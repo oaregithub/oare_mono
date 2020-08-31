@@ -5,6 +5,7 @@
     "lerna": "^3.22.1"
   },
   "scripts": {
-    "start": "cd ./packages/backend && (yarn dev &) && cd ../frontend && yarn serve"
+    "start": "cd packages/backend && yarn start",
+    "build": "./build.sh"
   }
 }
