@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OareDialog matches snapshot 1`] = `
+<div>
+  <v-dialog-stub opendelay="0" closedelay="0" value="true" contentclass="" maxwidth="none" origin="center center" persistent="true" retainfocus="true" transition="dialog-transition" width="500">
+    <v-card-stub loaderheight="4" tag="div">
+      <v-card-title-stub datatestid="dialog-title" data-testid="dialog-title">Test Dialog</v-card-title-stub>
+      <v-card-text-stub></v-card-text-stub>
+      <v-divider-stub></v-divider-stub>
+      <v-card-actions-stub>
+        <v-spacer-stub></v-spacer-stub>
+        <v-btn-stub color="error" tag="button" activeclass="" text="true" type="button" data-testid="cancel-btn">Cancel</v-btn-stub>
+        <v-btn-stub color="primary" tag="button" activeclass="" type="button" data-testid="submit-btn"><span>Submit</span></v-btn-stub>
+      </v-card-actions-stub>
+    </v-card-stub>
+  </v-dialog-stub>
+</div>
+`;

@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OareContentView matches snapshot 1`] = `
+<v-card-stub loaderheight="4" tag="div" maxwidth="100%" class="mx-auto pa-md-7 pa-xs-0 min-height">
+  <v-card-title-stub datatestid="content-title" data-testid="content-title" class="display-2 font-weight-bold d-flex justify-space-between align-start">
+    Content view title
+  </v-card-title-stub>
+  <v-card-text-stub class="black--text"></v-card-text-stub>
+  <v-card-actions-stub></v-card-actions-stub>
+</v-card-stub>
+`;

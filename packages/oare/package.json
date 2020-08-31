@@ -1,0 +1,45 @@
+{
+  "name": "@oare/oare",
+  "version": "3.1.7",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "jest --colors",
+    "lint": "eslint src/**/**.ts tests/** --fix --cache",
+    "build": "rimraf ./build && tsc",
+    "prepublish": "yarn build"
+  },
+  "author": "",
+  "license": "ISC",
+  "types": "build/index.d.ts",
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
+    "axios": "^0.19.2",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "husky": "^4.2.3",
+    "jest": "^25.2.7",
+    "jest-html-reporters": "^1.2.1",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^25.3.1",
+    "typescript": "^3.8.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "dependencies": {
+    "@types/node": "^13.11.0"
+  },
+  "files": [
+    "build"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oaregithub/oare"
+  }
+}

@@ -1,0 +1,79 @@
+<template>
+  <DictionaryDisplay
+    :wordList="wordList"
+    :letter="letter"
+    :route="route"
+    :searchFilter="searchFilter"
+  >
+    <template #translation="{word}" v-if="route === 'names'">
+      <div>
+        {{ word.translation || "(no trans.)" }}
+      </div>
+    </template>
+
+    <template #forms="{word}">
+      <div
+        v-for="(formInfo, idx) in word.forms"
+        :key="idx"
+        class="d-flex flex-wrap pl-4"
+      >
+        <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
+        <div class="mr-1">({{ formInfo.cases }})</div>
+        <div>{{ formInfo.spellings.join(", ") }}</div>
+      </div>
+    </template>
+  </DictionaryDisplay>
+</template>
+
+<script lang="ts">
+import { defineComponent, PropType, computed } from "@vue/composition-api";
+import { NamesOrPlaces } from "@/types/names";
+import DictionaryDisplay from "../DictionaryDisplay/index.vue";
+
+export default defineComponent({
+  name: "NamesPlacesDisplay",
+  components: {
+    DictionaryDisplay,
+  },
+  props: {
+    wordList: {
+      type: Array as PropType<NamesOrPlaces[]>,
+    },
+    letter: {
+      type: String,
+      required: true,
+    },
+    route: {
+      type: String,
+      required: true,
+    },
+  },
+
+  setup() {
+    const searchFilter = (search: string, word: NamesOrPlaces) => {
+      const lowerSearch = search.toLowerCase();
+
+      return (
+        word.word.toLowerCase().includes(lowerSearch) ||
+        (word.translation &&
+          word.translation.toLowerCase().includes(lowerSearch)) ||
+        word.forms.some((form) => {
+          return (
+            form.form &&
+            (form.form.toLowerCase().includes(lowerSearch) ||
+              form.spellings.some((spelling) => {
+                return spelling && spelling.toLowerCase().includes(lowerSearch);
+              }))
+          );
+        })
+      );
+    };
+
+    return {
+      searchFilter,
+    };
+  },
+});
+</script>
+
+<style></style>
