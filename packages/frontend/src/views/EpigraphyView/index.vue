@@ -42,7 +42,7 @@
         item-key="uuid"
         item-text="spelling"
       >
-        <template #label="{item}">
+        <template #label="{ item }">
           <div
             :class="`${discourseColor(item.type)}--text`"
             style="white-space: normal"
@@ -74,8 +74,8 @@ import {
   MarkupUnit,
   EpigraphicUnitSide,
   DiscourseUnit,
-} from "oare";
-import TabletRenderer from "oare/build/TabletRenderer";
+  TabletRenderer,
+} from "@oare/oare";
 import {
   defineComponent,
   reactive,

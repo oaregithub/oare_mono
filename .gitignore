@@ -1,3 +1,5 @@
 node_modules
+dist
+build
 .vscode
 oare_node.zip

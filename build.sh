@@ -5,8 +5,9 @@ rm -rf dist
 cp -r ../frontend/dist .
 rm -rf ../frontend/dist
 yarn build
-cd ../..
-stashName=`git stash create`
-git archive --format=zip --output=oare_node.zip $stashName ./packages/backend
-rm -rf ./packages/backend/build
-rm -rf ./packages/backend/dist
+zip -r oare_node.zip build dist package.json yarn.lock
+mv oare_node.zip ../..
+# cd ../..
+# git archive --format=zip --output=oare_node.zip HEAD
+# rm -rf ./packages/backend/build
+# rm -rf ./packages/backend/dist

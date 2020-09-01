@@ -1,5 +1,5 @@
 {
-  "name": "root",
+  "name": "oare",
   "private": true,
   "devDependencies": {
     "lerna": "^3.22.1"
@@ -7,5 +7,8 @@
   "scripts": {
     "start": "cd packages/backend && yarn start",
     "build": "./build.sh"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

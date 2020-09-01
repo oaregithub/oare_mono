@@ -53,7 +53,7 @@ import {
   watch,
   computed,
 } from "@vue/composition-api";
-import { AkkadianLetterGroupsUpper } from "oare";
+import { AkkadianLetterGroupsUpper } from "@oare/oare";
 import { WordWithForms, DictionaryForm } from "@/types/dictionary";
 import { BreadcrumbItem } from "@/components/base/OareBreadcrumbs.vue";
 import serverProxy from "../serverProxy";
