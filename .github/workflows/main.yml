@@ -30,7 +30,13 @@ jobs:
           yarn build
       - uses: montudor/action-zip@v0.1.0
         with:
-          args: zip -r oare_build.zip ./packages/backend/build ./packages/backend/dist ./packages/backend/package.json ./packages/backend/yarn.lock
+          args: cd ./packages/backend && zip -r ../../oare_build.zip ./build ./dist ./package.json ./yarn.lock
+      
+      # Get current time for EB version
+      - name: Current Time
+        uses: gerred/current-time@v1.0.0
+        id: current-time
+
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11
         with:
@@ -38,6 +44,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: oare
           environment_name: oare-env
-          version_label: 12345
+          version_label: oare-${{ steps.current-time.outputs.time }}
           region: us-west-2
           deployment_package: oare_build.zip
