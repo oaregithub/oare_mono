@@ -6,9 +6,9 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -21,14 +21,24 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
-      - name: Install lerna
-        run: yarn global add lerna
-      
-      - name: Bootstrap
-        run: lerna bootstrap --use-workspaces
-        
-      # Runs a set of commands using the runners shell
-      - name: Build the TS and Vue files
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Build TS and Vue files
         run: |
+          yarn install
           yarn build
+      - uses: montudor/action-zip@v0.1.0
+        with:
+          args: zip -qr ./oare_build.zip ./packages/backend/build ./packages/backend/dist ./packages/backend/package.json ./packages/backend/yarn.lock
+      # - run: cd ..
+      # - run: yarn install
+      # - run: yarn build
+
+      # - name: Bootstrap
+      #   run: lerna bootstrap --use-workspaces
+
+      # # Runs a set of commands using the runners shell
+      # - name: Build the TS and Vue files
+      #   run: |
+      #     yarn build

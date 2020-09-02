@@ -1,15 +1,19 @@
 {
   "name": "oare",
   "private": true,
-  "devDependencies": {
-    "lerna": "^3.22.1"
-  },
   "scripts": {
     "start": "cd packages/backend && yarn start",
-    "build": "./build.sh",
-    "bootstrap": "lerna bootstrap --use-workspaces"
+    "build": "./build.sh"
   },
-  "workspaces": [
-    "packages/*"
-  ]
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "packages/*"
+    ]
+  },
+  "devDependencies": {
+    "lerna": "^3.22.1"
+  }
 }

@@ -6,8 +6,7 @@
   "scripts": {
     "test": "jest --colors",
     "lint": "eslint src/**/**.ts tests/** --fix --cache",
-    "build": "rimraf ./build && tsc",
-    "prepublish": "yarn build"
+    "build": "rm -rf ./build && tsc"
   },
   "author": "",
   "license": "ISC",
