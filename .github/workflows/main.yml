@@ -31,15 +31,13 @@ jobs:
       - uses: montudor/action-zip@v0.1.0
         with:
           args: zip -r oare_build.zip ./packages/backend/build ./packages/backend/dist ./packages/backend/package.json ./packages/backend/yarn.lock
-      - run: ls
-      # - run: cd ..
-      # - run: yarn install
-      # - run: yarn build
-
-      # - name: Bootstrap
-      #   run: lerna bootstrap --use-workspaces
-
-      # # Runs a set of commands using the runners shell
-      # - name: Build the TS and Vue files
-      #   run: |
-      #     yarn build
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v11
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: oare
+          environment_name: oare-env
+          version_label: 12345
+          region: us-west-2
+          deployment_package: oare_build.zip
