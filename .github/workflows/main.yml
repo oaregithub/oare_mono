@@ -30,7 +30,8 @@ jobs:
           yarn build
       - uses: montudor/action-zip@v0.1.0
         with:
-          args: zip -qr ./oare_build.zip ./packages/backend/build ./packages/backend/dist ./packages/backend/package.json ./packages/backend/yarn.lock
+          args: zip -r oare_build.zip ./packages/backend/build ./packages/backend/dist ./packages/backend/package.json ./packages/backend/yarn.lock
+      - run: ls
       # - run: cd ..
       # - run: yarn install
       # - run: yarn build
