@@ -37,10 +37,7 @@ jobs:
           zip -r oare_build.zip build dist package.json yarn.lock
           mv oare_build.zip ../..
           
-      # Get current time for EB version
-      - name: Current Time
-        uses: gerred/current-time@v1.0.0
-        id: current-time
+      - run: ls
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11
@@ -49,6 +46,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: oare
           environment_name: oare-env
-          version_label: oare-${{ steps.current-time.outputs.time }}
+          version_label: 123456
           region: us-west-2
           deployment_package: oare_build.zip
