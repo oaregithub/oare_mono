@@ -28,10 +28,15 @@ jobs:
         run: |
           yarn install
           yarn build
-      - uses: montudor/action-zip@v0.1.0
-        with:
-          args: cd ./packages/backend && zip -r ../../oare_build.zip ./build ./dist ./package.json ./yarn.lock
-      
+#       - uses: montudor/action-zip@v0.1.0
+#         with:
+#           args: cd ./packages/backend && zip -r ../../oare_build.zip ./build ./dist ./package.json ./yarn.lock
+      - name: Zip up files
+        run: |
+          cd packages/backend
+          zip -r oare_build.zip build dist package.json yarn.lock
+          mv oare_build.zip ../..
+          
       # Get current time for EB version
       - name: Current Time
         uses: gerred/current-time@v1.0.0
