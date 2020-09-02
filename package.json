@@ -6,7 +6,8 @@
   },
   "scripts": {
     "start": "cd packages/backend && yarn start",
-    "build": "./build.sh"
+    "build": "./build.sh",
+    "bootstrap": "lerna bootstrap --use-workspaces"
   },
   "workspaces": [
     "packages/*"
