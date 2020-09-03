@@ -37,7 +37,12 @@ jobs:
           zip -r oare_build.zip build dist package.json yarn.lock
           mv oare_build.zip ../..
           
-      - run: ls
+      - name: Get Time
+        id: time
+        uses: nanzm/get-time-action@v1.0
+        with:
+          timeZone: 8
+          format: 'YYYY-MM-DD-HH-mm-ss'
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11
@@ -46,6 +51,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: oare
           environment_name: oare-env
-          version_label: 123456
+          version_label: "oare-${{ steps.time.outputs.time }}"
           region: us-west-2
           deployment_package: oare_build.zip
