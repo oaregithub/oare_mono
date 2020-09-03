@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, Ref, onMounted } from "@vue/composition-api";
-import { AkkadianLetterGroupsUpper } from "oare";
+import { AkkadianLetterGroupsUpper } from "@oare/oare";
 import server from "../../serverProxy";
 import { NamesOrPlaces } from "../../types/names";
 import NamesPlacesDisplay from "@/components/NamesPlacesDisplay/index.vue";

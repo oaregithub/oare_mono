@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import { AkkadianLetterGroupsUpper } from "oare";
+import { AkkadianLetterGroupsUpper } from "@oare/oare";
 import {
   defineComponent,
   ref,
