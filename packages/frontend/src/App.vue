@@ -5,18 +5,18 @@
       dark
       clipped
       v-model="drawer"
-      :mobile-break-point="$vuetify.breakpoint.thresholds.sm"
+      :mobile-breakpoint="$vuetify.breakpoint.thresholds.sm"
       color="#002E5D"
     >
       <component :is="sidebarComponent" />
     </v-navigation-drawer>
     <OareAppBar @nav-icon-click="drawer = !drawer" />
 
-    <v-content>
+    <v-main>
       <v-container fluid>
         <router-view />
       </v-container>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 
