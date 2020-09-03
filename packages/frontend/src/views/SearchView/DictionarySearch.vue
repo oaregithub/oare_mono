@@ -26,7 +26,7 @@
       :rows.sync="rows"
       :headers="headers"
     >
-      <template #item.name="{item}">
+      <template #item.name="{ item }">
         <router-link
           v-if="wordLink(item)"
           :to="wordLink(item)"
@@ -35,7 +35,7 @@
         </router-link>
       </template>
 
-      <template #item.translations="{item}">
+      <template #item.translations="{ item }">
         <div v-if="item.translations.length === 0" />
         <div
           v-for="(translation, idx) in item.translations"
@@ -44,7 +44,7 @@
         ></div>
       </template>
 
-      <template #item.matches="{item}">
+      <template #item.matches="{ item }">
         <div
           v-for="(match, index) in item.matches"
           :key="index"
@@ -63,7 +63,7 @@ import {
   computed,
   watch,
 } from "@vue/composition-api";
-import { AkkadianLetterGroupsUpper } from "oare";
+import { AkkadianLetterGroupsUpper } from "@oare/oare";
 import { DictionarySearchRow } from "@/types/search_dictionary";
 import ResultTable from "./ResultTable.vue";
 import server from "@/serverProxy";

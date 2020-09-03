@@ -1,5 +1,5 @@
 import axios from "../axiosInstance";
-import { EpigraphicUnit } from "oare";
+import { EpigraphicUnit } from "@oare/oare";
 
 export interface EpigraphyResponse {
   canWrite: boolean;

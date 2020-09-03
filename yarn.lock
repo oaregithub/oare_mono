@@ -11002,13 +11002,6 @@ nwsapi@^2.0.7, nwsapi@^2.2.0:
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.0.tgz#204879a9e3d068ff2a55139c2c772780681a38b7"
   integrity sha512-h2AatdwYH+JHiZpv7pt/gSX1XoRGb7L/qSIeuqA6GwYoF9w1vP1cw42TO0aI2pNyshRK5893hNSl+1//vHK7hQ==
 
-oare@^3.0.0:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/oare/-/oare-3.1.7.tgz#de07c7d8b7fb779eb0fbd38375885e9439a89331"
-  integrity sha512-/a2liMjVofuCSNFEwQ3vODwe1DIhd+TUsG7j1h4keWcKy44+gV1YnIVBc1zBveWafyA3CzqnI4hHmRO5K0lYKQ==
-  dependencies:
-    "@types/node" "^13.11.0"
-
 oauth-sign@~0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/oauth-sign/-/oauth-sign-0.9.0.tgz#47a7b016baa68b5fa0ecf3dee08a85c679ac6455"
