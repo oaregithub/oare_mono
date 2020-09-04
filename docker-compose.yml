@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  backend:
+    build: ./packages/backend
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./packages/backend:/app
+      - /app/node_modules/
+    environment:
+      - OARE_DB_URL
+
+  frontend:
+    build: .
+    depends_on:
+      - backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./packages/frontend:/app/packages/frontend
+      - /app/packages/frontend/node_modules/

@@ -3,13 +3,12 @@
   "private": true,
   "scripts": {
     "start": "cd packages/backend && yarn start",
-    "build": "./build.sh"
+    "build": "./build.sh",
+    "bootstrap": "lerna bootstrap --use-workspaces",
+    "serve": "cd packages/frontend && yarn serve"
   },
   "workspaces": {
     "packages": [
-      "packages/*"
-    ],
-    "nohoist": [
       "packages/*"
     ]
   },
