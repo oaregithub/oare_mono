@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'; // eslint-disable-line
+import { Request, Response, NextFunction } from 'express';
 import cache from '../cache';
 
 function cacheMiddleware(req: Request, res: Response, next: NextFunction) {

@@ -2,11 +2,18 @@ import TabletRenderer from './TabletRenderer';
 import TabletHtmlRenderer from './TabletHtmlRenderer';
 import TabletLineNumRenderer from './TabletLineNumRenderer';
 
-export { DiscourseUnit, DiscourseUnitType, default as DiscourseRenderer } from './DiscourseRenderer';
+export {
+  DiscourseUnit,
+  DiscourseUnitType,
+  default as DiscourseRenderer,
+} from './DiscourseRenderer';
 export { default as DiscourseHtmlRenderer } from './DiscourseHtmlRenderer';
 export { default as TabletHtmlRenderer } from './TabletHtmlRenderer';
 export { default as TabletLineNumRenderer } from './TabletLineNumRenderer';
-export { EpigraphicUnitWithMarkup, default as TabletRenderer } from './TabletRenderer';
+export {
+  EpigraphicUnitWithMarkup,
+  default as TabletRenderer,
+} from './TabletRenderer';
 
 export type EpigraphicUnitType =
   | 'phonogram'

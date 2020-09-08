@@ -1,7 +1,7 @@
 import knex from '../../../connection';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
-import { User } from '../UserDao'; // eslint-disable-line
+import { User } from '../UserDao';
 
 export interface UuidAndName {
   uuid: string;

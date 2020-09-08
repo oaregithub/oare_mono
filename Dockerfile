@@ -9,7 +9,6 @@ COPY ./packages/frontend/yarn.lock ./packages/frontend
 
 # Copy oare package and build TS files
 COPY ./packages/oare/ ./packages/oare
-RUN ls -R ./packages/oare
 RUN cd ./packages/oare && yarn install && yarn build && cd ../..
 
 # Copy over monorepo package.json and yarn.lock

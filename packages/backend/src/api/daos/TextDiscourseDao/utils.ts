@@ -1,4 +1,4 @@
-import { DiscourseRow, NestedDiscourse } from './index'; // eslint-disable-line
+import { DiscourseRow, NestedDiscourse } from './index';
 
 export function createdNestedDiscourses(discourseRows: DiscourseRow[], parentUuid: string | null): NestedDiscourse[] {
   const children = discourseRows.filter((row) => row.parentUuid === parentUuid);

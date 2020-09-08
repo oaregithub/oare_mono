@@ -1,12 +1,12 @@
 import {
-  WordQueryRow, // eslint-disable-line
-  WordQueryResultRow, // eslint-disable-line
-  NamePlaceQueryResult, // eslint-disable-line
-  NamePlaceQueryRow, // eslint-disable-line
-  SearchWordsQueryRow, // eslint-disable-line
-  SearchWordsQueryResult, //eslint-disable-line
-  GrammarInfoRow, //eslint-disable-line
-  GrammarInfoResult, //eslint-disable-line
+  WordQueryRow,
+  WordQueryResultRow,
+  NamePlaceQueryResult,
+  NamePlaceQueryRow,
+  SearchWordsQueryRow,
+  SearchWordsQueryResult,
+  GrammarInfoRow,
+  GrammarInfoResult,
 } from './index';
 
 export function nestedFormsAndSpellings(flatNames: NamePlaceQueryRow[]): NamePlaceQueryResult[] {
@@ -148,7 +148,7 @@ export function assembleSearchResult(rows: SearchWordsQueryRow[], search: string
   return searchResults;
 }
 
-function getVariables(value: string, grammarRows: GrammarInfoRow[], abbreviation: boolean = true): string[] {
+function getVariables(value: string, grammarRows: GrammarInfoRow[], abbreviation = true): string[] {
   const valueRow = grammarRows.find((row) => row.value === value);
   if (!valueRow) {
     return [];

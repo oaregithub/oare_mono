@@ -54,7 +54,7 @@ router
       const groupIds = (req.query.group_ids as unknown) as number[];
 
       for (let i = 0; i < groupIds.length; i += 1) {
-        const existingGroup = await oareGroupDao.getGroupById(groupIds[i]); // eslint-disable-line
+        const existingGroup = await oareGroupDao.getGroupById(groupIds[i]);
         if (!existingGroup) {
           next(new HttpException(400, `Group with ID ${groupIds[i]} does not exist`));
           return;

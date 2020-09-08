@@ -1,5 +1,5 @@
 import knex from '../../../connection';
-import { EpigraphicUnitRow, EpigraphicUnitResult } from './index'; // eslint-disable-line
+import { EpigraphicUnitRow, EpigraphicUnitResult } from './index';
 
 export default function getSearchQuery(characters: string[], textTitle: string, blacklist: string[]) {
   // Join alias table so text names can be returned

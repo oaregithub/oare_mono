@@ -82,7 +82,7 @@ class TextEpigraphyDao {
       for (let i = 0; i < texts.length; i += 1) {
         const { uuid } = texts[i];
 
-        const searchEpigraphyQuery = knex('text_epigraphy') // eslint-disable-line
+        const searchEpigraphyQuery = knex('text_epigraphy')
           .where('text_uuid', uuid)
           .andWhereNot('char_on_tablet', null)
           .orderBy('char_on_tablet')

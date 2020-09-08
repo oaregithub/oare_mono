@@ -1,7 +1,7 @@
 import knex from '../../../connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
-import { User } from '../UserDao'; // eslint-disable-line
+import { User } from '../UserDao';
 
 export interface TextQueryRow {
   text_uuid: string;
@@ -25,7 +25,7 @@ class TextGroupDao {
       const groupIds = await userGroupDao.getGroupsOfUser(user.id);
       for (let i = 0; i < groupIds.length; i += 1) {
         const groupId = groupIds[i];
-        const texts = await this.getTexts(groupId); // eslint-disable-line
+        const texts = await this.getTexts(groupId);
         texts.forEach((text) => {
           userTexts.push(text);
         });

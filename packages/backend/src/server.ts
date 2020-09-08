@@ -7,7 +7,7 @@ import errorMiddleware from './middlewares/error';
 import cacheMiddleware from './middlewares/cache';
 import userMiddleware from './middlewares/user';
 
-import { User } from './api/daos/UserDao'; // eslint-disable-line
+import { User } from './api/daos/UserDao';
 
 declare global {
   namespace Express {

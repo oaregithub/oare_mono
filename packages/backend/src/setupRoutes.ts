@@ -1,4 +1,4 @@
-import { Express } from 'express'; // eslint-disable-line
+import { Express } from 'express';
 import words from './api/words';
 import names from './api/names';
 import places from './api/places';

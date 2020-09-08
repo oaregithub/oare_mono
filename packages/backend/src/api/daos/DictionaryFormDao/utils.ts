@@ -1,4 +1,4 @@
-import { SpellingQueryRow, FormGrammarRow, FormQueryResult } from './index'; // eslint-disable-line
+import { SpellingQueryRow, FormGrammarRow, FormQueryResult } from './index';
 
 export default function assembleSpellingsAndFormGrammar(
   spellingRows: SpellingQueryRow[],

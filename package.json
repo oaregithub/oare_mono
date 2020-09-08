@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "cd packages/backend && yarn start",
-    "lint": "cd packages/oare && yarn lint",
+    "lint": "cd packages/oare && yarn lint && cd ../backend && yarn lint",
     "build": "./build.sh",
     "bootstrap": "lerna bootstrap --use-workspaces",
     "serve": "cd packages/frontend && yarn serve"

@@ -1,6 +1,6 @@
 import express from 'express';
 import HttpException from '../exceptions/HttpException';
-import aliasDao, { AliasRow } from './daos/AliasDao'; // eslint-disable-line
+import aliasDao from './daos/AliasDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
 import textGroupDao from './daos/TextGroupDao';
 import hierarchyDao from './daos/HierarchyDao';

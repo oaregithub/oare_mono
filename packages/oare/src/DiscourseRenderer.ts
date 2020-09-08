@@ -1,8 +1,17 @@
 /* eslint-disable max-classes-per-file */
 
-export type DiscourseUnitType = 'discourseUnit' |
-  'sentence' | 'phrase' | 'number' | 'word' | 'paragraph' |
-  'clause' | 'heading' | 'stitch' | 'morpheme' | null;
+export type DiscourseUnitType =
+  | 'discourseUnit'
+  | 'sentence'
+  | 'phrase'
+  | 'number'
+  | 'word'
+  | 'paragraph'
+  | 'clause'
+  | 'heading'
+  | 'stitch'
+  | 'morpheme'
+  | null;
 
 export interface DiscourseUnit {
   uuid: string;
@@ -29,10 +38,14 @@ function getLineNums(units: DiscourseUnit[]): number[] {
 }
 
 interface TranscriptionRenderFunc {
-  (word: string): string
+  (word: string): string;
 }
-export function lineReadingHelper(units: DiscourseUnit[], line: number, words: string[],
-  trRenderer: TranscriptionRenderFunc = (word) => word) {
+export function lineReadingHelper(
+  units: DiscourseUnit[],
+  line: number,
+  words: string[],
+  trRenderer: TranscriptionRenderFunc = (word) => word,
+) {
   units.forEach((unit) => {
     if (unit.line === line) {
       if (unit.transcription) {
@@ -45,15 +58,17 @@ export function lineReadingHelper(units: DiscourseUnit[], line: number, words: s
   });
 }
 
-function getRenderersHelper(units: DiscourseUnit[],
+function getRenderersHelper(
+  units: DiscourseUnit[],
   renderers: DiscourseRenderer[],
   type: DiscourseUnitType,
-  renderClass: typeof DiscourseRenderer) {  // eslint-disable-line
+  RenderClass: typeof DiscourseRenderer,
+) {
   units.forEach((unit) => {
     if (unit.type === 'paragraph') {
-      renderers.push(new renderClass(unit.units)); //eslint-disable-line
+      renderers.push(new RenderClass(unit.units));
     } else {
-      getRenderersHelper(unit.units, renderers, type, renderClass);
+      getRenderersHelper(unit.units, renderers, type, RenderClass);
     }
   });
 }
@@ -74,13 +89,23 @@ export default class DiscourseRenderer {
 
   get paragraphRenderers(): DiscourseRenderer[] {
     const renderers: DiscourseRenderer[] = [];
-    getRenderersHelper(this.discourseUnits, renderers, 'paragraph', this.renderClass);
+    getRenderersHelper(
+      this.discourseUnits,
+      renderers,
+      'paragraph',
+      this.renderClass,
+    );
     return renderers;
   }
 
   get sentenceRenderers(): DiscourseRenderer[] {
     const renderers: DiscourseRenderer[] = [];
-    getRenderersHelper(this.discourseUnits, renderers, 'sentence', this.renderClass);
+    getRenderersHelper(
+      this.discourseUnits,
+      renderers,
+      'sentence',
+      this.renderClass,
+    );
     return renderers;
   }
 

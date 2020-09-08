@@ -1,4 +1,7 @@
-import DiscourseRenderer, { DiscourseUnit, lineReadingHelper } from './DiscourseRenderer';
+import DiscourseRenderer, {
+  DiscourseUnit,
+  lineReadingHelper,
+} from './DiscourseRenderer';
 
 export default class DiscourseHtmlRenderer extends DiscourseRenderer {
   constructor(discourseUnits: DiscourseUnit[]) {
@@ -8,7 +11,12 @@ export default class DiscourseHtmlRenderer extends DiscourseRenderer {
 
   public lineReading(line: number): string {
     const words: string[] = [];
-    lineReadingHelper(this.discourseUnits, line, words, (word: string) => `<em>${word}</em>`);
+    lineReadingHelper(
+      this.discourseUnits,
+      line,
+      words,
+      (word: string) => `<em>${word}</em>`,
+    );
     return words.join(' ');
   }
 }

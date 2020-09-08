@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.route('/discourses/:textUuid').get(async (req, res, next) => {
   try {
-    const textUuid: string = String(req.params.textUuid);
+    const textUuid = String(req.params.textUuid);
     const nestedDiscourses = await textDiscourseDao.getTextDiscourseUnits(textUuid);
 
     res.json(nestedDiscourses);

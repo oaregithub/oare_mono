@@ -8,9 +8,27 @@ export function endsWithSuperscript(markedupUnit: string): boolean {
 }
 
 function isMarkupChar(char: string): boolean {
-  return ['%', '{', '}', ':', '×', '‹', '›',
-    '«', '»', '+', '+', 'x', '#', '⸢', '⸣',
-    '[', ']', '!', '?'].includes(char);
+  return [
+    '%',
+    '{',
+    '}',
+    ':',
+    '×',
+    '‹',
+    '›',
+    '«',
+    '»',
+    '+',
+    '+',
+    'x',
+    '#',
+    '⸢',
+    '⸣',
+    '[',
+    ']',
+    '!',
+    '?',
+  ].includes(char);
 }
 
 function italicize(word: string) {
@@ -43,7 +61,8 @@ export default class TabletHtmlRenderer extends TabletRenderer {
     const baseReading = super.markedUpEpigraphicReading(unit);
     if (unit.type === 'determinative') {
       return `<sup>${baseReading}</sup>`;
-    } if (unit.type === 'phonogram' && unit.reading !== '...') {
+    }
+    if (unit.type === 'phonogram' && unit.reading !== '...') {
       if (endsWithSuperscript(baseReading)) {
         const word = wordWithoutSuperscript(baseReading);
         return italicize(word) + baseReading.substring(word.length);
@@ -57,8 +76,8 @@ export default class TabletHtmlRenderer extends TabletRenderer {
   lineReading(lineNum: number) {
     if (this.renderer) {
       // eslint-disable-next-line dot-notation
-      this.renderer['markedUpEpigraphicReading'] = this.markedUpEpigraphicReading;
-      this.renderer['applySingleMarkup'] = this.applySingleMarkup;  // eslint-disable-line
+      this.renderer.markedUpEpigraphicReading = this.markedUpEpigraphicReading;
+      this.renderer['applySingleMarkup'] = this.applySingleMarkup; // eslint-disable-line
       return this.renderer.lineReading(lineNum);
     }
     throw new Error('Undefined renderer passed to render decorator');

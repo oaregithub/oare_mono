@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'; // eslint-disable-line
+import { Request, Response, NextFunction } from 'express';
 import HttpException from '../exceptions/HttpException';
 import hierarchyDao from '../api/daos/HierarchyDao';
 

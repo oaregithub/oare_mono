@@ -1,5 +1,5 @@
 import knex from '../../../connection';
-import { UserInfo } from '../UserDao'; // eslint-disable-line
+import { UserInfo } from '../UserDao';
 
 export interface UserGroupRow {
   group_id: number;

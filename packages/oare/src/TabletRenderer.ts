@@ -1,5 +1,7 @@
 import {
-  EpigraphicUnit, MarkupUnit, EpigraphicUnitType,
+  EpigraphicUnit,
+  MarkupUnit,
+  EpigraphicUnitType,
   EpigraphicUnitSide,
 } from './index';
 
@@ -67,9 +69,7 @@ export default class TabletRenderer {
   /**
    * Return the epigraphic reading at a specific line number
    */
-  public lineReading(
-    lineNum: number,
-  ) {
+  public lineReading(lineNum: number) {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
     const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
     return convertMarkedUpUnitsToLineReading(charactersWithMarkup);
@@ -86,7 +86,8 @@ export default class TabletRenderer {
   }
 
   public linesOnSide(side: EpigraphicUnitSide): number[] {
-    const unitsOnSide = this.epigraphicUnits.filter((unit) => unit.side === side)
+    const unitsOnSide = this.epigraphicUnits
+      .filter((unit) => unit.side === side)
       .sort((a, b) => a.charOnTablet - b.charOnTablet);
 
     const lines: number[] = [];
@@ -133,7 +134,9 @@ export default class TabletRenderer {
     return markupMap;
   }
 
-  protected addMarkupToEpigraphicUnits(epigUnits: EpigraphicUnit[]): EpigraphicUnitWithMarkup[] {
+  protected addMarkupToEpigraphicUnits(
+    epigUnits: EpigraphicUnit[],
+  ): EpigraphicUnitWithMarkup[] {
     return epigUnits.map((unit) => ({
       type: unit.type || 'phonogram',
       reading: this.markedUpEpigraphicReading(unit),
@@ -225,7 +228,8 @@ export default class TabletRenderer {
   }
 
   protected addStartBracket(markup: MarkupUnit, reading: string): string {
-    const bracket = markup.type === 'damage' || markup.type === 'missingSigns' ? '[' : '⸢';
+    const bracket =
+      markup.type === 'damage' || markup.type === 'missingSigns' ? '[' : '⸢';
 
     let formattedReading = reading;
     if (markup.startChar === null) {
@@ -233,15 +237,17 @@ export default class TabletRenderer {
         formattedReading = bracket + formattedReading;
       }
     } else {
-      formattedReading = formattedReading.slice(0, markup.startChar)
-        + bracket
-        + formattedReading.slice(markup.startChar);
+      formattedReading =
+        formattedReading.slice(0, markup.startChar) +
+        bracket +
+        formattedReading.slice(markup.startChar);
     }
     return formattedReading;
   }
 
   protected addEndBracket(markup: MarkupUnit, reading: string): string {
-    const bracket = markup.type === 'damage' || markup.type === 'missingSigns' ? ']' : '⸣';
+    const bracket =
+      markup.type === 'damage' || markup.type === 'missingSigns' ? ']' : '⸣';
 
     let formattedReading = reading;
     if (markup.endChar === null) {
@@ -254,9 +260,10 @@ export default class TabletRenderer {
       if (this.shouldAddStartBracket(markup)) {
         endChar += 1;
       }
-      formattedReading = formattedReading.slice(0, endChar)
-        + bracket
-        + formattedReading.slice(endChar);
+      formattedReading =
+        formattedReading.slice(0, endChar) +
+        bracket +
+        formattedReading.slice(endChar);
     }
     return formattedReading;
   }
@@ -275,12 +282,12 @@ export default class TabletRenderer {
     if (!unit) {
       return false;
     }
-    const [tabletDiff, neighborChar]: [number, 'endChar' | 'startChar'] = startOrEnd === 'start'
-      ? [-1, 'endChar']
-      : [1, 'startChar'];
+    const [tabletDiff, neighborChar]: [number, 'endChar' | 'startChar'] =
+      startOrEnd === 'start' ? [-1, 'endChar'] : [1, 'startChar'];
 
-    const neighbor = this.epigraphicUnits
-      .find((item) => item.charOnTablet === unit.charOnTablet + tabletDiff);
+    const neighbor = this.epigraphicUnits.find(
+      (item) => item.charOnTablet === unit.charOnTablet + tabletDiff,
+    );
 
     if (!neighbor || !neighbor.markups) {
       return true;
@@ -305,11 +312,11 @@ export default class TabletRenderer {
   }
 
   public getMarkupsByLineNumber(line: number): MarkupUnit[] {
-    const epigUuids = this.epigraphicUnits.filter(
-      (unit) => unit.line === line,
-    ).map((unit) => unit.uuid);
-    return this.markupUnits.filter(
-      (unit) => epigUuids.includes(unit.referenceUuid),
+    const epigUuids = this.epigraphicUnits
+      .filter((unit) => unit.line === line)
+      .map((unit) => unit.uuid);
+    return this.markupUnits.filter((unit) =>
+      epigUuids.includes(unit.referenceUuid),
     );
   }
 

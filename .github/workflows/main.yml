@@ -24,25 +24,24 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: Build TS and Vue files
+      - name: Lint files
         run: |
           yarn install
-          yarn build
-#       - uses: montudor/action-zip@v0.1.0
-#         with:
-#           args: cd ./packages/backend && zip -r ../../oare_build.zip ./build ./dist ./package.json ./yarn.lock
+          yarn lint
+      - name: Build TS and Vue files
+        run: yarn build
       - name: Zip up files
         run: |
           cd packages/backend
           zip -r oare_build.zip build dist package.json yarn.lock
           mv oare_build.zip ../..
-          
+
       - name: Get Time
         id: time
         uses: nanzm/get-time-action@v1.0
         with:
           timeZone: 8
-          format: 'YYYY-MM-DD-HH-mm-ss'
+          format: "YYYY-MM-DD-HH-mm-ss"
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11

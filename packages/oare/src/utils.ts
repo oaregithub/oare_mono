@@ -1,23 +1,26 @@
 import {
-  EpigraphicUnit, MarkupType, EpigraphicUnitType, MarkupUnit,
+  EpigraphicUnit,
+  MarkupType,
+  EpigraphicUnitType,
+  MarkupUnit,
 } from './index';
 
-export const isBracket = (char: string): boolean => ['[', ']', '⸢', '⸣'].includes(char);
+export const isBracket = (char: string): boolean =>
+  ['[', ']', '⸢', '⸣'].includes(char);
 
-export const unitMatchesMarkupType = (units: EpigraphicUnit[],
-  charOnTablet: number, markupType: MarkupType): boolean => {
-  const neighbor = units.find(
-    (item) => item.charOnTablet === charOnTablet,
-  );
+export const unitMatchesMarkupType = (
+  units: EpigraphicUnit[],
+  charOnTablet: number,
+  markupType: MarkupType,
+): boolean => {
+  const neighbor = units.find((item) => item.charOnTablet === charOnTablet);
 
   if (typeof neighbor === 'undefined') {
     return false;
   }
 
   if (neighbor.markups) {
-    const match = neighbor.markups.some(
-      (markup) => markup.type === markupType,
-    );
+    const match = neighbor.markups.some((markup) => markup.type === markupType);
     return match;
   }
   return false;
@@ -41,7 +44,8 @@ export const applyDamageMarkup = (
       formattedReading = matchReading;
     }
   }
-  const [bracket1, bracket2]: string[] = markup.type === 'damage' ? ['[', ']'] : ['⸢', '⸣'];
+  const [bracket1, bracket2]: string[] =
+    markup.type === 'damage' ? ['[', ']'] : ['⸢', '⸣'];
   let startingBracket = false;
 
   if (markup.startChar === null) {
@@ -50,9 +54,10 @@ export const applyDamageMarkup = (
       startingBracket = true;
     }
   } else {
-    formattedReading = formattedReading.slice(0, markup.startChar)
-      + bracket1
-      + formattedReading.slice(markup.startChar);
+    formattedReading =
+      formattedReading.slice(0, markup.startChar) +
+      bracket1 +
+      formattedReading.slice(markup.startChar);
     startingBracket = true;
   }
 
@@ -65,9 +70,10 @@ export const applyDamageMarkup = (
     if (startingBracket) {
       endChar += 1;
     }
-    formattedReading = formattedReading.slice(0, endChar)
-      + bracket2
-      + formattedReading.slice(endChar);
+    formattedReading =
+      formattedReading.slice(0, endChar) +
+      bracket2 +
+      formattedReading.slice(endChar);
   }
 
   // If phonogram, put the italics back without affecting the brackets
@@ -172,44 +178,35 @@ export const applyMarkup = (
 };
 
 /**
-   * Get the separator between two characters in a word given their types
-   */
+ * Get the separator between two characters in a word given their types
+ */
 export const separator = (
   type1: EpigraphicUnitType,
   type2: EpigraphicUnitType,
 ): string => {
-  if (
-    type1 === 'determinative'
-    || type2 === 'determinative'
-  ) {
+  if (type1 === 'determinative' || type2 === 'determinative') {
     return '';
   }
-  if (
-    type1 === 'phonogram'
-    || type2 === 'phonogram'
-  ) {
+  if (type1 === 'phonogram' || type2 === 'phonogram') {
     return '-';
   }
-  if (
-    type1 === 'number'
-    && type2 === 'number'
-  ) {
+  if (type1 === 'number' && type2 === 'number') {
     return '+';
   }
-  if (
-    type1 === 'logogram'
-    || type2 === 'logogram'
-  ) {
+  if (type1 === 'logogram' || type2 === 'logogram') {
     return '.';
   }
   return '';
 };
 
 /**
-   * Return true if units at idx has a character next to it.
-   * Used to determine if a separator needs to be inserted
-   */
-export const hasNeighbor = (units: EpigraphicUnit[], charOnTablet: number): boolean => {
+ * Return true if units at idx has a character next to it.
+ * Used to determine if a separator needs to be inserted
+ */
+export const hasNeighbor = (
+  units: EpigraphicUnit[],
+  charOnTablet: number,
+): boolean => {
   const curChar: EpigraphicUnit | undefined = units.find(
     (unit) => unit.charOnTablet === charOnTablet,
   );

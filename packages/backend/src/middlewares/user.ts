@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express'; // eslint-disable-line
-import UserDao, { User } from '../api/daos/UserDao'; // eslint-disable-line
+import { Request, Response, NextFunction } from 'express';
+import UserDao, { User } from '../api/daos/UserDao';
 import HttpException from '../exceptions/HttpException';
 
 // Attach user object to each request

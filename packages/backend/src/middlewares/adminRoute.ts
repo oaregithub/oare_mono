@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express'; // eslint-disable-line
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import HttpException from '../exceptions/HttpException';
-import userDao, { User } from '../api/daos/UserDao'; // eslint-disable-line
+import userDao, { User } from '../api/daos/UserDao';
 
 async function adminRoute(req: Request, res: Response, next: NextFunction) {
   try {
