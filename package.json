@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "start": "cd packages/backend && yarn start",
+    "lint": "cd packages/oare && yarn lint",
     "build": "./build.sh",
     "bootstrap": "lerna bootstrap --use-workspaces",
     "serve": "cd packages/frontend && yarn serve"
@@ -13,6 +14,12 @@
     ]
   },
   "devDependencies": {
+    "husky": "^4.3.0",
     "lerna": "^3.22.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint"
+    }
   }
 }

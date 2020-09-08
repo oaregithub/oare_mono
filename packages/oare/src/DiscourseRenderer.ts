@@ -68,7 +68,6 @@ export default class DiscourseRenderer {
     this.renderClass = DiscourseRenderer;
   }
 
-
   get lines(): number[] {
     return getLineNums(this.discourseUnits);
   }

@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "test": "jest --colors",
-    "lint": "eslint src/**/**.ts tests/** --fix --cache",
+    "lint": "eslint src/*.ts src/**/**.ts tests/** --fix",
     "build": "rm -rf ./build && tsc"
   },
   "author": "",
@@ -25,11 +25,6 @@
     "rimraf": "^3.0.2",
     "ts-jest": "^25.3.1",
     "typescript": "^3.8.3"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint"
-    }
   },
   "dependencies": {
     "@types/node": "^13.11.0"
