@@ -25,39 +25,6 @@ export interface DiscourseUnit {
   translation?: string;
 }
 
-function getLineNums(units: DiscourseUnit[]): number[] {
-  const lines: Set<number> = new Set();
-  units.forEach((unit) => {
-    if (unit.line) {
-      lines.add(unit.line);
-    }
-    const childrenLines = getLineNums(unit.units);
-    childrenLines.forEach((line) => lines.add(line));
-  });
-  return Array.from(lines).sort((a, b) => a - b);
-}
-
-interface TranscriptionRenderFunc {
-  (word: string): string;
-}
-export function lineReadingHelper(
-  units: DiscourseUnit[],
-  line: number,
-  words: string[],
-  trRenderer: TranscriptionRenderFunc = (word) => word,
-) {
-  units.forEach((unit) => {
-    if (unit.line === line) {
-      if (unit.transcription) {
-        words.push(trRenderer(unit.transcription));
-      } else if (unit.spelling) {
-        words.push(unit.spelling);
-      }
-    }
-    lineReadingHelper(unit.units, line, words, trRenderer);
-  });
-}
-
 function getRenderersHelper(
   units: DiscourseUnit[],
   renderers: DiscourseRenderer[],
@@ -114,4 +81,37 @@ export default class DiscourseRenderer {
     lineReadingHelper(this.discourseUnits, line, words);
     return words.join(' ');
   }
+}
+
+function getLineNums(units: DiscourseUnit[]): number[] {
+  const lines: Set<number> = new Set();
+  units.forEach((unit) => {
+    if (unit.line) {
+      lines.add(unit.line);
+    }
+    const childrenLines = getLineNums(unit.units);
+    childrenLines.forEach((line) => lines.add(line));
+  });
+  return Array.from(lines).sort((a, b) => a - b);
+}
+
+interface TranscriptionRenderFunc {
+  (word: string): string;
+}
+export function lineReadingHelper(
+  units: DiscourseUnit[],
+  line: number,
+  words: string[],
+  trRenderer: TranscriptionRenderFunc = (word) => word,
+) {
+  units.forEach((unit) => {
+    if (unit.line === line) {
+      if (unit.transcription) {
+        words.push(trRenderer(unit.transcription));
+      } else if (unit.spelling) {
+        words.push(unit.spelling);
+      }
+    }
+    lineReadingHelper(unit.units, line, words, trRenderer);
+  });
 }
