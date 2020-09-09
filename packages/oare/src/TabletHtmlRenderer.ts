@@ -75,8 +75,9 @@ export default class TabletHtmlRenderer extends TabletRenderer {
 
   lineReading(lineNum: number) {
     if (this.renderer) {
-      // eslint-disable-next-line dot-notation
-      this.renderer.markedUpEpigraphicReading = this.markedUpEpigraphicReading;
+      this.renderer[
+        'markedUpEpigraphicReading' // eslint-disable-line dot-notation
+      ] = this.markedUpEpigraphicReading;
       this.renderer['applySingleMarkup'] = this.applySingleMarkup; // eslint-disable-line
       return this.renderer.lineReading(lineNum);
     }
