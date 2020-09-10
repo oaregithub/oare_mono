@@ -5,7 +5,6 @@
         item.text
       }}</router-link>
       <span v-else>{{ item.text }}</span>
-
       <span v-if="idx !== items.length - 1" class="mx-3">{{ ">" }}</span>
     </div>
   </div>
