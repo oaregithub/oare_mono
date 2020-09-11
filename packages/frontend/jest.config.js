@@ -1,7 +1,7 @@
 module.exports = {
   verbose: true,
 
-  moduleFileExtensions: ["js", "json", "vue"],
+  moduleFileExtensions: ["js", "json", "vue", "ts"],
 
   transform: {
     ".*\\.(vue)$": "vue-jest",
