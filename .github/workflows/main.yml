@@ -35,14 +35,14 @@ jobs:
 
       - name: Build TS and Vue files
         run: yarn build
-        if: github.ref == 'master'
+        if: github.ref == 'refs/heads/master'
 
       - name: Zip up files
         run: |
           cd packages/backend
           zip -r oare_build.zip build dist package.json yarn.lock
           mv oare_build.zip ../..
-        if: github.ref == 'master'
+        if: github.ref == 'refs/heads/master'
 
       - name: Get Time
         id: time
@@ -50,7 +50,7 @@ jobs:
         with:
           timeZone: 8
           format: "YYYY-MM-DD-HH-mm-ss"
-        if: github.ref == 'master'
+        if: github.ref == 'refs/heads/master'
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11
@@ -62,4 +62,4 @@ jobs:
           version_label: "oare-${{ steps.time.outputs.time }}"
           region: us-west-2
           deployment_package: oare_build.zip
-        if: github.ref == 'master'
+        if: github.ref == 'refs/heads/master'
