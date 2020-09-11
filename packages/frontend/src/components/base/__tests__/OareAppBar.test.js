@@ -8,19 +8,6 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe("OareAppBar.vue", () => {
-  let user = {
-    first_name: "Test",
-    last_name: "User",
-    is_admin: false,
-    email: "test@email.com",
-    id: 0,
-  };
-
-  let getters = {
-    user,
-    isAuthenticated: true,
-  };
-
   const mockProps = {
     store: {
       dispatch: jest.fn(),
@@ -34,36 +21,72 @@ describe("OareAppBar.vue", () => {
     },
   };
 
-  const createWrapper = () =>
-    mount(OareAppBar, {
+  const createWrapper = (
+    { isAdmin, isAuthenticated } = { isAdmin: false, isAuthenticated: true }
+  ) => {
+    const user = {
+      first_name: "Test",
+      last_name: "User",
+      is_admin: isAdmin,
+      email: "test@email.com",
+      id: 0,
+    };
+    return mount(OareAppBar, {
       localVue,
       vuetify,
       mocks: {
         $store: {
-          getters,
+          getters: {
+            user,
+            isAuthenticated,
+          },
         },
-        // $i18n: {},
       },
       propsData: mockProps,
       stubs: ["router-link"],
     });
+  };
 
   it("matches snapshot", () => {
-    expect(createWrapper()).toMatchSnapshot();
+    expect(
+      createWrapper({ isAdmin: false, isAuthenticated: false })
+    ).toMatchSnapshot();
   });
 
   it("doesn't show Admin button when user is not admin", () => {
-    user.is_admin = false;
-    expect(createWrapper().find("[data-admin-btn]").exists()).toBe(false);
+    expect(
+      createWrapper({ isAdmin: false }).find(".test-admin-btn").exists()
+    ).toBe(false);
   });
 
   it("shows Admin button when user is admin", () => {
-    user.is_admin = true;
-    expect(createWrapper().find("[data-admin-btn]").exists()).toBe(true);
+    expect(
+      createWrapper({ isAdmin: true }).find(".test-admin-btn").exists()
+    ).toBe(true);
   });
 
   it("shows Login button when not logged in", () => {
-    getters.isAuthenticated = false;
-    expect(createWrapper().find("[data-login-btn]").exists()).toBe(true);
+    expect(
+      createWrapper({ isAuthenticated: false }).find(".test-login-btn").exists()
+    ).toBe(true);
+  });
+
+  it("shows Words, Names, and Places when an admin", () => {
+    const wrapper = createWrapper({ isAdmin: true, isAuthenticated: true });
+    ["words", "names", "places", "texts", "search"].forEach((link) => {
+      expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
+    });
+  });
+
+  it("shows only Texts and Search when not an admin", () => {
+    const wrapper = createWrapper({ isAdmin: false });
+
+    ["texts", "search"].forEach((link) => {
+      expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
+    });
+
+    ["words", "names", "places"].forEach((link) => {
+      expect(wrapper.find(`.test-${link}`).exists()).toBe(false);
+    });
   });
 });

@@ -25,12 +25,7 @@ exports[`OareAppBar.vue matches snapshot 1`] = `
         <!---->
       </div>
       <!---->
-      <div class="v-menu"><button type="button" class="v-btn v-btn--flat v-btn--text theme--dark v-size--default"><span class="v-btn__content">
-          ,
-          Test
-        </span></button>
-        <!---->
-      </div>
+      <router-link-stub class="test-login-btn v-btn v-btn--flat v-btn--router v-btn--text theme--dark v-size--default"><span class="v-btn__content"></span></router-link-stub>
     </div>
   </div>
   <div class="v-toolbar__extension" style="height: 48px;">
@@ -38,8 +33,8 @@ exports[`OareAppBar.vue matches snapshot 1`] = `
       <!---->
       <!---->
       <!---->
-      <router-link-stub class="v-btn v-btn--flat v-btn--router v-btn--text theme--dark v-size--default"><span class="v-btn__content">Texts</span></router-link-stub>
-      <router-link-stub class="v-btn v-btn--flat v-btn--router v-btn--text theme--dark v-size--default"><span class="v-btn__content">Search</span></router-link-stub>
+      <router-link-stub class="test-texts v-btn v-btn--flat v-btn--router v-btn--text theme--dark v-size--default"><span class="v-btn__content">Texts</span></router-link-stub>
+      <router-link-stub class="test-search v-btn v-btn--flat v-btn--router v-btn--text theme--dark v-size--default"><span class="v-btn__content">Search</span></router-link-stub>
     </div>
   </div>
 </header>

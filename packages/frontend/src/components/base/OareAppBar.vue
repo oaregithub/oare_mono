@@ -53,17 +53,16 @@
       </v-menu>
       <v-btn
         v-if="$store.getters.user.is_admin"
-        class="mr-2"
+        class="mr-2 test-admin-btn"
         text
         to="/admin"
-        data-admin-btn
         >Admin</v-btn
       >
       <v-btn
         v-if="!$store.getters.isAuthenticated"
+        class="test-login-btn"
         text
         to="/login"
-        data-login-btn
         >{{ i18n.t("appBar.login") }}</v-btn
       >
       <v-menu v-else offset-y>
@@ -86,17 +85,29 @@
 
     <template #extension>
       <v-row class="d-flex justify-center">
-        <v-btn text to="/words/A" v-if="$store.getters.user.is_admin"
+        <v-btn
+          class="test-words"
+          text
+          to="/words/A"
+          v-if="$store.getters.user.is_admin"
           >Words</v-btn
         >
-        <v-btn text to="/names/A" v-if="$store.getters.user.is_admin"
+        <v-btn
+          class="test-names"
+          text
+          to="/names/A"
+          v-if="$store.getters.user.is_admin"
           >Names</v-btn
         >
-        <v-btn text to="/places/A" v-if="$store.getters.user.is_admin"
+        <v-btn
+          class="test-places"
+          text
+          to="/places/A"
+          v-if="$store.getters.user.is_admin"
           >Places</v-btn
         >
-        <v-btn text to="/collections/A-J">Texts</v-btn>
-        <v-btn text to="/search/texts">Search</v-btn>
+        <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
+        <v-btn class="test-search" text to="/search/texts">Search</v-btn>
       </v-row>
     </template>
   </v-app-bar>
