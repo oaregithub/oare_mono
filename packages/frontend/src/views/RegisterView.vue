@@ -50,10 +50,13 @@
     </template>
 
     <template v-slot:actions>
-      <v-btn color="primary" @click="register">
-        <OareButtonSpinner v-if="loading.registerButton" />
-        <span v-else>{{ $t("register.confirm") }}</span>
-      </v-btn>
+      <OareLoaderButton
+        color="primary"
+        @click="register"
+        :loading="loading.registerButton"
+      >
+        {{ $t("register.confirm") }}
+      </OareLoaderButton>
     </template>
   </OareUserCard>
 </template>
