@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom";
+import "babel-polyfill";
 import Vue from "vue";
 import Vuetify from "vuetify";
 import OareLoaderButton from "./src/components/base/OareLoaderButton.vue";

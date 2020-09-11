@@ -1,0 +1,79 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OareSidebar test matches snapshot 1`] = `
+<div class="white--text pa-3 d-flex flex-column">
+  <h2 class="mb-2">Quick Queries</h2>
+  <router-link-stub to="/search/texts" class="white--text no-underline">
+    Go to advanced queries <i aria-hidden="true" class="v-icon notranslate mdi mdi-icon-right theme--light"></i></router-link-stub>
+  <div class="d-flex flex-column test-text-input">
+    <div class="d-flex">
+      <h4>Text</h4>
+      <div role="dialog" class="v-dialog__container">
+        <!---->
+      </div>
+    </div>
+    <div class="v-input v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--filled v-text-field--enclosed v-text-field--outlined">
+      <div class="v-input__control">
+        <div class="v-input__slot white">
+          <fieldset aria-hidden="true">
+            <legend><span>​</span></legend>
+          </fieldset>
+          <div class="v-text-field__slot"><input id="input-10" type="text"></div>
+        </div>
+        <div class="v-text-field__details">
+          <div class="v-messages theme--light">
+            <transition-group-stub tag="div" name="message-transition" class="v-messages__wrapper"></transition-group-stub>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex flex-column mt-n3 test-transliteration-input">
+    <div class="d-flex">
+      <h4>Transliteration</h4>
+      <div role="dialog" class="v-dialog__container">
+        <!---->
+      </div>
+    </div>
+    <div class="v-input v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--filled v-text-field--enclosed v-text-field--outlined">
+      <div class="v-input__control">
+        <div class="v-input__slot white">
+          <fieldset aria-hidden="true">
+            <legend><span>​</span></legend>
+          </fieldset>
+          <div class="v-text-field__slot"><input id="input-15" type="text"></div>
+        </div>
+        <div class="v-text-field__details">
+          <div class="v-messages theme--light">
+            <transition-group-stub tag="div" name="message-transition" class="v-messages__wrapper"></transition-group-stub>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex flex-column mt-n3 test-words-input">
+    <div class="d-flex">
+      <h4>Words</h4>
+      <div role="dialog" class="v-dialog__container">
+        <!---->
+      </div>
+    </div>
+    <div class="v-input v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--filled v-text-field--enclosed v-text-field--outlined">
+      <div class="v-input__control">
+        <div class="v-input__slot white">
+          <fieldset aria-hidden="true">
+            <legend><span>​</span></legend>
+          </fieldset>
+          <div class="v-text-field__slot"><input id="input-20" type="text"></div>
+        </div>
+        <div class="v-text-field__details">
+          <div class="v-messages theme--light">
+            <transition-group-stub tag="div" name="message-transition" class="v-messages__wrapper"></transition-group-stub>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <button type="button" class="mb-3 test-clear-btn v-btn v-btn--contained theme--light v-size--default error"><span class="v-btn__content">Clear</span></button>
+  <router-link-stub class="mb-3 test-search-btn v-btn v-btn--contained v-btn--disabled v-btn--router theme--light v-size--default"><span class="v-btn__content">Search</span></router-link-stub>
+</div>
+`;

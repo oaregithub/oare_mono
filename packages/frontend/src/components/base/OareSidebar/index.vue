@@ -5,29 +5,32 @@
       Go to advanced queries <v-icon>mdi-icon-right</v-icon>
     </router-link>
     <search-field
+      class="test-text-input"
       label="Text"
       v-model="text"
       @keyup.enter.native="$router.push(searchRoute)"
       :disabled="textSearchDisabled"
     />
     <search-field
-      class="mt-n3"
+      class="mt-n3 test-transliteration-input"
       label="Transliteration"
       v-model="transliteration"
       @keyup.enter.native="$router.push(searchRoute)"
       :disabled="textSearchDisabled"
     />
     <search-field
-      class="mt-n3"
+      class="mt-n3 test-words-input"
       label="Words"
       v-model="dictionary"
       @keyup.enter.native="$router.push(searchRoute)"
       :disabled="dictionaryDisabled"
     />
-    <v-btn color="error" class="mb-3" @click="clearSearch">Clear</v-btn>
+    <v-btn color="error" class="mb-3 test-clear-btn" @click="clearSearch"
+      >Clear</v-btn
+    >
     <v-btn
       color="info"
-      class="mb-3"
+      class="mb-3 test-search-btn"
       :to="searchRoute"
       :disabled="Object.keys(searchRoute.query).length < 1"
       >Search</v-btn
