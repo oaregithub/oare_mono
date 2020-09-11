@@ -2,10 +2,10 @@
 
 exports[`OareContentView matches snapshot 1`] = `
 <div>
-  <v-card-title-stub datatestid="content-title" data-testid="content-title" class="oare-header font-weight-bold d-flex justify-space-between align-start">
+  <div class="v-card__title oare-header font-weight-bold d-flex justify-space-between align-start test-content-title">
     Content view title
-  </v-card-title-stub>
-  <v-card-text-stub class="black--text"></v-card-text-stub>
-  <v-card-actions-stub></v-card-actions-stub>
+  </div>
+  <div class="v-card__text black--text"></div>
+  <div class="v-card__actions"></div>
 </div>
 `;
