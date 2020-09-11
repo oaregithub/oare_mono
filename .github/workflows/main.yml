@@ -6,7 +6,8 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [master]
+    branches:
+      - "**"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -22,17 +23,26 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
+
+      - name: Install dependencies
+        run: yarn install
+
       - name: Lint files
-        run: |
-          yarn install
-          yarn lint
+        run: yarn lint
+
+      - name: Run tests
+        run: yarn test
+
       - name: Build TS and Vue files
         run: yarn build
+        if: github.ref == 'master'
+
       - name: Zip up files
         run: |
           cd packages/backend
           zip -r oare_build.zip build dist package.json yarn.lock
           mv oare_build.zip ../..
+        if: github.ref == 'master'
 
       - name: Get Time
         id: time
@@ -40,6 +50,7 @@ jobs:
         with:
           timeZone: 8
           format: "YYYY-MM-DD-HH-mm-ss"
+        if: github.ref == 'master'
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11
@@ -51,3 +62,4 @@ jobs:
           version_label: "oare-${{ steps.time.outputs.time }}"
           region: us-west-2
           deployment_package: oare_build.zip
+        if: github.ref == 'master'
