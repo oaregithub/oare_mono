@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue } from "@vue/test-utils";
+import { mount, createLocalVue } from "@vue/test-utils";
 import Vuetify from "vuetify";
 import VueCompositionApi from "@vue/composition-api";
 import OareDialog from "../OareDialog.vue";
@@ -9,7 +9,7 @@ localVue.use(VueCompositionApi);
 
 describe("OareDialog", () => {
   const createWrapper = (props = {}) => {
-    return shallowMount(OareDialog, {
+    return mount(OareDialog, {
       localVue,
       vuetify,
       propsData: {
@@ -33,7 +33,7 @@ describe("OareDialog", () => {
 
   test('default submit text is "Submit"', () => {
     const wrapper = createWrapper();
-    const submitBtn = wrapper.find('[data-testid="submit-btn"');
+    const submitBtn = wrapper.find(".test-submit-btn");
     expect(submitBtn.text()).toBe("Submit");
   });
 
@@ -47,7 +47,7 @@ describe("OareDialog", () => {
     const wrapper = createWrapper({
       submitText: "Custom submit",
     });
-    const submitBtn = wrapper.find('[data-testid="submit-btn"]');
+    const submitBtn = wrapper.find(".test-submit-btn");
     expect(submitBtn.text()).toBe("Custom submit");
   });
 
@@ -59,11 +59,11 @@ describe("OareDialog", () => {
     expect(cancelBtn.text()).toBe("Custom cancel");
   });
 
-  test("submitLoading shows a loader spinner", () => {
+  test("submitLoading disables submit button", () => {
     const wrapper = createWrapper({
       submitLoading: true,
     });
-    const submitBtn = wrapper.find('[data-testid="submit-btn"]');
-    expect(submitBtn.find("oarebuttonspinner-stub")).not.toBeNull();
+    const submitBtn = wrapper.find(".test-submit-btn").element;
+    expect(submitBtn).toBeDisabled();
   });
 });
