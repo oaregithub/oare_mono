@@ -16,10 +16,7 @@ module.exports = {
 
   preset: "@vue/cli-plugin-unit-jest/presets/typescript-and-babel",
 
-  setupFiles: ["./setup-jest.js"],
+  setupFilesAfterEnv: ["./setup-jest.js"],
 
-  testMatch: [
-    "**/__tests__/**/*.(t|j)s?(x)",
-    // "**/?(*.)+(spec|test).(t|j)s?(x)",
-  ],
+  testMatch: ["**/__tests__/**/*.(t|j)s?(x)"],
 };

@@ -1,45 +1,43 @@
 <template>
-  <div>
-    <v-dialog
-      :value="value"
-      @input="$emit('input', $event)"
-      width="500"
-      persistent
-    >
-      <template v-slot:activator="{ on }">
-        <slot name="activator" :on="on"></slot>
-      </template>
+  <v-dialog
+    :value="value"
+    @input="$emit('input', $event)"
+    width="500"
+    persistent
+  >
+    <template v-slot:activator="{ on }">
+      <slot name="activator" :on="on"></slot>
+    </template>
 
-      <v-card>
-        <v-card-title data-testid="dialog-title">{{ title }}</v-card-title>
-        <v-card-text>
-          <slot></slot>
-        </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            @click="$emit('input', false)"
-            color="error"
-            text
-            data-testid="cancel-btn"
-            >{{ cancelText }}</v-btn
+    <v-card>
+      <v-card-title data-testid="dialog-title">{{ title }}</v-card-title>
+      <v-card-text>
+        <slot></slot>
+      </v-card-text>
+      <v-divider />
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          @click="$emit('input', false)"
+          color="error"
+          text
+          data-testid="cancel-btn"
+          >{{ cancelText }}</v-btn
+        >
+
+        <slot name="submit-button" :on="{ click: submit }">
+          <OareLoaderButton
+            class="test-submit-btn"
+            @click="submit"
+            color="primary"
+            :loading="submitLoading"
           >
-
-          <slot name="submit-button" :on="{ click: submit }">
-            <OareLoaderButton
-              @click="submit"
-              color="primary"
-              :loading="submitDisabled"
-              data-testid="submit-btn"
-            >
-              {{ submitText }}
-            </OareLoaderButton>
-          </slot>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
+            {{ submitText }}
+          </OareLoaderButton>
+        </slot>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script lang="ts">
