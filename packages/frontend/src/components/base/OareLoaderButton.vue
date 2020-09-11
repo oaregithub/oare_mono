@@ -1,6 +1,12 @@
 <template>
   <v-btn v-bind="$attrs" :disabled="loading" @click="$emit('click', $event)">
-    <v-progress-circular v-if="loading" indeterminate size="25" width="3" />
+    <v-progress-circular
+      v-if="loading"
+      indeterminate
+      size="25"
+      width="3"
+      class="test-spinner"
+    />
     <slot v-else></slot>
   </v-btn>
 </template>
