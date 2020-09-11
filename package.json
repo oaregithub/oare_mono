@@ -6,7 +6,8 @@
     "lint": "cd packages/oare && yarn lint && cd ../backend && yarn lint",
     "build": "./build.sh",
     "bootstrap": "lerna bootstrap --use-workspaces",
-    "serve": "cd packages/frontend && yarn serve"
+    "serve": "cd packages/frontend && yarn serve",
+    "test": "cd packages/frontend && yarn test"
   },
   "workspaces": {
     "packages": [
@@ -19,7 +20,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint"
+      "pre-commit": "yarn lint && yarn test"
     }
   }
 }

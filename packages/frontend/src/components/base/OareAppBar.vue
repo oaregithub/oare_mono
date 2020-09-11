@@ -1,7 +1,6 @@
 <template>
   <v-app-bar app dark clipped-left color="#002E5D">
     <v-app-bar-nav-icon @click="$emit('nav-icon-click')" />
-
     <div id="logo" v-if="$vuetify.breakpoint.smAndUp">
       <a href="https://byu.edu" target="_blank">
         <v-img
@@ -20,7 +19,7 @@
             class="blue-grey--text text--lighten-3 no_underline"
             href="https://history.byu.edu"
             target="_blank"
-            >{{ $t("appBar.historyDep") }}</a
+            >{{ i18n.t("appBar.historyDep") }}</a
           >
         </div>
         <div class="headline">
@@ -36,16 +35,16 @@
       <v-menu>
         <template v-slot:activator="{ on }">
           <v-btn v-on="on" light icon small>
-            <span class="flag-icon" :class="`flag-icon-${$i18n.locale}`"></span>
+            <span class="flag-icon" :class="`flag-icon-${i18n.locale}`"></span>
           </v-btn>
         </template>
         <v-list>
-          <v-list-item @click="$i18n.locale = 'us'">
+          <v-list-item @click="i18n.locale = 'us'">
             <v-list-item-title>
               <span class="flag-icon" :class="`flag-icon-us`"></span> US
             </v-list-item-title>
           </v-list-item>
-          <v-list-item @click="$i18n.locale = 'tr'">
+          <v-list-item @click="i18n.locale = 'tr'">
             <v-list-item-title>
               <span class="flag-icon" :class="`flag-icon-tr`"></span> TR
             </v-list-item-title>
@@ -54,23 +53,22 @@
       </v-menu>
       <v-btn
         v-if="$store.getters.user.is_admin"
-        class="mr-2"
+        class="mr-2 test-admin-btn"
         text
         to="/admin"
-        data-admin-btn
         >Admin</v-btn
       >
       <v-btn
         v-if="!$store.getters.isAuthenticated"
+        class="test-login-btn"
         text
         to="/login"
-        data-login-btn
-        >{{ $t("appBar.login") }}</v-btn
+        >{{ i18n.t("appBar.login") }}</v-btn
       >
       <v-menu v-else offset-y>
         <template v-slot:activator="{ on }">
           <v-btn text v-on="on">
-            {{ $t("appBar.welcome") }},
+            {{ i18n.t("appBar.welcome") }},
             {{ $store.getters.user.first_name }}
           </v-btn>
         </template>
@@ -79,7 +77,7 @@
             <v-list-item-title>Dashboard</v-list-item-title>
           </v-list-item>
           <v-list-item @click="logout">
-            <v-list-item-title>{{ $t("appBar.logout") }}</v-list-item-title>
+            <v-list-item-title>{{ i18n.t("appBar.logout") }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -87,31 +85,58 @@
 
     <template #extension>
       <v-row class="d-flex justify-center">
-        <v-btn text to="/words/A" v-if="$store.getters.user.is_admin"
+        <v-btn
+          class="test-words"
+          text
+          to="/words/A"
+          v-if="$store.getters.user.is_admin"
           >Words</v-btn
         >
-        <v-btn text to="/names/A" v-if="$store.getters.user.is_admin"
+        <v-btn
+          class="test-names"
+          text
+          to="/names/A"
+          v-if="$store.getters.user.is_admin"
           >Names</v-btn
         >
-        <v-btn text to="/places/A" v-if="$store.getters.user.is_admin"
+        <v-btn
+          class="test-places"
+          text
+          to="/places/A"
+          v-if="$store.getters.user.is_admin"
           >Places</v-btn
         >
-        <v-btn text to="/collections/A-J">Texts</v-btn>
-        <v-btn text to="/search/texts">Search</v-btn>
+        <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
+        <v-btn class="test-search" text to="/search/texts">Search</v-btn>
       </v-row>
     </template>
   </v-app-bar>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref } from "@vue/composition-api";
-import store from "../../store";
-import router from "../../router";
-import i18n from "../../i18n";
+import { defineComponent, computed, ref, PropType } from "@vue/composition-api";
+import VueI18n from "vue-i18n";
+import { Store } from "vuex";
+import Router from "vue-router";
+import defaultI18n from "../../i18n/index";
 
 export default defineComponent({
   name: "OareAppBar",
-  setup(_, context) {
+  props: {
+    store: {
+      type: Object as PropType<Store<{}>>,
+      required: true,
+    },
+    router: {
+      type: Object as PropType<Router>,
+      required: true,
+    },
+    i18n: {
+      type: Object as PropType<VueI18n>,
+      default: () => defaultI18n,
+    },
+  },
+  setup({ store, router, i18n }, context) {
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
         return "OARE";

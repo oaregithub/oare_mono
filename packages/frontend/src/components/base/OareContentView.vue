@@ -5,8 +5,7 @@
 
     <v-card-title
       v-if="title"
-      class="oare-header font-weight-bold d-flex justify-space-between align-start"
-      data-testid="content-title"
+      class="oare-header font-weight-bold d-flex justify-space-between align-start test-content-title"
     >
       {{ title }}
       <slot name="title:post"> </slot>

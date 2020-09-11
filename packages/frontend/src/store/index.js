@@ -26,4 +26,5 @@ if (jwt && isValidJwt(jwt) && user) {
   store.commit("setJwt", jwt);
   store.commit("setUser", user);
 }
+
 export default store;

@@ -10,7 +10,9 @@ exports[`OareDialog matches snapshot 1`] = `
       <v-card-actions-stub>
         <v-spacer-stub></v-spacer-stub>
         <v-btn-stub color="error" tag="button" activeclass="" text="true" type="button" data-testid="cancel-btn">Cancel</v-btn-stub>
-        <v-btn-stub color="primary" tag="button" activeclass="" type="button" data-testid="submit-btn"><span>Submit</span></v-btn-stub>
+        <oareloaderbutton-stub color="primary" data-testid="submit-btn">
+          Submit
+        </oareloaderbutton-stub>
       </v-card-actions-stub>
     </v-card-stub>
   </v-dialog-stub>

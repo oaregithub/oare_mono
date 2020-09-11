@@ -7,5 +7,6 @@ RUN yarn install
 COPY . .
 
 ENV NODE_ENV=development
+ENV OARE_JWT_TOKEN=secret
 
 CMD ["yarn", "dev"]

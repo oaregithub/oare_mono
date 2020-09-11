@@ -9,19 +9,19 @@ describe("AdminView.vue", () => {
     {
       id: 0,
       name: "User1",
-      num_users: 3
+      num_users: 3,
     },
     {
       id: 1,
       name: "User2",
-      num_users: 2
-    }
+      num_users: 2,
+    },
   ];
 
   const mockPostGroupResponse = {
     id: 2,
     name: "New Group",
-    num_users: 0
+    num_users: 0,
   };
   beforeAll(() => {
     wrapper = mount(AdminView, {
@@ -44,26 +44,25 @@ describe("AdminView.vue", () => {
             }
           },
 
-          put(path, {group_ids}) {
+          put(path, { group_ids }) {
             let route = path.split("/")[1];
             switch (route) {
               case "group":
-                let filteredGroups = mockGroupResponse.filter(group => !group_ids.includes(group.id))
-                return Promise.resolve({data: filteredGroups})
+                let filteredGroups = mockGroupResponse.filter(
+                  (group) => !group_ids.includes(group.id)
+                );
+                return Promise.resolve({ data: filteredGroups });
             }
-          }
-        }
-      }
+          },
+        },
+      },
     });
   });
 
   it("correctly displays group information", async () => {
     await flushPromises();
     expect(
-      wrapper
-        .find("[data-group-table]")
-        .find("tbody")
-        .findAll("tr").length
+      wrapper.find("[data-group-table]").find("tbody").findAll("tr").length
     ).toBe(mockGroupResponse.length);
   });
 
@@ -78,10 +77,7 @@ describe("AdminView.vue", () => {
     wrapper.find("[data-submit-group-btn]").trigger("click");
     await flushPromises();
     expect(
-      wrapper
-        .find("[data-group-table]")
-        .find("tbody")
-        .findAll("tr").length
+      wrapper.find("[data-group-table]").find("tbody").findAll("tr").length
     ).toBe(groupCount + 1);
   });
 
@@ -106,9 +102,8 @@ describe("AdminView.vue", () => {
     wrapper.find("[data-conf-group-del-btn]").trigger("click");
     await flushPromises();
 
-    expect(wrapper
-      .find("[data-group-table]")
-      .find("tbody")
-      .findAll("tr").length).toBe(groupCount - 1)
+    expect(
+      wrapper.find("[data-group-table]").find("tbody").findAll("tr").length
+    ).toBe(groupCount - 1);
   });
 });

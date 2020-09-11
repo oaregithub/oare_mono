@@ -32,10 +32,14 @@
     </v-card-text>
 
     <v-card-actions>
-      <v-btn @click="logIn" class="text-right loginBtn" color="primary">
-        <OareButtonSpinner v-if="loadings.signInButton" />
-        <span v-else>{{ $t("login.signIn") }}</span>
-      </v-btn>
+      <OareLoaderButton
+        class="text-right loginBtn"
+        @click="logIn"
+        color="primary"
+        :loading="loadings.signInButton"
+      >
+        {{ $t("login.signIn") }}
+      </OareLoaderButton>
     </v-card-actions>
   </v-card>
 </template>

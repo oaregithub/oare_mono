@@ -27,15 +27,14 @@
           >
 
           <slot name="submit-button" :on="{ click: submit }">
-            <v-btn
+            <OareLoaderButton
               @click="submit"
               color="primary"
-              :disabled="submitDisabled"
+              :loading="submitDisabled"
               data-testid="submit-btn"
             >
-              <OareButtonSpinner v-if="submitLoading" />
-              <span v-else>{{ submitText }}</span>
-            </v-btn>
+              {{ submitText }}
+            </OareLoaderButton>
           </slot>
         </v-card-actions>
       </v-card>
