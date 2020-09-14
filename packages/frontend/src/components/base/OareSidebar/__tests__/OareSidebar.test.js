@@ -84,4 +84,39 @@ describe("OareSidebar test", () => {
 
     expect(wordsInput.element).toHaveValue("");
   });
+
+  it("search button is disabled with no input", () => {
+    const wrapper = createWrapper();
+    const searchButton = wrapper.find(".test-search-btn");
+    expect(searchButton.element).toHaveClass("v-btn--disabled");
+  });
+
+  it("search button is not disabled with Text input value", async () => {
+    const wrapper = createWrapper();
+    const textInput = wrapper.find(".test-text-input").find("input");
+    await textInput.setValue("CCT");
+
+    const searchButton = wrapper.find(".test-search-btn");
+    expect(searchButton.element).not.toHaveClass("v-btn--disabled");
+  });
+
+  it("search button is not disabled with transliteration input value", async () => {
+    const wrapper = createWrapper();
+    const transInput = wrapper
+      .find(".test-transliteration-input")
+      .find("input");
+    await transInput.setValue("LUGAL");
+
+    const searchButton = wrapper.find(".test-search-btn");
+    expect(searchButton.element).not.toHaveClass("v-btn--disabled");
+  });
+
+  it("search button is not disabled with words input value", async () => {
+    const wrapper = createWrapper();
+    const wordsInput = wrapper.find(".test-words-input").find("input");
+    await wordsInput.setValue("ababum");
+
+    const searchButton = wrapper.find(".test-search-btn");
+    expect(searchButton.element).not.toHaveClass("v-btn--disabled");
+  });
 });
