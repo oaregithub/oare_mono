@@ -62,10 +62,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref } from "@vue/composition-api";
+import { defineComponent, ref, Ref, PropType } from "@vue/composition-api";
+import Router from "vue-router";
+import { Store } from "vuex";
 import i18n from "../i18n";
-import store from "../store";
-import router from "../router";
+import defaultStore from "../store";
+import defaultRouter from "../router";
 
 export interface FormRef {
   validate: () => void;
@@ -73,7 +75,17 @@ export interface FormRef {
 
 export default defineComponent({
   name: "RegisterView",
-  setup() {
+  props: {
+    router: {
+      type: Object as PropType<Router>,
+      default: () => defaultRouter,
+    },
+    store: {
+      type: Object as PropType<Store<{}>>,
+      default: () => defaultStore,
+    },
+  },
+  setup({ store, router }) {
     const valid = ref(false);
     const user = ref({
       email: "",
