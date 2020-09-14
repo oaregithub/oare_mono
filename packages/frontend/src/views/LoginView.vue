@@ -45,12 +45,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, Ref } from "@vue/composition-api";
+import { defineComponent, ref, Ref } from "@vue/composition-api";
 import { NavigationGuard } from "vue-router";
 import i18n from "../i18n";
 import store from "../store";
 import router from "../router";
-import { EventBus } from "../utils/index";
 
 export interface FormRef {
   validate: () => void;
@@ -80,12 +79,6 @@ export default defineComponent({
     const loadings = ref({ signInButton: false });
     const form: Ref<null | FormRef> = ref(null);
 
-    onMounted(() => {
-      EventBus.$on("loginFailure", (msg: string) => {
-        errorMsg.value = msg;
-      });
-    });
-
     const logIn = async () => {
       loadings.value.signInButton = true;
       if (form.value) {
@@ -102,10 +95,11 @@ export default defineComponent({
         password: password.value,
       };
 
-      let success = await store.dispatch("login", userData);
-
-      if (success) {
+      try {
+        await store.dispatch("login", userData);
         router.push("/");
+      } catch (err) {
+        errorMsg.value = err;
       }
       loadings.value.signInButton = false;
     };

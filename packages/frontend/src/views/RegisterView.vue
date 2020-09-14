@@ -62,8 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, Ref } from "@vue/composition-api";
-import { EventBus } from "../utils/index";
+import { defineComponent, ref, Ref } from "@vue/composition-api";
 import i18n from "../i18n";
 import store from "../store";
 import router from "../router";
@@ -114,12 +113,6 @@ export default defineComponent({
 
     const form: Ref<FormRef | null> = ref(null);
 
-    onMounted(() => {
-      EventBus.$on("registerFailure", (msg: string) => {
-        errorMsg.value = msg;
-      });
-    });
-
     const register = async () => {
       loading.value.registerButton = true;
 
@@ -139,11 +132,14 @@ export default defineComponent({
         email: user.value.email,
       };
 
-      let success = await store.dispatch("register", userData);
-      if (success) {
+      try {
+        await store.dispatch("register", userData);
         router.push("/");
+      } catch (e) {
+        errorMsg.value = e;
+      } finally {
+        loading.value.registerButton = false;
       }
-      loading.value.registerButton = false;
     };
 
     return {
