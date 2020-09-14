@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Build OARE package
+        run: cd packages/oare && yarn build && cd ../..
+
       - name: Lint files
         run: yarn lint
 
