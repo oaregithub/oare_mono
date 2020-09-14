@@ -19,4 +19,10 @@ module.exports = {
   setupFilesAfterEnv: ["./setup-jest.js"],
 
   testMatch: ["**/__tests__/**/*.(t|j)s?(x)"],
+
+  globals: {
+    "ts-jest": {
+      diagnostics: false,
+    },
+  },
 };
