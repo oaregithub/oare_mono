@@ -29,6 +29,7 @@ jobs:
 
       - name: Build OARE package
         run: cd packages/oare && yarn build && cd ../..
+        if: github.ref != 'refs/heads/master'
 
       - name: Lint files
         run: yarn lint
