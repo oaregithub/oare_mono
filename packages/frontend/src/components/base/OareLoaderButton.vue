@@ -1,5 +1,9 @@
 <template>
-  <v-btn v-bind="$attrs" :disabled="loading" @click="$emit('click', $event)">
+  <v-btn
+    v-bind="$attrs"
+    :disabled="$attrs.disabled || loading"
+    @click="$emit('click', $event)"
+  >
     <v-progress-circular
       v-if="loading"
       indeterminate
