@@ -40,13 +40,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, PropType } from "@vue/composition-api";
-import { NavigationGuard } from "vue-router";
-import i18n from "../i18n";
-import defaultStore from "../store";
-import defaultRouter from "../router";
-import Router from "vue-router";
-import { Store } from "vuex";
+import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
+import { NavigationGuard } from 'vue-router';
+import i18n from '../i18n';
+import defaultStore from '../store';
+import defaultRouter from '../router';
+import Router from 'vue-router';
+import { Store } from 'vuex';
 
 export interface FormRef {
   validate: () => void;
@@ -55,13 +55,13 @@ export interface FormRef {
 const beforeRouteEnter: NavigationGuard = (to, from, next) => {
   next(() => {
     if (defaultStore.getters.isAuthenticated) {
-      defaultRouter.push("/");
+      defaultRouter.push('/');
     }
   });
 };
 
 export default defineComponent({
-  name: "LoginView",
+  name: 'LoginView',
   props: {
     router: {
       type: Object as PropType<Router>,
@@ -74,22 +74,22 @@ export default defineComponent({
   },
   beforeRouteEnter,
   setup({ router, store }) {
-    const email = ref("");
-    const password = ref("");
-    const errorMsg = ref("");
+    const email = ref('');
+    const password = ref('');
+    const errorMsg = ref('');
     const loadings = ref({ signInButton: false });
 
     const logIn = async () => {
       loadings.value.signInButton = true;
-      errorMsg.value = "";
+      errorMsg.value = '';
       let userData = {
         email: email.value,
         password: password.value,
       };
 
       try {
-        await store.dispatch("login", userData);
-        router.push("/");
+        await store.dispatch('login', userData);
+        router.push('/');
       } catch (err) {
         errorMsg.value = err;
       }

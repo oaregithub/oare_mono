@@ -62,41 +62,41 @@ import {
   Ref,
   computed,
   watch,
-} from "@vue/composition-api";
-import { AkkadianLetterGroupsUpper } from "@oare/oare";
-import { DictionarySearchRow } from "@/types/search_dictionary";
-import ResultTable from "./ResultTable.vue";
-import server from "@/serverProxy";
-import { updateUrl, highlightedItem } from "./utils";
+} from '@vue/composition-api';
+import { AkkadianLetterGroupsUpper } from '@oare/oare';
+import { DictionarySearchRow } from '@/types/search_dictionary';
+import ResultTable from './ResultTable.vue';
+import server from '@/serverProxy';
+import { updateUrl, highlightedItem } from './utils';
 
 export default defineComponent({
-  name: "DictionarySearch",
+  name: 'DictionarySearch',
   components: {
     ResultTable,
   },
   setup(props, context) {
-    const dictionarySearch = ref("");
+    const dictionarySearch = ref('');
     const totalResults = ref(0);
     const searchResults: Ref<DictionarySearchRow[]> = ref([]);
     const searchLoading = ref(false);
     const page = ref(1);
     const rows = ref(10);
-    const lastSearch = ref("");
+    const lastSearch = ref('');
     const canSearch = computed(() => {
-      return dictionarySearch.value.trim() !== "";
+      return dictionarySearch.value.trim() !== '';
     });
     const headers = ref([
       {
-        text: "Word",
-        value: "name",
+        text: 'Word',
+        value: 'name',
       },
       {
-        text: "Matching translations",
-        value: "translations",
+        text: 'Matching translations',
+        value: 'translations',
       },
       {
-        text: "Matching forms and spellings",
-        value: "matches",
+        text: 'Matching forms and spellings',
+        value: 'matches',
       },
     ]);
 
@@ -128,7 +128,7 @@ export default defineComponent({
       if (canSearch.value) {
         updateUrl({
           ...queryUrl.value,
-          page: "1",
+          page: '1',
         });
       }
     };
@@ -141,16 +141,16 @@ export default defineComponent({
           return group;
         }
       }
-      return "A";
+      return 'A';
     };
 
     const wordLink = (word: DictionarySearchRow) => {
-      if (word.type === "word") {
+      if (word.type === 'word') {
         return `/dictionaryWord/${word.uuid}`;
-      } else if (word.type === "PN") {
+      } else if (word.type === 'PN') {
         const nameGroup = getWordGroup(word.name);
         return `/names/${encodeURIComponent(nameGroup)}?filter=${word.name}`;
-      } else if (word.type === "GN") {
+      } else if (word.type === 'GN') {
         const placeGroup = getWordGroup(word.name);
         return `/places/${encodeURIComponent(placeGroup)}?filter=${word.name}`;
       }
@@ -167,7 +167,7 @@ export default defineComponent({
         } = context;
         dictionarySearch.value = query.dictionary
           ? String(query.dictionary)
-          : "";
+          : '';
         page.value = query.page ? Number(query.page) : 1;
         rows.value = query.rows ? Number(rows.value) : 10;
         performSearch();

@@ -1,16 +1,16 @@
-import axiosInstance from "../axiosInstance";
-import serverProxy from "../serverProxy";
+import axiosInstance from '../axiosInstance';
+import serverProxy from '../serverProxy';
 
 export default {
   logout({ commit }) {
-    commit("logout");
+    commit('logout');
   },
 
   async register({ commit }, userData) {
     try {
-      let { data } = await axiosInstance.post("/register", userData);
-      commit("setUser", data.data);
-      commit("setJwt", data.token);
+      let { data } = await axiosInstance.post('/register', userData);
+      commit('setUser', data.data);
+      commit('setJwt', data.token);
     } catch (err) {
       throw err.response.data.message;
     }
@@ -19,8 +19,8 @@ export default {
   async login({ commit }, userData) {
     try {
       let response = await serverProxy.loginUser(userData);
-      commit("setUser", response.data);
-      commit("setJwt", response.token);
+      commit('setUser', response.data);
+      commit('setJwt', response.token);
     } catch (err) {
       throw err.response.data.message;
     }
@@ -31,9 +31,9 @@ export default {
     if (state.markups[textUuid]) {
       markups = state.markups[textUuid];
     } else {
-      let { data } = await axiosInstance.get("/markups/" + textUuid);
+      let { data } = await axiosInstance.get('/markups/' + textUuid);
       markups = data;
-      commit("setMarkup", { textUuid, markups });
+      commit('setMarkup', { textUuid, markups });
     }
     return markups;
   },
@@ -45,7 +45,7 @@ export default {
     } else {
       let { data } = await axiosInstance.get(`/text_epigraphies/${textUuid}`);
       epigraphies = data;
-      commit("setEpigraphy", { textUuid, epigraphies });
+      commit('setEpigraphy', { textUuid, epigraphies });
     }
     return epigraphies;
   },

@@ -1,4 +1,4 @@
-import axios from "../axiosInstance";
+import axios from '../axiosInstance';
 
 /**
  * @typedef {object} User
@@ -12,7 +12,7 @@ import axios from "../axiosInstance";
  * @returns {Promise<User[]>} A list of all users
  */
 async function getAllUsers() {
-  let { data } = await axios.get("/users");
+  let { data } = await axios.get('/users');
   return data;
 }
 

@@ -39,11 +39,11 @@ import {
   watch,
   computed,
   PropType,
-} from "@vue/composition-api";
-import { DataTableHeader } from "vuetify";
-import { SearchResultRow } from "@/types/search";
-import router from "../../router";
-import { updateUrl } from "./utils";
+} from '@vue/composition-api';
+import { DataTableHeader } from 'vuetify';
+import { SearchResultRow } from '@/types/search';
+import router from '../../router';
+import { updateUrl } from './utils';
 
 export default defineComponent({
   props: {
@@ -90,14 +90,14 @@ export default defineComponent({
     watch(
       () => searchOptions.value.page,
       () => {
-        emit("update:page", searchOptions.value.page);
+        emit('update:page', searchOptions.value.page);
       },
       { lazy: true }
     );
     watch(
       () => searchOptions.value.itemsPerPage,
       () => {
-        emit("update:rows", searchOptions.value.itemsPerPage);
+        emit('update:rows', searchOptions.value.itemsPerPage);
       },
       { lazy: true }
     );

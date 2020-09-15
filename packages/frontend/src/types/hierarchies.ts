@@ -1,17 +1,17 @@
 export type HierarchyType =
-  | "hierarchy"
-  | "text"
-  | "concept"
-  | "dictionaryUnit"
-  | "spatialUnit"
-  | "period"
-  | "person"
-  | "value"
-  | "variable"
-  | "taxonomy"
-  | "collection"
-  | "dictionaryWord"
-  | "textText";
+  | 'hierarchy'
+  | 'text'
+  | 'concept'
+  | 'dictionaryUnit'
+  | 'spatialUnit'
+  | 'period'
+  | 'person'
+  | 'value'
+  | 'variable'
+  | 'taxonomy'
+  | 'collection'
+  | 'dictionaryWord'
+  | 'textText';
 
 export interface Hierarchy {
   id: number;

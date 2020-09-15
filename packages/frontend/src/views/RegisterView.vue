@@ -62,19 +62,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, PropType } from "@vue/composition-api";
-import Router from "vue-router";
-import { Store } from "vuex";
-import i18n from "../i18n";
-import defaultStore from "../store";
-import defaultRouter from "../router";
+import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
+import Router from 'vue-router';
+import { Store } from 'vuex';
+import i18n from '../i18n';
+import defaultStore from '../store';
+import defaultRouter from '../router';
 
 export interface FormRef {
   validate: () => void;
 }
 
 export default defineComponent({
-  name: "RegisterView",
+  name: 'RegisterView',
   props: {
     router: {
       type: Object as PropType<Router>,
@@ -87,22 +87,22 @@ export default defineComponent({
   },
   setup({ store, router }) {
     const user = ref({
-      email: "",
-      password: "",
-      repeatpassword: "",
-      firstname: "",
-      lastname: "",
+      email: '',
+      password: '',
+      repeatpassword: '',
+      firstname: '',
+      lastname: '',
     });
 
     const formErrors = ref({
-      email: "",
-      password: "",
-      repeatpassword: "",
-      firstname: "",
-      lastname: "",
+      email: '',
+      password: '',
+      repeatpassword: '',
+      firstname: '',
+      lastname: '',
     });
 
-    const errorMsg = ref("");
+    const errorMsg = ref('');
     const loading = ref({
       registerButton: false,
     });
@@ -110,26 +110,26 @@ export default defineComponent({
     const validate = () => {
       let valid = true;
       formErrors.value = {
-        email: "",
-        password: "",
-        repeatpassword: "",
-        firstname: "",
-        lastname: "",
+        email: '',
+        password: '',
+        repeatpassword: '',
+        firstname: '',
+        lastname: '',
       };
 
       if (user.value.repeatpassword !== user.value.password) {
-        formErrors.value.repeatpassword = "Passwords do not match";
+        formErrors.value.repeatpassword = 'Passwords do not match';
         valid = false;
       }
 
       if (user.value.password.length < 8) {
         formErrors.value.password =
-          "Password must be at least 8 characters long";
+          'Password must be at least 8 characters long';
         valid = false;
       }
 
       if (!/.+@.+\..+/.test(user.value.email)) {
-        formErrors.value.email = "Email is not formatted correctly";
+        formErrors.value.email = 'Email is not formatted correctly';
         valid = false;
       }
 
@@ -144,7 +144,7 @@ export default defineComponent({
         return;
       }
 
-      errorMsg.value = "";
+      errorMsg.value = '';
       let userData = {
         first_name: user.value.firstname,
         last_name: user.value.lastname,
@@ -153,8 +153,8 @@ export default defineComponent({
       };
 
       try {
-        await store.dispatch("register", userData);
-        router.push("/");
+        await store.dispatch('register', userData);
+        router.push('/');
       } catch (e) {
         errorMsg.value = e;
       } finally {

@@ -1,13 +1,13 @@
-import Vuetify from "vuetify";
-import VueCompositionApi from "@vue/composition-api";
-import { mount, createLocalVue } from "@vue/test-utils";
-import OareSubheader from "@/components/base/OareSubheader";
+import Vuetify from 'vuetify';
+import VueCompositionApi from '@vue/composition-api';
+import { mount, createLocalVue } from '@vue/test-utils';
+import OareSubheader from '@/components/base/OareSubheader';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe("OareSubheader test", () => {
+describe('OareSubheader test', () => {
   const createWrapper = (label) =>
     mount(OareSubheader, {
       vuetify,
@@ -17,12 +17,12 @@ describe("OareSubheader test", () => {
       },
     });
 
-  it("matches snapshot", () => {
-    expect(createWrapper("Test Subheader")).toMatchSnapshot();
+  it('matches snapshot', () => {
+    expect(createWrapper('Test Subheader')).toMatchSnapshot();
   });
 
-  it("displays passed in slot", () => {
-    const text = "Test Subheader";
+  it('displays passed in slot', () => {
+    const text = 'Test Subheader';
     expect(createWrapper(text).text()).toBe(text);
   });
 });

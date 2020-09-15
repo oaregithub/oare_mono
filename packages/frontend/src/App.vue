@@ -25,14 +25,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from "@vue/composition-api";
-import hideSidebarRoutes from "./hideSidebarRoutes";
-import OareSidebar from "./components/base/OareSidebar/index.vue";
-import defaultStore from "./store";
-import defaultRouter from "./router";
+import { defineComponent, ref, computed } from '@vue/composition-api';
+import hideSidebarRoutes from './hideSidebarRoutes';
+import OareSidebar from './components/base/OareSidebar/index.vue';
+import defaultStore from './store';
+import defaultRouter from './router';
 
 export default defineComponent({
-  name: "App",
+  name: 'App',
   components: {
     OareSidebar,
   },
@@ -42,10 +42,10 @@ export default defineComponent({
 
     const sidebarComponent = computed(() => {
       const routeName = context.root.$route.name;
-      if (routeName && routeName.includes("dashboard")) {
-        return "OareDashboardSidebar";
+      if (routeName && routeName.includes('dashboard')) {
+        return 'OareDashboardSidebar';
       }
-      return "OareSidebar";
+      return 'OareSidebar';
     });
 
     const store = computed(() => defaultStore);

@@ -9,20 +9,20 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue from 'vue';
 import {
   defineComponent,
   ref,
   Ref,
   watch,
   computed,
-} from "@vue/composition-api";
-import TextsSearch from "./TextsSearch.vue";
-import DictionarySearch from "./DictionarySearch.vue";
-import { updateUrl } from "./utils";
+} from '@vue/composition-api';
+import TextsSearch from './TextsSearch.vue';
+import DictionarySearch from './DictionarySearch.vue';
+import { updateUrl } from './utils';
 
 export default defineComponent({
-  name: "SearchView",
+  name: 'SearchView',
   components: {
     TextsSearch,
     DictionarySearch,

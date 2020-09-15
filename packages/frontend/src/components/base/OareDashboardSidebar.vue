@@ -11,19 +11,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs } from "@vue/composition-api";
+import { defineComponent, reactive, toRefs } from '@vue/composition-api';
 
 export default defineComponent({
   setup() {
     const state = reactive({
       routes: [
         {
-          label: "Profile",
-          path: "profile",
+          label: 'Profile',
+          path: 'profile',
         },
         {
-          label: "Drafts",
-          path: "drafts",
+          label: 'Drafts',
+          path: 'drafts',
         },
       ],
     });

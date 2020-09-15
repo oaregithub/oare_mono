@@ -1,13 +1,13 @@
-import Vuetify from "vuetify";
-import VueCompositionApi from "@vue/composition-api";
-import { mount, shallowMount, createLocalVue } from "@vue/test-utils";
-import OareContentView from "@/components/base/OareContentView.vue";
+import Vuetify from 'vuetify';
+import VueCompositionApi from '@vue/composition-api';
+import { mount, shallowMount, createLocalVue } from '@vue/test-utils';
+import OareContentView from '@/components/base/OareContentView.vue';
 
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe("OareContentView", () => {
-  const TITLE = "Content view title";
+describe('OareContentView', () => {
+  const TITLE = 'Content view title';
 
   const createWrapper = (props = {}) =>
     mount(OareContentView, {
@@ -19,17 +19,17 @@ describe("OareContentView", () => {
       },
     });
 
-  it("matches snapshot", () => {
+  it('matches snapshot', () => {
     expect(createWrapper()).toMatchSnapshot();
   });
 
-  it("shows title", () => {
-    expect(createWrapper().find(".test-content-title").text()).toBe(TITLE);
+  it('shows title', () => {
+    expect(createWrapper().find('.test-content-title').text()).toBe(TITLE);
   });
 
-  it("shows loading bar when given loading prop", () => {
+  it('shows loading bar when given loading prop', () => {
     let wrapper = createWrapper({ loading: true });
 
-    expect(wrapper.findComponent({ name: "v-progress-linear" })).not.toBe(null);
+    expect(wrapper.findComponent({ name: 'v-progress-linear' })).not.toBe(null);
   });
 });

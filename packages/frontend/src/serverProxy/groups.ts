@@ -1,8 +1,8 @@
-import axios from "../axiosInstance";
-import { GetGroupsType } from "../types/groups";
+import axios from '../axiosInstance';
+import { GetGroupsType } from '../types/groups';
 
 async function getAllGroups(): Promise<GetGroupsType[]> {
-  const { data } = await axios.get("/groups");
+  const { data } = await axios.get('/groups');
   return data;
 }
 /**
@@ -17,7 +17,7 @@ async function getGroupName(groupId: number): Promise<string> {
 }
 
 async function deleteGroups(delGroupIds: number[]) {
-  await axios.delete("/groups", {
+  await axios.delete('/groups', {
     params: {
       group_ids: delGroupIds,
     },
@@ -27,7 +27,7 @@ async function deleteGroups(delGroupIds: number[]) {
 async function createGroup(groupName: string): Promise<number> {
   let {
     data: { id },
-  } = await axios.post("/groups", {
+  } = await axios.post('/groups', {
     group_name: groupName,
   });
   return id;

@@ -25,8 +25,8 @@ import {
   computed,
   watch,
   PropType,
-} from "@vue/composition-api";
-import { CollectionResponse } from "@/types/collections";
+} from '@vue/composition-api';
+import { CollectionResponse } from '@/types/collections';
 export default defineComponent({
   props: {
     loading: {
@@ -53,8 +53,8 @@ export default defineComponent({
   setup(props, { emit }) {
     const headers = ref([
       {
-        text: "Text Name",
-        value: "name",
+        text: 'Text Name',
+        value: 'name',
       },
     ]);
 
@@ -66,14 +66,14 @@ export default defineComponent({
     watch(
       () => searchOptions.value.page,
       () => {
-        emit("update:page", searchOptions.value.page);
+        emit('update:page', searchOptions.value.page);
       }
     );
 
     watch(
       () => searchOptions.value.itemsPerPage,
       () => {
-        emit("update:rows", searchOptions.value.itemsPerPage);
+        emit('update:rows', searchOptions.value.itemsPerPage);
       }
     );
 

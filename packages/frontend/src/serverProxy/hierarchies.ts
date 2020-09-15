@@ -1,8 +1,8 @@
-import axios from "../axiosInstance";
-import { Hierarchy } from "../types/hierarchies";
+import axios from '../axiosInstance';
+import { Hierarchy } from '../types/hierarchies';
 
 async function getBaseHierarchies(): Promise<Hierarchy[]> {
-  const { data } = await axios.get("/hierarchies");
+  const { data } = await axios.get('/hierarchies');
   return data;
 }
 

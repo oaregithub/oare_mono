@@ -1,4 +1,4 @@
-import axiosInstance from "../axiosInstance";
+import axiosInstance from '../axiosInstance';
 
 export default {
   setLanded(state) {
@@ -7,13 +7,13 @@ export default {
 
   setUser(state, user) {
     state.user = user;
-    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(user));
   },
 
   setJwt(state, token) {
     state.jwt = token;
-    localStorage.setItem("jwt", token);
-    axiosInstance.defaults.headers.common["Authorization"] = `Bearer: ${token}`;
+    localStorage.setItem('jwt', token);
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer: ${token}`;
     state.landed = true;
   },
 
@@ -27,10 +27,10 @@ export default {
 
   logout(state) {
     state.user = {};
-    state.jwt = "";
+    state.jwt = '';
     state.epigraphies = {};
     state.markups = {};
     localStorage.clear();
-    delete axiosInstance.defaults.headers.common["Authorization"];
+    delete axiosInstance.defaults.headers.common['Authorization'];
   },
 };

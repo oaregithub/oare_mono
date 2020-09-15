@@ -11,14 +11,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "@vue/composition-api";
+import { defineComponent, PropType } from '@vue/composition-api';
 export interface BreadcrumbItem {
   link: string | null;
   text: string;
 }
 
 export default defineComponent({
-  name: "OareBreadcrumbs",
+  name: 'OareBreadcrumbs',
   props: {
     items: {
       type: Array as PropType<BreadcrumbItem[]>,

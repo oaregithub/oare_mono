@@ -28,12 +28,12 @@ import {
   onMounted,
   computed,
   PropType,
-} from "@vue/composition-api";
-import { CollectionListItem } from "@/types/collections";
-import { letterGroups } from "./utils";
+} from '@vue/composition-api';
+import { CollectionListItem } from '@/types/collections';
+import { letterGroups } from './utils';
 
 export default defineComponent({
-  name: "CollectionsList",
+  name: 'CollectionsList',
   props: {
     collections: {
       type: Array as PropType<CollectionListItem[]>,

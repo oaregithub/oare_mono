@@ -114,14 +114,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, PropType } from "@vue/composition-api";
-import VueI18n from "vue-i18n";
-import { Store } from "vuex";
-import Router from "vue-router";
-import defaultI18n from "../../i18n/index";
+import { defineComponent, computed, ref, PropType } from '@vue/composition-api';
+import VueI18n from 'vue-i18n';
+import { Store } from 'vuex';
+import Router from 'vue-router';
+import defaultI18n from '../../i18n/index';
 
 export default defineComponent({
-  name: "OareAppBar",
+  name: 'OareAppBar',
   props: {
     store: {
       type: Object as PropType<Store<{}>>,
@@ -139,13 +139,13 @@ export default defineComponent({
   setup({ store, router, i18n }, context) {
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
-        return "OARE";
+        return 'OARE';
       }
-      return i18n.t("appBar.oare");
+      return i18n.t('appBar.oare');
     });
     const logout = () => {
-      store.dispatch("logout");
-      router.push("/login");
+      store.dispatch('logout');
+      router.push('/login');
     };
 
     return {

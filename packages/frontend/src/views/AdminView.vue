@@ -81,37 +81,37 @@ import {
   onMounted,
   watch,
   Ref,
-} from "@vue/composition-api";
+} from '@vue/composition-api';
 
-import { GetGroupsType, PostGroupsType } from "../types/groups";
-import serverProxy from "../serverProxy";
+import { GetGroupsType, PostGroupsType } from '../types/groups';
+import serverProxy from '../serverProxy';
 
 export default defineComponent({
   setup() {
     const headers = ref([
       {
-        text: "Group Name",
-        value: "name",
+        text: 'Group Name',
+        value: 'name',
       },
       {
-        text: "Users",
-        value: "num_users",
+        text: 'Users',
+        value: 'num_users',
       },
     ]);
     const groups: Ref<GetGroupsType[]> = ref([]);
     const selectedGroups: Ref<GetGroupsType[]> = ref([]);
     const loading = ref(true);
     const addDialog = ref(false);
-    const groupName = ref("");
+    const groupName = ref('');
     const addGroupLoading = ref(false);
     const deleteGroupLoading = ref(false);
     const confirmDeleteDialog = ref(false);
-    const addGroupErrorMsg = ref("");
+    const addGroupErrorMsg = ref('');
 
     watch(addDialog, (open) => {
       if (!open) {
-        groupName.value = "";
-        addGroupErrorMsg.value = "";
+        groupName.value = '';
+        addGroupErrorMsg.value = '';
       }
     });
 
@@ -121,8 +121,8 @@ export default defineComponent({
     });
 
     const submitGroup = async () => {
-      if (groupName.value.trim() === "") {
-        addGroupErrorMsg.value = "Group name cannot be blank.";
+      if (groupName.value.trim() === '') {
+        addGroupErrorMsg.value = 'Group name cannot be blank.';
         return;
       }
       try {

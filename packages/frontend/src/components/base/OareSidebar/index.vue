@@ -44,28 +44,28 @@ import {
   reactive,
   toRefs,
   computed,
-} from "@vue/composition-api";
-import SearchField from "./SearchField.vue";
-import router from "../../../router";
+} from '@vue/composition-api';
+import SearchField from './SearchField.vue';
+import router from '../../../router';
 
 export default defineComponent({
-  name: "OareSidebar",
+  name: 'OareSidebar',
   components: {
     SearchField,
   },
   setup() {
     const inputs = reactive({
-      text: "",
-      transliteration: "",
-      dictionary: "",
-      names: "",
-      periods: "",
-      parse: "",
+      text: '',
+      transliteration: '',
+      dictionary: '',
+      names: '',
+      periods: '',
+      parse: '',
     });
 
-    const textSearchDisabled = computed(() => inputs.dictionary.trim() !== "");
+    const textSearchDisabled = computed(() => inputs.dictionary.trim() !== '');
     const dictionaryDisabled = computed(() => {
-      return inputs.text.trim() !== "" || inputs.transliteration.trim() !== "";
+      return inputs.text.trim() !== '' || inputs.transliteration.trim() !== '';
     });
 
     const searchQuery = computed(() => {
@@ -85,8 +85,8 @@ export default defineComponent({
 
     const searchRoute = computed(() => {
       const routeName = dictionaryDisabled.value
-        ? "textsSearch"
-        : "dictionarySearch";
+        ? 'textsSearch'
+        : 'dictionarySearch';
       return {
         name: routeName,
         query: searchQuery.value,
@@ -94,9 +94,9 @@ export default defineComponent({
     });
 
     const clearSearch = () => {
-      inputs.text = "";
-      inputs.transliteration = "";
-      inputs.dictionary = "";
+      inputs.text = '';
+      inputs.transliteration = '';
+      inputs.dictionary = '';
     };
 
     return {

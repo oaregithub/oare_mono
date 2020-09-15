@@ -12,13 +12,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, Ref } from "@vue/composition-api";
-import NamesPlacesDisplay from "@/components/NamesPlacesDisplay/index.vue";
-import { NamesOrPlaces } from "@/types/names";
-import server from "../../serverProxy";
+import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
+import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
+import { NamesOrPlaces } from '@/types/names';
+import server from '../../serverProxy';
 
 export default defineComponent({
-  name: "PlacesView",
+  name: 'PlacesView',
   components: {
     NamesPlacesDisplay,
   },

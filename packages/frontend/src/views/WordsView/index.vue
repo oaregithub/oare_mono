@@ -41,13 +41,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, onMounted } from "@vue/composition-api";
-import DictionaryDisplay from "@/components/DictionaryDisplay/index.vue";
-import server from "@/serverProxy";
-import { DictionaryWord } from "@/types/words";
+import { defineComponent, ref, Ref, onMounted } from '@vue/composition-api';
+import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
+import server from '@/serverProxy';
+import { DictionaryWord } from '@/types/words';
 
 export default defineComponent({
-  name: "WordsView",
+  name: 'WordsView',
   components: {
     DictionaryDisplay,
   },
@@ -62,7 +62,7 @@ export default defineComponent({
     const loading = ref(false);
 
     const searchFilter = (search: string, word: DictionaryWord): boolean => {
-      const lowerSearch = search ? search.toLowerCase() : "";
+      const lowerSearch = search ? search.toLowerCase() : '';
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||

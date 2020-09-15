@@ -1,4 +1,4 @@
-import axios from "../axiosInstance";
+import axios from '../axiosInstance';
 
 /**
  * @typedef TextResult
@@ -11,7 +11,7 @@ import axios from "../axiosInstance";
  * @returns {Promise<TextResult[]>} A list of matching texts
  */
 async function searchTextNames(searchText) {
-  const { data } = await axios.get("/search_text_names", {
+  const { data } = await axios.get('/search_text_names', {
     params: {
       search: searchText
     }

@@ -184,12 +184,12 @@
 </template>
 
 <script>
-import _ from "lodash";
+import _ from 'lodash';
 
-import serverProxy from "../serverProxy";
+import serverProxy from '../serverProxy';
 
 export default {
-  name: "GroupView",
+  name: 'GroupView',
   props: {
     groupId: {
       required: true,
@@ -197,7 +197,7 @@ export default {
   },
   data() {
     return {
-      groupName: "", // Name of the group
+      groupName: '', // Name of the group
       groupUsers: [], //
       allUsers: [],
       allTexts: [],
@@ -211,7 +211,7 @@ export default {
       deleteUserDialog: false,
       deleteUserLoading: false,
 
-      usersHeaders: [{ text: "Name", value: "name" }],
+      usersHeaders: [{ text: 'Name', value: 'name' }],
       selectedDeleteUsers: [],
       selectedDeleteWhitelist: [],
       selectedUsers: [],
@@ -219,13 +219,13 @@ export default {
 
       // Data members for searching for whitelisted texts
       textsToAdd: [],
-      searchTextToAdd: "",
+      searchTextToAdd: '',
       whitelistTextItems: [],
       whitelistSearchLoading: false,
       textHeaders: [
-        { text: "Text Name", value: "name" },
-        { text: "Can view?", value: "can_read" },
-        { text: "Can edit?", value: "can_write" },
+        { text: 'Text Name', value: 'name' },
+        { text: 'Can view?', value: 'can_read' },
+        { text: 'Can edit?', value: 'can_write' },
       ],
       selectedWhitelistItems: [],
       addTextGroupsLoading: false,
@@ -257,7 +257,7 @@ export default {
       const index = this.viewableTexts
         .map((item) => item.text_uuid)
         .indexOf(uuid);
-      this.$set(this.viewableTexts[index], "can_write", canWrite);
+      this.$set(this.viewableTexts[index], 'can_write', canWrite);
       const text = this.viewableTexts[index];
       await serverProxy.updateText(
         this.groupId,
@@ -270,10 +270,10 @@ export default {
       const index = this.viewableTexts
         .map((item) => item.text_uuid)
         .indexOf(uuid);
-      this.$set(this.viewableTexts[index], "can_read", canRead);
+      this.$set(this.viewableTexts[index], 'can_read', canRead);
       // Disable editing if reading is disabled
       if (!canRead) {
-        this.$set(this.viewableTexts[index], "can_write", false);
+        this.$set(this.viewableTexts[index], 'can_write', false);
       }
       const text = this.viewableTexts[index];
       await serverProxy.updateText(
@@ -356,10 +356,10 @@ export default {
 
     updateTextToAddRead(uuid, canRead) {
       const index = this.textsToAdd.map((text) => text.uuid).indexOf(uuid);
-      this.$set(this.textsToAdd[index], "can_read", canRead);
+      this.$set(this.textsToAdd[index], 'can_read', canRead);
 
       if (!canRead) {
-        this.$set(this.textsToAdd[index], "can_write", false);
+        this.$set(this.textsToAdd[index], 'can_write', false);
       }
     },
   },
@@ -377,7 +377,7 @@ export default {
     addUserDialog(open) {
       if (!open) {
         this.selectedUsers = [];
-        this.searchUserInput = "";
+        this.searchUserInput = '';
       } else {
         this.$nextTick(() => {
           this.$nextTick(() => {
@@ -388,7 +388,7 @@ export default {
     },
     addTextDialog(open) {
       if (!open) {
-        this.searchTextToAdd = "";
+        this.searchTextToAdd = '';
         this.textsToAdd = [];
         this.selectedWhitelistItems = [];
       }
@@ -397,7 +397,7 @@ export default {
     selectedUsers: {
       handler(newUsers, oldUsers) {
         if (newUsers.length > oldUsers.length) {
-          this.searchUserInput = "";
+          this.searchUserInput = '';
         }
       },
       deep: true,
@@ -405,7 +405,7 @@ export default {
 
     searchTextToAdd: {
       handler: _.debounce(async function(text) {
-        if (!text || text.trim() === "") {
+        if (!text || text.trim() === '') {
           this.whitelistTextItems = [];
           return;
         }

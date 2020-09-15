@@ -1,8 +1,8 @@
-import search from "./search";
-import appBar from "./appBar";
-import login from "./login";
-import register from "./register";
-import landing from "./landing";
+import search from './search';
+import appBar from './appBar';
+import login from './login';
+import register from './register';
+import landing from './landing';
 
 export default {
   us: {

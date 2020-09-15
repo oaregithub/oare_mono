@@ -1,6 +1,6 @@
-import Vuetify from "vuetify";
-import VueRouter from "vue-router";
-import { createLocalVue } from "@vue/test-utils";
+import Vuetify from 'vuetify';
+import VueRouter from 'vue-router';
+import { createLocalVue } from '@vue/test-utils';
 
 const localVue = createLocalVue();
 localVue.use(Vuetify);
