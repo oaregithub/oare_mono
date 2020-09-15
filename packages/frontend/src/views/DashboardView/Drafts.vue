@@ -19,30 +19,30 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, Ref } from "@vue/composition-api";
-import server from "../../serverProxy";
-import { TextDraft } from "../../types/textDrafts";
-import moment from "moment";
+import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
+import server from '../../serverProxy';
+import { TextDraft } from '../../types/textDrafts';
+import moment from 'moment';
 
 export default defineComponent({
-  name: "DashboardDrafts",
+  name: 'DashboardDrafts',
 
   setup() {
     const draftsLoading: Ref<boolean> = ref(false);
     const drafts: Ref<TextDraft[]> = ref([]);
 
     const dateFormat = (dateStr: string) => {
-      return moment(dateStr).format("MMMM D, YYYY h:ma");
+      return moment(dateStr).format('MMMM D, YYYY h:ma');
     };
 
     const headers = [
       {
-        text: "Text",
-        value: "textName",
+        text: 'Text',
+        value: 'textName',
       },
       {
-        text: "Last Updated",
-        value: "updatedAt",
+        text: 'Last Updated',
+        value: 'updatedAt',
       },
     ];
 

@@ -44,10 +44,10 @@
 </template>
 
 <script>
-import server from "../../serverProxy";
+import server from '../../serverProxy';
 
 export default {
-  name: "EpigraphyEditor",
+  name: 'EpigraphyEditor',
   props: {
     // List of objects with "key" => side
     // and "lines" => list of line readings
@@ -83,13 +83,13 @@ export default {
     async createDraft() {
       this.saveLoading = true;
       await server.createDraft(this.textUuid, JSON.stringify(this.textData));
-      this.$emit("save-draft", this.textData);
+      this.$emit('save-draft', this.textData);
       this.saveLoading = false;
     },
 
     openRemoveDialog(side) {
-      this.$set(this.removeDialog, "open", true);
-      this.$set(this.removeDialog, "deleteSide", side);
+      this.$set(this.removeDialog, 'open', true);
+      this.$set(this.removeDialog, 'deleteSide', side);
     },
 
     removeSide() {
@@ -102,22 +102,22 @@ export default {
 
     addSide() {
       this.textData.push({
-        side: "",
-        text: "",
+        side: '',
+        text: '',
       });
     },
 
     usableSides(usedSide) {
       const usedSides = this.textData.map((sideData) => sideData.side);
       return this.sideTypes.filter(
-        (side) => side === "" || side === usedSide || !usedSides.includes(side)
+        (side) => side === '' || side === usedSide || !usedSides.includes(side)
       );
     },
   },
 
   computed: {
     sideTypes() {
-      return ["", "obv.", "lo.e.", "rev.", "u.e.", "le.e.", "r.e."];
+      return ['', 'obv.', 'lo.e.', 'rev.', 'u.e.', 'le.e.', 'r.e.'];
     },
   },
 };

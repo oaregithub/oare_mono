@@ -43,7 +43,7 @@
       ></v-text-field>
       <p class="subtitle error--text test-error-msg">{{ errorMsg }}</p>
       <v-btn text class="text-none" to="/login">
-        {{ $t("register.alreadyHaveAccount") }}
+        {{ $t('register.alreadyHaveAccount') }}
       </v-btn>
     </template>
 
@@ -53,83 +53,83 @@
         class="test-register-btn"
         @click="register"
         :loading="loading.registerButton"
-        :disabled="Object.values(user).some((v) => !v.trim())"
+        :disabled="Object.values(user).some(v => !v.trim())"
       >
-        {{ $t("register.confirm") }}
+        {{ $t('register.confirm') }}
       </OareLoaderButton>
     </template>
   </OareUserCard>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, PropType } from "@vue/composition-api";
-import Router from "vue-router";
-import { Store } from "vuex";
-import i18n from "../i18n";
-import defaultStore from "../store";
-import defaultRouter from "../router";
+import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
+import Router from 'vue-router';
+import { Store } from 'vuex';
+import i18n from '../i18n';
+import defaultStore from '../store';
+import defaultRouter from '../router';
 
 export interface FormRef {
   validate: () => void;
 }
 
 export default defineComponent({
-  name: "RegisterView",
+  name: 'RegisterView',
   props: {
     router: {
       type: Object as PropType<Router>,
-      default: () => defaultRouter,
+      default: () => defaultRouter
     },
     store: {
       type: Object as PropType<Store<{}>>,
-      default: () => defaultStore,
-    },
+      default: () => defaultStore
+    }
   },
   setup({ store, router }) {
     const user = ref({
-      email: "",
-      password: "",
-      repeatpassword: "",
-      firstname: "",
-      lastname: "",
+      email: '',
+      password: '',
+      repeatpassword: '',
+      firstname: '',
+      lastname: ''
     });
 
     const formErrors = ref({
-      email: "",
-      password: "",
-      repeatpassword: "",
-      firstname: "",
-      lastname: "",
+      email: '',
+      password: '',
+      repeatpassword: '',
+      firstname: '',
+      lastname: ''
     });
 
-    const errorMsg = ref("");
+    const errorMsg = ref('');
     const loading = ref({
-      registerButton: false,
+      registerButton: false
     });
 
     const validate = () => {
       let valid = true;
       formErrors.value = {
-        email: "",
-        password: "",
-        repeatpassword: "",
-        firstname: "",
-        lastname: "",
+        email: '',
+        password: '',
+        repeatpassword: '',
+        firstname: '',
+        lastname: ''
       };
 
       if (user.value.repeatpassword !== user.value.password) {
-        formErrors.value.repeatpassword = "Passwords do not match";
+        formErrors.value.repeatpassword = 'Passwords do not match';
         valid = false;
       }
 
       if (user.value.password.length < 8) {
         formErrors.value.password =
-          "Password must be at least 8 characters long";
+          'Password must be at least 8 characters long';
         valid = false;
       }
 
       if (!/.+@.+\..+/.test(user.value.email)) {
-        formErrors.value.email = "Email is not formatted correctly";
+        formErrors.value.email = 'Email is not formatted correctly';
         valid = false;
       }
 
@@ -144,17 +144,17 @@ export default defineComponent({
         return;
       }
 
-      errorMsg.value = "";
+      errorMsg.value = '';
       let userData = {
         first_name: user.value.firstname,
         last_name: user.value.lastname,
         password: user.value.password,
-        email: user.value.email,
+        email: user.value.email
       };
 
       try {
-        await store.dispatch("register", userData);
-        router.push("/");
+        await store.dispatch('register', userData);
+        router.push('/');
       } catch (e) {
         errorMsg.value = e;
       } finally {
@@ -167,8 +167,8 @@ export default defineComponent({
       errorMsg,
       loading,
       register,
-      formErrors,
+      formErrors
     };
-  },
+  }
 });
 </script>

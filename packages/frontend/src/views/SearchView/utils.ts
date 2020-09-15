@@ -1,13 +1,13 @@
-import router from "../../router";
+import router from '../../router';
 
 export const FRACTION_VALS: { [key: string]: number } = {
-  "1/4": 188,
-  "1/2": 189,
-  "3/4": 190,
-  "1/3": 8531,
-  "2/3": 8532,
-  "1/6": 8537,
-  "5/6": 8538,
+  '1/4': 188,
+  '1/2': 189,
+  '3/4': 190,
+  '1/3': 8531,
+  '2/3': 8532,
+  '1/6': 8537,
+  '5/6': 8538,
 };
 
 export const formattedSearchCharacter = (char: string): string => {
@@ -18,8 +18,8 @@ export const formattedSearchCharacter = (char: string): string => {
   // and for it to be automatically subscripted.
   else if (
     !char.match(/^\d+$/) &&
-    char[char.length - 1] >= "0" &&
-    char[char.length - 1] <= "9"
+    char[char.length - 1] >= '0' &&
+    char[char.length - 1] <= '9'
   ) {
     // 8320 is the unicode for subscripted 0
     const lastChar = String.fromCharCode(8320 + Number(char[char.length - 1]));
@@ -59,5 +59,5 @@ export const highlightedItem = (item: string, search: string) => {
       components.push(item[i]);
     }
   }
-  return components.join("");
+  return components.join('');
 };

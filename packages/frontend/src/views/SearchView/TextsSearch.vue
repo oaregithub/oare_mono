@@ -48,22 +48,22 @@ import {
   Ref,
   computed,
   watch,
-} from "@vue/composition-api";
-import { SearchResultRow, SearchResult } from "@/types/search";
-import { updateUrl, formattedSearchCharacter } from "./utils";
-import server from "@/serverProxy";
-import ResultTable from "./ResultTable.vue";
-import { highlightedItem } from "./utils";
+} from '@vue/composition-api';
+import { SearchResultRow, SearchResult } from '@/types/search';
+import { updateUrl, formattedSearchCharacter } from './utils';
+import server from '@/serverProxy';
+import ResultTable from './ResultTable.vue';
+import { highlightedItem } from './utils';
 
 export default defineComponent({
-  name: "TextsSearch",
+  name: 'TextsSearch',
   components: {
     ResultTable,
   },
   setup(props, context) {
     const searchResults: Ref<SearchResultRow[]> = ref([]);
-    const textTitleSearch = ref("");
-    const transliterationSearch = ref("");
+    const textTitleSearch = ref('');
+    const transliterationSearch = ref('');
     const searchLoading = ref(false);
     const totalSearchResults = ref(0);
     const page = ref(1);
@@ -71,12 +71,12 @@ export default defineComponent({
 
     const headers = ref([
       {
-        text: "Text Name",
-        value: "name",
+        text: 'Text Name',
+        value: 'name',
       },
       {
-        text: "Matching Lines",
-        value: "matches",
+        text: 'Matching Lines',
+        value: 'matches',
       },
     ]);
 
@@ -86,7 +86,7 @@ export default defineComponent({
         .split(/[\s\-.]+/)
         .map(formattedSearchCharacter);
 
-      if (chars.length === 1 && chars[0] === "") {
+      if (chars.length === 1 && chars[0] === '') {
         return [];
       }
       return chars;
@@ -110,7 +110,7 @@ export default defineComponent({
       if (canPerformSearch.value) {
         updateUrl({
           ...queryUrl.value,
-          page: "1",
+          page: '1',
         });
       }
     };
@@ -121,8 +121,8 @@ export default defineComponent({
           $route: { query },
         },
       } = context;
-      textTitleSearch.value = query.title ? String(query.title) : "";
-      transliterationSearch.value = query.query ? String(query.query) : "";
+      textTitleSearch.value = query.title ? String(query.title) : '';
+      transliterationSearch.value = query.query ? String(query.query) : '';
       page.value = query.page ? Number(query.page) : 1;
       rows.value = query.rows ? Number(rows.value) : 10;
       searchResults.value = [];

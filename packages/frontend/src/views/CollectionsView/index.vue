@@ -11,14 +11,14 @@ import {
   Ref,
   onMounted,
   computed,
-} from "@vue/composition-api";
-import { CollectionListItem } from "@/types/collections";
-import server from "@/serverProxy";
-import { letterGroups } from "./utils";
-import CollectionsList from "./CollectionsList.vue";
+} from '@vue/composition-api';
+import { CollectionListItem } from '@/types/collections';
+import server from '@/serverProxy';
+import { letterGroups } from './utils';
+import CollectionsList from './CollectionsList.vue';
 
 export default defineComponent({
-  name: "CollectionsView",
+  name: 'CollectionsView',
   components: {
     CollectionsList,
   },

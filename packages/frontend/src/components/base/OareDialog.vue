@@ -41,10 +41,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "@vue/composition-api";
+import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
-  name: "OareDialog",
+  name: 'OareDialog',
   props: {
     value: {
       type: Boolean,
@@ -56,11 +56,11 @@ export default defineComponent({
     },
     submitText: {
       type: String,
-      default: "Submit",
+      default: 'Submit',
     },
     cancelText: {
       type: String,
-      default: "Cancel",
+      default: 'Cancel',
     },
     submitLoading: {
       type: Boolean,
@@ -78,9 +78,9 @@ export default defineComponent({
   setup({ closeOnSubmit }, { emit }) {
     function submit() {
       if (closeOnSubmit) {
-        emit("input", false);
+        emit('input', false);
       }
-      emit("submit");
+      emit('submit');
     }
 
     return {

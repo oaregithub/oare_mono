@@ -1,15 +1,15 @@
-import { mount } from "@vue/test-utils";
-import wrapperOptions from "../wrapperOptions";
-import flushPromises from "flush-promises";
-import EpigraphyView from "../../src/components/EpigraphyView";
+import { mount } from '@vue/test-utils';
+import wrapperOptions from '../wrapperOptions';
+import flushPromises from 'flush-promises';
+import EpigraphyView from '../../src/components/EpigraphyView';
 
-describe("NewEpigraphyView.vue", () => {
+describe('NewEpigraphyView.vue', () => {
   const epigraphyResp = {
-    text_name: "Text Name",
-    text_uuid: "uuid",
+    text_name: 'Text Name',
+    text_uuid: 'uuid',
     collection: {
-      uuid: "col_uuid",
-      name: "Collection"
+      uuid: 'col_uuid',
+      name: 'Collection'
     },
     units: []
   };
@@ -18,13 +18,13 @@ describe("NewEpigraphyView.vue", () => {
     wrapper = mount(EpigraphyView, {
       ...wrapperOptions,
       propsData: {
-        textUuid: "text_uuid"
+        textUuid: 'text_uuid'
       },
       mocks: {
         $axios: {
           get(path) {
-            let route = path.split("/")[1];
-            if (route === "text_epigraphies") {
+            let route = path.split('/')[1];
+            if (route === 'text_epigraphies') {
               return Promise.resolve({ data: epigraphyResp });
             }
           }
@@ -33,9 +33,9 @@ describe("NewEpigraphyView.vue", () => {
     });
   });
 
-  it("correctly shows link back to collection", async () => {
+  it('correctly shows link back to collection', async () => {
     await flushPromises();
-    expect(wrapper.find("[data-collection-link]").text()).toContain(
+    expect(wrapper.find('[data-collection-link]').text()).toContain(
       epigraphyResp.collection.name
     );
   });

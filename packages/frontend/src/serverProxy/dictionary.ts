@@ -1,5 +1,5 @@
-import axios from "../axiosInstance";
-import { WordWithForms } from "@/types/dictionary";
+import axios from '../axiosInstance';
+import { WordWithForms } from '@/types/dictionary';
 
 /**
  * Return forms and spellings of a dictionary word

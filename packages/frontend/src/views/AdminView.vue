@@ -80,38 +80,38 @@ import {
   ref,
   onMounted,
   watch,
-  Ref,
-} from "@vue/composition-api";
+  Ref
+} from '@vue/composition-api';
 
-import { GetGroupsType, PostGroupsType } from "../types/groups";
-import serverProxy from "../serverProxy";
+import { GetGroupsType, PostGroupsType } from '../types/groups';
+import serverProxy from '../serverProxy';
 
 export default defineComponent({
   setup() {
     const headers = ref([
       {
-        text: "Group Name",
-        value: "name",
+        text: 'Group Name',
+        value: 'name'
       },
       {
-        text: "Users",
-        value: "num_users",
-      },
+        text: 'Users',
+        value: 'num_users'
+      }
     ]);
     const groups: Ref<GetGroupsType[]> = ref([]);
     const selectedGroups: Ref<GetGroupsType[]> = ref([]);
     const loading = ref(true);
     const addDialog = ref(false);
-    const groupName = ref("");
+    const groupName = ref('');
     const addGroupLoading = ref(false);
     const deleteGroupLoading = ref(false);
     const confirmDeleteDialog = ref(false);
-    const addGroupErrorMsg = ref("");
+    const addGroupErrorMsg = ref('');
 
-    watch(addDialog, (open) => {
+    watch(addDialog, open => {
       if (!open) {
-        groupName.value = "";
-        addGroupErrorMsg.value = "";
+        groupName.value = '';
+        addGroupErrorMsg.value = '';
       }
     });
 
@@ -121,8 +121,8 @@ export default defineComponent({
     });
 
     const submitGroup = async () => {
-      if (groupName.value.trim() === "") {
-        addGroupErrorMsg.value = "Group name cannot be blank.";
+      if (groupName.value.trim() === '') {
+        addGroupErrorMsg.value = 'Group name cannot be blank.';
         return;
       }
       try {
@@ -133,7 +133,7 @@ export default defineComponent({
           id,
           name: groupName.value,
           created_on: new Date(),
-          num_users: 0,
+          num_users: 0
         });
         addDialog.value = false;
       } catch (err) {
@@ -146,12 +146,12 @@ export default defineComponent({
     const deleteGroups = async () => {
       try {
         deleteGroupLoading.value = true;
-        let delGroupIds = selectedGroups.value.map((item) => item.id);
+        let delGroupIds = selectedGroups.value.map(item => item.id);
 
         await serverProxy.deleteGroups(delGroupIds);
 
         groups.value = groups.value.filter(
-          (group) => !delGroupIds.includes(group.id)
+          group => !delGroupIds.includes(group.id)
         );
 
         selectedGroups.value = [];
@@ -175,8 +175,8 @@ export default defineComponent({
       submitGroup,
       deleteGroups,
       confirmDeleteDialog,
-      addGroupErrorMsg,
+      addGroupErrorMsg
     };
-  },
+  }
 });
 </script>

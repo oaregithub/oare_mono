@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import { AkkadianLetterGroupsUpper } from "@oare/oare";
+import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import {
   defineComponent,
   ref,
@@ -39,7 +39,7 @@ import {
   computed,
   watch,
   PropType,
-} from "@vue/composition-api";
+} from '@vue/composition-api';
 
 export interface DisplayableWord {
   uuid: string;
@@ -47,7 +47,7 @@ export interface DisplayableWord {
 }
 
 export default defineComponent({
-  name: "DictionaryDisplay",
+  name: 'DictionaryDisplay',
   props: {
     wordList: {
       type: Array as PropType<DisplayableWord[]>,
@@ -79,10 +79,10 @@ export default defineComponent({
           },
         },
       } = context;
-      return filter ? String(filter) : "";
+      return filter ? String(filter) : '';
     });
     const letters = ref(Object.keys(AkkadianLetterGroupsUpper));
-    const wordSearch: Ref<string> = ref(filter.value || "");
+    const wordSearch: Ref<string> = ref(filter.value || '');
 
     const wordsByLetter = computed(() => {
       return props.wordList.filter((name) => {
@@ -99,7 +99,7 @@ export default defineComponent({
 
     watch(
       () => props.letter,
-      () => (wordSearch.value = ""),
+      () => (wordSearch.value = ''),
       {
         lazy: true,
       }

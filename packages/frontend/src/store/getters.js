@@ -1,4 +1,4 @@
-import { isValidJwt } from "../utils/index";
+import { isValidJwt } from '../utils/index';
 
 export default {
   landed(state) {
@@ -19,5 +19,5 @@ export default {
 
   jwt(state) {
     return state.jwt;
-  },
+  }
 };

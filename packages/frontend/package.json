@@ -6,7 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test": "vue-cli-service test:unit",
-    "lint": "vue-cli-service lint"
+    "prettier": "prettier --write src/**/*.{vue,js,ts}",
+    "lint": "yarn prettier && vue-cli-service lint"
   },
   "dependencies": {
     "@oare/oare": "^3.1.7",
@@ -45,6 +46,8 @@
     "babel-jest": "^26.3.0",
     "babel-polyfill": "^6.26.0",
     "eslint": "^5.16.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-vue": "^5.2.3",
     "flush-promises": "^1.0.2",
     "jest": "^24.9.0",

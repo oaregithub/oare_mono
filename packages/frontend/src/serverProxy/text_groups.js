@@ -1,4 +1,4 @@
-import axios from "../axiosInstance";
+import axios from '../axiosInstance';
 
 /**
  * @typedef {Object} TextGroup
@@ -11,7 +11,7 @@ import axios from "../axiosInstance";
  * @param {TextGroup[]} textGroups A list of texts to whitelist
  */
 async function addTextGroups(groupId, textGroups) {
-  await axios.post("/text_groups", {
+  await axios.post('/text_groups', {
     group_id: groupId,
     texts: textGroups
   });
@@ -22,7 +22,7 @@ async function addTextGroups(groupId, textGroups) {
  * @param {number} groupId The ID of the group to get the texts from
  */
 async function getTextGroups(groupId) {
-  let { data } = await axios.get("/text_groups", {
+  let { data } = await axios.get('/text_groups', {
     params: {
       group_id: groupId
     }
@@ -36,7 +36,7 @@ async function getTextGroups(groupId) {
  * @param {string[]} texts An array of UUIDs of texts to remove from the group
  */
 async function removeTextsFromGroup(groupId, texts) {
-  await axios.delete("/text_groups", {
+  await axios.delete('/text_groups', {
     params: {
       group_id: groupId,
       texts
@@ -52,7 +52,7 @@ async function removeTextsFromGroup(groupId, texts) {
  * @param {boolean} canWrite True if the text can be edited by members of the group
  */
 async function updateText(groupId, textUuid, canRead, canWrite) {
-  await axios.patch("/text_groups", {
+  await axios.patch('/text_groups', {
     group_id: groupId,
     text_uuid: textUuid,
     can_read: canRead,

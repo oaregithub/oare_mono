@@ -26,12 +26,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from "@vue/composition-api";
-import { NamesOrPlaces } from "@/types/names";
-import DictionaryDisplay from "../DictionaryDisplay/index.vue";
+import { defineComponent, PropType, computed } from '@vue/composition-api';
+import { NamesOrPlaces } from '@/types/names';
+import DictionaryDisplay from '../DictionaryDisplay/index.vue';
 
 export default defineComponent({
-  name: "NamesPlacesDisplay",
+  name: 'NamesPlacesDisplay',
   components: {
     DictionaryDisplay,
   },

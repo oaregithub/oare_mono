@@ -1,4 +1,1 @@
-export default [
-  'textsSearch',
-  'dictionarySearch'
-]
+export default ['textsSearch', 'dictionarySearch'];

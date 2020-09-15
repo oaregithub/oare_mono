@@ -1,7 +1,7 @@
 <template>
   <v-card class="mt-12 pa-3 mx-auto" max-width="600" elevation="24">
     <v-card-title>
-      <h3 class="oare-header mb-2">{{ $t("login.signIn") }}</h3>
+      <h3 class="oare-header mb-2">{{ $t('login.signIn') }}</h3>
     </v-card-title>
     <v-card-text>
       <v-text-field
@@ -20,7 +20,7 @@
       />
       <p class="subtitle error--text test-error-text">{{ errorMsg }}</p>
       <v-btn text class="text-none" to="/register">{{
-        $t("login.dontHaveAccount")
+        $t('login.dontHaveAccount')
       }}</v-btn>
       <br />
     </v-card-text>
@@ -33,20 +33,20 @@
         :loading="loadings.signInButton"
         :disabled="!email || !password"
       >
-        {{ $t("login.signIn") }}
+        {{ $t('login.signIn') }}
       </OareLoaderButton>
     </v-card-actions>
   </v-card>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, PropType } from "@vue/composition-api";
-import { NavigationGuard } from "vue-router";
-import i18n from "../i18n";
-import defaultStore from "../store";
-import defaultRouter from "../router";
-import Router from "vue-router";
-import { Store } from "vuex";
+import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
+import { NavigationGuard } from 'vue-router';
+import i18n from '../i18n';
+import defaultStore from '../store';
+import defaultRouter from '../router';
+import Router from 'vue-router';
+import { Store } from 'vuex';
 
 export interface FormRef {
   validate: () => void;
@@ -55,41 +55,41 @@ export interface FormRef {
 const beforeRouteEnter: NavigationGuard = (to, from, next) => {
   next(() => {
     if (defaultStore.getters.isAuthenticated) {
-      defaultRouter.push("/");
+      defaultRouter.push('/');
     }
   });
 };
 
 export default defineComponent({
-  name: "LoginView",
+  name: 'LoginView',
   props: {
     router: {
       type: Object as PropType<Router>,
-      default: () => defaultRouter,
+      default: () => defaultRouter
     },
     store: {
       type: Object as PropType<Store<{}>>,
-      default: () => defaultStore,
-    },
+      default: () => defaultStore
+    }
   },
   beforeRouteEnter,
   setup({ router, store }) {
-    const email = ref("");
-    const password = ref("");
-    const errorMsg = ref("");
+    const email = ref('');
+    const password = ref('');
+    const errorMsg = ref('');
     const loadings = ref({ signInButton: false });
 
     const logIn = async () => {
       loadings.value.signInButton = true;
-      errorMsg.value = "";
+      errorMsg.value = '';
       let userData = {
         email: email.value,
-        password: password.value,
+        password: password.value
       };
 
       try {
-        await store.dispatch("login", userData);
-        router.push("/");
+        await store.dispatch('login', userData);
+        router.push('/');
       } catch (err) {
         errorMsg.value = err;
       }
@@ -101,8 +101,8 @@ export default defineComponent({
       password,
       errorMsg,
       loadings,
-      logIn,
+      logIn
     };
-  },
+  }
 });
 </script>

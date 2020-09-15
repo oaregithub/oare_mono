@@ -7,10 +7,10 @@
     <div v-if="wordInfo">
       <div class="d-flex">
         <div v-if="wordInfo.partsOfSpeech.length > 0" class="mr-1">
-          {{ wordInfo.partsOfSpeech.join(", ") }}
+          {{ wordInfo.partsOfSpeech.join(', ') }}
         </div>
         <div v-if="wordInfo.verbalThematicVowelTypes.length > 0" class="mr-1">
-          ({{ wordInfo.verbalThematicVowelTypes.join(", ") }})
+          ({{ wordInfo.verbalThematicVowelTypes.join(', ') }})
         </div>
         <p>
           <span v-for="(tr, idx) in wordInfo.translations" :key="idx">
@@ -25,7 +25,7 @@
             >;</span
           >
           <span v-if="wordInfo.specialClassifications.length > 0">
-            {{ wordInfo.specialClassifications.join(", ") }}
+            {{ wordInfo.specialClassifications.join(', ') }}
           </span>
         </p>
       </div>
@@ -37,9 +37,7 @@
         <span class="mr-1" v-if="formGrammar(formInfo).trim() !== ''"
           >({{ formGrammar(formInfo) }})</span
         >
-        <span>{{
-          formInfo.spellings.map((sp) => sp.spelling).join(", ")
-        }}</span>
+        <span>{{ formInfo.spellings.map(sp => sp.spelling).join(', ') }}</span>
       </div>
     </div>
   </OareContentView>
@@ -51,66 +49,66 @@ import {
   ref,
   Ref,
   watch,
-  computed,
-} from "@vue/composition-api";
-import { AkkadianLetterGroupsUpper } from "@oare/oare";
-import { WordWithForms, DictionaryForm } from "@/types/dictionary";
-import { BreadcrumbItem } from "@/components/base/OareBreadcrumbs.vue";
-import serverProxy from "../serverProxy";
+  computed
+} from '@vue/composition-api';
+import { AkkadianLetterGroupsUpper } from '@oare/oare';
+import { WordWithForms, DictionaryForm } from '@/types/dictionary';
+import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
+import serverProxy from '../serverProxy';
 
 export default defineComponent({
-  name: "DictionaryWord",
+  name: 'DictionaryWord',
   props: {
     uuid: {
       type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   setup(props) {
     const loading = ref(true);
     const wordInfo: Ref<WordWithForms | null> = ref(null);
     const breadcrumbItems: Ref<BreadcrumbItem[]> = ref([
       {
-        link: "/words/A",
-        text: "Dictionary Words",
-      },
+        link: '/words/A',
+        text: 'Dictionary Words'
+      }
     ]);
 
     const formGrammar = (form: DictionaryForm) => {
-      let suffix = "";
+      let suffix = '';
 
       if (form.suffix) {
         suffix =
-          form.suffix.persons.join("") +
-          form.suffix.genders.join("") +
-          form.suffix.grammaticalNumbers.join("") +
-          form.suffix.cases.join("");
-        if (form.clitics.includes("-ma")) {
-          suffix += "-ma";
+          form.suffix.persons.join('') +
+          form.suffix.genders.join('') +
+          form.suffix.grammaticalNumbers.join('') +
+          form.suffix.cases.join('');
+        if (form.clitics.includes('-ma')) {
+          suffix += '-ma';
         }
       }
       return (
-        form.stems.join("") +
+        form.stems.join('') +
         form.morphologicalForms
-          .filter((mf) => mf === "stv." || mf === "inf")
-          .join("") +
-        form.tenses.join("") +
-        " " +
-        form.persons.join("") +
-        form.genders.join("") +
-        form.grammaticalNumbers.join("") +
-        form.cases.join("") +
-        " " +
-        form.states.join("") +
-        form.moods.join("") +
+          .filter(mf => mf === 'stv.' || mf === 'inf')
+          .join('') +
+        form.tenses.join('') +
+        ' ' +
+        form.persons.join('') +
+        form.genders.join('') +
+        form.grammaticalNumbers.join('') +
+        form.cases.join('') +
+        ' ' +
+        form.states.join('') +
+        form.moods.join('') +
         form.clitics
-          .map((clitic) => {
-            if (clitic === "suf.") return "+";
-            if (clitic === "vent") return "+vent";
+          .map(clitic => {
+            if (clitic === 'suf.') return '+';
+            if (clitic === 'vent') return '+vent';
             return clitic;
           })
-          .filter((clitic) => clitic !== "-ma")
-          .join("") +
+          .filter(clitic => clitic !== '-ma')
+          .join('') +
         suffix
       );
     };
@@ -126,14 +124,14 @@ export default defineComponent({
           if (letters.includes(wordInfo.value.word[0].toUpperCase())) {
             breadcrumbItems.value.push({
               link: `/words/${encodeURIComponent(letterGroup)}`,
-              text: letterGroup,
+              text: letterGroup
             });
             break;
           }
         }
         breadcrumbItems.value.push({
           link: null,
-          text: wordInfo.value.word,
+          text: wordInfo.value.word
         });
         loading.value = false;
       }
@@ -142,8 +140,8 @@ export default defineComponent({
       loading,
       wordInfo,
       breadcrumbItems,
-      formGrammar,
+      formGrammar
     };
-  },
+  }
 });
 </script>

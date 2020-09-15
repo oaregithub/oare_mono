@@ -1,5 +1,5 @@
-import axios from "../axiosInstance";
-import { EpigraphicUnit } from "@oare/oare";
+import axios from '../axiosInstance';
+import { EpigraphicUnit } from '@oare/oare';
 
 export interface EpigraphyResponse {
   canWrite: boolean;
@@ -16,5 +16,5 @@ async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
 }
 
 export default {
-  getEpigraphicInfo,
+  getEpigraphicInfo
 };

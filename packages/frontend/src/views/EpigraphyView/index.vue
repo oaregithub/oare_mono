@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts">
-import { mapActions } from "vuex";
+import { mapActions } from 'vuex';
 import {
   createTabletRenderer,
   DiscourseRenderer,
@@ -75,7 +75,7 @@ import {
   EpigraphicUnitSide,
   DiscourseUnit,
   TabletRenderer,
-} from "@oare/oare";
+} from '@oare/oare';
 import {
   defineComponent,
   reactive,
@@ -84,15 +84,15 @@ import {
   Ref,
   onMounted,
   computed,
-} from "@vue/composition-api";
-import store from "@/store";
+} from '@vue/composition-api';
+import store from '@/store';
 
-import server from "../../serverProxy";
+import server from '../../serverProxy';
 
-import EpigraphyEditor from "./EpigraphyEditor.vue";
-import serverProxy from "../../serverProxy";
-import router from "@/router";
-import { getLetterGroup } from "../CollectionsView/utils";
+import EpigraphyEditor from './EpigraphyEditor.vue';
+import serverProxy from '../../serverProxy';
+import router from '@/router';
+import { getLetterGroup } from '../CollectionsView/utils';
 
 interface EpigraphyState {
   loading: boolean;
@@ -107,7 +107,7 @@ interface EpigraphyEditorSideData {
 }
 
 export default defineComponent({
-  name: "EpigraphyView",
+  name: 'EpigraphyView',
   components: {
     EpigraphyEditor,
   },
@@ -121,23 +121,23 @@ export default defineComponent({
   setup({ textUuid }) {
     const epigraphyState = reactive<EpigraphyState>({
       loading: false,
-      collection: "",
+      collection: '',
       canWrite: false,
-      textName: "",
+      textName: '',
     });
 
     let renderer: Ref<TabletRenderer | null> = ref(null);
     let collection: Ref<{ uuid: string; name: string }> = ref({
-      uuid: "",
-      name: "",
+      uuid: '',
+      name: '',
     });
     let breadcrumbItems = computed(() => {
       const letterGroup = getLetterGroup(collection.value.name);
 
       return [
         {
-          link: "/collections/A-J",
-          text: "Texts",
+          link: '/collections/A-J',
+          text: 'Texts',
         },
         {
           link: `/collections/${letterGroup}`,
@@ -185,34 +185,34 @@ export default defineComponent({
 
     const discourseColor = (discourseType: string) => {
       switch (discourseType) {
-        case "paragraph":
-          return "red";
-        case "sentence":
-          return "blue";
-        case "clause":
-          return "purple";
-        case "phrase":
-          return "green";
+        case 'paragraph':
+          return 'red';
+        case 'sentence':
+          return 'blue';
+        case 'clause':
+          return 'purple';
+        case 'phrase':
+          return 'green';
         default:
-          return "black";
+          return 'black';
       }
     };
 
     const discourseReading = (discourse: DiscourseUnit) => {
       let reading;
       if (
-        (discourse.type === "discourseUnit" || discourse.type === "sentence") &&
+        (discourse.type === 'discourseUnit' || discourse.type === 'sentence') &&
         discourse.translation
       ) {
         reading = discourse.translation;
       } else if (
-        (discourse.type === "paragraph" ||
-          discourse.type === "clause" ||
-          discourse.type === "phrase") &&
+        (discourse.type === 'paragraph' ||
+          discourse.type === 'clause' ||
+          discourse.type === 'phrase') &&
         discourse.paragraphLabel
       ) {
         reading = discourse.paragraphLabel;
-      } else if (discourse.type === "word") {
+      } else if (discourse.type === 'word') {
         if (discourse.transcription && discourse.spelling) {
           reading = `${discourse.transcription} (${discourse.spelling})`;
         } else {
@@ -222,9 +222,9 @@ export default defineComponent({
         reading = discourse.spelling;
       }
 
-      if (discourse.type === "paragraph") {
+      if (discourse.type === 'paragraph') {
         reading = `<strong><em>${reading}</em></strong>`;
-      } else if (discourse.type === "clause" || discourse.type === "phrase") {
+      } else if (discourse.type === 'clause' || discourse.type === 'phrase') {
         reading = `<em>${reading}</em>`;
       }
       return reading;
@@ -247,7 +247,7 @@ export default defineComponent({
         }
 
         renderer.value = createTabletRenderer(epigUnits, markupUnits, {
-          textFormat: "html",
+          textFormat: 'html',
         });
 
         discourseUnits.value = await server.getDiscourseUnits(textUuid);
@@ -268,7 +268,7 @@ export default defineComponent({
       } catch (err) {
         if (err.response) {
           if (err.response.status === 403) {
-            router.replace({ name: "403" });
+            router.replace({ name: '403' });
           }
         } else {
           console.error(err.message);

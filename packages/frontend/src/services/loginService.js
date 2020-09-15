@@ -1,7 +1,7 @@
-import store from "../store";
+import store from '../store';
 
 export default {
   async isLoginValid(userData) {
-    return await store.dispatch("login", userData);
+    return await store.dispatch('login', userData);
   }
 };

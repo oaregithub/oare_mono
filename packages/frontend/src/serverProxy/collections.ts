@@ -1,15 +1,15 @@
-import axios from "../axiosInstance";
+import axios from '../axiosInstance';
 import {
   CollectionResponse,
   CollectionListItem,
-  CollectionInfo,
-} from "../types/collections";
+  CollectionInfo
+} from '../types/collections';
 
 /**
  * Returns the list of collections in the corpus
  */
 async function getAllCollections(): Promise<CollectionListItem[]> {
-  let { data } = await axios.get("/collections");
+  let { data } = await axios.get('/collections');
   return data;
 }
 
@@ -24,8 +24,8 @@ async function getCollectionTexts(
     params: {
       page,
       rows,
-      query,
-    },
+      query
+    }
   });
 
   return texts;
@@ -39,5 +39,5 @@ async function getCollectionInfo(uuid: string): Promise<CollectionInfo> {
 export default {
   getAllCollections,
   getCollectionTexts,
-  getCollectionInfo,
+  getCollectionInfo
 };

@@ -36,17 +36,17 @@ import {
   Ref,
   computed,
   onMounted,
-} from "@vue/composition-api";
-import { CollectionResponse, CollectionText } from "@/types/collections";
-import { BreadcrumbItem } from "@/components/base/OareBreadcrumbs.vue";
-import TextsTable from "./TextsTable.vue";
-import { getLetterGroup } from "./utils";
-import _ from "underscore";
-import router from "@/router";
-import serverProxy from "@/serverProxy";
+} from '@vue/composition-api';
+import { CollectionResponse, CollectionText } from '@/types/collections';
+import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
+import TextsTable from './TextsTable.vue';
+import { getLetterGroup } from './utils';
+import _ from 'underscore';
+import router from '@/router';
+import serverProxy from '@/serverProxy';
 
 export default defineComponent({
-  name: "CollectionTexts",
+  name: 'CollectionTexts',
   components: {
     TextsTable,
   },
@@ -58,15 +58,15 @@ export default defineComponent({
   },
 
   setup(props, context) {
-    const collectionName = ref("");
+    const collectionName = ref('');
     const loading = ref(false);
     const letterGroup = computed(() =>
-      collectionName.value ? getLetterGroup(collectionName.value) : ""
+      collectionName.value ? getLetterGroup(collectionName.value) : ''
     );
     const breadcrumbItems = computed(() => [
       {
-        link: `/collections/A-J`,
-        text: "Texts",
+        link: '/collections/A-J',
+        text: 'Texts',
       },
       {
         link: `/collections/${letterGroup.value}`,
@@ -76,7 +76,7 @@ export default defineComponent({
     const texts: Ref<CollectionText[]> = ref([]);
     const textsLoading = ref(false);
     const totalTexts = ref(0);
-    const search = ref("");
+    const search = ref('');
     const page = ref(1);
     const rows = ref(10);
 
@@ -86,13 +86,13 @@ export default defineComponent({
         rows: String(rows.value),
       };
 
-      if (search.value !== "") {
+      if (search.value !== '') {
         query.query = search.value;
       }
 
-      if (router.currentRoute.name === "collectionTexts") {
+      if (router.currentRoute.name === 'collectionTexts') {
         router.replace({
-          name: "collectionTexts",
+          name: 'collectionTexts',
           params: {
             collectionUuid: props.collectionUuid,
           },
@@ -119,7 +119,7 @@ export default defineComponent({
         texts.value = collectionResp.texts;
       } catch (err) {
         if (err.response && err.response.status === 403) {
-          router.replace({ name: "403" });
+          router.replace({ name: '403' });
         }
       } finally {
         textsLoading.value = false;
@@ -129,7 +129,7 @@ export default defineComponent({
     watch(
       () => context.root.$route,
       () => {
-        if (context.root.$route.name === "collectionTexts") {
+        if (context.root.$route.name === 'collectionTexts') {
           getCollectionTexts();
         }
       }
@@ -152,7 +152,7 @@ export default defineComponent({
       if ($route.query.query) {
         search.value = String($route.query.query);
       } else {
-        search.value = "";
+        search.value = '';
       }
 
       loading.value = true;
