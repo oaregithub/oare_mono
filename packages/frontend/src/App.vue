@@ -34,7 +34,7 @@ import defaultRouter from './router';
 export default defineComponent({
   name: 'App',
   components: {
-    OareSidebar,
+    OareSidebar
   },
   setup(_, context) {
     const drawer = ref(true);
@@ -56,15 +56,15 @@ export default defineComponent({
       hasLanded,
       sidebarComponent,
       store,
-      router,
+      router
     };
-  },
+  }
 });
 </script>
 
 <style>
 * {
-  font-family: "Gentium Basic", serif;
+  font-family: 'Gentium Basic', serif;
 }
 
 .oare-header {

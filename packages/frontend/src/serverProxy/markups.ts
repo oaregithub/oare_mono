@@ -7,5 +7,5 @@ async function getEpigraphicMarkups(textUuid: string): Promise<MarkupUnit[]> {
 }
 
 export default {
-  getEpigraphicMarkups,
+  getEpigraphicMarkups
 };

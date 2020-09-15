@@ -13,11 +13,11 @@ let store = new Vuex.Store({
     user: {},
     jwt: '',
     markups: {},
-    epigraphies: {},
+    epigraphies: {}
   },
   mutations,
   actions,
-  getters,
+  getters
 });
 
 const jwt = localStorage.getItem('jwt');

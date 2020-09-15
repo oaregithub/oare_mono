@@ -7,5 +7,5 @@ async function getDictionaryWords(): Promise<DictionaryWord[]> {
 }
 
 export default {
-  getDictionaryWords,
+  getDictionaryWords
 };

@@ -54,7 +54,7 @@
           <v-list-item
             v-for="(user, index) in selectedDeleteUsers"
             :key="index"
-            >{{ user.first_name + " " + user.last_name }}</v-list-item
+            >{{ user.first_name + ' ' + user.last_name }}</v-list-item
           >
         </v-list>
       </OareDialog>
@@ -67,7 +67,7 @@
       v-model="selectedDeleteUsers"
     >
       <template v-slot:item.name="{ item }">{{
-        item.first_name + " " + item.last_name
+        item.first_name + ' ' + item.last_name
       }}</template>
     </v-data-table>
 
@@ -192,8 +192,8 @@ export default {
   name: 'GroupView',
   props: {
     groupId: {
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
@@ -225,7 +225,7 @@ export default {
       textHeaders: [
         { text: 'Text Name', value: 'name' },
         { text: 'Can view?', value: 'can_read' },
-        { text: 'Can edit?', value: 'can_write' },
+        { text: 'Can edit?', value: 'can_write' }
       ],
       selectedWhitelistItems: [],
       addTextGroupsLoading: false,
@@ -236,26 +236,26 @@ export default {
       removeWhitelistLoading: false,
 
       // Data members for updating edit permission on a text
-      loadingEditTexts: [], // A list of indices loading
+      loadingEditTexts: [] // A list of indices loading
     };
   },
 
   computed: {
     searchUserItems() {
-      const groupUserIds = this.groupUsers.map((user) => user.id);
+      const groupUserIds = this.groupUsers.map(user => user.id);
       return this.allUsers
-        .filter((user) => !groupUserIds.includes(user.id))
-        .map((user) => ({
+        .filter(user => !groupUserIds.includes(user.id))
+        .map(user => ({
           ...user,
-          info: `${user.first_name} ${user.last_name} (${user.email})`,
+          info: `${user.first_name} ${user.last_name} (${user.email})`
         }));
-    },
+    }
   },
 
   methods: {
     async updateTextEdit(uuid, canWrite) {
       const index = this.viewableTexts
-        .map((item) => item.text_uuid)
+        .map(item => item.text_uuid)
         .indexOf(uuid);
       this.$set(this.viewableTexts[index], 'can_write', canWrite);
       const text = this.viewableTexts[index];
@@ -268,7 +268,7 @@ export default {
     },
     async updateTextRead(uuid, canRead) {
       const index = this.viewableTexts
-        .map((item) => item.text_uuid)
+        .map(item => item.text_uuid)
         .indexOf(uuid);
       this.$set(this.viewableTexts[index], 'can_read', canRead);
       // Disable editing if reading is disabled
@@ -284,16 +284,16 @@ export default {
       );
     },
     removeTextToAdd(name) {
-      this.textsToAdd = this.textsToAdd.filter((text) => text.name !== name);
+      this.textsToAdd = this.textsToAdd.filter(text => text.name !== name);
     },
     async addUsers() {
       this.addUsersLoading = true;
       try {
         await serverProxy.addUsersToGroup(
           this.groupId,
-          this.selectedUsers.map((user) => user.id)
+          this.selectedUsers.map(user => user.id)
         );
-        this.selectedUsers.forEach((user) => {
+        this.selectedUsers.forEach(user => {
           this.groupUsers.push(user);
         });
         this.addUserDialog = false;
@@ -305,18 +305,18 @@ export default {
     },
 
     async addTextGroups() {
-      const textGroups = this.textsToAdd.map((item) => ({
+      const textGroups = this.textsToAdd.map(item => ({
         can_read: item.can_read,
         can_write: item.can_write,
-        uuid: item.uuid,
+        uuid: item.uuid
       }));
       this.addTextGroupsLoading = true;
       await serverProxy.addTextGroups(this.groupId, textGroups);
 
-      this.textsToAdd.forEach((item) => {
+      this.textsToAdd.forEach(item => {
         this.viewableTexts.unshift({
           ...item,
-          text_uuid: item.uuid,
+          text_uuid: item.uuid
         });
       });
       this.addTextGroupsLoading = false;
@@ -327,7 +327,7 @@ export default {
     async removeWhitelistTexts() {
       this.removeWhitelistLoading = true;
       const deleteTextUuids = this.selectedDeleteWhitelist.map(
-        (text) => text.text_uuid
+        text => text.text_uuid
       );
 
       await serverProxy.removeTextsFromGroup(this.groupId, deleteTextUuids);
@@ -336,12 +336,12 @@ export default {
       this.removeWhitelistTextsDialog = false;
       this.selectedDeleteWhitelist = [];
       this.viewableTexts = this.viewableTexts.filter(
-        (text) => !deleteTextUuids.includes(text.text_uuid)
+        text => !deleteTextUuids.includes(text.text_uuid)
       );
     },
 
     async removeUsers() {
-      const userIds = this.selectedDeleteUsers.map((user) => user.id);
+      const userIds = this.selectedDeleteUsers.map(user => user.id);
       this.deleteUserLoading = true;
       await serverProxy.removeUsersFromGroup(this.groupId, userIds);
 
@@ -350,18 +350,18 @@ export default {
       this.selectedDeleteUsers = [];
 
       this.groupUsers = this.groupUsers.filter(
-        (user) => !userIds.includes(user.id)
+        user => !userIds.includes(user.id)
       );
     },
 
     updateTextToAddRead(uuid, canRead) {
-      const index = this.textsToAdd.map((text) => text.uuid).indexOf(uuid);
+      const index = this.textsToAdd.map(text => text.uuid).indexOf(uuid);
       this.$set(this.textsToAdd[index], 'can_read', canRead);
 
       if (!canRead) {
         this.$set(this.textsToAdd[index], 'can_write', false);
       }
-    },
+    }
   },
 
   async mounted() {
@@ -400,7 +400,7 @@ export default {
           this.searchUserInput = '';
         }
       },
-      deep: true,
+      deep: true
     },
 
     searchTextToAdd: {
@@ -412,14 +412,14 @@ export default {
 
         this.whitelistSearchLoading = true;
         const items = await serverProxy.searchTextNames(text);
-        this.whitelistTextItems = items.map((item) => ({
+        this.whitelistTextItems = items.map(item => ({
           ...item,
           can_read: true,
-          can_write: false,
+          can_write: false
         }));
         this.whitelistSearchLoading = false;
-      }, 500),
-    },
-  },
+      }, 500)
+    }
+  }
 };
 </script>

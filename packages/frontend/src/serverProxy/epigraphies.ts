@@ -16,5 +16,5 @@ async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
 }
 
 export default {
-  getEpigraphicInfo,
+  getEpigraphicInfo
 };

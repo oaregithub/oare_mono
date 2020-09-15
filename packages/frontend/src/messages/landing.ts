@@ -19,7 +19,7 @@ export default {
     ochre:
       'OARE veritabanı, Çevrimiçi Kültürel ve Tarihi Araştırma Ortamının (OCHRE) bir parçasıdır. OCHRE kılavuzları ve daha fazla bilgi için: {ochreHref}',
     enterSite: 'Siteye girin',
-    createdOare: 'Edward Stratford, OCHER platformu içinde OARE\'i yarattı.',
+    createdOare: "Edward Stratford, OCHER platformu içinde OARE'i yarattı.",
     director: 'Yönetmen: Edward Stratford',
     editorialBoard:
       'Yayın Kurulu: Gojko Barjamovic, Hakan Erol ve Edward Stratford.',

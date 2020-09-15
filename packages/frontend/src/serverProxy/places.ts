@@ -8,4 +8,4 @@ async function getPlaces(): Promise<NamesOrPlaces[]> {
 
 export default {
   getPlaces
-}
+};

@@ -13,7 +13,7 @@ async function getHierarchyChildren(item: {
   const { data: children } = await axios.get<Hierarchy[]>(
     `/hierarchies/${item.uuid}`
   );
-  children.forEach((c) => {
+  children.forEach(c => {
     if (c.numChildren > 0) {
       c.children = [];
     }
@@ -24,5 +24,5 @@ async function getHierarchyChildren(item: {
 
 export default {
   getHierarchyChildren,
-  getBaseHierarchies,
+  getBaseHierarchies
 };

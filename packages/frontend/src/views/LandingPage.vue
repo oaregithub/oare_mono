@@ -25,7 +25,7 @@
             experimental effort.*** We hope to add feedback mechanisms soon so
             that users can mark texts that are misbehaving, or point out errors.
             In the meantime, please send any feedback to</em
-          >{{ " " }}
+          >{{ ' ' }}
           <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>.
         </p>
         <p>

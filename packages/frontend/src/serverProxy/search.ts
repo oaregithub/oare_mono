@@ -1,13 +1,16 @@
 import axios from '../axiosInstance';
 import { SearchResult } from '@/types/search';
 
-async function searchTexts(searchChars: string[], textTitle: string,
-  { page, rows }: { page: number, rows: number }): Promise<SearchResult> {
+async function searchTexts(
+  searchChars: string[],
+  textTitle: string,
+  { page, rows }: { page: number; rows: number }
+): Promise<SearchResult> {
   const params: {
-    page: number,
-    rows: number,
-    textTitle: string,
-    characters?: string[]
+    page: number;
+    rows: number;
+    textTitle: string;
+    characters?: string[];
   } = {
     page,
     rows,

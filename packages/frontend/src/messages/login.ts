@@ -1,7 +1,7 @@
 export default {
   us: {
     signIn: 'Sign In',
-    dontHaveAccount: 'Don\'t have an account? Register for free',
+    dontHaveAccount: "Don't have an account? Register for free",
     email: 'Email',
     emailError: 'Please fill in the email field',
     password: 'Password',

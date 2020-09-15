@@ -7,5 +7,5 @@ async function getNames(): Promise<NamesOrPlaces[]> {
 }
 
 export default {
-  getNames,
+  getNames
 };

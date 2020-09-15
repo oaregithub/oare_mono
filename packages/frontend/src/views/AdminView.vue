@@ -80,7 +80,7 @@ import {
   ref,
   onMounted,
   watch,
-  Ref,
+  Ref
 } from '@vue/composition-api';
 
 import { GetGroupsType, PostGroupsType } from '../types/groups';
@@ -91,12 +91,12 @@ export default defineComponent({
     const headers = ref([
       {
         text: 'Group Name',
-        value: 'name',
+        value: 'name'
       },
       {
         text: 'Users',
-        value: 'num_users',
-      },
+        value: 'num_users'
+      }
     ]);
     const groups: Ref<GetGroupsType[]> = ref([]);
     const selectedGroups: Ref<GetGroupsType[]> = ref([]);
@@ -108,7 +108,7 @@ export default defineComponent({
     const confirmDeleteDialog = ref(false);
     const addGroupErrorMsg = ref('');
 
-    watch(addDialog, (open) => {
+    watch(addDialog, open => {
       if (!open) {
         groupName.value = '';
         addGroupErrorMsg.value = '';
@@ -133,7 +133,7 @@ export default defineComponent({
           id,
           name: groupName.value,
           created_on: new Date(),
-          num_users: 0,
+          num_users: 0
         });
         addDialog.value = false;
       } catch (err) {
@@ -146,12 +146,12 @@ export default defineComponent({
     const deleteGroups = async () => {
       try {
         deleteGroupLoading.value = true;
-        let delGroupIds = selectedGroups.value.map((item) => item.id);
+        let delGroupIds = selectedGroups.value.map(item => item.id);
 
         await serverProxy.deleteGroups(delGroupIds);
 
         groups.value = groups.value.filter(
-          (group) => !delGroupIds.includes(group.id)
+          group => !delGroupIds.includes(group.id)
         );
 
         selectedGroups.value = [];
@@ -175,8 +175,8 @@ export default defineComponent({
       submitGroup,
       deleteGroups,
       confirmDeleteDialog,
-      addGroupErrorMsg,
+      addGroupErrorMsg
     };
-  },
+  }
 });
 </script>

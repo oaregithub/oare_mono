@@ -19,5 +19,5 @@ export default {
 
   jwt(state) {
     return state.jwt;
-  },
+  }
 };

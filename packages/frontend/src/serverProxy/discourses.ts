@@ -7,5 +7,5 @@ async function getDiscourseUnits(textUuid: string): Promise<DiscourseUnit[]> {
 }
 
 export default {
-  getDiscourseUnits,
+  getDiscourseUnits
 };
