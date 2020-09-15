@@ -10,7 +10,7 @@
   "rules": {
     "no-console": "off",
     "no-debugger": "off",
-    "quotes": ["error", "single"]
+    "quotes": ["error", "single", { "avoidEscape": true }]
   },
 
   "parserOptions": {
