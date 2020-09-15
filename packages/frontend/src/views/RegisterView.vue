@@ -1,49 +1,47 @@
 <template>
   <OareUserCard :title="$t('register.register')">
     <template v-slot>
-      <v-form v-model="valid" ref="form">
-        <v-text-field
-          outline
-          v-model="user.firstname"
-          :label="$t('register.firstName')"
-          :rules="rules.firstName"
-          outlined
-          data-first-name-tf
-        ></v-text-field>
-        <v-text-field
-          outlined
-          v-model="user.lastname"
-          :rules="rules.lastName"
-          :label="$t('register.lastName')"
-          data-last-name-tf
-        ></v-text-field>
-        <v-text-field
-          outlined
-          v-model="user.email"
-          :rules="rules.email"
-          :label="$t('register.email')"
-          data-email-tf
-        ></v-text-field>
-        <v-text-field
-          outlined
-          v-model="user.password"
-          :rules="rules.password"
-          :label="$t('register.password')"
-          type="password"
-          data-pass-tf
-        ></v-text-field>
-        <v-text-field
-          @keyup.enter="register"
-          outlined
-          v-model="user.repeatpassword"
-          :rules="rules.repeatPassword"
-          :label="$t('register.confirmPassword')"
-          name="repeatpassword"
-          type="password"
-          data-rep-pass-tf
-        ></v-text-field>
-        <p class="subtitle error--text">{{ errorMsg }}</p>
-      </v-form>
+      <v-text-field
+        outline
+        v-model="user.firstname"
+        :label="$t('register.firstName')"
+        :error-messages="formErrors.firstname"
+        outlined
+        class="test-firstname"
+      ></v-text-field>
+      <v-text-field
+        outlined
+        v-model="user.lastname"
+        :label="$t('register.lastName')"
+        :error-messages="formErrors.lastname"
+        class="test-lastname"
+      ></v-text-field>
+      <v-text-field
+        outlined
+        v-model="user.email"
+        :label="$t('register.email')"
+        :error-messages="formErrors.email"
+        class="test-email"
+      ></v-text-field>
+      <v-text-field
+        outlined
+        v-model="user.password"
+        :label="$t('register.password')"
+        :error-messages="formErrors.password"
+        type="password"
+        class="test-password"
+      ></v-text-field>
+      <v-text-field
+        @keyup.enter="register"
+        outlined
+        v-model="user.repeatpassword"
+        :label="$t('register.confirmPassword')"
+        :error-messages="formErrors.repeatpassword"
+        name="repeatpassword"
+        type="password"
+        class="test-confirm-password"
+      ></v-text-field>
+      <p class="subtitle error--text test-error-msg">{{ errorMsg }}</p>
       <v-btn text class="text-none" to="/login">
         {{ $t("register.alreadyHaveAccount") }}
       </v-btn>
@@ -52,8 +50,10 @@
     <template v-slot:actions>
       <OareLoaderButton
         color="primary"
+        class="test-register-btn"
         @click="register"
         :loading="loading.registerButton"
+        :disabled="Object.values(user).some((v) => !v.trim())"
       >
         {{ $t("register.confirm") }}
       </OareLoaderButton>
@@ -86,36 +86,20 @@ export default defineComponent({
     },
   },
   setup({ store, router }) {
-    const valid = ref(false);
     const user = ref({
       email: "",
-      username: "",
       password: "",
       repeatpassword: "",
       firstname: "",
       lastname: "",
     });
 
-    const rules = ref({
-      firstName: [
-        (v: string) => !!v.trim() || i18n.t("register.firstNameError"),
-      ],
-      lastName: [(v: string) => !!v.trim() || i18n.t("register.lastNameError")],
-      email: [
-        (v: string) => !!v.trim() || i18n.t("register.emailBlankError"),
-        (v: string) =>
-          /.+@.+\..+/.test(v) || i18n.t("register.emailValidError"),
-      ],
-      password: [
-        (v: string) => !!v || i18n.t("register.passwordRequiredError"),
-        (v: string) => v.length >= 8 || i18n.t("register.passwordShortError"),
-      ],
-      repeatPassword: [
-        (v: string) => !!v || i18n.t("register.confirmPasswordRequiredError"),
-        (v: string) =>
-          v === user.value.password ||
-          i18n.t("register.confirmPasswordMatchError"),
-      ],
+    const formErrors = ref({
+      email: "",
+      password: "",
+      repeatpassword: "",
+      firstname: "",
+      lastname: "",
     });
 
     const errorMsg = ref("");
@@ -123,19 +107,43 @@ export default defineComponent({
       registerButton: false,
     });
 
-    const form: Ref<FormRef | null> = ref(null);
+    const validate = () => {
+      let valid = true;
+      formErrors.value = {
+        email: "",
+        password: "",
+        repeatpassword: "",
+        firstname: "",
+        lastname: "",
+      };
+
+      if (user.value.repeatpassword !== user.value.password) {
+        formErrors.value.repeatpassword = "Passwords do not match";
+        valid = false;
+      }
+
+      if (user.value.password.length < 8) {
+        formErrors.value.password =
+          "Password must be at least 8 characters long";
+        valid = false;
+      }
+
+      if (!/.+@.+\..+/.test(user.value.email)) {
+        formErrors.value.email = "Email is not formatted correctly";
+        valid = false;
+      }
+
+      return valid;
+    };
 
     const register = async () => {
       loading.value.registerButton = true;
 
-      if (form.value) {
-        form.value.validate();
-      }
-      if (!valid.value) {
-        errorMsg.value = String(i18n.t("register.requiredField"));
+      if (!validate()) {
         loading.value.registerButton = false;
         return;
       }
+
       errorMsg.value = "";
       let userData = {
         first_name: user.value.firstname,
@@ -155,12 +163,11 @@ export default defineComponent({
     };
 
     return {
-      valid,
       user,
-      rules,
       errorMsg,
       loading,
       register,
+      formErrors,
     };
   },
 });

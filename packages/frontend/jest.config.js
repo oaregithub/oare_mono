@@ -8,6 +8,8 @@ module.exports = {
     "^.+\\.js$": "<rootDir>/node_modules/babel-jest",
   },
 
+  clearMocks: true,
+
   collectCoverage: false,
 
   collectCoverageFrom: ["src/components/*.{js,vue}", "!**/node_modules/**"],

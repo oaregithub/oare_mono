@@ -3,16 +3,46 @@
 exports[`RegisterView test matches snapshot 1`] = `
 <div class="mt-12 pa-3 mx-auto v-card v-sheet theme--light elevation-24" style="max-width: 600px;">
   <div class="v-card__title">
-    <h3 class="oare-header mb-2"></h3>
+    <h3 class="oare-header mb-2">string</h3>
   </div>
   <div class="v-card__text">
+    <div class="v-input test-firstname theme--light v-text-field v-text-field--enclosed v-text-field--outlined">
+      <div class="v-input__control">
+        <div class="v-input__slot">
+          <fieldset aria-hidden="true">
+            <legend style="width: 0px;"><span>​</span></legend>
+          </fieldset>
+          <div class="v-text-field__slot"><label for="input-6" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input outline="" id="input-6" type="text"></div>
+        </div>
+        <div class="v-text-field__details">
+          <div class="v-messages theme--light">
+            <transition-group-stub tag="div" name="message-transition" class="v-messages__wrapper"></transition-group-stub>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="v-input test-lastname theme--light v-text-field v-text-field--enclosed v-text-field--outlined">
+      <div class="v-input__control">
+        <div class="v-input__slot">
+          <fieldset aria-hidden="true">
+            <legend style="width: 0px;"><span>​</span></legend>
+          </fieldset>
+          <div class="v-text-field__slot"><label for="input-9" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-9" type="text"></div>
+        </div>
+        <div class="v-text-field__details">
+          <div class="v-messages theme--light">
+            <transition-group-stub tag="div" name="message-transition" class="v-messages__wrapper"></transition-group-stub>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="v-input test-email theme--light v-text-field v-text-field--enclosed v-text-field--outlined">
       <div class="v-input__control">
         <div class="v-input__slot">
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-6" type="text"></div>
+          <div class="v-text-field__slot"><label for="input-12" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-12" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -27,7 +57,7 @@ exports[`RegisterView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-9" type="password"></div>
+          <div class="v-text-field__slot"><label for="input-15" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-15" type="password"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -36,11 +66,28 @@ exports[`RegisterView test matches snapshot 1`] = `
         </div>
       </div>
     </div>
-    <p class="subtitle error--text test-error-text"></p>
-    <router-link-stub to="/register" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content"></span></router-link-stub> <br>
+    <div class="v-input test-confirm-password theme--light v-text-field v-text-field--enclosed v-text-field--outlined">
+      <div class="v-input__control">
+        <div class="v-input__slot">
+          <fieldset aria-hidden="true">
+            <legend style="width: 0px;"><span>​</span></legend>
+          </fieldset>
+          <div class="v-text-field__slot"><label for="input-18" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input name="repeatpassword" id="input-18" type="password"></div>
+        </div>
+        <div class="v-text-field__details">
+          <div class="v-messages theme--light">
+            <transition-group-stub tag="div" name="message-transition" class="v-messages__wrapper"></transition-group-stub>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="subtitle error--text test-error-msg"></p>
+    <router-link-stub to="/login" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content">
+      string
+    </span></router-link-stub>
   </div>
-  <div class="v-card__actions"><button type="button" disabled="disabled" class="text-right test-signin-btn v-btn v-btn--contained v-btn--disabled theme--light v-size--default" color="primary"><span class="v-btn__content">
-
+  <div class="v-card__actions"><button type="button" disabled="disabled" class="test-register-btn v-btn v-btn--contained v-btn--disabled theme--light v-size--default" color="primary"><span class="v-btn__content">
+      string
     </span></button></div>
 </div>
 `;
