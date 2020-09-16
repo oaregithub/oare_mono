@@ -1,0 +1,419 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TextsTable test matches snapshot 1`] = `
+Object {
+  "baseElement": <body>
+    <div
+      data-app="true"
+    />
+    <div>
+      <div
+        class="v-data-table theme--light"
+      >
+        <div
+          class="v-data-table__wrapper"
+        >
+          <table>
+            <colgroup>
+              <col
+                class=""
+              />
+            </colgroup>
+            <thead
+              class="v-data-table-header"
+            >
+              <tr>
+                <th
+                  aria-label="Text Name: Not sorted. Activate to sort ascending."
+                  aria-sort="none"
+                  class="text-start sortable"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span>
+                    Text Name
+                  </span>
+                  <i
+                    aria-hidden="true"
+                    class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                    style="font-size: 18px;"
+                  />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class=""
+              >
+                <td
+                  class="text-start"
+                >
+                  <router-link-stub
+                    to="/epigraphies/1"
+                  >
+                    CCT 3 31
+                  </router-link-stub>
+                </td>
+              </tr>
+              <tr
+                class=""
+              >
+                <td
+                  class="text-start"
+                >
+                  <router-link-stub
+                    to="/epigraphies/2"
+                  >
+                    CCT 1 12b
+                  </router-link-stub>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          class="v-data-footer"
+        >
+          <div
+            class="v-data-footer__select"
+          >
+            Rows per page:
+            <div
+              class="v-input v-input--hide-details v-input--is-label-active v-input--is-dirty theme--light v-text-field v-select"
+            >
+              <div
+                class="v-input__control"
+              >
+                <div
+                  aria-expanded="false"
+                  aria-haspopup="listbox"
+                  aria-owns="list-10"
+                  class="v-input__slot"
+                  role="button"
+                >
+                  <div
+                    class="v-select__slot"
+                  >
+                    <div
+                      class="v-select__selections"
+                    >
+                      <div
+                        class="v-select__selection v-select__selection--comma"
+                      >
+                        10
+                      </div>
+                      <input
+                        aria-label="$vuetify.dataTable.itemsPerPageText"
+                        aria-readonly="false"
+                        autocomplete="off"
+                        id="input-10"
+                        readonly="readonly"
+                        type="text"
+                      />
+                    </div>
+                    <div
+                      class="v-input__append-inner"
+                    >
+                      <div
+                        class="v-input__icon v-input__icon--append"
+                      >
+                        <i
+                          aria-hidden="true"
+                          class="v-icon notranslate mdi mdi-menu-down theme--light"
+                        />
+                      </div>
+                    </div>
+                    <input
+                      type="hidden"
+                      value="10"
+                    />
+                  </div>
+                  <div
+                    class="v-menu"
+                  >
+                    <!---->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="v-data-footer__pagination"
+          >
+            1-2 of 2
+          </div>
+          <div
+            class="v-data-footer__icons-before"
+          >
+            <button
+              aria-label="Previous page"
+              class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+              disabled="disabled"
+              type="button"
+            >
+              <span
+                class="v-btn__content"
+              >
+                <i
+                  aria-hidden="true"
+                  class="v-icon notranslate mdi mdi-chevron-left theme--light"
+                />
+              </span>
+            </button>
+          </div>
+          <div
+            class="v-data-footer__icons-after"
+          >
+            <button
+              aria-label="Next page"
+              class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+              disabled="disabled"
+              type="button"
+            >
+              <span
+                class="v-btn__content"
+              >
+                <i
+                  aria-hidden="true"
+                  class="v-icon notranslate mdi mdi-chevron-right theme--light"
+                />
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="v-data-table theme--light"
+    >
+      <div
+        class="v-data-table__wrapper"
+      >
+        <table>
+          <colgroup>
+            <col
+              class=""
+            />
+          </colgroup>
+          <thead
+            class="v-data-table-header"
+          >
+            <tr>
+              <th
+                aria-label="Text Name: Not sorted. Activate to sort ascending."
+                aria-sort="none"
+                class="text-start sortable"
+                role="columnheader"
+                scope="col"
+              >
+                <span>
+                  Text Name
+                </span>
+                <i
+                  aria-hidden="true"
+                  class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                  style="font-size: 18px;"
+                />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class=""
+            >
+              <td
+                class="text-start"
+              >
+                <router-link-stub
+                  to="/epigraphies/1"
+                >
+                  CCT 3 31
+                </router-link-stub>
+              </td>
+            </tr>
+            <tr
+              class=""
+            >
+              <td
+                class="text-start"
+              >
+                <router-link-stub
+                  to="/epigraphies/2"
+                >
+                  CCT 1 12b
+                </router-link-stub>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div
+        class="v-data-footer"
+      >
+        <div
+          class="v-data-footer__select"
+        >
+          Rows per page:
+          <div
+            class="v-input v-input--hide-details v-input--is-label-active v-input--is-dirty theme--light v-text-field v-select"
+          >
+            <div
+              class="v-input__control"
+            >
+              <div
+                aria-expanded="false"
+                aria-haspopup="listbox"
+                aria-owns="list-10"
+                class="v-input__slot"
+                role="button"
+              >
+                <div
+                  class="v-select__slot"
+                >
+                  <div
+                    class="v-select__selections"
+                  >
+                    <div
+                      class="v-select__selection v-select__selection--comma"
+                    >
+                      10
+                    </div>
+                    <input
+                      aria-label="$vuetify.dataTable.itemsPerPageText"
+                      aria-readonly="false"
+                      autocomplete="off"
+                      id="input-10"
+                      readonly="readonly"
+                      type="text"
+                    />
+                  </div>
+                  <div
+                    class="v-input__append-inner"
+                  >
+                    <div
+                      class="v-input__icon v-input__icon--append"
+                    >
+                      <i
+                        aria-hidden="true"
+                        class="v-icon notranslate mdi mdi-menu-down theme--light"
+                      />
+                    </div>
+                  </div>
+                  <input
+                    type="hidden"
+                    value="10"
+                  />
+                </div>
+                <div
+                  class="v-menu"
+                >
+                  <!---->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="v-data-footer__pagination"
+        >
+          1-2 of 2
+        </div>
+        <div
+          class="v-data-footer__icons-before"
+        >
+          <button
+            aria-label="Previous page"
+            class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+            disabled="disabled"
+            type="button"
+          >
+            <span
+              class="v-btn__content"
+            >
+              <i
+                aria-hidden="true"
+                class="v-icon notranslate mdi mdi-chevron-left theme--light"
+              />
+            </span>
+          </button>
+        </div>
+        <div
+          class="v-data-footer__icons-after"
+        >
+          <button
+            aria-label="Next page"
+            class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+            disabled="disabled"
+            type="button"
+          >
+            <span
+              class="v-btn__content"
+            >
+              <i
+                aria-hidden="true"
+                class="v-icon notranslate mdi mdi-chevron-right theme--light"
+              />
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "emitted": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "html": [Function],
+  "isUnmounted": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "unmount": [Function],
+  "updateProps": [Function],
+}
+`;

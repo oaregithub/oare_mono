@@ -9,7 +9,8 @@
       <v-row>
         <v-col cols="4" offset="8">
           <v-text-field
-            v-model="search"
+            :value="search"
+            @input="(s) => setSearch(s || '')"
             label="Search"
             single-line
             hide-details
@@ -18,8 +19,10 @@
         </v-col>
       </v-row>
       <TextsTable
-        :page.sync="page"
-        :rows.sync="rows"
+        :page="Number(page)"
+        @update:page="(p) => setPage(String(p))"
+        :rows="Number(rows)"
+        @update:rows="(r) => setRows(String(r))"
         :totalTexts="totalTexts"
         :texts="texts"
         :loading="textsLoading"
@@ -36,14 +39,17 @@ import {
   Ref,
   computed,
   onMounted,
+  PropType,
 } from '@vue/composition-api';
+import Router from 'vue-router';
 import { CollectionResponse, CollectionText } from '@/types/collections';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import TextsTable from './TextsTable.vue';
-import { getLetterGroup } from './utils';
+import { getLetterGroup } from '../CollectionsView/utils';
 import _ from 'underscore';
-import router from '@/router';
-import serverProxy from '@/serverProxy';
+import defaultRouter from '@/router';
+import defaultServerProxy from '@/serverProxy';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   name: 'CollectionTexts',
@@ -54,6 +60,14 @@ export default defineComponent({
     collectionUuid: {
       type: String,
       required: true,
+    },
+    router: {
+      type: Object as PropType<Router>,
+      default: () => defaultRouter,
+    },
+    serverProxy: {
+      type: Object as PropType<typeof defaultServerProxy>,
+      default: () => defaultServerProxy,
     },
   },
 
@@ -76,30 +90,9 @@ export default defineComponent({
     const texts: Ref<CollectionText[]> = ref([]);
     const textsLoading = ref(false);
     const totalTexts = ref(0);
-    const search = ref('');
-    const page = ref(1);
-    const rows = ref(10);
-
-    const updateUrl = () => {
-      let query: { page: string; rows: string; query?: string } = {
-        page: String(page.value),
-        rows: String(rows.value),
-      };
-
-      if (search.value !== '') {
-        query.query = search.value;
-      }
-
-      if (router.currentRoute.name === 'collectionTexts') {
-        router.replace({
-          name: 'collectionTexts',
-          params: {
-            collectionUuid: props.collectionUuid,
-          },
-          query,
-        });
-      }
-    };
+    const [page, setPage] = useQueryParam('page', '1');
+    const [rows, setRows] = useQueryParam('rows', '10');
+    const [search, setSearch] = useQueryParam('query', '');
 
     const getCollectionTexts = async () => {
       if (textsLoading.value) {
@@ -107,11 +100,11 @@ export default defineComponent({
       }
       textsLoading.value = true;
       try {
-        const collectionResp = await serverProxy.getCollectionTexts(
+        const collectionResp = await props.serverProxy.getCollectionTexts(
           props.collectionUuid,
           {
-            page: page.value,
-            rows: rows.value,
+            page: Number(page.value),
+            rows: Number(rows.value),
             query: search.value,
           }
         );
@@ -119,64 +112,35 @@ export default defineComponent({
         texts.value = collectionResp.texts;
       } catch (err) {
         if (err.response && err.response.status === 403) {
-          router.replace({ name: '403' });
+          props.router.replace({ name: '403' });
         }
       } finally {
         textsLoading.value = false;
       }
     };
 
-    watch(
-      () => context.root.$route,
-      () => {
-        if (context.root.$route.name === 'collectionTexts') {
-          getCollectionTexts();
-        }
-      }
-    );
-
     onMounted(async () => {
-      const {
-        root: { $route },
-      } = context;
-      if ($route.query.page) {
-        page.value = Number($route.query.page);
-      } else {
-        page.value = 1;
-      }
-
-      if ($route.query.rows) {
-        rows.value = Number($route.query.rows);
-      }
-
-      if ($route.query.query) {
-        search.value = String($route.query.query);
-      } else {
-        search.value = '';
-      }
-
       loading.value = true;
       collectionName.value = (
-        await serverProxy.getCollectionInfo(props.collectionUuid)
+        await props.serverProxy.getCollectionInfo(props.collectionUuid)
       ).name;
       loading.value = false;
     });
 
+    watch([page, rows], () => {
+      getCollectionTexts();
+    });
+
     watch(
       search,
-      _.debounce(function() {
-        page.value = 1;
-        updateUrl();
-      }, 500)
+      _.debounce(function () {
+        setPage('1');
+        getCollectionTexts();
+      }, 500),
+      {
+        lazy: true,
+      }
     );
-
-    watch(page, () => {
-      updateUrl();
-    });
-
-    watch(rows, () => {
-      updateUrl();
-    });
 
     return {
       collectionName,
@@ -185,9 +149,12 @@ export default defineComponent({
       textsLoading,
       totalTexts,
       search,
+      setSearch,
       breadcrumbItems,
       page,
+      setPage,
       rows,
+      setRows,
     };
   },
 });

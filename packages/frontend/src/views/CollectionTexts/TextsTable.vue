@@ -9,7 +9,7 @@
       'items-per-page-options': [10, 25, 50, 100],
     }"
   >
-    <template v-slot:item.name="{ item }">
+    <template v-slot:[`item.name`]="{ item }">
       <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`">{{
         item.name
       }}</router-link>
@@ -26,7 +26,7 @@ import {
   watch,
   PropType,
 } from '@vue/composition-api';
-import { CollectionResponse } from '@/types/collections';
+import { CollectionResponse, CollectionText } from '@/types/collections';
 export default defineComponent({
   props: {
     loading: {
@@ -34,7 +34,7 @@ export default defineComponent({
       default: false,
     },
     texts: {
-      type: Array,
+      type: Array as PropType<CollectionText[]>,
       required: true,
     },
     totalTexts: {
@@ -62,6 +62,11 @@ export default defineComponent({
       page: props.page,
       itemsPerPage: props.rows,
     });
+
+    watch(
+      () => props.page,
+      () => (searchOptions.value.page = props.page)
+    );
 
     watch(
       () => searchOptions.value.page,
