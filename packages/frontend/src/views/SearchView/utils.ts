@@ -39,7 +39,7 @@ export const updateUrl = (searchOptions: Readonly<SearchOptions>) => {
   router.replace({
     name: router.currentRoute.name || '/',
     query: {
-      ...searchOptions
+      ...searchOptions,
     },
   });
 };
@@ -51,9 +51,7 @@ export const highlightedItem = (item: string, search: string) => {
       item.substring(i, i + search.length).toLowerCase() ===
       search.toLowerCase()
     ) {
-      components.push(
-        `<mark>${item.substring(i, i + search.length)}</mark>`
-      );
+      components.push(`<mark>${item.substring(i, i + search.length)}</mark>`);
       i += search.length - 1;
     } else {
       components.push(item[i]);

@@ -8,7 +8,7 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('OareSubheader test', () => {
-  const createWrapper = (label) =>
+  const createWrapper = label =>
     mount(OareSubheader, {
       vuetify,
       localVue,

@@ -6,7 +6,7 @@
       route="places"
       v-slot:translation
     >
-      {{ "" }}
+      {{ '' }}
     </NamesPlacesDisplay>
   </OareContentView>
 </template>

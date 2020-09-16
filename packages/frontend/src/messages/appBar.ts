@@ -6,7 +6,7 @@ export default {
     search: 'Search',
     welcome: 'Welcome',
     login: 'Login',
-    logout: 'Logout'
+    logout: 'Logout',
   },
   tr: {
     historyDep: 'Tarih Bölümü',
@@ -15,6 +15,6 @@ export default {
     search: 'Arama',
     welcome: 'Hoşgeldiniz',
     login: 'Oturum aç',
-    logout: 'Çıkış Yap'
-  }
+    logout: 'Çıkış Yap',
+  },
 };

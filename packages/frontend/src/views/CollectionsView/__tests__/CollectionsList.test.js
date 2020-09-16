@@ -50,7 +50,7 @@ describe('CollectionsList test', () => {
 
   it('displays A-J texts', () => {
     const { getByText } = createWrapper();
-    ['Adana Museum', 'Istanbul Archaeological Museum'].forEach((name) => {
+    ['Adana Museum', 'Istanbul Archaeological Museum'].forEach(name => {
       expect(getByText(name));
     });
   });
@@ -60,7 +60,7 @@ describe('CollectionsList test', () => {
     const kButton = getByText('K');
 
     await fireEvent.click(kButton);
-    [('Kayseri Museum', 'Kt 08/k')].forEach((name) => {
+    [('Kayseri Museum', 'Kt 08/k')].forEach(name => {
       expect(getByText(name));
     });
   });
@@ -70,7 +70,7 @@ describe('CollectionsList test', () => {
     const lzButton = getByText('L-Z');
 
     await fireEvent.click(lzButton);
-    [('Metropolitan Museum of Art', 'Schoyen Collection')].forEach((name) => {
+    [('Metropolitan Museum of Art', 'Schoyen Collection')].forEach(name => {
       expect(getByText(name));
     });
   });

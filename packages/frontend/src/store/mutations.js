@@ -32,5 +32,5 @@ export default {
     state.markups = {};
     localStorage.clear();
     delete axiosInstance.defaults.headers.common['Authorization'];
-  }
+  },
 };

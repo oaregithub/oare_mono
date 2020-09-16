@@ -78,12 +78,12 @@ export default defineComponent({
   props: {
     router: {
       type: Object as PropType<Router>,
-      default: () => defaultRouter
+      default: () => defaultRouter,
     },
     store: {
       type: Object as PropType<Store<{}>>,
-      default: () => defaultStore
-    }
+      default: () => defaultStore,
+    },
   },
   setup({ store, router }) {
     const user = ref({
@@ -91,7 +91,7 @@ export default defineComponent({
       password: '',
       repeatpassword: '',
       firstname: '',
-      lastname: ''
+      lastname: '',
     });
 
     const formErrors = ref({
@@ -99,12 +99,12 @@ export default defineComponent({
       password: '',
       repeatpassword: '',
       firstname: '',
-      lastname: ''
+      lastname: '',
     });
 
     const errorMsg = ref('');
     const loading = ref({
-      registerButton: false
+      registerButton: false,
     });
 
     const validate = () => {
@@ -114,7 +114,7 @@ export default defineComponent({
         password: '',
         repeatpassword: '',
         firstname: '',
-        lastname: ''
+        lastname: '',
       };
 
       if (user.value.repeatpassword !== user.value.password) {
@@ -149,7 +149,7 @@ export default defineComponent({
         first_name: user.value.firstname,
         last_name: user.value.lastname,
         password: user.value.password,
-        email: user.value.email
+        email: user.value.email,
       };
 
       try {
@@ -167,8 +167,8 @@ export default defineComponent({
       errorMsg,
       loading,
       register,
-      formErrors
+      formErrors,
     };
-  }
+  },
 });
 </script>

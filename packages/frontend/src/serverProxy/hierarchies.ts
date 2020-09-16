@@ -24,5 +24,5 @@ async function getHierarchyChildren(item: {
 
 export default {
   getHierarchyChildren,
-  getBaseHierarchies
+  getBaseHierarchies,
 };

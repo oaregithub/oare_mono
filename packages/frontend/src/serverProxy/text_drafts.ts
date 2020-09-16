@@ -4,7 +4,7 @@ import { TextDraft } from '../types/textDrafts';
 async function createDraft(textUuid: string, content: string) {
   await axios.post('/text_drafts', {
     text_uuid: textUuid,
-    content
+    content,
   });
 }
 
@@ -19,5 +19,5 @@ async function getDrafts(textUuid: string | null = null): Promise<TextDraft[]> {
 
 export default {
   createDraft,
-  getDrafts
+  getDrafts,
 };

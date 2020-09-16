@@ -19,7 +19,7 @@
             class="blue-grey--text text--lighten-3 no_underline"
             href="https://history.byu.edu"
             target="_blank"
-            >{{ i18n.t("appBar.historyDep") }}</a
+            >{{ i18n.t('appBar.historyDep') }}</a
           >
         </div>
         <div class="headline">
@@ -63,12 +63,12 @@
         class="test-login-btn"
         text
         to="/login"
-        >{{ i18n.t("appBar.login") }}</v-btn
+        >{{ i18n.t('appBar.login') }}</v-btn
       >
       <v-menu v-else offset-y>
         <template v-slot:activator="{ on }">
           <v-btn text v-on="on">
-            {{ i18n.t("appBar.welcome") }},
+            {{ i18n.t('appBar.welcome') }},
             {{ $store.getters.user.first_name }}
           </v-btn>
         </template>
@@ -77,7 +77,7 @@
             <v-list-item-title>Dashboard</v-list-item-title>
           </v-list-item>
           <v-list-item @click="logout">
-            <v-list-item-title>{{ i18n.t("appBar.logout") }}</v-list-item-title>
+            <v-list-item-title>{{ i18n.t('appBar.logout') }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>

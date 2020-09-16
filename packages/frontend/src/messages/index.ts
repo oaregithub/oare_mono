@@ -7,36 +7,36 @@ import landing from './landing';
 export default {
   us: {
     search: {
-      ...search.us
+      ...search.us,
     },
     appBar: {
-      ...appBar.us
+      ...appBar.us,
     },
     login: {
-      ...login.us
+      ...login.us,
     },
     register: {
-      ...register.us
+      ...register.us,
     },
     landing: {
-      ...landing.us
-    }
+      ...landing.us,
+    },
   },
   tr: {
     search: {
-      ...search.tr
+      ...search.tr,
     },
     appBar: {
-      ...appBar.tr
+      ...appBar.tr,
     },
     login: {
-      ...login.tr
+      ...login.tr,
     },
     register: {
-      ...register.tr
+      ...register.tr,
     },
     landing: {
-      ...landing.tr
-    }
-  }
+      ...landing.tr,
+    },
+  },
 };

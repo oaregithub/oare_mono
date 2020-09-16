@@ -21,7 +21,7 @@ describe('OareDashboardSidebar', () => {
   });
 
   it('contains expected sidebar links', () => {
-    ['Profile', 'Drafts'].forEach((link) => {
+    ['Profile', 'Drafts'].forEach(link => {
       const linkItem = wrapper.find(`[data-testid="${link}"]`);
       expect(linkItem.text()).toBe(link);
     });

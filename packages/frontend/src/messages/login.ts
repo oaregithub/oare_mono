@@ -5,7 +5,7 @@ export default {
     email: 'Email',
     emailError: 'Please fill in the email field',
     password: 'Password',
-    passwordError: 'Please fill in the password field'
+    passwordError: 'Please fill in the password field',
   },
   tr: {
     signIn: 'Oturum aç',
@@ -13,6 +13,6 @@ export default {
     email: 'E-posta',
     emailError: 'Lütfen e-posta alanını doldurun',
     password: 'Parola',
-    passwordError: 'Lütfen şifre alanını doldurun'
-  }
+    passwordError: 'Lütfen şifre alanını doldurun',
+  },
 };

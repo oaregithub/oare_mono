@@ -108,9 +108,9 @@ export default {
     },
 
     usableSides(usedSide) {
-      const usedSides = this.textData.map((sideData) => sideData.side);
+      const usedSides = this.textData.map(sideData => sideData.side);
       return this.sideTypes.filter(
-        (side) => side === '' || side === usedSide || !usedSides.includes(side)
+        side => side === '' || side === usedSide || !usedSides.includes(side)
       );
     },
   },

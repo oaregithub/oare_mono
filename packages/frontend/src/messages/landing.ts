@@ -11,7 +11,7 @@ export default {
       'Editorial Board: Gojko Barjamovic, Hakan Erol, and Edward Stratford.',
     thanks:
       'OARE graciously thanks the following organizations for previous and/or ongoing support:',
-    contact: 'CONTACT'
+    contact: 'CONTACT',
   },
   tr: {
     description:
@@ -25,6 +25,6 @@ export default {
       'Yayın Kurulu: Gojko Barjamovic, Hakan Erol ve Edward Stratford.',
     thanks:
       'OARE, önceki ve / veya sürekli destek için aşağıdaki kuruluşlara teşekkür eder:',
-    contact: 'İLETİŞİM'
-  }
+    contact: 'İLETİŞİM',
+  },
 };

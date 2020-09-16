@@ -21,52 +21,52 @@ import TextsSearch from '@/views/SearchView/TextsSearch.vue';
 const routes: RouteConfig[] = [
   {
     path: '/',
-    component: LandingPage
+    component: LandingPage,
   },
   {
     path: '/admin',
     name: 'admin',
-    component: AdminView
+    component: AdminView,
   },
   {
     path: '/collections/name/:collectionUuid',
     name: 'collectionTexts',
     component: CollectionTexts,
-    props: true
+    props: true,
   },
   {
     path: '/collections/:letter',
     name: 'collections',
     component: CollectionsView,
-    props: true
+    props: true,
   },
   {
     path: '/epigraphies/:textUuid',
     name: 'epigraphies',
     component: EpigraphyView,
-    props: true
+    props: true,
   },
   {
     path: '/groups/:groupId',
     name: 'groups',
     component: GroupView,
-    props: true
+    props: true,
   },
   {
     path: '/login',
     name: 'login',
-    component: LoginView
+    component: LoginView,
   },
   {
     path: '/register',
     name: 'register',
-    component: RegisterView
+    component: RegisterView,
   },
   {
     path: '/dictionaryWord/:uuid',
     name: 'dictionaryWord',
     component: DictionaryWord,
-    props: true
+    props: true,
   },
   {
     path: '/search',
@@ -76,48 +76,48 @@ const routes: RouteConfig[] = [
       {
         path: 'dictionary',
         name: 'dictionarySearch',
-        component: DictionarySearch
+        component: DictionarySearch,
       },
       {
         path: 'texts',
         name: 'textsSearch',
-        component: TextsSearch
-      }
-    ]
+        component: TextsSearch,
+      },
+    ],
   },
   {
     path: '/dashboard/drafts',
     name: 'dashboardDrafts',
-    component: Drafts
+    component: Drafts,
   },
   {
     path: '/dashboard/profile',
     name: 'dashboardProfile',
-    component: Profile
+    component: Profile,
   },
   {
     path: '/words/:letter',
     name: 'words',
     component: WordsView,
-    props: true
+    props: true,
   },
   {
     path: '/names/:letter',
     name: 'names',
     component: NamesView,
-    props: true
+    props: true,
   },
   {
     path: '/places/:letter',
     name: 'places',
     component: PlacesView,
-    props: true
+    props: true,
   },
   {
     path: '/403',
     name: '403',
-    component: ForbiddenView
-  }
+    component: ForbiddenView,
+  },
 ];
 
 export default routes;

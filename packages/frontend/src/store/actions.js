@@ -48,5 +48,5 @@ export default {
       commit('setEpigraphy', { textUuid, epigraphies });
     }
     return epigraphies;
-  }
+  },
 };

@@ -28,7 +28,7 @@ describe('RegisterView test', () => {
       stubs: ['router-link'],
     });
 
-  const fillInForm = async (wrapper) => {
+  const fillInForm = async wrapper => {
     const firstNameInput = wrapper.find('.test-firstname input');
     await firstNameInput.setValue('First');
 
@@ -45,7 +45,7 @@ describe('RegisterView test', () => {
     await confPasswordInput.setValue('password');
   };
 
-  const submitForm = async (wrapper) => {
+  const submitForm = async wrapper => {
     const registerBtn = wrapper.find('.test-register-btn');
     await registerBtn.trigger('click');
     await flushPromises();
@@ -95,7 +95,7 @@ describe('RegisterView test', () => {
     expect(mockProps.router.push).toHaveBeenCalledWith('/');
   });
 
-  it('doesn\'t submit form if passwords don\'t match', async () => {
+  it("doesn't submit form if passwords don't match", async () => {
     const wrapper = createWrapper();
     await fillInForm(wrapper);
 
@@ -108,7 +108,7 @@ describe('RegisterView test', () => {
     expect(mockProps.router.push).not.toHaveBeenCalled();
   });
 
-  it('doesn\'t submit if password is less than 8 characters', async () => {
+  it("doesn't submit if password is less than 8 characters", async () => {
     const wrapper = createWrapper();
     await fillInForm(wrapper);
 
@@ -121,7 +121,7 @@ describe('RegisterView test', () => {
     expect(mockProps.router.push).not.toHaveBeenCalled();
   });
 
-  it('doesn\'t submit if email is formatted incorrectly', async () => {
+  it("doesn't submit if email is formatted incorrectly", async () => {
     const wrapper = createWrapper();
     await fillInForm(wrapper);
 

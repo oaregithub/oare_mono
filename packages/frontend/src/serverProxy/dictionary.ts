@@ -11,5 +11,5 @@ async function getDictionaryInfo(uuid: string): Promise<WordWithForms> {
 }
 
 export default {
-  getDictionaryInfo
+  getDictionaryInfo,
 };

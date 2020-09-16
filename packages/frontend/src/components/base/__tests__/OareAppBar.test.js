@@ -53,27 +53,33 @@ describe('OareAppBar.vue', () => {
     ).toMatchSnapshot();
   });
 
-  it('doesn\'t show Admin button when user is not admin', () => {
+  it("doesn't show Admin button when user is not admin", () => {
     expect(
-      createWrapper({ isAdmin: false }).find('.test-admin-btn').exists()
+      createWrapper({ isAdmin: false })
+        .find('.test-admin-btn')
+        .exists()
     ).toBe(false);
   });
 
   it('shows Admin button when user is admin', () => {
     expect(
-      createWrapper({ isAdmin: true }).find('.test-admin-btn').exists()
+      createWrapper({ isAdmin: true })
+        .find('.test-admin-btn')
+        .exists()
     ).toBe(true);
   });
 
   it('shows Login button when not logged in', () => {
     expect(
-      createWrapper({ isAuthenticated: false }).find('.test-login-btn').exists()
+      createWrapper({ isAuthenticated: false })
+        .find('.test-login-btn')
+        .exists()
     ).toBe(true);
   });
 
   it('shows Words, Names, and Places when an admin', () => {
     const wrapper = createWrapper({ isAdmin: true, isAuthenticated: true });
-    ['words', 'names', 'places', 'texts', 'search'].forEach((link) => {
+    ['words', 'names', 'places', 'texts', 'search'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
   });
@@ -81,11 +87,11 @@ describe('OareAppBar.vue', () => {
   it('shows only Texts and Search when not an admin', () => {
     const wrapper = createWrapper({ isAdmin: false });
 
-    ['texts', 'search'].forEach((link) => {
+    ['texts', 'search'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
 
-    ['words', 'names', 'places'].forEach((link) => {
+    ['words', 'names', 'places'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(false);
     });
   });
