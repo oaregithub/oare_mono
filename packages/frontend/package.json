@@ -6,8 +6,10 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test": "vue-cli-service test:unit",
-    "prettier": "prettier --write src/**/*.{vue,js,ts}",
-    "lint": "yarn prettier && vue-cli-service lint"
+    "prettier": "prettier --check src/**/*.{vue,js,ts}",
+    "prettier:fix": "prettier --write src/**/*.{vue,js,ts}",
+    "lint": "yarn prettier && vue-cli-service lint --no-fix",
+    "lint:fix": "yarn prettier:fix && vue-cli-service lint"
   },
   "dependencies": {
     "@oare/oare": "^3.1.7",
