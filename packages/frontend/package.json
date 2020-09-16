@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test": "vue-cli-service test:unit",
-    "prettier": "prettier --list-different src/**/*.{vue,js,ts}",
+    "prettier": "prettier --list-different \"src/**/*.{vue,js,ts}\"",
     "prettier:fix": "prettier --write \"src/**/*.{vue,js,ts}\"",
     "lint": "yarn prettier && vue-cli-service lint --no-fix",
     "lint:fix": "yarn prettier:fix && vue-cli-service lint"
@@ -56,7 +56,7 @@
     "sass": "^1.26.3",
     "sass-loader": "^7.1.0",
     "ts-jest": "^25.4.0",
-    "typescript": "^3.5.3",
+    "typescript": "3.5.3",
     "vue-cli-plugin-vuetify": "^0.6.3",
     "vue-jest": "^3.0.5",
     "vue-template-compiler": "^2.5.21",

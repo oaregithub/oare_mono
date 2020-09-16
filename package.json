@@ -2,14 +2,13 @@
   "name": "oare",
   "private": true,
   "scripts": {
-    "start": "cd packages/backend && yarn start",
+    "start": "yarn workspace @oare/backend start",
     "lint": "yarn workspaces run lint",
-    "lint:fix": "cd packages/frontend && yarn lint:fix",
-    "prettier:vue": "prettier --write **/*.{vue,js,ts} --config packages/frontend/.prettierrc",
+    "lint:fix": "yarn workspace @oare/frontend lint:fix",
     "build": "./build.sh",
     "bootstrap": "lerna bootstrap --use-workspaces",
-    "serve": "cd packages/frontend && yarn serve",
-    "test": "cd packages/frontend && yarn test"
+    "serve": "yarn workspace @oare/frontend serve",
+    "test": "yarn workspace @oare/frontend test"
   },
   "workspaces": {
     "packages": [
