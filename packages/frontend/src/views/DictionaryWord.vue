@@ -49,7 +49,7 @@ import {
   ref,
   Ref,
   watch,
-  computed
+  computed,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { WordWithForms, DictionaryForm } from '@/types/dictionary';
@@ -61,8 +61,8 @@ export default defineComponent({
   props: {
     uuid: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   setup(props) {
     const loading = ref(true);
@@ -70,8 +70,8 @@ export default defineComponent({
     const breadcrumbItems: Ref<BreadcrumbItem[]> = ref([
       {
         link: '/words/A',
-        text: 'Dictionary Words'
-      }
+        text: 'Dictionary Words',
+      },
     ]);
 
     const formGrammar = (form: DictionaryForm) => {
@@ -124,14 +124,14 @@ export default defineComponent({
           if (letters.includes(wordInfo.value.word[0].toUpperCase())) {
             breadcrumbItems.value.push({
               link: `/words/${encodeURIComponent(letterGroup)}`,
-              text: letterGroup
+              text: letterGroup,
             });
             break;
           }
         }
         breadcrumbItems.value.push({
           link: null,
-          text: wordInfo.value.word
+          text: wordInfo.value.word,
         });
         loading.value = false;
       }
@@ -140,8 +140,8 @@ export default defineComponent({
       loading,
       wordInfo,
       breadcrumbItems,
-      formGrammar
+      formGrammar,
     };
-  }
+  },
 });
 </script>

@@ -15,8 +15,8 @@ import axios from '../axiosInstance';
 async function getGroupUsers(groupId) {
   let { data: groupUsers } = await axios.get('/user_groups', {
     params: {
-      group_id: groupId
-    }
+      group_id: groupId,
+    },
   });
   return groupUsers;
 }
@@ -29,7 +29,7 @@ async function getGroupUsers(groupId) {
 async function addUsersToGroup(groupId, userIds) {
   await axios.post('/user_groups', {
     group_id: groupId,
-    user_ids: userIds
+    user_ids: userIds,
   });
 }
 
@@ -42,13 +42,13 @@ async function removeUsersFromGroup(groupId, userIds) {
   await axios.delete('/user_groups', {
     params: {
       group_id: groupId,
-      user_ids: userIds
-    }
+      user_ids: userIds,
+    },
   });
 }
 
 export default {
   getGroupUsers,
   addUsersToGroup,
-  removeUsersFromGroup
+  removeUsersFromGroup,
 };

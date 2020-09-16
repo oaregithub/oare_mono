@@ -13,7 +13,7 @@ import axios from '../axiosInstance';
 async function addTextGroups(groupId, textGroups) {
   await axios.post('/text_groups', {
     group_id: groupId,
-    texts: textGroups
+    texts: textGroups,
   });
 }
 
@@ -24,8 +24,8 @@ async function addTextGroups(groupId, textGroups) {
 async function getTextGroups(groupId) {
   let { data } = await axios.get('/text_groups', {
     params: {
-      group_id: groupId
-    }
+      group_id: groupId,
+    },
   });
   return data;
 }
@@ -39,8 +39,8 @@ async function removeTextsFromGroup(groupId, texts) {
   await axios.delete('/text_groups', {
     params: {
       group_id: groupId,
-      texts
-    }
+      texts,
+    },
   });
 }
 
@@ -56,7 +56,7 @@ async function updateText(groupId, textUuid, canRead, canWrite) {
     group_id: groupId,
     text_uuid: textUuid,
     can_read: canRead,
-    can_write: canWrite
+    can_write: canWrite,
   });
 }
 
@@ -64,5 +64,5 @@ export default {
   addTextGroups,
   getTextGroups,
   removeTextsFromGroup,
-  updateText
+  updateText,
 };

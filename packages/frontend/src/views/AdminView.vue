@@ -80,7 +80,7 @@ import {
   ref,
   onMounted,
   watch,
-  Ref
+  Ref,
 } from '@vue/composition-api';
 
 import { GetGroupsType, PostGroupsType } from '../types/groups';
@@ -91,12 +91,12 @@ export default defineComponent({
     const headers = ref([
       {
         text: 'Group Name',
-        value: 'name'
+        value: 'name',
       },
       {
         text: 'Users',
-        value: 'num_users'
-      }
+        value: 'num_users',
+      },
     ]);
     const groups: Ref<GetGroupsType[]> = ref([]);
     const selectedGroups: Ref<GetGroupsType[]> = ref([]);
@@ -133,7 +133,7 @@ export default defineComponent({
           id,
           name: groupName.value,
           created_on: new Date(),
-          num_users: 0
+          num_users: 0,
         });
         addDialog.value = false;
       } catch (err) {
@@ -175,8 +175,8 @@ export default defineComponent({
       submitGroup,
       deleteGroups,
       confirmDeleteDialog,
-      addGroupErrorMsg
+      addGroupErrorMsg,
     };
-  }
+  },
 });
 </script>

@@ -192,8 +192,8 @@ export default {
   name: 'GroupView',
   props: {
     groupId: {
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
@@ -225,7 +225,7 @@ export default {
       textHeaders: [
         { text: 'Text Name', value: 'name' },
         { text: 'Can view?', value: 'can_read' },
-        { text: 'Can edit?', value: 'can_write' }
+        { text: 'Can edit?', value: 'can_write' },
       ],
       selectedWhitelistItems: [],
       addTextGroupsLoading: false,
@@ -236,7 +236,7 @@ export default {
       removeWhitelistLoading: false,
 
       // Data members for updating edit permission on a text
-      loadingEditTexts: [] // A list of indices loading
+      loadingEditTexts: [], // A list of indices loading
     };
   },
 
@@ -247,9 +247,9 @@ export default {
         .filter(user => !groupUserIds.includes(user.id))
         .map(user => ({
           ...user,
-          info: `${user.first_name} ${user.last_name} (${user.email})`
+          info: `${user.first_name} ${user.last_name} (${user.email})`,
         }));
-    }
+    },
   },
 
   methods: {
@@ -308,7 +308,7 @@ export default {
       const textGroups = this.textsToAdd.map(item => ({
         can_read: item.can_read,
         can_write: item.can_write,
-        uuid: item.uuid
+        uuid: item.uuid,
       }));
       this.addTextGroupsLoading = true;
       await serverProxy.addTextGroups(this.groupId, textGroups);
@@ -316,7 +316,7 @@ export default {
       this.textsToAdd.forEach(item => {
         this.viewableTexts.unshift({
           ...item,
-          text_uuid: item.uuid
+          text_uuid: item.uuid,
         });
       });
       this.addTextGroupsLoading = false;
@@ -361,7 +361,7 @@ export default {
       if (!canRead) {
         this.$set(this.textsToAdd[index], 'can_write', false);
       }
-    }
+    },
   },
 
   async mounted() {
@@ -400,7 +400,7 @@ export default {
           this.searchUserInput = '';
         }
       },
-      deep: true
+      deep: true,
     },
 
     searchTextToAdd: {
@@ -415,11 +415,11 @@ export default {
         this.whitelistTextItems = items.map(item => ({
           ...item,
           can_read: true,
-          can_write: false
+          can_write: false,
         }));
         this.whitelistSearchLoading = false;
-      }, 500)
-    }
-  }
+      }, 500),
+    },
+  },
 };
 </script>

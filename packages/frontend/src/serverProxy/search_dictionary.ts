@@ -10,12 +10,12 @@ async function searchDictionary(
     params: {
       search,
       page,
-      rows
-    }
+      rows,
+    },
   });
   return data;
 }
 
 export default {
-  searchDictionary
+  searchDictionary,
 };

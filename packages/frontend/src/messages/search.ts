@@ -11,7 +11,7 @@ export default {
     loadingText: 'Loading items...',
     matchingTexts: 'Matching texts',
     textTitle:
-      'Title of texts to search (can be a substring of the actual title, e.g. CCT)'
+      'Title of texts to search (can be a substring of the actual title, e.g. CCT)',
   },
   tr: {
     searchTexts: 'Metinlerde ara',
@@ -26,6 +26,6 @@ export default {
     loadingText: 'Öğeler yükleniyor...',
     matchingTexts: 'Eşleşen metinler',
     textTitle:
-      'Aranacak metinlerin başlığı (asıl başlığın bir alt dizesi olabilir, örn. CCT)'
-  }
+      'Aranacak metinlerin başlığı (asıl başlığın bir alt dizesi olabilir, örn. CCT)',
+  },
 };

@@ -7,17 +7,17 @@
       :showForms="false"
       :searchFilter="searchFilter"
     >
-      <template #word="{word}">
+      <template #word="{ word }">
         <router-link :to="`/dictionaryWord/${word.uuid}`" class="mr-1">{{
           word.word
         }}</router-link>
       </template>
-      <template #translation="{word}">
+      <template #translation="{ word }">
         <div v-if="word.partsOfSpeech.length > 0" class="mr-1">
-          {{ word.partsOfSpeech.join(", ") }}
+          {{ word.partsOfSpeech.join(', ') }}
         </div>
         <div v-if="word.verbalThematicVowelTypes.length > 0" class="mr-1">
-          {{ ` (${word.verbalThematicVowelTypes.join(", ")})` }}
+          {{ ` (${word.verbalThematicVowelTypes.join(', ')})` }}
         </div>
         <p>
           <span v-for="(tr, idx) in word.translations" :key="idx">
@@ -32,7 +32,7 @@
             >;</span
           >
           <span v-if="word.specialClassifications.length > 0">
-            {{ word.specialClassifications.join(", ") }}
+            {{ word.specialClassifications.join(', ') }}
           </span>
         </p>
       </template>
@@ -66,16 +66,14 @@ export default defineComponent({
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        word.translations.some((tr) =>
-          tr.toLowerCase().includes(lowerSearch)
-        ) ||
-        word.partsOfSpeech.some((pos) =>
+        word.translations.some(tr => tr.toLowerCase().includes(lowerSearch)) ||
+        word.partsOfSpeech.some(pos =>
           pos.toLowerCase().includes(lowerSearch)
         ) ||
-        word.specialClassifications.some((sp) =>
+        word.specialClassifications.some(sp =>
           sp.toLowerCase().includes(lowerSearch)
         ) ||
-        word.verbalThematicVowelTypes.some((vt) =>
+        word.verbalThematicVowelTypes.some(vt =>
           vt.toLowerCase().includes(lowerSearch)
         )
       );

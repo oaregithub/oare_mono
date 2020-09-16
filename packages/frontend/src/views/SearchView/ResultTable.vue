@@ -16,13 +16,13 @@
         {{ item.name }}
       </slot>
     </template>
-    <template #item.translations="{item}">
+    <template #item.translations="{ item }">
       <slot name="item.translations" :item="item">
         {{ item.translations }}
       </slot>
     </template>
 
-    <template #item.matches="{item}">
+    <template #item.matches="{ item }">
       <slot name="item.matches" :item="item">
         <div v-for="(match, index) in item.matches" :key="index">
           {{ match }}

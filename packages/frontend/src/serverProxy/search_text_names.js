@@ -13,12 +13,12 @@ import axios from '../axiosInstance';
 async function searchTextNames(searchText) {
   const { data } = await axios.get('/search_text_names', {
     params: {
-      search: searchText
-    }
+      search: searchText,
+    },
   });
   return data;
 }
 
 export default {
-  searchTextNames
+  searchTextNames,
 };

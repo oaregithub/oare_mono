@@ -5,13 +5,13 @@
     :route="route"
     :searchFilter="searchFilter"
   >
-    <template #translation="{word}" v-if="route === 'names'">
+    <template #translation="{ word }" v-if="route === 'names'">
       <div>
-        {{ word.translation || "(no trans.)" }}
+        {{ word.translation || '(no trans.)' }}
       </div>
     </template>
 
-    <template #forms="{word}">
+    <template #forms="{ word }">
       <div
         v-for="(formInfo, idx) in word.forms"
         :key="idx"
@@ -19,7 +19,7 @@
       >
         <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
         <div class="mr-1">({{ formInfo.cases }})</div>
-        <div>{{ formInfo.spellings.join(", ") }}</div>
+        <div>{{ formInfo.spellings.join(', ') }}</div>
       </div>
     </template>
   </DictionaryDisplay>
@@ -57,11 +57,11 @@ export default defineComponent({
         word.word.toLowerCase().includes(lowerSearch) ||
         (word.translation &&
           word.translation.toLowerCase().includes(lowerSearch)) ||
-        word.forms.some((form) => {
+        word.forms.some(form => {
           return (
             form.form &&
             (form.form.toLowerCase().includes(lowerSearch) ||
-              form.spellings.some((spelling) => {
+              form.spellings.some(spelling => {
                 return spelling && spelling.toLowerCase().includes(lowerSearch);
               }))
           );

@@ -17,5 +17,5 @@ async function getAllUsers() {
 }
 
 export default {
-  getAllUsers
+  getAllUsers,
 };

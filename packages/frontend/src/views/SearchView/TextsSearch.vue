@@ -2,14 +2,14 @@
   <div>
     <v-row>
       <v-col cols="8">
-        {{ $t("search.textTitle") }}
+        {{ $t('search.textTitle') }}
         <v-text-field
           v-model="textTitleSearch"
           placeholder="Text title"
           @keyup.enter="triggerSearch"
           outlined
         />
-        {{ $t("search.characterSequenceDescription") }}
+        {{ $t('search.characterSequenceDescription') }}
         <v-text-field
           v-model="transliterationSearch"
           :placeholder="$t('search.characterSequences')"
@@ -20,7 +20,7 @@
           @click="triggerSearch"
           color="primary"
           :disabled="!canPerformSearch"
-          >{{ $t("search.searchBtnText") }}</v-btn
+          >{{ $t('search.searchBtnText') }}</v-btn
         >
       </v-col>
     </v-row>
@@ -32,7 +32,7 @@
       :rows.sync="rows"
       :headers="headers"
     >
-      <template #item.name="{item}">
+      <template #item.name="{ item }">
         <router-link :to="'/epigraphies/' + item.uuid">
           {{ item.name }}
         </router-link>

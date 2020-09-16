@@ -16,7 +16,7 @@ export default {
     confirmPassword: 'Confirm Password',
     confirmPasswordRequiredError: 'Confirm password is required',
     confirmPasswordMatchError: 'Passwords do not match',
-    requiredField: 'Please fill in all required fields'
+    requiredField: 'Please fill in all required fields',
   },
   tr: {
     register: 'Kayıt ol',
@@ -35,6 +35,6 @@ export default {
     confirmPassword: 'Şifreyi Onayla',
     confirmPasswordRequiredError: 'Parolayı onaylamak gerekiyor',
     confirmPasswordMatchError: 'Parolalar uyuşmuyor',
-    requiredField: 'Lütfen gerekli tüm alanları doldurun'
-  }
+    requiredField: 'Lütfen gerekli tüm alanları doldurun',
+  },
 };

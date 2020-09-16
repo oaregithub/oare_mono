@@ -14,18 +14,18 @@ async function searchTexts(
   } = {
     page,
     rows,
-    textTitle
+    textTitle,
   };
 
   if (searchChars.length > 0) {
     params.characters = searchChars;
   }
   let { data } = await axios.get('/search', {
-    params
+    params,
   });
   return data;
 }
 
 export default {
-  searchTexts
+  searchTexts,
 };

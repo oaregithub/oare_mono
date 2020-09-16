@@ -39,7 +39,7 @@ async function textEpigraphiesGet(textUuid) {
 
 async function addGroup(groupName) {
   let { data } = await axios.post('/group', {
-    group_name: groupName
+    group_name: groupName,
   });
   return data;
 }
@@ -47,13 +47,13 @@ async function addGroup(groupName) {
 async function groupPatch(groupID, newName) {
   await axios.patch('/group', {
     group_id: groupID,
-    new_name: newName
+    new_name: newName,
   });
 }
 
 async function deleteTextPerms(groupId, selectedPermRows) {
   let { data: texts } = await axios.put(`/group_rw/${groupId}`, {
-    user_group_ids: selectedPermRows.map(item => item.text_id)
+    user_group_ids: selectedPermRows.map(item => item.text_id),
   });
   return texts;
 }
@@ -61,7 +61,7 @@ async function deleteTextPerms(groupId, selectedPermRows) {
 async function insertTextPerms(groupId, addTexts) {
   let { data: texts } = await axios.post('/group_rw', {
     group_id: Number(groupId),
-    texts: addTexts
+    texts: addTexts,
   });
   return texts;
 }
@@ -111,5 +111,5 @@ export default {
   ...discourses,
   ...places,
   ...words,
-  ...searchDictionary
+  ...searchDictionary,
 };

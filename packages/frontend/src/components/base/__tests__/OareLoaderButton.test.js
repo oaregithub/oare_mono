@@ -8,7 +8,7 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('OareLoaderButton test', () => {
-  const createWrapper = (loading) =>
+  const createWrapper = loading =>
     mount(OareLoaderButton, {
       localVue,
       vuetify,

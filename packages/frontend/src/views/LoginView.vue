@@ -65,12 +65,12 @@ export default defineComponent({
   props: {
     router: {
       type: Object as PropType<Router>,
-      default: () => defaultRouter
+      default: () => defaultRouter,
     },
     store: {
       type: Object as PropType<Store<{}>>,
-      default: () => defaultStore
-    }
+      default: () => defaultStore,
+    },
   },
   beforeRouteEnter,
   setup({ router, store }) {
@@ -84,7 +84,7 @@ export default defineComponent({
       errorMsg.value = '';
       let userData = {
         email: email.value,
-        password: password.value
+        password: password.value,
       };
 
       try {
@@ -101,8 +101,8 @@ export default defineComponent({
       password,
       errorMsg,
       loadings,
-      logIn
+      logIn,
     };
-  }
+  },
 });
 </script>

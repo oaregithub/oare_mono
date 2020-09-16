@@ -1,7 +1,5 @@
 <template>
-  <OareContentView title="Profile">
-    Coming Soon
-  </OareContentView>
+  <OareContentView title="Profile"> Coming Soon </OareContentView>
 </template>
 
 <script>

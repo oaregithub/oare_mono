@@ -85,13 +85,13 @@ export default defineComponent({
     const wordSearch: Ref<string> = ref(filter.value || '');
 
     const wordsByLetter = computed(() => {
-      return props.wordList.filter((name) => {
+      return props.wordList.filter(name => {
         const groupLetters = AkkadianLetterGroupsUpper[props.letter];
         return groupLetters.includes(name.word[0].toUpperCase());
       });
     });
     const filteredWords = computed(() => {
-      return wordsByLetter.value.filter((word) =>
+      return wordsByLetter.value.filter(word =>
         props.searchFilter(wordSearch.value, word)
       );
     });

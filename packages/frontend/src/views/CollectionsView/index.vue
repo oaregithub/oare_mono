@@ -33,7 +33,7 @@ export default defineComponent({
     const collections: Ref<CollectionListItem[]> = ref([]);
 
     const shownCollections = computed(() =>
-      collections.value.filter((collection) =>
+      collections.value.filter(collection =>
         letterGroups[props.letter].includes(collection.name[0])
       )
     );

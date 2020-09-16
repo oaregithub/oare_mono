@@ -2,7 +2,7 @@ import axios from '../axiosInstance';
 import {
   CollectionResponse,
   CollectionListItem,
-  CollectionInfo
+  CollectionInfo,
 } from '../types/collections';
 
 /**
@@ -24,8 +24,8 @@ async function getCollectionTexts(
     params: {
       page,
       rows,
-      query
-    }
+      query,
+    },
   });
 
   return texts;
@@ -39,5 +39,5 @@ async function getCollectionInfo(uuid: string): Promise<CollectionInfo> {
 export default {
   getAllCollections,
   getCollectionTexts,
-  getCollectionInfo
+  getCollectionInfo,
 };
