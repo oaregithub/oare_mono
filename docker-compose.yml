@@ -24,12 +24,12 @@ services:
     environment:
       - OARE_DB_URL
 
-  frontend:
-    build: .
-    depends_on:
-      - backend
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./packages/frontend:/app/packages/frontend
-      - /app/packages/frontend/node_modules/
+  # frontend:
+  #   build: .
+  #   depends_on:
+  #     - backend
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./packages/frontend:/app/packages/frontend
+  #     - /app/packages/frontend/node_modules/

@@ -15,6 +15,7 @@
             single-line
             hide-details
             clearable
+            class="test-search"
           />
         </v-col>
       </v-row>
@@ -69,6 +70,10 @@ export default defineComponent({
       type: Object as PropType<typeof defaultServerProxy>,
       default: () => defaultServerProxy,
     },
+    // useQueryParam: {
+    //   type: Function as PropType<typeof useQueryParamDefault>,
+    //   default: () => useQueryParamDefault,
+    // },
   },
 
   setup(props, context) {
