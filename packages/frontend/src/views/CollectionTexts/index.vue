@@ -10,7 +10,7 @@
         <v-col cols="4" offset="8">
           <v-text-field
             :value="search"
-            @input="(s) => setSearch(s || '')"
+            @input="s => setSearch(s || '')"
             label="Search"
             single-line
             hide-details
@@ -21,9 +21,9 @@
       </v-row>
       <TextsTable
         :page="Number(page)"
-        @update:page="(p) => setPage(String(p))"
+        @update:page="p => setPage(String(p))"
         :rows="Number(rows)"
-        @update:rows="(r) => setRows(String(r))"
+        @update:rows="r => setRows(String(r))"
         :totalTexts="totalTexts"
         :texts="texts"
         :loading="textsLoading"
@@ -70,13 +70,9 @@ export default defineComponent({
       type: Object as PropType<typeof defaultServerProxy>,
       default: () => defaultServerProxy,
     },
-    // useQueryParam: {
-    //   type: Function as PropType<typeof useQueryParamDefault>,
-    //   default: () => useQueryParamDefault,
-    // },
   },
 
-  setup(props, context) {
+  setup({ router, collectionUuid, serverProxy }, context) {
     const collectionName = ref('');
     const loading = ref(false);
     const letterGroup = computed(() =>
@@ -95,6 +91,7 @@ export default defineComponent({
     const texts: Ref<CollectionText[]> = ref([]);
     const textsLoading = ref(false);
     const totalTexts = ref(0);
+
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
@@ -105,8 +102,8 @@ export default defineComponent({
       }
       textsLoading.value = true;
       try {
-        const collectionResp = await props.serverProxy.getCollectionTexts(
-          props.collectionUuid,
+        const collectionResp = await serverProxy.getCollectionTexts(
+          collectionUuid,
           {
             page: Number(page.value),
             rows: Number(rows.value),
@@ -117,7 +114,7 @@ export default defineComponent({
         texts.value = collectionResp.texts;
       } catch (err) {
         if (err.response && err.response.status === 403) {
-          props.router.replace({ name: '403' });
+          router.replace({ name: '403' });
         }
       } finally {
         textsLoading.value = false;
@@ -127,7 +124,7 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       collectionName.value = (
-        await props.serverProxy.getCollectionInfo(props.collectionUuid)
+        await serverProxy.getCollectionInfo(collectionUuid)
       ).name;
       loading.value = false;
     });
@@ -138,7 +135,7 @@ export default defineComponent({
 
     watch(
       search,
-      _.debounce(function () {
+      _.debounce(function() {
         setPage('1');
         getCollectionTexts();
       }, 500),

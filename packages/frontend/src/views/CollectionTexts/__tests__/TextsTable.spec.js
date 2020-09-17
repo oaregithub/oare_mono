@@ -3,7 +3,6 @@ import VueCompositionApi from '@vue/composition-api';
 import { render } from '@testing-library/vue';
 import { createLocalVue } from '@vue/test-utils';
 import TextsTable from '../TextsTable.vue';
-import flushPromises from 'flush-promises';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -48,8 +47,8 @@ describe('TextsTable test', () => {
     const { getByText } = createWrapper();
 
     texts
-      .map((t) => t.name)
-      .forEach((name) => {
+      .map(t => t.name)
+      .forEach(name => {
         expect(getByText(name));
       });
   });
