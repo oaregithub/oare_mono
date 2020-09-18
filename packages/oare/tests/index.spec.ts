@@ -1,5 +1,12 @@
-import { createTabletRenderer, TabletRenderer } from '../src/index';
-import { endsWithSuperscript, wordWithoutSuperscript } from '../src/TabletHtmlRenderer';
+import {
+  createTabletRenderer,
+  EpigraphicUnit,
+  TabletRenderer,
+} from '../src/index';
+import {
+  endsWithSuperscript,
+  wordWithoutSuperscript,
+} from '../src/TabletHtmlRenderer';
 import units from '../mock/units';
 import markupUnits from '../mock/markups';
 import anor67units from '../mock/anor67units';
@@ -18,9 +25,9 @@ describe('Tablet renderer', () => {
 
   test('correctly returns lines on side', () => {
     // Lines 1..23
-    const obvLines = (new Array(23)).fill(null).map((_, i) => i + 1);
+    const obvLines = new Array(23).fill(null).map((_, i) => i + 1);
     // Lines 24..38
-    const revLines = (new Array(15)).fill(null).map((_, i) => i + 24);
+    const revLines = new Array(15).fill(null).map((_, i) => i + 24);
 
     expect(renderer.linesOnSide('obv.')).toEqual(obvLines);
     expect(renderer.linesOnSide('rev.')).toEqual(revLines);
@@ -119,8 +126,46 @@ describe('html renderer', () => {
   });
 
   test('it renders with html', () => {
-    const reading = 'KIŠIB <em>k</em><em>u</em>-<em>k</em><em>u</em>-<em>z</em><em>i</em> DUMU <em>ṣ</em><em>é</em>-<em>e</em><em>ḫ</em>-<em>r</em><em>i</em>-<em>ì</em>-<em>l</em><em>í</em>';
+    const reading =
+      'KIŠIB <em>k</em><em>u</em>-<em>k</em><em>u</em>-<em>z</em><em>i</em> DUMU <em>ṣ</em><em>é</em>-<em>e</em><em>ḫ</em>-<em>r</em><em>i</em>-<em>ì</em>-<em>l</em><em>í</em>';
     expect(renderer.lineReading(1)).toBe(reading);
+  });
+
+  describe('characters missing discourses', () => {
+    const highlightUnits: EpigraphicUnit[] = [
+      {
+        uuid: '1520a1b4-8aee-4c07-b2db-7d398271d8c8',
+        column: 0,
+        line: 1,
+        charOnLine: 1,
+        charOnTablet: 1,
+        discourseUuid: null,
+        reading: '2',
+        type: 'number',
+        value: '2',
+        side: 'obv.',
+      },
+    ];
+
+    const makeRenderer = (admin: boolean) =>
+      createTabletRenderer(highlightUnits, [], {
+        textFormat: 'html',
+        admin,
+      });
+
+    test('it highlights characters without discourses for admins', () => {
+      renderer = makeRenderer(true);
+
+      expect(renderer.lineReading(1)).toBe(
+        '<mark style="background-color: #ffb3b3">2</mark>',
+      );
+    });
+
+    it("it doesn't highlight characters for non admins", () => {
+      renderer = makeRenderer(false);
+
+      expect(renderer.lineReading(1)).toBe('2');
+    });
   });
 
   describe('ends with superscript', () => {
@@ -151,6 +196,8 @@ describe('html renderer', () => {
     const htmlRenderer = createTabletRenderer(anor67units, anor67markups, {
       textFormat: 'html',
     });
-    expect(htmlRenderer.lineReading(11)).toBe('[...] <em>a</em><sup>?</sup>-<em>g</em><em>i</em><em>₅</em>-<em>a</em> | <em>a</em>-<em>a</em>-<em>a</em><em>m</em>%');
+    expect(htmlRenderer.lineReading(11)).toBe(
+      '[...] <em>a</em><sup>?</sup>-<em>g</em><em>i</em><em>₅</em>-<em>a</em> | <em>a</em>-<em>a</em>-<em>a</em><em>m</em>%',
+    );
   });
 });

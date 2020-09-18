@@ -9,3 +9,4 @@ build
 !.elasticbeanstalk/*.global.yml
 mysql
 .eslintcache
+jest_html_reporters.html
