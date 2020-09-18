@@ -248,6 +248,7 @@ export default defineComponent({
 
         renderer.value = createTabletRenderer(epigUnits, markupUnits, {
           textFormat: 'html',
+          admin: store.getters.isAdmin,
         });
 
         discourseUnits.value = await server.getDiscourseUnits(textUuid);
