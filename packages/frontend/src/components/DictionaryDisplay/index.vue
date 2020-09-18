@@ -11,7 +11,12 @@
       >{{ lett }}</v-btn
     >
     <v-col cols="12" sm="6" md="4">
-      <v-text-field v-model="wordSearch" placeholder="Filter words" clearable />
+      <v-text-field
+        :value="wordSearch"
+        @input="setWordSearch"
+        placeholder="Filter words"
+        clearable
+      />
     </v-col>
     <div v-for="wordInfo in filteredWords" :key="wordInfo.uuid" class="mb-3">
       <div class="d-flex">
@@ -40,6 +45,7 @@ import {
   watch,
   PropType,
 } from '@vue/composition-api';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export interface DisplayableWord {
   uuid: string;
@@ -71,18 +77,8 @@ export default defineComponent({
     },
   },
   setup(props, context) {
-    const filter = computed(() => {
-      const {
-        root: {
-          $route: {
-            query: { filter },
-          },
-        },
-      } = context;
-      return filter ? String(filter) : '';
-    });
     const letters = ref(Object.keys(AkkadianLetterGroupsUpper));
-    const wordSearch: Ref<string> = ref(filter.value || '');
+    const [wordSearch, setWordSearch] = useQueryParam('filter', '');
 
     const wordsByLetter = computed(() => {
       return props.wordList.filter(name => {
@@ -99,25 +95,9 @@ export default defineComponent({
 
     watch(
       () => props.letter,
-      () => (wordSearch.value = ''),
+      () => setWordSearch(''),
       {
         lazy: true,
-      }
-    );
-
-    watch(wordSearch, () => {
-      context.root.$router.replace({
-        path: context.root.$route.path,
-        query: {
-          filter: wordSearch.value,
-        },
-      });
-    });
-
-    watch(
-      () => context.root.$route.query,
-      () => {
-        wordSearch.value = filter.value;
       }
     );
 
@@ -125,6 +105,7 @@ export default defineComponent({
       letters,
       encodedLetter,
       wordSearch,
+      setWordSearch,
       filteredWords,
     };
   },
