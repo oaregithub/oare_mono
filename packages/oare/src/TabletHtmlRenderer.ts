@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import TabletRenderer from './TabletRenderer';
 import { EpigraphicUnit, MarkupUnit } from './index';
 
@@ -52,9 +53,12 @@ export function wordWithoutSuperscript(word: string): string {
 export default class TabletHtmlRenderer extends TabletRenderer {
   private renderer: TabletRenderer | null = null;
 
-  constructor(renderer: TabletRenderer) {
+  private admin: boolean;
+
+  constructor(renderer: TabletRenderer, admin: boolean) {
     super(renderer.getEpigraphicUnits(), renderer.getMarkupUnits());
     this.renderer = renderer;
+    this.admin = admin;
   }
 
   markedUpEpigraphicReading(unit: EpigraphicUnit): string {
@@ -71,7 +75,7 @@ export default class TabletHtmlRenderer extends TabletRenderer {
       }
     }
 
-    if (unit.discourseUuid === null && unit.reading !== '|') {
+    if (this.admin && unit.discourseUuid === null && unit.reading !== '|') {
       baseReading = `<mark style="background-color: #ffb3b3">${baseReading}</mark>`;
     }
     return baseReading;
@@ -80,10 +84,13 @@ export default class TabletHtmlRenderer extends TabletRenderer {
   lineReading(lineNum: number) {
     if (this.renderer) {
       this.renderer[
-        'markedUpEpigraphicReading' // eslint-disable-line dot-notation
+        'markedUpEpigraphicReading'
       ] = this.markedUpEpigraphicReading;
-      this.renderer['applySingleMarkup'] = this.applySingleMarkup; // eslint-disable-line
-      return this.renderer.lineReading(lineNum);
+      this.renderer['applySingleMarkup'] = this.applySingleMarkup;
+
+      // Intermediate steps are being overridden. We need to supply
+      // the renderer with HtmlRenderer's this object
+      return this.renderer.lineReading.call(this, lineNum);
     }
     throw new Error('Undefined renderer passed to render decorator');
   }

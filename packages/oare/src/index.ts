@@ -83,6 +83,7 @@ export interface TextFormatOptions {
 export interface CreateTabletRendererOptions {
   lineNumbers?: boolean;
   textFormat?: TextFormatType;
+  admin?: boolean;
 }
 
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûwz';
@@ -121,11 +122,12 @@ const createTabletRenderer = (
   {
     textFormat = 'regular',
     lineNumbers = false,
+    admin = false,
   }: CreateTabletRendererOptions = {},
 ): TabletRenderer => {
   let renderer = new TabletRenderer(epigraphicUnits, markupUnits);
   if (textFormat === 'html') {
-    renderer = new TabletHtmlRenderer(renderer);
+    renderer = new TabletHtmlRenderer(renderer, admin);
   }
   if (lineNumbers) {
     renderer = new TabletLineNumRenderer(renderer);
