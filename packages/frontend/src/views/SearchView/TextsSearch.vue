@@ -36,7 +36,7 @@
       @update:rows="r => setRows(String(r))"
       :headers="headers"
     >
-      <template #item.name="{ item }">
+      <template #[`item.name`]="{ item }">
         <router-link :to="'/epigraphies/' + item.uuid">
           {{ item.name }}
         </router-link>

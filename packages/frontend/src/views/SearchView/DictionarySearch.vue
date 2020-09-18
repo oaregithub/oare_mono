@@ -4,15 +4,16 @@
       <v-col cols="8">
         Search lemma, forms, and translations
         <v-text-field
-          v-model="dictionarySearch"
+          :value="dictionarySearch"
+          @input="setDictionarySearch"
           placeholder="Dictionary"
           outlined
-          @keyup.enter.native="triggerSearch"
+          @keyup.enter.native="performSearch"
         />
         <v-btn
           color="primary"
           :disabled="!canSearch || searchLoading"
-          @click="triggerSearch"
+          @click="performSearch"
           >Search</v-btn
         >
       </v-col>
@@ -22,11 +23,13 @@
       :totalSearchResults="totalResults"
       :searchResults="searchResults"
       :loading="searchLoading"
-      :page.sync="page"
-      :rows.sync="rows"
+      :page="Number(page)"
+      @update:page="p => setPage(String(p))"
+      :rows="Number(rows)"
+      @update:rows="r => setRows(String(r))"
       :headers="headers"
     >
-      <template #item.name="{ item }">
+      <template #[`item.name`]="{ item }">
         <router-link
           v-if="wordLink(item)"
           :to="wordLink(item)"
@@ -35,7 +38,7 @@
         </router-link>
       </template>
 
-      <template #item.translations="{ item }">
+      <template #[`item.translations`]="{ item }">
         <div v-if="item.translations.length === 0" />
         <div
           v-for="(translation, idx) in item.translations"
@@ -44,7 +47,7 @@
         ></div>
       </template>
 
-      <template #item.matches="{ item }">
+      <template #[`item.matches`]="{ item }">
         <div
           v-for="(match, index) in item.matches"
           :key="index"
@@ -62,12 +65,14 @@ import {
   Ref,
   computed,
   watch,
+  onMounted,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { DictionarySearchRow } from '@/types/search_dictionary';
 import ResultTable from './ResultTable.vue';
 import server from '@/serverProxy';
-import { updateUrl, highlightedItem } from './utils';
+import { highlightedItem } from './utils';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   name: 'DictionarySearch',
@@ -75,12 +80,16 @@ export default defineComponent({
     ResultTable,
   },
   setup(props, context) {
-    const dictionarySearch = ref('');
     const totalResults = ref(0);
     const searchResults: Ref<DictionarySearchRow[]> = ref([]);
     const searchLoading = ref(false);
-    const page = ref(1);
-    const rows = ref(10);
+
+    const [dictionarySearch, setDictionarySearch] = useQueryParam(
+      'dictionary',
+      ''
+    );
+    const [page, setPage] = useQueryParam('page', '1');
+    const [rows, setRows] = useQueryParam('rows', '10');
     const lastSearch = ref('');
     const canSearch = computed(() => {
       return dictionarySearch.value.trim() !== '';
@@ -106,8 +115,8 @@ export default defineComponent({
         lastSearch.value = dictionarySearch.value;
         const searchResult = await server.searchDictionary(
           dictionarySearch.value,
-          page.value,
-          rows.value
+          Number(page.value),
+          Number(rows.value)
         );
         totalResults.value = searchResult.totalRows;
         searchResults.value = searchResult.results;
@@ -115,23 +124,9 @@ export default defineComponent({
       }
     };
 
-    const queryUrl = computed(() => ({
-      page: String(page.value),
-      rows: String(rows.value),
-      dictionary: dictionarySearch.value,
-    }));
+    onMounted(performSearch);
 
-    watch(page, () => updateUrl(queryUrl.value), { lazy: true });
-    watch(rows, () => updateUrl(queryUrl.value), { lazy: true });
-
-    const triggerSearch = async () => {
-      if (canSearch.value) {
-        updateUrl({
-          ...queryUrl.value,
-          page: '1',
-        });
-      }
-    };
+    watch([page, rows], performSearch, { lazy: true });
 
     const getWordGroup = (word: string) => {
       for (const [group, groupLetters] of Object.entries(
@@ -157,34 +152,19 @@ export default defineComponent({
       return null;
     };
 
-    watch(
-      () => context.root.$route.query,
-      () => {
-        const {
-          root: {
-            $route: { query },
-          },
-        } = context;
-        dictionarySearch.value = query.dictionary
-          ? String(query.dictionary)
-          : '';
-        page.value = query.page ? Number(query.page) : 1;
-        rows.value = query.rows ? Number(rows.value) : 10;
-        performSearch();
-      },
-      { deep: true }
-    );
-
     return {
       dictionarySearch,
+      setDictionarySearch,
       canSearch,
       totalResults,
       searchResults,
-      triggerSearch,
+      performSearch,
       highlightedItem,
       searchLoading,
       page,
+      setPage,
       rows,
+      setRows,
       headers,
       lastSearch,
       wordLink,
