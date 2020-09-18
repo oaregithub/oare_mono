@@ -4,14 +4,16 @@
       <v-col cols="8">
         {{ $t('search.textTitle') }}
         <v-text-field
-          v-model="textTitleSearch"
+          :value="textTitleSearch"
+          @input="setTextTitleSearch"
           placeholder="Text title"
           @keyup.enter="searchTexts"
           outlined
         />
         {{ $t('search.characterSequenceDescription') }}
         <v-text-field
-          v-model="transliterationSearch"
+          :value="translitSearch"
+          @input="setTranslitSearch"
           :placeholder="$t('search.characterSequences')"
           @keyup.enter="searchTexts"
           outlined
@@ -50,6 +52,7 @@ import {
   Ref,
   computed,
   watch,
+  onMounted,
 } from '@vue/composition-api';
 import { SearchResultRow, SearchResult } from '@/types/search';
 import { updateUrl, formattedSearchCharacter } from './utils';
@@ -65,10 +68,11 @@ export default defineComponent({
   },
   setup(props, context) {
     const searchResults: Ref<SearchResultRow[]> = ref([]);
-    const textTitleSearch = ref('');
-    const transliterationSearch = ref('');
     const searchLoading = ref(false);
     const totalSearchResults = ref(0);
+
+    const [translitSearch, setTranslitSearch] = useQueryParam('translit', '');
+    const [textTitleSearch, setTextTitleSearch] = useQueryParam('title', '');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [page, setPage] = useQueryParam('page', '1');
 
@@ -84,7 +88,7 @@ export default defineComponent({
     ]);
 
     const searchCharsArray = computed(() => {
-      let chars = transliterationSearch.value
+      let chars = translitSearch.value
         .trim()
         .split(/[\s\-.]+/)
         .map(formattedSearchCharacter);
@@ -96,17 +100,12 @@ export default defineComponent({
     });
 
     const canPerformSearch = computed(() => {
-      return transliterationSearch.value.trim() || textTitleSearch.value.trim();
+      return translitSearch.value.trim() || textTitleSearch.value.trim();
     });
 
-    const queryUrl = computed(() => ({
-      page: String(page.value),
-      rows: String(rows.value),
-      title: textTitleSearch.value,
-      query: transliterationSearch.value,
-    }));
-
     const searchTexts = async () => {
+      if (!canPerformSearch.value) return;
+
       searchLoading.value = true;
       let { totalRows, results }: SearchResult = await server.searchTexts(
         [...searchCharsArray.value],
@@ -123,20 +122,16 @@ export default defineComponent({
       searchLoading.value = false;
     };
 
-    watch(
-      [page, rows],
-      () => {
-        if (canPerformSearch.value) {
-          searchTexts();
-        }
-      },
-      { lazy: true }
-    );
+    watch([page, rows], searchTexts, { lazy: true });
+
+    onMounted(searchTexts);
 
     return {
       searchResults,
       textTitleSearch,
-      transliterationSearch,
+      setTextTitleSearch,
+      translitSearch,
+      setTranslitSearch,
       searchLoading,
       totalSearchResults,
       canPerformSearch,
