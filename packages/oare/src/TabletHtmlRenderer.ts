@@ -58,17 +58,21 @@ export default class TabletHtmlRenderer extends TabletRenderer {
   }
 
   markedUpEpigraphicReading(unit: EpigraphicUnit): string {
-    const baseReading = super.markedUpEpigraphicReading(unit);
+    let baseReading = super.markedUpEpigraphicReading(unit);
     if (unit.type === 'determinative') {
-      return `<sup>${baseReading}</sup>`;
+      baseReading = `<sup>${baseReading}</sup>`;
     }
     if (unit.type === 'phonogram' && unit.reading !== '...') {
       if (endsWithSuperscript(baseReading)) {
         const word = wordWithoutSuperscript(baseReading);
-        return italicize(word) + baseReading.substring(word.length);
+        baseReading = italicize(word) + baseReading.substring(word.length);
+      } else {
+        baseReading = italicize(baseReading);
       }
+    }
 
-      return italicize(baseReading);
+    if (unit.discourseUuid === null && unit.reading !== '|') {
+      baseReading = `<mark style="background-color: #ffb3b3">${baseReading}</mark>`;
     }
     return baseReading;
   }

@@ -111,9 +111,6 @@ export const AkkadianLetterGroupsUpper: { [key: string]: string } = {
   'U/W': 'UŪÛW',
   Z: 'Z',
 };
-// export const AkkadianLetterGroupsLower = AkkadianLetterGroupsUpper.map(
-//   (group) => group.toLowerCase()
-// );
 
 /**
  * Factory function for creating a tablet renderer
