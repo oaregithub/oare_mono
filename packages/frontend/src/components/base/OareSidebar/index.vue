@@ -8,21 +8,21 @@
       class="test-text-input"
       label="Text"
       v-model="text"
-      @keyup.enter.native="$router.push(searchRoute)"
+      @keyup.enter.native="performSearch"
       :disabled="textSearchDisabled"
     />
     <search-field
       class="mt-n3 test-transliteration-input"
       label="Transliteration"
-      v-model="transliteration"
-      @keyup.enter.native="$router.push(searchRoute)"
+      v-model="translit"
+      @keyup.enter.native="performSearch"
       :disabled="textSearchDisabled"
     />
     <search-field
       class="mt-n3 test-words-input"
       label="Words"
-      v-model="dictionary"
-      @keyup.enter.native="$router.push(searchRoute)"
+      v-model="word"
+      @keyup.enter.native="performSearch"
       :disabled="dictionaryDisabled"
     />
     <v-btn color="error" class="mb-3 test-clear-btn" @click="clearSearch"
@@ -31,8 +31,8 @@
     <v-btn
       color="info"
       class="mb-3 test-search-btn"
-      :to="searchRoute"
-      :disabled="Object.keys(searchRoute.query).length < 1"
+      :disabled="!canSearch"
+      @click="performSearch"
       >Search</v-btn
     >
   </div>
@@ -44,6 +44,7 @@ import {
   reactive,
   toRefs,
   computed,
+  ref,
 } from '@vue/composition-api';
 import SearchField from './SearchField.vue';
 import router from '../../../router';
@@ -54,57 +55,71 @@ export default defineComponent({
     SearchField,
   },
   setup() {
-    const inputs = reactive({
-      text: '',
-      transliteration: '',
-      dictionary: '',
-      names: '',
-      periods: '',
-      parse: '',
-    });
+    const text = ref('');
+    const translit = ref('');
+    const word = ref('');
 
-    const textSearchDisabled = computed(() => inputs.dictionary.trim() !== '');
+    const textSearchDisabled = computed(() => word.value.trim() !== '');
     const dictionaryDisabled = computed(() => {
-      return inputs.text.trim() !== '' || inputs.transliteration.trim() !== '';
+      return text.value.trim() !== '' || translit.value.trim() !== '';
     });
 
     const searchQuery = computed(() => {
-      const { text, transliteration, dictionary } = inputs;
-
       if (dictionaryDisabled.value) {
         return {
-          ...(text && { title: text }),
-          ...(transliteration && { query: transliteration }),
+          ...(text && { title: text.value }),
+          ...(translit && { translit: translit.value }),
         };
       } else {
         return {
-          ...(dictionary && { dictionary }),
+          ...(word && { dictionary: word.value }),
         };
       }
     });
 
-    const searchRoute = computed(() => {
+    const performSearch = async () => {
       const routeName = dictionaryDisabled.value
-        ? 'textsSearch'
-        : 'dictionarySearch';
-      return {
-        name: routeName,
-        query: searchQuery.value,
-      };
-    });
+        ? '/search/texts'
+        : '/search/dictionary';
+
+      const { protocol, pathname, host } = window.location;
+      const urlParams = new URLSearchParams();
+
+      if (text.value) {
+        urlParams.set('title', text.value);
+      }
+
+      if (translit.value) {
+        urlParams.set('translit', translit.value);
+      }
+
+      if (word.value) {
+        urlParams.set('dictionary', word.value);
+      }
+
+      const newUrl = `${protocol}//${host}${routeName}?${urlParams.toString()}`;
+      window.location.href = newUrl;
+    };
+
+    const canSearch = computed(
+      () => text.value || translit.value || word.value
+    );
 
     const clearSearch = () => {
-      inputs.text = '';
-      inputs.transliteration = '';
-      inputs.dictionary = '';
+      text.value = '';
+      translit.value = '';
+      word.value = '';
     };
 
     return {
-      ...toRefs(inputs),
-      searchRoute,
+      text,
+      translit,
+      word,
+      performSearch,
       textSearchDisabled,
       dictionaryDisabled,
       clearSearch,
+      canSearch,
     };
   },
 });
