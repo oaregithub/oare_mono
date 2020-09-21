@@ -17,7 +17,8 @@ const useQueryParam = (
 ): [Ref<string>, (val: string) => void] => {
   const param = ref(getQueryStringVal(key) || defaultVal);
 
-  const updateParam = (newVal: string) => {
+  window.addEventListener(`update:${key}`, e => {
+    const { newVal } = (e as CustomEvent).detail;
     param.value = newVal;
 
     const urlParams = getUrlParams();
@@ -33,6 +34,14 @@ const useQueryParam = (
       const newUrl = `${protocol}//${host}${pathname}?${urlParams.toString()}`;
       window.history.pushState({}, '', newUrl);
     }
+  });
+
+  const updateParam = (newVal: string) => {
+    window.dispatchEvent(
+      new CustomEvent(`update:${key}`, {
+        detail: { newVal },
+      })
+    );
   };
 
   return [param, updateParam];
