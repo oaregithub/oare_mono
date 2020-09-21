@@ -1,6 +1,7 @@
 import express from 'express';
 import history from 'connect-history-api-fallback';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 import './envConfig';
 import setupRoutes from './setupRoutes';
 import errorMiddleware from './middlewares/error';
@@ -42,6 +43,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   express.urlencoded({
     extended: true,

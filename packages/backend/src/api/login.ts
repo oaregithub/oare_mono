@@ -23,8 +23,10 @@ router.route('/login').post(async (req, res, next) => {
       return;
     }
 
-    res.json({
-      token: security.createJwt(user.email),
+    const token = security.createJwt(user.email);
+
+    res.cookie('jwt', token, { httpOnly: true }).json({
+      token,
       data: {
         id: user.id,
         first_name: user.firstName,
