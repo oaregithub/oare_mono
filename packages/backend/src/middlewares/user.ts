@@ -6,15 +6,14 @@ import HttpException from '../exceptions/HttpException';
 // Attach user object to each request
 async function attachUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const authHeader = req.header('Authorization');
+    const token = req.cookies.jwt;
 
-    if (!authHeader) {
+    if (!token) {
       req.user = null;
       next();
       return;
     }
 
-    const token = authHeader.split(' ')[1];
     const { email } = jwt.verify(token, process.env.OARE_JWT_TOKEN || '') as User;
     const user = await UserDao.getUserByEmail(email);
     req.user = user;

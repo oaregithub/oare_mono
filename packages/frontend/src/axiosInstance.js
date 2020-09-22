@@ -5,4 +5,5 @@ const host =
 
 export default axios.create({
   baseURL: `${host}/api/v2`,
+  withCredentials: true,
 });

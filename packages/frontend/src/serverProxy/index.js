@@ -18,16 +18,12 @@ import words from './words';
 import searchDictionary from './search_dictionary';
 
 async function registerUser(userData) {
-  let { data } = await axios.post('/register', userData, {
-    withCredentials: true,
-  });
+  let { data } = await axios.post('/register', userData);
   return data;
 }
 
 async function loginUser(userData) {
-  let { data } = await axios.post('/login', userData, {
-    withCredentials: true,
-  });
+  let { data } = await axios.post('/login', userData);
   return data;
 }
 

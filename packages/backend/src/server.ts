@@ -23,8 +23,6 @@ const app = express();
 // Prevent CORS issue inside Docker
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
-    // const origin = req.get('origin');
-
     res.header('Access-Control-Allow-Origin', 'http://localhost:8080');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
