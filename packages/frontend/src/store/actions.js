@@ -8,9 +8,9 @@ export default {
 
   async register({ commit }, userData) {
     try {
-      let { data } = await axiosInstance.post('/register', userData);
-      commit('setUser', data.data);
-      commit('setJwt', data.token);
+      let { data, token } = await serverProxy.registerUser(userData);
+      commit('setUser', data);
+      commit('setJwt', token);
     } catch (err) {
       throw err.response.data.message;
     }

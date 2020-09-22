@@ -25,16 +25,20 @@ router.route('/register').post(async (req, res, next) => {
     const user = await userDao.getUserByEmail(email);
     req.user = user;
 
-    res.status(201).json({
-      token: security.createJwt(user.email),
-      data: {
-        id: user.id,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        email: user.email,
-        is_admin: !!user.isAdmin,
-      },
-    });
+    const token = security.createJwt(user.email);
+    res
+      .cookie('jwt', token)
+      .status(201)
+      .json({
+        token,
+        data: {
+          id: user.id,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          email: user.email,
+          is_admin: !!user.isAdmin,
+        },
+      });
   } catch (err) {
     next(new HttpException(500, err));
   }
