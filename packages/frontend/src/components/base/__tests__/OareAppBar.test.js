@@ -39,6 +39,7 @@ describe('OareAppBar.vue', () => {
           getters: {
             user,
             isAuthenticated,
+            isAdmin,
           },
         },
       },
