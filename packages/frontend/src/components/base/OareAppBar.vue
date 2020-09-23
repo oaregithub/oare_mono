@@ -69,7 +69,7 @@
         <template v-slot:activator="{ on }">
           <v-btn text v-on="on">
             {{ i18n.t('appBar.welcome') }},
-            {{ $store.getters.user.first_name }}
+            {{ $store.getters.user.firstName }}
           </v-btn>
         </template>
         <v-list>

@@ -25,9 +25,13 @@ router.route('/register').post(async (req, res, next) => {
     const user = await userDao.getUserByEmail(email);
     req.user = user;
 
-    const token = security.createJwt(user.email);
+    const expirationSeconds = 24 * 60 * 60;
+    const token = security.createJwt(user.email, expirationSeconds);
     res
-      .cookie('jwt', token)
+      .cookie('jwt', token, {
+        secure: process.env.NODE_ENV !== 'development',
+        expires: new Date(new Date().getTime() + expirationSeconds * 1000),
+      })
       .status(201)
       .json({
         token,

@@ -25,7 +25,7 @@ describe('OareAppBar.vue', () => {
     { isAdmin, isAuthenticated } = { isAdmin: false, isAuthenticated: true }
   ) => {
     const user = {
-      first_name: 'Test',
+      firstName: 'Test',
       last_name: 'User',
       is_admin: isAdmin,
       email: 'test@email.com',
@@ -56,25 +56,19 @@ describe('OareAppBar.vue', () => {
 
   it("doesn't show Admin button when user is not admin", () => {
     expect(
-      createWrapper({ isAdmin: false })
-        .find('.test-admin-btn')
-        .exists()
+      createWrapper({ isAdmin: false }).find('.test-admin-btn').exists()
     ).toBe(false);
   });
 
   it('shows Admin button when user is admin', () => {
     expect(
-      createWrapper({ isAdmin: true })
-        .find('.test-admin-btn')
-        .exists()
+      createWrapper({ isAdmin: true }).find('.test-admin-btn').exists()
     ).toBe(true);
   });
 
   it('shows Login button when not logged in', () => {
     expect(
-      createWrapper({ isAuthenticated: false })
-        .find('.test-login-btn')
-        .exists()
+      createWrapper({ isAuthenticated: false }).find('.test-login-btn').exists()
     ).toBe(true);
   });
 
