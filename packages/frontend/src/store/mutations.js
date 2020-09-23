@@ -10,13 +10,6 @@ export default {
     localStorage.setItem('user', JSON.stringify(user));
   },
 
-  setJwt(state, token) {
-    state.jwt = token;
-    localStorage.setItem('jwt', token);
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer: ${token}`;
-    state.landed = true;
-  },
-
   setMarkup(state, payload) {
     state.markups[payload.textUuid] = payload.markups;
   },
@@ -26,11 +19,9 @@ export default {
   },
 
   logout(state) {
-    state.user = {};
-    state.jwt = '';
+    state.user = null;
     state.epigraphies = {};
     state.markups = {};
     localStorage.clear();
-    delete axiosInstance.defaults.headers.common['Authorization'];
   },
 };

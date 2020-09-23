@@ -18,14 +18,16 @@ export function checkPassword(password: string, checkHash: string) {
   return false;
 }
 
-export function createJwt(email: string) {
+export function createJwt(email: string, expiresIn: number) {
   const signingToken = process.env.OARE_JWT_TOKEN;
 
   if (!signingToken) {
     throw new Error('Missing signature token');
   }
 
-  return jwt.sign({ email }, signingToken, {
-    expiresIn: '1d',
+  const token = jwt.sign({ email }, signingToken, {
+    expiresIn,
   });
+
+  return token;
 }

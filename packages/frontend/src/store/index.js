@@ -1,17 +1,17 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { isValidJwt } from '../utils/index';
+import Cookies from 'js-cookie';
 import mutations from './mutations';
 import actions from './actions';
 import getters from './getters';
+import { isValidJwt } from '../utils/index';
 
 Vue.use(Vuex);
 
 let store = new Vuex.Store({
   state: {
     landed: false,
-    user: {},
-    jwt: '',
+    user: null,
     markups: {},
     epigraphies: {},
   },
@@ -20,10 +20,9 @@ let store = new Vuex.Store({
   getters,
 });
 
-const jwt = localStorage.getItem('jwt');
+const jwt = Cookies.get('jwt');
 const user = JSON.parse(localStorage.getItem('user'));
 if (jwt && isValidJwt(jwt) && user) {
-  store.commit('setJwt', jwt);
   store.commit('setUser', user);
 }
 

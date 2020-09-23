@@ -1,23 +1,17 @@
-import { isValidJwt } from '../utils/index';
-
 export default {
   landed(state) {
     return state.landed;
   },
 
   isAuthenticated(state) {
-    return isValidJwt(state.jwt);
+    return !!state.user;
   },
 
   isAdmin(state) {
-    return state.user.is_admin;
+    return state.user && state.user.is_admin;
   },
 
   user(state) {
     return state.user;
-  },
-
-  jwt(state) {
-    return state.jwt;
   },
 };

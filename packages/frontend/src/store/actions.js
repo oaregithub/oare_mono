@@ -8,9 +8,8 @@ export default {
 
   async register({ commit }, userData) {
     try {
-      let { data } = await axiosInstance.post('/register', userData);
-      commit('setUser', data.data);
-      commit('setJwt', data.token);
+      let { data } = await serverProxy.registerUser(userData);
+      commit('setUser', data);
     } catch (err) {
       throw err.response.data.message;
     }
@@ -19,8 +18,7 @@ export default {
   async login({ commit }, userData) {
     try {
       let response = await serverProxy.loginUser(userData);
-      commit('setUser', response.data);
-      commit('setJwt', response.token);
+      commit('setUser', response);
     } catch (err) {
       throw err.response.data.message;
     }

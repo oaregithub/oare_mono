@@ -25,7 +25,7 @@ describe('OareAppBar.vue', () => {
     { isAdmin, isAuthenticated } = { isAdmin: false, isAuthenticated: true }
   ) => {
     const user = {
-      first_name: 'Test',
+      firstName: 'Test',
       last_name: 'User',
       is_admin: isAdmin,
       email: 'test@email.com',
@@ -39,6 +39,7 @@ describe('OareAppBar.vue', () => {
           getters: {
             user,
             isAuthenticated,
+            isAdmin,
           },
         },
       },

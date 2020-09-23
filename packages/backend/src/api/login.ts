@@ -23,16 +23,21 @@ router.route('/login').post(async (req, res, next) => {
       return;
     }
 
-    res.json({
-      token: security.createJwt(user.email),
-      data: {
+    const expirationSeconds = 24 * 60 * 60;
+    const token = security.createJwt(user.email, expirationSeconds);
+
+    res
+      .cookie('jwt', token, {
+        secure: process.env.NODE_ENV !== 'development',
+        expires: new Date(new Date().getTime() + expirationSeconds * 1000),
+      })
+      .json({
         id: user.id,
-        first_name: user.firstName,
+        firstName: user.firstName,
         last_name: user.lastName,
         email: user.email,
         is_admin: !!user.isAdmin,
-      },
-    });
+      });
   } catch (err) {
     next(new HttpException(500, err));
   }

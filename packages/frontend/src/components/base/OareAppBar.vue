@@ -52,7 +52,7 @@
         </v-list>
       </v-menu>
       <v-btn
-        v-if="$store.getters.user.is_admin"
+        v-if="$store.getters.isAdmin"
         class="mr-2 test-admin-btn"
         text
         to="/admin"
@@ -69,7 +69,7 @@
         <template v-slot:activator="{ on }">
           <v-btn text v-on="on">
             {{ i18n.t('appBar.welcome') }},
-            {{ $store.getters.user.first_name }}
+            {{ $store.getters.user.firstName }}
           </v-btn>
         </template>
         <v-list>
@@ -89,21 +89,21 @@
           class="test-words"
           text
           to="/words/A"
-          v-if="$store.getters.user.is_admin"
+          v-if="$store.getters.isAdmin"
           >Words</v-btn
         >
         <v-btn
           class="test-names"
           text
           to="/names/A"
-          v-if="$store.getters.user.is_admin"
+          v-if="$store.getters.isAdmin"
           >Names</v-btn
         >
         <v-btn
           class="test-places"
           text
           to="/places/A"
-          v-if="$store.getters.user.is_admin"
+          v-if="$store.getters.isAdmin"
           >Places</v-btn
         >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>

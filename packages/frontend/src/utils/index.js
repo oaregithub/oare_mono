@@ -1,5 +1,3 @@
-import Vue from 'vue';
-
 /**
  * Return true if the given JWT token
  * is valid.
