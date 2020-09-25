@@ -1,10 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import Cookies from 'js-cookie';
 import mutations from './mutations';
 import actions from './actions';
 import getters from './getters';
-import { isValidJwt } from '../utils/index';
 
 Vue.use(Vuex);
 
@@ -14,6 +12,7 @@ let store = new Vuex.Store({
     user: null,
     markups: {},
     epigraphies: {},
+    authComplete: false,
   },
   mutations,
   actions,

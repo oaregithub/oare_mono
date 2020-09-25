@@ -14,4 +14,8 @@ export default {
   user(state) {
     return state.user;
   },
+
+  authComplete(state) {
+    return state.authComplete;
+  },
 };
