@@ -16,6 +16,7 @@ describe('OareAppBar.vue', () => {
           return Promise.resolve();
         }
       }),
+      commit: jest.fn(),
     },
     router: {
       push: jest.fn(),
