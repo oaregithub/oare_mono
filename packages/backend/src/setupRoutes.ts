@@ -18,6 +18,8 @@ import searchTextNames from './api/search_text_names';
 import textDrafts from './api/text_drafts';
 import collections from './api/collections';
 import collectionInfo from './api/collection_info';
+import logout from './api/logout';
+import refreshToken from './api/refresh_token';
 
 const API_PATH = '/api/v2';
 
@@ -41,4 +43,6 @@ export default (app: Express) => {
   app.use(API_PATH, textDrafts);
   app.use(API_PATH, collections);
   app.use(API_PATH, collectionInfo);
+  app.use(API_PATH, logout);
+  app.use(API_PATH, refreshToken);
 };

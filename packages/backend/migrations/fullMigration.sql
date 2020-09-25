@@ -42,3 +42,12 @@ UPDATE hierarchy h1
 INNER JOIN hierarchy h2 ON h2.uuid = h1.parent_uuid
 SET h1.published = false
 WHERE h2.published = false;
+
+-- 2020-09-24 Create refresh token table
+
+CREATE TABLE refresh_tokens (
+	id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    token CHAR(36) UNIQUE NOT NULL,
+    expiration DATETIME NOT NULL,
+    ip_address CHAR(16) NOT NULL
+);

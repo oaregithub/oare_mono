@@ -47,4 +47,17 @@ export default {
     }
     return epigraphies;
   },
+
+  async refreshToken({ commit }) {
+    try {
+      const user = await serverProxy.refreshToken();
+      commit('setUser', user);
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        return;
+      }
+
+      throw error;
+    }
+  },
 };

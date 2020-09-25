@@ -10,7 +10,7 @@ async function adminRoute(req: Request, res: Response, next: NextFunction) {
 
     const { user } = req;
     if (!user) {
-      next(new HttpException(400, 'No authorization given for admin restricted route'));
+      next(new HttpException(401, 'No authorization given for admin restricted route'));
       return;
     }
 

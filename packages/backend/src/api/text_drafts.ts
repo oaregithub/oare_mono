@@ -12,7 +12,7 @@ router
       const textUuid = req.query.text_uuid ? (req.query.text_uuid as string) : null;
 
       if (!userId) {
-        next(new HttpException(400, 'You must be an authenticated user to query drafts'));
+        next(new HttpException(401, 'You must be an authenticated user to query drafts'));
         return;
       }
 
