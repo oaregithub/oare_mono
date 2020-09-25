@@ -12,6 +12,7 @@ import loadBases from './loadBases';
 import axiosInstance from './axiosInstance';
 import { NavigationGuard } from 'vue-router';
 import i18n from './i18n';
+import EventBus, { ACTIONS } from '@/EventBus';
 import 'flag-icon-css/css/flag-icon.css';
 
 loadBases();
@@ -25,10 +26,18 @@ Vue.prototype.$axios = axiosInstance;
 const adminRoutes = ['admin', 'groups'];
 const adminGuard: NavigationGuard = (to, _from, next) => {
   if (to.name && adminRoutes.includes(to.name)) {
-    if (!store.getters.isAdmin) {
-      next(false);
+    const navigate = () => {
+      if (!store.getters.isAdmin) {
+        next(false);
+      } else {
+        next();
+      }
+    };
+
+    if (!store.getters.authComplete) {
+      EventBus.$on(ACTIONS.REFRESH, navigate);
     } else {
-      next();
+      navigate();
     }
   } else {
     next();

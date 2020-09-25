@@ -24,4 +24,8 @@ export default {
     state.markups = {};
     localStorage.clear();
   },
+
+  setAuthComplete(state) {
+    state.authComplete = true;
+  },
 };

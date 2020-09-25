@@ -134,6 +134,7 @@ import { Store } from 'vuex';
 import Router from 'vue-router';
 import defaultI18n from '../../i18n/index';
 import serverProxy from '@/serverProxy';
+import EventBus, { ACTIONS } from '@/EventBus';
 
 export default defineComponent({
   name: 'OareAppBar',
@@ -173,6 +174,8 @@ export default defineComponent({
         console.error(error);
       } finally {
         loading.value = false;
+        EventBus.$emit(ACTIONS.REFRESH);
+        store.commit('setAuthComplete');
       }
     });
 
