@@ -87,6 +87,11 @@ async function logout() {
   await axios.get('/logout');
 }
 
+async function refreshToken() {
+  const { data } = await axios.get('/refresh_token');
+  return data;
+}
+
 export default {
   registerUser,
   loginUser,
@@ -117,4 +122,5 @@ export default {
   ...words,
   ...searchDictionary,
   logout,
+  refreshToken,
 };

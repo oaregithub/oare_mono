@@ -1,5 +1,6 @@
 import express from 'express';
 import RefreshTokenDao from './daos/RefreshTokenDao';
+import UserDao from './daos/UserDao';
 import HttpException from '../exceptions/HttpException';
 import { sendJwtCookie } from '../security';
 
@@ -24,7 +25,16 @@ router.route('/refresh_token').get(async (req, res, next) => {
       return;
     }
 
-    (await sendJwtCookie(token.ipAddress, res, token.email)).end();
+    const user = await UserDao.getUserByEmail(token.email);
+    (await sendJwtCookie(token.ipAddress, res, token.email))
+      .json({
+        id: user.id,
+        firstName: user.firstName,
+        last_name: user.lastName,
+        email: user.email,
+        is_admin: !!user.isAdmin,
+      })
+      .end();
   } catch (err) {
     next(new HttpException(500, err));
   }

@@ -2,6 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import OareAppBar from '@/components/base/OareAppBar';
+import flushPromises from 'flush-promises';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -10,7 +11,11 @@ localVue.use(VueCompositionApi);
 describe('OareAppBar.vue', () => {
   const mockProps = {
     store: {
-      dispatch: jest.fn(),
+      dispatch: jest.fn(action => {
+        if (action === 'refreshToken') {
+          return Promise.resolve();
+        }
+      }),
     },
     router: {
       push: jest.fn(),
@@ -21,7 +26,7 @@ describe('OareAppBar.vue', () => {
     },
   };
 
-  const createWrapper = (
+  const createWrapper = async (
     { isAdmin, isAuthenticated } = { isAdmin: false, isAuthenticated: true }
   ) => {
     const user = {
@@ -31,7 +36,7 @@ describe('OareAppBar.vue', () => {
       email: 'test@email.com',
       id: 0,
     };
-    return mount(OareAppBar, {
+    const wrapper = mount(OareAppBar, {
       localVue,
       vuetify,
       mocks: {
@@ -46,47 +51,50 @@ describe('OareAppBar.vue', () => {
       propsData: mockProps,
       stubs: ['router-link'],
     });
+    await flushPromises();
+    return wrapper;
   };
 
-  it('matches snapshot', () => {
-    expect(
-      createWrapper({ isAdmin: false, isAuthenticated: false })
-    ).toMatchSnapshot();
+  it('matches snapshot', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: false,
+      isAuthenticated: false,
+    });
+    expect(wrapper).toMatchSnapshot();
   });
 
-  it("doesn't show Admin button when user is not admin", () => {
-    expect(
-      createWrapper({ isAdmin: false })
-        .find('.test-admin-btn')
-        .exists()
-    ).toBe(false);
+  it('calls refreshToken on load', async () => {
+    await createWrapper();
+    expect(mockProps.store.dispatch).toHaveBeenCalledWith('refreshToken');
   });
 
-  it('shows Admin button when user is admin', () => {
-    expect(
-      createWrapper({ isAdmin: true })
-        .find('.test-admin-btn')
-        .exists()
-    ).toBe(true);
+  it("doesn't show Admin button when user is not admin", async () => {
+    const wrapper = await createWrapper({ isAdmin: false });
+    expect(wrapper.find('.test-admin-btn').exists()).toBe(false);
   });
 
-  it('shows Login button when not logged in', () => {
-    expect(
-      createWrapper({ isAuthenticated: false })
-        .find('.test-login-btn')
-        .exists()
-    ).toBe(true);
+  it('shows Admin button when user is admin', async () => {
+    const wrapper = await createWrapper({ isAdmin: true });
+    expect(wrapper.find('.test-admin-btn').exists()).toBe(true);
   });
 
-  it('shows Words, Names, and Places when an admin', () => {
-    const wrapper = createWrapper({ isAdmin: true, isAuthenticated: true });
+  it('shows Login button when not logged in', async () => {
+    const wrapper = await createWrapper({ isAuthenticated: false });
+    expect(wrapper.find('.test-login-btn').exists()).toBe(true);
+  });
+
+  it('shows Words, Names, and Places when an admin', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: true,
+      isAuthenticated: true,
+    });
     ['words', 'names', 'places', 'texts', 'search'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
   });
 
-  it('shows only Texts and Search when not an admin', () => {
-    const wrapper = createWrapper({ isAdmin: false });
+  it('shows only Texts and Search when not an admin', async () => {
+    const wrapper = await createWrapper({ isAdmin: false });
 
     ['texts', 'search'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);

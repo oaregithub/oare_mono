@@ -21,11 +21,13 @@ exports[`OareAppBar.vue matches snapshot 1`] = `
     </div>
     <div class="spacer"></div>
     <div>
-      <div class="v-menu"><button type="button" class="v-btn v-btn--flat v-btn--icon v-btn--round theme--light v-size--small"><span class="v-btn__content"><span class="flag-icon flag-icon-us"></span></span></button>
+      <div class="d-flex align-center"><button type="button" class="v-btn v-btn--flat v-btn--icon v-btn--round theme--light v-size--small"><span class="v-btn__content"><span class="flag-icon flag-icon-us"></span></span></button>
+        <div class="v-menu">
+          <!---->
+        </div>
         <!---->
+        <router-link-stub class="test-login-btn v-btn v-btn--flat v-btn--router v-btn--text theme--dark v-size--default"><span class="v-btn__content"></span></router-link-stub>
       </div>
-      <!---->
-      <router-link-stub class="test-login-btn v-btn v-btn--flat v-btn--router v-btn--text theme--dark v-size--default"><span class="v-btn__content"></span></router-link-stub>
     </div>
   </div>
   <div class="v-toolbar__extension" style="height: 48px;">

@@ -18,13 +18,17 @@ class RefreshTokenDao {
   }
 
   async insertToken(token: string, expiration: Date, email: string, ipAddress: string) {
-    await knex('refresh_tokens').where({ email }).del();
+    await this.deleteToken(email, ipAddress);
     return knex('refresh_tokens').insert({
       token,
       expiration,
       ip_address: ipAddress,
       email,
     });
+  }
+
+  async deleteToken(email: string, ipAddress: string) {
+    await knex('refresh_tokens').where({ email, ip_address: ipAddress }).del();
   }
 }
 

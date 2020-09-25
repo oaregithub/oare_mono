@@ -32,55 +32,63 @@
 
     <v-spacer />
     <div>
-      <v-menu>
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on" light icon small>
-            <span class="flag-icon" :class="`flag-icon-${i18n.locale}`"></span>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item @click="i18n.locale = 'us'">
-            <v-list-item-title>
-              <span class="flag-icon" :class="`flag-icon-us`"></span> US
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="i18n.locale = 'tr'">
-            <v-list-item-title>
-              <span class="flag-icon" :class="`flag-icon-tr`"></span> TR
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <v-btn
-        v-if="$store.getters.isAdmin"
-        class="mr-2 test-admin-btn"
-        text
-        to="/admin"
-        >Admin</v-btn
-      >
-      <v-btn
-        v-if="!$store.getters.isAuthenticated"
-        class="test-login-btn"
-        text
-        to="/login"
-        >{{ i18n.t('appBar.login') }}</v-btn
-      >
-      <v-menu v-else offset-y>
-        <template v-slot:activator="{ on }">
-          <v-btn text v-on="on">
-            {{ i18n.t('appBar.welcome') }},
-            {{ $store.getters.user.firstName }}
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item @click="$router.push('/dashboard/profile')">
-            <v-list-item-title>Dashboard</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="logout">
-            <v-list-item-title>{{ i18n.t('appBar.logout') }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+      <v-progress-circular v-if="loading" indeterminate />
+      <div class="d-flex align-center" v-else>
+        <v-menu>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" light icon small>
+              <span
+                class="flag-icon"
+                :class="`flag-icon-${i18n.locale}`"
+              ></span>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="i18n.locale = 'us'">
+              <v-list-item-title>
+                <span class="flag-icon" :class="`flag-icon-us`"></span> US
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="i18n.locale = 'tr'">
+              <v-list-item-title>
+                <span class="flag-icon" :class="`flag-icon-tr`"></span> TR
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <v-btn
+          v-if="$store.getters.isAdmin"
+          class="mr-2 test-admin-btn"
+          text
+          to="/admin"
+          >Admin</v-btn
+        >
+        <v-btn
+          v-if="!$store.getters.isAuthenticated"
+          class="test-login-btn"
+          text
+          to="/login"
+          >{{ i18n.t('appBar.login') }}</v-btn
+        >
+        <v-menu v-else offset-y>
+          <template v-slot:activator="{ on }">
+            <v-btn text v-on="on">
+              {{ i18n.t('appBar.welcome') }},
+              {{ $store.getters.user.firstName }}
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="$router.push('/dashboard/profile')">
+              <v-list-item-title>Dashboard</v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="logout">
+              <v-list-item-title>{{
+                i18n.t('appBar.logout')
+              }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </div>
 
     <template #extension>
@@ -114,7 +122,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, PropType } from '@vue/composition-api';
+import {
+  defineComponent,
+  computed,
+  ref,
+  PropType,
+  onMounted,
+} from '@vue/composition-api';
 import VueI18n from 'vue-i18n';
 import { Store } from 'vuex';
 import Router from 'vue-router';
@@ -138,6 +152,7 @@ export default defineComponent({
     },
   },
   setup({ store, router, i18n }, context) {
+    const loading = ref(false);
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
         return 'OARE';
@@ -150,9 +165,21 @@ export default defineComponent({
       serverProxy.logout();
     };
 
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        await store.dispatch('refreshToken');
+      } catch (error) {
+        console.error(error);
+      } finally {
+        loading.value = false;
+      }
+    });
+
     return {
       title,
       logout,
+      loading,
     };
   },
 });
