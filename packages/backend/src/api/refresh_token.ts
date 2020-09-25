@@ -25,6 +25,11 @@ router.route('/refresh_token').get(async (req, res, next) => {
       return;
     }
 
+    if (Date.now() >= token.expiration.getTime()) {
+      next(new HttpException(400, 'Refresh token is expired'));
+      return;
+    }
+
     const user = await UserDao.getUserByEmail(token.email);
     (await sendJwtCookie(token.ipAddress, res, token.email))
       .json({

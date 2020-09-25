@@ -8,13 +8,25 @@ export interface RefreshTokenRow {
   email: string;
 }
 
+export interface RefreshToken {
+  id: number;
+  token: string;
+  expiration: Date;
+  ipAddress: string;
+  email: string;
+}
+
 class RefreshTokenDao {
-  async getTokenInfo(token: string) {
+  async getTokenInfo(token: string): Promise<RefreshToken> {
     const row: RefreshTokenRow = await knex('refresh_tokens')
       .select('id', 'token', 'expiration', 'ip_address AS ipAddress', 'email')
       .first()
       .where({ token });
-    return row;
+
+    return {
+      ...row,
+      expiration: new Date(row.expiration),
+    };
   }
 
   async insertToken(token: string, expiration: Date, email: string, ipAddress: string) {
