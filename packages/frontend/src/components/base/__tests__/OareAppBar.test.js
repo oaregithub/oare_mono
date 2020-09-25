@@ -55,14 +55,6 @@ describe('OareAppBar.vue', () => {
     return wrapper;
   };
 
-  it('matches snapshot', async () => {
-    const wrapper = await createWrapper({
-      isAdmin: false,
-      isAuthenticated: false,
-    });
-    expect(wrapper).toMatchSnapshot();
-  });
-
   it('calls refreshToken on load', async () => {
     await createWrapper();
     expect(mockProps.store.dispatch).toHaveBeenCalledWith('refreshToken');
