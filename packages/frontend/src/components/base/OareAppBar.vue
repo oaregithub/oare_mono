@@ -119,6 +119,7 @@ import VueI18n from 'vue-i18n';
 import { Store } from 'vuex';
 import Router from 'vue-router';
 import defaultI18n from '../../i18n/index';
+import serverProxy from '@/serverProxy';
 
 export default defineComponent({
   name: 'OareAppBar',
@@ -146,6 +147,7 @@ export default defineComponent({
     const logout = () => {
       store.dispatch('logout');
       router.push('/login');
+      serverProxy.logout();
     };
 
     return {

@@ -20,10 +20,4 @@ let store = new Vuex.Store({
   getters,
 });
 
-const jwt = Cookies.get('jwt');
-const user = JSON.parse(localStorage.getItem('user'));
-if (jwt && isValidJwt(jwt) && user) {
-  store.commit('setUser', user);
-}
-
 export default store;

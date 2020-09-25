@@ -83,6 +83,10 @@ async function groupRWGet(groupId) {
   return groupPerms;
 }
 
+async function logout() {
+  await axios.get('/logout');
+}
+
 export default {
   registerUser,
   loginUser,
@@ -112,4 +116,5 @@ export default {
   ...places,
   ...words,
   ...searchDictionary,
+  logout,
 };
