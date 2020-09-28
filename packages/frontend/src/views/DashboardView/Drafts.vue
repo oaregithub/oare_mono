@@ -1,17 +1,16 @@
 <template>
   <OareContentView title="Drafts">
     <v-data-table :headers="headers" :items="drafts" :loading="draftsLoading">
-      <template #item.textName="{ item }">
+      <template #[`item.textName`]="{ item }">
         <router-link
           :to="{
             name: 'epigraphies',
             params: { textUuid: item.textUuid },
-            query: { editing: 1 },
           }"
           >{{ item.textName }}</router-link
         >
       </template>
-      <template #item.updatedAt="{ item }">
+      <template #[`item.updatedAt`]="{ item }">
         {{ dateFormat(item.updatedAt) }}
       </template>
     </v-data-table>

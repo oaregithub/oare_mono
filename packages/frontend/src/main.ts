@@ -10,7 +10,7 @@ import './styles/base.css';
 import vuetify from './plugins/vuetify';
 import loadBases from './loadBases';
 import axiosInstance from './axiosInstance';
-import { NavigationGuard } from 'vue-router';
+import { NavigationGuard, Route } from 'vue-router';
 import i18n from './i18n';
 import EventBus, { ACTIONS } from '@/EventBus';
 import 'flag-icon-css/css/flag-icon.css';
@@ -22,28 +22,40 @@ Vue.use(VueCompositionApi);
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axiosInstance;
 
-// Guard admin routes
-const adminRoutes = ['admin', 'groups'];
-const adminGuard: NavigationGuard = (to, _from, next) => {
-  if (to.name && adminRoutes.includes(to.name)) {
-    const navigate = () => {
-      if (!store.getters.isAdmin) {
-        next(false);
-      } else {
-        next();
-      }
-    };
-
+const guardRoute = (routes: string[], to: Route, callback: Function) => {
+  if (to.name && routes.includes(to.name)) {
     if (!store.getters.authComplete) {
-      EventBus.$on(ACTIONS.REFRESH, navigate);
+      EventBus.$on(ACTIONS.REFRESH, callback);
     } else {
-      navigate();
+      callback();
     }
   } else {
-    next();
+    callback();
   }
 };
 
+// Guard admin routes
+const adminRoutes = ['admin', 'groups'];
+const adminGuard: NavigationGuard = (to, _from, next) => {
+  const navigate = () => {
+    if (!store.getters.isAdmin) {
+      next(false);
+    } else {
+      next();
+    }
+  };
+
+  guardRoute(adminRoutes, to, navigate);
+};
+
+// Non-admin routes where we must first determine auth status before
+// navigating to the route
+const authFirstRoutes = ['epigraphies'];
+const authFirstGuard: NavigationGuard = (to, _from, next) => {
+  guardRoute(authFirstRoutes, to, next);
+};
+
+router.beforeEach(authFirstGuard);
 router.beforeEach(adminGuard);
 
 new Vue({
