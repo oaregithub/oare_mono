@@ -13,15 +13,17 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const user = req.user || null;
 
     // Make sure user has access to the text he wishes to access
-    const blacklist = await textGroupDao.getUserBlacklist(user);
-    if (blacklist.includes(textUuid)) {
-      next(
-        new HttpException(
-          403,
-          'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.',
-        ),
-      );
-      return;
+    if (!user || !user.isAdmin) {
+      const blacklist = await textGroupDao.getUserBlacklist(user);
+      if (blacklist.includes(textUuid)) {
+        next(
+          new HttpException(
+            403,
+            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.',
+          ),
+        );
+        return;
+      }
     }
 
     const textName = await aliasDao.displayAliasNames(textUuid);
@@ -31,7 +33,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
 
     let canWrite: boolean;
     if (user) {
-      canWrite = await textGroupDao.userHasWritePermission(textUuid, user.id);
+      canWrite = user.isAdmin ? true : await textGroupDao.userHasWritePermission(textUuid, user.id);
     } else {
       canWrite = false;
     }
