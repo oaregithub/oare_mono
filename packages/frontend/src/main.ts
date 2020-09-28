@@ -10,7 +10,7 @@ import './styles/base.css';
 import vuetify from './plugins/vuetify';
 import loadBases from './loadBases';
 import axiosInstance from './axiosInstance';
-import { NavigationGuard, Route } from 'vue-router';
+import { NavigationGuard, Route, NavigationGuardNext } from 'vue-router';
 import i18n from './i18n';
 import EventBus, { ACTIONS } from '@/EventBus';
 import 'flag-icon-css/css/flag-icon.css';
@@ -22,7 +22,12 @@ Vue.use(VueCompositionApi);
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axiosInstance;
 
-const guardRoute = (routes: string[], to: Route, callback: Function) => {
+const guardRoute = (
+  routes: string[],
+  to: Route,
+  callback: Function,
+  next: NavigationGuardNext
+) => {
   if (to.name && routes.includes(to.name)) {
     if (!store.getters.authComplete) {
       EventBus.$on(ACTIONS.REFRESH, callback);
@@ -30,7 +35,7 @@ const guardRoute = (routes: string[], to: Route, callback: Function) => {
       callback();
     }
   } else {
-    callback();
+    next();
   }
 };
 
@@ -45,14 +50,14 @@ const adminGuard: NavigationGuard = (to, _from, next) => {
     }
   };
 
-  guardRoute(adminRoutes, to, navigate);
+  guardRoute(adminRoutes, to, navigate, next);
 };
 
 // Non-admin routes where we must first determine auth status before
 // navigating to the route
 const authFirstRoutes = ['epigraphies'];
 const authFirstGuard: NavigationGuard = (to, _from, next) => {
-  guardRoute(authFirstRoutes, to, next);
+  guardRoute(authFirstRoutes, to, next, next);
 };
 
 router.beforeEach(authFirstGuard);
