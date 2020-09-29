@@ -8,6 +8,7 @@ export interface TextDraftRow {
   textUuid: string;
   content: string;
   textName: string;
+  notes: string;
 }
 
 class TextDraftsDao {
@@ -19,7 +20,7 @@ class TextDraftsDao {
     return draft;
   }
 
-  async createDraft(userId: number, textUuid: string, content: string) {
+  async createDraft(userId: number, textUuid: string, content: string, notes: string) {
     const creation = new Date();
     await knex('text_drafts').insert({
       uuid: v4(),
@@ -28,14 +29,16 @@ class TextDraftsDao {
       updated_at: creation,
       text_uuid: textUuid,
       content,
+      notes,
     });
   }
 
-  async updateDraft(draftUuid: string, content: string) {
+  async updateDraft(draftUuid: string, content: string, notes: string) {
     const updated = new Date();
     await knex('text_drafts').where('uuid', draftUuid).update({
       content,
       updated_at: updated,
+      notes,
     });
   }
 
@@ -48,6 +51,7 @@ class TextDraftsDao {
         'text_drafts.text_uuid AS textUuid',
         'text_drafts.content',
         'alias.name AS textName',
+        'notes',
       )
       .innerJoin('hierarchy', 'hierarchy.uuid', 'text_drafts.text_uuid')
       .innerJoin('alias', 'text_drafts.text_uuid', 'alias.reference_uuid')

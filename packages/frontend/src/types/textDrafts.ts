@@ -11,4 +11,5 @@ export interface TextDraft {
   updatedAt: Date;
   uuid: string;
   content: TextDraftSideContent[];
+  notes: string;
 }

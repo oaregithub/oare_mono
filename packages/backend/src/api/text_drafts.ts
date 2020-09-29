@@ -31,15 +31,15 @@ router
         return;
       }
 
-      const { text_uuid: textUuid, content } = req.body;
+      const { text_uuid: textUuid, content, notes } = req.body;
       const draft = await textDraftsDao.getDraft(userId, textUuid);
 
       if (!draft) {
         // Create new draft
-        await textDraftsDao.createDraft(userId, textUuid, content);
+        await textDraftsDao.createDraft(userId, textUuid, content, notes);
       } else {
         // Update existing draft
-        await textDraftsDao.updateDraft(draft.uuid, content);
+        await textDraftsDao.updateDraft(draft.uuid, content, notes);
       }
       res.status(201).end();
     } catch (err) {

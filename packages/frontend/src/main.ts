@@ -55,7 +55,7 @@ const adminGuard: NavigationGuard = (to, _from, next) => {
 
 // Non-admin routes where we must first determine auth status before
 // navigating to the route
-const authFirstRoutes = ['epigraphies'];
+const authFirstRoutes = ['epigraphies', 'dashboardDrafts'];
 const authFirstGuard: NavigationGuard = (to, _from, next) => {
   guardRoute(authFirstRoutes, to, next, next);
 };

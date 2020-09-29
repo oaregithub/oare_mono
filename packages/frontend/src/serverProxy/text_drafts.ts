@@ -1,10 +1,11 @@
 import axios from '../axiosInstance';
 import { TextDraft } from '../types/textDrafts';
 
-async function createDraft(textUuid: string, content: string) {
+async function createDraft(textUuid: string, content: string, notes: string) {
   await axios.post('/text_drafts', {
     text_uuid: textUuid,
     content,
+    notes,
   });
 }
 
