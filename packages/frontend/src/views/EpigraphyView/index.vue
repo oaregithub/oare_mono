@@ -59,6 +59,7 @@
         @save-draft="draftContent = $event"
         @close-editor="toggleEdit"
         :draftSaveLoading.sync="draftSaveLoading"
+        :notes.sync="draftNotes"
       />
     </v-container>
   </OareContentView>
@@ -101,8 +102,8 @@ interface EpigraphyState {
   textName: string;
 }
 
-interface EpigraphyEditorSideData {
-  side: EpigraphicUnitSide;
+export interface EpigraphyEditorSideData {
+  side: EpigraphicUnitSide | string;
   text: string;
 }
 
@@ -153,6 +154,7 @@ export default defineComponent({
     let discourseRenderer: Ref<DiscourseRenderer | null> = ref(null);
     let isEditing: Ref<boolean> = ref(false);
     let draftContent: Ref<EpigraphyEditorSideData[] | null> = ref(null);
+    const draftNotes = ref('');
     let draftSaveLoading: Ref<boolean> = ref(false);
 
     const toggleEdit = () => {
@@ -264,6 +266,7 @@ export default defineComponent({
           if (res.length > 0) {
             // Should only be one entry because it's one text
             draftContent.value = res[0].content;
+            draftNotes.value = res[0].notes;
           }
         }
       } catch (err) {
@@ -289,6 +292,7 @@ export default defineComponent({
       editorSideData,
       draftSaveLoading,
       draftContent,
+      draftNotes,
       discourseUnits,
       discourseRenderer,
       breadcrumbItems,

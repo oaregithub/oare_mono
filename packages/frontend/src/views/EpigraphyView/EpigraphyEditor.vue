@@ -3,13 +3,19 @@
     <div>
       <oare-loader-button
         color="primary"
-        class="mr-2"
+        class="mr-2 test-save"
         :loading="saveLoading"
         @click="createDraft"
         >Save draft</oare-loader-button
       >
       <v-btn color="info" @click="$emit('close-editor')">Close editor</v-btn>
     </div>
+    <v-text-field
+      v-model="notesData"
+      label="Notes"
+      placeholder="Explain why you're making these changes"
+      class="mt-6 test-notes"
+    />
     <div v-for="(sideData, idx) in textData" :key="idx">
       <div class="d-flex justify-space-between align-baseline">
         <v-col cols="6">
@@ -43,16 +49,29 @@
   </div>
 </template>
 
-<script>
-import server from '../../serverProxy';
+<script lang="ts">
+import {
+  defineComponent,
+  PropType,
+  ref,
+  onMounted,
+  computed,
+} from '@vue/composition-api';
+import { EpigraphicUnitSide } from '@oare/oare';
+import { EpigraphyEditorSideData } from './index.vue';
+import defaultServer from '../../serverProxy';
 
-export default {
+export default defineComponent({
   name: 'EpigraphyEditor',
   props: {
     // List of objects with "key" => side
     // and "lines" => list of line readings
     sides: {
-      type: Array,
+      type: Array as PropType<EpigraphyEditorSideData[]>,
+      required: true,
+    },
+    notes: {
+      type: String,
       required: true,
     },
     textUuid: {
@@ -63,64 +82,93 @@ export default {
       type: Boolean,
       default: false,
     },
+    server: {
+      type: Object as PropType<typeof defaultServer>,
+      default: () => defaultServer,
+    },
   },
-  data: () => ({
-    textData: [],
-    saveLoading: false,
-    removeDialog: {
+  setup({ sides, notes, textUuid, draftSaveLoading, server }, { emit }) {
+    const textData = ref<EpigraphyEditorSideData[]>([]);
+    const saveLoading = ref(false);
+    const removeDialog = ref({
       open: false,
-      deleteSide: null,
-    },
-  }),
+      deleteSide: -1,
+    });
+    const notesData = ref(notes);
+    const sideTypes = computed(() => [
+      '',
+      'obv.',
+      'lo.e.',
+      'rev.',
+      'u.e.',
+      'le.e.',
+      'r.e.',
+    ]);
 
-  created() {
-    for (const sideData of this.sides) {
-      this.textData.push({ ...sideData });
-    }
-  },
+    const createDraft = async () => {
+      saveLoading.value = true;
+      await server.createDraft(
+        textUuid,
+        JSON.stringify(textData.value),
+        notesData.value
+      );
+      emit('save-draft', textData.value);
+      emit('update:notes', notesData.value);
+      saveLoading.value = false;
+    };
 
-  methods: {
-    async createDraft() {
-      this.saveLoading = true;
-      await server.createDraft(this.textUuid, JSON.stringify(this.textData));
-      this.$emit('save-draft', this.textData);
-      this.saveLoading = false;
-    },
+    const openRemoveDialog = (sideIdx: number) => {
+      removeDialog.value.open = true;
+      removeDialog.value.deleteSide = sideIdx;
+    };
 
-    openRemoveDialog(side) {
-      this.$set(this.removeDialog, 'open', true);
-      this.$set(this.removeDialog, 'deleteSide', side);
-    },
-
-    removeSide() {
-      const deleteSide = this.removeDialog.deleteSide;
-      this.textData = [
-        ...this.textData.slice(0, deleteSide),
-        ...this.textData.slice(deleteSide + 1),
+    const removeSide = () => {
+      const deleteSide = removeDialog.value.deleteSide;
+      textData.value = [
+        ...textData.value.slice(0, deleteSide),
+        ...textData.value.slice(deleteSide + 1),
       ];
-    },
+    };
 
-    addSide() {
-      this.textData.push({
+    const addSide = () => {
+      textData.value.push({
         side: '',
         text: '',
       });
-    },
+    };
 
-    usableSides(usedSide) {
-      const usedSides = this.textData.map(sideData => sideData.side);
-      return this.sideTypes.filter(
-        side => side === '' || side === usedSide || !usedSides.includes(side)
+    const usableSides = (usedSide: string) => {
+      const usedSides = textData.value.map(sideData => sideData.side);
+      return sideTypes.value.filter(
+        side =>
+          side === '' ||
+          side === usedSide ||
+          !usedSides.includes(side as EpigraphicUnitSide)
       );
-    },
-  },
+    };
 
-  computed: {
-    sideTypes() {
-      return ['', 'obv.', 'lo.e.', 'rev.', 'u.e.', 'le.e.', 'r.e.'];
-    },
+    onMounted(() => {
+      // We'll be making edits, so make a copy of the data
+      // so it isn't updated in the parent
+      for (const sideData of sides) {
+        textData.value.push({ ...sideData });
+      }
+    });
+
+    return {
+      textData,
+      sideTypes,
+      saveLoading,
+      removeDialog,
+      createDraft,
+      openRemoveDialog,
+      removeSide,
+      addSide,
+      usableSides,
+      notesData,
+    };
   },
-};
+});
 </script>
 
 <style></style>

@@ -51,3 +51,10 @@ CREATE TABLE refresh_tokens (
     expiration DATETIME NOT NULL,
     ip_address CHAR(16) NOT NULL
 );
+
+
+-- 2020-09-29 Add notes column to text_drafts table
+ALTER TABLE text_drafts ADD COLUMN notes TEXT;
+UPDATE text_drafts SET notes="";
+
+
