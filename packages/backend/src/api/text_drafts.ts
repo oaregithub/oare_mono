@@ -9,7 +9,7 @@ router
   .get(async (req, res, next) => {
     try {
       const userId = req.user ? req.user.id : null;
-      const textUuid = req.query.text_uuid ? (req.query.text_uuid as string) : null;
+      const textUuid = req.query.textUuid ? (req.query.textUuid as string) : null;
 
       if (!userId) {
         next(new HttpException(401, 'You must be an authenticated user to query drafts'));
@@ -31,7 +31,7 @@ router
         return;
       }
 
-      const { text_uuid: textUuid, content, notes } = req.body;
+      const { textUuid, content, notes } = req.body;
       const draft = await textDraftsDao.getDraft(userId, textUuid);
 
       if (!draft) {
