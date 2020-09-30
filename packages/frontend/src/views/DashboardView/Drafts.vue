@@ -31,7 +31,7 @@ export default defineComponent({
     const drafts: Ref<TextDraft[]> = ref([]);
 
     const dateFormat = (dateStr: string) => {
-      return moment(dateStr).format('MMMM D, YYYY h:ma');
+      return moment(dateStr).format('MMMM D, YYYY h:mm a');
     };
 
     const headers = [
