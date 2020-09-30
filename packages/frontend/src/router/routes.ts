@@ -17,6 +17,7 @@ import NamesView from '../views/NamesView/index.vue';
 import PlacesView from '../views/PlacesView/index.vue';
 import DictionarySearch from '@/views/SearchView/DictionarySearch.vue';
 import TextsSearch from '@/views/SearchView/TextsSearch.vue';
+import TestCdli from './TestCdli.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -117,6 +118,10 @@ const routes: RouteConfig[] = [
     path: '/403',
     name: '403',
     component: ForbiddenView,
+  },
+  {
+    path: '/testCdli',
+    component: TestCdli,
   },
 ];
 
