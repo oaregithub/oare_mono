@@ -8,6 +8,7 @@ export interface EpigraphyResponse {
     uuid: string;
     name: string;
   };
+  cdliNum: string | null;
   units: EpigraphicUnit[];
 }
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {

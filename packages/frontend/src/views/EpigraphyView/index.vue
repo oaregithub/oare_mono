@@ -7,23 +7,37 @@
       <v-btn v-if="!isEditing" color="primary" @click="toggleEdit">Edit</v-btn>
     </template>
     <div v-if="!isEditing">
-      <div v-if="renderer">
-        <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
-          <div class="sideName oare-title mr-4">
-            {{ sideName }}
-          </div>
-          <div>
-            <div
-              v-for="lineNum in renderer.linesOnSide(sideName)"
-              :key="lineNum"
-              class="oare-title"
-            >
-              <sup>{{ lineNum }}.&nbsp;</sup>
-              <span v-html="renderer.lineReading(lineNum)" />
+      <v-row>
+        <v-col cols="6" v-if="renderer">
+          <div
+            v-for="sideName in renderer.sides"
+            :key="sideName"
+            class="d-flex"
+          >
+            <div class="sideName oare-title mr-4">
+              {{ sideName }}
+            </div>
+            <div>
+              <div
+                v-for="lineNum in renderer.linesOnSide(sideName)"
+                :key="lineNum"
+                class="oare-title"
+              >
+                <sup>{{ lineNum }}.&nbsp;</sup>
+                <span v-html="renderer.lineReading(lineNum)" />
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </v-col>
+        <v-col cols="6">
+          <img
+            v-if="cdli"
+            :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
+            @error="cdli = null"
+            height="500"
+          />
+        </v-col>
+      </v-row>
       <p
         v-if="discourseRenderer && isAdmin"
         class="mt-5 oare-title font-weight-regular"
@@ -156,6 +170,7 @@ export default defineComponent({
     let draftContent: Ref<EpigraphyEditorSideData[] | null> = ref(null);
     const draftNotes = ref('');
     let draftSaveLoading: Ref<boolean> = ref(false);
+    const cdli: Ref<string | null> = ref(null);
 
     const toggleEdit = () => {
       isEditing.value = !isEditing.value;
@@ -240,10 +255,12 @@ export default defineComponent({
           units,
           canWrite,
           textName,
+          cdliNum,
         } = await server.getEpigraphicInfo(textUuid);
         let markupUnits = await server.getEpigraphicMarkups(textUuid);
         let epigUnits = units;
 
+        cdli.value = cdliNum;
         if (collectionInfo) {
           collection.value = collectionInfo;
         }
@@ -296,6 +313,7 @@ export default defineComponent({
       discourseColor,
       discourseReading,
       isAdmin,
+      cdli,
     };
   },
 });
