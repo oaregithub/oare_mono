@@ -16,11 +16,14 @@ describe('EpigraphyEditor test', () => {
       createDraft: jest.fn().mockResolvedValue(null),
     },
   };
-  const createWrapper = () =>
+  const createWrapper = (propsData = mockProps) =>
     mount(EpigraphyEditor, {
       vuetify,
       localVue,
-      propsData: mockProps,
+      propsData: {
+        ...mockProps,
+        ...propsData,
+      },
     });
 
   it('saves draft with notes', async () => {
@@ -35,6 +38,63 @@ describe('EpigraphyEditor test', () => {
       mockProps.textUuid,
       JSON.stringify(mockProps.sides),
       'Test note'
+    );
+  });
+
+  it('adds side', async () => {
+    const wrapper = createWrapper();
+    await wrapper.get('.test-add-side').trigger('click');
+    expect(wrapper.get('.test-side-select'));
+    expect(wrapper.get('.test-side-text'));
+  });
+
+  it('removes side', async () => {
+    const wrapper = createWrapper({
+      sides: [
+        {
+          side: 'obv.',
+          text: 'Test edits',
+        },
+      ],
+    });
+
+    await wrapper.vm.$nextTick();
+    await wrapper.get('.test-remove-side').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    expect(wrapper.find('.test-side-select').exists()).toBe(false);
+    expect(wrapper.find('.test-side-text').exists()).toBe(false);
+  });
+
+  it('closes editor', async () => {
+    const wrapper = createWrapper();
+    await wrapper.find('.test-close-editor').trigger('click');
+    expect(wrapper.emitted()['close-editor']).toBeTruthy();
+  });
+
+  it('saves draft with edits', async () => {
+    const wrapper = createWrapper({
+      sides: [
+        {
+          side: 'obv.',
+          text: 'Test reading',
+        },
+      ],
+    });
+
+    await wrapper.vm.$nextTick();
+    const textarea = wrapper.find('.test-side-text textarea');
+    await textarea.setValue('New reading');
+    await wrapper.find('.test-save').trigger('click');
+
+    expect(mockProps.server.createDraft).toHaveBeenCalledWith(
+      mockProps.textUuid,
+      JSON.stringify([
+        {
+          side: 'obv.',
+          text: 'New reading',
+        },
+      ]),
+      ''
     );
   });
 });

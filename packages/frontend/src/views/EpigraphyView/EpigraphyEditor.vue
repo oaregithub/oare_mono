@@ -8,7 +8,12 @@
         @click="createDraft"
         >Save draft</oare-loader-button
       >
-      <v-btn color="info" @click="$emit('close-editor')">Close editor</v-btn>
+      <v-btn
+        color="info"
+        @click="$emit('close-editor')"
+        class="test-close-editor"
+        >Close editor</v-btn
+      >
     </div>
     <v-text-field
       v-model="notesData"
@@ -22,19 +27,29 @@
           <v-autocomplete
             v-model="sideData.side"
             :items="usableSides(sideData.side)"
+            class="test-side-select"
           />
         </v-col>
-        <v-btn color="error" text @click="openRemoveDialog(idx)"
+        <v-btn
+          color="error"
+          text
+          @click="openRemoveDialog(idx)"
+          class="test-remove-side"
           >Remove side</v-btn
         >
       </div>
-      <v-textarea v-model="sideData.text" outlined class="mb-3" />
+      <v-textarea
+        v-model="sideData.text"
+        outlined
+        class="mb-3 test-side-text"
+      />
     </div>
     <v-btn
       v-if="textData.length < sideTypes.length"
       text
       color="primary"
       @click="addSide"
+      class="test-add-side"
       >Add side</v-btn
     >
     <OareDialog
