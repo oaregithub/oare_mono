@@ -55,6 +55,7 @@ class TextDraftsDao {
       )
       .innerJoin('hierarchy', 'hierarchy.uuid', 'text_drafts.text_uuid')
       .innerJoin('alias', 'text_drafts.text_uuid', 'alias.reference_uuid')
+      .orderBy('alias.name')
       .where('creator', userId)
       .groupBy('text_drafts.uuid');
 
@@ -63,10 +64,13 @@ class TextDraftsDao {
     }
 
     const rows: TextDraftRow[] = await query;
-    return rows.map((row) => ({
-      ...row,
-      content: JSON.parse(row.content),
-    }));
+    return rows
+      .map((row) => ({
+        ...row,
+        textName: row.textName.trim(),
+        content: JSON.parse(row.content),
+      }))
+      .sort((a, b) => a.textName.localeCompare(b.textName));
   }
 }
 

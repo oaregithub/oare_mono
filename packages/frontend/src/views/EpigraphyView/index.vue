@@ -262,12 +262,9 @@ export default defineComponent({
 
         // If the user is an editor, get the draft content
         if (epigraphyState.canWrite) {
-          const res = await serverProxy.getDrafts(textUuid);
-          if (res.length > 0) {
-            // Should only be one entry because it's one text
-            draftContent.value = res[0].content;
-            draftNotes.value = res[0].notes;
-          }
+          const res = await serverProxy.getSingleDraft(textUuid);
+          draftContent.value = res.content;
+          draftNotes.value = res.notes;
         }
       } catch (err) {
         if (err.response) {

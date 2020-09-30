@@ -17,7 +17,16 @@ router
       }
 
       const drafts = await textDraftsDao.getDrafts(userId, textUuid);
-      res.json(drafts);
+
+      if (textUuid) {
+        if (drafts.length < 1) {
+          next(new HttpException(400, 'The draft UUID does not exist.'));
+        } else {
+          res.json(drafts[0]);
+        }
+      } else {
+        res.json(drafts);
+      }
     } catch (err) {
       next(new HttpException(500, err));
     }
