@@ -119,10 +119,6 @@ const routes: RouteConfig[] = [
     name: '403',
     component: ForbiddenView,
   },
-  {
-    path: '/testCdli',
-    component: TestCdli,
-  },
 ];
 
 export default routes;
