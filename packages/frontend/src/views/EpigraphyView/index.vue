@@ -8,7 +8,7 @@
     </template>
     <div v-if="!isEditing">
       <v-row>
-        <v-col cols="6" v-if="renderer">
+        <div v-if="renderer" class="mr-10">
           <div
             v-for="sideName in renderer.sides"
             :key="sideName"
@@ -28,15 +28,15 @@
               </div>
             </div>
           </div>
-        </v-col>
-        <v-col cols="6">
+        </div>
+        <div>
           <img
             v-if="cdli"
             :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
             @error="cdli = null"
             height="500"
           />
-        </v-col>
+        </div>
       </v-row>
       <p
         v-if="discourseRenderer && isAdmin"
