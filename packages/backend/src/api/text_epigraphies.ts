@@ -4,6 +4,7 @@ import aliasDao from './daos/AliasDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
 import textGroupDao from './daos/TextGroupDao';
 import hierarchyDao from './daos/HierarchyDao';
+import TextDao from './daos/TextDao';
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
 
     const units = await textEpigraphyDao.getEpigraphicUnits(textUuid);
     const collection = await hierarchyDao.getEpigraphyCollection(textUuid);
+    const cdliNum = await TextDao.getCdliNum(textUuid);
 
     let canWrite: boolean;
     if (user) {
@@ -43,6 +45,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       collection,
       units,
       canWrite,
+      cdliNum,
     });
   } catch (err) {
     next(new HttpException(500, err));

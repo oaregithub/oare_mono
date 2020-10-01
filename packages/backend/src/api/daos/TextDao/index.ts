@@ -24,6 +24,11 @@ class TextDao {
 
     return texts.map((text) => text.uuid);
   }
+
+  async getCdliNum(uuid: string): Promise<string | null> {
+    const { cdliNum } = await knex('text').select('cdli_num AS cdliNum').where({ uuid }).first();
+    return cdliNum;
+  }
 }
 
 export default new TextDao();
