@@ -29,11 +29,20 @@
             </div>
           </div>
         </div>
-        <div>
+        <div v-if="cdli">
           <img
-            v-if="cdli"
+            v-if="!errors.photo"
             :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
-            @error="cdli = null"
+            @error="errors.photo = true"
+            height="500"
+          />
+          <img
+            v-else-if="!errors.lineart"
+            :src="`https://cdli.ucla.edu/dl/lineart/${cdli}_l.jpg`"
+            @error="
+              errors.lineart = true;
+              cdli = null;
+            "
             height="500"
           />
         </div>
@@ -314,6 +323,10 @@ export default defineComponent({
       discourseReading,
       isAdmin,
       cdli,
+      errors: ref({
+        photo: false,
+        lineart: false,
+      }),
     };
   },
 });
