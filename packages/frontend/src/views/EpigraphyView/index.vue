@@ -29,7 +29,7 @@
             </div>
           </div>
         </div>
-        <div v-if="cdli">
+        <div v-if="cdli && isAdmin">
           <img
             v-if="!errors.photo"
             :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
