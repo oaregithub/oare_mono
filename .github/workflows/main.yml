@@ -42,8 +42,9 @@ jobs:
 
       - name: Zip up files
         run: |
+          cp -R .ebextensions packages/backend
           cd packages/backend
-          zip -r oare_build.zip build dist package.json yarn.lock
+          zip -r oare_build.zip build dist package.json yarn.lock .ebextensions
           mv oare_build.zip ../..
         if: github.ref == 'refs/heads/master'
 
