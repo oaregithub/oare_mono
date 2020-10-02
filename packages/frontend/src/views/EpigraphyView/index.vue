@@ -340,7 +340,7 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .sideName {
   min-width: 50px;
 }
@@ -354,7 +354,14 @@ export default defineComponent({
 }
 
 .cdliImage {
-  height: 800px;
-  max-height: 60vh;
+  max-height: 50vh;
+
+  @media (min-height: 660px) {
+    max-height: 65vh;
+  }
+
+  @media (min-height: 1000px) {
+    max-height: 80vh;
+  }
 }
 </style>
