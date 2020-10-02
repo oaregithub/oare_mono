@@ -6,85 +6,93 @@
     <template #title:post v-if="canWrite">
       <v-btn v-if="!isEditing" color="primary" @click="toggleEdit">Edit</v-btn>
     </template>
-    <div v-if="!isEditing">
-      <v-row>
-        <div v-if="renderer" class="mr-10">
-          <div
-            v-for="sideName in renderer.sides"
-            :key="sideName"
-            class="d-flex"
-          >
-            <div class="sideName oare-title mr-4">
-              {{ sideName }}
-            </div>
-            <div>
-              <div
-                v-for="lineNum in renderer.linesOnSide(sideName)"
-                :key="lineNum"
-                class="oare-title"
-              >
-                <sup>{{ lineNum }}.&nbsp;</sup>
-                <span v-html="renderer.lineReading(lineNum)" />
+    <v-row>
+      <v-col cols="12" sm="7" md="5" v-if="!isEditing">
+        <v-row>
+          <div v-if="renderer" class="mr-10">
+            <div
+              v-for="sideName in renderer.sides"
+              :key="sideName"
+              class="d-flex"
+            >
+              <div class="sideName oare-title mr-4">
+                {{ sideName }}
+              </div>
+              <div>
+                <div
+                  v-for="lineNum in renderer.linesOnSide(sideName)"
+                  :key="lineNum"
+                  class="oare-title"
+                >
+                  <sup>{{ lineNum }}.&nbsp;</sup>
+                  <span v-html="renderer.lineReading(lineNum)" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div v-if="cdli && isAdmin">
-          <img
-            v-if="!errors.photo"
-            :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
-            @error="errors.photo = true"
-            height="500"
-          />
-          <img
-            v-else-if="!errors.lineart"
-            :src="`https://cdli.ucla.edu/dl/lineart/${cdli}_l.jpg`"
-            @error="
-              errors.lineart = true;
-              cdli = null;
-            "
-            height="500"
-          />
-        </div>
-      </v-row>
-      <p
-        v-if="discourseRenderer && isAdmin"
-        class="mt-5 oare-title font-weight-regular"
-      >
-        <span v-for="line in discourseRenderer.lines" :key="line" class="mr-1">
-          <sup>{{ line }})</sup
-          ><span v-html="discourseRenderer.lineReading(line)" />
-        </span>
-      </p>
-      <v-treeview
-        v-if="isAdmin"
-        open-all
-        dense
-        :items="discourseUnits"
-        item-children="units"
-        item-key="uuid"
-        item-text="spelling"
-      >
-        <template #label="{ item }">
-          <div
-            :class="`${discourseColor(item.type)}--text`"
-            style="white-space: normal"
-            v-html="discourseReading(item)"
-          ></div>
-        </template>
-      </v-treeview>
-    </div>
-    <v-container v-else>
-      <EpigraphyEditor
-        :sides="editorSideData"
-        :textUuid="textUuid"
-        ref="epigEditor"
-        @save-draft="draftContent = $event"
-        @close-editor="toggleEdit"
-        :draftSaveLoading.sync="draftSaveLoading"
-        :notes.sync="draftNotes"
-      />
-    </v-container>
+        </v-row>
+        <p
+          v-if="discourseRenderer && isAdmin"
+          class="mt-5 oare-title font-weight-regular"
+        >
+          <span
+            v-for="line in discourseRenderer.lines"
+            :key="line"
+            class="mr-1"
+          >
+            <sup>{{ line }})</sup
+            ><span v-html="discourseRenderer.lineReading(line)" />
+          </span>
+        </p>
+        <v-treeview
+          v-if="isAdmin"
+          open-all
+          dense
+          :items="discourseUnits"
+          item-children="units"
+          item-key="uuid"
+          item-text="spelling"
+        >
+          <template #label="{ item }">
+            <div
+              :class="`${discourseColor(item.type)}--text`"
+              style="white-space: normal"
+              v-html="discourseReading(item)"
+            ></div>
+          </template>
+        </v-treeview>
+      </v-col>
+      <v-col cols="12" sm="7" md="5" v-else>
+        <EpigraphyEditor
+          :sides="editorSideData"
+          :textUuid="textUuid"
+          ref="epigEditor"
+          @save-draft="draftContent = $event"
+          @close-editor="toggleEdit"
+          :draftSaveLoading.sync="draftSaveLoading"
+          :notes.sync="draftNotes"
+        />
+      </v-col>
+      <v-col cols="12" sm="5" md="7" v-if="cdli && isAdmin" class="relative">
+        <img
+          v-if="!errors.photo"
+          :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
+          @error="errors.photo = true"
+          height="500"
+          :class="{ fixed: $vuetify.breakpoint.smAndUp }"
+        />
+        <img
+          v-else-if="!errors.lineart"
+          :src="`https://cdli.ucla.edu/dl/lineart/${cdli}_l.jpg`"
+          @error="
+            errors.lineart = true;
+            cdli = null;
+          "
+          height="500"
+          :class="{ fixed: $vuetify.breakpoint.smAndUp }"
+        />
+      </v-col>
+    </v-row>
   </OareContentView>
 </template>
 
@@ -335,5 +343,13 @@ export default defineComponent({
 <style scoped>
 .sideName {
   min-width: 50px;
+}
+
+.relative {
+  position: relative;
+}
+
+.fixed {
+  position: fixed;
 }
 </style>
