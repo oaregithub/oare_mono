@@ -78,7 +78,7 @@
           v-if="!errors.photo"
           :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
           @error="errors.photo = true"
-          height="500"
+          class="cdliImage"
           :class="{ fixed: $vuetify.breakpoint.smAndUp }"
         />
         <img
@@ -88,7 +88,7 @@
             errors.lineart = true;
             cdli = null;
           "
-          height="500"
+          class="cdliImage"
           :class="{ fixed: $vuetify.breakpoint.smAndUp }"
         />
       </v-col>
@@ -351,5 +351,10 @@ export default defineComponent({
 
 .fixed {
   position: fixed;
+}
+
+.cdliImage {
+  height: 800px;
+  max-height: 60vh;
 }
 </style>
