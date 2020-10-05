@@ -10,7 +10,12 @@
       <v-btn v-if="!isEditing" color="primary" @click="toggleEdit">Edit</v-btn>
     </template>
     <v-row>
-      <v-col cols="12" sm="7" md="5" v-if="!isEditing">
+      <v-col
+        cols="12"
+        :sm="hasPicture ? 7 : 12"
+        :md="hasPicture ? 5 : 12"
+        v-if="!isEditing"
+      >
         <v-row>
           <div v-if="renderer" class="mr-10">
             <div
@@ -65,7 +70,12 @@
           </template>
         </v-treeview>
       </v-col>
-      <v-col cols="12" sm="7" md="5" v-else>
+      <v-col
+        cols="12"
+        :sm="hasPicture ? 7 : 12"
+        :md="hasPicture ? 5 : 12"
+        v-else
+      >
         <EpigraphyEditor
           :sides="editorSideData"
           :textUuid="textUuid"
@@ -83,6 +93,7 @@
           @error="errors.photo = true"
           class="cdliImage"
           :class="{ fixed: $vuetify.breakpoint.smAndUp }"
+          @load="hasPicture = true"
         />
         <img
           v-else-if="!errors.lineart"
@@ -93,6 +104,7 @@
           "
           class="cdliImage"
           :class="{ fixed: $vuetify.breakpoint.smAndUp }"
+          @load="hasPicture = true"
         />
       </v-col>
     </v-row>
@@ -168,6 +180,7 @@ export default defineComponent({
       uuid: '',
       name: '',
     });
+    const hasPicture = ref(false);
     let breadcrumbItems = computed(() => {
       const letterGroup = getLetterGroup(collection.value.name);
 
@@ -348,6 +361,7 @@ export default defineComponent({
       }),
       color,
       colorMeaning,
+      hasPicture,
     };
   },
 });
