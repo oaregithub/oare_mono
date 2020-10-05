@@ -32,6 +32,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const units = await textEpigraphyDao.getEpigraphicUnits(textUuid);
     const collection = await hierarchyDao.getEpigraphyCollection(textUuid);
     const cdliNum = await TextDao.getCdliNum(textUuid);
+    const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
 
     let canWrite: boolean;
     if (user) {
@@ -46,6 +47,8 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       units,
       canWrite,
       cdliNum,
+      color,
+      colorMeaning,
     });
   } catch (err) {
     next(new HttpException(500, err));

@@ -5,9 +5,12 @@
 
     <v-card-title
       v-if="title"
-      class="oare-header font-weight-bold d-flex justify-space-between align-start test-content-title"
+      class="oare-header font-weight-bold d-flex justify-space-between align-center test-content-title"
     >
-      {{ title }}
+      <div class="d-flex align-center">
+        <slot name="title:pre"></slot>
+        {{ title }}
+      </div>
       <slot name="title:post"> </slot>
     </v-card-title>
     <v-card-text class="black--text">
