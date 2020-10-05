@@ -59,29 +59,29 @@ export default defineComponent({
 
 <style scoped>
 .sl-background {
-  height: 70px;
-  width: 40px;
+  height: 40px;
+  width: 25px;
   background-color: black;
-  padding: 10px;
+  padding: 5px;
   border-radius: 10%;
 }
 
 .sl-light {
   border-radius: 50%;
-  height: 15px;
-  width: 15px;
+  height: 8px;
+  width: 8px;
 }
 
 .sl-dark-red {
-  background-color: hsl(0, 100%, 10%);
+  background-color: hsl(0, 100%, 13%);
 }
 
 .sl-dark-yellow {
-  background-color: hsl(60, 100%, 10%);
+  background-color: hsl(60, 100%, 13%);
 }
 
 .sl-dark-green {
-  background-color: hsl(120, 100%, 10%);
+  background-color: hsl(120, 100%, 13%);
 }
 
 .sl-light-red {
