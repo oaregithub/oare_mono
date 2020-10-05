@@ -2,8 +2,10 @@
 
 exports[`OareContentView matches snapshot 1`] = `
 <div>
-  <div class="v-card__title oare-header font-weight-bold d-flex justify-space-between align-start test-content-title">
-    Content view title
+  <div class="v-card__title oare-header font-weight-bold d-flex justify-space-between align-center test-content-title">
+    <div class="d-flex align-center">
+      Content view title
+    </div>
   </div>
   <div class="v-card__text black--text"></div>
   <div class="v-card__actions"></div>

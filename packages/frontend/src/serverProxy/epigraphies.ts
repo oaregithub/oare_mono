@@ -10,6 +10,8 @@ export interface EpigraphyResponse {
   };
   cdliNum: string | null;
   units: EpigraphicUnit[];
+  color: string;
+  colorMeaning: string;
 }
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
   let { data } = await axios.get(`/text_epigraphies/${textUuid}`);

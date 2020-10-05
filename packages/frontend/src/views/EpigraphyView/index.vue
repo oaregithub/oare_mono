@@ -3,6 +3,9 @@
     <template #header>
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
+    <template #title:pre>
+      <Stoplight :color="color" :colorMeaning="colorMeaning" />
+    </template>
     <template #title:post v-if="canWrite">
       <v-btn v-if="!isEditing" color="primary" @click="toggleEdit">Edit</v-btn>
     </template>
@@ -125,6 +128,7 @@ import EpigraphyEditor from './EpigraphyEditor.vue';
 import serverProxy from '../../serverProxy';
 import router from '@/router';
 import { getLetterGroup } from '../CollectionsView/utils';
+import Stoplight from './Stoplight.vue';
 
 interface EpigraphyState {
   loading: boolean;
@@ -142,6 +146,7 @@ export default defineComponent({
   name: 'EpigraphyView',
   components: {
     EpigraphyEditor,
+    Stoplight,
   },
   props: {
     textUuid: {
@@ -188,6 +193,8 @@ export default defineComponent({
     const draftNotes = ref('');
     let draftSaveLoading: Ref<boolean> = ref(false);
     const cdli: Ref<string | null> = ref(null);
+    const color = ref('');
+    const colorMeaning = ref('');
 
     const toggleEdit = () => {
       isEditing.value = !isEditing.value;
@@ -273,7 +280,11 @@ export default defineComponent({
           canWrite,
           textName,
           cdliNum,
+          color: epColor,
+          colorMeaning: epColorMeaning,
         } = await server.getEpigraphicInfo(textUuid);
+        color.value = epColor;
+        colorMeaning.value = epColorMeaning;
         let markupUnits = await server.getEpigraphicMarkups(textUuid);
         let epigUnits = units;
 
@@ -335,6 +346,8 @@ export default defineComponent({
         photo: false,
         lineart: false,
       }),
+      color,
+      colorMeaning,
     };
   },
 });

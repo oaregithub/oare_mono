@@ -29,6 +29,20 @@ class TextDao {
     const { cdliNum } = await knex('text').select('cdli_num AS cdliNum').where({ uuid }).first();
     return cdliNum;
   }
+
+  async getTranslitStatus(uuid: string) {
+    const { name: color, field: colorMeaning } = await knex('text')
+      .select('alias.name', 'field.field')
+      .where({ 'text.uuid': uuid })
+      .innerJoin('alias', 'translit_status', 'alias.reference_uuid')
+      .leftJoin('field', 'field.reference_uuid', 'alias.reference_uuid')
+      .first();
+
+    return {
+      color,
+      colorMeaning,
+    };
+  }
 }
 
 export default new TextDao();
