@@ -99,6 +99,14 @@ export default {
         this.searchUserInput = '';
       }
     },
+    selectedUsers: {
+      handler(newUsers, oldUsers) {
+        if (newUsers.length > oldUsers.length) {
+          this.searchUserInput = '';
+        }
+      },
+      deep: true,
+    },
   },
   computed: {
     searchUserItems() {
@@ -150,5 +158,3 @@ export default {
   },
 };
 </script>
-
-<style></style>
