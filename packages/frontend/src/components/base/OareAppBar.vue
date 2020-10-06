@@ -34,28 +34,6 @@
     <div>
       <v-progress-circular v-if="loading" indeterminate />
       <div class="d-flex align-center" v-else>
-        <v-menu>
-          <template v-slot:activator="{ on }">
-            <v-btn v-on="on" light icon small>
-              <span
-                class="flag-icon"
-                :class="`flag-icon-${i18n.locale}`"
-              ></span>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="i18n.locale = 'us'">
-              <v-list-item-title>
-                <span class="flag-icon" :class="`flag-icon-us`"></span> US
-              </v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="i18n.locale = 'tr'">
-              <v-list-item-title>
-                <span class="flag-icon" :class="`flag-icon-tr`"></span> TR
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
         <v-btn
           v-if="$store.getters.isAdmin"
           class="mr-2 test-admin-btn"
