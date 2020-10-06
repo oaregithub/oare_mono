@@ -2,7 +2,7 @@ import { RouteConfig } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import AdminView from '../views/AdminView.vue';
-import GroupView from '../views/GroupView.vue';
+import GroupView from '../views/GroupView/index.vue';
 import CollectionTexts from '../views/CollectionTexts/index.vue';
 import CollectionsView from '../views/CollectionsView/index.vue';
 import SearchView from '../views/SearchView/index.vue';
