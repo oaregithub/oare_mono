@@ -8,11 +8,18 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('OareSidebar test', () => {
-  const createWrapper = () =>
+  const createWrapper = (isAdmin = true) =>
     mount(OareSidebar, {
       localVue,
       vuetify,
       stubs: ['router-link'],
+      propsData: {
+        store: {
+          getters: {
+            isAdmin,
+          },
+        },
+      },
     });
 
   it('matches snapshot', () => {
@@ -113,10 +120,15 @@ describe('OareSidebar test', () => {
 
   it('search button is not disabled with words input value', async () => {
     const wrapper = createWrapper();
-    const wordsInput = wrapper.find('.test-words-input').find('input');
+    const wordsInput = wrapper.find('.test-words-input input');
     await wordsInput.setValue('ababum');
 
     const searchButton = wrapper.find('.test-search-btn');
     expect(searchButton.element).not.toHaveClass('v-btn--disabled');
+  });
+
+  it('does not show words input if not an admin', () => {
+    const wrapper = createWrapper(false);
+    expect(wrapper.find('.test-words-input').exists()).toBe(false);
   });
 });
