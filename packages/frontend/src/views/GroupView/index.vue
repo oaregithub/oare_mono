@@ -8,7 +8,6 @@
     <v-tabs class="mb-3" v-model="tab">
       <v-tab>Members</v-tab>
       <v-tab>Texts</v-tab>
-      <v-tab>Permissions</v-tab>
     </v-tabs>
     <keep-alive>
       <ManageMembers v-if="tab === 0" :groupId="groupId" />
@@ -18,7 +17,6 @@
 </template>
 
 <script>
-import _ from 'lodash';
 import { defineComponent } from '@vue/composition-api';
 import serverProxy from '@/serverProxy';
 import ManageMembers from './ManageMembers.vue';

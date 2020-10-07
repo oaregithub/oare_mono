@@ -62,6 +62,7 @@
             v-on="on"
             color="info"
             :disabled="selectedDeleteWhitelist.length === 0"
+            class="test-remove"
             >Remove texts</v-btn
           >
         </template>
@@ -93,19 +94,21 @@
           item.name
         }}</router-link>
       </template>
+      <template #[`item.can_read`]="{ item }">
+        <v-switch
+          :input-value="item.can_read"
+          @change="updateTextRead(item.text_uuid, $event)"
+          :label="item.can_read ? 'Yes' : 'No'"
+          class="test-toggle-view"
+        />
+      </template>
       <template #[`item.can_write`]="{ item }">
         <v-switch
           :input-value="item.can_write"
           @change="updateTextEdit(item.text_uuid, $event)"
           :label="item.can_write ? 'Yes' : 'No'"
           :disabled="!item.can_read"
-        />
-      </template>
-      <template #[`item.can_read`]="{ item }">
-        <v-switch
-          :input-value="item.can_read"
-          @change="updateTextRead(item.text_uuid, $event)"
-          :label="item.can_read ? 'Yes' : 'No'"
+          class="test-toggle-edit"
         />
       </template>
     </v-data-table>
@@ -113,7 +116,8 @@
 </template>
 
 <script>
-import serverProxy from '@/serverProxy';
+import _ from 'lodash';
+import defaultServerProxy from '@/serverProxy';
 
 export default {
   name: 'ManageTexts',
@@ -121,6 +125,10 @@ export default {
     groupId: {
       type: String,
       required: true,
+    },
+    serverProxy: {
+      type: Object,
+      default: () => defaultServerProxy,
     },
   },
   data: () => ({
@@ -158,7 +166,7 @@ export default {
         .indexOf(uuid);
       this.$set(this.viewableTexts[index], 'can_write', canWrite);
       const text = this.viewableTexts[index];
-      await serverProxy.updateText(
+      await this.serverProxy.updateText(
         this.groupId,
         uuid,
         text.can_read,
@@ -175,7 +183,7 @@ export default {
         this.$set(this.viewableTexts[index], 'can_write', false);
       }
       const text = this.viewableTexts[index];
-      await serverProxy.updateText(
+      await this.serverProxy.updateText(
         this.groupId,
         uuid,
         text.can_read,
@@ -193,7 +201,7 @@ export default {
         uuid: item.uuid,
       }));
       this.addTextGroupsLoading = true;
-      await serverProxy.addTextGroups(this.groupId, textGroups);
+      await this.serverProxy.addTextGroups(this.groupId, textGroups);
 
       this.textsToAdd.forEach(item => {
         this.viewableTexts.unshift({
@@ -212,7 +220,10 @@ export default {
         text => text.text_uuid
       );
 
-      await serverProxy.removeTextsFromGroup(this.groupId, deleteTextUuids);
+      await this.serverProxy.removeTextsFromGroup(
+        this.groupId,
+        deleteTextUuids
+      );
 
       this.removeWhitelistLoading = false;
       this.removeWhitelistTextsDialog = false;
@@ -233,7 +244,7 @@ export default {
   },
   async mounted() {
     this.loading = true;
-    this.viewableTexts = await serverProxy.getTextGroups(this.groupId);
+    this.viewableTexts = await this.serverProxy.getTextGroups(this.groupId);
     this.loading = false;
   },
   watch: {
@@ -246,14 +257,14 @@ export default {
     },
 
     searchTextToAdd: {
-      handler: _.debounce(async function (text) {
+      handler: _.debounce(async function(text) {
         if (!text || text.trim() === '') {
           this.whitelistTextItems = [];
           return;
         }
 
         this.whitelistSearchLoading = true;
-        const items = await serverProxy.searchTextNames(text);
+        const items = await this.serverProxy.searchTextNames(text);
         this.whitelistTextItems = items.map(item => ({
           ...item,
           can_read: true,

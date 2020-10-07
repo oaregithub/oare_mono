@@ -42,6 +42,7 @@
             v-on="on"
             color="info"
             :disabled="selectedDeleteUsers.length === 0"
+            class="test-remove"
             >Remove selected users</v-btn
           >
         </template>
@@ -62,21 +63,28 @@
       show-select
       v-model="selectedDeleteUsers"
     >
-      <template #[`item.name`]="{ item }">{{
-        item.first_name + ' ' + item.last_name
-      }}</template>
+      <template #[`item.name`]="{ item }"
+        ><span class="test-name">{{
+          item.first_name + ' ' + item.last_name
+        }}</span></template
+      >
     </v-data-table>
   </div>
 </template>
 
 <script>
-import serverProxy from '@/serverProxy';
+import defaultServerProxy from '@/serverProxy';
+import _ from 'lodash';
 
 export default {
   props: {
     groupId: {
       type: String,
       required: true,
+    },
+    serverProxy: {
+      type: Object,
+      default: () => defaultServerProxy,
     },
   },
   data: () => ({
@@ -123,7 +131,7 @@ export default {
     async addUsers() {
       this.addUsersLoading = true;
       try {
-        await serverProxy.addUsersToGroup(
+        await this.serverProxy.addUsersToGroup(
           this.groupId,
           this.selectedUsers.map(user => user.id)
         );
@@ -140,7 +148,7 @@ export default {
     async removeUsers() {
       const userIds = this.selectedDeleteUsers.map(user => user.id);
       this.deleteUserLoading = true;
-      await serverProxy.removeUsersFromGroup(this.groupId, userIds);
+      await this.serverProxy.removeUsersFromGroup(this.groupId, userIds);
 
       this.deleteUserLoading = false;
       this.deleteUserDialog = false;
@@ -152,8 +160,8 @@ export default {
     },
   },
   async mounted() {
-    this.allUsers = await serverProxy.getAllUsers();
-    this.groupUsers = await serverProxy.getGroupUsers(this.groupId);
+    this.allUsers = await this.serverProxy.getAllUsers();
+    this.groupUsers = await this.serverProxy.getGroupUsers(this.groupId);
     this.loading = false;
   },
 };
