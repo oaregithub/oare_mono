@@ -24,6 +24,7 @@
       v-model="word"
       @keyup.enter.native="performSearch"
       :disabled="dictionaryDisabled"
+      v-if="store.getters.isAdmin"
     />
     <v-btn color="error" class="mb-3 test-clear-btn" @click="clearSearch"
       >Clear</v-btn
@@ -45,14 +46,22 @@ import {
   toRefs,
   computed,
   ref,
+  PropType,
 } from '@vue/composition-api';
 import SearchField from './SearchField.vue';
 import router from '../../../router';
+import defaultStore from '@/store';
 
 export default defineComponent({
   name: 'OareSidebar',
   components: {
     SearchField,
+  },
+  props: {
+    store: {
+      type: Object as PropType<typeof defaultStore>,
+      default: () => defaultStore,
+    },
   },
   setup() {
     const text = ref('');
