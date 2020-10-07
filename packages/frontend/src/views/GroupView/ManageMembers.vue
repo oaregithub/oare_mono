@@ -24,7 +24,6 @@
           :items="searchUserItems"
           item-text="info"
           item-value="id"
-          ref="searchUserInput"
           autofocus
         ></v-autocomplete>
       </OareDialog>
@@ -72,97 +71,126 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import defaultServerProxy from '@/serverProxy';
 import _ from 'lodash';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  Ref,
+  onMounted,
+  watch,
+  computed,
+} from '@vue/composition-api';
+import { User } from '@/types/users';
 
-export default {
+export default defineComponent({
   props: {
     groupId: {
       type: String,
       required: true,
     },
     serverProxy: {
-      type: Object,
+      type: Object as PropType<typeof defaultServerProxy>,
       default: () => defaultServerProxy,
     },
   },
-  data: () => ({
-    addUserDialog: false,
-    addUsersLoading: false,
-    deleteUserLoading: false,
-    allUsers: [],
-    selectedUsers: [],
-    groupUsers: [],
-    searchUserInput: '',
-    deleteUserDialog: false,
-    selectedDeleteUsers: [],
-    usersHeaders: [{ text: 'Name', value: 'name' }],
-    loading: true,
-  }),
-  watch: {
-    addUserDialog(open) {
-      if (!open) {
-        this.selectedUsers = [];
-        this.searchUserInput = '';
-      }
-    },
-    selectedUsers: {
-      handler(newUsers, oldUsers) {
-        if (newUsers.length > oldUsers.length) {
-          this.searchUserInput = '';
-        }
-      },
-      deep: true,
-    },
-  },
-  computed: {
-    searchUserItems() {
-      const groupUserIds = this.groupUsers.map(user => user.id);
-      return this.allUsers
+  setup({ serverProxy, groupId }) {
+    const addUserDialog = ref(false);
+    const addUsersLoading = ref(false);
+    const deleteUserLoading = ref(false);
+    const deleteUserDialog = ref(false);
+    const loading = ref(true);
+    const searchUserInput = ref('');
+
+    const allUsers: Ref<User[]> = ref([]);
+    const groupUsers: Ref<User[]> = ref([]);
+    const selectedUsers: Ref<User[]> = ref([]);
+    const selectedDeleteUsers: Ref<User[]> = ref([]);
+    const usersHeaders = ref([{ text: 'Name', value: 'name' }]);
+
+    const searchUserItems = computed(() => {
+      const groupUserIds = groupUsers.value.map(user => user.id);
+      return allUsers.value
         .filter(user => !groupUserIds.includes(user.id))
         .map(user => ({
           ...user,
           info: `${user.first_name} ${user.last_name} (${user.email})`,
         }));
-    },
-  },
-  methods: {
-    async addUsers() {
-      this.addUsersLoading = true;
+    });
+
+    const addUsers = async () => {
+      addUsersLoading.value = true;
       try {
-        await this.serverProxy.addUsersToGroup(
-          this.groupId,
-          this.selectedUsers.map(user => user.id)
+        await serverProxy.addUsersToGroup(
+          Number(groupId),
+          selectedUsers.value.map(user => user.id)
         );
-        this.selectedUsers.forEach(user => {
-          this.groupUsers.push(user);
+        selectedUsers.value.forEach(user => {
+          groupUsers.value.push(user);
         });
-        this.addUserDialog = false;
+        addUserDialog.value = false;
       } catch (err) {
         console.error(err);
       } finally {
-        this.addUsersLoading = false;
+        addUsersLoading.value = false;
       }
-    },
-    async removeUsers() {
-      const userIds = this.selectedDeleteUsers.map(user => user.id);
-      this.deleteUserLoading = true;
-      await this.serverProxy.removeUsersFromGroup(this.groupId, userIds);
+    };
 
-      this.deleteUserLoading = false;
-      this.deleteUserDialog = false;
-      this.selectedDeleteUsers = [];
+    const removeUsers = async () => {
+      const userIds = selectedDeleteUsers.value.map(user => user.id);
+      deleteUserLoading.value = true;
+      await serverProxy.removeUsersFromGroup(Number(groupId), userIds);
 
-      this.groupUsers = this.groupUsers.filter(
+      deleteUserLoading.value = false;
+      deleteUserDialog.value = false;
+      selectedDeleteUsers.value = [];
+
+      groupUsers.value = groupUsers.value.filter(
         user => !userIds.includes(user.id)
       );
-    },
+    };
+
+    watch(addUserDialog, open => {
+      if (!open) {
+        selectedUsers.value = [];
+        searchUserInput.value = '';
+      }
+    });
+
+    watch(
+      selectedUsers,
+      (newUsers, oldUsers) => {
+        if (newUsers.length > oldUsers.length) {
+          searchUserInput.value = '';
+        }
+      },
+      { deep: true, lazy: true }
+    );
+
+    onMounted(async () => {
+      allUsers.value = await serverProxy.getAllUsers();
+      groupUsers.value = await serverProxy.getGroupUsers(Number(groupId));
+      loading.value = false;
+    });
+
+    return {
+      addUserDialog,
+      addUsersLoading,
+      deleteUserLoading,
+      deleteUserDialog,
+      loading,
+      searchUserInput,
+      allUsers,
+      groupUsers,
+      selectedUsers,
+      selectedDeleteUsers,
+      usersHeaders,
+      searchUserItems,
+      addUsers,
+      removeUsers,
+    };
   },
-  async mounted() {
-    this.allUsers = await this.serverProxy.getAllUsers();
-    this.groupUsers = await this.serverProxy.getGroupUsers(this.groupId);
-    this.loading = false;
-  },
-};
+});
 </script>
