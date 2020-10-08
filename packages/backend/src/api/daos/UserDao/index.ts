@@ -1,3 +1,4 @@
+import { v4 } from 'uuid';
 import knex from '../../../connection';
 
 export interface User {
@@ -56,6 +57,7 @@ class UserDao {
     isAdmin: boolean;
   }): Promise<void> {
     await knex('user').insert({
+      uuid: v4(),
       first_name: firstName,
       last_name: lastName,
       email,
