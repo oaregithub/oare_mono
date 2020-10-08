@@ -10,8 +10,13 @@ router.route('/words').get(async (req, res, next) => {
     const userId = req.user ? req.user.id : null;
 
     const words = await dictionaryWordDao.getWords();
-    cache.insert({ reqPath: req.originalUrl, userId }, words);
-    res.json(words);
+    const canEdit = req.user ? req.user.isAdmin : false;
+    const response = {
+      words,
+      canEdit,
+    };
+    cache.insert({ reqPath: req.originalUrl, userId }, response);
+    res.json(response);
   } catch (err) {
     next(new HttpException(500, err));
   }

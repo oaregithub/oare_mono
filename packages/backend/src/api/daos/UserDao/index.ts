@@ -39,7 +39,10 @@ class UserDao {
         'created_on AS createdOn',
       )
       .where(column, value);
-    return user;
+    return {
+      ...user,
+      isAdmin: !!user.isAdmin,
+    };
   }
 
   async createUser({
