@@ -8,6 +8,14 @@
       :searchFilter="searchFilter"
     >
       <template #word="{ word }">
+        <v-btn
+          icon
+          class="mt-n2 mr-1"
+          :to="`/dictionaryWord/${word.uuid}/edit`"
+          v-if="canEdit"
+        >
+          <v-icon>mdi-pencil</v-icon>
+        </v-btn>
         <router-link :to="`/dictionaryWord/${word.uuid}`" class="mr-1">{{
           word.word
         }}</router-link>
@@ -59,6 +67,7 @@ export default defineComponent({
   },
   setup() {
     const words: Ref<DictionaryWord[]> = ref([]);
+    const canEdit = ref(false);
     const loading = ref(false);
 
     const searchFilter = (search: string, word: DictionaryWord): boolean => {
@@ -81,8 +90,12 @@ export default defineComponent({
 
     onMounted(async () => {
       loading.value = true;
-      const { words: wordsResp, canEdit } = await server.getDictionaryWords();
+      const {
+        words: wordsResp,
+        canEdit: canEditResp,
+      } = await server.getDictionaryWords();
       words.value = wordsResp;
+      canEdit.value = canEditResp;
       loading.value = false;
     });
 
@@ -90,6 +103,7 @@ export default defineComponent({
       words,
       loading,
       searchFilter,
+      canEdit,
     };
   },
 });

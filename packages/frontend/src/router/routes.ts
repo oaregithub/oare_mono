@@ -9,7 +9,7 @@ import CollectionTexts from '../views/CollectionTexts/index.vue';
 import CollectionsView from '../views/CollectionsView/index.vue';
 import SearchView from '../views/SearchView/index.vue';
 import ForbiddenView from '../views/ForbiddenView.vue';
-import DictionaryWord from '../views/DictionaryWord.vue';
+import DictionaryWord from '../views/DictionaryWord/index.vue';
 import EpigraphyView from '../views/EpigraphyView/index.vue';
 import Drafts from '../views/DashboardView/Drafts.vue';
 import Profile from '../views/DashboardView/Profile.vue';
@@ -78,6 +78,12 @@ const routes: RouteConfig[] = [
     path: '/register',
     name: 'register',
     component: RegisterView,
+  },
+  {
+    path: '/dictionaryWord/:uuid/edit',
+    name: 'editDictionaryWord',
+    props: true,
+    component: DictionaryWord,
   },
   {
     path: '/dictionaryWord/:uuid',
