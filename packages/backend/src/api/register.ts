@@ -30,7 +30,7 @@ router.route('/register').post(async (req, res, next) => {
     cookieRes.status(201).json({
       data: {
         id: user.id,
-        first_name: user.firstName,
+        firstName: user.firstName,
         last_name: user.lastName,
         email: user.email,
         is_admin: !!user.isAdmin,
