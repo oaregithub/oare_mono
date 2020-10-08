@@ -20,8 +20,8 @@
           v-model="textsToAdd"
           :search-input.sync="searchTextToAdd"
           outlined
-          :items="whitelistTextItems"
-          :loading="whitelistSearchLoading"
+          :items="textItems"
+          :loading="searchLoading"
           item-text="name"
           item-value="uuid"
           hide-no-data
@@ -51,17 +51,17 @@
       </OareDialog>
       <OareDialog
         title="Remove texts"
-        v-model="removeWhitelistTextsDialog"
+        v-model="removeTextsDialog"
         cancelText="No, don't remove"
         submitText="Yes, remove"
-        @submit="removeWhitelistTexts"
-        :submitLoading="removeWhitelistLoading"
+        @submit="removeTexts"
+        :submitLoading="removeLoading"
       >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
             color="info"
-            :disabled="selectedDeleteWhitelist.length === 0"
+            :disabled="selectedDeleteList.length === 0"
             class="test-remove"
             >Remove texts</v-btn
           >
@@ -71,10 +71,7 @@
         following texts if their visibility is restricted in another group that
         users of this group belong to.
         <v-list>
-          <v-list-item
-            v-for="(text, index) in selectedDeleteWhitelist"
-            :key="index"
-          >
+          <v-list-item v-for="(text, index) in selectedDeleteList" :key="index">
             <v-list-item-title>{{ text.name }}</v-list-item-title>
           </v-list-item>
         </v-list>
@@ -85,7 +82,7 @@
       :items="viewableTexts"
       disable-sort
       show-select
-      v-model="selectedDeleteWhitelist"
+      v-model="selectedDeleteList"
       item-key="text_uuid"
       class="mt-3"
     >
@@ -115,11 +112,21 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import _ from 'lodash';
 import defaultServerProxy from '@/serverProxy';
+import { Text } from '@/types/text_groups';
 
-export default {
+import {
+  defineComponent,
+  ref,
+  Ref,
+  onMounted,
+  PropType,
+  watch,
+} from '@vue/composition-api';
+
+export default defineComponent({
   name: 'ManageTexts',
   props: {
     groupId: {
@@ -127,152 +134,170 @@ export default {
       required: true,
     },
     serverProxy: {
-      type: Object,
+      type: Object as PropType<typeof defaultServerProxy>,
       default: () => defaultServerProxy,
     },
   },
-  data: () => ({
-    allTexts: [],
-    loading: false,
-    addTextDialog: false,
+  setup({ serverProxy, groupId }) {
+    const loading = ref(false);
+    const addTextDialog = ref(false);
+    const searchLoading = ref(false);
+    const addTextGroupsLoading = ref(false);
+    const removeTextsDialog = ref(false);
+    const removeLoading = ref(false);
 
-    selectedDeleteWhitelist: [],
-
-    // Data members for searching for whitelisted texts
-    textsToAdd: [],
-    searchTextToAdd: '',
-    whitelistTextItems: [],
-    whitelistSearchLoading: false,
-    textHeaders: [
+    const allTexts: Ref<Text[]> = ref([]);
+    const selectedDeleteList: Ref<Text[]> = ref([]);
+    const textsToAdd: Ref<Text[]> = ref([]);
+    const searchTextToAdd = ref('');
+    const textItems: Ref<Text[]> = ref([]);
+    const textHeaders = ref([
       { text: 'Text Name', value: 'name' },
       { text: 'Can view?', value: 'can_read' },
       { text: 'Can edit?', value: 'can_write' },
-    ],
-    selectedWhitelistItems: [],
-    addTextGroupsLoading: false,
-    viewableTexts: [],
+    ]);
+    const viewableTexts: Ref<Text[]> = ref([]);
+    const loadingEditTexts = ref([]);
 
-    // Data members for removing whitelisted texts
-    removeWhitelistTextsDialog: false,
-    removeWhitelistLoading: false,
+    onMounted(async () => {
+      loading.value = true;
+      viewableTexts.value = await serverProxy.getTextGroups(Number(groupId));
+      loading.value = false;
+    });
 
-    // Data members for updating edit permission on a text
-    loadingEditTexts: [], // A list of indices loading
-  }),
-  methods: {
-    async updateTextEdit(uuid, canWrite) {
-      const index = this.viewableTexts
+    const updateTextEdit = async (uuid: string, canWrite: boolean) => {
+      const index = viewableTexts.value
         .map(item => item.text_uuid)
         .indexOf(uuid);
-      this.$set(this.viewableTexts[index], 'can_write', canWrite);
-      const text = this.viewableTexts[index];
-      await this.serverProxy.updateText(
-        this.groupId,
+
+      viewableTexts.value[index].can_write = canWrite;
+      const text = viewableTexts.value[index];
+      await serverProxy.updateText(
+        Number(groupId),
         uuid,
         text.can_read,
         text.can_write
       );
-    },
-    async updateTextRead(uuid, canRead) {
-      const index = this.viewableTexts
+    };
+
+    const updateTextRead = async (uuid: string, canRead: boolean) => {
+      const index = viewableTexts.value
         .map(item => item.text_uuid)
         .indexOf(uuid);
-      this.$set(this.viewableTexts[index], 'can_read', canRead);
+      viewableTexts.value[index].can_read = canRead;
+
       // Disable editing if reading is disabled
       if (!canRead) {
-        this.$set(this.viewableTexts[index], 'can_write', false);
+        viewableTexts.value[index].can_write = false;
       }
-      const text = this.viewableTexts[index];
-      await this.serverProxy.updateText(
-        this.groupId,
+
+      const text = viewableTexts.value[index];
+      await serverProxy.updateText(
+        Number(groupId),
         uuid,
         text.can_read,
         text.can_write
       );
-    },
-    removeTextToAdd(name) {
-      this.textsToAdd = this.textsToAdd.filter(text => text.name !== name);
-    },
+    };
 
-    async addTextGroups() {
-      const textGroups = this.textsToAdd.map(item => ({
+    const removeTextToAdd = (name: string) => {
+      textsToAdd.value = textsToAdd.value.filter(text => text.name !== name);
+    };
+
+    const addTextGroups = async () => {
+      const textGroups = textsToAdd.value.map(item => ({
         can_read: item.can_read,
         can_write: item.can_write,
-        uuid: item.uuid,
+        uuid: item.text_uuid,
       }));
-      this.addTextGroupsLoading = true;
-      await this.serverProxy.addTextGroups(this.groupId, textGroups);
+      addTextGroupsLoading.value = true;
+      await serverProxy.addTextGroups(Number(groupId), textGroups);
 
-      this.textsToAdd.forEach(item => {
-        this.viewableTexts.unshift({
+      textsToAdd.value.forEach(item => {
+        viewableTexts.value.unshift({
           ...item,
-          text_uuid: item.uuid,
+          text_uuid: item.text_uuid,
         });
       });
-      this.addTextGroupsLoading = false;
+      addTextGroupsLoading.value = false;
 
-      this.addTextDialog = false;
-    },
+      addTextDialog.value = false;
+    };
 
-    async removeWhitelistTexts() {
-      this.removeWhitelistLoading = true;
-      const deleteTextUuids = this.selectedDeleteWhitelist.map(
+    const removeTexts = async () => {
+      removeLoading.value = true;
+      const deleteTextUuids = selectedDeleteList.value.map(
         text => text.text_uuid
       );
 
-      await this.serverProxy.removeTextsFromGroup(
-        this.groupId,
-        deleteTextUuids
-      );
+      await serverProxy.removeTextsFromGroup(Number(groupId), deleteTextUuids);
 
-      this.removeWhitelistLoading = false;
-      this.removeWhitelistTextsDialog = false;
-      this.selectedDeleteWhitelist = [];
-      this.viewableTexts = this.viewableTexts.filter(
+      removeLoading.value = false;
+      removeTextsDialog.value = false;
+      selectedDeleteList.value = [];
+      viewableTexts.value = viewableTexts.value.filter(
         text => !deleteTextUuids.includes(text.text_uuid)
       );
-    },
+    };
 
-    updateTextToAddRead(uuid, canRead) {
-      const index = this.textsToAdd.map(text => text.uuid).indexOf(uuid);
-      this.$set(this.textsToAdd[index], 'can_read', canRead);
+    const updateTextToAddRead = (uuid: string, canRead: boolean) => {
+      const index = textsToAdd.value.map(text => text.text_uuid).indexOf(uuid);
+      textsToAdd.value[index].can_read = canRead;
 
       if (!canRead) {
-        this.$set(this.textsToAdd[index], 'can_write', false);
+        textsToAdd.value[index].can_write = false;
       }
-    },
-  },
-  async mounted() {
-    this.loading = true;
-    this.viewableTexts = await this.serverProxy.getTextGroups(this.groupId);
-    this.loading = false;
-  },
-  watch: {
-    addTextDialog(open) {
-      if (!open) {
-        this.searchTextToAdd = '';
-        this.textsToAdd = [];
-        this.selectedWhitelistItems = [];
-      }
-    },
+    };
 
-    searchTextToAdd: {
-      handler: _.debounce(async function(text) {
+    watch(addTextDialog, open => {
+      if (!open) {
+        searchTextToAdd.value = '';
+        textsToAdd.value = [];
+      }
+    });
+
+    watch(
+      searchTextToAdd,
+      _.debounce(async (text: string) => {
         if (!text || text.trim() === '') {
-          this.whitelistTextItems = [];
+          textItems.value = [];
           return;
         }
 
-        this.whitelistSearchLoading = true;
-        const items = await this.serverProxy.searchTextNames(text);
-        this.whitelistTextItems = items.map(item => ({
+        searchLoading.value = true;
+        const items = await serverProxy.searchTextNames(text);
+        textItems.value = items.map(item => ({
           ...item,
+          text_uuid: item.uuid,
           can_read: true,
           can_write: false,
         }));
-        this.whitelistSearchLoading = false;
-      }, 500),
-    },
+        searchLoading.value = false;
+      }, 500)
+    );
+
+    return {
+      loading,
+      addTextDialog,
+      searchLoading,
+      addTextGroupsLoading,
+      removeTextsDialog,
+      removeLoading,
+      allTexts,
+      selectedDeleteList,
+      textsToAdd,
+      searchTextToAdd,
+      textItems,
+      textHeaders,
+      viewableTexts,
+      loadingEditTexts,
+      updateTextEdit,
+      updateTextRead,
+      removeTextToAdd,
+      removeTexts,
+      updateTextToAddRead,
+      addTextGroups,
+    };
   },
-};
+});
 </script>
