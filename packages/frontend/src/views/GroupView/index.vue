@@ -6,12 +6,11 @@
     </template>
 
     <v-tabs class="mb-3" v-model="tab">
-      <v-tab>Members</v-tab>
-      <v-tab>Texts</v-tab>
+      <v-tab to="members">Members</v-tab>
+      <v-tab to="texts">Texts</v-tab>
     </v-tabs>
     <keep-alive>
-      <ManageMembers v-if="tab === 0" :groupId="groupId" />
-      <ManageTexts v-else-if="tab === 1" :groupId="groupId" />
+      <router-view />
     </keep-alive>
   </OareContentView>
 </template>
@@ -19,8 +18,6 @@
 <script>
 import { defineComponent } from '@vue/composition-api';
 import serverProxy from '@/serverProxy';
-import ManageMembers from './ManageMembers.vue';
-import ManageTexts from './ManageTexts.vue';
 
 export default {
   name: 'GroupView',
@@ -28,10 +25,6 @@ export default {
     groupId: {
       required: true,
     },
-  },
-  components: {
-    ManageMembers,
-    ManageTexts,
   },
   data() {
     return {

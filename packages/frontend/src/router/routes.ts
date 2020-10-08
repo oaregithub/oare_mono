@@ -3,6 +3,8 @@ import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import AdminView from '../views/AdminView.vue';
 import GroupView from '../views/GroupView/index.vue';
+import ManageMembers from '@/views/GroupView/ManageMembers.vue';
+import ManageTexts from '@/views/GroupView/ManageTexts.vue';
 import CollectionTexts from '../views/CollectionTexts/index.vue';
 import CollectionsView from '../views/CollectionsView/index.vue';
 import SearchView from '../views/SearchView/index.vue';
@@ -17,7 +19,6 @@ import NamesView from '../views/NamesView/index.vue';
 import PlacesView from '../views/PlacesView/index.vue';
 import DictionarySearch from '@/views/SearchView/DictionarySearch.vue';
 import TextsSearch from '@/views/SearchView/TextsSearch.vue';
-import TestCdli from './TestCdli.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -52,10 +53,25 @@ const routes: RouteConfig[] = [
     name: 'groups',
     component: GroupView,
     props: true,
+    children: [
+      {
+        path: 'members',
+        name: 'manageMembers',
+        props: true,
+        component: ManageMembers,
+      },
+      {
+        path: 'texts',
+        name: 'manageTexts',
+        props: true,
+        component: ManageTexts,
+      },
+    ],
   },
   {
     path: '/login',
     name: 'login',
+    props: true,
     component: LoginView,
   },
   {
