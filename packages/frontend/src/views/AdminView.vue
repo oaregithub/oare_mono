@@ -52,7 +52,9 @@
       data-group-table
     >
       <template #[`item.name`]="{ item }">
-        <router-link :to="`/groups/${item.id}`">{{ item.name }}</router-link>
+        <router-link :to="`/groups/${item.id}/members`">{{
+          item.name
+        }}</router-link>
       </template>
     </v-data-table>
     <OareDialog
