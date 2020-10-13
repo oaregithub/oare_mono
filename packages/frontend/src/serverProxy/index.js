@@ -16,6 +16,7 @@ import discourses from './discourses';
 import places from './places';
 import words from './words';
 import searchDictionary from './search_dictionary';
+import permissions from './permissions';
 
 async function registerUser(userData) {
   let { data } = await axios.post('/register', userData);
@@ -121,6 +122,7 @@ export default {
   ...places,
   ...words,
   ...searchDictionary,
+  ...permissions,
   logout,
   refreshToken,
 };

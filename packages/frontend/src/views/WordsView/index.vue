@@ -35,7 +35,7 @@
           <span
             v-if="
               word.translations.length > 0 &&
-                word.specialClassifications.length > 0
+              word.specialClassifications.length > 0
             "
             >;</span
           >
@@ -90,10 +90,8 @@ export default defineComponent({
 
     onMounted(async () => {
       loading.value = true;
-      const {
-        words: wordsResp,
-        canEdit: canEditResp,
-      } = await server.getDictionaryWords();
+      const { words: wordsResp } = await server.getDictionaryWords();
+      const { canEdit: canEditResp } = await server.getDictionaryPermissions();
       words.value = wordsResp;
       canEdit.value = canEditResp;
       loading.value = false;

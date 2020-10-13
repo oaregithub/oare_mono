@@ -9,5 +9,4 @@ export interface DictionaryWord {
 
 export interface WordsResponse {
   words: DictionaryWord[];
-  canEdit: boolean;
 }

@@ -1,6 +1,6 @@
 <template>
   <OareContentView :title="title" :loading="loading">
-    <template #title:pre v-if="!isEditing && wordInfo && wordInfo.canEdit">
+    <template #title:pre v-if="!isEditing && wordInfo && canEdit">
       <v-btn icon class="mt-n2 mr-1" :to="`/dictionaryWord/${uuid}/edit`">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
@@ -47,12 +47,17 @@ export default defineComponent({
   },
   setup(props, context) {
     const loading = ref(true);
+    const canEdit = ref(false);
     const wordInfo: Ref<WordWithForms | null> = ref(null);
 
     watch(
       () => props.uuid,
       async () => {
         loading.value = true;
+        const {
+          canEdit: canEditResp,
+        } = await serverProxy.getDictionaryPermissions();
+        canEdit.value = canEditResp;
         wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
         loading.value = false;
       }
@@ -105,6 +110,7 @@ export default defineComponent({
       breadcrumbItems,
       title,
       isEditing,
+      canEdit,
     };
   },
 });

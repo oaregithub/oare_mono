@@ -5,7 +5,6 @@ export interface WordWithForms {
   verbalThematicVowelTypes: string[];
   specialClassifications: string[];
   translations: string[];
-  canEdit: boolean;
 }
 
 export interface DictionaryForm {

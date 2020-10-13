@@ -16,12 +16,10 @@ router
 
       const grammarInfo = await dictionaryWordDao.getGrammaticalInfo(uuid);
       const forms = await dictionaryFormDao.getFormsWithSpellings(uuid);
-      const canEdit = req.user ? req.user.isAdmin : false;
 
       res.json({
         ...grammarInfo,
         forms,
-        canEdit,
       });
     } catch (err) {
       next(new HttpException(500, err));

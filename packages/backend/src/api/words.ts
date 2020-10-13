@@ -8,10 +8,8 @@ const router = express.Router();
 router.route('/words').get(async (req, res, next) => {
   try {
     const words = await dictionaryWordDao.getWords();
-    const canEdit = req.user ? req.user.isAdmin : false;
     const response = {
       words,
-      canEdit,
     };
     cache.insert({ req }, response);
     res.json(response);

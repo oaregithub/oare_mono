@@ -20,6 +20,7 @@ import collections from './api/collections';
 import collectionInfo from './api/collection_info';
 import logout from './api/logout';
 import refreshToken from './api/refresh_token';
+import permissions from './api/permissions';
 
 export const API_PATH = '/api/v2';
 
@@ -45,4 +46,5 @@ export default (app: Express) => {
   app.use(API_PATH, collectionInfo);
   app.use(API_PATH, logout);
   app.use(API_PATH, refreshToken);
+  app.use(API_PATH, permissions);
 };
