@@ -37,7 +37,7 @@ router.route('/collections/:uuid').get(collectionsMiddleware, async (req, res, n
       texts: results,
     };
 
-    cache.insert({ reqPath: req.originalUrl, userId: user?.id || null }, response);
+    cache.insert({ req }, response);
 
     res.json(response);
   } catch (err) {

@@ -3,10 +3,10 @@ import HttpException from '../exceptions/HttpException';
 
 async function adminRoute(req: Request, res: Response, next: NextFunction) {
   try {
-    // if (process.env.NODE_ENV === 'development') {
-    //   next();
-    //   return;
-    // }
+    if (process.env.NODE_ENV === 'development') {
+      next();
+      return;
+    }
 
     const { user } = req;
     if (!user) {

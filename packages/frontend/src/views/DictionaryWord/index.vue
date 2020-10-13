@@ -1,9 +1,18 @@
 <template>
   <OareContentView :title="title" :loading="loading">
+    <template #title:pre v-if="!isEditing && wordInfo && wordInfo.canEdit">
+      <v-btn icon class="mt-n2 mr-1" :to="`/dictionaryWord/${uuid}/edit`">
+        <v-icon>mdi-pencil</v-icon>
+      </v-btn>
+    </template>
     <template #header>
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
-    <EditWord v-if="isEditing && wordInfo" :wordInfo="wordInfo" />
+    <EditWord
+      v-if="isEditing && wordInfo"
+      :wordInfo.sync="wordInfo"
+      :uuid="uuid"
+    />
     <WordInfo v-else-if="!isEditing && wordInfo" :wordInfo="wordInfo" />
   </OareContentView>
 </template>
@@ -36,42 +45,50 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(props) {
+  setup(props, context) {
     const loading = ref(true);
     const wordInfo: Ref<WordWithForms | null> = ref(null);
-    const breadcrumbItems: Ref<BreadcrumbItem[]> = ref([
-      {
-        link: '/words/A',
-        text: 'Dictionary Words',
-      },
-    ]);
 
     watch(
       () => props.uuid,
       async () => {
         loading.value = true;
         wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
+        loading.value = false;
+      }
+    );
+
+    const breadcrumbItems = computed(() => {
+      const items = [
+        {
+          link: '/words/A',
+          text: 'Dictionary Words',
+        },
+      ];
+
+      if (wordInfo.value) {
         for (const [letterGroup, letters] of Object.entries(
           AkkadianLetterGroupsUpper
         )) {
           if (letters.includes(wordInfo.value.word[0].toUpperCase())) {
-            breadcrumbItems.value.push({
+            items.push({
               link: `/words/${encodeURIComponent(letterGroup)}`,
               text: letterGroup,
             });
             break;
           }
         }
-        breadcrumbItems.value.push({
-          link: null,
+        items.push({
+          link: `/dictionaryWord/${props.uuid}`,
           text: wordInfo.value.word,
         });
-        loading.value = false;
       }
-    );
+
+      return items;
+    });
 
     const title = computed(() => {
-      if (router.currentRoute.name === 'dictionaryWord') {
+      if (context.root.$route.name === 'dictionaryWord') {
         return wordInfo.value ? wordInfo.value.word : '';
       } else {
         return 'Edit Word';
@@ -79,7 +96,7 @@ export default defineComponent({
     });
 
     const isEditing = computed(() => {
-      return router.currentRoute.name === 'editDictionaryWord';
+      return context.root.$route.name === 'editDictionaryWord';
     });
 
     return {

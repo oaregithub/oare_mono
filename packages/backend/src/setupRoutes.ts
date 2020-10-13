@@ -21,7 +21,7 @@ import collectionInfo from './api/collection_info';
 import logout from './api/logout';
 import refreshToken from './api/refresh_token';
 
-const API_PATH = '/api/v2';
+export const API_PATH = '/api/v2';
 
 export default (app: Express) => {
   app.use(API_PATH, words);

@@ -40,7 +40,7 @@ const guardRoute = (
 };
 
 // Guard admin routes
-const adminRoutes = ['admin', 'groups'];
+const adminRoutes = ['admin', 'groups', 'editDictionaryWord'];
 const adminGuard: NavigationGuard = (to, _from, next) => {
   const navigate = () => {
     if (!store.getters.isAdmin) {

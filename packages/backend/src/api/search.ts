@@ -26,7 +26,7 @@ router.route('/search').get(async (req, res, next) => {
       results: texts,
     };
 
-    cache.insert({ reqPath: req.originalUrl, userId: user ? user.id : null }, searchResults);
+    cache.insert({ req }, searchResults);
     res.json(searchResults);
   } catch (err) {
     next(new HttpException(500, err));

@@ -3,6 +3,7 @@ import knex from '../../../connection';
 
 export interface User {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -32,6 +33,7 @@ class UserDao {
     const user: User = await knex('user')
       .first(
         'id',
+        'uuid',
         'first_name AS firstName',
         'last_name AS lastName',
         'email',
