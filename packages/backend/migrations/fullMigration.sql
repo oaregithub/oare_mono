@@ -57,4 +57,14 @@ CREATE TABLE refresh_tokens (
 ALTER TABLE text_drafts ADD COLUMN notes TEXT;
 UPDATE text_drafts SET notes="";
 
-
+-- 2020-10-12 Create logging_edits table
+CREATE TABLE `logging_edits` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` varchar(15) NOT NULL,
+  `user_uuid` char(36) NOT NULL,
+  `time` datetime NOT NULL,
+  `reference_table` varchar(250) NOT NULL,
+  `uuid` char(36) DEFAULT NULL,
+  `object_values` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=58128 DEFAULT CHARSET=latin1

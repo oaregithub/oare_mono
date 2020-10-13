@@ -8,9 +8,8 @@ const router = express.Router();
 router.route('/names').get(async (req, res, next) => {
   try {
     const dictionaryNames = await dictionaryWordDao.getNames();
-    const userId = req.user ? req.user.id : null;
 
-    cache.insert({ reqPath: req.originalUrl, userId }, dictionaryNames);
+    cache.insert({ req }, dictionaryNames);
     res.json(dictionaryNames);
   } catch (err) {
     next(new HttpException(500, err));

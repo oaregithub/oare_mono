@@ -7,11 +7,12 @@ const router = express.Router();
 
 router.route('/words').get(async (req, res, next) => {
   try {
-    const userId = req.user ? req.user.id : null;
-
     const words = await dictionaryWordDao.getWords();
-    cache.insert({ reqPath: req.originalUrl, userId }, words);
-    res.json(words);
+    const response = {
+      words,
+    };
+    cache.insert({ req }, response);
+    res.json(response);
   } catch (err) {
     next(new HttpException(500, err));
   }

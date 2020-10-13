@@ -1,6 +1,7 @@
 import getQueryString from '../utils';
 import knex from '../../../connection';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
+import LoggingEditsDao from '../LoggingEditsDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -159,6 +160,11 @@ class DictionaryWordDao {
       totalRows: resultRows.length,
       results,
     };
+  }
+
+  async updateWordSpelling(userUuid: string, uuid: string, word: string): Promise<void> {
+    await LoggingEditsDao.logEdit('UPDATE', userUuid, 'dictionary_word', uuid);
+    await knex('dictionary_word').update({ word }).where({ uuid });
   }
 }
 

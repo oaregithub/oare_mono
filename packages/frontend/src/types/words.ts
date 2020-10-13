@@ -6,3 +6,7 @@ export interface DictionaryWord {
   translations: string[];
   verbalThematicVowelTypes: string[];
 }
+
+export interface WordsResponse {
+  words: DictionaryWord[];
+}
