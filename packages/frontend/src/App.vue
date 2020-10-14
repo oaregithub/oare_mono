@@ -21,6 +21,8 @@
         <router-view />
       </v-container>
     </v-main>
+
+    <OareSnackbar />
   </v-app>
 </template>
 

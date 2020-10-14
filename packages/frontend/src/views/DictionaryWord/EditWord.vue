@@ -47,20 +47,6 @@
       Add translation
     </v-btn> -->
 
-    <v-snackbar v-model="successfulEditSnackbar" class="test-edit-snackbar">
-      Edit saved
-      <template #action="{ attrs }">
-        <v-btn
-          text
-          color="error"
-          v-bind="attrs"
-          @click="successfulEditSnackbar = false"
-        >
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
-
     <v-snackbar v-model="undoTranslateSnackbar">
       Translation deleted
       <template #action="{ attrs }">
@@ -76,6 +62,7 @@ import { defineComponent, PropType, ref, Ref } from '@vue/composition-api';
 import { WordWithForms } from '@/types/dictionary';
 import _ from 'lodash';
 import defaultServerProxy from '@/serverProxy';
+import * as defaultSnackbar from '@/globalActions';
 
 export interface DeletedTranslation {
   index: number;
@@ -97,13 +84,16 @@ export default defineComponent({
       type: Object as PropType<typeof defaultServerProxy>,
       default: () => defaultServerProxy,
     },
+    snackbar: {
+      type: Object as PropType<typeof defaultSnackbar>,
+      default: () => defaultSnackbar,
+    },
   },
-  setup({ uuid, wordInfo, serverProxy }, { emit }) {
+  setup({ uuid, wordInfo, serverProxy, snackbar }, { emit }) {
     const loading = ref(true);
     const saveLoading = ref(false);
     const localWordInfo: Ref<WordWithForms> = ref(_.cloneDeep(wordInfo));
     const undoTranslateSnackbar = ref(false);
-    const successfulEditSnackbar = ref(false);
     const deletedTranslation: Ref<DeletedTranslation | null> = ref(null);
 
     const removeTranslation = (index: number) => {
@@ -141,13 +131,19 @@ export default defineComponent({
     const saveEdits = async () => {
       saveLoading.value = true;
       const payload = { word: localWordInfo.value.word };
-      await serverProxy.editWord(uuid, payload);
-      emit('update:wordInfo', {
-        ...localWordInfo.value,
-        ...payload,
-      });
-      successfulEditSnackbar.value = true;
-      saveLoading.value = false;
+
+      try {
+        await serverProxy.editWord(uuid, payload);
+        emit('update:wordInfo', {
+          ...localWordInfo.value,
+          ...payload,
+        });
+        snackbar.showSnackbar('Edit saved');
+      } catch {
+        snackbar.showErrorSnackbar('Error saving word');
+      } finally {
+        saveLoading.value = false;
+      }
     };
 
     return {
@@ -160,7 +156,6 @@ export default defineComponent({
       undoDeleteTranslation,
       saveEdits,
       saveLoading,
-      successfulEditSnackbar,
     };
   },
 });

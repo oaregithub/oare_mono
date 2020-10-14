@@ -12,21 +12,30 @@ describe('EditWord test', () => {
   const mockServer = {
     editWord: jest.fn().mockResolvedValue(null),
   };
-  const createWrapper = () =>
+  const mockSnackbar = {
+    showSnackbar: jest.fn(),
+    showErrorSnackbar: jest.fn(),
+  };
+  const mockProps = {
+    uuid: 'uuid',
+    wordInfo: {
+      word: 'test word',
+      forms: [],
+      partsOfSpeech: [],
+      verbalThematicVowelTypes: [],
+      specialClassifications: [],
+      translations: [],
+    },
+    serverProxy: mockServer,
+    snackbar: mockSnackbar,
+  };
+  const createWrapper = (props = mockProps) =>
     mount(EditWord, {
       vuetify,
       localVue,
       propsData: {
-        uuid: 'uuid',
-        wordInfo: {
-          word: 'test word',
-          forms: [],
-          partsOfSpeech: [],
-          verbalThematicVowelTypes: [],
-          specialClassifications: [],
-          translations: [],
-        },
-        serverProxy: mockServer,
+        ...mockProps,
+        ...props,
       },
     });
 
@@ -42,6 +51,22 @@ describe('EditWord test', () => {
     expect(mockServer.editWord).toHaveBeenCalledWith('uuid', {
       word: 'new word',
     });
-    expect(wrapper.get('.test-edit-snackbar'));
+    expect(mockSnackbar.showSnackbar).toHaveBeenCalledWith('Edit saved');
+  });
+
+  it("shows error when edit doesn't work", async () => {
+    const errorServer = {
+      editWord: jest.fn().mockRejectedValue(null),
+    };
+    const wrapper = createWrapper({
+      serverProxy: errorServer,
+    });
+
+    await wrapper.find('.test-edit-word input').setValue('new word');
+    await wrapper.find('.test-save-btn').trigger('click');
+    await flushPromises();
+    expect(mockSnackbar.showErrorSnackbar).toHaveBeenCalledWith(
+      'Error saving word'
+    );
   });
 });
