@@ -7,6 +7,7 @@ import OareUserCard from './src/components/base/OareUserCard.vue';
 import OareContentView from './src/components/base/OareContentView.vue';
 import OareBreadcrumbs from './src/components/base/OareBreadcrumbs.vue';
 import OareDialog from './src/components/base/OareDialog.vue';
+import OareLabel from './src/components/base/OareLabel.vue';
 
 Vue.use(Vuetify);
 Vue.component('OareLoaderButton', OareLoaderButton);
@@ -14,6 +15,7 @@ Vue.component('OareUserCard', OareUserCard);
 Vue.component('OareContentView', OareContentView);
 Vue.component('OareBreadcrumbs', OareBreadcrumbs);
 Vue.component('OareDialog', OareDialog);
+Vue.component('OareLabel', OareLabel);
 
 // Stops Vuetify from complaining about missing data-app attribute
 const app = document.createElement('div');

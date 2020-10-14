@@ -2,14 +2,18 @@
   <div>
     <OareLoaderButton
       color="primary"
-      class="mb-5"
+      class="mb-5 test-save-btn"
       :loading="saveLoading"
       @click="saveEdits"
       >Save Edits</OareLoaderButton
     >
     <OareLabel>Word</OareLabel>
     <v-col cols="11" sm="7" lg="5">
-      <v-text-field v-model="localWordInfo.word" outlined class="mb-4" />
+      <v-text-field
+        v-model="localWordInfo.word"
+        outlined
+        class="mb-4 test-edit-word"
+      />
     </v-col>
     <!-- <OareLabel>Translations</OareLabel> -->
 
@@ -43,7 +47,7 @@
       Add translation
     </v-btn> -->
 
-    <v-snackbar v-model="successfulEditSnackbar">
+    <v-snackbar v-model="successfulEditSnackbar" class="test-edit-snackbar">
       Edit saved
       <template #action="{ attrs }">
         <v-btn
