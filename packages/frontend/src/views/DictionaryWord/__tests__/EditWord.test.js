@@ -10,7 +10,9 @@ localVue.use(VueCompositionApi);
 
 describe('EditWord test', () => {
   const mockServer = {
-    editWord: jest.fn().mockResolvedValue(null),
+    editWord: jest.fn().mockResolvedValue({
+      translations: [],
+    }),
   };
   const mockSnackbar = {
     showSnackbar: jest.fn(),
@@ -27,7 +29,7 @@ describe('EditWord test', () => {
       translations: [],
     },
     serverProxy: mockServer,
-    snackbar: mockSnackbar,
+    actions: mockSnackbar,
   };
   const createWrapper = (props = mockProps) =>
     mount(EditWord, {
@@ -50,6 +52,7 @@ describe('EditWord test', () => {
     await flushPromises();
     expect(mockServer.editWord).toHaveBeenCalledWith('uuid', {
       word: 'new word',
+      translations: [],
     });
     expect(mockSnackbar.showSnackbar).toHaveBeenCalledWith('Edit saved');
   });

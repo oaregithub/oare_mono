@@ -8,9 +8,9 @@
         ({{ wordInfo.verbalThematicVowelTypes.join(', ') }})
       </div>
       <p>
-        <span v-for="(tr, idx) in wordInfo.translations" :key="idx">
+        <span v-for="(tr, idx) in wordInfo.translations" :key="tr.uuid">
           <b>{{ idx + 1 }}</b
-          >. {{ tr }}
+          >. {{ tr.translation }}
         </span>
         <span
           v-if="

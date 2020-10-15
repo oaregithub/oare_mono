@@ -15,16 +15,19 @@
         class="mb-4 test-edit-word"
       />
     </v-col>
-    <!-- <OareLabel>Translations</OareLabel> -->
+    <OareLabel>Translations</OareLabel>
 
-    <!-- <div
+    <div
       v-for="(translation, idx) in localWordInfo.translations"
       :key="idx"
       class="d-flex align-start"
     >
       <span class="mt-6">{{ idx + 1 }}</span>
       <v-col cols="11" sm="7" lg="5" class="mb-n4">
-        <v-text-field v-model="localWordInfo.translations[idx]" outlined />
+        <v-text-field
+          v-model="localWordInfo.translations[idx].translation"
+          outlined
+        />
       </v-col>
       <div class="d-flex mt-5">
         <v-btn v-if="idx !== 0" icon @click="moveTranslation(idx, idx - 1)">
@@ -45,7 +48,7 @@
     <v-btn color="primary" @click="addTranslation" text>
       <v-icon>mdi-plus</v-icon>
       Add translation
-    </v-btn> -->
+    </v-btn>
 
     <v-snackbar v-model="undoTranslateSnackbar">
       Translation deleted
@@ -62,11 +65,14 @@ import { defineComponent, PropType, ref, Ref } from '@vue/composition-api';
 import { WordWithForms } from '@/types/dictionary';
 import _ from 'lodash';
 import defaultServerProxy from '@/serverProxy';
-import * as defaultSnackbar from '@/globalActions';
+import defaultActions from '@/globalActions';
 
 export interface DeletedTranslation {
   index: number;
-  translation: string;
+  translation: {
+    uuid: string;
+    translation: string;
+  };
 }
 
 export default defineComponent({
@@ -84,12 +90,12 @@ export default defineComponent({
       type: Object as PropType<typeof defaultServerProxy>,
       default: () => defaultServerProxy,
     },
-    snackbar: {
-      type: Object as PropType<typeof defaultSnackbar>,
-      default: () => defaultSnackbar,
+    actions: {
+      type: Object as PropType<typeof defaultActions>,
+      default: () => defaultActions,
     },
   },
-  setup({ uuid, wordInfo, serverProxy, snackbar }, { emit }) {
+  setup({ uuid, wordInfo, serverProxy, actions }, { emit }) {
     const loading = ref(true);
     const saveLoading = ref(false);
     const localWordInfo: Ref<WordWithForms> = ref(_.cloneDeep(wordInfo));
@@ -116,7 +122,10 @@ export default defineComponent({
     };
 
     const addTranslation = () => {
-      localWordInfo.value.translations.push('');
+      localWordInfo.value.translations.push({
+        uuid: '',
+        translation: '',
+      });
     };
 
     const undoDeleteTranslation = () => {
@@ -130,17 +139,21 @@ export default defineComponent({
 
     const saveEdits = async () => {
       saveLoading.value = true;
-      const payload = { word: localWordInfo.value.word };
+      const payload = {
+        word: localWordInfo.value.word,
+        translations: localWordInfo.value.translations,
+      };
 
       try {
-        await serverProxy.editWord(uuid, payload);
+        const { translations } = await serverProxy.editWord(uuid, payload);
+        localWordInfo.value.translations = translations;
         emit('update:wordInfo', {
           ...localWordInfo.value,
           ...payload,
         });
-        snackbar.showSnackbar('Edit saved');
+        actions.showSnackbar('Edit saved');
       } catch {
-        snackbar.showErrorSnackbar('Error saving word');
+        actions.showErrorSnackbar('Error saving word');
       } finally {
         saveLoading.value = false;
       }

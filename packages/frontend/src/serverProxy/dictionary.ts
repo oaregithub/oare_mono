@@ -3,6 +3,17 @@ import { WordWithForms } from '@/types/dictionary';
 
 interface UpdateWordPayload {
   word: string;
+  translations: {
+    uuid: string;
+    translation: string;
+  }[];
+}
+
+interface UpdateWordResponse {
+  translations: {
+    uuid: string;
+    translation: string;
+  }[];
 }
 /**
  * Return forms and spellings of a dictionary word
@@ -16,8 +27,9 @@ async function getDictionaryInfo(uuid: string): Promise<WordWithForms> {
 async function editWord(
   uuid: string,
   payload: UpdateWordPayload
-): Promise<void> {
-  await axios.post(`/dictionary/${uuid}`, payload);
+): Promise<UpdateWordResponse> {
+  const { data } = await axios.post(`/dictionary/${uuid}`, payload);
+  return data;
 }
 
 export default {

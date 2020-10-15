@@ -40,6 +40,11 @@ function getWordList(flatNames: NamePlaceQueryRow[]): string[] {
   return Array.from(wordList);
 }
 
+function capitalized(word: string): string {
+  if (!word || word.length < 1) return word;
+  return word[0].toUpperCase() + word.substring(1);
+}
+
 function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NamePlaceQueryResult {
   const info: NamePlaceQueryResult = {
     uuid: flatNames[0].uuid,
@@ -64,15 +69,9 @@ function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NamePlaceQueryResult
   return info;
 }
 
-function capitalized(word: string): string {
-  if (!word || word.length < 1) return word;
-  return word[0].toUpperCase() + word.substring(1);
-}
-
 export function prepareWords(words: WordQueryRow[]): WordQueryResultRow[] {
   const wordsWithLists = words.map((wordInfo) => ({
     ...wordInfo,
-    translations: wordInfo.translations ? wordInfo.translations.split('#!') : [],
     partsOfSpeech: wordInfo.partsOfSpeech ? wordInfo.partsOfSpeech.split(',') : [],
     verbalThematicVowelTypes: wordInfo.verbalThematicVowelTypes
       ? wordInfo.verbalThematicVowelTypes.split(',').map((vowelType) => vowelType.replace('-Class', ''))
