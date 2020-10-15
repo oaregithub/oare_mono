@@ -8,7 +8,7 @@ const router = express.Router();
 router.route('/register').post(async (req, res, next) => {
   try {
     const { first_name: firstName, last_name: lastName, email, password } = req.body;
-    const existingUser = await userDao.getUserByEmail(email);
+    const existingUser = await userDao.emailExists(email);
     if (existingUser) {
       next(new HttpException(400, `The email ${email} is already in use, please choose another.`));
       return;
