@@ -2,6 +2,7 @@ import getQueryString from '../utils';
 import knex from '../../../connection';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
+import FieldDao from '../FieldDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -9,7 +10,6 @@ export interface WordQueryRow {
   partsOfSpeech: string | null;
   verbalThematicVowelTypes: string | null;
   specialClassifications: string | null;
-  translations: string | null;
 }
 
 export interface GrammarInfoRow {
@@ -35,13 +35,22 @@ export interface GrammarInfoResult {
   cases: string[];
 }
 
+export interface WordTranslation {
+  uuid: string;
+  translation: string;
+}
+
 export interface WordQueryResultRow {
   uuid: string;
   word: string;
   partsOfSpeech: string[];
   verbalThematicVowelTypes: string[];
   specialClassifications: string[];
-  translations: string[];
+  // translations: WordTranslation[];
+}
+
+export interface GrammarResult extends WordQueryResultRow {
+  translations: WordTranslation[];
 }
 
 export interface NamePlaceQueryRow {
@@ -85,13 +94,37 @@ export interface SearchWordsQueryResult {
   matches: string[];
 }
 
+export interface TranslationRow {
+  dictionaryUuid: string;
+  fieldUuid: string;
+  field: string;
+}
+
 class DictionaryWordDao {
-  async getWords(): Promise<WordQueryResultRow[]> {
+  async getWords(): Promise<GrammarResult[]> {
     const wordsQuery = getQueryString('wordsQuery.sql');
 
     const res: WordQueryRow[] = (await knex.raw(wordsQuery))[0];
 
-    return prepareWords(res);
+    const allTranslations = await this.getAllTranslations();
+    const wordsWithoutTranslations = prepareWords(res);
+    return wordsWithoutTranslations.map((row) => {
+      const translations = allTranslations.filter((tRow) => tRow.dictionaryUuid === row.uuid);
+      return {
+        ...row,
+        translations: translations.map((tRow) => ({
+          uuid: tRow.fieldUuid,
+          translation: tRow.field,
+        })),
+      };
+    });
+  }
+
+  async getAllTranslations(): Promise<TranslationRow[]> {
+    const rows: TranslationRow[] = await knex('dictionary_word')
+      .select('dictionary_word.uuid AS dictionaryUuid', 'field.uuid AS field.field', 'field.field')
+      .innerJoin('field', 'field.reference_uuid', 'dictionary_word.uuid');
+    return rows;
   }
 
   async getNames() {
@@ -108,16 +141,22 @@ class DictionaryWordDao {
     return nestedFormsAndSpellings(placeRows);
   }
 
-  async getGrammaticalInfo(wordUuid: string): Promise<WordQueryResultRow> {
-    const grammaticalInfoQuery = getQueryString('wordGrammaticalInfoQuery.sql');
-    const {
+  async getWordTranslations(wordUuid: string): Promise<WordTranslation[]> {
+    const translations = (await FieldDao.getByReferenceUuid(wordUuid)).map(({ uuid, field }) => ({
       uuid,
-      word,
-      partsOfSpeech,
-      specialClassifications,
-      translations,
-      verbalThematicVowelTypes,
-    }: WordQueryRow = (await knex.raw(grammaticalInfoQuery, wordUuid))[0][0];
+      translation: field,
+    })) as WordTranslation[];
+
+    return translations;
+  }
+
+  async getGrammaticalInfo(wordUuid: string): Promise<GrammarResult> {
+    const grammaticalInfoQuery = getQueryString('wordGrammaticalInfoQuery.sql');
+    const { uuid, word, partsOfSpeech, specialClassifications, verbalThematicVowelTypes }: WordQueryRow = (
+      await knex.raw(grammaticalInfoQuery, wordUuid)
+    )[0][0];
+
+    const translations = await this.getWordTranslations(wordUuid);
 
     return {
       uuid,
@@ -127,7 +166,7 @@ class DictionaryWordDao {
       verbalThematicVowelTypes: verbalThematicVowelTypes
         ? verbalThematicVowelTypes.split(',').map((vtv) => vtv.replace('-Class', ''))
         : [],
-      translations: translations ? translations.split('#!') : [],
+      translations,
     };
   }
 
@@ -165,6 +204,60 @@ class DictionaryWordDao {
   async updateWordSpelling(userUuid: string, uuid: string, word: string): Promise<void> {
     await LoggingEditsDao.logEdit('UPDATE', userUuid, 'dictionary_word', uuid);
     await knex('dictionary_word').update({ word }).where({ uuid });
+  }
+
+  async updateTranslations(
+    userUuid: string,
+    wordUuid: string,
+    translations: WordTranslation[],
+  ): Promise<WordTranslation[]> {
+    const currentTranslations = await this.getWordTranslations(wordUuid);
+    const translationsWithPrimacy = translations.map((tr, index) => ({
+      ...tr,
+      primacy: index + 1,
+    }));
+
+    // Insert new translations
+    let newTranslations = translationsWithPrimacy.filter((tr) => tr.uuid === '');
+    const insertedUuids = await Promise.all(
+      newTranslations.map((tr) =>
+        FieldDao.insertField(wordUuid, 'definition', tr.translation, { primacy: tr.primacy }),
+      ),
+    );
+    await Promise.all(
+      insertedUuids.map((fieldUuid) => {
+        return LoggingEditsDao.logEdit('INSERT', userUuid, 'field', fieldUuid);
+      }),
+    );
+    newTranslations = newTranslations.map((tr, index) => ({
+      ...tr,
+      uuid: insertedUuids[index],
+    }));
+
+    // Update existing translations
+    const existingTranslations = translationsWithPrimacy.filter((tr) => tr.uuid !== '');
+    await Promise.all(existingTranslations.map((tr) => LoggingEditsDao.logEdit('UPDATE', userUuid, 'field', tr.uuid)));
+    await Promise.all(
+      existingTranslations.map((tr) => FieldDao.updateField(tr.uuid, tr.translation, { primacy: tr.primacy })),
+    );
+
+    // Delete removed translations
+    const combinedTranslations = [...newTranslations, ...existingTranslations];
+    const currentTranslationUuids = currentTranslations.map((tr) => tr.uuid);
+    const remainingTranslationUuids = combinedTranslations.map((tr) => tr.uuid);
+    const deletedTranslationUuids = currentTranslationUuids.filter((uuid) => !remainingTranslationUuids.includes(uuid));
+    await Promise.all(deletedTranslationUuids.map((uuid) => FieldDao.deleteField(uuid)));
+
+    return combinedTranslations
+      .sort((a, b) => {
+        if (a.primacy > b.primacy) return 1;
+        if (a.primacy < b.primacy) return -1;
+        return 0;
+      })
+      .map((tr) => ({
+        translation: tr.translation,
+        uuid: tr.uuid,
+      }));
   }
 }
 

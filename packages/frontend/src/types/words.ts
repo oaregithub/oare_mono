@@ -3,7 +3,10 @@ export interface DictionaryWord {
   word: string;
   partsOfSpeech: string[];
   specialClassifications: string[];
-  translations: string[];
+  translations: {
+    uuid: string;
+    translation: string;
+  }[];
   verbalThematicVowelTypes: string[];
 }
 

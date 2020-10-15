@@ -20,6 +20,9 @@ exports[`EditWord test matches snapshot 1`] = `
       </div>
     </div>
   </div>
+  <div class="font-weight-bold mb-2">Translations</div> <button type="button" class="v-btn v-btn--flat v-btn--text theme--light v-size--default primary--text"><span class="v-btn__content"><i aria-hidden="true" class="v-icon notranslate mdi mdi-plus theme--light"></i>
+    Add translation
+  </span></button>
   <div class="v-snack v-snack--bottom v-snack--has-background" style="padding-bottom: 0px; padding-top: 0px;">
     <transition-stub name="v-snack-transition">
       <div class="v-snack__wrapper v-sheet theme--dark" style="display: none;">

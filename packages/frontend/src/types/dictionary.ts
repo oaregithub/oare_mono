@@ -4,7 +4,10 @@ export interface WordWithForms {
   partsOfSpeech: string[];
   verbalThematicVowelTypes: string[];
   specialClassifications: string[];
-  translations: string[];
+  translations: {
+    uuid: string;
+    translation: string;
+  }[];
 }
 
 export interface DictionaryForm {

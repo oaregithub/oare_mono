@@ -28,9 +28,9 @@
           {{ ` (${word.verbalThematicVowelTypes.join(', ')})` }}
         </div>
         <p>
-          <span v-for="(tr, idx) in word.translations" :key="idx">
+          <span v-for="(tr, idx) in word.translations" :key="tr.uuid">
             <b>{{ idx + 1 }}</b
-            >. {{ tr }}
+            >. {{ tr.translation }}
           </span>
           <span
             v-if="
@@ -75,7 +75,9 @@ export default defineComponent({
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        word.translations.some(tr => tr.toLowerCase().includes(lowerSearch)) ||
+        word.translations.some(tr =>
+          tr.translation.toLowerCase().includes(lowerSearch)
+        ) ||
         word.partsOfSpeech.some(pos =>
           pos.toLowerCase().includes(lowerSearch)
         ) ||
