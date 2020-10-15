@@ -19,6 +19,11 @@ export interface UserInfo {
   email: string;
 }
 class UserDao {
+  async emailExists(email: string): Promise<boolean> {
+    const user = await knex('user').first().where({ email });
+    return !!user;
+  }
+
   async getUserById(id: number): Promise<User> {
     const user = await this.getUserByColumn('id', id);
     return user;
