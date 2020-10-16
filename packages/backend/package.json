@@ -28,7 +28,6 @@
     "typescript": "^3.9.3"
   },
   "dependencies": {
-    "@oare/types": "^1.0.0",
     "@types/connect-history-api-fallback": "^1.3.3",
     "@types/cookie-parser": "^1.4.2",
     "@types/dotenv": "^8.2.0",
