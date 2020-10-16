@@ -1,7 +1,7 @@
 import axios from '../axiosInstance';
-import { GetGroupsType } from '../types/groups';
+import { Group } from '@oare/types';
 
-async function getAllGroups(): Promise<GetGroupsType[]> {
+async function getAllGroups(): Promise<Group[]> {
   const { data } = await axios.get('/groups');
   return data;
 }

@@ -97,3 +97,12 @@ export interface DictionaryWord {
 export interface WordsResponse {
   words: DictionaryWord[];
 }
+
+// Groups
+
+export interface Group {
+  id: number;
+  name: string;
+  created_on: Date;
+  num_users: number;
+}

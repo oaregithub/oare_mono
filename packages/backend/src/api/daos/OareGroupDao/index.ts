@@ -1,25 +1,17 @@
+import { Group } from '@oare/types';
 import knex from '../../../connection';
 
-export interface OareGroup {
-  id: number;
-  name: string;
-  created_on: string;
-  num_users?: number;
-}
-
 class OareGroupDao {
-  async getGroupByName(name: string): Promise<OareGroup> {
-    const group: OareGroup = await knex('oare_group').first().where({ name });
-    return group;
+  async getGroupByName(name: string): Promise<Group> {
+    return knex('oare_group').first().where({ name });
   }
 
-  async getGroupById(id: number): Promise<OareGroup> {
-    const group: OareGroup = await knex('oare_group').first().where({ id });
-    return group;
+  async getGroupById(id: number): Promise<Group> {
+    return knex('oare_group').first().where({ id });
   }
 
-  async getAllGroups(): Promise<OareGroup[]> {
-    const groups: OareGroup[] = await knex('oare_group')
+  async getAllGroups(): Promise<Group[]> {
+    return knex('oare_group')
       .select(
         'oare_group.id',
         'oare_group.name',
@@ -28,7 +20,6 @@ class OareGroupDao {
       )
       .leftJoin('user_group', 'user_group.group_id', 'oare_group.id')
       .groupBy('oare_group.id');
-    return groups;
   }
 
   async createGroup(name: string): Promise<number> {

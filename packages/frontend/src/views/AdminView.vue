@@ -84,8 +84,7 @@ import {
   watch,
   Ref,
 } from '@vue/composition-api';
-
-import { GetGroupsType, PostGroupsType } from '../types/groups';
+import { Group } from '@oare/types';
 import serverProxy from '../serverProxy';
 
 export default defineComponent({
@@ -100,8 +99,8 @@ export default defineComponent({
         value: 'num_users',
       },
     ]);
-    const groups: Ref<GetGroupsType[]> = ref([]);
-    const selectedGroups: Ref<GetGroupsType[]> = ref([]);
+    const groups: Ref<Group[]> = ref([]);
+    const selectedGroups: Ref<Group[]> = ref([]);
     const loading = ref(true);
     const addDialog = ref(false);
     const groupName = ref('');

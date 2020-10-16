@@ -1,4 +1,5 @@
 import express from 'express';
+import { Group } from '@oare/types';
 import adminRoute from '../middlewares/adminRoute';
 import oareGroupDao from './daos/OareGroupDao';
 import HttpException from '../exceptions/HttpException';
@@ -25,7 +26,8 @@ router
   .route('/groups')
   .get(adminRoute, async (_req, res, next) => {
     try {
-      res.json(await oareGroupDao.getAllGroups());
+      const groups: Group[] = await oareGroupDao.getAllGroups();
+      res.json(groups);
     } catch (err) {
       next(new HttpException(500, err));
     }
