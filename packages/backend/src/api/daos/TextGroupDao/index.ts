@@ -1,7 +1,7 @@
 import knex from '../../../connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
-import { User } from '../UserDao';
+import { UserRow } from '../UserDao';
 
 export interface TextQueryRow {
   text_uuid: string;
@@ -18,7 +18,7 @@ export interface TextGroupRow {
 }
 
 class TextGroupDao {
-  async getUserBlacklist(user: User | null) {
+  async getUserBlacklist(user: UserRow | null) {
     const userTexts = await this.getPublicTexts();
 
     if (user) {

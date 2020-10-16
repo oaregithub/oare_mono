@@ -1,0 +1,13 @@
+{
+  "name": "@oare/types",
+  "version": "1.0.0",
+  "main": "./build/index.js",
+  "types": "index.d.ts",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^4.0.3"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}

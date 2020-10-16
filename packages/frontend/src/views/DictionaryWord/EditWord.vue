@@ -62,17 +62,14 @@
 </template>
 <script lang="ts">
 import { defineComponent, PropType, ref, Ref } from '@vue/composition-api';
-import { WordWithForms } from '@/types/dictionary';
+import { WordWithForms, DictionaryWordTranslation } from '@oare/types';
 import _ from 'lodash';
 import defaultServerProxy from '@/serverProxy';
 import defaultActions from '@/globalActions';
 
 export interface DeletedTranslation {
   index: number;
-  translation: {
-    uuid: string;
-    translation: string;
-  };
+  translation: DictionaryWordTranslation;
 }
 
 export default defineComponent({

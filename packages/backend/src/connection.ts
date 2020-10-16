@@ -5,8 +5,9 @@ export default knex({
   connection:
     process.env.NODE_ENV === 'development'
       ? {
-          host: 'db',
+          host: 'localhost',
           user: 'root',
+          port: 3306,
           password: 'example',
           database: 'oarebyue_0.3',
         }

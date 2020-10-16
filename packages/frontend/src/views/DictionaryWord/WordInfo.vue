@@ -39,7 +39,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
-import { WordWithForms, DictionaryForm } from '@/types/dictionary';
+import { WordWithForms, DictionaryForm } from '@oare/types';
 
 export default defineComponent({
   props: {

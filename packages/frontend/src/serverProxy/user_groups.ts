@@ -1,5 +1,5 @@
 import axios from '../axiosInstance';
-import { User } from '@/types/users';
+import { User } from '@oare/types';
 
 async function getGroupUsers(groupId: number): Promise<User[]> {
   let { data: groupUsers } = await axios.get('/user_groups', {

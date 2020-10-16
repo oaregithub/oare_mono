@@ -1,3 +1,4 @@
+import { DictionaryWordTranslation } from '@oare/types';
 import getQueryString from '../utils';
 import knex from '../../../connection';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
@@ -35,11 +36,6 @@ export interface GrammarInfoResult {
   cases: string[];
 }
 
-export interface WordTranslation {
-  uuid: string;
-  translation: string;
-}
-
 export interface WordQueryResultRow {
   uuid: string;
   word: string;
@@ -50,7 +46,7 @@ export interface WordQueryResultRow {
 }
 
 export interface GrammarResult extends WordQueryResultRow {
-  translations: WordTranslation[];
+  translations: DictionaryWordTranslation[];
 }
 
 export interface NamePlaceQueryRow {
@@ -141,11 +137,11 @@ class DictionaryWordDao {
     return nestedFormsAndSpellings(placeRows);
   }
 
-  async getWordTranslations(wordUuid: string): Promise<WordTranslation[]> {
+  async getWordTranslations(wordUuid: string): Promise<DictionaryWordTranslation[]> {
     const translations = (await FieldDao.getByReferenceUuid(wordUuid)).map(({ uuid, field }) => ({
       uuid,
       translation: field,
-    })) as WordTranslation[];
+    })) as DictionaryWordTranslation[];
 
     return translations;
   }
@@ -209,8 +205,8 @@ class DictionaryWordDao {
   async updateTranslations(
     userUuid: string,
     wordUuid: string,
-    translations: WordTranslation[],
-  ): Promise<WordTranslation[]> {
+    translations: DictionaryWordTranslation[],
+  ): Promise<DictionaryWordTranslation[]> {
     const currentTranslations = await this.getWordTranslations(wordUuid);
     const translationsWithPrimacy = translations.map((tr, index) => ({
       ...tr,

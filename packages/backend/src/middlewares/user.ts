@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import UserDao, { User } from '../api/daos/UserDao';
+import UserDao, { UserRow } from '../api/daos/UserDao';
 import HttpException from '../exceptions/HttpException';
 
 // Attach user object to each request
@@ -14,7 +14,7 @@ async function attachUser(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    const { email } = jwt.verify(token, process.env.OARE_JWT_TOKEN || '') as User;
+    const { email } = jwt.verify(token, process.env.OARE_JWT_TOKEN || '') as UserRow;
     const user = await UserDao.getUserByEmail(email);
     req.user = user;
     next();
