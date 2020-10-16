@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
-    "lint": "yarn workspaces run lint",
+    "lint": "yarn workspace @oare/frontend run lint",
     "lint:fix": "yarn workspace @oare/frontend lint:fix",
     "build": "./build.sh",
     "bootstrap": "lerna bootstrap --use-workspaces",
