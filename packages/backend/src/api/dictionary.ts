@@ -1,17 +1,13 @@
 import express from 'express';
+import { DictionaryWordResponse, UpdateDictionaryPayload } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import dictionaryFormDao from './daos/DictionaryFormDao';
-import dictionaryWordDao, { WordTranslation } from './daos/DictionaryWordDao';
+import dictionaryWordDao from './daos/DictionaryWordDao';
 import { API_PATH } from '../setupRoutes';
 import cache from '../cache';
 import adminRoute from '../middlewares/adminRoute';
 
 const router = express.Router();
-
-interface UpdateDictionaryPayload {
-  word: string;
-  translations: WordTranslation[];
-}
 
 router
   .route('/dictionary/:uuid')
@@ -22,10 +18,11 @@ router
       const grammarInfo = await dictionaryWordDao.getGrammaticalInfo(uuid);
       const forms = await dictionaryFormDao.getFormsWithSpellings(uuid);
 
-      res.json({
+      const result: DictionaryWordResponse = {
         ...grammarInfo,
         forms,
-      });
+      };
+      res.json(result);
     } catch (err) {
       next(new HttpException(500, err));
     }

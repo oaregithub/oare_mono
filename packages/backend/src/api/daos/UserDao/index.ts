@@ -1,7 +1,8 @@
 import { v4 } from 'uuid';
+import { User } from '@oare/types';
 import knex from '../../../connection';
 
-export interface User {
+export interface UserRow {
   id: number;
   uuid: string;
   firstName: string;
@@ -12,30 +13,24 @@ export interface User {
   createdOn: string;
 }
 
-export interface UserInfo {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-}
 class UserDao {
   async emailExists(email: string): Promise<boolean> {
     const user = await knex('user').first().where({ email });
     return !!user;
   }
 
-  async getUserById(id: number): Promise<User> {
+  async getUserById(id: number): Promise<UserRow> {
     const user = await this.getUserByColumn('id', id);
     return user;
   }
 
-  async getUserByEmail(email: string): Promise<User> {
+  async getUserByEmail(email: string): Promise<UserRow> {
     const user = await this.getUserByColumn('email', email);
     return user;
   }
 
   private async getUserByColumn(column: string, value: string | number) {
-    const user: User = await knex('user')
+    const user: UserRow = await knex('user')
       .first(
         'id',
         'uuid',
@@ -76,8 +71,8 @@ class UserDao {
     });
   }
 
-  async getAllUsers(): Promise<UserInfo[]> {
-    const users: UserInfo[] = await knex('user').select('id', 'first_name', 'last_name', 'email');
+  async getAllUsers(): Promise<User[]> {
+    const users: User[] = await knex('user').select('id', 'first_name', 'last_name', 'email');
     return users;
   }
 }

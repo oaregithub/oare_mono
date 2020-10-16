@@ -83,7 +83,7 @@ import {
   watch,
   computed,
 } from '@vue/composition-api';
-import { User } from '@/types/users';
+import { User } from '@oare/types';
 
 export default defineComponent({
   props: {

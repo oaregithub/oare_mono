@@ -8,12 +8,12 @@ import errorMiddleware from './middlewares/error';
 import cacheMiddleware from './middlewares/cache';
 import userMiddleware from './middlewares/user';
 
-import { User } from './api/daos/UserDao';
+import { UserRow } from './api/daos/UserDao';
 
 declare global {
   namespace Express {
     interface Request {
-      user: User | null;
+      user: UserRow | null;
     }
   }
 }

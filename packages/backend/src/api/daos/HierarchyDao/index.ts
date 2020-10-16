@@ -1,7 +1,7 @@
 import knex from '../../../connection';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
-import { User } from '../UserDao';
+import { UserRow } from '../UserDao';
 
 export interface UuidAndName {
   uuid: string;
@@ -57,7 +57,7 @@ class HierarchyDao {
     }));
   }
 
-  async getCollectionTexts(userId: User | null, uuid: string, { page = 1, rows = 10, search = '' }) {
+  async getCollectionTexts(userId: UserRow | null, uuid: string, { page = 1, rows = 10, search = '' }) {
     const blacklistedTexts = await textGroupDao.getUserBlacklist(userId);
     const countRow = await collectionTextQuery(uuid, search, blacklistedTexts)
       .count({

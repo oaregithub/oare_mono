@@ -2,12 +2,13 @@
   "name": "oare",
   "private": true,
   "scripts": {
-    "start": "yarn workspace @oare/backend start",
-    "lint": "yarn workspaces run lint",
+    "start": "concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
+    "lint": "yarn workspace @oare/frontend run lint",
     "lint:fix": "yarn workspace @oare/frontend lint:fix",
     "build": "./build.sh",
     "bootstrap": "lerna bootstrap --use-workspaces",
-    "serve": "yarn workspace @oare/frontend serve",
+    "client": "yarn workspace @oare/frontend serve",
+    "server": "yarn workspace @oare/backend dev",
     "test": "yarn workspace @oare/frontend test"
   },
   "workspaces": {

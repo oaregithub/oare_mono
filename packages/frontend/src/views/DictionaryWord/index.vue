@@ -26,7 +26,7 @@ import {
   computed,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { WordWithForms, DictionaryForm } from '@/types/dictionary';
+import { WordWithForms, DictionaryForm } from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
 import EditWord from './EditWord.vue';
