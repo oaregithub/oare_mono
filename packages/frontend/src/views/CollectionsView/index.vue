@@ -12,7 +12,7 @@ import {
   onMounted,
   computed,
 } from '@vue/composition-api';
-import { CollectionListItem } from '@/types/collections';
+import { CollectionListItem } from '@oare/types';
 import server from '@/serverProxy';
 import { letterGroups } from './utils';
 import CollectionsList from './CollectionsList.vue';

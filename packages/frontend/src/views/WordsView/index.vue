@@ -52,7 +52,7 @@
 import { defineComponent, ref, Ref, onMounted } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
 import server from '@/serverProxy';
-import { DictionaryWord } from '@/types/words';
+import { DictionaryWord } from '@oare/types';
 
 export default defineComponent({
   name: 'WordsView',

@@ -1,4 +1,4 @@
-import { DictionaryWordTranslation } from '@oare/types';
+import { DictionaryWordTranslation, DictionaryWord } from '@oare/types';
 import getQueryString from '../utils';
 import knex from '../../../connection';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
@@ -42,11 +42,6 @@ export interface WordQueryResultRow {
   partsOfSpeech: string[];
   verbalThematicVowelTypes: string[];
   specialClassifications: string[];
-  // translations: WordTranslation[];
-}
-
-export interface GrammarResult extends WordQueryResultRow {
-  translations: DictionaryWordTranslation[];
 }
 
 export interface NamePlaceQueryRow {
@@ -97,7 +92,7 @@ export interface TranslationRow {
 }
 
 class DictionaryWordDao {
-  async getWords(): Promise<GrammarResult[]> {
+  async getWords(): Promise<DictionaryWord[]> {
     const wordsQuery = getQueryString('wordsQuery.sql');
 
     const res: WordQueryRow[] = (await knex.raw(wordsQuery))[0];
@@ -146,7 +141,7 @@ class DictionaryWordDao {
     return translations;
   }
 
-  async getGrammaticalInfo(wordUuid: string): Promise<GrammarResult> {
+  async getGrammaticalInfo(wordUuid: string): Promise<DictionaryWord> {
     const grammaticalInfoQuery = getQueryString('wordGrammaticalInfoQuery.sql');
     const { uuid, word, partsOfSpeech, specialClassifications, verbalThematicVowelTypes }: WordQueryRow = (
       await knex.raw(grammaticalInfoQuery, wordUuid)

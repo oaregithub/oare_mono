@@ -59,3 +59,41 @@ export interface WordWithForms {
   specialClassifications: string[];
   translations: DictionaryWordTranslation[];
 }
+
+// Collections / Texts
+
+export interface CollectionListItem {
+  uuid: string;
+  name: string;
+}
+
+export interface CollectionText {
+  id: number;
+  uuid: string;
+  type: string;
+  hasEpigraphy: boolean;
+  name: string;
+}
+export interface CollectionResponse {
+  totalTexts: number;
+  texts: CollectionText[];
+}
+
+export interface CollectionInfo {
+  name: string;
+}
+
+// Words
+
+export interface DictionaryWord {
+  uuid: string;
+  word: string;
+  partsOfSpeech: string[];
+  specialClassifications: string[];
+  translations: DictionaryWordTranslation[];
+  verbalThematicVowelTypes: string[];
+}
+
+export interface WordsResponse {
+  words: DictionaryWord[];
+}
