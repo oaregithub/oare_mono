@@ -29,7 +29,7 @@ import {
   computed,
   PropType,
 } from '@vue/composition-api';
-import { CollectionListItem } from '@/types/collections';
+import { CollectionListItem } from '@oare/types';
 import { letterGroups } from './utils';
 
 export default defineComponent({

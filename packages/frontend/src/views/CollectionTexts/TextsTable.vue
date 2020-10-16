@@ -26,7 +26,7 @@ import {
   watch,
   PropType,
 } from '@vue/composition-api';
-import { CollectionResponse, CollectionText } from '@/types/collections';
+import { CollectionResponse, CollectionText } from '@oare/types';
 export default defineComponent({
   props: {
     loading: {

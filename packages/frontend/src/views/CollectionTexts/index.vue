@@ -43,7 +43,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import Router from 'vue-router';
-import { CollectionResponse, CollectionText } from '@/types/collections';
+import { CollectionResponse, CollectionText } from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import TextsTable from './TextsTable.vue';
 import { getLetterGroup } from '../CollectionsView/utils';

@@ -1,20 +1,8 @@
+import { CollectionListItem, CollectionResponse, CollectionText } from '@oare/types';
 import knex from '../../../connection';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
-
-export interface UuidAndName {
-  uuid: string;
-  name: string;
-}
-
-export interface CollectionRow {
-  id: number;
-  uuid: string;
-  type: string;
-  name: string;
-  hasEpigraphy: boolean;
-}
 
 function collectionTextQuery(uuid: string, search: string, blacklist: string[]) {
   const query = knex('hierarchy')
@@ -29,8 +17,8 @@ function collectionTextQuery(uuid: string, search: string, blacklist: string[]) 
 }
 
 class HierarchyDao {
-  async getTextsBySearchTerm(searchText: string) {
-    const matchingTexts: UuidAndName[] = await knex('hierarchy')
+  async getTextsBySearchTerm(searchText: string): Promise<CollectionListItem[]> {
+    const matchingTexts: CollectionListItem[] = await knex('hierarchy')
       .select('hierarchy.uuid', 'alias.name')
       .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
       .where('hierarchy.type', 'text')
@@ -40,7 +28,7 @@ class HierarchyDao {
     return matchingTexts;
   }
 
-  async getAllCollections(isAdmin: boolean): Promise<UuidAndName[]> {
+  async getAllCollections(isAdmin: boolean): Promise<CollectionListItem[]> {
     let collectionsQuery = knex('hierarchy').select('hierarchy.uuid').where('hierarchy.type', 'collection');
 
     if (!isAdmin) {
@@ -57,7 +45,11 @@ class HierarchyDao {
     }));
   }
 
-  async getCollectionTexts(userId: UserRow | null, uuid: string, { page = 1, rows = 10, search = '' }) {
+  async getCollectionTexts(
+    userId: UserRow | null,
+    uuid: string,
+    { page = 1, rows = 10, search = '' },
+  ): Promise<CollectionResponse> {
     const blacklistedTexts = await textGroupDao.getUserBlacklist(userId);
     const countRow = await collectionTextQuery(uuid, search, blacklistedTexts)
       .count({
@@ -82,23 +74,23 @@ class HierarchyDao {
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    const results: CollectionRow[] = await collectionRowsQuery;
+    let texts: CollectionText[] = await collectionRowsQuery;
 
-    const textNameQueries = results.map((result) => aliasDao.displayAliasNames(result.uuid));
-    const textNames = await Promise.all(textNameQueries);
+    const textNames = await Promise.all(texts.map((result) => aliasDao.displayAliasNames(result.uuid)));
 
-    results.forEach((result, i) => {
-      result.name = textNames[i]; // eslint-disable-line
-    });
+    texts = texts.map((result, i) => ({
+      ...result,
+      name: textNames[i],
+    }));
 
     return {
       totalTexts,
-      results,
+      texts,
     };
   }
 
-  async getEpigraphyCollection(epigUuid: string): Promise<UuidAndName> {
-    const collection: UuidAndName = await knex('hierarchy')
+  async getEpigraphyCollection(epigUuid: string): Promise<CollectionListItem> {
+    const collection: CollectionListItem = await knex('hierarchy')
       .first('hierarchy.parent_uuid AS uuid', 'alias.name')
       .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.parent_uuid')
       .where('hierarchy.uuid', epigUuid);

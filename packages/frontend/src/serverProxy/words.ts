@@ -1,4 +1,4 @@
-import { WordsResponse } from '@/types/words';
+import { WordsResponse } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getDictionaryWords(): Promise<WordsResponse> {

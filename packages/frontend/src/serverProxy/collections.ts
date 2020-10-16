@@ -1,9 +1,10 @@
 import axios from '../axiosInstance';
+
 import {
-  CollectionResponse,
   CollectionListItem,
+  CollectionResponse,
   CollectionInfo,
-} from '../types/collections';
+} from '@oare/types';
 
 /**
  * Returns the list of collections in the corpus

@@ -26,16 +26,11 @@ router.route('/collections/:uuid').get(collectionsMiddleware, async (req, res, n
     const rows = req.query.rows ? ((req.query.rows as unknown) as number) : 10;
     const search = req.query.query ? (req.query.query as string) : '';
 
-    const { totalTexts, results } = await hierarchyDao.getCollectionTexts(user, uuid, {
+    const response = await hierarchyDao.getCollectionTexts(user, uuid, {
       page,
       rows,
       search,
     });
-
-    const response = {
-      totalTexts,
-      texts: results,
-    };
 
     cache.insert({ req }, response);
 
