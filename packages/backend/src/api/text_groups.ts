@@ -1,15 +1,10 @@
 import express from 'express';
+import { AddTextPayload } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import adminRoute from '../middlewares/adminRoute';
 import textGroupDao from './daos/TextGroupDao';
 import oareGroupDao from './daos/OareGroupDao';
 import textDao from './daos/TextDao';
-
-export interface NewText {
-  uuid: string;
-  can_read: boolean;
-  can_write: boolean;
-}
 
 const router = express.Router();
 
@@ -54,8 +49,7 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const groupId = (req.body.group_id as unknown) as number;
-      const texts = (req.body.texts as unknown) as NewText[];
+      const { groupId, texts }: AddTextPayload = req.body;
 
       // Make sure that group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);

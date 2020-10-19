@@ -146,3 +146,23 @@ export interface DictionarySearchResult {
   totalRows: number;
   results: DictionarySearchRow[];
 }
+
+// Text Groups
+
+export interface TextGroup {
+  uuid: string;
+  can_write: boolean;
+  can_read: boolean;
+}
+
+export interface Text {
+  can_read: boolean;
+  can_write: boolean;
+  name: string;
+  text_uuid: string;
+}
+
+export interface AddTextPayload {
+  groupId: number;
+  texts: TextGroup[];
+}

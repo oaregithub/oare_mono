@@ -1,14 +1,8 @@
+import { Text } from '@oare/types';
 import knex from '../../../connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
 import { UserRow } from '../UserDao';
-
-export interface TextQueryRow {
-  text_uuid: string;
-  can_read: boolean;
-  can_write: boolean;
-  name: string;
-}
 
 export interface TextGroupRow {
   text_uuid: string;
@@ -47,8 +41,8 @@ class TextGroupDao {
     return blacklistedUuids;
   }
 
-  async getPublicTexts(): Promise<TextQueryRow[]> {
-    const results: TextQueryRow[] = await knex('text_group')
+  async getPublicTexts(): Promise<Text[]> {
+    const results: Text[] = await knex('text_group')
       .select('text_group.text_uuid', 'text_group.can_read', 'text_group.can_write', 'alias.name')
       .innerJoin('hierarchy', 'hierarchy.uuid', 'text_group.text_uuid')
       .innerJoin('oare_group', 'oare_group.id', 'text_group.group_id')
@@ -63,8 +57,8 @@ class TextGroupDao {
     }));
   }
 
-  async getTexts(groupId: number): Promise<TextQueryRow[]> {
-    const results: TextQueryRow[] = await knex('text_group')
+  async getTexts(groupId: number): Promise<Text[]> {
+    const results: Text[] = await knex('text_group')
       .select('text_group.text_uuid', 'text_group.can_read', 'text_group.can_write', 'alias.name')
       .innerJoin('hierarchy', 'hierarchy.uuid', 'text_group.text_uuid')
       .innerJoin('alias', 'text_group.text_uuid', 'alias.reference_uuid')
@@ -95,12 +89,12 @@ class TextGroupDao {
     return false;
   }
 
-  async containsAssociation(groupId: number, textUuid: string) {
+  async containsAssociation(groupId: number, textUuid: string): Promise<boolean> {
     const row = await knex('text_group').first().where('text_uuid', textUuid).andWhere('group_id', groupId);
     return !!row;
   }
 
-  async update(groupId: number, textUuid: string, canWrite: boolean, canRead: boolean) {
+  async update(groupId: number, textUuid: string, canWrite: boolean, canRead: boolean): Promise<void> {
     await knex('text_group')
       .where('text_uuid', textUuid)
       .andWhere('group_id', groupId)
@@ -110,12 +104,12 @@ class TextGroupDao {
       });
   }
 
-  async addTexts(texts: TextGroupRow[]) {
+  async addTexts(texts: TextGroupRow[]): Promise<number[]> {
     const ids: number[] = await knex('text_group').insert(texts);
     return ids;
   }
 
-  async removeTexts(groupId: number, texts: string[]) {
+  async removeTexts(groupId: number, texts: string[]): Promise<void> {
     await knex('text_group').whereIn('text_uuid', texts).andWhere('group_id', groupId).del();
   }
 }
