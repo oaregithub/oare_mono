@@ -115,7 +115,7 @@
 <script lang="ts">
 import _ from 'lodash';
 import defaultServerProxy from '@/serverProxy';
-import { Text } from '@/types/text_groups';
+import { Text } from '@oare/types';
 
 import {
   defineComponent,
@@ -211,7 +211,10 @@ export default defineComponent({
         uuid: item.text_uuid,
       }));
       addTextGroupsLoading.value = true;
-      await serverProxy.addTextGroups(Number(groupId), textGroups);
+      await serverProxy.addTextGroups({
+        groupId: Number(groupId),
+        texts: textGroups,
+      });
 
       textsToAdd.value.forEach(item => {
         viewableTexts.value.unshift({

@@ -1,14 +1,8 @@
 import axios from '../axiosInstance';
-import { TextGroup, Text } from '@/types/text_groups';
+import { Text, AddTextPayload } from '@oare/types';
 
-async function addTextGroups(
-  groupId: number,
-  textGroups: TextGroup[]
-): Promise<void> {
-  await axios.post('/text_groups', {
-    group_id: groupId,
-    texts: textGroups,
-  });
+async function addTextGroups(payload: AddTextPayload): Promise<void> {
+  await axios.post('/text_groups', payload);
 }
 
 async function getTextGroups(groupId: number): Promise<Text[]> {
