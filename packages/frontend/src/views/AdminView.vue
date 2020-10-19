@@ -128,7 +128,7 @@ export default defineComponent({
       }
       try {
         addGroupLoading.value = true;
-        let id = await serverProxy.createGroup(groupName.value);
+        let id = await serverProxy.createGroup({ groupName: groupName.value });
 
         groups.value.push({
           id,
@@ -149,7 +149,7 @@ export default defineComponent({
         deleteGroupLoading.value = true;
         let delGroupIds = selectedGroups.value.map(item => item.id);
 
-        await serverProxy.deleteGroups(delGroupIds);
+        await serverProxy.deleteGroups({ groupIds: delGroupIds });
 
         groups.value = groups.value.filter(
           group => !delGroupIds.includes(group.id)

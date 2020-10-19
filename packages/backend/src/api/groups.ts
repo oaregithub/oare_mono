@@ -1,5 +1,5 @@
 import express from 'express';
-import { Group } from '@oare/types';
+import { Group, CreateGroupPayload, DeleteGroupPayload } from '@oare/types';
 import adminRoute from '../middlewares/adminRoute';
 import oareGroupDao from './daos/OareGroupDao';
 import HttpException from '../exceptions/HttpException';
@@ -34,7 +34,7 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const groupName = req.body.group_name;
+      const { groupName }: CreateGroupPayload = req.body;
 
       const existingGroup = await oareGroupDao.getGroupByName(groupName);
       if (existingGroup) {
@@ -53,7 +53,7 @@ router
   .delete(adminRoute, async (req, res, next) => {
     try {
       // Verify that each group ID exists before deleting
-      const groupIds = (req.query.group_ids as unknown) as number[];
+      const { groupIds } = (req.query as unknown) as DeleteGroupPayload;
 
       for (let i = 0; i < groupIds.length; i += 1) {
         const existingGroup = await oareGroupDao.getGroupById(groupIds[i]);

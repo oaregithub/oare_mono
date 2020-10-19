@@ -108,6 +108,14 @@ export interface Group {
   num_users: number;
 }
 
+export interface CreateGroupPayload {
+  groupName: string;
+}
+
+export interface DeleteGroupPayload {
+  groupIds: number[];
+}
+
 // Names and Places
 
 export interface OnomasticonForm {

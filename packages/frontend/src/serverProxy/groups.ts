@@ -1,5 +1,5 @@
 import axios from '../axiosInstance';
-import { Group } from '@oare/types';
+import { Group, CreateGroupPayload, DeleteGroupPayload } from '@oare/types';
 
 async function getAllGroups(): Promise<Group[]> {
   const { data } = await axios.get('/groups');
@@ -16,20 +16,16 @@ async function getGroupName(groupId: number): Promise<string> {
   return name;
 }
 
-async function deleteGroups(delGroupIds: number[]) {
+async function deleteGroups(payload: DeleteGroupPayload) {
   await axios.delete('/groups', {
-    params: {
-      group_ids: delGroupIds,
-    },
+    params: payload,
   });
 }
 
-async function createGroup(groupName: string): Promise<number> {
+async function createGroup(payload: CreateGroupPayload): Promise<number> {
   let {
     data: { id },
-  } = await axios.post('/groups', {
-    group_name: groupName,
-  });
+  } = await axios.post('/groups', payload);
   return id;
 }
 
