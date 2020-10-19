@@ -1,3 +1,4 @@
+import { EpigraphicUnitSide } from "@oare/oare";
 export interface User {
   id: number;
   first_name: string;
@@ -165,4 +166,26 @@ export interface Text {
 export interface AddTextPayload {
   groupId: number;
   texts: TextGroup[];
+}
+
+// Text Drafts
+export interface TextDraftSideContent {
+  side: EpigraphicUnitSide;
+  text: string;
+}
+
+export interface TextDraft {
+  createdAt: Date;
+  textName: string;
+  textUuid: string;
+  updatedAt: Date;
+  uuid: string;
+  content: TextDraftSideContent[];
+  notes: string;
+}
+
+export interface AddTextDraftPayload {
+  textUuid: string;
+  content: string;
+  notes: string;
 }

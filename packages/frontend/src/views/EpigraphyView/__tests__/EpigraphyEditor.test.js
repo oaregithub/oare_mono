@@ -34,11 +34,11 @@ describe('EpigraphyEditor test', () => {
     await notesInput.setValue('Test note');
     await saveButton.trigger('click');
 
-    expect(mockProps.server.createDraft).toHaveBeenCalledWith(
-      mockProps.textUuid,
-      JSON.stringify(mockProps.sides),
-      'Test note'
-    );
+    expect(mockProps.server.createDraft).toHaveBeenCalledWith({
+      textUuid: mockProps.textUuid,
+      content: JSON.stringify(mockProps.sides),
+      notes: 'Test note',
+    });
   });
 
   it('adds side', async () => {
@@ -86,15 +86,15 @@ describe('EpigraphyEditor test', () => {
     await textarea.setValue('New reading');
     await wrapper.find('.test-save').trigger('click');
 
-    expect(mockProps.server.createDraft).toHaveBeenCalledWith(
-      mockProps.textUuid,
-      JSON.stringify([
+    expect(mockProps.server.createDraft).toHaveBeenCalledWith({
+      textUuid: mockProps.textUuid,
+      content: JSON.stringify([
         {
           side: 'obv.',
           text: 'New reading',
         },
       ]),
-      ''
-    );
+      notes: '',
+    });
   });
 });

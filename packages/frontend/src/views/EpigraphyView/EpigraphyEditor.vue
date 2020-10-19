@@ -122,11 +122,11 @@ export default defineComponent({
 
     const createDraft = async () => {
       saveLoading.value = true;
-      await server.createDraft(
+      await server.createDraft({
         textUuid,
-        JSON.stringify(textData.value),
-        notesData.value
-      );
+        content: JSON.stringify(textData.value),
+        notes: notesData.value,
+      });
       emit('save-draft', textData.value);
       emit('update:notes', notesData.value);
       saveLoading.value = false;
