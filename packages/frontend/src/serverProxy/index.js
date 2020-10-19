@@ -7,7 +7,6 @@ import searchTextNames from './search_text_names';
 import dictionary from './dictionary';
 import searchTexts from './search';
 import collections from './collections';
-import hierarchies from './hierarchies';
 import textDrafts from './text_drafts';
 import epigraphies from './epigraphies';
 import markups from './markups';
@@ -113,7 +112,6 @@ export default {
   ...dictionary,
   ...searchTexts,
   ...collections,
-  ...hierarchies,
   ...textDrafts,
   ...epigraphies,
   ...markups,
