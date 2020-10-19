@@ -197,3 +197,18 @@ export interface AddTextDraftPayload {
   content: string;
   notes: string;
 }
+
+// Login / Register
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isAdmin: boolean;
+}

@@ -17,7 +17,7 @@ export default {
 
   async login({ commit }, userData) {
     try {
-      let response = await serverProxy.loginUser(userData);
+      let response = await serverProxy.login(userData);
       commit('setUser', response);
     } catch (err) {
       throw err.response.data.message;
