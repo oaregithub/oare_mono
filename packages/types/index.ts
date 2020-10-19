@@ -106,3 +106,18 @@ export interface Group {
   created_on: Date;
   num_users: number;
 }
+
+// Names and Places
+
+export interface OnomasticonForm {
+  uuid: string;
+  form: string;
+  spellings: string[];
+  cases: string | null;
+}
+export interface NameOrPlace {
+  uuid: string;
+  word: string;
+  translation: string;
+  forms: OnomasticonForm[];
+}

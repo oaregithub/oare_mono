@@ -8,7 +8,7 @@
 import { defineComponent, ref, Ref, onMounted } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import server from '../../serverProxy';
-import { NamesOrPlaces } from '../../types/names';
+import { NameOrPlace } from '@oare/types';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 
 export default defineComponent({
@@ -23,7 +23,7 @@ export default defineComponent({
     NamesPlacesDisplay,
   },
   setup(props) {
-    const names: Ref<NamesOrPlaces[]> = ref([]);
+    const names: Ref<NameOrPlace[]> = ref([]);
     const loading = ref(false);
 
     onMounted(async () => {

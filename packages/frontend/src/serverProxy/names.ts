@@ -1,7 +1,7 @@
 import axios from '../axiosInstance';
-import { NamesOrPlaces } from '../types/names';
+import { NameOrPlace } from '@oare/types';
 
-async function getNames(): Promise<NamesOrPlaces[]> {
+async function getNames(): Promise<NameOrPlace[]> {
   const { data } = await axios.get('/names');
   return data;
 }
