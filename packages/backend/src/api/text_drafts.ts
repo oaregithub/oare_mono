@@ -1,4 +1,5 @@
 import express from 'express';
+import { AddTextDraftPayload, TextDraft } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import textDraftsDao from './daos/TextDraftsDao';
 
@@ -40,7 +41,7 @@ router
         return;
       }
 
-      const { textUuid, content, notes } = req.body;
+      const { textUuid, content, notes }: AddTextDraftPayload = req.body;
       const draft = await textDraftsDao.getDraft(userId, textUuid);
 
       if (!draft) {

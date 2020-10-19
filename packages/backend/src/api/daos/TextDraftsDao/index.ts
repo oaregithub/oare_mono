@@ -1,9 +1,10 @@
+import { TextDraft } from '@oare/types';
 import { v4 } from 'uuid';
 import knex from '../../../connection';
 
 export interface TextDraftRow {
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
   uuid: string;
   textUuid: string;
   content: string;
@@ -42,7 +43,7 @@ class TextDraftsDao {
     });
   }
 
-  async getDrafts(userId: number, textUuid: string | null) {
+  async getDrafts(userId: number, textUuid: string | null): Promise<TextDraft[]> {
     let query = knex('text_drafts')
       .select(
         'text_drafts.created_at AS createdAt',

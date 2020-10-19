@@ -20,7 +20,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
 import server from '../../serverProxy';
-import { TextDraft } from '../../types/textDrafts';
+import { TextDraft } from '@oare/types';
 import moment from 'moment';
 
 export default defineComponent({
