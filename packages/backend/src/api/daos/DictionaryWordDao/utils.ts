@@ -1,7 +1,7 @@
+import { NameOrPlace } from '@oare/types';
 import {
   WordQueryRow,
   WordQueryResultRow,
-  NamePlaceQueryResult,
   NamePlaceQueryRow,
   SearchWordsQueryRow,
   SearchWordsQueryResult,
@@ -9,9 +9,9 @@ import {
   GrammarInfoResult,
 } from './index';
 
-export function nestedFormsAndSpellings(flatNames: NamePlaceQueryRow[]): NamePlaceQueryResult[] {
+export function nestedFormsAndSpellings(flatNames: NamePlaceQueryRow[]): NameOrPlace[] {
   const wordList = getWordList(flatNames);
-  const allNames: NamePlaceQueryResult[] = [];
+  const allNames: NameOrPlace[] = [];
 
   // Insert forms into list with each word
   wordList.forEach((word) => {
@@ -45,8 +45,8 @@ function capitalized(word: string): string {
   return word[0].toUpperCase() + word.substring(1);
 }
 
-function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NamePlaceQueryResult {
-  const info: NamePlaceQueryResult = {
+function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NameOrPlace {
+  const info: NameOrPlace = {
     uuid: flatNames[0].uuid,
     word: flatNames[0].word,
     translation: flatNames[0].translation || '',

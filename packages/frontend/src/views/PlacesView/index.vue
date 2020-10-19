@@ -1,11 +1,6 @@
 <template>
   <OareContentView title="Gazetteer" :loading="loading">
-    <NamesPlacesDisplay
-      :wordList="places"
-      :letter="letter"
-      route="places"
-      v-slot:translation
-    >
+    <NamesPlacesDisplay :wordList="places" :letter="letter" route="places">
       {{ '' }}
     </NamesPlacesDisplay>
   </OareContentView>
@@ -14,7 +9,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
-import { NamesOrPlaces } from '@/types/names';
+import { NameOrPlace } from '@oare/types';
 import server from '../../serverProxy';
 
 export default defineComponent({
@@ -29,7 +24,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const places: Ref<NamesOrPlaces[]> = ref([]);
+    const places: Ref<NameOrPlace[]> = ref([]);
     const loading = ref(false);
 
     onMounted(async () => {
@@ -45,5 +40,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style></style>

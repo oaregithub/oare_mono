@@ -27,7 +27,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from '@vue/composition-api';
-import { NamesOrPlaces } from '@/types/names';
+import { NameOrPlace } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
 
 export default defineComponent({
@@ -37,7 +37,7 @@ export default defineComponent({
   },
   props: {
     wordList: {
-      type: Array as PropType<NamesOrPlaces[]>,
+      type: Array as PropType<NameOrPlace[]>,
     },
     letter: {
       type: String,
@@ -50,7 +50,7 @@ export default defineComponent({
   },
 
   setup() {
-    const searchFilter = (search: string, word: NamesOrPlaces) => {
+    const searchFilter = (search: string, word: NameOrPlace) => {
       const lowerSearch = search.toLowerCase();
 
       return (

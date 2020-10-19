@@ -1,4 +1,4 @@
-import { DictionaryWordTranslation, DictionaryWord } from '@oare/types';
+import { DictionaryWordTranslation, DictionaryWord, NameOrPlace } from '@oare/types';
 import getQueryString from '../utils';
 import knex from '../../../connection';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
@@ -54,20 +54,6 @@ export interface NamePlaceQueryRow {
   spellings: string | null;
 }
 
-export interface NamePlaceForm {
-  uuid: string;
-  form: string;
-  spellings: string[];
-  cases: string | null;
-}
-
-export interface NamePlaceQueryResult {
-  uuid: string;
-  word: string;
-  translation: string;
-  forms: NamePlaceForm[];
-}
-
 export interface SearchWordsQueryRow {
   uuid: string;
   type: 'word' | 'PN' | 'GN';
@@ -118,7 +104,7 @@ class DictionaryWordDao {
     return rows;
   }
 
-  async getNames() {
+  async getNames(): Promise<NameOrPlace[]> {
     const namesQuery = getQueryString('namesAndPlacesQuery.sql').replace('#{wordType}', 'PN');
 
     const nameRows: NamePlaceQueryRow[] = (await knex.raw(namesQuery))[0];
