@@ -121,3 +121,28 @@ export interface NameOrPlace {
   translation: string;
   forms: OnomasticonForm[];
 }
+
+// Search
+
+export interface SearchResultRow {
+  uuid: string;
+  name: string;
+  matches: string[];
+}
+
+export interface SearchResult {
+  totalRows: number;
+  results: SearchResultRow[];
+}
+
+// Dictionary Search
+
+export interface DictionarySearchRow extends SearchResultRow {
+  type: "word" | "PN" | "GN";
+  translations: string[];
+}
+
+export interface DictionarySearchResult {
+  totalRows: number;
+  results: DictionarySearchRow[];
+}

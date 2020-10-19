@@ -1,5 +1,5 @@
 import axios from '../axiosInstance';
-import { SearchResult } from '@/types/search';
+import { SearchResult } from '@oare/types';
 
 async function searchTexts(
   searchChars: string[],

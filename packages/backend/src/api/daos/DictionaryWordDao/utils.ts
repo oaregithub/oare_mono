@@ -1,10 +1,9 @@
-import { NameOrPlace } from '@oare/types';
+import { NameOrPlace, DictionarySearchRow } from '@oare/types';
 import {
   WordQueryRow,
   WordQueryResultRow,
   NamePlaceQueryRow,
   SearchWordsQueryRow,
-  SearchWordsQueryResult,
   GrammarInfoRow,
   GrammarInfoResult,
 } from './index';
@@ -102,11 +101,11 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   return wordMap;
 }
 
-export function assembleSearchResult(rows: SearchWordsQueryRow[], search: string): SearchWordsQueryResult[] {
+export function assembleSearchResult(rows: SearchWordsQueryRow[], search: string): DictionarySearchRow[] {
   const lowerSearch = search.toLowerCase();
   const wordMap = mapWordsToRows(rows);
 
-  const searchResults: SearchWordsQueryResult[] = [];
+  const searchResults: DictionarySearchRow[] = [];
   Object.values(wordMap).forEach((wordRows) => {
     const { uuid, type, name, translations } = wordRows[0];
     const matches: string[] = [];

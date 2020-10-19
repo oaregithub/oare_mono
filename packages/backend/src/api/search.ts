@@ -1,4 +1,5 @@
 import express from 'express';
+import { SearchResult } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import textGroupDao from './daos/TextGroupDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
@@ -21,7 +22,7 @@ router.route('/search').get(async (req, res, next) => {
       rows,
     });
 
-    const searchResults = {
+    const searchResults: SearchResult = {
       totalRows,
       results: texts,
     };

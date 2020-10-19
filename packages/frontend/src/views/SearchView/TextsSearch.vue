@@ -54,7 +54,7 @@ import {
   watch,
   onMounted,
 } from '@vue/composition-api';
-import { SearchResultRow, SearchResult } from '@/types/search';
+import { SearchResultRow, SearchResult } from '@oare/types';
 import { updateUrl, formattedSearchCharacter } from './utils';
 import server from '@/serverProxy';
 import ResultTable from './ResultTable.vue';

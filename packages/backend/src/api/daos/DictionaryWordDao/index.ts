@@ -63,14 +63,6 @@ export interface SearchWordsQueryRow {
   spellings: string | null;
 }
 
-export interface SearchWordsQueryResult {
-  uuid: string;
-  type: 'word' | 'PN' | 'GN';
-  name: string;
-  translations: string[];
-  matches: string[];
-}
-
 export interface TranslationRow {
   dictionaryUuid: string;
   fieldUuid: string;
