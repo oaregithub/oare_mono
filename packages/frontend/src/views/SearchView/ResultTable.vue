@@ -11,18 +11,18 @@
     :no-data-text="$t('search.noData')"
     :loading-text="$t('search.loadingText')"
   >
-    <template #item.name="{ item }">
+    <template #[`item.name`]="{ item }">
       <slot name="item.name" :item="item">
         {{ item.name }}
       </slot>
     </template>
-    <template #item.translations="{ item }">
+    <template #[`item.translations`]="{ item }">
       <slot name="item.translations" :item="item">
         {{ item.translations }}
       </slot>
     </template>
 
-    <template #item.matches="{ item }">
+    <template #[`item.matches`]="{ item }">
       <slot name="item.matches" :item="item">
         <div v-for="(match, index) in item.matches" :key="index">
           {{ match }}
@@ -41,7 +41,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import { DataTableHeader } from 'vuetify';
-import { SearchResultRow } from '@/types/search';
+import { SearchResultRow } from '@oare/types';
 import router from '../../router';
 import { updateUrl } from './utils';
 

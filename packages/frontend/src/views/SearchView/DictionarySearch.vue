@@ -68,7 +68,7 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { DictionarySearchRow } from '@/types/search_dictionary';
+import { DictionarySearchRow } from '@oare/types';
 import ResultTable from './ResultTable.vue';
 import server from '@/serverProxy';
 import { highlightedItem } from './utils';

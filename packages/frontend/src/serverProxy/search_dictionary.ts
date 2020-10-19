@@ -1,4 +1,4 @@
-import { DictionarySearchResult } from '@/types/search_dictionary';
+import { DictionarySearchResult } from '@oare/types';
 import axios from '@/axiosInstance';
 
 async function searchDictionary(
