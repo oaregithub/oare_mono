@@ -1,5 +1,5 @@
 import express from 'express';
-import { AddTextPayload } from '@oare/types';
+import { AddTextPayload, RemoveTextsPayload, UpdateTextPermissionPayload } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import adminRoute from '../middlewares/adminRoute';
 import textGroupDao from './daos/TextGroupDao';
@@ -9,47 +9,20 @@ import textDao from './daos/TextDao';
 const router = express.Router();
 
 router
-  .route('/text_groups')
+  .route('/text_groups/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const groupId = (req.query.group_id as unknown) as number;
-
+      const { groupId } = (req.params as unknown) as { groupId: number };
       const texts = await textGroupDao.getTexts(groupId);
       res.json(texts);
     } catch (err) {
       next(new HttpException(500, err));
     }
   })
-  .patch(adminRoute, async (req, res, next) => {
-    try {
-      const groupId = (req.body.group_id as unknown) as number;
-      const textUuid = req.body.text_uuid as string;
-      const canRead = (req.body.can_read as unknown) as boolean;
-      const canWrite = (req.body.can_write as unknown) as boolean;
-
-      // Make sure that group ID exists
-      const existingGroup = oareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(new HttpException(400, `Group ID does not exist: ${groupId}`));
-        return;
-      }
-
-      // Make sure that each text exists inside the group
-      const textExists = await textGroupDao.containsAssociation(groupId, textUuid);
-      if (!textExists) {
-        next(new HttpException(400, `Cannot update text not in group: ${textUuid}`));
-        return;
-      }
-
-      await textGroupDao.update(groupId, textUuid, canWrite, canRead);
-      res.status(204).end();
-    } catch (err) {
-      next(new HttpException(500, err));
-    }
-  })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const { groupId, texts }: AddTextPayload = req.body;
+      const { groupId } = (req.params as unknown) as { groupId: number };
+      const { texts }: AddTextPayload = req.body;
 
       // Make sure that group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);
@@ -84,8 +57,8 @@ router
   })
   .delete(adminRoute, async (req, res, next) => {
     try {
-      const groupId = (req.query.group_id as unknown) as number;
-      const texts = req.query.texts as string[];
+      const { groupId } = (req.params as unknown) as { groupId: number };
+      const { textUuids } = (req.query as unknown) as RemoveTextsPayload;
 
       // Make sure that group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);
@@ -95,15 +68,40 @@ router
       }
 
       // Make sure that each text exists inside the group
-      for (let i = 0; i < texts.length; i += 1) {
-        const textExists = await textGroupDao.containsAssociation(groupId, texts[i]);
+      for (let i = 0; i < textUuids.length; i += 1) {
+        const textExists = await textGroupDao.containsAssociation(groupId, textUuids[i]);
         if (!textExists) {
-          next(new HttpException(400, `Cannot remove text not in group: ${texts[i]}`));
+          next(new HttpException(400, `Cannot remove text not in group: ${textUuids[i]}`));
           return;
         }
       }
 
-      await textGroupDao.removeTexts(groupId, texts);
+      await textGroupDao.removeTexts(groupId, textUuids);
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpException(500, err));
+    }
+  })
+  .patch(adminRoute, async (req, res, next) => {
+    try {
+      const { groupId } = (req.params as unknown) as { groupId: number };
+      const { textUuid, canRead, canWrite }: UpdateTextPermissionPayload = req.body;
+
+      // Make sure that group ID exists
+      const existingGroup = oareGroupDao.getGroupById(groupId);
+      if (!existingGroup) {
+        next(new HttpException(400, `Group ID does not exist: ${groupId}`));
+        return;
+      }
+
+      // Make sure that each text exists inside the group
+      const textExists = await textGroupDao.containsAssociation(groupId, textUuid);
+      if (!textExists) {
+        next(new HttpException(400, `Cannot update text not in group: ${textUuid}`));
+        return;
+      }
+
+      await textGroupDao.update(groupId, textUuid, canWrite, canRead);
       res.status(204).end();
     } catch (err) {
       next(new HttpException(500, err));

@@ -172,12 +172,11 @@ export default defineComponent({
 
       viewableTexts.value[index].can_write = canWrite;
       const text = viewableTexts.value[index];
-      await serverProxy.updateText(
-        Number(groupId),
-        uuid,
-        text.can_read,
-        text.can_write
-      );
+      await serverProxy.updateText(Number(groupId), {
+        textUuid: uuid,
+        canRead: text.can_read,
+        canWrite: text.can_write,
+      });
     };
 
     const updateTextRead = async (uuid: string, canRead: boolean) => {
@@ -192,12 +191,11 @@ export default defineComponent({
       }
 
       const text = viewableTexts.value[index];
-      await serverProxy.updateText(
-        Number(groupId),
-        uuid,
-        text.can_read,
-        text.can_write
-      );
+      await serverProxy.updateText(Number(groupId), {
+        textUuid: uuid,
+        canRead: text.can_read,
+        canWrite: text.can_write,
+      });
     };
 
     const removeTextToAdd = (name: string) => {
@@ -211,8 +209,7 @@ export default defineComponent({
         uuid: item.text_uuid,
       }));
       addTextGroupsLoading.value = true;
-      await serverProxy.addTextGroups({
-        groupId: Number(groupId),
+      await serverProxy.addTextGroups(Number(groupId), {
         texts: textGroups,
       });
 
@@ -233,7 +230,9 @@ export default defineComponent({
         text => text.text_uuid
       );
 
-      await serverProxy.removeTextsFromGroup(Number(groupId), deleteTextUuids);
+      await serverProxy.removeTextsFromGroup(Number(groupId), {
+        textUuids: deleteTextUuids,
+      });
 
       removeLoading.value = false;
       removeTextsDialog.value = false;

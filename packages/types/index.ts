@@ -196,8 +196,17 @@ export interface Text {
 }
 
 export interface AddTextPayload {
-  groupId: number;
   texts: TextGroup[];
+}
+
+export interface RemoveTextsPayload {
+  textUuids: string[];
+}
+
+export interface UpdateTextPermissionPayload {
+  textUuid: string;
+  canRead: boolean;
+  canWrite: boolean;
 }
 
 // Text Drafts
