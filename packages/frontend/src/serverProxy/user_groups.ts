@@ -1,31 +1,28 @@
 import axios from '../axiosInstance';
-import { User } from '@oare/types';
+import {
+  User,
+  AddUsersToGroupPayload,
+  RemoveUsersFromGroupPayload,
+} from '@oare/types';
 
 async function getGroupUsers(groupId: number): Promise<User[]> {
-  let { data: groupUsers } = await axios.get('/user_groups', {
-    params: {
-      group_id: groupId,
-    },
-  });
+  let { data: groupUsers } = await axios.get(`/user_groups/${groupId}`);
   return groupUsers;
 }
 
 async function addUsersToGroup(
   groupId: number,
-  userIds: number[]
+  payload: AddUsersToGroupPayload
 ): Promise<void> {
-  await axios.post('/user_groups', {
-    group_id: groupId,
-    user_ids: userIds,
-  });
+  await axios.post(`/user_groups/${groupId}`, payload);
 }
 
-async function removeUsersFromGroup(groupId: number, userIds: number[]) {
-  await axios.delete('/user_groups', {
-    params: {
-      group_id: groupId,
-      user_ids: userIds,
-    },
+async function removeUsersFromGroup(
+  groupId: number,
+  payload: RemoveUsersFromGroupPayload
+) {
+  await axios.delete(`/user_groups/${groupId}`, {
+    params: payload,
   });
 }
 

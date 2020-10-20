@@ -116,6 +116,16 @@ export interface DeleteGroupPayload {
   groupIds: number[];
 }
 
+// Group Users
+
+export interface AddUsersToGroupPayload {
+  userIds: number[];
+}
+
+export interface RemoveUsersFromGroupPayload {
+  userIds: number[];
+}
+
 // Names and Places
 
 export interface OnomasticonForm {

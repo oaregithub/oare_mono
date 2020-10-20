@@ -59,6 +59,8 @@ describe('ManageMembers test', () => {
     await wrapper.find('.test-remove').trigger('click');
     await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
-    expect(mockServer.removeUsersFromGroup).toHaveBeenCalledWith(1, [2]);
+    expect(mockServer.removeUsersFromGroup).toHaveBeenCalledWith(1, {
+      userIds: [2],
+    });
   });
 });
