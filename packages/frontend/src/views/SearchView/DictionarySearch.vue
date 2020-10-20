@@ -113,11 +113,11 @@ export default defineComponent({
       if (canSearch.value) {
         searchLoading.value = true;
         lastSearch.value = dictionarySearch.value;
-        const searchResult = await server.searchDictionary(
-          dictionarySearch.value,
-          Number(page.value),
-          Number(rows.value)
-        );
+        const searchResult = await server.searchDictionary({
+          search: dictionarySearch.value,
+          page: Number(page.value),
+          rows: Number(rows.value),
+        });
         totalResults.value = searchResult.totalRows;
         searchResults.value = searchResult.results;
         searchLoading.value = false;

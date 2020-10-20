@@ -268,7 +268,7 @@ export default defineComponent({
         }
 
         searchLoading.value = true;
-        const items = await serverProxy.searchTextNames(text);
+        const items = await serverProxy.searchTextNames({ search: text });
         textItems.value = items.map(item => ({
           ...item,
           text_uuid: item.uuid,

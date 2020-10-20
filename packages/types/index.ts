@@ -144,6 +144,17 @@ export interface SearchResult {
   results: SearchResultRow[];
 }
 
+// Search Text Names
+
+export interface SearchTextResultRow {
+  uuid: string;
+  name: string;
+}
+
+export interface SearchTextPayload {
+  search: string;
+}
+
 // Dictionary Search
 
 export interface DictionarySearchRow extends SearchResultRow {
@@ -154,6 +165,12 @@ export interface DictionarySearchRow extends SearchResultRow {
 export interface DictionarySearchResult {
   totalRows: number;
   results: DictionarySearchRow[];
+}
+
+export interface DictionarySearchPayload {
+  search: string;
+  page: number;
+  rows: number;
 }
 
 // Text Groups
