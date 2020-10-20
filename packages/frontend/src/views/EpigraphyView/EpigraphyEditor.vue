@@ -122,8 +122,7 @@ export default defineComponent({
 
     const createDraft = async () => {
       saveLoading.value = true;
-      await server.createDraft({
-        textUuid,
+      await server.createDraft(textUuid, {
         content: JSON.stringify(textData.value),
         notes: notesData.value,
       });

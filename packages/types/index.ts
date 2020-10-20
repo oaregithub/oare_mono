@@ -217,7 +217,6 @@ export interface TextDraft {
 }
 
 export interface AddTextDraftPayload {
-  textUuid: string;
   content: string;
   notes: string;
 }

@@ -1,39 +1,32 @@
 import express from 'express';
-import { AddTextDraftPayload, TextDraft } from '@oare/types';
+import { AddTextDraftPayload } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import textDraftsDao from './daos/TextDraftsDao';
+import authenticatedRoute from '../middlewares/authenticatedRoute';
 
 const router = express.Router();
 
 router
-  .route('/text_drafts')
-  .get(async (req, res, next) => {
+  .route('/text_drafts/:textUuid')
+  .get(authenticatedRoute, async (req, res, next) => {
     try {
-      const userId = req.user ? req.user.id : null;
-      const textUuid = req.query.textUuid ? (req.query.textUuid as string) : null;
+      const userId = req!.user!.id;
+      const { textUuid } = req.params;
+      const draftExists = await textDraftsDao.draftExists(userId, textUuid);
 
-      if (!userId) {
-        next(new HttpException(401, 'You must be an authenticated user to query drafts'));
+      if (!draftExists) {
+        next(new HttpException(400, `No drafts for text with UUID ${textUuid}`));
         return;
       }
-
-      const drafts = await textDraftsDao.getDrafts(userId, textUuid);
-
-      if (textUuid) {
-        if (drafts.length < 1) {
-          next(new HttpException(400, 'The draft UUID does not exist.'));
-        } else {
-          res.json(drafts[0]);
-        }
-      } else {
-        res.json(drafts);
-      }
+      const draft = await textDraftsDao.getDraft(userId, textUuid);
+      res.json(draft);
     } catch (err) {
       next(new HttpException(500, err));
     }
   })
   .post(async (req, res, next) => {
     try {
+      const { textUuid } = req.params;
       const userId = req.user ? req.user.id : null;
 
       if (!userId) {
@@ -41,14 +34,15 @@ router
         return;
       }
 
-      const { textUuid, content, notes }: AddTextDraftPayload = req.body;
-      const draft = await textDraftsDao.getDraft(userId, textUuid);
+      const { content, notes }: AddTextDraftPayload = req.body;
+      const draftExists = await textDraftsDao.draftExists(userId, textUuid);
 
-      if (!draft) {
+      if (!draftExists) {
         // Create new draft
         await textDraftsDao.createDraft(userId, textUuid, content, notes);
       } else {
         // Update existing draft
+        const draft = await textDraftsDao.getDraft(userId, textUuid);
         await textDraftsDao.updateDraft(draft.uuid, content, notes);
       }
       res.status(201).end();
@@ -56,5 +50,16 @@ router
       next(new HttpException(500, err));
     }
   });
+
+router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
+  try {
+    const userId = req!.user!.id;
+
+    const drafts = await textDraftsDao.getAllDrafts(userId);
+    res.json(drafts);
+  } catch (err) {
+    next(new HttpException(500, err));
+  }
+});
 
 export default router;
