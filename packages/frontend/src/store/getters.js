@@ -8,7 +8,7 @@ export default {
   },
 
   isAdmin(state) {
-    return state.user && state.user.is_admin;
+    return state.user && state.user.isAdmin;
   },
 
   user(state) {

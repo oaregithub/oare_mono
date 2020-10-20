@@ -8,8 +8,8 @@ export default {
 
   async register({ commit }, userData) {
     try {
-      let { data } = await serverProxy.registerUser(userData);
-      commit('setUser', data);
+      let response = await serverProxy.register(userData);
+      commit('setUser', response);
     } catch (err) {
       throw err.response.data.message;
     }
@@ -17,7 +17,7 @@ export default {
 
   async login({ commit }, userData) {
     try {
-      let response = await serverProxy.loginUser(userData);
+      let response = await serverProxy.login(userData);
       commit('setUser', response);
     } catch (err) {
       throw err.response.data.message;

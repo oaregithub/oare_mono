@@ -1,4 +1,5 @@
 import express from 'express';
+import { DictionarySearchPayload } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import dictionaryWordDao from './daos/DictionaryWordDao';
 import cache from '../cache';
@@ -7,11 +8,9 @@ const router = express.Router();
 
 router.route('/search_dictionary').get(async (req, res, next) => {
   try {
-    const search = String(req.query.search);
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const numRows = req.query.rows ? Number(req.query.rows) : 10;
+    const { search, page, rows } = (req.query as unknown) as DictionarySearchPayload;
 
-    const results = await dictionaryWordDao.searchWords(search, page, numRows);
+    const results = await dictionaryWordDao.searchWords(search, page, rows);
     cache.insert({ req }, results);
     res.json(results);
   } catch (err) {

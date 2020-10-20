@@ -12,13 +12,38 @@ export interface TextDraftRow {
   notes: string;
 }
 
+function getBaseDraftQuery(userId: number) {
+  return knex('text_drafts')
+    .select(
+      'text_drafts.created_at AS createdAt',
+      'text_drafts.updated_at AS updatedAt',
+      'text_drafts.uuid',
+      'text_drafts.text_uuid AS textUuid',
+      'text_drafts.content',
+      'alias.name AS textName',
+      'notes',
+    )
+    .innerJoin('hierarchy', 'hierarchy.uuid', 'text_drafts.text_uuid')
+    .innerJoin('alias', 'text_drafts.text_uuid', 'alias.reference_uuid')
+    .orderBy('alias.name')
+    .where('creator', userId)
+    .groupBy('text_drafts.uuid');
+}
+
 class TextDraftsDao {
-  async getDraft(userId: number, textUuid: string) {
-    const draft: TextDraftRow = await knex('text_drafts')
-      .first()
-      .where('creator', userId)
-      .andWhere('text_uuid', textUuid);
-    return draft;
+  async draftExists(userId: number, textUuid: string): Promise<boolean> {
+    const row = await knex('text_drafts').first().where('creator', userId).andWhere('text_uuid', textUuid);
+    return !!row;
+  }
+
+  async getDraft(userId: number, textUuid: string): Promise<TextDraft> {
+    const draft: TextDraftRow = await getBaseDraftQuery(userId).first().andWhere('text_uuid', textUuid);
+
+    return {
+      ...draft,
+      textName: draft.textName.trim(),
+      content: JSON.parse(draft.content),
+    };
   }
 
   async createDraft(userId: number, textUuid: string, content: string, notes: string) {
@@ -43,26 +68,8 @@ class TextDraftsDao {
     });
   }
 
-  async getDrafts(userId: number, textUuid: string | null): Promise<TextDraft[]> {
-    let query = knex('text_drafts')
-      .select(
-        'text_drafts.created_at AS createdAt',
-        'text_drafts.updated_at AS updatedAt',
-        'text_drafts.uuid',
-        'text_drafts.text_uuid AS textUuid',
-        'text_drafts.content',
-        'alias.name AS textName',
-        'notes',
-      )
-      .innerJoin('hierarchy', 'hierarchy.uuid', 'text_drafts.text_uuid')
-      .innerJoin('alias', 'text_drafts.text_uuid', 'alias.reference_uuid')
-      .orderBy('alias.name')
-      .where('creator', userId)
-      .groupBy('text_drafts.uuid');
-
-    if (textUuid) {
-      query = query.where('text_uuid', textUuid);
-    }
+  async getAllDrafts(userId: number): Promise<TextDraft[]> {
+    const query = getBaseDraftQuery(userId);
 
     const rows: TextDraftRow[] = await query;
     return rows

@@ -1,4 +1,5 @@
 import express from 'express';
+import { LoginRegisterResponse, LoginPayload } from '@oare/types';
 import userDao from './daos/UserDao';
 import HttpException from '../exceptions/HttpException';
 import * as security from '../security';
@@ -7,8 +8,7 @@ const router = express.Router();
 
 router.route('/login').post(async (req, res, next) => {
   try {
-    const email = String(req.body.email);
-    const password = String(req.body.password);
+    const { email, password }: LoginPayload = req.body;
     const user = await userDao.getUserByEmail(email);
 
     if (!user) {
@@ -24,13 +24,14 @@ router.route('/login').post(async (req, res, next) => {
     }
 
     const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
-    cookieRes.json({
+    const response: LoginRegisterResponse = {
       id: user.id,
       firstName: user.firstName,
-      last_name: user.lastName,
+      lastName: user.lastName,
       email: user.email,
-      is_admin: !!user.isAdmin,
-    });
+      isAdmin: !!user.isAdmin,
+    };
+    cookieRes.json(response);
   } catch (err) {
     next(new HttpException(500, err));
   }

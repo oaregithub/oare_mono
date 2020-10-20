@@ -44,7 +44,7 @@ const adminRoutes = ['admin', 'groups', 'editDictionaryWord'];
 const adminGuard: NavigationGuard = (to, _from, next) => {
   const navigate = () => {
     if (!store.getters.isAdmin) {
-      next(false);
+      next('/');
     } else {
       next();
     }
@@ -55,7 +55,12 @@ const adminGuard: NavigationGuard = (to, _from, next) => {
 
 // Non-admin routes where we must first determine auth status before
 // navigating to the route
-const authFirstRoutes = ['epigraphies', 'dashboardDrafts', 'words'];
+const authFirstRoutes = [
+  'epigraphies',
+  'dashboardDrafts',
+  'words',
+  'dashboardProfile',
+];
 const authFirstGuard: NavigationGuard = (to, _from, next) => {
   guardRoute(authFirstRoutes, to, next, next);
 };

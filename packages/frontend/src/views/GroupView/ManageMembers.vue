@@ -123,10 +123,9 @@ export default defineComponent({
     const addUsers = async () => {
       addUsersLoading.value = true;
       try {
-        await serverProxy.addUsersToGroup(
-          Number(groupId),
-          selectedUsers.value.map(user => user.id)
-        );
+        await serverProxy.addUsersToGroup(Number(groupId), {
+          userIds: selectedUsers.value.map(user => user.id),
+        });
         selectedUsers.value.forEach(user => {
           groupUsers.value.push(user);
         });
@@ -141,7 +140,7 @@ export default defineComponent({
     const removeUsers = async () => {
       const userIds = selectedDeleteUsers.value.map(user => user.id);
       deleteUserLoading.value = true;
-      await serverProxy.removeUsersFromGroup(Number(groupId), userIds);
+      await serverProxy.removeUsersFromGroup(Number(groupId), { userIds });
 
       deleteUserLoading.value = false;
       deleteUserDialog.value = false;

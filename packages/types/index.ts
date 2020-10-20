@@ -108,6 +108,24 @@ export interface Group {
   num_users: number;
 }
 
+export interface CreateGroupPayload {
+  groupName: string;
+}
+
+export interface DeleteGroupPayload {
+  groupIds: number[];
+}
+
+// Group Users
+
+export interface AddUsersToGroupPayload {
+  userIds: number[];
+}
+
+export interface RemoveUsersFromGroupPayload {
+  userIds: number[];
+}
+
 // Names and Places
 
 export interface OnomasticonForm {
@@ -125,20 +143,38 @@ export interface NameOrPlace {
 
 // Search
 
-export interface SearchResultRow {
+export interface SearchTextsResultRow {
   uuid: string;
   name: string;
   matches: string[];
 }
 
-export interface SearchResult {
+export interface SearchTextsPayload {
+  characters: string[];
+  textTitle: string;
+  page: number;
+  rows: number;
+}
+
+export interface SearchTextsResponse {
   totalRows: number;
-  results: SearchResultRow[];
+  results: SearchTextsResultRow[];
+}
+
+// Search Text Names
+
+export interface SearchTextNamesResultRow {
+  uuid: string;
+  name: string;
+}
+
+export interface SearchTextNamesPayload {
+  search: string;
 }
 
 // Dictionary Search
 
-export interface DictionarySearchRow extends SearchResultRow {
+export interface DictionarySearchRow extends SearchTextsResultRow {
   type: "word" | "PN" | "GN";
   translations: string[];
 }
@@ -146,6 +182,12 @@ export interface DictionarySearchRow extends SearchResultRow {
 export interface DictionarySearchResult {
   totalRows: number;
   results: DictionarySearchRow[];
+}
+
+export interface DictionarySearchPayload {
+  search: string;
+  page: number;
+  rows: number;
 }
 
 // Text Groups
@@ -164,8 +206,17 @@ export interface Text {
 }
 
 export interface AddTextPayload {
-  groupId: number;
   texts: TextGroup[];
+}
+
+export interface RemoveTextsPayload {
+  textUuids: string[];
+}
+
+export interface UpdateTextPermissionPayload {
+  textUuid: string;
+  canRead: boolean;
+  canWrite: boolean;
 }
 
 // Text Drafts
@@ -185,7 +236,28 @@ export interface TextDraft {
 }
 
 export interface AddTextDraftPayload {
-  textUuid: string;
   content: string;
   notes: string;
+}
+
+// Login / Register
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  firstName: string;
+  lastName: string;
+  password: string;
+  email: string;
+}
+
+export interface LoginRegisterResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isAdmin: boolean;
 }

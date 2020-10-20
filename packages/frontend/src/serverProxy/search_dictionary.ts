@@ -1,17 +1,11 @@
-import { DictionarySearchResult } from '@oare/types';
+import { DictionarySearchResult, DictionarySearchPayload } from '@oare/types';
 import axios from '@/axiosInstance';
 
 async function searchDictionary(
-  search: string,
-  page: number,
-  rows: number
+  payload: DictionarySearchPayload
 ): Promise<DictionarySearchResult> {
   let { data } = await axios.get('/search_dictionary', {
-    params: {
-      search,
-      page,
-      rows,
-    },
+    params: payload,
   });
   return data;
 }

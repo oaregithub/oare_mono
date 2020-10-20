@@ -62,6 +62,7 @@
 </template>
 
 <script lang="ts">
+import { RegisterPayload } from '@oare/types';
 import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
 import Router from 'vue-router';
 import { Store } from 'vuex';
@@ -145,9 +146,9 @@ export default defineComponent({
       }
 
       errorMsg.value = '';
-      let userData = {
-        first_name: user.value.firstname,
-        last_name: user.value.lastname,
+      let userData: RegisterPayload = {
+        firstName: user.value.firstname,
+        lastName: user.value.lastname,
         password: user.value.password,
         email: user.value.email,
       };

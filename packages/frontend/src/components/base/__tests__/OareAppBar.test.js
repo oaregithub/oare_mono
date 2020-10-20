@@ -32,7 +32,7 @@ describe('OareAppBar.vue', () => {
   ) => {
     const user = {
       firstName: 'Test',
-      last_name: 'User',
+      lastName: 'User',
       is_admin: isAdmin,
       email: 'test@email.com',
       id: 0,

@@ -35,9 +35,9 @@ router.route('/refresh_token').get(async (req, res, next) => {
       .json({
         id: user.id,
         firstName: user.firstName,
-        last_name: user.lastName,
+        lastName: user.lastName,
         email: user.email,
-        is_admin: !!user.isAdmin,
+        isAdmin: !!user.isAdmin,
       })
       .end();
   } catch (err) {

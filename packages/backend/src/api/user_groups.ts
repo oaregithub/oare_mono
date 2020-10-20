@@ -1,4 +1,5 @@
 import express from 'express';
+import { AddUsersToGroupPayload, RemoveUsersFromGroupPayload } from '@oare/types';
 import adminRoute from '../middlewares/adminRoute';
 import HttpException from '../exceptions/HttpException';
 import oareGroupDao from './daos/OareGroupDao';
@@ -29,10 +30,10 @@ async function canDelete(groupId: number, userIds: number[]) {
 const router = express.Router();
 
 router
-  .route('/user_groups')
+  .route('/user_groups/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const groupId: number = (req.query.group_id as unknown) as number;
+      const { groupId }: { groupId: number } = req.params as any;
 
       const existingGroup = await oareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
@@ -47,8 +48,8 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const groupId = (req.body.group_id as unknown) as number;
-      const userIds = (req.body.user_ids as unknown) as number[];
+      const { groupId }: { groupId: number } = req.params as any;
+      const { userIds }: AddUsersToGroupPayload = req.body;
 
       // Make sure that the group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);
@@ -80,8 +81,8 @@ router
   })
   .delete(adminRoute, async (req, res, next) => {
     try {
-      const groupId = (req.query.group_id as unknown) as number;
-      const userIds = (req.query.user_ids as unknown) as number[];
+      const { groupId }: { groupId: number } = req.params as any;
+      const { userIds }: RemoveUsersFromGroupPayload = req.query as any;
 
       // Make sure that the group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);

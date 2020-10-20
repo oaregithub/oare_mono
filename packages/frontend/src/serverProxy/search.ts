@@ -1,28 +1,10 @@
-import axios from '../axiosInstance';
-import { SearchResult } from '@oare/types';
+import axios from '@/axiosInstance';
+import { SearchTextsResponse, SearchTextsPayload } from '@oare/types';
 
 async function searchTexts(
-  searchChars: string[],
-  textTitle: string,
-  { page, rows }: { page: number; rows: number }
-): Promise<SearchResult> {
-  const params: {
-    page: number;
-    rows: number;
-    textTitle: string;
-    characters?: string[];
-  } = {
-    page,
-    rows,
-    textTitle,
-  };
-
-  if (searchChars.length > 0) {
-    params.characters = searchChars;
-  }
-  let { data } = await axios.get('/search', {
-    params,
-  });
+  payload: SearchTextsPayload
+): Promise<SearchTextsResponse> {
+  let { data } = await axios.get('/search', { params: payload });
   return data;
 }
 
