@@ -41,14 +41,14 @@ import {
   PropType,
 } from '@vue/composition-api';
 import { DataTableHeader } from 'vuetify';
-import { SearchResultRow } from '@oare/types';
+import { SearchTextsResultRow } from '@oare/types';
 import router from '../../router';
 import { updateUrl } from './utils';
 
 export default defineComponent({
   props: {
     searchResults: {
-      type: Array as PropType<SearchResultRow[]>,
+      type: Array as PropType<SearchTextsResultRow[]>,
       required: true,
     },
     loading: {

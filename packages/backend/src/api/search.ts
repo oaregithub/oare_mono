@@ -1,5 +1,5 @@
 import express from 'express';
-import { SearchResult } from '@oare/types';
+import { SearchTextsResponse, SearchTextsPayload } from '@oare/types';
 import HttpException from '../exceptions/HttpException';
 import textGroupDao from './daos/TextGroupDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
@@ -9,11 +9,8 @@ const router = express.Router();
 
 router.route('/search').get(async (req, res, next) => {
   try {
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const rows = req.query.rows ? Number(req.query.rows) : 10;
-    const textTitle = String(req.query.textTitle);
-    const user = req.user ? req.user : null;
-    const characters: string[] = req.query.characters ? (req.query.characters as string[]) : [];
+    const { page, rows, textTitle, characters } = (req.query as unknown) as SearchTextsPayload;
+    const user = req.user || null;
 
     const blacklist = await textGroupDao.getUserBlacklist(user);
     const totalRows = await textEpigraphyDao.totalSearchRows(characters, textTitle, blacklist);
@@ -22,7 +19,7 @@ router.route('/search').get(async (req, res, next) => {
       rows,
     });
 
-    const searchResults: SearchResult = {
+    const searchResults: SearchTextsResponse = {
       totalRows,
       results: texts,
     };

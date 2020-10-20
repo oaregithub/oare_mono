@@ -1,9 +1,9 @@
 import axios from '@/axiosInstance';
-import { SearchTextPayload, SearchTextResultRow } from '@oare/types';
+import { SearchTextNamesPayload, SearchTextNamesResultRow } from '@oare/types';
 
 async function searchTextNames(
-  payload: SearchTextPayload
-): Promise<SearchTextResultRow[]> {
+  payload: SearchTextNamesPayload
+): Promise<SearchTextNamesResultRow[]> {
   const { data } = await axios.get('/search_text_names', {
     params: payload,
   });

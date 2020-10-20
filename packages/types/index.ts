@@ -133,31 +133,38 @@ export interface NameOrPlace {
 
 // Search
 
-export interface SearchResultRow {
+export interface SearchTextsResultRow {
   uuid: string;
   name: string;
   matches: string[];
 }
 
-export interface SearchResult {
+export interface SearchTextsPayload {
+  characters: string[];
+  textTitle: string;
+  page: number;
+  rows: number;
+}
+
+export interface SearchTextsResponse {
   totalRows: number;
-  results: SearchResultRow[];
+  results: SearchTextsResultRow[];
 }
 
 // Search Text Names
 
-export interface SearchTextResultRow {
+export interface SearchTextNamesResultRow {
   uuid: string;
   name: string;
 }
 
-export interface SearchTextPayload {
+export interface SearchTextNamesPayload {
   search: string;
 }
 
 // Dictionary Search
 
-export interface DictionarySearchRow extends SearchResultRow {
+export interface DictionarySearchRow extends SearchTextsResultRow {
   type: "word" | "PN" | "GN";
   translations: string[];
 }

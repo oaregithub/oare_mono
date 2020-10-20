@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { SearchResultRow } from '@oare/types';
+import { SearchTextsResultRow } from '@oare/types';
 import knex from '../../../connection';
 import getSearchQuery, { convertEpigraphicUnitRows } from './utils';
 import aliasDao from '../AliasDao';
@@ -67,7 +67,7 @@ class TextEpigraphyDao {
     textTitle: string,
     blacklist: string[],
     { page = 1, rows = 10 },
-  ): Promise<SearchResultRow[]> {
+  ): Promise<SearchTextsResultRow[]> {
     // Gets list of texts with their UUIDs that match the query
     const getTextQuery = getSearchQuery(characters, textTitle, blacklist)
       .orderBy('alias.name')
@@ -75,7 +75,7 @@ class TextEpigraphyDao {
       .limit(rows)
       .offset((page - 1) * rows)
       .select('text_epigraphy.text_uuid AS uuid', 'alias.name');
-    const texts: SearchResultRow[] = await getTextQuery;
+    const texts: SearchTextsResultRow[] = await getTextQuery;
 
     // For each text, get its surrounding characters as context
     if (characters.length > 0) {

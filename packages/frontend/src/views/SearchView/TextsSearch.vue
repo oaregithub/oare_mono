@@ -54,7 +54,7 @@ import {
   watch,
   onMounted,
 } from '@vue/composition-api';
-import { SearchResultRow, SearchResult } from '@oare/types';
+import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
 import { updateUrl, formattedSearchCharacter } from './utils';
 import server from '@/serverProxy';
 import ResultTable from './ResultTable.vue';
@@ -67,7 +67,7 @@ export default defineComponent({
     ResultTable,
   },
   setup(props, context) {
-    const searchResults: Ref<SearchResultRow[]> = ref([]);
+    const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
     const searchLoading = ref(false);
     const totalSearchResults = ref(0);
 
@@ -107,14 +107,15 @@ export default defineComponent({
       if (!canPerformSearch.value) return;
 
       searchLoading.value = true;
-      let { totalRows, results }: SearchResult = await server.searchTexts(
-        [...searchCharsArray.value],
-        textTitleSearch.value,
-        {
-          page: Number(page.value),
-          rows: Number(rows.value),
-        }
-      );
+      let {
+        totalRows,
+        results,
+      }: SearchTextsResponse = await server.searchTexts({
+        characters: [...searchCharsArray.value],
+        textTitle: textTitleSearch.value,
+        page: Number(page.value),
+        rows: Number(page.value),
+      });
 
       totalSearchResults.value = totalRows;
       searchResults.value = results;
