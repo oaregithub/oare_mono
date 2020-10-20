@@ -17,11 +17,7 @@ import words from './words';
 import searchDictionary from './search_dictionary';
 import permissions from './permissions';
 import login from './login';
-
-async function registerUser(userData) {
-  let { data } = await axios.post('/register', userData);
-  return data;
-}
+import register from './register';
 
 async function markupsGet(textUuid) {
   let { data } = await axios.get('/markups/' + textUuid);
@@ -89,7 +85,6 @@ async function refreshToken() {
 }
 
 export default {
-  registerUser,
   markupsGet,
   textEpigraphiesGet,
   addGroup,
@@ -117,6 +112,7 @@ export default {
   ...searchDictionary,
   ...permissions,
   ...login,
+  ...register,
   logout,
   refreshToken,
 };

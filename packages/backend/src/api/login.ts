@@ -1,5 +1,5 @@
 import express from 'express';
-import { LoginResponse, LoginPayload } from '@oare/types';
+import { LoginRegisterResponse, LoginPayload } from '@oare/types';
 import userDao from './daos/UserDao';
 import HttpException from '../exceptions/HttpException';
 import * as security from '../security';
@@ -24,7 +24,7 @@ router.route('/login').post(async (req, res, next) => {
     }
 
     const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
-    const response: LoginResponse = {
+    const response: LoginRegisterResponse = {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,

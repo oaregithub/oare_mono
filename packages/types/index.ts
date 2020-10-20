@@ -205,7 +205,14 @@ export interface LoginPayload {
   password: string;
 }
 
-export interface LoginResponse {
+export interface RegisterPayload {
+  firstName: string;
+  lastName: string;
+  password: string;
+  email: string;
+}
+
+export interface LoginRegisterResponse {
   id: number;
   firstName: string;
   lastName: string;

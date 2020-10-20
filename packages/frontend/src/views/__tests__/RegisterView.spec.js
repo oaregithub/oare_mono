@@ -87,8 +87,8 @@ describe('RegisterView test', () => {
     await submitForm(wrapper);
 
     expect(mockProps.store.dispatch).toHaveBeenCalledWith('register', {
-      first_name: 'First',
-      last_name: 'Last',
+      firstName: 'First',
+      lastName: 'Last',
       password: 'password',
       email: 'email@test.com',
     });
