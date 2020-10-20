@@ -42,7 +42,7 @@ router
         return;
       }
 
-      const groupId = await oareGroupDao.createGroup(req.body.group_name);
+      const groupId = await oareGroupDao.createGroup(groupName);
       res.json({
         id: groupId,
       });
