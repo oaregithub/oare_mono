@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.route('/permissions/:type').get(async (req, res, next) => {
       return;
     }
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

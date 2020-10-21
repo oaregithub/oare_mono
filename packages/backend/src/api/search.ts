@@ -1,7 +1,7 @@
 import express from 'express';
 import { SearchTextsResponse, SearchTextsPayload } from '@oare/types';
 import cache from '@/cache';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import textGroupDao from './daos/TextGroupDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
 
@@ -27,7 +27,7 @@ router.route('/search').get(async (req, res, next) => {
     cache.insert({ req }, searchResults);
     res.json(searchResults);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

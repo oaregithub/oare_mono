@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import textDiscourseDao from './daos/TextDiscourseDao';
 
 const router = express.Router();
@@ -11,7 +11,7 @@ router.route('/discourses/:textUuid').get(async (req, res, next) => {
 
     res.json(nestedDiscourses);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

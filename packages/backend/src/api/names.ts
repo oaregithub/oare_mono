@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import cache from '@/cache';
 import dictionaryWordDao from './daos/DictionaryWordDao';
 
@@ -12,7 +12,7 @@ router.route('/names').get(async (req, res, next) => {
     cache.insert({ req }, dictionaryNames);
     res.json(dictionaryNames);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

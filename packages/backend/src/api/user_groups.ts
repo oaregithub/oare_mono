@@ -1,7 +1,7 @@
 import express from 'express';
 import { AddUsersToGroupPayload, RemoveUsersFromGroupPayload } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
-import HttpException from '../exceptions/HttpException';
+import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import oareGroupDao from './daos/OareGroupDao';
 import userGroupDao from './daos/UserGroupDao';
 import userDao from './daos/UserDao';
@@ -37,13 +37,13 @@ router
 
       const existingGroup = await oareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
-        next(new HttpException(400, `Group with ID ${groupId} does not exist`));
+        next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
 
       res.json(await userGroupDao.getUsersInGroup(groupId));
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .post(adminRoute, async (req, res, next) => {
@@ -54,7 +54,7 @@ router
       // Make sure that the group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
-        next(new HttpException(400, `Group ID ${groupId} does not exist`));
+        next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
         return;
       }
 
@@ -62,21 +62,21 @@ router
       for (let i = 0; i < userIds.length; i += 1) {
         const existingUser = await userDao.getUserById(userIds[i]);
         if (!existingUser) {
-          next(new HttpException(400, `User ID ${userIds[i]} does not exist`));
+          next(new HttpBadRequest(`User ID ${userIds[i]} does not exist`));
           return;
         }
       }
 
       // Make sure each association does not already exist
       if (!(await canInsert(groupId, userIds))) {
-        next(new HttpException(400, `One or more of given users already exist in group with ID ${groupId}`));
+        next(new HttpBadRequest(`One or more of given users already exist in group with ID ${groupId}`));
         return;
       }
 
       const insertIds = await userGroupDao.addUsersToGroup(groupId, userIds);
       res.status(201).json(insertIds);
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .delete(adminRoute, async (req, res, next) => {
@@ -87,7 +87,7 @@ router
       // Make sure that the group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
-        next(new HttpException(500, `Group ID ${groupId} does not exist`));
+        next(new HttpInternalError(`Group ID ${groupId} does not exist`));
         return;
       }
 
@@ -95,21 +95,21 @@ router
       for (let i = 0; i < userIds.length; i += 1) {
         const existingUser = await userDao.getUserById(userIds[i]);
         if (!existingUser) {
-          next(new HttpException(500, `User ID ${userIds[i]} does not exist`));
+          next(new HttpInternalError(`User ID ${userIds[i]} does not exist`));
           return;
         }
       }
 
       // Make sure each user to delete actually belongs to the group
       if (!(await canDelete(groupId, userIds))) {
-        next(new HttpException(400, 'Not all given users belong to the given group'));
+        next(new HttpBadRequest('Not all given users belong to the given group'));
         return;
       }
 
       await userGroupDao.removeUsersFromGroup(groupId, userIds);
       res.end();
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   });
 

@@ -1,7 +1,7 @@
 import express from 'express';
 import { Group, CreateGroupPayload, DeleteGroupPayload } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
-import HttpException from '@/exceptions/HttpException';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import oareGroupDao from './daos/OareGroupDao';
 
 const router = express.Router();
@@ -12,13 +12,13 @@ router.route('/groups/:id').get(adminRoute, async (req, res, next) => {
 
     const existingGroup = await oareGroupDao.getGroupById(groupId);
     if (!existingGroup) {
-      next(new HttpException(400, `Cannot retrieve information on non existent group with ID ${groupId}`));
+      next(new HttpBadRequest(`Cannot retrieve information on non existent group with ID ${groupId}`));
       return;
     }
 
     res.json(existingGroup);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 
@@ -29,7 +29,7 @@ router
       const groups: Group[] = await oareGroupDao.getAllGroups();
       res.json(groups);
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .post(adminRoute, async (req, res, next) => {
@@ -38,7 +38,7 @@ router
 
       const existingGroup = await oareGroupDao.getGroupByName(groupName);
       if (existingGroup) {
-        next(new HttpException(400, 'Group name already exists'));
+        next(new HttpBadRequest('Group name already exists'));
         return;
       }
 
@@ -47,7 +47,7 @@ router
         id: groupId,
       });
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .delete(adminRoute, async (req, res, next) => {
@@ -58,14 +58,14 @@ router
       for (let i = 0; i < groupIds.length; i += 1) {
         const existingGroup = await oareGroupDao.getGroupById(groupIds[i]);
         if (!existingGroup) {
-          next(new HttpException(400, `Group with ID ${groupIds[i]} does not exist`));
+          next(new HttpBadRequest(`Group with ID ${groupIds[i]} does not exist`));
           return;
         }
       }
       await oareGroupDao.deleteGroups(groupIds);
       res.end();
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   });
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import adminRoute from '@/middlewares/adminRoute';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import userDao from './daos/UserDao';
 
 const router = express.Router();
@@ -10,7 +10,7 @@ router.route('/users').get(adminRoute, async (_req, res, next) => {
     const users = await userDao.getAllUsers();
     res.json(users);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

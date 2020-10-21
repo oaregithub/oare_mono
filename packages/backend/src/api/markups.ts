@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import textMarkupDao from './daos/TextMarkupDao';
 
 const router = express.Router();
@@ -33,7 +33,7 @@ router.route('/markups/:textUuid').get(async (req, res, next) => {
 
     res.json(markups);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 
