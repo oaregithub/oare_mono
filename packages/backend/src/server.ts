@@ -2,9 +2,9 @@ import express from 'express';
 import history from 'connect-history-api-fallback';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import errorMiddleware from '@/middlewares/error';
 import './envConfig';
 import setupRoutes from './setupRoutes';
-import errorMiddleware from './middlewares/error';
 import cacheMiddleware from './middlewares/cache';
 import userMiddleware from './middlewares/user';
 

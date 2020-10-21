@@ -1,5 +1,5 @@
 import { CollectionListItem, CollectionResponse, CollectionText } from '@oare/types';
-import knex from '../../../connection';
+import knex from '@/connection';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';

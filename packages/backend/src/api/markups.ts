@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '../exceptions/HttpException';
+import HttpException from '@/exceptions/HttpException';
 import textMarkupDao from './daos/TextMarkupDao';
 
 const router = express.Router();

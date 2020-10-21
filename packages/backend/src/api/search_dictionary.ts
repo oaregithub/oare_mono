@@ -1,8 +1,8 @@
 import express from 'express';
 import { DictionarySearchPayload } from '@oare/types';
-import HttpException from '../exceptions/HttpException';
+import HttpException from '@/exceptions/HttpException';
+import cache from '@/cache';
 import dictionaryWordDao from './daos/DictionaryWordDao';
-import cache from '../cache';
 
 const router = express.Router();
 

@@ -1,4 +1,4 @@
-import knex from '../../../connection';
+import knex from '@/connection';
 import { EpigraphicUnitRow, EpigraphicUnitResult } from './index';
 
 export default function getSearchQuery(characters: string[], textTitle: string, blacklist: string[]) {

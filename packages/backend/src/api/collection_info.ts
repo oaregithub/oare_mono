@@ -1,6 +1,6 @@
 import express from 'express';
-import HttpException from '../exceptions/HttpException';
-import collectionsMiddleware from '../middlewares/collections';
+import HttpException from '@/exceptions/HttpException';
+import collectionsMiddleware from '@/middlewares/collections';
 import aliasDao from './daos/AliasDao';
 
 const router = express.Router();

@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import knex from '../../../connection';
+import knex from '@/connection';
 
 interface FieldRow {
   id: number;

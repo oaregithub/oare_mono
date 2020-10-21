@@ -1,6 +1,6 @@
 import { TextDraft } from '@oare/types';
 import { v4 } from 'uuid';
-import knex from '../../../connection';
+import knex from '@/connection';
 
 export interface TextDraftRow {
   createdAt: Date;

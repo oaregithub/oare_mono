@@ -1,8 +1,8 @@
 import express from 'express';
 import { AddTextDraftPayload } from '@oare/types';
-import HttpException from '../exceptions/HttpException';
+import HttpException from '@/exceptions/HttpException';
+import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import textDraftsDao from './daos/TextDraftsDao';
-import authenticatedRoute from '../middlewares/authenticatedRoute';
 
 const router = express.Router();
 

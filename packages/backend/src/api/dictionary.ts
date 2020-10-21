@@ -1,11 +1,11 @@
 import express from 'express';
 import { DictionaryWordResponse, UpdateDictionaryPayload } from '@oare/types';
-import HttpException from '../exceptions/HttpException';
+import adminRoute from '@/middlewares/adminRoute';
+import HttpException from '@/exceptions/HttpException';
+import cache from '@/cache';
+import { API_PATH } from '@/setupRoutes';
 import dictionaryFormDao from './daos/DictionaryFormDao';
 import dictionaryWordDao from './daos/DictionaryWordDao';
-import { API_PATH } from '../setupRoutes';
-import cache from '../cache';
-import adminRoute from '../middlewares/adminRoute';
 
 const router = express.Router();
 

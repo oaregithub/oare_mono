@@ -1,6 +1,6 @@
 import express from 'express';
+import HttpException from '@/exceptions/HttpException';
 import hierarchyDao from './daos/HierarchyDao';
-import HttpException from '../exceptions/HttpException';
 
 const router = express.Router();
 

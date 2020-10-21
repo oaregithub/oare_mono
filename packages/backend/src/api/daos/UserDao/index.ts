@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import { User } from '@oare/types';
-import knex from '../../../connection';
+import knex from '@/connection';
 
 export interface UserRow {
   id: number;

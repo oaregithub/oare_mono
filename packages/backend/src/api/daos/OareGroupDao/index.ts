@@ -1,5 +1,5 @@
 import { Group } from '@oare/types';
-import knex from '../../../connection';
+import knex from '@/connection';
 
 class OareGroupDao {
   async getGroupByName(name: string): Promise<Group> {

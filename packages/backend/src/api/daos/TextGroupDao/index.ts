@@ -1,5 +1,5 @@
 import { Text } from '@oare/types';
-import knex from '../../../connection';
+import knex from '@/connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
 import { UserRow } from '../UserDao';

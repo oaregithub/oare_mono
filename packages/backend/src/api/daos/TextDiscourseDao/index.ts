@@ -1,4 +1,4 @@
-import knex from '../../../connection';
+import knex from '@/connection';
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
 
 export interface DiscourseRow {
