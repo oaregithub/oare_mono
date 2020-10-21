@@ -1,8 +1,8 @@
 import express from 'express';
-import HttpException from '../exceptions/HttpException';
+import HttpException from '@/exceptions/HttpException';
+import collectionsMiddleware from '@/middlewares/collections';
+import cache from '@/cache';
 import hierarchyDao from './daos/HierarchyDao';
-import collectionsMiddleware from '../middlewares/collections';
-import cache from '../cache';
 
 const router = express.Router();
 

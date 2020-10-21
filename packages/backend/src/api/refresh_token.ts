@@ -1,9 +1,9 @@
 import express from 'express';
 import { LoginRegisterResponse } from '@oare/types';
+import HttpException from '@/exceptions/HttpException';
+import { sendJwtCookie } from '@/security';
 import RefreshTokenDao from './daos/RefreshTokenDao';
 import UserDao from './daos/UserDao';
-import HttpException from '../exceptions/HttpException';
-import { sendJwtCookie } from '../security';
 
 const router = express.Router();
 

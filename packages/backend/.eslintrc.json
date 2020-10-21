@@ -44,7 +44,8 @@
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/camelcase": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "import/no-extraneous-dependencies": "off"
+    "import/no-extraneous-dependencies": "off",
+    "import/no-unresolved": "off"
   },
   "settings": {
     "import/resolver": {

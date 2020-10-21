@@ -1,4 +1,4 @@
-import knex from '../../../connection';
+import knex from '@/connection';
 
 class LoggingEditsDao {
   async logEdit(type: 'UPDATE' | 'DELETE' | 'INSERT', userUuid: string, tableName: string, uuid: string) {

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import HttpException from '../exceptions/HttpException';
-import hierarchyDao from '../api/daos/HierarchyDao';
+import HttpException from '@/exceptions/HttpException';
+import hierarchyDao from '@/api/daos/HierarchyDao';
 
 async function collectionsMiddleware(req: Request, res: Response, next: NextFunction) {
   const user = req.user || null;

@@ -7,7 +7,7 @@
     "build": "tsc && cp -r src/api/sql build/api",
     "start": "node ./build/server.js",
     "lint": "eslint src/*.ts src/**/*.ts",
-    "dev": "ts-node-dev ./src/server.ts --respawn --transpileOnly ",
+    "dev": "ts-node-dev -r tsconfig-paths/register ./src/server.ts --respawn --transpileOnly ",
     "dev:3": "DB_VERSION=0.3 npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,6 +25,7 @@
     "husky": "^4.2.5",
     "prettier": "^2.1.1",
     "ts-node-dev": "^1.0.0-pre.44",
+    "tsconfig-paths": "^3.9.0",
     "typescript": "^3.9.3"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 import { DictionaryWordTranslation, DictionaryWord, NameOrPlace } from '@oare/types';
+import knex from '@/connection';
 import getQueryString from '../utils';
-import knex from '../../../connection';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';

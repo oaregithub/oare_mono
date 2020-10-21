@@ -1,8 +1,8 @@
 import express from 'express';
 import { LoginRegisterResponse, LoginPayload } from '@oare/types';
+import HttpException from '@/exceptions/HttpException';
+import * as security from '@/security';
 import userDao from './daos/UserDao';
-import HttpException from '../exceptions/HttpException';
-import * as security from '../security';
 
 const router = express.Router();
 

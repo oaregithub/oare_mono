@@ -1,6 +1,6 @@
 import express from 'express';
 import { AddUsersToGroupPayload, RemoveUsersFromGroupPayload } from '@oare/types';
-import adminRoute from '../middlewares/adminRoute';
+import adminRoute from '@/middlewares/adminRoute';
 import HttpException from '../exceptions/HttpException';
 import oareGroupDao from './daos/OareGroupDao';
 import userGroupDao from './daos/UserGroupDao';

@@ -1,7 +1,7 @@
 import express from 'express';
 import { AddTextPayload, RemoveTextsPayload, UpdateTextPermissionPayload } from '@oare/types';
-import HttpException from '../exceptions/HttpException';
-import adminRoute from '../middlewares/adminRoute';
+import HttpException from '@/exceptions/HttpException';
+import adminRoute from '@/middlewares/adminRoute';
 import textGroupDao from './daos/TextGroupDao';
 import oareGroupDao from './daos/OareGroupDao';
 import textDao from './daos/TextDao';

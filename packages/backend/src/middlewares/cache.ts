@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import cache from '../cache';
+import cache from '@/cache';
 
 function cacheMiddleware(req: Request, res: Response, next: NextFunction) {
   const userId = req.user ? req.user.id : null;

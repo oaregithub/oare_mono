@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import HttpException from '../exceptions/HttpException';
+import HttpException from '@/exceptions/HttpException';
 import authenticatedRoute from './authenticatedRoute';
 
 async function adminRoute(req: Request, res: Response, next: NextFunction) {

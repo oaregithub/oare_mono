@@ -1,7 +1,7 @@
 import express from 'express';
-import adminRoute from '../middlewares/adminRoute';
+import adminRoute from '@/middlewares/adminRoute';
+import HttpException from '@/exceptions/HttpException';
 import userDao from './daos/UserDao';
-import HttpException from '../exceptions/HttpException';
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '../exceptions/HttpException';
+import HttpException from '@/exceptions/HttpException';
 import aliasDao from './daos/AliasDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
 import textGroupDao from './daos/TextGroupDao';

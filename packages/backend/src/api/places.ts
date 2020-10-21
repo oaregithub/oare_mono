@@ -1,7 +1,7 @@
 import express from 'express';
+import HttpException from '@/exceptions/HttpException';
+import cache from '@/cache';
 import dictionaryWordDao from './daos/DictionaryWordDao';
-import HttpException from '../exceptions/HttpException';
-import cache from '../cache';
 
 const router = express.Router();
 

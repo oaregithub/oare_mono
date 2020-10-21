@@ -1,9 +1,9 @@
 import express from 'express';
 import { SearchTextsResponse, SearchTextsPayload } from '@oare/types';
-import HttpException from '../exceptions/HttpException';
+import cache from '@/cache';
+import HttpException from '@/exceptions/HttpException';
 import textGroupDao from './daos/TextGroupDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
-import cache from '../cache';
 
 const router = express.Router();
 

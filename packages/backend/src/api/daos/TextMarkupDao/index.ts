@@ -1,4 +1,4 @@
-import knex from '../../../connection';
+import knex from '@/connection';
 
 export interface MarkupRow {
   referenceUuid: string;

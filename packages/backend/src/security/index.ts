@@ -3,7 +3,7 @@ import cryptoRandomString from 'crypto-random-string';
 import jwt from 'jsonwebtoken';
 import { Response } from 'express';
 import { v4 } from 'uuid';
-import RefreshTokenDao from '../api/daos/RefreshTokenDao';
+import RefreshTokenDao from '@/api/daos/RefreshTokenDao';
 
 export function hashPassword(password: string, salt?: string): string {
   const pSalt = salt || cryptoRandomString({ length: 8 });

@@ -1,8 +1,8 @@
 import express from 'express';
 import { Group, CreateGroupPayload, DeleteGroupPayload } from '@oare/types';
-import adminRoute from '../middlewares/adminRoute';
+import adminRoute from '@/middlewares/adminRoute';
+import HttpException from '@/exceptions/HttpException';
 import oareGroupDao from './daos/OareGroupDao';
-import HttpException from '../exceptions/HttpException';
 
 const router = express.Router();
 

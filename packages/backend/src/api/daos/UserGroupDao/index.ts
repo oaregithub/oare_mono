@@ -1,5 +1,5 @@
 import { User } from '@oare/types';
-import knex from '../../../connection';
+import knex from '@/connection';
 
 export interface UserGroupRow {
   group_id: number;

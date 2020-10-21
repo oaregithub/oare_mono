@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '../exceptions/HttpException';
+import HttpException from '@/exceptions/HttpException';
 
 const router = express.Router();
 

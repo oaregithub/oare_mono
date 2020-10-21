@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import UserDao, { UserRow } from '../api/daos/UserDao';
-import HttpException from '../exceptions/HttpException';
+import UserDao, { UserRow } from '@/api/daos/UserDao';
+import HttpException from '@/exceptions/HttpException';
 
 // Attach user object to each request
 async function attachUser(req: Request, res: Response, next: NextFunction) {

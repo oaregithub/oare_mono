@@ -1,8 +1,8 @@
 import express from 'express';
 import { WordsResponse } from '@oare/types';
+import HttpException from '@/exceptions/HttpException';
+import cache from '@/cache';
 import dictionaryWordDao from './daos/DictionaryWordDao';
-import HttpException from '../exceptions/HttpException';
-import cache from '../cache';
 
 const router = express.Router();
 
