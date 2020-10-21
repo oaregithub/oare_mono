@@ -1,6 +1,6 @@
 import express from 'express';
 import { AddTextPayload, RemoveTextsPayload, UpdateTextPermissionPayload } from '@oare/types';
-import HttpException from '@/exceptions/HttpException';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import textGroupDao from './daos/TextGroupDao';
 import oareGroupDao from './daos/OareGroupDao';
@@ -16,7 +16,7 @@ router
       const texts = await textGroupDao.getTexts(groupId);
       res.json(texts);
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .post(adminRoute, async (req, res, next) => {
@@ -27,7 +27,7 @@ router
       // Make sure that group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
-        next(new HttpException(400, `Group ID does not exist: ${groupId}`));
+        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
         return;
       }
 
@@ -36,7 +36,7 @@ router
         const text = texts[i];
         const existingText = await textDao.getTextByUuid(text.uuid);
         if (!existingText) {
-          next(new HttpException(400, `Text UUID is invalid: ${text.uuid}`));
+          next(new HttpBadRequest(`Text UUID is invalid: ${text.uuid}`));
           return;
         }
       }
@@ -52,7 +52,7 @@ router
       await textGroupDao.addTexts(insertRows);
       res.status(201).end();
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .delete(adminRoute, async (req, res, next) => {
@@ -63,7 +63,7 @@ router
       // Make sure that group ID exists
       const existingGroup = await oareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
-        next(new HttpException(400, `Group ID does not exist: ${groupId}`));
+        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
         return;
       }
 
@@ -71,7 +71,7 @@ router
       for (let i = 0; i < textUuids.length; i += 1) {
         const textExists = await textGroupDao.containsAssociation(groupId, textUuids[i]);
         if (!textExists) {
-          next(new HttpException(400, `Cannot remove text not in group: ${textUuids[i]}`));
+          next(new HttpBadRequest(`Cannot remove text not in group: ${textUuids[i]}`));
           return;
         }
       }
@@ -79,7 +79,7 @@ router
       await textGroupDao.removeTexts(groupId, textUuids);
       res.status(204).end();
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .patch(adminRoute, async (req, res, next) => {
@@ -90,21 +90,21 @@ router
       // Make sure that group ID exists
       const existingGroup = oareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
-        next(new HttpException(400, `Group ID does not exist: ${groupId}`));
+        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
         return;
       }
 
       // Make sure that each text exists inside the group
       const textExists = await textGroupDao.containsAssociation(groupId, textUuid);
       if (!textExists) {
-        next(new HttpException(400, `Cannot update text not in group: ${textUuid}`));
+        next(new HttpBadRequest(`Cannot update text not in group: ${textUuid}`));
         return;
       }
 
       await textGroupDao.update(groupId, textUuid, canWrite, canRead);
       res.status(204).end();
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   });
 

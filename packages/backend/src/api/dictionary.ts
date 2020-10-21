@@ -1,7 +1,7 @@
 import express from 'express';
 import { DictionaryWordResponse, UpdateDictionaryPayload } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import cache from '@/cache';
 import { API_PATH } from '@/setupRoutes';
 import dictionaryFormDao from './daos/DictionaryFormDao';
@@ -24,7 +24,7 @@ router
       };
       res.json(result);
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .post(adminRoute, async (req, res, next) => {
@@ -45,10 +45,10 @@ router
           translations: updatedTranslations,
         });
       } else {
-        next(new HttpException(403, 'You are not authorized to access this route'));
+        next(new HttpForbidden('You are not authorized to access this route'));
       }
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   });
 

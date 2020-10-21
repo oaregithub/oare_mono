@@ -1,6 +1,6 @@
 import express from 'express';
 import { LoginRegisterResponse, LoginPayload } from '@oare/types';
-import HttpException from '@/exceptions/HttpException';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import * as security from '@/security';
 import userDao from './daos/UserDao';
 
@@ -12,14 +12,14 @@ router.route('/login').post(async (req, res, next) => {
     const user = await userDao.getUserByEmail(email);
 
     if (!user) {
-      next(new HttpException(400, `Non existent email: ${email}`));
+      next(new HttpBadRequest(`Non existent email: ${email}`));
       return;
     }
 
     if (security.checkPassword(password, user.passwordHash)) {
       req.user = user;
     } else {
-      next(new HttpException(400, 'Invalid credentials'));
+      next(new HttpBadRequest('Invalid credentials'));
       return;
     }
 
@@ -33,7 +33,7 @@ router.route('/login').post(async (req, res, next) => {
     };
     cookieRes.json(response);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import { LoginRegisterResponse } from '@oare/types';
-import HttpException from '@/exceptions/HttpException';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { sendJwtCookie } from '@/security';
 import RefreshTokenDao from './daos/RefreshTokenDao';
 import UserDao from './daos/UserDao';
@@ -11,23 +11,23 @@ router.route('/refresh_token').get(async (req, res, next) => {
   try {
     const { refreshToken } = req.cookies;
     if (!refreshToken) {
-      next(new HttpException(400, 'No refresh token provided'));
+      next(new HttpBadRequest('No refresh token provided'));
       return;
     }
 
     const token = await RefreshTokenDao.getTokenInfo(refreshToken);
     if (!token) {
-      next(new HttpException(400, 'Invalid token'));
+      next(new HttpBadRequest('Invalid token'));
       return;
     }
 
     if (req.ip !== token.ipAddress) {
-      next(new HttpException(400, 'Invalid IP address'));
+      next(new HttpBadRequest('Invalid IP address'));
       return;
     }
 
     if (Date.now() >= token.expiration.getTime()) {
-      next(new HttpException(400, 'Refresh token is expired'));
+      next(new HttpBadRequest('Refresh token is expired'));
       return;
     }
 
@@ -35,7 +35,7 @@ router.route('/refresh_token').get(async (req, res, next) => {
 
     (await sendJwtCookie(token.ipAddress, res, token.email)).json(user).end();
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

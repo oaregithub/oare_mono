@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpForbidden } from '@/exceptions';
 import hierarchyDao from '@/api/daos/HierarchyDao';
 
 async function collectionsMiddleware(req: Request, res: Response, next: NextFunction) {
@@ -9,7 +9,7 @@ async function collectionsMiddleware(req: Request, res: Response, next: NextFunc
   if (!user || !user.isAdmin) {
     const isCollectionPublished = await hierarchyDao.isPublished(uuid);
     if (!isCollectionPublished) {
-      next(new HttpException(403, 'You do not have access to that collection.'));
+      next(new HttpForbidden('You do not have access to that collection.'));
       return;
     }
   }

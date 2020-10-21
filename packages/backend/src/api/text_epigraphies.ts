@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import aliasDao from './daos/AliasDao';
 import textEpigraphyDao from './daos/TextEpigraphyDao';
 import textGroupDao from './daos/TextGroupDao';
@@ -18,8 +18,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       const blacklist = await textGroupDao.getUserBlacklist(user);
       if (blacklist.includes(textUuid)) {
         next(
-          new HttpException(
-            403,
+          new HttpForbidden(
             'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.',
           ),
         );
@@ -51,7 +50,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       colorMeaning,
     });
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

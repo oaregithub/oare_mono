@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
 import cache from '@/cache';
 import hierarchyDao from './daos/HierarchyDao';
@@ -14,7 +14,7 @@ router.route('/collections').get(async (req, res, next) => {
     const collections = await hierarchyDao.getAllCollections(isAdmin);
     res.json(collections);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 
@@ -36,7 +36,7 @@ router.route('/collections/:uuid').get(collectionsMiddleware, async (req, res, n
 
     res.json(response);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

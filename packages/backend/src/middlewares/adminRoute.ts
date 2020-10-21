@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from './authenticatedRoute';
 
 async function adminRoute(req: Request, res: Response, next: NextFunction) {
@@ -14,13 +14,13 @@ async function adminRoute(req: Request, res: Response, next: NextFunction) {
       if (user && user.isAdmin) {
         next();
       } else {
-        next(new HttpException(403, 'You are not authenticated to access this route'));
+        next(new HttpForbidden('You are not authenticated to access this route'));
       }
     };
 
     authenticatedRoute(req, res, navigateAdmin);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 }
 

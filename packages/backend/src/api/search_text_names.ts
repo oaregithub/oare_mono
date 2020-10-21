@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import hierarchyDao from './daos/HierarchyDao';
 
 const router = express.Router();
@@ -10,7 +10,7 @@ router.route('/search_text_names').get(async (req, res, next) => {
 
     res.json(await hierarchyDao.getTextsBySearchTerm(search));
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

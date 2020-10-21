@@ -1,6 +1,6 @@
 import express from 'express';
 import { AddTextDraftPayload } from '@oare/types';
-import HttpException from '@/exceptions/HttpException';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import textDraftsDao from './daos/TextDraftsDao';
 
@@ -15,13 +15,13 @@ router
       const draftExists = await textDraftsDao.draftExists(userId, textUuid);
 
       if (!draftExists) {
-        next(new HttpException(400, `No drafts for text with UUID ${textUuid}`));
+        next(new HttpBadRequest(`No drafts for text with UUID ${textUuid}`));
         return;
       }
       const draft = await textDraftsDao.getDraft(userId, textUuid);
       res.json(draft);
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   })
   .post(async (req, res, next) => {
@@ -30,7 +30,7 @@ router
       const userId = req.user ? req.user.id : null;
 
       if (!userId) {
-        next(new HttpException(400, 'You must be an authenticated user to edit texts'));
+        next(new HttpBadRequest('You must be an authenticated user to edit texts'));
         return;
       }
 
@@ -47,7 +47,7 @@ router
       }
       res.status(201).end();
     } catch (err) {
-      next(new HttpException(500, err));
+      next(new HttpInternalError(err));
     }
   });
 
@@ -58,7 +58,7 @@ router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
     const drafts = await textDraftsDao.getAllDrafts(userId);
     res.json(drafts);
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 

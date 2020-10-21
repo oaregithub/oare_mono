@@ -1,5 +1,5 @@
 import express from 'express';
-import HttpException from '@/exceptions/HttpException';
+import { HttpInternalError } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
 import aliasDao from './daos/AliasDao';
 
@@ -14,7 +14,7 @@ router.route('/collection_info/:uuid').get(collectionsMiddleware, async (req, re
       name,
     });
   } catch (err) {
-    next(new HttpException(500, err));
+    next(new HttpInternalError(err));
   }
 });
 
