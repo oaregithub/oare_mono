@@ -1,4 +1,5 @@
 import express from 'express';
+import { LoginRegisterResponse } from '@oare/types';
 import RefreshTokenDao from './daos/RefreshTokenDao';
 import UserDao from './daos/UserDao';
 import HttpException from '../exceptions/HttpException';
@@ -30,16 +31,9 @@ router.route('/refresh_token').get(async (req, res, next) => {
       return;
     }
 
-    const user = await UserDao.getUserByEmail(token.email);
-    (await sendJwtCookie(token.ipAddress, res, token.email))
-      .json({
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        isAdmin: !!user.isAdmin,
-      })
-      .end();
+    const user: LoginRegisterResponse = await UserDao.getUserByEmail(token.email);
+
+    (await sendJwtCookie(token.ipAddress, res, token.email)).json(user).end();
   } catch (err) {
     next(new HttpException(500, err));
   }
