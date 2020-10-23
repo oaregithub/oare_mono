@@ -49,10 +49,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, onMounted } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  Ref,
+  onMounted,
+  PropType,
+} from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
-import server from '@/serverProxy';
+import defaultServer from '@/serverProxy';
 import { DictionaryWord } from '@oare/types';
+import defaultActions from '@/globalActions';
 
 export default defineComponent({
   name: 'WordsView',
@@ -64,8 +71,16 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    server: {
+      type: Object as PropType<typeof defaultServer>,
+      default: () => defaultServer,
+    },
+    actions: {
+      type: Object as PropType<typeof defaultActions>,
+      default: () => defaultActions,
+    },
   },
-  setup() {
+  setup({ actions, server }) {
     const words: Ref<DictionaryWord[]> = ref([]);
     const canEdit = ref(false);
     const loading = ref(false);
@@ -92,11 +107,18 @@ export default defineComponent({
 
     onMounted(async () => {
       loading.value = true;
-      const { words: wordsResp } = await server.getDictionaryWords();
-      const { canEdit: canEditResp } = await server.getDictionaryPermissions();
-      words.value = wordsResp;
-      canEdit.value = canEditResp;
-      loading.value = false;
+      try {
+        const { words: wordsResp } = await server.getDictionaryWords();
+        const {
+          canEdit: canEditResp,
+        } = await server.getDictionaryPermissions();
+        words.value = wordsResp;
+        canEdit.value = canEditResp;
+      } catch {
+        actions.showErrorSnackbar('Failed to retrieve dictionary words');
+      } finally {
+        loading.value = false;
+      }
     });
 
     return {

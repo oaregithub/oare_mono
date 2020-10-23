@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar v-model="showSnackbar" :color="snackbarColor">
+  <v-snackbar v-model="showSnackbar" :color="snackbarColor" :top="top">
     {{ message }}
     <template #action="{ attrs }">
       <v-btn
@@ -29,12 +29,14 @@ export default defineComponent({
     const showSnackbar = ref(false);
     const snackbarColor: Ref<string | undefined> = ref(undefined);
     const buttonColor = ref('info');
+    const top = ref(false);
 
     onMounted(() => {
       EventBus.$on(ACTIONS.TOAST, (options: SnackbarOptions) => {
         showSnackbar.value = true;
         message.value = options.text;
         snackbarColor.value = options.error ? 'error' : undefined;
+        top.value = !!options.error;
         buttonColor.value = snackbarColor.value === 'error' ? 'white' : 'info';
       });
     });
@@ -44,6 +46,7 @@ export default defineComponent({
       message,
       snackbarColor,
       buttonColor,
+      top,
     };
   },
 });
