@@ -12,9 +12,6 @@ import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import { NameOrPlace } from '@oare/types';
 import sl from '@/serviceLocator';
 
-const server = sl.get('serverProxy');
-const globalActions = sl.get('globalActions');
-
 export default defineComponent({
   name: 'PlacesView',
   components: {
@@ -29,6 +26,9 @@ export default defineComponent({
   setup(props) {
     const places: Ref<NameOrPlace[]> = ref([]);
     const loading = ref(false);
+
+    const server = sl.get('serverProxy');
+    const globalActions = sl.get('globalActions');
 
     onMounted(async () => {
       loading.value = true;
