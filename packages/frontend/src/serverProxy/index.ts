@@ -20,7 +20,7 @@ import register from './register';
 import logout from './logout';
 import refreshToken from './refresh_token';
 
-export default {
+const serverProxy = {
   ...textGroups,
   ...groups,
   ...users,
@@ -43,3 +43,7 @@ export default {
   ...logout,
   ...refreshToken,
 };
+
+export type ServerProxyType = typeof serverProxy;
+
+export default serverProxy;
