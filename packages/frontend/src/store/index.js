@@ -13,6 +13,9 @@ let store = new Vuex.Store({
     markups: {},
     epigraphies: {},
     authComplete: false,
+    permissions: {
+      dictionary: [],
+    },
   },
   mutations,
   actions,

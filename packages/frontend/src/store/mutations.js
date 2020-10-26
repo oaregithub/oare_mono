@@ -1,5 +1,3 @@
-import axiosInstance from '../axiosInstance';
-
 export default {
   setLanded(state) {
     state.landed = true;
@@ -27,5 +25,9 @@ export default {
 
   setAuthComplete(state) {
     state.authComplete = true;
+  },
+
+  setPermissions(state, payload) {
+    state.permissions = payload;
   },
 };

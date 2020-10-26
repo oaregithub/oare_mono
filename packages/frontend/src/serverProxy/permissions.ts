@@ -1,13 +1,11 @@
-import axios from '../axiosInstance';
+import axios from '@/axiosInstance';
+import { PermissionResponse } from '@oare/types';
 
-interface DictionaryPermissions {
-  canEdit: boolean;
-}
-const getDictionaryPermissions = async (): Promise<DictionaryPermissions> => {
-  const { data } = await axios.get('/permissions/dictionary');
+const getPermissions = async (): Promise<PermissionResponse> => {
+  const { data } = await axios.get('/permissions');
   return data;
 };
 
 export default {
-  getDictionaryPermissions,
+  getPermissions,
 };
