@@ -114,7 +114,7 @@ export default defineComponent({
         characters: [...searchCharsArray.value],
         textTitle: textTitleSearch.value,
         page: Number(page.value),
-        rows: Number(page.value),
+        rows: Number(rows.value),
       });
 
       totalSearchResults.value = totalRows;
