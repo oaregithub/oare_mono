@@ -10,7 +10,7 @@
 import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import { NameOrPlace } from '@oare/types';
-import server from '../../serverProxy';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'PlacesView',
@@ -27,10 +27,20 @@ export default defineComponent({
     const places: Ref<NameOrPlace[]> = ref([]);
     const loading = ref(false);
 
+    const server = sl.get('serverProxy');
+    const globalActions = sl.get('globalActions');
+
     onMounted(async () => {
       loading.value = true;
-      places.value = await server.getPlaces();
-      loading.value = false;
+      try {
+        places.value = await server.getPlaces();
+      } catch {
+        globalActions.showErrorSnackbar(
+          'Failed to retrieve places information'
+        );
+      } finally {
+        loading.value = false;
+      }
     });
 
     return {

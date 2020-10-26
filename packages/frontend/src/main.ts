@@ -2,6 +2,9 @@ import 'babel-polyfill';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
+import serverProxy from '@/serverProxy';
+import globalActions from '@/globalActions';
+import sl from '@/serviceLocator';
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -9,18 +12,19 @@ import 'vuetify/dist/vuetify.min.css';
 import './styles/base.css';
 import vuetify from './plugins/vuetify';
 import loadBases from './loadBases';
-import axiosInstance from './axiosInstance';
 import { NavigationGuard, Route, NavigationGuardNext } from 'vue-router';
 import i18n from './i18n';
 import EventBus, { ACTIONS } from '@/EventBus';
 import 'flag-icon-css/css/flag-icon.css';
+
+sl.set('serverProxy', serverProxy);
+sl.set('globalActions', globalActions);
 
 loadBases();
 
 Vue.use(Vuetify);
 Vue.use(VueCompositionApi);
 Vue.config.productionTip = false;
-Vue.prototype.$axios = axiosInstance;
 
 const guardRoute = (
   routes: string[],
