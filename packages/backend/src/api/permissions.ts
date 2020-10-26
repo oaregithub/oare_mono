@@ -1,18 +1,29 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
+import { PermissionResponse } from '@oare/types';
 
 const router = express.Router();
 
-router.route('/permissions/:type').get(async (req, res, next) => {
+router.route('/permissions').get(async (req, res, next) => {
   try {
-    const { type } = req.params;
-    if (type === 'dictionary') {
-      const canEdit = req.user?.isAdmin || false;
-      res.json({
-        canEdit,
-      });
-      return;
+    const { user } = req;
+
+    const permissions: PermissionResponse = {
+      dictionary: [],
+    };
+
+    if (user && user.isAdmin) {
+      permissions.dictionary = [
+        'ADD_TRANSLATION',
+        'DELETE_TRANSLATION',
+        'UPDATE_FORM',
+        'UPDATE_TRANSLATION',
+        'UPDATE_TRANSLATION_ORDER',
+        'UPDATE_WORD_SPELLING',
+      ];
     }
+
+    res.json(permissions);
   } catch (err) {
     next(new HttpInternalError(err));
   }

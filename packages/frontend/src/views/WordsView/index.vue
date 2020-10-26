@@ -55,11 +55,15 @@ import {
   Ref,
   onMounted,
   PropType,
+  computed,
 } from '@vue/composition-api';
+import { Store } from 'vuex';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
 import defaultServer from '@/serverProxy';
-import { DictionaryWord } from '@oare/types';
+import { DictionaryWord, PermissionResponse } from '@oare/types';
 import defaultActions from '@/globalActions';
+import defaultStore from '@/store';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'WordsView',
@@ -71,19 +75,22 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    server: {
-      type: Object as PropType<typeof defaultServer>,
-      default: () => defaultServer,
-    },
-    actions: {
-      type: Object as PropType<typeof defaultActions>,
-      default: () => defaultActions,
+    store: {
+      type: Object as PropType<Store<{}>>,
+      default: () => defaultStore,
     },
   },
-  setup({ actions, server }) {
+
+  setup(props) {
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
     const words: Ref<DictionaryWord[]> = ref([]);
-    const canEdit = ref(false);
     const loading = ref(false);
+
+    const canEdit = computed(() => {
+      const permissions: PermissionResponse = props.store.getters.permissions;
+      return permissions.dictionary.length > 0;
+    });
 
     const searchFilter = (search: string, word: DictionaryWord): boolean => {
       const lowerSearch = search ? search.toLowerCase() : '';
@@ -109,11 +116,7 @@ export default defineComponent({
       loading.value = true;
       try {
         const { words: wordsResp } = await server.getDictionaryWords();
-        const {
-          canEdit: canEditResp,
-        } = await server.getDictionaryPermissions();
         words.value = wordsResp;
-        canEdit.value = canEditResp;
       } catch {
         actions.showErrorSnackbar('Failed to retrieve dictionary words');
       } finally {

@@ -111,8 +111,8 @@ import VueI18n from 'vue-i18n';
 import { Store } from 'vuex';
 import Router from 'vue-router';
 import defaultI18n from '../../i18n/index';
-import serverProxy from '@/serverProxy';
 import EventBus, { ACTIONS } from '@/EventBus';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'OareAppBar',
@@ -131,6 +131,9 @@ export default defineComponent({
     },
   },
   setup({ store, router, i18n }, context) {
+    const serverProxy = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+
     const loading = ref(false);
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
@@ -148,8 +151,10 @@ export default defineComponent({
       loading.value = true;
       try {
         await store.dispatch('refreshToken');
+        const permissions = await serverProxy.getPermissions();
+        store.commit('setPermissions', permissions);
       } catch (error) {
-        console.error(error);
+        actions.showErrorSnackbar('There was an error initializing the site');
       } finally {
         loading.value = false;
         EventBus.$emit(ACTIONS.REFRESH);

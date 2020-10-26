@@ -68,3 +68,15 @@ CREATE TABLE `logging_edits` (
   `object_values` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=58128 DEFAULT CHARSET=latin1
+
+
+-- 2020-10-26 Add general permissions table
+CREATE TABLE permissions (
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    `user_uuid` CHAR(36) NOT NULL,
+    `type` VARCHAR(128) NOT NULL,
+    `permission` VARCHAR(128) NOT NULL-- 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `user` ADD UNIQUE (uuid);
+ALTER TABLE permissions ADD FOREIGN KEY (user_uuid) REFERENCES user(uuid) ON DELETE CASCADE;

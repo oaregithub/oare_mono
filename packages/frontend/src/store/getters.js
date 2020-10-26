@@ -18,4 +18,8 @@ export default {
   authComplete(state) {
     return state.authComplete;
   },
+
+  permissions(state) {
+    return state.permissions;
+  },
 };

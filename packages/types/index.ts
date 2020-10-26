@@ -261,3 +261,17 @@ export interface LoginRegisterResponse {
   email: string;
   isAdmin: boolean;
 }
+
+// Permissions
+
+export type DictionaryPermission =
+  | "UPDATE_WORD_SPELLING"
+  | "ADD_TRANSLATION"
+  | "DELETE_TRANSLATION"
+  | "UPDATE_TRANSLATION"
+  | "UPDATE_TRANSLATION_ORDER"
+  | "UPDATE_FORM";
+
+export interface PermissionResponse {
+  dictionary: DictionaryPermission[];
+}

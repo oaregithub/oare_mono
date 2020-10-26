@@ -24,10 +24,13 @@ import {
   Ref,
   watch,
   computed,
+  PropType,
 } from '@vue/composition-api';
+import { Store } from 'vuex';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { WordWithForms, DictionaryForm } from '@oare/types';
+import { WordWithForms, DictionaryForm, PermissionResponse } from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
+import defaultStore from '@/store';
 import WordInfo from './WordInfo.vue';
 import EditWord from './EditWord.vue';
 import serverProxy from '@/serverProxy';
@@ -44,20 +47,24 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    store: {
+      type: Object as PropType<Store<{}>>,
+      default: () => defaultStore,
+    },
   },
   setup(props, context) {
     const loading = ref(true);
-    const canEdit = ref(false);
     const wordInfo: Ref<WordWithForms | null> = ref(null);
+
+    const canEdit = computed(() => {
+      const permissions: PermissionResponse = props.store.getters.permissions;
+      return permissions.dictionary.length > 0;
+    });
 
     watch(
       () => props.uuid,
       async () => {
         loading.value = true;
-        const {
-          canEdit: canEditResp,
-        } = await serverProxy.getDictionaryPermissions();
-        canEdit.value = canEditResp;
         wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
         loading.value = false;
       }

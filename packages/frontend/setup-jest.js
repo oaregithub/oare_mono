@@ -8,6 +8,11 @@ import OareContentView from './src/components/base/OareContentView.vue';
 import OareBreadcrumbs from './src/components/base/OareBreadcrumbs.vue';
 import OareDialog from './src/components/base/OareDialog.vue';
 import OareLabel from './src/components/base/OareLabel.vue';
+import sl from './src/serviceLocator';
+
+sl.set('globalActions', {
+  showErrorSnackbar: () => {},
+});
 
 Vue.use(Vuetify);
 Vue.component('OareLoaderButton', OareLoaderButton);
