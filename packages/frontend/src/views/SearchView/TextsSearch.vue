@@ -123,7 +123,7 @@ export default defineComponent({
       searchLoading.value = false;
     };
 
-    watch([page, rows], searchTexts, { lazy: true });
+    watch([page, rows], searchTexts, { immediate: false });
 
     onMounted(searchTexts);
 

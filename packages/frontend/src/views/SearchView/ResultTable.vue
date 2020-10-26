@@ -92,14 +92,14 @@ export default defineComponent({
       () => {
         emit('update:page', searchOptions.value.page);
       },
-      { lazy: true }
+      { immediate: false }
     );
     watch(
       () => searchOptions.value.itemsPerPage,
       () => {
         emit('update:rows', searchOptions.value.itemsPerPage);
       },
-      { lazy: true }
+      { immediate: false }
     );
 
     return {

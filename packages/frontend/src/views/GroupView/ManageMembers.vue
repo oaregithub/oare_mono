@@ -165,7 +165,7 @@ export default defineComponent({
           searchUserInput.value = '';
         }
       },
-      { deep: true, lazy: true }
+      { deep: true, immediate: false }
     );
 
     onMounted(async () => {
