@@ -51,7 +51,7 @@ export default defineComponent({
 
   setup() {
     const searchFilter = (search: string, word: NameOrPlace) => {
-      const lowerSearch = search.toLowerCase();
+      const lowerSearch = search ? search.toLowerCase() : '';
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
