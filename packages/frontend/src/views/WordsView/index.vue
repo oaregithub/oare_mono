@@ -54,15 +54,12 @@ import {
   ref,
   Ref,
   onMounted,
-  PropType,
   computed,
 } from '@vue/composition-api';
-import { Store } from 'vuex';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
 import defaultServer from '@/serverProxy';
 import { DictionaryWord, PermissionResponse } from '@oare/types';
 import defaultActions from '@/globalActions';
-import defaultStore from '@/store';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -75,20 +72,18 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    store: {
-      type: Object as PropType<Store<{}>>,
-      default: () => defaultStore,
-    },
   },
 
-  setup(props) {
+  setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
+
     const words: Ref<DictionaryWord[]> = ref([]);
     const loading = ref(false);
 
     const canEdit = computed(() => {
-      const permissions: PermissionResponse = props.store.getters.permissions;
+      const permissions = store.getters.permissions;
       return permissions.dictionary.length > 0;
     });
 

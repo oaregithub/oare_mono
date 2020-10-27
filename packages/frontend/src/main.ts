@@ -1,13 +1,12 @@
 import 'babel-polyfill';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
-import VueCompositionApi from '@vue/composition-api';
 import serverProxy from '@/serverProxy';
 import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
+import tsStore from '@/ts-store';
 import App from './App.vue';
 import router from './router';
-import store from './store';
 import 'vuetify/dist/vuetify.min.css';
 import './styles/base.css';
 import vuetify from './plugins/vuetify';
@@ -19,11 +18,11 @@ import 'flag-icon-css/css/flag-icon.css';
 
 sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);
+sl.set('store', tsStore);
 
 loadBases();
 
 Vue.use(Vuetify);
-Vue.use(VueCompositionApi);
 Vue.config.productionTip = false;
 
 const guardRoute = (
@@ -33,7 +32,7 @@ const guardRoute = (
   next: NavigationGuardNext
 ) => {
   if (to.name && routes.includes(to.name)) {
-    if (!store.getters.authComplete) {
+    if (!tsStore.getters.authComplete) {
       EventBus.$on(ACTIONS.REFRESH, callback);
     } else {
       callback();
@@ -47,7 +46,7 @@ const guardRoute = (
 const adminRoutes = ['admin', 'groups', 'editDictionaryWord'];
 const adminGuard: NavigationGuard = (to, _from, next) => {
   const navigate = () => {
-    if (!store.getters.isAdmin) {
+    if (!tsStore.getters.isAdmin) {
       next('/');
     } else {
       next();
@@ -64,6 +63,7 @@ const authFirstRoutes = [
   'dashboardDrafts',
   'words',
   'dashboardProfile',
+  'login',
 ];
 const authFirstGuard: NavigationGuard = (to, _from, next) => {
   guardRoute(authFirstRoutes, to, next, next);
@@ -74,7 +74,6 @@ router.beforeEach(adminGuard);
 
 new Vue({
   router,
-  store,
   vuetify,
   i18n,
   render: h => h(App),

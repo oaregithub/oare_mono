@@ -1,11 +1,13 @@
 import { GlobalActionsType } from '@/globalActions';
 import { ServerProxyType } from '@/serverProxy';
+import store from '@/ts-store';
 
 const instances: { [key: string]: any } = {};
 
 export type ServiceTypes = {
   serverProxy: ServerProxyType;
   globalActions: GlobalActionsType;
+  store: typeof store;
 };
 
 export default {

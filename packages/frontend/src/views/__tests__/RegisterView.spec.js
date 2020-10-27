@@ -3,6 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import RegisterView from '../RegisterView.vue';
 import flushPromises from 'flush-promises';
+import sl from '../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -13,20 +14,34 @@ describe('RegisterView test', () => {
     router: {
       push: jest.fn(),
     },
-    store: {
-      dispatch: jest.fn().mockResolvedValue(true),
-    },
   };
-  const createWrapper = (props = mockProps) =>
-    mount(RegisterView, {
+
+  const mockServer = {
+    register: jest.fn().mockResolvedValue({
+      id: 1,
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@gmail.com',
+      isAdmin: false,
+    }),
+  };
+
+  const mockStore = {
+    setUser: jest.fn(),
+  };
+  const createWrapper = ({ server, store } = {}) => {
+    sl.set('serverProxy', server || mockServer);
+    sl.set('store', store || mockStore);
+    return mount(RegisterView, {
       localVue,
       vuetify,
-      propsData: props,
+      propsData: mockProps,
       mocks: {
         $t: jest.fn().mockReturnValue('string'),
       },
       stubs: ['router-link'],
     });
+  };
 
   const fillInForm = async wrapper => {
     const firstNameInput = wrapper.find('.test-firstname input');
@@ -86,12 +101,13 @@ describe('RegisterView test', () => {
     await fillInForm(wrapper);
     await submitForm(wrapper);
 
-    expect(mockProps.store.dispatch).toHaveBeenCalledWith('register', {
+    expect(mockServer.register).toHaveBeenCalledWith({
       firstName: 'First',
       lastName: 'Last',
       password: 'password',
       email: 'email@test.com',
     });
+    expect(mockStore.setUser).toHaveBeenCalled();
     expect(mockProps.router.push).toHaveBeenCalledWith('/');
   });
 
@@ -104,7 +120,7 @@ describe('RegisterView test', () => {
 
     await submitForm(wrapper);
 
-    expect(mockProps.store.dispatch).not.toHaveBeenCalled();
+    expect(mockStore.setUser).not.toHaveBeenCalled();
     expect(mockProps.router.push).not.toHaveBeenCalled();
   });
 
@@ -117,7 +133,7 @@ describe('RegisterView test', () => {
 
     await submitForm(wrapper);
 
-    expect(mockProps.store.dispatch).not.toHaveBeenCalled();
+    expect(mockStore.setUser).not.toHaveBeenCalled();
     expect(mockProps.router.push).not.toHaveBeenCalled();
   });
 
@@ -130,16 +146,20 @@ describe('RegisterView test', () => {
 
     await submitForm(wrapper);
 
-    expect(mockProps.store.dispatch).not.toHaveBeenCalled();
+    expect(mockStore.setUser).not.toHaveBeenCalled();
     expect(mockProps.router.push).not.toHaveBeenCalled();
   });
 
   it('shows error message if network calls fail', async () => {
-    const mockDispatch = jest.fn().mockRejectedValue('Email already taken');
     const wrapper = createWrapper({
-      ...mockProps,
-      store: {
-        dispatch: mockDispatch,
+      server: {
+        register: jest.fn().mockRejectedValue({
+          response: {
+            data: {
+              message: 'Email already taken',
+            },
+          },
+        }),
       },
     });
 
@@ -148,7 +168,7 @@ describe('RegisterView test', () => {
 
     const errorMsg = wrapper.find('.test-error-msg');
     expect(errorMsg.text()).toBe('Email already taken');
-    expect(mockProps.store.dispatch).not.toHaveBeenCalled();
+    expect(mockStore.setUser).not.toHaveBeenCalled();
     expect(mockProps.router.push).not.toHaveBeenCalled();
   });
 });

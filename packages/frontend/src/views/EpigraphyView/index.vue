@@ -132,7 +132,7 @@ import {
   onMounted,
   computed,
 } from '@vue/composition-api';
-import store from '@/store';
+import sl from '@/serviceLocator';
 
 import server from '../../serverProxy';
 
@@ -168,6 +168,8 @@ export default defineComponent({
   },
 
   setup({ textUuid }) {
+    const store = sl.get('store');
+
     const epigraphyState = reactive<EpigraphyState>({
       loading: false,
       collection: '',
