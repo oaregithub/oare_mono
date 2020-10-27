@@ -2,7 +2,7 @@
   <OareContentView :title="title" :loading="loading">
     <template #title:pre v-if="!isEditing && wordInfo && canEdit">
       <v-btn icon class="mt-n2 mr-1" :to="`/dictionaryWord/${uuid}/edit`">
-        <v-icon>mdi-pencil</v-icon>
+        <v-icon class="test-pencil">mdi-pencil</v-icon>
       </v-btn>
     </template>
     <template #header>
@@ -22,19 +22,17 @@ import {
   defineComponent,
   ref,
   Ref,
-  watch,
   computed,
   PropType,
+  onMounted,
 } from '@vue/composition-api';
-import { Store } from 'vuex';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { WordWithForms, DictionaryForm, PermissionResponse } from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
-import defaultStore from '@/store';
 import WordInfo from './WordInfo.vue';
 import EditWord from './EditWord.vue';
-import serverProxy from '@/serverProxy';
 import router from '@/router';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'DictionaryWord',
@@ -47,29 +45,30 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    store: {
-      type: Object as PropType<Store<{}>>,
-      default: () => defaultStore,
-    },
   },
   setup(props, context) {
+    const store = sl.get('store');
+    const serverProxy = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+
     const loading = ref(true);
     const wordInfo: Ref<WordWithForms | null> = ref(null);
 
     const canEdit = computed(() => {
-      const permissions: PermissionResponse = props.store.getters.permissions;
+      const permissions = store.getters.permissions;
       return permissions.dictionary.length > 0;
     });
 
-    watch(
-      () => props.uuid,
-      async () => {
-        loading.value = true;
+    onMounted(async () => {
+      loading.value = true;
+      try {
         wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
+      } catch {
+        actions.showErrorSnackbar('Failed to retrieve dictionary info');
+      } finally {
         loading.value = false;
-      },
-      { immediate: true }
-    );
+      }
+    });
 
     const breadcrumbItems = computed(() => {
       const items = [

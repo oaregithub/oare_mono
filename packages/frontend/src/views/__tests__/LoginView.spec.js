@@ -3,30 +3,45 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import LoginView from '../LoginView.vue';
 import flushPromises from 'flush-promises';
+import sl from '../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('LoginView test', () => {
+  const mockServer = {
+    login: jest.fn().mockResolvedValue({
+      id: 1,
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@email.com',
+      isAdmin: false,
+    }),
+  };
+
+  const mockStore = {
+    setUser: jest.fn(),
+  };
   const mockProps = {
     router: {
       push: jest.fn(),
     },
-    store: {
-      dispatch: jest.fn().mockResolvedValue(true),
-    },
   };
-  const createWrapper = (props = mockProps) =>
-    mount(LoginView, {
+  const createWrapper = ({ store, server } = {}) => {
+    sl.set('store', store || mockStore);
+    sl.set('serverProxy', server || mockServer);
+
+    return mount(LoginView, {
       localVue,
       vuetify,
       mocks: {
         $t: jest.fn(),
       },
-      propsData: props,
+      propsData: mockProps,
       stubs: ['router-link'],
     });
+  };
 
   it('matches snapshot', () => {
     expect(createWrapper()).toMatchSnapshot();
@@ -44,7 +59,7 @@ describe('LoginView test', () => {
     await signinBtn.trigger('click');
     await flushPromises();
 
-    expect(mockProps.store.dispatch).toHaveBeenCalledWith('login', {
+    expect(mockServer.login).toHaveBeenCalledWith({
       email: 'myemail@test.com',
       password: 'password',
     });
@@ -67,9 +82,11 @@ describe('LoginView test', () => {
 
   it('displays error message on unsuccessful login', async () => {
     const wrapper = createWrapper({
-      ...mockProps,
-      store: {
-        dispatch: jest.fn().mockRejectedValue('Invalid login'),
+      server: {
+        ...mockServer,
+        login: jest.fn().mockRejectedValue({
+          response: { data: { message: 'Invalid login' } },
+        }),
       },
     });
 

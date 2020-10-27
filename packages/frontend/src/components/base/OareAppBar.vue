@@ -34,15 +34,11 @@
     <div>
       <v-progress-circular v-if="loading" indeterminate />
       <div class="d-flex align-center" v-else>
-        <v-btn
-          v-if="$store.getters.isAdmin"
-          class="mr-2 test-admin-btn"
-          text
-          to="/admin"
+        <v-btn v-if="isAdmin" class="mr-2 test-admin-btn" text to="/admin"
           >Admin</v-btn
         >
         <v-btn
-          v-if="!$store.getters.isAuthenticated"
+          v-if="!isAuthenticated"
           class="test-login-btn"
           text
           to="/login"
@@ -52,7 +48,7 @@
           <template v-slot:activator="{ on }">
             <v-btn text v-on="on">
               {{ i18n.t('appBar.welcome') }},
-              {{ $store.getters.user.firstName }}
+              {{ firstName }}
             </v-btn>
           </template>
           <v-list>
@@ -71,25 +67,13 @@
 
     <template #extension>
       <v-row class="d-flex justify-center">
-        <v-btn
-          class="test-words"
-          text
-          to="/words/A"
-          v-if="$store.getters.isAdmin"
+        <v-btn class="test-words" text to="/words/A" v-if="isAdmin"
           >Words</v-btn
         >
-        <v-btn
-          class="test-names"
-          text
-          to="/names/A"
-          v-if="$store.getters.isAdmin"
+        <v-btn class="test-names" text to="/names/A" v-if="isAdmin"
           >Names</v-btn
         >
-        <v-btn
-          class="test-places"
-          text
-          to="/places/A"
-          v-if="$store.getters.isAdmin"
+        <v-btn class="test-places" text to="/places/A" v-if="isAdmin"
           >Places</v-btn
         >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
@@ -117,10 +101,6 @@ import sl from '@/serviceLocator';
 export default defineComponent({
   name: 'OareAppBar',
   props: {
-    store: {
-      type: Object as PropType<Store<{}>>,
-      required: true,
-    },
     router: {
       type: Object as PropType<Router>,
       required: true,
@@ -130,7 +110,8 @@ export default defineComponent({
       default: () => defaultI18n,
     },
   },
-  setup({ store, router, i18n }, context) {
+  setup({ router, i18n }, context) {
+    const store = sl.get('store');
     const serverProxy = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
@@ -141,8 +122,15 @@ export default defineComponent({
       }
       return i18n.t('appBar.oare');
     });
+
+    const isAdmin = computed(() => store.getters.isAdmin);
+    const isAuthenticated = computed(() => store.getters.isAuthenticated);
+    const firstName = computed(() =>
+      store.getters.user ? store.getters.user.firstName : ''
+    );
+
     const logout = () => {
-      store.dispatch('logout');
+      store.logout();
       router.push('/login');
       serverProxy.logout();
     };
@@ -150,15 +138,18 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       try {
-        await store.dispatch('refreshToken');
+        const user = await serverProxy.refreshToken();
+        store.setUser(user);
         const permissions = await serverProxy.getPermissions();
-        store.commit('setPermissions', permissions);
+        store.setPermissions(permissions);
       } catch (error) {
-        actions.showErrorSnackbar('There was an error initializing the site');
+        if (!(error.response && error.response.status === 400)) {
+          actions.showErrorSnackbar('There was an error initializing the site');
+        }
       } finally {
         loading.value = false;
         EventBus.$emit(ACTIONS.REFRESH);
-        store.commit('setAuthComplete');
+        store.setAuthComplete();
       }
     });
 
@@ -166,6 +157,9 @@ export default defineComponent({
       title,
       logout,
       loading,
+      isAdmin,
+      isAuthenticated,
+      firstName,
     };
   },
 });

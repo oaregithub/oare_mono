@@ -1,6 +1,7 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
+import sl from '../../../../serviceLocator';
 import OareSidebar from '../index.vue';
 
 const vuetify = new Vuetify();
@@ -8,19 +9,18 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('OareSidebar test', () => {
-  const createWrapper = (isAdmin = true) =>
-    mount(OareSidebar, {
+  const createWrapper = (isAdmin = true) => {
+    sl.set('store', {
+      getters: {
+        isAdmin,
+      },
+    });
+    return mount(OareSidebar, {
       localVue,
       vuetify,
       stubs: ['router-link'],
-      propsData: {
-        store: {
-          getters: {
-            isAdmin,
-          },
-        },
-      },
     });
+  };
 
   it('matches snapshot', () => {
     expect(createWrapper()).toMatchSnapshot();

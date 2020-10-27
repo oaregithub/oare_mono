@@ -42,11 +42,10 @@
 <script lang="ts">
 import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
 import { NavigationGuard } from 'vue-router';
+import sl from '@/serviceLocator';
 import i18n from '../i18n';
-import defaultStore from '../store';
 import defaultRouter from '../router';
 import Router from 'vue-router';
-import { Store } from 'vuex';
 
 export interface FormRef {
   validate: () => void;
@@ -54,7 +53,8 @@ export interface FormRef {
 
 const beforeRouteEnter: NavigationGuard = (to, from, next) => {
   next(() => {
-    if (defaultStore.getters.isAuthenticated) {
+    const store = sl.get('store');
+    if (store.getters.isAuthenticated) {
       defaultRouter.push('/');
     }
   });
@@ -67,13 +67,12 @@ export default defineComponent({
       type: Object as PropType<Router>,
       default: () => defaultRouter,
     },
-    store: {
-      type: Object as PropType<Store<{}>>,
-      default: () => defaultStore,
-    },
   },
   beforeRouteEnter,
-  setup({ router, store }) {
+  setup({ router }) {
+    const store = sl.get('store');
+    const server = sl.get('serverProxy');
+
     const email = ref('');
     const password = ref('');
     const errorMsg = ref('');
@@ -88,12 +87,14 @@ export default defineComponent({
       };
 
       try {
-        await store.dispatch('login', userData);
+        let response = await server.login(userData);
+        store.setUser(response);
         router.push('/');
       } catch (err) {
-        errorMsg.value = err;
+        errorMsg.value = err.response.data.message;
+      } finally {
+        loadings.value.signInButton = false;
       }
-      loadings.value.signInButton = false;
     };
 
     return {

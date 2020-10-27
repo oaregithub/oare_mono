@@ -3,21 +3,41 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import OareAppBar from '@/components/base/OareAppBar';
 import flushPromises from 'flush-promises';
+import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('OareAppBar.vue', () => {
-  const mockProps = {
-    store: {
-      dispatch: jest.fn(action => {
-        if (action === 'refreshToken') {
-          return Promise.resolve();
-        }
-      }),
-      commit: jest.fn(),
+  const mockStore = {
+    getters: {
+      isAdmin: false,
+      isAuthenticated: true,
+      user: {
+        firstName: 'Test',
+      },
     },
+    logout: jest.fn(),
+    setUser: jest.fn(),
+    setPermissions: jest.fn(),
+    setAuthComplete: jest.fn(),
+  };
+
+  const mockServer = {
+    refreshToken: jest.fn().mockResolvedValue({
+      id: 1,
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@gmail.com',
+      isAdmin: false,
+    }),
+    getPermissions: jest.fn().mockResolvedValue({
+      dictionary: [],
+    }),
+  };
+
+  const mockProps = {
     router: {
       push: jest.fn(),
     },
@@ -30,25 +50,18 @@ describe('OareAppBar.vue', () => {
   const createWrapper = async (
     { isAdmin, isAuthenticated } = { isAdmin: false, isAuthenticated: true }
   ) => {
-    const user = {
-      firstName: 'Test',
-      lastName: 'User',
-      is_admin: isAdmin,
-      email: 'test@email.com',
-      id: 0,
-    };
+    sl.set('store', {
+      ...mockStore,
+      getters: {
+        ...mockStore.getters,
+        isAdmin,
+        isAuthenticated,
+      },
+    });
+    sl.set('serverProxy', mockServer);
     const wrapper = mount(OareAppBar, {
       localVue,
       vuetify,
-      mocks: {
-        $store: {
-          getters: {
-            user,
-            isAuthenticated,
-            isAdmin,
-          },
-        },
-      },
       propsData: mockProps,
       stubs: ['router-link'],
     });
@@ -56,9 +69,21 @@ describe('OareAppBar.vue', () => {
     return wrapper;
   };
 
-  it('calls refreshToken on load', async () => {
+  it('sets the user on load', async () => {
     await createWrapper();
-    expect(mockProps.store.dispatch).toHaveBeenCalledWith('refreshToken');
+    expect(mockServer.refreshToken).toHaveBeenCalled();
+    expect(mockStore.setUser).toHaveBeenCalled();
+  });
+
+  it('sets permissions on load', async () => {
+    await createWrapper();
+    expect(mockServer.getPermissions).toHaveBeenCalled();
+    expect(mockStore.setPermissions).toHaveBeenCalled();
+  });
+
+  it('sets auth complete when finished loading', async () => {
+    await createWrapper();
+    expect(mockStore.setAuthComplete).toHaveBeenCalled();
   });
 
   it("doesn't show Admin button when user is not admin", async () => {

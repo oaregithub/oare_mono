@@ -19,18 +19,18 @@ class UserDao {
     return !!user;
   }
 
-  async getUserById(id: number): Promise<UserRow> {
+  async getUserById(id: number): Promise<UserRow | null> {
     const user = await this.getUserByColumn('id', id);
     return user;
   }
 
-  async getUserByEmail(email: string): Promise<UserRow> {
+  async getUserByEmail(email: string): Promise<UserRow | null> {
     const user = await this.getUserByColumn('email', email);
     return user;
   }
 
-  private async getUserByColumn(column: string, value: string | number) {
-    const user: UserRow = await knex('user')
+  private async getUserByColumn(column: string, value: string | number): Promise<UserRow | null> {
+    const user: UserRow | null = await knex('user')
       .first(
         'id',
         'uuid',
@@ -42,6 +42,11 @@ class UserDao {
         'created_on AS createdOn',
       )
       .where(column, value);
+
+    if (!user) {
+      return null;
+    }
+
     return {
       ...user,
       isAdmin: !!user.isAdmin,

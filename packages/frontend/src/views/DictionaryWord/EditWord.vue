@@ -63,7 +63,6 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, Ref } from '@vue/composition-api';
 import { WordWithForms, DictionaryWordTranslation } from '@oare/types';
-import store from '@/ts-store';
 import _ from 'lodash';
 import defaultServerProxy from '@/serverProxy';
 import defaultActions from '@/globalActions';

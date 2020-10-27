@@ -10,11 +10,7 @@
     >
       <component :is="sidebarComponent" />
     </v-navigation-drawer>
-    <OareAppBar
-      @nav-icon-click="drawer = !drawer"
-      :store="store"
-      :router="router"
-    />
+    <OareAppBar @nav-icon-click="drawer = !drawer" :router="router" />
 
     <v-main>
       <v-container fluid>
@@ -35,7 +31,6 @@ import {
 } from '@vue/composition-api';
 import hideSidebarRoutes from './hideSidebarRoutes';
 import OareSidebar from './components/base/OareSidebar/index.vue';
-import defaultStore from './store';
 import defaultRouter from './router';
 
 export default defineComponent({
@@ -55,14 +50,12 @@ export default defineComponent({
       return 'OareSidebar';
     });
 
-    const store = computed(() => defaultStore);
     const router = computed(() => defaultRouter);
 
     return {
       drawer,
       hasLanded,
       sidebarComponent,
-      store,
       router,
     };
   },

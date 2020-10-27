@@ -66,8 +66,8 @@ import { RegisterPayload } from '@oare/types';
 import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
 import Router from 'vue-router';
 import { Store } from 'vuex';
+import sl from '@/serviceLocator';
 import i18n from '../i18n';
-import defaultStore from '../store';
 import defaultRouter from '../router';
 
 export interface FormRef {
@@ -81,12 +81,11 @@ export default defineComponent({
       type: Object as PropType<Router>,
       default: () => defaultRouter,
     },
-    store: {
-      type: Object as PropType<Store<{}>>,
-      default: () => defaultStore,
-    },
   },
-  setup({ store, router }) {
+  setup({ router }) {
+    const server = sl.get('serverProxy');
+    const store = sl.get('store');
+
     const user = ref({
       email: '',
       password: '',
@@ -154,10 +153,11 @@ export default defineComponent({
       };
 
       try {
-        await store.dispatch('register', userData);
+        let user = await server.register(userData);
+        store.setUser(user);
         router.push('/');
       } catch (e) {
-        errorMsg.value = e;
+        errorMsg.value = e.response.data.message;
       } finally {
         loading.value.registerButton = false;
       }

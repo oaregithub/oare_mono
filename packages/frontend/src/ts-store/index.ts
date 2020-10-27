@@ -1,5 +1,9 @@
+import Vue from 'vue';
+import VueCompositionAPI from '@vue/composition-api';
 import { LoginRegisterResponse, PermissionResponse } from '@oare/types';
 import { reactive, computed, shallowReadonly } from '@vue/composition-api';
+
+Vue.use(VueCompositionAPI);
 
 export interface State {
   landed: boolean;
@@ -17,10 +21,7 @@ const state: State = reactive({
   },
 });
 
-const readonlyState = computed(() => state);
-
 export default {
-  state: readonlyState,
   setUser: (user: LoginRegisterResponse) => {
     state.user = user;
   },
@@ -35,5 +36,25 @@ export default {
   },
   setPermissions: (permissions: PermissionResponse) => {
     state.permissions = permissions;
+  },
+  getters: {
+    get isAdmin() {
+      return state.user ? state.user.isAdmin : false;
+    },
+    get landed() {
+      return state.landed;
+    },
+    get isAuthenticated() {
+      return !!state.user;
+    },
+    get user() {
+      return state.user;
+    },
+    get authComplete() {
+      return state.authComplete;
+    },
+    get permissions() {
+      return state.permissions;
+    },
   },
 };
