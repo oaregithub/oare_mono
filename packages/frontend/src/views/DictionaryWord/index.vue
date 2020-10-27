@@ -67,7 +67,8 @@ export default defineComponent({
         loading.value = true;
         wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
         loading.value = false;
-      }
+      },
+      { immediate: true }
     );
 
     const breadcrumbItems = computed(() => {

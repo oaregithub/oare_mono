@@ -150,7 +150,7 @@ export interface SearchTextsResultRow {
 }
 
 export interface SearchTextsPayload {
-  characters: string[];
+  characters?: string[];
   textTitle: string;
   page: number;
   rows: number;

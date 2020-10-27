@@ -126,7 +126,7 @@ export default defineComponent({
 
     onMounted(performSearch);
 
-    watch([page, rows], performSearch, { lazy: true });
+    watch([page, rows], performSearch, { immediate: false });
 
     const getWordGroup = (word: string) => {
       for (const [group, groupLetters] of Object.entries(

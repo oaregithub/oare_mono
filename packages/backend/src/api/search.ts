@@ -9,7 +9,8 @@ const router = express.Router();
 
 router.route('/search').get(async (req, res, next) => {
   try {
-    const { page, rows, textTitle, characters } = (req.query as unknown) as SearchTextsPayload;
+    const { page, rows, textTitle, characters: charsPayload } = (req.query as unknown) as SearchTextsPayload;
+    const characters = charsPayload || [];
     const user = req.user || null;
 
     const blacklist = await textGroupDao.getUserBlacklist(user);

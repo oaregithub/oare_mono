@@ -51,6 +51,7 @@ import _ from 'underscore';
 import defaultRouter from '@/router';
 import defaultServerProxy from '@/serverProxy';
 import useQueryParam from '@/hooks/useQueryParam';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'CollectionTexts',
@@ -66,13 +67,11 @@ export default defineComponent({
       type: Object as PropType<Router>,
       default: () => defaultRouter,
     },
-    serverProxy: {
-      type: Object as PropType<typeof defaultServerProxy>,
-      default: () => defaultServerProxy,
-    },
   },
 
-  setup({ router, collectionUuid, serverProxy }, context) {
+  setup({ router, collectionUuid }, context) {
+    const server = sl.get('serverProxy');
+
     const collectionName = ref('');
     const loading = ref(false);
     const letterGroup = computed(() =>
@@ -102,14 +101,11 @@ export default defineComponent({
       }
       textsLoading.value = true;
       try {
-        const collectionResp = await serverProxy.getCollectionTexts(
-          collectionUuid,
-          {
-            page: Number(page.value),
-            rows: Number(rows.value),
-            query: search.value,
-          }
-        );
+        const collectionResp = await server.getCollectionTexts(collectionUuid, {
+          page: Number(page.value),
+          rows: Number(rows.value),
+          query: search.value,
+        });
         totalTexts.value = collectionResp.totalTexts;
         texts.value = collectionResp.texts;
       } catch (err) {
@@ -124,14 +120,18 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       collectionName.value = (
-        await serverProxy.getCollectionInfo(collectionUuid)
+        await server.getCollectionInfo(collectionUuid)
       ).name;
       loading.value = false;
     });
 
-    watch([page, rows], () => {
-      getCollectionTexts();
-    });
+    watch(
+      [page, rows],
+      () => {
+        getCollectionTexts();
+      },
+      { immediate: true }
+    );
 
     watch(
       search,
@@ -140,7 +140,7 @@ export default defineComponent({
         getCollectionTexts();
       }, 500),
       {
-        lazy: true,
+        immediate: false,
       }
     );
 

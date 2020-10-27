@@ -96,9 +96,7 @@ export default defineComponent({
     watch(
       () => props.letter,
       () => setWordSearch(''),
-      {
-        lazy: true,
-      }
+      { immediate: false }
     );
 
     return {

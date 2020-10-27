@@ -23,7 +23,7 @@ const useQueryParam = (
 
     const urlParams = getUrlParams();
 
-    if (newVal.trim() !== '') {
+    if (newVal && newVal.trim() !== '') {
       urlParams.set(key, newVal);
     } else {
       urlParams.delete(key);
