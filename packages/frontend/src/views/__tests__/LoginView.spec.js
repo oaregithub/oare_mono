@@ -18,10 +18,14 @@ describe('LoginView test', () => {
       email: 'test@email.com',
       isAdmin: false,
     }),
+    getPermissions: jest.fn().mockResolvedValue({
+      dictionary: [],
+    }),
   };
 
   const mockStore = {
     setUser: jest.fn(),
+    setPermissions: jest.fn(),
   };
   const mockProps = {
     router: {
@@ -47,7 +51,7 @@ describe('LoginView test', () => {
     expect(createWrapper()).toMatchSnapshot();
   });
 
-  it('redirects to home page on successful login', async () => {
+  it('logs in and gets permissions', async () => {
     const wrapper = createWrapper();
     const emailInput = wrapper.find('.test-email input');
     const passwordInput = wrapper.find('.test-password input');
@@ -63,6 +67,9 @@ describe('LoginView test', () => {
       email: 'myemail@test.com',
       password: 'password',
     });
+    expect(mockStore.setUser).toHaveBeenCalled();
+    expect(mockServer.getPermissions).toHaveBeenCalled();
+    expect(mockStore.setPermissions).toHaveBeenCalled();
   });
 
   it('sign in button is only active when fields are filled in', async () => {

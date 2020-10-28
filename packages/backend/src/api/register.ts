@@ -24,6 +24,11 @@ router.route('/register').post(async (req, res, next) => {
       isAdmin: false,
     });
     const user = await userDao.getUserByEmail(email);
+
+    if (!user) {
+      next(new HttpInternalError('Error creating user'));
+      return;
+    }
     req.user = user;
 
     const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);

@@ -31,7 +31,7 @@ router.route('/refresh_token').get(async (req, res, next) => {
       return;
     }
 
-    const user: LoginRegisterResponse = await UserDao.getUserByEmail(token.email);
+    const user: LoginRegisterResponse | null = await UserDao.getUserByEmail(token.email);
 
     (await sendJwtCookie(token.ipAddress, res, token.email)).json(user).end();
   } catch (err) {

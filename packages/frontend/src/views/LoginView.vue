@@ -89,6 +89,8 @@ export default defineComponent({
       try {
         let response = await server.login(userData);
         store.setUser(response);
+        const permissions = await server.getPermissions();
+        store.setPermissions(permissions);
         router.push('/');
       } catch (err) {
         errorMsg.value = err.response.data.message;
