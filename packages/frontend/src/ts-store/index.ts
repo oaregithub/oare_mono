@@ -30,6 +30,7 @@ export default {
   },
   logout: () => {
     state.user = null;
+    state.permissions.dictionary = [];
   },
   setAuthComplete: () => {
     state.authComplete = true;
