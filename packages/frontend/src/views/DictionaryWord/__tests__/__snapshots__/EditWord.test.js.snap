@@ -10,7 +10,7 @@ exports[`EditWord test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-6" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-5" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -20,20 +20,9 @@ exports[`EditWord test matches snapshot 1`] = `
       </div>
     </div>
   </div>
-  <div class="font-weight-bold mb-2">Translations</div> <button type="button" class="v-btn v-btn--flat v-btn--text theme--light v-size--default primary--text"><span class="v-btn__content"><i aria-hidden="true" class="v-icon notranslate mdi mdi-plus theme--light"></i>
+  <div class="font-weight-bold mb-2">Translations</div>
+  <div> <button type="button" class="v-btn v-btn--flat v-btn--text theme--light v-size--default primary--text"><span class="v-btn__content"><i aria-hidden="true" class="v-icon notranslate mdi mdi-plus theme--light"></i>
     Add translation
-  </span></button>
-  <div class="v-snack v-snack--bottom v-snack--has-background" style="padding-bottom: 0px; padding-top: 0px;">
-    <transition-stub name="v-snack-transition">
-      <div class="v-snack__wrapper v-sheet theme--dark" style="display: none;">
-        <div role="status" aria-live="polite" class="v-snack__content">
-          Translation deleted
-        </div>
-        <div class="v-snack__action "><button type="button" class="v-btn v-btn--flat v-btn--text theme--dark v-size--default info--text v-snack__btn"><span class="v-btn__content">
-        Undo
-      </span></button></div>
-      </div>
-    </transition-stub>
-  </div>
+  </span></button></div>
 </div>
 `;

@@ -3,6 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import EditWord from '../EditWord.vue';
 import flushPromises from 'flush-promises';
+import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -28,18 +29,16 @@ describe('EditWord test', () => {
       specialClassifications: [],
       translations: [],
     },
-    serverProxy: mockServer,
-    actions: mockSnackbar,
   };
-  const createWrapper = (props = mockProps) =>
-    mount(EditWord, {
+  const createWrapper = ({ server, actions } = {}) => {
+    sl.set('serverProxy', server || mockServer);
+    sl.set('globalActions', actions || mockSnackbar);
+    return mount(EditWord, {
       vuetify,
       localVue,
-      propsData: {
-        ...mockProps,
-        ...props,
-      },
+      propsData: mockProps,
     });
+  };
 
   it('matches snapshot', () => {
     expect(createWrapper()).toMatchSnapshot();
@@ -62,7 +61,7 @@ describe('EditWord test', () => {
       editWord: jest.fn().mockRejectedValue(null),
     };
     const wrapper = createWrapper({
-      serverProxy: errorServer,
+      server: errorServer,
     });
 
     await wrapper.find('.test-edit-word input').setValue('new word');

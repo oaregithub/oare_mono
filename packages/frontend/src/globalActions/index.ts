@@ -1,7 +1,11 @@
 import EventBus, { ACTIONS } from '@/EventBus';
 
-const showSnackbar = (text: string): void => {
-  EventBus.$emit(ACTIONS.TOAST, { text });
+export interface SnackbarActions {
+  onAction?: () => void;
+  actionText?: string;
+}
+const showSnackbar = (text: string, options: SnackbarActions = {}): void => {
+  EventBus.$emit(ACTIONS.TOAST, { text, ...options });
 };
 
 const showErrorSnackbar = (text: string): void => {
