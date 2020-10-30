@@ -32,7 +32,7 @@
           <span
             v-if="
               wordInfo.translations.length > 0 &&
-              wordInfo.specialClassifications.length > 0
+                wordInfo.specialClassifications.length > 0
             "
             >;</span
           >
