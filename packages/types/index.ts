@@ -22,6 +22,11 @@ export interface DictionaryWordResponse {
   translations: DictionaryWordTranslation[];
 }
 
+export interface FormSpelling {
+  uuid: string;
+  spelling: string;
+}
+
 export interface DictionaryForm {
   uuid: string;
   form: string;
@@ -35,6 +40,7 @@ export interface DictionaryForm {
   moods: string[];
   clitics: string[];
   morphologicalForms: string[];
+  spellings: FormSpelling[];
   suffix: {
     persons: string[];
     genders: string[];
@@ -46,6 +52,10 @@ export interface DictionaryForm {
 export interface UpdateDictionaryPayload {
   word: string;
   translations: DictionaryWordTranslation[];
+}
+
+export interface UpdateDictionaryWordPayload {
+  word: string;
 }
 
 export interface UpdateDictionaryResponse {

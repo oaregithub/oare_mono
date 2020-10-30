@@ -19,6 +19,13 @@ describe('EditWord test', () => {
     showSnackbar: jest.fn(),
     showErrorSnackbar: jest.fn(),
   };
+  const mockStore = {
+    getters: {
+      permissions: {
+        dictionary: [],
+      },
+    },
+  };
   const mockProps = {
     uuid: 'uuid',
     wordInfo: {
@@ -33,6 +40,7 @@ describe('EditWord test', () => {
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockSnackbar);
+    sl.set('store', mockStore);
     return mount(EditWord, {
       vuetify,
       localVue,

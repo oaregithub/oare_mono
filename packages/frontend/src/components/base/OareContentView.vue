@@ -4,12 +4,12 @@
     <slot name="header"></slot>
 
     <v-card-title
-      v-if="title"
-      class="oare-header font-weight-bold d-flex justify-space-between align-center test-content-title"
+      v-if="title !== null && title !== undefined"
+      class="oare-header d-flex justify-space-between align-center test-content-title"
     >
       <div class="d-flex align-center">
         <slot name="title:pre"></slot>
-        {{ title }}
+        <span class="font-weight-bold">{{ title }}</span>
       </div>
       <slot name="title:post"> </slot>
     </v-card-title>

@@ -16,11 +16,7 @@
       />
     </v-col>
     <OareLabel>Translations</OareLabel>
-
-    <edit-translations
-      :translations="localWordInfo.translations"
-      @update:translations="updateTranslations"
-    />
+    <edit-translations :translations.sync="localWordInfo.translations" />
   </div>
 </template>
 <script lang="ts">
@@ -56,16 +52,11 @@ export default defineComponent({
   setup({ uuid, wordInfo }, { emit }) {
     const serverProxy = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const permissions = sl.get('store').getters.permissions.dictionary;
 
     const loading = ref(true);
     const saveLoading = ref(false);
     const localWordInfo: Ref<WordWithForms> = ref(_.cloneDeep(wordInfo));
-
-    const updateTranslations = (
-      newTranslations: DictionaryWordTranslation[]
-    ) => {
-      localWordInfo.value.translations = newTranslations;
-    };
 
     const saveEdits = async () => {
       saveLoading.value = true;
@@ -94,7 +85,7 @@ export default defineComponent({
       localWordInfo,
       saveEdits,
       saveLoading,
-      updateTranslations,
+      canUpdateForms: permissions.some(perm => perm.includes('FORM')),
     };
   },
 });

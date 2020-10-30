@@ -170,8 +170,7 @@ class DictionaryWordDao {
     };
   }
 
-  async updateWordSpelling(userUuid: string, uuid: string, word: string): Promise<void> {
-    await LoggingEditsDao.logEdit('UPDATE', userUuid, 'dictionary_word', uuid);
+  async updateWordSpelling(uuid: string, word: string): Promise<void> {
     await knex('dictionary_word').update({ word }).where({ uuid });
   }
 

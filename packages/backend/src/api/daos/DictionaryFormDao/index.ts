@@ -19,34 +19,11 @@ export interface FormGrammarRow {
   valueAbbrev: string | null;
 }
 
-export interface FormSpelling {
-  uuid: string;
-  spelling: string;
-}
-
-export interface FormQueryResult {
-  uuid: string;
-  form: string;
-  stems: string[];
-  tenses: string[];
-  persons: string[];
-  genders: string[];
-  grammaticalNumbers: string[];
-  cases: string[];
-  states: string[];
-  moods: string[];
-  clitics: string[];
-  morphologicalForms: string[];
-  spellings: FormSpelling[];
-  suffix: {
-    persons: string[];
-    genders: string[];
-    grammaticalNumbers: string[];
-    cases: string[];
-  } | null;
-}
-
 class DictionaryFormDao {
+  async updateForm(uuid: string, newForm: string): Promise<void> {
+    await knex('dictionary_form').update({ form: newForm }).where({ uuid });
+  }
+
   async getFormsWithSpellings(wordUuid: string) {
     const formsQueryString = getQueryString('dictionaryFormsQuery.sql');
     const formsGrammarQueryString = getQueryString('formsGrammarQuery.sql');
@@ -57,7 +34,8 @@ class DictionaryFormDao {
     const spellingRows: SpellingQueryRow[] = (await formsQuery)[0];
     const formGrammarRows: FormGrammarRow[] = (await formsGrammarQuery)[0];
 
-    return assembleSpellingsAndFormGrammar(spellingRows, formGrammarRows);
+    const forms = assembleSpellingsAndFormGrammar(spellingRows, formGrammarRows);
+    return forms.sort((a, b) => a.form.localeCompare(b.form));
   }
 }
 

@@ -1,8 +1,9 @@
 import axios from '../axiosInstance';
 import {
   DictionaryWordResponse,
-  UpdateDictionaryPayload,
+  UpdateDictionaryWordPayload,
   UpdateDictionaryResponse,
+  DictionaryForm,
 } from '@oare/types';
 
 /**
@@ -18,13 +19,18 @@ async function getDictionaryInfo(
 
 async function editWord(
   uuid: string,
-  payload: UpdateDictionaryPayload
+  payload: UpdateDictionaryWordPayload
 ): Promise<UpdateDictionaryResponse> {
   const { data } = await axios.post(`/dictionary/${uuid}`, payload);
   return data;
 }
 
+async function updateForm(form: DictionaryForm): Promise<void> {
+  await axios.post(`/dictionary/forms/${form.uuid}`, form);
+}
+
 export default {
+  updateForm,
   getDictionaryInfo,
   editWord,
 };
