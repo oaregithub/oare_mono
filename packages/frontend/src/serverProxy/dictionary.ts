@@ -2,7 +2,9 @@ import axios from '../axiosInstance';
 import {
   DictionaryWordResponse,
   UpdateDictionaryWordPayload,
+  UpdateDictionaryTranslationPayload,
   UpdateDictionaryResponse,
+  UpdateDictionaryTranslationsResponse,
   DictionaryForm,
 } from '@oare/types';
 
@@ -25,6 +27,17 @@ async function editWord(
   return data;
 }
 
+async function editTranslations(
+  uuid: string,
+  payload: UpdateDictionaryTranslationPayload
+): Promise<UpdateDictionaryTranslationsResponse> {
+  const { data } = await axios.post(
+    `/dictionary/translations/${uuid}`,
+    payload
+  );
+  return data;
+}
+
 async function updateForm(form: DictionaryForm): Promise<void> {
   await axios.post(`/dictionary/forms/${form.uuid}`, form);
 }
@@ -32,5 +45,6 @@ async function updateForm(form: DictionaryForm): Promise<void> {
 export default {
   updateForm,
   getDictionaryInfo,
+  editTranslations,
   editWord,
 };

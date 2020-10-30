@@ -1,5 +1,10 @@
 import express from 'express';
-import { DictionaryWordResponse, UpdateDictionaryWordPayload, DictionaryForm } from '@oare/types';
+import {
+  DictionaryWordResponse,
+  UpdateDictionaryWordPayload,
+  UpdateDictionaryTranslationPayload,
+  DictionaryForm,
+} from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpInternalError } from '@/exceptions';
 import cache from '@/cache';
@@ -50,6 +55,28 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+router.route('/dictionary/translations/:uuid').post(adminRoute, async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { translations }: UpdateDictionaryTranslationPayload = req.body;
+
+    const updatedTranslations = await DictionaryWordDao.updateTranslations(req.user!.uuid, uuid, translations);
+
+    // Updated word, cache must be cleared
+    cache.clear({
+      req: {
+        originalUrl: `${API_PATH}/words`,
+        method: 'GET',
+      },
+    });
+    res.json({
+      translations: updatedTranslations,
+    });
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) => {
   try {

@@ -80,12 +80,6 @@ const routes: RouteConfig[] = [
     component: RegisterView,
   },
   {
-    path: '/dictionaryWord/:uuid/edit',
-    name: 'editDictionaryWord',
-    props: true,
-    component: DictionaryWord,
-  },
-  {
     path: '/dictionaryWord/:uuid',
     name: 'dictionaryWord',
     component: DictionaryWord,

@@ -49,8 +49,7 @@ export interface DictionaryForm {
   } | null;
 }
 
-export interface UpdateDictionaryPayload {
-  word: string;
+export interface UpdateDictionaryTranslationPayload {
   translations: DictionaryWordTranslation[];
 }
 
@@ -59,6 +58,10 @@ export interface UpdateDictionaryWordPayload {
 }
 
 export interface UpdateDictionaryResponse {
+  word: string;
+}
+
+export interface UpdateDictionaryTranslationsResponse {
   translations: DictionaryWordTranslation[];
 }
 

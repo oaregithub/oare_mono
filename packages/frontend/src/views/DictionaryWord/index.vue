@@ -1,6 +1,6 @@
 <template>
   <OareContentView :title="title" :loading="loading">
-    <template #title:pre v-if="wordInfo && canEdit">
+    <template #title:pre v-if="wordInfo && canUpdateWordSpelling">
       <v-btn
         v-if="!isEditing"
         icon
@@ -20,7 +20,7 @@
     <template #header>
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
-    <WordInfo v-if="wordInfo" :wordInfo="wordInfo" />
+    <WordInfo v-if="wordInfo" :wordInfo="wordInfo" :wordUuid="uuid" />
   </OareContentView>
 </template>
 
@@ -37,7 +37,6 @@ import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { WordWithForms, DictionaryForm, PermissionResponse } from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
-import EditWord from './EditWord.vue';
 import WordNameEdit from './WordNameEdit.vue';
 import router from '@/router';
 import sl from '@/serviceLocator';
@@ -46,7 +45,6 @@ export default defineComponent({
   name: 'DictionaryWord',
   components: {
     WordInfo,
-    EditWord,
     WordNameEdit,
   },
   props: {
@@ -64,10 +62,9 @@ export default defineComponent({
     const isEditing = ref(false);
     const wordInfo: Ref<WordWithForms | null> = ref(null);
 
-    const canEdit = computed(() => {
-      const permissions = store.getters.permissions;
-      return permissions.dictionary.length > 0;
-    });
+    const canUpdateWordSpelling = computed(() =>
+      store.getters.permissions.dictionary.includes('UPDATE_WORD_SPELLING')
+    );
 
     onMounted(async () => {
       loading.value = true;
@@ -122,7 +119,7 @@ export default defineComponent({
       breadcrumbItems,
       title,
       isEditing,
-      canEdit,
+      canUpdateWordSpelling,
     };
   },
 });
