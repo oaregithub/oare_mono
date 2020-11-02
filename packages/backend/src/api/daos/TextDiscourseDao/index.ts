@@ -26,6 +26,21 @@ export interface NestedDiscourse {
 }
 
 class TextDiscourseDao {
+  /* Get the uuids of the rows in text discourse associated with a 
+  particular form. Useful for updating the logging edits table 
+  and then updating the text discourse table itself */
+  async getDiscourseUuidsByFormUuid(formUuid: string): Promise<string[]> {
+    const rows: Record<'uuid', string>[] = await knex('text_discourse')
+      .select('text_discourse.uuid')
+      .innerJoin('dictionary_spelling', 'dictionary_spelling.uuid', 'text_discourse.spelling_uuid')
+      .where('dictionary_spelling.reference_uuid', formUuid);
+    return rows.map((row) => row.uuid);
+  }
+
+  async updateDiscourseTranscription(uuid: string, newTranscription: string): Promise<void> {
+    await knex('text_discourse').update({ transcription: newTranscription }).where({ uuid });
+  }
+
   async getTextDiscourseUnits(textUuid: string): Promise<NestedDiscourse[]> {
     const discourseQuery = knex('text_discourse')
       .select(

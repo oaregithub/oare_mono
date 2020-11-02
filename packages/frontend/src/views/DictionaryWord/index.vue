@@ -1,19 +1,26 @@
 <template>
   <OareContentView :title="title" :loading="loading">
-    <template #title:pre v-if="!isEditing && wordInfo && canEdit">
-      <v-btn icon class="mt-n2 mr-1" :to="`/dictionaryWord/${uuid}/edit`">
+    <template #title:pre v-if="wordInfo && canUpdateWordSpelling">
+      <v-btn
+        v-if="!isEditing"
+        icon
+        class="mt-n2 mr-1"
+        @click="isEditing = true"
+      >
         <v-icon class="test-pencil">mdi-pencil</v-icon>
       </v-btn>
+
+      <word-name-edit
+        v-else
+        :word.sync="wordInfo.word"
+        :wordUuid="uuid"
+        @close-edit="isEditing = false"
+      />
     </template>
     <template #header>
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
-    <EditWord
-      v-if="isEditing && wordInfo"
-      :wordInfo.sync="wordInfo"
-      :uuid="uuid"
-    />
-    <WordInfo v-else-if="!isEditing && wordInfo" :wordInfo="wordInfo" />
+    <WordInfo v-if="wordInfo" :wordInfo="wordInfo" :wordUuid="uuid" />
   </OareContentView>
 </template>
 
@@ -30,7 +37,7 @@ import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { WordWithForms, DictionaryForm, PermissionResponse } from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
-import EditWord from './EditWord.vue';
+import WordNameEdit from './WordNameEdit.vue';
 import router from '@/router';
 import sl from '@/serviceLocator';
 
@@ -38,7 +45,7 @@ export default defineComponent({
   name: 'DictionaryWord',
   components: {
     WordInfo,
-    EditWord,
+    WordNameEdit,
   },
   props: {
     uuid: {
@@ -52,12 +59,12 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const loading = ref(true);
+    const isEditing = ref(false);
     const wordInfo: Ref<WordWithForms | null> = ref(null);
 
-    const canEdit = computed(() => {
-      const permissions = store.getters.permissions;
-      return permissions.dictionary.length > 0;
-    });
+    const canUpdateWordSpelling = computed(() =>
+      store.getters.permissions.dictionary.includes('UPDATE_WORD_SPELLING')
+    );
 
     onMounted(async () => {
       loading.value = true;
@@ -100,15 +107,10 @@ export default defineComponent({
     });
 
     const title = computed(() => {
-      if (context.root.$route.name === 'dictionaryWord') {
-        return wordInfo.value ? wordInfo.value.word : '';
-      } else {
-        return 'Edit Word';
+      if (wordInfo.value && !isEditing.value) {
+        return wordInfo.value.word;
       }
-    });
-
-    const isEditing = computed(() => {
-      return context.root.$route.name === 'editDictionaryWord';
+      return '';
     });
 
     return {
@@ -117,7 +119,7 @@ export default defineComponent({
       breadcrumbItems,
       title,
       isEditing,
-      canEdit,
+      canUpdateWordSpelling,
     };
   },
 });

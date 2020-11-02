@@ -8,14 +8,6 @@
       :searchFilter="searchFilter"
     >
       <template #word="{ word }">
-        <v-btn
-          icon
-          class="mt-n2 mr-1"
-          :to="`/dictionaryWord/${word.uuid}/edit`"
-          v-if="canEdit"
-        >
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
         <router-link :to="`/dictionaryWord/${word.uuid}`" class="mr-1">{{
           word.word
         }}</router-link>
@@ -77,15 +69,9 @@ export default defineComponent({
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const store = sl.get('store');
 
     const words: Ref<DictionaryWord[]> = ref([]);
     const loading = ref(false);
-
-    const canEdit = computed(() => {
-      const permissions = store.getters.permissions;
-      return permissions.dictionary.length > 0;
-    });
 
     const searchFilter = (search: string, word: DictionaryWord): boolean => {
       const lowerSearch = search ? search.toLowerCase() : '';
@@ -123,7 +109,6 @@ export default defineComponent({
       words,
       loading,
       searchFilter,
-      canEdit,
     };
   },
 });

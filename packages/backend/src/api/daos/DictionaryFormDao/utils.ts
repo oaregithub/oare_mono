@@ -1,10 +1,11 @@
-import { SpellingQueryRow, FormGrammarRow, FormQueryResult } from './index';
+import { DictionaryForm, FormSpelling } from '@oare/types';
+import { SpellingQueryRow, FormGrammarRow } from './index';
 
 export default function assembleSpellingsAndFormGrammar(
   spellingRows: SpellingQueryRow[],
   formGrammars: FormGrammarRow[],
-): FormQueryResult[] {
-  const resultGrammars: FormQueryResult[] = [];
+): DictionaryForm[] {
+  const resultGrammars: DictionaryForm[] = [];
 
   spellingRows.forEach((spellingRow) => {
     const { form, formUuid } = spellingRow;
