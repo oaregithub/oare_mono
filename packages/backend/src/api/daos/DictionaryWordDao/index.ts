@@ -67,6 +67,7 @@ export interface TranslationRow {
   dictionaryUuid: string;
   fieldUuid: string;
   field: string;
+  primacy: number | null;
 }
 
 class DictionaryWordDao {
@@ -78,7 +79,23 @@ class DictionaryWordDao {
     const allTranslations = await this.getAllTranslations();
     const wordsWithoutTranslations = prepareWords(res);
     return wordsWithoutTranslations.map((row) => {
-      const translations = allTranslations.filter((tRow) => tRow.dictionaryUuid === row.uuid);
+      const translations = allTranslations
+        .filter((tRow) => tRow.dictionaryUuid === row.uuid)
+        .sort((a, b) => {
+          if (a.primacy === null) {
+            return 1;
+          }
+          if (b.primacy === null) {
+            return -1;
+          }
+          if (a.primacy > b.primacy) {
+            return 1;
+          }
+          if (a.primacy < b.primacy) {
+            return -1;
+          }
+          return 0;
+        });
       return {
         ...row,
         translations: translations.map((tRow) => ({
@@ -91,7 +108,7 @@ class DictionaryWordDao {
 
   async getAllTranslations(): Promise<TranslationRow[]> {
     const rows: TranslationRow[] = await knex('dictionary_word')
-      .select('dictionary_word.uuid AS dictionaryUuid', 'field.uuid AS field.field', 'field.field')
+      .select('dictionary_word.uuid AS dictionaryUuid', 'field.uuid AS fieldUuid', 'field.primacy', 'field.field')
       .innerJoin('field', 'field.reference_uuid', 'dictionary_word.uuid');
     return rows;
   }
