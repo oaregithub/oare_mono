@@ -17,11 +17,15 @@ export interface RefreshToken {
 }
 
 class RefreshTokenDao {
-  async getTokenInfo(token: string): Promise<RefreshToken> {
-    const row: RefreshTokenRow = await knex('refresh_tokens')
+  async getTokenInfo(token: string): Promise<RefreshToken | null> {
+    const row: RefreshTokenRow | null = await knex('refresh_tokens')
       .select('id', 'token', 'expiration', 'ip_address AS ipAddress', 'email')
       .first()
       .where({ token });
+
+    if (!row) {
+      return null;
+    }
 
     return {
       ...row,
