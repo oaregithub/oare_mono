@@ -53,5 +53,13 @@
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.test.js", "jest-setup.js"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
 }
