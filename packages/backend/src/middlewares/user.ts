@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import UserDao, { UserRow } from '@/api/daos/UserDao';
+import { UserRow } from '@/api/daos/UserDao';
 import { HttpInternalError } from '@/exceptions';
+import sl from '@/serviceLocator';
 
 // Attach user object to each request
 async function attachUser(req: Request, res: Response, next: NextFunction) {
   try {
+    const UserDao = sl.get('UserDao');
     const token = req.cookies.jwt;
 
     if (!token) {
