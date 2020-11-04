@@ -104,7 +104,7 @@ describe('dictionary api test', () => {
     it('prevents non-logged in users from posting', async () => {
       setup();
       const response = await request(app).post(PATH).send({ word: 'newWord' });
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(401);
     });
 
     it('prevents non-admins from posting', async () => {
@@ -189,7 +189,7 @@ describe('dictionary api test', () => {
     it('prevents non-admins from posting', async () => {
       setup();
       let response = await request(app).post(PATH).send({ translations: updatedTranslations });
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(401);
 
       setup({
         UserDao: {
@@ -265,7 +265,7 @@ describe('dictionary api test', () => {
     it('prevents non-admins from posting', async () => {
       setup();
       let response = await request(app).post(PATH).send({ uuid: 'test-uuid', form: 'newForm' });
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(401);
 
       setup({
         UserDao: {

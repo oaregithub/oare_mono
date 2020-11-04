@@ -2,6 +2,8 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
 import EpigraphyEditor from '../EpigraphyEditor.vue';
+import sl from '../../../serviceLocator';
+import flushPromises from 'flush-promises';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -12,12 +14,20 @@ describe('EpigraphyEditor test', () => {
     sides: [],
     notes: '',
     textUuid: 'test-uuid',
-    server: {
-      createDraft: jest.fn().mockResolvedValue(null),
-    },
   };
-  const createWrapper = (propsData = mockProps) =>
-    mount(EpigraphyEditor, {
+
+  const mockServer = {
+    createDraft: jest.fn().mockResolvedValue(null),
+  };
+
+  const mockActions = {
+    showSnackbar: jest.fn(),
+    showErrorSnackbar: jest.fn(),
+  };
+  const createWrapper = (propsData = mockProps, { server } = {}) => {
+    sl.set('serverProxy', server || mockServer);
+    sl.set('globalActions', mockActions);
+    return mount(EpigraphyEditor, {
       vuetify,
       localVue,
       propsData: {
@@ -25,6 +35,7 @@ describe('EpigraphyEditor test', () => {
         ...propsData,
       },
     });
+  };
 
   it('saves draft with notes', async () => {
     const wrapper = createWrapper();
@@ -33,14 +44,12 @@ describe('EpigraphyEditor test', () => {
 
     await notesInput.setValue('Test note');
     await saveButton.trigger('click');
-
-    expect(mockProps.server.createDraft).toHaveBeenCalledWith(
-      mockProps.textUuid,
-      {
-        content: JSON.stringify(mockProps.sides),
-        notes: 'Test note',
-      }
-    );
+    await flushPromises();
+    expect(mockServer.createDraft).toHaveBeenCalledWith(mockProps.textUuid, {
+      content: JSON.stringify(mockProps.sides),
+      notes: 'Test note',
+    });
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
   it('adds side', async () => {
@@ -88,17 +97,32 @@ describe('EpigraphyEditor test', () => {
     await textarea.setValue('New reading');
     await wrapper.find('.test-save').trigger('click');
 
-    expect(mockProps.server.createDraft).toHaveBeenCalledWith(
-      mockProps.textUuid,
+    expect(mockServer.createDraft).toHaveBeenCalledWith(mockProps.textUuid, {
+      content: JSON.stringify([
+        {
+          side: 'obv.',
+          text: 'New reading',
+        },
+      ]),
+      notes: '',
+    });
+  });
+
+  it('shows error snackbar when save draft fails', async () => {
+    const wrapper = createWrapper(
+      {},
       {
-        content: JSON.stringify([
-          {
-            side: 'obv.',
-            text: 'New reading',
-          },
-        ]),
-        notes: '',
+        server: {
+          createDraft: jest.fn().mockRejectedValue(null),
+        },
       }
     );
+    const notesInput = wrapper.find('.test-notes input');
+    const saveButton = wrapper.find('.test-save');
+
+    await notesInput.setValue('Test note');
+    await saveButton.trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });
