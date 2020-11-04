@@ -9,7 +9,7 @@
     "bootstrap": "lerna bootstrap --use-workspaces",
     "client": "yarn workspace @oare/frontend serve",
     "server": "yarn workspace @oare/backend dev",
-    "test": "yarn workspace @oare/frontend test"
+    "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test"
   },
   "workspaces": {
     "packages": [

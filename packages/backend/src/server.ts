@@ -1,14 +1,11 @@
-import express from 'express';
-import history from 'connect-history-api-fallback';
-import path from 'path';
-import cookieParser from 'cookie-parser';
-import errorMiddleware from '@/middlewares/error';
-import './envConfig';
-import setupRoutes from './setupRoutes';
-import cacheMiddleware from './middlewares/cache';
-import userMiddleware from './middlewares/user';
-
-import { UserRow } from './api/daos/UserDao';
+import sl from '@/serviceLocator';
+import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
+import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
+import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
+import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
+import cache from '@/cache';
+import app from './app';
+import UserDao, { UserRow } from './api/daos/UserDao';
 
 declare global {
   namespace Express {
@@ -18,43 +15,12 @@ declare global {
   }
 }
 
-const app = express();
-
-// Prevent CORS issue inside Docker
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:8080');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma',
-    );
-
-    // intercept OPTIONS
-    if (req.method === 'OPTIONS') {
-      res.sendStatus(204);
-    } else {
-      next();
-    }
-  });
-}
-
-app.use(express.json());
-app.use(cookieParser());
-app.use(
-  express.urlencoded({
-    extended: true,
-  }),
-);
-app.use(userMiddleware);
-app.use(cacheMiddleware);
-setupRoutes(app);
-
-app.use(errorMiddleware);
-
-app.use(history());
-app.use(express.static(path.join(__dirname, '../dist')));
+sl.set('UserDao', UserDao);
+sl.set('DictionaryFormDao', DictionaryFormDao);
+sl.set('DictionaryWordDao', DictionaryWordDao);
+sl.set('LoggingEditsDao', LoggingEditsDao);
+sl.set('TextDiscourseDao', TextDiscourseDao);
+sl.set('cache', cache);
 
 app.listen(8081, () => {
   console.log('Listening on port 8081');

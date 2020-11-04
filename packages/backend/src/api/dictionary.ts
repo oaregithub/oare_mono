@@ -7,12 +7,8 @@ import {
 } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpInternalError } from '@/exceptions';
-import cache from '@/cache';
 import { API_PATH } from '@/setupRoutes';
-import DictionaryFormDao from './daos/DictionaryFormDao';
-import DictionaryWordDao from './daos/DictionaryWordDao';
-import LoggingEditsDao from './daos/LoggingEditsDao';
-import TextDiscourseDao from './daos/TextDiscourseDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
@@ -20,6 +16,8 @@ router
   .route('/dictionary/:uuid')
   .get(async (req, res, next) => {
     try {
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
       const { uuid } = req.params;
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
@@ -36,6 +34,10 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const cache = sl.get('cache');
+
       const { uuid } = req.params;
       const { word }: UpdateDictionaryWordPayload = req.body;
       const userUuid = req.user!.uuid;
@@ -58,6 +60,9 @@ router
 
 router.route('/dictionary/translations/:uuid').post(adminRoute, async (req, res, next) => {
   try {
+    const cache = sl.get('cache');
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+
     const { uuid } = req.params;
     const { translations }: UpdateDictionaryTranslationPayload = req.body;
 
@@ -80,6 +85,10 @@ router.route('/dictionary/translations/:uuid').post(adminRoute, async (req, res,
 
 router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) => {
   try {
+    const DictionaryFormDao = sl.get('DictionaryFormDao');
+    const LoggingEditsDao = sl.get('LoggingEditsDao');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
     const { uuid: formUuid } = req.params;
     const formData: DictionaryForm = req.body;
     const userUuid = req.user!.uuid;
