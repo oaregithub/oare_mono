@@ -9,7 +9,10 @@ async function adminRoute(req: Request, res: Response, next: NextFunction) {
     //   return;
     // }
 
-    const navigateAdmin = () => {
+    const navigateAdmin = (err?: any) => {
+      if (err) {
+        next(err);
+      }
       const { user } = req;
       if (user && user.isAdmin) {
         next();

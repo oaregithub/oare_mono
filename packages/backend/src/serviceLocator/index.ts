@@ -3,6 +3,7 @@ import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
 import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import UserDao from '@/api/daos/UserDao';
+import TextDraftsDao from '@/api/daos/TextDraftsDao';
 import cache from '@/cache';
 
 const instances: { [key: string]: any } = {};
@@ -12,6 +13,7 @@ export type ServiceTypes = {
   DictionaryWordDao: typeof DictionaryWordDao;
   LoggingEditsDao: typeof LoggingEditsDao;
   TextDiscourseDao: typeof TextDiscourseDao;
+  TextDraftsDao: typeof TextDraftsDao;
   UserDao: typeof UserDao;
   cache: typeof cache;
 };

@@ -73,8 +73,8 @@ import {
   computed,
 } from '@vue/composition-api';
 import { EpigraphicUnitSide } from '@oare/oare';
+import sl from '@/serviceLocator';
 import { EpigraphyEditorSideData } from './index.vue';
-import defaultServer from '../../serverProxy';
 
 export default defineComponent({
   name: 'EpigraphyEditor',
@@ -97,12 +97,11 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    server: {
-      type: Object as PropType<typeof defaultServer>,
-      default: () => defaultServer,
-    },
   },
-  setup({ sides, notes, textUuid, draftSaveLoading, server }, { emit }) {
+  setup({ sides, notes, textUuid, draftSaveLoading }, { emit }) {
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+
     const textData = ref<EpigraphyEditorSideData[]>([]);
     const saveLoading = ref(false);
     const removeDialog = ref({
@@ -122,12 +121,18 @@ export default defineComponent({
 
     const createDraft = async () => {
       saveLoading.value = true;
-      await server.createDraft(textUuid, {
-        content: JSON.stringify(textData.value),
-        notes: notesData.value,
-      });
-      emit('save-draft', textData.value);
-      emit('update:notes', notesData.value);
+
+      try {
+        await server.createDraft(textUuid, {
+          content: JSON.stringify(textData.value),
+          notes: notesData.value,
+        });
+        emit('save-draft', textData.value);
+        emit('update:notes', notesData.value);
+        actions.showSnackbar('Successfully saved draft');
+      } catch {
+        actions.showErrorSnackbar('Failed to save draft');
+      }
       saveLoading.value = false;
     };
 
