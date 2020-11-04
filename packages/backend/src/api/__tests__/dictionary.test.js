@@ -101,11 +101,7 @@ describe('dictionary api test', () => {
       });
     });
 
-<<<<<<< HEAD
     it('prevents non-logged in users from posting', async () => {
-=======
-    it('prevents logged in users from posting', async () => {
->>>>>>> 1559f7df993d85d70b3e6ab2f4f5fa49db3a2e5f
       setup();
       const response = await request(app).post(PATH).send({ word: 'newWord' });
       expect(response.status).toBe(403);
