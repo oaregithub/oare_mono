@@ -11,10 +11,7 @@
           <v-icon>mdi-pencil</v-icon>
         </v-btn>
         <strong>{{ form.form }}</strong>
-        <span class="mx-1" v-if="formGrammar(form).trim() !== ''"
-          >({{ formGrammar(form) }})</span
-        >
-        <span>{{ form.spellings.map(sp => sp.spelling).join(', ') }}</span>
+        <grammar-display :form="form" />
       </div>
 
       <v-row v-else class="pa-0 ml-2">
@@ -49,6 +46,7 @@
         >
           <v-icon>mdi-close</v-icon>
         </v-btn>
+        <grammar-display :form="form" class="mt-2" />
       </v-row>
     </div>
   </div>
@@ -65,8 +63,12 @@ import {
 import { DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import permissions from '@/serverProxy/permissions';
+import GrammarDisplay from './GrammarDisplay.vue';
 
 export default defineComponent({
+  components: {
+    GrammarDisplay,
+  },
   props: {
     forms: {
       type: Array as PropType<DictionaryForm[]>,
@@ -130,45 +132,6 @@ export default defineComponent({
     const isFormSaveLoading = (index: number): boolean =>
       !!loadingForms.value[index];
 
-    const formGrammar = (form: DictionaryForm) => {
-      let suffix = '';
-
-      if (form.suffix) {
-        suffix =
-          form.suffix.persons.join('') +
-          form.suffix.genders.join('') +
-          form.suffix.grammaticalNumbers.join('') +
-          form.suffix.cases.join('');
-        if (form.clitics.includes('-ma')) {
-          suffix += '-ma';
-        }
-      }
-      return (
-        form.stems.join('') +
-        form.morphologicalForms
-          .filter(mf => mf === 'stv.' || mf === 'inf')
-          .join('') +
-        form.tenses.join('') +
-        ' ' +
-        form.persons.join('') +
-        form.genders.join('') +
-        form.grammaticalNumbers.join('') +
-        form.cases.join('') +
-        ' ' +
-        form.states.join('') +
-        form.moods.join('') +
-        form.clitics
-          .map(clitic => {
-            if (clitic === 'suf.') return '+';
-            if (clitic === 'vent') return '+vent';
-            return clitic;
-          })
-          .filter(clitic => clitic !== '-ma')
-          .join('') +
-        suffix
-      );
-    };
-
     return {
       isFormBeingEdited,
       isFormSaveLoading,
@@ -179,7 +142,6 @@ export default defineComponent({
       canEditForm: computed(() =>
         store.getters.permissions.dictionary.includes('UPDATE_FORM')
       ),
-      formGrammar,
     };
   },
 });
