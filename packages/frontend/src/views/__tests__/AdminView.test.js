@@ -27,7 +27,7 @@ describe('AdminView test', () => {
   const mockServer = {
     getAllGroups: jest.fn().mockResolvedValue(mockGroups),
     createGroup: jest.fn().mockResolvedValue(2),
-    deleteGroups: jest.fn().mockResolvedValue(null),
+    deleteGroup: jest.fn().mockResolvedValue(null),
   };
 
   const mockActions = {
@@ -119,7 +119,7 @@ describe('AdminView test', () => {
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 
-    expect(mockServer.deleteGroups).toHaveBeenCalled();
+    expect(mockServer.deleteGroup).toHaveBeenCalled();
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
@@ -127,7 +127,7 @@ describe('AdminView test', () => {
     const wrapper = createWrapper({
       server: {
         ...mockServer,
-        deleteGroups: jest.fn().mockRejectedValue(null),
+        deleteGroup: jest.fn().mockRejectedValue(null),
       },
     });
     await flushPromises();

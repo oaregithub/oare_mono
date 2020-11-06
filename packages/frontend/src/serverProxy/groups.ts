@@ -16,10 +16,8 @@ async function getGroupName(groupId: number): Promise<string> {
   return name;
 }
 
-async function deleteGroups(payload: DeleteGroupPayload) {
-  await axios.delete('/groups', {
-    params: payload,
-  });
+async function deleteGroup(groupId: number): Promise<void> {
+  await axios.delete(`/groups/${groupId}`);
 }
 
 async function createGroup(payload: CreateGroupPayload): Promise<number> {
@@ -31,7 +29,7 @@ async function createGroup(payload: CreateGroupPayload): Promise<number> {
 
 export default {
   getGroupName,
-  deleteGroups,
+  deleteGroup,
   getAllGroups,
   createGroup,
 };

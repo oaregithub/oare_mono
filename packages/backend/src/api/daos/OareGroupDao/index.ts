@@ -2,11 +2,11 @@ import { Group } from '@oare/types';
 import knex from '@/connection';
 
 class OareGroupDao {
-  async getGroupByName(name: string): Promise<Group> {
+  async getGroupByName(name: string): Promise<Group | null> {
     return knex('oare_group').first().where({ name });
   }
 
-  async getGroupById(id: number): Promise<Group> {
+  async getGroupById(id: number): Promise<Group | null> {
     return knex('oare_group').first().where({ id });
   }
 
@@ -27,8 +27,8 @@ class OareGroupDao {
     return ids[0];
   }
 
-  async deleteGroups(groupIds: number[]) {
-    await knex('oare_group').whereIn('id', groupIds).del();
+  async deleteGroup(groupId: number): Promise<void> {
+    await knex('oare_group').where('id', groupId).del();
   }
 }
 

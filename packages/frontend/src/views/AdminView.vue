@@ -162,7 +162,7 @@ export default defineComponent({
         deleteGroupLoading.value = true;
         let delGroupIds = selectedGroups.value.map(item => item.id);
 
-        await server.deleteGroups({ groupIds: delGroupIds });
+        await Promise.all(delGroupIds.map(id => server.deleteGroup(id)));
 
         groups.value = groups.value.filter(
           group => !delGroupIds.includes(group.id)

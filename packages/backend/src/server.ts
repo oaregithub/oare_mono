@@ -4,6 +4,7 @@ import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
 import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
+import OareGroupDao from '@/api/daos/OareGroupDao';
 import cache from '@/cache';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
@@ -22,6 +23,7 @@ sl.set('DictionaryWordDao', DictionaryWordDao);
 sl.set('LoggingEditsDao', LoggingEditsDao);
 sl.set('TextDiscourseDao', TextDiscourseDao);
 sl.set('TextDraftsDao', TextDraftsDao);
+sl.set('OareGroupDao', OareGroupDao);
 sl.set('cache', cache);
 
 app.listen(8081, () => {
