@@ -8,7 +8,7 @@
       :submitLoading="addGroupLoading"
     >
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" color="primary" data-add-group-btn>
+        <v-btn v-on="on" color="primary" class="test-add-group">
           <v-icon class="mr-2">mdi-plus</v-icon>Add Group
         </v-btn>
       </template>
@@ -18,7 +18,8 @@
         @keyup.enter="submitGroup"
         outlined
         label="Group Name"
-        data-group-name-tf
+        class="test-group-name"
+        autofocus
       />
     </OareDialog>
 
@@ -27,7 +28,7 @@
         <v-btn
           v-on="on"
           color="info"
-          class="ml-3"
+          class="ml-3 test-actions"
           :disabled="selectedGroups.length < 1"
           data-actions-btn
           >Actions</v-btn
@@ -35,7 +36,9 @@
       </template>
       <v-list>
         <v-list-item @click="confirmDeleteDialog = true" data-del-group-btn>
-          <v-list-item-title>Delete group</v-list-item-title>
+          <v-list-item-title class="test-delete-group"
+            >Delete group</v-list-item-title
+          >
         </v-list-item>
       </v-list>
     </v-menu>
@@ -52,9 +55,11 @@
       data-group-table
     >
       <template #[`item.name`]="{ item }">
-        <router-link :to="`/groups/${item.id}/members`">{{
-          item.name
-        }}</router-link>
+        <router-link
+          :to="`/groups/${item.id}/members`"
+          class="test-group-name"
+          >{{ item.name }}</router-link
+        >
       </template>
     </v-data-table>
     <OareDialog
@@ -85,10 +90,13 @@ import {
   Ref,
 } from '@vue/composition-api';
 import { Group } from '@oare/types';
-import serverProxy from '../serverProxy';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   setup() {
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+
     const headers = ref([
       {
         text: 'Group Name',
@@ -101,34 +109,38 @@ export default defineComponent({
     ]);
     const groups: Ref<Group[]> = ref([]);
     const selectedGroups: Ref<Group[]> = ref([]);
-    const loading = ref(true);
+    const loading = ref(false);
     const addDialog = ref(false);
     const groupName = ref('');
     const addGroupLoading = ref(false);
     const deleteGroupLoading = ref(false);
     const confirmDeleteDialog = ref(false);
-    const addGroupErrorMsg = ref('');
 
     watch(addDialog, open => {
       if (!open) {
         groupName.value = '';
-        addGroupErrorMsg.value = '';
       }
     });
 
     onMounted(async () => {
-      groups.value = await serverProxy.getAllGroups();
-      loading.value = false;
+      loading.value = true;
+      try {
+        groups.value = await server.getAllGroups();
+      } catch {
+        actions.showErrorSnackbar('Failed to fetch groups');
+      } finally {
+        loading.value = false;
+      }
     });
 
     const submitGroup = async () => {
       if (groupName.value.trim() === '') {
-        addGroupErrorMsg.value = 'Group name cannot be blank.';
+        actions.showErrorSnackbar('Group name cannot be blank.');
         return;
       }
       try {
         addGroupLoading.value = true;
-        let id = await serverProxy.createGroup({ groupName: groupName.value });
+        let id = await server.createGroup({ groupName: groupName.value });
 
         groups.value.push({
           id,
@@ -136,9 +148,10 @@ export default defineComponent({
           created_on: new Date(),
           num_users: 0,
         });
+        actions.showSnackbar('Successfully created group');
         addDialog.value = false;
       } catch (err) {
-        addGroupErrorMsg.value = err.response.data.message;
+        actions.showErrorSnackbar('Failed to create group');
       } finally {
         addGroupLoading.value = false;
       }
@@ -149,15 +162,15 @@ export default defineComponent({
         deleteGroupLoading.value = true;
         let delGroupIds = selectedGroups.value.map(item => item.id);
 
-        await serverProxy.deleteGroups({ groupIds: delGroupIds });
+        await Promise.all(delGroupIds.map(id => server.deleteGroup(id)));
 
         groups.value = groups.value.filter(
           group => !delGroupIds.includes(group.id)
         );
-
+        actions.showSnackbar('Successfully deleted groups');
         selectedGroups.value = [];
       } catch (err) {
-        // TODO handle error
+        actions.showErrorSnackbar('Failed to delete group');
       } finally {
         confirmDeleteDialog.value = false;
         deleteGroupLoading.value = false;
@@ -176,7 +189,6 @@ export default defineComponent({
       submitGroup,
       deleteGroups,
       confirmDeleteDialog,
-      addGroupErrorMsg,
     };
   },
 });

@@ -4,6 +4,7 @@ import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import UserDao from '@/api/daos/UserDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
+import OareGroupDao from '@/api/daos/OareGroupDao';
 import cache from '@/cache';
 
 const instances: { [key: string]: any } = {};
@@ -15,6 +16,7 @@ export type ServiceTypes = {
   TextDiscourseDao: typeof TextDiscourseDao;
   TextDraftsDao: typeof TextDraftsDao;
   UserDao: typeof UserDao;
+  OareGroupDao: typeof OareGroupDao;
   cache: typeof cache;
 };
 
