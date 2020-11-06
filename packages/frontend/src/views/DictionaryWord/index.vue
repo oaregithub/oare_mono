@@ -1,17 +1,20 @@
 <template>
-  <OareContentView :title="title" :loading="loading">
-    <template #title:pre v-if="wordInfo && canUpdateWordSpelling">
-      <v-btn
-        v-if="!isEditing"
-        icon
-        class="mt-n2 mr-1"
-        @click="isEditing = true"
-      >
-        <v-icon class="test-pencil">mdi-pencil</v-icon>
-      </v-btn>
+  <OareContentView :loading="loading">
+    <template #title>
+      <v-row v-if="!isEditing" class="px-3">
+        <v-btn
+          v-if="canUpdateWordSpelling && !isEditing"
+          icon
+          class="mt-n2 mr-1"
+          @click="isEditing = true"
+        >
+          <v-icon class="test-pencil">mdi-pencil</v-icon>
+        </v-btn>
+        <span class="font-weight-bold">{{ title }}</span>
+      </v-row>
 
       <word-name-edit
-        v-else
+        v-else-if="wordInfo"
         :word.sync="wordInfo.word"
         :wordUuid="uuid"
         @close-edit="isEditing = false"
@@ -107,7 +110,7 @@ export default defineComponent({
     });
 
     const title = computed(() => {
-      if (wordInfo.value && !isEditing.value) {
+      if (wordInfo.value) {
         return wordInfo.value.word;
       }
       return '';

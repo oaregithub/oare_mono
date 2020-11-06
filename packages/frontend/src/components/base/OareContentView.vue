@@ -4,14 +4,19 @@
     <slot name="header"></slot>
 
     <v-card-title
-      v-if="title !== null && title !== undefined"
       class="oare-header d-flex justify-space-between align-center test-content-title"
     >
-      <div class="d-flex align-center">
-        <slot name="title:pre"></slot>
-        <span class="font-weight-bold">{{ title }}</span>
-      </div>
-      <slot name="title:post"> </slot>
+      <slot name="title">
+        <div class="d-flex align-center">
+          <slot name="title:pre"></slot>
+          <span
+            class="font-weight-bold"
+            v-if="title !== null && title !== undefined"
+            >{{ title }}</span
+          >
+        </div>
+        <slot name="title:post"> </slot>
+      </slot>
     </v-card-title>
     <v-card-text class="black--text">
       <slot></slot>
