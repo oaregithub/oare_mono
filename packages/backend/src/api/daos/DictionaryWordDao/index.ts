@@ -136,22 +136,60 @@ class DictionaryWordDao {
     return translations;
   }
 
-  async getGrammaticalInfo(wordUuid: string): Promise<DictionaryWord> {
-    const grammaticalInfoQuery = getQueryString('wordGrammaticalInfoQuery.sql');
-    const { uuid, word, partsOfSpeech, specialClassifications, verbalThematicVowelTypes }: WordQueryRow = (
-      await knex.raw(grammaticalInfoQuery, wordUuid)
-    )[0][0];
+  async getPartsOfSpeech(wordUuid: string): Promise<string[]> {
+    const rows: { partOfSpeech: string }[] = await knex('item_properties')
+      .innerJoin('alias AS a1', 'a1.reference_uuid', 'item_properties.variable_uuid')
+      .innerJoin('alias AS a2', 'a2.reference_uuid', 'item_properties.value_uuid')
+      .where('a1.name', 'Part of Speech')
+      .andWhere('a2.type', 'abbreviation')
+      .andWhere('item_properties.reference_uuid', wordUuid)
+      .select('a2.name AS partOfSpeech');
 
-    const translations = await this.getWordTranslations(wordUuid);
+    return rows.map((r) => r.partOfSpeech);
+  }
+
+  async getSpecialClassifications(wordUuid: string): Promise<string[]> {
+    const rows: { specialClassification: string }[] = await knex('item_properties')
+      .innerJoin('alias AS a1', 'a1.reference_uuid', 'item_properties.variable_uuid')
+      .innerJoin('alias AS a2', 'a2.reference_uuid', 'item_properties.value_uuid')
+      .where('a1.name', 'Special Classifications')
+      .andWhere('item_properties.reference_uuid', wordUuid)
+      .select('a2.name AS specialClassification');
+
+    return rows.map((r) => r.specialClassification);
+  }
+
+  async getVerbalThematicVowelTypes(wordUuid: string): Promise<string[]> {
+    const rows: { verbalThematicVowelType: string }[] = await knex('item_properties')
+      .innerJoin('alias AS a1', 'a1.reference_uuid', 'item_properties.variable_uuid')
+      .innerJoin('alias AS a2', 'a2.reference_uuid', 'item_properties.value_uuid')
+      .where('a1.name', 'Verbal Thematic Vowel Type')
+      .andWhere('item_properties.reference_uuid', wordUuid)
+      .select('a2.name AS verbalThematicVowelType');
+
+    return rows.map((r) => r.verbalThematicVowelType.replace('-Class', ''));
+  }
+
+  async getWordName(wordUuid: string): Promise<string> {
+    const { word }: { word: string } = await knex('dictionary_word').select('word').where('uuid', wordUuid).first();
+    return word;
+  }
+
+  async getGrammaticalInfo(wordUuid: string): Promise<DictionaryWord> {
+    const [word, partsOfSpeech, specialClassifications, verbalThematicVowelTypes, translations] = await Promise.all([
+      this.getWordName(wordUuid),
+      this.getPartsOfSpeech(wordUuid),
+      this.getSpecialClassifications(wordUuid),
+      this.getVerbalThematicVowelTypes(wordUuid),
+      this.getWordTranslations(wordUuid),
+    ]);
 
     return {
-      uuid,
+      uuid: wordUuid,
       word,
-      partsOfSpeech: partsOfSpeech ? partsOfSpeech.split(',') : [],
-      specialClassifications: specialClassifications ? specialClassifications.split(',') : [],
-      verbalThematicVowelTypes: verbalThematicVowelTypes
-        ? verbalThematicVowelTypes.split(',').map((vtv) => vtv.replace('-Class', ''))
-        : [],
+      partsOfSpeech,
+      specialClassifications,
+      verbalThematicVowelTypes,
       translations,
     };
   }

@@ -1,6 +1,30 @@
 import { DictionaryForm, FormSpelling } from '@oare/types';
 import { SpellingQueryRow, FormGrammarRow } from './index';
 
+function getCliticSuffixUuid(grammarRows: FormGrammarRow[]) {
+  const cliticRow = grammarRows.find((row) => row.variable === 'Clitic' && row.valueName === 'Suffix pronoun');
+
+  if (!cliticRow) return null;
+
+  return cliticRow.propertyUuid;
+}
+
+function getVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string | null): string[] {
+  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid !== cliticUuid);
+
+  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
+  return values;
+  // return values.filter((v, i) => values.indexOf(v) === i);
+}
+
+function getSuffixVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string): string[] {
+  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid === cliticUuid);
+
+  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
+  return values;
+  // return values.filter((v, i) => values.indexOf(v) === i);
+}
+
 export default function assembleSpellingsAndFormGrammar(
   spellingRows: SpellingQueryRow[],
   formGrammars: FormGrammarRow[],
@@ -59,28 +83,4 @@ export default function assembleSpellingsAndFormGrammar(
     }
     return 0;
   });
-}
-
-function getCliticSuffixUuid(grammarRows: FormGrammarRow[]) {
-  const cliticRow = grammarRows.find((row) => row.variable === 'Clitic' && row.valueName === 'Suffix pronoun');
-
-  if (!cliticRow) return null;
-
-  return cliticRow.propertyUuid;
-}
-
-function getVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string | null): string[] {
-  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid !== cliticUuid);
-
-  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
-  return values;
-  // return values.filter((v, i) => values.indexOf(v) === i);
-}
-
-function getSuffixVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string): string[] {
-  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid === cliticUuid);
-
-  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
-  return values;
-  // return values.filter((v, i) => values.indexOf(v) === i);
 }
