@@ -1,4 +1,5 @@
 import knex from '@/connection';
+import { SpellingText } from '@oare/types';
 import getQueryString from '../utils';
 import assembleSpellingsAndFormGrammar from './utils';
 
@@ -22,6 +23,52 @@ export interface FormGrammarRow {
 class DictionaryFormDao {
   async updateForm(uuid: string, newForm: string): Promise<void> {
     await knex('dictionary_form').update({ form: newForm }).where({ uuid });
+  }
+
+  async getSpellingTexts(spellingUuid: string): Promise<SpellingText[]> {
+    interface SpellingTextRow {
+      textUuid: string;
+      name: string;
+      primacy: null | number;
+    }
+    const rows: SpellingTextRow[] = await knex('text_discourse')
+      .select('text_discourse.text_uuid AS textUuid', 'alias.name', 'alias.primacy')
+      .innerJoin('alias', 'alias.reference_uuid', 'text_discourse.text_uuid')
+      .where('text_discourse.spelling_uuid', spellingUuid)
+      .groupBy('text_discourse.text_uuid', 'alias.primacy');
+
+    const textUuids = [...new Set(rows.map((r) => r.textUuid))];
+
+    return textUuids.map((textUuid) => {
+      const spellingTextRows = rows
+        .filter((r) => r.textUuid === textUuid)
+        .sort((a, b) => {
+          if (a.primacy === null) {
+            return -1;
+          }
+          if (b.primacy === null) {
+            return 1;
+          }
+          if (a.primacy < b.primacy) {
+            return 1;
+          }
+          if (a.primacy > b.primacy) {
+            return -1;
+          }
+          return 0;
+        });
+
+      if (spellingTextRows.length === 1) {
+        return {
+          uuid: textUuid,
+          text: spellingTextRows[0].name,
+        };
+      }
+      return {
+        uuid: textUuid,
+        text: `${spellingTextRows[0].name} (${spellingTextRows[1].name})`,
+      };
+    });
   }
 
   async getFormsWithSpellings(wordUuid: string) {
