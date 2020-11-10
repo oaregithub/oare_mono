@@ -22,9 +22,15 @@ export interface DictionaryWordResponse {
   translations: DictionaryWordTranslation[];
 }
 
+export interface SpellingText {
+  uuid: string;
+  text: string;
+}
+
 export interface FormSpelling {
   uuid: string;
   spelling: string;
+  // texts: SpellingText[];
 }
 
 export interface DictionaryForm {
