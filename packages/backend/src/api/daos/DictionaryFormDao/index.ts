@@ -1,14 +1,6 @@
 import knex from '@/connection';
-import { SpellingText } from '@oare/types';
-import getQueryString from '../utils';
-import assembleSpellingsAndFormGrammar from './utils';
-
-export interface SpellingQueryRow {
-  formUuid: string;
-  form: string;
-  spellingUuids: string | null;
-  spellings: string | null;
-}
+import { DictionaryForm } from '@oare/types';
+import DictionarySpellingDao from '../DictionarySpellingDao';
 
 export interface FormGrammarRow {
   propertyUuid: string;
@@ -20,69 +12,109 @@ export interface FormGrammarRow {
   valueAbbrev: string | null;
 }
 
+function getCliticSuffixUuid(grammarRows: FormGrammarRow[]): string | null {
+  const cliticRow = grammarRows.find((row) => row.variable === 'Clitic' && row.valueName === 'Suffix pronoun');
+  return cliticRow ? cliticRow.propertyUuid : null;
+}
+
+function getVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string | null): string[] {
+  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid !== cliticUuid);
+
+  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
+  return values;
+}
+
+function getSuffixVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string): string[] {
+  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid === cliticUuid);
+
+  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
+  return values;
+}
+
 class DictionaryFormDao {
   async updateForm(uuid: string, newForm: string): Promise<void> {
     await knex('dictionary_form').update({ form: newForm }).where({ uuid });
   }
 
-  async getSpellingTexts(spellingUuid: string): Promise<SpellingText[]> {
-    interface SpellingTextRow {
-      textUuid: string;
-      name: string;
-      primacy: null | number;
-    }
-    const rows: SpellingTextRow[] = await knex('text_discourse')
-      .select('text_discourse.text_uuid AS textUuid', 'alias.name', 'alias.primacy')
-      .innerJoin('alias', 'alias.reference_uuid', 'text_discourse.text_uuid')
-      .where('text_discourse.spelling_uuid', spellingUuid)
-      .groupBy('text_discourse.text_uuid', 'alias.primacy');
+  async getForms(wordUuid: string): Promise<DictionaryForm[]> {
+    const forms: { uuid: string; form: string }[] = await knex('dictionary_form')
+      .select('uuid', 'form')
+      .where('reference_uuid', wordUuid);
 
-    const textUuids = [...new Set(rows.map((r) => r.textUuid))];
+    const formSpellings = await Promise.all(forms.map((f) => DictionarySpellingDao.getFormSpellings(f.uuid)));
 
-    return textUuids.map((textUuid) => {
-      const spellingTextRows = rows
-        .filter((r) => r.textUuid === textUuid)
-        .sort((a, b) => {
-          if (a.primacy === null) {
-            return -1;
-          }
-          if (b.primacy === null) {
-            return 1;
-          }
-          if (a.primacy < b.primacy) {
-            return 1;
-          }
-          if (a.primacy > b.primacy) {
-            return -1;
-          }
-          return 0;
-        });
+    const grammarRows: FormGrammarRow[] = await knex('dictionary_form AS df')
+      .select(
+        'ip.uuid AS propertyUuid',
+        'ip.parent_uuid AS parentUuid',
+        'df.form',
+        'df.uuid AS formUuid',
+        'a1.name AS variable',
+        'a2.name AS valueName',
+        'a3.name AS valueAbbrev',
+      )
+      .leftJoin('item_properties AS ip', 'ip.reference_uuid', 'df.uuid')
+      .leftJoin('alias AS a1', 'a1.reference_uuid', 'ip.variable_uuid')
+      .leftJoin('alias AS a2', 'a2.reference_uuid', 'ip.value_uuid')
+      .leftJoin('alias AS a3', 'a3.reference_uuid', 'ip.value_uuid')
+      .where('df.reference_uuid', wordUuid)
+      .andWhere('a2.type', '!=', 'abbreviation')
+      .andWhere('a3.type', 'abbreviation');
 
-      if (spellingTextRows.length === 1) {
+    return forms
+      .map((form, i) => {
+        const formGrammarRows = grammarRows.filter((r) => r.formUuid === form.uuid);
+        const cliticSuffixUuid = getCliticSuffixUuid(formGrammarRows);
+
+        let suffix = null;
+        if (cliticSuffixUuid) {
+          const [persons, cases, genders, grammaticalNumbers] = [
+            'Person',
+            'Case',
+            'Gender',
+            'Grammatical Number',
+          ].map((varValue) => getSuffixVariables(varValue, formGrammarRows, cliticSuffixUuid));
+          suffix = {
+            persons,
+            cases,
+            genders,
+            grammaticalNumbers,
+          };
+        }
+
+        const [stems, tenses, cases, states, moods, persons, grammaticalNumbers, morphologicalForms, genders] = [
+          'Stem',
+          'Tense',
+          'Case',
+          'State',
+          'Mood',
+          'Person',
+          'Grammatical Number',
+          'Morphological Form',
+          'Gender',
+        ].map((varType) => getVariables(varType, formGrammarRows, cliticSuffixUuid));
+
         return {
-          uuid: textUuid,
-          text: spellingTextRows[0].name,
+          ...form,
+          stems,
+          tenses,
+          cases,
+          states,
+          moods,
+          persons,
+          grammaticalNumbers,
+          morphologicalForms,
+          genders,
+          spellings: formSpellings[i],
+          suffix,
+          clitics: getVariables('Clitic', formGrammarRows, cliticSuffixUuid).sort((a, b) => {
+            if (a === 'suf.') return 1;
+            if (b === 'suf.') return -1;
+            return 0;
+          }),
         };
-      }
-      return {
-        uuid: textUuid,
-        text: `${spellingTextRows[0].name} (${spellingTextRows[1].name})`,
-      };
-    });
-  }
-
-  async getFormsWithSpellings(wordUuid: string) {
-    const formsQueryString = getQueryString('dictionaryFormsQuery.sql');
-    const formsGrammarQueryString = getQueryString('formsGrammarQuery.sql');
-
-    const formsQuery = knex.raw(formsQueryString, [wordUuid]);
-    const formsGrammarQuery = knex.raw(formsGrammarQueryString, [wordUuid]);
-
-    const spellingRows: SpellingQueryRow[] = (await formsQuery)[0];
-    const formGrammarRows: FormGrammarRow[] = (await formsGrammarQuery)[0];
-
-    const forms = assembleSpellingsAndFormGrammar(spellingRows, formGrammarRows);
-    return forms.sort((a, b) => a.form.localeCompare(b.form));
+      })
+      .sort((a, b) => a.form.localeCompare(b.form));
   }
 }
 

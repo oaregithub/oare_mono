@@ -30,7 +30,7 @@ export interface SpellingText {
 export interface FormSpelling {
   uuid: string;
   spelling: string;
-  // texts: SpellingText[];
+  texts: SpellingText[];
 }
 
 export interface DictionaryForm {
