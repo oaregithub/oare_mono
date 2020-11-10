@@ -1,7 +1,15 @@
 <template>
   <div>
     <span class="mx-1" v-if="formGrammar !== ''">({{ formGrammar }})</span>
-    <span>{{ form.spellings.map(sp => sp.spelling).join(', ') }}</span>
+    <span v-for="(s, index) in form.spellings" :key="index">
+      <span>{{ s.spelling }}</span>
+      <span v-if="s.texts.length > 0">
+        (<a>{{ s.texts.length }}</a
+        >)</span
+      >
+      <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
+    </span>
+    <!-- <span>{{ form.spellings.map(sp => sp.spelling).join(', ') }}</span> -->
   </div>
 </template>
 
