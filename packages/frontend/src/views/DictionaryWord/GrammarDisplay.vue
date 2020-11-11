@@ -4,7 +4,9 @@
     <span v-for="(s, index) in form.spellings" :key="index">
       <span>{{ s.spelling }}</span>
       <span v-if="s.texts.length > 0">
-        (<a @click="showTexts(index)">{{ s.texts.length }}</a
+        (<a @click="showTexts(index)" class="test-num-texts">{{
+          s.texts.length
+        }}</a
         >)</span
       >
       <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
@@ -16,9 +18,14 @@
       cancelText="Close"
       :persistent="false"
     >
-      <v-data-table :headers="headers" :items="spellingTexts">
+      <v-row>
+        <v-col cols="12" sm="6" class="py-0">
+          <v-text-field v-model="search" clearable label="Filter" autofocus />
+        </v-col>
+      </v-row>
+      <v-data-table :headers="headers" :items="spellingTexts" :search="search">
         <template #[`item.text`]="{ item }">
-          <router-link :to="`/epigraphies/${item.uuid}`">{{
+          <router-link :to="`/epigraphies/${item.uuid}`" class="test-text">{{
             item.text
           }}</router-link>
         </template>
@@ -47,6 +54,7 @@ export default defineComponent({
     },
   },
   setup({ form }) {
+    const search = ref('');
     const dialogOpen = ref(false);
     const dialogTitle = ref('');
     const headers: DataTableHeader[] = reactive([
@@ -109,6 +117,7 @@ export default defineComponent({
       showTexts,
       headers,
       spellingTexts,
+      search,
     };
   },
 });

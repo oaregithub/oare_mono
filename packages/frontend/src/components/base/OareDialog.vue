@@ -10,7 +10,9 @@
     </template>
 
     <v-card>
-      <v-card-title data-testid="dialog-title">{{ title }}</v-card-title>
+      <v-card-title data-testid="dialog-title" class="test-dialog-title">{{
+        title
+      }}</v-card-title>
       <v-card-text>
         <slot></slot>
       </v-card-text>

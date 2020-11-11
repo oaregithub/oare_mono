@@ -94,10 +94,10 @@ class TextDiscourseDao {
               return 1;
             }
             if (a.primacy < b.primacy) {
-              return 1;
+              return -1;
             }
             if (a.primacy > b.primacy) {
-              return -1;
+              return 1;
             }
             return 0;
           });
