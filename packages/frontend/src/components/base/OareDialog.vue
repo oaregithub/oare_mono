@@ -3,7 +3,7 @@
     :value="value"
     @input="$emit('input', $event)"
     width="500"
-    persistent
+    :persistent="persistent"
   >
     <template v-slot:activator="{ on }">
       <slot name="activator" :on="on"></slot>
@@ -25,7 +25,7 @@
           >{{ cancelText }}</v-btn
         >
 
-        <slot name="submit-button" :on="{ click: submit }">
+        <slot v-if="showSubmit" name="submit-button" :on="{ click: submit }">
           <OareLoaderButton
             class="test-submit-btn"
             @click="submit"
@@ -53,6 +53,14 @@ export default defineComponent({
     title: {
       type: String,
       required: true,
+    },
+    showSubmit: {
+      type: Boolean,
+      default: true,
+    },
+    persistent: {
+      type: Boolean,
+      default: true,
     },
     submitText: {
       type: String,
