@@ -82,36 +82,38 @@ class TextDiscourseDao {
 
     const textUuids = [...new Set(rows.map((r) => r.textUuid))];
 
-    return textUuids.map((textUuid) => {
-      const spellingTextRows = rows
-        .filter((r) => r.textUuid === textUuid)
-        .sort((a, b) => {
-          if (a.primacy === null) {
-            return -1;
-          }
-          if (b.primacy === null) {
-            return 1;
-          }
-          if (a.primacy < b.primacy) {
-            return 1;
-          }
-          if (a.primacy > b.primacy) {
-            return -1;
-          }
-          return 0;
-        });
+    return textUuids
+      .map((textUuid) => {
+        const spellingTextRows = rows
+          .filter((r) => r.textUuid === textUuid)
+          .sort((a, b) => {
+            if (a.primacy === null) {
+              return -1;
+            }
+            if (b.primacy === null) {
+              return 1;
+            }
+            if (a.primacy < b.primacy) {
+              return -1;
+            }
+            if (a.primacy > b.primacy) {
+              return 1;
+            }
+            return 0;
+          });
 
-      if (spellingTextRows.length === 1) {
+        if (spellingTextRows.length === 1) {
+          return {
+            uuid: textUuid,
+            text: spellingTextRows[0].name,
+          };
+        }
         return {
           uuid: textUuid,
-          text: spellingTextRows[0].name,
+          text: `${spellingTextRows[0].name} (${spellingTextRows[1].name})`,
         };
-      }
-      return {
-        uuid: textUuid,
-        text: `${spellingTextRows[0].name} (${spellingTextRows[1].name})`,
-      };
-    });
+      })
+      .sort((a, b) => a.text.localeCompare(b.text));
   }
 }
 

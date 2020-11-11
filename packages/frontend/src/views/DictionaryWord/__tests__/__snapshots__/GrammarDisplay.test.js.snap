@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GrammarDisplay test matches snapshot 1`] = `
+<div>
+  <!----> <span><span>spelling</span> <span>
+      (<a class="test-num-texts">1</a>)</span>
+  <!----></span>
+  <div role="dialog" class="v-dialog__container">
+    <!---->
+  </div>
+</div>
+`;

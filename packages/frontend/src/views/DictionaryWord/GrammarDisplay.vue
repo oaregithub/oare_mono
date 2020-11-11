@@ -1,13 +1,50 @@
 <template>
   <div>
     <span class="mx-1" v-if="formGrammar !== ''">({{ formGrammar }})</span>
-    <span>{{ form.spellings.map(sp => sp.spelling).join(', ') }}</span>
+    <span v-for="(s, index) in form.spellings" :key="index">
+      <span>{{ s.spelling }}</span>
+      <span v-if="s.texts.length > 0">
+        (<a @click="showTexts(index)" class="test-num-texts">{{
+          s.texts.length
+        }}</a
+        >)</span
+      >
+      <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
+    </span>
+    <OareDialog
+      v-model="dialogOpen"
+      :title="`Texts for ${dialogTitle}`"
+      :showSubmit="false"
+      cancelText="Close"
+      :persistent="false"
+    >
+      <v-row>
+        <v-col cols="12" sm="6" class="py-0">
+          <v-text-field v-model="search" clearable label="Filter" autofocus />
+        </v-col>
+      </v-row>
+      <v-data-table :headers="headers" :items="spellingTexts" :search="search">
+        <template #[`item.text`]="{ item }">
+          <router-link :to="`/epigraphies/${item.uuid}`" class="test-text">{{
+            item.text
+          }}</router-link>
+        </template>
+      </v-data-table>
+    </OareDialog>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from '@vue/composition-api';
-import { DictionaryForm } from '@oare/types';
+import {
+  defineComponent,
+  PropType,
+  computed,
+  ref,
+  Ref,
+  reactive,
+} from '@vue/composition-api';
+import { DictionaryForm, SpellingText } from '@oare/types';
+import { DataTableHeader } from 'vuetify';
 
 export default defineComponent({
   props: {
@@ -17,6 +54,23 @@ export default defineComponent({
     },
   },
   setup({ form }) {
+    const search = ref('');
+    const dialogOpen = ref(false);
+    const dialogTitle = ref('');
+    const headers: DataTableHeader[] = reactive([
+      {
+        text: 'Text Name',
+        value: 'text',
+      },
+    ]);
+    const spellingTexts: Ref<SpellingText[]> = ref([]);
+
+    const showTexts = (spellingIndex: number) => {
+      dialogOpen.value = true;
+      dialogTitle.value = form.spellings[spellingIndex].spelling;
+      spellingTexts.value = form.spellings[spellingIndex].texts;
+    };
+
     const formGrammar = computed(() => {
       let suffix = '';
 
@@ -58,6 +112,12 @@ export default defineComponent({
 
     return {
       formGrammar,
+      dialogOpen,
+      dialogTitle,
+      showTexts,
+      headers,
+      spellingTexts,
+      search,
     };
   },
 });
