@@ -19,10 +19,9 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
-//import server from '../../serverProxy';
 import { TextDraft } from '@oare/types';
 import moment from 'moment';
-import sl from '@/serviceLocator'
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'DashboardDrafts',
