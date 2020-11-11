@@ -19,9 +19,9 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
-import server from '../../serverProxy';
 import { TextDraft } from '@oare/types';
 import moment from 'moment';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'DashboardDrafts',
@@ -29,6 +29,8 @@ export default defineComponent({
   setup() {
     const draftsLoading: Ref<boolean> = ref(false);
     const drafts: Ref<TextDraft[]> = ref([]);
+    const actions = sl.get('globalActions');
+    const server = sl.get('serverProxy');
 
     const dateFormat = (dateStr: string) => {
       return moment(dateStr).format('MMMM D, YYYY h:mm a');
@@ -47,8 +49,13 @@ export default defineComponent({
 
     onMounted(async () => {
       draftsLoading.value = true;
-      drafts.value = await server.getDrafts();
-      draftsLoading.value = false;
+      try {
+        drafts.value = await server.getDrafts();
+      } catch {
+        actions.showErrorSnackbar('Error loading drafts. Please try again.');
+      } finally {
+        draftsLoading.value = false;
+      }
     });
 
     return {
