@@ -71,6 +71,7 @@ export default defineComponent({
 
   setup({ router, collectionUuid }, context) {
     const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     const collectionName = ref('');
     const loading = ref(false);
@@ -112,6 +113,9 @@ export default defineComponent({
         if (err.response && err.response.status === 403) {
           router.replace({ name: '403' });
         }
+        actions.showErrorSnackbar(
+          'Error loading collection texts. Please try again.'
+        );
       } finally {
         textsLoading.value = false;
       }
@@ -119,10 +123,17 @@ export default defineComponent({
 
     onMounted(async () => {
       loading.value = true;
-      collectionName.value = (
-        await server.getCollectionInfo(collectionUuid)
-      ).name;
-      loading.value = false;
+      try {
+        collectionName.value = (
+          await server.getCollectionInfo(collectionUuid)
+        ).name;
+      } catch {
+        actions.showErrorSnackbar(
+          'Error loading collection name. Please try again.'
+        );
+      } finally {
+        loading.value = false;
+      }
     });
 
     watch(

@@ -13,9 +13,9 @@ import {
   computed,
 } from '@vue/composition-api';
 import { CollectionListItem } from '@oare/types';
-import server from '@/serverProxy';
 import { letterGroups } from './utils';
 import CollectionsList from './CollectionsList.vue';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'CollectionsView',
@@ -31,6 +31,8 @@ export default defineComponent({
   setup(props) {
     const loading = ref(false);
     const collections: Ref<CollectionListItem[]> = ref([]);
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     const shownCollections = computed(() =>
       collections.value.filter(collection =>
@@ -40,8 +42,15 @@ export default defineComponent({
 
     onMounted(async () => {
       loading.value = true;
-      collections.value = await server.getAllCollections();
-      loading.value = false;
+      try {
+        collections.value = await server.getAllCollections();
+      } catch {
+        actions.showErrorSnackbar(
+          'Error loading collections. Please try again.'
+        );
+      } finally {
+        loading.value = false;
+      }
     });
 
     return {
