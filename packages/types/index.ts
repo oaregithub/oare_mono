@@ -59,6 +59,10 @@ export interface UpdateDictionaryTranslationPayload {
   translations: DictionaryWordTranslation[];
 }
 
+export interface UpdateFormSpellingPayload {
+  spelling: string;
+}
+
 export interface UpdateDictionaryWordPayload {
   word: string;
 }
