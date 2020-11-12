@@ -1,7 +1,9 @@
 <template>
   <div>
     <span class="mx-1" v-if="formGrammar !== ''">({{ formGrammar }})</span>
-    <span>{{ form.spellings.map(sp => sp.spelling).join(', ') }}</span>
+    <span v-if="!isEditing">{{
+      form.spellings.map(sp => sp.spelling).join(', ')
+    }}</span>
   </div>
 </template>
 
@@ -11,6 +13,10 @@ import { DictionaryForm } from '@oare/types';
 
 export default defineComponent({
   props: {
+    isEditing: {
+      type: Boolean,
+      default: false,
+    },
     form: {
       type: Object as PropType<DictionaryForm>,
       required: true,

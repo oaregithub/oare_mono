@@ -46,7 +46,7 @@
         >
           <v-icon>mdi-close</v-icon>
         </v-btn>
-        <grammar-display :form="form" class="mt-2" />
+        <grammar-display :form="form" class="mt-2" :isEditing="true" />
       </v-row>
     </div>
   </div>
