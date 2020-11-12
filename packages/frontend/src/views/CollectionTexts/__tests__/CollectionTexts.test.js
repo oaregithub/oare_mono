@@ -51,8 +51,8 @@ describe('CollectionTexts test', () => {
   it('displays error when fails to retrieve collection info', async () => {
     createWrapper({
       server: {
+        ...mockServer,
         getCollectionInfo: jest.fn().mockRejectedValue(null),
-        getCollectionTexts: jest.fn(),
       },
     });
     await flushPromises();
@@ -68,7 +68,7 @@ describe('CollectionTexts test', () => {
   it('displays error when fails to retrieve collection texts', async () => {
     createWrapper({
       server: {
-        getCollectionInfo: jest.fn(),
+        ...mockServer,
         getCollectionTexts: jest.fn().mockRejectedValue({}),
       },
     });
