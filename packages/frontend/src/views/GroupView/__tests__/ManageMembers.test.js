@@ -4,12 +4,14 @@ import { createLocalVue, mount } from '@vue/test-utils';
 import { render } from '@testing-library/vue';
 import ManageMembers from '../ManageMembers.vue';
 import flushPromises from 'flush-promises';
+import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('ManageMembers test', () => {
+  const actions = sl.get('globalActions');
   const mockUsers = [
     {
       id: 1,
@@ -30,6 +32,9 @@ describe('ManageMembers test', () => {
     getAllUsers: jest.fn().mockResolvedValue(mockUsers.slice(0, 1)),
     getGroupUsers: jest.fn().mockResolvedValue(mockUsers.slice(1)),
   };
+  const mockActions = {
+    showErrorSnackbar: jest.fn(),
+  }
 
   const renderOptions = {
     localVue,
@@ -40,20 +45,50 @@ describe('ManageMembers test', () => {
     },
   };
 
-  const renderWrapper = () => render(ManageMembers, renderOptions);
+  const createWrapper = ({ server, actions } = {}) => {
+    sl.set('serverProxy', server || mockServer);
+    sl.set('globalActions', actions || mockActions);
 
-  const mountWrapper = () => mount(ManageMembers, renderOptions);
+    return mount(ManageMembers, renderOptions);
+  }
+
+  //const renderWrapper = () => render(ManageMembers, renderOptions);
+
+  //const mountWrapper = () => mount(ManageMembers, renderOptions);
 
   it('displays users in group', async () => {
-    const { getByText } = renderWrapper();
+    //const { getByText } = renderWrapper();
+    //createWrapper();
+    createWrapper();
     await flushPromises();
     expect(mockServer.getAllUsers).toHaveBeenCalled();
     expect(mockServer.getGroupUsers).toHaveBeenCalled();
-    expect(getByText('Tony Stark'));
+    //expect(mockServer.getAllUsers.mock.results[1].value).toContain('Tony Stark');
+    //expect(getByText('Tony Stark'));
+  });
+
+  it('displays error upon user retrieval fail', async () => {
+    createWrapper({
+      server: {
+        getAllUsers: jest.fn().mockRejectedValue(null),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('displays error upon user add failure', async () => {
+    createWrapper({
+      server: {
+        addUsersToGroup: jest.fn().mockRejectedValue(null),
+      },
+    });
+    await flushPromises;
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
   it('removes users', async () => {
-    const wrapper = mountWrapper();
+    const wrapper = createWrapper();
     await flushPromises();
     await wrapper.find('.v-data-table__checkbox').trigger('click');
     await wrapper.find('.test-remove').trigger('click');
@@ -63,4 +98,15 @@ describe('ManageMembers test', () => {
       userIds: [2],
     });
   });
+
+  it('displays error upon remove failure', async () => {
+    createWrapper({
+      server: {
+        removeUsersFromGroup: jest.fn().mockRejectedValue(null),
+      },
+    });
+    await flushPromises;
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
 });
+

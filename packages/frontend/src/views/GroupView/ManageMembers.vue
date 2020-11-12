@@ -84,6 +84,7 @@ import {
   computed,
 } from '@vue/composition-api';
 import { User } from '@oare/types';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
@@ -109,6 +110,8 @@ export default defineComponent({
     const selectedUsers: Ref<User[]> = ref([]);
     const selectedDeleteUsers: Ref<User[]> = ref([]);
     const usersHeaders = ref([{ text: 'Name', value: 'name' }]);
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     const searchUserItems = computed(() => {
       const groupUserIds = groupUsers.value.map(user => user.id);
@@ -123,7 +126,7 @@ export default defineComponent({
     const addUsers = async () => {
       addUsersLoading.value = true;
       try {
-        await serverProxy.addUsersToGroup(Number(groupId), {
+        await server.addUsersToGroup(Number(groupId), {
           userIds: selectedUsers.value.map(user => user.id),
         });
         selectedUsers.value.forEach(user => {
@@ -132,6 +135,7 @@ export default defineComponent({
         addUserDialog.value = false;
       } catch (err) {
         console.error(err);
+        actions.showErrorSnackbar('Could not add user(s). Please try again.');
       } finally {
         addUsersLoading.value = false;
       }
@@ -140,12 +144,15 @@ export default defineComponent({
     const removeUsers = async () => {
       const userIds = selectedDeleteUsers.value.map(user => user.id);
       deleteUserLoading.value = true;
-      await serverProxy.removeUsersFromGroup(Number(groupId), { userIds });
-
-      deleteUserLoading.value = false;
-      deleteUserDialog.value = false;
-      selectedDeleteUsers.value = [];
-
+      try {
+        await server.removeUsersFromGroup(Number(groupId), { userIds });
+      } catch {
+        actions.showErrorSnackbar('Could not remove user(s). Please try again.');
+      } finally {
+        deleteUserLoading.value = false;
+        deleteUserDialog.value = false;
+        selectedDeleteUsers.value = [];
+      }
       groupUsers.value = groupUsers.value.filter(
         user => !userIds.includes(user.id)
       );
@@ -169,9 +176,15 @@ export default defineComponent({
     );
 
     onMounted(async () => {
-      allUsers.value = await serverProxy.getAllUsers();
-      groupUsers.value = await serverProxy.getGroupUsers(Number(groupId));
-      loading.value = false;
+      //loading.value = true;
+      //try {
+        allUsers.value = await server.getAllUsers();
+        groupUsers.value = await server.getGroupUsers(Number(groupId));
+      //} catch {
+        actions.showErrorSnackbar('Error loading users. Please try again.');
+      //} finally {
+        loading.value = false;
+      //}
     });
 
     return {
@@ -192,4 +205,5 @@ export default defineComponent({
     };
   },
 });
+
 </script>
