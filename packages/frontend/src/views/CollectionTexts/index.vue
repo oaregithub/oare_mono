@@ -112,6 +112,7 @@ export default defineComponent({
       } catch (err) {
         if (err.response && err.response.status === 403) {
           router.replace({ name: '403' });
+          return;
         }
         actions.showErrorSnackbar(
           'Error loading collection texts. Please try again.'
