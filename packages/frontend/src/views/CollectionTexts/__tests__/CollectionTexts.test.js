@@ -25,8 +25,13 @@ describe('CollectionTexts test', () => {
     }),
     getCollectionInfo: jest.fn().mockResolvedValue({ name: 'Test Collection' }),
   };
-  const createWrapper = () => {
-    sl.set('serverProxy', mockServer);
+  const mockActions = {
+    showErrorSnackbar: jest.fn(),
+  };
+  const createWrapper = ({ server, actions } = {}) => {
+    sl.set('serverProxy', server || mockServer);
+    sl.set('globalActions', actions || mockActions);
+
     return mount(CollectionTexts, {
       vuetify,
       localVue,
@@ -43,9 +48,31 @@ describe('CollectionTexts test', () => {
     expect(mockServer.getCollectionInfo).toHaveBeenCalled();
   });
 
+  it('displays error when fails to retrieve collection info', async () => {
+    createWrapper({
+      server: {
+        ...mockServer,
+        getCollectionInfo: jest.fn().mockRejectedValue(null),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
   it('gets collection texts', async () => {
     createWrapper();
     await flushPromises();
     expect(mockServer.getCollectionTexts).toHaveBeenCalled();
+  });
+
+  it('displays error when fails to retrieve collection texts', async () => {
+    createWrapper({
+      server: {
+        ...mockServer,
+        getCollectionTexts: jest.fn().mockRejectedValue({}),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });
