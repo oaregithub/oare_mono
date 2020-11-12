@@ -147,7 +147,9 @@ export default defineComponent({
       try {
         await server.removeUsersFromGroup(Number(groupId), { userIds });
       } catch {
-        actions.showErrorSnackbar('Could not remove user(s). Please try again.');
+        actions.showErrorSnackbar(
+          'Could not remove user(s). Please try again.'
+        );
       } finally {
         deleteUserLoading.value = false;
         deleteUserDialog.value = false;
@@ -205,5 +207,4 @@ export default defineComponent({
     };
   },
 });
-
 </script>
