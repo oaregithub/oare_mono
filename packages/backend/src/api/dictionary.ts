@@ -4,9 +4,10 @@ import {
   UpdateDictionaryWordPayload,
   UpdateDictionaryTranslationPayload,
   DictionaryForm,
+  UpdateFormSpellingPayload,
 } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
@@ -105,6 +106,34 @@ router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) 
       uuid: formUuid,
       form: formData,
     });
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/dictionary/spellings/:uuid').post(adminRoute, async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { spelling }: UpdateFormSpellingPayload = req.body;
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const LoggingEditsDao = sl.get('LoggingEditsDao');
+    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+
+    // If it doesn't exist in text_discourse, update
+    const hasSpelling = await TextDiscourseDao.hasSpelling(uuid);
+    if (hasSpelling) {
+      next(
+        new HttpBadRequest(
+          'Currently cannot update a spelling that exists in text_discourse. Try again at a future date.',
+        ),
+      );
+      return;
+    }
+
+    await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', uuid);
+    await DictionarySpellingDao.updateSpelling(uuid, spelling);
+
+    res.status(201).end();
   } catch (err) {
     next(new HttpInternalError(err));
   }

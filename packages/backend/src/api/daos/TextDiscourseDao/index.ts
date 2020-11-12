@@ -38,6 +38,11 @@ class TextDiscourseDao {
     return rows.map((row) => row.uuid);
   }
 
+  async hasSpelling(spellingUuid: string): Promise<boolean> {
+    const row = await knex('text_discourse').select().where('spelling_uuid', spellingUuid).first();
+    return !!row;
+  }
+
   async updateDiscourseTranscription(uuid: string, newTranscription: string): Promise<void> {
     await knex('text_discourse').update({ transcription: newTranscription }).where({ uuid });
   }

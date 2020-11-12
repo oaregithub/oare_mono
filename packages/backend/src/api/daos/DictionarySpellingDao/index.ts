@@ -3,6 +3,10 @@ import { FormSpelling } from '@oare/types';
 import TextDiscourseDao from '../TextDiscourseDao';
 
 class DictionarySpellingDao {
+  async updateSpelling(uuid: string, newSpelling: string): Promise<void> {
+    await knex('dictionary_spelling').update('explicit_spelling', newSpelling).where({ uuid });
+  }
+
   async getFormSpellings(formUuid: string): Promise<FormSpelling[]> {
     interface FormSpellingRow {
       uuid: string;
