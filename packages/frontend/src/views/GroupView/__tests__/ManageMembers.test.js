@@ -70,16 +70,17 @@ describe('ManageMembers test', () => {
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
-  it('displays error upon user add failure', async () => {
-    createWrapper({
+  /* it('displays error upon user add failure', async () => {
+    const wrapper = createWrapper({
       server: {
         ...mockServer,
         addUsersToGroup: jest.fn().mockRejectedValue(null),
       },
     });
-    await flushPromises;
+    await wrapper.find()
+    await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
+  }); */
 
   it('removes users', async () => {
     const wrapper = createWrapper();
@@ -93,15 +94,18 @@ describe('ManageMembers test', () => {
     });
   });
 
-  /* it('displays error upon remove failure', async () => {
-    createWrapper({
+  it('displays error upon remove failure', async () => {
+    const wrapper = createWrapper({
       server: {
         ...mockServer,
         removeUsersFromGroup: jest.fn().mockRejectedValue(null),
       },
     });
-    await flushPromises;
+    await wrapper.find('.v-data-table__checkbox').trigger('click');
+    await wrapper.find('.test-remove').trigger('click');
+    await wrapper.find('test-submit-btn').trigger('click');
+    await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  }); */
+  });
 });
 
