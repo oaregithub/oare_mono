@@ -1,6 +1,7 @@
 import sl from '@/serviceLocator';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
+import DictionarySpellingDao from '@/api/daos/DictionarySpellingDao';
 import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
@@ -20,6 +21,7 @@ declare global {
 sl.set('UserDao', UserDao);
 sl.set('DictionaryFormDao', DictionaryFormDao);
 sl.set('DictionaryWordDao', DictionaryWordDao);
+sl.set('DictionarySpellingDao', DictionarySpellingDao);
 sl.set('LoggingEditsDao', LoggingEditsDao);
 sl.set('TextDiscourseDao', TextDiscourseDao);
 sl.set('TextDraftsDao', TextDraftsDao);
