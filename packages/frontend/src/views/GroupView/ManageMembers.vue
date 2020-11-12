@@ -176,15 +176,15 @@ export default defineComponent({
     );
 
     onMounted(async () => {
-      //loading.value = true;
-      //try {
+      loading.value = true;
+      try {
         allUsers.value = await server.getAllUsers();
         groupUsers.value = await server.getGroupUsers(Number(groupId));
-      //} catch {
+      } catch {
         actions.showErrorSnackbar('Error loading users. Please try again.');
-      //} finally {
+      } finally {
         loading.value = false;
-      //}
+      }
     });
 
     return {

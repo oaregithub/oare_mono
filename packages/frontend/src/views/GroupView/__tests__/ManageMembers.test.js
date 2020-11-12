@@ -11,7 +11,6 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('ManageMembers test', () => {
-  const actions = sl.get('globalActions');
   const mockUsers = [
     {
       id: 1,
@@ -45,26 +44,19 @@ describe('ManageMembers test', () => {
     },
   };
 
-  const createWrapper = ({ server, actions } = {}) => {
+  const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
-    sl.set('globalActions', actions || mockActions);
+    sl.set('globalActions', mockActions);
 
     return mount(ManageMembers, renderOptions);
   }
 
-  //const renderWrapper = () => render(ManageMembers, renderOptions);
-
-  //const mountWrapper = () => mount(ManageMembers, renderOptions);
-
   it('displays users in group', async () => {
-    //const { getByText } = renderWrapper();
-    //createWrapper();
-    createWrapper();
+    const wrapper = createWrapper();
     await flushPromises();
     expect(mockServer.getAllUsers).toHaveBeenCalled();
     expect(mockServer.getGroupUsers).toHaveBeenCalled();
-    //expect(mockServer.getAllUsers.mock.results[1].value).toContain('Tony Stark');
-    //expect(getByText('Tony Stark'));
+    expect(wrapper.html('Tony Stark'));
   });
 
   it('displays error upon user retrieval fail', async () => {
