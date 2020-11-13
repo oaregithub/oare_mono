@@ -78,7 +78,7 @@ describe('ManageMembers test', () => {
       },
     });
     await flushPromises();
-    await wrapper.find('.mr-3').trigger('click');
+    await wrapper.find('.test-add').trigger('click');
     await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();

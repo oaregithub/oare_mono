@@ -9,7 +9,7 @@
         :submitLoading="addUsersLoading"
       >
         <template v-slot:activator="{ on }">
-          <v-btn color="primary" v-on="on" class="mr-3">
+          <v-btn color="primary" v-on="on" class="mr-3 test-add">
             <span> <v-icon>mdi-plus</v-icon>Add users </span>
           </v-btn>
         </template>
