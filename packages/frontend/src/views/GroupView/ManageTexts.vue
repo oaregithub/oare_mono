@@ -259,6 +259,7 @@ export default defineComponent({
         viewableTexts.value = viewableTexts.value.filter(
           text => !deleteTextUuids.includes(text.text_uuid)
         );
+        actions.showSnackbar('Successfully removed text(s).')
       } catch {
         actions.showErrorSnackbar('Error removing text(s). Please try again.');
       } finally {

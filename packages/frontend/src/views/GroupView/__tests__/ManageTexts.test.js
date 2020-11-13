@@ -5,7 +5,6 @@ import { render } from '@testing-library/vue';
 import ManageTexts from '../ManageTexts.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
-import { forEach } from 'core-js/fn/array';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();

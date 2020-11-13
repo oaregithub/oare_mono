@@ -24,6 +24,7 @@ export default defineComponent({
   name: 'GroupView',
   props: {
     groupId: {
+      type: Number,
       required: true,
     },
   },

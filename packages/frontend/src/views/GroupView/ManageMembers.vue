@@ -133,8 +133,8 @@ export default defineComponent({
           groupUsers.value.push(user);
         });
         addUserDialog.value = false;
-      } catch (err) {
-        console.error(err);
+        actions.showSnackbar('Successfully added user(s).')
+      } catch {
         actions.showErrorSnackbar('Could not add user(s). Please try again.');
       } finally {
         addUsersLoading.value = false;
@@ -146,14 +146,15 @@ export default defineComponent({
       deleteUserLoading.value = true;
       try {
         await server.removeUsersFromGroup(Number(groupId), { userIds });
+        deleteUserDialog.value = false;
+        selectedDeleteUsers.value = [];
+        actions.showSnackbar('Successfully removed user(s).')
       } catch {
         actions.showErrorSnackbar(
           'Could not remove user(s). Please try again.'
         );
       } finally {
         deleteUserLoading.value = false;
-        deleteUserDialog.value = false;
-        selectedDeleteUsers.value = [];
       }
       groupUsers.value = groupUsers.value.filter(
         user => !userIds.includes(user.id)
