@@ -187,7 +187,9 @@ export default defineComponent({
           canWrite: text.can_write,
         });
       } catch {
-        actions.showErrorSnackbar('Error updating editing permissions. Please try again.');
+        actions.showErrorSnackbar(
+          'Error updating editing permissions. Please try again.'
+        );
       }
     };
 
@@ -210,7 +212,9 @@ export default defineComponent({
           canWrite: text.can_write,
         });
       } catch {
-        actions.showErrorSnackbar('Error updating viewing permissions. Please try again.');
+        actions.showErrorSnackbar(
+          'Error updating viewing permissions. Please try again.'
+        );
       }
     };
 
@@ -253,8 +257,8 @@ export default defineComponent({
           textUuids: deleteTextUuids,
         });
         viewableTexts.value = viewableTexts.value.filter(
-        text => !deleteTextUuids.includes(text.text_uuid)
-      );
+          text => !deleteTextUuids.includes(text.text_uuid)
+        );
       } catch {
         actions.showErrorSnackbar('Error removing text(s). Please try again.');
       } finally {
@@ -298,7 +302,9 @@ export default defineComponent({
             can_write: false,
           }));
         } catch {
-          actions.showErrorSnackbar('Error performing search. Please try again.');
+          actions.showErrorSnackbar(
+            'Error performing search. Please try again.'
+          );
         } finally {
           searchLoading.value = false;
         }

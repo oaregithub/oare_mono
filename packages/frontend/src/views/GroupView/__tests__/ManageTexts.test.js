@@ -61,7 +61,7 @@ describe('ManageTexts test', () => {
       .map(tg => tg.name)
       .forEach(name => {
         expect(wrapper.html(name));
-      })
+      });
   });
 
   it('displays error on failed text groups load', async () => {
@@ -161,29 +161,10 @@ describe('ManageTexts test', () => {
       },
     });
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').trigger('click');
     await wrapper.find('.test-remove').trigger('click');
     await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
-
-  it('displays error on failed text search', async () => {
-    const wrapper = createWrapper({
-      server: {
-        ...mockServer,
-        searchTextNames: jest.fn().mockRejectedValue(),
-      },
-    });
-    await flushPromises();
-    await wrapper.find('.test-add').trigger('click');
-    await wrapper.find('fieldset').trigger('click');
-    await wrapper.trigger('keydown', {
-      key: 'a',
-    });
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  }); 
 });
