@@ -190,6 +190,7 @@ export default defineComponent({
         actions.showErrorSnackbar(
           'Error updating editing permissions. Please try again.'
         );
+        viewableTexts.value[index].can_write = !canWrite;
       }
     };
 
@@ -215,6 +216,7 @@ export default defineComponent({
         actions.showErrorSnackbar(
           'Error updating viewing permissions. Please try again.'
         );
+        viewableTexts.value[index].can_read = !canRead;
       }
     };
 
@@ -259,7 +261,7 @@ export default defineComponent({
         viewableTexts.value = viewableTexts.value.filter(
           text => !deleteTextUuids.includes(text.text_uuid)
         );
-        actions.showSnackbar('Successfully removed text(s).')
+        actions.showSnackbar('Successfully removed text(s).');
       } catch {
         actions.showErrorSnackbar('Error removing text(s). Please try again.');
       } finally {

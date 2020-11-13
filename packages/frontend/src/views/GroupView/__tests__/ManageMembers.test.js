@@ -56,7 +56,7 @@ describe('ManageMembers test', () => {
     await flushPromises();
     expect(mockServer.getAllUsers).toHaveBeenCalled();
     expect(mockServer.getGroupUsers).toHaveBeenCalled();
-    expect(wrapper.html('Tony Stark'));
+    expect(wrapper.html()).toContain('Tony Stark');
   });
 
   it('displays error upon user retrieval fail', async () => {

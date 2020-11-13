@@ -59,7 +59,7 @@ describe('ManageTexts test', () => {
     textGroups
       .map(tg => tg.name)
       .forEach(name => {
-        expect(wrapper.html(name));
+        expect(wrapper.html()).toContain(name);
       });
   });
 
