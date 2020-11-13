@@ -11,39 +11,39 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('GroupsView', () => {
-    const mockServer = {
-        getGroupName: jest.fn().mockResolvedValue(),
-    };
-    const mockActions = {
-        showErrorSnackbar: jest.fn(),
-    };
-    const createWrapper = ({ server } = {}) => {
-        sl.set('serverProxy', server || mockServer);
-        sl.set('globalActions', mockActions);
+  const mockServer = {
+    getGroupName: jest.fn().mockResolvedValue(),
+  };
+  const mockActions = {
+    showErrorSnackbar: jest.fn(),
+  };
+  const createWrapper = ({ server } = {}) => {
+    sl.set('serverProxy', server || mockServer);
+    sl.set('globalActions', mockActions);
 
-        return mount(GroupView, {
-            localVue,
-            vuetify,
-            propsData: {
-                groupId: '1',
-            },
-            stubs: ['router-link', 'router-view'],
-        });
-    }
-
-    it('displays group information', async () => {
-        createWrapper();
-        await flushPromises();
-        expect(mockServer.getGroupName).toHaveBeenCalled();
+    return mount(GroupView, {
+      localVue,
+      vuetify,
+      propsData: {
+        groupId: '1',
+      },
+      stubs: ['router-link', 'router-view'],
     });
+  };
 
-    it('displays error upon failed retrieval of group info', async () => {
-        createWrapper({
-            server: {
-                getGroupName: jest.fn().mockRejectedValue(null),
-            },
-        });
-        await flushPromises();
-        expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  it('displays group information', async () => {
+    createWrapper();
+    await flushPromises();
+    expect(mockServer.getGroupName).toHaveBeenCalled();
+  });
+
+  it('displays error upon failed retrieval of group info', async () => {
+    createWrapper({
+      server: {
+        getGroupName: jest.fn().mockRejectedValue(null),
+      },
     });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
 });

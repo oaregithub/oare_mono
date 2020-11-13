@@ -27,7 +27,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup( { groupId }) {
+  setup({ groupId }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const groupName = ref('');
@@ -39,7 +39,9 @@ export default defineComponent({
       try {
         groupName.value = await server.getGroupName(groupId);
       } catch {
-        actions.showErrorSnackbar('Error loading group information. Please try again.');
+        actions.showErrorSnackbar(
+          'Error loading group information. Please try again.'
+        );
       } finally {
         loading.value = false;
       }
@@ -48,7 +50,7 @@ export default defineComponent({
     return {
       loading,
       groupName,
-      tab
+      tab,
     };
   },
 });
