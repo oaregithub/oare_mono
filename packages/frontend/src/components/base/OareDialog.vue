@@ -33,6 +33,7 @@
             @click="submit"
             color="primary"
             :loading="submitLoading"
+            :disabled="submitLoading || submitDisabled"
           >
             {{ submitText }}
           </OareLoaderButton>

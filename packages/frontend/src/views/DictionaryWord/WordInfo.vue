@@ -13,7 +13,8 @@
       <edit-translations
         v-if="isEditingTranslations"
         @close-editor="isEditingTranslations = false"
-        :translations.sync="wordInfo.translations"
+        :translations="wordInfo.translations"
+        @update:translations="updateTranslations"
         :wordUuid="wordUuid"
       />
       <div v-else class="d-flex">
@@ -32,7 +33,7 @@
           <span
             v-if="
               wordInfo.translations.length > 0 &&
-                wordInfo.specialClassifications.length > 0
+              wordInfo.specialClassifications.length > 0
             "
             >;</span
           >
@@ -45,19 +46,27 @@
     <div v-if="wordInfo.forms.length < 1">
       No forms found for {{ wordInfo.word }}
     </div>
-    <forms-display :forms="wordInfo.forms" />
+    <forms-display :forms="wordInfo.forms" :updateForms="updateForms" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import { WordWithForms, DictionaryForm } from '@oare/types';
+import {
+  WordWithForms,
+  DictionaryForm,
+  DictionaryWordTranslation,
+} from '@oare/types';
 import FormsDisplay from './FormsDisplay.vue';
 import EditTranslations from './EditTranslations.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
+    updateWordInfo: {
+      type: Function as PropType<(newWord: WordWithForms) => void>,
+      required: true,
+    },
     wordUuid: {
       type: String,
       required: true,
@@ -71,7 +80,7 @@ export default defineComponent({
     FormsDisplay,
     EditTranslations,
   },
-  setup() {
+  setup({ wordInfo, updateWordInfo }) {
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
@@ -80,9 +89,27 @@ export default defineComponent({
       permissions.value.dictionary.some(perm => perm.includes('TRANSLATION'))
     );
 
+    const updateTranslations = (
+      newTranslations: DictionaryWordTranslation[]
+    ) => {
+      updateWordInfo({
+        ...wordInfo,
+        translations: newTranslations,
+      });
+    };
+
+    const updateForms = (newForms: DictionaryForm[]) => {
+      updateWordInfo({
+        ...wordInfo,
+        forms: newForms,
+      });
+    };
+
     return {
       canEditTranslations,
       isEditingTranslations,
+      updateTranslations,
+      updateForms,
     };
   },
 });

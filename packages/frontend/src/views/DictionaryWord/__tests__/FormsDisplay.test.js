@@ -39,6 +39,9 @@ describe('FormsDisplay test', () => {
     moods: [],
     clitics: [],
   };
+
+  const updateForms = jest.fn();
+
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
@@ -49,6 +52,7 @@ describe('FormsDisplay test', () => {
       localVue,
       propsData: {
         forms: [mockForm],
+        updateForms,
       },
     });
   };
@@ -80,7 +84,7 @@ describe('FormsDisplay test', () => {
       form: 'new form',
     };
     expect(mockServer.updateForm).toHaveBeenCalledWith(updatedForm);
-    expect(wrapper.emitted()['update:forms']).toEqual([[[updatedForm]]]);
+    expect(updateForms).toHaveBeenCalledWith([updatedForm]);
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
