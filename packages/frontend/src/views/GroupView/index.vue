@@ -16,28 +16,40 @@
 </template>
 
 <script>
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import serverProxy from '@/serverProxy';
+import sl from '../../serviceLocator';
 
-export default {
+export default defineComponent({
   name: 'GroupView',
   props: {
     groupId: {
       required: true,
     },
   },
-  data() {
+  setup( { groupId }) {
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+    const groupName = ref('');
+    const loading = ref(true);
+    const tab = ref(null);
+
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        groupName.value = await server.getGroupName(groupId);
+      } catch {
+        actions.showErrorSnackbar('Error loading group information. Please try again.');
+      } finally {
+        loading.value = false;
+      }
+    });
+
     return {
-      groupName: '', // Name of the group
-      loading: true,
-      tab: null,
+      loading,
+      groupName,
+      tab
     };
   },
-
-  async mounted() {
-    this.loading = true;
-    this.groupName = await serverProxy.getGroupName(this.groupId);
-    this.loading = false;
-  },
-};
+});
 </script>
