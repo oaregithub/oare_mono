@@ -3,6 +3,7 @@ dist
 build
 .vscode
 *.zip
+.DS_Store
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml

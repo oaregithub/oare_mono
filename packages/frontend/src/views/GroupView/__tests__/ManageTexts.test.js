@@ -116,29 +116,6 @@ describe('ManageTexts test', () => {
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
-  it('adds texts', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    await wrapper.find('.test-add').trigger('click');
-    await wrapper.find('.test-submit-btn').trigger('click');
-    await flushPromises();
-    expect(mockServer.addTextGroups).toHaveBeenCalled();
-  });
-
-  it('displays error on failed adds texts', async () => {
-    const wrapper = createWrapper({
-      server: {
-        ...mockServer,
-        addTextGroups: jest.fn().mockRejectedValue(null),
-      },
-    });
-    await flushPromises();
-    await wrapper.find('.test-add').trigger('click');
-    await wrapper.find('.test-submit-btn').trigger('click');
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
   it('removes texts', async () => {
     const wrapper = createWrapper();
     await flushPromises();
