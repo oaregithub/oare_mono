@@ -124,7 +124,7 @@ router.route('/dictionary/spellings/:uuid').post(adminRoute, async (req, res, ne
     if (hasSpelling) {
       next(
         new HttpBadRequest(
-          'Currently cannot update a spelling that exists in text_discourse. Try again at a future date.',
+          'Updating a spelling that exists in text_discourse is currently not supported. Try again at a future date.',
         ),
       );
       return;

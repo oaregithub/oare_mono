@@ -14,7 +14,7 @@ class DictionarySpellingDao {
     }
 
     const rows: FormSpellingRow[] = await knex('dictionary_spelling')
-      .select('uuid', 'spelling')
+      .select('uuid', 'explicit_spelling AS spelling')
       .where('reference_uuid', formUuid);
 
     const spellingTexts = await Promise.all(rows.map((r) => TextDiscourseDao.getSpellingTexts(r.uuid)));

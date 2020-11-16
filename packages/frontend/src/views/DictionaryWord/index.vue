@@ -23,7 +23,12 @@
     <template #header>
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
-    <WordInfo v-if="wordInfo" :wordInfo="wordInfo" :wordUuid="uuid" />
+    <WordInfo
+      v-if="wordInfo"
+      :wordInfo="wordInfo"
+      :wordUuid="uuid"
+      :updateWordInfo="updateWordInfo"
+    />
   </OareContentView>
 </template>
 
@@ -68,6 +73,10 @@ export default defineComponent({
     const canUpdateWordSpelling = computed(() =>
       store.getters.permissions.dictionary.includes('UPDATE_WORD_SPELLING')
     );
+
+    const updateWordInfo = (newWordInfo: WordWithForms) => {
+      wordInfo.value = newWordInfo;
+    };
 
     onMounted(async () => {
       loading.value = true;
@@ -123,6 +132,7 @@ export default defineComponent({
       title,
       isEditing,
       canUpdateWordSpelling,
+      updateWordInfo,
     };
   },
 });

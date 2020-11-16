@@ -11,43 +11,52 @@
           <v-icon>mdi-pencil</v-icon>
         </v-btn>
         <strong>{{ form.form }}</strong>
-        <grammar-display :form="form" />
+        <grammar-display
+          :form="form"
+          :updateForm="newForm => updateForm(index, newForm)"
+        />
       </div>
 
-      <v-row v-else class="pa-0 ml-2">
-        <v-col cols="4" class="pa-0">
-          <v-text-field
-            v-model="editingForms[index].form"
-            autofocus
-            class="test-edit pa-0"
-            :disabled="isFormSaveLoading(index)"
+      <div v-else>
+        <v-row class="pa-0 ml-2">
+          <v-col cols="4" class="pa-0">
+            <v-text-field
+              v-model="editingForms[index].form"
+              autofocus
+              class="test-edit pa-0"
+              :disabled="isFormSaveLoading(index)"
+            />
+          </v-col>
+          <v-progress-circular
+            size="20"
+            v-if="isFormSaveLoading(index)"
+            indeterminate
+            color="#757575"
+            class="mt-3"
           />
-        </v-col>
-        <v-progress-circular
-          size="20"
-          v-if="isFormSaveLoading(index)"
-          indeterminate
-          color="#757575"
-          class="mt-3"
-        />
-        <v-btn
-          v-if="!isFormSaveLoading(index)"
-          icon
-          @click="saveFormEdit(index)"
-          class="test-check"
-        >
-          <v-icon>mdi-check</v-icon>
-        </v-btn>
-        <v-btn
-          v-if="!isFormSaveLoading(index)"
-          icon
-          @click="cancelFormEdit(index)"
-          class="test-close"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-        <grammar-display :form="form" class="mt-2" />
-      </v-row>
+          <v-btn
+            v-if="!isFormSaveLoading(index)"
+            icon
+            @click="saveFormEdit(index)"
+            class="test-check"
+          >
+            <v-icon>mdi-check</v-icon>
+          </v-btn>
+          <v-btn
+            v-if="!isFormSaveLoading(index)"
+            icon
+            @click="cancelFormEdit(index)"
+            class="test-close"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <grammar-display
+            :form="form"
+            class="mt-2"
+            :updateForm="newForm => updateForm(index, newForm)"
+          />
+        </v-row>
+      </div>
     </div>
   </div>
 </template>
@@ -70,12 +79,16 @@ export default defineComponent({
     GrammarDisplay,
   },
   props: {
+    updateForms: {
+      type: Function as PropType<(newForms: DictionaryForm[]) => void>,
+      required: true,
+    },
     forms: {
       type: Array as PropType<DictionaryForm[]>,
       required: true,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
@@ -92,6 +105,12 @@ export default defineComponent({
       editingForms.value = updatedEditingForms;
     };
 
+    const updateForm = (index: number, newForm: DictionaryForm) => {
+      const forms = [...props.forms];
+      forms[index] = newForm;
+      props.updateForms(forms);
+    };
+
     const saveFormEdit = async (index: number): Promise<void> => {
       loadingForms.value = {
         ...loadingForms.value,
@@ -101,7 +120,7 @@ export default defineComponent({
       try {
         const updatedForm = editingForms.value[index];
         await server.updateForm(updatedForm);
-        emit('update:forms', [
+        props.updateForms([
           ...props.forms.slice(0, index),
           updatedForm,
           ...props.forms.slice(index + 1),
@@ -142,6 +161,7 @@ export default defineComponent({
       canEditForm: computed(() =>
         store.getters.permissions.dictionary.includes('UPDATE_FORM')
       ),
+      updateForm,
     };
   },
 });
