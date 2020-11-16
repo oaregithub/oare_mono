@@ -1,7 +1,6 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { render } from '@testing-library/vue';
 import ManageTexts from '../ManageTexts.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
@@ -119,10 +118,7 @@ describe('ManageTexts test', () => {
   it('removes texts', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(0)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(0).trigger('click');
     await wrapper.find('.test-remove').trigger('click');
     await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
