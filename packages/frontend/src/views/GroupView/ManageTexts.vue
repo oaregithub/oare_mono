@@ -12,7 +12,7 @@
         :submitDisabled="textsToAdd.length === 0"
       >
         <template v-slot:activator="{ on }">
-          <v-btn color="primary" class="mr-3" v-on="on">
+          <v-btn color="primary" class="mr-3 test-add" v-on="on">
             <v-icon>mdi-plus</v-icon>Add Text
           </v-btn>
         </template>
@@ -116,6 +116,7 @@
 import _ from 'lodash';
 import defaultServerProxy from '@/serverProxy';
 import { Text } from '@oare/types';
+import sl from '@/serviceLocator';
 
 import {
   defineComponent,
@@ -158,11 +159,18 @@ export default defineComponent({
     ]);
     const viewableTexts: Ref<Text[]> = ref([]);
     const loadingEditTexts = ref([]);
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     onMounted(async () => {
       loading.value = true;
-      viewableTexts.value = await serverProxy.getTextGroups(Number(groupId));
-      loading.value = false;
+      try {
+        viewableTexts.value = await server.getTextGroups(Number(groupId));
+      } catch {
+        actions.showErrorSnackbar('Error loading texts. Please try again.');
+      } finally {
+        loading.value = false;
+      }
     });
 
     const updateTextEdit = async (uuid: string, canWrite: boolean) => {
@@ -172,11 +180,18 @@ export default defineComponent({
 
       viewableTexts.value[index].can_write = canWrite;
       const text = viewableTexts.value[index];
-      await serverProxy.updateText(Number(groupId), {
-        textUuid: uuid,
-        canRead: text.can_read,
-        canWrite: text.can_write,
-      });
+      try {
+        await server.updateText(Number(groupId), {
+          textUuid: uuid,
+          canRead: text.can_read,
+          canWrite: text.can_write,
+        });
+      } catch {
+        actions.showErrorSnackbar(
+          'Error updating editing permissions. Please try again.'
+        );
+        viewableTexts.value[index].can_write = !canWrite;
+      }
     };
 
     const updateTextRead = async (uuid: string, canRead: boolean) => {
@@ -191,11 +206,18 @@ export default defineComponent({
       }
 
       const text = viewableTexts.value[index];
-      await serverProxy.updateText(Number(groupId), {
-        textUuid: uuid,
-        canRead: text.can_read,
-        canWrite: text.can_write,
-      });
+      try {
+        await server.updateText(Number(groupId), {
+          textUuid: uuid,
+          canRead: text.can_read,
+          canWrite: text.can_write,
+        });
+      } catch {
+        actions.showErrorSnackbar(
+          'Error updating viewing permissions. Please try again.'
+        );
+        viewableTexts.value[index].can_read = !canRead;
+      }
     };
 
     const removeTextToAdd = (name: string) => {
@@ -209,18 +231,21 @@ export default defineComponent({
         uuid: item.text_uuid,
       }));
       addTextGroupsLoading.value = true;
-      await serverProxy.addTextGroups(Number(groupId), {
-        texts: textGroups,
-      });
-
-      textsToAdd.value.forEach(item => {
-        viewableTexts.value.unshift({
-          ...item,
-          text_uuid: item.text_uuid,
+      try {
+        await server.addTextGroups(Number(groupId), {
+          texts: textGroups,
         });
-      });
-      addTextGroupsLoading.value = false;
-
+        textsToAdd.value.forEach(item => {
+          viewableTexts.value.unshift({
+            ...item,
+            text_uuid: item.text_uuid,
+          });
+        });
+      } catch {
+        actions.showErrorSnackbar('Error adding text(s). Please try again.');
+      } finally {
+        addTextGroupsLoading.value = false;
+      }
       addTextDialog.value = false;
     };
 
@@ -229,17 +254,21 @@ export default defineComponent({
       const deleteTextUuids = selectedDeleteList.value.map(
         text => text.text_uuid
       );
-
-      await serverProxy.removeTextsFromGroup(Number(groupId), {
-        textUuids: deleteTextUuids,
-      });
-
-      removeLoading.value = false;
+      try {
+        await server.removeTextsFromGroup(Number(groupId), {
+          textUuids: deleteTextUuids,
+        });
+        viewableTexts.value = viewableTexts.value.filter(
+          text => !deleteTextUuids.includes(text.text_uuid)
+        );
+        actions.showSnackbar('Successfully removed text(s).');
+      } catch {
+        actions.showErrorSnackbar('Error removing text(s). Please try again.');
+      } finally {
+        removeLoading.value = false;
+      }
       removeTextsDialog.value = false;
       selectedDeleteList.value = [];
-      viewableTexts.value = viewableTexts.value.filter(
-        text => !deleteTextUuids.includes(text.text_uuid)
-      );
     };
 
     const updateTextToAddRead = (uuid: string, canRead: boolean) => {
@@ -267,14 +296,21 @@ export default defineComponent({
         }
 
         searchLoading.value = true;
-        const items = await serverProxy.searchTextNames({ search: text });
-        textItems.value = items.map(item => ({
-          ...item,
-          text_uuid: item.uuid,
-          can_read: true,
-          can_write: false,
-        }));
-        searchLoading.value = false;
+        try {
+          const items = await server.searchTextNames({ search: text });
+          textItems.value = items.map(item => ({
+            ...item,
+            text_uuid: item.uuid,
+            can_read: true,
+            can_write: false,
+          }));
+        } catch {
+          actions.showErrorSnackbar(
+            'Error performing search. Please try again.'
+          );
+        } finally {
+          searchLoading.value = false;
+        }
       }, 500)
     );
 
