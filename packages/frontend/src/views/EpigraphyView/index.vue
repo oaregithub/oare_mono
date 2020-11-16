@@ -134,8 +134,6 @@ import {
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 
-import server from '../../serverProxy';
-
 import EpigraphyEditor from './EpigraphyEditor.vue';
 import serverProxy from '../../serverProxy';
 import router from '@/router';
@@ -169,6 +167,8 @@ export default defineComponent({
 
   setup({ textUuid }) {
     const store = sl.get('store');
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     const epigraphyState = reactive<EpigraphyState>({
       loading: false,
@@ -319,22 +319,21 @@ export default defineComponent({
         );
         epigraphyState.canWrite = canWrite;
         epigraphyState.textName = textName;
-
-        // If the user is an editor, get the draft content
-        if (epigraphyState.canWrite) {
-          const res = await serverProxy.getSingleDraft(textUuid);
-          draftContent.value = res.content;
-          draftNotes.value = res.notes;
-        }
       } catch (err) {
         if (err.response) {
           if (err.response.status === 403) {
             router.replace({ name: '403' });
           }
         } else {
-          console.error(err.message);
+          actions.showErrorSnackbar('Error loading text. Please try again.');
         }
       } finally {
+        // If the user is an editor, get the draft content
+        if (epigraphyState.canWrite) {
+          const res = await serverProxy.getSingleDraft(textUuid);
+          draftContent.value = res.content;
+          draftNotes.value = res.notes;
+        }
         epigraphyState.loading = false;
       }
     });
