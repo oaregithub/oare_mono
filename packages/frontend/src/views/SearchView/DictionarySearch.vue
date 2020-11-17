@@ -4,6 +4,7 @@
       <v-col cols="8">
         Search lemma, forms, and translations
         <v-text-field
+          class="test-dictionary-search"
           :value="dictionarySearch"
           @input="setDictionarySearch"
           placeholder="Dictionary"
@@ -11,6 +12,7 @@
           @keyup.enter.native="performSearch"
         />
         <v-btn
+          class="test-submit-button"
           color="primary"
           :disabled="!canSearch || searchLoading"
           @click="performSearch"
@@ -70,9 +72,9 @@ import {
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { DictionarySearchRow } from '@oare/types';
 import ResultTable from './ResultTable.vue';
-import server from '@/serverProxy';
 import { highlightedItem } from './utils';
 import useQueryParam from '@/hooks/useQueryParam';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'DictionarySearch',
@@ -83,6 +85,8 @@ export default defineComponent({
     const totalResults = ref(0);
     const searchResults: Ref<DictionarySearchRow[]> = ref([]);
     const searchLoading = ref(false);
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     const [dictionarySearch, setDictionarySearch] = useQueryParam(
       'dictionary',
@@ -113,14 +117,21 @@ export default defineComponent({
       if (canSearch.value) {
         searchLoading.value = true;
         lastSearch.value = dictionarySearch.value;
-        const searchResult = await server.searchDictionary({
-          search: dictionarySearch.value,
-          page: Number(page.value),
-          rows: Number(rows.value),
-        });
-        totalResults.value = searchResult.totalRows;
-        searchResults.value = searchResult.results;
-        searchLoading.value = false;
+        try {
+          const searchResult = await server.searchDictionary({
+            search: dictionarySearch.value,
+            page: Number(page.value),
+            rows: Number(rows.value),
+          });
+          totalResults.value = searchResult.totalRows;
+          searchResults.value = searchResult.results;
+        } catch {
+          actions.showErrorSnackbar(
+            'Error performing dictionary search. Please try again.'
+          );
+        } finally {
+          searchLoading.value = false;
+        }
       }
     };
 
