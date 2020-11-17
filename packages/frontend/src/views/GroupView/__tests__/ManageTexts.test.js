@@ -1,7 +1,6 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { render } from '@testing-library/vue';
 import ManageTexts from '../ManageTexts.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';

@@ -8,7 +8,7 @@
     >
       <v-icon>mdi-pencil</v-icon>
     </v-btn>
-    <span>{{ spelling.spelling }}</span>
+    <span v-html="htmlSpelling"></span>
     <span v-if="spelling.texts.length > 0">
       (<a @click="dialogOpen = true" class="test-num-texts">{{
         spelling.texts.length
@@ -64,6 +64,7 @@ import { FormSpelling } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import { AxiosError } from 'axios';
+import { spellingHtmlReading } from './utils';
 
 export default defineComponent({
   props: {
@@ -92,8 +93,13 @@ export default defineComponent({
         value: 'text',
       },
     ]);
+
     const canEdit = computed(() =>
       store.getters.permissions.dictionary.includes('UPDATE_FORM')
+    );
+
+    const htmlSpelling = computed(() =>
+      spellingHtmlReading(props.spelling.spelling)
     );
 
     const saveSpelling = async () => {
@@ -132,6 +138,7 @@ export default defineComponent({
       editedSpelling,
       editLoading,
       saveSpelling,
+      htmlSpelling,
     };
   },
 });
