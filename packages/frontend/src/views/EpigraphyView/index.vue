@@ -299,15 +299,7 @@ export default defineComponent({
         } = await server.getEpigraphicInfo(textUuid);
         color.value = epColor;
         colorMeaning.value = epColorMeaning;
-        let markupUnits;
-        try {
-          markupUnits = await server.getEpigraphicMarkups(textUuid);
-        } catch {
-          actions.showErrorSnackbar(
-            'Error loading epigraphic markups. Please try again.'
-          );
-          return;
-        }
+        let markupUnits = await server.getEpigraphicMarkups(textUuid);
         let epigUnits = units;
 
         cdli.value = cdliNum;
@@ -319,14 +311,7 @@ export default defineComponent({
           textFormat: 'html',
           admin: store.getters.isAdmin,
         });
-        try {
-          discourseUnits.value = await server.getDiscourseUnits(textUuid);
-        } catch {
-          actions.showErrorSnackbar(
-            'Error loading discourse units. Please try again.'
-          );
-          return;
-        }
+        discourseUnits.value = await server.getDiscourseUnits(textUuid);
         discourseRenderer.value = new DiscourseHtmlRenderer(
           discourseUnits.value
         );
