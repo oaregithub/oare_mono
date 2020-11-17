@@ -4,6 +4,7 @@
       <v-col cols="8">
         {{ $t('search.textTitle') }}
         <v-text-field
+          class="test-title-search"
           :value="textTitleSearch"
           @input="setTextTitleSearch"
           placeholder="Text title"
@@ -12,6 +13,7 @@
         />
         {{ $t('search.characterSequenceDescription') }}
         <v-text-field
+          class="test-character-search"
           :value="translitSearch"
           @input="setTranslitSearch"
           :placeholder="$t('search.characterSequences')"
@@ -19,6 +21,7 @@
           outlined
         ></v-text-field>
         <v-btn
+          class="test-submit-button"
           @click="searchTexts"
           color="primary"
           :disabled="!canPerformSearch"
@@ -56,10 +59,10 @@ import {
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
 import { updateUrl, formattedSearchCharacter } from './utils';
-import server from '@/serverProxy';
 import ResultTable from './ResultTable.vue';
 import { highlightedItem } from './utils';
 import useQueryParam from '@/hooks/useQueryParam';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'TextsSearch',
@@ -70,6 +73,9 @@ export default defineComponent({
     const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
     const searchLoading = ref(false);
     const totalSearchResults = ref(0);
+
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     const [translitSearch, setTranslitSearch] = useQueryParam('translit', '');
     const [textTitleSearch, setTextTitleSearch] = useQueryParam('title', '');
@@ -107,20 +113,24 @@ export default defineComponent({
       if (!canPerformSearch.value) return;
 
       searchLoading.value = true;
-      let {
-        totalRows,
-        results,
-      }: SearchTextsResponse = await server.searchTexts({
-        characters: [...searchCharsArray.value],
-        textTitle: textTitleSearch.value,
-        page: Number(page.value),
-        rows: Number(rows.value),
-      });
+      try {
+        let {
+          totalRows,
+          results,
+        }: SearchTextsResponse = await server.searchTexts({
+          characters: [...searchCharsArray.value],
+          textTitle: textTitleSearch.value,
+          page: Number(page.value),
+          rows: Number(rows.value),
+        });
 
-      totalSearchResults.value = totalRows;
-      searchResults.value = results;
-
-      searchLoading.value = false;
+        totalSearchResults.value = totalRows;
+        searchResults.value = results;
+      } catch {
+        actions.showErrorSnackbar('Error searching texts. Please try again.');
+      } finally {
+        searchLoading.value = false;
+      }
     };
 
     watch([page, rows], searchTexts, { immediate: false });
