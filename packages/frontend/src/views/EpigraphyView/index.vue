@@ -135,7 +135,6 @@ import {
 import sl from '@/serviceLocator';
 
 import EpigraphyEditor from './EpigraphyEditor.vue';
-import serverProxy from '../../serverProxy';
 import router from '@/router';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './Stoplight.vue';
@@ -300,7 +299,15 @@ export default defineComponent({
         } = await server.getEpigraphicInfo(textUuid);
         color.value = epColor;
         colorMeaning.value = epColorMeaning;
-        let markupUnits = await server.getEpigraphicMarkups(textUuid);
+        let markupUnits;
+        try {
+          markupUnits = await server.getEpigraphicMarkups(textUuid);
+        } catch {
+          actions.showErrorSnackbar(
+            'Error loading epigraphic markups. Please try again.'
+          );
+          return;
+        }
         let epigUnits = units;
 
         cdli.value = cdliNum;
@@ -312,8 +319,14 @@ export default defineComponent({
           textFormat: 'html',
           admin: store.getters.isAdmin,
         });
-
-        discourseUnits.value = await server.getDiscourseUnits(textUuid);
+        try {
+          discourseUnits.value = await server.getDiscourseUnits(textUuid);
+        } catch {
+          actions.showErrorSnackbar(
+            'Error loading discourse units. Please try again.'
+          );
+          return;
+        }
         discourseRenderer.value = new DiscourseHtmlRenderer(
           discourseUnits.value
         );
@@ -328,13 +341,13 @@ export default defineComponent({
           actions.showErrorSnackbar('Error loading text. Please try again.');
         }
       } finally {
+        epigraphyState.loading = false;
         // If the user is an editor, get the draft content
         if (epigraphyState.canWrite) {
-          const res = await serverProxy.getSingleDraft(textUuid);
+          const res = await server.getSingleDraft(textUuid);
           draftContent.value = res.content;
           draftNotes.value = res.notes;
         }
-        epigraphyState.loading = false;
       }
     });
 

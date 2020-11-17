@@ -12,10 +12,21 @@ localVue.use(VueCompositionApi);
 
 describe('Epigraphy View', () => {
   const mockServer = {
-    getDiscourseUnits: jest.fn().mockRejectedValue({}),
-    getEpigraphicInfo: jest.fn().mockRejectedValue({}),
-    getEpigraphicMarkups: jest.fn().mockRejectedValue({}),
-    getSingleDraft: jest.fn().mockRejectedValue({}),
+    getDiscourseUnits: jest.fn().mockResolvedValue({}),
+    getEpigraphicInfo: jest.fn().mockResolvedValue({
+      collection: {
+        uuid: 'test',
+        name: 'test',
+      },
+      units: null,
+      canWrite: false,
+      textName: 'testName',
+      cdliNum: 'test',
+      color: 'red',
+      colorMeaning: 'test meaning',
+    }),
+    getEpigraphicMarkups: jest.fn().mockResolvedValue({}),
+    getSingleDraft: jest.fn().mockResolvedValue({}),
   };
 
   const mockActions = {
@@ -37,8 +48,8 @@ describe('Epigraphy View', () => {
     stubs: ['router-link'],
   };
 
-  const createWrapper = () => {
-    sl.set('serverProxy', mockServer);
+  const createWrapper = ({ server } = {}) => {
+    sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
     sl.set('store', mockStore);
 
@@ -46,7 +57,34 @@ describe('Epigraphy View', () => {
   };
 
   it('displays error on text load error', async () => {
-    createWrapper();
+    createWrapper({
+      server: {
+        ...mockServer,
+        getEpigraphicInfo: jest.fn().mockRejectedValue({}),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('displays error on epigraphic markup load fail', async () => {
+    createWrapper({
+      server: {
+        ...mockServer,
+        getEpigraphicMarkups: jest.fn().mockRejectedValue({}),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('displays error on discourse units load fail', async () => {
+    createWrapper({
+      server: {
+        ...mockServer,
+        getDiscourseUnits: jest.fn().mockRejectedValue({}),
+      },
+    });
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });

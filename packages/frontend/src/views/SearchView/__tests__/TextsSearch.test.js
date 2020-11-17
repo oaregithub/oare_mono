@@ -11,7 +11,7 @@ localVue.use(VueCompositionApi);
 
 describe('TextsSearch', () => {
   const mockServer = {
-    searchTexts: jest.fn().mockResolvedValue({}),
+    searchTexts: jest.fn().mockResolvedValue({ totalRows: 0, results: [] }),
   };
 
   const mockActions = {
