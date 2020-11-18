@@ -46,7 +46,12 @@
     <div v-if="wordInfo.forms.length < 1">
       No forms found for {{ wordInfo.word }}
     </div>
-    <forms-display :forms="wordInfo.forms" :updateForms="updateForms" />
+    <form-display
+      v-for="(form, index) in wordInfo.forms"
+      :key="index"
+      :form="form"
+      :updateForm="newForm => updateForm(index, newForm)"
+    />
   </div>
 </template>
 
@@ -57,7 +62,7 @@ import {
   DictionaryForm,
   DictionaryWordTranslation,
 } from '@oare/types';
-import FormsDisplay from './FormsDisplay.vue';
+import FormDisplay from './FormDisplay.vue';
 import EditTranslations from './EditTranslations.vue';
 import sl from '@/serviceLocator';
 
@@ -77,7 +82,7 @@ export default defineComponent({
     },
   },
   components: {
-    FormsDisplay,
+    FormDisplay,
     EditTranslations,
   },
   setup({ wordInfo, updateWordInfo }) {
@@ -98,10 +103,12 @@ export default defineComponent({
       });
     };
 
-    const updateForms = (newForms: DictionaryForm[]) => {
+    const updateForm = (index: number, form: DictionaryForm) => {
+      const updatedForms = [...wordInfo.forms];
+      updatedForms[index] = form;
       updateWordInfo({
         ...wordInfo,
-        forms: newForms,
+        forms: updatedForms,
       });
     };
 
@@ -109,7 +116,7 @@ export default defineComponent({
       canEditTranslations,
       isEditingTranslations,
       updateTranslations,
-      updateForms,
+      updateForm,
     };
   },
 });
