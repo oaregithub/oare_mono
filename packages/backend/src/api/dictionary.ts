@@ -5,6 +5,7 @@ import {
   UpdateDictionaryTranslationPayload,
   DictionaryForm,
   UpdateFormSpellingPayload,
+  AddFormSpellingPayload,
 } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
@@ -12,6 +13,27 @@ import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
 const router = express.Router();
+
+router.route('/dictionary/spellings').post(adminRoute, async (req, res, next) => {
+  try {
+    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+    const LoggingEditsDao = sl.get('LoggingEditsDao');
+
+    const { formUuid, spelling }: AddFormSpellingPayload = req.body;
+    const spellingExists = await DictionarySpellingDao.spellingExistsOnForm(formUuid, spelling);
+
+    if (spellingExists) {
+      next(new HttpBadRequest('Spelling already exists on form'));
+      return;
+    }
+
+    const uuid = await DictionarySpellingDao.addSpelling(formUuid, spelling);
+    await LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'dictionary_spelling', uuid);
+    res.status(201).end();
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 router
   .route('/dictionary/:uuid')
@@ -111,7 +133,7 @@ router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) 
   }
 });
 
-router.route('/dictionary/spellings/:uuid').post(adminRoute, async (req, res, next) => {
+router.route('/dictionary/spellings/:uuid').put(adminRoute, async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const { spelling }: UpdateFormSpellingPayload = req.body;
