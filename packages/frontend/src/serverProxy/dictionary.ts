@@ -50,7 +50,7 @@ async function updateSpelling(
   const payload: UpdateFormSpellingPayload = {
     spelling: newSpelling,
   };
-  await axios.post(`/dictionary/spellings/${spellingUuid}`, payload);
+  await axios.put(`/dictionary/spellings/${spellingUuid}`, payload);
 }
 
 export default {

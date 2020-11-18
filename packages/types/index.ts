@@ -75,6 +75,11 @@ export interface UpdateDictionaryTranslationsResponse {
   translations: DictionaryWordTranslation[];
 }
 
+export interface AddFormSpellingPayload {
+  formUuid: string;
+  spelling: string;
+}
+
 export interface WordWithForms {
   word: string;
   forms: DictionaryForm[];

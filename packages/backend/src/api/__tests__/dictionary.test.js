@@ -379,7 +379,7 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('POST /dictionary/spellings/:uuid', () => {
+  describe('PUT /dictionary/spellings/:uuid', () => {
     const spellingUuid = 'spelling-uuid';
     const mockPayload = {
       spelling: 'new-spelling',
@@ -405,10 +405,10 @@ describe('dictionary api test', () => {
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
     };
 
-    const sendRequest = () => request(app).post(PATH).send(mockPayload).set('Cookie', 'jwt=token');
+    const sendRequest = () => request(app).put(PATH).send(mockPayload).set('Cookie', 'jwt=token');
 
     it("doesn't allow non-logged-in users to post", async () => {
-      const response = await request(app).post(PATH).send(mockPayload);
+      const response = await request(app).put(PATH).send(mockPayload);
       expect(response.status).toBe(401);
     });
 
@@ -482,6 +482,124 @@ describe('dictionary api test', () => {
       setupPostForm();
       sl.set('DictionarySpellingDao', {
         updateSpelling: jest.fn().mockRejectedValue('Failed to update spelling'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('POST /dictionary/spellings', () => {
+    const formUuid = 'form-uuid';
+    const spelling = 'new-spelling';
+    const newUuid = 'new-uuid';
+
+    const PATH = `${API_PATH}/dictionary/spellings`;
+    const payload = {
+      formUuid,
+      spelling,
+    };
+
+    const DictionarySpellingDao = {
+      spellingExistsOnForm: jest.fn().mockResolvedValue(false),
+      addSpelling: jest.fn().mockResolvedValue(newUuid),
+    };
+
+    const LoggingEditsDao = {
+      logEdit: jest.fn().mockResolvedValue(null),
+    };
+
+    const setupAddSpelling = () => {
+      sl.set('UserDao', AdminUserDao);
+      sl.set('DictionarySpellingDao', DictionarySpellingDao);
+      sl.set('LoggingEditsDao', LoggingEditsDao);
+    };
+
+    const sendRequest = () => request(app).post(PATH).send(payload).set('Cookie', 'jwt=token');
+
+    it("doesn't allow non-logged-in users to post", async () => {
+      const response = await request(app).post(PATH).send(payload);
+      expect(response.status).toBe(401);
+    });
+
+    it("doesn't allow non-admins to post", async () => {
+      sl.set('UserDao', {
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: false,
+        }),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it('returns 201 on success', async () => {
+      setupAddSpelling();
+      const response = await sendRequest();
+      expect(response.status).toBe(201);
+    });
+
+    it("checks that the new spelling doesn't already exist on the form", async () => {
+      setupAddSpelling();
+      await sendRequest();
+
+      expect(DictionarySpellingDao.spellingExistsOnForm).toHaveBeenCalledWith(formUuid, spelling);
+    });
+
+    it('adds spelling to dictionary_spelling', async () => {
+      setupAddSpelling();
+      await sendRequest();
+
+      expect(DictionarySpellingDao.addSpelling).toHaveBeenCalledWith(formUuid, spelling);
+    });
+
+    it('logs edit', async () => {
+      setupAddSpelling();
+      await sendRequest();
+
+      expect(LoggingEditsDao.logEdit).toHaveBeenCalledWith('INSERT', 'user-uuid', 'dictionary_spelling', newUuid);
+    });
+
+    it('returns 400 if spelling already exists on form', async () => {
+      setupAddSpelling();
+      sl.set('DictionarySpellingDao', {
+        spellingExistsOnForm: jest.fn().mockResolvedValue(true),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(400);
+      expect(DictionarySpellingDao.addSpelling).not.toHaveBeenCalled();
+      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if checking spelling existence fails', async () => {
+      setupAddSpelling();
+      sl.set('DictionarySpellingDao', {
+        ...DictionarySpellingDao,
+        spellingExistsOnForm: jest.fn().mockRejectedValue('Failed to check if spelling exists'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(DictionarySpellingDao.addSpelling).not.toHaveBeenCalled();
+      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if adding spelling fails', async () => {
+      setupAddSpelling();
+      sl.set('DictionarySpellingDao', {
+        ...DictionarySpellingDao,
+        addSpelling: jest.fn().mockRejectedValue('Failed to add spelling'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if logging edit fails', async () => {
+      setupAddSpelling();
+      sl.set('LoggingEditsDao', {
+        logEdit: jest.fn().mockRejectedValue('Failed to log'),
       });
 
       const response = await sendRequest();
