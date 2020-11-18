@@ -1,9 +1,10 @@
-import { DictionaryWordTranslation, DictionaryWord, NameOrPlace } from '@oare/types';
+import { DictionaryWordTranslation, DictionaryWord, NameOrPlace, SearchSpellingResultRow } from '@oare/types';
 import knex from '@/connection';
 import getQueryString from '../utils';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
+import DictionaryFormDao from '../DictionaryFormDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -71,6 +72,34 @@ export interface TranslationRow {
 }
 
 class DictionaryWordDao {
+  async searchSpellings(spelling: string): Promise<SearchSpellingResultRow[]> {
+    interface SearchSpellingRow {
+      wordUuid: string;
+      word: string;
+      formUuid: string;
+      form: string;
+    }
+
+    const rows: SearchSpellingRow[] = await knex
+      .select('dw.uuid AS wordUuid', 'dw.word', 'df.uuid AS formUuid', 'df.form')
+      .from('dictionary_word AS dw')
+      .innerJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
+      .innerJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
+      .where('ds.explicit_spelling', spelling);
+
+    const formGrammars = await Promise.all(rows.map((r) => DictionaryFormDao.getFormGrammar(r.formUuid)));
+
+    return rows.map((row, i) => ({
+      word: row.word,
+      wordUuid: row.wordUuid,
+      form: {
+        form: row.form,
+        uuid: row.formUuid,
+        ...formGrammars[i],
+      },
+    }));
+  }
+
   async getWords(): Promise<DictionaryWord[]> {
     const wordsQuery = getQueryString('wordsQuery.sql');
 

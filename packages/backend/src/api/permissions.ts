@@ -20,6 +20,7 @@ router.route('/permissions').get(async (req, res, next) => {
         'UPDATE_TRANSLATION',
         'UPDATE_TRANSLATION_ORDER',
         'UPDATE_WORD_SPELLING',
+        'ADD_SPELLING',
       ];
     }
 
