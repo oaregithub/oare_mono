@@ -24,7 +24,7 @@
         <div v-if="wordInfo.verbalThematicVowelTypes.length > 0" class="mr-1">
           ({{ wordInfo.verbalThematicVowelTypes.join(', ') }})
         </div>
-        <p v-else>
+        <p>
           <span v-for="(tr, idx) in wordInfo.translations" :key="tr.uuid">
             <b>{{ idx + 1 }}</b
             >. {{ tr.translation }}
