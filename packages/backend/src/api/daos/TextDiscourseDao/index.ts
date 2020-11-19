@@ -26,7 +26,42 @@ export interface NestedDiscourse {
   translation?: string;
 }
 
+export interface SearchDiscourseSpellingRow {
+  textUuid: string;
+  line: number;
+  wordOnTablet: number;
+}
+
+export interface DiscourseLineSpelling {
+  wordOnTablet: number;
+  spelling: string;
+}
+
 class TextDiscourseDao {
+  async searchTextDiscourseSpellings(spelling: string): Promise<SearchDiscourseSpellingRow[]> {
+    const rows: SearchDiscourseSpellingRow[] = await knex('text_discourse AS td')
+      .select('td.text_uuid AS textUuid', 'te.line', 'td.word_on_tablet AS wordOnTablet')
+      .innerJoin('text_epigraphy AS te', 'te.discourse_uuid', 'td.uuid')
+      .where('explicit_spelling', spelling)
+      .groupBy('td.uuid');
+
+    return rows;
+  }
+
+  async getTextSpellings(textUuid: string): Promise<DiscourseLineSpelling[]> {
+    const rows = await knex('text_discourse')
+      .select('word_on_tablet AS wordOnTablet', 'explicit_spelling AS spelling')
+      .from('text_discourse')
+      .where('text_uuid', textUuid)
+      .andWhere(function () {
+        this.where('type', 'word');
+        this.orWhere('type', 'number');
+      })
+      .orderBy('wordOnTablet');
+
+    return rows;
+  }
+
   /* Get the uuids of the rows in text discourse associated with a 
   particular form. Useful for updating the logging edits table 
   and then updating the text discourse table itself */

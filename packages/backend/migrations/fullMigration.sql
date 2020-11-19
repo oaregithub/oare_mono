@@ -80,3 +80,6 @@ CREATE TABLE permissions (
 
 ALTER TABLE `user` ADD UNIQUE (uuid);
 ALTER TABLE permissions ADD FOREIGN KEY (user_uuid) REFERENCES user(uuid) ON DELETE CASCADE;
+
+-- 2020-11-18
+CREATE INDEX idx_text_discourse_explicit_spelling ON text_discourse (explicit_spelling);
