@@ -33,9 +33,12 @@ export interface FormSpelling {
   texts: SpellingText[];
 }
 
-export interface DictionaryForm {
+export interface DictionaryFormInfo {
   uuid: string;
   form: string;
+}
+
+export interface DictionaryFormGrammar {
   stems: string[];
   tenses: string[];
   persons: string[];
@@ -46,13 +49,18 @@ export interface DictionaryForm {
   moods: string[];
   clitics: string[];
   morphologicalForms: string[];
-  spellings: FormSpelling[];
   suffix: {
     persons: string[];
     genders: string[];
     grammaticalNumbers: string[];
     cases: string[];
   } | null;
+}
+
+export interface DictionaryForm
+  extends DictionaryFormInfo,
+    DictionaryFormGrammar {
+  spellings: FormSpelling[];
 }
 
 export interface UpdateDictionaryTranslationPayload {
@@ -73,6 +81,11 @@ export interface UpdateDictionaryResponse {
 
 export interface UpdateDictionaryTranslationsResponse {
   translations: DictionaryWordTranslation[];
+}
+
+export interface AddFormSpellingPayload {
+  formUuid: string;
+  spelling: string;
 }
 
 export interface WordWithForms {
@@ -195,6 +208,18 @@ export interface SearchTextNamesPayload {
   search: string;
 }
 
+// Search spellings
+
+export interface SearchSpellingResultRow {
+  wordUuid: string;
+  word: string;
+  form: Omit<DictionaryForm, "spellings">;
+}
+
+export interface SearchSpellingPayload {
+  spelling: string;
+}
+
 // Dictionary Search
 
 export interface DictionarySearchRow extends SearchTextsResultRow {
@@ -293,7 +318,8 @@ export type DictionaryPermission =
   | "DELETE_TRANSLATION"
   | "UPDATE_TRANSLATION"
   | "UPDATE_TRANSLATION_ORDER"
-  | "UPDATE_FORM";
+  | "UPDATE_FORM"
+  | "ADD_SPELLING";
 
 export interface PermissionResponse {
   dictionary: DictionaryPermission[];

@@ -1,7 +1,7 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
-import FormsDisplay from '../FormsDisplay.vue';
+import FormDisplay from '../FormDisplay.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
 
@@ -40,19 +40,19 @@ describe('FormsDisplay test', () => {
     clitics: [],
   };
 
-  const updateForms = jest.fn();
+  const updateForm = jest.fn();
 
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
     sl.set('store', mockStore);
 
-    return mount(FormsDisplay, {
+    return mount(FormDisplay, {
       vuetify,
       localVue,
       propsData: {
-        forms: [mockForm],
-        updateForms,
+        form: mockForm,
+        updateForm,
       },
     });
   };
@@ -84,7 +84,7 @@ describe('FormsDisplay test', () => {
       form: 'new form',
     };
     expect(mockServer.updateForm).toHaveBeenCalledWith(updatedForm);
-    expect(updateForms).toHaveBeenCalledWith([updatedForm]);
+    expect(updateForm).toHaveBeenCalledWith(updatedForm);
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 

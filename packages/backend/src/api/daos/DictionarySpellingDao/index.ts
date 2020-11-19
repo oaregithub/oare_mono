@@ -1,3 +1,4 @@
+import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
 import TextDiscourseDao from '../TextDiscourseDao';
@@ -23,6 +24,29 @@ class DictionarySpellingDao {
       ...r,
       texts: spellingTexts[i],
     }));
+  }
+
+  async spellingExistsOnForm(formUuid: string, spelling: string): Promise<boolean> {
+    const row = await knex('dictionary_spelling')
+      .select()
+      .where({
+        reference_uuid: formUuid,
+        explicit_spelling: spelling,
+      })
+      .first();
+
+    return !!row;
+  }
+
+  async addSpelling(formUuid: string, spelling: string): Promise<string> {
+    const uuid = v4();
+    await knex('dictionary_spelling').insert({
+      uuid,
+      reference_uuid: formUuid,
+      spelling,
+      explicit_spelling: spelling,
+    });
+    return uuid;
   }
 }
 
