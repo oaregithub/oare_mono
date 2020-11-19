@@ -14,6 +14,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const TextGroupDao = sl.get('TextGroupDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const AliasDao = sl.get('AliasDao');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
 
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
@@ -29,11 +30,11 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     }
 
     const textName = await AliasDao.displayAliasNames(textUuid);
-
     const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
     const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
     const cdliNum = await TextDao.getCdliNum(textUuid);
     const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
+    const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(textUuid);
 
     let markups = await TextMarkupDao.getMarkups(textUuid);
     const refTypes: { [key: string]: Set<string> } = {};
@@ -72,6 +73,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       color,
       colorMeaning,
       markups,
+      discourseUnits,
     });
   } catch (err) {
     next(new HttpInternalError(err));

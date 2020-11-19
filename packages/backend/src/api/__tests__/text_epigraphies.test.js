@@ -40,6 +40,13 @@ describe('GET /text_epigraphies/:uuid', () => {
         endChar: null,
       },
     ],
+    discourseUnits: [
+      {
+        uuid: '12345',
+        type: 'discourseUnit',
+        units: [],
+      },
+    ],
   };
 
   const mockAliasDao = {
@@ -95,6 +102,16 @@ describe('GET /text_epigraphies/:uuid', () => {
     ]),
   };
 
+  const mockTextDiscourseDao = {
+    getTextDiscourseUnits: jest.fn().mockResolvedValue([
+      {
+        uuid: '12345',
+        type: 'discourseUnit',
+        units: [],
+      },
+    ]),
+  };
+
   const setup = () => {
     sl.set('AliasDao', mockAliasDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
@@ -102,6 +119,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('TextDao', mockTextDao);
     sl.set('TextMarkupDao', mockTextMarkupDao);
+    sl.set('TextDiscourseDao', mockTextDiscourseDao);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -127,6 +145,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(mockTextDao.getCdliNum).not.toHaveBeenCalled();
     expect(mockTextDao.getTranslitStatus).not.toHaveBeenCalled();
     expect(mockTextMarkupDao.getMarkups).not.toHaveBeenCalled();
+    expect(mockTextDiscourseDao.getTextDiscourseUnits).not.toHaveBeenCalled();
   });
 
   it('does not allow non-admin user to see blacklisted texts', async () => {
@@ -203,6 +222,14 @@ describe('GET /text_epigraphies/:uuid', () => {
     sl.set('TextDao', {
       ...mockTextDao,
       getTranslitStatus: jest.fn().mockRejectedValue(null),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 500 on failed discourse units retrieval', async () => {
+    sl.set('TextDiscourseDao', {
+      getTextDiscourseUnits: jest.fn().mockRejectedValue(null),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

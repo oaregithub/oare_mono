@@ -9,7 +9,6 @@ import collections from './collections';
 import textDrafts from './text_drafts';
 import epigraphies from './epigraphies';
 import names from './names';
-import discourses from './discourses';
 import places from './places';
 import words from './words';
 import searchDictionary from './search_dictionary';
@@ -31,7 +30,6 @@ const serverProxy = {
   ...textDrafts,
   ...epigraphies,
   ...names,
-  ...discourses,
   ...places,
   ...words,
   ...searchDictionary,
