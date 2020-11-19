@@ -8,7 +8,6 @@ import searchTexts from './search';
 import collections from './collections';
 import textDrafts from './text_drafts';
 import epigraphies from './epigraphies';
-import markups from './markups';
 import names from './names';
 import discourses from './discourses';
 import places from './places';
@@ -31,7 +30,6 @@ const serverProxy = {
   ...collections,
   ...textDrafts,
   ...epigraphies,
-  ...markups,
   ...names,
   ...discourses,
   ...places,

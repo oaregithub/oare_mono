@@ -1,10 +1,6 @@
 import express from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
-import aliasDao from './daos/AliasDao';
-import textEpigraphyDao from './daos/TextEpigraphyDao';
-import textGroupDao from './daos/TextGroupDao';
-import hierarchyDao from './daos/HierarchyDao';
-import TextDao from './daos/TextDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
@@ -12,10 +8,16 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
   try {
     const textUuid = String(req.params.uuid);
     const user = req.user || null;
+    const TextMarkupDao = sl.get('TextMarkupDao');
+    const TextDao = sl.get('TextDao');
+    const HierarchyDao = sl.get('HierarchyDao');
+    const TextGroupDao = sl.get('TextGroupDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const AliasDao = sl.get('AliasDao');
 
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
-      const blacklist = await textGroupDao.getUserBlacklist(user);
+      const blacklist = await TextGroupDao.getUserBlacklist(user);
       if (blacklist.includes(textUuid)) {
         next(
           new HttpForbidden(
@@ -26,16 +28,37 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       }
     }
 
-    const textName = await aliasDao.displayAliasNames(textUuid);
+    const textName = await AliasDao.displayAliasNames(textUuid);
 
-    const units = await textEpigraphyDao.getEpigraphicUnits(textUuid);
-    const collection = await hierarchyDao.getEpigraphyCollection(textUuid);
+    const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
+    const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
     const cdliNum = await TextDao.getCdliNum(textUuid);
     const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
 
+    let markups = await TextMarkupDao.getMarkups(textUuid);
+    const refTypes: { [key: string]: Set<string> } = {};
+    markups = markups.filter((markup) => {
+      if (refTypes[markup.referenceUuid]) {
+        if (refTypes[markup.referenceUuid].has(markup.type)) {
+          return false;
+        }
+      } else {
+        refTypes[markup.referenceUuid] = new Set();
+      }
+
+      refTypes[markup.referenceUuid].add(markup.type);
+      return true;
+    });
+    markups.sort((a) => {
+      if (a.type === 'damage' || a.type === 'partialDamage') {
+        return -1;
+      }
+      return 0;
+    });
+
     let canWrite: boolean;
     if (user) {
-      canWrite = user.isAdmin ? true : await textGroupDao.userHasWritePermission(textUuid, user.id);
+      canWrite = user.isAdmin ? true : await TextGroupDao.userHasWritePermission(textUuid, user.id);
     } else {
       canWrite = false;
     }
@@ -48,6 +71,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       cdliNum,
       color,
       colorMeaning,
+      markups,
     });
   } catch (err) {
     next(new HttpInternalError(err));
