@@ -6,7 +6,6 @@ import dictionary from './api/dictionary';
 import searchDictionary from './api/search_dictionary';
 import search from './api/search';
 import textEpigraphies from './api/text_epigraphies';
-import discourses from './api/discourses';
 import login from './api/login';
 import register from './api/register';
 import groups from './api/groups';
@@ -31,7 +30,6 @@ export default (app: Express) => {
   app.use(API_PATH, searchDictionary);
   app.use(API_PATH, search);
   app.use(API_PATH, textEpigraphies);
-  app.use(API_PATH, discourses);
   app.use(API_PATH, login);
   app.use(API_PATH, register);
   app.use(API_PATH, groups);
