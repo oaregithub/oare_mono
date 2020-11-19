@@ -3,8 +3,6 @@ import { SearchTextsResponse, SearchTextsPayload, SearchSpellingPayload } from '
 import cache from '@/cache';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import textGroupDao from './daos/TextGroupDao';
-import textEpigraphyDao from './daos/TextEpigraphyDao';
 
 interface SearchDiscourseSpellingRow {
   line: number;
@@ -55,6 +53,9 @@ router.route('/search/spellings').get(async (req, res, next) => {
 
 router.route('/search').get(async (req, res, next) => {
   try {
+    const textGroupDao = sl.get('TextGroupDao');
+    const textEpigraphyDao = sl.get('TextEpigraphyDao');
+
     const { page, rows, textTitle, characters: charsPayload } = (req.query as unknown) as SearchTextsPayload;
     const characters = charsPayload || [];
     const user = req.user || null;

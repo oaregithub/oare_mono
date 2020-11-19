@@ -7,6 +7,8 @@ import UserDao from '@/api/daos/UserDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
 import OareGroupDao from '@/api/daos/OareGroupDao';
 import DictionarySpellingDao from '@/api/daos/DictionarySpellingDao';
+import TextGroupDao from '@/api/daos/TextGroupDao';
+import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
 import cache from '@/cache';
 
 const instances: { [key: string]: any } = {};
@@ -21,6 +23,8 @@ export type ServiceTypes = {
   TextDraftsDao: typeof TextDraftsDao;
   UserDao: typeof UserDao;
   OareGroupDao: typeof OareGroupDao;
+  TextEpigraphyDao: typeof TextEpigraphyDao;
+  TextGroupDao: typeof TextGroupDao;
   cache: typeof cache;
 };
 

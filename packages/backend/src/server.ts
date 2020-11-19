@@ -7,6 +7,8 @@ import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
 import OareGroupDao from '@/api/daos/OareGroupDao';
+import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
+import TextGroupDao from '@/api/daos/TextGroupDao';
 import cache from '@/cache';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
@@ -28,6 +30,8 @@ sl.set('LoggingEditsDao', LoggingEditsDao);
 sl.set('TextDiscourseDao', TextDiscourseDao);
 sl.set('TextDraftsDao', TextDraftsDao);
 sl.set('OareGroupDao', OareGroupDao);
+sl.set('TextGroupDao', TextGroupDao);
+sl.set('TextEpigraphyDao', TextEpigraphyDao);
 sl.set('cache', cache);
 
 app.listen(8081, () => {
