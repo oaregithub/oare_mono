@@ -290,17 +290,16 @@ export default defineComponent({
         epigraphyState.loading = true;
         const {
           collection: collectionInfo,
-          units,
+          units: epigUnits,
           canWrite,
           textName,
           cdliNum,
           color: epColor,
           colorMeaning: epColorMeaning,
+          markups: markupUnits,
         } = await server.getEpigraphicInfo(textUuid);
         color.value = epColor;
         colorMeaning.value = epColorMeaning;
-        let markupUnits = await server.getEpigraphicMarkups(textUuid);
-        let epigUnits = units;
 
         cdli.value = cdliNum;
         if (collectionInfo) {

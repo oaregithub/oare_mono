@@ -7,6 +7,12 @@ import TextDraftsDao from '@/api/daos/TextDraftsDao';
 import OareGroupDao from '@/api/daos/OareGroupDao';
 import DictionarySpellingDao from '@/api/daos/DictionarySpellingDao';
 import cache from '@/cache';
+import TextMarkupDao from '@/api/daos/TextMarkupDao';
+import TextDao from '@/api/daos/TextDao';
+import HierarchyDao from '@/api/daos/HierarchyDao';
+import TextGroupDao from '@/api/daos/TextGroupDao';
+import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
+import AliasDao from '@/api/daos/AliasDao';
 
 const instances: { [key: string]: any } = {};
 
@@ -20,6 +26,12 @@ export type ServiceTypes = {
   UserDao: typeof UserDao;
   OareGroupDao: typeof OareGroupDao;
   cache: typeof cache;
+  TextMarkupDao: typeof TextMarkupDao;
+  TextDao: typeof TextDao;
+  HierarchyDao: typeof HierarchyDao;
+  TextGroupDao: typeof TextGroupDao;
+  TextEpigraphyDao: typeof TextEpigraphyDao;
+  AliasDao: typeof AliasDao;
 };
 
 export default {
