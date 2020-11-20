@@ -3,10 +3,41 @@ import { SearchTextsResponse, SearchTextsPayload, SearchSpellingPayload } from '
 import cache from '@/cache';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import textGroupDao from './daos/TextGroupDao';
-import textEpigraphyDao from './daos/TextEpigraphyDao';
 
+interface SearchDiscourseSpellingRow {
+  line: number;
+  textUuid: string;
+  textName: string;
+  textReading: string;
+}
 const router = express.Router();
+
+router.route('/search/spellings/discourse').get(async (req, res, next) => {
+  try {
+    const textDiscourseDao = sl.get('TextDiscourseDao');
+    const aliasDao = sl.get('AliasDao');
+
+    const { spelling } = (req.query as unknown) as SearchSpellingPayload;
+
+    const searchRows = await textDiscourseDao.searchTextDiscourseSpellings(spelling);
+    const textNames = await Promise.all(searchRows.map((r) => aliasDao.displayAliasNames(r.textUuid)));
+    const textReadings = await Promise.all(searchRows.map((r) => textDiscourseDao.getTextSpellings(r.textUuid)));
+
+    const response: SearchDiscourseSpellingRow[] = searchRows.map((row, i) => ({
+      line: row.line,
+      textName: textNames[i],
+      textUuid: row.textUuid,
+      textReading: textReadings[i]
+        .filter((tr) => tr.wordOnTablet >= row.wordOnTablet - 5 && tr.wordOnTablet <= row.wordOnTablet + 5)
+        .map((tr) => tr.spelling)
+        .join(' '),
+    }));
+
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 router.route('/search/spellings').get(async (req, res, next) => {
   try {
@@ -22,6 +53,9 @@ router.route('/search/spellings').get(async (req, res, next) => {
 
 router.route('/search').get(async (req, res, next) => {
   try {
+    const textGroupDao = sl.get('TextGroupDao');
+    const textEpigraphyDao = sl.get('TextEpigraphyDao');
+
     const { page, rows, textTitle, characters: charsPayload } = (req.query as unknown) as SearchTextsPayload;
     const characters = charsPayload || [];
     const user = req.user || null;

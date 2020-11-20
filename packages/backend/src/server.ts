@@ -1,4 +1,5 @@
 import sl from '@/serviceLocator';
+import AliasDao from '@/api/daos/AliasDao';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
 import DictionarySpellingDao from '@/api/daos/DictionarySpellingDao';
@@ -6,10 +7,9 @@ import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
 import OareGroupDao from '@/api/daos/OareGroupDao';
-import cache from '@/cache';
-import AliasDao from '@/api/daos/AliasDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
 import TextGroupDao from '@/api/daos/TextGroupDao';
+import cache from '@/cache';
 import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';

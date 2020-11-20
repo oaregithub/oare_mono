@@ -17,6 +17,7 @@ import AliasDao from '@/api/daos/AliasDao';
 const instances: { [key: string]: any } = {};
 
 export type ServiceTypes = {
+  AliasDao: typeof AliasDao;
   DictionaryFormDao: typeof DictionaryFormDao;
   DictionaryWordDao: typeof DictionaryWordDao;
   DictionarySpellingDao: typeof DictionarySpellingDao;
@@ -31,7 +32,6 @@ export type ServiceTypes = {
   HierarchyDao: typeof HierarchyDao;
   TextGroupDao: typeof TextGroupDao;
   TextEpigraphyDao: typeof TextEpigraphyDao;
-  AliasDao: typeof AliasDao;
 };
 
 export default {
