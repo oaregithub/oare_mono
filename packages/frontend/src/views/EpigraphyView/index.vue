@@ -290,19 +290,20 @@ export default defineComponent({
         epigraphyState.loading = true;
         const {
           collection: collectionInfo,
-          units,
+          units: epigUnits,
           canWrite,
           textName,
           cdliNum,
           color: epColor,
           colorMeaning: epColorMeaning,
+          markups: markupUnits,
+          discourseUnits: textDiscourseUnits,
         } = await server.getEpigraphicInfo(textUuid);
         color.value = epColor;
         colorMeaning.value = epColorMeaning;
-        let markupUnits = await server.getEpigraphicMarkups(textUuid);
-        let epigUnits = units;
-
+        discourseUnits.value = textDiscourseUnits;
         cdli.value = cdliNum;
+
         if (collectionInfo) {
           collection.value = collectionInfo;
         }
@@ -311,7 +312,6 @@ export default defineComponent({
           textFormat: 'html',
           admin: store.getters.isAdmin,
         });
-        discourseUnits.value = await server.getDiscourseUnits(textUuid);
         discourseRenderer.value = new DiscourseHtmlRenderer(
           discourseUnits.value
         );

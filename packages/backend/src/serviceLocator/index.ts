@@ -1,4 +1,3 @@
-import AliasDao from '@/api/daos/AliasDao';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
 import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
@@ -7,9 +6,13 @@ import UserDao from '@/api/daos/UserDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
 import OareGroupDao from '@/api/daos/OareGroupDao';
 import DictionarySpellingDao from '@/api/daos/DictionarySpellingDao';
+import cache from '@/cache';
+import TextMarkupDao from '@/api/daos/TextMarkupDao';
+import TextDao from '@/api/daos/TextDao';
+import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextGroupDao from '@/api/daos/TextGroupDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
-import cache from '@/cache';
+import AliasDao from '@/api/daos/AliasDao';
 
 const instances: { [key: string]: any } = {};
 
@@ -23,9 +26,12 @@ export type ServiceTypes = {
   TextDraftsDao: typeof TextDraftsDao;
   UserDao: typeof UserDao;
   OareGroupDao: typeof OareGroupDao;
-  TextEpigraphyDao: typeof TextEpigraphyDao;
-  TextGroupDao: typeof TextGroupDao;
   cache: typeof cache;
+  TextMarkupDao: typeof TextMarkupDao;
+  TextDao: typeof TextDao;
+  HierarchyDao: typeof HierarchyDao;
+  TextGroupDao: typeof TextGroupDao;
+  TextEpigraphyDao: typeof TextEpigraphyDao;
 };
 
 export default {

@@ -10,6 +10,9 @@ import OareGroupDao from '@/api/daos/OareGroupDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
 import TextGroupDao from '@/api/daos/TextGroupDao';
 import cache from '@/cache';
+import HierarchyDao from '@/api/daos/HierarchyDao';
+import TextDao from '@/api/daos/TextDao';
+import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
 
@@ -21,7 +24,6 @@ declare global {
   }
 }
 
-sl.set('AliasDao', AliasDao);
 sl.set('UserDao', UserDao);
 sl.set('DictionaryFormDao', DictionaryFormDao);
 sl.set('DictionaryWordDao', DictionaryWordDao);
@@ -30,8 +32,12 @@ sl.set('LoggingEditsDao', LoggingEditsDao);
 sl.set('TextDiscourseDao', TextDiscourseDao);
 sl.set('TextDraftsDao', TextDraftsDao);
 sl.set('OareGroupDao', OareGroupDao);
-sl.set('TextGroupDao', TextGroupDao);
+sl.set('AliasDao', AliasDao);
 sl.set('TextEpigraphyDao', TextEpigraphyDao);
+sl.set('HierarchyDao', HierarchyDao);
+sl.set('TextGroupDao', TextGroupDao);
+sl.set('TextDao', TextDao);
+sl.set('TextMarkupDao', TextMarkupDao);
 sl.set('cache', cache);
 
 app.listen(8081, () => {
