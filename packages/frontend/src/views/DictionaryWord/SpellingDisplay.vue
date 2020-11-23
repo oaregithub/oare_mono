@@ -64,7 +64,7 @@ import { FormSpelling } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import { AxiosError } from 'axios';
-import { spellingHtmlReading } from './utils';
+import { spellingHtmlReading } from '@oare/oare';
 
 export default defineComponent({
   props: {

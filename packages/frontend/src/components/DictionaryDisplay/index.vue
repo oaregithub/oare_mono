@@ -21,7 +21,10 @@
     <div v-for="wordInfo in filteredWords" :key="wordInfo.uuid" class="mb-3">
       <div class="d-flex">
         <slot name="word" :word="wordInfo">
-          <div class="font-weight-bold mr-1">{{ wordInfo.word }}</div>
+          <div
+            class="font-weight-bold mr-1"
+            v-html="spellingHtmlReading(wordInfo.word)"
+          ></div>
         </slot>
         <slot name="translation" :word="wordInfo"> </slot>
       </div>
@@ -46,6 +49,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import useQueryParam from '@/hooks/useQueryParam';
+import { spellingHtmlReading } from '@oare/oare';
 
 export interface DisplayableWord {
   uuid: string;
@@ -105,6 +109,7 @@ export default defineComponent({
       wordSearch,
       setWordSearch,
       filteredWords,
+      spellingHtmlReading,
     };
   },
 });
