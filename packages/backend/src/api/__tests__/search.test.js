@@ -92,7 +92,13 @@ describe('search test', () => {
           line: 1,
           textName,
           textUuid: 'text-uuid',
-          textReading: 'fakeSpelling',
+          wordOnTablet: 10,
+          readings: [
+            {
+              spelling: 'fakeSpelling',
+              wordOnTablet: 10,
+            },
+          ],
         },
       ]);
     });

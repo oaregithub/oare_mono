@@ -14,7 +14,7 @@ describe('dictionary api test', () => {
     verbalThematicVowelTypes: [],
   };
   const MockDictionaryFormDao = {
-    getForms: jest.fn().mockResolvedValue(mockForms),
+    getWordForms: jest.fn().mockResolvedValue(mockForms),
   };
   const MockDictionaryWordDao = {
     getGrammaticalInfo: jest.fn().mockResolvedValue(mockGrammar),
@@ -62,7 +62,7 @@ describe('dictionary api test', () => {
       setup();
 
       await request(app).get(PATH);
-      expect(MockDictionaryFormDao.getForms).toHaveBeenCalled();
+      expect(MockDictionaryFormDao.getWordForms).toHaveBeenCalled();
       expect(MockDictionaryWordDao.getGrammaticalInfo).toHaveBeenCalled();
     });
 
@@ -70,7 +70,7 @@ describe('dictionary api test', () => {
       setup({
         FormDao: {
           ...MockDictionaryFormDao,
-          getForms: jest.fn().mockRejectedValue('Form failure'),
+          getWordForms: jest.fn().mockRejectedValue('Form failure'),
         },
       });
 

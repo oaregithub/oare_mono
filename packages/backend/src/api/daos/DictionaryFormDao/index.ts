@@ -100,7 +100,25 @@ class DictionaryFormDao {
     };
   }
 
-  async getForms(wordUuid: string): Promise<DictionaryForm[]> {
+  async getForm(formUuid: string): Promise<DictionaryForm> {
+    const { form }: { form: string } = await knex('dictionary_form').select('form').where('uuid', formUuid).first();
+    const spellings = await DictionarySpellingDao.getFormSpellings(formUuid);
+    const grammar = await this.getFormGrammar(formUuid);
+
+    return {
+      uuid: formUuid,
+      form,
+      ...grammar,
+      spellings,
+    };
+  }
+
+  async formExists(formUuid: string): Promise<boolean> {
+    const row = await knex('dictionary_form').select().where('uuid', formUuid).first();
+    return !!row;
+  }
+
+  async getWordForms(wordUuid: string): Promise<DictionaryForm[]> {
     const forms: { uuid: string; form: string }[] = await knex('dictionary_form')
       .select('uuid', 'form')
       .where('reference_uuid', wordUuid);

@@ -2,7 +2,7 @@
   <v-dialog
     :value="value"
     @input="$emit('input', $event)"
-    width="500"
+    :width="width"
     :persistent="persistent"
   >
     <template v-slot:activator="{ on }">
@@ -84,6 +84,10 @@ export default defineComponent({
     closeOnSubmit: {
       type: Boolean,
       default: false,
+    },
+    width: {
+      type: Number,
+      default: 500,
     },
   },
   setup({ closeOnSubmit }, { emit }) {
