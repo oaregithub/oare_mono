@@ -1,8 +1,8 @@
-import { tokenize, spellingHtmlReading } from '../utils';
+import { tokenizeExplicitSpelling, spellingHtmlReading } from '../src/index';
 
 describe('tokenizer', () => {
   it('correctly tokenizes', () => {
-    expect(tokenize('(TÚG)a-bar-ni-ú')).toEqual([
+    expect(tokenizeExplicitSpelling('(TÚG)a-bar-ni-ú')).toEqual([
       { classifier: 'SUPERSCRIPT', reading: 'TÚG' },
       { classifier: 'SYLLABLE', reading: 'a' },
       { classifier: 'SEPARATOR', reading: '-' },
@@ -16,7 +16,7 @@ describe('tokenizer', () => {
 
   it('returns HTML reading', () => {
     expect(spellingHtmlReading('(TÚG)a-bar-ni-ú')).toBe(
-      '<sup>TÚG</sup><em>a</em>-<em>bar</em>-<em>ni</em>-<em>ú</em>'
+      '<sup>TÚG</sup><em>a</em>-<em>bar</em>-<em>ni</em>-<em>ú</em>',
     );
   });
 });
