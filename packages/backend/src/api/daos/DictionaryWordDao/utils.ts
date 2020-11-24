@@ -39,11 +39,6 @@ function getWordList(flatNames: NamePlaceQueryRow[]): string[] {
   return Array.from(wordList);
 }
 
-function capitalized(word: string): string {
-  if (!word || word.length < 1) return word;
-  return word[0].toUpperCase() + word.substring(1);
-}
-
 function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NameOrPlace {
   const info: NameOrPlace = {
     uuid: flatNames[0].uuid,
@@ -54,7 +49,7 @@ function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NameOrPlace {
 
   flatNames.forEach(({ formUuid, form, spellings, cases }) => {
     if (form && formUuid) {
-      const spellingList = spellings ? spellings.split(',') : [];
+      const spellingList = spellings ? spellings.split(',').map((spelling) => spelling.trim()) : [];
 
       info.forms.push({
         uuid: formUuid,
