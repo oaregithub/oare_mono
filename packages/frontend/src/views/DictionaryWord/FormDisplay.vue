@@ -1,14 +1,14 @@
 <template>
   <div>
     <div v-if="!editing" class="d-flex">
-      <!-- <v-btn
+      <v-btn
         v-if="canAddSpelling && !editing"
         icon
         class="mt-n2 mr-1"
         @click="spellingDialogOpen = true"
       >
         <v-icon>mdi-plus</v-icon>
-      </v-btn> -->
+      </v-btn>
       <v-btn
         v-if="canEdit"
         icon

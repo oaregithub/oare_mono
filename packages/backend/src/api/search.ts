@@ -4,6 +4,7 @@ import {
   SearchTextsPayload,
   SearchSpellingPayload,
   SearchDiscourseSpellingRow,
+  SearchDiscourseSpellingResponse,
 } from '@oare/types';
 import cache from '@/cache';
 import { HttpInternalError } from '@/exceptions';
@@ -16,13 +17,18 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
     const textDiscourseDao = sl.get('TextDiscourseDao');
     const aliasDao = sl.get('AliasDao');
 
-    const { spelling } = (req.query as unknown) as SearchSpellingPayload;
+    const { spelling, page: queryPage, limit: queryLimit } = (req.query as unknown) as SearchSpellingPayload;
+    const limit = queryLimit ? Number(queryLimit) : 10;
+    const page = queryPage ? Number(queryPage) : 1;
 
-    const searchRows = await textDiscourseDao.searchTextDiscourseSpellings(spelling);
+    const { rows: searchRows, totalResults } = await textDiscourseDao.searchTextDiscourseSpellings(spelling, {
+      page,
+      limit,
+    });
     const textNames = await Promise.all(searchRows.map((r) => aliasDao.displayAliasNames(r.textUuid)));
     const textReadings = await Promise.all(searchRows.map((r) => textDiscourseDao.getTextSpellings(r.textUuid)));
 
-    const response: SearchDiscourseSpellingRow[] = searchRows
+    const rows: SearchDiscourseSpellingRow[] = searchRows
       .map((row, i) => ({
         line: row.line,
         wordOnTablet: row.wordOnTablet,
@@ -45,6 +51,10 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
         return nameCompare;
       });
 
+    const response: SearchDiscourseSpellingResponse = {
+      rows,
+      totalResults,
+    };
     res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));

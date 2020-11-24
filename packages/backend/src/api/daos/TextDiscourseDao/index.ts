@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { SpellingText, DiscourseLineSpelling } from '@oare/types';
+import { SpellingText, DiscourseLineSpelling, Pagination } from '@oare/types';
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
 
 export interface DiscourseRow {
@@ -32,15 +32,32 @@ export interface SearchDiscourseSpellingRow {
   wordOnTablet: number;
 }
 
+export interface SearchDiscourseSpellingDaoResponse {
+  totalResults: number;
+  rows: SearchDiscourseSpellingRow[];
+}
+
 class TextDiscourseDao {
-  async searchTextDiscourseSpellings(spelling: string): Promise<SearchDiscourseSpellingRow[]> {
-    const rows: SearchDiscourseSpellingRow[] = await knex('text_discourse AS td')
+  async searchTextDiscourseSpellings(
+    spelling: string,
+    { page, limit }: Pagination,
+  ): Promise<SearchDiscourseSpellingDaoResponse> {
+    const createBaseQuery = () => knex('text_discourse AS td').where('explicit_spelling', spelling);
+
+    const countRow = await createBaseQuery().count({ count: 'uuid' }).first();
+    const totalResults = countRow?.count || 0;
+
+    const rows: SearchDiscourseSpellingRow[] = await createBaseQuery()
       .select('td.text_uuid AS textUuid', 'te.line', 'td.word_on_tablet AS wordOnTablet')
       .innerJoin('text_epigraphy AS te', 'te.discourse_uuid', 'td.uuid')
-      .where('explicit_spelling', spelling)
-      .groupBy('td.uuid');
+      .groupBy('td.uuid')
+      .limit(limit)
+      .offset(page * limit);
 
-    return rows;
+    return {
+      totalResults: Number(totalResults),
+      rows,
+    };
   }
 
   async getTextSpellings(textUuid: string): Promise<DiscourseLineSpelling[]> {

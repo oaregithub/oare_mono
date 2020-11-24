@@ -13,7 +13,7 @@
         <v-data-table
           :headers="spellingResultHeaders"
           :items="spellingSearchResults"
-          :loading="searchLoading"
+          :loading="searchSpellingLoading"
         >
           <template #[`item.word`]="{ item }">
             <router-link :to="`/dictionaryWord/${item.wordUuid}`">{{
@@ -30,7 +30,9 @@
         <v-data-table
           :headers="discourseResultHeaders"
           :items="discourseSearchResults"
-          :loading="searchLoading"
+          :loading="searchDiscourseLoading"
+          :server-items-length="totalDiscourseResults"
+          :options.sync="discourseOptions"
         >
           <template #[`item.textName`]="{ item }">
             <router-link :to="`/epigraphies/${item.textUuid}`">{{
@@ -52,7 +54,13 @@ import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
 } from '@oare/types';
-import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  reactive,
+  Ref,
+  watch,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import _ from 'lodash';
 import { DataTableHeader } from 'vuetify';
@@ -72,10 +80,16 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const spelling = ref('');
     const searchedSpelling = ref('');
+    const totalDiscourseResults = ref(0);
+    const discourseOptions = ref({
+      page: 1,
+      itemsPerPage: 10,
+    });
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
     const discourseSearchResults: Ref<SearchDiscourseSpellingRow[]> = ref([]);
-    const searchLoading = ref(false);
+    const searchSpellingLoading = ref(false);
+    const searchDiscourseLoading = ref(false);
 
     const spellingResultHeaders: Ref<DataTableHeader[]> = ref([
       {
@@ -113,29 +127,60 @@ export default defineComponent({
         .join(' ');
     };
 
+    const searchSpellings = async (newSpelling: string) => {
+      try {
+        searchSpellingLoading.value = true;
+        searchedSpelling.value = newSpelling;
+        spellingSearchResults.value = await server.searchSpellings(newSpelling);
+      } catch {
+        actions.showErrorSnackbar('Failed to search for spellings');
+      } finally {
+        searchSpellingLoading.value = false;
+      }
+    };
+
+    const searchDiscourse = async (newSpelling: string) => {
+      try {
+        searchDiscourseLoading.value = true;
+        discourseSearchResults.value = [];
+        const { totalResults, rows } = await server.searchSpellingDiscourse(
+          newSpelling,
+          {
+            page: discourseOptions.value.page - 1,
+            limit: discourseOptions.value.itemsPerPage,
+          }
+        );
+
+        discourseSearchResults.value = rows;
+        totalDiscourseResults.value = totalResults;
+      } catch {
+        actions.showErrorSnackbar('Failed to search discourse spellings');
+      } finally {
+        searchDiscourseLoading.value = false;
+      }
+    };
+
     watch(
       spelling,
       _.debounce(async (newSpelling: string) => {
         if (newSpelling) {
-          try {
-            searchLoading.value = true;
-            searchedSpelling.value = newSpelling;
-            spellingSearchResults.value = await server.searchSpellings(
-              newSpelling
-            );
-            discourseSearchResults.value = await server.searchSpellingDiscourse(
-              newSpelling
-            );
-          } catch {
-            actions.showSnackbar('Failed to load search results');
-          } finally {
-            searchLoading.value = false;
-          }
+          searchSpellings(newSpelling);
+          searchDiscourse(newSpelling);
         } else {
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
         }
       }, 500)
+    );
+
+    watch(
+      discourseOptions,
+      () => {
+        if (spelling.value) {
+          searchDiscourse(spelling.value);
+        }
+      },
+      { deep: true }
     );
 
     return {
@@ -144,8 +189,11 @@ export default defineComponent({
       discourseSearchResults,
       spellingResultHeaders,
       discourseResultHeaders,
-      searchLoading,
+      searchSpellingLoading,
+      searchDiscourseLoading,
       renderedReading,
+      totalDiscourseResults,
+      discourseOptions,
     };
   },
 });
