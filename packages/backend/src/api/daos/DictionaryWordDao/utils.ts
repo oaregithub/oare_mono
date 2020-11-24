@@ -54,7 +54,7 @@ function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NameOrPlace {
 
   flatNames.forEach(({ formUuid, form, spellings, cases }) => {
     if (form && formUuid) {
-      const spellingList = spellings ? spellings.split(',').map((spelling) => capitalized(spelling.trim())) : [];
+      const spellingList = spellings ? spellings.split(',') : [];
 
       info.forms.push({
         uuid: formUuid,

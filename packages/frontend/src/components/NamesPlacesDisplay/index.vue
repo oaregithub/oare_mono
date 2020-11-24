@@ -21,7 +21,7 @@
         <div class="mr-1">({{ formInfo.cases }})</div>
         <div v-for="(spelling, idx) in formInfo.spellings" :key="idx">
           <span v-if="idx > 0">, </span>
-          <span v-html="spellingHtmlReading(spelling)"></span>
+          <span v-html="correctedHtmlSpelling(spelling)"></span>
         </div>
       </div>
     </template>
@@ -54,6 +54,15 @@ export default defineComponent({
   },
 
   setup() {
+    const correctedHtmlSpelling = (spelling: string) => {
+      let rawHtml = spellingHtmlReading(spelling);
+      const firstLetterIndex = rawHtml.indexOf('<em>') + 4;
+      return rawHtml.replace(
+        rawHtml.charAt(firstLetterIndex),
+        rawHtml.charAt(firstLetterIndex).toUpperCase()
+      );
+    };
+
     const searchFilter = (search: string, word: NameOrPlace) => {
       const lowerSearch = search ? search.toLowerCase() : '';
 
@@ -75,7 +84,7 @@ export default defineComponent({
 
     return {
       searchFilter,
-      spellingHtmlReading,
+      correctedHtmlSpelling,
     };
   },
 });
