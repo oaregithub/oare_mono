@@ -39,7 +39,7 @@ import {
   Ref,
   computed,
   PropType,
-  onMounted,
+  watch,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { WordWithForms, DictionaryForm, PermissionResponse } from '@oare/types';
@@ -78,19 +78,23 @@ export default defineComponent({
       wordInfo.value = newWordInfo;
     };
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
-      } catch {
-        actions.showErrorSnackbar('Failed to retrieve dictionary info');
-      } finally {
-        loading.value = false;
-      }
-    });
+    watch(
+      props,
+      async () => {
+        loading.value = true;
+        try {
+          wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
+        } catch {
+          actions.showErrorSnackbar('Failed to retrieve dictionary info');
+        } finally {
+          loading.value = false;
+        }
+      },
+      { immediate: true }
+    );
 
     const breadcrumbItems = computed(() => {
-      const items = [
+      const items: BreadcrumbItem[] = [
         {
           link: '/words/A',
           text: 'Dictionary Words',
@@ -110,7 +114,7 @@ export default defineComponent({
           }
         }
         items.push({
-          link: `/dictionaryWord/${props.uuid}`,
+          link: null,
           text: wordInfo.value.word,
         });
       }

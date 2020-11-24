@@ -44,7 +44,7 @@ router
       const { uuid } = req.params;
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
-      const forms = await DictionaryFormDao.getForms(uuid);
+      const forms = await DictionaryFormDao.getWordForms(uuid);
 
       const result: DictionaryWordResponse = {
         ...grammarInfo,

@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { SpellingText } from '@oare/types';
+import { SpellingText, DiscourseLineSpelling } from '@oare/types';
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
 
 export interface DiscourseRow {
@@ -30,11 +30,6 @@ export interface SearchDiscourseSpellingRow {
   textUuid: string;
   line: number;
   wordOnTablet: number;
-}
-
-export interface DiscourseLineSpelling {
-  wordOnTablet: number;
-  spelling: string;
 }
 
 class TextDiscourseDao {
