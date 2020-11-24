@@ -88,6 +88,10 @@ export interface AddFormSpellingPayload {
   spelling: string;
 }
 
+export interface AddFormSpellingResponse {
+  uuid: string;
+}
+
 export interface WordWithForms {
   word: string;
   forms: DictionaryForm[];

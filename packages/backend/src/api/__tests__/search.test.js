@@ -70,7 +70,10 @@ describe('search test', () => {
     };
 
     const TextDiscourseDao = {
-      searchTextDiscourseSpellings: jest.fn().mockResolvedValue(searchRows),
+      searchTextDiscourseSpellings: jest.fn().mockResolvedValue({
+        rows: searchRows,
+        totalResults: searchRows.length,
+      }),
       getTextSpellings: jest.fn().mockResolvedValue(textReadings),
     };
 
@@ -87,26 +90,29 @@ describe('search test', () => {
       const response = await sendRequest();
 
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([
-        {
-          line: 1,
-          textName,
-          textUuid: 'text-uuid',
-          wordOnTablet: 10,
-          readings: [
-            {
-              spelling: 'fakeSpelling',
-              wordOnTablet: 10,
-            },
-          ],
-        },
-      ]);
+      expect(JSON.parse(response.text)).toEqual({
+        totalResults: searchRows.length,
+        rows: [
+          {
+            line: 1,
+            textName,
+            textUuid: 'text-uuid',
+            wordOnTablet: 10,
+            readings: [
+              {
+                spelling: 'fakeSpelling',
+                wordOnTablet: 10,
+              },
+            ],
+          },
+        ],
+      });
     });
 
     it('calls appropriate DAOs', async () => {
       await sendRequest();
 
-      expect(TextDiscourseDao.searchTextDiscourseSpellings).toHaveBeenCalledWith(spelling);
+      expect(TextDiscourseDao.searchTextDiscourseSpellings).toHaveBeenCalledWith(spelling, { limit: 10, page: 1 });
       expect(AliasDao.displayAliasNames).toHaveBeenCalledWith('text-uuid');
       expect(TextDiscourseDao.getTextSpellings).toHaveBeenCalledWith('text-uuid');
     });

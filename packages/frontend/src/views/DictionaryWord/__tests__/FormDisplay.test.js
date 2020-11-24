@@ -54,6 +54,7 @@ describe('FormsDisplay test', () => {
         form: mockForm,
         updateForm,
       },
+      stubs: ['add-spelling-dialog'],
     });
   };
 

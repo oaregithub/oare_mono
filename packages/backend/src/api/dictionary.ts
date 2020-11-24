@@ -6,6 +6,7 @@ import {
   DictionaryForm,
   UpdateFormSpellingPayload,
   AddFormSpellingPayload,
+  AddFormSpellingResponse,
 } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
@@ -29,7 +30,9 @@ router.route('/dictionary/spellings').post(adminRoute, async (req, res, next) =>
 
     const uuid = await DictionarySpellingDao.addSpelling(formUuid, spelling);
     await LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'dictionary_spelling', uuid);
-    res.status(201).end();
+
+    const response: AddFormSpellingResponse = { uuid };
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

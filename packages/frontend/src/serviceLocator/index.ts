@@ -1,6 +1,7 @@
 import { GlobalActionsType } from '@/globalActions';
 import { ServerProxyType } from '@/serverProxy';
 import store from '@/ts-store';
+import _ from 'lodash';
 
 const instances: { [key: string]: any } = {};
 
@@ -8,6 +9,7 @@ export type ServiceTypes = {
   serverProxy: ServerProxyType;
   globalActions: GlobalActionsType;
   store: typeof store;
+  lodash: typeof _;
 };
 
 export default {

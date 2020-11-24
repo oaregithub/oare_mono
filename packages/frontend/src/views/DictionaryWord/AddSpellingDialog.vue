@@ -1,12 +1,16 @@
 <template>
   <oare-dialog
-    title="Add Spelling"
+    :title="`Add Spelling to ${form.form}`"
     :value="value"
     @input="$emit('input', $event)"
-    :submitDisabled="!spelling"
     :width="1000"
   >
-    <v-text-field v-model="spelling" autofocus clearable />
+    <v-text-field
+      v-model="spelling"
+      autofocus
+      clearable
+      class="test-spelling-field"
+    />
     <v-row>
       <v-col cols="12" md="6">
         This spelling appears in the following forms:
@@ -45,6 +49,25 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <template #submit-button>
+      <v-tooltip bottom :disabled="!submitDisabledMessage">
+        <template v-slot:activator="{ on, attrs }">
+          <span v-on="on">
+            <OareLoaderButton
+              color="primary"
+              v-bind="attrs"
+              :disabled="!spelling || spellingExists"
+              :loading="addLoading"
+              @click="addSpelling"
+              class="test-submit-btn"
+            >
+              Submit
+            </OareLoaderButton>
+          </span>
+        </template>
+        <span>{{ submitDisabledMessage }}</span>
+      </v-tooltip>
+    </template>
   </oare-dialog>
 </template>
 
@@ -53,6 +76,7 @@ import OareDialog from '@/components/base/OareDialog.vue';
 import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
+  DictionaryForm,
 } from '@oare/types';
 import {
   defineComponent,
@@ -60,9 +84,10 @@ import {
   reactive,
   Ref,
   watch,
+  PropType,
+  computed,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import _ from 'lodash';
 import { DataTableHeader } from 'vuetify';
 
 export default defineComponent({
@@ -71,13 +96,24 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    form: {
+      type: Object as PropType<DictionaryForm>,
+      required: true,
+    },
+    addSpellingToForm: {
+      type: Function as PropType<
+        (spellingUuid: string, spelling: string) => void
+      >,
+      required: true,
+    },
   },
   components: {
     OareDialog,
   },
-  setup() {
+  setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const _ = sl.get('lodash');
     const spelling = ref('');
     const searchedSpelling = ref('');
     const totalDiscourseResults = ref(0);
@@ -85,6 +121,7 @@ export default defineComponent({
       page: 1,
       itemsPerPage: 10,
     });
+    const addLoading = ref(false);
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
     const discourseSearchResults: Ref<SearchDiscourseSpellingRow[]> = ref([]);
@@ -116,6 +153,36 @@ export default defineComponent({
         value: 'readings',
       },
     ]);
+
+    const spellingExists = computed(() =>
+      props.form.spellings.map(f => f.spelling).includes(spelling.value)
+    );
+
+    const submitDisabledMessage = computed(() => {
+      if (spellingExists.value) {
+        return 'The spelling you have typed already exists on the form';
+      } else if (!spelling.value) {
+        return 'You cannot submit an empty spelling';
+      }
+      return '';
+    });
+
+    const addSpelling = async () => {
+      try {
+        addLoading.value = true;
+        const { uuid } = await server.addSpelling({
+          formUuid: props.form.uuid,
+          spelling: spelling.value,
+        });
+        props.addSpellingToForm(uuid, spelling.value);
+        emit('input', false);
+        actions.showSnackbar('Successfully added spelling');
+      } catch {
+        actions.showErrorSnackbar('Failed to add spelling to form');
+      } finally {
+        addLoading.value = false;
+      }
+    };
 
     const renderedReading = (row: SearchDiscourseSpellingRow) => {
       return row.readings
@@ -183,6 +250,17 @@ export default defineComponent({
       { deep: true }
     );
 
+    watch(
+      () => props.value,
+      open => {
+        if (!open) {
+          spelling.value = '';
+          spellingSearchResults.value = [];
+          discourseSearchResults.value = [];
+        }
+      }
+    );
+
     return {
       spelling,
       spellingSearchResults,
@@ -194,6 +272,10 @@ export default defineComponent({
       renderedReading,
       totalDiscourseResults,
       discourseOptions,
+      spellingExists,
+      submitDisabledMessage,
+      addLoading,
+      addSpelling,
     };
   },
 });
