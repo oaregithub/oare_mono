@@ -19,7 +19,10 @@
       >
         <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
         <div class="mr-1">({{ formInfo.cases }})</div>
-        <div>{{ formInfo.spellings.join(', ') }}</div>
+        <div v-for="(spelling, idx) in formInfo.spellings" :key="idx">
+          <span v-if="idx > 0">, </span>
+          <span v-html="correctedHtmlSpelling(spelling)"></span>
+        </div>
       </div>
     </template>
   </DictionaryDisplay>
@@ -29,6 +32,7 @@
 import { defineComponent, PropType, computed } from '@vue/composition-api';
 import { NameOrPlace } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
+import { spellingHtmlReading } from '@oare/oare';
 
 export default defineComponent({
   name: 'NamesPlacesDisplay',
@@ -50,6 +54,15 @@ export default defineComponent({
   },
 
   setup() {
+    const correctedHtmlSpelling = (spelling: string) => {
+      let rawHtml = spellingHtmlReading(spelling);
+      const firstLetterIndex = rawHtml.indexOf('<em>') + 4;
+      return rawHtml.replace(
+        rawHtml.charAt(firstLetterIndex),
+        rawHtml.charAt(firstLetterIndex).toUpperCase()
+      );
+    };
+
     const searchFilter = (search: string, word: NameOrPlace) => {
       const lowerSearch = search ? search.toLowerCase() : '';
 
@@ -71,6 +84,7 @@ export default defineComponent({
 
     return {
       searchFilter,
+      correctedHtmlSpelling,
     };
   },
 });

@@ -86,6 +86,14 @@ export interface CreateTabletRendererOptions {
   admin?: boolean;
 }
 
+type TokenType = 'SYLLABLE' | 'SUPERSCRIPT' | 'SEPARATOR';
+type State = null | 'READ_SUPERSCRIPT' | 'READ_SYLLABLE';
+
+type Token = {
+  classifier: TokenType;
+  reading: string;
+};
+
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûwz';
 export const AkkadianAlphabetUpper = 'ĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛWZ';
 export const AkkadianLetterGroupsUpper: { [key: string]: string } = {
@@ -135,4 +143,83 @@ const createTabletRenderer = (
   return renderer;
 };
 
-export { createTabletRenderer };
+const tokenizeExplicitSpelling = (spelling: string): Token[] => {
+  let state: State = null;
+  let reading = '';
+  const tokens: Token[] = [];
+  const eof = String.fromCharCode(-1);
+
+  spelling
+    .concat(eof)
+    .split('')
+    .forEach((char) => {
+      switch (state) {
+        case null:
+          if (char === '(') {
+            state = 'READ_SUPERSCRIPT';
+          } else {
+            state = 'READ_SYLLABLE';
+            reading += char;
+          }
+          break;
+        case 'READ_SUPERSCRIPT':
+          if (char === ')' || char === eof) {
+            tokens.push({
+              classifier: 'SUPERSCRIPT',
+              reading,
+            });
+            reading = '';
+            state = null;
+          } else {
+            reading += char;
+          }
+          break;
+        case 'READ_SYLLABLE':
+          if (char === '.' || char === '-') {
+            tokens.push({
+              classifier: 'SYLLABLE',
+              reading,
+            });
+            tokens.push({
+              classifier: 'SEPARATOR',
+              reading: char,
+            });
+            reading = '';
+            state = null;
+          } else if (char === '(' || char === eof) {
+            tokens.push({
+              classifier: 'SYLLABLE',
+              reading,
+            });
+            reading = '';
+            state = 'READ_SUPERSCRIPT';
+          } else {
+            reading += char;
+          }
+          break;
+        default:
+          break;
+      }
+    });
+  return tokens;
+};
+
+const spellingHtmlReading = (spelling: string): string => {
+  const tokenizedSpelling = tokenizeExplicitSpelling(spelling)
+    .map((token) => {
+      if (token.classifier === 'SUPERSCRIPT') {
+        return `<sup>${token.reading}</sup>`;
+      }
+      if (token.classifier === 'SYLLABLE') {
+        if (token.reading === token.reading.toLowerCase()) {
+          return `<em>${token.reading}</em>`;
+        }
+        return token.reading;
+      }
+      return token.reading;
+    })
+    .join('');
+  return tokenizedSpelling;
+};
+
+export { createTabletRenderer, spellingHtmlReading, tokenizeExplicitSpelling };
