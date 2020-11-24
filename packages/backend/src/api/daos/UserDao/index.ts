@@ -78,7 +78,17 @@ class UserDao {
 
   async getAllUsers(): Promise<User[]> {
     const users: User[] = await knex('user').select('id', 'first_name', 'last_name', 'email');
-    return users;
+    const mappedUsers = Promise.all(
+      users.map(async (user) => {
+        const groupObjects = await knex('user_group').select('group_id').where('user_id', user.id);
+        const userGroups = groupObjects.map((index) => index.group_id);
+        return {
+          ...user,
+          groups: userGroups,
+        };
+      }),
+    );
+    return mappedUsers;
   }
 }
 

@@ -182,7 +182,9 @@ export default defineComponent({
       loading.value = true;
       try {
         allUsers.value = await server.getAllUsers();
-        groupUsers.value = await server.getGroupUsers(Number(groupId));
+        groupUsers.value = allUsers.value.filter(user => {
+          return user.groups.includes(Number(groupId));
+        });
       } catch {
         actions.showErrorSnackbar('Error loading users. Please try again.');
       } finally {

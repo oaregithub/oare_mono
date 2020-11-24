@@ -17,19 +17,20 @@ describe('ManageMembers test', () => {
       first_name: 'Steve',
       last_name: 'Rogers',
       email: 'steve@gmail.com',
+      groups: [1],
     },
     {
       id: 2,
       first_name: 'Tony',
       last_name: 'Stark',
       email: 'tony@gmail.com',
+      groups: [2],
     },
   ];
   const mockServer = {
     addUsersToGroup: jest.fn().mockResolvedValue(null),
     removeUsersFromGroup: jest.fn().mockResolvedValue(null),
     getAllUsers: jest.fn().mockResolvedValue(mockUsers.slice(0, 1)),
-    getGroupUsers: jest.fn().mockResolvedValue(mockUsers.slice(1)),
   };
   const mockActions = {
     showErrorSnackbar: jest.fn(),
@@ -55,8 +56,7 @@ describe('ManageMembers test', () => {
     const wrapper = createWrapper();
     await flushPromises();
     expect(mockServer.getAllUsers).toHaveBeenCalled();
-    expect(mockServer.getGroupUsers).toHaveBeenCalled();
-    expect(wrapper.html()).toContain('Tony Stark');
+    expect(wrapper.html()).toContain('Steve Rogers');
   });
 
   it('displays error upon user retrieval fail', async () => {
@@ -92,7 +92,7 @@ describe('ManageMembers test', () => {
     await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.removeUsersFromGroup).toHaveBeenCalledWith(1, {
-      userIds: [2],
+      userIds: [1],
     });
   });
 
