@@ -1,15 +1,14 @@
 import express from 'express';
-import { SearchTextsResponse, SearchTextsPayload, SearchSpellingPayload } from '@oare/types';
+import {
+  SearchTextsResponse,
+  SearchTextsPayload,
+  SearchSpellingPayload,
+  SearchDiscourseSpellingRow,
+} from '@oare/types';
 import cache from '@/cache';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-interface SearchDiscourseSpellingRow {
-  line: number;
-  textUuid: string;
-  textName: string;
-  textReading: string;
-}
 const router = express.Router();
 
 router.route('/search/spellings/discourse').get(async (req, res, next) => {
@@ -23,15 +22,28 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
     const textNames = await Promise.all(searchRows.map((r) => aliasDao.displayAliasNames(r.textUuid)));
     const textReadings = await Promise.all(searchRows.map((r) => textDiscourseDao.getTextSpellings(r.textUuid)));
 
-    const response: SearchDiscourseSpellingRow[] = searchRows.map((row, i) => ({
-      line: row.line,
-      textName: textNames[i],
-      textUuid: row.textUuid,
-      textReading: textReadings[i]
-        .filter((tr) => tr.wordOnTablet >= row.wordOnTablet - 5 && tr.wordOnTablet <= row.wordOnTablet + 5)
-        .map((tr) => tr.spelling)
-        .join(' '),
-    }));
+    const response: SearchDiscourseSpellingRow[] = searchRows
+      .map((row, i) => ({
+        line: row.line,
+        wordOnTablet: row.wordOnTablet,
+        textName: textNames[i],
+        textUuid: row.textUuid,
+        readings: textReadings[i].filter(
+          (tr) => tr.wordOnTablet >= row.wordOnTablet - 5 && tr.wordOnTablet <= row.wordOnTablet + 5,
+        ),
+      }))
+      .sort((a, b) => {
+        const nameCompare = a.textName.localeCompare(b.textName);
+
+        if (nameCompare === 0) {
+          if (a.line === b.line) {
+            return a.wordOnTablet > b.wordOnTablet ? 1 : -1;
+          }
+          return a.line > b.line ? 1 : -1;
+        }
+
+        return nameCompare;
+      });
 
     res.json(response);
   } catch (err) {

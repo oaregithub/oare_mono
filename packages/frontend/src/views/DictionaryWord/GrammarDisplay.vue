@@ -1,16 +1,5 @@
 <template>
-  <div>
-    <span class="mx-1" v-if="formGrammar !== ''">({{ formGrammar }})</span>
-    <span>
-      <span v-for="(s, index) in form.spellings" :key="index">
-        <spelling-display
-          :spelling="s"
-          :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
-        />
-        <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
-      </span></span
-    >
-  </div>
+  <span class="mx-1" v-if="formGrammar !== ''">({{ formGrammar }})</span>
 </template>
 
 <script lang="ts">
@@ -22,35 +11,18 @@ import {
   Ref,
   reactive,
 } from '@vue/composition-api';
-import { DictionaryForm, SpellingText, FormSpelling } from '@oare/types';
+import { DictionaryForm, SpellingText } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
-import SpellingDisplay from './SpellingDisplay.vue';
 
 export default defineComponent({
-  components: {
-    SpellingDisplay,
-  },
   props: {
-    updateForm: {
-      type: Function as PropType<(newForm: DictionaryForm) => void>,
-      required: true,
-    },
     form: {
       type: Object as PropType<DictionaryForm>,
       required: true,
     },
   },
-  setup({ updateForm, form }) {
+  setup({ form }) {
     const search = ref('');
-
-    const updateSpelling = (index: number, newSpelling: FormSpelling) => {
-      const spellings = [...form.spellings];
-      spellings[index] = newSpelling;
-      updateForm({
-        ...form,
-        spellings,
-      });
-    };
 
     const formGrammar = computed(() => {
       let suffix = '';
@@ -94,7 +66,6 @@ export default defineComponent({
     return {
       formGrammar,
       search,
-      updateSpelling,
     };
   },
 });

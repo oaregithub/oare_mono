@@ -208,6 +208,21 @@ export interface SearchTextNamesPayload {
   search: string;
 }
 
+// Search spelling discourse
+
+export interface DiscourseLineSpelling {
+  wordOnTablet: number;
+  spelling: string;
+}
+
+export interface SearchDiscourseSpellingRow {
+  line: number;
+  wordOnTablet: number;
+  textUuid: string;
+  textName: string;
+  readings: DiscourseLineSpelling[];
+}
+
 // Search spellings
 
 export interface SearchSpellingResultRow {
