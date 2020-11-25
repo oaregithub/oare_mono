@@ -2,31 +2,11 @@
   <v-progress-linear v-if="loading" indeterminate />
   <div v-else>
     <div style="display: flex">
-      <OareDialog
-        v-model="addUserDialog"
-        title="Add user"
-        @submit="addUsers"
-        :submitLoading="addUsersLoading"
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn color="primary" v-on="on" class="mr-3 test-add">
-            <span> <v-icon>mdi-plus</v-icon>Add users </span>
-          </v-btn>
-        </template>
-        <v-autocomplete
-          v-model="selectedUsers"
-          outlined
-          return-object
-          chips
-          multiple
-          deletable-chips
-          :search-input.sync="searchUserInput"
-          :items="searchUserItems"
-          item-text="info"
-          item-value="id"
-          autofocus
-        ></v-autocomplete>
-      </OareDialog>
+      <router-link :to="`/addusers/${groupId}`">
+        <v-btn color="primary" class="mr-3 test-add">
+          <span> <v-icon>mdi-plus</v-icon>Add users </span>
+        </v-btn>
+      </router-link>
 
       <OareDialog
         v-model="deleteUserDialog"
@@ -98,48 +78,16 @@ export default defineComponent({
     },
   },
   setup({ serverProxy, groupId }) {
-    const addUserDialog = ref(false);
-    const addUsersLoading = ref(false);
     const deleteUserLoading = ref(false);
     const deleteUserDialog = ref(false);
     const loading = ref(true);
-    const searchUserInput = ref('');
 
     const allUsers: Ref<GetUserResponse[]> = ref([]);
     const groupUsers: Ref<GetUserResponse[]> = ref([]);
-    const selectedUsers: Ref<GetUserResponse[]> = ref([]);
     const selectedDeleteUsers: Ref<GetUserResponse[]> = ref([]);
     const usersHeaders = ref([{ text: 'Name', value: 'name' }]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-
-    const searchUserItems = computed(() => {
-      const groupUserIds = groupUsers.value.map(user => user.id);
-      return allUsers.value
-        .filter(user => !groupUserIds.includes(user.id))
-        .map(user => ({
-          ...user,
-          info: `${user.first_name} ${user.last_name} (${user.email})`,
-        }));
-    });
-
-    const addUsers = async () => {
-      addUsersLoading.value = true;
-      try {
-        await server.addUsersToGroup(Number(groupId), {
-          userIds: selectedUsers.value.map(user => user.id),
-        });
-        selectedUsers.value.forEach(user => {
-          groupUsers.value.push(user);
-        });
-        addUserDialog.value = false;
-        actions.showSnackbar('Successfully added user(s).');
-      } catch {
-        actions.showErrorSnackbar('Could not add user(s). Please try again.');
-      } finally {
-        addUsersLoading.value = false;
-      }
-    };
 
     const removeUsers = async () => {
       const userIds = selectedDeleteUsers.value.map(user => user.id);
@@ -161,23 +109,6 @@ export default defineComponent({
       );
     };
 
-    watch(addUserDialog, open => {
-      if (!open) {
-        selectedUsers.value = [];
-        searchUserInput.value = '';
-      }
-    });
-
-    watch(
-      selectedUsers,
-      (newUsers, oldUsers) => {
-        if (newUsers.length > oldUsers.length) {
-          searchUserInput.value = '';
-        }
-      },
-      { deep: true, immediate: false }
-    );
-
     onMounted(async () => {
       loading.value = true;
       try {
@@ -193,19 +124,13 @@ export default defineComponent({
     });
 
     return {
-      addUserDialog,
-      addUsersLoading,
       deleteUserLoading,
       deleteUserDialog,
       loading,
-      searchUserInput,
       allUsers,
       groupUsers,
-      selectedUsers,
       selectedDeleteUsers,
       usersHeaders,
-      searchUserItems,
-      addUsers,
       removeUsers,
     };
   },
