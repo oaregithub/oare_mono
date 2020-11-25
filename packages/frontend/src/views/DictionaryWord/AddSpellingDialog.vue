@@ -1,6 +1,6 @@
 <template>
   <oare-dialog
-    :title="`Add Spelling to ${form.form}`"
+    :title="`Add Spelling to ${form.form} (${formGrammarString(form)})`"
     :value="value"
     @input="$emit('input', $event)"
     :width="1000"
@@ -25,7 +25,7 @@
             }}</router-link>
           </template>
           <template #[`item.form`]="{ item }">
-            {{ item.form.form }}
+            {{ `${item.form.form} (${formGrammarString(item.form)})` }}
           </template>
         </v-data-table>
       </v-col>
@@ -89,6 +89,7 @@ import {
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
+import utils from '@/utils';
 
 export default defineComponent({
   props: {
@@ -276,6 +277,7 @@ export default defineComponent({
       submitDisabledMessage,
       addLoading,
       addSpelling,
+      formGrammarString: utils.formGrammarString,
     };
   },
 });
