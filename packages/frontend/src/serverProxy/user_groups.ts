@@ -5,11 +5,6 @@ import {
   RemoveUsersFromGroupPayload,
 } from '@oare/types';
 
-async function getGroupUsers(groupId: number): Promise<User[]> {
-  let { data: groupUsers } = await axios.get(`/user_groups/${groupId}`);
-  return groupUsers;
-}
-
 async function addUsersToGroup(
   groupId: number,
   payload: AddUsersToGroupPayload
@@ -27,7 +22,6 @@ async function removeUsersFromGroup(
 }
 
 export default {
-  getGroupUsers,
   addUsersToGroup,
   removeUsersFromGroup,
 };

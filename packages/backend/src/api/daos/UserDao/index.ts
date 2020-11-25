@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
-import { User } from '@oare/types';
+import { User, GetUserResponse } from '@oare/types';
 import knex from '@/connection';
+import UserGroupDao from '../UserGroupDao';
 
 export interface UserRow {
   id: number;
@@ -76,9 +77,13 @@ class UserDao {
     });
   }
 
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<GetUserResponse[]> {
     const users: User[] = await knex('user').select('id', 'first_name', 'last_name', 'email');
-    return users;
+    const groupObjects = await Promise.all(users.map((user) => UserGroupDao.getGroupsOfUser(user.id)));
+    return users.map((user, index) => ({
+      ...user,
+      groups: groupObjects[index],
+    }));
   }
 }
 

@@ -83,7 +83,7 @@ import {
   watch,
   computed,
 } from '@vue/composition-api';
-import { User } from '@oare/types';
+import { User, GetUserResponse } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -105,10 +105,10 @@ export default defineComponent({
     const loading = ref(true);
     const searchUserInput = ref('');
 
-    const allUsers: Ref<User[]> = ref([]);
-    const groupUsers: Ref<User[]> = ref([]);
-    const selectedUsers: Ref<User[]> = ref([]);
-    const selectedDeleteUsers: Ref<User[]> = ref([]);
+    const allUsers: Ref<GetUserResponse[]> = ref([]);
+    const groupUsers: Ref<GetUserResponse[]> = ref([]);
+    const selectedUsers: Ref<GetUserResponse[]> = ref([]);
+    const selectedDeleteUsers: Ref<GetUserResponse[]> = ref([]);
     const usersHeaders = ref([{ text: 'Name', value: 'name' }]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -182,7 +182,9 @@ export default defineComponent({
       loading.value = true;
       try {
         allUsers.value = await server.getAllUsers();
-        groupUsers.value = await server.getGroupUsers(Number(groupId));
+        groupUsers.value = allUsers.value.filter(user => {
+          return user.groups.includes(Number(groupId));
+        });
       } catch {
         actions.showErrorSnackbar('Error loading users. Please try again.');
       } finally {
