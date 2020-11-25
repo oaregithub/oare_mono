@@ -3,7 +3,8 @@ import {
   SearchTextsResponse,
   SearchTextsPayload,
   SearchSpellingResultRow,
-  SearchDiscourseSpellingRow,
+  SearchDiscourseSpellingResponse,
+  Pagination,
 } from '@oare/types';
 
 async function searchTexts(
@@ -26,11 +27,14 @@ async function searchSpellings(
 }
 
 async function searchSpellingDiscourse(
-  spelling: string
-): Promise<SearchDiscourseSpellingRow[]> {
+  spelling: string,
+  { page, limit }: Pagination
+): Promise<SearchDiscourseSpellingResponse> {
   let { data } = await axios.get('/search/spellings/discourse', {
     params: {
       spelling,
+      page,
+      limit,
     },
   });
 

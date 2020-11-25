@@ -5,6 +5,7 @@ import serverProxy from '@/serverProxy';
 import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
 import tsStore from '@/ts-store';
+import _ from 'lodash';
 import App from './App.vue';
 import router from './router';
 import 'vuetify/dist/vuetify.min.css';
@@ -19,6 +20,7 @@ import 'flag-icon-css/css/flag-icon.css';
 sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);
 sl.set('store', tsStore);
+sl.set('lodash', _);
 
 loadBases();
 

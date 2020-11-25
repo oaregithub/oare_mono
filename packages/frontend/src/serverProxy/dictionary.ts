@@ -7,6 +7,8 @@ import {
   UpdateDictionaryTranslationsResponse,
   UpdateFormSpellingPayload,
   DictionaryForm,
+  AddFormSpellingPayload,
+  AddFormSpellingResponse,
 } from '@oare/types';
 
 /**
@@ -53,7 +55,15 @@ async function updateSpelling(
   await axios.put(`/dictionary/spellings/${spellingUuid}`, payload);
 }
 
+async function addSpelling(
+  payload: AddFormSpellingPayload
+): Promise<AddFormSpellingResponse> {
+  const { data } = await axios.post('/dictionary/spellings', payload);
+  return data;
+}
+
 export default {
+  addSpelling,
   updateForm,
   getDictionaryInfo,
   editTranslations,

@@ -92,6 +92,10 @@ export interface AddFormSpellingPayload {
   spelling: string;
 }
 
+export interface AddFormSpellingResponse {
+  uuid: string;
+}
+
 export interface WordWithForms {
   word: string;
   forms: DictionaryForm[];
@@ -227,6 +231,11 @@ export interface SearchDiscourseSpellingRow {
   readings: DiscourseLineSpelling[];
 }
 
+export interface SearchDiscourseSpellingResponse {
+  totalResults: number;
+  rows: SearchDiscourseSpellingRow[];
+}
+
 // Search spellings
 
 export interface SearchSpellingResultRow {
@@ -237,6 +246,13 @@ export interface SearchSpellingResultRow {
 
 export interface SearchSpellingPayload {
   spelling: string;
+  page?: string;
+  limit?: string;
+}
+
+export interface Pagination {
+  page: number;
+  limit: number;
 }
 
 // Dictionary Search

@@ -532,10 +532,13 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 201 on success', async () => {
+    it('returns 200 on success', async () => {
       setupAddSpelling();
       const response = await sendRequest();
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual({
+        uuid: newUuid,
+      });
     });
 
     it("checks that the new spelling doesn't already exist on the form", async () => {
