@@ -30,6 +30,7 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
 
     const rows: SearchDiscourseSpellingRow[] = searchRows
       .map((row, i) => ({
+        uuid: row.uuid,
         line: row.line,
         wordOnTablet: row.wordOnTablet,
         textName: textNames[i],

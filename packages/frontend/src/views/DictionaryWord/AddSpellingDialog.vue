@@ -37,6 +37,7 @@
           :loading="searchDiscourseLoading"
           :server-items-length="totalDiscourseResults"
           :options.sync="discourseOptions"
+          show-select
         >
           <template #[`item.textName`]="{ item }">
             <router-link :to="`/epigraphies/${item.textUuid}`">{{
