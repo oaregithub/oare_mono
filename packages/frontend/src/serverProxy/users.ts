@@ -1,7 +1,7 @@
 import axios from '../axiosInstance';
-import { User } from '@oare/types';
+import { GetUserResponse } from '@oare/types';
 
-async function getAllUsers(): Promise<User[]> {
+async function getAllUsers(): Promise<GetUserResponse[]> {
   let { data } = await axios.get('/users');
   return data;
 }
