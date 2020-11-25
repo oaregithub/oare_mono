@@ -6,6 +6,10 @@ export interface User {
   email: string;
 }
 
+export interface GetUserResponse extends User {
+  groups: number[];
+}
+
 // Dictionary
 
 export interface DictionaryWordTranslation {
