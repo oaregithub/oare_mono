@@ -1,13 +1,10 @@
 <template>
-  <v-progress-linear v-if="loading" indeterminate />
-  <OareContentView v-else title="Add Users">
-    <template v-slot:header>
+  <OareContentView :title="`Add Users to ${groupName}`" :loading="loading">
+    <template #header>
       <router-link :to="`/groups/${groupId}/members`"
         >&larr; Back to group view
       </router-link>
     </template>
-
-    <OareSubheader>Group: {{ groupName }}</OareSubheader>
 
     <OareDialog
       v-model="addUsersDialog"
@@ -63,6 +60,7 @@ import {
 import { User, GetUserResponse } from '@oare/types';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
+import { DataTableHeader } from 'vuetify';
 
 export default defineComponent({
   components: { OareContentView },
@@ -73,14 +71,25 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ groupId, users }) {
+  setup({ groupId }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = sl.get('router');
 
     const groupName = ref('');
-    const usersHeaders = ref([{ text: 'Name', value: 'name' }]);
+    const usersHeaders: Ref<DataTableHeader[]> = ref([
+      { text: 'Name', value: 'name' },
+    ]);
     const allUsers: Ref<GetUserResponse[]> = ref([]);
-    const unaddedUsers: Ref<GetUserResponse[]> = ref([]);
+    const unaddedUsers = computed(() => {
+      return allUsers.value
+        .filter(user => {
+          return !user.groups.includes(Number(groupId));
+        })
+        .sort((a, b) => {
+          return a.first_name.charCodeAt(0) - b.first_name.charCodeAt(0);
+        });
+    });
     const selectedUsers: Ref<GetUserResponse[]> = ref([]);
 
     const loading = ref(true);
@@ -94,11 +103,10 @@ export default defineComponent({
         await server.addUsersToGroup(Number(groupId), {
           userIds: userIds,
         });
-        unaddedUsers.value = unaddedUsers.value.filter(
-          user => !userIds.includes(user.id)
-        );
+        selectedUsers.value = [];
         addUsersDialog.value = false;
         actions.showSnackbar('Successfully added users to group.');
+        router.push(`/groups/${groupId}/members`);
       } catch {
         actions.showErrorSnackbar(
           'Error adding users to group. Please try again.'
@@ -108,23 +116,10 @@ export default defineComponent({
       }
     };
 
-    watch(addUsersDialog, open => {
-      if (!open) {
-        selectedUsers.value = [];
-      }
-    });
-
     onMounted(async () => {
       try {
         groupName.value = await server.getGroupName(Number(groupId));
         allUsers.value = await server.getAllUsers();
-        unaddedUsers.value = allUsers.value
-          .filter(user => {
-            return !user.groups.includes(Number(groupId));
-          })
-          .sort((a, b) => {
-            return a.first_name.charCodeAt(0) - b.first_name.charCodeAt(0);
-          });
       } catch {
         actions.showErrorSnackbar(
           'Error loading group users. Please try again.'

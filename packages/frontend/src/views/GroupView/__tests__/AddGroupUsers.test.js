@@ -35,6 +35,9 @@ describe('AddGroupUsers test', () => {
     showErrorSnackbar: jest.fn(),
     showSnackbar: jest.fn(),
   };
+  const mockRouter = {
+    push: jest.fn(),
+  };
 
   const renderOptions = {
     localVue,
@@ -48,6 +51,7 @@ describe('AddGroupUsers test', () => {
   const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('router', mockRouter);
 
     return mount(AddGroupUsers, renderOptions);
   };
@@ -93,6 +97,16 @@ describe('AddGroupUsers test', () => {
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
+  it('navigates back to group view after add', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.find('.v-data-table__checkbox').trigger('click');
+    await wrapper.find('.test-add').trigger('click');
+    await wrapper.find('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockRouter.push).toHaveBeenCalledWith('/groups/1/members');
+  });
+
   it('adds users successfully', async () => {
     const wrapper = createWrapper();
     await flushPromises();
@@ -104,7 +118,7 @@ describe('AddGroupUsers test', () => {
       userIds: [2],
     });
     expect(mockActions.showSnackbar).toHaveBeenCalled();
-    expect(wrapper.html()).not.toContain('Tony Stark');
+    expect(wrapper.html()).toContain('Tony Stark');
   });
 
   it('displays error on failed user add', async () => {
