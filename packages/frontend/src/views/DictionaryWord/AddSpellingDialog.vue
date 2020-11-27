@@ -32,11 +32,13 @@
       <v-col cols="12" md="6">
         This spelling appears in the following texts:
         <v-data-table
+          v-model="selectedDiscourses"
           :headers="discourseResultHeaders"
           :items="discourseSearchResults"
           :loading="searchDiscourseLoading"
           :server-items-length="totalDiscourseResults"
           :options.sync="discourseOptions"
+          item-key="uuid"
           show-select
         >
           <template #[`item.textName`]="{ item }">
@@ -93,6 +95,7 @@ import { DataTableHeader } from 'vuetify';
 import utils from '@/utils';
 
 export default defineComponent({
+  name: 'AddSpellingDialog',
   props: {
     value: {
       type: Boolean,
@@ -124,6 +127,7 @@ export default defineComponent({
       itemsPerPage: 10,
     });
     const addLoading = ref(false);
+    const selectedDiscourses: Ref<SearchDiscourseSpellingRow[]> = ref([]);
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
     const discourseSearchResults: Ref<SearchDiscourseSpellingRow[]> = ref([]);
@@ -175,6 +179,7 @@ export default defineComponent({
         const { uuid } = await server.addSpelling({
           formUuid: props.form.uuid,
           spelling: spelling.value,
+          discourseUuids: selectedDiscourses.value.map(row => row.uuid),
         });
         props.addSpellingToForm(uuid, spelling.value);
         emit('input', false);
@@ -279,6 +284,7 @@ export default defineComponent({
       addLoading,
       addSpelling,
       formGrammarString: utils.formGrammarString,
+      selectedDiscourses,
     };
   },
 });
