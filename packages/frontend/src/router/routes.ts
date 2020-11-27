@@ -20,6 +20,7 @@ import NamesView from '../views/NamesView/index.vue';
 import PlacesView from '../views/PlacesView/index.vue';
 import DictionarySearch from '@/views/SearchView/DictionarySearch.vue';
 import TextsSearch from '@/views/SearchView/TextsSearch.vue';
+import AddGroupUsers from '@/views/GroupView/AddGroupUsers.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -73,6 +74,12 @@ const routes: RouteConfig[] = [
         component: ManageTexts,
       },
     ],
+  },
+  {
+    path: '/addusers/:groupId',
+    name: 'addgroupusers',
+    component: AddGroupUsers,
+    props: true,
   },
   {
     path: '/login',
