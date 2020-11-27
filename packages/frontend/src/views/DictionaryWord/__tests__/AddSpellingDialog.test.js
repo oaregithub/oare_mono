@@ -75,7 +75,7 @@ describe('AddSpellingDialog test', () => {
       localVue,
       stubs: ['router-link'],
       provide: {
-        ReloadKey: reload,
+        [ReloadKey]: reload,
       },
       propsData: {
         value: true,
@@ -105,9 +105,8 @@ describe('AddSpellingDialog test', () => {
     });
   };
 
-  it.only('submit button is disabled with no input', async () => {
+  it('submit button is disabled with no input', async () => {
     const wrapper = createWrapper();
-    console.log(ReloadKey);
     expect(wrapper.get('.test-submit-btn').element).toBeDisabled();
   });
 
@@ -150,6 +149,7 @@ describe('AddSpellingDialog test', () => {
       discourseUuids: [],
     });
     expect(mockActions.showSnackbar).toHaveBeenCalled();
+    expect(reload).toHaveBeenCalled();
   });
 
   it('shows error when adding fails', async () => {
