@@ -34,7 +34,11 @@
     <div>
       <v-progress-circular v-if="loading" indeterminate />
       <div class="d-flex align-center" v-else>
-        <v-btn v-if="isAdmin" class="mr-2 test-admin-btn" text to="/admin"
+        <v-btn
+          v-if="isAdmin"
+          class="mr-2 test-admin-btn"
+          text
+          to="/admin/groups"
           >Admin</v-btn
         >
         <v-btn

@@ -1,15 +1,15 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
-import AdminView from '../AdminView.vue';
+import AdminGroupView from '../AdminGroupView.vue';
 import flushPromises from 'flush-promises';
-import sl from '../../serviceLocator';
+import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe('AdminView test', () => {
+describe('AdminGroupView test', () => {
   const mockGroups = [
     {
       id: 0,
@@ -37,7 +37,7 @@ describe('AdminView test', () => {
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
-    return mount(AdminView, {
+    return mount(AdminGroupView, {
       vuetify,
       localVue,
       stubs: ['router-link'],

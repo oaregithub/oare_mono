@@ -2,7 +2,7 @@
   <v-progress-linear v-if="loading" indeterminate />
   <OareContentView v-else :title="groupName">
     <template v-slot:header>
-      <router-link to="/admin">&larr; Back to admin view</router-link>
+      <router-link to="/admin/groups">&larr; Back to admin view</router-link>
     </template>
 
     <v-tabs class="mb-3" v-model="tab">

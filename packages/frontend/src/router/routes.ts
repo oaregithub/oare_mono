@@ -1,7 +1,8 @@
 import { RouteConfig } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
-import AdminView from '../views/AdminView.vue';
+import AdminGroupView from '../views/AdminView/AdminGroupView.vue';
+import AdminTextView from '../views/AdminView/AdminTextView.vue';
 import GroupView from '../views/GroupView/index.vue';
 import ManageMembers from '@/views/GroupView/ManageMembers.vue';
 import ManageTexts from '@/views/GroupView/ManageTexts.vue';
@@ -27,9 +28,14 @@ const routes: RouteConfig[] = [
     component: LandingPage,
   },
   {
-    path: '/admin',
-    name: 'admin',
-    component: AdminView,
+    path: '/admin/groups',
+    name: 'adminGroups',
+    component: AdminGroupView,
+  },
+  {
+    path: '/admin/texts',
+    name: 'adminTexts',
+    component: AdminTextView,
   },
   {
     path: '/collections/name/:collectionUuid',
@@ -71,7 +77,7 @@ const routes: RouteConfig[] = [
   },
   {
     path: '/addusers/:groupId',
-    name: 'addgroupusers',
+    name: 'manageGroupUsers',
     component: AddGroupUsers,
     props: true,
   },
