@@ -77,7 +77,7 @@ const routes: RouteConfig[] = [
   },
   {
     path: '/addusers/:groupId',
-    name: 'addgroupusers',
+    name: 'manageGroupUsers',
     component: AddGroupUsers,
     props: true,
   },
