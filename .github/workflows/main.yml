@@ -27,21 +27,14 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Build OARE package
-        run: cd packages/oare && yarn build && cd ../..
-
-      - name: Build types package
-        run: cd packages/types && yarn build && cd ../..
+      - name: Build packages
+        run: yarn build
 
       - name: Lint files
         run: yarn lint
 
       - name: Run tests
         run: yarn test
-
-      - name: Build TS and Vue files
-        run: yarn build
-        if: github.ref == 'refs/heads/master'
 
       - name: Zip up files
         run: |
