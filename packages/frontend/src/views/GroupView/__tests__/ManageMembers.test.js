@@ -1,7 +1,6 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { render } from '@testing-library/vue';
 import ManageMembers from '../ManageMembers.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
@@ -28,7 +27,6 @@ describe('ManageMembers test', () => {
     },
   ];
   const mockServer = {
-    addUsersToGroup: jest.fn().mockResolvedValue(null),
     removeUsersFromGroup: jest.fn().mockResolvedValue(null),
     getAllUsers: jest.fn().mockResolvedValue(mockUsers.slice(0, 1)),
   };
@@ -43,6 +41,7 @@ describe('ManageMembers test', () => {
       groupId: '1',
       serverProxy: mockServer,
     },
+    stubs: ['router-link'],
   };
 
   const createWrapper = ({ server } = {}) => {
@@ -66,20 +65,6 @@ describe('ManageMembers test', () => {
         getAllUsers: jest.fn().mockRejectedValue(null),
       },
     });
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
-  it('displays error upon user add failure', async () => {
-    const wrapper = createWrapper({
-      server: {
-        ...mockServer,
-        addUsersToGroup: jest.fn().mockRejectedValue(null),
-      },
-    });
-    await flushPromises();
-    await wrapper.find('.test-add').trigger('click');
-    await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });

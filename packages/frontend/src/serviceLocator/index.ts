@@ -2,6 +2,7 @@ import { GlobalActionsType } from '@/globalActions';
 import { ServerProxyType } from '@/serverProxy';
 import store from '@/ts-store';
 import _ from 'lodash';
+import Router from 'vue-router';
 
 const instances: { [key: string]: any } = {};
 
@@ -10,6 +11,7 @@ export type ServiceTypes = {
   globalActions: GlobalActionsType;
   store: typeof store;
   lodash: typeof _;
+  router: Router;
 };
 
 export default {

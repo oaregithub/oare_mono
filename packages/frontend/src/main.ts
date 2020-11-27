@@ -21,6 +21,7 @@ sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);
 sl.set('store', tsStore);
 sl.set('lodash', _);
+sl.set('router', router);
 
 loadBases();
 
