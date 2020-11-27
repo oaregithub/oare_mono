@@ -40,6 +40,8 @@ import {
   computed,
   PropType,
   watch,
+  provide,
+  InjectionKey,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { WordWithForms, DictionaryForm, PermissionResponse } from '@oare/types';
@@ -48,6 +50,8 @@ import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
 import router from '@/router';
 import sl from '@/serviceLocator';
+
+export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
   name: 'DictionaryWord',
@@ -78,20 +82,20 @@ export default defineComponent({
       wordInfo.value = newWordInfo;
     };
 
-    watch(
-      props,
-      async () => {
-        loading.value = true;
-        try {
-          wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
-        } catch {
-          actions.showErrorSnackbar('Failed to retrieve dictionary info');
-        } finally {
-          loading.value = false;
-        }
-      },
-      { immediate: true }
-    );
+    const loadDictionaryInfo = async () => {
+      loading.value = true;
+      try {
+        wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
+      } catch {
+        actions.showErrorSnackbar('Failed to retrieve dictionary info');
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    provide(ReloadKey, loadDictionaryInfo);
+
+    watch(props, loadDictionaryInfo, { immediate: true });
 
     const breadcrumbItems = computed(() => {
       const items: BreadcrumbItem[] = [

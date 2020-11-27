@@ -80,6 +80,7 @@ import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
   DictionaryForm,
+  SpellingText,
 } from '@oare/types';
 import {
   defineComponent,
@@ -89,10 +90,12 @@ import {
   watch,
   PropType,
   computed,
+  inject,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
 import utils from '@/utils';
+import { ReloadKey } from './index.vue';
 
 export default defineComponent({
   name: 'AddSpellingDialog',
@@ -103,12 +106,6 @@ export default defineComponent({
     },
     form: {
       type: Object as PropType<DictionaryForm>,
-      required: true,
-    },
-    addSpellingToForm: {
-      type: Function as PropType<
-        (spellingUuid: string, spelling: string) => void
-      >,
       required: true,
     },
   },
@@ -160,6 +157,8 @@ export default defineComponent({
       },
     ]);
 
+    const reload = inject(ReloadKey);
+
     const spellingExists = computed(() =>
       props.form.spellings.map(f => f.spelling).includes(spelling.value)
     );
@@ -181,9 +180,9 @@ export default defineComponent({
           spelling: spelling.value,
           discourseUuids: selectedDiscourses.value.map(row => row.uuid),
         });
-        props.addSpellingToForm(uuid, spelling.value);
         emit('input', false);
         actions.showSnackbar('Successfully added spelling');
+        reload && reload();
       } catch {
         actions.showErrorSnackbar('Failed to add spelling to form');
       } finally {
