@@ -46,6 +46,11 @@ export default defineComponent({
       const routeName = context.root.$route.name;
       if (routeName && routeName.includes('dashboard')) {
         return 'OareDashboardSidebar';
+      } else if (
+        routeName &&
+        (routeName.includes('admin') || routeName.includes('manage'))
+      ) {
+        return 'OareAdminSidebar';
       }
       return 'OareSidebar';
     });
