@@ -41,6 +41,7 @@ describe('ManageMembers test', () => {
       groupId: '1',
       serverProxy: mockServer,
     },
+    stubs: ['router-link'],
   };
 
   const createWrapper = ({ server } = {}) => {
