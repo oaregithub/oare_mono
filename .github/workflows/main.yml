@@ -43,6 +43,10 @@ jobs:
         run: yarn build
         if: github.ref == 'refs/heads/master'
 
+      - name: Run SQL migrations
+        run: yarn migrate:latest-prod
+        if: github.ref == 'refs/heads/master'
+
       - name: Zip up files
         run: |
           cp -R .ebextensions packages/backend

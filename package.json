@@ -2,14 +2,17 @@
   "name": "oare",
   "private": true,
   "scripts": {
-    "start": "concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
+    "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
     "lint": "yarn workspace @oare/frontend run lint",
     "lint:fix": "yarn workspace @oare/frontend lint:fix",
     "build": "./build.sh",
     "bootstrap": "lerna bootstrap --use-workspaces",
     "client": "yarn workspace @oare/frontend serve",
     "server": "yarn workspace @oare/backend dev",
-    "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test"
+    "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test",
+    "migrate:make": "yarn workspace @oare/backend migrate:make",
+    "migrate:latest": "NODE_ENV=development yarn workspace @oare/backend migrate:latest",
+    "migrate:latest-prod": "NODE_ENV=production yarn workspace @oare/backend migrate:latest"
   },
   "workspaces": {
     "packages": [
