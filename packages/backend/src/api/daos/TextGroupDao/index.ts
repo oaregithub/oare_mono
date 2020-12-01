@@ -42,18 +42,23 @@ class TextGroupDao {
   }
 
   async getPublicTexts(): Promise<Text[]> {
-    const results: Text[] = await knex('text_group')
-      .select('text_group.text_uuid', 'text_group.can_read', 'text_group.can_write', 'alias.name')
-      .innerJoin('hierarchy', 'hierarchy.uuid', 'text_group.text_uuid')
-      .innerJoin('oare_group', 'oare_group.id', 'text_group.group_id')
-      .innerJoin('alias', 'text_group.text_uuid', 'alias.reference_uuid')
-      .where('oare_group.name', 'Public')
-      .groupBy('text_group.text_uuid');
+    const textResults: Text[] = await knex('public_blacklist')
+      .select('public_blacklist.uuid AS text_uuid', 'alias.name')
+      .innerJoin('alias', 'public_blacklist.uuid', 'alias.reference_uuid')
+      .where('public_blacklist.type', 'text');
+
+    const collectionResults: Text[] = await knex('hierarchy')
+      .select('hierarchy.uuid AS text_uuid', 'alias.name')
+      .innerJoin('alias', 'hierarchy.uuid', 'alias.reference_uuid')
+      .innerJoin('public_blacklist', 'hierarchy.parent_uuid', 'public_blacklist.uuid')
+      .where('public_blacklist.type', 'collection');
+
+    const results: Text[] = textResults.concat(collectionResults);
 
     return results.map((item) => ({
       ...item,
-      can_write: !!item.can_write,
-      can_read: !!item.can_read,
+      can_write: false,
+      can_read: false,
     }));
   }
 
