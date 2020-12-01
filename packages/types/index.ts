@@ -90,6 +90,7 @@ export interface UpdateDictionaryTranslationsResponse {
 export interface AddFormSpellingPayload {
   formUuid: string;
   spelling: string;
+  discourseUuids: string[];
 }
 
 export interface AddFormSpellingResponse {
@@ -224,6 +225,7 @@ export interface DiscourseLineSpelling {
 }
 
 export interface SearchDiscourseSpellingRow {
+  uuid: string;
   line: number;
   wordOnTablet: number;
   textUuid: string;

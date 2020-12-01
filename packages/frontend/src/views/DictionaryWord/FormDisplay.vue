@@ -70,17 +70,13 @@
       </v-row>
     </div>
 
-    <add-spelling-dialog
-      v-model="spellingDialogOpen"
-      :form="form"
-      :addSpellingToForm="addSpellingToForm"
-    />
+    <add-spelling-dialog v-model="spellingDialogOpen" :form="form" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
-import { DictionaryForm, FormSpelling } from '@oare/types';
+import { DictionaryForm, FormSpelling, SpellingText } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
@@ -135,20 +131,6 @@ export default defineComponent({
       }
     };
 
-    const addSpellingToForm = (uuid: string, spelling: string) => {
-      props.updateForm({
-        ...props.form,
-        spellings: [
-          ...props.form.spellings,
-          {
-            uuid,
-            spelling,
-            texts: [],
-          },
-        ].sort((a, b) => a.spelling.localeCompare(b.spelling)),
-      });
-    };
-
     const updateSpelling = (index: number, newSpelling: FormSpelling) => {
       const spellings = [...props.form.spellings];
       spellings[index] = newSpelling;
@@ -167,7 +149,6 @@ export default defineComponent({
       saveFormEdit,
       updateSpelling,
       spellingDialogOpen,
-      addSpellingToForm,
     };
   },
 });

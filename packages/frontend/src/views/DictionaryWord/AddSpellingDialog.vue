@@ -32,11 +32,14 @@
       <v-col cols="12" md="6">
         This spelling appears in the following texts:
         <v-data-table
+          v-model="selectedDiscourses"
           :headers="discourseResultHeaders"
           :items="discourseSearchResults"
           :loading="searchDiscourseLoading"
           :server-items-length="totalDiscourseResults"
           :options.sync="discourseOptions"
+          item-key="uuid"
+          show-select
         >
           <template #[`item.textName`]="{ item }">
             <router-link :to="`/epigraphies/${item.textUuid}`">{{
@@ -77,6 +80,7 @@ import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
   DictionaryForm,
+  SpellingText,
 } from '@oare/types';
 import {
   defineComponent,
@@ -86,12 +90,15 @@ import {
   watch,
   PropType,
   computed,
+  inject,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
 import utils from '@/utils';
+import { ReloadKey } from './index.vue';
 
 export default defineComponent({
+  name: 'AddSpellingDialog',
   props: {
     value: {
       type: Boolean,
@@ -99,12 +106,6 @@ export default defineComponent({
     },
     form: {
       type: Object as PropType<DictionaryForm>,
-      required: true,
-    },
-    addSpellingToForm: {
-      type: Function as PropType<
-        (spellingUuid: string, spelling: string) => void
-      >,
       required: true,
     },
   },
@@ -123,6 +124,7 @@ export default defineComponent({
       itemsPerPage: 10,
     });
     const addLoading = ref(false);
+    const selectedDiscourses: Ref<SearchDiscourseSpellingRow[]> = ref([]);
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
     const discourseSearchResults: Ref<SearchDiscourseSpellingRow[]> = ref([]);
@@ -155,6 +157,8 @@ export default defineComponent({
       },
     ]);
 
+    const reload = inject(ReloadKey);
+
     const spellingExists = computed(() =>
       props.form.spellings.map(f => f.spelling).includes(spelling.value)
     );
@@ -174,10 +178,11 @@ export default defineComponent({
         const { uuid } = await server.addSpelling({
           formUuid: props.form.uuid,
           spelling: spelling.value,
+          discourseUuids: selectedDiscourses.value.map(row => row.uuid),
         });
-        props.addSpellingToForm(uuid, spelling.value);
         emit('input', false);
         actions.showSnackbar('Successfully added spelling');
+        reload && reload();
       } catch {
         actions.showErrorSnackbar('Failed to add spelling to form');
       } finally {
@@ -278,6 +283,7 @@ export default defineComponent({
       addLoading,
       addSpelling,
       formGrammarString: utils.formGrammarString,
+      selectedDiscourses,
     };
   },
 });

@@ -19,8 +19,9 @@ router.route('/dictionary/spellings').post(adminRoute, async (req, res, next) =>
   try {
     const DictionarySpellingDao = sl.get('DictionarySpellingDao');
     const LoggingEditsDao = sl.get('LoggingEditsDao');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-    const { formUuid, spelling }: AddFormSpellingPayload = req.body;
+    const { formUuid, spelling, discourseUuids }: AddFormSpellingPayload = req.body;
     const spellingExists = await DictionarySpellingDao.spellingExistsOnForm(formUuid, spelling);
 
     if (spellingExists) {
@@ -28,10 +29,19 @@ router.route('/dictionary/spellings').post(adminRoute, async (req, res, next) =>
       return;
     }
 
-    const uuid = await DictionarySpellingDao.addSpelling(formUuid, spelling);
-    await LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'dictionary_spelling', uuid);
+    const spellingUuid = await DictionarySpellingDao.addSpelling(formUuid, spelling);
+    await LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'dictionary_spelling', spellingUuid);
 
-    const response: AddFormSpellingResponse = { uuid };
+    await Promise.all(
+      discourseUuids.map((discourseUuid) =>
+        LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', discourseUuid),
+      ),
+    );
+    await Promise.all(
+      discourseUuids.map((discourseUuid) => TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid)),
+    );
+
+    const response: AddFormSpellingResponse = { uuid: spellingUuid };
     res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));

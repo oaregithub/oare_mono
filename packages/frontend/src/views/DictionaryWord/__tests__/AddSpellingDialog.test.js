@@ -1,6 +1,7 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
+import { ReloadKey } from '../index.vue';
 import AddSpellingDialog from '../AddSpellingDialog.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
@@ -62,7 +63,8 @@ describe('AddSpellingDialog test', () => {
     }),
   };
 
-  const addSpellingToForm = jest.fn();
+  const reload = jest.fn();
+
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('globalActions', actions || mockActions);
     sl.set('serverProxy', server || mockServer);
@@ -72,6 +74,9 @@ describe('AddSpellingDialog test', () => {
       vuetify,
       localVue,
       stubs: ['router-link'],
+      provide: {
+        [ReloadKey]: reload,
+      },
       propsData: {
         value: true,
         form: {
@@ -96,7 +101,6 @@ describe('AddSpellingDialog test', () => {
             },
           ],
         },
-        addSpellingToForm,
       },
     });
   };
@@ -142,9 +146,10 @@ describe('AddSpellingDialog test', () => {
     expect(mockServer.addSpelling).toHaveBeenCalledWith({
       formUuid: 'form-uuid',
       spelling: 'new spelling',
+      discourseUuids: [],
     });
-    expect(addSpellingToForm).toHaveBeenCalled();
     expect(mockActions.showSnackbar).toHaveBeenCalled();
+    expect(reload).toHaveBeenCalled();
   });
 
   it('shows error when adding fails', async () => {
@@ -159,7 +164,6 @@ describe('AddSpellingDialog test', () => {
     await flushPromises();
 
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-    expect(addSpellingToForm).not.toHaveBeenCalled();
   });
 
   it('shows error when searching spellings fails', async () => {
