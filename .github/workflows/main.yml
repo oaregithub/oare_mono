@@ -36,6 +36,12 @@ jobs:
       - name: Run tests
         run: yarn test
 
+      - name: Run SQL migrations
+        run: yarn migrate:latest-prod
+        env:
+          OARE_DB_URL: ${{ secrets.OARE_DB_URL }}
+        if: github.ref == 'refs/heads/master'
+
       - name: Zip up files
         run: |
           cp -R .ebextensions packages/backend
