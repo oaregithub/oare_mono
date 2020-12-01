@@ -74,6 +74,7 @@ class TextDiscourseDao {
         this.where('type', 'word');
         this.orWhere('type', 'number');
       })
+      .andWhereNot('explicit_spelling', null)
       .orderBy('wordOnTablet');
 
     return rows;
