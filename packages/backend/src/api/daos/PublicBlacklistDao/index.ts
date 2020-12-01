@@ -4,16 +4,10 @@ import AliasDao from '../AliasDao';
 
 class PublicBlacklistDao {
   async getPublicTexts(): Promise<Text[]> {
-    const textResults: Text[] = await knex('public_blacklist')
+    const results: Text[] = await knex('public_blacklist')
       .select('public_blacklist.uuid AS text_uuid')
       .where('public_blacklist.type', 'text');
 
-    const collectionResults: Text[] = await knex('hierarchy')
-      .select('hierarchy.uuid AS text_uuid')
-      .innerJoin('public_blacklist', 'hierarchy.parent_uuid', 'public_blacklist.uuid')
-      .where('public_blacklist.type', 'collection');
-
-    const results: Text[] = textResults.concat(collectionResults);
     const textNames = await Promise.all(results.map((text) => AliasDao.displayAliasNames(text.text_uuid)));
 
     return results.map((item, index) => ({
