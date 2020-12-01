@@ -96,6 +96,7 @@ import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
 import utils from '@/utils';
 import { ReloadKey } from './index.vue';
+import { spellingHtmlReading } from '@oare/oare';
 
 export default defineComponent({
   name: 'AddSpellingDialog',
@@ -192,6 +193,10 @@ export default defineComponent({
 
     const renderedReading = (row: SearchDiscourseSpellingRow) => {
       return row.readings
+        .map(reading => ({
+          ...reading,
+          spelling: spellingHtmlReading(reading.spelling),
+        }))
         .map(reading =>
           reading.wordOnTablet === row.wordOnTablet
             ? `<mark>${reading.spelling}</mark>`
