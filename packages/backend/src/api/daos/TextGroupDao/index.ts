@@ -2,6 +2,7 @@ import { Text } from '@oare/types';
 import knex from '@/connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
+import PublicBlacklistDao from '../PublicBlacklistDao';
 import { UserRow } from '../UserDao';
 
 export interface TextGroupRow {
@@ -13,7 +14,7 @@ export interface TextGroupRow {
 
 class TextGroupDao {
   async getUserBlacklist(user: UserRow | null) {
-    const userTexts = await this.getPublicTexts();
+    const userTexts = await PublicBlacklistDao.getPublicTexts();
 
     if (user) {
       const groupIds = await userGroupDao.getGroupsOfUser(user.id);
@@ -39,22 +40,6 @@ class TextGroupDao {
     }
 
     return blacklistedUuids;
-  }
-
-  async getPublicTexts(): Promise<Text[]> {
-    const results: Text[] = await knex('text_group')
-      .select('text_group.text_uuid', 'text_group.can_read', 'text_group.can_write', 'alias.name')
-      .innerJoin('hierarchy', 'hierarchy.uuid', 'text_group.text_uuid')
-      .innerJoin('oare_group', 'oare_group.id', 'text_group.group_id')
-      .innerJoin('alias', 'text_group.text_uuid', 'alias.reference_uuid')
-      .where('oare_group.name', 'Public')
-      .groupBy('text_group.text_uuid');
-
-    return results.map((item) => ({
-      ...item,
-      can_write: !!item.can_write,
-      can_read: !!item.can_read,
-    }));
   }
 
   async getTexts(groupId: number): Promise<Text[]> {
