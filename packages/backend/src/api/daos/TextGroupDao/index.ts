@@ -2,6 +2,7 @@ import { Text } from '@oare/types';
 import knex from '@/connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
+import PublicBlacklistDao from '../PublicBlacklistDao';
 import { UserRow } from '../UserDao';
 
 export interface TextGroupRow {
@@ -13,7 +14,7 @@ export interface TextGroupRow {
 
 class TextGroupDao {
   async getUserBlacklist(user: UserRow | null) {
-    const userTexts = await this.getPublicTexts();
+    const userTexts = await PublicBlacklistDao.getPublicTexts();
 
     if (user) {
       const groupIds = await userGroupDao.getGroupsOfUser(user.id);
@@ -39,27 +40,6 @@ class TextGroupDao {
     }
 
     return blacklistedUuids;
-  }
-
-  async getPublicTexts(): Promise<Text[]> {
-    const textResults: Text[] = await knex('public_blacklist')
-      .select('public_blacklist.uuid AS text_uuid', 'alias.name')
-      .innerJoin('alias', 'public_blacklist.uuid', 'alias.reference_uuid')
-      .where('public_blacklist.type', 'text');
-
-    const collectionResults: Text[] = await knex('hierarchy')
-      .select('hierarchy.uuid AS text_uuid', 'alias.name')
-      .innerJoin('alias', 'hierarchy.uuid', 'alias.reference_uuid')
-      .innerJoin('public_blacklist', 'hierarchy.parent_uuid', 'public_blacklist.uuid')
-      .where('public_blacklist.type', 'collection');
-
-    const results: Text[] = textResults.concat(collectionResults);
-
-    return results.map((item) => ({
-      ...item,
-      can_write: false,
-      can_read: false,
-    }));
   }
 
   async getTexts(groupId: number): Promise<Text[]> {
