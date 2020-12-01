@@ -2,6 +2,7 @@ import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
 import TextDiscourseDao from '../TextDiscourseDao';
+import Knex from 'knex';
 
 class DictionarySpellingDao {
   async updateSpelling(uuid: string, newSpelling: string): Promise<void> {
@@ -47,6 +48,16 @@ class DictionarySpellingDao {
       explicit_spelling: spelling,
     });
     return uuid;
+  }
+
+  async deleteSpelling(spellingUuid: string, postDelete?: (trx: Knex.Transaction) => Promise<void>): Promise<void> {
+    await knex.transaction(async (trx) => {
+      await trx('dictionary_spelling').del().where('uuid', spellingUuid);
+
+      if (postDelete) {
+        await postDelete(trx);
+      }
+    });
   }
 }
 
