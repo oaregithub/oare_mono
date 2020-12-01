@@ -1,14 +1,24 @@
 <template>
   <span>
-    <v-btn
-      v-if="canEdit"
-      icon
-      class="test-pencil mt-n2"
-      @click="isEditing = true"
-    >
-      <v-icon>mdi-pencil</v-icon>
-    </v-btn>
-    <span v-html="htmlSpelling"></span>
+    <v-menu offset-y v-if="canEdit">
+      <template #activator="{ on, attrs }">
+        <span v-html="htmlSpelling" v-bind="attrs" v-on="on"></span>
+      </template>
+      <v-list>
+        <v-list-item @click="isEditing = true">
+          <v-list-item-title>
+            <v-icon>mdi-pencil</v-icon>
+            Edit
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-title>
+            <v-icon>mdi-close</v-icon>
+            Delete
+          </v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
     <span v-if="spelling.texts.length > 0">
       (<a @click="dialogOpen = true" class="test-num-texts">{{
         spelling.texts.length
