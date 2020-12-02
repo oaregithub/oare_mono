@@ -15,6 +15,7 @@ import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
+import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
 
 declare global {
   namespace Express {
@@ -39,6 +40,7 @@ sl.set('TextGroupDao', TextGroupDao);
 sl.set('TextDao', TextDao);
 sl.set('TextMarkupDao', TextMarkupDao);
 sl.set('cache', cache);
+sl.set('PublicBlacklistDao', PublicBlacklistDao);
 
 app.listen(8081, () => {
   console.log('Listening on port 8081');

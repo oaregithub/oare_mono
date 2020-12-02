@@ -1,4 +1,4 @@
-import { Text } from '@oare/types';
+import { PublicBlacklistPayloadItem, Text } from '@oare/types';
 import knex from '@/connection';
 import AliasDao from '../AliasDao';
 
@@ -16,6 +16,11 @@ class PublicBlacklistDao {
       can_write: false,
       can_read: false,
     }));
+  }
+
+  async addPublicTexts(texts: PublicBlacklistPayloadItem[]): Promise<number[]> {
+    const ids: number[] = await knex('public_blacklist').insert(texts);
+    return ids;
   }
 }
 
