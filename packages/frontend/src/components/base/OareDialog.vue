@@ -10,9 +10,9 @@
     </template>
 
     <v-card>
-      <v-card-title data-testid="dialog-title" class="test-dialog-title">{{
-        title
-      }}</v-card-title>
+      <v-card-title data-testid="dialog-title" class="test-dialog-title">
+        <slot name="title">{{ title }}</slot>
+      </v-card-title>
       <v-card-text>
         <slot></slot>
       </v-card-text>
@@ -55,7 +55,7 @@ export default defineComponent({
     },
     title: {
       type: String,
-      required: true,
+      default: '',
     },
     showSubmit: {
       type: Boolean,
