@@ -1,8 +1,8 @@
 import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
-import TextDiscourseDao from '../TextDiscourseDao';
 import Knex from 'knex';
+import TextDiscourseDao from '../TextDiscourseDao';
 
 class DictionarySpellingDao {
   async updateSpelling(uuid: string, newSpelling: string): Promise<void> {

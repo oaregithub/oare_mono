@@ -2,6 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
+import { ReloadKey } from '../index.vue';
 import SpellingDisplay from '../SpellingDisplay.vue';
 import sl from '../../../serviceLocator';
 
@@ -33,6 +34,7 @@ describe('SpellingDisplay test', () => {
 
   const mockServer = {
     updateSpelling: jest.fn().mockResolvedValue(null),
+    removeSpelling: jest.fn().mockResolvedValue(null),
   };
 
   const mockActions = {
@@ -40,8 +42,10 @@ describe('SpellingDisplay test', () => {
     showErrorSnackbar: jest.fn(),
   };
 
-  const createWrapper = ({ server } = {}) => {
-    sl.set('store', mockStore);
+  const reload = jest.fn();
+
+  const createWrapper = ({ server, store } = {}) => {
+    sl.set('store', store || mockStore);
     sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
     return mount(SpellingDisplay, {
@@ -52,6 +56,9 @@ describe('SpellingDisplay test', () => {
         spelling,
       },
       stubs: ['router-link'],
+      provide: {
+        [ReloadKey]: reload,
+      },
     });
   };
 
@@ -78,6 +85,7 @@ describe('SpellingDisplay test', () => {
 
   it('edits spelling', async () => {
     const wrapper = createWrapper();
+    await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
     await wrapper.get('.test-edit-spelling input').setValue('new spelling');
     await wrapper.get('.test-submit-btn').trigger('click');
@@ -108,6 +116,7 @@ describe('SpellingDisplay test', () => {
       },
     });
 
+    await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
     await wrapper.get('.test-edit-spelling input').setValue('new spelling');
     await wrapper.get('.test-submit-btn').trigger('click');
@@ -124,11 +133,61 @@ describe('SpellingDisplay test', () => {
           .mockRejectedValue('Failed to update spelling'),
       },
     });
+
+    await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
     await wrapper.get('.test-edit-spelling input').setValue('new spelling');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('deletes spelling', async () => {
+    const wrapper = createWrapper();
+    await wrapper.get('.test-spelling').trigger('click');
+    await wrapper.get('.test-close').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+
+    expect(mockServer.removeSpelling).toHaveBeenCalled();
+    expect(reload).toHaveBeenCalled();
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
+  });
+
+  it('shows error when deleting spelling fails', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        removeSpelling: jest
+          .fn()
+          .mockRejectedValue('Failed to delete spelling'),
+      },
+    });
+
+    await wrapper.get('.test-spelling').trigger('click');
+    await wrapper.get('.test-close').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("doesn't allow editing without permissions", async () => {
+    const wrapper = createWrapper({
+      store: {
+        getters: {
+          permissions: {
+            dictionary: [],
+          },
+        },
+      },
+    });
+
+    await wrapper.get('.test-spelling').trigger('click');
+
+    expect(wrapper.find('.test-pencil').exists()).toBe(false);
+    expect(wrapper.find('.test-close').exists()).toBe(false);
   });
 });
