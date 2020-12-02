@@ -61,6 +61,7 @@
               :updateSpelling="
                 newSpelling => updateSpelling(index, newSpelling)
               "
+              :removeSpelling="() => removeSpelling(index)"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
