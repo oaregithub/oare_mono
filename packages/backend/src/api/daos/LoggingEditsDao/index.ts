@@ -1,13 +1,21 @@
 import knex from '@/connection';
+import Knex from 'knex';
 
 class LoggingEditsDao {
-  async logEdit(type: 'UPDATE' | 'DELETE' | 'INSERT', userUuid: string, tableName: string, uuid: string) {
+  async logEdit(
+    type: 'UPDATE' | 'DELETE' | 'INSERT',
+    userUuid: string,
+    tableName: string,
+    uuid: string,
+    trx?: Knex.Transaction,
+  ) {
+    const k = trx || knex;
     let prevRow: string | null = null;
 
     if (type === 'UPDATE' || type === 'DELETE') {
-      prevRow = await knex(tableName).where({ uuid }).first();
+      prevRow = await k(tableName).where({ uuid }).first();
     }
-    await knex('logging_edits').insert({
+    await k('logging_edits').insert({
       type,
       user_uuid: userUuid,
       time: new Date(),

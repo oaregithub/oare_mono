@@ -1,5 +1,6 @@
 import knex from '@/connection';
 import { SpellingText, DiscourseLineSpelling, Pagination } from '@oare/types';
+import Knex from 'knex';
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
 
 export interface DiscourseRow {
@@ -172,6 +173,17 @@ class TextDiscourseDao {
         };
       })
       .sort((a, b) => a.text.localeCompare(b.text));
+  }
+
+  async uuidsBySpellingUuid(spellingUuid: string, trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knex;
+    const rows: { uuid: string }[] = await k('text_discourse').select('uuid').where('spelling_uuid', spellingUuid);
+    return rows.map((r) => r.uuid);
+  }
+
+  async unsetSpellingUuid(spellingUuid: string, trx?: Knex.Transaction): Promise<void> {
+    const k = trx || knex;
+    await k('text_discourse').update('spelling_uuid', null).where('spelling_uuid', spellingUuid);
   }
 }
 

@@ -645,4 +645,118 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(500);
     });
   });
+
+  describe('DELETE /dictionary/spellings/:uuid', () => {
+    const spellingUuid = 'spelling-uuid';
+    const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}`;
+    const DictionarySpellingDao = {
+      deleteSpelling: jest.fn(async (uuid, cb) => {
+        await cb();
+      }),
+    };
+
+    const LoggingEditsDao = {
+      logEdit: jest.fn().mockResolvedValue(null),
+    };
+
+    const TextDiscourseDao = {
+      uuidsBySpellingUuid: jest.fn().mockResolvedValue(['uuid1']),
+      unsetSpellingUuid: jest.fn().mockResolvedValue(null),
+    };
+
+    const setupDeleteSpelling = () => {
+      sl.set('UserDao', AdminUserDao);
+      sl.set('DictionarySpellingDao', DictionarySpellingDao);
+      sl.set('TextDiscourseDao', TextDiscourseDao);
+      sl.set('LoggingEditsDao', LoggingEditsDao);
+    };
+
+    const sendRequest = () => request(app).delete(PATH).set('Cookie', 'jwt=token');
+
+    it("doesn't allow non-logged-in users to delete", async () => {
+      const response = await request(app).delete(PATH);
+      expect(response.status).toBe(401);
+    });
+
+    it("doesn't allow non-admins to delete", async () => {
+      sl.set('UserDao', {
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: false,
+        }),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it('returns 201 on success', async () => {
+      setupDeleteSpelling();
+      const response = await sendRequest();
+      expect(response.status).toBe(201);
+    });
+
+    it('deletes spelling', async () => {
+      setupDeleteSpelling();
+      await sendRequest();
+      expect(DictionarySpellingDao.deleteSpelling).toHaveBeenCalled();
+    });
+
+    it('logs edits', async () => {
+      setupDeleteSpelling();
+      await sendRequest();
+      expect(LoggingEditsDao.logEdit).toHaveBeenCalled();
+    });
+
+    it('sets discourse spelling uuids to null', async () => {
+      setupDeleteSpelling();
+      await sendRequest();
+      expect(TextDiscourseDao.unsetSpellingUuid).toHaveBeenCalled();
+    });
+
+    it('returns 500 on delete spelling error', async () => {
+      setupDeleteSpelling();
+      sl.set('DictionarySpellingDao', {
+        deleteSpelling: jest.fn().mockRejectedValue('Failed to delete spelling'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
+      expect(TextDiscourseDao.unsetSpellingUuid).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 when getting uuids fails', async () => {
+      setupDeleteSpelling();
+      sl.set('TextDiscourseDao', {
+        ...TextDiscourseDao,
+        uuidsBySpellingUuid: jest.fn().mockRejectedValue('Failed to get uuids'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
+      expect(TextDiscourseDao.unsetSpellingUuid).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 when logging edits fails', async () => {
+      setupDeleteSpelling();
+      sl.set('LoggingEditsDao', {
+        logEdit: jest.fn().mockRejectedValue('Failed to log edit'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(TextDiscourseDao.unsetSpellingUuid).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 when text discourse update fails', async () => {
+      setupDeleteSpelling();
+      sl.set('TextDiscourseDao', {
+        unsetSpellingUuid: jest.fn().mockRejectedValue('Failed to update spelling uuids'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
 });

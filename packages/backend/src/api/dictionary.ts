@@ -146,32 +146,57 @@ router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) 
   }
 });
 
-router.route('/dictionary/spellings/:uuid').put(adminRoute, async (req, res, next) => {
-  try {
-    const { uuid } = req.params;
-    const { spelling }: UpdateFormSpellingPayload = req.body;
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
-    const LoggingEditsDao = sl.get('LoggingEditsDao');
-    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+router
+  .route('/dictionary/spellings/:uuid')
+  .put(adminRoute, async (req, res, next) => {
+    try {
+      const { uuid } = req.params;
+      const { spelling }: UpdateFormSpellingPayload = req.body;
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
 
-    // If it doesn't exist in text_discourse, update
-    const hasSpelling = await TextDiscourseDao.hasSpelling(uuid);
-    if (hasSpelling) {
-      next(
-        new HttpBadRequest(
-          'Updating a spelling that exists in text_discourse is currently not supported. Try again at a future date.',
-        ),
-      );
-      return;
+      // If it doesn't exist in text_discourse, update
+      const hasSpelling = await TextDiscourseDao.hasSpelling(uuid);
+      if (hasSpelling) {
+        next(
+          new HttpBadRequest(
+            'Updating a spelling that exists in text_discourse is currently not supported. Try again at a future date.',
+          ),
+        );
+        return;
+      }
+
+      await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', uuid);
+      await DictionarySpellingDao.updateSpelling(uuid, spelling);
+
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
     }
+  })
+  .delete(adminRoute, async (req, res, next) => {
+    try {
+      const { uuid } = req.params;
+      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const LoggingEditsDao = sl.get('LoggingEditsDao');
 
-    await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', uuid);
-    await DictionarySpellingDao.updateSpelling(uuid, spelling);
+      await DictionarySpellingDao.deleteSpelling(uuid, async (trx) => {
+        const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(uuid, trx);
 
-    res.status(201).end();
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+        await Promise.all(
+          discourseRowUuids.map((rowUuid) =>
+            LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', rowUuid, trx),
+          ),
+        );
+        await TextDiscourseDao.unsetSpellingUuid(uuid, trx);
+      });
+
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;
