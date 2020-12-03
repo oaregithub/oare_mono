@@ -104,7 +104,7 @@ describe('POST /public_blacklist', () => {
 
   it('returns 200 on successful addition', async () => {
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.addPublicTexts).toHaveBeenCalledWith(mockPOST.texts);
+    expect(mockPublicBlacklistDao.addPublicTexts).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 

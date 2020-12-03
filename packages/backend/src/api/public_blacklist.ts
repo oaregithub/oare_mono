@@ -22,8 +22,6 @@ router
   .route('/public_blacklist')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const user = req.user || null;
-
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
       const publicBlacklist = await PublicBlacklistDao.getPublicTexts();
       res.json(publicBlacklist);
@@ -33,6 +31,7 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
+      const LoggingEditsDao = sl.get('LoggingEditsDao');
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
       const { texts }: AddPublicBlacklistPayload = req.body;
 
@@ -41,7 +40,12 @@ router
         return;
       }
 
-      const insertIds = await PublicBlacklistDao.addPublicTexts(texts);
+      const insertIds = await PublicBlacklistDao.addPublicTexts(texts, async (trx) => {
+        await Promise.all(
+          texts.map((text) => LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'public_blacklist', text.uuid, trx)),
+        );
+      });
+
       res.status(201).json(insertIds);
     } catch (err) {
       next(new HttpInternalError(err));
