@@ -1,16 +1,32 @@
 <template>
   <span>
-    <v-btn
-      v-if="canEdit"
-      icon
-      class="test-pencil mt-n2"
-      @click="isEditing = true"
-    >
-      <v-icon>mdi-pencil</v-icon>
-    </v-btn>
-    <span v-html="htmlSpelling"></span>
+    <v-menu offset-y v-if="canEdit">
+      <template #activator="{ on, attrs }">
+        <span
+          v-html="htmlSpelling"
+          v-bind="attrs"
+          v-on="on"
+          class="test-spelling"
+        ></span>
+      </template>
+      <v-list>
+        <v-list-item @click="isEditing = true" class="test-pencil">
+          <v-list-item-title>
+            <v-icon>mdi-pencil</v-icon>
+            Edit
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="deleteSpellingDialog = true" class="test-close">
+          <v-list-item-title>
+            <v-icon>mdi-close</v-icon>
+            Delete
+          </v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+    <span v-else v-html="htmlSpelling" class="test-spelling"></span>
     <span v-if="spelling.texts.length > 0">
-      (<a @click="dialogOpen = true" class="test-num-texts">{{
+      (<a @click="addSpellingDialog = true" class="test-num-texts">{{
         spelling.texts.length
       }}</a
       >)</span
@@ -29,7 +45,7 @@
       />
     </OareDialog>
     <OareDialog
-      v-model="dialogOpen"
+      v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
       :showSubmit="false"
       cancelText="Close"
@@ -48,6 +64,18 @@
         </template>
       </v-data-table>
     </OareDialog>
+    <OareDialog
+      v-model="deleteSpellingDialog"
+      title="Delete spelling"
+      submitText="Yes, delete"
+      cancelText="No, don't delete"
+      :persistent="false"
+      @submit="deleteSpelling"
+      :submitLoading="deleteLoading"
+    >
+      Are you sure you want to delete the spelling {{ spelling.spelling }} from
+      this form? This action cannot be undone.
+    </OareDialog>
   </span>
 </template>
 
@@ -59,12 +87,14 @@ import {
   computed,
   PropType,
   watch,
+  inject,
 } from '@vue/composition-api';
 import { FormSpelling } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
+import { ReloadKey } from './index.vue';
 
 export default defineComponent({
   props: {
@@ -81,9 +111,12 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
+    const reload = inject(ReloadKey);
 
     const search = ref('');
-    const dialogOpen = ref(false);
+    const addSpellingDialog = ref(false);
+    const deleteSpellingDialog = ref(false);
+    const deleteLoading = ref(false);
     const isEditing = ref(false);
     const editedSpelling = ref(props.spelling.spelling);
     const editLoading = ref(false);
@@ -123,6 +156,19 @@ export default defineComponent({
       }
     };
 
+    const deleteSpelling = async () => {
+      try {
+        deleteLoading.value = true;
+        await server.removeSpelling(props.spelling.uuid);
+        actions.showSnackbar('Successfully removed spelling');
+        reload && reload();
+      } catch {
+        actions.showErrorSnackbar('Failed to delete spelling');
+      } finally {
+        deleteLoading.value = false;
+      }
+    };
+
     watch(isEditing, open => {
       if (!open) {
         editedSpelling.value = props.spelling.spelling;
@@ -130,7 +176,9 @@ export default defineComponent({
     });
 
     return {
-      dialogOpen,
+      addSpellingDialog,
+      deleteSpellingDialog,
+      deleteLoading,
       headers,
       search,
       canEdit,
@@ -139,6 +187,7 @@ export default defineComponent({
       editLoading,
       saveSpelling,
       htmlSpelling,
+      deleteSpelling,
     };
   },
 });

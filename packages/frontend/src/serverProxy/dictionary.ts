@@ -62,6 +62,10 @@ async function addSpelling(
   return data;
 }
 
+async function removeSpelling(spellingUuid: string): Promise<void> {
+  await axios.delete(`/dictionary/spellings/${spellingUuid}`);
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -69,4 +73,5 @@ export default {
   editTranslations,
   editWord,
   updateSpelling,
+  removeSpelling,
 };
