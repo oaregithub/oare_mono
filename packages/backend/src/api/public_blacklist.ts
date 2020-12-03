@@ -7,9 +7,9 @@ import sl from '@/serviceLocator';
 async function canInsert(texts: PublicBlacklistPayloadItem[]) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
   const existingBlacklist = await PublicBlacklistDao.getPublicTexts();
-  const existingTexts = existingBlacklist.map((text) => text.text_uuid);
+  const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
   for (let i = 0; i < texts.length; i += 1) {
-    if (existingTexts.includes(texts[i].uuid)) {
+    if (existingTexts.has(texts[i].uuid)) {
       return false;
     }
   }
@@ -24,15 +24,6 @@ router
     try {
       const user = req.user || null;
 
-      if (!user || !user.isAdmin) {
-        next(
-          new HttpForbidden(
-            'You do not have permission to view this data. If you think this is a mistake, please contact your administrator.',
-          ),
-        );
-        return;
-      }
-
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
       const publicBlacklist = await PublicBlacklistDao.getPublicTexts();
       res.json(publicBlacklist);
@@ -42,18 +33,8 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const user = req.user || null;
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
       const { texts }: AddPublicBlacklistPayload = req.body;
-
-      if (!user || !user.isAdmin) {
-        next(
-          new HttpForbidden(
-            'You do not have permission to change this data. If you think this is a mistake, please contact your administrator.',
-          ),
-        );
-        return;
-      }
 
       if (!(await canInsert(texts))) {
         next(new HttpBadRequest('One or more of the selected texts is already blacklisted'));

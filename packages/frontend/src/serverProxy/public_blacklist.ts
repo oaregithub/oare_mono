@@ -9,8 +9,8 @@ async function getPublicBlacklist() {
   return data;
 }
 
-async function addTextsToPublicBlacklist(texts: AddPublicBlacklistPayload) {
-  await axios.post('/public_blacklist', texts);
+async function addTextsToPublicBlacklist(texts: AddPublicBlacklistPayload): Promise<number[]> {
+  return await axios.post('/public_blacklist', texts);
 }
 
 export default {
