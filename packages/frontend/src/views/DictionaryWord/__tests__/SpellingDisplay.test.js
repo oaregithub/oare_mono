@@ -42,12 +42,17 @@ describe('SpellingDisplay test', () => {
     showErrorSnackbar: jest.fn(),
   };
 
+  const lodash = {
+    debounce: cb => cb,
+  };
+
   const reload = jest.fn();
 
   const createWrapper = ({ server, store } = {}) => {
     sl.set('store', store || mockStore);
     sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
+    sl.set('lodash', lodash);
     return mount(SpellingDisplay, {
       vuetify,
       localVue,

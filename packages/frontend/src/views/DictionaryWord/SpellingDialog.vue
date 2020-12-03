@@ -1,16 +1,63 @@
 <template>
-  <oare-dialog
-    :title="title"
-    :value="value"
-    @input="$emit('input', $event)"
-    :width="1000"
-  >
+  <oare-dialog :value="value" @input="$emit('input', $event)" :width="2000">
+    <template #title>
+      {{ title }}
+      <v-menu offset-y open-on-hover>
+        <template #activator="{ on, attrs }">
+          <v-icon v-bind="attrs" v-on="on" class="ml-2">
+            mdi-information-outline
+          </v-icon>
+        </template>
+        <v-card class="pa-3">
+          Spellings must be strictly formatted. Here are the rules:
+          <ol>
+            <li>
+              Logograms in all uppercase, separated with periods, e.g.:
+              TÚG.ḪI.A.
+            </li>
+            <li>
+              Enclose determinatives in parentheses, e.g.: (m), (f), (d), (ki).
+              All these as lowercase. Logographic determinatives in uppercase,
+              with all elements including periods in their own parens, e.g.:
+              (TÚG)(.)(ḪI)(.)(A)ku-ta-nu.
+            </li>
+            <li>
+              Dashes between syllabic values and between syllabic and logograms.
+              No dashes between determinatives, e.g.: a-šur-ANDUL.
+            </li>
+            <li>Dashes between elements of names, e.g.: (d)IŠTAR-ANDUL.</li>
+            <li>
+              Subscript numerals are just entered as regular numerals, e.g.:
+              PUZUR4-a-šùr.
+            </li>
+            <li>
+              Don’t capitalize syllabic readings at the beginning of a name (the
+              database takes care of this during display).
+            </li>
+            <li>
+              Render phonetic complements between curly brackets, e.g.
+              2{šé}{-}{ne}.
+            </li>
+          </ol>
+          Thus enter spellings into this database like this: 2{šé}{-}{ne} ANŠE ú
+          10+2 (TÚG)(.)(ḪI)ra-qu-ú ša (m)(d)UTU-(d)a-šur though in a printed
+          publication they might look like this: 2šé-ne ANŠE ú 12 TÚG.ḪIra-qu-ú
+          ša mdUTU-dA-šur
+        </v-card>
+      </v-menu>
+    </template>
     <v-text-field
       v-model="spellingInput"
       autofocus
       clearable
       class="test-spelling-field"
     />
+    <div
+      v-if="spelling && submitDisabledMessage"
+      class="red--text text--darken-2 font-weight-bold"
+    >
+      {{ submitDisabledMessage }}
+    </div>
     <v-row>
       <v-col cols="12" md="6">
         This spelling appears in the following forms:
@@ -59,7 +106,7 @@
             <OareLoaderButton
               color="primary"
               v-bind="attrs"
-              :disabled="!spelling || spellingExists"
+              :disabled="!spellingInput || spellingExists"
               :loading="addLoading"
               @click="addSpelling"
               class="test-submit-btn"
@@ -152,10 +199,12 @@ export default defineComponent({
       {
         text: 'Text',
         value: 'textName',
+        width: 100,
       },
       {
         text: 'Line',
         value: 'line',
+        width: 75,
       },
       {
         text: 'Reading',
@@ -171,7 +220,7 @@ export default defineComponent({
 
     const submitDisabledMessage = computed(() => {
       if (spellingExists.value) {
-        return 'The spelling you have typed already exists on the form';
+        return 'The spelling you have typed already exists in the form';
       } else if (!spellingInput.value) {
         return 'You cannot submit an empty spelling';
       }
@@ -180,6 +229,7 @@ export default defineComponent({
 
     const addSpelling = async () => {
       try {
+        console.log('add spelling');
         addLoading.value = true;
         const { uuid } = await server.addSpelling({
           formUuid: props.form.uuid,
@@ -306,6 +356,7 @@ export default defineComponent({
       addSpelling,
       selectedDiscourses,
       title,
+      formGrammarString: utils.formGrammarString,
     };
   },
 });

@@ -144,6 +144,17 @@ export interface WordsResponse {
   words: DictionaryWord[];
 }
 
+// Public Blacklist
+
+export interface PublicBlacklistPayloadItem {
+  uuid: string;
+  type: string;
+}
+
+export interface AddPublicBlacklistPayload {
+  texts: PublicBlacklistPayloadItem[];
+}
+
 // Groups
 
 export interface Group {
