@@ -19,6 +19,7 @@ import collectionInfo from './api/collection_info';
 import logout from './api/logout';
 import refreshToken from './api/refresh_token';
 import permissions from './api/permissions';
+import publicBlacklist from './api/public_blacklist';
 
 export const API_PATH = '/api/v2';
 
@@ -43,4 +44,5 @@ export default (app: Express) => {
   app.use(API_PATH, logout);
   app.use(API_PATH, refreshToken);
   app.use(API_PATH, permissions);
+  app.use(API_PATH, publicBlacklist);
 };
