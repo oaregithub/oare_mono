@@ -2,7 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import { ReloadKey } from '../index.vue';
-import AddSpellingDialog from '../AddSpellingDialog.vue';
+import SpellingDialog from '../SpellingDialog.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
 
@@ -10,7 +10,7 @@ const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe('AddSpellingDialog test', () => {
+describe('SpellingDialog test', () => {
   const mockActions = {
     showErrorSnackbar: jest.fn(),
     showSnackbar: jest.fn(),
@@ -70,7 +70,7 @@ describe('AddSpellingDialog test', () => {
     sl.set('serverProxy', server || mockServer);
     sl.set('lodash', mockLodash);
 
-    return mount(AddSpellingDialog, {
+    return mount(SpellingDialog, {
       vuetify,
       localVue,
       stubs: ['router-link'],

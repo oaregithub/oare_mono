@@ -48,7 +48,8 @@ class TextDiscourseDao {
     spelling: string,
     { page, limit }: Pagination,
   ): Promise<SearchDiscourseSpellingDaoResponse> {
-    const createBaseQuery = () => knex('text_discourse AS td').where('explicit_spelling', spelling);
+    const createBaseQuery = () =>
+      knex('text_discourse AS td').where('explicit_spelling', spelling).andWhere('spelling_uuid', null);
 
     const countRow = await createBaseQuery().count({ count: 'uuid' }).first();
     const totalResults = countRow?.count || 0;

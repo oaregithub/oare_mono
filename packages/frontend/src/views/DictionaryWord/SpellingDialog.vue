@@ -1,12 +1,12 @@
 <template>
   <oare-dialog
-    :title="`Add Spelling to ${form.form} (${formGrammarString(form)})`"
+    :title="title"
     :value="value"
     @input="$emit('input', $event)"
     :width="1000"
   >
     <v-text-field
-      v-model="spelling"
+      v-model="spellingInput"
       autofocus
       clearable
       class="test-spelling-field"
@@ -80,6 +80,7 @@ import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
   DictionaryForm,
+  FormSpelling,
   SpellingText,
 } from '@oare/types';
 import {
@@ -99,7 +100,7 @@ import { ReloadKey } from './index.vue';
 import { spellingHtmlReading } from '@oare/oare';
 
 export default defineComponent({
-  name: 'AddSpellingDialog',
+  name: 'SpellingDialog',
   props: {
     value: {
       type: Boolean,
@@ -109,6 +110,10 @@ export default defineComponent({
       type: Object as PropType<DictionaryForm>,
       required: true,
     },
+    spelling: {
+      type: Object as PropType<FormSpelling | null>,
+      default: null,
+    },
   },
   components: {
     OareDialog,
@@ -117,7 +122,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
-    const spelling = ref('');
+    const spellingInput = ref('');
     const searchedSpelling = ref('');
     const totalDiscourseResults = ref(0);
     const discourseOptions = ref({
@@ -161,13 +166,13 @@ export default defineComponent({
     const reload = inject(ReloadKey);
 
     const spellingExists = computed(() =>
-      props.form.spellings.map(f => f.spelling).includes(spelling.value)
+      props.form.spellings.map(f => f.spelling).includes(spellingInput.value)
     );
 
     const submitDisabledMessage = computed(() => {
       if (spellingExists.value) {
         return 'The spelling you have typed already exists on the form';
-      } else if (!spelling.value) {
+      } else if (!spellingInput.value) {
         return 'You cannot submit an empty spelling';
       }
       return '';
@@ -178,7 +183,7 @@ export default defineComponent({
         addLoading.value = true;
         const { uuid } = await server.addSpelling({
           formUuid: props.form.uuid,
-          spelling: spelling.value,
+          spelling: spellingInput.value,
           discourseUuids: selectedDiscourses.value.map(row => row.uuid),
         });
         emit('input', false);
@@ -238,8 +243,20 @@ export default defineComponent({
       }
     };
 
+    const title = computed(() => {
+      if (props.spelling) {
+        return `Edit ${props.spelling.spelling}`;
+      }
+
+      const grammarString = utils.formGrammarString(props.form);
+      return (
+        `Add Spelling to ${props.form.form}` +
+        (grammarString ? ` (${grammarString})` : '')
+      );
+    });
+
     watch(
-      spelling,
+      spellingInput,
       _.debounce(async (newSpelling: string) => {
         if (newSpelling) {
           searchSpellings(newSpelling);
@@ -254,8 +271,8 @@ export default defineComponent({
     watch(
       discourseOptions,
       () => {
-        if (spelling.value) {
-          searchDiscourse(spelling.value);
+        if (spellingInput.value) {
+          searchDiscourse(spellingInput.value);
         }
       },
       { deep: true }
@@ -265,7 +282,7 @@ export default defineComponent({
       () => props.value,
       open => {
         if (!open) {
-          spelling.value = '';
+          spellingInput.value = '';
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
         }
@@ -273,7 +290,7 @@ export default defineComponent({
     );
 
     return {
-      spelling,
+      spellingInput,
       spellingSearchResults,
       discourseSearchResults,
       spellingResultHeaders,
@@ -287,8 +304,8 @@ export default defineComponent({
       submitDisabledMessage,
       addLoading,
       addSpelling,
-      formGrammarString: utils.formGrammarString,
       selectedDiscourses,
+      title,
     };
   },
 });
