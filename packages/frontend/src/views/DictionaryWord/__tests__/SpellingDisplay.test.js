@@ -11,8 +11,6 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('SpellingDisplay test', () => {
-  const updateSpelling = jest.fn();
-
   const spelling = {
     uuid: 'spelling-uuid',
     spelling: 'spelling',
@@ -42,18 +40,26 @@ describe('SpellingDisplay test', () => {
     showErrorSnackbar: jest.fn(),
   };
 
+  const lodash = {
+    debounce: cb => cb,
+  };
+
   const reload = jest.fn();
 
   const createWrapper = ({ server, store } = {}) => {
     sl.set('store', store || mockStore);
     sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
+    sl.set('lodash', lodash);
     return mount(SpellingDisplay, {
       vuetify,
       localVue,
       propsData: {
-        updateSpelling,
         spelling,
+        form: {
+          form: 'form',
+          spellings: [],
+        },
       },
       stubs: ['router-link'],
       provide: {
@@ -87,18 +93,16 @@ describe('SpellingDisplay test', () => {
     const wrapper = createWrapper();
     await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
-    await wrapper.get('.test-edit-spelling input').setValue('new spelling');
+    await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 
     expect(mockServer.updateSpelling).toHaveBeenCalledWith(
       spelling.uuid,
-      'new spelling'
+      'new spelling',
+      []
     );
-    expect(updateSpelling).toHaveBeenCalledWith({
-      ...spelling,
-      spelling: 'new spelling',
-    });
+    expect(reload).toHaveBeenCalled();
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
@@ -118,7 +122,7 @@ describe('SpellingDisplay test', () => {
 
     await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
-    await wrapper.get('.test-edit-spelling input').setValue('new spelling');
+    await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 
@@ -136,7 +140,7 @@ describe('SpellingDisplay test', () => {
 
     await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
-    await wrapper.get('.test-edit-spelling input').setValue('new spelling');
+    await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 

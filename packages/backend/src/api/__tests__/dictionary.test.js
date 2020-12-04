@@ -383,11 +383,13 @@ describe('dictionary api test', () => {
     const spellingUuid = 'spelling-uuid';
     const mockPayload = {
       spelling: 'new-spelling',
+      discourseUuids: ['uuid1', 'uuid2'],
     };
     const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}`;
 
     const TextDiscourseDao = {
       hasSpelling: jest.fn().mockResolvedValue(false),
+      updateSpellingUuid: jest.fn().mockResolvedValue(null),
     };
 
     const LoggingEditsDao = {
@@ -395,7 +397,9 @@ describe('dictionary api test', () => {
     };
 
     const DictionarySpellingDao = {
-      updateSpelling: jest.fn().mockResolvedValue(null),
+      updateSpelling: jest.fn(async (_spellingUuid, _spelling, cb) => {
+        await cb();
+      }),
     };
 
     const setupPostForm = () => {
@@ -431,13 +435,20 @@ describe('dictionary api test', () => {
     it('logs edit', async () => {
       setupPostForm();
       await sendRequest();
-      expect(LoggingEditsDao.logEdit).toHaveBeenCalledWith('UPDATE', 'user-uuid', 'dictionary_spelling', spellingUuid);
+      expect(LoggingEditsDao.logEdit).toHaveBeenCalled();
     });
 
     it('updates spelling', async () => {
       setupPostForm();
       await sendRequest();
-      expect(DictionarySpellingDao.updateSpelling).toHaveBeenCalledWith(spellingUuid, mockPayload.spelling);
+      expect(DictionarySpellingDao.updateSpelling).toHaveBeenCalled();
+    });
+
+    it('updates discourses', async () => {
+      setupPostForm();
+      await sendRequest();
+
+      expect(TextDiscourseDao.updateSpellingUuid).toHaveBeenCalledTimes(mockPayload.discourseUuids.length);
     });
 
     it('checks to see if text discourse contains the spelling', async () => {
@@ -453,6 +464,17 @@ describe('dictionary api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(400);
+    });
+
+    it('returns 500 if updating discourse spelling uuid fails', async () => {
+      setupPostForm();
+      sl.set('TextDiscourseDao', {
+        ...TextDiscourseDao,
+        updateSpellingUuid: jest.fn().mockRejectedValue('Failed to update spelling uuid'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
     });
 
     it('returns 500 if checking text discourse fails', async () => {
@@ -475,7 +497,7 @@ describe('dictionary api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
-      expect(DictionarySpellingDao.updateSpelling).not.toHaveBeenCalled();
+      expect(TextDiscourseDao.updateSpellingUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500 if updating spelling fails', async () => {
@@ -650,9 +672,7 @@ describe('dictionary api test', () => {
     const spellingUuid = 'spelling-uuid';
     const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}`;
     const DictionarySpellingDao = {
-      deleteSpelling: jest.fn(async (uuid, cb) => {
-        await cb();
-      }),
+      deleteSpelling: jest.fn().mockResolvedValue(null),
     };
 
     const LoggingEditsDao = {
@@ -661,7 +681,9 @@ describe('dictionary api test', () => {
 
     const TextDiscourseDao = {
       uuidsBySpellingUuid: jest.fn().mockResolvedValue(['uuid1']),
-      unsetSpellingUuid: jest.fn().mockResolvedValue(null),
+      unsetSpellingUuid: jest.fn(async (_uuid, cb) => {
+        await cb();
+      }),
     };
 
     const setupDeleteSpelling = () => {
@@ -721,8 +743,8 @@ describe('dictionary api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(DictionarySpellingDao.deleteSpelling).not.toHaveBeenCalled();
       expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
-      expect(TextDiscourseDao.unsetSpellingUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500 when getting uuids fails', async () => {
@@ -735,7 +757,6 @@ describe('dictionary api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(500);
       expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
-      expect(TextDiscourseDao.unsetSpellingUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500 when logging edits fails', async () => {
@@ -746,7 +767,6 @@ describe('dictionary api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
-      expect(TextDiscourseDao.unsetSpellingUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500 when text discourse update fails', async () => {

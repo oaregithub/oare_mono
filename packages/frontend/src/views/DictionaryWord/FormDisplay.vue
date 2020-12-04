@@ -24,6 +24,7 @@
           <spelling-display
             :spelling="s"
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
+            :form="form"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -61,6 +62,7 @@
               :updateSpelling="
                 newSpelling => updateSpelling(index, newSpelling)
               "
+              :form="form"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -70,7 +72,7 @@
       </v-row>
     </div>
 
-    <add-spelling-dialog v-model="spellingDialogOpen" :form="form" />
+    <spelling-dialog v-model="spellingDialogOpen" :form="form" />
   </div>
 </template>
 
@@ -80,13 +82,13 @@ import { DictionaryForm, FormSpelling, SpellingText } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
-import AddSpellingDialog from './AddSpellingDialog.vue';
+import SpellingDialog from './SpellingDialog.vue';
 
 export default defineComponent({
   components: {
     GrammarDisplay,
     SpellingDisplay,
-    AddSpellingDialog,
+    SpellingDialog,
   },
   props: {
     form: {
