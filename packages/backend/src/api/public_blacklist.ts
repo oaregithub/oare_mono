@@ -1,7 +1,7 @@
 import express from 'express';
-import { AddPublicBlacklistPayload, PublicBlacklistPayloadItem } from '@oare/types';
+import { AddPublicBlacklistPayload, PublicBlacklistPayloadItem, RemovePublicBlacklistPayload } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
-import { HttpBadRequest, HttpForbidden, HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
 async function canInsert(texts: PublicBlacklistPayloadItem[]) {
@@ -10,6 +10,18 @@ async function canInsert(texts: PublicBlacklistPayloadItem[]) {
   const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
   for (let i = 0; i < texts.length; i += 1) {
     if (existingTexts.has(texts[i].uuid)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function canRemove(uuids: string[]) {
+  const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+  const existingBlacklist = await PublicBlacklistDao.getPublicTexts();
+  const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
+  for (let i = 0; i < uuids.length; i += 1) {
+    if (!existingTexts.has(uuids[i])) {
       return false;
     }
   }
@@ -47,6 +59,27 @@ router
       });
 
       res.status(201).json(insertIds);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  })
+  .delete(adminRoute, async (req, res, next) => {
+    try {
+      const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+      const { uuids } = (req.query as unknown) as RemovePublicBlacklistPayload;
+
+      if (!(await canRemove(uuids))) {
+        next(new HttpBadRequest('One or more of the selected texts does not exist in the blacklist'));
+        return;
+      }
+
+      await PublicBlacklistDao.removePublicTexts(uuids, async (trx) => {
+        await Promise.all(
+          uuids.map((uuid) => LoggingEditsDao.logEdit('DELETE', req.user!.uuid, 'public_blacklist', uuid, trx)),
+        );
+      });
+      res.end();
     } catch (err) {
       next(new HttpInternalError(err));
     }

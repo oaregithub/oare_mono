@@ -155,6 +155,10 @@ export interface AddPublicBlacklistPayload {
   texts: PublicBlacklistPayloadItem[];
 }
 
+export interface RemovePublicBlacklistPayload {
+  uuids: string[];
+}
+
 // Groups
 
 export interface Group {

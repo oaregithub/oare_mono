@@ -34,6 +34,16 @@ class PublicBlacklistDao {
     });
     return ids;
   }
+
+  async removePublicTexts(uuids: string[], postDelete?: (trx: Knex.Transaction) => Promise<void>) {
+    await knex.transaction(async (trx) => {
+      await trx('public_blacklist').whereIn('uuid', uuids).del();
+
+      if (postDelete) {
+        await postDelete(trx);
+      }
+    });
+  }
 }
 
 export default new PublicBlacklistDao();
