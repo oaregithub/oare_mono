@@ -24,6 +24,7 @@
           <spelling-display
             :spelling="s"
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
+            :form="form"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -61,6 +62,7 @@
               :updateSpelling="
                 newSpelling => updateSpelling(index, newSpelling)
               "
+              :form="form"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span

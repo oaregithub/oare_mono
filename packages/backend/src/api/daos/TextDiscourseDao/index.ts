@@ -40,8 +40,9 @@ export interface SearchDiscourseSpellingDaoResponse {
 }
 
 class TextDiscourseDao {
-  async updateSpellingUuid(uuid: string, spellingUuid: string): Promise<void> {
-    await knex('text_discourse').update('spelling_uuid', spellingUuid).where({ uuid });
+  async updateSpellingUuid(uuid: string, spellingUuid: string, trx?: Knex.Transaction): Promise<void> {
+    const k = trx || knex;
+    await k('text_discourse').update('spelling_uuid', spellingUuid).where({ uuid });
   }
 
   async searchTextDiscourseSpellings(
@@ -182,9 +183,13 @@ class TextDiscourseDao {
     return rows.map((r) => r.uuid);
   }
 
-  async unsetSpellingUuid(spellingUuid: string, trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knex;
-    await k('text_discourse').update('spelling_uuid', null).where('spelling_uuid', spellingUuid);
+  async unsetSpellingUuid(spellingUuid: string, cb?: (trx: Knex.Transaction) => Promise<void>): Promise<void> {
+    await knex.transaction(async (trx) => {
+      await trx('text_discourse').update('spelling_uuid', null).where('spelling_uuid', spellingUuid);
+      if (cb) {
+        await cb(trx);
+      }
+    });
   }
 }
 

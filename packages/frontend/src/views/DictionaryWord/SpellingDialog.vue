@@ -107,8 +107,8 @@
               color="primary"
               v-bind="attrs"
               :disabled="!spellingInput || spellingExists"
-              :loading="addLoading"
-              @click="addSpelling"
+              :loading="submitLoading"
+              @click="submit"
               class="test-submit-btn"
             >
               Submit
@@ -176,7 +176,7 @@ export default defineComponent({
       page: 1,
       itemsPerPage: 10,
     });
-    const addLoading = ref(false);
+    const submitLoading = ref(false);
     const selectedDiscourses: Ref<SearchDiscourseSpellingRow[]> = ref([]);
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
@@ -229,8 +229,7 @@ export default defineComponent({
 
     const addSpelling = async () => {
       try {
-        console.log('add spelling');
-        addLoading.value = true;
+        submitLoading.value = true;
         const { uuid } = await server.addSpelling({
           formUuid: props.form.uuid,
           spelling: spellingInput.value,
@@ -242,7 +241,43 @@ export default defineComponent({
       } catch {
         actions.showErrorSnackbar('Failed to add spelling to form');
       } finally {
-        addLoading.value = false;
+        submitLoading.value = false;
+      }
+    };
+
+    const editSpelling = async () => {
+      if (!props.spelling) {
+        actions.showErrorSnackbar(
+          'Failed to update form spelling because spelling is null'
+        );
+        return;
+      }
+
+      try {
+        submitLoading.value = true;
+        await server.updateSpelling(
+          props.spelling.uuid,
+          spellingInput.value,
+          selectedDiscourses.value.map(row => row.uuid)
+        );
+        actions.showSnackbar('Successfully updated spelling');
+        reload && reload();
+      } catch (err) {
+        if (err.response && err.response.status === 400) {
+          actions.showErrorSnackbar(err.response.data.message);
+        } else {
+          actions.showErrorSnackbar('Failed to update form spelling');
+        }
+      } finally {
+        submitLoading.value = false;
+      }
+    };
+
+    const submit = () => {
+      if (props.spelling) {
+        editSpelling();
+      } else {
+        addSpelling();
       }
     };
 
@@ -295,7 +330,7 @@ export default defineComponent({
 
     const title = computed(() => {
       if (props.spelling) {
-        return `Edit ${props.spelling.spelling}`;
+        return 'Editing existing spelling';
       }
 
       const grammarString = utils.formGrammarString(props.form);
@@ -332,11 +367,16 @@ export default defineComponent({
       () => props.value,
       open => {
         if (!open) {
-          spellingInput.value = '';
+          if (props.spelling) {
+            spellingInput.value = props.spelling.spelling;
+          } else {
+            spellingInput.value = '';
+          }
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
         }
-      }
+      },
+      { immediate: true }
     );
 
     return {
@@ -352,11 +392,12 @@ export default defineComponent({
       discourseOptions,
       spellingExists,
       submitDisabledMessage,
-      addLoading,
+      submitLoading,
       addSpelling,
       selectedDiscourses,
       title,
       formGrammarString: utils.formGrammarString,
+      submit,
     };
   },
 });

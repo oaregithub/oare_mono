@@ -31,19 +31,7 @@
       }}</a
       >)</span
     >
-    <OareDialog
-      v-model="isEditing"
-      :title="`Edit Form Spelling: ${spelling.spelling}`"
-      :submitDisabled="!editedSpelling || editedSpelling === spelling.spelling"
-      :submitLoading="editLoading"
-      @submit="saveSpelling"
-    >
-      <v-text-field
-        v-model="editedSpelling"
-        autofocus
-        class="test-edit-spelling"
-      />
-    </OareDialog>
+    <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
     <OareDialog
       v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
@@ -89,21 +77,25 @@ import {
   watch,
   inject,
 } from '@vue/composition-api';
-import { FormSpelling } from '@oare/types';
+import { FormSpelling, DictionaryForm } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
 import { ReloadKey } from './index.vue';
+import SpellingDialog from './SpellingDialog.vue';
 
 export default defineComponent({
+  components: {
+    SpellingDialog,
+  },
   props: {
-    updateSpelling: {
-      type: Function as PropType<(newSpelling: FormSpelling) => void>,
-      required: true,
-    },
     spelling: {
       type: Object as PropType<FormSpelling>,
+      required: true,
+    },
+    form: {
+      type: Object as PropType<DictionaryForm>,
       required: true,
     },
   },
@@ -118,7 +110,6 @@ export default defineComponent({
     const deleteSpellingDialog = ref(false);
     const deleteLoading = ref(false);
     const isEditing = ref(false);
-    const editedSpelling = ref(props.spelling.spelling);
     const editLoading = ref(false);
     const headers: DataTableHeader[] = reactive([
       {
@@ -135,27 +126,6 @@ export default defineComponent({
       spellingHtmlReading(props.spelling.spelling)
     );
 
-    const saveSpelling = async () => {
-      try {
-        editLoading.value = true;
-        await server.updateSpelling(props.spelling.uuid, editedSpelling.value);
-        actions.showSnackbar('Successfully updated spelling');
-        isEditing.value = false;
-        props.updateSpelling({
-          ...props.spelling,
-          spelling: editedSpelling.value,
-        });
-      } catch (err) {
-        if (err.response && err.response.status === 400) {
-          actions.showErrorSnackbar(err.response.data.message);
-        } else {
-          actions.showErrorSnackbar('Failed to update form spelling');
-        }
-      } finally {
-        editLoading.value = false;
-      }
-    };
-
     const deleteSpelling = async () => {
       try {
         deleteLoading.value = true;
@@ -169,12 +139,6 @@ export default defineComponent({
       }
     };
 
-    watch(isEditing, open => {
-      if (!open) {
-        editedSpelling.value = props.spelling.spelling;
-      }
-    });
-
     return {
       addSpellingDialog,
       deleteSpellingDialog,
@@ -183,9 +147,7 @@ export default defineComponent({
       search,
       canEdit,
       isEditing,
-      editedSpelling,
       editLoading,
-      saveSpelling,
       htmlSpelling,
       deleteSpelling,
     };
