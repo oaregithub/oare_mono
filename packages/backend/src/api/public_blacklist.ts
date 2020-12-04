@@ -1,5 +1,5 @@
 import express from 'express';
-import { AddPublicBlacklistPayload, PublicBlacklistPayloadItem, RemovePublicBlacklistPayload } from '@oare/types';
+import { AddPublicBlacklistPayload, PublicBlacklistPayloadItem } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
@@ -62,7 +62,7 @@ router
     }
   });
 
-router.route('public_blacklist/:uuid').delete(adminRoute, async (req, res, next) => {
+router.route('/public_blacklist/:uuid').delete(adminRoute, async (req, res, next) => {
   try {
     const LoggingEditsDao = sl.get('LoggingEditsDao');
     const PublicBlacklistDao = sl.get('PublicBlacklistDao');

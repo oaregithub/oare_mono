@@ -29,9 +29,6 @@ const mockPOST = {
     },
   ],
 };
-const mockDELETE = {
-  uuids: ['uuid1', 'uuid2'],
-};
 
 describe('GET /public_blacklist', () => {
   const PATH = `${API_PATH}/public_blacklist`;
@@ -78,7 +75,7 @@ describe('GET /public_blacklist', () => {
 
   it('returns 500 on failed blacklist retrieval', async () => {
     sl.set('PublicBlacklistDao', {
-      getPublicTexts: jest.fn().mockRejectedValue(null),
+      getPublicTexts: jest.fn().mockRejectedValue('Remove blacklist text failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -158,7 +155,7 @@ describe('POST /public_blacklist', () => {
 
 describe('DELETE /public_blacklist', () => {
   const uuid = 'uuid1';
-  const PATH = `${API_PATH}/${uuid}`;
+  const PATH = `${API_PATH}/public_blacklist/${uuid}`;
   const mockPublicBlacklistDao = {
     getPublicTexts: jest.fn().mockResolvedValue(mockGET),
     removePublicTexts: jest.fn().mockResolvedValue(),
@@ -195,7 +192,7 @@ describe('DELETE /public_blacklist', () => {
   });
 
   it('does not allow non-logged-in users to delete from blacklist', async () => {
-    const response = await request(app).delete(PATH).query(mockDELETE);
+    const response = await request(app).delete(PATH);
     expect(mockPublicBlacklistDao.removePublicTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
@@ -210,7 +207,7 @@ describe('DELETE /public_blacklist', () => {
   });
 
   it('returns 400 when texts to be deleted are not blacklisted', async () => {
-    const response = await request(app).delete(PATH).set('Cookie', 'jwt=token');
+    const response = await request(app).delete(`${API_PATH}/public_blacklist/uuid3`).set('Cookie', 'jwt=token');
     expect(mockPublicBlacklistDao.removePublicTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
