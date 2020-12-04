@@ -16,14 +16,12 @@ async function canInsert(texts: PublicBlacklistPayloadItem[]) {
   return true;
 }
 
-async function canRemove(uuids: string[]) {
+async function canRemove(uuid: string) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
   const existingBlacklist = await PublicBlacklistDao.getPublicTexts();
   const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
-  for (let i = 0; i < uuids.length; i += 1) {
-    if (!existingTexts.has(uuids[i])) {
-      return false;
-    }
+  if (!existingTexts.has(uuid)) {
+    return false;
   }
   return true;
 }
@@ -62,27 +60,26 @@ router
     } catch (err) {
       next(new HttpInternalError(err));
     }
-  })
-  .delete(adminRoute, async (req, res, next) => {
-    try {
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
-      const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-      const { uuids } = (req.query as unknown) as RemovePublicBlacklistPayload;
-
-      if (!(await canRemove(uuids))) {
-        next(new HttpBadRequest('One or more of the selected texts does not exist in the blacklist'));
-        return;
-      }
-
-      await PublicBlacklistDao.removePublicTexts(uuids, async (trx) => {
-        await Promise.all(
-          uuids.map((uuid) => LoggingEditsDao.logEdit('DELETE', req.user!.uuid, 'public_blacklist', uuid, trx)),
-        );
-      });
-      res.end();
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
   });
+
+router.route('public_blacklist/:uuid').delete(adminRoute, async (req, res, next) => {
+  try {
+    const LoggingEditsDao = sl.get('LoggingEditsDao');
+    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const { uuid } = req.params;
+
+    if (!(await canRemove(uuid))) {
+      next(new HttpBadRequest('One or more of the selected texts does not exist in the blacklist'));
+      return;
+    }
+
+    await PublicBlacklistDao.removePublicTexts(uuid, async (trx) => {
+      await LoggingEditsDao.logEdit('DELETE', req.user!.uuid, 'public_blacklist', uuid, trx);
+    });
+    res.end();
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 export default router;

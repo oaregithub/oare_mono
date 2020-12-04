@@ -3,8 +3,6 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const PATH = `${API_PATH}/public_blacklist`;
-
 const mockGET = [
   {
     text_uuid: 'uuid1',
@@ -36,6 +34,7 @@ const mockDELETE = {
 };
 
 describe('GET /public_blacklist', () => {
+  const PATH = `${API_PATH}/public_blacklist`;
   const mockPublicBlacklistDao = {
     getPublicTexts: jest.fn().mockResolvedValue(mockGET),
   };
@@ -87,6 +86,7 @@ describe('GET /public_blacklist', () => {
 });
 
 describe('POST /public_blacklist', () => {
+  const PATH = `${API_PATH}/public_blacklist`;
   const mockPublicBlacklistDao = {
     getPublicTexts: jest.fn().mockResolvedValue(mockGET),
     addPublicTexts: jest.fn().mockResolvedValue(),
@@ -157,6 +157,8 @@ describe('POST /public_blacklist', () => {
 });
 
 describe('DELETE /public_blacklist', () => {
+  const uuid = 'uuid1';
+  const PATH = `${API_PATH}/${uuid}`;
   const mockPublicBlacklistDao = {
     getPublicTexts: jest.fn().mockResolvedValue(mockGET),
     removePublicTexts: jest.fn().mockResolvedValue(),
@@ -173,7 +175,7 @@ describe('DELETE /public_blacklist', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).delete(PATH).query(mockDELETE).set('Cookie', 'jwt=token');
+  const sendRequest = () => request(app).delete(PATH).set('Cookie', 'jwt=token');
 
   it('returns 200 on successful deletion', async () => {
     const response = await sendRequest();
@@ -208,10 +210,7 @@ describe('DELETE /public_blacklist', () => {
   });
 
   it('returns 400 when texts to be deleted are not blacklisted', async () => {
-    const mockNonExistantDELETE = {
-      uuids: ['uuid3', 'uuid4'],
-    };
-    const response = await request(app).delete(PATH).query(mockNonExistantDELETE).set('Cookie', 'jwt=token');
+    const response = await request(app).delete(PATH).set('Cookie', 'jwt=token');
     expect(mockPublicBlacklistDao.removePublicTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });

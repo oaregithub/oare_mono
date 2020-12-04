@@ -1,6 +1,5 @@
 import axios from '../axiosInstance';
 import {
-  RemovePublicBlacklistPayload,
   AddPublicBlacklistPayload,
 } from '@oare/types';
 
@@ -15,12 +14,10 @@ async function addTextsToPublicBlacklist(
   return await axios.post('/public_blacklist', texts);
 }
 
-async function removeTextsFromPublicBlacklist(
-  payload: RemovePublicBlacklistPayload
-) {
-  await axios.delete('/public_blacklist', {
-    params: payload,
-  });
+async function removeTextsFromPublicBlacklist(uuids: string[]) {
+  await Promise.all(
+    uuids.map(uuid => axios.delete(`/public_blacklist/${uuid}`))
+  );
 }
 
 export default {
