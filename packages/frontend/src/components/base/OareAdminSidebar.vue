@@ -19,11 +19,11 @@ export default defineComponent({
       routes: [
         {
           label: 'Groups',
-          path: 'groups',
+          path: '/admin/groups',
         },
         {
           label: 'Texts',
-          path: 'texts',
+          path: '/admin/blacklist/texts',
         },
       ],
     });
