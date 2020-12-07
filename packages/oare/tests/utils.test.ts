@@ -19,4 +19,22 @@ describe('tokenizer', () => {
       '<sup>TÚG</sup><em>a</em>-<em>bar</em>-<em>ni</em>-<em>ú</em>',
     );
   });
+
+  it('throws error with unmatched opening parenthesis', () => {
+    expect(() => tokenizeExplicitSpelling('(TÚGa-bar-ni-ú')).toThrow();
+  });
+
+  it('throws error with unmatched closing parenthesis', () => {
+    expect(() => tokenizeExplicitSpelling('TÚG)a-bar-ni-ú')).toThrow();
+  });
+
+  it('throws error with separators at beginning', () => {
+    expect(() => tokenizeExplicitSpelling('-bar-ni-ú')).toThrow();
+    expect(() => tokenizeExplicitSpelling('.bar-ni-ú')).toThrow();
+  });
+
+  it('throws error with separator at end', () => {
+    expect(() => tokenizeExplicitSpelling('(TÚG)a-bar-ni-')).toThrow();
+    expect(() => tokenizeExplicitSpelling('(TÚG)a-bar-ni.')).toThrow();
+  });
 });

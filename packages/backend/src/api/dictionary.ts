@@ -8,6 +8,7 @@ import {
   AddFormSpellingPayload,
   AddFormSpellingResponse,
 } from '@oare/types';
+import { tokenizeExplicitSpelling } from '@oare/oare';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
@@ -45,6 +46,17 @@ router.route('/dictionary/spellings').post(adminRoute, async (req, res, next) =>
     res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
+  }
+});
+
+router.route('/dictionary/spellings/check').get(async (req, res, next) => {
+  const spelling = (req.query.spelling as unknown) as string;
+
+  try {
+    tokenizeExplicitSpelling(spelling);
+    res.json(true);
+  } catch {
+    res.json(false);
   }
 });
 

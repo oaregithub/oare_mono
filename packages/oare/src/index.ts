@@ -94,8 +94,8 @@ type Token = {
   reading: string;
 };
 
-export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûwz';
-export const AkkadianAlphabetUpper = 'ĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛWZ';
+export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';
+export const AkkadianAlphabetUpper = 'ĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZ';
 export const AkkadianLetterGroupsUpper: { [key: string]: string } = {
   A: 'ĂAĀÂ',
   B: 'B',
@@ -143,6 +143,15 @@ const createTabletRenderer = (
   return renderer;
 };
 
+const isAlpha = (char: string): boolean =>
+  AkkadianAlphabetLower.includes(char) || AkkadianAlphabetUpper.includes(char);
+
+class TokenizeError extends Error {
+  constructor(message: string) {
+    super(`Unexpected token: ${message}`);
+  }
+}
+
 const tokenizeExplicitSpelling = (spelling: string): Token[] => {
   let state: State = null;
   let reading = '';
@@ -157,21 +166,25 @@ const tokenizeExplicitSpelling = (spelling: string): Token[] => {
         case null:
           if (char === '(') {
             state = 'READ_SUPERSCRIPT';
-          } else {
+          } else if (isAlpha(char)) {
             state = 'READ_SYLLABLE';
             reading += char;
+          } else {
+            throw new TokenizeError(char);
           }
           break;
         case 'READ_SUPERSCRIPT':
-          if (char === ')' || char === eof) {
+          if (char === ')') {
             tokens.push({
               classifier: 'SUPERSCRIPT',
               reading,
             });
             reading = '';
             state = null;
-          } else {
+          } else if (isAlpha(char)) {
             reading += char;
+          } else {
+            throw new TokenizeError(char);
           }
           break;
         case 'READ_SYLLABLE':
@@ -193,8 +206,10 @@ const tokenizeExplicitSpelling = (spelling: string): Token[] => {
             });
             reading = '';
             state = 'READ_SUPERSCRIPT';
-          } else {
+          } else if (isAlpha(char)) {
             reading += char;
+          } else {
+            throw new TokenizeError(char);
           }
           break;
         default:
