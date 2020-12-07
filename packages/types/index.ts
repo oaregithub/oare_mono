@@ -73,6 +73,7 @@ export interface UpdateDictionaryTranslationPayload {
 
 export interface UpdateFormSpellingPayload {
   spelling: string;
+  discourseUuids: string[];
 }
 
 export interface UpdateDictionaryWordPayload {

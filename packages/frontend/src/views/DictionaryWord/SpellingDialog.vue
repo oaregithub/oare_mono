@@ -1,12 +1,7 @@
 <template>
-  <oare-dialog
-    :title="`Add Spelling to ${form.form} (${formGrammarString(form)})`"
-    :value="value"
-    @input="$emit('input', $event)"
-    :width="2000"
-  >
+  <oare-dialog :value="value" @input="$emit('input', $event)" :width="2000">
     <template #title>
-      {{ `Add Spelling to ${form.form} (${formGrammarString(form)})` }}
+      {{ title }}
       <v-menu offset-y open-on-hover>
         <template #activator="{ on, attrs }">
           <v-icon v-bind="attrs" v-on="on" class="ml-2">
@@ -52,7 +47,7 @@
       </v-menu>
     </template>
     <v-text-field
-      v-model="spelling"
+      v-model="spellingInput"
       autofocus
       clearable
       class="test-spelling-field"
@@ -111,9 +106,9 @@
             <OareLoaderButton
               color="primary"
               v-bind="attrs"
-              :disabled="!spelling || spellingExists"
-              :loading="addLoading"
-              @click="addSpelling"
+              :disabled="!spellingInput || spellingExists"
+              :loading="submitLoading"
+              @click="submit"
               class="test-submit-btn"
             >
               Submit
@@ -132,6 +127,7 @@ import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
   DictionaryForm,
+  FormSpelling,
   SpellingText,
 } from '@oare/types';
 import {
@@ -151,7 +147,7 @@ import { ReloadKey } from './index.vue';
 import { spellingHtmlReading } from '@oare/oare';
 
 export default defineComponent({
-  name: 'AddSpellingDialog',
+  name: 'SpellingDialog',
   props: {
     value: {
       type: Boolean,
@@ -161,6 +157,10 @@ export default defineComponent({
       type: Object as PropType<DictionaryForm>,
       required: true,
     },
+    spelling: {
+      type: Object as PropType<FormSpelling | null>,
+      default: null,
+    },
   },
   components: {
     OareDialog,
@@ -169,14 +169,14 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
-    const spelling = ref('');
+    const spellingInput = ref('');
     const searchedSpelling = ref('');
     const totalDiscourseResults = ref(0);
     const discourseOptions = ref({
       page: 1,
       itemsPerPage: 10,
     });
-    const addLoading = ref(false);
+    const submitLoading = ref(false);
     const selectedDiscourses: Ref<SearchDiscourseSpellingRow[]> = ref([]);
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
@@ -215,13 +215,13 @@ export default defineComponent({
     const reload = inject(ReloadKey);
 
     const spellingExists = computed(() =>
-      props.form.spellings.map(f => f.spelling).includes(spelling.value)
+      props.form.spellings.map(f => f.spelling).includes(spellingInput.value)
     );
 
     const submitDisabledMessage = computed(() => {
       if (spellingExists.value) {
         return 'The spelling you have typed already exists in the form';
-      } else if (!spelling.value) {
+      } else if (!spellingInput.value) {
         return 'You cannot submit an empty spelling';
       }
       return '';
@@ -229,10 +229,10 @@ export default defineComponent({
 
     const addSpelling = async () => {
       try {
-        addLoading.value = true;
+        submitLoading.value = true;
         const { uuid } = await server.addSpelling({
           formUuid: props.form.uuid,
-          spelling: spelling.value,
+          spelling: spellingInput.value,
           discourseUuids: selectedDiscourses.value.map(row => row.uuid),
         });
         emit('input', false);
@@ -241,7 +241,43 @@ export default defineComponent({
       } catch {
         actions.showErrorSnackbar('Failed to add spelling to form');
       } finally {
-        addLoading.value = false;
+        submitLoading.value = false;
+      }
+    };
+
+    const editSpelling = async () => {
+      if (!props.spelling) {
+        actions.showErrorSnackbar(
+          'Failed to update form spelling because spelling is null'
+        );
+        return;
+      }
+
+      try {
+        submitLoading.value = true;
+        await server.updateSpelling(
+          props.spelling.uuid,
+          spellingInput.value,
+          selectedDiscourses.value.map(row => row.uuid)
+        );
+        actions.showSnackbar('Successfully updated spelling');
+        reload && reload();
+      } catch (err) {
+        if (err.response && err.response.status === 400) {
+          actions.showErrorSnackbar(err.response.data.message);
+        } else {
+          actions.showErrorSnackbar('Failed to update form spelling');
+        }
+      } finally {
+        submitLoading.value = false;
+      }
+    };
+
+    const submit = () => {
+      if (props.spelling) {
+        editSpelling();
+      } else {
+        addSpelling();
       }
     };
 
@@ -292,8 +328,20 @@ export default defineComponent({
       }
     };
 
+    const title = computed(() => {
+      if (props.spelling) {
+        return 'Editing existing spelling';
+      }
+
+      const grammarString = utils.formGrammarString(props.form);
+      return (
+        `Add Spelling to ${props.form.form}` +
+        (grammarString ? ` (${grammarString})` : '')
+      );
+    });
+
     watch(
-      spelling,
+      spellingInput,
       _.debounce(async (newSpelling: string) => {
         if (newSpelling) {
           searchSpellings(newSpelling);
@@ -308,8 +356,8 @@ export default defineComponent({
     watch(
       discourseOptions,
       () => {
-        if (spelling.value) {
-          searchDiscourse(spelling.value);
+        if (spellingInput.value) {
+          searchDiscourse(spellingInput.value);
         }
       },
       { deep: true }
@@ -319,15 +367,20 @@ export default defineComponent({
       () => props.value,
       open => {
         if (!open) {
-          spelling.value = '';
+          if (props.spelling) {
+            spellingInput.value = props.spelling.spelling;
+          } else {
+            spellingInput.value = '';
+          }
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
         }
-      }
+      },
+      { immediate: true }
     );
 
     return {
-      spelling,
+      spellingInput,
       spellingSearchResults,
       discourseSearchResults,
       spellingResultHeaders,
@@ -339,10 +392,12 @@ export default defineComponent({
       discourseOptions,
       spellingExists,
       submitDisabledMessage,
-      addLoading,
+      submitLoading,
       addSpelling,
-      formGrammarString: utils.formGrammarString,
       selectedDiscourses,
+      title,
+      formGrammarString: utils.formGrammarString,
+      submit,
     };
   },
 });
