@@ -162,14 +162,14 @@ router
   .route('/dictionary/spellings/:uuid')
   .put(adminRoute, async (req, res, next) => {
     try {
-      const { uuid } = req.params;
-      const { spelling }: UpdateFormSpellingPayload = req.body;
+      const { uuid: spellingUuid } = req.params;
+      const { spelling, discourseUuids }: UpdateFormSpellingPayload = req.body;
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
 
       // If it doesn't exist in text_discourse, update
-      const hasSpelling = await TextDiscourseDao.hasSpelling(uuid);
+      const hasSpelling = await TextDiscourseDao.hasSpelling(spellingUuid);
       if (hasSpelling) {
         next(
           new HttpBadRequest(
@@ -179,8 +179,17 @@ router
         return;
       }
 
-      await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', uuid);
-      await DictionarySpellingDao.updateSpelling(uuid, spelling);
+      await DictionarySpellingDao.updateSpelling(spellingUuid, spelling, async (trx) => {
+        await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', spellingUuid, trx);
+        await Promise.all(
+          discourseUuids.map((discourseUuid) =>
+            LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', discourseUuid, trx),
+          ),
+        );
+        await Promise.all(
+          discourseUuids.map((discourseUuid) => TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid, trx)),
+        );
+      });
 
       res.status(201).end();
     } catch (err) {
@@ -194,15 +203,15 @@ router
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
 
-      await DictionarySpellingDao.deleteSpelling(uuid, async (trx) => {
-        const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(uuid, trx);
+      await TextDiscourseDao.unsetSpellingUuid(uuid, async (trx) => {
+        await DictionarySpellingDao.deleteSpelling(uuid, trx);
 
+        const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(uuid, trx);
         await Promise.all(
           discourseRowUuids.map((rowUuid) =>
             LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', rowUuid, trx),
           ),
         );
-        await TextDiscourseDao.unsetSpellingUuid(uuid, trx);
       });
 
       res.status(201).end();

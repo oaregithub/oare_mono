@@ -47,10 +47,12 @@ async function updateForm(form: DictionaryForm): Promise<void> {
 
 async function updateSpelling(
   spellingUuid: string,
-  newSpelling: string
+  newSpelling: string,
+  discourseUuids: string[]
 ): Promise<void> {
   const payload: UpdateFormSpellingPayload = {
     spelling: newSpelling,
+    discourseUuids,
   };
   await axios.put(`/dictionary/spellings/${spellingUuid}`, payload);
 }

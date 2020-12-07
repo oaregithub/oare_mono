@@ -1,7 +1,7 @@
 import express from 'express';
 import { AddPublicBlacklistPayload, PublicBlacklistPayloadItem } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
-import { HttpBadRequest, HttpForbidden, HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
 async function canInsert(texts: PublicBlacklistPayloadItem[]) {
@@ -12,6 +12,16 @@ async function canInsert(texts: PublicBlacklistPayloadItem[]) {
     if (existingTexts.has(texts[i].uuid)) {
       return false;
     }
+  }
+  return true;
+}
+
+async function canRemove(uuid: string) {
+  const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+  const existingBlacklist = await PublicBlacklistDao.getPublicTexts();
+  const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
+  if (!existingTexts.has(uuid)) {
+    return false;
   }
   return true;
 }
@@ -51,5 +61,25 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+router.route('/public_blacklist/:uuid').delete(adminRoute, async (req, res, next) => {
+  try {
+    const LoggingEditsDao = sl.get('LoggingEditsDao');
+    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const { uuid } = req.params;
+
+    if (!(await canRemove(uuid))) {
+      next(new HttpBadRequest('One or more of the selected texts does not exist in the blacklist'));
+      return;
+    }
+
+    await PublicBlacklistDao.removePublicTexts(uuid, async (trx) => {
+      await LoggingEditsDao.logEdit('DELETE', req.user!.uuid, 'public_blacklist', uuid, trx);
+    });
+    res.end();
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 export default router;
