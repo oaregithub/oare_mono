@@ -143,8 +143,11 @@ const createTabletRenderer = (
   return renderer;
 };
 
-const isAlpha = (char: string): boolean =>
-  AkkadianAlphabetLower.includes(char) || AkkadianAlphabetUpper.includes(char);
+const isAlpha = (char: string): boolean => {
+  // Convert letter with diacritics to normal letter. See https://stackoverflow.com/a/37511463/4231848
+  const normalizedChar = char.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return !!normalizedChar.match(/[a-z]/i);
+};
 
 class TokenizeError extends Error {
   constructor(message: string) {
