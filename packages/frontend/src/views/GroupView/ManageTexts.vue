@@ -297,7 +297,11 @@ export default defineComponent({
 
         searchLoading.value = true;
         try {
-          const items = await server.searchTextNames({ search: text });
+          const items = await server.searchTextNames({
+            page: '1',
+            rows: '1000',
+            search: text,
+          });
           textItems.value = items.map(item => ({
             ...item,
             text_uuid: item.uuid,
