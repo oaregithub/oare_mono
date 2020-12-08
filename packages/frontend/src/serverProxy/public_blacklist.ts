@@ -13,9 +13,6 @@ async function addTextsToPublicBlacklist(
 }
 
 async function removeTextsFromPublicBlacklist(uuids: string[]) {
-  /* await Promise.all(
-    uuids.map(uuid => axios.delete(`/public_blacklist/${uuid}`))
-  ); */
   await Promise.all(
     uuids.map(uuid => axios.delete(`public_blacklist/${uuid}`))
   );

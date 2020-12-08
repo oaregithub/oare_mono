@@ -48,7 +48,9 @@ export default defineComponent({
         return 'OareDashboardSidebar';
       } else if (
         routeName &&
-        (routeName.includes('admin') || routeName.includes('manage'))
+        (routeName.includes('admin') ||
+          routeName.includes('manage') ||
+          routeName.includes('blacklist'))
       ) {
         return 'OareAdminSidebar';
       }
