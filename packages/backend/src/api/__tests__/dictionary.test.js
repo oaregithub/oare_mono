@@ -397,7 +397,12 @@ describe('dictionary api test', () => {
     };
 
     const DictionarySpellingDao = {
-      updateSpelling: jest.fn(async (_spellingUuid, _spelling, cb) => {
+      updateSpelling: jest.fn().mockResolvedValue(null),
+      getSpellingByUuid: jest.fn().mockResolvedValue('current spelling'),
+    };
+
+    const utils = {
+      createTransaction: jest.fn(async (cb) => {
         await cb();
       }),
     };
@@ -407,6 +412,7 @@ describe('dictionary api test', () => {
       sl.set('TextDiscourseDao', TextDiscourseDao);
       sl.set('LoggingEditsDao', LoggingEditsDao);
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
+      sl.set('utils', utils);
     };
 
     const sendRequest = () => request(app).put(PATH).send(mockPayload).set('Cookie', 'jwt=token');
@@ -455,6 +461,17 @@ describe('dictionary api test', () => {
       setupPostForm();
       await sendRequest();
       expect(TextDiscourseDao.hasSpelling).toHaveBeenCalled();
+    });
+
+    it("doesn't update spelling if the spelling is the same as the current", async () => {
+      setupPostForm();
+      sl.set('DictionarySpellingDao', {
+        ...DictionarySpellingDao,
+        getSpellingByUuid: jest.fn().mockResolvedValue(mockPayload.spelling),
+      });
+
+      await sendRequest();
+      expect(DictionarySpellingDao.updateSpelling).not.toHaveBeenCalled();
     });
 
     it('returns 400 if spelling exists in text discourse', async () => {

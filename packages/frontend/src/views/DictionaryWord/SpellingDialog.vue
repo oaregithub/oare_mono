@@ -1,5 +1,10 @@
 <template>
-  <oare-dialog :value="value" @input="$emit('input', $event)" :width="2000">
+  <oare-dialog
+    :value="value"
+    @input="$emit('input', $event)"
+    :width="2000"
+    :persistent="false"
+  >
     <template #title>
       {{ title }}
       <v-menu offset-y open-on-hover>
@@ -53,7 +58,7 @@
       class="test-spelling-field"
     />
     <div
-      v-if="spelling && submitDisabledMessage"
+      v-if="submitDisabledMessage"
       class="red--text text--darken-2 font-weight-bold"
     >
       {{ submitDisabledMessage }}
@@ -85,6 +90,7 @@
           :loading="searchDiscourseLoading"
           :server-items-length="totalDiscourseResults"
           :options.sync="discourseOptions"
+          :footer-props="{ 'items-per-page-options': [10, 25, 50, 100] }"
           item-key="uuid"
           show-select
         >
@@ -106,7 +112,7 @@
             <OareLoaderButton
               color="primary"
               v-bind="attrs"
-              :disabled="!spellingInput || spellingExists"
+              :disabled="!!submitDisabledMessage"
               :loading="submitLoading"
               @click="submit"
               class="test-submit-btn"
@@ -174,7 +180,7 @@ export default defineComponent({
     const totalDiscourseResults = ref(0);
     const discourseOptions = ref({
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 50,
     });
     const submitLoading = ref(false);
     const selectedDiscourses: Ref<SearchDiscourseSpellingRow[]> = ref([]);
@@ -214,8 +220,10 @@ export default defineComponent({
 
     const reload = inject(ReloadKey);
 
-    const spellingExists = computed(() =>
-      props.form.spellings.map(f => f.spelling).includes(spellingInput.value)
+    const spellingExists = computed(
+      () =>
+        !props.spelling &&
+        props.form.spellings.map(f => f.spelling).includes(spellingInput.value)
     );
 
     const submitDisabledMessage = computed(() => {
@@ -223,6 +231,12 @@ export default defineComponent({
         return 'The spelling you have typed already exists in the form';
       } else if (!spellingInput.value) {
         return 'You cannot submit an empty spelling';
+      } else if (
+        props.spelling &&
+        spellingInput.value === props.spelling.spelling &&
+        selectedDiscourses.value.length === 0
+      ) {
+        return 'You must link the text to unlinked discourses and/or update the spelling.';
       }
       return '';
     });
@@ -374,6 +388,11 @@ export default defineComponent({
           }
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
+        } else {
+          if (props.spelling) {
+            searchSpellings(spellingInput.value);
+            searchDiscourse(spellingInput.value);
+          }
         }
       },
       { immediate: true }
