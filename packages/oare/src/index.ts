@@ -205,21 +205,25 @@ const tokenizeExplicitSpelling = (spelling: string): Token[] => {
 };
 
 const spellingHtmlReading = (spelling: string): string => {
-  const tokenizedSpelling = tokenizeExplicitSpelling(spelling)
-    .map((token) => {
-      if (token.classifier === 'SUPERSCRIPT') {
-        return `<sup>${token.reading}</sup>`;
-      }
-      if (token.classifier === 'SYLLABLE') {
-        if (token.reading === token.reading.toLowerCase()) {
-          return `<em>${token.reading}</em>`;
-        }
-        return token.reading;
-      }
-      return token.reading;
-    })
-    .join('');
-  return tokenizedSpelling;
+  return spelling
+    .split(' ')
+    .map((s) =>
+      tokenizeExplicitSpelling(s)
+        .map((token) => {
+          if (token.classifier === 'SUPERSCRIPT') {
+            return `<sup>${token.reading}</sup>`;
+          }
+          if (token.classifier === 'SYLLABLE') {
+            if (token.reading === token.reading.toLowerCase()) {
+              return `<em>${token.reading}</em>`;
+            }
+            return token.reading;
+          }
+          return token.reading;
+        })
+        .join(''),
+    )
+    .join(' ');
 };
 
 export { createTabletRenderer, spellingHtmlReading, tokenizeExplicitSpelling };

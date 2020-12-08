@@ -5,18 +5,9 @@ import Knex from 'knex';
 import TextDiscourseDao from '../TextDiscourseDao';
 
 class DictionarySpellingDao {
-  async updateSpelling(
-    uuid: string,
-    newSpelling: string,
-    cb?: (trx: Knex.Transaction) => Promise<void>,
-  ): Promise<void> {
-    await knex.transaction(async (trx) => {
-      await trx('dictionary_spelling').update('explicit_spelling', newSpelling).where({ uuid });
-
-      if (cb) {
-        await cb(trx);
-      }
-    });
+  async updateSpelling(uuid: string, newSpelling: string, trx?: Knex.Transaction): Promise<void> {
+    const k = trx || knex;
+    await k('dictionary_spelling').update('explicit_spelling', newSpelling).where({ uuid });
   }
 
   async getFormSpellings(formUuid: string): Promise<FormSpelling[]> {
@@ -64,6 +55,15 @@ class DictionarySpellingDao {
     const k = trx || knex;
 
     await k('dictionary_spelling').del().where('uuid', spellingUuid);
+  }
+
+  async getSpellingByUuid(spellingUuid: string): Promise<string> {
+    const row: { explicit_spelling: string } = await knex('dictionary_spelling')
+      .where('uuid', spellingUuid)
+      .select('explicit_spelling')
+      .first();
+
+    return row.explicit_spelling;
   }
 }
 

@@ -14,6 +14,7 @@ import TextGroupDao from '@/api/daos/TextGroupDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
 import AliasDao from '@/api/daos/AliasDao';
 import PublicBlacklistDao from '@/api/daos/PublicBlacklistDao';
+import utils from '@/utils';
 
 const instances: { [key: string]: any } = {};
 
@@ -34,6 +35,7 @@ export type ServiceTypes = {
   TextGroupDao: typeof TextGroupDao;
   TextEpigraphyDao: typeof TextEpigraphyDao;
   PublicBlacklistDao: typeof PublicBlacklistDao;
+  utils: typeof utils;
 };
 
 export default {
