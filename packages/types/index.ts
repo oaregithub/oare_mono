@@ -226,6 +226,8 @@ export interface SearchTextNamesResultRow {
 }
 
 export interface SearchTextNamesPayload {
+  page: string,
+  rows: string,
   search: string;
 }
 
