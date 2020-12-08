@@ -61,11 +61,12 @@ describe('SpellingDialog test', () => {
         },
       ],
     }),
+    updateSpelling: jest.fn().mockResolvedValue(null),
   };
 
   const reload = jest.fn();
 
-  const createWrapper = ({ server, actions } = {}) => {
+  const createWrapper = ({ spelling, server, actions } = {}) => {
     sl.set('globalActions', actions || mockActions);
     sl.set('serverProxy', server || mockServer);
     sl.set('lodash', mockLodash);
@@ -79,6 +80,7 @@ describe('SpellingDialog test', () => {
       },
       propsData: {
         value: true,
+        ...(spelling ? { spelling } : null),
         form: {
           uuid: 'form-uuid',
           form: 'form',
@@ -110,6 +112,38 @@ describe('SpellingDialog test', () => {
     expect(wrapper.get('.test-submit-btn').element).toBeDisabled();
   });
 
+  it('immediately performs search for edit spellings', async () => {
+    createWrapper({
+      spelling: {
+        uuid: 'spelling-uuid',
+        spelling: 'spelling',
+      },
+    });
+
+    await flushPromises();
+    expect(mockServer.searchSpellings).toHaveBeenCalled();
+    expect(mockServer.searchSpellingDiscourse).toHaveBeenCalled();
+  });
+
+  it('updates spellings', async () => {
+    const wrapper = createWrapper({
+      spelling: {
+        uuid: 'spelling-uuid',
+        spelling: 'spelling',
+      },
+    });
+
+    await flushPromises();
+    await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockServer.updateSpelling).toHaveBeenCalledWith(
+      'spelling-uuid',
+      'new spelling',
+      []
+    );
+  });
+
   it('searches for forms', async () => {
     const wrapper = createWrapper();
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
@@ -125,7 +159,7 @@ describe('SpellingDialog test', () => {
       'new spelling',
       {
         page: 0,
-        limit: 10,
+        limit: 50,
       }
     );
   });
