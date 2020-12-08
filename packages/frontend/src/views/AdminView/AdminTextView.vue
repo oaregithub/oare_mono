@@ -24,8 +24,11 @@ export default defineComponent({
     const tab = ref(null);
 
     const title = computed(() => {
-      if (tab.value === '/admin/blacklist/texts') return 'Texts';
-      else return 'Collections';
+      if (tab.value === '/admin/blacklist/texts') {
+        return 'Texts';
+      } else {
+        return 'Collections';
+      }
     });
 
     return {

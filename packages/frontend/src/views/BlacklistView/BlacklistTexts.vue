@@ -136,6 +136,9 @@ export default defineComponent({
     onMounted(async () => {
       try {
         publicBlacklist.value = await server.getPublicBlacklist();
+        publicBlacklist.value = publicBlacklist.value.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
       } catch {
         actions.showErrorSnackbar(
           'Error loading blacklisted texts. Please try again.'
@@ -159,6 +162,9 @@ export default defineComponent({
             text_uuid: text.text_uuid,
           });
         });
+        publicBlacklist.value = publicBlacklist.value.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
         actions.showSnackbar('Successfully added text(s).');
       } catch {
         actions.showErrorSnackbar('Error adding text(s). Please try again.');
