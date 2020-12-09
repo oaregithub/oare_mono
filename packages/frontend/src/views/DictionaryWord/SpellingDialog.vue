@@ -1,5 +1,10 @@
 <template>
-  <oare-dialog :value="value" @input="$emit('input', $event)" :width="2000">
+  <oare-dialog
+    :value="value"
+    @input="$emit('input', $event)"
+    :width="2000"
+    :persistent="false"
+  >
     <template #title>
       {{ title }}
       <v-menu offset-y open-on-hover>
@@ -97,6 +102,7 @@
           :loading="searchDiscourseLoading"
           :server-items-length="totalDiscourseResults"
           :options.sync="discourseOptions"
+          :footer-props="{ 'items-per-page-options': [10, 25, 50, 100] }"
           item-key="uuid"
           show-select
         >
@@ -186,7 +192,7 @@ export default defineComponent({
     const totalDiscourseResults = ref(0);
     const discourseOptions = ref({
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 50,
     });
     const submitLoading = ref(false);
     const selectedDiscourses: Ref<SearchDiscourseSpellingRow[]> = ref([]);
@@ -227,8 +233,10 @@ export default defineComponent({
 
     const reload = inject(ReloadKey);
 
-    const spellingExists = computed(() =>
-      props.form.spellings.map(f => f.spelling).includes(spellingInput.value)
+    const spellingExists = computed(
+      () =>
+        !props.spelling &&
+        props.form.spellings.map(f => f.spelling).includes(spellingInput.value)
     );
 
     const submitDisabledMessage = computed(() => {
@@ -238,6 +246,12 @@ export default defineComponent({
         return 'You cannot submit an empty spelling';
       } else if (spellingErrors.value.length > 0) {
         return 'The spelling you entered contains errors';
+      } else if (
+        props.spelling &&
+        spellingInput.value === props.spelling.spelling &&
+        selectedDiscourses.value.length === 0
+      ) {
+        return 'You must link the text to unlinked discourses and/or update the spelling.';
       }
       return '';
     });
@@ -404,6 +418,11 @@ export default defineComponent({
           }
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
+        } else {
+          if (props.spelling) {
+            searchSpellings(spellingInput.value);
+            searchDiscourse(spellingInput.value);
+          }
         }
       },
       { immediate: true }

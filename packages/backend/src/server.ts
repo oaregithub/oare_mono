@@ -13,6 +13,7 @@ import cache from '@/cache';
 import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
+import utils from '@/utils';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
@@ -43,6 +44,7 @@ sl.set('TextMarkupDao', TextMarkupDao);
 sl.set('cache', cache);
 sl.set('PublicBlacklistDao', PublicBlacklistDao);
 sl.set('SignReadingDao', SignReadingDao);
+sl.set('utils', utils);
 
 app.listen(8081, () => {
   console.log('Listening on port 8081');

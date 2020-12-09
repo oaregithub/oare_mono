@@ -17,14 +17,16 @@ function collectionTextQuery(uuid: string, search: string, blacklist: string[]) 
 }
 
 class HierarchyDao {
-  async getTextsBySearchTerm(searchText: string): Promise<CollectionListItem[]> {
+  async getTextsBySearchTerm(page: number, rows: number, searchText: string): Promise<CollectionListItem[]> {
     const matchingTexts: CollectionListItem[] = await knex('hierarchy')
       .select('hierarchy.uuid', 'alias.name')
       .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
       .where('hierarchy.type', 'text')
       .andWhere('alias.name', 'like', `%${searchText}%`)
       .groupBy('alias.name')
-      .orderBy('alias.name');
+      .orderBy('alias.name')
+      .limit(rows)
+      .offset((page - 1) * rows);
     return matchingTexts;
   }
 

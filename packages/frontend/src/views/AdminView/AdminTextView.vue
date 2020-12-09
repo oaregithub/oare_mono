@@ -1,11 +1,40 @@
 <template>
-  <OareContentView title="Admin Texts"> Coming Soon </OareContentView>
+  <OareContentView :title="`Public Blacklist ${title}`">
+    <v-tabs class="mb-3" v-model="tab">
+      <v-tab to="/admin/blacklist/texts">Texts</v-tab>
+      <v-tab to="/admin/blacklist/collections">Collections</v-tab>
+    </v-tabs>
+    <keep-alive>
+      <router-view />
+    </keep-alive>
+  </OareContentView>
 </template>
 
 <script>
-import { defineComponent } from '@vue/composition-api';
+import {
+  computed,
+  defineComponent,
+  onMounted,
+  ref,
+} from '@vue/composition-api';
 
-export default defineComponent({});
+export default defineComponent({
+  name: 'AdminTextView',
+  setup({ groupId }) {
+    const tab = ref(null);
+
+    const title = computed(() => {
+      if (tab.value === '/admin/blacklist/texts') {
+        return 'Texts';
+      } else {
+        return 'Collections';
+      }
+    });
+
+    return {
+      tab,
+      title,
+    };
+  },
+});
 </script>
-
-<style></style>

@@ -194,10 +194,12 @@ router
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const utils = sl.get('utils');
 
       // If it doesn't exist in text_discourse, update
-      const hasSpelling = await TextDiscourseDao.hasSpelling(spellingUuid);
-      if (hasSpelling) {
+      const currentSpelling = await DictionarySpellingDao.getSpellingByUuid(spellingUuid);
+      const discourseHasSpelling = await TextDiscourseDao.hasSpelling(spellingUuid);
+      if (currentSpelling !== spelling && discourseHasSpelling) {
         next(
           new HttpBadRequest(
             'Updating a spelling that exists in text_discourse is currently not supported. Try again at a future date.',
@@ -206,8 +208,12 @@ router
         return;
       }
 
-      await DictionarySpellingDao.updateSpelling(spellingUuid, spelling, async (trx) => {
-        await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', spellingUuid, trx);
+      await utils.createTransaction(async (trx) => {
+        if (currentSpelling !== spelling) {
+          await DictionarySpellingDao.updateSpelling(spellingUuid, spelling, trx);
+          await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', spellingUuid, trx);
+        }
+
         await Promise.all(
           discourseUuids.map((discourseUuid) =>
             LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', discourseUuid, trx),
