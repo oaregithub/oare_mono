@@ -422,6 +422,7 @@ export default defineComponent({
           if (props.spelling) {
             searchSpellings(spellingInput.value);
             searchDiscourse(spellingInput.value);
+            checkSpelling(spellingInput.value);
           }
         }
       },
