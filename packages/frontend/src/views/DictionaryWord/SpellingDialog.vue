@@ -46,18 +46,30 @@
         </v-card>
       </v-menu>
     </template>
-    <v-text-field
-      v-model="spellingInput"
-      autofocus
-      clearable
-      class="test-spelling-field"
-    />
-    <div
-      v-if="spelling && submitDisabledMessage"
-      class="red--text text--darken-2 font-weight-bold"
-    >
-      {{ submitDisabledMessage }}
+    <v-row align="center">
+      <v-col cols="6">
+        <v-text-field
+          v-model="spellingInput"
+          autofocus
+          class="test-spelling-field"
+        />
+      </v-col>
+      <v-col cols="6" class="black--text">
+        Preview:
+        <span v-html="spellingHtmlReading(spellingInput)" />
+      </v-col>
+    </v-row>
+    <div class="red--text text--darken-2 font-weight-bold">
+      <span v-if="spelling && submitDisabledMessage">{{
+        submitDisabledMessage
+      }}</span>
+      <ul v-if="spellingErrors.length > 0">
+        <li v-for="(error, idx) in spellingErrors" :key="idx">
+          {{ error }}
+        </li>
+      </ul>
     </div>
+
     <v-row>
       <v-col cols="12" md="6">
         This spelling appears in the following forms:
@@ -106,7 +118,7 @@
             <OareLoaderButton
               color="primary"
               v-bind="attrs"
-              :disabled="!spellingInput || spellingExists"
+              :disabled="hasError"
               :loading="submitLoading"
               @click="submit"
               class="test-submit-btn"
@@ -169,7 +181,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
-    const spellingInput = ref('');
+    const spellingInput = ref(props.spelling ? props.spelling.spelling : '');
     const searchedSpelling = ref('');
     const totalDiscourseResults = ref(0);
     const discourseOptions = ref({
@@ -183,6 +195,7 @@ export default defineComponent({
     const discourseSearchResults: Ref<SearchDiscourseSpellingRow[]> = ref([]);
     const searchSpellingLoading = ref(false);
     const searchDiscourseLoading = ref(false);
+    const spellingErrors = ref<string[]>([]);
 
     const spellingResultHeaders: Ref<DataTableHeader[]> = ref([
       {
@@ -223,9 +236,15 @@ export default defineComponent({
         return 'The spelling you have typed already exists in the form';
       } else if (!spellingInput.value) {
         return 'You cannot submit an empty spelling';
+      } else if (spellingErrors.value.length > 0) {
+        return 'The spelling you entered contains errors';
       }
       return '';
     });
+
+    const hasError = computed(
+      () => !!submitDisabledMessage.value || spellingErrors.value.length > 0
+    );
 
     const addSpelling = async () => {
       try {
@@ -295,6 +314,15 @@ export default defineComponent({
         .join(' ');
     };
 
+    const checkSpelling = async (spelling: string) => {
+      try {
+        const { errors } = await server.checkSpelling(spelling);
+        spellingErrors.value = errors;
+      } catch {
+        actions.showErrorSnackbar('Failed to check spelling');
+      }
+    };
+
     const searchSpellings = async (newSpelling: string) => {
       try {
         searchSpellingLoading.value = true;
@@ -346,9 +374,11 @@ export default defineComponent({
         if (newSpelling) {
           searchSpellings(newSpelling);
           searchDiscourse(newSpelling);
+          checkSpelling(newSpelling);
         } else {
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
+          spellingErrors.value = [];
         }
       }, 500)
     );
@@ -398,6 +428,9 @@ export default defineComponent({
       title,
       formGrammarString: utils.formGrammarString,
       submit,
+      spellingErrors,
+      hasError,
+      spellingHtmlReading,
     };
   },
 });
