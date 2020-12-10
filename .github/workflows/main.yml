@@ -46,7 +46,7 @@ jobs:
         run: |
           cp -R .ebextensions packages/backend
           cd packages/backend
-          zip -r oare_build.zip build dist package.json yarn.lock .ebextensions
+          zip -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare
           mv oare_build.zip ../..
         if: github.ref == 'refs/heads/master'
 
