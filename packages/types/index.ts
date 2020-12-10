@@ -37,6 +37,10 @@ export interface FormSpelling {
   texts: SpellingText[];
 }
 
+export interface CheckSpellingResponse {
+  errors: string[]
+}
+
 export interface DictionaryFormInfo {
   uuid: string;
   form: string;

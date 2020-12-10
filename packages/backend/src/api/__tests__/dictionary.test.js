@@ -796,4 +796,57 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(500);
     });
   });
+
+  describe('GET /dictionary/spellings/check', () => {
+    const checkSpelling = 'áb ša-ra-nim';
+    const PATH = `${API_PATH}/dictionary/spellings/check`;
+    const SignReadingDao = {
+      hasSign: jest.fn().mockResolvedValue(true),
+    };
+
+    const checkSpellingSetup = () => {
+      sl.set('SignReadingDao', SignReadingDao);
+    };
+
+    const sendRequest = (spelling) =>
+      request(app)
+        .get(PATH)
+        .query({
+          spelling: spelling || checkSpelling,
+        });
+
+    beforeEach(checkSpellingSetup);
+
+    it('returns no errors when spelling is valid', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual({
+        errors: [],
+      });
+    });
+
+    it('returns errors when spelling cannot parse', async () => {
+      const response = await sendRequest('bad---spelling');
+
+      expect(JSON.parse(response.text).errors.length).toBeGreaterThan(0);
+    });
+
+    it('returns errors when spelling contains signs that do not exist', async () => {
+      sl.set('SignReadingDao', {
+        hasSign: jest.fn().mockResolvedValue(false),
+      });
+
+      const response = await sendRequest();
+      expect(JSON.parse(response.text).errors.length).toBeGreaterThan(0);
+    });
+
+    it('returns 500 when sign reading dao fails', async () => {
+      sl.set('SignReadingDao', {
+        hasSign: jest.fn().mockRejectedValue('sign reading dao failed'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
 });

@@ -7,7 +7,9 @@ import {
   UpdateFormSpellingPayload,
   AddFormSpellingPayload,
   AddFormSpellingResponse,
+  CheckSpellingResponse,
 } from '@oare/types';
+import { tokenizeExplicitSpelling } from '@oare/oare';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
@@ -43,6 +45,43 @@ router.route('/dictionary/spellings').post(adminRoute, async (req, res, next) =>
 
     const response: AddFormSpellingResponse = { uuid: spellingUuid };
     res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/dictionary/spellings/check').get(async (req, res, next) => {
+  try {
+    const spelling = (req.query.spelling as unknown) as string;
+
+    const tokens = tokenizeExplicitSpelling(spelling);
+    const errorTokens = tokens.filter((token) => token.classifier === 'ERROR');
+
+    if (errorTokens.length > 0) {
+      const response: CheckSpellingResponse = {
+        errors: errorTokens.map(
+          (token) => `Unexpected token: ${token.reading === String.fromCharCode(-1) ? 'EOF' : token.reading}`,
+        ),
+      };
+      res.json(response);
+      return;
+    }
+
+    const SignReadingDao = sl.get('SignReadingDao');
+    const signs = tokens.filter((token) => token.classifier === 'SUPERSCRIPT' || token.classifier === 'SYLLABLE');
+    const signExistences = await Promise.all(signs.map((token) => SignReadingDao.hasSign(token.reading)));
+
+    if (signExistences.every((v) => v)) {
+      const response: CheckSpellingResponse = { errors: [] };
+      res.json(response);
+    } else {
+      const response: CheckSpellingResponse = {
+        errors: signs
+          .filter((_, i) => !signExistences[i])
+          .map((token) => `${token.reading} is not a valid sign reading`),
+      };
+      res.json(response);
+    }
   } catch (err) {
     next(new HttpInternalError(err));
   }
