@@ -2,42 +2,11 @@
   <v-progress-linear v-if="loading" indeterminate />
   <div v-else>
     <div style="display: flex">
-      <OareDialog
-        title="Add individual texts"
-        v-model="addTextsDialog"
-        :submitLoading="addTextsLoading"
-        @submit="addTexts"
-        :submitDisabled="textsToAdd.length === 0"
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn color="primary" class="mr-3 test-add" v-on="on">
-            <v-icon>mdi-plus</v-icon>Add Texts
-          </v-btn>
-        </template>
-        <v-autocomplete
-          v-model="textsToAdd"
-          :search-input.sync="searchTextToAdd"
-          outlined
-          :items="textItems"
-          :loading="searchLoading"
-          item-text="name"
-          item-value="uuid"
-          hide-no-data
-          cache-items
-          return-object
-          multiple
-          chips
-          deletable-chips
-        ></v-autocomplete>
-        <v-data-table :headers="textHeaders" :items="textsToAdd">
-          <template #[`item.name`]="{ item }">
-            <v-btn icon small @click="removeTextToAdd(item.name)">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-            {{ item.name }}
-          </template>
-        </v-data-table>
-      </OareDialog>
+      <router-link to="/addblacklist">
+        <v-btn color="primary" class="mr-3 test-add">
+          <span> <v-icon>mdi-plus</v-icon>Add texts</span>
+        </v-btn>
+      </router-link>
       <OareDialog
         v-model="confirmRemoveDialog"
         title="Confirm Removal"
@@ -118,20 +87,13 @@ export default defineComponent({
     const blacklistHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Name', value: 'name' },
     ]);
-    const textHeaders = ref([{ text: 'Text Name', value: 'name' }]);
 
     const publicBlacklist: Ref<Text[]> = ref([]);
     const selectedTexts: Ref<Text[]> = ref([]);
-    const textsToAdd: Ref<Text[]> = ref([]);
-    const textItems: Ref<Text[]> = ref([]);
 
     const loading = ref(true);
     const confirmRemoveDialog = ref(false);
     const removeTextLoading = ref(false);
-    const addTextsDialog = ref(false);
-    const addTextsLoading = ref(false);
-    const searchLoading = ref(false);
-    const searchTextToAdd = ref('');
 
     onMounted(async () => {
       try {
@@ -147,32 +109,6 @@ export default defineComponent({
         loading.value = false;
       }
     });
-
-    const addTexts = async () => {
-      const addPublicTexts = textsToAdd.value.map(text => ({
-        uuid: text.text_uuid,
-        type: 'text',
-      }));
-      addTextsLoading.value = true;
-      try {
-        await server.addTextsToPublicBlacklist({ texts: addPublicTexts });
-        textsToAdd.value.forEach(text => {
-          publicBlacklist.value.unshift({
-            ...text,
-            text_uuid: text.text_uuid,
-          });
-        });
-        publicBlacklist.value = publicBlacklist.value.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
-        actions.showSnackbar('Successfully added text(s).');
-      } catch {
-        actions.showErrorSnackbar('Error adding text(s). Please try again.');
-      } finally {
-        addTextsLoading.value = false;
-        addTextsDialog.value = false;
-      }
-    };
 
     const removeTexts = async () => {
       try {
@@ -193,48 +129,6 @@ export default defineComponent({
       }
     };
 
-    const removeTextToAdd = (name: string) => {
-      textsToAdd.value = textsToAdd.value.filter(text => text.name !== name);
-    };
-
-    watch(addTextsDialog, open => {
-      if (!open) {
-        searchTextToAdd.value = '';
-        textsToAdd.value = [];
-      }
-    });
-
-    watch(
-      searchTextToAdd,
-      _.debounce(async (text: string) => {
-        if (!text || text.trim() === '') {
-          textItems.value = [];
-          return;
-        }
-
-        searchLoading.value = true;
-        try {
-          const items = await server.searchTextNames({
-            page: '1',
-            rows: '1000',
-            search: text,
-          });
-          textItems.value = items.map(item => ({
-            ...item,
-            text_uuid: item.uuid,
-            can_read: false,
-            can_write: false,
-          }));
-        } catch {
-          actions.showErrorSnackbar(
-            'Error performing search. Please try again.'
-          );
-        } finally {
-          searchLoading.value = false;
-        }
-      }, 500)
-    );
-
     return {
       loading,
       publicBlacklist,
@@ -243,15 +137,6 @@ export default defineComponent({
       confirmRemoveDialog,
       removeTextLoading,
       removeTexts,
-      addTexts,
-      addTextsDialog,
-      addTextsLoading,
-      textsToAdd,
-      searchTextToAdd,
-      textItems,
-      textHeaders,
-      removeTextToAdd,
-      searchLoading,
     };
   },
 });

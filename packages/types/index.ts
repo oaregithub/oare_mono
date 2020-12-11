@@ -230,9 +230,14 @@ export interface SearchTextNamesResultRow {
 }
 
 export interface SearchTextNamesPayload {
-  page: string,
-  rows: string,
+  page: number,
+  rows: number,
   search: string;
+}
+
+export interface SearchTextNamesResponse {
+  texts: SearchTextNamesResultRow[],
+  count: number,
 }
 
 // Search spelling discourse
