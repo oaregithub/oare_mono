@@ -1,4 +1,4 @@
-import { CollectionListItem, CollectionResponse, CollectionText } from '@oare/types';
+import { CollectionListItem, CollectionResponse, CollectionText, SearchTextNamesResponse } from '@oare/types';
 import knex from '@/connection';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
@@ -17,17 +17,30 @@ function collectionTextQuery(uuid: string, search: string, blacklist: string[]) 
 }
 
 class HierarchyDao {
-  async getTextsBySearchTerm(page: number, rows: number, searchText: string): Promise<CollectionListItem[]> {
+  async getTextsBySearchTerm(page: number, rows: number, searchText: string): Promise<SearchTextNamesResponse> {
     const matchingTexts: CollectionListItem[] = await knex('hierarchy')
       .select('hierarchy.uuid', 'alias.name')
       .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
+      .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
+      .whereNull('public_blacklist.uuid')
       .where('hierarchy.type', 'text')
       .andWhere('alias.name', 'like', `%${searchText}%`)
       .groupBy('alias.name')
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    return matchingTexts;
+    const texts = await knex('hierarchy')
+      .select('hierarchy.uuid')
+      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
+      .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
+      .whereNull('public_blacklist.uuid')
+      .where('hierarchy.type', 'text')
+      .andWhere('alias.name', 'like', `%${searchText}%`);
+    const count = texts.length;
+    return {
+      texts: matchingTexts,
+      count,
+    };
   }
 
   async getAllCollections(isAdmin: boolean): Promise<CollectionListItem[]> {
