@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc && cp -r src/api/sql build/src/api",
     "postbuild": "ef-tspm",
-    "start": "rm -rf build/@oare && cp -r @oare build && node ./build/src/server.js",
+    "start": "rm -rf build/@oare && cp -r @oare build && cp -r @oare node_modules && node ./build/src/server.js",
     "lint": "eslint src/*.ts src/**/*.ts",
     "dev": "ts-node-dev -r tsconfig-paths/register ./src/server.ts --respawn --transpileOnly ",
     "dev:3": "DB_VERSION=0.3 npm run dev",

@@ -46,9 +46,24 @@ jobs:
         run: |
           cp -R .ebextensions packages/backend
           cd packages/backend
-          zip -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare
+          zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare
           mv oare_build.zip ../..
         if: github.ref == 'refs/heads/master'
+
+      # Uncomment if you want to debug a build. It will upload the zip file to S3.
+      # The bucket does not have public access, so you'll need to change the access to public for this to work.
+      # You'll also want to uncomment the if statement at the end of the zip action above
+      # - name: Upload file to bucket
+      #   uses: zdurham/s3-upload-github-action@master
+      #   with:
+      #     args: --acl public-read
+      #   env:
+      #     FILE: ./oare_build.zip
+      #     AWS_REGION: "us-east-1"
+      #     S3_BUCKET: ${{ secrets.AWS_BUCKET }}
+      #     S3_KEY: ${{ secrets.S3_KEY }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Get Time
         id: time
