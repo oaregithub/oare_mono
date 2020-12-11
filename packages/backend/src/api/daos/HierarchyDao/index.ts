@@ -18,28 +18,40 @@ function collectionTextQuery(uuid: string, search: string, blacklist: string[]) 
 
 class HierarchyDao {
   async getTextsBySearchTerm(page: number, rows: number, searchText: string): Promise<SearchTextNamesResponse> {
-    const matchingTexts: CollectionListItem[] = await knex('hierarchy')
-      .select('hierarchy.uuid', 'alias.name')
-      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
-      .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
-      .whereNull('public_blacklist.uuid')
-      .where('hierarchy.type', 'text')
-      .andWhere('alias.name', 'like', `%${searchText}%`)
-      .groupBy('alias.name')
+    function createBaseQuery() {
+      const query = knex('hierarchy')
+        .distinct('hierarchy.uuid')
+        .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
+        .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
+        .whereNull('public_blacklist.uuid')
+        .where('hierarchy.type', 'text')
+        .andWhere('alias.name', 'like', `%${searchText}%`);
+      return query;
+    }
+
+    const textsResponse = await createBaseQuery()
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    const texts = await knex('hierarchy')
-      .select('hierarchy.uuid')
-      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
-      .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
-      .whereNull('public_blacklist.uuid')
-      .where('hierarchy.type', 'text')
-      .andWhere('alias.name', 'like', `%${searchText}%`);
-    const count = texts.length;
+    const names = await Promise.all(textsResponse.map((text) => aliasDao.displayAliasNames(text.uuid)));
+    const matchingTexts: CollectionListItem[] = textsResponse.map((text, index) => ({
+      ...text,
+      name: names[index],
+    }));
+
+    const count = await createBaseQuery()
+      .count({
+        count: knex.raw('distinct hierarchy.uuid'),
+      })
+      .first();
+    let totalTexts = 0;
+    if (count?.count) {
+      totalTexts = count.count as number;
+    }
+
     return {
       texts: matchingTexts,
-      count,
+      count: totalTexts,
     };
   }
 

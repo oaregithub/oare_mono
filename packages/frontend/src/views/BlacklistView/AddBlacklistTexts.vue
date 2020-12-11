@@ -67,6 +67,7 @@
         <v-col cols="8">
           <h3>All Texts</h3>
           <v-data-table
+            :loading="getTextsLoading"
             :headers="textsHeaders"
             :items="unaddedTexts"
             item-key="uuid"
@@ -104,7 +105,7 @@ import {
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import useQueryParam from '@/hooks/useQueryParam';
-import { DataTableHeader } from 'vuetify';
+import { DataTableHeader, DataOptions } from 'vuetify';
 
 export default defineComponent({
   components: { OareContentView },
@@ -117,6 +118,7 @@ export default defineComponent({
     const loading = ref(true);
     const addTextsDialog = ref(false);
     const addTextsLoading = ref(false);
+    const getTextsLoading = ref(false);
 
     const textsHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Text Name', value: 'name' },
@@ -124,11 +126,19 @@ export default defineComponent({
     const selectedTexts: Ref<SearchTextNamesResultRow[]> = ref([]);
     const unaddedTexts: Ref<SearchTextNamesResultRow[]> = ref([]);
 
-    const search = ref('');
+    const [page, setPage] = useQueryParam('page', '1');
+    const [rows, setRows] = useQueryParam('rows', '10');
+    const [search, setSearch] = useQueryParam('query', '');
 
-    const searchOptions = ref({
-      page: 1,
-      itemsPerPage: 10,
+    const searchOptions: Ref<DataOptions> = ref({
+      page: Number(page.value),
+      itemsPerPage: Number(rows.value),
+      sortBy: [],
+      sortDesc: [],
+      groupBy: [],
+      groupDesc: [],
+      multiSort: false,
+      mustSort: false,
     });
     const serverCount: Ref<number> = ref(0);
 
@@ -162,6 +172,7 @@ export default defineComponent({
 
     const getTexts = async () => {
       try {
+        getTextsLoading.value = true;
         const response: SearchTextNamesResponse = await server.searchTextNames({
           page: searchOptions.value.page,
           rows: searchOptions.value.itemsPerPage,
@@ -173,12 +184,17 @@ export default defineComponent({
         actions.showErrorSnackbar(
           'Error updating text list. Please try again.'
         );
+      } finally {
+        getTextsLoading.value = false;
       }
     };
 
     watch(searchOptions, async () => {
       try {
         await getTexts();
+        setPage(String(searchOptions.value.page));
+        setRows(String(searchOptions.value.itemsPerPage));
+        setSearch(search.value);
       } catch {
         actions.showErrorSnackbar(
           'Error updating text list. Please try again.'
@@ -212,6 +228,7 @@ export default defineComponent({
       serverCount,
       search,
       getTexts,
+      getTextsLoading,
     };
   },
 });
