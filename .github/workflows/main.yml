@@ -30,17 +30,17 @@ jobs:
       - name: Build packages
         run: yarn build
 
-      # - name: Lint files
-      #   run: yarn lint
+      - name: Lint files
+        run: yarn lint
 
-      # - name: Run tests
-      #   run: yarn test
+      - name: Run tests
+        run: yarn test
 
-      # - name: Run SQL migrations
-      #   run: yarn migrate:latest-prod
-      #   env:
-      #     OARE_DB_URL: ${{ secrets.OARE_DB_URL }}
-      #   if: github.ref == 'refs/heads/master'
+      - name: Run SQL migrations
+        run: yarn migrate:latest-prod
+        env:
+          OARE_DB_URL: ${{ secrets.OARE_DB_URL }}
+        if: github.ref == 'refs/heads/master'
 
       - name: Zip up files
         run: |
@@ -48,9 +48,23 @@ jobs:
           cd packages/backend
           zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare
           mv oare_build.zip ../..
+        if: github.ref == 'refs/heads/master'
 
+      # Uncomment if you want to debug a build. It will upload the zip file to S3.
+      # The bucket does not have public access, so you'll need to change the access to public for this to work.
+      # You'll also want to uncomment the if statement at the end of the zip action above
+      # - name: Upload file to bucket
+      #   uses: zdurham/s3-upload-github-action@master
+      #   with:
+      #     args: --acl public-read
+      #   env:
+      #     FILE: ./oare_build.zip
+      #     AWS_REGION: "us-east-1"
+      #     S3_BUCKET: ${{ secrets.AWS_BUCKET }}
+      #     S3_KEY: ${{ secrets.S3_KEY }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-        # if: github.ref == 'refs/heads/master'
       - name: Get Time
         id: time
         uses: nanzm/get-time-action@v1.0
@@ -58,23 +72,6 @@ jobs:
           timeZone: 8
           format: "YYYY-MM-DD-HH-mm-ss"
         if: github.ref == 'refs/heads/master'
-
-      - name: Sanity check
-        run: |
-          pwd
-          ls
-
-      - name: Upload file to bucket
-        uses: zdurham/s3-upload-github-action@master
-        with:
-          args: --acl public-read
-        env:
-          FILE: ./oare_build.zip
-          AWS_REGION: "us-east-1"
-          S3_BUCKET: ${{ secrets.AWS_BUCKET }}
-          S3_KEY: ${{ secrets.S3_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11
