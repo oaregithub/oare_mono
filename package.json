@@ -6,10 +6,11 @@
     "lint": "yarn workspace @oare/frontend run lint",
     "lint:fix": "yarn workspace @oare/frontend lint:fix",
     "build": "./build.sh",
+    "zip": "cd packages/backend && zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare && cp oare_build.zip ../..",
     "bootstrap": "lerna bootstrap --use-workspaces",
     "client": "yarn workspace @oare/frontend serve",
     "server": "yarn workspace @oare/backend dev",
-    "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test",
+    "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test && yarn workspace @oare/oare test utils.test.ts",
     "migrate:make": "yarn workspace @oare/backend migrate:make",
     "migrate:latest": "NODE_ENV=development yarn workspace @oare/backend migrate:latest",
     "migrate:latest-prod": "NODE_ENV=production yarn workspace @oare/backend migrate:latest"
@@ -23,11 +24,6 @@
     "husky": "^4.3.0",
     "lerna": "^3.22.1",
     "lint-staged": "^10.4.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-push": "yarn test"
-    }
   },
   "dependencies": {
     "concurrently": "^5.3.0"

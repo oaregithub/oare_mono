@@ -20,6 +20,11 @@ describe('SpellingDialog test', () => {
     debounce: cb => cb,
   };
 
+  const mockSpelling = {
+    uuid: 'spelling-uuid',
+    spelling: 'spelling',
+  };
+
   const mockServer = {
     addSpelling: jest.fn().mockResolvedValue({ uuid: 'new-uuid' }),
     searchSpellings: jest.fn().mockResolvedValue([
@@ -62,6 +67,9 @@ describe('SpellingDialog test', () => {
       ],
     }),
     updateSpelling: jest.fn().mockResolvedValue(null),
+    checkSpelling: jest.fn().mockResolvedValue({
+      errors: [],
+    }),
   };
 
   const reload = jest.fn();
@@ -114,10 +122,7 @@ describe('SpellingDialog test', () => {
 
   it('immediately performs search for edit spellings', async () => {
     createWrapper({
-      spelling: {
-        uuid: 'spelling-uuid',
-        spelling: 'spelling',
-      },
+      spelling: mockSpelling,
     });
 
     await flushPromises();
@@ -125,12 +130,49 @@ describe('SpellingDialog test', () => {
     expect(mockServer.searchSpellingDiscourse).toHaveBeenCalled();
   });
 
+  it('checks spelling for errors', async () => {
+    createWrapper({
+      spelling: mockSpelling,
+    });
+
+    await flushPromises();
+    expect(mockServer.checkSpelling).toHaveBeenCalled();
+  });
+
+  it('shows error if checking for spellings fails', async () => {
+    createWrapper({
+      spelling: mockSpelling,
+      server: {
+        ...mockServer,
+        checkSpelling: jest.fn().mockRejectedValue('Failed to check spelling'),
+      },
+    });
+
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it("doesn't allow submission if spelling contains errors", async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+      server: {
+        ...mockServer,
+        checkSpelling: jest.fn().mockResolvedValue({
+          errors: ['Invalid reading: bad', 'Invalid reading: spelling'],
+        }),
+      },
+    });
+
+    await flushPromises();
+    await wrapper.get('.test-spelling-field input').setValue('bad spelling');
+    await flushPromises();
+
+    expect(wrapper.get('.test-submit-btn').element).toBeDisabled();
+  });
+
   it('updates spellings', async () => {
     const wrapper = createWrapper({
-      spelling: {
-        uuid: 'spelling-uuid',
-        spelling: 'spelling',
-      },
+      spelling: mockSpelling,
     });
 
     await flushPromises();

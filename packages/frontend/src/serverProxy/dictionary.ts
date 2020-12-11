@@ -9,6 +9,7 @@ import {
   DictionaryForm,
   AddFormSpellingPayload,
   AddFormSpellingResponse,
+  CheckSpellingResponse,
 } from '@oare/types';
 
 /**
@@ -68,6 +69,16 @@ async function removeSpelling(spellingUuid: string): Promise<void> {
   await axios.delete(`/dictionary/spellings/${spellingUuid}`);
 }
 
+async function checkSpelling(spelling: string): Promise<CheckSpellingResponse> {
+  const { data } = await axios.get('/dictionary/spellings/check', {
+    params: {
+      spelling,
+    },
+  });
+
+  return data;
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -76,4 +87,5 @@ export default {
   editWord,
   updateSpelling,
   removeSpelling,
+  checkSpelling,
 };
