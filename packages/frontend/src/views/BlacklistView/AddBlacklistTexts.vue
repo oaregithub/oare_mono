@@ -37,7 +37,8 @@
         <v-spacer />
         <v-col cols="4">
           <v-text-field
-            v-model="search"
+            :value="search"
+            @input="setSearch"
             label="Search"
             single-line
             hide-details
@@ -194,7 +195,6 @@ export default defineComponent({
         await getTexts();
         setPage(String(searchOptions.value.page));
         setRows(String(searchOptions.value.itemsPerPage));
-        setSearch(search.value);
       } catch {
         actions.showErrorSnackbar(
           'Error updating text list. Please try again.'
@@ -229,6 +229,7 @@ export default defineComponent({
       search,
       getTexts,
       getTextsLoading,
+      setSearch,
     };
   },
 });
