@@ -24,8 +24,8 @@ jobs:
         with:
           node-version: 12
 
-      # - name: Install dependencies
-      #   run: yarn install
+      - name: Install dependencies
+        run: yarn install
 
       - name: Build packages
         run: yarn build
@@ -48,8 +48,9 @@ jobs:
           cd packages/backend
           zip -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare
           mv oare_build.zip ../..
-        if: github.ref == 'refs/heads/master'
 
+
+        # if: github.ref == 'refs/heads/master'
       - name: Get Time
         id: time
         uses: nanzm/get-time-action@v1.0
