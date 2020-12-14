@@ -25,7 +25,7 @@
       </v-list>
     </v-menu>
     <span v-else v-html="htmlSpelling" class="test-spelling"></span>
-    <span v-if="spelling.totalOccurrences > 0">
+    <span v-if="spelling.totalOccurrences > 0" class="test-num-texts">
       ({{ spelling.totalOccurrences }})</span
     >
     <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
