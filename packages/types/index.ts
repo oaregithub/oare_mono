@@ -34,11 +34,11 @@ export interface SpellingText {
 export interface FormSpelling {
   uuid: string;
   spelling: string;
-  texts: SpellingText[];
+  totalOccurrences: number;
 }
 
 export interface CheckSpellingResponse {
-  errors: string[]
+  errors: string[];
 }
 
 export interface DictionaryFormInfo {
@@ -230,14 +230,14 @@ export interface SearchTextNamesResultRow {
 }
 
 export interface SearchTextNamesPayload {
-  page: number,
-  rows: number,
+  page: number;
+  rows: number;
   search: string;
 }
 
 export interface SearchTextNamesResponse {
-  texts: SearchTextNamesResultRow[],
-  count: number,
+  texts: SearchTextNamesResultRow[];
+  count: number;
 }
 
 // Search spelling discourse

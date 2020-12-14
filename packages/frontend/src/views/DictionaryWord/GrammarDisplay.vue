@@ -1,5 +1,5 @@
 <template>
-  <span class="mx-1" v-if="formGrammar !== ''">({{ formGrammar }})</span>
+  <span class="mr-1" v-if="formGrammar !== ''">({{ formGrammar }})</span>
 </template>
 
 <script lang="ts">

@@ -25,14 +25,11 @@
       </v-list>
     </v-menu>
     <span v-else v-html="htmlSpelling" class="test-spelling"></span>
-    <span v-if="spelling.texts.length > 0">
-      (<a @click="addSpellingDialog = true" class="test-num-texts">{{
-        spelling.texts.length
-      }}</a
-      >)</span
+    <span v-if="spelling.totalOccurrences > 0">
+      ({{ spelling.totalOccurrences }})</span
     >
     <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
-    <OareDialog
+    <!-- <OareDialog
       v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
       :showSubmit="false"
@@ -51,7 +48,7 @@
           }}</router-link>
         </template>
       </v-data-table>
-    </OareDialog>
+    </OareDialog> -->
     <OareDialog
       v-model="deleteSpellingDialog"
       title="Delete spelling"
