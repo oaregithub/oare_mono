@@ -384,3 +384,9 @@ export type DictionaryPermission =
 export interface PermissionResponse {
   dictionary: DictionaryPermission[];
 }
+
+// Text Info
+
+export interface TextInfoResponse {
+  name: string;
+}
