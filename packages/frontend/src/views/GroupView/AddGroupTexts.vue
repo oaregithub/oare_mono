@@ -28,11 +28,7 @@
           Are you sure you want to add the following text(s) and permissions to
           the group named
           {{ groupName }}?
-          <v-data-table
-            :headers="selectedTextsHeaders"
-            :items="selectedTexts"
-            :hide-default-footer="true"
-          >
+          <v-data-table :headers="selectedTextsHeaders" :items="selectedTexts">
             <template #[`item.can_read`]="{ item }">
               <v-checkbox
                 :input-value="item.can_read"
@@ -65,11 +61,10 @@
           <v-data-table
             :headers="selectedTextsHeaders"
             :items="selectedTexts"
-            item-key="uuid"
+            item-key="text_uuid"
             class="mt-3"
             show-select
             v-model="selectedTexts"
-            :hide-default-footer="true"
           >
             <template #[`item.can_read`]="{ item }">
               <v-checkbox
@@ -89,7 +84,7 @@
             :loading="getTextsLoading"
             :headers="textsHeaders"
             :items="unaddedTexts"
-            item-key="uuid"
+            item-key="text_uuid"
             class="mt-3"
             show-select
             v-model="selectedTexts"
@@ -153,6 +148,7 @@ export default defineComponent({
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
+    const [texts, setTexts] = useQueryParam('texts', '');
 
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
@@ -178,10 +174,10 @@ export default defineComponent({
           page: searchOptions.value.page,
           rows: searchOptions.value.itemsPerPage,
           search: search.value,
-          groupId: groupId,
+          groupId,
         });
         unaddedTexts.value = response.texts.map(text => ({
-          ...text,
+          name: text.name,
           text_uuid: text.uuid,
           can_read: true,
           can_write: false,
@@ -205,7 +201,7 @@ export default defineComponent({
       addTextsLoading.value = true;
       try {
         await server.addTextGroups(Number(groupId), {
-          texts: texts,
+          texts,
         });
         actions.showSnackbar('Successfully added text(s).');
         router.push(`/groups/${groupId}/texts`);
@@ -230,7 +226,7 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        getTexts();
+        await getTexts();
         groupName.value = await server.getGroupName(Number(groupId));
       } catch {
         actions.showErrorSnackbar('Error loading texts. Please try again.');
@@ -258,12 +254,16 @@ export default defineComponent({
           search.value = '';
         }
         searchOptions.value.page = 1;
-        getTexts();
+        await getTexts();
       }, 500),
       {
         immediate: false,
       }
     );
+
+    watch(selectedTexts, async () => {
+      setTexts(JSON.stringify(selectedTexts.value.map(text => text.text_uuid)));
+    });
 
     return {
       groupName,
