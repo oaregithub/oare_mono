@@ -27,14 +27,6 @@ export interface NestedDiscourse {
   paragraphLabel?: string;
   translation?: string;
 }
-
-export interface SearchDiscourseSpellingRow {
-  uuid: string;
-  textUuid: string;
-  line: number;
-  wordOnTablet: number;
-}
-
 export interface SearchDiscourseSpellingDaoResponse {
   totalResults: number;
   rows: SearchDiscourseSpellingRow[];
