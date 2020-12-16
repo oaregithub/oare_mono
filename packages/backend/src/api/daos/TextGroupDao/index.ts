@@ -14,7 +14,7 @@ export interface TextGroupRow {
 
 class TextGroupDao {
   async getUserBlacklist(user: UserRow | null) {
-    const userTexts = await PublicBlacklistDao.getPublicTexts();
+    const userTexts = await PublicBlacklistDao.getAllBlacklistedItems();
 
     if (user) {
       const groupIds = await userGroupDao.getGroupsOfUser(user.id);
