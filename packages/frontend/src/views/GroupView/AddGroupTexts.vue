@@ -87,7 +87,19 @@
             item-key="text_uuid"
             class="mt-3"
             show-select
-            v-model="selectedTexts"
+            :value="selectedTexts"
+            @item-selected="
+              $event.value
+                ? selectedTexts.unshift($event.item)
+                : selectedTexts.splice($event.item, 1)
+            "
+            @toggle-select-all="
+              $event.value
+                ? unaddedTexts.forEach(text => selectedTexts.push(text))
+                : unaddedTexts.forEach(text =>
+                    selectedTexts.splice(selectedTexts.indexOf(text), 1)
+                  )
+            "
             :options.sync="searchOptions"
             :server-items-length="serverCount"
             :footer-props="{
