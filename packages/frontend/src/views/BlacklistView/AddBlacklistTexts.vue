@@ -59,6 +59,8 @@
             class="mt-3"
             show-select
             v-model="selectedTexts"
+            :server-items-length="selectedTexts.length"
+            :hide-default-footer="true"
           >
             <template slot="no-data"> No texts selected </template>
           </v-data-table>
@@ -72,19 +74,7 @@
             item-key="uuid"
             class="mt-3"
             show-select
-            :value="selectedTexts"
-            @item-selected="
-              $event.value
-                ? selectedTexts.unshift($event.item)
-                : selectedTexts.splice($event.item, 1)
-            "
-            @toggle-select-all="
-              $event.value
-                ? unaddedTexts.forEach(text => selectedTexts.push(text))
-                : unaddedTexts.forEach(text =>
-                    selectedTexts.splice(selectedTexts.indexOf(text), 1)
-                  )
-            "
+            v-model="selectedTexts"
             :options.sync="searchOptions"
             :server-items-length="serverCount"
             :footer-props="{
@@ -117,7 +107,6 @@ import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import { DataTableHeader, DataOptions } from 'vuetify';
-
 export default defineComponent({
   components: { OareContentView },
   setup() {
@@ -125,23 +114,18 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
     const _ = sl.get('lodash');
-
     const loading = ref(true);
     const addTextsDialog = ref(false);
     const addTextsLoading = ref(false);
     const getTextsLoading = ref(false);
-
     const textsHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Text Name', value: 'name' },
     ]);
     const selectedTexts: Ref<SearchTextNamesResultRow[]> = ref([]);
     const unaddedTexts: Ref<SearchTextNamesResultRow[]> = ref([]);
-
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
-    const [texts, setTexts] = useQueryParam('texts', '');
-
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
       itemsPerPage: Number(rows.value),
@@ -153,27 +137,15 @@ export default defineComponent({
       mustSort: false,
     });
     const serverCount: Ref<number> = ref(0);
-
     onMounted(async () => {
       try {
         await getTexts();
-        if (texts.value) {
-          const uuids: string[] = JSON.parse(texts.value);
-          const textNames = await Promise.all(
-            uuids.map(uuid => server.getTextName(uuid))
-          );
-          selectedTexts.value = uuids.map((uuid, index) => ({
-            name: textNames[index].name,
-            uuid,
-          }));
-        }
       } catch {
         actions.showErrorSnackbar('Error loading texts. Please try again.');
       } finally {
         loading.value = false;
       }
     });
-
     const addTexts = async () => {
       const addPublicTexts = selectedTexts.value.map(text => ({
         uuid: text.uuid,
@@ -191,7 +163,6 @@ export default defineComponent({
         addTextsDialog.value = false;
       }
     };
-
     const getTexts = async () => {
       try {
         getTextsLoading.value = true;
@@ -210,7 +181,6 @@ export default defineComponent({
         getTextsLoading.value = false;
       }
     };
-
     watch(searchOptions, async () => {
       try {
         await getTexts();
@@ -222,7 +192,6 @@ export default defineComponent({
         );
       }
     });
-
     watch(
       search,
       _.debounce(async () => {
@@ -236,11 +205,6 @@ export default defineComponent({
         immediate: false,
       }
     );
-
-    watch(selectedTexts, async () => {
-      setTexts(JSON.stringify(selectedTexts.value.map(text => text.uuid)));
-    });
-
     return {
       loading,
       addTextsDialog,

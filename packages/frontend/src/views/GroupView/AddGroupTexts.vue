@@ -87,19 +87,7 @@
             item-key="text_uuid"
             class="mt-3"
             show-select
-            :value="selectedTexts"
-            @item-selected="
-              $event.value
-                ? selectedTexts.unshift($event.item)
-                : selectedTexts.splice($event.item, 1)
-            "
-            @toggle-select-all="
-              $event.value
-                ? unaddedTexts.forEach(text => selectedTexts.push(text))
-                : unaddedTexts.forEach(text =>
-                    selectedTexts.splice(selectedTexts.indexOf(text), 1)
-                  )
-            "
+            v-model="selectedTexts"
             :options.sync="searchOptions"
             :server-items-length="serverCount"
             :footer-props="{
@@ -128,7 +116,6 @@ import OareContentView from '@/components/base/OareContentView.vue';
 import { Text, SearchTextNamesResponse } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
-
 export default defineComponent({
   name: 'AddGroupTexts',
   props: {
@@ -142,7 +129,6 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
     const _ = sl.get('lodash');
-
     const selectedTextsHeaders = ref([
       { text: 'Text Name', value: 'name' },
       { text: 'Can view?', value: 'can_read', width: '20%' },
@@ -151,17 +137,14 @@ export default defineComponent({
     const textsHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Text Name', value: 'name' },
     ]);
-
     const loading = ref(true);
     const addTextsDialog = ref(false);
     const addTextsLoading = ref(false);
     const getTextsLoading = ref(false);
-
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
     const [texts, setTexts] = useQueryParam('texts', '');
-
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
       itemsPerPage: Number(rows.value),
@@ -173,12 +156,9 @@ export default defineComponent({
       mustSort: false,
     });
     const serverCount: Ref<number> = ref(0);
-
     const selectedTexts: Ref<Text[]> = ref([]);
     const unaddedTexts: Ref<Text[]> = ref([]);
-
     const groupName = ref('');
-
     const getTexts = async () => {
       try {
         getTextsLoading.value = true;
@@ -203,7 +183,6 @@ export default defineComponent({
         getTextsLoading.value = false;
       }
     };
-
     const addTexts = async () => {
       const texts = selectedTexts.value.map(text => ({
         can_read: text.can_read,
@@ -224,41 +203,25 @@ export default defineComponent({
         addTextsDialog.value = false;
       }
     };
-
     const updateTextToAddRead = (uuid: string, canRead: boolean) => {
       const index = selectedTexts.value
         .map(text => text.text_uuid)
         .indexOf(uuid);
       selectedTexts.value[index].can_read = canRead;
-
       if (!canRead) {
         selectedTexts.value[index].can_write = false;
       }
     };
-
     onMounted(async () => {
       try {
         await getTexts();
         groupName.value = await server.getGroupName(Number(groupId));
-        if (texts.value) {
-          const uuids: string[] = JSON.parse(texts.value);
-          const textNames = await Promise.all(
-            uuids.map(uuid => server.getTextName(uuid))
-          );
-          selectedTexts.value = uuids.map((uuid, index) => ({
-            name: textNames[index].name,
-            text_uuid: uuid,
-            can_read: true,
-            can_write: false,
-          }));
-        }
       } catch {
         actions.showErrorSnackbar('Error loading texts. Please try again.');
       } finally {
         loading.value = false;
       }
     });
-
     watch(searchOptions, async () => {
       try {
         await getTexts();
@@ -270,7 +233,6 @@ export default defineComponent({
         );
       }
     });
-
     watch(
       search,
       _.debounce(async () => {
@@ -284,11 +246,9 @@ export default defineComponent({
         immediate: false,
       }
     );
-
     watch(selectedTexts, async () => {
       setTexts(JSON.stringify(selectedTexts.value.map(text => text.text_uuid)));
     });
-
     return {
       groupName,
       loading,
