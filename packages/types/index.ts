@@ -233,6 +233,7 @@ export interface SearchTextNamesPayload {
   page: number,
   rows: number,
   search: string;
+  groupId?: string;
 }
 
 export interface SearchTextNamesResponse {

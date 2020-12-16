@@ -4,51 +4,11 @@
     Texts here affect all members of this group. You may restrict read and write
     access on texts added here.
     <div class="flex mt-2">
-      <OareDialog
-        title="Add texts"
-        v-model="addTextDialog"
-        :submitLoading="addTextGroupsLoading"
-        @submit="addTextGroups"
-        :submitDisabled="textsToAdd.length === 0"
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn color="primary" class="mr-3 test-add" v-on="on">
-            <v-icon>mdi-plus</v-icon>Add Text
-          </v-btn>
-        </template>
-        <v-autocomplete
-          v-model="textsToAdd"
-          :search-input.sync="searchTextToAdd"
-          outlined
-          :items="textItems"
-          :loading="searchLoading"
-          item-text="name"
-          item-value="uuid"
-          hide-no-data
-          cache-items
-          return-object
-          multiple
-          chips
-          deletable-chips
-        ></v-autocomplete>
-        <v-data-table :headers="textHeaders" :items="textsToAdd">
-          <template #[`item.can_read`]="{ item }">
-            <v-checkbox
-              :input-value="item.can_read"
-              @change="updateTextToAddRead(item.uuid, $event)"
-            />
-          </template>
-          <template #[`item.can_write`]="{ item }">
-            <v-checkbox v-model="item.can_write" :disabled="!item.can_read" />
-          </template>
-          <template #[`item.name`]="{ item }">
-            <v-btn icon small @click="removeTextToAdd(item.name)">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-            {{ item.name }}
-          </template>
-        </v-data-table>
-      </OareDialog>
+      <router-link :to="`/addgrouptexts/${groupId}`">
+        <v-btn color="primary" class="mr-3 test-add">
+          <span> <v-icon>mdi-plus</v-icon>Add texts </span>
+        </v-btn>
+      </router-link>
       <OareDialog
         title="Remove texts"
         v-model="removeTextsDialog"
@@ -141,24 +101,17 @@ export default defineComponent({
   },
   setup({ serverProxy, groupId }) {
     const loading = ref(false);
-    const addTextDialog = ref(false);
-    const searchLoading = ref(false);
-    const addTextGroupsLoading = ref(false);
     const removeTextsDialog = ref(false);
     const removeLoading = ref(false);
 
     const allTexts: Ref<Text[]> = ref([]);
     const selectedDeleteList: Ref<Text[]> = ref([]);
-    const textsToAdd: Ref<Text[]> = ref([]);
-    const searchTextToAdd = ref('');
-    const textItems: Ref<Text[]> = ref([]);
     const textHeaders = ref([
       { text: 'Text Name', value: 'name' },
       { text: 'Can view?', value: 'can_read' },
       { text: 'Can edit?', value: 'can_write' },
     ]);
     const viewableTexts: Ref<Text[]> = ref([]);
-    const loadingEditTexts = ref([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
@@ -220,35 +173,6 @@ export default defineComponent({
       }
     };
 
-    const removeTextToAdd = (name: string) => {
-      textsToAdd.value = textsToAdd.value.filter(text => text.name !== name);
-    };
-
-    const addTextGroups = async () => {
-      const textGroups = textsToAdd.value.map(item => ({
-        can_read: item.can_read,
-        can_write: item.can_write,
-        uuid: item.text_uuid,
-      }));
-      addTextGroupsLoading.value = true;
-      try {
-        await server.addTextGroups(Number(groupId), {
-          texts: textGroups,
-        });
-        textsToAdd.value.forEach(item => {
-          viewableTexts.value.unshift({
-            ...item,
-            text_uuid: item.text_uuid,
-          });
-        });
-      } catch {
-        actions.showErrorSnackbar('Error adding text(s). Please try again.');
-      } finally {
-        addTextGroupsLoading.value = false;
-      }
-      addTextDialog.value = false;
-    };
-
     const removeTexts = async () => {
       removeLoading.value = true;
       const deleteTextUuids = selectedDeleteList.value.map(
@@ -271,74 +195,17 @@ export default defineComponent({
       selectedDeleteList.value = [];
     };
 
-    const updateTextToAddRead = (uuid: string, canRead: boolean) => {
-      const index = textsToAdd.value.map(text => text.text_uuid).indexOf(uuid);
-      textsToAdd.value[index].can_read = canRead;
-
-      if (!canRead) {
-        textsToAdd.value[index].can_write = false;
-      }
-    };
-
-    watch(addTextDialog, open => {
-      if (!open) {
-        searchTextToAdd.value = '';
-        textsToAdd.value = [];
-      }
-    });
-
-    watch(
-      searchTextToAdd,
-      _.debounce(async (text: string) => {
-        if (!text || text.trim() === '') {
-          textItems.value = [];
-          return;
-        }
-
-        searchLoading.value = true;
-        try {
-          const items = await server.searchTextNames({
-            page: 1,
-            rows: 1000,
-            search: text,
-          });
-          textItems.value = items.texts.map(item => ({
-            ...item,
-            text_uuid: item.uuid,
-            can_read: true,
-            can_write: false,
-          }));
-        } catch {
-          actions.showErrorSnackbar(
-            'Error performing search. Please try again.'
-          );
-        } finally {
-          searchLoading.value = false;
-        }
-      }, 500)
-    );
-
     return {
       loading,
-      addTextDialog,
-      searchLoading,
-      addTextGroupsLoading,
       removeTextsDialog,
       removeLoading,
       allTexts,
       selectedDeleteList,
-      textsToAdd,
-      searchTextToAdd,
-      textItems,
       textHeaders,
       viewableTexts,
-      loadingEditTexts,
       updateTextEdit,
       updateTextRead,
-      removeTextToAdd,
       removeTexts,
-      updateTextToAddRead,
-      addTextGroups,
     };
   },
 });

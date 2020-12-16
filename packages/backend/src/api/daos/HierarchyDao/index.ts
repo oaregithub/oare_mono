@@ -17,16 +17,24 @@ function collectionTextQuery(uuid: string, search: string, blacklist: string[]) 
 }
 
 class HierarchyDao {
-  async getTextsBySearchTerm(page: number, rows: number, searchText: string): Promise<SearchTextNamesResponse> {
+  async getTextsBySearchTerm(
+    page: number,
+    rows: number,
+    searchText: string,
+    groupId?: number,
+  ): Promise<SearchTextNamesResponse> {
     function createBaseQuery() {
       const query = knex('hierarchy')
         .distinct('hierarchy.uuid')
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
-        .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
-        .whereNull('public_blacklist.uuid')
         .where('hierarchy.type', 'text')
         .andWhere('alias.name', 'like', `%${searchText}%`);
-      return query;
+      if (groupId) {
+        return query.whereNotIn('hierarchy.uuid', knex('text_group').select('text_uuid').where('group_id', groupId));
+      }
+      return query
+        .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
+        .whereNull('public_blacklist.uuid');
     }
 
     const textsResponse = await createBaseQuery()
