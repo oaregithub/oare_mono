@@ -26,10 +26,13 @@
     </v-menu>
     <span v-else v-html="htmlSpelling" class="test-spelling"></span>
     <span v-if="spelling.totalOccurrences > 0" class="test-num-texts">
-      ({{ spelling.totalOccurrences }})</span
+      (<a @click="addSpellingDialog = true" class="test-num-texts">{{
+        spelling.totalOccurrences
+      }}</a
+      >)</span
     >
     <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
-    <!-- <OareDialog
+    <OareDialog
       v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
       :showSubmit="false"
@@ -41,14 +44,23 @@
           <v-text-field v-model="search" clearable label="Filter" autofocus />
         </v-col>
       </v-row>
-      <v-data-table :headers="headers" :items="spelling.texts" :search="search">
+      <v-data-table
+        :headers="headers"
+        :items="spellingOccurrences"
+        :search="search"
+        :loading="referencesLoading"
+        :server-items-length="totalOccurrences"
+        :options.sync="tableOptions"
+      >
         <template #[`item.text`]="{ item }">
-          <router-link :to="`/epigraphies/${item.uuid}`" class="test-text">{{
-            item.text
-          }}</router-link>
+          <router-link
+            :to="`/epigraphies/${item.textUuid}`"
+            class="test-text"
+            >{{ item.textName }}</router-link
+          >
         </template>
       </v-data-table>
-    </OareDialog> -->
+    </OareDialog>
     <OareDialog
       v-model="deleteSpellingDialog"
       title="Delete spelling"
@@ -74,7 +86,11 @@ import {
   watch,
   inject,
 } from '@vue/composition-api';
-import { FormSpelling, DictionaryForm } from '@oare/types';
+import {
+  FormSpelling,
+  DictionaryForm,
+  SearchDiscourseSpellingRow,
+} from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import { AxiosError } from 'axios';
@@ -97,6 +113,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
@@ -114,6 +131,15 @@ export default defineComponent({
         value: 'text',
       },
     ]);
+    const referencesLoading = ref(false);
+    const tableOptions = ref({
+      page: 1,
+      itemsPerPage: 10,
+    });
+    const spellingOccurrences = ref<
+      Pick<SearchDiscourseSpellingRow, 'textName' | 'textUuid'>[]
+    >([]);
+    const totalOccurrences = ref(0);
 
     const canEdit = computed(() =>
       store.getters.permissions.dictionary.includes('UPDATE_FORM')
@@ -122,6 +148,26 @@ export default defineComponent({
     const htmlSpelling = computed(() =>
       spellingHtmlReading(props.spelling.spelling)
     );
+
+    const getReferences = async () => {
+      try {
+        referencesLoading.value = true;
+        const { totalResults, rows } = await server.getSpellingTextOccurrences(
+          props.spelling.uuid,
+          {
+            page: tableOptions.value.page - 1,
+            limit: tableOptions.value.itemsPerPage,
+            ...(search.value ? { filter: search.value } : null),
+          }
+        );
+        spellingOccurrences.value = rows;
+        totalOccurrences.value = totalResults;
+      } catch {
+        actions.showErrorSnackbar('Failed to load spelling occurrences');
+      } finally {
+        referencesLoading.value = false;
+      }
+    };
 
     const deleteSpelling = async () => {
       try {
@@ -136,6 +182,10 @@ export default defineComponent({
       }
     };
 
+    watch(tableOptions, getReferences);
+
+    watch(search, _.debounce(getReferences, 500));
+
     return {
       addSpellingDialog,
       deleteSpellingDialog,
@@ -147,6 +197,10 @@ export default defineComponent({
       editLoading,
       htmlSpelling,
       deleteSpelling,
+      referencesLoading,
+      spellingOccurrences,
+      tableOptions,
+      totalOccurrences,
     };
   },
 });

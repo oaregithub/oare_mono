@@ -10,6 +10,9 @@ import {
   AddFormSpellingPayload,
   AddFormSpellingResponse,
   CheckSpellingResponse,
+  Pagination,
+  SearchDiscourseSpellingRow,
+  SpellingOccurrencesResponse,
 } from '@oare/types';
 
 /**
@@ -79,6 +82,19 @@ async function checkSpelling(spelling: string): Promise<CheckSpellingResponse> {
   return data;
 }
 
+async function getSpellingTextOccurrences(
+  spellingUuid: string,
+  pagination: Pagination
+): Promise<SpellingOccurrencesResponse> {
+  const { data } = await axios.get(
+    `/dictionary/spellings/${spellingUuid}/texts`,
+    {
+      params: pagination,
+    }
+  );
+  return data;
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -88,4 +104,5 @@ export default {
   updateSpelling,
   removeSpelling,
   checkSpelling,
+  getSpellingTextOccurrences,
 };

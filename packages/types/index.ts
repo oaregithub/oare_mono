@@ -300,6 +300,11 @@ export interface DictionarySearchPayload {
   rows: number;
 }
 
+export interface SpellingOccurrencesResponse {
+  totalResults: number;
+  rows: Pick<SearchDiscourseSpellingRow, "textName" | "textUuid">[];
+}
+
 // Text Groups
 
 export interface TextGroup {
