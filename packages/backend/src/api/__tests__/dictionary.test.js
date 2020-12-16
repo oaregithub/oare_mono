@@ -2,6 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
+import utils from '@/utils';
 
 describe('dictionary api test', () => {
   const mockForms = [];
@@ -401,7 +402,7 @@ describe('dictionary api test', () => {
       getSpellingByUuid: jest.fn().mockResolvedValue('current spelling'),
     };
 
-    const utils = {
+    const mockUtils = {
       createTransaction: jest.fn(async (cb) => {
         await cb();
       }),
@@ -412,7 +413,7 @@ describe('dictionary api test', () => {
       sl.set('TextDiscourseDao', TextDiscourseDao);
       sl.set('LoggingEditsDao', LoggingEditsDao);
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
-      sl.set('utils', utils);
+      sl.set('utils', mockUtils);
     };
 
     const sendRequest = () => request(app).put(PATH).send(mockPayload).set('Cookie', 'jwt=token');
@@ -845,6 +846,43 @@ describe('dictionary api test', () => {
         hasSign: jest.fn().mockRejectedValue('sign reading dao failed'),
       });
 
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /dictionary/spellings/:uuid/texts', () => {
+    const spellingUuid = 'spelling-uuid';
+    const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/texts`;
+    const spelllingOccurrences = [
+      {
+        textUuid: 'text-uuid',
+        textName: 'text-Name',
+      },
+    ];
+    const TextDiscourseDao = {
+      getSpellingTextOccurrences: jest.fn().mockResolvedValue(spelllingOccurrences),
+    };
+
+    const spelllingOccurrencesSetup = () => {
+      sl.set('TextDiscourseDao', TextDiscourseDao);
+      sl.set('utils', utils);
+    };
+
+    beforeEach(spelllingOccurrencesSetup);
+
+    const sendRequest = () => request(app).get(PATH);
+
+    it('returns 200 on success', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(spelllingOccurrences);
+    });
+
+    it('returns 500 when getting occurrences fails', async () => {
+      sl.set('TextDiscourseDao', {
+        getSpellingTextOccurrences: jest.fn().mockRejectedValue('Failed to get spelling occurrences'),
+      });
       const response = await sendRequest();
       expect(response.status).toBe(500);
     });

@@ -135,55 +135,24 @@ class TextDiscourseDao {
   async getSpellingTextOccurrences(
     spellingUuid: string,
     { limit, page }: Pagination,
-  ): Promise<SearchDiscourseSpellingRow[]> {
+  ): Promise<Pick<SearchDiscourseSpellingRow, 'textName' | 'textUuid'>[]> {
     interface SpellingTextRow {
       textUuid: string;
       uuid: string;
     }
-    // const rows: SpellingTextRow[] = await knex('text_discourse')
-    //   .select('text_discourse.text_uuid AS textUuid', 'alias.name', 'alias.primacy')
-    //   .innerJoin('alias', 'alias.reference_uuid', 'text_discourse.text_uuid')
-    //   .where('text_discourse.spelling_uuid', spellingUuid)
-    //   .groupBy('text_discourse.text_uuid', 'alias.primacy');
     const rows: SpellingTextRow[] = await this.createSpellingTextsQuery(spellingUuid)
-      .select('text_uuid AS textUuid', 'uuid')
+      .innerJoin('alias', 'alias.reference_uuid', 'text_discourse.text_uuid')
+      .distinct('text_discourse.text_uuid AS textUuid', 'text_discourse.uuid')
+      .andWhere(knex.raw('(alias.primacy = 1 OR alias.primacy IS NULL)'))
       .limit(limit)
       .offset(page * limit);
 
     const textNames = await Promise.all(rows.map((r) => AliasDao.textAliasNames(r.textUuid)));
 
-    // return textUuids
-    //   .map((textUuid) => {
-    //     const spellingTextRows = rows
-    //       .filter((r) => r.textUuid === textUuid)
-    //       .sort((a, b) => {
-    //         if (a.primacy === null) {
-    //           return -1;
-    //         }
-    //         if (b.primacy === null) {
-    //           return 1;
-    //         }
-    //         if (a.primacy < b.primacy) {
-    //           return -1;
-    //         }
-    //         if (a.primacy > b.primacy) {
-    //           return 1;
-    //         }
-    //         return 0;
-    //       });
-
-    //     if (spellingTextRows.length === 1) {
-    //       return {
-    //         uuid: textUuid,
-    //         text: spellingTextRows[0].name,
-    //       };
-    //     }
-    //     return {
-    //       uuid: textUuid,
-    //       text: `${spellingTextRows[0].name} (${spellingTextRows[1].name})`,
-    //     };
-    //   })
-    //   .sort((a, b) => a.text.localeCompare(b.text));
+    return rows.map((r, index) => ({
+      textUuid: r.textUuid,
+      textName: textNames[index],
+    }));
   }
 
   async uuidsBySpellingUuid(spellingUuid: string, trx?: Knex.Transaction): Promise<string[]> {

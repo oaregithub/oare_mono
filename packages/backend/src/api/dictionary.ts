@@ -188,8 +188,13 @@ router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) 
 router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => {
   try {
     const utils = sl.get('utils');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
     const { uuid } = req.params;
-    const { page, limit, filter } = utils.extractPagination(req.query);
+    const pagination = utils.extractPagination(req.query);
+
+    const texts = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+    res.json(texts);
   } catch (err) {
     next(new HttpInternalError(err));
   }

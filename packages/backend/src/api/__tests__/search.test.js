@@ -66,7 +66,7 @@ describe('search test', () => {
     ];
 
     const AliasDao = {
-      displayAliasNames: jest.fn().mockResolvedValue(textName),
+      textAliasNames: jest.fn().mockResolvedValue(textName),
     };
 
     const TextDiscourseDao = {
@@ -113,7 +113,7 @@ describe('search test', () => {
       await sendRequest();
 
       expect(TextDiscourseDao.searchTextDiscourseSpellings).toHaveBeenCalledWith(spelling, { limit: 10, page: 1 });
-      expect(AliasDao.displayAliasNames).toHaveBeenCalledWith('text-uuid');
+      expect(AliasDao.textAliasNames).toHaveBeenCalledWith('text-uuid');
       expect(TextDiscourseDao.getTextSpellings).toHaveBeenCalledWith('text-uuid');
     });
 
@@ -129,7 +129,7 @@ describe('search test', () => {
 
     it('returns 500 if get text alias fails', async () => {
       sl.set('AliasDao', {
-        displayAliasNames: jest.fn().mockRejectedValue('Cannot get text alias'),
+        textAliasNames: jest.fn().mockRejectedValue('Cannot get text alias'),
       });
       const response = await sendRequest();
 
