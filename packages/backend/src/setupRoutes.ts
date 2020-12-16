@@ -20,6 +20,7 @@ import logout from './api/logout';
 import refreshToken from './api/refresh_token';
 import permissions from './api/permissions';
 import publicBlacklist from './api/public_blacklist';
+import textInfo from './api/text_info';
 
 export const API_PATH = '/api/v2';
 
@@ -45,4 +46,5 @@ export default (app: Express) => {
   app.use(API_PATH, refreshToken);
   app.use(API_PATH, permissions);
   app.use(API_PATH, publicBlacklist);
+  app.use(API_PATH, textInfo);
 };

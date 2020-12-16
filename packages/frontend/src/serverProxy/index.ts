@@ -18,6 +18,7 @@ import register from './register';
 import logout from './logout';
 import refreshToken from './refresh_token';
 import publicBlacklist from './public_blacklist';
+import textInfo from './text_info';
 
 const serverProxy = {
   ...textGroups,
@@ -40,6 +41,7 @@ const serverProxy = {
   ...logout,
   ...refreshToken,
   ...publicBlacklist,
+  ...textInfo,
 };
 
 export type ServerProxyType = typeof serverProxy;

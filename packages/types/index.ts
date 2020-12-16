@@ -233,6 +233,7 @@ export interface SearchTextNamesPayload {
   page: number;
   rows: number;
   search: string;
+  groupId?: string;
 }
 
 export interface SearchTextNamesResponse {
@@ -384,4 +385,10 @@ export type DictionaryPermission =
 
 export interface PermissionResponse {
   dictionary: DictionaryPermission[];
+}
+
+// Text Info
+
+export interface TextInfoResponse {
+  name: string;
 }

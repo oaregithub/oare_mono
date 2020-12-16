@@ -24,6 +24,7 @@ import AddGroupUsers from '@/views/GroupView/AddGroupUsers.vue';
 import BlacklistTexts from '@/views/BlacklistView/BlacklistTexts.vue';
 import BlacklistCollections from '@/views/BlacklistView/BlacklistCollections.vue';
 import AddBlacklistTexts from '@/views/BlacklistView/AddBlacklistTexts.vue';
+import AddGroupTexts from '@/views/GroupView/AddGroupTexts.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -94,6 +95,12 @@ const routes: RouteConfig[] = [
         component: ManageTexts,
       },
     ],
+  },
+  {
+    path: '/addgrouptexts/:groupId',
+    name: 'manageGroupTexts',
+    component: AddGroupTexts,
+    props: true,
   },
   {
     path: '/addusers/:groupId',
