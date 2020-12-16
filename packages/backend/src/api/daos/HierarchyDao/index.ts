@@ -1,5 +1,6 @@
 import { CollectionListItem, CollectionResponse, CollectionText, SearchTextNamesResponse } from '@oare/types';
 import knex from '@/connection';
+import sl from '@/serviceLocator';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
@@ -64,7 +65,14 @@ class HierarchyDao {
   }
 
   async getAllCollections(isAdmin: boolean): Promise<CollectionListItem[]> {
-    let collectionsQuery = knex('hierarchy').select('hierarchy.uuid').where('hierarchy.type', 'collection');
+    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const blacklistedCollections = await PublicBlacklistDao.getPublicCollections();
+    const blacklistedUuids = blacklistedCollections.map((collection) => collection.uuid);
+
+    let collectionsQuery = knex('hierarchy')
+      .select('hierarchy.uuid')
+      .whereNotIn('uuid', blacklistedUuids)
+      .andWhere('hierarchy.type', 'collection');
 
     if (!isAdmin) {
       collectionsQuery = collectionsQuery.andWhere('hierarchy.published', true);
