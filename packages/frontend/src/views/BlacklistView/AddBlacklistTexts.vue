@@ -59,8 +59,6 @@
             class="mt-3"
             show-select
             v-model="selectedTexts"
-            :server-items-length="selectedTexts.length"
-            :hide-default-footer="true"
           >
             <template slot="no-data"> No texts selected </template>
           </v-data-table>
@@ -130,6 +128,7 @@ export default defineComponent({
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
+    const [texts, setTexts] = useQueryParam('texts', '');
 
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
@@ -146,6 +145,16 @@ export default defineComponent({
     onMounted(async () => {
       try {
         await getTexts();
+        if (texts.value) {
+          const uuids: string[] = JSON.parse(texts.value);
+          const textNames = await Promise.all(
+            uuids.map(uuid => server.getTextName(uuid))
+          );
+          selectedTexts.value = uuids.map((uuid, index) => ({
+            name: textNames[index].name,
+            uuid: uuid,
+          }));
+        }
       } catch {
         actions.showErrorSnackbar('Error loading texts. Please try again.');
       } finally {
@@ -215,6 +224,10 @@ export default defineComponent({
         immediate: false,
       }
     );
+
+    watch(selectedTexts, async () => {
+      setTexts(JSON.stringify(selectedTexts.value.map(text => text.uuid)));
+    });
 
     return {
       loading,

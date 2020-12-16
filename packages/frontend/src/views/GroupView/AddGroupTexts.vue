@@ -228,6 +228,18 @@ export default defineComponent({
       try {
         await getTexts();
         groupName.value = await server.getGroupName(Number(groupId));
+        if (texts.value) {
+          const uuids: string[] = JSON.parse(texts.value);
+          const textNames = await Promise.all(
+            uuids.map(uuid => server.getTextName(uuid))
+          );
+          selectedTexts.value = uuids.map((uuid, index) => ({
+            name: textNames[index].name,
+            text_uuid: uuid,
+            can_read: true,
+            can_write: false,
+          }));
+        }
       } catch {
         actions.showErrorSnackbar('Error loading texts. Please try again.');
       } finally {
