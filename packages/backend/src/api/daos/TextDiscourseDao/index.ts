@@ -129,6 +129,16 @@ class TextDiscourseDao {
     return nestedDiscourses;
   }
 
+  private createSpellingTextsQuery(spellingUuid: string) {
+    return knex('text_discourse').where('text_discourse.spelling_uuid', spellingUuid);
+  }
+
+  async getTotalSpellingTexts(spellingUuid: string): Promise<number> {
+    const countRow = await this.createSpellingTextsQuery(spellingUuid).count({ count: '*' }).first();
+
+    return (countRow?.count as number) || 0;
+  }
+
   async getSpellingTexts(spellingUuid: string): Promise<SpellingText[]> {
     interface SpellingTextRow {
       textUuid: string;

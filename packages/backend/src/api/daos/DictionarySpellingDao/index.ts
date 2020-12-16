@@ -20,11 +20,11 @@ class DictionarySpellingDao {
       .select('uuid', 'explicit_spelling AS spelling')
       .where('reference_uuid', formUuid);
 
-    const spellingTexts = await Promise.all(rows.map((r) => TextDiscourseDao.getSpellingTexts(r.uuid)));
+    const spellingOccurrences = await Promise.all(rows.map((r) => TextDiscourseDao.getTotalSpellingTexts(r.uuid)));
 
     return rows.map((r, i) => ({
       ...r,
-      texts: spellingTexts[i],
+      totalOccurrences: spellingOccurrences[i],
     }));
   }
 
