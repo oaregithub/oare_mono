@@ -50,7 +50,7 @@ describe('GET /text_epigraphies/:uuid', () => {
   };
 
   const mockAliasDao = {
-    displayAliasNames: jest.fn().mockResolvedValue('Test Alias'),
+    textAliasNames: jest.fn().mockResolvedValue('Test Alias'),
   };
 
   const mockTextEpigraphyDao = {
@@ -139,7 +139,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     });
     const response = await sendRequest();
     expect(response.status).toBe(403);
-    expect(mockAliasDao.displayAliasNames).not.toHaveBeenCalled();
+    expect(mockAliasDao.textAliasNames).not.toHaveBeenCalled();
     expect(mockTextEpigraphyDao.getEpigraphicUnits).not.toHaveBeenCalled();
     expect(mockHierarchyDao.getEpigraphyCollection).not.toHaveBeenCalled();
     expect(mockTextDao.getCdliNum).not.toHaveBeenCalled();
@@ -187,7 +187,7 @@ describe('GET /text_epigraphies/:uuid', () => {
 
   it('returns 500 on failed alias name retrieval', async () => {
     sl.set('AliasDao', {
-      displayAliasNames: jest.fn().mockRejectedValue(null),
+      textAliasNames: jest.fn().mockRejectedValue(null),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

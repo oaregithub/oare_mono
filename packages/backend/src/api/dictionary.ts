@@ -185,6 +185,21 @@ router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) 
   }
 });
 
+router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => {
+  try {
+    const utils = sl.get('utils');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+    const { uuid } = req.params;
+    const pagination = utils.extractPagination(req.query);
+
+    const texts = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+    res.json(texts);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 router
   .route('/dictionary/spellings/:uuid')
   .put(adminRoute, async (req, res, next) => {

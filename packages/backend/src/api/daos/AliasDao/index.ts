@@ -20,7 +20,7 @@ class AliasDao {
     return rows;
   }
 
-  async displayAliasNames(textUuid: string): Promise<string> {
+  async textAliasNames(textUuid: string): Promise<string> {
     const aliases = await this.getAllNames(textUuid);
     const primaryRow = aliases.find((alias) => alias.primacy === null || alias.primacy === 1);
     const secondaryRows = aliases.filter((alias) => alias.uuid !== primaryRow?.uuid);
