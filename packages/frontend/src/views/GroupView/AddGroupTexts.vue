@@ -88,18 +88,8 @@
             class="mt-3"
             show-select
             :value="selectedTexts"
-            @item-selected="
-              $event.value
-                ? selectedTexts.unshift($event.item)
-                : selectedTexts.splice($event.item, 1)
-            "
-            @toggle-select-all="
-              $event.value
-                ? unaddedTexts.forEach(text => selectedTexts.push(text))
-                : unaddedTexts.forEach(text =>
-                    selectedTexts.splice(selectedTexts.indexOf(text), 1)
-                  )
-            "
+            @item-selected="selectItem($event)"
+            @toggle-select-all="selectAll($event)"
             :options.sync="searchOptions"
             :server-items-length="serverCount"
             :footer-props="{
@@ -259,6 +249,23 @@ export default defineComponent({
       }
     });
 
+    function selectItem(event: { value: any; item: Text }) {
+      event.value
+        ? selectedTexts.value.unshift(event.item)
+        : selectedTexts.value.splice(
+            selectedTexts.value.indexOf(event.item),
+            1
+          );
+    }
+
+    function selectAll(event: { value: any; item: Text }) {
+      event.value
+        ? unaddedTexts.value.forEach(text => selectedTexts.value.push(text))
+        : unaddedTexts.value.forEach(text =>
+            selectedTexts.value.splice(selectedTexts.value.indexOf(text), 1)
+          );
+    }
+
     watch(searchOptions, async () => {
       try {
         await getTexts();
@@ -305,6 +312,8 @@ export default defineComponent({
       serverCount,
       selectedTextsHeaders,
       updateTextToAddRead,
+      selectItem,
+      selectAll,
     };
   },
 });
