@@ -185,6 +185,16 @@ router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) 
   }
 });
 
+router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => {
+  try {
+    const utils = sl.get('utils');
+    const { uuid } = req.params;
+    const { page, limit, filter } = utils.extractPagination(req.query);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 router
   .route('/dictionary/spellings/:uuid')
   .put(adminRoute, async (req, res, next) => {

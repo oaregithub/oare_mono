@@ -114,7 +114,7 @@ class TextEpigraphyDao {
       }
     }
 
-    const textNameQueries = texts.map((text) => aliasDao.displayAliasNames(text.uuid));
+    const textNameQueries = texts.map((text) => aliasDao.textAliasNames(text.uuid));
     const textNames = await Promise.all(textNameQueries);
 
     texts.forEach((text, index) => {

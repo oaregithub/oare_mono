@@ -278,6 +278,7 @@ export interface SearchSpellingPayload {
 export interface Pagination {
   page: number;
   limit: number;
+  filter?: string;
 }
 
 // Dictionary Search

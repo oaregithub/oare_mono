@@ -25,7 +25,7 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
       page,
       limit,
     });
-    const textNames = await Promise.all(searchRows.map((r) => aliasDao.displayAliasNames(r.textUuid)));
+    const textNames = await Promise.all(searchRows.map((r) => aliasDao.textAliasNames(r.textUuid)));
     const textReadings = await Promise.all(searchRows.map((r) => textDiscourseDao.getTextSpellings(r.textUuid)));
 
     const rows: SearchDiscourseSpellingRow[] = searchRows

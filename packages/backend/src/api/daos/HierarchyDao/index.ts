@@ -33,7 +33,7 @@ class HierarchyDao {
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    const names = await Promise.all(textsResponse.map((text) => aliasDao.displayAliasNames(text.uuid)));
+    const names = await Promise.all(textsResponse.map((text) => aliasDao.textAliasNames(text.uuid)));
     const matchingTexts: CollectionListItem[] = textsResponse.map((text, index) => ({
       ...text,
       name: names[index],
@@ -63,7 +63,7 @@ class HierarchyDao {
     }
 
     const collections: { uuid: string }[] = await collectionsQuery;
-    const collectionNameQueries = collections.map((collection) => aliasDao.displayAliasNames(collection.uuid));
+    const collectionNameQueries = collections.map((collection) => aliasDao.textAliasNames(collection.uuid));
     const collectionNames = await Promise.all(collectionNameQueries);
 
     return collections.map(({ uuid }, idx) => ({
@@ -103,7 +103,7 @@ class HierarchyDao {
       .offset((page - 1) * rows);
     let texts: CollectionText[] = await collectionRowsQuery;
 
-    const textNames = await Promise.all(texts.map((result) => aliasDao.displayAliasNames(result.uuid)));
+    const textNames = await Promise.all(texts.map((result) => aliasDao.textAliasNames(result.uuid)));
 
     texts = texts.map((result, i) => ({
       ...result,

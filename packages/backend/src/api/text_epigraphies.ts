@@ -29,7 +29,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       }
     }
 
-    const textName = await AliasDao.displayAliasNames(textUuid);
+    const textName = await AliasDao.textAliasNames(textUuid);
     const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
     const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
     const cdliNum = await TextDao.getCdliNum(textUuid);
