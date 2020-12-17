@@ -30,9 +30,17 @@ export interface EpigraphicUnitResult extends EpigraphicBaseUnit {
   side: string | null;
 }
 
+export interface GetEpigraphicUnitsOptions {
+  minLine?: number;
+  maxLine?: number;
+}
+
 class TextEpigraphyDao {
-  async getEpigraphicUnits(textUuid: string): Promise<EpigraphicUnitResult[]> {
-    const units: EpigraphicUnitRow[] = await knex('text_epigraphy')
+  async getEpigraphicUnits(
+    textUuid: string,
+    { maxLine, minLine }: GetEpigraphicUnitsOptions = {},
+  ): Promise<EpigraphicUnitResult[]> {
+    let query = knex('text_epigraphy')
       .leftJoin('sign_reading', 'text_epigraphy.reading_uuid', 'sign_reading.uuid')
       .where('text_uuid', textUuid)
       .select(
@@ -49,6 +57,16 @@ class TextEpigraphyDao {
         'sign_reading.value',
       )
       .orderBy('text_epigraphy.char_on_tablet');
+
+    if (minLine) {
+      query = query.andWhere('text_epigraphy.line', '>=', minLine);
+    }
+
+    if (maxLine) {
+      query = query.andWhere('text_epigraphy.line', '<=', maxLine);
+    }
+
+    const units: EpigraphicUnitRow[] = await query;
 
     return convertEpigraphicUnitRows(units);
   }

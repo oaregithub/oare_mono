@@ -4,6 +4,7 @@ import {
   DiscourseLineSpelling,
   Pagination,
   SearchDiscourseSpellingRow,
+  SpellingOccurrenceRow,
 } from '@oare/types';
 import Knex from 'knex';
 import AliasDao from '../AliasDao';
@@ -151,27 +152,25 @@ class TextDiscourseDao {
     spellingUuid: string,
     { limit, page, filter }: Pagination,
   ): Promise<SpellingOccurrencesResponse> {
-    interface SpellingTextRow {
-      name: string;
-      textUuid: string;
-      uuid: string;
-    }
-
     const query = this.createSpellingTextsQuery(spellingUuid, { filter })
-      .select('text.name', 'text_discourse.uuid', 'text_discourse.text_uuid AS textUuid')
+      .select(
+        'text.name AS textName',
+        'te.line',
+        'text_discourse.word_on_tablet AS wordOnTablet',
+        'text_discourse.uuid AS discourseUuid',
+        'text_discourse.text_uuid AS textUuid',
+      )
+      .innerJoin('text_epigraphy AS te', 'te.discourse_uuid', 'text_discourse.uuid')
       .orderBy('text.name')
       .limit(limit)
       .offset(page * limit);
 
-    const rows: SpellingTextRow[] = await query;
+    const rows: SpellingOccurrenceRow[] = await query;
     const totalResults = await this.getTotalSpellingTexts(spellingUuid, { filter });
 
     return {
       totalResults,
-      rows: rows.map((r, index) => ({
-        textUuid: r.textUuid,
-        textName: r.name,
-      })),
+      rows,
     };
   }
 

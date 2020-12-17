@@ -1,4 +1,5 @@
 import knex from '@/connection';
+import { EpigraphicUnit } from '@oare/oare';
 import { EpigraphicUnitRow, EpigraphicUnitResult } from './index';
 
 export default function getSearchQuery(characters: string[], textTitle: string, blacklist: string[]) {
@@ -55,7 +56,7 @@ function mapSideNumberToSideName(side: number): string | null {
   }
 }
 
-export function convertEpigraphicUnitRows(units: EpigraphicUnitRow[]): EpigraphicUnitResult[] {
+export function convertEpigraphicUnitRows(units: EpigraphicUnitRow[]): EpigraphicUnit[] {
   return units
     .map(({ uuid, column, line, charOnLine, charOnTablet, discourseUuid, reading, side, type, value, epigReading }) => {
       const mappedUnit: EpigraphicUnitResult = {
