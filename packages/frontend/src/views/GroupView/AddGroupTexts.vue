@@ -88,8 +88,8 @@
             class="mt-3"
             show-select
             :value="selectedTexts"
-            @item-selected="selectItem($event)"
-            @toggle-select-all="selectAll($event)"
+            @item-selected="selectItem"
+            @toggle-select-all="selectAll"
             :options.sync="searchOptions"
             :server-items-length="serverCount"
             :footer-props="{
@@ -249,7 +249,7 @@ export default defineComponent({
       }
     });
 
-    function selectItem(event: { value: any; item: Text }) {
+    function selectItem(event: { value: boolean; item: Text }) {
       event.value
         ? selectedTexts.value.unshift(event.item)
         : selectedTexts.value.splice(
@@ -258,7 +258,7 @@ export default defineComponent({
           );
     }
 
-    function selectAll(event: { value: any; item: Text }) {
+    function selectAll(event: { value: boolean; item: Text }) {
       event.value
         ? unaddedTexts.value.forEach(text => selectedTexts.value.push(text))
         : unaddedTexts.value.forEach(text =>
