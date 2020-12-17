@@ -5,7 +5,24 @@ import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
 
-function collectionTextQuery(uuid: string, search: string, blacklist: string[]) {
+function collectionTextQuery(
+  uuid: string,
+  search: string,
+  collectionIsBlacklisted: boolean,
+  blacklist: string[],
+  whitelist: string[],
+) {
+  if (collectionIsBlacklisted) {
+    const query = knex('hierarchy')
+      .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
+      .leftJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
+      .where('hierarchy.parent_uuid', uuid)
+      .andWhere('alias.name', 'like', `%${search}%`)
+      .andWhere(function () {
+        this.whereIn('hierarchy.uuid', whitelist);
+      });
+    return query;
+  }
   const query = knex('hierarchy')
     .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
     .leftJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
@@ -64,9 +81,9 @@ class HierarchyDao {
     };
   }
 
-  async getAllCollections(isAdmin: boolean): Promise<CollectionListItem[]> {
+  async getAllCollections(isAdmin: boolean, user: UserRow | null): Promise<CollectionListItem[]> {
     const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-    const blacklistedCollections = await PublicBlacklistDao.getPublicCollections();
+    const blacklistedCollections = await PublicBlacklistDao.getBlacklistedCollections(user);
     const blacklistedUuids = blacklistedCollections.map((collection) => collection.uuid);
 
     let collectionsQuery = knex('hierarchy')
@@ -93,8 +110,11 @@ class HierarchyDao {
     uuid: string,
     { page = 1, rows = 10, search = '' },
   ): Promise<CollectionResponse> {
-    const blacklistedTexts = await textGroupDao.getUserBlacklist(userId);
-    const countRow = await collectionTextQuery(uuid, search, blacklistedTexts)
+    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const collectionIsBlacklisted = await PublicBlacklistDao.collectionIsBlacklisted(uuid, userId);
+    const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(userId);
+
+    const countRow = await collectionTextQuery(uuid, search, collectionIsBlacklisted, blacklist, whitelist)
       .count({
         count: knex.raw('distinct hierarchy.id'),
       })
@@ -105,7 +125,7 @@ class HierarchyDao {
       totalTexts = countRow.count as number;
     }
 
-    const collectionRowsQuery = collectionTextQuery(uuid, search, blacklistedTexts)
+    const collectionRowsQuery = collectionTextQuery(uuid, search, collectionIsBlacklisted, blacklist, whitelist)
       .distinct(
         'hierarchy.id',
         'hierarchy.uuid',
