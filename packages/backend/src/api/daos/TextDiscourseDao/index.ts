@@ -130,10 +130,10 @@ class TextDiscourseDao {
   private createSpellingTextsQuery(spellingUuid: string, { filter }: Partial<Pagination> = {}) {
     let query = knex('text_discourse')
       .where('text_discourse.spelling_uuid', spellingUuid)
-      .innerJoin('alias', 'alias.reference_uuid', 'text_discourse.text_uuid');
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid');
 
     if (filter) {
-      query = query.andWhere('alias.name', 'like', `%${filter}%`);
+      query = query.andWhere('text.name', 'like', `%${filter}%`);
     }
 
     return query;
@@ -141,7 +141,7 @@ class TextDiscourseDao {
 
   async getTotalSpellingTexts(spellingUuid: string, pagination: Partial<Pagination> = {}): Promise<number> {
     const countRow = await this.createSpellingTextsQuery(spellingUuid, pagination)
-      .count({ count: knex.raw('DISTINCT text_discourse.uuid') })
+      .count({ count: 'text_discourse.uuid' })
       .first();
 
     return (countRow?.count as number) || 0;
@@ -152,29 +152,25 @@ class TextDiscourseDao {
     { limit, page, filter }: Pagination,
   ): Promise<SpellingOccurrencesResponse> {
     interface SpellingTextRow {
+      name: string;
       textUuid: string;
       uuid: string;
     }
-    let query = this.createSpellingTextsQuery(spellingUuid, { filter })
-      .distinct('text_discourse.uuid', 'text_discourse.text_uuid AS textUuid')
-      .orderBy('alias.name')
+
+    const query = this.createSpellingTextsQuery(spellingUuid, { filter })
+      .select('text.name', 'text_discourse.uuid', 'text_discourse.text_uuid AS textUuid')
+      .orderBy('text.name')
       .limit(limit)
       .offset(page * limit);
 
-    if (filter) {
-      query = query.andWhere('alias.name', 'like', `%${filter}%`);
-    }
-
     const rows: SpellingTextRow[] = await query;
     const totalResults = await this.getTotalSpellingTexts(spellingUuid, { filter });
-
-    const textNames = await Promise.all(rows.map((r) => AliasDao.textAliasNames(r.textUuid)));
 
     return {
       totalResults,
       rows: rows.map((r, index) => ({
         textUuid: r.textUuid,
-        textName: textNames[index],
+        textName: r.name,
       })),
     };
   }
