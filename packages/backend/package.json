@@ -14,7 +14,8 @@
     "test:log": "NODE_ENV=log yarn test",
     "migrate:make": "knex migrate:make --migrations-directory knex_migrations -x ts",
     "migrate:latest": "knex migrate:latest --migrations-directory knex_migrations",
-    "migrate:rollback": "knex migrate:rollback --migrations-directory knex_migrations"
+    "migrate:rollback": "knex migrate:rollback --migrations-directory knex_migrations",
+    "migrate:up": "knex migrate:up --migrations-directory knex_migrations"
   },
   "author": "",
   "license": "ISC",
