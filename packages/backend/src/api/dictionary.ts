@@ -1,4 +1,5 @@
 import express from 'express';
+import _ from 'lodash';
 import {
   DictionaryWordResponse,
   UpdateDictionaryWordPayload,
@@ -78,7 +79,7 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
     } else {
       const response: CheckSpellingResponse = {
         errors: signs
-          .filter((_, i) => !signExistences[i])
+          .filter((_exists, i) => !signExistences[i])
           .map((token) => `${token.reading} is not a valid sign reading`),
       };
       res.json(response);
@@ -198,18 +199,18 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
     const { rows, totalResults } = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
 
     const epigraphicUnits = await Promise.all(
-      rows.map(({ textUuid, line }) =>
-        TextEpigraphyDao.getEpigraphicUnits(textUuid, {
-          maxLine: Math.floor(line) + 1,
-          minLine: Math.floor(line) - 1,
-        }),
-      ),
+      rows.map(({ textUuid }) => TextEpigraphyDao.getEpigraphicUnits(textUuid)),
     );
 
     const readings = epigraphicUnits.map((units, index) => {
       const renderer = createTabletRenderer(units, [], { lineNumbers: true, textFormat: 'html' });
-      const line = Math.floor(rows[index].line);
-      return [line - 1, line, line + 1].map((l) => renderer.lineReading(l));
+      const linesList = renderer.lines;
+      const lineIdx = linesList.indexOf(rows[index].line);
+
+      const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
+      const endIdx = lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
+
+      return _.range(startIdx, endIdx + 1).map((idx) => renderer.lineReading(linesList[idx]));
     });
 
     const response: SpellingOccurrencesResponse = {

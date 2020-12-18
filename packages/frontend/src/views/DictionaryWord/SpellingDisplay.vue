@@ -59,6 +59,13 @@
             >{{ item.textName }}</router-link
           >
         </template>
+        <template #[`item.context`]="{ item }">
+          <div
+            v-for="(reading, index) in item.readings"
+            :key="index"
+            v-html="reading"
+          />
+        </template>
       </v-data-table>
     </OareDialog>
     <OareDialog
@@ -129,6 +136,10 @@ export default defineComponent({
       {
         text: 'Text Name',
         value: 'text',
+      },
+      {
+        text: 'Context',
+        value: 'context',
       },
     ]);
     const referencesLoading = ref(false);
