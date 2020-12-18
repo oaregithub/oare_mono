@@ -13,7 +13,8 @@
     "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test && yarn workspace @oare/oare test utils.test.ts",
     "migrate:make": "yarn workspace @oare/backend migrate:make",
     "migrate:latest": "NODE_ENV=development yarn workspace @oare/backend migrate:latest",
-    "migrate:latest-prod": "NODE_ENV=production yarn workspace @oare/backend migrate:latest"
+    "migrate:latest-prod": "NODE_ENV=production yarn workspace @oare/backend migrate:latest",
+    "migrate:rollback": "NODE_ENV=development yarn workspace @oare/backend migrate:rollback"
   },
   "workspaces": {
     "packages": [

@@ -8,7 +8,7 @@ router.route('/text_info/:uuid').get(async (req, res, next) => {
   try {
     const AliasDao = sl.get('AliasDao');
     const uuid = req.params.uuid as string;
-    const name = await AliasDao.displayAliasNames(uuid);
+    const name = await AliasDao.textAliasNames(uuid);
 
     res.json({ name });
   } catch (err) {

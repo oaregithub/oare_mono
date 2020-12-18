@@ -11,7 +11,7 @@ class PublicBlacklistDao {
       .select('public_blacklist.uuid AS text_uuid')
       .where('public_blacklist.type', 'text');
 
-    const textNames = await Promise.all(results.map((text) => AliasDao.displayAliasNames(text.text_uuid)));
+    const textNames = await Promise.all(results.map((text) => AliasDao.textAliasNames(text.text_uuid)));
 
     return results.map((item, index) => ({
       ...item,

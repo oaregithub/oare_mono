@@ -17,7 +17,7 @@
       >
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
-      <strong>{{ form.form }}</strong>
+      <strong class="mr-1">{{ form.form }}</strong>
       <grammar-display :form="form" />
       <span>
         <span v-for="(s, index) in form.spellings" :key="index">

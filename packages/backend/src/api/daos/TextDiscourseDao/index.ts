@@ -1,6 +1,13 @@
 import knex from '@/connection';
-import { SpellingText, DiscourseLineSpelling, Pagination } from '@oare/types';
+import {
+  SpellingOccurrencesResponse,
+  DiscourseLineSpelling,
+  Pagination,
+  SearchDiscourseSpellingRow,
+  SpellingOccurrenceRow,
+} from '@oare/types';
 import Knex from 'knex';
+
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
 
 export interface DiscourseRow {
@@ -26,14 +33,6 @@ export interface NestedDiscourse {
   paragraphLabel?: string;
   translation?: string;
 }
-
-export interface SearchDiscourseSpellingRow {
-  uuid: string;
-  textUuid: string;
-  line: number;
-  wordOnTablet: number;
-}
-
 export interface SearchDiscourseSpellingDaoResponse {
   totalResults: number;
   rows: SearchDiscourseSpellingRow[];
@@ -129,52 +128,47 @@ class TextDiscourseDao {
     return nestedDiscourses;
   }
 
-  async getSpellingTexts(spellingUuid: string): Promise<SpellingText[]> {
-    interface SpellingTextRow {
-      textUuid: string;
-      name: string;
-      primacy: null | number;
-    }
-    const rows: SpellingTextRow[] = await knex('text_discourse')
-      .select('text_discourse.text_uuid AS textUuid', 'alias.name', 'alias.primacy')
-      .innerJoin('alias', 'alias.reference_uuid', 'text_discourse.text_uuid')
+  private createSpellingTextsQuery(spellingUuid: string, { filter }: Partial<Pagination> = {}) {
+    let query = knex('text_discourse')
       .where('text_discourse.spelling_uuid', spellingUuid)
-      .groupBy('text_discourse.text_uuid', 'alias.primacy');
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid');
 
-    const textUuids = [...new Set(rows.map((r) => r.textUuid))];
+    if (filter) {
+      query = query.andWhere('text.name', 'like', `%${filter}%`);
+    }
 
-    return textUuids
-      .map((textUuid) => {
-        const spellingTextRows = rows
-          .filter((r) => r.textUuid === textUuid)
-          .sort((a, b) => {
-            if (a.primacy === null) {
-              return -1;
-            }
-            if (b.primacy === null) {
-              return 1;
-            }
-            if (a.primacy < b.primacy) {
-              return -1;
-            }
-            if (a.primacy > b.primacy) {
-              return 1;
-            }
-            return 0;
-          });
+    return query;
+  }
 
-        if (spellingTextRows.length === 1) {
-          return {
-            uuid: textUuid,
-            text: spellingTextRows[0].name,
-          };
-        }
-        return {
-          uuid: textUuid,
-          text: `${spellingTextRows[0].name} (${spellingTextRows[1].name})`,
-        };
-      })
-      .sort((a, b) => a.text.localeCompare(b.text));
+  async getTotalSpellingTexts(spellingUuid: string, pagination: Partial<Pagination> = {}): Promise<number> {
+    const countRow = await this.createSpellingTextsQuery(spellingUuid, pagination)
+      .count({ count: 'text_discourse.uuid' })
+      .first();
+
+    return (countRow?.count as number) || 0;
+  }
+
+  async getSpellingTextOccurrences(spellingUuid: string, { limit, page, filter }: Pagination) {
+    const query = this.createSpellingTextsQuery(spellingUuid, { filter })
+      .distinct(
+        'text_discourse.uuid AS discourseUuid',
+        'name AS textName',
+        'te.line',
+        'text_discourse.word_on_tablet AS wordOnTablet',
+        'text_discourse.text_uuid AS textUuid',
+      )
+      .innerJoin('text_epigraphy AS te', 'te.discourse_uuid', 'text_discourse.uuid')
+      .orderBy('text.name')
+      .limit(limit)
+      .offset(page * limit);
+
+    const rows: SpellingOccurrenceRow[] = await query;
+    const totalResults = await this.getTotalSpellingTexts(spellingUuid, { filter });
+
+    return {
+      totalResults,
+      rows,
+    };
   }
 
   async uuidsBySpellingUuid(spellingUuid: string, trx?: Knex.Transaction): Promise<string[]> {

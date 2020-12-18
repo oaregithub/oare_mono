@@ -1,4 +1,5 @@
 import express from 'express';
+import _ from 'lodash';
 import {
   DictionaryWordResponse,
   UpdateDictionaryWordPayload,
@@ -8,8 +9,9 @@ import {
   AddFormSpellingPayload,
   AddFormSpellingResponse,
   CheckSpellingResponse,
+  SpellingOccurrencesResponse,
 } from '@oare/types';
-import { tokenizeExplicitSpelling } from '@oare/oare';
+import { tokenizeExplicitSpelling, createTabletRenderer } from '@oare/oare';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
@@ -77,7 +79,7 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
     } else {
       const response: CheckSpellingResponse = {
         errors: signs
-          .filter((_, i) => !signExistences[i])
+          .filter((_exists, i) => !signExistences[i])
           .map((token) => `${token.reading} is not a valid sign reading`),
       };
       res.json(response);
@@ -180,6 +182,46 @@ router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) 
       uuid: formUuid,
       form: formData,
     });
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => {
+  try {
+    const utils = sl.get('utils');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
+    const { uuid } = req.params;
+    const pagination = utils.extractPagination(req.query);
+
+    const { rows, totalResults } = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+
+    const epigraphicUnits = await Promise.all(
+      rows.map(({ textUuid }) => TextEpigraphyDao.getEpigraphicUnits(textUuid)),
+    );
+
+    const readings = epigraphicUnits.map((units, index) => {
+      const renderer = createTabletRenderer(units, [], { lineNumbers: true, textFormat: 'html' });
+      const linesList = renderer.lines;
+      const lineIdx = linesList.indexOf(rows[index].line);
+
+      const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
+      const endIdx = lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
+
+      return _.range(startIdx, endIdx + 1).map((idx) => renderer.lineReading(linesList[idx]));
+    });
+
+    const response: SpellingOccurrencesResponse = {
+      totalResults,
+      rows: rows.map((r, index) => ({
+        ...r,
+        readings: readings[index],
+      })),
+    };
+
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

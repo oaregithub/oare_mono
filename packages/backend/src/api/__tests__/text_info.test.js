@@ -12,7 +12,7 @@ describe('GET /text_info', () => {
   };
 
   const mockAliasDao = {
-    displayAliasNames: jest.fn().mockResolvedValue('Test Name'),
+    textAliasNames: jest.fn().mockResolvedValue('Test Name'),
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -20,17 +20,17 @@ describe('GET /text_info', () => {
   it('returns text name successfully', async () => {
     sl.set('AliasDao', mockAliasDao);
     const response = await sendRequest();
-    expect(mockAliasDao.displayAliasNames).toHaveBeenCalled();
+    expect(mockAliasDao.textAliasNames).toHaveBeenCalled();
     expect(response.status).toBe(200);
     expect(JSON.parse(response.text)).toEqual(mockResponse);
   });
 
   it('returns 500 on failed name retrieval', async () => {
     sl.set('AliasDao', {
-      displayAliasNames: jest.fn().mockRejectedValue('Failed text name retrieval'),
+      textAliasNames: jest.fn().mockRejectedValue('Failed text name retrieval'),
     });
     const response = await sendRequest();
-    expect(mockAliasDao.displayAliasNames).not.toHaveBeenCalled();
+    expect(mockAliasDao.textAliasNames).not.toHaveBeenCalled();
     expect(response.status).toBe(500);
   });
 });

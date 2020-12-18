@@ -34,11 +34,11 @@ export interface SpellingText {
 export interface FormSpelling {
   uuid: string;
   spelling: string;
-  texts: SpellingText[];
+  totalOccurrences: number;
 }
 
 export interface CheckSpellingResponse {
-  errors: string[]
+  errors: string[];
 }
 
 export interface DictionaryFormInfo {
@@ -235,15 +235,15 @@ export interface SearchTextNamesResultRow {
 }
 
 export interface SearchTextNamesPayload {
-  page: number,
-  rows: number,
+  page: number;
+  rows: number;
   search: string;
   groupId?: string;
 }
 
 export interface SearchTextNamesResponse {
-  texts: SearchTextNamesResultRow[],
-  count: number,
+  texts: SearchTextNamesResultRow[];
+  count: number;
 }
 
 //Search Collection Names
@@ -303,6 +303,7 @@ export interface SearchSpellingPayload {
 export interface Pagination {
   page: number;
   limit: number;
+  filter?: string;
 }
 
 // Dictionary Search
@@ -321,6 +322,23 @@ export interface DictionarySearchPayload {
   search: string;
   page: number;
   rows: number;
+}
+
+export interface SpellingOccurrenceRow {
+  discourseUuid: string;
+  textName: string;
+  textUuid: string;
+  line: number;
+  wordOnTablet: number;
+}
+
+export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
+  readings: string[];
+}
+
+export interface SpellingOccurrencesResponse {
+  totalResults: number;
+  rows: SpellingOccurrenceResponseRow[];
 }
 
 // Text Groups

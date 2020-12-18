@@ -9,7 +9,7 @@ router.route('/collection_info/:uuid').get(collectionsMiddleware, async (req, re
   try {
     const uuid = req.params.uuid as string;
 
-    const name = await aliasDao.displayAliasNames(uuid);
+    const name = await aliasDao.textAliasNames(uuid);
     res.json({
       name,
     });
