@@ -25,13 +25,8 @@ async function canRemove(uuid: string) {
   const blacklistCollections = (await PublicBlacklistDao.getBlacklistedCollections()).map(
     (collection) => collection.uuid,
   );
-<<<<<<< HEAD
-  const existingBlacklist = new Set(blacklistTexts.concat(blacklistCollections));
-  if (!existingBlacklist.has(uuid)) {
-=======
   const existingBlacklist = blacklistTexts.concat(blacklistCollections);
   if (!existingBlacklist.includes(uuid)) {
->>>>>>> master
     return false;
   }
   return true;

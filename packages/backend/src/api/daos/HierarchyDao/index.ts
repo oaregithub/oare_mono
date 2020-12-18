@@ -130,11 +130,7 @@ class HierarchyDao {
     }
 
     return {
-<<<<<<< HEAD
       collections: matchingCollections,
-=======
-      texts: matchingCollections,
->>>>>>> master
       count: totalCollections,
     };
   }
