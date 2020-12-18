@@ -872,9 +872,14 @@ describe('dictionary api test', () => {
       getEpigraphicUnits: jest.fn().mockResolvedValue([]),
     };
 
+    const TextMarkupDao = {
+      getMarkups: jest.fn().mockResolvedValue([]),
+    };
+
     const spelllingOccurrencesSetup = () => {
       sl.set('TextDiscourseDao', TextDiscourseDao);
       sl.set('TextEpigraphyDao', TextEpigraphyDao);
+      sl.set('TextMarkupDao', TextMarkupDao);
       sl.set('utils', utils);
     };
 
@@ -892,6 +897,11 @@ describe('dictionary api test', () => {
       expect(TextEpigraphyDao.getEpigraphicUnits).toHaveBeenCalledTimes(spelllingOccurrences.length);
     });
 
+    it('gets markup units', async () => {
+      await sendRequest();
+      expect(TextMarkupDao.getMarkups).toHaveBeenCalled();
+    });
+
     it('returns 500 when getting occurrences fails', async () => {
       sl.set('TextDiscourseDao', {
         getSpellingTextOccurrences: jest.fn().mockRejectedValue('Failed to get spelling occurrences'),
@@ -904,6 +914,15 @@ describe('dictionary api test', () => {
       sl.set('TextEpigraphyDao', {
         ...TextEpigraphyDao,
         getEpigraphicUnits: jest.fn().mockRejectedValue('Failed to get epigraphic units'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when getting markup units fails', async () => {
+      sl.set('TextMarkupDao', {
+        getMarkups: jest.fn().mockRejectedValue('Failed to get markup units'),
       });
 
       const response = await sendRequest();
