@@ -19,6 +19,7 @@ import logout from './logout';
 import refreshToken from './refresh_token';
 import publicBlacklist from './public_blacklist';
 import textInfo from './text_info';
+import searchCollectionNames from './search_collection_names';
 
 const serverProxy = {
   ...textGroups,
@@ -42,6 +43,7 @@ const serverProxy = {
   ...refreshToken,
   ...publicBlacklist,
   ...textInfo,
+  ...searchCollectionNames,
 };
 
 export type ServerProxyType = typeof serverProxy;

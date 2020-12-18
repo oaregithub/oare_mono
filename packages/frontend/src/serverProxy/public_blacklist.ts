@@ -6,6 +6,11 @@ async function getPublicBlacklist() {
   return data;
 }
 
+async function getBlacklistCollections() {
+  let { data } = await axios.get('/public_blacklist/collections');
+  return data;
+}
+
 async function addTextsToPublicBlacklist(
   texts: AddPublicBlacklistPayload
 ): Promise<number[]> {
@@ -14,12 +19,13 @@ async function addTextsToPublicBlacklist(
 
 async function removeTextsFromPublicBlacklist(uuids: string[]) {
   await Promise.all(
-    uuids.map(uuid => axios.delete(`public_blacklist/${uuid}`))
+    uuids.map(uuid => axios.delete(`/public_blacklist/${uuid}`))
   );
 }
 
 export default {
   getPublicBlacklist,
+  getBlacklistCollections,
   addTextsToPublicBlacklist,
   removeTextsFromPublicBlacklist,
 };
