@@ -18,7 +18,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
 
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
-      const blacklist = await TextGroupDao.getUserBlacklist(user);
+      const { blacklist } = await TextGroupDao.getUserBlacklist(user);
       if (blacklist.includes(textUuid)) {
         next(
           new HttpForbidden(

@@ -6,7 +6,7 @@ import sl from '@/serviceLocator';
 
 async function canInsert(texts: PublicBlacklistPayloadItem[]) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const existingBlacklist = await PublicBlacklistDao.getPublicTexts();
+  const existingBlacklist = await PublicBlacklistDao.getBlacklistedTexts();
   const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
   for (let i = 0; i < texts.length; i += 1) {
     if (existingTexts.has(texts[i].uuid)) {
@@ -18,7 +18,7 @@ async function canInsert(texts: PublicBlacklistPayloadItem[]) {
 
 async function canRemove(uuid: string) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const existingBlacklist = await PublicBlacklistDao.getPublicTexts();
+  const existingBlacklist = await PublicBlacklistDao.getBlacklistedTexts();
   const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
   if (!existingTexts.has(uuid)) {
     return false;
@@ -33,7 +33,7 @@ router
   .get(adminRoute, async (req, res, next) => {
     try {
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-      const publicBlacklist = await PublicBlacklistDao.getPublicTexts();
+      const publicBlacklist = await PublicBlacklistDao.getBlacklistedTexts();
       res.json(publicBlacklist);
     } catch (err) {
       next(new HttpInternalError(err));
