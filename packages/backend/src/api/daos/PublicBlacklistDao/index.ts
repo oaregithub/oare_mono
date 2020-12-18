@@ -66,7 +66,7 @@ class PublicBlacklistDao {
         this.whereNotIn('uuid', collectionUuids);
       });
 
-    const collectionNames = await Promise.all(results.map((collection) => AliasDao.displayAliasNames(collection.uuid)));
+    const collectionNames = await Promise.all(results.map((collection) => AliasDao.textAliasNames(collection.uuid)));
 
     return results.map((item, index) => ({
       uuid: item.uuid,

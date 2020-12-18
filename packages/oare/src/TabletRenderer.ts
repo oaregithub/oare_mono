@@ -58,6 +58,15 @@ export default class TabletRenderer {
     return orderedSides;
   }
 
+  // An ordered list of lines on the tablet
+  get lines(): number[] {
+    const lineSet = this.epigraphicUnits.reduce(
+      (curSet, unit) => curSet.add(unit.line),
+      new Set<number>(),
+    );
+    return Array.from(lineSet).sort((a, b) => a - b);
+  }
+
   public sideReading(side: EpigraphicUnitSide): string {
     const lineReadings: string[] = [];
     this.linesOnSide(side).forEach((lineNum) => {
