@@ -160,6 +160,11 @@ export interface AddPublicBlacklistPayload {
   texts: PublicBlacklistPayloadItem[];
 }
 
+export interface Blacklists {
+  blacklist: string[];
+  whitelist: string[];
+}
+
 // Groups
 
 export interface Group {

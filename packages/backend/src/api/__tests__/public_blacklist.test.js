@@ -33,7 +33,7 @@ const mockPOST = {
 describe('GET /public_blacklist', () => {
   const PATH = `${API_PATH}/public_blacklist`;
   const mockPublicBlacklistDao = {
-    getPublicTexts: jest.fn().mockResolvedValue(mockGET),
+    getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
   };
 
   const setup = () => {
@@ -51,7 +51,7 @@ describe('GET /public_blacklist', () => {
 
   it('returns 200 on successful blacklist retrieval', async () => {
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.getPublicTexts).toHaveBeenCalled();
+    expect(mockPublicBlacklistDao.getBlacklistedTexts).toHaveBeenCalled();
     expect(response.status).toBe(200);
     expect(JSON.parse(response.text)).toEqual(mockGET);
   });
@@ -63,19 +63,19 @@ describe('GET /public_blacklist', () => {
       }),
     });
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.getPublicTexts).not.toHaveBeenCalled();
+    expect(mockPublicBlacklistDao.getBlacklistedTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
 
   it('does not allow non-logged-in user to see blacklist', async () => {
     const response = await request(app).get(PATH);
-    expect(mockPublicBlacklistDao.getPublicTexts).not.toHaveBeenCalled();
+    expect(mockPublicBlacklistDao.getBlacklistedTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 
   it('returns 500 on failed blacklist retrieval', async () => {
     sl.set('PublicBlacklistDao', {
-      getPublicTexts: jest.fn().mockRejectedValue('Remove blacklist text failed'),
+      getBlacklistedTexts: jest.fn().mockRejectedValue('Remove blacklist text failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -85,7 +85,7 @@ describe('GET /public_blacklist', () => {
 describe('POST /public_blacklist', () => {
   const PATH = `${API_PATH}/public_blacklist`;
   const mockPublicBlacklistDao = {
-    getPublicTexts: jest.fn().mockResolvedValue(mockGET),
+    getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
     addPublicTexts: jest.fn().mockResolvedValue(),
   };
 
@@ -157,7 +157,7 @@ describe('DELETE /public_blacklist', () => {
   const uuid = 'uuid1';
   const PATH = `${API_PATH}/public_blacklist/${uuid}`;
   const mockPublicBlacklistDao = {
-    getPublicTexts: jest.fn().mockResolvedValue(mockGET),
+    getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
     removePublicTexts: jest.fn().mockResolvedValue(),
   };
 

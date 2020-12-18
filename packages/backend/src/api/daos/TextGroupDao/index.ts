@@ -1,4 +1,4 @@
-import { Text } from '@oare/types';
+import { Text, Blacklists } from '@oare/types';
 import knex from '@/connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
@@ -13,8 +13,8 @@ export interface TextGroupRow {
 }
 
 class TextGroupDao {
-  async getUserBlacklist(user: UserRow | null) {
-    const userTexts = await PublicBlacklistDao.getPublicTexts();
+  async getUserBlacklist(user: UserRow | null): Promise<Blacklists> {
+    const userTexts = await PublicBlacklistDao.getBlacklistedTexts();
 
     if (user) {
       const groupIds = await userGroupDao.getGroupsOfUser(user.id);
@@ -39,7 +39,10 @@ class TextGroupDao {
       });
     }
 
-    return blacklistedUuids;
+    return {
+      blacklist: blacklistedUuids,
+      whitelist: whitelistedUuids,
+    };
   }
 
   async getTexts(groupId: number): Promise<Text[]> {

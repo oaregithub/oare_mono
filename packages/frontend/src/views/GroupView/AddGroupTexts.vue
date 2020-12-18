@@ -87,7 +87,9 @@
             item-key="text_uuid"
             class="mt-3"
             show-select
-            v-model="selectedTexts"
+            :value="selectedTexts"
+            @item-selected="selectItem"
+            @toggle-select-all="selectAll"
             :options.sync="searchOptions"
             :server-items-length="serverCount"
             :footer-props="{
@@ -228,12 +230,41 @@ export default defineComponent({
       try {
         await getTexts();
         groupName.value = await server.getGroupName(Number(groupId));
+        if (texts.value) {
+          const uuids: string[] = JSON.parse(texts.value);
+          const textNames = await Promise.all(
+            uuids.map(uuid => server.getTextName(uuid))
+          );
+          selectedTexts.value = uuids.map((uuid, index) => ({
+            name: textNames[index].name,
+            text_uuid: uuid,
+            can_read: true,
+            can_write: false,
+          }));
+        }
       } catch {
         actions.showErrorSnackbar('Error loading texts. Please try again.');
       } finally {
         loading.value = false;
       }
     });
+
+    function selectItem(event: { value: boolean; item: Text }) {
+      event.value
+        ? selectedTexts.value.unshift(event.item)
+        : selectedTexts.value.splice(
+            selectedTexts.value.indexOf(event.item),
+            1
+          );
+    }
+
+    function selectAll(event: { value: boolean; item: Text }) {
+      event.value
+        ? unaddedTexts.value.forEach(text => selectedTexts.value.push(text))
+        : unaddedTexts.value.forEach(text =>
+            selectedTexts.value.splice(selectedTexts.value.indexOf(text), 1)
+          );
+    }
 
     watch(searchOptions, async () => {
       try {
@@ -281,6 +312,8 @@ export default defineComponent({
       serverCount,
       selectedTextsHeaders,
       updateTextToAddRead,
+      selectItem,
+      selectAll,
     };
   },
 });

@@ -83,7 +83,7 @@ router.route('/search').get(async (req, res, next) => {
     const characters = charsPayload || [];
     const user = req.user || null;
 
-    const blacklist = await textGroupDao.getUserBlacklist(user);
+    const { blacklist } = await textGroupDao.getUserBlacklist(user);
     const totalRows = await textEpigraphyDao.totalSearchRows(characters, textTitle, blacklist);
     const texts = await textEpigraphyDao.searchTexts(characters, textTitle, blacklist, {
       page,
