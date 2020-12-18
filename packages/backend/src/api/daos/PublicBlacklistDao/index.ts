@@ -47,30 +47,14 @@ class PublicBlacklistDao {
     });
   }
 
-  async getBlacklistedCollections(user: UserRow | null): Promise<CollectionListItem[]> {
-    const TextGroupDao = sl.get('TextGroupDao');
-
-    const { whitelist } = await TextGroupDao.getUserBlacklist(user);
-    const collectionsWithWhitelistedTexts: CollectionListItem[] = await knex('hierarchy')
-      .select('parent_uuid AS uuid')
-      .where('type', 'text')
-      .andWhere(function () {
-        this.whereIn('uuid', whitelist);
-      });
-    const collectionUuids = collectionsWithWhitelistedTexts.map((collection) => collection.uuid);
-
-    const results: CollectionListItem[] = await knex('public_blacklist')
-      .select('uuid')
-      .where('type', 'collection')
-      .andWhere(function () {
-        this.whereNotIn('uuid', collectionUuids);
-      });
-
-    const collectionNames = await Promise.all(results.map((collection) => AliasDao.textAliasNames(collection.uuid)));
-
-    return results.map((item, index) => ({
-      uuid: item.uuid,
+  async getBlacklistedCollections(): Promise<CollectionListItem[]> {
+    const blacklistCollections = await knex('public_blacklist').select('uuid').where('type', 'collection');
+    const collectionNames = await Promise.all(
+      blacklistCollections.map((collection) => AliasDao.displayAliasNames(collection.uuid)),
+    );
+    return blacklistCollections.map((collection, index) => ({
       name: collectionNames[index],
+      uuid: collection.uuid,
     }));
   }
 

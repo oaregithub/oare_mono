@@ -246,6 +246,25 @@ export interface SearchTextNamesResponse {
   count: number;
 }
 
+//Search Collection Names
+
+export interface SearchCollectionNamesResultRow {
+  uuid: string;
+  name: string;
+}
+
+export interface SearchCollectionNamesPayload {
+  page: number,
+  rows: number,
+  search: string;
+  groupId?: string;
+}
+
+export interface SearchCollectionNamesResponse {
+  texts: SearchCollectionNamesResultRow[],
+  count: number,
+}
+
 // Search spelling discourse
 
 export interface DiscourseLineSpelling {

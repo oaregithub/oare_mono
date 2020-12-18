@@ -6,10 +6,13 @@ import sl from '@/serviceLocator';
 
 async function canInsert(texts: PublicBlacklistPayloadItem[]) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const existingBlacklist = await PublicBlacklistDao.getBlacklistedTexts();
-  const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
+  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map((text) => text.text_uuid);
+  const blacklistCollections = (await PublicBlacklistDao.getBlacklistedCollections()).map(
+    (collection) => collection.uuid,
+  );
+  const existingBlacklist = new Set(blacklistTexts.concat(blacklistCollections));
   for (let i = 0; i < texts.length; i += 1) {
-    if (existingTexts.has(texts[i].uuid)) {
+    if (existingBlacklist.has(texts[i].uuid)) {
       return false;
     }
   }
@@ -18,9 +21,12 @@ async function canInsert(texts: PublicBlacklistPayloadItem[]) {
 
 async function canRemove(uuid: string) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const existingBlacklist = await PublicBlacklistDao.getBlacklistedTexts();
-  const existingTexts = new Set(existingBlacklist.map((text) => text.text_uuid));
-  if (!existingTexts.has(uuid)) {
+  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map((text) => text.text_uuid);
+  const blacklistCollections = (await PublicBlacklistDao.getBlacklistedCollections()).map(
+    (collection) => collection.uuid,
+  );
+  const existingBlacklist = blacklistTexts.concat(blacklistCollections);
+  if (!existingBlacklist.includes(uuid)) {
     return false;
   }
   return true;
@@ -77,6 +83,16 @@ router.route('/public_blacklist/:uuid').delete(adminRoute, async (req, res, next
       await LoggingEditsDao.logEdit('DELETE', req.user!.uuid, 'public_blacklist', uuid, trx);
     });
     res.end();
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/public_blacklist/collections').get(adminRoute, async (_req, res, next) => {
+  try {
+    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const publicBlacklist = await PublicBlacklistDao.getBlacklistedCollections();
+    res.json(publicBlacklist);
   } catch (err) {
     next(new HttpInternalError(err));
   }

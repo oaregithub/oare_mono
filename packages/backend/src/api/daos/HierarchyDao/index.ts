@@ -1,4 +1,10 @@
-import { CollectionListItem, CollectionResponse, CollectionText, SearchTextNamesResponse } from '@oare/types';
+import {
+  CollectionListItem,
+  CollectionResponse,
+  CollectionText,
+  SearchTextNamesResponse,
+  SearchCollectionNamesResponse,
+} from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
 import textGroupDao from '../TextGroupDao';
@@ -81,9 +87,57 @@ class HierarchyDao {
     };
   }
 
+  async getCollectionsBySearchTerm(
+    page: number,
+    rows: number,
+    searchText: string,
+    groupId?: number,
+  ): Promise<SearchCollectionNamesResponse> {
+    function createBaseQuery() {
+      const query = knex('hierarchy')
+        .distinct('hierarchy.uuid')
+        .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
+        .where('hierarchy.type', 'collection')
+        .andWhere('alias.name', 'like', `%${searchText}%`);
+      if (groupId) {
+        return query.whereNotIn('hierarchy.uuid', knex('text_group').select('text_uuid').where('group_id', groupId));
+      }
+      return query
+        .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
+        .whereNull('public_blacklist.uuid');
+    }
+
+    const collectionsResponse = await createBaseQuery()
+      .orderBy('alias.name')
+      .limit(rows)
+      .offset((page - 1) * rows);
+    const names = await Promise.all(
+      collectionsResponse.map((collection) => aliasDao.displayAliasNames(collection.uuid)),
+    );
+    const matchingCollections: CollectionListItem[] = collectionsResponse.map((collection, index) => ({
+      ...collection,
+      name: names[index],
+    }));
+
+    const count = await createBaseQuery()
+      .count({
+        count: knex.raw('distinct hierarchy.uuid'),
+      })
+      .first();
+    let totalCollections = 0;
+    if (count?.count) {
+      totalCollections = count.count as number;
+    }
+
+    return {
+      texts: matchingCollections,
+      count: totalCollections,
+    };
+  }
+
   async getAllCollections(isAdmin: boolean, user: UserRow | null): Promise<CollectionListItem[]> {
-    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-    const blacklistedCollections = await PublicBlacklistDao.getBlacklistedCollections(user);
+    const TextGroupDao = sl.get('TextGroupDao');
+    const blacklistedCollections = await TextGroupDao.getUserCollectionBlacklist(user);
     const blacklistedUuids = blacklistedCollections.map((collection) => collection.uuid);
 
     let collectionsQuery = knex('hierarchy')
