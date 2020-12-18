@@ -1,7 +1,6 @@
 <template>
-  <v-progress-linear v-if="loading" indeterminate />
-  <div v-else>
-    <div style="display: flex">
+  <OareContentView :loading="loading">
+    <div class="d-flex">
       <router-link to="/addblacklist/collections">
         <v-btn color="primary" class="mr-3 test-add">
           <span> <v-icon>mdi-plus</v-icon>Add collections</span>
@@ -60,7 +59,7 @@
         >
       </template>
     </v-data-table>
-  </div>
+  </OareContentView>
 </template>
 
 <script lang="ts">
@@ -76,14 +75,12 @@ import { CollectionListItem } from '@oare/types';
 import OareContentView from '@/components/base/OareContentView.vue';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
-import { Collection } from 'lodash';
 
 export default defineComponent({
   components: { OareContentView },
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const _ = sl.get('lodash');
 
     const blacklistHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Name', value: 'name' },
