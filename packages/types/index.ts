@@ -261,7 +261,11 @@ export interface SearchCollectionNamesPayload {
 }
 
 export interface SearchCollectionNamesResponse {
+<<<<<<< HEAD
   collections: SearchCollectionNamesResultRow[],
+=======
+  texts: SearchCollectionNamesResultRow[],
+>>>>>>> master
   count: number,
 }
 
