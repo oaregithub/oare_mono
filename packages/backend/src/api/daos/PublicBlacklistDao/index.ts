@@ -50,7 +50,7 @@ class PublicBlacklistDao {
   async getBlacklistedCollections(): Promise<CollectionListItem[]> {
     const blacklistCollections = await knex('public_blacklist').select('uuid').where('type', 'collection');
     const collectionNames = await Promise.all(
-      blacklistCollections.map((collection) => AliasDao.displayAliasNames(collection.uuid)),
+      blacklistCollections.map((collection) => AliasDao.textAliasNames(collection.uuid)),
     );
     return blacklistCollections.map((collection, index) => ({
       name: collectionNames[index],
