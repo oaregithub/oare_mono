@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { SearchTextsResultRow } from '@oare/types';
+import { EpigraphicUnit } from '@oare/oare';
 import knex from '@/connection';
 import getSearchQuery, { convertEpigraphicUnitRows } from './utils';
 import aliasDao from '../AliasDao';
@@ -8,26 +9,9 @@ export interface EpigraphyReadingRow {
   reading: string;
   line: number;
 }
-
-export interface EpigraphicBaseUnit {
-  uuid: string;
-  column: number;
-  line: number | null;
-  charOnLine: number | null;
-  charOnTablet: number | null;
-  discourseUuid: string | null;
-  reading: string | null;
-  type: string | null;
-  value: string | null;
-}
-
-export interface EpigraphicUnitRow extends EpigraphicBaseUnit {
+export interface EpigraphicQueryRow extends Omit<EpigraphicUnit, 'side'> {
   side: number;
   epigReading: string;
-}
-
-export interface EpigraphicUnitResult extends EpigraphicBaseUnit {
-  side: string | null;
 }
 
 export interface GetEpigraphicUnitsOptions {
@@ -39,10 +23,11 @@ class TextEpigraphyDao {
   async getEpigraphicUnits(
     textUuid: string,
     { maxLine, minLine }: GetEpigraphicUnitsOptions = {},
-  ): Promise<EpigraphicUnitResult[]> {
+  ): Promise<EpigraphicUnit[]> {
     let query = knex('text_epigraphy')
       .leftJoin('sign_reading', 'text_epigraphy.reading_uuid', 'sign_reading.uuid')
       .where('text_uuid', textUuid)
+      .andWhereNot('char_on_tablet', null)
       .select(
         'text_epigraphy.uuid',
         'text_epigraphy.side',
@@ -66,7 +51,7 @@ class TextEpigraphyDao {
       query = query.andWhere('text_epigraphy.line', '<=', maxLine);
     }
 
-    const units: EpigraphicUnitRow[] = await query;
+    const units: EpigraphicQueryRow[] = await query;
 
     return convertEpigraphicUnitRows(units);
   }

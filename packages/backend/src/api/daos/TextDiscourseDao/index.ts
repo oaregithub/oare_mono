@@ -7,7 +7,7 @@ import {
   SpellingOccurrenceRow,
 } from '@oare/types';
 import Knex from 'knex';
-import AliasDao from '../AliasDao';
+
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
 
 export interface DiscourseRow {
@@ -148,16 +148,13 @@ class TextDiscourseDao {
     return (countRow?.count as number) || 0;
   }
 
-  async getSpellingTextOccurrences(
-    spellingUuid: string,
-    { limit, page, filter }: Pagination,
-  ): Promise<SpellingOccurrencesResponse> {
+  async getSpellingTextOccurrences(spellingUuid: string, { limit, page, filter }: Pagination) {
     const query = this.createSpellingTextsQuery(spellingUuid, { filter })
-      .select(
-        'text.name AS textName',
+      .distinct(
+        'text_discourse.uuid AS discourseUuid',
+        'name AS textName',
         'te.line',
         'text_discourse.word_on_tablet AS wordOnTablet',
-        'text_discourse.uuid AS discourseUuid',
         'text_discourse.text_uuid AS textUuid',
       )
       .innerJoin('text_epigraphy AS te', 'te.discourse_uuid', 'text_discourse.uuid')

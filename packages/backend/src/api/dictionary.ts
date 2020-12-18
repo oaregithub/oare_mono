@@ -191,7 +191,6 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
     const utils = sl.get('utils');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const TextMarkupDao = sl.get('TextMarkupDao');
 
     const { uuid } = req.params;
     const pagination = utils.extractPagination(req.query);
@@ -210,7 +209,7 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
     const readings = epigraphicUnits.map((units, index) => {
       const renderer = createTabletRenderer(units, [], { lineNumbers: true, textFormat: 'html' });
       const line = Math.floor(rows[index].line);
-      return [line - 1, line, line + 1].map(renderer.lineReading);
+      return [line - 1, line, line + 1].map((l) => renderer.lineReading(l));
     });
 
     const response: SpellingOccurrencesResponse = {
