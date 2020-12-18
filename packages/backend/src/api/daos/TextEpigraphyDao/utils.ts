@@ -1,5 +1,6 @@
 import knex from '@/connection';
-import { EpigraphicUnitRow, EpigraphicUnitResult } from './index';
+import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/oare';
+import { EpigraphicQueryRow } from './index';
 
 export default function getSearchQuery(characters: string[], textTitle: string, blacklist: string[]) {
   // Join alias table so text names can be returned
@@ -36,7 +37,7 @@ export default function getSearchQuery(characters: string[], textTitle: string, 
   return query;
 }
 
-function mapSideNumberToSideName(side: number): string | null {
+function mapSideNumberToSideName(side: number): EpigraphicUnitSide {
   switch (side) {
     case 1:
       return 'obv.';
@@ -48,35 +49,24 @@ function mapSideNumberToSideName(side: number): string | null {
       return 'u.e.';
     case 5:
       return 'le.e.';
-    case 6:
-      return 'r.e.';
     default:
-      return null;
+      return 're.e.';
   }
 }
 
-export function convertEpigraphicUnitRows(units: EpigraphicUnitRow[]): EpigraphicUnitResult[] {
+export function convertEpigraphicUnitRows(units: EpigraphicQueryRow[]): EpigraphicUnit[] {
   return units
-    .map(({ uuid, column, line, charOnLine, charOnTablet, discourseUuid, reading, side, type, value, epigReading }) => {
-      const mappedUnit: EpigraphicUnitResult = {
-        uuid,
-        column,
-        line,
-        charOnLine,
-        charOnTablet,
-        discourseUuid,
-        reading,
-        type,
-        value,
-        side: null,
+    .map((unit) => {
+      const mappedUnit: EpigraphicUnit = {
+        ...unit,
+        side: mapSideNumberToSideName(unit.side),
       };
-      if (reading === null) {
-        mappedUnit.reading = epigReading;
+      if (unit.reading === null) {
+        mappedUnit.reading = unit.epigReading;
       } else if (mappedUnit.reading !== mappedUnit.value) {
-        mappedUnit.reading = value;
+        mappedUnit.reading = unit.value;
         mappedUnit.type = 'number';
       }
-      mappedUnit.side = mapSideNumberToSideName(side);
 
       return mappedUnit;
     })

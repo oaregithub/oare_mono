@@ -305,9 +305,21 @@ export interface DictionarySearchPayload {
   rows: number;
 }
 
+export interface SpellingOccurrenceRow {
+  discourseUuid: string;
+  textName: string;
+  textUuid: string;
+  line: number;
+  wordOnTablet: number;
+}
+
+export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
+  readings: string[];
+}
+
 export interface SpellingOccurrencesResponse {
   totalResults: number;
-  rows: Pick<SearchDiscourseSpellingRow, "textName" | "textUuid">[];
+  rows: SpellingOccurrenceResponseRow[];
 }
 
 // Text Groups

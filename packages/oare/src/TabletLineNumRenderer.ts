@@ -13,7 +13,8 @@ export default class TabletLineNumRenderer extends TabletRenderer {
 
   lineReading(lineNum: number) {
     if (this.renderer) {
-      return `${lineNum}. ${this.renderer?.lineReading(lineNum)}`;
+      const reading = this.renderer.lineReading(lineNum);
+      return reading ? `${lineNum}. ${reading}` : '';
     }
     throw new Error('Undefined renderer passed to render decorator');
   }

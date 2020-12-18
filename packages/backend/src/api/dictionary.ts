@@ -8,8 +8,9 @@ import {
   AddFormSpellingPayload,
   AddFormSpellingResponse,
   CheckSpellingResponse,
+  SpellingOccurrencesResponse,
 } from '@oare/types';
-import { tokenizeExplicitSpelling } from '@oare/oare';
+import { tokenizeExplicitSpelling, createTabletRenderer } from '@oare/oare';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
@@ -189,11 +190,36 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
   try {
     const utils = sl.get('utils');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     const { uuid } = req.params;
     const pagination = utils.extractPagination(req.query);
 
-    const response = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+    const { rows, totalResults } = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+
+    const epigraphicUnits = await Promise.all(
+      rows.map(({ textUuid, line }) =>
+        TextEpigraphyDao.getEpigraphicUnits(textUuid, {
+          maxLine: Math.floor(line) + 1,
+          minLine: Math.floor(line) - 1,
+        }),
+      ),
+    );
+
+    const readings = epigraphicUnits.map((units, index) => {
+      const renderer = createTabletRenderer(units, [], { lineNumbers: true, textFormat: 'html' });
+      const line = Math.floor(rows[index].line);
+      return [line - 1, line, line + 1].map((l) => renderer.lineReading(l));
+    });
+
+    const response: SpellingOccurrencesResponse = {
+      totalResults,
+      rows: rows.map((r, index) => ({
+        ...r,
+        readings: readings[index],
+      })),
+    };
+
     res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
