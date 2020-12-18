@@ -261,7 +261,7 @@ export interface SearchCollectionNamesPayload {
 }
 
 export interface SearchCollectionNamesResponse {
-  texts: SearchCollectionNamesResultRow[],
+  collections: SearchCollectionNamesResultRow[],
   count: number,
 }
 

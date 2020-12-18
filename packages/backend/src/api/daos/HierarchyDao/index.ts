@@ -128,7 +128,7 @@ class HierarchyDao {
     }
 
     return {
-      texts: matchingCollections,
+      collections: matchingCollections,
       count: totalCollections,
     };
   }

@@ -25,6 +25,7 @@ import BlacklistTexts from '@/views/BlacklistView/BlacklistTexts.vue';
 import BlacklistCollections from '@/views/BlacklistView/BlacklistCollections.vue';
 import AddBlacklistTexts from '@/views/BlacklistView/AddBlacklistTexts.vue';
 import AddGroupTexts from '@/views/GroupView/AddGroupTexts.vue';
+import AddBlacklistCollections from '@/views/BlacklistView/AddBlacklistCollections.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -57,6 +58,11 @@ const routes: RouteConfig[] = [
     path: '/addblacklist',
     name: 'blacklistAdd',
     component: AddBlacklistTexts,
+  },
+  {
+    path: '/addblacklist/collections',
+    name: 'blacklistAddCollections',
+    component: AddBlacklistCollections,
   },
   {
     path: '/collections/name/:collectionUuid',
