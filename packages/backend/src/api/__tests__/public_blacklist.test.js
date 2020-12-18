@@ -34,6 +34,7 @@ describe('GET /public_blacklist', () => {
   const PATH = `${API_PATH}/public_blacklist`;
   const mockPublicBlacklistDao = {
     getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
+    getBlacklistedCollections: jest.fn().mockResolvedValue([]),
   };
 
   const setup = () => {
@@ -86,6 +87,7 @@ describe('POST /public_blacklist', () => {
   const PATH = `${API_PATH}/public_blacklist`;
   const mockPublicBlacklistDao = {
     getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
+    getBlacklistedCollections: jest.fn().mockResolvedValue([]),
     addPublicTexts: jest.fn().mockResolvedValue(),
   };
 
@@ -158,6 +160,7 @@ describe('DELETE /public_blacklist', () => {
   const PATH = `${API_PATH}/public_blacklist/${uuid}`;
   const mockPublicBlacklistDao = {
     getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
+    getBlacklistedCollections: jest.fn().mockResolvedValue([]),
     removePublicTexts: jest.fn().mockResolvedValue(),
   };
 
