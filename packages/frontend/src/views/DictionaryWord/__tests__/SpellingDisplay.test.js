@@ -25,6 +25,16 @@ describe('SpellingDisplay test', () => {
     },
   };
 
+  const mockOccurrences = {
+    totalResults: 1,
+    rows: [
+      {
+        textName: 'text-name',
+        textUuid: 'text-uuid',
+      },
+    ],
+  };
+
   const mockServer = {
     updateSpelling: jest.fn().mockResolvedValue(null),
     removeSpelling: jest.fn().mockResolvedValue(null),
@@ -75,7 +85,7 @@ describe('SpellingDisplay test', () => {
   it('shows number of texts next to spelling', () => {
     const wrapper = createWrapper();
     expect(wrapper.get('.test-num-texts').text()).toBe(
-      `(${spelling.totalOccurrences})`
+      `${spelling.totalOccurrences}`
     );
   });
 

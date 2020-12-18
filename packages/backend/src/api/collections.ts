@@ -11,7 +11,7 @@ router.route('/collections').get(async (req, res, next) => {
     const user = req.user || null;
     const isAdmin = user ? user.isAdmin : false;
 
-    const collections = await hierarchyDao.getAllCollections(isAdmin);
+    const collections = await hierarchyDao.getAllCollections(isAdmin, user);
     res.json(collections);
   } catch (err) {
     next(new HttpInternalError(err));

@@ -72,7 +72,10 @@ describe('GET /text_epigraphies/:uuid', () => {
 
   const mockTextGroupDao = {
     userHasWritePermission: jest.fn().mockResolvedValue(false),
-    getUserBlacklist: jest.fn().mockResolvedValue(['67890']),
+    getUserBlacklist: jest.fn().mockResolvedValue({
+      blacklist: ['67890'],
+      whitelist: [],
+    }),
   };
 
   const mockHierarchyDao = {
@@ -135,7 +138,7 @@ describe('GET /text_epigraphies/:uuid', () => {
   it('does not allow blacklisted texts to be seen', async () => {
     sl.set('TextGroupDao', {
       ...mockTextGroupDao,
-      getUserBlacklist: jest.fn().mockResolvedValue(['12345']),
+      getUserBlacklist: jest.fn().mockResolvedValue({ blacklist: ['12345'], whitelist: [] }),
     });
     const response = await sendRequest();
     expect(response.status).toBe(403);
@@ -156,7 +159,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     });
     sl.set('TextGroupDao', {
       ...mockTextGroupDao,
-      getUserBlacklist: jest.fn().mockResolvedValue(['12345']),
+      getUserBlacklist: jest.fn().mockResolvedValue({ blacklist: ['12345'], whitelist: [] }),
     });
     const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
     expect(response.status).toBe(403);
