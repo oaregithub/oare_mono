@@ -860,8 +860,12 @@ describe('dictionary api test', () => {
         textName: 'text-Name',
       },
     ];
+    const mockResponse = {
+      totalOccurrences: 1,
+      rows: spelllingOccurrences,
+    };
     const TextDiscourseDao = {
-      getSpellingTextOccurrences: jest.fn().mockResolvedValue(spelllingOccurrences),
+      getSpellingTextOccurrences: jest.fn().mockResolvedValue(mockResponse),
     };
 
     const spelllingOccurrencesSetup = () => {
@@ -876,7 +880,7 @@ describe('dictionary api test', () => {
     it('returns 200 on success', async () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual(spelllingOccurrences);
+      expect(JSON.parse(response.text)).toEqual(mockResponse);
     });
 
     it('returns 500 when getting occurrences fails', async () => {

@@ -193,8 +193,8 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
     const { uuid } = req.params;
     const pagination = utils.extractPagination(req.query);
 
-    const texts = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
-    res.json(texts);
+    const response = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

@@ -25,9 +25,20 @@ describe('SpellingDisplay test', () => {
     },
   };
 
+  const mockOccurrences = {
+    totalResults: 1,
+    rows: [
+      {
+        textName: 'text-name',
+        textUuid: 'text-uuid',
+      },
+    ],
+  };
+
   const mockServer = {
     updateSpelling: jest.fn().mockResolvedValue(null),
     removeSpelling: jest.fn().mockResolvedValue(null),
+    getSpellingTextOccurrences: jest.fn().mockResolvedValue(mockOccurrences),
   };
 
   const mockActions = {
@@ -66,23 +77,26 @@ describe('SpellingDisplay test', () => {
   it('shows number of texts next to spelling', () => {
     const wrapper = createWrapper();
     expect(wrapper.get('.test-num-texts').text()).toBe(
-      `(${spelling.totalOccurrences})`
+      `${spelling.totalOccurrences}`
     );
   });
 
-  // it('shows dialog when clicking on number of texts', async () => {
-  //   const wrapper = createWrapper();
-  //   await wrapper.get('.test-num-texts').trigger('click');
-  //   expect(wrapper.get('.test-dialog-title').text()).toBe(
-  //     `Texts for ${spelling.spelling}`
-  //   );
-  // });
+  it('shows dialog when clicking on number of texts', async () => {
+    const wrapper = createWrapper();
+    await wrapper.get('.test-num-texts').trigger('click');
+    expect(wrapper.get('.test-dialog-title').text()).toBe(
+      `Texts for ${spelling.spelling}`
+    );
+  });
 
-  // it('shows texts associated with spelling', async () => {
-  //   const wrapper = createWrapper();
-  //   await wrapper.get('.test-num-texts').trigger('click');
-  //   expect(wrapper.get('.test-text').text()).toBe(spelling.texts[0].text);
-  // });
+  it('shows texts associated with spelling', async () => {
+    const wrapper = createWrapper();
+    await wrapper.get('.test-num-texts').trigger('click');
+    await flushPromises();
+    expect(wrapper.get('.test-text').text()).toBe(
+      mockOccurrences.rows[0].textName
+    );
+  });
 
   it('edits spelling', async () => {
     const wrapper = createWrapper();
