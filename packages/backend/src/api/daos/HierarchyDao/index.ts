@@ -111,9 +111,7 @@ class HierarchyDao {
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    const names = await Promise.all(
-      collectionsResponse.map((collection) => aliasDao.displayAliasNames(collection.uuid)),
-    );
+    const names = await Promise.all(collectionsResponse.map((collection) => aliasDao.textAliasNames(collection.uuid)));
     const matchingCollections: CollectionListItem[] = collectionsResponse.map((collection, index) => ({
       ...collection,
       name: names[index],
