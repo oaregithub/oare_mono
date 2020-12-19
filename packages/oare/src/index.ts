@@ -80,10 +80,14 @@ export interface TextFormatOptions {
   lineNums?: boolean;
 }
 
-export interface CreateTabletRendererOptions {
+export interface TabletHtmlOptions {
+  admin?: boolean;
+  highlightDiscourses?: string[];
+}
+
+export interface CreateTabletRendererOptions extends TabletHtmlOptions {
   lineNumbers?: boolean;
   textFormat?: TextFormatType;
-  admin?: boolean;
 }
 
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';
@@ -123,11 +127,12 @@ const createTabletRenderer = (
     textFormat = 'regular',
     lineNumbers = false,
     admin = false,
+    highlightDiscourses = [],
   }: CreateTabletRendererOptions = {},
 ): TabletRenderer => {
   let renderer = new TabletRenderer(epigraphicUnits, markupUnits);
   if (textFormat === 'html') {
-    renderer = new TabletHtmlRenderer(renderer, admin);
+    renderer = new TabletHtmlRenderer(renderer, { admin, highlightDiscourses });
   }
   if (lineNumbers) {
     renderer = new TabletLineNumRenderer(renderer);
