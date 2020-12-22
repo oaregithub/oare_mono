@@ -1,6 +1,6 @@
 import { CollectionListItem } from '@oare/types';
 import knex from '@/connection';
-import userGroupDao from '../UserGroupDao';
+import UserGroupDao from '../UserGroupDao';
 import AliasDao from '../AliasDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
@@ -39,7 +39,7 @@ class CollectionGroupDao {
     );
 
     if (user) {
-      const groupIds = await userGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
       for (let i = 0; i < groupIds.length; i += 1) {
         const groupId = groupIds[i];
         const collections = await this.getCollections(groupId);
@@ -74,7 +74,7 @@ class CollectionGroupDao {
     );
 
     if (user) {
-      const groupIds = await userGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
       for (let i = 0; i < groupIds.length; i += 1) {
         const groupId = groupIds[i];
         const collections = await this.getCollections(groupId);
@@ -110,7 +110,7 @@ class CollectionGroupDao {
   }
 
   async userHasWritePermission(uuid: string, userId: number): Promise<boolean> {
-    const groupIds = await userGroupDao.getGroupsOfUser(userId);
+    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
 
     const collectionUuid = await knex('hierarchy')
       .select('parent_uuid AS uuid')
