@@ -1,14 +1,8 @@
 import knex from '@/connection';
+import { MarkupUnit } from '@oare/oare';
 
-export interface MarkupRow {
-  referenceUuid: string;
-  type: string;
-  value: number | null;
-  startChar: number | null;
-  endChar: number | null;
-}
 class TextMarkupDao {
-  async getMarkups(textUuid: string): Promise<MarkupRow[]> {
+  async getMarkups(textUuid: string): Promise<MarkupUnit[]> {
     const query = await knex('text_markup')
       .select(
         'text_markup.reference_uuid AS referenceUuid',
@@ -19,7 +13,7 @@ class TextMarkupDao {
       )
       .innerJoin('text_epigraphy', 'text_markup.reference_uuid', 'text_epigraphy.uuid')
       .where('text_epigraphy.text_uuid', textUuid);
-    const rows: MarkupRow[] = await query;
+    const rows: MarkupUnit[] = await query;
     return rows;
   }
 }

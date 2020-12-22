@@ -11,6 +11,7 @@ export interface CollectionPermissionsItem extends CollectionListItem {
   canWrite: boolean;
 }
 
+<<<<<<< HEAD
 export interface CollectionGroupRow {
   collectionUuid: string;
   groupId: number;
@@ -18,6 +19,8 @@ export interface CollectionGroupRow {
   canWrite: boolean;
 }
 
+=======
+>>>>>>> master
 class CollectionGroupDao {
   async getUserCollectionBlacklist(user: UserRow | null): Promise<CollectionListItem[]> {
     const { whitelist } = await TextGroupDao.getUserBlacklist(user);
@@ -130,6 +133,7 @@ class CollectionGroupDao {
     }
     return false;
   }
+<<<<<<< HEAD
 
   async containsAssociation(groupId: number, collectionUuid: string): Promise<boolean> {
     const row = await knex('collection_group')
@@ -157,6 +161,8 @@ class CollectionGroupDao {
   async removeCollections(groupId: number, uuid: string): Promise<void> {
     await knex('collection_group').where('collection_uuid', uuid).andWhere('group_id', groupId).del();
   }
+=======
+>>>>>>> master
 }
 
 export default new CollectionGroupDao();

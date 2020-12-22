@@ -192,6 +192,7 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
     const utils = sl.get('utils');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const TextMarkupDao = sl.get('TextMarkupDao');
 
     const { uuid } = req.params;
     const pagination = utils.extractPagination(req.query);
@@ -202,10 +203,19 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
       rows.map(({ textUuid }) => TextEpigraphyDao.getEpigraphicUnits(textUuid)),
     );
 
-    const readings = epigraphicUnits.map((units, index) => {
-      const renderer = createTabletRenderer(units, [], { lineNumbers: true, textFormat: 'html' });
+    const markupUnits = await Promise.all(rows.map(({ textUuid }) => TextMarkupDao.getMarkups(textUuid)));
+
+    const readings = rows.map((row, index) => {
+      const units = epigraphicUnits[index];
+      const markups = markupUnits[index];
+
+      const renderer = createTabletRenderer(units, markups, {
+        lineNumbers: true,
+        textFormat: 'html',
+        highlightDiscourses: [row.discourseUuid],
+      });
       const linesList = renderer.lines;
-      const lineIdx = linesList.indexOf(rows[index].line);
+      const lineIdx = linesList.indexOf(row.line);
 
       const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
       const endIdx = lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
