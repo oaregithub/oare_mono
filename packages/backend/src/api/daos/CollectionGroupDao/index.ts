@@ -11,6 +11,13 @@ export interface CollectionPermissionsItem extends CollectionListItem {
   canWrite: boolean;
 }
 
+export interface CollectionGroupRow {
+  collectionUuid: string;
+  groupId: number;
+  canRead: boolean;
+  canWrite: boolean;
+}
+
 class CollectionGroupDao {
   async getUserCollectionBlacklist(user: UserRow | null): Promise<CollectionListItem[]> {
     const { whitelist } = await TextGroupDao.getUserBlacklist(user);
@@ -122,6 +129,33 @@ class CollectionGroupDao {
       return true;
     }
     return false;
+  }
+
+  async containsAssociation(groupId: number, collectionUuid: string): Promise<boolean> {
+    const row = await knex('collection_group')
+      .first()
+      .where('collection_uuid', collectionUuid)
+      .andWhere('group_id', groupId);
+    return !!row;
+  }
+
+  async update(groupId: number, collectionUuid: string, canWrite: boolean, canRead: boolean): Promise<void> {
+    await knex('collection_group')
+      .where('collection_uuid', collectionUuid)
+      .andWhere('group_id', groupId)
+      .update({
+        can_write: canRead ? canWrite : false,
+        can_read: canRead,
+      });
+  }
+
+  async addCollections(collections: CollectionGroupRow[]): Promise<number[]> {
+    const ids: number[] = await knex('collection_group').insert(collections);
+    return ids;
+  }
+
+  async removeCollections(groupId: number, uuid: string): Promise<void> {
+    await knex('collection_group').where('collection_uuid', uuid).andWhere('group_id', groupId).del();
   }
 }
 
