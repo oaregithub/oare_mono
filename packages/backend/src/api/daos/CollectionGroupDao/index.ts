@@ -92,13 +92,13 @@ class CollectionGroupDao {
 
   async getCollections(groupId: number): Promise<CollectionPermissionsItem[]> {
     const results: CollectionPermissionsItem[] = await knex('collection_group')
-      .select('collection_group.collection_uuid AS uuid', 'collection_group.can_read', 'collection_group.can_write')
+      .select('collection_uuid AS uuid', 'can_read', 'can_write')
       .where('group_id', groupId);
 
-    return results.map((item) => ({
-      ...item,
-      can_write: !!item.can_write,
-      can_read: !!item.can_read,
+    return results.map((collection) => ({
+      ...collection,
+      can_write: !!collection.can_write,
+      can_read: !!collection.can_read,
     }));
   }
 
