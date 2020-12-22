@@ -46,31 +46,6 @@ class TextGroupDao {
     };
   }
 
-  async getUserCollectionBlacklist(user: UserRow | null): Promise<CollectionListItem[]> {
-    const { whitelist } = await this.getUserBlacklist(user);
-    const collectionsWithWhitelistedTexts: CollectionListItem[] = await knex('hierarchy')
-      .select('parent_uuid AS uuid')
-      .where('type', 'text')
-      .andWhere(function () {
-        this.whereIn('uuid', whitelist);
-      });
-    const collectionUuids = collectionsWithWhitelistedTexts.map((collection) => collection.uuid);
-
-    const results: CollectionListItem[] = await knex('public_blacklist')
-      .select('uuid')
-      .where('type', 'collection')
-      .andWhere(function () {
-        this.whereNotIn('uuid', collectionUuids);
-      });
-
-    const collectionNames = await Promise.all(results.map((collection) => AliasDao.textAliasNames(collection.uuid)));
-
-    return results.map((item, index) => ({
-      uuid: item.uuid,
-      name: collectionNames[index],
-    }));
-  }
-
   async getTexts(groupId: number): Promise<Text[]> {
     const results: Text[] = await knex('text_group')
       .select('text_group.text_uuid', 'text_group.can_read', 'text_group.can_write', 'alias.name')

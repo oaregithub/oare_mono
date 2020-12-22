@@ -18,6 +18,7 @@ import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
 import SignReadingDao from './api/daos/SignReadingDao';
+import CollectionGroupDao from './api/daos/CollectionGroupDao';
 
 declare global {
   namespace Express {
@@ -44,6 +45,7 @@ sl.set('TextMarkupDao', TextMarkupDao);
 sl.set('cache', cache);
 sl.set('PublicBlacklistDao', PublicBlacklistDao);
 sl.set('SignReadingDao', SignReadingDao);
+sl.set('CollectionGroupDao', CollectionGroupDao);
 sl.set('utils', utils);
 
 app.listen(8081, () => {
