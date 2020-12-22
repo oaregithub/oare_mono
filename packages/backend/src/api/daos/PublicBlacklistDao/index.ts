@@ -57,16 +57,6 @@ class PublicBlacklistDao {
       uuid: collection.uuid,
     }));
   }
-
-  async collectionIsBlacklisted(uuid: string, user: UserRow | null): Promise<boolean> {
-    const blacklistedCollections = await knex('public_blacklist').select('uuid').where('type', 'collection');
-
-    const collectionUuids = blacklistedCollections.map((collection) => collection.uuid);
-    if (collectionUuids.includes(uuid)) {
-      return true;
-    }
-    return false;
-  }
 }
 
 export default new PublicBlacklistDao();
