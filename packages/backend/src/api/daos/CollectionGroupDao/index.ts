@@ -7,8 +7,8 @@ import TextGroupDao from '../TextGroupDao';
 import { UserRow } from '../UserDao';
 
 export interface CollectionPermissionsItem extends CollectionListItem {
-  can_read: boolean;
-  can_write: boolean;
+  canRead: boolean;
+  canWrite: boolean;
 }
 
 class CollectionGroupDao {
@@ -26,8 +26,8 @@ class CollectionGroupDao {
     const userCollections: CollectionPermissionsItem[] = (await PublicBlacklistDao.getBlacklistedCollections()).map(
       (collection) => ({
         ...collection,
-        can_read: false,
-        can_write: false,
+        canRead: false,
+        canWrite: false,
       }),
     );
 
@@ -43,10 +43,10 @@ class CollectionGroupDao {
     }
 
     const whitelistedUuids = userCollections
-      .filter((collection) => collection.can_read || collectionsWithWhitelistedTexts.includes(collection.uuid))
+      .filter((collection) => collection.canRead || collectionsWithWhitelistedTexts.includes(collection.uuid))
       .map((collection) => collection.uuid);
     const blacklistedUuids = userCollections
-      .filter((collection) => !collection.can_read && !whitelistedUuids.includes(collection.uuid))
+      .filter((collection) => !collection.canRead && !whitelistedUuids.includes(collection.uuid))
       .map((collection) => collection.uuid);
 
     const collectionNames = await Promise.all(blacklistedUuids.map((uuid) => AliasDao.textAliasNames(uuid)));
@@ -61,8 +61,8 @@ class CollectionGroupDao {
     const userCollections: CollectionPermissionsItem[] = (await PublicBlacklistDao.getBlacklistedCollections()).map(
       (collection) => ({
         ...collection,
-        can_read: false,
-        can_write: false,
+        canRead: false,
+        canWrite: false,
       }),
     );
 
@@ -78,10 +78,10 @@ class CollectionGroupDao {
     }
 
     const whitelistedUuids = userCollections
-      .filter((collection) => collection.can_read)
+      .filter((collection) => collection.canRead)
       .map((collection) => collection.uuid);
     const blacklistedUuids = userCollections
-      .filter((collection) => !collection.can_read && !whitelistedUuids.includes(collection.uuid))
+      .filter((collection) => !collection.canRead && !whitelistedUuids.includes(collection.uuid))
       .map((collection) => collection.uuid);
 
     if (blacklistedUuids.includes(uuid)) {
@@ -92,13 +92,13 @@ class CollectionGroupDao {
 
   async getCollections(groupId: number): Promise<CollectionPermissionsItem[]> {
     const results: CollectionPermissionsItem[] = await knex('collection_group')
-      .select('collection_uuid AS uuid', 'can_read', 'can_write')
+      .select('collection_uuid AS uuid', 'can_read AS canRead', 'can_write AS canWrite')
       .where('group_id', groupId);
 
     return results.map((collection) => ({
       ...collection,
-      can_write: !!collection.can_write,
-      can_read: !!collection.can_read,
+      canWrite: !!collection.canWrite,
+      canRead: !!collection.canRead,
     }));
   }
 
