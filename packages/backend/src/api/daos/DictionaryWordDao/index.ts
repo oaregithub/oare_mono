@@ -108,9 +108,14 @@ class DictionaryWordDao {
   }
 
   async getWords(letter: string): Promise<DictionaryWord[]> {
-    const words: { uuid: string; word: string }[] = await knex('dictionary_word')
-      .select('uuid', 'word')
-      .where('word', 'like', `${letter}%`);
+    const letters = letter.split('/');
+    let query = knex('dictionary_word').select('uuid', 'word');
+
+    letters.forEach((l) => {
+      query = query.orWhere('word', 'like', `${l}%`);
+    });
+
+    const words: { uuid: string; word: string }[] = await query;
 
     const partsOfSpeech = await this.getPartsOfSpeech();
     const specialClassifications = await this.getSpecialClassifications();
@@ -202,7 +207,7 @@ class DictionaryWordDao {
       wordUuid ? { referenceUuid: wordUuid } : {},
     );
 
-    return rows;
+    return rows.filter((r) => !r.name.endsWith('-Class'));
   }
 
   async getWordName(wordUuid: string): Promise<string> {

@@ -12,20 +12,6 @@ export interface GetUserResponse extends User {
 
 // Dictionary
 
-export interface DictionaryWordTranslation {
-  uuid: string;
-  translation: string;
-}
-
-export interface DictionaryWordResponse {
-  word: string;
-  forms: DictionaryForm[];
-  partsOfSpeech: string[];
-  verbalThematicVowelTypes: string[];
-  specialClassifications: string[];
-  translations: DictionaryWordTranslation[];
-}
-
 export interface SpellingText {
   uuid: string;
   text: string;
@@ -102,15 +88,6 @@ export interface AddFormSpellingResponse {
   uuid: string;
 }
 
-export interface WordWithForms {
-  word: string;
-  forms: DictionaryForm[];
-  partsOfSpeech: string[];
-  verbalThematicVowelTypes: string[];
-  specialClassifications: string[];
-  translations: DictionaryWordTranslation[];
-}
-
 // Collections / Texts
 
 export interface CollectionListItem {
@@ -141,13 +118,26 @@ export interface ItemProperty {
   name: string;
 }
 
-export interface DictionaryWord {
+export interface DictionaryWordTranslation {
   uuid: string;
-  word: string;
+  translation: string;
+}
+
+export interface DictionaryWordParseInfo {
   partsOfSpeech: ItemProperty[];
   specialClassifications: ItemProperty[];
   translations: DictionaryWordTranslation[];
   verbalThematicVowelTypes: ItemProperty[];
+}
+
+export interface DictionaryWordResponse extends DictionaryWordParseInfo {
+  word: string;
+  forms: DictionaryForm[];
+}
+
+export interface DictionaryWord extends DictionaryWordParseInfo {
+  uuid: string;
+  word: string;
 }
 
 export interface WordsResponse {

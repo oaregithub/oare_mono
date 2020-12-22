@@ -14,10 +14,10 @@
       </template>
       <template #translation="{ word }">
         <div v-if="word.partsOfSpeech.length > 0" class="mr-1">
-          {{ word.partsOfSpeech.join(', ') }}
+          {{ itemPropertyString(word.partsOfSpeech) }}
         </div>
         <div v-if="word.verbalThematicVowelTypes.length > 0" class="mr-1">
-          {{ ` (${word.verbalThematicVowelTypes.join(', ')})` }}
+          {{ ` (${itemPropertyString(word.verbalThematicVowelTypes)})` }}
         </div>
         <p>
           <span v-for="(tr, idx) in word.translations" :key="tr.uuid">
@@ -32,7 +32,7 @@
             >;</span
           >
           <span v-if="word.specialClassifications.length > 0">
-            {{ word.specialClassifications.join(', ') }}
+            {{ itemPropertyString(word.specialClassifications) }}
           </span>
         </p>
       </template>
@@ -47,10 +47,11 @@ import {
   Ref,
   onMounted,
   computed,
+  watch,
 } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
 import defaultServer from '@/serverProxy';
-import { DictionaryWord, PermissionResponse } from '@oare/types';
+import { DictionaryWord, PermissionResponse, ItemProperty } from '@oare/types';
 import defaultActions from '@/globalActions';
 import sl from '@/serviceLocator';
 
@@ -93,24 +94,32 @@ export default defineComponent({
       );
     };
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        const { words: wordsResp } = await server.getDictionaryWords(
-          props.letter
-        );
-        words.value = wordsResp;
-      } catch {
-        actions.showErrorSnackbar('Failed to retrieve dictionary words');
-      } finally {
-        loading.value = false;
-      }
-    });
+    const itemPropertyString = (properties: ItemProperty[]) =>
+      properties.map(prop => prop.name).join(', ');
+
+    watch(
+      () => props.letter,
+      async () => {
+        loading.value = true;
+        try {
+          const { words: wordsResp } = await server.getDictionaryWords(
+            props.letter
+          );
+          words.value = wordsResp;
+        } catch {
+          actions.showErrorSnackbar('Failed to retrieve dictionary words');
+        } finally {
+          loading.value = false;
+        }
+      },
+      { immediate: true }
+    );
 
     return {
       words,
       loading,
       searchFilter,
+      itemPropertyString,
     };
   },
 });

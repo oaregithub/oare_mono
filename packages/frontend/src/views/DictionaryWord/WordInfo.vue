@@ -19,10 +19,10 @@
       />
       <div v-else class="d-flex">
         <div v-if="wordInfo.partsOfSpeech.length > 0" class="mr-1">
-          {{ wordInfo.partsOfSpeech.join(', ') }}
+          {{ partsOfSpeech }}
         </div>
         <div v-if="wordInfo.verbalThematicVowelTypes.length > 0" class="mr-1">
-          ({{ wordInfo.verbalThematicVowelTypes.join(', ') }})
+          ({{ verbalThematicVowelTypes }})
         </div>
         <p>
           <span v-for="(tr, idx) in wordInfo.translations" :key="tr.uuid">
@@ -33,12 +33,12 @@
           <span
             v-if="
               wordInfo.translations.length > 0 &&
-                wordInfo.specialClassifications.length > 0
+              wordInfo.specialClassifications.length > 0
             "
             >;</span
           >
           <span v-if="wordInfo.specialClassifications.length > 0">
-            {{ wordInfo.specialClassifications.join(', ') }}
+            {{ specialClassifications }}
           </span>
         </p>
       </div>
@@ -58,7 +58,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import {
-  WordWithForms,
+  DictionaryWordResponse,
   DictionaryForm,
   DictionaryWordTranslation,
 } from '@oare/types';
@@ -69,7 +69,7 @@ import sl from '@/serviceLocator';
 export default defineComponent({
   props: {
     updateWordInfo: {
-      type: Function as PropType<(newWord: WordWithForms) => void>,
+      type: Function as PropType<(newWord: DictionaryWordResponse) => void>,
       required: true,
     },
     wordUuid: {
@@ -77,7 +77,7 @@ export default defineComponent({
       required: true,
     },
     wordInfo: {
-      type: Object as PropType<WordWithForms>,
+      type: Object as PropType<DictionaryWordResponse>,
       required: true,
     },
   },
@@ -92,6 +92,18 @@ export default defineComponent({
 
     const canEditTranslations = computed(() =>
       permissions.value.dictionary.some(perm => perm.includes('TRANSLATION'))
+    );
+
+    const partsOfSpeech = computed(() =>
+      wordInfo.partsOfSpeech.map(pos => pos.name).join(', ')
+    );
+
+    const verbalThematicVowelTypes = computed(() =>
+      wordInfo.verbalThematicVowelTypes.map(pos => pos.name).join(', ')
+    );
+
+    const specialClassifications = computed(() =>
+      wordInfo.specialClassifications.map(pos => pos.name).join(', ')
     );
 
     const updateTranslations = (
@@ -117,6 +129,9 @@ export default defineComponent({
       isEditingTranslations,
       updateTranslations,
       updateForm,
+      partsOfSpeech,
+      verbalThematicVowelTypes,
+      specialClassifications,
     };
   },
 });

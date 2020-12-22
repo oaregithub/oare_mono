@@ -16,7 +16,7 @@ class ItemProperties {
     { abbreviation, referenceUuid }: GetItemPropertiesOptions = {},
   ): Promise<ItemPropertyRow[]> {
     let query = knex('item_properties AS ip')
-      .select('ip.uuid', 'a2.name')
+      .select('ip.uuid', 'ip.reference_uuid AS referenceUuid', 'a2.name')
       .innerJoin('alias AS a1', 'a1.reference_uuid', 'ip.variable_uuid')
       .innerJoin('alias AS a2', 'a2.reference_uuid', 'ip.value_uuid')
       .where('a1.name', referenceType);
