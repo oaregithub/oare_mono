@@ -15,6 +15,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const AliasDao = sl.get('AliasDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const CollectionGroupDao = sl.get('CollectionGroupDao');
 
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
@@ -59,7 +60,10 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
 
     let canWrite: boolean;
     if (user) {
-      canWrite = user.isAdmin ? true : await TextGroupDao.userHasWritePermission(textUuid, user.id);
+      canWrite = user.isAdmin
+        ? true
+        : (await TextGroupDao.userHasWritePermission(textUuid, user.id)) ||
+          (await CollectionGroupDao.userHasWritePermission(textUuid, user.id));
     } else {
       canWrite = false;
     }

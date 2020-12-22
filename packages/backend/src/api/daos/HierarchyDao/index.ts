@@ -134,8 +134,8 @@ class HierarchyDao {
   }
 
   async getAllCollections(isAdmin: boolean, user: UserRow | null): Promise<CollectionListItem[]> {
-    const TextGroupDao = sl.get('TextGroupDao');
-    const blacklistedCollections = await TextGroupDao.getUserCollectionBlacklist(user);
+    const CollectionGroupDao = sl.get('CollectionGroupDao');
+    const blacklistedCollections = await CollectionGroupDao.getUserCollectionBlacklist(user);
     const blacklistedUuids = blacklistedCollections.map((collection) => collection.uuid);
 
     let collectionsQuery = knex('hierarchy')
@@ -162,8 +162,8 @@ class HierarchyDao {
     uuid: string,
     { page = 1, rows = 10, search = '' },
   ): Promise<CollectionResponse> {
-    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-    const collectionIsBlacklisted = await PublicBlacklistDao.collectionIsBlacklisted(uuid, userId);
+    const CollectionGroupDao = sl.get('CollectionGroupDao');
+    const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(uuid, userId);
     const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(userId);
 
     const countRow = await collectionTextQuery(uuid, search, collectionIsBlacklisted, blacklist, whitelist)
