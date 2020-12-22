@@ -136,13 +136,18 @@ export interface CollectionInfo {
 
 // Words
 
+export interface ItemProperty {
+  uuid: string;
+  name: string;
+}
+
 export interface DictionaryWord {
   uuid: string;
   word: string;
-  partsOfSpeech: string[];
-  specialClassifications: string[];
+  partsOfSpeech: ItemProperty[];
+  specialClassifications: ItemProperty[];
   translations: DictionaryWordTranslation[];
-  verbalThematicVowelTypes: string[];
+  verbalThematicVowelTypes: ItemProperty[];
 }
 
 export interface WordsResponse {
@@ -254,15 +259,15 @@ export interface SearchCollectionNamesResultRow {
 }
 
 export interface SearchCollectionNamesPayload {
-  page: number,
-  rows: number,
+  page: number;
+  rows: number;
   search: string;
   groupId?: string;
 }
 
 export interface SearchCollectionNamesResponse {
-  collections: SearchCollectionNamesResultRow[],
-  count: number,
+  collections: SearchCollectionNamesResultRow[];
+  count: number;
 }
 
 // Search spelling discourse

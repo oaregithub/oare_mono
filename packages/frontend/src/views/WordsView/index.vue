@@ -27,7 +27,7 @@
           <span
             v-if="
               word.translations.length > 0 &&
-                word.specialClassifications.length > 0
+              word.specialClassifications.length > 0
             "
             >;</span
           >
@@ -66,7 +66,7 @@ export default defineComponent({
     },
   },
 
-  setup() {
+  setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
@@ -82,13 +82,13 @@ export default defineComponent({
           tr.translation.toLowerCase().includes(lowerSearch)
         ) ||
         word.partsOfSpeech.some(pos =>
-          pos.toLowerCase().includes(lowerSearch)
+          pos.name.toLowerCase().includes(lowerSearch)
         ) ||
         word.specialClassifications.some(sp =>
-          sp.toLowerCase().includes(lowerSearch)
+          sp.name.toLowerCase().includes(lowerSearch)
         ) ||
         word.verbalThematicVowelTypes.some(vt =>
-          vt.toLowerCase().includes(lowerSearch)
+          vt.name.toLowerCase().includes(lowerSearch)
         )
       );
     };
@@ -96,7 +96,9 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       try {
-        const { words: wordsResp } = await server.getDictionaryWords();
+        const { words: wordsResp } = await server.getDictionaryWords(
+          props.letter
+        );
         words.value = wordsResp;
       } catch {
         actions.showErrorSnackbar('Failed to retrieve dictionary words');

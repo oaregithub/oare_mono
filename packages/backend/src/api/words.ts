@@ -6,9 +6,10 @@ import dictionaryWordDao from './daos/DictionaryWordDao';
 
 const router = express.Router();
 
-router.route('/words').get(async (req, res, next) => {
+router.route('/words/:letter').get(async (req, res, next) => {
   try {
-    const words = await dictionaryWordDao.getWords();
+    const { letter } = req.params;
+    const words = await dictionaryWordDao.getWords(letter.toLowerCase());
     const response: WordsResponse = {
       words,
     };
