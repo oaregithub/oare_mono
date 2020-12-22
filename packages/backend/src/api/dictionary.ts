@@ -209,7 +209,11 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
       const units = epigraphicUnits[index];
       const markups = markupUnits[index];
 
-      const renderer = createTabletRenderer(units, markups, { lineNumbers: true, textFormat: 'html' });
+      const renderer = createTabletRenderer(units, markups, {
+        lineNumbers: true,
+        textFormat: 'html',
+        highlightDiscourses: [row.discourseUuid],
+      });
       const linesList = renderer.lines;
       const lineIdx = linesList.indexOf(row.line);
 

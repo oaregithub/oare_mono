@@ -1,5 +1,6 @@
 <template>
-  <OareContentView :loading="loading">
+  <v-progress-linear v-if="loading" indeterminate />
+  <div v-else>
     <div class="d-flex">
       <router-link to="/addblacklist/collections">
         <v-btn color="primary" class="mr-3 test-add">
@@ -59,7 +60,7 @@
         >
       </template>
     </v-data-table>
-  </OareContentView>
+  </div>
 </template>
 
 <script lang="ts">

@@ -1,6 +1,6 @@
 /* eslint-disable dot-notation */
 import TabletRenderer from './TabletRenderer';
-import { EpigraphicUnit, MarkupUnit } from './index';
+import { EpigraphicUnit, MarkupUnit, TabletHtmlOptions } from './index';
 
 const superscriptRegex = /<sup>.*<\/sup>$/;
 
@@ -55,10 +55,16 @@ export default class TabletHtmlRenderer extends TabletRenderer {
 
   private admin: boolean;
 
-  constructor(renderer: TabletRenderer, admin: boolean) {
+  private highlightDiscourses: string[];
+
+  constructor(
+    renderer: TabletRenderer,
+    { admin, highlightDiscourses }: TabletHtmlOptions = {},
+  ) {
     super(renderer.getEpigraphicUnits(), renderer.getMarkupUnits());
     this.renderer = renderer;
-    this.admin = admin;
+    this.admin = admin || false;
+    this.highlightDiscourses = highlightDiscourses || [];
   }
 
   markedUpEpigraphicReading(unit: EpigraphicUnit): string {
@@ -77,6 +83,8 @@ export default class TabletHtmlRenderer extends TabletRenderer {
 
     if (this.admin && unit.discourseUuid === null && unit.reading !== '|') {
       baseReading = `<mark style="background-color: #ffb3b3">${baseReading}</mark>`;
+    } else if (this.highlightDiscourses.includes(unit.discourseUuid || '')) {
+      baseReading = `<mark>${baseReading}</mark>`;
     }
     return baseReading;
   }
