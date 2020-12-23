@@ -2,9 +2,24 @@ import express from 'express';
 import { AddTextPayload, RemoveTextsPayload, UpdateTextPermissionPayload } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
+import sl from '@/serviceLocator';
+import { API_PATH } from '@/setupRoutes';
 import textGroupDao from './daos/TextGroupDao';
 import oareGroupDao from './daos/OareGroupDao';
 import textDao from './daos/TextDao';
+
+function clearCache() {
+  const cache = sl.get('cache');
+  cache.clear(
+    {
+      req: {
+        originalUrl: `${API_PATH}/collections`,
+        method: 'GET',
+      },
+    },
+    { exact: false },
+  );
+}
 
 const router = express.Router();
 
@@ -21,6 +36,7 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
+      const cache = sl.get('cache');
       const { groupId } = (req.params as unknown) as { groupId: number };
       const { texts }: AddTextPayload = req.body;
 
@@ -50,6 +66,7 @@ router
       }));
 
       await textGroupDao.addTexts(insertRows);
+      clearCache();
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -57,6 +74,7 @@ router
   })
   .delete(adminRoute, async (req, res, next) => {
     try {
+      const cache = sl.get('cache');
       const { groupId } = (req.params as unknown) as { groupId: number };
       const { textUuids } = (req.query as unknown) as RemoveTextsPayload;
 
@@ -77,6 +95,7 @@ router
       }
 
       await textGroupDao.removeTexts(groupId, textUuids);
+      clearCache();
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -84,6 +103,7 @@ router
   })
   .patch(adminRoute, async (req, res, next) => {
     try {
+      const cache = sl.get('cache');
       const { groupId } = (req.params as unknown) as { groupId: number };
       const { textUuid, canRead, canWrite }: UpdateTextPermissionPayload = req.body;
 
@@ -102,6 +122,7 @@ router
       }
 
       await textGroupDao.update(groupId, textUuid, canWrite, canRead);
+      clearCache();
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
