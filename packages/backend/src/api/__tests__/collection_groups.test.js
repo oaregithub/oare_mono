@@ -106,10 +106,14 @@ describe('POST /collection_groups', () => {
   const mockOareGroupDao = {
     getGroupById: jest.fn().mockResolvedValue(mockGroup),
   };
+  const mockCache = {
+    clear: jest.fn(),
+  };
 
   const setup = () => {
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('OareGroupDao', mockOareGroupDao);
+    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -192,10 +196,14 @@ describe('PATCH /collection_groups', () => {
   const mockOareGroupDao = {
     getGroupById: jest.fn().mockResolvedValue(mockGroup),
   };
+  const mockCache = {
+    clear: jest.fn(),
+  };
 
   const setup = () => {
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('OareGroupDao', mockOareGroupDao);
+    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -269,10 +277,14 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
   const mockOareGroupDao = {
     getGroupById: jest.fn().mockResolvedValue(mockGroup),
   };
+  const mockCache = {
+    clear: jest.fn(),
+  };
 
   const setup = () => {
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('OareGroupDao', mockOareGroupDao);
+    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,

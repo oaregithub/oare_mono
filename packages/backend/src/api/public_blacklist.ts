@@ -2,6 +2,7 @@ import express from 'express';
 import { AddPublicBlacklistPayload, PublicBlacklistPayloadItem } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
+import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
 async function canInsert(texts: PublicBlacklistPayloadItem[]) {
@@ -30,6 +31,19 @@ async function canRemove(uuid: string) {
     return false;
   }
   return true;
+}
+
+function clearCache() {
+  const cache = sl.get('cache');
+  cache.clear(
+    {
+      req: {
+        originalUrl: `${API_PATH}/collections`,
+        method: 'GET',
+      },
+    },
+    { exact: false },
+  );
 }
 
 const router = express.Router();
@@ -61,7 +75,7 @@ router
           texts.map((text) => LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'public_blacklist', text.uuid, trx)),
         );
       });
-
+      clearCache();
       res.status(201).json(insertIds);
     } catch (err) {
       next(new HttpInternalError(err));
@@ -82,6 +96,7 @@ router.route('/public_blacklist/:uuid').delete(adminRoute, async (req, res, next
     await PublicBlacklistDao.removePublicTexts(uuid, async (trx) => {
       await LoggingEditsDao.logEdit('DELETE', req.user!.uuid, 'public_blacklist', uuid, trx);
     });
+    clearCache();
     res.end();
   } catch (err) {
     next(new HttpInternalError(err));

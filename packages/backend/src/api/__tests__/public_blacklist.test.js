@@ -90,9 +90,13 @@ describe('POST /public_blacklist', () => {
     getBlacklistedCollections: jest.fn().mockResolvedValue([]),
     addPublicTexts: jest.fn().mockResolvedValue(),
   };
+  const mockCache = {
+    clear: jest.fn(),
+  };
 
   const setup = () => {
     sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
+    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -163,9 +167,13 @@ describe('DELETE /public_blacklist', () => {
     getBlacklistedCollections: jest.fn().mockResolvedValue([]),
     removePublicTexts: jest.fn().mockResolvedValue(),
   };
+  const mockCache = {
+    clear: jest.fn(),
+  };
 
   const setup = () => {
     sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
+    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,

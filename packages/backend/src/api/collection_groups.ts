@@ -2,6 +2,7 @@ import express from 'express';
 import { AddCollectionsPayload, UpdateCollectionPermissionPayload, CollectionGroup } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
+import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
 async function canInsert(groupId: number, collections: CollectionGroup[]) {
@@ -22,6 +23,19 @@ async function canRemove(groupId: number, uuid: string) {
     return false;
   }
   return true;
+}
+
+function clearCache() {
+  const cache = sl.get('cache');
+  cache.clear(
+    {
+      req: {
+        originalUrl: `${API_PATH}/collections`,
+        method: 'GET',
+      },
+    },
+    { exact: false },
+  );
 }
 
 const router = express.Router();
@@ -64,6 +78,7 @@ router
       }));
 
       await CollectionGroupDao.addCollections(insertRows);
+      clearCache();
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -89,6 +104,7 @@ router
       }
 
       await CollectionGroupDao.update(groupId, uuid, canWrite, canRead);
+      clearCache();
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -113,6 +129,7 @@ router.route('/collection_groups/:groupId/:uuid').delete(adminRoute, async (req,
     }
 
     await CollectionGroupDao.removeCollection(groupId, uuid);
+    clearCache();
     res.status(204).end();
   } catch (err) {
     next(new HttpInternalError(err));
