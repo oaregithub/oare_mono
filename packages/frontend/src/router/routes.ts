@@ -6,6 +6,7 @@ import AdminTextView from '../views/AdminView/AdminTextView.vue';
 import GroupView from '../views/GroupView/index.vue';
 import ManageMembers from '@/views/GroupView/ManageMembers.vue';
 import ManageTexts from '@/views/GroupView/ManageTexts.vue';
+import ManageCollections from '@/views/GroupView/ManageCollections.vue';
 import CollectionTexts from '../views/CollectionTexts/index.vue';
 import CollectionsView from '../views/CollectionsView/index.vue';
 import SearchView from '../views/SearchView/index.vue';
@@ -26,6 +27,7 @@ import BlacklistCollections from '@/views/BlacklistView/BlacklistCollections.vue
 import AddBlacklistTexts from '@/views/BlacklistView/AddBlacklistTexts.vue';
 import AddGroupTexts from '@/views/GroupView/AddGroupTexts.vue';
 import AddBlacklistCollections from '@/views/BlacklistView/AddBlacklistCollections.vue';
+import AddGroupCollections from '@/views/GroupView/AddGroupCollections.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -100,12 +102,24 @@ const routes: RouteConfig[] = [
         props: true,
         component: ManageTexts,
       },
+      {
+        path: 'collections',
+        name: 'manageCollections',
+        props: true,
+        component: ManageCollections,
+      },
     ],
   },
   {
     path: '/addgrouptexts/:groupId',
     name: 'manageGroupTexts',
     component: AddGroupTexts,
+    props: true,
+  },
+  {
+    path: '/addgroupcollections/:groupId',
+    name: 'manageGroupCollections',
+    component: AddGroupCollections,
     props: true,
   },
   {

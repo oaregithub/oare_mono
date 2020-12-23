@@ -1,4 +1,4 @@
-import { CollectionListItem } from '@oare/types';
+import { CollectionListItem, CollectionPermissionsItem } from '@oare/types';
 import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
 import AliasDao from '../AliasDao';
@@ -6,16 +6,11 @@ import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
 import { UserRow } from '../UserDao';
 
-export interface CollectionPermissionsItem extends CollectionListItem {
-  canRead: boolean;
-  canWrite: boolean;
-}
-
 export interface CollectionGroupRow {
-  collectionUuid: string;
-  groupId: number;
-  canRead: boolean;
-  canWrite: boolean;
+  collection_uuid: string;
+  group_id: number;
+  can_read: boolean;
+  can_write: boolean;
 }
 
 class CollectionGroupDao {
@@ -101,9 +96,11 @@ class CollectionGroupDao {
     const results: CollectionPermissionsItem[] = await knex('collection_group')
       .select('collection_uuid AS uuid', 'can_read AS canRead', 'can_write AS canWrite')
       .where('group_id', groupId);
+    const collectionNames = await Promise.all(results.map((collection) => AliasDao.textAliasNames(collection.uuid)));
 
-    return results.map((collection) => ({
+    return results.map((collection, index) => ({
       ...collection,
+      name: collectionNames[index],
       canWrite: !!collection.canWrite,
       canRead: !!collection.canRead,
     }));
