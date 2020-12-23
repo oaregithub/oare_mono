@@ -22,6 +22,7 @@ import permissions from './api/permissions';
 import publicBlacklist from './api/public_blacklist';
 import textInfo from './api/text_info';
 import searchCollectionNames from './api/search_collection_names';
+import collectionGroups from './api/collection_groups';
 
 export const API_PATH = '/api/v2';
 
@@ -49,4 +50,5 @@ export default (app: Express) => {
   app.use(API_PATH, publicBlacklist);
   app.use(API_PATH, textInfo);
   app.use(API_PATH, searchCollectionNames);
+  app.use(API_PATH, collectionGroups);
 };

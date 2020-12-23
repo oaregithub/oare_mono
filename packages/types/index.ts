@@ -370,6 +370,24 @@ export interface UpdateTextPermissionPayload {
   canWrite: boolean;
 }
 
+// Collection Groups
+
+export interface CollectionGroup {
+  uuid: string;
+  canWrite: boolean;
+  canRead: boolean;
+}
+
+export interface AddCollectionsPayload {
+  collections: CollectionGroup[];
+}
+
+export interface UpdateCollectionPermissionPayload {
+  uuid: string;
+  canRead: boolean;
+  canWrite: boolean;
+}
+
 // Text Drafts
 export interface TextDraftSideContent {
   side: EpigraphicUnitSide;
