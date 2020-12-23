@@ -22,7 +22,7 @@ export default defineComponent({
           path: '/admin/groups',
         },
         {
-          label: 'Texts',
+          label: 'Public Blacklist',
           path: '/admin/blacklist/texts',
         },
       ],
