@@ -100,7 +100,10 @@ class HierarchyDao {
         .where('hierarchy.type', 'collection')
         .andWhere('alias.name', 'like', `%${searchText}%`);
       if (groupId) {
-        return query.whereNotIn('hierarchy.uuid', knex('text_group').select('text_uuid').where('group_id', groupId));
+        return query.whereNotIn(
+          'hierarchy.uuid',
+          knex('collection_group').select('collection_uuid').where('group_id', groupId),
+        );
       }
       return query
         .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')

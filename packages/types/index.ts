@@ -378,6 +378,11 @@ export interface CollectionGroup {
   canRead: boolean;
 }
 
+export interface CollectionPermissionsItem extends CollectionListItem {
+  canRead: boolean;
+  canWrite: boolean;
+}
+
 export interface AddCollectionsPayload {
   collections: CollectionGroup[];
 }

@@ -57,10 +57,10 @@ router
       }
 
       const insertRows = collections.map(({ uuid, canRead, canWrite }) => ({
-        collectionUuid: uuid,
-        groupId,
-        canRead,
-        canWrite,
+        collection_uuid: uuid,
+        group_id: groupId,
+        can_read: canRead,
+        can_write: canWrite,
       }));
 
       await CollectionGroupDao.addCollections(insertRows);
