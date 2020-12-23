@@ -44,7 +44,11 @@ import {
   InjectionKey,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { WordWithForms, DictionaryForm, PermissionResponse } from '@oare/types';
+import {
+  DictionaryForm,
+  PermissionResponse,
+  DictionaryWordResponse,
+} from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
@@ -72,13 +76,13 @@ export default defineComponent({
 
     const loading = ref(true);
     const isEditing = ref(false);
-    const wordInfo: Ref<WordWithForms | null> = ref(null);
+    const wordInfo = ref<DictionaryWordResponse | null>(null);
 
     const canUpdateWordSpelling = computed(() =>
       store.getters.permissions.dictionary.includes('UPDATE_WORD_SPELLING')
     );
 
-    const updateWordInfo = (newWordInfo: WordWithForms) => {
+    const updateWordInfo = (newWordInfo: DictionaryWordResponse) => {
       wordInfo.value = newWordInfo;
     };
 

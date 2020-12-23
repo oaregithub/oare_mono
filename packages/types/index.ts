@@ -12,20 +12,6 @@ export interface GetUserResponse extends User {
 
 // Dictionary
 
-export interface DictionaryWordTranslation {
-  uuid: string;
-  translation: string;
-}
-
-export interface DictionaryWordResponse {
-  word: string;
-  forms: DictionaryForm[];
-  partsOfSpeech: string[];
-  verbalThematicVowelTypes: string[];
-  specialClassifications: string[];
-  translations: DictionaryWordTranslation[];
-}
-
 export interface SpellingText {
   uuid: string;
   text: string;
@@ -102,15 +88,6 @@ export interface AddFormSpellingResponse {
   uuid: string;
 }
 
-export interface WordWithForms {
-  word: string;
-  forms: DictionaryForm[];
-  partsOfSpeech: string[];
-  verbalThematicVowelTypes: string[];
-  specialClassifications: string[];
-  translations: DictionaryWordTranslation[];
-}
-
 // Collections / Texts
 
 export interface CollectionListItem {
@@ -136,13 +113,31 @@ export interface CollectionInfo {
 
 // Words
 
-export interface DictionaryWord {
+export interface ItemProperty {
+  uuid: string;
+  name: string;
+}
+
+export interface DictionaryWordTranslation {
+  uuid: string;
+  translation: string;
+}
+
+export interface DictionaryWordParseInfo {
+  partsOfSpeech: ItemProperty[];
+  specialClassifications: ItemProperty[];
+  translations: DictionaryWordTranslation[];
+  verbalThematicVowelTypes: ItemProperty[];
+}
+
+export interface DictionaryWordResponse extends DictionaryWordParseInfo {
+  word: string;
+  forms: DictionaryForm[];
+}
+
+export interface DictionaryWord extends DictionaryWordParseInfo {
   uuid: string;
   word: string;
-  partsOfSpeech: string[];
-  specialClassifications: string[];
-  translations: DictionaryWordTranslation[];
-  verbalThematicVowelTypes: string[];
 }
 
 export interface WordsResponse {
@@ -254,15 +249,15 @@ export interface SearchCollectionNamesResultRow {
 }
 
 export interface SearchCollectionNamesPayload {
-  page: number,
-  rows: number,
+  page: number;
+  rows: number;
   search: string;
   groupId?: string;
 }
 
 export interface SearchCollectionNamesResponse {
-  collections: SearchCollectionNamesResultRow[],
-  count: number,
+  collections: SearchCollectionNamesResultRow[];
+  count: number;
 }
 
 // Search spelling discourse
