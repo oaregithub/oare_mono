@@ -5,6 +5,10 @@ export interface CacheKey {
   };
 }
 
+export interface ClearCacheOptions {
+  exact: boolean;
+}
+
 const keyString = (key: CacheKey): string =>
   JSON.stringify({
     method: key.req.method,
@@ -25,8 +29,13 @@ class Cache {
     return this.responses[keyString(key)];
   }
 
-  clear(key: CacheKey) {
-    delete this.responses[keyString(key)];
+  clear(key: CacheKey, { exact }: ClearCacheOptions = { exact: true }) {
+    if (exact) {
+      delete this.responses[keyString(key)];
+    } else {
+      const keys = Object.keys(this.responses).filter((k) => JSON.parse(k).url.startsWith(key.req.originalUrl));
+      keys.forEach((k) => delete this.responses[k]);
+    }
   }
 }
 

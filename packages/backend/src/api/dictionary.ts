@@ -123,12 +123,15 @@ router
       await DictionaryWordDao.updateWordSpelling(uuid, word);
 
       // Updated word, cache must be cleared
-      cache.clear({
-        req: {
-          originalUrl: `${API_PATH}/words`,
-          method: 'GET',
+      cache.clear(
+        {
+          req: {
+            originalUrl: `${API_PATH}/words`,
+            method: 'GET',
+          },
         },
-      });
+        { exact: false },
+      );
       res.json({ word });
     } catch (err) {
       next(new HttpInternalError(err));
@@ -146,12 +149,15 @@ router.route('/dictionary/translations/:uuid').post(adminRoute, async (req, res,
     const updatedTranslations = await DictionaryWordDao.updateTranslations(req.user!.uuid, uuid, translations);
 
     // Updated word, cache must be cleared
-    cache.clear({
-      req: {
-        originalUrl: `${API_PATH}/words`,
-        method: 'GET',
+    cache.clear(
+      {
+        req: {
+          originalUrl: `${API_PATH}/words`,
+          method: 'GET',
+        },
       },
-    });
+      { exact: false },
+    );
     res.json({
       translations: updatedTranslations,
     });

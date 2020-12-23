@@ -1,10 +1,17 @@
-import { DictionaryWordTranslation, DictionaryWord, NameOrPlace, SearchSpellingResultRow } from '@oare/types';
+import {
+  DictionaryWordTranslation,
+  DictionaryWord,
+  NameOrPlace,
+  SearchSpellingResultRow,
+  ItemProperty,
+} from '@oare/types';
 import knex from '@/connection';
 import getQueryString from '../utils';
 import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
+import ItemPropertiesDao, { ItemPropertyRow } from '../ItemPropertiesDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -100,39 +107,50 @@ class DictionaryWordDao {
     }));
   }
 
-  async getWords(): Promise<DictionaryWord[]> {
-    const wordsQuery = getQueryString('wordsQuery.sql');
+  async getWords(letter: string): Promise<DictionaryWord[]> {
+    const letters = letter.split('/');
+    let query = knex('dictionary_word').select('uuid', 'word');
 
-    const res: WordQueryRow[] = (await knex.raw(wordsQuery))[0];
-
-    const allTranslations = await this.getAllTranslations();
-    const wordsWithoutTranslations = prepareWords(res);
-    return wordsWithoutTranslations.map((row) => {
-      const translations = allTranslations
-        .filter((tRow) => tRow.dictionaryUuid === row.uuid)
-        .sort((a, b) => {
-          if (a.primacy === null) {
-            return 1;
-          }
-          if (b.primacy === null) {
-            return -1;
-          }
-          if (a.primacy > b.primacy) {
-            return 1;
-          }
-          if (a.primacy < b.primacy) {
-            return -1;
-          }
-          return 0;
-        });
-      return {
-        ...row,
-        translations: translations.map((tRow) => ({
-          uuid: tRow.fieldUuid,
-          translation: tRow.field,
-        })),
-      };
+    letters.forEach((l) => {
+      query = query.orWhere('word', 'like', `${l}%`);
     });
+
+    const words: { uuid: string; word: string }[] = await query;
+
+    const partsOfSpeech = await this.getPartsOfSpeech();
+    const specialClassifications = await this.getSpecialClassifications();
+    const verbalThematicVowelTypes = await this.getVerbalThematicVowelTypes();
+    const allTranslations = await this.getAllTranslations();
+
+    return words
+      .map((word) => {
+        const translations = allTranslations
+          .filter(({ dictionaryUuid }) => word.uuid === dictionaryUuid)
+          .sort((a, b) => {
+            if (a.primacy === null) {
+              return 1;
+            }
+            if (b.primacy === null) {
+              return -1;
+            }
+
+            return a.primacy - b.primacy;
+          })
+          .map((tr) => ({
+            uuid: tr.fieldUuid,
+            translation: tr.field,
+          }));
+
+        return {
+          uuid: word.uuid,
+          word: word.word,
+          partsOfSpeech: partsOfSpeech.filter(({ referenceUuid }) => referenceUuid === word.uuid),
+          specialClassifications: specialClassifications.filter(({ referenceUuid }) => referenceUuid === word.uuid),
+          verbalThematicVowelTypes: verbalThematicVowelTypes.filter(({ referenceUuid }) => referenceUuid === word.uuid),
+          translations,
+        };
+      })
+      .sort((a, b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
   }
 
   async getAllTranslations(): Promise<TranslationRow[]> {
@@ -165,38 +183,31 @@ class DictionaryWordDao {
     return translations;
   }
 
-  async getPartsOfSpeech(wordUuid: string): Promise<string[]> {
-    const rows: { partOfSpeech: string }[] = await knex('item_properties')
-      .innerJoin('alias AS a1', 'a1.reference_uuid', 'item_properties.variable_uuid')
-      .innerJoin('alias AS a2', 'a2.reference_uuid', 'item_properties.value_uuid')
-      .where('a1.name', 'Part of Speech')
-      .andWhere('a2.type', 'abbreviation')
-      .andWhere('item_properties.reference_uuid', wordUuid)
-      .select('a2.name AS partOfSpeech');
+  async getPartsOfSpeech(wordUuid?: string): Promise<ItemPropertyRow[]> {
+    const rows = await ItemPropertiesDao.getProperties('Part of Speech', {
+      abbreviation: true,
+      ...(wordUuid ? { referenceUuid: wordUuid } : null),
+    });
 
-    return rows.map((r) => r.partOfSpeech);
+    return rows;
   }
 
-  async getSpecialClassifications(wordUuid: string): Promise<string[]> {
-    const rows: { specialClassification: string }[] = await knex('item_properties')
-      .innerJoin('alias AS a1', 'a1.reference_uuid', 'item_properties.variable_uuid')
-      .innerJoin('alias AS a2', 'a2.reference_uuid', 'item_properties.value_uuid')
-      .where('a1.name', 'Special Classifications')
-      .andWhere('item_properties.reference_uuid', wordUuid)
-      .select('a2.name AS specialClassification');
+  async getSpecialClassifications(wordUuid?: string): Promise<ItemPropertyRow[]> {
+    const rows = await ItemPropertiesDao.getProperties(
+      'Special Classifications',
+      wordUuid ? { referenceUuid: wordUuid } : {},
+    );
 
-    return rows.map((r) => r.specialClassification);
+    return rows;
   }
 
-  async getVerbalThematicVowelTypes(wordUuid: string): Promise<string[]> {
-    const rows: { verbalThematicVowelType: string }[] = await knex('item_properties')
-      .innerJoin('alias AS a1', 'a1.reference_uuid', 'item_properties.variable_uuid')
-      .innerJoin('alias AS a2', 'a2.reference_uuid', 'item_properties.value_uuid')
-      .where('a1.name', 'Verbal Thematic Vowel Type')
-      .andWhere('item_properties.reference_uuid', wordUuid)
-      .select('a2.name AS verbalThematicVowelType');
+  async getVerbalThematicVowelTypes(wordUuid?: string): Promise<ItemPropertyRow[]> {
+    const rows = await ItemPropertiesDao.getProperties(
+      'Verbal Thematic Vowel Type',
+      wordUuid ? { referenceUuid: wordUuid } : {},
+    );
 
-    return rows.map((r) => r.verbalThematicVowelType.replace('-Class', ''));
+    return rows.filter((r) => !r.name.endsWith('-Class'));
   }
 
   async getWordName(wordUuid: string): Promise<string> {
