@@ -318,10 +318,7 @@ export default defineComponent({
         }
         searchOptions.value.page = 1;
         await getCollections();
-      }, 500),
-      {
-        immediate: false,
-      }
+      }, 500)
     );
 
     watch(selectedCollections, async () => {

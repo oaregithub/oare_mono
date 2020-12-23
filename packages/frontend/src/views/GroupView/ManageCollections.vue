@@ -39,7 +39,7 @@
           >
         </template>
         <v-list>
-          <v-list-item @click="confirmRemoveDialog = true" data-del-group-btn>
+          <v-list-item @click="confirmRemoveDialog = true">
             <v-list-item-title class="test-remove-collections"
               >Remove From Group</v-list-item-title
             >
