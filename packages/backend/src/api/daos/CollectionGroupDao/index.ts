@@ -154,7 +154,7 @@ class CollectionGroupDao {
     return ids;
   }
 
-  async removeCollections(groupId: number, uuid: string): Promise<void> {
+  async removeCollection(groupId: number, uuid: string): Promise<void> {
     await knex('collection_group').where('collection_uuid', uuid).andWhere('group_id', groupId).del();
   }
 }

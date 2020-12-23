@@ -264,7 +264,7 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
   const PATH = `${API_PATH}/collection_groups/${groupId}/${uuid}`;
   const mockCollectionGroupDao = {
     getCollections: jest.fn().mockResolvedValue(mockGET),
-    removeCollections: jest.fn().mockResolvedValue(),
+    removeCollection: jest.fn().mockResolvedValue(),
   };
   const mockOareGroupDao = {
     getGroupById: jest.fn().mockResolvedValue(mockGroup),
@@ -286,7 +286,7 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
-    expect(mockCollectionGroupDao.removeCollections).toHaveBeenCalled();
+    expect(mockCollectionGroupDao.removeCollection).toHaveBeenCalled();
     expect(response.status).toBe(204);
   });
 
@@ -297,20 +297,20 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
       }),
     });
     const response = await sendRequest();
-    expect(mockCollectionGroupDao.removeCollections).not.toHaveBeenCalled();
+    expect(mockCollectionGroupDao.removeCollection).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
 
   it('does not allow non-logged-in users to delete from collection groups', async () => {
     const response = await request(app).delete(PATH);
-    expect(mockCollectionGroupDao.removeCollections).not.toHaveBeenCalled();
+    expect(mockCollectionGroupDao.removeCollection).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 
   it('returns 500 on failed delete', async () => {
     sl.set('CollectionGroupDao', {
       ...mockCollectionGroupDao,
-      removeCollections: jest.fn().mockRejectedValue('failed collection group removal'),
+      removeCollection: jest.fn().mockRejectedValue('failed collection group removal'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -326,7 +326,7 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
 
   it('returns 400 when texts to be deleted are not in the collection group permissions', async () => {
     const response = await request(app).delete(`${API_PATH}/collection_groups/1/uuid3`).set('Cookie', 'jwt=token');
-    expect(mockCollectionGroupDao.removeCollections).not.toHaveBeenCalled();
+    expect(mockCollectionGroupDao.removeCollection).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
 });

@@ -56,11 +56,11 @@ router
         return;
       }
 
-      const insertRows = collections.map((collection) => ({
-        collectionUuid: collection.uuid,
+      const insertRows = collections.map(({ uuid, canRead, canWrite }) => ({
+        collectionUuid: uuid,
         groupId,
-        canRead: collection.canRead,
-        canWrite: collection.canWrite,
+        canRead,
+        canWrite,
       }));
 
       await CollectionGroupDao.addCollections(insertRows);
@@ -112,7 +112,7 @@ router.route('/collection_groups/:groupId/:uuid').delete(adminRoute, async (req,
       return;
     }
 
-    await CollectionGroupDao.removeCollections(groupId, uuid);
+    await CollectionGroupDao.removeCollection(groupId, uuid);
     res.status(204).end();
   } catch (err) {
     next(new HttpInternalError(err));
