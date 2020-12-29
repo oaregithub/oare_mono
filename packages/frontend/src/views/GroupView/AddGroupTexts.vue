@@ -29,14 +29,14 @@
           the group named
           {{ groupName }}?
           <v-data-table :headers="selectedTextsHeaders" :items="selectedTexts">
-            <template #[`item.can_read`]="{ item }">
+            <template #[`item.canRead`]="{ item }">
               <v-checkbox
-                :input-value="item.can_read"
+                :input-value="item.canRead"
                 @change="updateTextToAddRead(item.uuid, $event)"
               />
             </template>
-            <template #[`item.can_write`]="{ item }">
-              <v-checkbox v-model="item.can_write" :disabled="!item.can_read" />
+            <template #[`item.canWrite`]="{ item }">
+              <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
             </template>
           </v-data-table>
         </OareDialog>
@@ -61,19 +61,19 @@
           <v-data-table
             :headers="selectedTextsHeaders"
             :items="selectedTexts"
-            item-key="text_uuid"
+            item-key="uuid"
             class="mt-3"
             show-select
             v-model="selectedTexts"
           >
-            <template #[`item.can_read`]="{ item }">
+            <template #[`item.canRead`]="{ item }">
               <v-checkbox
-                :input-value="item.can_read"
+                :input-value="item.canRead"
                 @change="updateTextToAddRead(item.uuid, $event)"
               />
             </template>
-            <template #[`item.can_write`]="{ item }">
-              <v-checkbox v-model="item.can_write" :disabled="!item.can_read" />
+            <template #[`item.canWrite`]="{ item }">
+              <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
             </template>
             <template slot="no-data"> No texts selected </template>
           </v-data-table>
@@ -84,7 +84,7 @@
             :loading="getTextsLoading"
             :headers="textsHeaders"
             :items="unaddedTexts"
-            item-key="text_uuid"
+            item-key="uuid"
             class="mt-3"
             show-select
             :value="selectedTexts"
@@ -135,8 +135,8 @@ export default defineComponent({
 
     const selectedTextsHeaders = ref([
       { text: 'Text Name', value: 'name' },
-      { text: 'Can view?', value: 'can_read', width: '20%' },
-      { text: 'Can edit?', value: 'can_write', width: '20%' },
+      { text: 'Can view?', value: 'canRead', width: '20%' },
+      { text: 'Can edit?', value: 'canWrite', width: '20%' },
     ]);
     const textsHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Text Name', value: 'name' },
@@ -180,9 +180,9 @@ export default defineComponent({
         });
         unaddedTexts.value = response.texts.map(text => ({
           name: text.name,
-          text_uuid: text.uuid,
-          can_read: true,
-          can_write: false,
+          uuid: text.uuid,
+          canRead: true,
+          canWrite: false,
         }));
         serverCount.value = response.count;
       } catch {
@@ -196,9 +196,9 @@ export default defineComponent({
 
     const addTexts = async () => {
       const texts = selectedTexts.value.map(text => ({
-        can_read: text.can_read,
-        can_write: text.can_write,
-        uuid: text.text_uuid,
+        canRead: text.canRead,
+        canWrite: text.canWrite,
+        uuid: text.uuid,
       }));
       addTextsLoading.value = true;
       try {
@@ -216,13 +216,11 @@ export default defineComponent({
     };
 
     const updateTextToAddRead = (uuid: string, canRead: boolean) => {
-      const index = selectedTexts.value
-        .map(text => text.text_uuid)
-        .indexOf(uuid);
-      selectedTexts.value[index].can_read = canRead;
+      const index = selectedTexts.value.map(text => text.uuid).indexOf(uuid);
+      selectedTexts.value[index].canRead = canRead;
 
       if (!canRead) {
-        selectedTexts.value[index].can_write = false;
+        selectedTexts.value[index].canWrite = false;
       }
     };
 
@@ -237,9 +235,9 @@ export default defineComponent({
           );
           selectedTexts.value = uuids.map((uuid, index) => ({
             name: textNames[index].name,
-            text_uuid: uuid,
-            can_read: true,
-            can_write: false,
+            uuid,
+            canRead: true,
+            canWrite: false,
           }));
         }
       } catch {
@@ -293,7 +291,7 @@ export default defineComponent({
     );
 
     watch(selectedTexts, async () => {
-      setTexts(JSON.stringify(selectedTexts.value.map(text => text.text_uuid)));
+      setTexts(JSON.stringify(selectedTexts.value.map(text => text.uuid)));
     });
 
     return {

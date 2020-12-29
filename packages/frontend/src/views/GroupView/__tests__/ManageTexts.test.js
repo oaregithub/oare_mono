@@ -12,15 +12,15 @@ localVue.use(VueCompositionApi);
 describe('ManageTexts test', () => {
   const textGroups = [
     {
-      text_uuid: '1',
-      can_read: true,
-      can_write: false,
+      uuid: '1',
+      canRead: true,
+      canWrite: false,
       name: 'Text 1',
     },
     {
-      text_uuid: '2',
-      can_read: true,
-      can_write: false,
+      uuid: '2',
+      canRead: true,
+      canWrite: false,
       name: 'Text 2',
     },
   ];

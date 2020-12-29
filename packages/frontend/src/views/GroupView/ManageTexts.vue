@@ -43,28 +43,28 @@
       disable-sort
       show-select
       v-model="selectedDeleteList"
-      item-key="text_uuid"
+      item-key="uuid"
       class="mt-3"
     >
       <template #[`item.name`]="{ item }">
-        <router-link :to="`/epigraphies/${item.text_uuid}`">{{
+        <router-link :to="`/epigraphies/${item.uuid}`">{{
           item.name
         }}</router-link>
       </template>
-      <template #[`item.can_read`]="{ item }">
+      <template #[`item.canRead`]="{ item }">
         <v-switch
-          :input-value="item.can_read"
-          @change="updateTextRead(item.text_uuid, $event)"
-          :label="item.can_read ? 'Yes' : 'No'"
+          :input-value="item.canRead"
+          @change="updateTextRead(item.uuid, $event)"
+          :label="item.canRead ? 'Yes' : 'No'"
           class="test-toggle-view"
         />
       </template>
-      <template #[`item.can_write`]="{ item }">
+      <template #[`item.canWrite`]="{ item }">
         <v-switch
-          :input-value="item.can_write"
-          @change="updateTextEdit(item.text_uuid, $event)"
-          :label="item.can_write ? 'Yes' : 'No'"
-          :disabled="!item.can_read"
+          :input-value="item.canWrite"
+          @change="updateTextEdit(item.uuid, $event)"
+          :label="item.canWrite ? 'Yes' : 'No'"
+          :disabled="!item.canRead"
           class="test-toggle-edit"
         />
       </template>
@@ -108,8 +108,8 @@ export default defineComponent({
     const selectedDeleteList: Ref<Text[]> = ref([]);
     const textHeaders = ref([
       { text: 'Text Name', value: 'name' },
-      { text: 'Can view?', value: 'can_read' },
-      { text: 'Can edit?', value: 'can_write' },
+      { text: 'Can view?', value: 'canRead' },
+      { text: 'Can edit?', value: 'canWrite' },
     ]);
     const viewableTexts: Ref<Text[]> = ref([]);
     const server = sl.get('serverProxy');
@@ -127,63 +127,57 @@ export default defineComponent({
     });
 
     const updateTextEdit = async (uuid: string, canWrite: boolean) => {
-      const index = viewableTexts.value
-        .map(item => item.text_uuid)
-        .indexOf(uuid);
+      const index = viewableTexts.value.map(item => item.uuid).indexOf(uuid);
 
-      viewableTexts.value[index].can_write = canWrite;
+      viewableTexts.value[index].canWrite = canWrite;
       const text = viewableTexts.value[index];
       try {
         await server.updateText(Number(groupId), {
           textUuid: uuid,
-          canRead: text.can_read,
-          canWrite: text.can_write,
+          canRead: text.canRead,
+          canWrite: text.canWrite,
         });
       } catch {
         actions.showErrorSnackbar(
           'Error updating editing permissions. Please try again.'
         );
-        viewableTexts.value[index].can_write = !canWrite;
+        viewableTexts.value[index].canWrite = !canWrite;
       }
     };
 
     const updateTextRead = async (uuid: string, canRead: boolean) => {
-      const index = viewableTexts.value
-        .map(item => item.text_uuid)
-        .indexOf(uuid);
-      viewableTexts.value[index].can_read = canRead;
+      const index = viewableTexts.value.map(item => item.uuid).indexOf(uuid);
+      viewableTexts.value[index].canRead = canRead;
 
       // Disable editing if reading is disabled
       if (!canRead) {
-        viewableTexts.value[index].can_write = false;
+        viewableTexts.value[index].canWrite = false;
       }
 
       const text = viewableTexts.value[index];
       try {
         await server.updateText(Number(groupId), {
           textUuid: uuid,
-          canRead: text.can_read,
-          canWrite: text.can_write,
+          canRead: text.canRead,
+          canWrite: text.canWrite,
         });
       } catch {
         actions.showErrorSnackbar(
           'Error updating viewing permissions. Please try again.'
         );
-        viewableTexts.value[index].can_read = !canRead;
+        viewableTexts.value[index].canRead = !canRead;
       }
     };
 
     const removeTexts = async () => {
       removeLoading.value = true;
-      const deleteTextUuids = selectedDeleteList.value.map(
-        text => text.text_uuid
-      );
+      const deleteTextUuids = selectedDeleteList.value.map(text => text.uuid);
       try {
         await server.removeTextsFromGroup(Number(groupId), {
           textUuids: deleteTextUuids,
         });
         viewableTexts.value = viewableTexts.value.filter(
-          text => !deleteTextUuids.includes(text.text_uuid)
+          text => !deleteTextUuids.includes(text.uuid)
         );
         actions.showSnackbar('Successfully removed text(s).');
       } catch {

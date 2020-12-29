@@ -36,7 +36,6 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const cache = sl.get('cache');
       const { groupId } = (req.params as unknown) as { groupId: number };
       const { texts }: AddTextPayload = req.body;
 
@@ -61,8 +60,8 @@ router
       const insertRows = texts.map((text) => ({
         text_uuid: text.uuid,
         group_id: groupId,
-        can_read: text.can_read,
-        can_write: text.can_write,
+        can_read: text.canRead,
+        can_write: text.canWrite,
       }));
 
       await textGroupDao.addTexts(insertRows);
