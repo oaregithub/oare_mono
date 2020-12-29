@@ -14,7 +14,11 @@ export interface CollectionGroupRow {
 }
 
 class CollectionGroupDao {
-  async getUserCollectionBlacklist(user: UserRow | null): Promise<CollectionListItem[]> {
+  async getUserCollectionBlacklist(user: UserRow | null): Promise<string[]> {
+    if (user && user.isAdmin) {
+      return [];
+    }
+
     const { whitelist } = await TextGroupDao.getUserBlacklist(user);
     const collectionsWithWhitelistedTexts: string[] = (
       await knex('hierarchy')
@@ -51,15 +55,14 @@ class CollectionGroupDao {
       .filter((collection) => !collection.canRead && !whitelistedUuids.includes(collection.uuid))
       .map((collection) => collection.uuid);
 
-    const collectionNames = await Promise.all(blacklistedUuids.map((uuid) => AliasDao.textAliasNames(uuid)));
-
-    return blacklistedUuids.map((uuid, index) => ({
-      uuid,
-      name: collectionNames[index],
-    }));
+    return blacklistedUuids;
   }
 
   async collectionIsBlacklisted(uuid: string, user: UserRow | null): Promise<boolean> {
+    if (user && user.isAdmin) {
+      return false;
+    }
+
     const userCollections: CollectionPermissionsItem[] = (await PublicBlacklistDao.getBlacklistedCollections()).map(
       (collection) => ({
         ...collection,

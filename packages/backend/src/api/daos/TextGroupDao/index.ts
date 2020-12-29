@@ -15,6 +15,10 @@ export interface TextGroupRow {
 
 class TextGroupDao {
   async getUserBlacklist(user: UserRow | null): Promise<Blacklists> {
+    if (user && user.isAdmin) {
+      return { blacklist: [], whitelist: [] };
+    }
+
     const userTexts = await PublicBlacklistDao.getBlacklistedTexts();
 
     if (user) {
