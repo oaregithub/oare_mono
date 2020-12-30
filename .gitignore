@@ -13,3 +13,4 @@ mysql
 jest_html_reporters.html
 yarn-error.log
 @oare
+.env
