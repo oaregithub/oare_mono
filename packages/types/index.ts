@@ -105,7 +105,6 @@ export interface CollectionText {
 export interface CollectionResponse {
   totalTexts: number;
   texts: CollectionText[];
-  isForbidden: boolean;
 }
 
 export interface CollectionInfo {

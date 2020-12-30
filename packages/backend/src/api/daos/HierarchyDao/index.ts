@@ -11,6 +11,10 @@ import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
 
+export interface CollectionPermissionResponse extends CollectionResponse {
+  isForbidden: boolean;
+}
+
 function collectionTextQuery(
   uuid: string,
   search: string,
@@ -163,7 +167,7 @@ class HierarchyDao {
     userId: UserRow | null,
     uuid: string,
     { page = 1, rows = 10, search = '' },
-  ): Promise<CollectionResponse> {
+  ): Promise<CollectionPermissionResponse> {
     const CollectionGroupDao = sl.get('CollectionGroupDao');
     const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(uuid, userId);
     const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(userId);
