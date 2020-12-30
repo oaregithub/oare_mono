@@ -107,8 +107,8 @@ class TextGroupDao {
     return ids;
   }
 
-  async removeTexts(groupId: number, texts: string[]): Promise<void> {
-    await knex('text_group').whereIn('text_uuid', texts).andWhere('group_id', groupId).del();
+  async removeText(groupId: number, uuid: string): Promise<void> {
+    await knex('text_group').where('text_uuid', uuid).andWhere('group_id', groupId).del();
   }
 }
 
