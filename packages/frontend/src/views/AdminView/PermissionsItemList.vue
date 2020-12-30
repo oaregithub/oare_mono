@@ -5,7 +5,7 @@
       {{ itemType }}s here affect all members of this group. You may restrict
       read and write access on {{ itemType.toLowerCase() }}s added here.
     </span>
-    <div class="flex mt-2">
+    <div class="d-flex mt-2">
       <router-link :to="addUrl">
         <v-btn color="primary" class="mr-3 test-add">
           <span> <v-icon>mdi-plus</v-icon>Add {{ itemType }}s</span>
