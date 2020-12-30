@@ -28,10 +28,10 @@ class TextGroupDao {
       }
     }
 
-    const whitelistedUuids = userTexts.filter((text) => text.can_read).map((text) => text.text_uuid);
+    const whitelistedUuids = userTexts.filter((text) => text.canRead).map((text) => text.uuid);
     const blacklistedUuids = userTexts
-      .filter((text) => !text.can_read && !whitelistedUuids.includes(text.text_uuid))
-      .map((text) => text.text_uuid);
+      .filter((text) => !text.canRead && !whitelistedUuids.includes(text.uuid))
+      .map((text) => text.uuid);
 
     if (!user || !user?.isAdmin) {
       const unpublishedTextUuids = await textDao.getUnpublishedTextUuids();
@@ -48,7 +48,12 @@ class TextGroupDao {
 
   async getTexts(groupId: number): Promise<Text[]> {
     const results: Text[] = await knex('text_group')
-      .select('text_group.text_uuid', 'text_group.can_read', 'text_group.can_write', 'alias.name')
+      .select(
+        'text_group.text_uuid AS uuid',
+        'text_group.can_read AS canRead',
+        'text_group.can_write AS canWrite',
+        'alias.name',
+      )
       .innerJoin('hierarchy', 'hierarchy.uuid', 'text_group.text_uuid')
       .innerJoin('alias', 'text_group.text_uuid', 'alias.reference_uuid')
       .where('group_id', groupId)
@@ -56,8 +61,8 @@ class TextGroupDao {
 
     return results.map((item) => ({
       ...item,
-      can_write: !!item.can_write,
-      can_read: !!item.can_read,
+      canWrite: !!item.canWrite,
+      canRead: !!item.canRead,
     }));
   }
 

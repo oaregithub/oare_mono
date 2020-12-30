@@ -7,7 +7,7 @@ import sl from '@/serviceLocator';
 
 async function canInsert(texts: PublicBlacklistPayloadItem[]) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map((text) => text.text_uuid);
+  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map((text) => text.uuid);
   const blacklistCollections = (await PublicBlacklistDao.getBlacklistedCollections()).map(
     (collection) => collection.uuid,
   );
@@ -22,7 +22,7 @@ async function canInsert(texts: PublicBlacklistPayloadItem[]) {
 
 async function canRemove(uuid: string) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map((text) => text.text_uuid);
+  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map((text) => text.uuid);
   const blacklistCollections = (await PublicBlacklistDao.getBlacklistedCollections()).map(
     (collection) => collection.uuid,
   );

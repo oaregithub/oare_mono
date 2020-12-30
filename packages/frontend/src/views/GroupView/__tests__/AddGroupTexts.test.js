@@ -105,8 +105,8 @@ describe('AddGroupTexts test', () => {
     await wrapper.get('.test-submit-btn').trigger('click');
     expect(mockServer.addTextGroups).toHaveBeenCalledWith(1, {
       texts: [
-        { uuid: 'test1', can_read: true, can_write: false },
-        { uuid: 'test2', can_read: true, can_write: false },
+        { uuid: 'test1', canRead: true, canWrite: false },
+        { uuid: 'test2', canRead: true, canWrite: false },
       ],
     });
     await flushPromises();

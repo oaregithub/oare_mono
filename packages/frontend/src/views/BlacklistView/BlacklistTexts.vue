@@ -19,7 +19,7 @@
         be available to all users unless individual group restrictions apply.
         Are you sure you want to remove them?
         <ul>
-          <li v-for="text in selectedTexts" :key="text.text_uuid">
+          <li v-for="text in selectedTexts" :key="text.uuid">
             {{ text.name }}
           </li>
         </ul>
@@ -47,17 +47,15 @@
     <v-data-table
       :headers="blacklistHeaders"
       :items="publicBlacklist"
-      item-key="text_uuid"
+      item-key="uuid"
       class="mt-3"
       show-select
       v-model="selectedTexts"
     >
       <template #[`item.name`]="{ item }">
-        <router-link
-          :to="`/epigraphies/${item.text_uuid}`"
-          class="test-text-name"
-          >{{ item.name }}</router-link
-        >
+        <router-link :to="`/epigraphies/${item.uuid}`" class="test-text-name">{{
+          item.name
+        }}</router-link>
       </template>
     </v-data-table>
   </div>
@@ -113,11 +111,11 @@ export default defineComponent({
     const removeTexts = async () => {
       try {
         removeTextLoading.value = true;
-        let removeTextIds = selectedTexts.value.map(text => text.text_uuid);
+        let removeTextIds = selectedTexts.value.map(text => text.uuid);
 
         await server.removeTextsFromPublicBlacklist(removeTextIds);
         publicBlacklist.value = publicBlacklist.value.filter(
-          text => !removeTextIds.includes(text.text_uuid)
+          text => !removeTextIds.includes(text.uuid)
         );
         actions.showSnackbar('Successfully removed text(s).');
         selectedTexts.value = [];
