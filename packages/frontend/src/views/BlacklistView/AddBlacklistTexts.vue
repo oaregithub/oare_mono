@@ -98,11 +98,7 @@ import {
   watch,
   computed,
 } from '@vue/composition-api';
-import {
-  Text,
-  SearchTextNamesResultRow,
-  SearchTextNamesResponse,
-} from '@oare/types';
+import { SearchTextNamesResultRow, SearchTextNamesResponse } from '@oare/types';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import useQueryParam from '@/hooks/useQueryParam';

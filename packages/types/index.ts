@@ -341,15 +341,15 @@ export interface SpellingOccurrencesResponse {
 
 export interface TextGroup {
   uuid: string;
-  can_write: boolean;
-  can_read: boolean;
+  canWrite: boolean;
+  canRead: boolean;
 }
 
 export interface Text {
-  can_read: boolean;
-  can_write: boolean;
+  canRead: boolean;
+  canWrite: boolean;
   name: string;
-  text_uuid: string;
+  uuid: string;
 }
 
 export interface AddTextPayload {
