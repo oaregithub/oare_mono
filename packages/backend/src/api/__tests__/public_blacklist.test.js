@@ -5,16 +5,16 @@ import sl from '@/serviceLocator';
 
 const mockGET = [
   {
-    text_uuid: 'uuid1',
+    uuid: 'uuid1',
     name: 'Test1',
-    can_read: false,
-    can_write: false,
+    canRead: false,
+    canWrite: false,
   },
   {
-    text_uuid: 'uuid2',
+    uuid: 'uuid2',
     name: 'Test2',
-    can_read: false,
-    can_write: false,
+    canRead: false,
+    canWrite: false,
   },
 ];
 const mockPOST = {
