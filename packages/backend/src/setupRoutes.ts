@@ -23,7 +23,7 @@ import publicBlacklist from './api/public_blacklist';
 import textInfo from './api/text_info';
 import searchCollectionNames from './api/search_collection_names';
 import collectionGroups from './api/collection_groups';
-import sendResetPasswordLink from './api/send_reset_password_link';
+import resetPassword from './api/reset_password';
 
 export const API_PATH = '/api/v2';
 
@@ -52,5 +52,5 @@ export default (app: Express) => {
   app.use(API_PATH, textInfo);
   app.use(API_PATH, searchCollectionNames);
   app.use(API_PATH, collectionGroups);
-  app.use(API_PATH, sendResetPasswordLink);
+  app.use(API_PATH, resetPassword);
 };
