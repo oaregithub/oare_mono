@@ -122,8 +122,9 @@ describe('ManageTexts test', () => {
       .findAll('.v-data-table__checkbox')
       .at(0)
       .trigger('click');
-    await wrapper.find('.test-remove').trigger('click');
-    await wrapper.find('.test-submit-btn').trigger('click');
+    await wrapper.get('.test-actions').trigger('click');
+    await wrapper.get('.test-remove-items').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.removeTextsFromGroup).toHaveBeenCalled();
   });
@@ -137,8 +138,9 @@ describe('ManageTexts test', () => {
     });
     await flushPromises();
     await wrapper.findAll('.v-data-table__checkbox').trigger('click');
-    await wrapper.find('.test-remove').trigger('click');
-    await wrapper.find('.test-submit-btn').trigger('click');
+    await wrapper.get('.test-actions').trigger('click');
+    await wrapper.get('.test-remove-items').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
