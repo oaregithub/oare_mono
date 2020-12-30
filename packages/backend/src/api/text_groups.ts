@@ -98,11 +98,11 @@ router
     }
   });
 
-router.route('/text_groups/:groupId/:uuid').delete(adminRoute, async (req, res, next) => {
+router.route('/text_groups/:groupId/:textUuid').delete(adminRoute, async (req, res, next) => {
   try {
     const TextGroupDao = sl.get('TextGroupDao');
     const OareGroupDao = sl.get('OareGroupDao');
-    const { groupId, uuid } = (req.params as unknown) as { groupId: number; uuid: string };
+    const { groupId, textUuid } = (req.params as unknown) as { groupId: number; textUuid: string };
 
     const existingGroup = await OareGroupDao.getGroupById(groupId);
     if (!existingGroup) {
@@ -110,13 +110,13 @@ router.route('/text_groups/:groupId/:uuid').delete(adminRoute, async (req, res, 
       return;
     }
 
-    const textExists = await TextGroupDao.containsAssociation(groupId, uuid);
+    const textExists = await TextGroupDao.containsAssociation(groupId, textUuid);
     if (!textExists) {
-      next(new HttpBadRequest(`Cannot remove text not in group: ${uuid}`));
+      next(new HttpBadRequest(`Cannot remove text not in group: ${textUuid}`));
       return;
     }
 
-    await TextGroupDao.removeText(groupId, uuid);
+    await TextGroupDao.removeText(groupId, textUuid);
     clearCache();
     res.status(204).end();
   } catch (err) {
