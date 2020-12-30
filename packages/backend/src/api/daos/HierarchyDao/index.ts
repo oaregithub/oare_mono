@@ -11,6 +11,10 @@ import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
 
+export interface CollectionPermissionResponse extends CollectionResponse {
+  isForbidden: boolean;
+}
+
 function collectionTextQuery(
   uuid: string,
   search: string,
@@ -138,8 +142,7 @@ class HierarchyDao {
 
   async getAllCollections(isAdmin: boolean, user: UserRow | null): Promise<CollectionListItem[]> {
     const CollectionGroupDao = sl.get('CollectionGroupDao');
-    const blacklistedCollections = await CollectionGroupDao.getUserCollectionBlacklist(user);
-    const blacklistedUuids = blacklistedCollections.map((collection) => collection.uuid);
+    const blacklistedUuids = await CollectionGroupDao.getUserCollectionBlacklist(user);
 
     let collectionsQuery = knex('hierarchy')
       .select('hierarchy.uuid')
@@ -164,7 +167,7 @@ class HierarchyDao {
     userId: UserRow | null,
     uuid: string,
     { page = 1, rows = 10, search = '' },
-  ): Promise<CollectionResponse> {
+  ): Promise<CollectionPermissionResponse> {
     const CollectionGroupDao = sl.get('CollectionGroupDao');
     const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(uuid, userId);
     const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(userId);
@@ -201,9 +204,12 @@ class HierarchyDao {
       name: textNames[i],
     }));
 
+    const isForbidden = collectionIsBlacklisted && texts.length === 0;
+
     return {
       totalTexts,
       texts,
+      isForbidden,
     };
   }
 
@@ -218,6 +224,11 @@ class HierarchyDao {
   async isPublished(hierarchyUuid: string): Promise<boolean> {
     const row: { published: boolean } = await knex('hierarchy').first('published').where('uuid', hierarchyUuid);
     return row.published;
+  }
+
+  async getCollectionOfText(uuid: string): Promise<string> {
+    const collection: CollectionListItem = await knex('hierarchy').first('parent_uuid AS uuid').where('uuid', uuid);
+    return collection.uuid;
   }
 }
 

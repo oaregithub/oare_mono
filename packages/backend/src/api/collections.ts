@@ -1,7 +1,6 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
-import cache from '@/cache';
 import hierarchyDao from './daos/HierarchyDao';
 
 const router = express.Router();
@@ -32,7 +31,14 @@ router.route('/collections/:uuid').get(collectionsMiddleware, async (req, res, n
       search,
     });
 
-    cache.insert({ req }, response);
+    if (response.isForbidden) {
+      next(
+        new HttpForbidden(
+          'You do not have permission to view this collection. If you think this is a mistake, please contact your administrator.',
+        ),
+      );
+      return;
+    }
 
     res.json(response);
   } catch (err) {

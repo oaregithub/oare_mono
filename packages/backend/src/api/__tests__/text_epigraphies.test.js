@@ -78,11 +78,16 @@ describe('GET /text_epigraphies/:uuid', () => {
     }),
   };
 
+  const mockCollectionGroupDao = {
+    getUserCollectionBlacklist: jest.fn().mockResolvedValue([]),
+  };
+
   const mockHierarchyDao = {
     getEpigraphyCollection: jest.fn().mockResolvedValue({
       uuid: '12345',
       name: 'Test Collection',
     }),
+    getCollectionOfText: jest.fn().mockResolvedValue('mockCollectionUuid'),
   };
 
   const mockTextDao = {
@@ -123,6 +128,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     sl.set('TextDao', mockTextDao);
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
+    sl.set('CollectionGroupDao', mockCollectionGroupDao);
   };
 
   const sendRequest = () => request(app).get(PATH);
