@@ -95,6 +95,7 @@ import {
   Text,
   UpdateCollectionPermissionPayload,
   UpdateTextPermissionPayload,
+  PermissionsListType,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
@@ -106,7 +107,7 @@ export default defineComponent({
       required: false,
     },
     itemType: {
-      type: String,
+      type: String as PropType<PermissionsListType>,
       required: true,
     },
     getItems: {
