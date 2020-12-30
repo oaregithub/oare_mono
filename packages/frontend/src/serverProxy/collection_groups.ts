@@ -27,8 +27,8 @@ async function updateCollectionPermissions(
 }
 
 async function removeGroupCollections(
-  groupId: number,
-  uuids: string[]
+  uuids: string[],
+  groupId: number
 ): Promise<void> {
   await Promise.all(
     uuids.map(uuid => axios.delete(`/collection_groups/${groupId}/${uuid}`))

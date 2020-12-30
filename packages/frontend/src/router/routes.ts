@@ -57,8 +57,8 @@ const routes: RouteConfig[] = [
     ],
   },
   {
-    path: '/addblacklist',
-    name: 'blacklistAdd',
+    path: '/addblacklist/texts',
+    name: 'blacklistAddTexts',
     component: AddBlacklistTexts,
   },
   {
