@@ -49,6 +49,8 @@
     "@types/dotenv": "^8.2.0",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/lodash": "^4.14.153",
+    "@types/luxon": "^1.25.0",
+    "@types/nodemailer": "^6.4.0",
     "@types/uuid": "^8.0.0",
     "connect-history-api-fallback": "^1.6.0",
     "cookie-parser": "^1.4.5",
@@ -58,7 +60,9 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.1",
     "lodash": "^4.17.15",
+    "luxon": "^1.25.0",
     "mysql": "^2.18.1",
+    "nodemailer": "^6.4.17",
     "uuid": "^8.1.0"
   },
   "husky": {

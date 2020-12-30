@@ -14,11 +14,13 @@ import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import utils from '@/utils';
+import * as nodemailer from 'nodemailer';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
 import SignReadingDao from './api/daos/SignReadingDao';
 import CollectionGroupDao from './api/daos/CollectionGroupDao';
+import ResetPasswordLinksDao from './api/daos/ResetPasswordLinksDao';
 
 declare global {
   namespace Express {
@@ -46,7 +48,9 @@ sl.set('cache', cache);
 sl.set('PublicBlacklistDao', PublicBlacklistDao);
 sl.set('SignReadingDao', SignReadingDao);
 sl.set('CollectionGroupDao', CollectionGroupDao);
+sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
 sl.set('utils', utils);
+sl.set('nodemailer', nodemailer);
 
 app.listen(8081, () => {
   console.log('Listening on port 8081');

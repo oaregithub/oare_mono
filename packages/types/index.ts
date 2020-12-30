@@ -355,12 +355,8 @@ export interface AddTextPayload {
   texts: TextGroup[];
 }
 
-export interface RemoveTextsPayload {
-  textUuids: string[];
-}
-
 export interface UpdateTextPermissionPayload {
-  textUuid: string;
+  uuid: string;
   canRead: boolean;
   canWrite: boolean;
 }
