@@ -20,7 +20,10 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
       const { blacklist } = await TextGroupDao.getUserBlacklist(user);
-      if (blacklist.includes(textUuid)) {
+      const collectionBlacklist = await CollectionGroupDao.getUserCollectionBlacklist(user);
+      const collectionOfText = await HierarchyDao.getCollectionOfText(textUuid);
+
+      if (blacklist.includes(textUuid) || collectionBlacklist.includes(collectionOfText)) {
         next(
           new HttpForbidden(
             'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.',
