@@ -1,10 +1,5 @@
 import axios from '../axiosInstance';
-import {
-  Text,
-  AddTextPayload,
-  RemoveTextsPayload,
-  UpdateTextPermissionPayload,
-} from '@oare/types';
+import { Text, AddTextPayload, UpdateTextPermissionPayload } from '@oare/types';
 
 async function addTextGroups(
   groupId: number,
@@ -19,12 +14,12 @@ async function getTextGroups(groupId: number): Promise<Text[]> {
 }
 
 async function removeTextsFromGroup(
-  groupId: number,
-  payload: RemoveTextsPayload
+  uuids: string[],
+  groupId: number
 ): Promise<void> {
-  await axios.delete(`/text_groups/${groupId}`, {
-    params: payload,
-  });
+  await Promise.all(
+    uuids.map(uuid => axios.delete(`/text_groups/${groupId}/${uuid}`))
+  );
 }
 
 async function updateText(

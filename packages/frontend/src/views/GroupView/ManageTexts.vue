@@ -133,7 +133,7 @@ export default defineComponent({
       const text = viewableTexts.value[index];
       try {
         await server.updateText(Number(groupId), {
-          textUuid: uuid,
+          uuid,
           canRead: text.canRead,
           canWrite: text.canWrite,
         });
@@ -157,7 +157,7 @@ export default defineComponent({
       const text = viewableTexts.value[index];
       try {
         await server.updateText(Number(groupId), {
-          textUuid: uuid,
+          uuid,
           canRead: text.canRead,
           canWrite: text.canWrite,
         });
@@ -173,9 +173,7 @@ export default defineComponent({
       removeLoading.value = true;
       const deleteTextUuids = selectedDeleteList.value.map(text => text.uuid);
       try {
-        await server.removeTextsFromGroup(Number(groupId), {
-          textUuids: deleteTextUuids,
-        });
+        await server.removeTextsFromGroup(deleteTextUuids, Number(groupId));
         viewableTexts.value = viewableTexts.value.filter(
           text => !deleteTextUuids.includes(text.uuid)
         );
