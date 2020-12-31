@@ -2,6 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
+import { DateTime } from 'luxon';
 
 describe('POST /reset_password', () => {
   const PATH = `${API_PATH}/reset_password`;
@@ -19,16 +20,14 @@ describe('POST /reset_password', () => {
   };
 
   const sendMail = jest.fn().mockResolvedValue(null);
-  const nodemailer = {
-    createTransport: jest.fn().mockReturnValue({
-      sendMail,
-    }),
+  const mailer = {
+    sendMail,
   };
 
   const setup = () => {
     sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
     sl.set('UserDao', UserDao);
-    sl.set('nodemailer', nodemailer);
+    sl.set('mailer', mailer);
   };
 
   const resetEmail = 'resetemail@example.com';
@@ -79,10 +78,113 @@ describe('POST /reset_password', () => {
   });
 
   it('returns 500 if sending mail fails', async () => {
-    sl.set('nodemailer', {
-      createTransport: jest.fn().mockReturnValue({
-        sendMail: jest.fn().mockRejectedValue('Failed to send email'),
+    sl.set('mailer', {
+      sendMail: jest.fn().mockRejectedValue('Failed to send email'),
+    });
+
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('PATH /reset_password', () => {
+  const PATH = `${API_PATH}/reset_password`;
+  const payload = {
+    newPassword: 'password',
+    resetUuid: 'reset-uuid',
+  };
+
+  const resetRow = {
+    uuid: 'uuid',
+    userUuid: 'user-uuid',
+    expiration: DateTime.local().plus({ minutes: 30 }).toJSDate(),
+  };
+
+  const ResetPasswordLinksDao = {
+    getResetPasswordRow: jest.fn().mockResolvedValue(resetRow),
+  };
+
+  const UserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      email: 'user@email.com',
+      firstName: 'User',
+    }),
+    updatePassword: jest.fn().mockResolvedValue(null),
+  };
+
+  const mailer = {
+    sendMail: jest.fn().mockResolvedValue(null),
+  };
+
+  const setup = () => {
+    sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
+    sl.set('UserDao', UserDao);
+    sl.set('mailer', mailer);
+  };
+
+  const sendRequest = () => request(app).patch(PATH).send(payload);
+
+  beforeEach(setup);
+
+  it('successfully resets password', async () => {
+    const response = await sendRequest();
+
+    expect(response.status).toBe(200);
+    expect(UserDao.updatePassword).toHaveBeenCalledWith(resetRow.uuid, payload.newPassword);
+    expect(mailer.sendMail).toHaveBeenCalled();
+  });
+
+  it('returns 400 if the link is invalid', async () => {
+    sl.set('ResetPasswordLinksDao', {
+      ...ResetPasswordLinksDao,
+      getResetPasswordRow: jest.fn().mockResolvedValue(null),
+    });
+
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+    expect(UserDao.updatePassword).not.toHaveBeenCalled();
+    expect(mailer.sendMail).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 if the link is expired', async () => {
+    sl.set('ResetPasswordLinksDao', {
+      ...ResetPasswordLinksDao,
+      getResetPasswordRow: jest.fn().mockResolvedValue({
+        expiration: DateTime.local().minus({ minutes: 1 }).toJSDate(),
       }),
+    });
+
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+    expect(UserDao.updatePassword).not.toHaveBeenCalled();
+    expect(mailer.sendMail).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 if reset row contains invalid user UUID', async () => {
+    sl.set('UserDao', {
+      getUserByUuid: jest.fn().mockResolvedValue(null),
+    });
+
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+    expect(UserDao.updatePassword).not.toHaveBeenCalled();
+    expect(mailer.sendMail).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 if updating password fails', async () => {
+    sl.set('UserDao', {
+      ...UserDao,
+      updatePassword: jest.fn().mockRejectedValue('Failed to update password'),
+    });
+
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+    expect(mailer.sendMail).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 if sending mail fails', async () => {
+    sl.set('mailer', {
+      sendMail: jest.fn().mockRejectedValue('Failed to send mail'),
     });
 
     const response = await sendRequest();

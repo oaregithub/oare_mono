@@ -26,23 +26,13 @@ router
       const ResetPasswordLinksDao = sl.get('ResetPasswordLinksDao');
       const resetUuid = await ResetPasswordLinksDao.createResetPasswordLink(user.uuid);
 
-      const nodemailer = sl.get('nodemailer');
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.RESET_EMAIL,
-          pass: process.env.RESET_EMAIL_PASSWORD,
-        },
-      });
+      const mailer = sl.get('mailer');
 
-      const options: SendMailOptions = {
-        from: process.env.RESET_EMAIL,
+      await mailer.sendMail({
         to: email,
         subject: 'Reset OARE password',
         text: `Hello ${user.firstName},\n\nYou have requested to reset your password at oare.byu.edu. Please follow this link to reset your password: https://oare.byu.edu/reset_password/${resetUuid}.\n\nOARE Team`,
-      };
-
-      await transporter.sendMail(options);
+      });
       res.status(200).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -75,24 +65,13 @@ router
 
       await UserDao.updatePassword(resetRow.uuid, newPassword);
 
-      // TODO send email saying that password was reset
-      const nodemailer = sl.get('nodemailer');
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.RESET_EMAIL,
-          pass: process.env.RESET_EMAIL_PASSWORD,
-        },
-      });
+      const mailer = sl.get('mailer');
 
-      const options: SendMailOptions = {
-        from: process.env.RESET_EMAIL,
+      await mailer.sendMail({
         to: user.email,
         subject: 'Your OARE password has been reset',
         text: `Hello ${user.firstName},\n\nYour password has been reset for oare.byu.edu. If you did not do this, then immediately contact us at oarefeedback@byu.edu as it could pose a security risk.\n\nOARE Team`,
-      };
-
-      await transporter.sendMail(options);
+      });
       res.status(200).end();
     } catch (err) {
       next(new HttpInternalError(err));
