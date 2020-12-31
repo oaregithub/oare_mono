@@ -87,7 +87,7 @@ describe('POST /reset_password', () => {
   });
 });
 
-describe('PATH /reset_password', () => {
+describe('PATCH /reset_password', () => {
   const PATH = `${API_PATH}/reset_password`;
   const payload = {
     newPassword: 'password',
