@@ -14,7 +14,7 @@ import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import utils from '@/utils';
-import * as nodemailer from 'nodemailer';
+import mailer from './mailer';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
@@ -50,24 +50,7 @@ sl.set('SignReadingDao', SignReadingDao);
 sl.set('CollectionGroupDao', CollectionGroupDao);
 sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
 sl.set('utils', utils);
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.RESET_EMAIL,
-    pass: process.env.RESET_EMAIL_PASSWORD,
-  },
-});
-sl.set('mailer', {
-  sendMail: ({ to, subject, text }) => {
-    transporter.sendMail({
-      from: process.env.RESET_EMAIL,
-      to,
-      subject,
-      text,
-    });
-  },
-});
+sl.set('mailer', mailer);
 
 app.listen(8081, () => {
   console.log('Listening on port 8081');

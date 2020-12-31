@@ -1,7 +1,6 @@
 import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { SendMailOptions } from 'nodemailer';
 import { ResetPasswordPayload } from '@oare/types';
 
 const router = express.Router();
