@@ -227,6 +227,7 @@ export interface SearchTextsResponse {
 export interface SearchTextNamesResultRow {
   uuid: string;
   name: string;
+  hasEpigraphy: boolean;
 }
 
 export interface SearchTextNamesPayload {

@@ -9,12 +9,14 @@ const mockGET = [
     name: 'Test1',
     canRead: false,
     canWrite: false,
+    hasEpigraphy: true,
   },
   {
     uuid: 'uuid2',
     name: 'Test2',
     canRead: false,
     canWrite: false,
+    hasEpigraphy: true,
   },
 ];
 const mockPOST = {
@@ -36,9 +38,13 @@ describe('GET /public_blacklist', () => {
     getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
     getBlacklistedCollections: jest.fn().mockResolvedValue([]),
   };
+  const mockHierarchyDao = {
+    hasEpigraphy: jest.fn().mockResolvedValue(true),
+  };
 
   const setup = () => {
     sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
+    sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,

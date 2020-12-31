@@ -55,9 +55,13 @@
       v-model="selectedItems"
     >
       <template #[`item.name`]="{ item }">
-        <router-link :to="`${itemLink}${item.uuid}`" class="test-item-name">{{
-          item.name
-        }}</router-link>
+        <router-link
+          v-if="item.hasEpigraphy || itemType === 'Collection'"
+          :to="`${itemLink}${item.uuid}`"
+          class="test-item-name"
+          >{{ item.name }}</router-link
+        >
+        <span v-else>{{ item.name }}</span>
       </template>
       <template v-if="updatePermissions" #[`item.canRead`]="{ item }">
         <v-switch

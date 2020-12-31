@@ -4,6 +4,7 @@ import {
   CollectionText,
   SearchTextNamesResponse,
   SearchCollectionNamesResponse,
+  SearchTextNamesResultRow,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -70,9 +71,11 @@ class HierarchyDao {
       .limit(rows)
       .offset((page - 1) * rows);
     const names = await Promise.all(textsResponse.map((text) => aliasDao.textAliasNames(text.uuid)));
-    const matchingTexts: CollectionListItem[] = textsResponse.map((text, index) => ({
+    const epigraphyStatus = await Promise.all(textsResponse.map((text) => this.hasEpigraphy(text.uuid)));
+    const matchingTexts: SearchTextNamesResultRow[] = textsResponse.map((text, index) => ({
       ...text,
       name: names[index],
+      hasEpigraphy: epigraphyStatus[index],
     }));
 
     const count = await createBaseQuery()
@@ -229,6 +232,14 @@ class HierarchyDao {
   async getCollectionOfText(uuid: string): Promise<string> {
     const collection: CollectionListItem = await knex('hierarchy').first('parent_uuid AS uuid').where('uuid', uuid);
     return collection.uuid;
+  }
+
+  async hasEpigraphy(uuid: string): Promise<boolean> {
+    const response = await knex('text_epigraphy').first('uuid').where('text_uuid', uuid);
+    if (response) {
+      return true;
+    }
+    return false;
   }
 }
 
