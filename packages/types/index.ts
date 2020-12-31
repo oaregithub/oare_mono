@@ -447,3 +447,10 @@ export interface PermissionResponse {
 export interface TextInfoResponse {
   name: string;
 }
+
+// Reset Password
+
+export interface ResetPasswordPayload {
+  resetUuid: string;
+  newPassword: string;
+}
