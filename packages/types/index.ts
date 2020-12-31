@@ -442,6 +442,8 @@ export interface PermissionResponse {
   dictionary: DictionaryPermission[];
 }
 
+export type PermissionsListType = 'Text' | 'Collection';
+
 // Text Info
 
 export interface TextInfoResponse {

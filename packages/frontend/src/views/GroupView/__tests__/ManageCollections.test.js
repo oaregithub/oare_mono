@@ -120,7 +120,7 @@ describe('ManageCollections test', () => {
       .at(0)
       .trigger('click');
     await wrapper.get('.test-actions').trigger('click');
-    await wrapper.get('.test-remove-collections').trigger('click');
+    await wrapper.get('.test-remove-items').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.removeGroupCollections).toHaveBeenCalled();
@@ -136,7 +136,7 @@ describe('ManageCollections test', () => {
     await flushPromises();
     await wrapper.findAll('.v-data-table__checkbox').trigger('click');
     await wrapper.get('.test-actions').trigger('click');
-    await wrapper.get('.test-remove-collections').trigger('click');
+    await wrapper.get('.test-remove-items').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();

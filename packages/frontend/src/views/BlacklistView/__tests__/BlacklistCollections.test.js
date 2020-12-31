@@ -72,7 +72,7 @@ describe('BlacklistCollections test', () => {
     await flushPromises();
     await wrapper.get('.v-data-table__checkbox').trigger('click');
     await wrapper.get('.test-actions').trigger('click');
-    await wrapper.get('.test-remove-collections').trigger('click');
+    await wrapper.get('.test-remove-items').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.removeTextsFromPublicBlacklist).toHaveBeenCalled();
@@ -89,7 +89,7 @@ describe('BlacklistCollections test', () => {
     await flushPromises();
     await wrapper.get('.v-data-table__checkbox').trigger('click');
     await wrapper.get('.test-actions').trigger('click');
-    await wrapper.get('.test-remove-collections').trigger('click');
+    await wrapper.get('.test-remove-items').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
