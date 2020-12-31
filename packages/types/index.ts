@@ -8,6 +8,7 @@ export interface User {
 
 export interface GetUserResponse extends User {
   groups: number[];
+  isAdmin: boolean;
 }
 
 // Dictionary

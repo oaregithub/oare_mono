@@ -77,12 +77,19 @@ class UserDao {
     });
   }
 
+  async userIsAdmin(email: string): Promise<boolean> {
+    const { isAdmin } = await knex('user').first('is_admin AS isAdmin').where('email', email);
+    return isAdmin;
+  }
+
   async getAllUsers(): Promise<GetUserResponse[]> {
     const users: User[] = await knex('user').select('id', 'first_name', 'last_name', 'email');
     const groupObjects = await Promise.all(users.map((user) => UserGroupDao.getGroupsOfUser(user.id)));
+    const adminStatus = await Promise.all(users.map((user) => this.userIsAdmin(user.email)));
     return users.map((user, index) => ({
       ...user,
       groups: groupObjects[index],
+      isAdmin: adminStatus[index],
     }));
   }
 }
