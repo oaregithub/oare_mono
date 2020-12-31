@@ -82,12 +82,7 @@ describe('AddBlacklistTexts test', () => {
       .trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
-    expect(mockServer.addTextsToPublicBlacklist).toHaveBeenCalledWith({
-      texts: [
-        { uuid: 'test1', type: 'text' },
-        { uuid: 'test2', type: 'text' },
-      ],
-    });
+    expect(mockServer.addTextsToPublicBlacklist).toHaveBeenCalled();
     await flushPromises();
     expect(mockActions.showSnackbar).toHaveBeenCalled();
     expect(mockRouter.push).toHaveBeenCalled();
