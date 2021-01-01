@@ -139,7 +139,6 @@ import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
-  name: 'AddGroupTexts',
   props: {
     groupId: {
       type: String,
