@@ -236,10 +236,7 @@ class HierarchyDao {
 
   async hasEpigraphy(uuid: string): Promise<boolean> {
     const response = await knex('text_epigraphy').first('uuid').where('text_uuid', uuid);
-    if (response) {
-      return true;
-    }
-    return false;
+    return !!response;
   }
 }
 
