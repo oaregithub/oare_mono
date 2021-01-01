@@ -18,7 +18,7 @@ import SignReadingDao from '@/api/daos/SignReadingDao';
 import CollectionGroupDao from '@/api/daos/CollectionGroupDao';
 import ResetPasswordLinksDao from '@/api/daos/ResetPasswordLinksDao';
 import utils from '@/utils';
-import * as nodemailer from 'nodemailer';
+import mailer from '@/mailer';
 
 const instances: { [key: string]: any } = {};
 
@@ -43,7 +43,7 @@ export type ServiceTypes = {
   CollectionGroupDao: typeof CollectionGroupDao;
   ResetPasswordLinksDao: typeof ResetPasswordLinksDao;
   utils: typeof utils;
-  nodemailer: typeof nodemailer;
+  mailer: typeof mailer;
 };
 
 export default {
