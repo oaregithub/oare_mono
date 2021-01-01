@@ -13,8 +13,8 @@ async function getGroupCollections(
 }
 
 async function addGroupCollections(
-  groupId: number,
-  payload: AddCollectionsPayload
+  payload: AddCollectionsPayload,
+  groupId: number
 ): Promise<void> {
   await axios.post(`/collection_groups/${groupId}`, payload);
 }

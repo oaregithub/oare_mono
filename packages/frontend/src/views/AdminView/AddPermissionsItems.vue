@@ -1,0 +1,411 @@
+<template>
+  <OareContentView
+    :title="`Add ${itemType}s to ${groupName}`"
+    :loading="loading"
+  >
+    <template #header>
+      <router-link
+        :to="
+          groupId
+            ? `/groups/${groupId}/${itemType.toLowerCase()}s`
+            : `/admin/blacklist/${itemType.toLowerCase()}s`
+        "
+        >&larr; Back to {{ itemType.toLowerCase() }} view
+      </router-link>
+    </template>
+
+    <v-container>
+      <v-row align="center" justify="center">
+        <OareDialog
+          v-model="addItemsDialog"
+          :title="`Add ${itemType}s`"
+          submitText="Yes, add"
+          cancelText="No, don't add"
+          @submit="addListItems"
+          :submitLoading="addItemsLoading"
+        >
+          <template v-slot:activator="{ on }">
+            <v-btn
+              v-on="on"
+              color="info"
+              :disabled="selectedItems.length === 0"
+              class="test-add"
+              >Add selected {{ itemType }}s ({{ selectedItems.length }})</v-btn
+            >
+          </template>
+          {{ confirmAddMessage }}
+          <v-data-table :headers="selectedItemsHeaders" :items="selectedItems">
+            <template v-if="editPermissions" #[`item.canRead`]="{ item }">
+              <v-checkbox
+                :input-value="item.canRead"
+                @change="updateItemToAddRead(item.uuid, $event)"
+              />
+            </template>
+            <template v-if="editPermissions" #[`item.canWrite`]="{ item }">
+              <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
+            </template>
+          </v-data-table>
+        </OareDialog>
+        <v-spacer />
+        <v-col cols="4">
+          <v-text-field
+            :value="search"
+            @input="setSearch"
+            label="Search"
+            single-line
+            hide-details
+            clearable
+            class="test-search"
+          />
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-container>
+      <v-row>
+        <v-col cols="4">
+          <h3>Selected {{ itemType }}s</h3>
+          <v-data-table
+            :headers="selectedItemsHeaders"
+            :items="selectedItems"
+            item-key="uuid"
+            class="mt-3"
+            show-select
+            v-model="selectedItems"
+          >
+            <template v-if="editPermissions" #[`item.canRead`]="{ item }">
+              <v-checkbox
+                :input-value="item.canRead"
+                @change="updateItemToAddRead(item.uuid, $event)"
+              />
+            </template>
+            <template v-if="editPermissions" #[`item.canWrite`]="{ item }">
+              <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
+            </template>
+            <template slot="no-data">
+              No {{ itemType.toLowerCase() }}s selected
+            </template>
+          </v-data-table>
+        </v-col>
+        <v-col cols="8">
+          <h3>All {{ itemType }}s</h3>
+          <v-data-table
+            :loading="getItemsLoading"
+            :headers="itemsHeaders"
+            :items="unaddedItems"
+            item-key="uuid"
+            class="mt-3"
+            show-select
+            :value="selectedItems"
+            @item-selected="selectItem"
+            @toggle-select-all="selectAll"
+            :options.sync="searchOptions"
+            :server-items-length="serverCount"
+            :footer-props="{
+              'items-per-page-options': [10, 25, 50, 100],
+            }"
+          >
+          </v-data-table>
+        </v-col>
+      </v-row>
+    </v-container>
+  </OareContentView>
+</template>
+
+<script lang="ts">
+import {
+  defineComponent,
+  PropType,
+  ref,
+  Ref,
+  onMounted,
+  watch,
+  computed,
+} from '@vue/composition-api';
+import sl from '@/serviceLocator';
+import OareContentView from '@/components/base/OareContentView.vue';
+import {
+  Text,
+  SearchTextNamesResponse,
+  PermissionsListType,
+  CollectionPermissionsItem,
+  SearchTextNamesPayload,
+  SearchCollectionNamesPayload,
+  SearchCollectionNamesResponse,
+  AddTextPayload,
+  AddCollectionsPayload,
+  AddPublicBlacklistPayload,
+} from '@oare/types';
+import { DataTableHeader, DataOptions } from 'vuetify';
+import useQueryParam from '@/hooks/useQueryParam';
+
+export default defineComponent({
+  name: 'AddGroupTexts',
+  props: {
+    groupId: {
+      type: String,
+      required: false,
+    },
+    itemType: {
+      type: String as PropType<PermissionsListType>,
+      required: true,
+    },
+    editPermissions: {
+      type: Boolean,
+      required: true,
+    },
+    searchItems: {
+      type: Function as PropType<
+        (
+          payload: SearchTextNamesPayload | SearchCollectionNamesPayload
+        ) => SearchTextNamesResponse | SearchCollectionNamesResponse
+      >,
+      required: true,
+    },
+    addItems: {
+      type: Function as PropType<
+        (
+          payload:
+            | AddTextPayload
+            | AddCollectionsPayload
+            | AddPublicBlacklistPayload,
+          groupId?: Number
+        ) => void
+      >,
+      required: true,
+    },
+  },
+  setup({ groupId, itemType, editPermissions, searchItems, addItems }) {
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+    const router = sl.get('router');
+    const _ = sl.get('lodash');
+
+    const selectedItemsHeaders: Ref<DataTableHeader[]> = editPermissions
+      ? ref([
+          { text: 'Name', value: 'name' },
+          { text: 'Can view?', value: 'canRead' },
+          { text: 'Can edit?', value: 'canWrite' },
+        ])
+      : ref([{ text: 'Name', value: 'name' }]);
+    const itemsHeaders: Ref<DataTableHeader[]> = ref([
+      { text: 'Name', value: 'name' },
+    ]);
+
+    const loading = ref(true);
+    const addItemsDialog = ref(false);
+    const addItemsLoading = ref(false);
+    const getItemsLoading = ref(false);
+
+    const [page, setPage] = useQueryParam('page', '1');
+    const [rows, setRows] = useQueryParam('rows', '10');
+    const [search, setSearch] = useQueryParam('query', '');
+    const [items, setItems] = useQueryParam('items', '');
+
+    const searchOptions: Ref<DataOptions> = ref({
+      page: Number(page.value),
+      itemsPerPage: Number(rows.value),
+      sortBy: [],
+      sortDesc: [],
+      groupBy: [],
+      groupDesc: [],
+      multiSort: false,
+      mustSort: false,
+    });
+    const serverCount: Ref<number> = ref(0);
+
+    const selectedItems: Ref<Text[] | CollectionPermissionsItem[]> = ref([]);
+    const unaddedItems: Ref<Text[] | CollectionPermissionsItem[]> = ref([]);
+
+    const groupName = ref('');
+    const confirmAddMessage = computed(() => {
+      if (groupId) {
+        return `Are you sure you want to add the following
+          ${itemType.toLowerCase()}(s) and permission(s) to the group named
+          ${groupName.value}?`;
+      } else {
+        return `Are you sure you want to add the following ${itemType.toLowerCase()}(s) 
+        to the public blacklist? This will prevent all users from viewing and editing these 
+        ${itemType.toLowerCase()}(s) unless otherwise authorized.`;
+      }
+    });
+
+    const getItems = async () => {
+      try {
+        getItemsLoading.value = true;
+        const response = await searchItems({
+          page: searchOptions.value.page,
+          rows: searchOptions.value.itemsPerPage,
+          search: search.value,
+          groupId,
+        });
+        if ('texts' in response) {
+          unaddedItems.value = response.texts.map(text => ({
+            name: text.name,
+            uuid: text.uuid,
+            canRead: true,
+            canWrite: false,
+          }));
+        } else if ('collections' in response) {
+          unaddedItems.value = response.collections.map(collection => ({
+            name: collection.name,
+            uuid: collection.uuid,
+            canRead: true,
+            canWrite: false,
+          }));
+        }
+        serverCount.value = response.count;
+      } catch {
+        actions.showErrorSnackbar(
+          `Error updating ${itemType.toLowerCase()} list. Please try again.`
+        );
+      } finally {
+        getItemsLoading.value = false;
+      }
+    };
+
+    const addListItems = async () => {
+      const items = selectedItems.value.map(item => ({
+        canRead: item.canRead,
+        canWrite: item.canWrite,
+        uuid: item.uuid,
+        type: itemType.toLowerCase(),
+      }));
+      addItemsLoading.value = true;
+      try {
+        await addItems(
+          {
+            texts: items,
+            collections: items,
+          },
+          Number(groupId)
+        );
+        actions.showSnackbar(
+          `Successfully added ${itemType.toLowerCase()}(s).`
+        );
+        if (groupId) {
+          router.push(`/groups/${groupId}/${itemType.toLowerCase()}s`);
+        } else {
+          router.push(`/admin/blacklist/${itemType.toLowerCase()}s`);
+        }
+      } catch {
+        actions.showErrorSnackbar(
+          `Error adding ${itemType.toLowerCase()}(s). Please try again.`
+        );
+      } finally {
+        addItemsLoading.value = false;
+        addItemsDialog.value = false;
+      }
+    };
+
+    const updateItemToAddRead = (uuid: string, canRead: boolean) => {
+      const index = selectedItems.value.map(item => item.uuid).indexOf(uuid);
+      selectedItems.value[index].canRead = canRead;
+
+      if (!canRead) {
+        selectedItems.value[index].canWrite = false;
+      }
+    };
+
+    onMounted(async () => {
+      try {
+        await getItems();
+        groupName.value = groupId
+          ? await server.getGroupName(Number(groupId))
+          : 'Public Blacklist';
+        if (items.value) {
+          const uuids: string[] = JSON.parse(items.value);
+          const itemNames = await Promise.all(
+            uuids.map(uuid => server.getTextName(uuid))
+          );
+          selectedItems.value = uuids.map((uuid, index) => ({
+            name: itemNames[index].name,
+            uuid,
+            canRead: true,
+            canWrite: false,
+          }));
+        }
+      } catch {
+        actions.showErrorSnackbar(
+          `Error loading ${itemType.toLowerCase()}s. Please try again.`
+        );
+      } finally {
+        loading.value = false;
+      }
+    });
+
+    function selectItem(event: {
+      value: boolean;
+      item: Text | CollectionPermissionsItem;
+    }) {
+      event.value
+        ? selectedItems.value.unshift(event.item)
+        : selectedItems.value.splice(
+            selectedItems.value.indexOf(event.item),
+            1
+          );
+    }
+
+    function selectAll(event: {
+      value: boolean;
+      item: Text | CollectionPermissionsItem;
+    }) {
+      event.value
+        ? unaddedItems.value.forEach(item => selectedItems.value.push(item))
+        : unaddedItems.value.forEach(item =>
+            selectedItems.value.splice(selectedItems.value.indexOf(item), 1)
+          );
+    }
+
+    watch(searchOptions, async () => {
+      try {
+        await getItems();
+        setPage(String(searchOptions.value.page));
+        setRows(String(searchOptions.value.itemsPerPage));
+      } catch {
+        actions.showErrorSnackbar(
+          `Error updating ${itemType.toLowerCase()}s list. Please try again.`
+        );
+      }
+    });
+
+    watch(
+      search,
+      _.debounce(async () => {
+        if (!search.value) {
+          search.value = '';
+        }
+        searchOptions.value.page = 1;
+        await getItems();
+      }, 500),
+      {
+        immediate: false,
+      }
+    );
+
+    watch(selectedItems, async () => {
+      setItems(JSON.stringify(selectedItems.value.map(item => item.uuid)));
+    });
+
+    return {
+      groupName,
+      loading,
+      addItemsLoading,
+      addItemsDialog,
+      addListItems,
+      selectedItems,
+      unaddedItems,
+      itemsHeaders,
+      search,
+      setSearch,
+      getItemsLoading,
+      searchOptions,
+      serverCount,
+      selectedItemsHeaders,
+      updateItemToAddRead,
+      selectItem,
+      selectAll,
+      confirmAddMessage,
+    };
+  },
+});
+</script>

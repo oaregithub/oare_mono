@@ -2,8 +2,8 @@ import axios from '../axiosInstance';
 import { Text, AddTextPayload, UpdateTextPermissionPayload } from '@oare/types';
 
 async function addTextGroups(
-  groupId: number,
-  payload: AddTextPayload
+  payload: AddTextPayload,
+  groupId: number
 ): Promise<void> {
   await axios.post(`/text_groups/${groupId}`, payload);
 }
