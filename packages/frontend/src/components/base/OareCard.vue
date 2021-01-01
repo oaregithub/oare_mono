@@ -3,7 +3,7 @@
     <v-card-title>
       <h3 class="oare-header mb-2">{{ title }}</h3>
     </v-card-title>
-    <v-card-text>
+    <v-card-text class="d-flex flex-column">
       <slot></slot>
     </v-card-text>
 
@@ -17,7 +17,6 @@
 import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
-  name: 'OareUserCard',
   props: {
     title: {
       type: String,
