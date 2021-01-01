@@ -97,11 +97,11 @@ class UserDao {
     );
     const groupObjects = await Promise.all(users.map((user) => UserGroupDao.getGroupsOfUser(user.id)));
     const adminStatus = await Promise.all(users.map((user) => this.userIsAdmin(user.uuid)));
-    return users.map((user, index) => ({
-      id: user.id,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      email: user.email,
+    return users.map(({ id, firstName, lastName, email }, index) => ({
+      id,
+      first_name: firstName,
+      last_name: lastName,
+      email,
       groups: groupObjects[index],
       isAdmin: adminStatus[index],
     }));
