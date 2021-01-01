@@ -14,9 +14,9 @@
       />
     </div>
     <div v-else class="d-flex flex-column">
-      If there is an accounted associated with that email, a message has been
-      sent to your inbox with a link to reset your password. The link will
-      expire in 30 minutes.
+      If there is an account associated with that email, a message has been sent
+      to your inbox with a link to reset your password. The link will expire in
+      30 minutes.
     </div>
     <template #actions>
       <OareLoaderButton
