@@ -38,13 +38,13 @@ describe('GET /public_blacklist', () => {
     getBlacklistedTexts: jest.fn().mockResolvedValue(mockGET),
     getBlacklistedCollections: jest.fn().mockResolvedValue([]),
   };
-  const mockHierarchyDao = {
+  const mockTextEpigraphyDao = {
     hasEpigraphy: jest.fn().mockResolvedValue(true),
   };
 
   const setup = () => {
     sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
-    sl.set('HierarchyDao', mockHierarchyDao);
+    sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,

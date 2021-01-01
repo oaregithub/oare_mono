@@ -66,12 +66,13 @@ class HierarchyDao {
         .whereNull('public_blacklist.uuid');
     }
 
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const textsResponse = await createBaseQuery()
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
     const names = await Promise.all(textsResponse.map((text) => aliasDao.textAliasNames(text.uuid)));
-    const epigraphyStatus = await Promise.all(textsResponse.map((text) => this.hasEpigraphy(text.uuid)));
+    const epigraphyStatus = await Promise.all(textsResponse.map((text) => TextEpigraphyDao.hasEpigraphy(text.uuid)));
     const matchingTexts: SearchTextNamesResultRow[] = textsResponse.map((text, index) => ({
       ...text,
       name: names[index],
@@ -232,11 +233,6 @@ class HierarchyDao {
   async getCollectionOfText(uuid: string): Promise<string> {
     const collection: CollectionListItem = await knex('hierarchy').first('parent_uuid AS uuid').where('uuid', uuid);
     return collection.uuid;
-  }
-
-  async hasEpigraphy(uuid: string): Promise<boolean> {
-    const response = await knex('text_epigraphy').first('uuid').where('text_uuid', uuid);
-    return !!response;
   }
 }
 

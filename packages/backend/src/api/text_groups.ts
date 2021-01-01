@@ -27,10 +27,10 @@ router
   .route('/text_groups/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const HierarchyDao = sl.get('HierarchyDao');
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const { groupId } = (req.params as unknown) as { groupId: number };
       const texts = await textGroupDao.getTexts(groupId);
-      const epigraphyStatus = await Promise.all(texts.map((text) => HierarchyDao.hasEpigraphy(text.uuid)));
+      const epigraphyStatus = await Promise.all(texts.map((text) => TextEpigraphyDao.hasEpigraphy(text.uuid)));
       const response = texts.map((text, index) => ({
         ...text,
         hasEpigraphy: epigraphyStatus[index],

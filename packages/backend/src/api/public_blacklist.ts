@@ -53,9 +53,11 @@ router
   .get(adminRoute, async (req, res, next) => {
     try {
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-      const HierarchyDao = sl.get('HierarchyDao');
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const publicBlacklist = await PublicBlacklistDao.getBlacklistedTexts();
-      const epigraphyStatus = await Promise.all(publicBlacklist.map((text) => HierarchyDao.hasEpigraphy(text.uuid)));
+      const epigraphyStatus = await Promise.all(
+        publicBlacklist.map((text) => TextEpigraphyDao.hasEpigraphy(text.uuid)),
+      );
       const response = publicBlacklist.map((text, index) => ({
         ...text,
         hasEpigraphy: epigraphyStatus[index],
