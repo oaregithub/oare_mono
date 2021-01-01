@@ -14,7 +14,7 @@ import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import utils from '@/utils';
-import * as nodemailer from 'nodemailer';
+import mailer from './mailer';
 import app from './app';
 import UserDao, { UserRow } from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
@@ -50,7 +50,7 @@ sl.set('SignReadingDao', SignReadingDao);
 sl.set('CollectionGroupDao', CollectionGroupDao);
 sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
 sl.set('utils', utils);
-sl.set('nodemailer', nodemailer);
+sl.set('mailer', mailer);
 
 app.listen(8081, () => {
   console.log('Listening on port 8081');
