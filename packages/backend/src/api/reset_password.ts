@@ -45,12 +45,16 @@ router
       const resetRow = await ResetPasswordLinksDao.getResetPasswordRow(resetUuid);
 
       if (!resetRow) {
-        next(new HttpBadRequest('Invalid link'));
+        next(new HttpBadRequest('The link you tried to use to reset your password is invalid.'));
         return;
       }
 
       if (Date.now() >= resetRow.expiration.getTime()) {
-        next(new HttpBadRequest('Expired reset password link'));
+        next(
+          new HttpBadRequest(
+            'The link you tried to use to reset your password is expired. When a reset link is sent to your email, you have 30 minutes before it expires. Please try again.',
+          ),
+        );
         return;
       }
 
@@ -58,7 +62,9 @@ router
       const user = await UserDao.getUserByUuid(resetRow.userUuid);
 
       if (!user) {
-        next(new HttpBadRequest('Invalid user ID'));
+        next(
+          new HttpBadRequest('You tried to reset the password for an invalid user. The user may have been deleted.'),
+        );
         return;
       }
 
