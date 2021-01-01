@@ -70,7 +70,12 @@ router
         return;
       }
 
-      const insertIds = await PublicBlacklistDao.addPublicTexts(texts, async (trx) => {
+      const insertRows = texts.map((item) => ({
+        uuid: item.uuid,
+        type: item.type,
+      }));
+
+      const insertIds = await PublicBlacklistDao.addPublicTexts(insertRows, async (trx) => {
         await Promise.all(
           texts.map((text) => LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'public_blacklist', text.uuid, trx)),
         );

@@ -2,6 +2,19 @@ import knex from '@/connection';
 import { v4 } from 'uuid';
 import { DateTime } from 'luxon';
 
+interface ResetPasswordBase {
+  uuid: string;
+  userUuid: string;
+}
+
+interface ResetPasswordQueryRow extends ResetPasswordBase {
+  expiration: string;
+}
+
+export interface ResetPasswordRow extends ResetPasswordBase {
+  expiration: Date;
+}
+
 class ResetPasswordLinksDao {
   async createResetPasswordLink(userUuid: string): Promise<string> {
     const uuid = v4();
@@ -14,6 +27,19 @@ class ResetPasswordLinksDao {
     });
 
     return uuid;
+  }
+
+  async getResetPasswordRow(uuid: string): Promise<ResetPasswordRow | null> {
+    const row: ResetPasswordQueryRow | null = await knex('reset_password_links').select().where({ uuid }).first();
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      ...row,
+      expiration: new Date(row.expiration),
+    };
   }
 }
 

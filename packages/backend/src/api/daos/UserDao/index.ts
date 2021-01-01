@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 import { User, GetUserResponse } from '@oare/types';
 import knex from '@/connection';
+import { hashPassword } from '@/security';
 import UserGroupDao from '../UserGroupDao';
 
 export interface UserRow {
@@ -28,6 +29,10 @@ class UserDao {
   async getUserByEmail(email: string): Promise<UserRow | null> {
     const user = await this.getUserByColumn('email', email);
     return user;
+  }
+
+  async getUserByUuid(uuid: string): Promise<UserRow | null> {
+    return this.getUserByColumn('uuid', uuid);
   }
 
   private async getUserByColumn(column: string, value: string | number): Promise<UserRow | null> {
@@ -91,6 +96,10 @@ class UserDao {
       groups: groupObjects[index],
       isAdmin: adminStatus[index],
     }));
+  }
+
+  async updatePassword(userUuid: string, newPassword: string): Promise<void> {
+    await knex('user').update('password_hash', hashPassword(newPassword)).where('uuid', userUuid);
   }
 }
 

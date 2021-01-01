@@ -450,3 +450,10 @@ export type PermissionsListType = 'Text' | 'Collection';
 export interface TextInfoResponse {
   name: string;
 }
+
+// Reset Password
+
+export interface ResetPasswordPayload {
+  resetUuid: string;
+  newPassword: string;
+}
