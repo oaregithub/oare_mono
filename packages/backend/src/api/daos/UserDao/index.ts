@@ -82,17 +82,26 @@ class UserDao {
     });
   }
 
-  async userIsAdmin(email: string): Promise<boolean> {
-    const { isAdmin } = await knex('user').first('is_admin AS isAdmin').where('email', email);
+  async userIsAdmin(uuid: string): Promise<boolean> {
+    const { isAdmin } = await knex('user').first('is_admin AS isAdmin').where('uuid', uuid);
     return isAdmin;
   }
 
   async getAllUsers(): Promise<GetUserResponse[]> {
-    const users: User[] = await knex('user').select('id', 'first_name', 'last_name', 'email');
+    const users: UserRow[] = await knex('user').select(
+      'id',
+      'uuid',
+      'first_name AS firstName',
+      'last_name AS lastName',
+      'email',
+    );
     const groupObjects = await Promise.all(users.map((user) => UserGroupDao.getGroupsOfUser(user.id)));
-    const adminStatus = await Promise.all(users.map((user) => this.userIsAdmin(user.email)));
+    const adminStatus = await Promise.all(users.map((user) => this.userIsAdmin(user.uuid)));
     return users.map((user, index) => ({
-      ...user,
+      id: user.id,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      email: user.email,
       groups: groupObjects[index],
       isAdmin: adminStatus[index],
     }));
