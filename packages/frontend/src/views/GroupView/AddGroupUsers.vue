@@ -83,9 +83,7 @@ export default defineComponent({
     const allUsers: Ref<GetUserResponse[]> = ref([]);
     const unaddedUsers = computed(() => {
       return allUsers.value
-        .filter(user => {
-          return !user.groups.includes(Number(groupId));
-        })
+        .filter(user => !user.groups.includes(Number(groupId)) && !user.isAdmin)
         .sort((a, b) => {
           return a.first_name.charCodeAt(0) - b.first_name.charCodeAt(0);
         });
