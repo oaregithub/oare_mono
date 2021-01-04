@@ -6,29 +6,32 @@
         v-model="newPassword"
         label="New password"
         type="password"
+        class="test-new-password"
+        autofocus
       />
       <v-text-field
         outlined
         v-model="confirmNewPassword"
         label="Confirm new password"
         type="password"
+        class="test-confirm-new-password"
       />
-      <span class="subtitle error--text" v-if="!passwordsMatch">
-        Passwords do not match
+      <span class="subtitle error--text" v-if="formError">
+        {{ formError }}
       </span>
     </v-col>
     <v-col v-else>
-      <span class="mb-3">{{
-        serverError || 'Your password has successfully been reset.'
-      }}</span>
+      <span v-if="serverError" v-html="serverError" class="test-error-msg" />
+      <span v-else>Your password has successfully been reset.</span>
     </v-col>
 
     <template #actions>
       <OareLoaderButton
         v-if="!submitted"
+        class="test-submit"
         color="primary"
         :loading="loading"
-        :disabled="!newPassword || !confirmNewPassword || !passwordsMatch"
+        :disabled="!newPassword || !confirmNewPassword || Boolean(formError)"
         @click="resetPassword"
         >Submit</OareLoaderButton
       >
@@ -37,9 +40,12 @@
         color="primary"
         v-else-if="serverError"
         to="/send_reset_password_email"
+        class="test-action"
         >Try again</v-btn
       >
-      <v-btn color="primary" v-else to="/login">Login</v-btn>
+      <v-btn class="test-action" color="primary" v-else to="/login"
+        >Login</v-btn
+      >
     </template>
   </OareCard>
 </template>
@@ -47,6 +53,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from '@vue/composition-api';
 import sl from '@/serviceLocator';
+import serverProxy from '@/serverProxy';
 
 export default defineComponent({
   props: {
@@ -64,11 +71,18 @@ export default defineComponent({
     const title = ref('Create new password');
 
     const server = sl.get('serverProxy');
-    const actions = sl.get('globalActions');
 
-    const passwordsMatch = computed(
-      () => newPassword.value === confirmNewPassword.value
-    );
+    const formError = computed(() => {
+      if (newPassword.value !== confirmNewPassword.value) {
+        return 'Passwords do not match';
+      }
+
+      if (newPassword.value.length < 8) {
+        return 'Passwords must be at least 8 characters long';
+      }
+
+      return '';
+    });
 
     const resetPassword = async () => {
       try {
@@ -78,11 +92,12 @@ export default defineComponent({
           newPassword: newPassword.value,
         });
       } catch (err) {
+        title.value = 'Failed to reset password';
         if (err && err.response && err.response.status === 400) {
           serverError.value = err.response.data.message;
-          title.value = 'Failed to reset password';
         } else {
-          actions.showErrorSnackbar('Failed to reset password');
+          serverError.value =
+            'There was a server-side error. Please try again, and if the problem persists, contact us at <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>.';
         }
       } finally {
         loading.value = false;
@@ -96,12 +111,10 @@ export default defineComponent({
       loading,
       resetPassword,
       submitted,
-      passwordsMatch,
+      formError,
       title,
       serverError,
     };
   },
 });
 </script>
-
-<style></style>

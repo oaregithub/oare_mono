@@ -102,6 +102,7 @@ describe('PATCH /reset_password', () => {
 
   const ResetPasswordLinksDao = {
     getResetPasswordRow: jest.fn().mockResolvedValue(resetRow),
+    invalidateResetRow: jest.fn().mockResolvedValue(null),
   };
 
   const UserDao = {
@@ -116,10 +117,17 @@ describe('PATCH /reset_password', () => {
     sendMail: jest.fn().mockResolvedValue(null),
   };
 
+  const utils = {
+    createTransaction: jest.fn(async (cb) => {
+      await cb();
+    }),
+  };
+
   const setup = () => {
     sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
     sl.set('UserDao', UserDao);
     sl.set('mailer', mailer);
+    sl.set('utils', utils);
   };
 
   const sendRequest = () => request(app).patch(PATH).send(payload);
@@ -130,7 +138,8 @@ describe('PATCH /reset_password', () => {
     const response = await sendRequest();
 
     expect(response.status).toBe(200);
-    expect(UserDao.updatePassword).toHaveBeenCalledWith(resetRow.uuid, payload.newPassword);
+    expect(UserDao.updatePassword).toHaveBeenCalled();
+    expect(ResetPasswordLinksDao.invalidateResetRow).toHaveBeenCalled();
     expect(mailer.sendMail).toHaveBeenCalled();
   });
 
@@ -143,6 +152,7 @@ describe('PATCH /reset_password', () => {
     const response = await sendRequest();
     expect(response.status).toBe(400);
     expect(UserDao.updatePassword).not.toHaveBeenCalled();
+    expect(ResetPasswordLinksDao.invalidateResetRow).not.toHaveBeenCalled();
     expect(mailer.sendMail).not.toHaveBeenCalled();
   });
 
@@ -157,6 +167,7 @@ describe('PATCH /reset_password', () => {
     const response = await sendRequest();
     expect(response.status).toBe(400);
     expect(UserDao.updatePassword).not.toHaveBeenCalled();
+    expect(ResetPasswordLinksDao.invalidateResetRow).not.toHaveBeenCalled();
     expect(mailer.sendMail).not.toHaveBeenCalled();
   });
 
@@ -168,6 +179,7 @@ describe('PATCH /reset_password', () => {
     const response = await sendRequest();
     expect(response.status).toBe(400);
     expect(UserDao.updatePassword).not.toHaveBeenCalled();
+    expect(ResetPasswordLinksDao.invalidateResetRow).not.toHaveBeenCalled();
     expect(mailer.sendMail).not.toHaveBeenCalled();
   });
 
@@ -175,6 +187,17 @@ describe('PATCH /reset_password', () => {
     sl.set('UserDao', {
       ...UserDao,
       updatePassword: jest.fn().mockRejectedValue('Failed to update password'),
+    });
+
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+    expect(mailer.sendMail).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 if invalidating the reset row fails', async () => {
+    sl.set('ResetPasswordLinksDao', {
+      ...ResetPasswordLinksDao,
+      invalidateResetRow: jest.fn().mockRejectedValue('Failed to invalidate reset row'),
     });
 
     const response = await sendRequest();

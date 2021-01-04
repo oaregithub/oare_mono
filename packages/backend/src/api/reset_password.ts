@@ -30,7 +30,11 @@ router
       await mailer.sendMail({
         to: email,
         subject: 'Reset OARE password',
-        text: `Hello ${user.firstName},\n\nYou have requested to reset your password at oare.byu.edu. Please follow this link to reset your password: https://oare.byu.edu/reset_password/${resetUuid}.\n\nOARE Team`,
+        text: `Hello ${
+          user.firstName
+        },\n\nYou have requested to reset your password at oare.byu.edu. Please follow this link to reset your password: ${
+          process.env.NODE_ENV === 'development' ? 'localhost:8080' : 'https://oare.byu.edu'
+        }/reset_password/${resetUuid}.\n\nOARE Team`,
       });
       res.status(200).end();
     } catch (err) {
@@ -68,7 +72,12 @@ router
         return;
       }
 
-      await UserDao.updatePassword(resetRow.uuid, newPassword);
+      const utils = sl.get('utils');
+
+      await utils.createTransaction(async (trx) => {
+        await UserDao.updatePassword(resetRow.userUuid, newPassword, trx);
+        await ResetPasswordLinksDao.invalidateResetRow(resetRow.uuid, trx);
+      });
 
       const mailer = sl.get('mailer');
 
