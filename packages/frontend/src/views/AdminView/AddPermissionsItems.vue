@@ -72,6 +72,15 @@
             show-select
             v-model="selectedItems"
           >
+            <template #[`item.name`]="{ item }">
+              <router-link
+                v-if="item.hasEpigraphy || itemType === 'Collection'"
+                :to="`${itemLink}${item.uuid}`"
+                class="test-item-name"
+                >{{ item.name }}</router-link
+              >
+              <span v-else>{{ item.name }}</span>
+            </template>
             <template v-if="editPermissions" #[`item.canRead`]="{ item }">
               <v-checkbox
                 :input-value="item.canRead"
@@ -104,6 +113,15 @@
               'items-per-page-options': [10, 25, 50, 100],
             }"
           >
+            <template #[`item.name`]="{ item }">
+              <router-link
+                v-if="item.hasEpigraphy || itemType === 'Collection'"
+                :to="`${itemLink}${item.uuid}`"
+                class="test-item-name"
+                >{{ item.name }}</router-link
+              >
+              <span v-else>{{ item.name }}</span>
+            </template>
           </v-data-table>
         </v-col>
       </v-row>
@@ -227,6 +245,9 @@ export default defineComponent({
         ${itemType.toLowerCase()}(s) unless otherwise authorized.`;
       }
     });
+    const itemLink = computed(() =>
+      itemType === 'Collection' ? '/collections/name/' : '/epigraphies/'
+    );
 
     const getItems = async () => {
       try {
@@ -243,6 +264,7 @@ export default defineComponent({
             uuid: text.uuid,
             canRead: true,
             canWrite: false,
+            hasEpigraphy: text.hasEpigraphy,
           }));
         } else if ('collections' in response) {
           unaddedItems.value = response.collections.map(collection => ({
@@ -404,6 +426,7 @@ export default defineComponent({
       selectItem,
       selectAll,
       confirmAddMessage,
+      itemLink,
     };
   },
 });
