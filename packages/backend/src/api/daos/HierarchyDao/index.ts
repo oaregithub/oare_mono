@@ -4,6 +4,7 @@ import {
   CollectionText,
   SearchTextNamesResponse,
   SearchCollectionNamesResponse,
+  SearchTextNamesResultRow,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -65,14 +66,17 @@ class HierarchyDao {
         .whereNull('public_blacklist.uuid');
     }
 
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const textsResponse = await createBaseQuery()
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
     const names = await Promise.all(textsResponse.map((text) => aliasDao.textAliasNames(text.uuid)));
-    const matchingTexts: CollectionListItem[] = textsResponse.map((text, index) => ({
+    const epigraphyStatus = await Promise.all(textsResponse.map((text) => TextEpigraphyDao.hasEpigraphy(text.uuid)));
+    const matchingTexts: SearchTextNamesResultRow[] = textsResponse.map((text, index) => ({
       ...text,
       name: names[index],
+      hasEpigraphy: epigraphyStatus[index],
     }));
 
     const count = await createBaseQuery()
