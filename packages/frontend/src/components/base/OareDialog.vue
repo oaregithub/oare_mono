@@ -10,35 +10,45 @@
     </template>
 
     <v-card>
+      <div v-if="closeButton">
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="$emit('input', false)" text color="error">Close</v-btn>
+        </v-card-actions>
+        <v-divider />
+      </div>
       <v-card-title data-testid="dialog-title" class="test-dialog-title">
         <slot name="title">{{ title }}</slot>
       </v-card-title>
       <v-card-text>
         <slot></slot>
       </v-card-text>
-      <v-divider />
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          @click="$emit('input', false)"
-          color="error"
-          text
-          data-testid="cancel-btn"
-          >{{ cancelText }}</v-btn
-        >
-
-        <slot v-if="showSubmit" name="submit-button" :on="{ click: submit }">
-          <OareLoaderButton
-            class="test-submit-btn"
-            @click="submit"
-            color="primary"
-            :loading="submitLoading"
-            :disabled="submitLoading || submitDisabled"
+      <div v-if="showCancel || showSubmit">
+        <v-divider />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            v-if="showCancel"
+            @click="$emit('input', false)"
+            color="error"
+            text
+            data-testid="cancel-btn"
+            >{{ cancelText }}</v-btn
           >
-            {{ submitText }}
-          </OareLoaderButton>
-        </slot>
-      </v-card-actions>
+
+          <slot v-if="showSubmit" name="submit-button" :on="{ click: submit }">
+            <OareLoaderButton
+              class="test-submit-btn"
+              @click="submit"
+              color="primary"
+              :loading="submitLoading"
+              :disabled="submitLoading || submitDisabled"
+            >
+              {{ submitText }}
+            </OareLoaderButton>
+          </slot>
+        </v-card-actions>
+      </div>
     </v-card>
   </v-dialog>
 </template>
@@ -58,6 +68,10 @@ export default defineComponent({
       default: '',
     },
     showSubmit: {
+      type: Boolean,
+      default: true,
+    },
+    showCancel: {
       type: Boolean,
       default: true,
     },
@@ -88,6 +102,10 @@ export default defineComponent({
     width: {
       type: Number,
       default: 500,
+    },
+    closeButton: {
+      type: Boolean,
+      default: false,
     },
   },
   setup({ closeOnSubmit }, { emit }) {
