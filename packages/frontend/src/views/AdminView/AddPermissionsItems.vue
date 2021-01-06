@@ -319,6 +319,7 @@ export default defineComponent({
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );
+        selectedItems.value = [];
         if (groupId) {
           router.push(`/groups/${groupId}/${itemType.toLowerCase()}s`);
         } else {
