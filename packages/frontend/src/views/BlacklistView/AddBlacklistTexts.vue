@@ -30,7 +30,7 @@ export default defineComponent({
   },
   setup() {
     const server = sl.get('serverProxy');
-    let nextObj = ref(() => {});
+    const nextObj = ref(() => {});
 
     const permitChange = () => {
       nextObj.value();
