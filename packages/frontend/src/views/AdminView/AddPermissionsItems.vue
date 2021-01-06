@@ -20,6 +20,16 @@
       :itemType="itemType"
       v-model="textsAndCollectionsDialog"
     ></text-and-collections-dialog>
+    <OareDialog
+      v-model="preventRouterDialog"
+      title="Are you sure?"
+      submitText="Continue"
+      cancelText="Cancel"
+      @submit="routerChangePermitted"
+    >
+      Any changes made will be lost. Would you like to continue anyways?
+    </OareDialog>
+
     <v-container>
       <v-row align="center" justify="center">
         <OareDialog
@@ -138,6 +148,8 @@ import {
   onMounted,
   watch,
   computed,
+  onBeforeMount,
+  onBeforeUnmount,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
@@ -160,6 +172,10 @@ import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   name: 'AddPermissionsItems',
+  components: {
+    EpigraphyView,
+    TextAndCollectionsDialog,
+  },
   props: {
     groupId: {
       type: String,
@@ -194,11 +210,10 @@ export default defineComponent({
       required: true,
     },
   },
-  components: {
-    EpigraphyView,
-    TextAndCollectionsDialog,
-  },
-  setup({ groupId, itemType, editPermissions, searchItems, addItems }) {
+  setup(
+    { groupId, itemType, editPermissions, searchItems, addItems },
+    { emit }
+  ) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
@@ -219,13 +234,13 @@ export default defineComponent({
     const addItemsDialog = ref(false);
     const addItemsLoading = ref(false);
     const getItemsLoading = ref(false);
+    const preventRouterDialog = ref(false);
     const textsAndCollectionsDialog = ref(false);
     const dialogUuid = ref('');
 
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
-    const [items, setItems] = useQueryParam('items', '');
 
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
@@ -312,6 +327,7 @@ export default defineComponent({
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );
+        selectedItems.value = [];
         if (groupId) {
           router.push(`/groups/${groupId}/${itemType.toLowerCase()}s`);
         } else {
@@ -342,18 +358,6 @@ export default defineComponent({
         groupName.value = groupId
           ? await server.getGroupName(Number(groupId))
           : 'Public Blacklist';
-        if (items.value) {
-          const uuids: string[] = JSON.parse(items.value);
-          const itemNames = await Promise.all(
-            uuids.map(uuid => server.getTextName(uuid))
-          );
-          selectedItems.value = uuids.map((uuid, index) => ({
-            name: itemNames[index].name,
-            uuid,
-            canRead: true,
-            canWrite: false,
-          }));
-        }
       } catch {
         actions.showErrorSnackbar(
           `Error loading ${itemType.toLowerCase()}s. Please try again.`
@@ -391,6 +395,11 @@ export default defineComponent({
       textsAndCollectionsDialog.value = true;
     };
 
+    const routerChangePermitted = () => {
+      emit('router-change-permitted');
+      preventRouterDialog.value = false;
+    };
+
     watch(searchOptions, async () => {
       try {
         await getItems();
@@ -417,8 +426,23 @@ export default defineComponent({
       }
     );
 
-    watch(selectedItems, async () => {
-      setItems(JSON.stringify(selectedItems.value.map(item => item.uuid)));
+    onBeforeMount(() => {
+      window.addEventListener('beforeunload', event => {
+        if (selectedItems.value.length > 0) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('beforeunload', event => {
+        if (selectedItems.value.length > 0) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
+      selectedItems.value = [];
     });
 
     return {
@@ -444,6 +468,8 @@ export default defineComponent({
       textsAndCollectionsDialog,
       dialogUuid,
       setupDialog,
+      preventRouterDialog,
+      routerChangePermitted,
     };
   },
 });
