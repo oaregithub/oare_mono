@@ -1,17 +1,11 @@
-import {
-  DictionaryWordTranslation,
-  DictionaryWord,
-  NameOrPlace,
-  SearchSpellingResultRow,
-  ItemProperty,
-} from '@oare/types';
+import {DictionaryWord, DictionaryWordTranslation, NameOrPlace, SearchSpellingResultRow} from '@oare/types';
 import knex from '@/connection';
 import getQueryString from '../utils';
-import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
+import {assembleSearchResult, nestedFormsAndSpellings} from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
-import ItemPropertiesDao, { ItemPropertyRow } from '../ItemPropertiesDao';
+import ItemPropertiesDao, {ItemPropertyRow} from '../ItemPropertiesDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -161,16 +155,134 @@ class DictionaryWordDao {
   }
 
   async getNames(): Promise<NameOrPlace[]> {
-    const namesQuery = getQueryString('namesAndPlacesQuery.sql').replace('#{wordType}', 'PN');
+    const namesQuery = getQueryString('namesAndPlacesQuery.sql').replace('#{wordType}', 'PN')
+        .replace('#{upperCaseLetter}', 'A')
+        .replace('#{lowerCaseLetter}', 'a');
 
     const nameRows: NamePlaceQueryRow[] = (await knex.raw(namesQuery))[0];
     return nestedFormsAndSpellings(nameRows);
   }
 
   async getPlaces() {
-    const placesQuery = getQueryString('./namesAndPlacesQuery.sql').replace('#{wordType}', 'GN');
+    const placesQuery = getQueryString('./namesAndPlacesQuery.sql').replace('#{wordType}', 'GN')
+
+    const [dictionary_words, dictionary_form, dictionary_spelling, field, item_properties, alias] = await Promise.all([
+      (await knex('dictionary_word AS dw')
+          .select('dw.uuid', 'dw.word')
+          .where('dw.type', 'GN'))
+          .reduce((array, obj) => {
+            array.push(obj)
+            // map[obj.uuid] = obj;
+            return array;
+          }, []),
+      (await knex('dictionary_form AS df')
+          .select('df.uuid', 'df.reference_uuid', 'df.form'))
+          .reduce((map, obj) => {
+            map[obj.reference_uuid] = obj;
+            return map;
+          }, {}),
+      (await knex('dictionary_spelling AS ds')
+          .select('ds.reference_uuid', 'ds.explicit_spelling AS spelling'))
+          .reduce((map, obj) => {
+            if (map[obj.reference_uuid] === undefined) {
+              map[obj.reference_uuid] = [obj.spelling];
+            } else {
+              const dict_form_array = map[obj.reference_uuid];
+              dict_form_array.push(obj.spelling);
+              map[obj.reference_uuid] = dict_form_array
+            }
+            return map;
+          }, {}),
+      (await knex('field AS f')
+          .select('f.reference_uuid', 'f.field'))
+          .reduce((map, obj) => {
+            map[obj.reference_uuid] = obj;
+            return map;
+          }, {}),
+      (await knex('item_properties AS ip')
+            .select('ip.reference_uuid', 'ip.value_uuid')
+            .where('ip.variable_uuid', 'e0092e36-fb94-a4dc-cd04-5883ab861fd6'))
+          .reduce((map, obj) => {
+            if (map[obj.reference_uuid] === undefined) {
+              map[obj.reference_uuid] = [obj];
+            } else {
+              const dict_form_array = map[obj.reference_uuid];
+              dict_form_array.push(obj);
+              map[obj.reference_uuid] = dict_form_array
+            }
+            return map;
+          }, {}),
+      (await knex('alias AS a')
+          .select('a.reference_uuid', 'a.name')
+          .where('a.type', 'abbreviation'))
+          .reduce((map, obj) => {
+            map[obj.reference_uuid] = obj;
+            return map;
+          }, {})
+    ]);
+
+    console.log('Dictionary Words');
+    // console.log(dictionary_words);
+    // console.log(item_properties);
+    console.log("Length: " + dictionary_words.length);
+    console.log("Is Array: " + Array.isArray(dictionary_words));
+
+    const words_and_form_results = dictionary_words.forEach( (dictionary_word : {uuid: string, word: string}) => {
+
+
+      let form_uuid: string | undefined = '';
+      let form_string: string | undefined = '';
+      let translation: string | undefined = '';
+      const abbreviations = new Set();
+      let explicit_spelling = new Set();
+      if (dictionary_form[dictionary_word.uuid] !== undefined) {
+        const form: {uuid: string, reference_uuid: string, form: string} = dictionary_form[dictionary_word.uuid];
+
+        form_uuid = form.uuid;
+        form_string = form.form;
+      }
+      if (form_uuid !== undefined && dictionary_spelling[form_uuid] !== undefined) {
+        dictionary_spelling[form_uuid].forEach((spelling: string) => {
+          explicit_spelling.add(spelling);
+        });
+      }
+
+      if (field[dictionary_word.uuid] !== undefined) {
+        translation = field[dictionary_word.uuid]?.field;
+      }
+
+      const properties: {reference_uuid: string, value_uuid: string}[] = item_properties[form_uuid];
+      if (properties !== undefined) {
+        properties.forEach( property => {
+          if (alias[property.value_uuid] !== undefined) {
+            abbreviations.add(alias[property.value_uuid].name);
+          }
+        })
+      }
+
+
+      //q1.uuid, q1.word, q1.form_uuid AS formUuid, q1.field AS translation, q1.form, q2.parse AS cases, q1.spelling AS spellings
+      console.log(dictionary_word.uuid, dictionary_word.word, form_uuid, translation, form_string, abbreviations, explicit_spelling);
+      return {
+        uuid: dictionary_word.uuid,
+        word: dictionary_word.word,
+        formUuid: form_uuid,
+        translation: translation,
+        form: form_string,
+        cases: abbreviations,
+        spellings: explicit_spelling,
+      };
+    });
+
+    // console.log("OUTPUT");
+    // console.log(words_and_form_results);
+
+
 
     const placeRows: NamePlaceQueryRow[] = (await knex.raw(placesQuery))[0];
+    console.log("SQL ROWS");
+    console.log(placeRows);
+
     return nestedFormsAndSpellings(placeRows);
   }
 
