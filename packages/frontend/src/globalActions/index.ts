@@ -12,9 +12,21 @@ const showErrorSnackbar = (text: string): void => {
   EventBus.$emit(ACTIONS.TOAST, { text, error: true });
 };
 
+const showUnsavedChangesWarning = (next: Function): void => {
+  const response = window.confirm(
+    'Any changes made will be lost. Would you like to continue anyways?'
+  );
+  if (response) {
+    next();
+  } else {
+    next(false);
+  }
+};
+
 const globalActions = {
   showSnackbar,
   showErrorSnackbar,
+  showUnsavedChangesWarning,
 };
 
 export type GlobalActionsType = typeof globalActions;

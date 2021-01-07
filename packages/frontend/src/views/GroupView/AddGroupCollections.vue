@@ -5,8 +5,6 @@
     :editPermissions="true"
     :searchItems="server.searchCollectionNames"
     :addItems="server.addGroupCollections"
-    @router-change-permitted="permitChange"
-    ref="childView"
   />
 </template>
 
@@ -24,29 +22,20 @@ export default defineComponent({
       required: true,
     },
   },
-  beforeRouteLeave(_to, _from, next) {
-    const selectedItems = (this.$refs.childView as any).selectedItems;
-    if (selectedItems.length > 0) {
-      (this.$refs.childView as any).preventRouterDialog = true;
-      this.nextObj = next;
-    } else if (selectedItems.length === 0) {
+  beforeRouteLeave(_to, from, next) {
+    if (from.query.saved) {
       next();
     } else {
-      next(false);
+      this.actions.showUnsavedChangesWarning(next);
     }
   },
   setup() {
     const server = sl.get('serverProxy');
-    const nextObj = ref(() => {});
-
-    const permitChange = () => {
-      nextObj.value();
-    };
+    const actions = sl.get('globalActions');
 
     return {
       server,
-      permitChange,
-      nextObj,
+      actions,
     };
   },
 });
