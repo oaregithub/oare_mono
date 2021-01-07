@@ -90,9 +90,11 @@
           >
             <template #[`item.name`]="{ item }">
               <span v-if="item.hasEpigraphy || itemType === 'Collection'">
-                <a @click="setupDialog(item.uuid)" class="underlined">{{
-                  item.name
-                }}</a>
+                <a
+                  @click="setupDialog(item.uuid)"
+                  class="text-decoration-underline"
+                  >{{ item.name }}</a
+                >
               </span>
               <span v-else>{{ item.name }}</span>
             </template>
@@ -130,9 +132,11 @@
           >
             <template #[`item.name`]="{ item }">
               <span v-if="item.hasEpigraphy || itemType === 'Collection'">
-                <a @click="setupDialog(item.uuid)" class="underlined">{{
-                  item.name
-                }}</a>
+                <a
+                  @click="setupDialog(item.uuid)"
+                  class="text-decoration-underline"
+                  >{{ item.name }}</a
+                >
               </span>
               <span v-else>{{ item.name }}</span>
             </template>
@@ -478,9 +482,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.underlined {
-  text-decoration: underline;
-}
-</style>
