@@ -76,6 +76,7 @@ describe('AddGroupTexts test', () => {
   it('displays error on failed group name retreival', async () => {
     createWrapper({
       server: {
+        ...mockServer,
         getGroupName: jest.fn().mockRejectedValue('failed name retrieval'),
       },
     });

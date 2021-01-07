@@ -27,9 +27,15 @@ router
   .route('/text_groups/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const { groupId } = (req.params as unknown) as { groupId: number };
       const texts = await textGroupDao.getTexts(groupId);
-      res.json(texts);
+      const epigraphyStatus = await Promise.all(texts.map((text) => TextEpigraphyDao.hasEpigraphy(text.uuid)));
+      const response = texts.map((text, index) => ({
+        ...text,
+        hasEpigraphy: epigraphyStatus[index],
+      }));
+      res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
     }
