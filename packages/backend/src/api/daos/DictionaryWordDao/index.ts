@@ -5,7 +5,7 @@ import {assembleSearchResult, nestedFormsAndSpellings} from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
-import ItemPropertiesDao, {ItemPropertyRow} from '../ItemPropertiesDao';
+import ItemPropertiesDao, { ItemPropertyRow } from '../ItemPropertiesDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -44,6 +44,11 @@ export interface WordQueryResultRow {
   partsOfSpeech: string[];
   verbalThematicVowelTypes: string[];
   specialClassifications: string[];
+}
+
+export interface WordQueryWordResultRow {
+  uuid: string;
+  word: string;
 }
 
 export interface NamePlaceQueryRow {
@@ -163,13 +168,18 @@ class DictionaryWordDao {
     return nestedFormsAndSpellings(nameRows);
   }
 
+  async getDictionaryWordsByType(type: string): Promise<WordQueryWordResultRow[]> {
+    const words: WordQueryWordResultRow[] = await knex('dictionary_word AS dw')
+      .select('dw.uuid', 'dw.word')
+      .where('dw.type', 'GN');
+    return words;
+  }
+
   async getPlaces() {
     const placesQuery = getQueryString('./namesAndPlacesQuery.sql').replace('#{wordType}', 'GN')
 
     const [dictionary_words, dictionary_form, dictionary_spelling, field, item_properties, alias] = await Promise.all([
-      (await knex('dictionary_word AS dw')
-          .select('dw.uuid', 'dw.word')
-          .where('dw.type', 'GN')),
+      this.getDictionaryWordsByType('GN'),
       (await knex('dictionary_form AS df')
           .select('df.uuid', 'df.reference_uuid', 'df.form'))
           .reduce((map, obj) => {
