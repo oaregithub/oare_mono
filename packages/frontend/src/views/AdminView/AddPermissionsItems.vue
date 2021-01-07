@@ -150,7 +150,6 @@ import {
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
-import EpigraphyView from '../EpigraphyView/index.vue';
 import TextAndCollectionsDialog from './TextAndCollectionsDialog.vue';
 import {
   Text,
@@ -170,7 +169,6 @@ import useQueryParam from '@/hooks/useQueryParam';
 export default defineComponent({
   name: 'AddPermissionsItems',
   components: {
-    EpigraphyView,
     TextAndCollectionsDialog,
   },
   props: {
