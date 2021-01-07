@@ -129,7 +129,9 @@
                   >All <b>{{ rows }}</b> {{ itemType.toLowerCase() }}s on this
                   page are selected.</span
                 >
-                <a @click="selectFullList" class="px-2 underlined"
+                <a
+                  @click="selectFullList"
+                  class="px-2 text-decoration-underline"
                   >Select all {{ serverCount }}
                   {{ itemType.toLowerCase() }}s.</a
                 >
