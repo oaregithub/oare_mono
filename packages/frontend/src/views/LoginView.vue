@@ -1,31 +1,29 @@
 <template>
-  <v-card class="mt-12 pa-3 mx-auto" max-width="600" elevation="24">
-    <v-card-title>
-      <h3 class="oare-header mb-2">{{ $t('login.signIn') }}</h3>
-    </v-card-title>
-    <v-card-text>
-      <v-text-field
-        v-model="email"
-        class="test-email"
-        :label="$t('login.email')"
-        outlined
-      />
-      <v-text-field
-        class="test-password"
-        outlined
-        @keyup.enter="logIn"
-        v-model="password"
-        :label="$t('login.password')"
-        type="password"
-      />
-      <p class="subtitle error--text test-error-text">{{ errorMsg }}</p>
-      <v-btn text class="text-none" to="/register">{{
-        $t('login.dontHaveAccount')
-      }}</v-btn>
-      <br />
-    </v-card-text>
+  <OareCard title="Sign In">
+    <v-text-field
+      v-model="email"
+      class="test-email"
+      :label="$t('login.email')"
+      outlined
+    />
+    <v-text-field
+      class="test-password"
+      outlined
+      @keyup.enter="logIn"
+      v-model="password"
+      :label="$t('login.password')"
+      type="password"
+    />
+    <p class="subtitle error--text test-error-text">{{ errorMsg }}</p>
+    <v-btn text class="text-none" to="/send_reset_password_email"
+      >Forgot your password?</v-btn
+    >
+    <v-btn text class="text-none" to="/register">{{
+      $t('login.dontHaveAccount')
+    }}</v-btn>
+    <br />
 
-    <v-card-actions>
+    <template #actions>
       <OareLoaderButton
         class="text-right test-signin-btn"
         @click="logIn"
@@ -35,8 +33,8 @@
       >
         {{ $t('login.signIn') }}
       </OareLoaderButton>
-    </v-card-actions>
-  </v-card>
+    </template>
+  </OareCard>
 </template>
 
 <script lang="ts">

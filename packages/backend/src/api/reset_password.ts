@@ -30,7 +30,11 @@ router
       await mailer.sendMail({
         to: email,
         subject: 'Reset OARE password',
-        text: `Hello ${user.firstName},\n\nYou have requested to reset your password at oare.byu.edu. Please follow this link to reset your password: https://oare.byu.edu/reset_password/${resetUuid}.\n\nOARE Team`,
+        text: `Hello ${
+          user.firstName
+        },\n\nYou have requested to reset your password at oare.byu.edu. Please follow this link to reset your password: ${
+          process.env.NODE_ENV === 'development' ? 'localhost:8080' : 'https://oare.byu.edu'
+        }/reset_password/${resetUuid}.\n\nOARE Team`,
       });
       res.status(200).end();
     } catch (err) {
@@ -45,12 +49,16 @@ router
       const resetRow = await ResetPasswordLinksDao.getResetPasswordRow(resetUuid);
 
       if (!resetRow) {
-        next(new HttpBadRequest('Invalid link'));
+        next(new HttpBadRequest('The link you tried to use to reset your password is invalid.'));
         return;
       }
 
       if (Date.now() >= resetRow.expiration.getTime()) {
-        next(new HttpBadRequest('Expired reset password link'));
+        next(
+          new HttpBadRequest(
+            'The link you tried to use to reset your password is expired. When a reset link is sent to your email, you have 30 minutes before it expires. Please try again.',
+          ),
+        );
         return;
       }
 
@@ -58,11 +66,18 @@ router
       const user = await UserDao.getUserByUuid(resetRow.userUuid);
 
       if (!user) {
-        next(new HttpBadRequest('Invalid user ID'));
+        next(
+          new HttpBadRequest('You tried to reset the password for an invalid user. The user may have been deleted.'),
+        );
         return;
       }
 
-      await UserDao.updatePassword(resetRow.uuid, newPassword);
+      const utils = sl.get('utils');
+
+      await utils.createTransaction(async (trx) => {
+        await UserDao.updatePassword(resetRow.userUuid, newPassword, trx);
+        await ResetPasswordLinksDao.invalidateResetRow(resetRow.uuid, trx);
+      });
 
       const mailer = sl.get('mailer');
 
