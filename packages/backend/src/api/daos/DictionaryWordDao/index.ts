@@ -169,16 +169,17 @@ class DictionaryWordDao {
     const [dictionary_words, dictionary_form, dictionary_spelling, field, item_properties, alias] = await Promise.all([
       (await knex('dictionary_word AS dw')
           .select('dw.uuid', 'dw.word')
-          .where('dw.type', 'GN'))
-          .reduce((array, obj) => {
-            array.push(obj)
-            // map[obj.uuid] = obj;
-            return array;
-          }, []),
+          .where('dw.type', 'GN')),
       (await knex('dictionary_form AS df')
           .select('df.uuid', 'df.reference_uuid', 'df.form'))
           .reduce((map, obj) => {
-            map[obj.reference_uuid] = obj;
+            if (map[obj.reference_uuid] === undefined) {
+              map[obj.reference_uuid] = [obj];
+            } else {
+              const dict_form_array = map[obj.reference_uuid];
+              dict_form_array.push(obj);
+              map[obj.reference_uuid] = dict_form_array
+            }
             return map;
           }, {}),
       (await knex('dictionary_spelling AS ds')
@@ -227,63 +228,116 @@ class DictionaryWordDao {
     console.log("Length: " + dictionary_words.length);
     console.log("Is Array: " + Array.isArray(dictionary_words));
 
-    const words_and_form_results = dictionary_words.forEach( (dictionary_word : {uuid: string, word: string}) => {
+
+    // console.log(dictionary_words);
+    const words_and_form_results: NamePlaceQueryRow[] = [];
+    dictionary_words.forEach( (dictionary_word : {uuid: string, word: string}) => {
 
 
       let form_uuid: string | undefined = '';
       let form_string: string | undefined = '';
       let translation: string | undefined = '';
-      const abbreviations = new Set();
-      let explicit_spelling = new Set();
-      if (dictionary_form[dictionary_word.uuid] !== undefined) {
-        const form: {uuid: string, reference_uuid: string, form: string} = dictionary_form[dictionary_word.uuid];
+      // const abbreviations = new Set();
+      let abbreviations: { [key:string]:Set<string> } = {};
+      // let explicit_spelling = new Set();
+      let explicit_spelling: { [key:string]:Set<string> } = {};
+      let forms: {uuid: string, reference_uuid: string, form: string}[] = [];
 
-        form_uuid = form.uuid;
-        form_string = form.form;
+
+      if (dictionary_form[dictionary_word.uuid] !== undefined) {
+        forms = dictionary_form[dictionary_word.uuid];
+
+        // form_uuid = form.uuid;
+        // form_string = form.form;
       }
-      if (form_uuid !== undefined && dictionary_spelling[form_uuid] !== undefined) {
-        dictionary_spelling[form_uuid].forEach((spelling: string) => {
-          explicit_spelling.add(spelling);
-        });
-      }
+
+      forms.forEach((form) => {
+        if (form.uuid !== undefined && dictionary_spelling[form.uuid] !== undefined) {
+          dictionary_spelling[form.uuid].forEach((spelling: string) => {
+            if (explicit_spelling[form.uuid] === undefined) {
+              explicit_spelling[form.uuid] = new Set<string>().add(spelling);
+            } else {
+              explicit_spelling[form.uuid].add(spelling);
+            }
+          });
+        }
+      });
 
       if (field[dictionary_word.uuid] !== undefined) {
         translation = field[dictionary_word.uuid]?.field;
       }
 
-      const properties: {reference_uuid: string, value_uuid: string}[] = item_properties[form_uuid];
-      if (properties !== undefined) {
-        properties.forEach( property => {
-          if (alias[property.value_uuid] !== undefined) {
-            abbreviations.add(alias[property.value_uuid].name);
-          }
-        })
-      }
+      forms.forEach((form) => {
+        const properties: {reference_uuid: string, value_uuid: string}[] = item_properties[form.uuid];
+        if (properties !== undefined) {
+          properties.forEach( property => {
+            if (alias[property.value_uuid] !== undefined) {
+              if (abbreviations[form.uuid] === undefined) {
+                abbreviations[form.uuid] = new Set<string>().add(alias[property.value_uuid].name);
+              } else {
+                abbreviations[form.uuid].add(alias[property.value_uuid].name);
+              }
+            }
+          });
+        }
+      });
+
 
 
       //q1.uuid, q1.word, q1.form_uuid AS formUuid, q1.field AS translation, q1.form, q2.parse AS cases, q1.spelling AS spellings
-      console.log(dictionary_word.uuid, dictionary_word.word, form_uuid, translation, form_string, abbreviations, explicit_spelling);
-      return {
-        uuid: dictionary_word.uuid,
-        word: dictionary_word.word,
-        formUuid: form_uuid,
-        translation: translation,
-        form: form_string,
-        cases: abbreviations,
-        spellings: explicit_spelling,
-      };
+      // console.log(dictionary_word.uuid, dictionary_word.word, form_uuid, translation, form_string, Array.from(abbreviations).join('/'), Array.from(explicit_spelling).join(','));
+
+      if (forms !== undefined && forms.length !== 0) {
+        forms.forEach((form) => {
+          words_and_form_results.push({
+            uuid: dictionary_word.uuid,
+            word: dictionary_word.word,
+            formUuid: form.uuid,
+            translation: translation,
+            form: form.form,
+            cases: (abbreviations[form.uuid] !== undefined) ? Array.from(abbreviations[form.uuid]).join('/') : null,
+            spellings: (explicit_spelling[form.uuid] !== undefined) ? Array.from(explicit_spelling[form.uuid]).join(',') : null,
+          } as NamePlaceQueryRow);
+        });
+      } else {
+        words_and_form_results.push({
+          uuid: dictionary_word.uuid,
+          word: dictionary_word.word,
+          formUuid: null,
+          translation: translation,
+          form: null,
+          cases: null,
+          spellings: null,
+        } as NamePlaceQueryRow);
+      }
+
+
     });
 
     // console.log("OUTPUT");
+    // words_and_form_results.sort((a: any, b: any) => {
+    //   return (a.word.toLowerCase() < b.word.toLowerCase()) ? 1 : -1;
+    // })
+    //
+    // words_and_form_results.forEach((dictionary_word) => {
+    //   console.log(dictionary_word.word);
+    // })
     // console.log(words_and_form_results);
 
 
 
     const placeRows: NamePlaceQueryRow[] = (await knex.raw(placesQuery))[0];
     console.log("SQL ROWS");
-    console.log(placeRows);
+    // placeRows.sort((a: any, b: any) => {
+    //   return (a.word.toLowerCase() < b.word.toLowerCase()) ? 1 : -1;
+    // })
+    //
+    //
+    // console.log(placeRows);
 
-    return nestedFormsAndSpellings(placeRows);
+
+    return nestedFormsAndSpellings(words_and_form_results);
+    // return nestedFormsAndSpellings(placeRows);
   }
 
   async getWordTranslations(wordUuid: string): Promise<DictionaryWordTranslation[]> {
