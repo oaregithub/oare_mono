@@ -38,6 +38,7 @@ describe('AddGroupTexts test', () => {
   };
 
   const mockRouter = {
+    replace: jest.fn(),
     push: jest.fn(),
   };
 

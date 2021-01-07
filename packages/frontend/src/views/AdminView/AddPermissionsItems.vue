@@ -138,6 +138,8 @@ import {
   onMounted,
   watch,
   computed,
+  onBeforeMount,
+  onBeforeUnmount,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
@@ -217,7 +219,6 @@ export default defineComponent({
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
-    const [items, setItems] = useQueryParam('items', '');
 
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
@@ -304,6 +305,10 @@ export default defineComponent({
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );
+        router.replace({
+          ...router,
+          query: { saved: 'true' },
+        });
         if (groupId) {
           router.push(`/groups/${groupId}/${itemType.toLowerCase()}s`);
         } else {
@@ -334,18 +339,6 @@ export default defineComponent({
         groupName.value = groupId
           ? await server.getGroupName(Number(groupId))
           : 'Public Blacklist';
-        if (items.value) {
-          const uuids: string[] = JSON.parse(items.value);
-          const itemNames = await Promise.all(
-            uuids.map(uuid => server.getTextName(uuid))
-          );
-          selectedItems.value = uuids.map((uuid, index) => ({
-            name: itemNames[index].name,
-            uuid,
-            canRead: true,
-            canWrite: false,
-          }));
-        }
       } catch {
         actions.showErrorSnackbar(
           `Error loading ${itemType.toLowerCase()}s. Please try again.`
@@ -404,8 +397,23 @@ export default defineComponent({
       }
     );
 
-    watch(selectedItems, async () => {
-      setItems(JSON.stringify(selectedItems.value.map(item => item.uuid)));
+    onBeforeMount(() => {
+      window.addEventListener('beforeunload', event => {
+        if (selectedItems.value.length > 0) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('beforeunload', event => {
+        if (selectedItems.value.length > 0) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
+      selectedItems.value = [];
     });
 
     return {
