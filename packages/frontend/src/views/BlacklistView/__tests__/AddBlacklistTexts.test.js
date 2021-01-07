@@ -37,6 +37,7 @@ describe('AddBlacklistTexts test', () => {
   };
 
   const mockRouter = {
+    replace: jest.fn(),
     push: jest.fn(),
   };
 

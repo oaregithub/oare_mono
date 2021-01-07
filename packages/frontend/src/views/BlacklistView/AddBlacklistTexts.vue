@@ -4,8 +4,6 @@
     :editPermissions="false"
     :searchItems="server.searchTextNames"
     :addItems="server.addTextsToPublicBlacklist"
-    @router-change-permitted="permitChange"
-    ref="childView"
   />
 </template>
 
@@ -17,29 +15,20 @@ import AddPermissionsItems from '../AdminView/AddPermissionsItems.vue';
 export default defineComponent({
   name: 'AddBlacklistTexts',
   components: { AddPermissionsItems },
-  beforeRouteLeave(_to, _from, next) {
-    const selectedItems = (this.$refs.childView as any).selectedItems;
-    if (selectedItems.length > 0) {
-      (this.$refs.childView as any).preventRouterDialog = true;
-      this.nextObj = next;
-    } else if (selectedItems.length === 0) {
+  beforeRouteLeave(_to, from, next) {
+    if (from.query.saved) {
       next();
     } else {
-      next(false);
+      this.actions.showUnsavedChangesWarning(next);
     }
   },
   setup() {
     const server = sl.get('serverProxy');
-    const nextObj = ref(() => {});
-
-    const permitChange = () => {
-      nextObj.value();
-    };
+    const actions = sl.get('globalActions');
 
     return {
       server,
-      permitChange,
-      nextObj,
+      actions,
     };
   },
 });

@@ -14,16 +14,6 @@
       </router-link>
     </template>
 
-    <OareDialog
-      v-model="preventRouterDialog"
-      title="Are you sure?"
-      submitText="Continue"
-      cancelText="Cancel"
-      @submit="routerChangePermitted"
-    >
-      Any changes made will be lost. Would you like to continue anyways?
-    </OareDialog>
-
     <v-container>
       <v-row align="center" justify="center">
         <OareDialog
@@ -228,7 +218,6 @@ export default defineComponent({
     const addItemsDialog = ref(false);
     const addItemsLoading = ref(false);
     const getItemsLoading = ref(false);
-    const preventRouterDialog = ref(false);
 
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
@@ -319,7 +308,10 @@ export default defineComponent({
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );
-        selectedItems.value = [];
+        router.replace({
+          ...router,
+          query: { saved: 'true' },
+        });
         if (groupId) {
           router.push(`/groups/${groupId}/${itemType.toLowerCase()}s`);
         } else {
@@ -381,11 +373,6 @@ export default defineComponent({
             selectedItems.value.splice(selectedItems.value.indexOf(item), 1)
           );
     }
-
-    const routerChangePermitted = () => {
-      emit('router-change-permitted');
-      preventRouterDialog.value = false;
-    };
 
     watch(searchOptions, async () => {
       try {
@@ -452,8 +439,6 @@ export default defineComponent({
       selectAll,
       confirmAddMessage,
       itemLink,
-      preventRouterDialog,
-      routerChangePermitted,
     };
   },
 });
