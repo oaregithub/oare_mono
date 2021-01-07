@@ -5,7 +5,6 @@
     :width="1000"
     :show-submit="false"
     :show-cancel="false"
-    cancelText="Close"
     :closeButton="true"
   >
     <EpigraphyView v-if="itemType === 'Text'" :textUuid="uuid"></EpigraphyView>
