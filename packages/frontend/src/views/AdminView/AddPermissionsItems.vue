@@ -80,13 +80,12 @@
             v-model="selectedItems"
           >
             <template #[`item.name`]="{ item }">
-              <span v-if="item.hasEpigraphy || itemType === 'Collection'">
-                <a
-                  @click="setupDialog(item.uuid)"
-                  class="text-decoration-underline"
-                  >{{ item.name }}</a
-                >
-              </span>
+              <a
+                v-if="item.hasEpigraphy || itemType === 'Collection'"
+                @click="setupDialog(item.uuid)"
+                class="text-decoration-underline"
+                >{{ item.name }}</a
+              >
               <span v-else>{{ item.name }}</span>
             </template>
             <template v-if="editPermissions" #[`item.canRead`]="{ item }">
@@ -122,13 +121,12 @@
             }"
           >
             <template #[`item.name`]="{ item }">
-              <span v-if="item.hasEpigraphy || itemType === 'Collection'">
-                <a
-                  @click="setupDialog(item.uuid)"
-                  class="text-decoration-underline"
-                  >{{ item.name }}</a
-                >
-              </span>
+              <a
+                v-if="item.hasEpigraphy || itemType === 'Collection'"
+                @click="setupDialog(item.uuid)"
+                class="text-decoration-underline"
+                >{{ item.name }}</a
+              >
               <span v-else>{{ item.name }}</span>
             </template>
           </v-data-table>
