@@ -194,10 +194,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(
-    { groupId, itemType, editPermissions, searchItems, addItems },
-    { emit }
-  ) {
+  setup({ groupId, itemType, editPermissions, searchItems, addItems }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
