@@ -28,6 +28,8 @@ import AddBlacklistTexts from '@/views/BlacklistView/AddBlacklistTexts.vue';
 import AddGroupTexts from '@/views/GroupView/AddGroupTexts.vue';
 import AddBlacklistCollections from '@/views/BlacklistView/AddBlacklistCollections.vue';
 import AddGroupCollections from '@/views/GroupView/AddGroupCollections.vue';
+import SendResetPasswordEmailView from '@/views/SendResetPasswordEmailView.vue';
+import ResetPasswordView from '@/views/ResetPasswordView.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -188,6 +190,17 @@ const routes: RouteConfig[] = [
     path: '/places/:letter',
     name: 'places',
     component: PlacesView,
+    props: true,
+  },
+  {
+    path: '/send_reset_password_email',
+    name: 'sendresetpasswordemail',
+    component: SendResetPasswordEmailView,
+  },
+  {
+    path: '/reset_password/:uuid',
+    name: 'resetpassword',
+    component: ResetPasswordView,
     props: true,
   },
   {

@@ -37,6 +37,7 @@ describe('AddGroupCollections test', () => {
   };
 
   const mockRouter = {
+    replace: jest.fn(),
     push: jest.fn(),
   };
 

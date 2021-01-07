@@ -1,53 +1,51 @@
 <template>
-  <OareUserCard :title="$t('register.register')">
-    <template v-slot>
-      <v-text-field
-        outline
-        v-model="user.firstname"
-        :label="$t('register.firstName')"
-        :error-messages="formErrors.firstname"
-        outlined
-        class="test-firstname"
-      ></v-text-field>
-      <v-text-field
-        outlined
-        v-model="user.lastname"
-        :label="$t('register.lastName')"
-        :error-messages="formErrors.lastname"
-        class="test-lastname"
-      ></v-text-field>
-      <v-text-field
-        outlined
-        v-model="user.email"
-        :label="$t('register.email')"
-        :error-messages="formErrors.email"
-        class="test-email"
-      ></v-text-field>
-      <v-text-field
-        outlined
-        v-model="user.password"
-        :label="$t('register.password')"
-        :error-messages="formErrors.password"
-        type="password"
-        class="test-password"
-      ></v-text-field>
-      <v-text-field
-        @keyup.enter="register"
-        outlined
-        v-model="user.repeatpassword"
-        :label="$t('register.confirmPassword')"
-        :error-messages="formErrors.repeatpassword"
-        name="repeatpassword"
-        type="password"
-        class="test-confirm-password"
-      ></v-text-field>
-      <p class="subtitle error--text test-error-msg">{{ errorMsg }}</p>
-      <v-btn text class="text-none" to="/login">
-        {{ $t('register.alreadyHaveAccount') }}
-      </v-btn>
-    </template>
+  <OareCard :title="$t('register.register')">
+    <v-text-field
+      outline
+      v-model="user.firstname"
+      :label="$t('register.firstName')"
+      :error-messages="formErrors.firstname"
+      outlined
+      class="test-firstname"
+    ></v-text-field>
+    <v-text-field
+      outlined
+      v-model="user.lastname"
+      :label="$t('register.lastName')"
+      :error-messages="formErrors.lastname"
+      class="test-lastname"
+    ></v-text-field>
+    <v-text-field
+      outlined
+      v-model="user.email"
+      :label="$t('register.email')"
+      :error-messages="formErrors.email"
+      class="test-email"
+    ></v-text-field>
+    <v-text-field
+      outlined
+      v-model="user.password"
+      :label="$t('register.password')"
+      :error-messages="formErrors.password"
+      type="password"
+      class="test-password"
+    ></v-text-field>
+    <v-text-field
+      @keyup.enter="register"
+      outlined
+      v-model="user.repeatpassword"
+      :label="$t('register.confirmPassword')"
+      :error-messages="formErrors.repeatpassword"
+      name="repeatpassword"
+      type="password"
+      class="test-confirm-password"
+    ></v-text-field>
+    <p class="subtitle error--text test-error-msg">{{ errorMsg }}</p>
+    <v-btn text class="text-none" to="/login">
+      {{ $t('register.alreadyHaveAccount') }}
+    </v-btn>
 
-    <template v-slot:actions>
+    <template #actions>
       <OareLoaderButton
         color="primary"
         class="test-register-btn"
@@ -58,7 +56,7 @@
         {{ $t('register.confirm') }}
       </OareLoaderButton>
     </template>
-  </OareUserCard>
+  </OareCard>
 </template>
 
 <script lang="ts">

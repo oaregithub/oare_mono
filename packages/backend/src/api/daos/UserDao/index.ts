@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
-import { User, GetUserResponse } from '@oare/types';
+import { GetUserResponse } from '@oare/types';
 import knex from '@/connection';
+import { Transaction } from 'knex';
 import { hashPassword } from '@/security';
 import UserGroupDao from '../UserGroupDao';
 
@@ -107,8 +108,9 @@ class UserDao {
     }));
   }
 
-  async updatePassword(userUuid: string, newPassword: string): Promise<void> {
-    await knex('user').update('password_hash', hashPassword(newPassword)).where('uuid', userUuid);
+  async updatePassword(userUuid: string, newPassword: string, trx?: Transaction): Promise<void> {
+    const k = trx || knex;
+    await k('user').update('password_hash', hashPassword(newPassword)).where('uuid', userUuid);
   }
 }
 
