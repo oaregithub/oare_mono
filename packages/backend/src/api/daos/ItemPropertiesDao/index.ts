@@ -10,6 +10,12 @@ export interface GetItemPropertiesOptions {
   referenceUuid?: string;
 }
 
+export interface ItemPropertyShortRow {
+  uuid: string;
+  referenceUuid: string;
+  valueUuid: string | null;
+}
+
 class ItemProperties {
   async getProperties(
     referenceType: string,
@@ -30,6 +36,14 @@ class ItemProperties {
     }
 
     return query;
+  }
+
+  async getItemPropertyRowsByAliasName(aliasName: string): Promise<ItemPropertyShortRow[]> {
+    const itemProperties: ItemPropertyShortRow[] = await knex('item_properties AS ip')
+      .select('ip.uuid', 'ip.reference_uuid AS referenceUuid', 'ip.value_uuid AS valueUuid')
+      .innerJoin('alias AS a', 'a.reference_uuid', 'ip.variable_uuid')
+      .where('a.name', aliasName);
+    return itemProperties;
   }
 }
 
