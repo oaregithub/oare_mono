@@ -1,7 +1,7 @@
 <template>
   <v-progress-linear v-if="loading" indeterminate />
   <OareContentView v-else :title="collectionName">
-    <template #header>
+    <template #header v-if="!hideDetails">
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
     <v-spacer />
@@ -66,6 +66,10 @@ export default defineComponent({
     router: {
       type: Object as PropType<Router>,
       default: () => defaultRouter,
+    },
+    hideDetails: {
+      type: Boolean,
+      default: false,
     },
   },
 

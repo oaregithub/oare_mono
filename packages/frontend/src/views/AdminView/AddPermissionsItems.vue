@@ -19,7 +19,7 @@
       :uuid="dialogUuid"
       :itemType="itemType"
       v-model="textsAndCollectionsDialog"
-    ></text-and-collections-dialog>
+    />
 
     <v-container>
       <v-row align="center" justify="center">

@@ -6,11 +6,17 @@
     :show-submit="false"
     :show-cancel="false"
     :closeButton="true"
+    :persistent="false"
   >
-    <EpigraphyView v-if="itemType === 'Text'" :textUuid="uuid"></EpigraphyView>
+    <EpigraphyView
+      v-if="itemType === 'Text'"
+      :textUuid="uuid"
+      :hideDetails="true"
+    ></EpigraphyView>
     <CollectionTexts
       v-if="itemType === 'Collection'"
       :collectionUuid="uuid"
+      :hideDetails="true"
     ></CollectionTexts>
   </oare-dialog>
 </template>
