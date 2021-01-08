@@ -1,12 +1,12 @@
 <template>
   <OareContentView :title="textName" :loading="loading">
-    <template #header>
+    <template #header v-if="!hideDetails">
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
     <template #title:pre>
       <Stoplight :color="color" :colorMeaning="colorMeaning" />
     </template>
-    <template #title:post v-if="canWrite">
+    <template #title:post v-if="canWrite && !hideDetails">
       <v-btn v-if="!isEditing" color="primary" @click="toggleEdit">Edit</v-btn>
     </template>
     <v-row>
@@ -161,6 +161,10 @@ export default defineComponent({
     textUuid: {
       type: String,
       required: true,
+    },
+    hideDetails: {
+      type: Boolean,
+      default: false,
     },
   },
 

@@ -14,6 +14,13 @@
       </router-link>
     </template>
 
+    <text-and-collections-dialog
+      :key="dialogUuid"
+      :uuid="dialogUuid"
+      :itemType="itemType"
+      v-model="textsAndCollectionsDialog"
+    />
+
     <v-container>
       <v-row align="center" justify="center">
         <OareDialog
@@ -73,11 +80,11 @@
             v-model="selectedItems"
           >
             <template #[`item.name`]="{ item }">
-              <router-link
+              <a
                 v-if="item.hasEpigraphy || itemType === 'Collection'"
-                :to="`${itemLink}${item.uuid}`"
-                class="test-item-name"
-                >{{ item.name }}</router-link
+                @click="setupDialog(item.uuid)"
+                class="text-decoration-underline"
+                >{{ item.name }}</a
               >
               <span v-else>{{ item.name }}</span>
             </template>
@@ -114,11 +121,11 @@
             }"
           >
             <template #[`item.name`]="{ item }">
-              <router-link
+              <a
                 v-if="item.hasEpigraphy || itemType === 'Collection'"
-                :to="`${itemLink}${item.uuid}`"
-                class="test-item-name"
-                >{{ item.name }}</router-link
+                @click="setupDialog(item.uuid)"
+                class="text-decoration-underline"
+                >{{ item.name }}</a
               >
               <span v-else>{{ item.name }}</span>
             </template>
@@ -143,6 +150,7 @@ import {
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
+import TextAndCollectionsDialog from './TextAndCollectionsDialog.vue';
 import {
   Text,
   SearchTextNamesResponse,
@@ -160,6 +168,9 @@ import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   name: 'AddPermissionsItems',
+  components: {
+    TextAndCollectionsDialog,
+  },
   props: {
     groupId: {
       type: String,
@@ -215,6 +226,8 @@ export default defineComponent({
     const addItemsDialog = ref(false);
     const addItemsLoading = ref(false);
     const getItemsLoading = ref(false);
+    const textsAndCollectionsDialog = ref(false);
+    const dialogUuid = ref('');
 
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
@@ -371,6 +384,11 @@ export default defineComponent({
           );
     }
 
+    const setupDialog = (uuid: string) => {
+      dialogUuid.value = uuid;
+      textsAndCollectionsDialog.value = true;
+    };
+
     watch(searchOptions, async () => {
       try {
         await getItems();
@@ -436,6 +454,9 @@ export default defineComponent({
       selectAll,
       confirmAddMessage,
       itemLink,
+      textsAndCollectionsDialog,
+      dialogUuid,
+      setupDialog,
     };
   },
 });
