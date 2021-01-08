@@ -80,6 +80,7 @@
             v-model="selectedItems"
             @toggle-select-all="unselectAll"
             :loading="selectedListLoading"
+            :page.sync="selectedListPage"
           >
             <template #[`item.name`]="{ item }">
               <a
@@ -185,9 +186,19 @@ import {
   AddTextPayload,
   AddCollectionsPayload,
   AddPublicBlacklistPayload,
+  CopyWithPartial,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
+
+interface TextsCollectionsReponse
+  extends SearchTextNamesResponse,
+    SearchCollectionNamesResponse {}
+
+type SearchItemsResponse = CopyWithPartial<
+  TextsCollectionsReponse,
+  'texts' | 'collections'
+>;
 
 export default defineComponent({
   name: 'AddPermissionsItems',
@@ -211,7 +222,7 @@ export default defineComponent({
       type: Function as PropType<
         (
           payload: SearchTextNamesPayload | SearchCollectionNamesPayload
-        ) => SearchTextNamesResponse | SearchCollectionNamesResponse
+        ) => SearchItemsResponse
       >,
       required: true,
     },
@@ -253,6 +264,7 @@ export default defineComponent({
     const selectAllMessage = ref(false);
     const textsAndCollectionsDialog = ref(false);
     const dialogUuid = ref('');
+    const selectedListPage = ref(1);
 
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
@@ -298,7 +310,7 @@ export default defineComponent({
           search: search.value,
           groupId,
         });
-        if ('texts' in response) {
+        if (response.texts) {
           unaddedItems.value = response.texts.map(text => ({
             name: text.name,
             uuid: text.uuid,
@@ -306,7 +318,7 @@ export default defineComponent({
             canWrite: false,
             hasEpigraphy: text.hasEpigraphy,
           }));
-        } else if ('collections' in response) {
+        } else if (response.collections) {
           unaddedItems.value = response.collections.map(collection => ({
             name: collection.name,
             uuid: collection.uuid,
@@ -410,7 +422,10 @@ export default defineComponent({
       } else {
         selectAllMessage.value = false;
         unaddedItems.value.forEach(item =>
-          selectedItems.value.splice(selectedItems.value.indexOf(item), 1)
+          selectedItems.value.splice(
+            selectedItems.value.map(item => item.uuid).indexOf(item.uuid),
+            1
+          )
         );
       }
     }
@@ -419,6 +434,7 @@ export default defineComponent({
       if (!event.value) {
         selectedItems.value = [];
         selectAllMessage.value = false;
+        selectedListPage.value = 1;
       }
     }
 
@@ -431,7 +447,7 @@ export default defineComponent({
         groupId,
       });
       const selectedItemsUuids = selectedItems.value.map(item => item.uuid);
-      if ('texts' in response) {
+      if (response.texts) {
         const textsToAdd = response.texts
           .map(text => ({
             name: text.name,
@@ -441,8 +457,8 @@ export default defineComponent({
             hasEpigraphy: text.hasEpigraphy,
           }))
           .filter(text => !selectedItemsUuids.includes(text.uuid));
-        textsToAdd.forEach(text => selectedItems.value.unshift(text));
-      } else if ('collections' in response) {
+        textsToAdd.forEach(text => selectedItems.value.push(text));
+      } else if (response.collections) {
         const collectionsToAdd = response.collections
           .map(collection => ({
             name: collection.name,
@@ -452,7 +468,7 @@ export default defineComponent({
           }))
           .filter(collection => !selectedItemsUuids.includes(collection.uuid));
         collectionsToAdd.forEach(collection =>
-          selectedItems.value.unshift(collection)
+          selectedItems.value.push(collection)
         );
       }
       selectedListLoading.value = false;
@@ -543,6 +559,7 @@ export default defineComponent({
       textsAndCollectionsDialog,
       dialogUuid,
       setupDialog,
+      selectedListPage,
     };
   },
 });

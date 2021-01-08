@@ -458,3 +458,7 @@ export interface ResetPasswordPayload {
   resetUuid: string;
   newPassword: string;
 }
+
+//CopyWithPartial
+
+export type CopyWithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
