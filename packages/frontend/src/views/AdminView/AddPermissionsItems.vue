@@ -78,6 +78,9 @@
             class="mt-3"
             show-select
             v-model="selectedItems"
+            @toggle-select-all="unselectAll"
+            :loading="selectedListLoading"
+            :page.sync="selectedListPage"
           >
             <template #[`item.name`]="{ item }">
               <a
@@ -104,6 +107,27 @@
         </v-col>
         <v-col cols="8">
           <h3>All {{ itemType }}s</h3>
+          <v-card
+            v-if="selectAllMessage"
+            color="grey lighten-3"
+            class="my-2"
+            elevation="0"
+          >
+            <v-container>
+              <v-row>
+                <v-spacer />
+                <span class="px-2"
+                  >All <b>{{ rows }}</b> {{ itemType.toLowerCase() }}s on this
+                  page are selected.</span
+                >
+                <a @click="selectFullList" class="px-2"
+                  >Select all {{ serverCount }}
+                  {{ itemType.toLowerCase() }}s.</a
+                >
+                <v-spacer />
+              </v-row>
+            </v-container>
+          </v-card>
           <v-data-table
             :loading="getItemsLoading"
             :headers="itemsHeaders"
@@ -162,9 +186,19 @@ import {
   AddTextPayload,
   AddCollectionsPayload,
   AddPublicBlacklistPayload,
+  CopyWithPartial,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
+
+interface TextsCollectionsReponse
+  extends SearchTextNamesResponse,
+    SearchCollectionNamesResponse {}
+
+type SearchItemsResponse = CopyWithPartial<
+  TextsCollectionsReponse,
+  'texts' | 'collections'
+>;
 
 export default defineComponent({
   name: 'AddPermissionsItems',
@@ -188,7 +222,7 @@ export default defineComponent({
       type: Function as PropType<
         (
           payload: SearchTextNamesPayload | SearchCollectionNamesPayload
-        ) => SearchTextNamesResponse | SearchCollectionNamesResponse
+        ) => SearchItemsResponse
       >,
       required: true,
     },
@@ -226,8 +260,11 @@ export default defineComponent({
     const addItemsDialog = ref(false);
     const addItemsLoading = ref(false);
     const getItemsLoading = ref(false);
+    const selectedListLoading = ref(false);
+    const selectAllMessage = ref(false);
     const textsAndCollectionsDialog = ref(false);
     const dialogUuid = ref('');
+    const selectedListPage = ref(1);
 
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
@@ -273,7 +310,7 @@ export default defineComponent({
           search: search.value,
           groupId,
         });
-        if ('texts' in response) {
+        if (response.texts) {
           unaddedItems.value = response.texts.map(text => ({
             name: text.name,
             uuid: text.uuid,
@@ -281,7 +318,7 @@ export default defineComponent({
             canWrite: false,
             hasEpigraphy: text.hasEpigraphy,
           }));
-        } else if ('collections' in response) {
+        } else if (response.collections) {
           unaddedItems.value = response.collections.map(collection => ({
             name: collection.name,
             uuid: collection.uuid,
@@ -365,23 +402,80 @@ export default defineComponent({
       value: boolean;
       item: Text | CollectionPermissionsItem;
     }) {
-      event.value
-        ? selectedItems.value.unshift(event.item)
-        : selectedItems.value.splice(
-            selectedItems.value.indexOf(event.item),
-            1
-          );
+      if (event.value) {
+        selectedItems.value.unshift(event.item);
+      } else {
+        selectedItems.value.splice(selectedItems.value.indexOf(event.item), 1);
+        selectAllMessage.value = false;
+      }
     }
 
     function selectAll(event: {
       value: boolean;
       item: Text | CollectionPermissionsItem;
     }) {
-      event.value
-        ? unaddedItems.value.forEach(item => selectedItems.value.push(item))
-        : unaddedItems.value.forEach(item =>
-            selectedItems.value.splice(selectedItems.value.indexOf(item), 1)
-          );
+      if (event.value) {
+        if (Number(serverCount.value) > Number(rows.value)) {
+          selectAllMessage.value = true;
+        }
+        unaddedItems.value.forEach(item => selectedItems.value.push(item));
+      } else {
+        selectAllMessage.value = false;
+        unaddedItems.value.forEach(item =>
+          selectedItems.value.splice(
+            selectedItems.value.map(item => item.uuid).indexOf(item.uuid),
+            1
+          )
+        );
+      }
+    }
+
+    function unselectAll(event: { value: boolean }) {
+      if (!event.value) {
+        selectedItems.value = [];
+        selectAllMessage.value = false;
+        selectedListPage.value = 1;
+      }
+    }
+
+    async function selectFullList() {
+      selectedListLoading.value = true;
+      const response = await searchItems({
+        page: searchOptions.value.page,
+        rows: serverCount.value,
+        search: search.value,
+        groupId,
+      });
+      const selectedItemsUuids = selectedItems.value.map(item => item.uuid);
+      if (response.texts) {
+        const textsToAdd = response.texts
+          .map(text => ({
+            name: text.name,
+            uuid: text.uuid,
+            canRead: true,
+            canWrite: false,
+            hasEpigraphy: text.hasEpigraphy,
+          }))
+          .filter(text => !selectedItemsUuids.includes(text.uuid));
+        textsToAdd.forEach(text => selectedItems.value.push(text));
+      } else if (response.collections) {
+        const collectionsToAdd = response.collections
+          .map(collection => ({
+            name: collection.name,
+            uuid: collection.uuid,
+            canRead: true,
+            canWrite: false,
+          }))
+          .filter(collection => !selectedItemsUuids.includes(collection.uuid));
+        collectionsToAdd.forEach(collection =>
+          selectedItems.value.push(collection)
+        );
+      }
+      selectedListLoading.value = false;
+      selectAllMessage.value = false;
+      actions.showSnackbar(
+        `Successfully selected all specified ${itemType.toLowerCase()}s`
+      );
     }
 
     const setupDialog = (uuid: string) => {
@@ -394,6 +488,7 @@ export default defineComponent({
         await getItems();
         setPage(String(searchOptions.value.page));
         setRows(String(searchOptions.value.itemsPerPage));
+        selectAllMessage.value = false;
       } catch {
         actions.showErrorSnackbar(
           `Error updating ${itemType.toLowerCase()}s list. Please try again.`
@@ -414,6 +509,8 @@ export default defineComponent({
         immediate: false,
       }
     );
+
+    watch(search, () => (selectAllMessage.value = false));
 
     onBeforeMount(() => {
       window.addEventListener('beforeunload', event => {
@@ -454,9 +551,15 @@ export default defineComponent({
       selectAll,
       confirmAddMessage,
       itemLink,
+      unselectAll,
+      selectAllMessage,
+      rows,
+      selectFullList,
+      selectedListLoading,
       textsAndCollectionsDialog,
       dialogUuid,
       setupDialog,
+      selectedListPage,
     };
   },
 });
