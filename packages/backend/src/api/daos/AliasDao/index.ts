@@ -46,7 +46,7 @@ class AliasDao {
   async getAliasesByType(type: string): Promise<AliasWithName[]> {
     const aliases: AliasWithName[] = await knex('alias AS a')
         .select('a.uuid', 'a.reference_uuid AS referenceUuid', 'a.name')
-        .where('a.type', type);
+        .where({type});
     return aliases;
   }
 }

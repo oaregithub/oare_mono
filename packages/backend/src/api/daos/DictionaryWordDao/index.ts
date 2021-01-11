@@ -204,14 +204,11 @@ class DictionaryWordDao {
     return results;
   }
 
-  private reduceByReferenceUuid(
-    iterable: any,
-    hasMultiplePerReferenceUuid?: boolean,
-  ): { [referenceUuid: string]: any } {
-    let results: { [referenceUuid: string]: any } = {};
+  private reduceByReferenceUuid(iterable: any, hasMultiplePerReferenceUuid?: boolean): Record<string, any> {
+    let results: Record<string, any> = {};
 
     if (hasMultiplePerReferenceUuid) {
-      results = iterable.reduce((map: { [referenceUuid: string]: any }, obj: any) => {
+      results = iterable.reduce((map: Record<string, any>, obj: any) => {
         if (map[obj.referenceUuid] === undefined) {
           map[obj.referenceUuid] = [obj];
         } else {
@@ -233,18 +230,18 @@ class DictionaryWordDao {
 
   private parseNamesOrPlacesQueries(
     dictionaryWords: WordQueryWordResultRow[],
-    dictionaryFormsMapped: { [referenceUuid: string]: FormRow[] },
-    dictionarySpellingsMapped: { [referenceUuid: string]: DictionarySpellingRows[] },
-    fieldsMapped: { [referenceUuid: string]: FieldShortRow },
-    itemPropertiesMapped: { [referenceUuid: string]: ItemPropertyShortRow[] },
-    aliasesMapped: { [referenceUuid: string]: AliasWithName },
+    dictionaryFormsMapped: Record<string, FormRow[]>,
+    dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]>,
+    fieldsMapped: Record<string, FieldShortRow>,
+    itemPropertiesMapped: Record<string, ItemPropertyShortRow[]>,
+    aliasesMapped: Record<string, AliasWithName>,
   ): NamePlaceQueryRow[] {
     // Join results for NamePlaceQuery.
     const results: NamePlaceQueryRow[] = [];
     dictionaryWords.forEach((dictWord: WordQueryWordResultRow) => {
       let translation: string | null = '';
-      const abbreviations: { [key: string]: Set<string | null> } = {};
-      const explicitSpellings: { [key: string]: Set<string | null> } = {};
+      const abbreviations: Record<string, Set<string | null>> = {};
+      const explicitSpellings: Record<string, Set<string | null>> = {};
       let forms: FormRow[] = [];
 
       // Get all forms associated with the current word.
@@ -328,20 +325,22 @@ class DictionaryWordDao {
     ]);
 
     // Map to referenceUuid for O(1) lookup.
-    const dictionaryFormsMapped: { [referenceUuid: string]: FormRow[] } = this.reduceByReferenceUuid(
-      dictionaryForms,
-      true,
+    const dictionaryFormsMapped: Record<string, FormRow[]> = <Record<string, FormRow[]>>(
+      this.reduceByReferenceUuid(dictionaryForms, true)
     );
-    const dictionarySpellingsMapped: { [referenceUuid: string]: DictionarySpellingRows[] } = this.reduceByReferenceUuid(
-      dictionarySpellings,
-      true,
+    const dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]> = <
+      Record<string, DictionarySpellingRows[]>
+    >this.reduceByReferenceUuid(dictionarySpellings, true);
+
+    const fieldsMapped: Record<string, FieldShortRow> = <Record<string, FieldShortRow>>(
+      this.reduceByReferenceUuid(fields)
     );
-    const fieldsMapped: { [referenceUuid: string]: FieldShortRow } = this.reduceByReferenceUuid(fields);
-    const itemPropertiesMapped: { [referenceUuid: string]: ItemPropertyShortRow[] } = this.reduceByReferenceUuid(
-      itemProperties,
-      true,
+    const itemPropertiesMapped: Record<string, ItemPropertyShortRow[]> = <Record<string, ItemPropertyShortRow[]>>(
+      this.reduceByReferenceUuid(itemProperties, true)
     );
-    const aliasesMapped: { [referenceUuid: string]: AliasWithName } = this.reduceByReferenceUuid(aliases);
+    const aliasesMapped: Record<string, AliasWithName> = <Record<string, AliasWithName>>(
+      this.reduceByReferenceUuid(aliases)
+    );
 
     const results: NamePlaceQueryRow[] = this.parseNamesOrPlacesQueries(
       dictionaryWords,
