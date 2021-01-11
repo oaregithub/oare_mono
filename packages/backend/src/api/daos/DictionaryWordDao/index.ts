@@ -185,15 +185,16 @@ class DictionaryWordDao {
     return rows;
   }
 
-  async getNames(): Promise<NameOrPlace[]> {
-    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.NAMES_TYPE);
+  async getNames(letter: string): Promise<NameOrPlace[]> {
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.NAMES_TYPE, letter);
     return nestedFormsAndSpellings(results);
   }
 
-  async getDictionaryWordsByType(type: string): Promise<WordQueryWordResultRow[]> {
+  async getDictionaryWordsByType(type: string, letter: string): Promise<WordQueryWordResultRow[]> {
     const words: WordQueryWordResultRow[] = await knex('dictionary_word AS dw')
       .select('dw.uuid', 'dw.word')
-      .where('dw.type', type);
+      .where('dw.type', type)
+      .andWhere('dw.word', 'like', `${letter.toUpperCase()}%`);
     return words;
   }
 
@@ -334,10 +335,10 @@ class DictionaryWordDao {
     return results;
   }
 
-  async getNamesOrPlaces(type: string) {
+  async getNamesOrPlaces(type: string, letter: string) {
     // Query the needed tables.
     const [dictionaryWords, dictionaryForms, dictionarySpellings, fields, itemProperties, aliases] = await Promise.all([
-      this.getDictionaryWordsByType(type),
+      this.getDictionaryWordsByType(type, letter),
       this.getDictionaryFormRows(),
       this.getDictionarySpellingRows(),
       this.getFieldRows(),
@@ -377,8 +378,8 @@ class DictionaryWordDao {
     return results;
   }
 
-  async getPlaces(): Promise<NameOrPlace[]> {
-    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.PLACE_TYPE);
+  async getPlaces(letter: string): Promise<NameOrPlace[]> {
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.PLACE_TYPE, letter);
     return nestedFormsAndSpellings(results);
   }
 

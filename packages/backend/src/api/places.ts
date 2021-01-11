@@ -5,9 +5,10 @@ import dictionaryWordDao from './daos/DictionaryWordDao';
 
 const router = express.Router();
 
-router.route('/places').get(async (req, res, next) => {
+router.route('/places/:letter').get(async (req, res, next) => {
   try {
-    const dictionaryPlaces = await dictionaryWordDao.getPlaces();
+    const { letter } = req.params;
+    const dictionaryPlaces = await dictionaryWordDao.getPlaces(letter.toLowerCase());
 
     cache.insert({ req }, dictionaryPlaces);
     res.json(dictionaryPlaces);
