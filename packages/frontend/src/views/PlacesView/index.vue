@@ -39,7 +39,7 @@ export default defineComponent({
                   props.letter
           );
         } catch {
-          globalActions.showErrorSnackbar('Failed to retrieve dictionary words');
+          globalActions.showErrorSnackbar('Failed to retrieve place words');
         } finally {
           loading.value = false;
         }

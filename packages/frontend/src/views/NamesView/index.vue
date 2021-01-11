@@ -5,13 +5,13 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  Ref,
-  onMounted,
-  PropType,
-} from '@vue/composition-api';
+  import {
+    defineComponent,
+    ref,
+    Ref,
+    onMounted,
+    PropType, watch
+  } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { NameOrPlace } from '@oare/types';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
@@ -37,20 +37,26 @@ export default defineComponent({
   components: {
     NamesPlacesDisplay,
   },
-  setup({ actions, server }) {
+  setup(props) {
     const names: Ref<NameOrPlace[]> = ref([]);
     const loading = ref(false);
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        names.value = await server.getNames();
-      } catch {
-        actions.showErrorSnackbar('Failed to retrieve names');
-      } finally {
-        loading.value = false;
-      }
-    });
+    watch(
+      () => props.letter,
+      async () => {
+        loading.value = true;
+        try {
+          names.value = await props.server.getPlaces(
+                  props.letter
+          );
+        } catch {
+          props.actions.showErrorSnackbar('Failed to retrieve name words');
+        } finally {
+          loading.value = false;
+        }
+      },
+      { immediate: true }
+    );
 
     return {
       names,

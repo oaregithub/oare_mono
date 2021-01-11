@@ -191,10 +191,11 @@ class DictionaryWordDao {
   }
 
   async getDictionaryWordsByType(type: string, letter: string): Promise<WordQueryWordResultRow[]> {
+    // REGEX = Starts with open parenthesis followed by upperCase 'letter' OR just starts with upperCase 'letter'
     const words: WordQueryWordResultRow[] = await knex('dictionary_word AS dw')
       .select('dw.uuid', 'dw.word')
       .where('dw.type', type)
-      .andWhere('dw.word', 'like', `${letter.toUpperCase()}%`);
+      .andWhereRaw(`dw.word REGEXP '^[(]${letter.toUpperCase()}|^[${letter.toUpperCase()}]'`);
     return words;
   }
 
