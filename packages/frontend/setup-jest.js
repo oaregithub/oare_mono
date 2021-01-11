@@ -3,7 +3,7 @@ import 'babel-polyfill';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import OareLoaderButton from './src/components/base/OareLoaderButton.vue';
-import OareUserCard from './src/components/base/OareUserCard.vue';
+import OareCard from './src/components/base/OareCard.vue';
 import OareContentView from './src/components/base/OareContentView.vue';
 import OareBreadcrumbs from './src/components/base/OareBreadcrumbs.vue';
 import OareDialog from './src/components/base/OareDialog.vue';
@@ -17,7 +17,7 @@ sl.set('globalActions', {
 
 Vue.use(Vuetify);
 Vue.component('OareLoaderButton', OareLoaderButton);
-Vue.component('OareUserCard', OareUserCard);
+Vue.component('OareCard', OareCard);
 Vue.component('OareContentView', OareContentView);
 Vue.component('OareBreadcrumbs', OareBreadcrumbs);
 Vue.component('OareDialog', OareDialog);

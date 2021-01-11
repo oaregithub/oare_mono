@@ -21,6 +21,7 @@ import publicBlacklist from './public_blacklist';
 import textInfo from './text_info';
 import searchCollectionNames from './search_collection_names';
 import collectionGroups from './collection_groups';
+import resetPassword from './reset_password';
 
 const serverProxy = {
   ...textGroups,
@@ -46,6 +47,7 @@ const serverProxy = {
   ...textInfo,
   ...searchCollectionNames,
   ...collectionGroups,
+  ...resetPassword,
 };
 
 export type ServerProxyType = typeof serverProxy;

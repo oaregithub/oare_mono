@@ -112,6 +112,7 @@ describe('SpellingDisplay test', () => {
     await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 
@@ -141,6 +142,7 @@ describe('SpellingDisplay test', () => {
     await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 

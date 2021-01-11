@@ -14,6 +14,13 @@
       </router-link>
     </template>
 
+    <text-and-collections-dialog
+      :key="dialogUuid"
+      :uuid="dialogUuid"
+      :itemType="itemType"
+      v-model="textsAndCollectionsDialog"
+    />
+
     <v-container>
       <v-row align="center" justify="center">
         <OareDialog
@@ -71,7 +78,19 @@
             class="mt-3"
             show-select
             v-model="selectedItems"
+            @toggle-select-all="unselectAll"
+            :loading="selectedListLoading"
+            :page.sync="selectedListPage"
           >
+            <template #[`item.name`]="{ item }">
+              <a
+                v-if="item.hasEpigraphy || itemType === 'Collection'"
+                @click="setupDialog(item.uuid)"
+                class="text-decoration-underline"
+                >{{ item.name }}</a
+              >
+              <span v-else>{{ item.name }}</span>
+            </template>
             <template v-if="editPermissions" #[`item.canRead`]="{ item }">
               <v-checkbox
                 :input-value="item.canRead"
@@ -88,6 +107,27 @@
         </v-col>
         <v-col cols="8">
           <h3>All {{ itemType }}s</h3>
+          <v-card
+            v-if="selectAllMessage"
+            color="grey lighten-3"
+            class="my-2"
+            elevation="0"
+          >
+            <v-container>
+              <v-row>
+                <v-spacer />
+                <span class="px-2"
+                  >All <b>{{ rows }}</b> {{ itemType.toLowerCase() }}s on this
+                  page are selected.</span
+                >
+                <a @click="selectFullList" class="px-2"
+                  >Select all {{ serverCount }}
+                  {{ itemType.toLowerCase() }}s.</a
+                >
+                <v-spacer />
+              </v-row>
+            </v-container>
+          </v-card>
           <v-data-table
             :loading="getItemsLoading"
             :headers="itemsHeaders"
@@ -104,6 +144,15 @@
               'items-per-page-options': [10, 25, 50, 100],
             }"
           >
+            <template #[`item.name`]="{ item }">
+              <a
+                v-if="item.hasEpigraphy || itemType === 'Collection'"
+                @click="setupDialog(item.uuid)"
+                class="text-decoration-underline"
+                >{{ item.name }}</a
+              >
+              <span v-else>{{ item.name }}</span>
+            </template>
           </v-data-table>
         </v-col>
       </v-row>
@@ -120,9 +169,12 @@ import {
   onMounted,
   watch,
   computed,
+  onBeforeMount,
+  onBeforeUnmount,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
+import TextAndCollectionsDialog from './TextAndCollectionsDialog.vue';
 import {
   Text,
   SearchTextNamesResponse,
@@ -134,12 +186,25 @@ import {
   AddTextPayload,
   AddCollectionsPayload,
   AddPublicBlacklistPayload,
+  CopyWithPartial,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
 
+interface TextsCollectionsReponse
+  extends SearchTextNamesResponse,
+    SearchCollectionNamesResponse {}
+
+type SearchItemsResponse = CopyWithPartial<
+  TextsCollectionsReponse,
+  'texts' | 'collections'
+>;
+
 export default defineComponent({
-  name: 'AddGroupTexts',
+  name: 'AddPermissionsItems',
+  components: {
+    TextAndCollectionsDialog,
+  },
   props: {
     groupId: {
       type: String,
@@ -157,7 +222,7 @@ export default defineComponent({
       type: Function as PropType<
         (
           payload: SearchTextNamesPayload | SearchCollectionNamesPayload
-        ) => SearchTextNamesResponse | SearchCollectionNamesResponse
+        ) => SearchItemsResponse
       >,
       required: true,
     },
@@ -195,11 +260,15 @@ export default defineComponent({
     const addItemsDialog = ref(false);
     const addItemsLoading = ref(false);
     const getItemsLoading = ref(false);
+    const selectedListLoading = ref(false);
+    const selectAllMessage = ref(false);
+    const textsAndCollectionsDialog = ref(false);
+    const dialogUuid = ref('');
+    const selectedListPage = ref(1);
 
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
-    const [items, setItems] = useQueryParam('items', '');
 
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
@@ -228,6 +297,9 @@ export default defineComponent({
         ${itemType.toLowerCase()}(s) unless otherwise authorized.`;
       }
     });
+    const itemLink = computed(() =>
+      itemType === 'Collection' ? '/collections/name/' : '/epigraphies/'
+    );
 
     const getItems = async () => {
       try {
@@ -238,14 +310,15 @@ export default defineComponent({
           search: search.value,
           groupId,
         });
-        if ('texts' in response) {
+        if (response.texts) {
           unaddedItems.value = response.texts.map(text => ({
             name: text.name,
             uuid: text.uuid,
             canRead: true,
             canWrite: false,
+            hasEpigraphy: text.hasEpigraphy,
           }));
-        } else if ('collections' in response) {
+        } else if (response.collections) {
           unaddedItems.value = response.collections.map(collection => ({
             name: collection.name,
             uuid: collection.uuid,
@@ -282,6 +355,10 @@ export default defineComponent({
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );
+        router.replace({
+          ...router,
+          query: { saved: 'true' },
+        });
         if (groupId) {
           router.push(`/groups/${groupId}/${itemType.toLowerCase()}s`);
         } else {
@@ -312,18 +389,6 @@ export default defineComponent({
         groupName.value = groupId
           ? await server.getGroupName(Number(groupId))
           : 'Public Blacklist';
-        if (items.value) {
-          const uuids: string[] = JSON.parse(items.value);
-          const itemNames = await Promise.all(
-            uuids.map(uuid => server.getTextName(uuid))
-          );
-          selectedItems.value = uuids.map((uuid, index) => ({
-            name: itemNames[index].name,
-            uuid,
-            canRead: true,
-            canWrite: false,
-          }));
-        }
       } catch {
         actions.showErrorSnackbar(
           `Error loading ${itemType.toLowerCase()}s. Please try again.`
@@ -337,30 +402,93 @@ export default defineComponent({
       value: boolean;
       item: Text | CollectionPermissionsItem;
     }) {
-      event.value
-        ? selectedItems.value.unshift(event.item)
-        : selectedItems.value.splice(
-            selectedItems.value.indexOf(event.item),
-            1
-          );
+      if (event.value) {
+        selectedItems.value.unshift(event.item);
+      } else {
+        selectedItems.value.splice(selectedItems.value.indexOf(event.item), 1);
+        selectAllMessage.value = false;
+      }
     }
 
     function selectAll(event: {
       value: boolean;
       item: Text | CollectionPermissionsItem;
     }) {
-      event.value
-        ? unaddedItems.value.forEach(item => selectedItems.value.push(item))
-        : unaddedItems.value.forEach(item =>
-            selectedItems.value.splice(selectedItems.value.indexOf(item), 1)
-          );
+      if (event.value) {
+        if (Number(serverCount.value) > Number(rows.value)) {
+          selectAllMessage.value = true;
+        }
+        unaddedItems.value.forEach(item => selectedItems.value.push(item));
+      } else {
+        selectAllMessage.value = false;
+        unaddedItems.value.forEach(item =>
+          selectedItems.value.splice(
+            selectedItems.value.map(item => item.uuid).indexOf(item.uuid),
+            1
+          )
+        );
+      }
     }
+
+    function unselectAll(event: { value: boolean }) {
+      if (!event.value) {
+        selectedItems.value = [];
+        selectAllMessage.value = false;
+        selectedListPage.value = 1;
+      }
+    }
+
+    async function selectFullList() {
+      selectedListLoading.value = true;
+      const response = await searchItems({
+        page: searchOptions.value.page,
+        rows: serverCount.value,
+        search: search.value,
+        groupId,
+      });
+      const selectedItemsUuids = selectedItems.value.map(item => item.uuid);
+      if (response.texts) {
+        const textsToAdd = response.texts
+          .map(text => ({
+            name: text.name,
+            uuid: text.uuid,
+            canRead: true,
+            canWrite: false,
+            hasEpigraphy: text.hasEpigraphy,
+          }))
+          .filter(text => !selectedItemsUuids.includes(text.uuid));
+        textsToAdd.forEach(text => selectedItems.value.push(text));
+      } else if (response.collections) {
+        const collectionsToAdd = response.collections
+          .map(collection => ({
+            name: collection.name,
+            uuid: collection.uuid,
+            canRead: true,
+            canWrite: false,
+          }))
+          .filter(collection => !selectedItemsUuids.includes(collection.uuid));
+        collectionsToAdd.forEach(collection =>
+          selectedItems.value.push(collection)
+        );
+      }
+      selectedListLoading.value = false;
+      selectAllMessage.value = false;
+      actions.showSnackbar(
+        `Successfully selected all specified ${itemType.toLowerCase()}s`
+      );
+    }
+
+    const setupDialog = (uuid: string) => {
+      dialogUuid.value = uuid;
+      textsAndCollectionsDialog.value = true;
+    };
 
     watch(searchOptions, async () => {
       try {
         await getItems();
         setPage(String(searchOptions.value.page));
         setRows(String(searchOptions.value.itemsPerPage));
+        selectAllMessage.value = false;
       } catch {
         actions.showErrorSnackbar(
           `Error updating ${itemType.toLowerCase()}s list. Please try again.`
@@ -382,8 +510,25 @@ export default defineComponent({
       }
     );
 
-    watch(selectedItems, async () => {
-      setItems(JSON.stringify(selectedItems.value.map(item => item.uuid)));
+    watch(search, () => (selectAllMessage.value = false));
+
+    onBeforeMount(() => {
+      window.addEventListener('beforeunload', event => {
+        if (selectedItems.value.length > 0) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('beforeunload', event => {
+        if (selectedItems.value.length > 0) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
+      selectedItems.value = [];
     });
 
     return {
@@ -405,6 +550,16 @@ export default defineComponent({
       selectItem,
       selectAll,
       confirmAddMessage,
+      itemLink,
+      unselectAll,
+      selectAllMessage,
+      rows,
+      selectFullList,
+      selectedListLoading,
+      textsAndCollectionsDialog,
+      dialogUuid,
+      setupDialog,
+      selectedListPage,
     };
   },
 });

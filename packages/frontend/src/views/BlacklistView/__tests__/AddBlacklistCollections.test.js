@@ -37,6 +37,7 @@ describe('AddBlacklistCollections test', () => {
   };
 
   const mockRouter = {
+    replace: jest.fn(),
     push: jest.fn(),
   };
 

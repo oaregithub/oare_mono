@@ -5,7 +5,7 @@ exports[`RegisterView test matches snapshot 1`] = `
   <div class="v-card__title">
     <h3 class="oare-header mb-2">string</h3>
   </div>
-  <div class="v-card__text">
+  <div class="v-card__text d-flex flex-column">
     <div class="v-input test-firstname theme--light v-text-field v-text-field--enclosed v-text-field--outlined">
       <div class="v-input__control">
         <div class="v-input__slot">
@@ -83,8 +83,8 @@ exports[`RegisterView test matches snapshot 1`] = `
     </div>
     <p class="subtitle error--text test-error-msg"></p>
     <router-link-stub to="/login" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content">
-      string
-    </span></router-link-stub>
+    string
+  </span></router-link-stub>
   </div>
   <div class="v-card__actions"><button type="button" disabled="disabled" class="test-register-btn v-btn v-btn--contained v-btn--disabled theme--light v-size--default" color="primary"><span class="v-btn__content">
       string

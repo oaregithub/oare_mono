@@ -228,6 +228,7 @@ export interface SearchTextsResponse {
 export interface SearchTextNamesResultRow {
   uuid: string;
   name: string;
+  hasEpigraphy: boolean;
 }
 
 export interface SearchTextNamesPayload {
@@ -457,3 +458,7 @@ export interface ResetPasswordPayload {
   resetUuid: string;
   newPassword: string;
 }
+
+//CopyWithPartial
+
+export type CopyWithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;

@@ -3,16 +3,16 @@
 exports[`LoginView test matches snapshot 1`] = `
 <div class="mt-12 pa-3 mx-auto v-card v-sheet theme--light elevation-24" style="max-width: 600px;">
   <div class="v-card__title">
-    <h3 class="oare-header mb-2"></h3>
+    <h3 class="oare-header mb-2">Sign In</h3>
   </div>
-  <div class="v-card__text">
+  <div class="v-card__text d-flex flex-column">
     <div class="v-input test-email theme--light v-text-field v-text-field--enclosed v-text-field--outlined">
       <div class="v-input__control">
         <div class="v-input__slot">
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-4" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-5" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -27,7 +27,7 @@ exports[`LoginView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-7" type="password"></div>
+          <div class="v-text-field__slot"><input id="input-8" type="password"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -37,6 +37,7 @@ exports[`LoginView test matches snapshot 1`] = `
       </div>
     </div>
     <p class="subtitle error--text test-error-text"></p>
+    <router-link-stub to="/send_reset_password_email" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content">Forgot your password?</span></router-link-stub>
     <router-link-stub to="/register" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content"></span></router-link-stub> <br>
   </div>
   <div class="v-card__actions"><button type="button" disabled="disabled" class="text-right test-signin-btn v-btn v-btn--contained v-btn--disabled theme--light v-size--default" color="primary"><span class="v-btn__content">
