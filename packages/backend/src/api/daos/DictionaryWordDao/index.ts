@@ -1,4 +1,4 @@
-import { DictionaryWord, DictionaryWordTranslation, NameOrPlace, SearchSpellingResultRow } from '@oare/types';
+import {DictionaryWord, DictionaryWordTranslation, NameOrPlace, SearchSpellingResultRow, CopyWithPartial} from '@oare/types';
 import knex from '@/connection';
 import { DictionarySpellingRows } from '@/api/daos/DictionarySpellingDao';
 import { AliasRow, AliasWithName } from '@/api/daos/AliasDao';
@@ -55,6 +55,13 @@ export interface WordQueryWordResultRow {
   word: string;
 }
 
+export interface WordCombination
+  extends FormRow,
+    DictionarySpellingRows,
+    FieldShortRow,
+    ItemPropertyShortRow,
+    AliasWithName {}
+
 export interface NamePlaceQueryRow {
   uuid: string;
   word: string;
@@ -80,6 +87,11 @@ export interface TranslationRow {
   field: string;
   primacy: number | null;
 }
+
+type PartialWordCombination = CopyWithPartial<
+  WordCombination,
+  'form' | 'explicitSpelling' | 'field' | 'valueUuid' | 'name'
+>;
 
 class DictionaryWordDao {
   public readonly PLACE_TYPE = 'GN';
@@ -204,11 +216,14 @@ class DictionaryWordDao {
     return results;
   }
 
-  private reduceByReferenceUuid(iterable: any, hasMultiplePerReferenceUuid?: boolean): Record<string, any> {
+  private reduceByReferenceUuid(
+    iterable: PartialWordCombination | PartialWordCombination[],
+    hasMultiplePerReferenceUuid?: boolean,
+  ): Record<string, PartialWordCombination> {
     let results: Record<string, any> = {};
 
     if (hasMultiplePerReferenceUuid) {
-      results = iterable.reduce((map: Record<string, any>, obj: any) => {
+      results = iterable.reduce((map: Record<string, PartialWordCombination[]>, obj: PartialWordCombination) => {
         if (map[obj.referenceUuid] === undefined) {
           map[obj.referenceUuid] = [obj];
         } else {
@@ -219,7 +234,7 @@ class DictionaryWordDao {
         return map;
       }, {});
     } else {
-      results = iterable.reduce((map: any, obj: any) => {
+      results = iterable.reduce((map: Record<string, PartialWordCombination>, obj: PartialWordCombination) => {
         map[obj.referenceUuid] = obj;
         return map;
       }, {});
@@ -314,6 +329,7 @@ class DictionaryWordDao {
   }
 
   async getNamesOrPlaces(type: string) {
+
     // Query the needed tables.
     const [dictionaryWords, dictionaryForms, dictionarySpellings, fields, itemProperties, aliases] = await Promise.all([
       this.getDictionaryWordsByType(type),
@@ -325,22 +341,20 @@ class DictionaryWordDao {
     ]);
 
     // Map to referenceUuid for O(1) lookup.
-    const dictionaryFormsMapped: Record<string, FormRow[]> = <Record<string, FormRow[]>>(
-      this.reduceByReferenceUuid(dictionaryForms, true)
-    );
-    const dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]> = <
-      Record<string, DictionarySpellingRows[]>
-    >this.reduceByReferenceUuid(dictionarySpellings, true);
+    const dictionaryFormsMapped: Record<string, FormRow[]> = this.reduceByReferenceUuid(dictionaryForms, true);
 
-    const fieldsMapped: Record<string, FieldShortRow> = <Record<string, FieldShortRow>>(
-      this.reduceByReferenceUuid(fields)
+    const dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]> = this.reduceByReferenceUuid(
+      dictionarySpellings,
+      true,
     );
-    const itemPropertiesMapped: Record<string, ItemPropertyShortRow[]> = <Record<string, ItemPropertyShortRow[]>>(
-      this.reduceByReferenceUuid(itemProperties, true)
+
+    const fieldsMapped: Record<string, FieldShortRow> = this.reduceByReferenceUuid(fields);
+    const itemPropertiesMapped: Record<string, ItemPropertyShortRow[]> = this.reduceByReferenceUuid(
+      itemProperties,
+      true,
     );
-    const aliasesMapped: Record<string, AliasWithName> = <Record<string, AliasWithName>>(
-      this.reduceByReferenceUuid(aliases)
-    );
+
+    const aliasesMapped: Record<string, AliasWithName> = this.reduceByReferenceUuid(aliases);
 
     const results: NamePlaceQueryRow[] = this.parseNamesOrPlacesQueries(
       dictionaryWords,
