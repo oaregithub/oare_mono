@@ -124,7 +124,7 @@
             <OareLoaderButton
               color="primary"
               v-bind="attrs"
-              :disabled="hasError"
+              :disabled="hasError || isTyping"
               :loading="submitLoading"
               @click="submit"
               class="test-submit-btn"
@@ -202,6 +202,7 @@ export default defineComponent({
     const searchSpellingLoading = ref(false);
     const searchDiscourseLoading = ref(false);
     const spellingErrors = ref<string[]>([]);
+    const isTyping = ref(false);
 
     const spellingResultHeaders: Ref<DataTableHeader[]> = ref([
       {
@@ -382,13 +383,16 @@ export default defineComponent({
       );
     });
 
+    watch(spellingInput, () => (isTyping.value = true));
+
     watch(
       spellingInput,
       _.debounce(async (newSpelling: string) => {
         if (newSpelling) {
-          searchSpellings(newSpelling);
-          searchDiscourse(newSpelling);
-          checkSpelling(newSpelling);
+          await searchSpellings(newSpelling);
+          await searchDiscourse(newSpelling);
+          await checkSpelling(newSpelling);
+          isTyping.value = false;
         } else {
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
@@ -430,6 +434,7 @@ export default defineComponent({
     );
 
     return {
+      isTyping,
       spellingInput,
       spellingSearchResults,
       discourseSearchResults,

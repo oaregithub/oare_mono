@@ -177,6 +177,7 @@ describe('SpellingDialog test', () => {
 
     await flushPromises();
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.updateSpelling).toHaveBeenCalledWith(
@@ -216,6 +217,7 @@ describe('SpellingDialog test', () => {
   it('successfully adds spelling', async () => {
     const wrapper = createWrapper();
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 
@@ -236,6 +238,7 @@ describe('SpellingDialog test', () => {
       },
     });
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
 
