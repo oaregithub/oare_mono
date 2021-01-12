@@ -5,12 +5,13 @@
 </template>
 
 <script lang="ts">
-  import {
-    defineComponent,
-    ref,
-    Ref,
-    PropType, watch
-  } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  Ref,
+  PropType,
+  watch,
+} from '@vue/composition-api';
 import { NameOrPlace } from '@oare/types';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import defaultActions from '@/globalActions';
@@ -44,9 +45,7 @@ export default defineComponent({
       async () => {
         loading.value = true;
         try {
-          names.value = await props.server.getPlaces(
-            props.letter
-          );
+          names.value = await props.server.getPlaces(props.letter);
         } catch {
           props.actions.showErrorSnackbar('Failed to retrieve name words');
         } finally {

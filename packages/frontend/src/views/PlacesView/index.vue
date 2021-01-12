@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-  import {defineComponent, ref, Ref, watch} from '@vue/composition-api';
+import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import { NameOrPlace } from '@oare/types';
 import sl from '@/serviceLocator';
@@ -35,9 +35,7 @@ export default defineComponent({
       async () => {
         loading.value = true;
         try {
-          places.value = await server.getPlaces(
-                  props.letter
-          );
+          places.value = await server.getPlaces(props.letter);
         } catch {
           globalActions.showErrorSnackbar('Failed to retrieve place words');
         } finally {
