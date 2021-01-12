@@ -440,8 +440,11 @@ export type DictionaryPermission =
   | "UPDATE_FORM"
   | "ADD_SPELLING";
 
+export type PagesPermission = "WORDS" | "NAMES" | "PLACES";
+
 export interface PermissionResponse {
   dictionary: DictionaryPermission[];
+  pages: PagesPermission[];
 }
 
 export type PermissionsListType = 'Text' | 'Collection';

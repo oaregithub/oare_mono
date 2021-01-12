@@ -10,6 +10,7 @@ router.route('/permissions').get(async (req, res, next) => {
 
     const permissions: PermissionResponse = {
       dictionary: [],
+      pages: [],
     };
 
     if (user && user.isAdmin) {
@@ -22,6 +23,7 @@ router.route('/permissions').get(async (req, res, next) => {
         'UPDATE_WORD_SPELLING',
         'ADD_SPELLING',
       ];
+      permissions.pages = ['WORDS', 'NAMES', 'PLACES'];
     }
 
     res.json(permissions);

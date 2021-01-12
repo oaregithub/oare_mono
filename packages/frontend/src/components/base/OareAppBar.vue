@@ -71,13 +71,25 @@
 
     <template #extension>
       <v-row class="d-flex justify-center">
-        <v-btn class="test-words" text to="/words/A" v-if="isAdmin"
+        <v-btn
+          class="test-words"
+          text
+          to="/words/A"
+          v-if="pagesPermissions.includes('WORDS')"
           >Words</v-btn
         >
-        <v-btn class="test-names" text to="/names/A" v-if="isAdmin"
+        <v-btn
+          class="test-names"
+          text
+          to="/names/A"
+          v-if="pagesPermissions.includes('NAMES')"
           >Names</v-btn
         >
-        <v-btn class="test-places" text to="/places/A" v-if="isAdmin"
+        <v-btn
+          class="test-places"
+          text
+          to="/places/A"
+          v-if="pagesPermissions.includes('PLACES')"
           >Places</v-btn
         >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
@@ -132,6 +144,7 @@ export default defineComponent({
     const firstName = computed(() =>
       store.getters.user ? store.getters.user.firstName : ''
     );
+    const pagesPermissions = computed(() => store.getters.permissions.pages);
 
     const logout = () => {
       store.logout();
@@ -164,6 +177,7 @@ export default defineComponent({
       isAdmin,
       isAuthenticated,
       firstName,
+      pagesPermissions,
     };
   },
 });
