@@ -1,4 +1,5 @@
 import {
+  DictionaryWordTranslation,
   DictionaryWord,
   NameOrPlace,
   SearchSpellingResultRow,
@@ -6,8 +7,7 @@ import {
 } from '@oare/types';
 import knex from '@/connection';
 import { DictionarySpellingRows } from '@/api/daos/DictionarySpellingDao';
-import { AliasRow, AliasWithName } from '@/api/daos/AliasDao';
-import getQueryString from '../utils';
+import { AliasWithName } from '@/api/daos/AliasDao';
 import { assembleSearchResult, nestedFormsAndSpellings } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao, { FieldShortRow } from '../FieldDao';
@@ -191,10 +191,20 @@ class DictionaryWordDao {
 
   async getDictionaryWordsByType(type: string, letter: string): Promise<WordQueryWordResultRow[]> {
     // REGEX = Starts with open parenthesis followed by upperCase 'letter' OR just starts with upperCase 'letter'
+    const letters = letter.split('/');
+
+    let andWhere = '';
+    letters.forEach((l: string, index: number) => {
+      andWhere += `dw.word REGEXP '^[(]${l.toUpperCase()}|^[${l.toUpperCase()}]|^[(]${l.toLowerCase()}|^[${l.toLowerCase()}]]'`;
+      if (index !== letters.length - 1) {
+        andWhere += ' OR ';
+      }
+    });
+
     const words: WordQueryWordResultRow[] = await knex('dictionary_word AS dw')
       .select('dw.uuid', 'dw.word')
       .where('dw.type', type)
-      .andWhereRaw(`dw.word REGEXP '^[(]${letter.toUpperCase()}|^[${letter.toUpperCase()}]'`);
+      .andWhereRaw(andWhere);
     return words;
   }
 
