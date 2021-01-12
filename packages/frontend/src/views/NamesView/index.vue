@@ -45,7 +45,7 @@ export default defineComponent({
       async () => {
         loading.value = true;
         try {
-          names.value = await props.server.getPlaces(props.letter);
+          names.value = await props.server.getNames(props.letter);
         } catch {
           props.actions.showErrorSnackbar('Failed to retrieve name words');
         } finally {
