@@ -1,6 +1,5 @@
 import {
   DictionaryWord,
-  DictionaryWordTranslation,
   NameOrPlace,
   SearchSpellingResultRow,
   CopyWithPartial,
