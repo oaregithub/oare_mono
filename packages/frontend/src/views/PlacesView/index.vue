@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-  import {defineComponent, onMounted, ref, Ref, watch} from '@vue/composition-api';
+  import {defineComponent, ref, Ref, watch} from '@vue/composition-api';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import { NameOrPlace } from '@oare/types';
 import sl from '@/serviceLocator';

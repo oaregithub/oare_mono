@@ -9,10 +9,8 @@
     defineComponent,
     ref,
     Ref,
-    onMounted,
     PropType, watch
   } from '@vue/composition-api';
-import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { NameOrPlace } from '@oare/types';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import defaultActions from '@/globalActions';
@@ -47,7 +45,7 @@ export default defineComponent({
         loading.value = true;
         try {
           names.value = await props.server.getPlaces(
-                  props.letter
+            props.letter
           );
         } catch {
           props.actions.showErrorSnackbar('Failed to retrieve name words');
