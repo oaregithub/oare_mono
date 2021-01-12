@@ -525,6 +525,8 @@ export default defineComponent({
           limit: Number(rows.value),
           filter: search.value,
         };
+        setPage('1');
+        setRows('10');
         setSearch('');
       } else {
         setPage(String(savedQueries.value.page));
