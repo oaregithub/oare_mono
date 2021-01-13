@@ -1,12 +1,10 @@
 import knex from '@/connection';
-import sl from '@/serviceLocator';
-import { PermissionResponse, DictionaryPermissionRow } from '@oare/types';
+import { PermissionResponse, DictionaryPermissionRow, PagesPermissionRow } from '@oare/types';
 import UserGroupDao from '@/api/daos/UserGroupDao';
 import { UserRow } from '../UserDao';
 
 class PermissionsDao {
   async getUserPermissions(user: UserRow | null): Promise<PermissionResponse> {
-    // const UserGroupDao = sl.get('UserGroupDao');
 
     if (user && user.isAdmin) {
       return {
@@ -19,11 +17,13 @@ class PermissionsDao {
           'UPDATE_WORD_SPELLING',
           'ADD_SPELLING',
         ],
+        pages: ['WORDS', 'NAMES', 'PLACES'],
       };
     }
 
     const userPermissions: PermissionResponse = {
       dictionary: [],
+      pages: [],
     };
 
     if (user) {
@@ -33,6 +33,11 @@ class PermissionsDao {
         const dictionaryPermissions = await this.getDictionaryPermissions(groupIds[i]);
         dictionaryPermissions.forEach((row) => {
           userPermissions.dictionary.push(row.permission);
+        });
+
+        const pagesPermissions = await this.getPagesPermissions(groupIds[i]);
+        pagesPermissions.forEach((row) => {
+          userPermissions.pages.push(row.permission);
         });
       }
     }
@@ -45,6 +50,14 @@ class PermissionsDao {
       .select('permission')
       .where('group_id', groupId)
       .andWhere('type', 'dictionary');
+    return response;
+  }
+
+  async getPagesPermissions(groupId: number): Promise<PagesPermissionRow[]> {
+    const response: PagesPermissionRow[] = await knex('permissions')
+      .select('permission')
+      .where('group_id', groupId)
+      .andWhere('type', 'pages');
     return response;
   }
 }

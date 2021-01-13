@@ -445,6 +445,10 @@ export interface DictionaryPermissionRow {
 }
 export type PagesPermission = "WORDS" | "NAMES" | "PLACES";
 
+export interface PagesPermissionRow {
+  permission: PagesPermission;
+}
+
 export interface PermissionResponse {
   dictionary: DictionaryPermission[];
   pages: PagesPermission[];
