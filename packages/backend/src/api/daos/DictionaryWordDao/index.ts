@@ -8,11 +8,11 @@ import {
 import knex from '@/connection';
 import { DictionarySpellingRows } from '@/api/daos/DictionarySpellingDao';
 import { AliasWithName } from '@/api/daos/AliasDao';
+import sl from '@/serviceLocator';
 import { assembleSearchResult, nestedFormsAndSpellings } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao, { FieldShortRow } from '../FieldDao';
 import AliasDao from '../AliasDao';
-import DictionarySpellingDao from '../DictionarySpellingDao';
 import DictionaryFormDao, { FormRow } from '../DictionaryFormDao';
 import ItemPropertiesDao, { ItemPropertyRow, ItemPropertyShortRow } from '../ItemPropertiesDao';
 
@@ -209,31 +209,36 @@ class DictionaryWordDao {
   }
 
   async getDictionaryFormRows(): Promise<FormRow[]> {
-    const results: FormRow[] = await DictionaryFormDao.getDictionaryFormRows();
+    const dictionaryFormDao = sl.get('DictionaryFormDao');
+    const results: FormRow[] = await dictionaryFormDao.getDictionaryFormRows();
     return results;
   }
 
   async getDictionarySpellingRows(): Promise<DictionarySpellingRows[]> {
-    const results: DictionarySpellingRows[] = await DictionarySpellingDao.getDictionarySpellingRows();
+    const dictionarySpellingDao = sl.get('DictionarySpellingDao');
+    const results: DictionarySpellingRows[] = await dictionarySpellingDao.getDictionarySpellingRows();
     return results;
   }
 
   async getFieldRows(): Promise<FieldShortRow[]> {
-    const results: FieldShortRow[] = await FieldDao.getFieldRows();
+    const fieldDao = sl.get('FieldDao');
+    const results: FieldShortRow[] = await fieldDao.getFieldRows();
     return results;
   }
 
   async getItemPropertyRowsByAliasName(aliasName: string): Promise<ItemPropertyShortRow[]> {
-    const results: ItemPropertyShortRow[] = await ItemPropertiesDao.getItemPropertyRowsByAliasName(aliasName);
+    const itemPropertiesDao = sl.get('ItemPropertiesDao');
+    const results: ItemPropertyShortRow[] = await itemPropertiesDao.getItemPropertyRowsByAliasName(aliasName);
     return results;
   }
 
   async getAliasesByType(type: string): Promise<AliasWithName[]> {
-    const results: AliasWithName[] = await AliasDao.getAliasesByType(type);
+    const aliasDao = sl.get('AliasDao');
+    const results: AliasWithName[] = await aliasDao.getAliasesByType(type);
     return results;
   }
 
-  private reduceByReferenceUuid(
+  public reduceByReferenceUuid(
     iterable: PartialWordCombination[],
     hasMultiplePerReferenceUuid?: boolean,
   ): Record<string, PartialWordCombination | PartialWordCombination[]> {
@@ -260,7 +265,7 @@ class DictionaryWordDao {
     return results;
   }
 
-  private parseNamesOrPlacesQueries(
+  public parseNamesOrPlacesQueries(
     dictionaryWords: WordQueryWordResultRow[],
     dictionaryFormsMapped: Record<string, FormRow[]>,
     dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]>,
