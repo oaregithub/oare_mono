@@ -3,7 +3,10 @@ import * as Knex from 'knex';
 export async function up(knex: Knex): Promise<void> {
   const hasOldName = await knex.schema.hasColumn('permissions', 'user_uuid');
   if (hasOldName) {
-    await knex.schema.table('permissions', (table) => table.renameColumn('user_uuid', 'group_id'));
+    await knex.schema.table('permissions', (table) => {
+      table.dropForeign(['user_uuid'], 'permissions_ibfk_1');
+      table.renameColumn('user_uuid', 'group_id');
+    });
   }
 }
 
