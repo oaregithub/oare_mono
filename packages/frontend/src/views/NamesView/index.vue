@@ -5,12 +5,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  Ref,
-  watch,
-} from '@vue/composition-api';
+import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import { NameOrPlace } from '@oare/types';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import sl from '@/serviceLocator';
