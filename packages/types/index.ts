@@ -440,6 +440,10 @@ export type DictionaryPermission =
   | "UPDATE_FORM"
   | "ADD_SPELLING";
 
+export interface DictionaryPermissionRow {
+  permission: DictionaryPermission;
+}
+
 export interface PermissionResponse {
   dictionary: DictionaryPermission[];
 }
