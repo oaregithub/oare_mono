@@ -5,7 +5,6 @@ import { UserRow } from '../UserDao';
 
 class PermissionsDao {
   async getUserPermissions(user: UserRow | null): Promise<PermissionResponse> {
-
     if (user && user.isAdmin) {
       return {
         dictionary: [
