@@ -71,9 +71,10 @@
 
     <template #extension>
       <v-row class="d-flex justify-center">
-        <v-btn class="test-words" text to="/words/A" v-if="isAdmin"
+        <!-- <v-btn class="test-words" text to="/words/A" v-if="isAdmin"
           >Words</v-btn
-        >
+        > -->
+        <v-btn class="test-words" text to="/words/A">Words</v-btn>
         <v-btn class="test-names" text to="/names/A" v-if="isAdmin"
           >Names</v-btn
         >

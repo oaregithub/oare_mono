@@ -18,6 +18,7 @@ import SignReadingDao from '@/api/daos/SignReadingDao';
 import CollectionGroupDao from '@/api/daos/CollectionGroupDao';
 import ResetPasswordLinksDao from '@/api/daos/ResetPasswordLinksDao';
 import UserGroupDao from '@/api/daos/UserGroupDao';
+import PermissionsDao from '@/api/daos/PermissionsDao';
 import utils from '@/utils';
 import mailer from '@/mailer';
 
@@ -44,6 +45,7 @@ export type ServiceTypes = {
   CollectionGroupDao: typeof CollectionGroupDao;
   ResetPasswordLinksDao: typeof ResetPasswordLinksDao;
   UserGroupDao: typeof UserGroupDao;
+  PermissionsDao: typeof PermissionsDao;
   utils: typeof utils;
   mailer: typeof mailer;
 };
