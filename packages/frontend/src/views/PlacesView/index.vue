@@ -28,7 +28,7 @@ export default defineComponent({
     const loading = ref(false);
 
     const server = sl.get('serverProxy');
-    const globalActions = sl.get('globalActions');
+    const actions = sl.get('globalActions');
 
     watch(
       () => props.letter,
@@ -37,7 +37,7 @@ export default defineComponent({
         try {
           places.value = await server.getPlaces(props.letter);
         } catch {
-          globalActions.showErrorSnackbar('Failed to retrieve place words');
+          actions.showErrorSnackbar('Failed to retrieve place words');
         } finally {
           loading.value = false;
         }

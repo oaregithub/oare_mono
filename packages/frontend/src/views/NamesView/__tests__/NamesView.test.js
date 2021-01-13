@@ -3,6 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import NamesView from '../index.vue';
 import flushPromises from 'flush-promises';
+import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -17,18 +18,19 @@ describe('NamesView test', () => {
     getNames: jest.fn().mockResolvedValue([]),
   };
 
-  const createWrapper = (props = {}) =>
+  const createWrapper = ({server} = {}) => {
+    sl.set('serverProxy', server || mockServer);
+    sl.set('globalActions', mockActions);
     mount(NamesView, {
       vuetify,
       localVue,
       propsData: {
         letter: 'A',
-        server: mockServer,
-        actions: mockActions,
-        ...props,
       },
       stubs: ['router-link'],
     });
+  }
+
 
   it('gets names on load', async () => {
     createWrapper();
@@ -39,6 +41,7 @@ describe('NamesView test', () => {
   it('shows snackbar when name retrieval fails', async () => {
     createWrapper({
       server: {
+        ...mockServer,
         getNames: jest.fn().mockRejectedValue(null),
       },
     });

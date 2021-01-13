@@ -25,7 +25,7 @@ export default defineComponent({
     const names: Ref<NameOrPlace[]> = ref([]);
     const loading = ref(false);
     const server = sl.get('serverProxy');
-    const globalActions = sl.get('globalActions');
+    const actions = sl.get('globalActions');
 
     watch(
       () => props.letter,
@@ -34,7 +34,7 @@ export default defineComponent({
         try {
           names.value = await server.getNames(props.letter);
         } catch {
-          globalActions.showErrorSnackbar('Failed to retrieve name words');
+          actions.showErrorSnackbar('Failed to retrieve name words');
         } finally {
           loading.value = false;
         }

@@ -18,9 +18,9 @@ describe('PlacesView', () => {
     showErrorSnackbar: jest.fn(),
   };
 
-  const createWrapper = ({ server, actions } = {}) => {
+  const createWrapper = ({server} = {}) => {
     sl.set('serverProxy', server || mockServer);
-    sl.set('globalActions', actions || mockActions);
+    sl.set('globalActions', mockActions);
 
     return mount(PlacesView, {
       vuetify,
@@ -40,6 +40,7 @@ describe('PlacesView', () => {
   it('shows error snackbar when places fails to load', async () => {
     createWrapper({
       server: {
+        ...mockServer,
         getPlaces: jest.fn().mockRejectedValue(null),
       },
     });
