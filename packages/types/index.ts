@@ -443,9 +443,11 @@ export type DictionaryPermission =
 export interface DictionaryPermissionRow {
   permission: DictionaryPermission;
 }
+export type PagesPermission = "WORDS" | "NAMES" | "PLACES";
 
 export interface PermissionResponse {
   dictionary: DictionaryPermission[];
+  pages: PagesPermission[];
 }
 
 export type PermissionsListType = 'Text' | 'Collection';
