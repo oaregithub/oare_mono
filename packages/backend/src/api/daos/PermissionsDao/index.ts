@@ -29,36 +29,36 @@ class PermissionsDao {
     if (user) {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
 
-      for (let i = 0; i < groupIds.length; i += 1) {
-        const dictionaryPermissions = await this.getDictionaryPermissions(groupIds[i]);
-        dictionaryPermissions.forEach((row) => {
-          userPermissions.dictionary.push(row.permission);
-        });
+      const dictionaryPermissions = await Promise.all(
+        groupIds.map((groupId) => this.getDictionaryPermissions(groupId)),
+      );
+      dictionaryPermissions.forEach((groupId) => {
+        groupId.map((row) => userPermissions.dictionary.push(row.permission));
+      });
 
-        const pagesPermissions = await this.getPagesPermissions(groupIds[i]);
-        pagesPermissions.forEach((row) => {
-          userPermissions.pages.push(row.permission);
-        });
-      }
+      const pagesPermissions = await Promise.all(groupIds.map((groupId) => this.getPagesPermissions(groupId)));
+      pagesPermissions.forEach((groupId) => {
+        groupId.map((row) => userPermissions.pages.push(row.permission));
+      });
     }
 
     return userPermissions;
   }
 
-  async getDictionaryPermissions(groupId: number): Promise<DictionaryPermissionRow[]> {
-    const response: DictionaryPermissionRow[] = await knex('permissions')
+  async getPermissionsByType<K>(groupId: number, type: string): Promise<K[]> {
+    const response: K[] = await knex('permissions')
       .select('permission')
       .where('group_id', groupId)
-      .andWhere('type', 'dictionary');
+      .andWhere('type', type);
     return response;
   }
 
-  async getPagesPermissions(groupId: number): Promise<PagesPermissionRow[]> {
-    const response: PagesPermissionRow[] = await knex('permissions')
-      .select('permission')
-      .where('group_id', groupId)
-      .andWhere('type', 'pages');
-    return response;
+  async getDictionaryPermissions(groupId: number) {
+    return this.getPermissionsByType<DictionaryPermissionRow>(groupId, 'dictionary');
+  }
+
+  async getPagesPermissions(groupId: number) {
+    return this.getPermissionsByType<PagesPermissionRow>(groupId, 'pages');
   }
 }
 
