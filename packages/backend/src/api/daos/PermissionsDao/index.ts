@@ -1,10 +1,11 @@
 import knex from '@/connection';
 import { PermissionResponse, DictionaryPermissionRow, PagesPermissionRow } from '@oare/types';
-import UserGroupDao from '@/api/daos/UserGroupDao';
+import sl from '@/serviceLocator';
 import { UserRow } from '../UserDao';
 
 class PermissionsDao {
   async getUserPermissions(user: UserRow | null): Promise<PermissionResponse> {
+    const UserGroupDao = sl.get('UserGroupDao');
     if (user && user.isAdmin) {
       return {
         dictionary: [
