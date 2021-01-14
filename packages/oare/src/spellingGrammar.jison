@@ -3,11 +3,10 @@
 %%
 
 \s+                   return 'SPACE'
-"+"                   return '+'
-"-"                   return '-'
-"."                   return '.'
+"+"                   return 'PLUS'
+"-"|"."                   return 'SEPARATOR'
 ([0-9]+("."[0-9]+)?\b)|"LÁ"  return 'NUMBER'
-[a-zA-Z\u00C0-\u017F]+[₀₁₂₃₄₅₆₇₈₉]{0,2}    return 'SIGN'
+[a-zA-Z\u00C0-\u017F]+([₀₁₂₃₄₅₆₇₈₉]|\d){0,2}    return 'SIGN'
 
 // any other characters will throw an error
 .                     return 'INVALID'
@@ -29,12 +28,11 @@ phrase
 ;
 
 signphrase 
-  : signphrase '-' signphrase
-  | signphrase '.' signphrase
+  : signphrase SEPARATOR signphrase
   | SIGN
 ;
 
 numberphrase 
-  : numberphrase '+' numberphrase 
+  : numberphrase PLUS numberphrase 
   | NUMBER 
 ;

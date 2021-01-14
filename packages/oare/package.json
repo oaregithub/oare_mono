@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@types/node": "^13.11.0",
-    "jison": "^0.4.18"
+    "jison": "git+https://github.com/oaregithub/jison.git"
   },
   "files": [
     "build"
