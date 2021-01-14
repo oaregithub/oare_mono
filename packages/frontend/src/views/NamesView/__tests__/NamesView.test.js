@@ -18,7 +18,7 @@ describe('NamesView test', () => {
     getNames: jest.fn().mockResolvedValue([]),
   };
 
-  const createWrapper = ({server} = {}) => {
+  const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
     mount(NamesView, {
@@ -29,8 +29,7 @@ describe('NamesView test', () => {
       },
       stubs: ['router-link'],
     });
-  }
-
+  };
 
   it('gets names on load', async () => {
     createWrapper();

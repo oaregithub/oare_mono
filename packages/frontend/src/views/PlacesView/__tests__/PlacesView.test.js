@@ -18,7 +18,7 @@ describe('PlacesView', () => {
     showErrorSnackbar: jest.fn(),
   };
 
-  const createWrapper = ({server} = {}) => {
+  const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
 
