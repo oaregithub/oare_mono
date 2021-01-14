@@ -18,6 +18,7 @@ const state: State = reactive({
   authComplete: false,
   permissions: {
     dictionary: [],
+    pages: [],
   },
 });
 
@@ -31,6 +32,7 @@ export default {
   logout: () => {
     state.user = null;
     state.permissions.dictionary = [];
+    state.permissions.pages = [];
   },
   setAuthComplete: () => {
     state.authComplete = true;

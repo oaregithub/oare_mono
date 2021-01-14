@@ -1,28 +1,15 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import { PermissionResponse } from '@oare/types';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
 router.route('/permissions').get(async (req, res, next) => {
   try {
     const { user } = req;
+    const PermissionsDao = sl.get('PermissionsDao');
 
-    const permissions: PermissionResponse = {
-      dictionary: [],
-    };
-
-    if (user && user.isAdmin) {
-      permissions.dictionary = [
-        'ADD_TRANSLATION',
-        'DELETE_TRANSLATION',
-        'UPDATE_FORM',
-        'UPDATE_TRANSLATION',
-        'UPDATE_TRANSLATION_ORDER',
-        'UPDATE_WORD_SPELLING',
-        'ADD_SPELLING',
-      ];
-    }
+    const permissions = await PermissionsDao.getUserPermissions(user);
 
     res.json(permissions);
   } catch (err) {
