@@ -23,6 +23,8 @@ import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
 import SignReadingDao from './api/daos/SignReadingDao';
 import CollectionGroupDao from './api/daos/CollectionGroupDao';
 import ResetPasswordLinksDao from './api/daos/ResetPasswordLinksDao';
+import PermissionsDao from './api/daos/PermissionsDao';
+import UserGroupDao from './api/daos/UserGroupDao';
 
 declare global {
   namespace Express {
@@ -53,6 +55,8 @@ sl.set('PublicBlacklistDao', PublicBlacklistDao);
 sl.set('SignReadingDao', SignReadingDao);
 sl.set('CollectionGroupDao', CollectionGroupDao);
 sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
+sl.set('PermissionsDao', PermissionsDao);
+sl.set('UserGroupDao', UserGroupDao);
 sl.set('utils', utils);
 sl.set('mailer', mailer);
 
