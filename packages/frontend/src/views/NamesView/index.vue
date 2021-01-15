@@ -5,30 +5,14 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  Ref,
-  onMounted,
-  PropType,
-} from '@vue/composition-api';
-import { AkkadianLetterGroupsUpper } from '@oare/oare';
+import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import { NameOrPlace } from '@oare/types';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
-import defaultActions from '@/globalActions';
-import defaultServer from '@/serverProxy';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'NamesView',
   props: {
-    server: {
-      type: Object as PropType<typeof defaultServer>,
-      default: () => defaultServer,
-    },
-    actions: {
-      type: Object as PropType<typeof defaultActions>,
-      default: () => defaultActions,
-    },
     letter: {
       type: String,
       required: true,
@@ -37,20 +21,26 @@ export default defineComponent({
   components: {
     NamesPlacesDisplay,
   },
-  setup({ actions, server }) {
+  setup(props) {
     const names: Ref<NameOrPlace[]> = ref([]);
     const loading = ref(false);
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        names.value = await server.getNames();
-      } catch {
-        actions.showErrorSnackbar('Failed to retrieve names');
-      } finally {
-        loading.value = false;
-      }
-    });
+    watch(
+      () => props.letter,
+      async () => {
+        loading.value = true;
+        try {
+          names.value = await server.getNames(props.letter);
+        } catch {
+          actions.showErrorSnackbar('Failed to retrieve name words');
+        } finally {
+          loading.value = false;
+        }
+      },
+      { immediate: true }
+    );
 
     return {
       names,
