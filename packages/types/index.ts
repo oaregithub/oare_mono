@@ -456,6 +456,11 @@ export interface PermissionResponse {
 
 export type PermissionsListType = 'Text' | 'Collection';
 
+export interface UpdatePermissionPayload {
+  type: string;
+  permission: string;
+}
+
 // Text Info
 
 export interface TextInfoResponse {
