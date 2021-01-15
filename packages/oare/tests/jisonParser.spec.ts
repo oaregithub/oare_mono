@@ -32,4 +32,8 @@ describe('spelling grammar test', () => {
   it('returns html spelling for number phrases', () => {
     expect(spellingHtmlReading('0.5+LÁ')).toBe('0.5+LÁ');
   });
+
+  it('parses signs with spaces', () => {
+    tokenizeExplicitSpelling('áb   ša-ra-nim');
+  });
 });
