@@ -6,7 +6,9 @@ async function getPermissions(): Promise<PermissionResponse> {
   return data;
 }
 
-async function getGroupPermissions(groupId: number): Promise<PermissionResponse> {
+async function getGroupPermissions(
+  groupId: number
+): Promise<PermissionResponse> {
   const { data } = await axios.get(`/permissions/${groupId}`);
   return data;
 }
@@ -16,11 +18,17 @@ async function getAllPermissions(): Promise<PermissionResponse> {
   return data;
 }
 
-async function addPermission(groupId: string, payload: UpdatePermissionPayload): Promise<void> {
+async function addPermission(
+  groupId: string,
+  payload: UpdatePermissionPayload
+): Promise<void> {
   await axios.post(`/permissions/${groupId}`, payload);
 }
 
-async function removePermission(groupId: string, permission: string): Promise<void> {
+async function removePermission(
+  groupId: string,
+  permission: string
+): Promise<void> {
   await axios.delete(`/permissions/${groupId}/${permission}`);
 }
 
