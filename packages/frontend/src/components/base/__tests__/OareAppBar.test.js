@@ -17,6 +17,10 @@ describe('OareAppBar.vue', () => {
       user: {
         firstName: 'Test',
       },
+      permissions: {
+        dictionary: [],
+        pages: [],
+      },
     },
     logout: jest.fn(),
     setUser: jest.fn(),
@@ -34,6 +38,7 @@ describe('OareAppBar.vue', () => {
     }),
     getPermissions: jest.fn().mockResolvedValue({
       dictionary: [],
+      pages: [],
     }),
   };
 
@@ -56,6 +61,10 @@ describe('OareAppBar.vue', () => {
         ...mockStore.getters,
         isAdmin,
         isAuthenticated,
+        permissions: {
+          dictionary: [],
+          pages: isAdmin ? ['WORDS', 'NAMES', 'PLACES'] : [],
+        },
       },
     });
     sl.set('serverProxy', mockServer);

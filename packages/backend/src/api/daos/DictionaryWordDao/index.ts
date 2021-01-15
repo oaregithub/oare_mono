@@ -1,17 +1,21 @@
 import {
-  DictionaryWordTranslation,
   DictionaryWord,
+  DictionaryWordTranslation,
   NameOrPlace,
   SearchSpellingResultRow,
-  ItemProperty,
+  CopyWithPartial,
 } from '@oare/types';
 import knex from '@/connection';
+import { DictionarySpellingRows } from '@/api/daos/DictionarySpellingDao';
+import { AliasRow, AliasWithName } from '@/api/daos/AliasDao';
 import getQueryString from '../utils';
-import { nestedFormsAndSpellings, prepareWords, assembleSearchResult } from './utils';
+import { assembleSearchResult, nestedFormsAndSpellings } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
-import FieldDao from '../FieldDao';
-import DictionaryFormDao from '../DictionaryFormDao';
-import ItemPropertiesDao, { ItemPropertyRow } from '../ItemPropertiesDao';
+import FieldDao, { FieldShortRow } from '../FieldDao';
+import AliasDao from '../AliasDao';
+import DictionarySpellingDao from '../DictionarySpellingDao';
+import DictionaryFormDao, { FormRow } from '../DictionaryFormDao';
+import ItemPropertiesDao, { ItemPropertyRow, ItemPropertyShortRow } from '../ItemPropertiesDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -52,6 +56,18 @@ export interface WordQueryResultRow {
   specialClassifications: string[];
 }
 
+export interface WordQueryWordResultRow {
+  uuid: string;
+  word: string;
+}
+
+export interface WordCombination
+  extends FormRow,
+    DictionarySpellingRows,
+    FieldShortRow,
+    ItemPropertyShortRow,
+    AliasWithName {}
+
 export interface NamePlaceQueryRow {
   uuid: string;
   word: string;
@@ -78,7 +94,16 @@ export interface TranslationRow {
   primacy: number | null;
 }
 
+type PartialWordCombination = CopyWithPartial<
+  WordCombination,
+  'form' | 'explicitSpelling' | 'field' | 'valueUuid' | 'name'
+>;
+
 class DictionaryWordDao {
+  public readonly PLACE_TYPE = 'GN';
+
+  public readonly NAMES_TYPE = 'PN';
+
   async searchSpellings(spelling: string): Promise<SearchSpellingResultRow[]> {
     interface SearchSpellingRow {
       wordUuid: string;
@@ -161,17 +186,200 @@ class DictionaryWordDao {
   }
 
   async getNames(): Promise<NameOrPlace[]> {
-    const namesQuery = getQueryString('namesAndPlacesQuery.sql').replace('#{wordType}', 'PN');
-
-    const nameRows: NamePlaceQueryRow[] = (await knex.raw(namesQuery))[0];
-    return nestedFormsAndSpellings(nameRows);
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.NAMES_TYPE);
+    return nestedFormsAndSpellings(results);
   }
 
-  async getPlaces() {
-    const placesQuery = getQueryString('./namesAndPlacesQuery.sql').replace('#{wordType}', 'GN');
+  async getDictionaryWordsByType(type: string): Promise<WordQueryWordResultRow[]> {
+    const words: WordQueryWordResultRow[] = await knex('dictionary_word AS dw')
+      .select('dw.uuid', 'dw.word')
+      .where('dw.type', type);
+    return words;
+  }
 
-    const placeRows: NamePlaceQueryRow[] = (await knex.raw(placesQuery))[0];
-    return nestedFormsAndSpellings(placeRows);
+  async getDictionaryFormRows(): Promise<FormRow[]> {
+    const results: FormRow[] = await DictionaryFormDao.getDictionaryFormRows();
+    return results;
+  }
+
+  async getDictionarySpellingRows(): Promise<DictionarySpellingRows[]> {
+    const results: DictionarySpellingRows[] = await DictionarySpellingDao.getDictionarySpellingRows();
+    return results;
+  }
+
+  async getFieldRows(): Promise<FieldShortRow[]> {
+    const results: FieldShortRow[] = await FieldDao.getFieldRows();
+    return results;
+  }
+
+  async getItemPropertyRowsByAliasName(aliasName: string): Promise<ItemPropertyShortRow[]> {
+    const results: ItemPropertyShortRow[] = await ItemPropertiesDao.getItemPropertyRowsByAliasName(aliasName);
+    return results;
+  }
+
+  async getAliasesByType(type: string): Promise<AliasWithName[]> {
+    const results: AliasWithName[] = await AliasDao.getAliasesByType(type);
+    return results;
+  }
+
+  private reduceByReferenceUuid(
+    iterable: PartialWordCombination[],
+    hasMultiplePerReferenceUuid?: boolean,
+  ): Record<string, PartialWordCombination | PartialWordCombination[]> {
+    let results: Record<string, any> = {};
+
+    if (hasMultiplePerReferenceUuid) {
+      results = iterable.reduce((map: Record<string, PartialWordCombination[]>, obj: PartialWordCombination) => {
+        if (map[obj.referenceUuid] === undefined) {
+          map[obj.referenceUuid] = [obj];
+        } else {
+          const returnObjs = map[obj.referenceUuid];
+          returnObjs.push(obj);
+          map[obj.referenceUuid] = returnObjs;
+        }
+        return map;
+      }, {});
+    } else {
+      results = iterable.reduce((map: Record<string, PartialWordCombination>, obj: PartialWordCombination) => {
+        map[obj.referenceUuid] = obj;
+        return map;
+      }, {});
+    }
+
+    return results;
+  }
+
+  private parseNamesOrPlacesQueries(
+    dictionaryWords: WordQueryWordResultRow[],
+    dictionaryFormsMapped: Record<string, FormRow[]>,
+    dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]>,
+    fieldsMapped: Record<string, FieldShortRow>,
+    itemPropertiesMapped: Record<string, ItemPropertyShortRow[]>,
+    aliasesMapped: Record<string, AliasWithName>,
+  ): NamePlaceQueryRow[] {
+    // Join results for NamePlaceQuery.
+    const results: NamePlaceQueryRow[] = [];
+    dictionaryWords.forEach((dictWord: WordQueryWordResultRow) => {
+      let translation: string | null = '';
+      const abbreviations: Record<string, Set<string | null>> = {};
+      const explicitSpellings: Record<string, Set<string | null>> = {};
+      let forms: FormRow[] = [];
+
+      // Get all forms associated with the current word.
+      if (dictionaryFormsMapped[dictWord.uuid] !== undefined) {
+        forms = dictionaryFormsMapped[dictWord.uuid];
+      }
+
+      // Get all explicitSpellings for each form associated with the current word.
+      forms.forEach((form: FormRow) => {
+        if (form.uuid !== undefined && dictionarySpellingsMapped[form.uuid] !== undefined) {
+          dictionarySpellingsMapped[form.uuid].forEach((spelling: DictionarySpellingRows) => {
+            if (explicitSpellings[form.uuid] === undefined) {
+              explicitSpellings[form.uuid] = new Set<string | null>().add(spelling.explicitSpelling);
+            } else {
+              explicitSpellings[form.uuid].add(spelling.explicitSpelling);
+            }
+          });
+        }
+      });
+
+      // Get the translation of the current word.
+      if (fieldsMapped[dictWord.uuid] !== undefined) {
+        translation = fieldsMapped[dictWord.uuid]?.field;
+      }
+
+      // Get all abbreviations for each form associated with the current word.
+      forms.forEach((form: FormRow) => {
+        const properties: ItemPropertyShortRow[] = itemPropertiesMapped[form.uuid];
+        if (properties !== undefined) {
+          properties.forEach((property: ItemPropertyShortRow) => {
+            if (property.valueUuid !== null && aliasesMapped[property.valueUuid] !== undefined) {
+              if (abbreviations[form.uuid] === undefined) {
+                abbreviations[form.uuid] = new Set<string | null>().add(aliasesMapped[property.valueUuid].name);
+              } else {
+                abbreviations[form.uuid].add(aliasesMapped[property.valueUuid].name);
+              }
+            }
+          });
+        }
+      });
+
+      // Change format for display and add to results.
+      if (forms.length !== 0) {
+        forms.forEach((form) => {
+          results.push({
+            uuid: dictWord.uuid,
+            word: dictWord.word,
+            formUuid: form.uuid,
+            translation,
+            form: form.form,
+            cases: abbreviations[form.uuid] !== undefined ? Array.from(abbreviations[form.uuid]).join('/') : null,
+            spellings:
+              explicitSpellings[form.uuid] !== undefined ? Array.from(explicitSpellings[form.uuid]).join(',') : null,
+          } as NamePlaceQueryRow);
+        });
+      } else {
+        results.push({
+          uuid: dictWord.uuid,
+          word: dictWord.word,
+          formUuid: null,
+          translation,
+          form: null,
+          cases: null,
+          spellings: null,
+        } as NamePlaceQueryRow);
+      }
+    });
+
+    return results;
+  }
+
+  async getNamesOrPlaces(type: string) {
+    // Query the needed tables.
+    const [dictionaryWords, dictionaryForms, dictionarySpellings, fields, itemProperties, aliases] = await Promise.all([
+      this.getDictionaryWordsByType(type),
+      this.getDictionaryFormRows(),
+      this.getDictionarySpellingRows(),
+      this.getFieldRows(),
+      this.getItemPropertyRowsByAliasName(AliasDao.CASE_NAME),
+      this.getAliasesByType(AliasDao.ABBREVIATION_TYPE),
+    ]);
+
+    // Map to referenceUuid for O(1) lookup.
+    const dictionaryFormsMapped: Record<string, FormRow[]> = <Record<string, FormRow[]>>(
+      this.reduceByReferenceUuid(dictionaryForms, true)
+    );
+
+    const dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]> = <
+      Record<string, DictionarySpellingRows[]>
+    >this.reduceByReferenceUuid(dictionarySpellings, true);
+
+    const fieldsMapped: Record<string, FieldShortRow> = <Record<string, FieldShortRow>>(
+      this.reduceByReferenceUuid(fields)
+    );
+    const itemPropertiesMapped: Record<string, ItemPropertyShortRow[]> = <Record<string, ItemPropertyShortRow[]>>(
+      this.reduceByReferenceUuid(itemProperties, true)
+    );
+
+    const aliasesMapped: Record<string, AliasWithName> = <Record<string, AliasWithName>>(
+      this.reduceByReferenceUuid(aliases)
+    );
+
+    const results: NamePlaceQueryRow[] = this.parseNamesOrPlacesQueries(
+      dictionaryWords,
+      dictionaryFormsMapped,
+      dictionarySpellingsMapped,
+      fieldsMapped,
+      itemPropertiesMapped,
+      aliasesMapped,
+    );
+
+    return results;
+  }
+
+  async getPlaces(): Promise<NameOrPlace[]> {
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.PLACE_TYPE);
+    return nestedFormsAndSpellings(results);
   }
 
   async getWordTranslations(wordUuid: string): Promise<DictionaryWordTranslation[]> {

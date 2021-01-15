@@ -187,6 +187,7 @@ import {
   AddCollectionsPayload,
   AddPublicBlacklistPayload,
   CopyWithPartial,
+  Pagination,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
@@ -269,6 +270,11 @@ export default defineComponent({
     const [page, setPage] = useQueryParam('page', '1');
     const [rows, setRows] = useQueryParam('rows', '10');
     const [search, setSearch] = useQueryParam('query', '');
+    const savedQueries: Ref<Required<Pagination>> = ref({
+      page: 1,
+      limit: 10,
+      filter: '',
+    });
 
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
@@ -511,6 +517,23 @@ export default defineComponent({
     );
 
     watch(search, () => (selectAllMessage.value = false));
+
+    watch(textsAndCollectionsDialog, () => {
+      if (textsAndCollectionsDialog.value) {
+        savedQueries.value = {
+          page: Number(page.value),
+          limit: Number(rows.value),
+          filter: search.value,
+        };
+        setPage('1');
+        setRows('10');
+        setSearch('');
+      } else {
+        setPage(String(savedQueries.value.page));
+        setRows(String(savedQueries.value.limit));
+        setSearch(savedQueries.value.filter);
+      }
+    });
 
     onBeforeMount(() => {
       window.addEventListener('beforeunload', event => {
