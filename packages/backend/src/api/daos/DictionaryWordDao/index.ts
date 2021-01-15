@@ -238,7 +238,7 @@ class DictionaryWordDao {
     return results;
   }
 
-  public reduceByReferenceUuid(
+  private reduceByReferenceUuid(
     iterable: PartialWordCombination[],
     hasMultiplePerReferenceUuid?: boolean,
   ): Record<string, PartialWordCombination | PartialWordCombination[]> {
@@ -265,7 +265,7 @@ class DictionaryWordDao {
     return results;
   }
 
-  public parseNamesOrPlacesQueries(
+  private parseNamesOrPlacesQueries(
     dictionaryWords: WordQueryWordResultRow[],
     dictionaryFormsMapped: Record<string, FormRow[]>,
     dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]>,
