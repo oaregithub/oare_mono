@@ -1,61 +1,60 @@
 <template>
-	<div>
-		<div @mouseover='displayDropdown = true' @mouseleave='displayDropdown = false'>
-			{{word}}
-			<div style='position: absolute' v-if='displayDropdown'>
-				<v-btn
-				@click='displayDialog = true'
-				class="mr-2 mb-2"
-				small
-				color="primary"
-				>Comment</v-btn>
-			</div>
-		</div>
-		<div v-if='displayDialog'>
-			<oare-dialog
-					:value="true"
-					@submit='insertComment'
-					@input="$emit('input', $event)"
-					:width="1000"
-					:show-submit="true"
-					:show-cancel="true"
-					:closeButton="true"
-					:persistent="false"
-					v-model="displayDialog"
-			>
-				<v-row>
-					<v-col cols='12'>
-						<h1>{{word}}</h1>
-					</v-col>
-					<v-col cols='12'>
-						<v-container fluid>
-							<v-textarea
-									name="comment"
-									label="Comment"
-									auto-grow
-									prepend-icon="mdi-comment"
-									v-model='userComment'
-							></v-textarea>
-						</v-container>
-					</v-col>
-				</v-row>
-			</oare-dialog>
-		</div>
-	</div>
+  <div>
+    <div
+      @mouseover="displayDropdown = true"
+      @mouseleave="displayDropdown = false"
+    >
+      {{ word }}
+      <div style="position: absolute" v-if="displayDropdown">
+        <v-btn
+          @click="displayDialog = true"
+          class="mr-2 mb-2"
+          small
+          color="primary"
+          >Comment</v-btn
+        >
+      </div>
+    </div>
+    <div v-if="displayDialog">
+      <oare-dialog
+        :value="true"
+        @submit="insertComment"
+        @input="$emit('input', $event)"
+        :width="1000"
+        :show-submit="true"
+        :show-cancel="true"
+        :closeButton="true"
+        :persistent="false"
+        v-model="displayDialog"
+      >
+        <v-row>
+          <v-col cols="12">
+            <h1>{{ word }}</h1>
+          </v-col>
+          <v-col cols="12">
+            <v-container fluid>
+              <v-textarea
+                name="comment"
+                label="Comment"
+                auto-grow
+                prepend-icon="mdi-comment"
+                v-model="userComment"
+              ></v-textarea>
+            </v-container>
+          </v-col>
+        </v-row>
+      </oare-dialog>
+    </div>
+  </div>
 </template>
 
-<script lang='ts'>
-import {
-defineComponent,
-ref,
-PropType,
-} from '@vue/composition-api';
+<script lang="ts">
+import { defineComponent, ref, PropType } from '@vue/composition-api';
 import OareDialog from '../../components/base/OareDialog.vue';
 import sl from '@/serviceLocator';
 import { Comment } from '@oare/types';
 import { Thread } from '@oare/types';
 import { CommentRequest } from '@oare/types';
-
 
 export default defineComponent({
   name: 'DictionaryWordDisplay',
@@ -66,7 +65,7 @@ export default defineComponent({
     word: {
       type: String as PropType<string>,
       required: true,
-	},
+    },
     route: {
       type: String as PropType<string>,
       required: true,
@@ -76,7 +75,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({word, route, uuid}) {
+  setup({ word, route, uuid }) {
     const displayDropdown = ref(false);
     const displayDialog = ref(false);
     const loading = ref(false);
@@ -85,26 +84,37 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const store = sl.get('store');
 
-
     const insertComment = async () => {
-	  if(store.getters.user === null) {
-		actions.showErrorSnackbar('Please login before making a comment.');
-	  }
+      if (store.getters.user === null) {
+        actions.showErrorSnackbar('Please login before making a comment.');
+      }
 
       const userUuid = store.getters.user ? store.getters.user.uuid : null;
       loading.value = true;
       try {
-        const comment: Comment = {uuid: null, threadUuid: null, userUuid: userUuid, createdAt: null, deleted: false, text: userComment.value}
-        const thread: Thread = {uuid: null, referenceUuid: uuid, status: 'Untouched', route: route}
-        const request: CommentRequest = {comment: comment, thread: thread}
+        const comment: Comment = {
+          uuid: null,
+          threadUuid: null,
+          userUuid: userUuid,
+          createdAt: null,
+          deleted: false,
+          text: userComment.value,
+        };
+        const thread: Thread = {
+          uuid: null,
+          referenceUuid: uuid,
+          status: 'Untouched',
+          route: route,
+        };
+        const request: CommentRequest = { comment: comment, thread: thread };
 
         const success = await server.insertComment(request);
 
-        if(success) {
+        if (success) {
           actions.showSnackbar(`Successfully added the comment for ${word}`);
-		} else {
+        } else {
           actions.showErrorSnackbar('Failed to insert the comment');
-		}
+        }
       } catch {
         actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
@@ -113,15 +123,13 @@ export default defineComponent({
     };
 
     return {
-		insertComment,
-		displayDropdown,
-		displayDialog,
-		userComment,
-	};
+      insertComment,
+      displayDropdown,
+      displayDialog,
+      userComment,
+    };
   },
 });
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

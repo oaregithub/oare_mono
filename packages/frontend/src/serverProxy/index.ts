@@ -49,7 +49,7 @@ const serverProxy = {
   ...searchCollectionNames,
   ...collectionGroups,
   ...resetPassword,
-  ...comments
+  ...comments,
 };
 
 export type ServerProxyType = typeof serverProxy;
