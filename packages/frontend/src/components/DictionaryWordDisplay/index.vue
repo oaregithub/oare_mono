@@ -87,20 +87,26 @@ export default defineComponent({
 
 
     const insertComment = async () => {
-      if(store.getters.user === null) {
-        actions.showErrorSnackbar('Please login before making a comment.');
+	  if(store.getters.user === null) {
+		actions.showErrorSnackbar('Please login before making a comment.');
 	  }
 
+      const userUuid = store.getters.user ? store.getters.user.uuid : null;
       loading.value = true;
       try {
-        const comment: Comment = {uuid: null, threadUuid: null, userUuid: store.getters.user?.uuid, createdAt: '2021', deleted: false, text: userComment.value}
+        const comment: Comment = {uuid: null, threadUuid: null, userUuid: userUuid, createdAt: null, deleted: false, text: userComment.value}
         const thread: Thread = {uuid: null, referenceUuid: uuid, status: 'Untouched', route: route}
         const request: CommentRequest = {comment: comment, thread: thread}
-        await server.insertComment(request);
-        // await server.getNames(comment.value);
-        actions.showSnackbar('Successfully added the comment');
+
+        const success = await server.insertComment(request);
+
+        if(success) {
+          actions.showSnackbar(`Successfully added the comment for ${word}`);
+		} else {
+          actions.showErrorSnackbar('Failed to insert the comment');
+		}
       } catch {
-        actions.showErrorSnackbar('Failed to retrieve name words');
+        actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
         loading.value = false;
       }

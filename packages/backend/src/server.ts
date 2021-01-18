@@ -25,6 +25,8 @@ import CollectionGroupDao from './api/daos/CollectionGroupDao';
 import ResetPasswordLinksDao from './api/daos/ResetPasswordLinksDao';
 import PermissionsDao from './api/daos/PermissionsDao';
 import UserGroupDao from './api/daos/UserGroupDao';
+import CommentsDao from './api/daos/CommentsDao';
+import ThreadsDao from './api/daos/ThreadsDao';
 
 declare global {
   namespace Express {
@@ -57,6 +59,8 @@ sl.set('CollectionGroupDao', CollectionGroupDao);
 sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
 sl.set('PermissionsDao', PermissionsDao);
 sl.set('UserGroupDao', UserGroupDao);
+sl.set('CommentsDao', CommentsDao);
+sl.set('ThreadsDao', ThreadsDao);
 sl.set('utils', utils);
 sl.set('mailer', mailer);
 

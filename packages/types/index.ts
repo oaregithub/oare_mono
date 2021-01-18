@@ -484,8 +484,8 @@ export interface CommentRequest {
 export interface Comment {
   uuid?: string | null,
   threadUuid?: string | null,
-  userUuid: string,
-  createdAt: string,
+  userUuid?: string | null,
+  createdAt?: string | null,
   deleted: boolean,
   text: string,
 }
