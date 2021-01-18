@@ -22,7 +22,7 @@
       <div class="d-flex">
         <slot name="word" :word="wordInfo">
           <div class="font-weight-bold mr-1">
-            <DictionaryWordDisplay :word='wordInfo.word'/>
+            <DictionaryWordDisplay :route='"/dictionaryWord/"' :uuid='wordInfo.uuid' :word='wordInfo.word'/>
           </div>
         </slot>
         <slot name="translation" :word="wordInfo"></slot>

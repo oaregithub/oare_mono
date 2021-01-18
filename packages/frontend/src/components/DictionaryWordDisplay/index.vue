@@ -34,7 +34,7 @@
 									label="Comment"
 									auto-grow
 									prepend-icon="mdi-comment"
-									v-model='comment'
+									v-model='userComment'
 							></v-textarea>
 						</v-container>
 					</v-col>
@@ -52,6 +52,9 @@ PropType,
 } from '@vue/composition-api';
 import OareDialog from '../../components/base/OareDialog.vue';
 import sl from '@/serviceLocator';
+import { Comment } from '@oare/types';
+import { Thread } from '@oare/types';
+import { CommentRequest } from '@oare/types';
 
 
 export default defineComponent({
@@ -64,19 +67,36 @@ export default defineComponent({
       type: String as PropType<string>,
       required: true,
 	},
+    route: {
+      type: String as PropType<string>,
+      required: true,
+    },
+    uuid: {
+      type: String as PropType<string>,
+      required: true,
+    },
   },
-  setup() {
+  setup({word, route, uuid}) {
     const displayDropdown = ref(false);
     const displayDialog = ref(false);
     const loading = ref(false);
-    const comment = ref('');
+    const userComment = ref('');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
 
 
     const insertComment = async () => {
+      if(store.getters.user === null) {
+        actions.showErrorSnackbar('Please login before making a comment.');
+	  }
+
       loading.value = true;
       try {
+        const comment: Comment = {uuid: null, threadUuid: null, userUuid: store.getters.user?.uuid, createdAt: '2021', deleted: false, text: userComment.value}
+        const thread: Thread = {uuid: null, referenceUuid: uuid, status: 'Untouched', route: route}
+        const request: CommentRequest = {comment: comment, thread: thread}
+        await server.insertComment(request);
         // await server.getNames(comment.value);
         actions.showSnackbar('Successfully added the comment');
       } catch {
@@ -90,7 +110,7 @@ export default defineComponent({
 		insertComment,
 		displayDropdown,
 		displayDialog,
-		comment,
+		userComment,
 	};
   },
 });

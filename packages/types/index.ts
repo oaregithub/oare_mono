@@ -423,6 +423,7 @@ export interface RegisterPayload {
 
 export interface LoginRegisterResponse {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -472,3 +473,26 @@ export interface ResetPasswordPayload {
 //CopyWithPartial
 
 export type CopyWithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+
+// Comment Request
+
+export interface CommentRequest {
+  comment: Comment,
+  thread: Thread
+}
+
+export interface Comment {
+  uuid?: string | null,
+  threadUuid?: string | null,
+  userUuid: string,
+  createdAt: string,
+  deleted: boolean,
+  text: string,
+}
+
+export interface Thread {
+  uuid?: string | null,
+  referenceUuid: string,
+  status: "Untouched" | "Pending" | "In Progress" | "Completed",
+  route: string,
+}
