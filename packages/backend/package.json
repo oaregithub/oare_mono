@@ -64,7 +64,6 @@
     "luxon": "^1.25.0",
     "mailgun-js": "^0.22.0",
     "mysql": "^2.18.1",
-    "nodemailer": "^6.4.17",
     "uuid": "^8.1.0"
   },
   "husky": {
