@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from '@vue/composition-api';
+  import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { NameOrPlace } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
 import { spellingHtmlReading } from '@oare/oare';

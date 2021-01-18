@@ -21,9 +21,11 @@
     <div v-for="wordInfo in filteredWords" :key="wordInfo.uuid" class="mb-3">
       <div class="d-flex">
         <slot name="word" :word="wordInfo">
-          <div class="font-weight-bold mr-1">{{ wordInfo.word }}</div>
+          <div class="font-weight-bold mr-1">
+            <DictionaryWordDisplay :word='wordInfo.word'/>
+          </div>
         </slot>
-        <slot name="translation" :word="wordInfo"> </slot>
+        <slot name="translation" :word="wordInfo"></slot>
       </div>
       <div>
         <slot name="forms" :word="wordInfo"></slot>
@@ -46,6 +48,8 @@ import {
   PropType,
 } from '@vue/composition-api';
 import useQueryParam from '@/hooks/useQueryParam';
+import DictionaryWordDisplay from '@/components/DictionaryWordDisplay/index.vue';
+
 
 export interface DisplayableWord {
   uuid: string;
@@ -54,6 +58,9 @@ export interface DisplayableWord {
 
 export default defineComponent({
   name: 'DictionaryDisplay',
+  components: {
+    DictionaryWordDisplay,
+  },
   props: {
     wordList: {
       type: Array as PropType<DisplayableWord[]>,
@@ -91,6 +98,9 @@ export default defineComponent({
         props.searchFilter(wordSearch.value, word)
       );
     });
+
+    console.log(filteredWords);
+
     const encodedLetter = (letter: string) => encodeURIComponent(letter);
 
     watch(
