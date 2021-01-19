@@ -17,6 +17,10 @@ class PermissionsDao {
     pages: ['WORDS', 'NAMES', 'PLACES'],
   };
 
+  async getAllPermissions(): Promise<PermissionResponse> {
+    return this.ALL_PERMISSIONS;
+  }
+
   async getUserPermissions(user: UserRow | null): Promise<PermissionResponse> {
     const UserGroupDao = sl.get('UserGroupDao');
     if (user && user.isAdmin) {

@@ -34,25 +34,33 @@ router
     }
   })
   .post(adminRoute, async (req, res, next) => {
-    const { groupId } = (req.params as unknown) as { groupId: number };
-    const { type, permission }: UpdatePermissionPayload = req.body;
+    try {
+      const { groupId } = (req.params as unknown) as { groupId: number };
+      const { type, permission }: UpdatePermissionPayload = req.body;
 
-    const PermissionsDao = sl.get('PermissionsDao');
-    await PermissionsDao.addPermission(groupId, type, permission);
-    res.status(201).end();
+      const PermissionsDao = sl.get('PermissionsDao');
+      await PermissionsDao.addPermission(groupId, type, permission);
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
   });
 
 router.route('/permissions/:groupId/:permission').delete(adminRoute, async (req, res, next) => {
-  const { groupId, permission } = (req.params as unknown) as { groupId: number; permission: string };
-  const PermissionsDao = sl.get('PermissionsDao');
-  await PermissionsDao.removePermission(groupId, permission);
-  res.status(204).end();
+  try {
+    const { groupId, permission } = (req.params as unknown) as { groupId: number; permission: string };
+    const PermissionsDao = sl.get('PermissionsDao');
+    await PermissionsDao.removePermission(groupId, permission);
+    res.status(204).end();
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
 });
 
-router.route('/permissions').get(adminRoute, async (req, res, next) => {
+router.route('/permissions').get(adminRoute, async (_req, res, next) => {
   try {
     const PermissionsDao = sl.get('PermissionsDao');
-    const allPermissions = await PermissionsDao.ALL_PERMISSIONS;
+    const allPermissions = await PermissionsDao.getAllPermissions();
     res.json(allPermissions);
   } catch (err) {
     next(new HttpInternalError(err));
