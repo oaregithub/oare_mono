@@ -9,7 +9,7 @@ export default `/* lexical grammar */
 "(.)"                 return 'DETSEPARATOR'
 "{-}"                 return 'COMPSEPARATOR'
 ([0-9]+("."[0-9]+)?\b)|"LÁ"  return 'NUMBER'
-[\u00C0-\u017FĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz]+([₀₁₂₃₄₅₆₇₈₉]|\d){0,2}    return 'SIGN'
+[\u00C0-\u017FĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz]+([₀₁₂₃₄₅₆₇₈₉]|[0-9]){0,2}    return 'SIGN'
 "("                 return "("
 ")"                 return ")"
 "{"                 return "{"

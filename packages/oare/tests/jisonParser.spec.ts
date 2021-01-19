@@ -34,7 +34,11 @@ describe('spelling grammar test', () => {
   });
 
   it('parses signs with spaces', () => {
-    tokenizeExplicitSpelling('áb   ša-ra-nim');
+    tokenizeExplicitSpelling('áb ša-ra-nim');
+  });
+
+  it('errors on repeated separators', () => {
+    expect(() => tokenizeExplicitSpelling('ša--qá-lu-um')).toThrow();
   });
 
   it('parses phrases with determinatives', () => {
@@ -55,6 +59,12 @@ describe('spelling grammar test', () => {
     expect(() => tokenizeExplicitSpelling('KIŠIB(ki)-šu')).toThrow();
   });
 
+  it('errors on sign phrase in determinative', () => {
+    expect(() =>
+      tokenizeExplicitSpelling('(TÚG.ḪI.A)ba-ad-de-te-er-mi-na-ti-ve'),
+    ).toThrow();
+  });
+
   it('errors on lone determinative phrases', () => {
     expect(() => tokenizeExplicitSpelling('(m)(d)')).toThrow();
   });
@@ -66,9 +76,26 @@ describe('spelling grammar test', () => {
     tokenizeExplicitSpelling('1{iš}{-}{té}-tù-ma');
   });
 
+  it('errors on dangling complement separator', () => {
+    expect(() => tokenizeExplicitSpelling('ra{-}{at}')).toThrow();
+  });
+
   it('correct html reading for determinants', () => {
     expect(spellingHtmlReading('(TÚG)a-bar')).toBe(
       '<sup>TÚG</sup><em>a</em>-<em>bar</em>',
+    );
+  });
+
+  it('requires digit in front of decimal', () => {
+    expect(() => tokenizeExplicitSpelling('5+10+.033')).toThrow();
+  });
+
+  it('converts normal numbers to small numbers', () => {
+    expect(spellingHtmlReading('eš15-ra-at')).toBe(
+      '<em>eš₁₅</em>-<em>ra</em>-<em>at</em>',
+    );
+    expect(spellingHtmlReading('(d)PUZUR4-IŠTAR')).toBe(
+      '<sup>d</sup>PUZUR₄-IŠTAR',
     );
   });
 });

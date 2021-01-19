@@ -39,6 +39,23 @@ export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
   return tokens;
 };
 
+const isDigit = (char: string): boolean => !!char.match(/^\d$/);
+
+const subscriptNumber = (normalNumber: string): string =>
+  String.fromCharCode(8320 + Number(normalNumber));
+
+const normalizeSign = (sign: string): string => {
+  const normalizedSign = sign.split('');
+  [1, 2].forEach((negIdx) => {
+    const signIdx = normalizedSign.length - negIdx;
+    if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
+      normalizedSign[signIdx] = subscriptNumber(normalizedSign[signIdx]);
+    }
+  });
+
+  return normalizedSign.join('');
+};
+
 export const spellingHtmlReading = (spelling: string): string => {
   if (!spelling) {
     return '';
@@ -50,15 +67,14 @@ export const spellingHtmlReading = (spelling: string): string => {
       .filter(({ tokenName: [tokenType] }) => tokenType !== '$end')
       .map(({ tokenName: [tokenType], tokenText }, index) => {
         if (tokenType === 'SIGN') {
+          const sign = normalizeSign(tokenText);
           if (index > 0) {
             const { tokenText: prevToken } = tokens[index - 1];
             if (prevToken === '(' || prevToken === '{') {
-              return `<sup>${tokenText}</sup>`;
+              return `<sup>${sign}</sup>`;
             }
           }
-          return tokenText === tokenText.toLowerCase()
-            ? `<em>${tokenText}</em>`
-            : tokenText;
+          return sign === sign.toLowerCase() ? `<em>${sign}</em>` : sign;
         }
         if (tokenType === 'SPACE') {
           return ' ';
