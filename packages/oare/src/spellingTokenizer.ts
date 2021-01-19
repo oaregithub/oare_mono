@@ -11,7 +11,20 @@ const Jison = require('jison');
 
 const parser = new Jison.Parser(bnf);
 
-type TokenType = 'NUMBER' | 'SIGN' | 'SPACE' | 'PLUS' | 'SEPARATOR' | '$end';
+type TokenType =
+  | 'NUMBER'
+  | 'SIGN'
+  | 'SPACE'
+  | '+'
+  | '.'
+  | '-'
+  | 'DETSEPARATOR'
+  | 'COMPSEPARATOR'
+  | '('
+  | ')'
+  | '{'
+  | '}'
+  | '$end';
 
 interface Token {
   tokenName: TokenType[];
@@ -23,7 +36,6 @@ export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
   Jison.lexDebugger = tokens;
 
   parser.parse(spelling.trim());
-  console.log(tokens);
   return tokens;
 };
 
@@ -36,8 +48,14 @@ export const spellingHtmlReading = (spelling: string): string => {
     const tokens = tokenizeExplicitSpelling(spelling);
     return tokens
       .filter(({ tokenName: [tokenType] }) => tokenType !== '$end')
-      .map(({ tokenName: [tokenType], tokenText }) => {
+      .map(({ tokenName: [tokenType], tokenText }, index) => {
         if (tokenType === 'SIGN') {
+          if (index > 0) {
+            const { tokenText: prevToken } = tokens[index - 1];
+            if (prevToken === '(' || prevToken === '{') {
+              return `<sup>${tokenText}</sup>`;
+            }
+          }
           return tokenText === tokenText.toLowerCase()
             ? `<em>${tokenText}</em>`
             : tokenText;
@@ -45,10 +63,10 @@ export const spellingHtmlReading = (spelling: string): string => {
         if (tokenType === 'SPACE') {
           return ' ';
         }
-        if (['NUMBER', 'SIGN', 'PLUS', 'SEPARATOR'].includes(tokenType)) {
+        if (['NUMBER', 'SIGN', '+', '.', '-'].includes(tokenType)) {
           return tokenText;
         }
-        return tokenText;
+        return '';
       })
       .join('');
   } catch {

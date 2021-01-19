@@ -36,4 +36,39 @@ describe('spelling grammar test', () => {
   it('parses signs with spaces', () => {
     tokenizeExplicitSpelling('áb   ša-ra-nim');
   });
+
+  it('parses phrases with determinatives', () => {
+    tokenizeExplicitSpelling('(TÚG)a-bar-ni-ú');
+    tokenizeExplicitSpelling('a-bar-ni-ú(TÚG)');
+    tokenizeExplicitSpelling('(TÚG)(.)(HI)(.)(A)ku-ta-ni');
+    tokenizeExplicitSpelling('(m)(d)UTU.DÙG');
+    tokenizeExplicitSpelling('(m)(d)a-bar(m)(d)');
+  });
+
+  it('errors on improper separator placement', () => {
+    expect(() => tokenizeExplicitSpelling('(.)(HI)ku-ta-ni')).toThrow();
+    expect(() => tokenizeExplicitSpelling('(TUG)(.)ku-ta-ni')).toThrow();
+  });
+
+  it('errors on determinatives in the wrong spot', () => {
+    expect(() => tokenizeExplicitSpelling('ku(di)ta-ni')).toThrow();
+    expect(() => tokenizeExplicitSpelling('KIŠIB(ki)-šu')).toThrow();
+  });
+
+  it('errors on lone determinative phrases', () => {
+    expect(() => tokenizeExplicitSpelling('(m)(d)')).toThrow();
+  });
+
+  it('parses complement phrases', () => {
+    tokenizeExplicitSpelling('É{bé}{-}{et}');
+    tokenizeExplicitSpelling('10{eš₁₅}{-}{ra}{-}{at}');
+    tokenizeExplicitSpelling('É{be}{-}{ta}-tí-ni');
+    tokenizeExplicitSpelling('1{iš}{-}{té}-tù-ma');
+  });
+
+  it('correct html reading for determinants', () => {
+    expect(spellingHtmlReading('(TÚG)a-bar')).toBe(
+      '<sup>TÚG</sup><em>a</em>-<em>bar</em>',
+    );
+  });
 });

@@ -3,10 +3,18 @@ export default `/* lexical grammar */
 %%
 
 " "+                   return 'SPACE'
-"+"                   return 'PLUS'
-"-"|"."                   return 'SEPARATOR'
+"+"                   return '+'
+"."                   return '.'
+"-"                   return '-'
+"(.)"                 return 'DETSEPARATOR'
+"{-}"                 return 'COMPSEPARATOR'
 ([0-9]+("."[0-9]+)?\b)|"LÁ"  return 'NUMBER'
-[a-zA-Z\u00C0-\u017F]+([₀₁₂₃₄₅₆₇₈₉]|\d){0,2}    return 'SIGN'
+[\u00C0-\u017FĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz]+([₀₁₂₃₄₅₆₇₈₉]|\d){0,2}    return 'SIGN'
+"("                 return "("
+")"                 return ")"
+"{"                 return "{"
+"}"                 return "}"
+"="                 return "="
 
 
 // any other characters will throw an error
@@ -20,21 +28,71 @@ export default `/* lexical grammar */
 
 expressions
   : phrase
-  | expressions SPACE expressions
+  | expressions SPACE phrase
+;
+
+separator
+  : '.'
+  | '-'
 ;
 
 phrase
   : numberphrase
-  | signphrase
+  | NUMBER compphrase opt_compphrase_suffix
+  | opt_detphrase signphrase opt_signsuffix
+;
+
+opt_compphrase_suffix
+  : '-' signphrase
+  | /* empty */
+;
+
+opt_signsuffix
+  : signsuffix
+  | /* empty */
+;
+
+signsuffix
+  : detphrase
+  | compphrase opt_compphrase_suffix
 ;
 
 signphrase 
-  : signphrase SEPARATOR signphrase
+  : signphrase separator SIGN
   | SIGN
 ;
 
 numberphrase 
-  : numberphrase PLUS numberphrase 
+  : numberphrase '+' NUMBER 
   | NUMBER 
+;
+
+opt_detphrase
+  : detphrase
+  | /* empty */
+;
+
+detphrase
+  : detsign
+  | detphrase detsign
+  | detphrase DETSEPARATOR detsign
+;
+
+detsign
+  : '(' SIGN ')'
+;
+
+opt_compphrase
+  : compphrase
+  | /* empty */
+;
+
+compphrase
+  : compsign
+  | compphrase COMPSEPARATOR compsign
+;
+
+compsign
+  : '{' SIGN '}'
 ;
 `;
