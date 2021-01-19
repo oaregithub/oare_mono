@@ -17,65 +17,61 @@ class PermissionsDao {
     pages: ['WORDS', 'NAMES', 'PLACES'],
   };
 
-  async getUserPermissions(user: UserRow | null): Promise<PermissionResponse> {
+  async getAllPermissions(): Promise<PermissionResponse> {
+    return this.ALL_PERMISSIONS;
+  }
+
+  async getUserPermissions(user: UserRow | null): Promise<Partial<PermissionResponse>> {
     const UserGroupDao = sl.get('UserGroupDao');
     if (user && user.isAdmin) {
       return this.ALL_PERMISSIONS;
     }
 
-    const userPermissions: PermissionResponse = {
-      dictionary: [],
-      pages: [],
-    };
+    let userPermissions = {};
+
+    const types = Object.keys(await this.getAllPermissions());
+    const groupIds: number[] = [];
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
-
-      const dictionaryPermissions = await Promise.all(
-        groupIds.map((groupId) => this.getDictionaryPermissions(groupId)),
-      );
-      dictionaryPermissions.forEach((groupId) => {
-        groupId.map((row) => userPermissions.dictionary.push(row.permission));
-      });
-
-      const pagesPermissions = await Promise.all(groupIds.map((groupId) => this.getPagesPermissions(groupId)));
-      pagesPermissions.forEach((groupId) => {
-        groupId.map((row) => userPermissions.pages.push(row.permission));
-      });
+      const groups = await UserGroupDao.getGroupsOfUser(user.id);
+      groups.forEach((group) => groupIds.push(group));
     }
+    const permissions = (
+      await Promise.all(
+        types.map((type) =>
+          knex('permissions').select('permission').whereIn('group_id', groupIds).andWhere('type', type),
+        ),
+      )
+    ).map((item) => item.map((permissionObject) => permissionObject.permission));
+
+    types.forEach((type, index) => {
+      userPermissions = {
+        ...userPermissions,
+        [type]: permissions[index],
+      };
+    });
 
     return userPermissions;
   }
 
-  async getGroupPermissions(groupId: number): Promise<PermissionResponse> {
-    const groupPermissions: PermissionResponse = {
-      dictionary: [],
-      pages: [],
-    };
+  async getGroupPermissions(groupId: number): Promise<Partial<PermissionResponse>> {
+    let groupPermissions = {};
 
-    const dictionaryPermissions = await this.getDictionaryPermissions(groupId);
-    dictionaryPermissions.forEach((row) => groupPermissions.dictionary.push(row.permission));
+    const types = Object.keys(await this.getAllPermissions());
+    const permissions = (
+      await Promise.all(
+        types.map((type) => knex('permissions').select('permission').where('group_id', groupId).andWhere('type', type)),
+      )
+    ).map((item) => item.map((permissionObject) => permissionObject.permission));
 
-    const pagesPermissions = await this.getPagesPermissions(groupId);
-    pagesPermissions.forEach((row) => groupPermissions.pages.push(row.permission));
+    types.forEach((type, index) => {
+      groupPermissions = {
+        ...groupPermissions,
+        [type]: permissions[index],
+      };
+    });
 
     return groupPermissions;
-  }
-
-  async getPermissionsByType<K>(groupId: number, type: string): Promise<K[]> {
-    const response: K[] = await knex('permissions')
-      .select('permission')
-      .where('group_id', groupId)
-      .andWhere('type', type);
-    return response;
-  }
-
-  async getDictionaryPermissions(groupId: number) {
-    return this.getPermissionsByType<DictionaryPermissionRow>(groupId, 'dictionary');
-  }
-
-  async getPagesPermissions(groupId: number) {
-    return this.getPermissionsByType<PagesPermissionRow>(groupId, 'pages');
   }
 
   async addPermission(groupId: number, type: string, permission: string) {
