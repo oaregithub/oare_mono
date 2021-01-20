@@ -457,12 +457,14 @@ export interface PermissionResponse {
   pages: PagesPermission[];
 }
 
-export type PermissionsListType = 'Text' | 'Collection';
-
 export interface UpdatePermissionPayload {
-  type: string;
-  permission: string;
+  type: keyof PermissionResponse;
+  permission: PermissionResponse[keyof PermissionResponse][number];
 }
+
+// Blacklist Permissions
+
+export type PermissionsListType = 'Text' | 'Collection';
 
 // Text Info
 

@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { PermissionResponse, AllPermissions, PermissionItem } from '@oare/types';
+import { PermissionResponse, AllPermissions, AllPermissionsItem } from '@oare/types';
 import sl from '@/serviceLocator';
 import { UserRow } from '../UserDao';
 
@@ -51,27 +51,27 @@ class PermissionsDao {
     ],
   };
 
-  async getAllPermissions(): Promise<AllPermissions> {
+  getAllPermissions(): AllPermissions {
     return this.ALL_PERMISSIONS;
   }
 
   async getUserPermissions(user: UserRow | null): Promise<Partial<PermissionResponse>> {
     const UserGroupDao = sl.get('UserGroupDao');
 
-    let userPermissions = {};
+    let userPermissions: Partial<PermissionResponse> = {};
     if (user && user.isAdmin) {
       const types = Object.keys(this.ALL_PERMISSIONS);
       const permissions = Object.values(this.ALL_PERMISSIONS);
       types.forEach((type, index) => {
         userPermissions = {
           ...userPermissions,
-          [type]: permissions[index].map((item: PermissionItem<any>) => item.name),
+          [type]: permissions[index].map((item: AllPermissionsItem<any>) => item.name),
         };
       });
       return userPermissions;
     }
 
-    const types = Object.keys(await this.getAllPermissions());
+    const types = Object.keys(this.getAllPermissions());
     const groupIds: number[] = [];
 
     if (user) {
@@ -97,7 +97,7 @@ class PermissionsDao {
   }
 
   async getGroupPermissions(groupId: number): Promise<Partial<PermissionResponse>> {
-    let groupPermissions = {};
+    let groupPermissions: Partial<PermissionResponse> = {};
 
     const types = Object.keys(await this.getAllPermissions());
     const permissions = (
@@ -116,7 +116,11 @@ class PermissionsDao {
     return groupPermissions;
   }
 
-  async addPermission(groupId: number, type: string, permission: string) {
+  async addPermission<T extends keyof PermissionResponse, P extends PermissionResponse[T][number]>(
+    groupId: number,
+    type: T,
+    permission: P,
+  ) {
     await knex('permissions').insert({
       group_id: groupId,
       type,
@@ -124,7 +128,10 @@ class PermissionsDao {
     });
   }
 
-  async removePermission(groupId: number, permission: string) {
+  async removePermission<P extends PermissionResponse[keyof PermissionResponse][number]>(
+    groupId: number,
+    permission: P,
+  ) {
     await knex('permissions').where('group_id', groupId).andWhere('permission', permission).del();
   }
 }
