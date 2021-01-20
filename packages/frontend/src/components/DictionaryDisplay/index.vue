@@ -24,7 +24,6 @@
           <div class="font-weight-bold mr-1">
             <CommentWordDisplay
               :route="`/dictionaryWord/${wordInfo.uuid}`"
-              :word-uuid='wordInfo.uuid'
               :uuid="wordInfo.uuid"
               :word="wordInfo.word"
             />

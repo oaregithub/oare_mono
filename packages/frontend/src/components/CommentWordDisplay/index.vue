@@ -78,10 +78,6 @@ export default defineComponent({
       type: String as PropType<string>,
       required: true,
     },
-    wordUuid: {
-      type: String as PropType<string>,
-      required: true,
-    },
     uuid: {
       type: String as PropType<string>,
       required: true,
@@ -91,7 +87,7 @@ export default defineComponent({
       required: false,
     },
   },
-  setup({ word, route, wordUuid, uuid }) {
+  setup({ word, route, uuid }) {
     const displayDropdown = ref(false);
     const displayDialog = ref(false);
     const loading = ref(false);
@@ -111,7 +107,6 @@ export default defineComponent({
       try {
         const comment: Comment = {
           uuid: null,
-          referenceUuid: uuid,
           threadUuid: null,
           userUuid: userUuid,
           createdAt: null,
@@ -120,7 +115,7 @@ export default defineComponent({
         };
         const thread: Thread = {
           uuid: null,
-          referenceUuid: wordUuid,
+          referenceUuid: uuid,
           status: 'Untouched',
           route: route,
         };

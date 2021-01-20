@@ -6,7 +6,6 @@ export async function up(knex: Knex): Promise<void> {
     return knex.schema.createTable('comments', (table) => {
       table.increments('id');
       table.uuid('uuid').notNullable();
-      table.uuid('reference_uuid').notNullable();
       table.uuid('thread_uuid').notNullable();
       table.uuid('user_uuid').notNullable();
       table.dateTime('created_at').notNullable();

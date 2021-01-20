@@ -6,7 +6,6 @@ class CommentsDao {
   async insert(comment: Comment): Promise<void> {
     await knex('comments').insert({
       uuid: v4(),
-      reference_uuid: comment.referenceUuid,
       thread_uuid: comment.threadUuid,
       user_uuid: comment.userUuid,
       created_at: comment.createdAt,

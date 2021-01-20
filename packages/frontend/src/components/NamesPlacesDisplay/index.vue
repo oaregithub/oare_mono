@@ -20,7 +20,6 @@
         <em class="font-weight-bold mr-1">
           <CommentWordDisplay
                   :route="`/dictionaryWord/${word.uuid}`"
-                  :word-uuid="word.uuid"
                   :uuid='formInfo.uuid'
                   :word="formInfo.form"
           />
@@ -29,7 +28,6 @@
         <div v-for="(spelling, idx) in formInfo.spellings" :key="idx">
           <CommentWordDisplay
                   :route="`/dictionaryWord/${word.uuid}`"
-                  :word-uuid="word.uuid"
                   :uuid='spelling.uuid'
                   :word="correctedHtmlSpelling(spelling.explicitSpelling)"
                   :index='idx'
