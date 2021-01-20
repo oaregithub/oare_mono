@@ -4,38 +4,31 @@
     <span>Permissions set here affect all members of this group.</span>
     <div>
       <div v-for="(value, name) in allPermissionsOptions" :key="name">
-        <v-divider class="mt-4 primary" />
-        <h2 class="my-4">
+        <v-divider class="mt-2 primary" />
+        <h2 class="mt-4">
           {{ name.charAt(0).toUpperCase() + name.slice(1) }}
         </h2>
-        <!-- <v-data-table :headers="listHeaders" :items="value" hide-default-footer>
-          <template #[`item.name`]="{ item }">
-            <div>
-              <span>{{ formatName(item) }}</span>
-            </div>
-          </template>
-          <template #[`item.permission`]="{ item }">
-            <v-switch
-              :input-value="allGroupPermissions.includes(item)"
-              @change="updatePermission(item, name, $event)"
-            ></v-switch>
-          </template>
-        </v-data-table> -->
         <v-list v-if="value">
-          <v-list-item v-for="(permission, index) in value" :key="index">
-            <v-list-item-content>
-              <v-list-item-title
-                >{{ formatName(permission) }}
-              </v-list-item-title>
+          <div v-for="(permission, index) in value" :key="index">
+            <v-divider v-if="Number(index) !== 0" />
+            <v-list-item class="ma-2">
+              <v-list-item-content>
+                <v-list-item-title
+                  >{{ formatName(permission.name) }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ permission.description }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
               <v-list-item-action>
                 <v-switch
-                  :input-value="allGroupPermissions.includes(permission)"
-                  @change="updatePermission(permission, name, $event)"
+                  :input-value="allGroupPermissions.includes(permission.name)"
+                  @change="updatePermission(permission.name, name, $event)"
                 >
                 </v-switch>
               </v-list-item-action>
-            </v-list-item-content>
-          </v-list-item>
+            </v-list-item>
+          </div>
         </v-list>
       </div>
     </div>
@@ -51,6 +44,7 @@ import {
   computed,
 } from '@vue/composition-api';
 import {
+  AllPermissions,
   DictionaryPermission,
   PagesPermission,
   PermissionResponse,
@@ -70,14 +64,9 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const listHeaders: Ref<DataTableHeader[]> = ref([
-      { text: 'Name', value: 'name', width: '75%' },
-      { text: 'Allow?', value: 'permission' },
-    ]);
-
     const loading = ref(false);
 
-    const allPermissionsOptions: Ref<Partial<PermissionResponse>> = ref({});
+    const allPermissionsOptions: Ref<Partial<AllPermissions>> = ref({});
 
     const groupPermissions: Ref<Partial<PermissionResponse>> = ref({});
 
@@ -141,7 +130,6 @@ export default defineComponent({
       groupPermissions,
       allGroupPermissions,
       formatName,
-      listHeaders,
       updatePermission,
     };
   },
