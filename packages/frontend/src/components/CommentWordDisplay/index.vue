@@ -1,28 +1,5 @@
 <template>
   <div>
-<!--    <div style='cursor: pointer;' @mouseover="displayDropdown = true" @mouseleave='displayDropdown = false'>-->
-<!--      <div v-if='index !== undefined'>-->
-<!--        <span v-if="index > 0">, </span>-->
-<!--        <mark v-if='displayDropdown' v-html='word'></mark>-->
-<!--        <span v-else v-html='word'></span>-->
-<!--      </div>-->
-<!--      <div v-else>-->
-<!--        <mark v-if="displayDropdown">{{ word }}</mark>-->
-<!--        <span v-else>{{ word }}</span>-->
-<!--      </div>-->
-
-<!--      <div style="position: absolute" v-if="displayDropdown">-->
-<!--        <v-btn-->
-<!--                @click="displayDialog = true"-->
-<!--                class="mr-2 mb-2"-->
-<!--                small-->
-<!--                color="primary"-->
-<!--        >Comment</v-btn-->
-<!--        >-->
-<!--      </div>-->
-<!--    </div>-->
-
-<!--    <div v-if="displayDropdown">-->
       <oare-dialog
         :value="true"
         @submit="insertComment"
@@ -51,7 +28,6 @@
           </v-col>
         </v-row>
       </oare-dialog>
-<!--    </div>-->
   </div>
 </template>
 
@@ -86,8 +62,7 @@ export default defineComponent({
       required: false,
     },
   },
-  setup({ word, route, uuid }) {
-    const displayDropdown = ref(false);
+  setup({ word, route, uuid }, { emit }) {
     const displayDialog = ref(true);
     const loading = ref(false);
     const userComment = ref('');
@@ -124,6 +99,7 @@ export default defineComponent({
         if (success) {
           // Remove <em> tags if embedded html is used.
           actions.showSnackbar(`Successfully added the comment for ${word.replace(/<em>|<\/em>/g, '')}`);
+          emit('submit');
         } else {
           actions.showErrorSnackbar('Failed to insert the comment');
         }
@@ -137,7 +113,6 @@ export default defineComponent({
 
     return {
       insertComment,
-      displayDropdown,
       displayDialog,
       userComment,
     };

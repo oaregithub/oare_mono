@@ -1,5 +1,18 @@
 <template>
-	<div>
+	<v-menu offset-y>
+		<template #activator="{ on, attrs }">
+			<span v-if='hasHtml'
+				v-html='word'
+				v-bind="attrs"
+				v-on="on"
+				class="test-spelling"
+			></span>
+			<span v-else
+				class="test-spelling"
+				v-bind="attrs"
+				v-on="on"
+			>{{word}}</span>
+		</template>
 		<v-list>
 			<v-list-item v-if='hasComment' @click="$emit('clicked-commenting')" class="test-pencil">
 				<v-list-item-title>
@@ -20,7 +33,7 @@
 				</v-list-item-title>
 			</v-list-item>
 		</v-list>
-	</div>
+	</v-menu>
 </template>
 
 <script lang="ts">
@@ -29,6 +42,14 @@ import { defineComponent, PropType } from '@vue/composition-api';
 export default defineComponent({
   name: 'UtilList',
   props: {
+    word: {
+      type: String as PropType<string>,
+      required: true,
+    },
+    hasHtml: {
+      type: String as PropType<string>,
+      required: false,
+    },
     hasComment: {
       type: Boolean as PropType<boolean>,
       default: true,

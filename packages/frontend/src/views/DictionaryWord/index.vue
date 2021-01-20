@@ -10,7 +10,21 @@
         >
           <v-icon class="test-pencil">mdi-pencil</v-icon>
         </v-btn>
-        <span class="font-weight-bold">{{ title }}</span>
+        <UtilList
+                @clicked-commenting='isCommenting = true'
+                :has-edit='false'
+                :has-delete='false'
+                :word='`<span class="font-weight-bold">` + title + `</span>`'
+                :has-html='true'>
+        </UtilList>
+
+        <CommentWordDisplay v-if='isCommenting'
+                            :route="`/dictionaryWord/${wordInfo.word}`"
+                            :uuid='wordInfo.uuid'
+                            :word="wordInfo.word"
+                            @submit='isCommenting = false'
+                            @input='isCommenting = false'
+        />
       </v-row>
 
       <word-name-edit
@@ -54,6 +68,8 @@ import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
 import router from '@/router';
 import sl from '@/serviceLocator';
+import UtilList from '../../components/UtilList/index.vue'
+import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue'
 
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
@@ -62,6 +78,8 @@ export default defineComponent({
   components: {
     WordInfo,
     WordNameEdit,
+    UtilList,
+    CommentWordDisplay,
   },
   props: {
     uuid: {
@@ -75,6 +93,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const loading = ref(true);
+    const isCommenting = ref(false);
     const isEditing = ref(false);
     const wordInfo = ref<DictionaryWordResponse | null>(null);
 
@@ -138,6 +157,7 @@ export default defineComponent({
     });
 
     return {
+      isCommenting,
       loading,
       wordInfo,
       breadcrumbItems,

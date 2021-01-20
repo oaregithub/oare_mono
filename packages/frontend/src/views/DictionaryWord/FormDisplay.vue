@@ -17,7 +17,24 @@
       >
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
-      <strong class="mr-1">{{ form.form }}</strong>
+
+
+      <UtilList
+                @clicked-commenting='isCommenting = true'
+                :has-edit='false'
+                :has-delete='false'
+                :word='`<strong class="mr-1">` + form.form + `</strong>`'
+                :has-html='true'>
+      </UtilList>
+
+      <CommentWordDisplay v-if='isCommenting'
+        :route="`/dictionaryWord/${word}`"
+        :uuid='form.uuid'
+        :word="form.form"
+        @submit='isCommenting = false'
+        input='isCommenting = false'
+      />
+
       <grammar-display :form="form" />
       <span>
         <span v-for="(s, index) in form.spellings" :key="index">
@@ -84,12 +101,16 @@ import sl from '@/serviceLocator';
 import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
 import SpellingDialog from './SpellingDialog.vue';
+import UtilList from '../../components/UtilList/index.vue'
+import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue'
 
 export default defineComponent({
   components: {
     GrammarDisplay,
     SpellingDisplay,
     SpellingDialog,
+    UtilList,
+    CommentWordDisplay,
   },
   props: {
     form: {
@@ -113,6 +134,7 @@ export default defineComponent({
     const spellingDialogOpen = ref(false);
     const editing = ref(false);
     const loading = ref(false);
+    const isCommenting = ref(false);
     const editForm = ref({
       ...props.form,
     });
@@ -148,6 +170,7 @@ export default defineComponent({
     };
 
     return {
+      isCommenting,
       editing,
       canEdit,
       canAddSpelling,

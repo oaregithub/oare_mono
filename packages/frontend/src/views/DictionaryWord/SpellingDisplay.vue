@@ -1,20 +1,12 @@
 <template>
   <span>
-    <v-menu offset-y v-if="canEdit">
-      <template #activator="{ on, attrs }">
-        <span
-          v-html="htmlSpelling"
-          v-bind="attrs"
-          v-on="on"
-          class="test-spelling"
-        ></span>
-      </template>
-      <UtilList
+      <UtilList v-if="canEdit"
         @clicked-commenting='isCommenting = true'
         @clicked-editing='isEditing = true'
-        @clicked-deleting='deleteSpellingDialog = true'>
+        @clicked-deleting='deleteSpellingDialog = true'
+        :word='htmlSpelling'
+        :has-html='true'>
       </UtilList>
-    </v-menu>
     <span v-else v-html="htmlSpelling" class="test-spelling"></span>
     <span v-if="spelling.totalOccurrences > 0">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
@@ -27,7 +19,8 @@
             :route="`/dictionaryWord/${word}`"
             :uuid='spelling.uuid'
             :word="spelling.spelling"
-            v-model='isCommenting'
+            @submit='isCommenting = false'
+            @input='isCommenting = false'
     />
     <OareDialog
       v-model="addSpellingDialog"
