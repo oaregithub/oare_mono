@@ -76,6 +76,12 @@ export const spellingHtmlReading = (spelling: string): string => {
           }
           return sign === sign.toLowerCase() ? `<em>${sign}</em>` : sign;
         }
+        if (tokenType === 'DETSEPARATOR') {
+          return '<sup>.</sup>';
+        }
+        if (tokenType === 'COMPSEPARATOR') {
+          return '<sup>-</sup>';
+        }
         if (tokenType === 'SPACE') {
           return ' ';
         }
@@ -86,6 +92,6 @@ export const spellingHtmlReading = (spelling: string): string => {
       })
       .join('');
   } catch {
-    return `<mark style="background-color:red">${spelling}</mark>`;
+    return `<mark style="background-color: #ffb3b3">${spelling}</mark>`;
   }
 };
