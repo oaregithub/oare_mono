@@ -126,7 +126,7 @@ describe('GET /permissions/:groupId', () => {
 
   const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
 
-  it('returns 200 on successfull user permission retreival', async () => {
+  it('returns 200 on successful user permission retreival', async () => {
     const response = await sendRequest();
     expect(mockPermissionsDao.getGroupPermissions).toHaveBeenCalled();
     expect(response.status).toBe(200);
@@ -135,7 +135,7 @@ describe('GET /permissions/:groupId', () => {
   it('returns 500 on failed user permission retrieval', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
-      getGroupPermissions: jest.fn().mockRejectedValue('failed'),
+      getGroupPermissions: jest.fn().mockRejectedValue('get user permissions failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -188,7 +188,7 @@ describe('POST /permissions/:groupId', () => {
   it('returns 500 on failed addition', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
-      addPermission: jest.fn().mockRejectedValue('failed'),
+      addPermission: jest.fn().mockRejectedValue('permissions addition failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -238,7 +238,7 @@ describe('DELETE /permissions/:groupId/:permission', () => {
   it('returns 500 on failed deletion', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
-      removePermission: jest.fn().mockRejectedValue('failed'),
+      removePermission: jest.fn().mockRejectedValue('permissions deletion failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

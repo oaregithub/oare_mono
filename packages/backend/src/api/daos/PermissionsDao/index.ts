@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { PermissionResponse, DictionaryPermissionRow, PagesPermissionRow } from '@oare/types';
+import { PermissionResponse } from '@oare/types';
 import sl from '@/serviceLocator';
 import { UserRow } from '../UserDao';
 
@@ -17,7 +17,7 @@ class PermissionsDao {
     pages: ['WORDS', 'NAMES', 'PLACES'],
   };
 
-  async getAllPermissions(): Promise<PermissionResponse> {
+  getAllPermissions(): PermissionResponse {
     return this.ALL_PERMISSIONS;
   }
 
@@ -27,9 +27,9 @@ class PermissionsDao {
       return this.ALL_PERMISSIONS;
     }
 
-    let userPermissions = {};
+    let userPermissions: Partial<PermissionResponse> = {};
 
-    const types = Object.keys(await this.getAllPermissions());
+    const types = Object.keys(this.getAllPermissions());
     const groupIds: number[] = [];
 
     if (user) {
@@ -55,7 +55,7 @@ class PermissionsDao {
   }
 
   async getGroupPermissions(groupId: number): Promise<Partial<PermissionResponse>> {
-    let groupPermissions = {};
+    let groupPermissions: Partial<PermissionResponse> = {};
 
     const types = Object.keys(await this.getAllPermissions());
     const permissions = (
@@ -74,7 +74,11 @@ class PermissionsDao {
     return groupPermissions;
   }
 
-  async addPermission(groupId: number, type: string, permission: string) {
+  async addPermission<T extends keyof PermissionResponse, P extends PermissionResponse[T][number]>(
+    groupId: number,
+    type: T,
+    permission: P,
+  ) {
     await knex('permissions').insert({
       group_id: groupId,
       type,
@@ -82,7 +86,10 @@ class PermissionsDao {
     });
   }
 
-  async removePermission(groupId: number, permission: string) {
+  async removePermission<P extends PermissionResponse[keyof PermissionResponse][number]>(
+    groupId: number,
+    permission: P,
+  ) {
     await knex('permissions').where('group_id', groupId).andWhere('permission', permission).del();
   }
 }
