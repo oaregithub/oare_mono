@@ -73,11 +73,11 @@ class TextEpigraphyDao {
   ): Promise<SearchTextsResultRow[]> {
     // Gets list of texts with their UUIDs that match the query
     const getTextQuery = getSearchQuery(characters, textTitle, blacklist)
-      .orderBy('alias.name')
+      .orderBy('text.name')
       .groupBy('text_epigraphy.text_uuid')
       .limit(rows)
       .offset((page - 1) * rows)
-      .select('text_epigraphy.text_uuid AS uuid', 'alias.name');
+      .select('text_epigraphy.text_uuid AS uuid', 'text.name');
     const texts: SearchTextsResultRow[] = await getTextQuery;
 
     // For each text, get its surrounding characters as context
@@ -116,13 +116,6 @@ class TextEpigraphyDao {
         texts[i].matches = matches;
       }
     }
-
-    const textNameQueries = texts.map((text) => aliasDao.textAliasNames(text.uuid));
-    const textNames = await Promise.all(textNameQueries);
-
-    texts.forEach((text, index) => {
-      text.name = textNames[index]; // eslint-disable-line
-    });
 
     return texts;
   }
