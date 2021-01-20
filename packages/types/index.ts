@@ -190,10 +190,15 @@ export interface RemoveUsersFromGroupPayload {
 
 // Names and Places
 
+export interface ExplicitSpelling {
+  uuid: string;
+  explicitSpelling: string
+}
+
 export interface OnomasticonForm {
   uuid: string;
   form: string;
-  spellings: string[];
+  spellings: ExplicitSpelling[];
   cases: string | null;
 }
 export interface NameOrPlace {
@@ -483,6 +488,7 @@ export interface CommentRequest {
 
 export interface Comment {
   uuid?: string | null,
+  referenceUuid?: string | null,
   threadUuid?: string | null,
   userUuid?: string | null,
   createdAt?: string | null,

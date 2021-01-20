@@ -1,20 +1,27 @@
 <template>
   <div>
-    <div
-      @mouseover="displayDropdown = true"
-      @mouseleave="displayDropdown = false"
-    >
-      {{ word }}
+    <div style='cursor: pointer;' @mouseover="displayDropdown = true" @mouseleave='displayDropdown = false'>
+      <div v-if='index !== undefined'>
+        <span v-if="index > 0">, </span>
+        <mark v-if='displayDropdown' v-html='word'></mark>
+        <span v-else v-html='word'></span>
+      </div>
+      <div v-else>
+        <mark v-if="displayDropdown">{{ word }}</mark>
+        <span v-else>{{ word }}</span>
+      </div>
+
       <div style="position: absolute" v-if="displayDropdown">
         <v-btn
-          @click="displayDialog = true"
-          class="mr-2 mb-2"
-          small
-          color="primary"
-          >Comment</v-btn
+                @click="displayDialog = true"
+                class="mr-2 mb-2"
+                small
+                color="primary"
+        >Comment</v-btn
         >
       </div>
     </div>
+
     <div v-if="displayDialog">
       <oare-dialog
         :value="true"
@@ -29,7 +36,8 @@
       >
         <v-row>
           <v-col cols="12">
-            <h1>{{ word }}</h1>
+            <h1 v-if='index !== undefined' v-html='word'></h1>
+            <h1 v-else>{{ word }}</h1>
           </v-col>
           <v-col cols="12">
             <v-container fluid>
@@ -70,12 +78,20 @@ export default defineComponent({
       type: String as PropType<string>,
       required: true,
     },
+    wordUuid: {
+      type: String as PropType<string>,
+      required: true,
+    },
     uuid: {
       type: String as PropType<string>,
       required: true,
     },
+    index: {
+      type: Number as PropType<number>,
+      required: false,
+    },
   },
-  setup({ word, route, uuid }) {
+  setup({ word, route, wordUuid, uuid }) {
     const displayDropdown = ref(false);
     const displayDialog = ref(false);
     const loading = ref(false);
@@ -87,6 +103,7 @@ export default defineComponent({
     const insertComment = async () => {
       if (store.getters.user === null) {
         actions.showErrorSnackbar('Please login before making a comment.');
+        return;
       }
 
       const userUuid = store.getters.user ? store.getters.user.uuid : null;
@@ -94,6 +111,7 @@ export default defineComponent({
       try {
         const comment: Comment = {
           uuid: null,
+          referenceUuid: uuid,
           threadUuid: null,
           userUuid: userUuid,
           createdAt: null,
@@ -102,16 +120,16 @@ export default defineComponent({
         };
         const thread: Thread = {
           uuid: null,
-          referenceUuid: uuid,
+          referenceUuid: wordUuid,
           status: 'Untouched',
           route: route,
         };
         const request: CommentRequest = { comment: comment, thread: thread };
 
         const success = await server.insertComment(request);
-
         if (success) {
-          actions.showSnackbar(`Successfully added the comment for ${word}`);
+          // Remove <em> tags if embedded html is used.
+          actions.showSnackbar(`Successfully added the comment for ${word.replace(/<em>|<\/em>/g, '')}`);
         } else {
           actions.showErrorSnackbar('Failed to insert the comment');
         }
@@ -119,6 +137,7 @@ export default defineComponent({
         actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
         loading.value = false;
+        displayDialog.value = false;
       }
     };
 

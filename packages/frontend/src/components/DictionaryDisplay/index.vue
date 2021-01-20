@@ -22,8 +22,9 @@
       <div class="d-flex">
         <slot name="word" :word="wordInfo">
           <div class="font-weight-bold mr-1">
-            <DictionaryWordDisplay
-              :route="'/dictionaryWord/'"
+            <CommentWordDisplay
+              :route="`/dictionaryWord/${wordInfo.uuid}`"
+              :word-uuid='wordInfo.uuid'
               :uuid="wordInfo.uuid"
               :word="wordInfo.word"
             />
@@ -52,7 +53,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import useQueryParam from '@/hooks/useQueryParam';
-import DictionaryWordDisplay from '@/components/DictionaryWordDisplay/index.vue';
+import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 
 export interface DisplayableWord {
   uuid: string;
@@ -62,7 +63,7 @@ export interface DisplayableWord {
 export default defineComponent({
   name: 'DictionaryDisplay',
   components: {
-    DictionaryWordDisplay,
+    CommentWordDisplay,
   },
   props: {
     wordList: {

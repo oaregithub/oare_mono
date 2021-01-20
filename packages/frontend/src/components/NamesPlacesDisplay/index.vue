@@ -17,11 +17,23 @@
         :key="idx"
         class="d-flex flex-wrap pl-4"
       >
-        <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
+        <em class="font-weight-bold mr-1">
+          <CommentWordDisplay
+                  :route="`/dictionaryWord/${word.uuid}`"
+                  :word-uuid="word.uuid"
+                  :uuid='formInfo.uuid'
+                  :word="formInfo.form"
+          />
+        </em>
         <div class="mr-1">({{ formInfo.cases }})</div>
         <div v-for="(spelling, idx) in formInfo.spellings" :key="idx">
-          <span v-if="idx > 0">, </span>
-          <span v-html="correctedHtmlSpelling(spelling)"></span>
+          <CommentWordDisplay
+                  :route="`/dictionaryWord/${word.uuid}`"
+                  :word-uuid="word.uuid"
+                  :uuid='spelling.uuid'
+                  :word="correctedHtmlSpelling(spelling.explicitSpelling)"
+                  :index='idx'
+          />
         </div>
       </div>
     </template>
@@ -32,12 +44,14 @@
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { NameOrPlace } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
+import CommentWordDisplay from '../CommentWordDisplay/index.vue';
 import { spellingHtmlReading } from '@oare/oare';
 
 export default defineComponent({
   name: 'NamesPlacesDisplay',
   components: {
     DictionaryDisplay,
+    CommentWordDisplay,
   },
   props: {
     wordList: {
@@ -75,7 +89,7 @@ export default defineComponent({
             form.form &&
             (form.form.toLowerCase().includes(lowerSearch) ||
               form.spellings.some(spelling => {
-                return spelling && spelling.toLowerCase().includes(lowerSearch);
+                return spelling && spelling.explicitSpelling.toLowerCase().includes(lowerSearch);
               }))
           );
         })
