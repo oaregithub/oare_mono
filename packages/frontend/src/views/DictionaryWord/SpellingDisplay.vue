@@ -9,20 +9,11 @@
           class="test-spelling"
         ></span>
       </template>
-      <v-list>
-        <v-list-item @click="isEditing = true" class="test-pencil">
-          <v-list-item-title>
-            <v-icon>mdi-pencil</v-icon>
-            Edit
-          </v-list-item-title>
-        </v-list-item>
-        <v-list-item @click="deleteSpellingDialog = true" class="test-close">
-          <v-list-item-title>
-            <v-icon>mdi-close</v-icon>
-            Delete
-          </v-list-item-title>
-        </v-list-item>
-      </v-list>
+      <UtilList
+        @clicked-commenting='isCommenting = true'
+        @clicked-editing='isEditing = true'
+        @clicked-deleting='deleteSpellingDialog = true'>
+      </UtilList>
     </v-menu>
     <span v-else v-html="htmlSpelling" class="test-spelling"></span>
     <span v-if="spelling.totalOccurrences > 0">
@@ -32,6 +23,12 @@
       >)</span
     >
     <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
+    <CommentWordDisplay v-if='isCommenting'
+            :route="`/dictionaryWord/${word}`"
+            :uuid='spelling.uuid'
+            :word="spelling.spelling"
+            v-model='isCommenting'
+    />
     <OareDialog
       v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
@@ -104,10 +101,14 @@ import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
 import { ReloadKey } from './index.vue';
 import SpellingDialog from './SpellingDialog.vue';
+import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue'
+import UtilList from '../../components/UtilList/index.vue'
 
 export default defineComponent({
   components: {
     SpellingDialog,
+    CommentWordDisplay,
+    UtilList
   },
   props: {
     spelling: {
@@ -117,6 +118,10 @@ export default defineComponent({
     form: {
       type: Object as PropType<DictionaryForm>,
       required: true,
+    },
+    word: {
+      type: String as PropType<string>,
+      required: false,
     },
   },
   setup(props) {
@@ -131,6 +136,7 @@ export default defineComponent({
     const deleteSpellingDialog = ref(false);
     const deleteLoading = ref(false);
     const isEditing = ref(false);
+    const isCommenting = ref(false);
     const editLoading = ref(false);
     const headers: DataTableHeader[] = reactive([
       {
@@ -205,6 +211,7 @@ export default defineComponent({
       search,
       canEdit,
       isEditing,
+      isCommenting,
       editLoading,
       htmlSpelling,
       deleteSpelling,

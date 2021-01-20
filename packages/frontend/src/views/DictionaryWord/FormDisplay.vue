@@ -63,6 +63,7 @@
                 newSpelling => updateSpelling(index, newSpelling)
               "
               :form="form"
+              :word='word'
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -98,6 +99,10 @@ export default defineComponent({
     updateForm: {
       type: Function as PropType<(newForm: DictionaryForm) => void>,
       required: true,
+    },
+    word: {
+      type: String as PropType<string>,
+      required: false,
     },
   },
   setup(props) {

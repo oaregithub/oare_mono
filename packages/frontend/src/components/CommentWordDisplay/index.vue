@@ -1,28 +1,28 @@
 <template>
   <div>
-    <div style='cursor: pointer;' @mouseover="displayDropdown = true" @mouseleave='displayDropdown = false'>
-      <div v-if='index !== undefined'>
-        <span v-if="index > 0">, </span>
-        <mark v-if='displayDropdown' v-html='word'></mark>
-        <span v-else v-html='word'></span>
-      </div>
-      <div v-else>
-        <mark v-if="displayDropdown">{{ word }}</mark>
-        <span v-else>{{ word }}</span>
-      </div>
+<!--    <div style='cursor: pointer;' @mouseover="displayDropdown = true" @mouseleave='displayDropdown = false'>-->
+<!--      <div v-if='index !== undefined'>-->
+<!--        <span v-if="index > 0">, </span>-->
+<!--        <mark v-if='displayDropdown' v-html='word'></mark>-->
+<!--        <span v-else v-html='word'></span>-->
+<!--      </div>-->
+<!--      <div v-else>-->
+<!--        <mark v-if="displayDropdown">{{ word }}</mark>-->
+<!--        <span v-else>{{ word }}</span>-->
+<!--      </div>-->
 
-      <div style="position: absolute" v-if="displayDropdown">
-        <v-btn
-                @click="displayDialog = true"
-                class="mr-2 mb-2"
-                small
-                color="primary"
-        >Comment</v-btn
-        >
-      </div>
-    </div>
+<!--      <div style="position: absolute" v-if="displayDropdown">-->
+<!--        <v-btn-->
+<!--                @click="displayDialog = true"-->
+<!--                class="mr-2 mb-2"-->
+<!--                small-->
+<!--                color="primary"-->
+<!--        >Comment</v-btn-->
+<!--        >-->
+<!--      </div>-->
+<!--    </div>-->
 
-    <div v-if="displayDialog">
+<!--    <div v-if="displayDropdown">-->
       <oare-dialog
         :value="true"
         @submit="insertComment"
@@ -32,7 +32,6 @@
         :show-cancel="true"
         :closeButton="true"
         :persistent="false"
-        v-model="displayDialog"
       >
         <v-row>
           <v-col cols="12">
@@ -52,7 +51,7 @@
           </v-col>
         </v-row>
       </oare-dialog>
-    </div>
+<!--    </div>-->
   </div>
 </template>
 
@@ -89,7 +88,7 @@ export default defineComponent({
   },
   setup({ word, route, uuid }) {
     const displayDropdown = ref(false);
-    const displayDialog = ref(false);
+    const displayDialog = ref(true);
     const loading = ref(false);
     const userComment = ref('');
     const server = sl.get('serverProxy');
