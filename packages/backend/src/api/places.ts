@@ -4,12 +4,12 @@ import sl from '@/serviceLocator';
 
 const router = express.Router();
 
-router.route('/places').get(async (req, res, next) => {
+router.route('/places/:letter').get(async (req, res, next) => {
   try {
-    const DictionaryWordDao = sl.get('DictionaryWordDao');
+    const { letter } = req.params;
     const cache = sl.get('cache');
-
-    const dictionaryPlaces = await DictionaryWordDao.getPlaces();
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+    const dictionaryPlaces = await DictionaryWordDao.getPlaces(letter.toLowerCase());
 
     cache.insert({ req }, dictionaryPlaces);
     res.json(dictionaryPlaces);

@@ -1,21 +1,25 @@
-import * as nodemailer from 'nodemailer';
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.RESET_EMAIL,
-    pass: process.env.RESET_EMAIL_PASSWORD,
-  },
-});
+import mailgun from 'mailgun-js';
 
 const mailer = {
-  sendMail: ({ to, subject, text }: { to: string; subject: string; text: string }) => {
-    transporter.sendMail({
-      from: process.env.RESET_EMAIL,
-      to,
-      subject,
-      text,
-    });
+  sendMail: async ({ to, subject, text }: { to: string; subject: string; text: string }) => {
+    if (process.env.MG_API_KEY) {
+      const mg = mailgun({
+        apiKey: process.env.MG_API_KEY,
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? 'oare.byu.edu'
+            : 'sandbox3f749aa55c7947f5a26959616a7a0054.mailgun.org',
+      });
+
+      const data = {
+        from: 'OARE Support <oarefeedback@gmail.com>',
+        to,
+        subject,
+        text,
+      };
+
+      await mg.messages().send(data);
+    }
   },
 };
 

@@ -3,45 +3,81 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const mockGET = {
-  uuid: 'uuid1',
-  word: 'word1',
-  translation: 'translation1',
-  forms: [],
-};
+const resolveValue = [
+  {
+    uuid: 'word1',
+    word: 'coolBeans',
+    translation: 'This is a cool word',
+    forms: [
+      {
+        uuid: 'form1',
+        form: 'Form1',
+        spellings: ['Spelling1', 'Spelling2', 'Spelling3'],
+        cases: 'John/John2',
+      },
+      {
+        uuid: 'form2',
+        form: 'Form2',
+        spellings: ['SpellingOfOther'],
+        cases: 'Jane',
+      },
+    ],
+  },
+];
 
-describe('GET /places', () => {
-  const PATH = `${API_PATH}/places`;
-  const mockDictionaryWordDao = {
-    getPlaces: jest.fn().mockResolvedValue(mockGET),
+describe('places api test', () => {
+  const MockDictionaryWordDao = {
+    getPlaces: jest.fn().mockResolvedValue(resolveValue),
   };
+
   const mockCache = {
     insert: jest.fn(),
   };
 
-  const setup = () => {
-    sl.set('DictionaryWordDao', mockDictionaryWordDao);
-    sl.set('cache', mockCache);
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue(),
-    });
+  const setup = ({ WordDao, cache } = {}) => {
+    sl.set('DictionaryWordDao', WordDao || MockDictionaryWordDao);
+    sl.set('cache', cache || mockCache);
   };
 
-  beforeEach(setup);
-
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
-
-  it('returns 200 on successful places retrieval', async () => {
-    const response = await sendRequest();
-    expect(mockDictionaryWordDao.getPlaces).toHaveBeenCalled();
-    expect(response.status).toBe(200);
-  });
-
-  it('returns 500 on failed places retrieval', async () => {
-    sl.set('DictionaryWordDao', {
-      getPlaces: jest.fn().mockRejectedValue('failed places retrieval'),
+  describe('GET /places/:letter', () => {
+    it('returns places info', async () => {
+      const letter = 'A';
+      const PATH = `${API_PATH}/places/${letter}`;
+      setup();
+      const response = await request(app).get(PATH);
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(resolveValue);
     });
-    const response = await sendRequest();
-    expect(response.status).toBe(500);
+
+    it('checks multi letters', async () => {
+      const letter = 'U/A';
+      const PATH = `${API_PATH}/places/${encodeURIComponent(letter)}`;
+      setup();
+      const response = await request(app).get(PATH);
+      expect(response.status).toBe(200);
+    });
+
+    it('fails return places', async () => {
+      const letter = 'A';
+      const PATH = `${API_PATH}/places/${letter}`;
+      setup({
+        WordDao: {
+          getPlaces: jest.fn().mockRejectedValue('Not a valid letter'),
+        },
+        ...mockCache,
+      });
+
+      const response = await request(app).get(PATH);
+      expect(response.status).toBe(500);
+      expect(mockCache.insert).toHaveBeenCalledTimes(0);
+    });
+
+    it('checks cache insert', async () => {
+      const letter = 'A';
+      const PATH = `${API_PATH}/places/${letter}`;
+      setup();
+      await request(app).get(PATH);
+      expect(mockCache.insert).toHaveBeenCalled();
+    });
   });
 });
