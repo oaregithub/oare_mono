@@ -86,8 +86,8 @@ export default defineComponent({
     };
 
     const updatePermission = async (
-      permission: string,
-      type: string,
+      permission: PermissionResponse[keyof PermissionResponse][number],
+      type: keyof PermissionResponse,
       isAllowed: boolean
     ) => {
       try {
