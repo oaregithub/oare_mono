@@ -1,13 +1,6 @@
-// import fs from 'fs';
-// import path from 'path';
 import bnf from './spellingGrammar';
 
 const Jison = require('jison');
-
-// const bnf = fs.readFileSync(
-//   path.join(__dirname, '..', 'src', 'spellingGrammar.jison'),
-//   'utf-8',
-// );
 
 const parser = new Jison.Parser(bnf);
 
@@ -26,7 +19,7 @@ type TokenType =
   | '}'
   | '$end';
 
-interface Token {
+export interface Token {
   tokenName: TokenType[];
   tokenText: string;
 }
@@ -91,7 +84,7 @@ export const spellingHtmlReading = (spelling: string): string => {
         return '';
       })
       .join('');
-  } catch {
-    return `<mark style="background-color: #ffb3b3">${spelling}</mark>`;
+  } catch (e) {
+    return `<mark style="background-color: #ffb3b3>${spelling}</mark>`;
   }
 };

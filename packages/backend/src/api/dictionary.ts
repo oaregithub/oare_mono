@@ -11,7 +11,7 @@ import {
   CheckSpellingResponse,
   SpellingOccurrencesResponse,
 } from '@oare/types';
-import { tokenizeExplicitSpelling, createTabletRenderer } from '@oare/oare';
+import { tokenizeExplicitSpelling, createTabletRenderer, Token } from '@oare/oare';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
@@ -56,22 +56,26 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
   try {
     const spelling = (req.query.spelling as unknown) as string;
 
-    const tokens = tokenizeExplicitSpelling(spelling);
-    const errorTokens = tokens.filter((token) => token.classifier === 'ERROR');
+    let tokens: Token[];
 
-    if (errorTokens.length > 0) {
+    try {
+      tokens = tokenizeExplicitSpelling(spelling);
+    } catch (e) {
+      const {
+        hash: {
+          loc: { last_column: errorIndex },
+        },
+      } = e;
       const response: CheckSpellingResponse = {
-        errors: errorTokens.map(
-          (token) => `Unexpected token: ${token.reading === String.fromCharCode(-1) ? 'EOF' : token.reading}`,
-        ),
+        errors: [`Unexpected token: ${spelling[errorIndex]}`],
       };
       res.json(response);
       return;
     }
 
     const SignReadingDao = sl.get('SignReadingDao');
-    const signs = tokens.filter((token) => token.classifier === 'SUPERSCRIPT' || token.classifier === 'SYLLABLE');
-    const signExistences = await Promise.all(signs.map((token) => SignReadingDao.hasSign(token.reading)));
+    const signs = tokens.filter(({ tokenName: [tokenType] }) => tokenType === 'SIGN');
+    const signExistences = await Promise.all(signs.map((token) => SignReadingDao.hasSign(token.tokenText)));
 
     if (signExistences.every((v) => v)) {
       const response: CheckSpellingResponse = { errors: [] };
@@ -80,7 +84,7 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
       const response: CheckSpellingResponse = {
         errors: signs
           .filter((_exists, i) => !signExistences[i])
-          .map((token) => `${token.reading} is not a valid sign reading`),
+          .map((token) => `${token.tokenText} is not a valid sign reading`),
       };
       res.json(response);
     }
