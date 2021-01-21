@@ -1,5 +1,5 @@
 <template>
-  <span class="container">
+  <span class="spelling-display-container">
     <UtilList
       v-if="canEdit"
       @clicked-commenting="isCommenting = true"
@@ -227,7 +227,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.container {
+.spelling-display-container {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
