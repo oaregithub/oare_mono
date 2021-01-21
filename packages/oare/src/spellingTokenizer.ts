@@ -37,7 +37,7 @@ const isDigit = (char: string): boolean => !!char.match(/^\d$/);
 const subscriptNumber = (normalNumber: string): string =>
   String.fromCharCode(8320 + Number(normalNumber));
 
-const normalizeSign = (sign: string): string => {
+export const normalizeSign = (sign: string): string => {
   const normalizedSign = sign.split('');
   [1, 2].forEach((negIdx) => {
     const signIdx = normalizedSign.length - negIdx;

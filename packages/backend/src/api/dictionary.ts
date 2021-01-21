@@ -11,7 +11,7 @@ import {
   CheckSpellingResponse,
   SpellingOccurrencesResponse,
 } from '@oare/types';
-import { tokenizeExplicitSpelling, createTabletRenderer, Token } from '@oare/oare';
+import { tokenizeExplicitSpelling, createTabletRenderer, Token, normalizeSign } from '@oare/oare';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
@@ -75,7 +75,9 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
 
     const SignReadingDao = sl.get('SignReadingDao');
     const signs = tokens.filter(({ tokenName: [tokenType] }) => tokenType === 'SIGN');
-    const signExistences = await Promise.all(signs.map((token) => SignReadingDao.hasSign(token.tokenText)));
+    const signExistences = await Promise.all(
+      signs.map((token) => SignReadingDao.hasSign(normalizeSign(token.tokenText))),
+    );
 
     if (signExistences.every((v) => v)) {
       const response: CheckSpellingResponse = { errors: [] };
@@ -84,7 +86,7 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
       const response: CheckSpellingResponse = {
         errors: signs
           .filter((_exists, i) => !signExistences[i])
-          .map((token) => `${token.tokenText} is not a valid sign reading`),
+          .map((token) => `${normalizeSign(token.tokenText)} is not a valid sign reading`),
       };
       res.json(response);
     }

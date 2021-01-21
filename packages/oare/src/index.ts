@@ -19,6 +19,7 @@ export {
   spellingHtmlReading,
   tokenizeExplicitSpelling,
   Token,
+  normalizeSign,
 } from './spellingTokenizer';
 
 export type EpigraphicUnitType =
