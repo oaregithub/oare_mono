@@ -60,6 +60,16 @@
           </v-btn>
         </div>
       </div>
+      <div
+        v-for="(translation, index) in newTranslations"
+        :key="index"
+        class="d-flex align-start"
+      >
+        <span class="mt-6">{{ localTranslations.length + index + 1 }}</span>
+        <v-col cols="11" sm="7" lg="5" class="mb-n4">
+          <v-text-field v-model="newTranslations[index].translation" outlined />
+        </v-col>
+      </div>
       <v-btn
         v-if="canAddTranslations"
         color="primary"
@@ -104,6 +114,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const localTranslations = ref(_.cloneDeep(props.translations));
+    const newTranslations: Ref<DictionaryWordTranslation[]> = ref([]);
 
     const actions = sl.get('globalActions');
     const server = sl.get('serverProxy');
@@ -121,6 +132,11 @@ export default defineComponent({
       isLoading.value = true;
 
       try {
+        newTranslations.value.forEach(newTranslation => {
+          if (newTranslation.translation !== '') {
+            localTranslations.value.push(newTranslation);
+          }
+        });
         await server.editTranslations(props.wordUuid, {
           translations: localTranslations.value,
         });
@@ -148,14 +164,13 @@ export default defineComponent({
 
     const addTranslation = () => {
       const updatedTranslations: DictionaryWordTranslation[] = [
-        ...localTranslations.value,
+        ...newTranslations.value,
         {
           uuid: '',
           translation: '',
         },
       ];
-
-      localTranslations.value = updatedTranslations;
+      newTranslations.value = updatedTranslations;
     };
 
     const removeTranslation = (index: number) => {
@@ -218,6 +233,7 @@ export default defineComponent({
       canDeleteTranslations,
       canUpdateTranslations,
       canUpdateTranslationsOrder,
+      newTranslations,
     };
   },
 });
