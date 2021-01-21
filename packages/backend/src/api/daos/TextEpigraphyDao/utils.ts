@@ -3,10 +3,8 @@ import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/oare';
 import { EpigraphicQueryRow } from './index';
 
 export default function getSearchQuery(characters: string[], textTitle: string, blacklist: string[]) {
-  // Join alias table so text names can be returned
-  let query = knex('text_epigraphy').join('alias', function () {
-    this.on('alias.reference_uuid', '=', 'text_epigraphy.text_uuid');
-  });
+  // Join text table so text names can be returned
+  let query = knex('text_epigraphy').join('text', 'text.uuid', 'text_epigraphy.text_uuid');
 
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
@@ -32,7 +30,7 @@ export default function getSearchQuery(characters: string[], textTitle: string, 
   }
 
   if (textTitle !== '') {
-    query = query.andWhere('alias.name', 'like', `%${textTitle}%`);
+    query = query.andWhere('text.name', 'like', `%${textTitle}%`);
   }
   return query;
 }

@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
+import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import { NameOrPlace } from '@oare/types';
 import sl from '@/serviceLocator';
@@ -28,20 +28,22 @@ export default defineComponent({
     const loading = ref(false);
 
     const server = sl.get('serverProxy');
-    const globalActions = sl.get('globalActions');
+    const actions = sl.get('globalActions');
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        places.value = await server.getPlaces();
-      } catch {
-        globalActions.showErrorSnackbar(
-          'Failed to retrieve places information'
-        );
-      } finally {
-        loading.value = false;
-      }
-    });
+    watch(
+      () => props.letter,
+      async () => {
+        loading.value = true;
+        try {
+          places.value = await server.getPlaces(props.letter);
+        } catch {
+          actions.showErrorSnackbar('Failed to retrieve place words');
+        } finally {
+          loading.value = false;
+        }
+      },
+      { immediate: true }
+    );
 
     return {
       places,

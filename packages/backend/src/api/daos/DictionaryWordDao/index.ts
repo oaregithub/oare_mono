@@ -1,19 +1,18 @@
 import {
-  DictionaryWord,
   DictionaryWordTranslation,
+  DictionaryWord,
   NameOrPlace,
   SearchSpellingResultRow,
   CopyWithPartial,
 } from '@oare/types';
 import knex from '@/connection';
 import { DictionarySpellingRows } from '@/api/daos/DictionarySpellingDao';
-import { AliasRow, AliasWithName } from '@/api/daos/AliasDao';
-import getQueryString from '../utils';
+import { AliasWithName } from '@/api/daos/AliasDao';
+import sl from '@/serviceLocator';
 import { assembleSearchResult, nestedFormsAndSpellings } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao, { FieldShortRow } from '../FieldDao';
 import AliasDao from '../AliasDao';
-import DictionarySpellingDao from '../DictionarySpellingDao';
 import DictionaryFormDao, { FormRow } from '../DictionaryFormDao';
 import ItemPropertiesDao, { ItemPropertyRow, ItemPropertyShortRow } from '../ItemPropertiesDao';
 
@@ -185,40 +184,57 @@ class DictionaryWordDao {
     return rows;
   }
 
-  async getNames(): Promise<NameOrPlace[]> {
-    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.NAMES_TYPE);
+  async getNames(letter: string): Promise<NameOrPlace[]> {
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.NAMES_TYPE, letter);
     return nestedFormsAndSpellings(results);
   }
 
-  async getDictionaryWordsByType(type: string): Promise<WordQueryWordResultRow[]> {
+  async getDictionaryWordsByType(type: string, letter: string): Promise<WordQueryWordResultRow[]> {
+    // REGEX = Starts with open parenthesis followed by upperCase 'letter' OR just starts with upperCase 'letter'
+    const letters = letter.split('/');
+
+    let andWhere = '';
+    letters.forEach((l: string, index: number) => {
+      andWhere += `dw.word REGEXP '^[(]${l.toUpperCase()}|^[${l.toUpperCase()}]|^[(]${l.toLowerCase()}|^[${l.toLowerCase()}]]'`;
+      if (index !== letters.length - 1) {
+        andWhere += ' OR ';
+      }
+    });
+
     const words: WordQueryWordResultRow[] = await knex('dictionary_word AS dw')
       .select('dw.uuid', 'dw.word')
-      .where('dw.type', type);
+      .where('dw.type', type)
+      .andWhereRaw(andWhere);
     return words;
   }
 
   async getDictionaryFormRows(): Promise<FormRow[]> {
-    const results: FormRow[] = await DictionaryFormDao.getDictionaryFormRows();
+    const dictionaryFormDao = sl.get('DictionaryFormDao');
+    const results: FormRow[] = await dictionaryFormDao.getDictionaryFormRows();
     return results;
   }
 
   async getDictionarySpellingRows(): Promise<DictionarySpellingRows[]> {
-    const results: DictionarySpellingRows[] = await DictionarySpellingDao.getDictionarySpellingRows();
+    const dictionarySpellingDao = sl.get('DictionarySpellingDao');
+    const results: DictionarySpellingRows[] = await dictionarySpellingDao.getDictionarySpellingRows();
     return results;
   }
 
   async getFieldRows(): Promise<FieldShortRow[]> {
-    const results: FieldShortRow[] = await FieldDao.getFieldRows();
+    const fieldDao = sl.get('FieldDao');
+    const results: FieldShortRow[] = await fieldDao.getFieldRows();
     return results;
   }
 
   async getItemPropertyRowsByAliasName(aliasName: string): Promise<ItemPropertyShortRow[]> {
-    const results: ItemPropertyShortRow[] = await ItemPropertiesDao.getItemPropertyRowsByAliasName(aliasName);
+    const itemPropertiesDao = sl.get('ItemPropertiesDao');
+    const results: ItemPropertyShortRow[] = await itemPropertiesDao.getItemPropertyRowsByAliasName(aliasName);
     return results;
   }
 
   async getAliasesByType(type: string): Promise<AliasWithName[]> {
-    const results: AliasWithName[] = await AliasDao.getAliasesByType(type);
+    const aliasDao = sl.get('AliasDao');
+    const results: AliasWithName[] = await aliasDao.getAliasesByType(type);
     return results;
   }
 
@@ -334,10 +350,10 @@ class DictionaryWordDao {
     return results;
   }
 
-  async getNamesOrPlaces(type: string) {
+  async getNamesOrPlaces(type: string, letter: string) {
     // Query the needed tables.
     const [dictionaryWords, dictionaryForms, dictionarySpellings, fields, itemProperties, aliases] = await Promise.all([
-      this.getDictionaryWordsByType(type),
+      this.getDictionaryWordsByType(type, letter),
       this.getDictionaryFormRows(),
       this.getDictionarySpellingRows(),
       this.getFieldRows(),
@@ -377,8 +393,8 @@ class DictionaryWordDao {
     return results;
   }
 
-  async getPlaces(): Promise<NameOrPlace[]> {
-    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.PLACE_TYPE);
+  async getPlaces(letter: string): Promise<NameOrPlace[]> {
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.PLACE_TYPE, letter);
     return nestedFormsAndSpellings(results);
   }
 

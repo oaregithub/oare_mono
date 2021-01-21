@@ -17,6 +17,8 @@ import PublicBlacklistDao from '@/api/daos/PublicBlacklistDao';
 import SignReadingDao from '@/api/daos/SignReadingDao';
 import CollectionGroupDao from '@/api/daos/CollectionGroupDao';
 import ResetPasswordLinksDao from '@/api/daos/ResetPasswordLinksDao';
+import FieldDao from '@/api/daos/FieldDao';
+import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
 import UserGroupDao from '@/api/daos/UserGroupDao';
 import PermissionsDao from '@/api/daos/PermissionsDao';
 import utils from '@/utils';
@@ -29,6 +31,8 @@ export type ServiceTypes = {
   DictionaryFormDao: typeof DictionaryFormDao;
   DictionaryWordDao: typeof DictionaryWordDao;
   DictionarySpellingDao: typeof DictionarySpellingDao;
+  FieldDao: typeof FieldDao;
+  ItemPropertiesDao: typeof ItemPropertiesDao;
   LoggingEditsDao: typeof LoggingEditsDao;
   TextDiscourseDao: typeof TextDiscourseDao;
   TextDraftsDao: typeof TextDraftsDao;
