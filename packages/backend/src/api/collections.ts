@@ -1,7 +1,7 @@
 import express from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
-import hierarchyDao from './daos/HierarchyDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
@@ -10,7 +10,9 @@ router.route('/collections').get(async (req, res, next) => {
     const user = req.user || null;
     const isAdmin = user ? user.isAdmin : false;
 
-    const collections = await hierarchyDao.getAllCollections(isAdmin, user);
+    const HierarchyDao = sl.get('HierarchyDao');
+
+    const collections = await HierarchyDao.getAllCollections(isAdmin, user);
     res.json(collections);
   } catch (err) {
     next(new HttpInternalError(err));
@@ -25,7 +27,9 @@ router.route('/collections/:uuid').get(collectionsMiddleware, async (req, res, n
     const rows = req.query.rows ? ((req.query.rows as unknown) as number) : 10;
     const search = req.query.query ? (req.query.query as string) : '';
 
-    const response = await hierarchyDao.getCollectionTexts(user, uuid, {
+    const HierarchyDao = sl.get('HierarchyDao');
+
+    const response = await HierarchyDao.getCollectionTexts(user, uuid, {
       page,
       rows,
       search,

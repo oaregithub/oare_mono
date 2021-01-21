@@ -9,6 +9,7 @@
       <v-tab to="members">Members</v-tab>
       <v-tab to="texts">Texts</v-tab>
       <v-tab to="collections">Collections</v-tab>
+      <v-tab to="permissions">Permissions</v-tab>
     </v-tabs>
     <keep-alive>
       <router-view />

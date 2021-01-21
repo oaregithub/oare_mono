@@ -30,6 +30,7 @@ import AddBlacklistCollections from '@/views/BlacklistView/AddBlacklistCollectio
 import AddGroupCollections from '@/views/GroupView/AddGroupCollections.vue';
 import SendResetPasswordEmailView from '@/views/SendResetPasswordEmailView.vue';
 import ResetPasswordView from '@/views/ResetPasswordView.vue';
+import ManagePermissions from '@/views/GroupView/ManagePermissions.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -109,6 +110,12 @@ const routes: RouteConfig[] = [
         name: 'manageCollections',
         props: true,
         component: ManageCollections,
+      },
+      {
+        path: 'permissions',
+        name: 'managePermissions',
+        props: true,
+        component: ManagePermissions,
       },
     ],
   },
