@@ -158,7 +158,7 @@ describe('POST /text_groups/:groupId', () => {
     expect(response.status).toBe(201);
   });
 
-  it('does not allow non-admings to add texts to groups', async () => {
+  it('does not allow non-admins to add texts to groups', async () => {
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: false,
