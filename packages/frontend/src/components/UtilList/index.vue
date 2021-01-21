@@ -51,7 +51,7 @@
       <v-list-item
         v-if="hasComment"
         @click="$emit('clicked-commenting')"
-        class="test-pencil"
+        class="test-comment"
       >
         <v-list-item-title>
           <v-icon>mdi-comment</v-icon>
@@ -123,4 +123,7 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.test-comment {
+}
+</style>

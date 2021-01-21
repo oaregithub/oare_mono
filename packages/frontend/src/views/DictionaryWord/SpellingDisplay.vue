@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <span class="container">
     <UtilList
       v-if="canEdit"
       @clicked-commenting="isCommenting = true"
@@ -7,9 +7,15 @@
       @clicked-deleting="deleteSpellingDialog = true"
       :word="htmlSpelling"
       :has-html="true"
+      class="testing-spelling"
     >
     </UtilList>
-    <span v-else v-html="htmlSpelling" class="test-spelling"></span>
+    <span
+      v-else
+      v-html="htmlSpelling"
+      class="test-spelling testing-spelling"
+    ></span>
+    &nbsp;
     <span v-if="spelling.totalOccurrences > 0">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
         spelling.totalOccurrences
@@ -219,3 +225,14 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.testing-spelling {
+}
+</style>

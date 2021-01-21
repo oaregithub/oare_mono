@@ -139,6 +139,7 @@ describe('SpellingDisplay test', () => {
       },
     });
 
+    await wrapper.get('.testing-spelling').trigger('click');
     await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
@@ -157,7 +158,7 @@ describe('SpellingDisplay test', () => {
           .mockRejectedValue('Failed to update spelling'),
       },
     });
-
+    await wrapper.get('.testing-spelling').trigger('click');
     await wrapper.get('.test-spelling').trigger('click');
     await wrapper.get('.test-pencil').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');

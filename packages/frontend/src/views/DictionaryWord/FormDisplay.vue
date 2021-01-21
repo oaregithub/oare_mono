@@ -22,7 +22,7 @@
         @clicked-commenting="isCommenting = true"
         :has-edit="false"
         :has-delete="false"
-        :word="`<strong class=&quot;mr-1&quot;>` + form.form + `</strong>`"
+        :word="`<strong class='mr-1'>` + form.form + `</strong>`"
         :has-html="true"
       >
       </UtilList>
@@ -37,8 +37,12 @@
       />
 
       <grammar-display :form="form" />
-      <span>
-        <span v-for="(s, index) in form.spellings" :key="index">
+      <span class="spelling-container">
+        <span
+          v-for="(s, index) in form.spellings"
+          :key="index"
+          class="spelling-inner-container"
+        >
           <spelling-display
             :spelling="s"
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
@@ -185,3 +189,19 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.spelling-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.spelling-inner-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+</style>
