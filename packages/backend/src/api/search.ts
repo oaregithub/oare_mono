@@ -6,7 +6,6 @@ import {
   SearchDiscourseSpellingRow,
   SearchDiscourseSpellingResponse,
 } from '@oare/types';
-import cache from '@/cache';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
@@ -95,7 +94,6 @@ router.route('/search').get(async (req, res, next) => {
       results: texts,
     };
 
-    cache.insert({ req }, searchResults);
     res.json(searchResults);
   } catch (err) {
     next(new HttpInternalError(err));
