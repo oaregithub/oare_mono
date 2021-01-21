@@ -31,26 +31,42 @@
           <v-text-field
             v-model="localTranslations[idx].translation"
             outlined
-            :disabled="isLoading"
+            :disabled="isLoading || !canUpdateTranslations"
           />
         </v-col>
         <div v-if="!isLoading" class="d-flex mt-5">
-          <v-btn v-if="idx !== 0" icon @click="moveTranslation(idx, idx - 1)">
+          <v-btn
+            v-if="idx !== 0 && canUpdateTranslationsOrder"
+            icon
+            @click="moveTranslation(idx, idx - 1)"
+          >
             <v-icon>mdi-chevron-up</v-icon>
           </v-btn>
           <v-btn
-            v-if="idx !== localTranslations.length - 1"
+            v-if="
+              idx !== localTranslations.length - 1 && canUpdateTranslationsOrder
+            "
             icon
             @click="moveTranslation(idx, idx + 1)"
           >
             <v-icon>mdi-chevron-down</v-icon>
           </v-btn>
-          <v-btn icon @click="removeTranslation(idx)">
+          <v-btn
+            v-if="canDeleteTranslations"
+            icon
+            @click="removeTranslation(idx)"
+          >
             <v-icon>mdi-trash-can-outline</v-icon>
           </v-btn>
         </div>
       </div>
-      <v-btn color="primary" @click="addTranslation" text :disabled="isLoading">
+      <v-btn
+        v-if="canAddTranslations"
+        color="primary"
+        @click="addTranslation"
+        text
+        :disabled="isLoading"
+      >
         <v-icon>mdi-plus</v-icon>
         Add translation
       </v-btn>
@@ -168,19 +184,40 @@ export default defineComponent({
       });
     };
 
+    const canEdit = computed(() =>
+      permissions.value.some(perm => perm.includes('TRANSLATION'))
+    );
+
+    const canAddTranslations = computed(() =>
+      permissions.value.includes('ADD_TRANSLATION')
+    );
+
+    const canDeleteTranslations = computed(() =>
+      permissions.value.includes('DELETE_TRANSLATION')
+    );
+
+    const canUpdateTranslations = computed(() =>
+      permissions.value.includes('UPDATE_TRANSLATION')
+    );
+
+    const canUpdateTranslationsOrder = computed(() =>
+      permissions.value.includes('UPDATE_TRANSLATION_ORDER')
+    );
+
     return {
-      // updateTranslation,
       moveTranslation,
       addTranslation,
       removeTranslation,
       localTranslations,
-      canEdit: computed(() =>
-        permissions.value.some(perm => perm.includes('TRANSLATION'))
-      ),
+      canEdit,
       isEditing,
       closeEditor,
       saveEdits,
       isLoading,
+      canAddTranslations,
+      canDeleteTranslations,
+      canUpdateTranslations,
+      canUpdateTranslationsOrder,
     };
   },
 });
