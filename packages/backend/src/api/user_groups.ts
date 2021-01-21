@@ -2,13 +2,12 @@ import express from 'express';
 import { AddUsersToGroupPayload, RemoveUsersFromGroupPayload } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
-import oareGroupDao from './daos/OareGroupDao';
-import userGroupDao from './daos/UserGroupDao';
-import userDao from './daos/UserDao';
+import sl from '@/serviceLocator';
 
 async function canInsert(groupId: number, userIds: number[]) {
   for (let i = 0; i < userIds.length; i += 1) {
-    const inGroup = await userGroupDao.userInGroup(groupId, userIds[i]);
+    const UserGroupDao = sl.get('UserGroupDao');
+    const inGroup = await UserGroupDao.userInGroup(groupId, userIds[i]);
     if (inGroup) {
       return false;
     }
@@ -18,7 +17,8 @@ async function canInsert(groupId: number, userIds: number[]) {
 
 async function canDelete(groupId: number, userIds: number[]) {
   for (let i = 0; i < userIds.length; i += 1) {
-    const inGroup = await userGroupDao.userInGroup(groupId, userIds[i]);
+    const UserGroupDao = sl.get('UserGroupDao');
+    const inGroup = await UserGroupDao.userInGroup(groupId, userIds[i]);
 
     if (!inGroup) {
       return false;
@@ -35,13 +35,16 @@ router
     try {
       const { groupId }: { groupId: number } = req.params as any;
 
-      const existingGroup = await oareGroupDao.getGroupById(groupId);
+      const OareGroupDao = sl.get('OareGroupDao');
+      const UserGroupDao = sl.get('UserGroupDao');
+
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
 
-      res.json(await userGroupDao.getUsersInGroup(groupId));
+      res.json(await UserGroupDao.getUsersInGroup(groupId));
     } catch (err) {
       next(new HttpInternalError(err));
     }
@@ -51,8 +54,12 @@ router
       const { groupId }: { groupId: number } = req.params as any;
       const { userIds }: AddUsersToGroupPayload = req.body;
 
+      const OareGroupDao = sl.get('OareGroupDao');
+      const UserDao = sl.get('UserDao');
+      const UserGroupDao = sl.get('UserGroupDao');
+
       // Make sure that the group ID exists
-      const existingGroup = await oareGroupDao.getGroupById(groupId);
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
         return;
@@ -60,7 +67,7 @@ router
 
       // Make sure each user ID exists
       for (let i = 0; i < userIds.length; i += 1) {
-        const existingUser = await userDao.getUserById(userIds[i]);
+        const existingUser = await UserDao.getUserById(userIds[i]);
         if (!existingUser) {
           next(new HttpBadRequest(`User ID ${userIds[i]} does not exist`));
           return;
@@ -73,7 +80,7 @@ router
         return;
       }
 
-      const insertIds = await userGroupDao.addUsersToGroup(groupId, userIds);
+      const insertIds = await UserGroupDao.addUsersToGroup(groupId, userIds);
       res.status(201).json(insertIds);
     } catch (err) {
       next(new HttpInternalError(err));
@@ -84,8 +91,12 @@ router
       const { groupId }: { groupId: number } = req.params as any;
       const { userIds }: RemoveUsersFromGroupPayload = req.query as any;
 
+      const OareGroupDao = sl.get('OareGroupDao');
+      const UserDao = sl.get('UserDao');
+      const UserGroupDao = sl.get('UserGroupDao');
+
       // Make sure that the group ID exists
-      const existingGroup = await oareGroupDao.getGroupById(groupId);
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpInternalError(`Group ID ${groupId} does not exist`));
         return;
@@ -93,7 +104,7 @@ router
 
       // Make sure each user ID exists
       for (let i = 0; i < userIds.length; i += 1) {
-        const existingUser = await userDao.getUserById(userIds[i]);
+        const existingUser = await UserDao.getUserById(userIds[i]);
         if (!existingUser) {
           next(new HttpInternalError(`User ID ${userIds[i]} does not exist`));
           return;
@@ -106,7 +117,7 @@ router
         return;
       }
 
-      await userGroupDao.removeUsersFromGroup(groupId, userIds);
+      await UserGroupDao.removeUsersFromGroup(groupId, userIds);
       res.end();
     } catch (err) {
       next(new HttpInternalError(err));

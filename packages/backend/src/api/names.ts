@@ -1,13 +1,15 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import cache from '@/cache';
-import dictionaryWordDao from './daos/DictionaryWordDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
 router.route('/names').get(async (req, res, next) => {
   try {
-    const dictionaryNames = await dictionaryWordDao.getNames();
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+    const cache = sl.get('cache');
+
+    const dictionaryNames = await DictionaryWordDao.getNames();
 
     cache.insert({ req }, dictionaryNames);
     res.json(dictionaryNames);

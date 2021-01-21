@@ -4,9 +4,6 @@ import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
 import { API_PATH } from '@/setupRoutes';
-import textGroupDao from './daos/TextGroupDao';
-import oareGroupDao from './daos/OareGroupDao';
-import textDao from './daos/TextDao';
 
 function clearCache() {
   const cache = sl.get('cache');
@@ -28,8 +25,9 @@ router
   .get(adminRoute, async (req, res, next) => {
     try {
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+      const TextGroupDao = sl.get('TextGroupDao');
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const texts = await textGroupDao.getTexts(groupId);
+      const texts = await TextGroupDao.getTexts(groupId);
       const epigraphyStatus = await Promise.all(texts.map((text) => TextEpigraphyDao.hasEpigraphy(text.uuid)));
       const response = texts.map((text, index) => ({
         ...text,
@@ -45,8 +43,12 @@ router
       const { groupId } = (req.params as unknown) as { groupId: number };
       const { texts }: AddTextPayload = req.body;
 
+      const TextGroupDao = sl.get('TextGroupDao');
+      const OareGroupDao = sl.get('OareGroupDao');
+      const TextDao = sl.get('TextDao');
+
       // Make sure that group ID exists
-      const existingGroup = await oareGroupDao.getGroupById(groupId);
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
         return;
@@ -55,7 +57,7 @@ router
       // Make sure that given text UUIDs exist
       for (let i = 0; i < texts.length; i += 1) {
         const text = texts[i];
-        const existingText = await textDao.getTextByUuid(text.uuid);
+        const existingText = await TextDao.getTextByUuid(text.uuid);
         if (!existingText) {
           next(new HttpBadRequest(`Text UUID is invalid: ${text.uuid}`));
           return;
@@ -70,7 +72,7 @@ router
         can_write: text.canWrite,
       }));
 
-      await textGroupDao.addTexts(insertRows);
+      await TextGroupDao.addTexts(insertRows);
       clearCache();
       res.status(201).end();
     } catch (err) {
@@ -82,21 +84,24 @@ router
       const { groupId } = (req.params as unknown) as { groupId: number };
       const { uuid, canRead, canWrite }: UpdateTextPermissionPayload = req.body;
 
+      const TextGroupDao = sl.get('TextGroupDao');
+      const OareGroupDao = sl.get('OareGroupDao');
+
       // Make sure that group ID exists
-      const existingGroup = oareGroupDao.getGroupById(groupId);
+      const existingGroup = OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
         return;
       }
 
       // Make sure that each text exists inside the group
-      const textExists = await textGroupDao.containsAssociation(groupId, uuid);
+      const textExists = await TextGroupDao.containsAssociation(groupId, uuid);
       if (!textExists) {
         next(new HttpBadRequest(`Cannot update text not in group: ${uuid}`));
         return;
       }
 
-      await textGroupDao.update(groupId, uuid, canWrite, canRead);
+      await TextGroupDao.update(groupId, uuid, canWrite, canRead);
       clearCache();
       res.status(204).end();
     } catch (err) {

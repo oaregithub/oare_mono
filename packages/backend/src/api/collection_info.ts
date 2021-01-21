@@ -1,7 +1,7 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
-import aliasDao from './daos/AliasDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
@@ -9,7 +9,9 @@ router.route('/collection_info/:uuid').get(collectionsMiddleware, async (req, re
   try {
     const uuid = req.params.uuid as string;
 
-    const name = await aliasDao.textAliasNames(uuid);
+    const AliasDao = sl.get('AliasDao');
+
+    const name = await AliasDao.textAliasNames(uuid);
     res.json({
       name,
     });
