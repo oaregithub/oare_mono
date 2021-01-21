@@ -1,33 +1,33 @@
 <template>
   <div>
-      <oare-dialog
-        :value="true"
-        @submit="insertComment"
-        @input="$emit('input', $event)"
-        :width="1000"
-        :show-submit="true"
-        :show-cancel="true"
-        :closeButton="true"
-        :persistent="false"
-      >
-        <v-row>
-          <v-col cols="12">
-            <h1 v-if='index !== undefined' v-html='word'></h1>
-            <h1 v-else>{{ word }}</h1>
-          </v-col>
-          <v-col cols="12">
-            <v-container fluid>
-              <v-textarea
-                name="comment"
-                label="Comment"
-                auto-grow
-                prepend-icon="mdi-comment"
-                v-model="userComment"
-              ></v-textarea>
-            </v-container>
-          </v-col>
-        </v-row>
-      </oare-dialog>
+    <oare-dialog
+      :value="true"
+      @submit="insertComment"
+      @input="$emit('input', $event)"
+      :width="1000"
+      :show-submit="true"
+      :show-cancel="true"
+      :closeButton="true"
+      :persistent="false"
+    >
+      <v-row>
+        <v-col cols="12">
+          <h1 v-if="index !== undefined || hasHtml" v-html="word"></h1>
+          <h1 v-else>{{ word }}</h1>
+        </v-col>
+        <v-col cols="12">
+          <v-container fluid>
+            <v-textarea
+              name="comment"
+              label="Comment"
+              auto-grow
+              prepend-icon="mdi-comment"
+              v-model="userComment"
+            ></v-textarea>
+          </v-container>
+        </v-col>
+      </v-row>
+    </oare-dialog>
   </div>
 </template>
 
@@ -59,6 +59,10 @@ export default defineComponent({
     },
     index: {
       type: Number as PropType<number>,
+      required: false,
+    },
+    hasHtml: {
+      type: Boolean as PropType<boolean>,
       required: false,
     },
   },
@@ -98,7 +102,12 @@ export default defineComponent({
         const success = await server.insertComment(request);
         if (success) {
           // Remove <em> tags if embedded html is used.
-          actions.showSnackbar(`Successfully added the comment for ${word.replace(/<em>|<\/em>/g, '')}`);
+          actions.showSnackbar(
+            `Successfully added the comment for ${word.replace(
+              /<em>|<\/em>|<strong>|<\/strong>/g,
+              ''
+            )}`
+          );
           emit('submit');
         } else {
           actions.showErrorSnackbar('Failed to insert the comment');

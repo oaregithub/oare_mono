@@ -1,12 +1,14 @@
 <template>
   <span>
-      <UtilList v-if="canEdit"
-        @clicked-commenting='isCommenting = true'
-        @clicked-editing='isEditing = true'
-        @clicked-deleting='deleteSpellingDialog = true'
-        :word='htmlSpelling'
-        :has-html='true'>
-      </UtilList>
+    <UtilList
+      v-if="canEdit"
+      @clicked-commenting="isCommenting = true"
+      @clicked-editing="isEditing = true"
+      @clicked-deleting="deleteSpellingDialog = true"
+      :word="htmlSpelling"
+      :has-html="true"
+    >
+    </UtilList>
     <span v-else v-html="htmlSpelling" class="test-spelling"></span>
     <span v-if="spelling.totalOccurrences > 0">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
@@ -15,12 +17,13 @@
       >)</span
     >
     <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
-    <CommentWordDisplay v-if='isCommenting'
-            :route="`/dictionaryWord/${word}`"
-            :uuid='spelling.uuid'
-            :word="spelling.spelling"
-            @submit='isCommenting = false'
-            @input='isCommenting = false'
+    <CommentWordDisplay
+      v-if="isCommenting"
+      :route="`/dictionaryWord/${wordUuid}`"
+      :uuid="spelling.uuid"
+      :word="spelling.spelling"
+      @submit="isCommenting = false"
+      @input="isCommenting = false"
     />
     <OareDialog
       v-model="addSpellingDialog"
@@ -94,14 +97,14 @@ import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
 import { ReloadKey } from './index.vue';
 import SpellingDialog from './SpellingDialog.vue';
-import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue'
-import UtilList from '../../components/UtilList/index.vue'
+import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
+import UtilList from '../../components/UtilList/index.vue';
 
 export default defineComponent({
   components: {
     SpellingDialog,
     CommentWordDisplay,
-    UtilList
+    UtilList,
   },
   props: {
     spelling: {
@@ -112,7 +115,7 @@ export default defineComponent({
       type: Object as PropType<DictionaryForm>,
       required: true,
     },
-    word: {
+    wordUuid: {
       type: String as PropType<string>,
       required: false,
     },

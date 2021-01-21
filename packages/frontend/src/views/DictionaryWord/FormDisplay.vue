@@ -18,21 +18,22 @@
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
-
       <UtilList
-                @clicked-commenting='isCommenting = true'
-                :has-edit='false'
-                :has-delete='false'
-                :word='`<strong class="mr-1">` + form.form + `</strong>`'
-                :has-html='true'>
+        @clicked-commenting="isCommenting = true"
+        :has-edit="false"
+        :has-delete="false"
+        :word="`<strong class=&quot;mr-1&quot;>` + form.form + `</strong>`"
+        :has-html="true"
+      >
       </UtilList>
 
-      <CommentWordDisplay v-if='isCommenting'
-        :route="`/dictionaryWord/${word}`"
-        :uuid='form.uuid'
+      <CommentWordDisplay
+        v-if="isCommenting"
+        :route="`/dictionaryWord/${wordUuid}`"
+        :uuid="form.uuid"
         :word="form.form"
-        @submit='isCommenting = false'
-        input='isCommenting = false'
+        @submit="isCommenting = false"
+        @input="isCommenting = false"
       />
 
       <grammar-display :form="form" />
@@ -42,6 +43,7 @@
             :spelling="s"
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
             :form="form"
+            :word-uuid="wordUuid"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -80,7 +82,7 @@
                 newSpelling => updateSpelling(index, newSpelling)
               "
               :form="form"
-              :word='word'
+              :word-uuid="wordUuid"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -101,8 +103,8 @@ import sl from '@/serviceLocator';
 import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
 import SpellingDialog from './SpellingDialog.vue';
-import UtilList from '../../components/UtilList/index.vue'
-import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue'
+import UtilList from '../../components/UtilList/index.vue';
+import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 
 export default defineComponent({
   components: {
@@ -121,7 +123,7 @@ export default defineComponent({
       type: Function as PropType<(newForm: DictionaryForm) => void>,
       required: true,
     },
-    word: {
+    wordUuid: {
       type: String as PropType<string>,
       required: false,
     },

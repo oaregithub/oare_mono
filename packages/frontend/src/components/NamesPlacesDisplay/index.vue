@@ -17,20 +17,50 @@
         :key="idx"
         class="d-flex flex-wrap pl-4"
       >
-        <em class="font-weight-bold mr-1">
-          <CommentWordDisplay
-                  :route="`/dictionaryWord/${word.uuid}`"
-                  :uuid='formInfo.uuid'
-                  :word="formInfo.form"
-          />
-        </em>
+        <UtilList
+          @clicked-commenting="isCommenting = true"
+          :has-edit="false"
+          :has-delete="false"
+          :word="`<em class='font-weight-bold mr-1'>${formInfo.form}</em>`"
+          :has-html="true"
+          :mark-word="true"
+        >
+        </UtilList>
+
+        <CommentWordDisplay
+          v-if="isCommenting"
+          :route="`/dictionaryWord/${word.uuid}`"
+          :uuid="formInfo.uuid"
+          :word="`<em class='font-weight-bold mr-1'>${formInfo.form}</em>`"
+          @submit="isCommenting = false"
+          @input="isCommenting = false"
+          :index="idx"
+        />
         <div class="mr-1">({{ formInfo.cases }})</div>
-        <div v-for="(spelling, idx) in formInfo.spellings" :key="idx">
+        <div
+          v-for="(spelling, idx) in formInfo.spellings"
+          :key="idx"
+          class="spelling-container"
+        >
+          <span v-if="idx > 0" class="spelling-container-space">, </span>
+          <UtilList
+            @clicked-commenting="isCommenting = true"
+            :has-edit="false"
+            :has-delete="false"
+            :word="correctedHtmlSpelling(spelling.explicitSpelling)"
+            :has-html="true"
+            :mark-word="true"
+          >
+          </UtilList>
+
           <CommentWordDisplay
-                  :route="`/dictionaryWord/${word.uuid}`"
-                  :uuid='spelling.uuid'
-                  :word="correctedHtmlSpelling(spelling.explicitSpelling)"
-                  :index='idx'
+            v-if="isCommenting"
+            :route="`/dictionaryWord/${word.uuid}`"
+            :uuid="spelling.uuid"
+            :word="correctedHtmlSpelling(spelling.explicitSpelling)"
+            @submit="isCommenting = false"
+            @input="isCommenting = false"
+            :index="idx"
           />
         </div>
       </div>
@@ -43,6 +73,7 @@ import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { NameOrPlace } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
 import CommentWordDisplay from '../CommentWordDisplay/index.vue';
+import UtilList from '../../components/UtilList/index.vue';
 import { spellingHtmlReading } from '@oare/oare';
 
 export default defineComponent({
@@ -50,6 +81,7 @@ export default defineComponent({
   components: {
     DictionaryDisplay,
     CommentWordDisplay,
+    UtilList,
   },
   props: {
     wordList: {
@@ -66,6 +98,7 @@ export default defineComponent({
   },
 
   setup() {
+    const isCommenting = ref(false);
     const correctedHtmlSpelling = (spelling: string) => {
       let rawHtml = spellingHtmlReading(spelling);
       const firstLetterIndex = rawHtml.indexOf('<em>') + 4;
@@ -87,7 +120,10 @@ export default defineComponent({
             form.form &&
             (form.form.toLowerCase().includes(lowerSearch) ||
               form.spellings.some(spelling => {
-                return spelling && spelling.explicitSpelling.toLowerCase().includes(lowerSearch);
+                return (
+                  spelling &&
+                  spelling.explicitSpelling.toLowerCase().includes(lowerSearch)
+                );
               }))
           );
         })
@@ -95,6 +131,7 @@ export default defineComponent({
     };
 
     return {
+      isCommenting,
       searchFilter,
       correctedHtmlSpelling,
     };
@@ -102,4 +139,14 @@ export default defineComponent({
 });
 </script>
 
-<style></style>
+<style scoped>
+.spelling-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.spelling-container-space {
+  margin-right: 3px;
+}
+</style>

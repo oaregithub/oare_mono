@@ -11,19 +11,23 @@
           <v-icon class="test-pencil">mdi-pencil</v-icon>
         </v-btn>
         <UtilList
-                @clicked-commenting='isCommenting = true'
-                :has-edit='false'
-                :has-delete='false'
-                :word='`<span class="font-weight-bold">` + title + `</span>`'
-                :has-html='true'>
+          @clicked-commenting="isCommenting = true"
+          :has-edit="false"
+          :has-delete="false"
+          :word="
+            `<span class=&quot;font-weight-bold&quot;>` + title + `</span>`
+          "
+          :has-html="true"
+        >
         </UtilList>
 
-        <CommentWordDisplay v-if='isCommenting'
-                            :route="`/dictionaryWord/${wordInfo.word}`"
-                            :uuid='wordInfo.uuid'
-                            :word="wordInfo.word"
-                            @submit='isCommenting = false'
-                            @input='isCommenting = false'
+        <CommentWordDisplay
+          v-if="isCommenting"
+          :route="`/dictionaryWord/${wordInfo.word}`"
+          :uuid="wordInfo.uuid"
+          :word="wordInfo.word"
+          @submit="isCommenting = false"
+          @input="isCommenting = false"
         />
       </v-row>
 
@@ -68,8 +72,8 @@ import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
 import router from '@/router';
 import sl from '@/serviceLocator';
-import UtilList from '../../components/UtilList/index.vue'
-import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue'
+import UtilList from '../../components/UtilList/index.vue';
+import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 

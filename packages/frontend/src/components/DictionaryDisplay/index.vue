@@ -22,10 +22,23 @@
       <div class="d-flex">
         <slot name="word" :word="wordInfo">
           <div class="font-weight-bold mr-1">
+            <UtilList
+              @clicked-commenting="isCommenting = true"
+              :has-edit="false"
+              :has-delete="false"
+              :word="wordInfo.word"
+              :has-html="false"
+              :mark-word="true"
+            >
+            </UtilList>
+
             <CommentWordDisplay
+              v-if="isCommenting"
               :route="`/dictionaryWord/${wordInfo.uuid}`"
               :uuid="wordInfo.uuid"
               :word="wordInfo.word"
+              @submit="isCommenting = false"
+              @input="isCommenting = false"
             />
           </div>
         </slot>
@@ -53,6 +66,7 @@ import {
 } from '@vue/composition-api';
 import useQueryParam from '@/hooks/useQueryParam';
 import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import UtilList from '../../components/UtilList/index.vue';
 
 export interface DisplayableWord {
   uuid: string;
@@ -63,6 +77,7 @@ export default defineComponent({
   name: 'DictionaryDisplay',
   components: {
     CommentWordDisplay,
+    UtilList,
   },
   props: {
     wordList: {
@@ -88,6 +103,7 @@ export default defineComponent({
   },
   setup(props, context) {
     const letters = ref(Object.keys(AkkadianLetterGroupsUpper));
+    const isCommenting = ref(false);
     const [wordSearch, setWordSearch] = useQueryParam('filter', '');
 
     const wordsByLetter = computed(() => {
@@ -102,8 +118,6 @@ export default defineComponent({
       );
     });
 
-    console.log(filteredWords);
-
     const encodedLetter = (letter: string) => encodeURIComponent(letter);
 
     watch(
@@ -113,6 +127,7 @@ export default defineComponent({
     );
 
     return {
+      isCommenting,
       letters,
       encodedLetter,
       wordSearch,
