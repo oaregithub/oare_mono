@@ -3,13 +3,18 @@
   <div v-else>
     <span>Permissions set here affect all members of this group.</span>
     <div>
-      <div v-for="(value, name) in allPermissionsOptions" :key="name">
+      <div v-for="(type, index) in allPermissionTypes" :key="index">
         <v-divider class="mt-2 primary" />
         <h2 class="mt-4">
-          {{ name.charAt(0).toUpperCase() + name.slice(1) }}
+          {{ type.charAt(0).toUpperCase() + type.slice(1) }}
         </h2>
-        <v-list v-if="value">
-          <div v-for="(permission, index) in value" :key="index">
+        <v-list>
+          <div
+            v-for="(permission, index) in allPermissionsOptions.filter(
+              permission => permission.type === type
+            )"
+            :key="index"
+          >
             <v-divider v-if="Number(index) !== 0" />
             <v-list-item class="ma-2">
               <v-list-item-content>
@@ -20,10 +25,35 @@
                   {{ permission.description }}
                 </v-list-item-subtitle>
               </v-list-item-content>
+              <v-menu
+                v-if="
+                  permission.dependency &&
+                    !allGroupPermissions.includes(permission.dependency)
+                "
+                offset-y
+                open-on-hover
+              >
+                <template #activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on" class="ml-2" color="error">
+                    mdi-information-outline
+                  </v-icon>
+                </template>
+                <v-card class="pa-3">
+                  <span
+                    >To enable, the
+                    {{ formatName(permission.dependency) }} permission must be
+                    enabled</span
+                  >
+                </v-card>
+              </v-menu>
               <v-list-item-action>
                 <v-switch
                   :input-value="allGroupPermissions.includes(permission.name)"
-                  @change="updatePermission(permission.name, name, $event)"
+                  @change="updatePermission(permission, $event)"
+                  :disabled="
+                    permission.dependency &&
+                      !allGroupPermissions.includes(permission.dependency)
+                  "
                 >
                 </v-switch>
               </v-list-item-action>
@@ -43,13 +73,7 @@ import {
   Ref,
   computed,
 } from '@vue/composition-api';
-import {
-  AllPermissions,
-  DictionaryPermission,
-  PagesPermission,
-  PermissionResponse,
-  UpdatePermissionPayload,
-} from '@oare/types';
+import { PermissionItem, UpdatePermissionPayload } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 
@@ -66,18 +90,19 @@ export default defineComponent({
 
     const loading = ref(false);
 
-    const allPermissionsOptions: Ref<Partial<AllPermissions>> = ref({});
+    const allPermissionsOptions: Ref<PermissionItem[]> = ref([]);
 
-    const groupPermissions: Ref<Partial<PermissionResponse>> = ref({});
+    const allPermissionTypes = computed(() => {
+      const types = allPermissionsOptions.value.map(
+        permission => permission.type
+      );
+      return [...new Set(types)];
+    });
+
+    const groupPermissions: Ref<PermissionItem[]> = ref([]);
 
     const allGroupPermissions: Ref<string[]> = computed(() => {
-      const permissions: string[] = [];
-      Object.values(groupPermissions.value).map(type => {
-        if (type) {
-          type.forEach((permission: string) => permissions.push(permission));
-        }
-      });
-      return permissions;
+      return groupPermissions.value.map(permission => permission.name);
     });
 
     const formatName = (name: string) => {
@@ -86,20 +111,21 @@ export default defineComponent({
     };
 
     const updatePermission = async (
-      permission: PermissionResponse[keyof PermissionResponse][number],
-      type: keyof PermissionResponse,
+      permission: PermissionItem,
       isAllowed: boolean
     ) => {
       try {
         if (isAllowed) {
           const payload: UpdatePermissionPayload = {
-            type,
             permission,
           };
           await server.addPermission(groupId, payload);
         } else {
-          await server.removePermission(groupId, permission);
+          await server.removePermission(groupId, permission.name);
         }
+        groupPermissions.value = await server.getGroupPermissions(
+          Number(groupId)
+        );
       } catch {
         actions.showErrorSnackbar(
           'Error updating permission. Please try again.'
@@ -127,6 +153,7 @@ export default defineComponent({
     return {
       loading,
       allPermissionsOptions,
+      allPermissionTypes,
       groupPermissions,
       allGroupPermissions,
       formatName,

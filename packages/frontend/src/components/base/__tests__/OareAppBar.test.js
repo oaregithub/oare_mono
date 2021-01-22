@@ -17,10 +17,7 @@ describe('OareAppBar.vue', () => {
       user: {
         firstName: 'Test',
       },
-      permissions: {
-        dictionary: [],
-        pages: [],
-      },
+      permissions: [],
     },
     logout: jest.fn(),
     setUser: jest.fn(),
@@ -36,10 +33,7 @@ describe('OareAppBar.vue', () => {
       email: 'test@gmail.com',
       isAdmin: false,
     }),
-    getPermissions: jest.fn().mockResolvedValue({
-      dictionary: [],
-      pages: [],
-    }),
+    getPermissions: jest.fn().mockResolvedValue([]),
   };
 
   const mockProps = {
@@ -61,10 +55,19 @@ describe('OareAppBar.vue', () => {
         ...mockStore.getters,
         isAdmin,
         isAuthenticated,
-        permissions: {
-          dictionary: [],
-          pages: isAdmin ? ['WORDS', 'NAMES', 'PLACES'] : [],
-        },
+        permissions: isAdmin
+          ? [
+              {
+                name: 'WORDS',
+              },
+              {
+                name: 'NAMES',
+              },
+              {
+                name: 'PLACES',
+              },
+            ]
+          : [],
       },
     });
     sl.set('serverProxy', mockServer);

@@ -112,11 +112,15 @@ export default defineComponent({
       ...props.form,
     });
     const canEdit = computed(() =>
-      store.getters.permissions.dictionary.includes('UPDATE_FORM')
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('UPDATE_FORM')
     );
 
     const canAddSpelling = computed(() =>
-      store.getters.permissions.dictionary.includes('ADD_SPELLING')
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('ADD_SPELLING')
     );
 
     const saveFormEdit = async (): Promise<void> => {
