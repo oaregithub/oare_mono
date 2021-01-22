@@ -1,5 +1,9 @@
 import axios from '@/axiosInstance';
-import { PermissionResponse, UpdatePermissionPayload } from '@oare/types';
+import {
+  AllPermissions,
+  PermissionResponse,
+  UpdatePermissionPayload,
+} from '@oare/types';
 
 async function getPermissions(): Promise<PermissionResponse> {
   const { data } = await axios.get('/userpermissions');
@@ -13,7 +17,7 @@ async function getGroupPermissions(
   return data;
 }
 
-async function getAllPermissions(): Promise<PermissionResponse> {
+async function getAllPermissions(): Promise<AllPermissions> {
   const { data } = await axios.get('/permissions');
   return data;
 }

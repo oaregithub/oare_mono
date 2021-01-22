@@ -431,6 +431,16 @@ export interface LoginRegisterResponse {
 
 // Permissions
 
+export interface AllPermissions {
+  dictionary: AllPermissionsItem<DictionaryPermission>[];
+  pages: AllPermissionsItem<PagesPermission>[];
+}
+
+export interface AllPermissionsItem<T> {
+  name: T;
+  description: string;
+}
+
 export type DictionaryPermission =
   | "UPDATE_WORD_SPELLING"
   | "ADD_TRANSLATION"
