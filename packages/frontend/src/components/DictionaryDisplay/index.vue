@@ -27,19 +27,20 @@
               :has-edit="false"
               :has-delete="false"
               :word="wordInfo.word"
-              :has-html="false"
               :mark-word="true"
             >
+              {{ wordInfo.word }}
             </UtilList>
 
             <CommentWordDisplay
-              v-if="isCommenting"
+              v-model="isCommenting"
               :route="`/dictionaryWord/${wordInfo.uuid}`"
               :uuid="wordInfo.uuid"
               :word="wordInfo.word"
               @submit="isCommenting = false"
               @input="isCommenting = false"
-            />
+              >{{ wordInfo.word }}</CommentWordDisplay
+            >
           </div>
         </slot>
         <slot name="translation" :word="wordInfo"></slot>

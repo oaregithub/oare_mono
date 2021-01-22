@@ -1,20 +1,21 @@
 <template>
-  <span class="spelling-display-container">
+  <span class="d-flex flex-row mb-0">
     <UtilList
       v-if="canEdit"
       @clicked-commenting="isCommenting = true"
       @clicked-editing="isEditing = true"
       @clicked-deleting="deleteSpellingDialog = true"
-      :word="htmlSpelling"
-      :has-html="true"
+      :word="spelling.spelling"
       class="testing-spelling"
     >
+      <span v-html="htmlSpelling"></span>
     </UtilList>
     <span
       v-else
       v-html="htmlSpelling"
       class="test-spelling testing-spelling"
     ></span>
+
     &nbsp;
     <span v-if="spelling.totalOccurrences > 0">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
@@ -24,13 +25,15 @@
     >
     <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
     <CommentWordDisplay
-      v-if="isCommenting"
+      v-model="isCommenting"
       :route="`/dictionaryWord/${wordUuid}`"
       :uuid="spelling.uuid"
       :word="spelling.spelling"
       @submit="isCommenting = false"
       @input="isCommenting = false"
-    />
+    >
+      <span v-html="htmlSpelling"></span>
+    </CommentWordDisplay>
     <OareDialog
       v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
@@ -225,14 +228,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.spelling-display-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-}
-.testing-spelling {
-}
-</style>

@@ -1,35 +1,36 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { Thread } from '@oare/types';
+import { CommentRequest, CommentResponse, Thread } from '@oare/types';
 
 const router = express.Router();
 
 router.route('/comments').post(async (req, res, next) => {
   try {
-    const { comment, thread } = req.body;
+    const { comment, thread }: CommentRequest = req.body;
     const commentsDao = sl.get('CommentsDao');
     const threadsDao = sl.get('ThreadsDao');
 
     // Check if thread already exists.
-    let foundThreads: Thread[] = await threadsDao.getByReferenceUuid(thread.referenceUuid);
+    const foundThread: Thread | null = await threadsDao.getByReferenceUuid(thread.referenceUuid);
 
-    if (!foundThreads.length) {
+    if (!foundThread) {
       // Create new thread.
-      await threadsDao.insert(thread);
-      foundThreads = await threadsDao.getByReferenceUuid(thread.referenceUuid);
+      comment.threadUuid = await threadsDao.insert(thread);
+    } else {
+      comment.threadUuid = foundThread.uuid;
     }
 
-    comment.threadUuid = foundThreads[0].uuid;
     // MySQL datetime format.
-    comment.createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    comment.createdAt = new Date();
 
     // Insert comment.
-    await commentsDao.insert(comment);
+    const newCommentUuid: string | null = await commentsDao.insert(comment);
 
     res.json({
-      success: true,
-    });
+      commentUuid: newCommentUuid,
+      threadUuid: comment.threadUuid,
+    } as CommentResponse);
   } catch (err) {
     next(new HttpInternalError(err));
   }

@@ -1,73 +1,59 @@
 <template>
-  <div>
-    <oare-dialog
-      :value="true"
-      @submit="insertComment"
-      @input="$emit('input', $event)"
-      :width="1000"
-      :show-submit="true"
-      :show-cancel="true"
-      :closeButton="true"
-      :persistent="false"
-    >
-      <v-row>
-        <v-col cols="12">
-          <h1 v-if="index !== undefined || hasHtml" v-html="word"></h1>
-          <h1 v-else>{{ word }}</h1>
-        </v-col>
-        <v-col cols="12">
-          <v-container fluid>
-            <v-textarea
-              name="comment"
-              label="Comment"
-              auto-grow
-              prepend-icon="mdi-comment"
-              v-model="userComment"
-            ></v-textarea>
-          </v-container>
-        </v-col>
-      </v-row>
-    </oare-dialog>
-  </div>
+  <oare-dialog
+    :value="value"
+    @submit="insertComment"
+    @input="$emit('input', $event)"
+    :width="1000"
+    :show-submit="true"
+    :show-cancel="true"
+    :closeButton="true"
+    :persistent="false"
+  >
+    <v-row>
+      <v-col cols="12">
+        <h1><slot></slot></h1>
+      </v-col>
+      <v-col cols="12">
+        <v-container fluid>
+          <v-textarea
+            name="comment"
+            label="Comment"
+            auto-grow
+            prepend-icon="mdi-comment"
+            v-model="userComment"
+          ></v-textarea>
+        </v-container>
+      </v-col>
+    </v-row>
+  </oare-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType } from '@vue/composition-api';
-import OareDialog from '../../components/base/OareDialog.vue';
+import { defineComponent, ref } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { Comment } from '@oare/types';
-import { Thread } from '@oare/types';
-import { CommentRequest } from '@oare/types';
+import { Comment, CommentResponse, Thread, CommentRequest } from '@oare/types';
 
 export default defineComponent({
   name: 'DictionaryWordDisplay',
-  components: {
-    OareDialog,
-  },
   props: {
     word: {
-      type: String as PropType<string>,
+      type: String,
       required: true,
     },
     route: {
-      type: String as PropType<string>,
+      type: String,
       required: true,
     },
     uuid: {
-      type: String as PropType<string>,
+      type: String,
       required: true,
     },
-    index: {
-      type: Number as PropType<number>,
-      required: false,
-    },
-    hasHtml: {
-      type: Boolean as PropType<boolean>,
-      required: false,
+    value: {
+      type: Boolean,
+      default: true,
     },
   },
-  setup({ word, route, uuid }, { emit }) {
-    const displayDialog = ref(true);
+  setup(props, { emit }) {
     const loading = ref(false);
     const userComment = ref('');
     const server = sl.get('serverProxy');
@@ -77,6 +63,11 @@ export default defineComponent({
     const insertComment = async () => {
       if (store.getters.user === null) {
         actions.showErrorSnackbar('Please login before making a comment.');
+        return;
+      }
+
+      if (!userComment.value) {
+        actions.showErrorSnackbar('Please enter a comment.');
         return;
       }
 
@@ -93,20 +84,17 @@ export default defineComponent({
         };
         const thread: Thread = {
           uuid: null,
-          referenceUuid: uuid,
-          status: 'Untouched',
-          route: route,
+          referenceUuid: props.uuid,
+          status: 'New',
+          route: props.route,
         };
-        const request: CommentRequest = { comment: comment, thread: thread };
+        const request: CommentRequest = { comment, thread };
 
-        const success = await server.insertComment(request);
-        if (success) {
+        const response: CommentResponse = await server.insertComment(request);
+        if (response) {
           // Remove <em> tags if embedded html is used.
           actions.showSnackbar(
-            `Successfully added the comment for ${word.replace(
-              /<em>|<\/em>|<strong>|<\/strong>/g,
-              ''
-            )}`
+            `Successfully added the comment for ${props.word}`
           );
           emit('submit');
         } else {
@@ -116,13 +104,11 @@ export default defineComponent({
         actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
         loading.value = false;
-        displayDialog.value = false;
       }
     };
 
     return {
       insertComment,
-      displayDialog,
       userComment,
     };
   },

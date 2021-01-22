@@ -22,26 +22,27 @@
         @clicked-commenting="isCommenting = true"
         :has-edit="false"
         :has-delete="false"
-        :word="`<strong class='mr-1'>` + form.form + `</strong>`"
-        :has-html="true"
+        :word="form.form"
       >
+        <strong class="mr-1">{{ form.form }}</strong>
       </UtilList>
 
       <CommentWordDisplay
-        v-if="isCommenting"
+        v-model="isCommenting"
         :route="`/dictionaryWord/${wordUuid}`"
         :uuid="form.uuid"
         :word="form.form"
         @submit="isCommenting = false"
         @input="isCommenting = false"
-      />
+        >{{ form.form }}</CommentWordDisplay
+      >
 
       <grammar-display :form="form" />
-      <span class="spelling-container">
+      <span class="d-flex flex-row flex-wrap mb-0">
         <span
+          class="d-flex flex-row mb-0"
           v-for="(s, index) in form.spellings"
           :key="index"
-          class="spelling-inner-container"
         >
           <spelling-display
             :spelling="s"
@@ -189,19 +190,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.spelling-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  width: 100%;
-  flex-wrap: wrap;
-}
-.spelling-inner-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-}
-</style>

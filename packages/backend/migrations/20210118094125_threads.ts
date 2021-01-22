@@ -5,9 +5,9 @@ export async function up(knex: Knex): Promise<void> {
   if (!exists) {
     return knex.schema.createTable('threads', (table) => {
       table.increments('id');
-      table.uuid('uuid').notNullable();
+      table.uuid('uuid').notNullable().unique();
       table.uuid('reference_uuid').notNullable();
-      table.string('status');
+      table.string('status').notNullable();
       table.string('route').notNullable();
     });
   }
@@ -17,7 +17,6 @@ export async function up(knex: Knex): Promise<void> {
 export async function down(knex: Knex): Promise<void> {
   const exists = await knex.schema.hasTable('threads');
   if (exists) {
-    return knex.schema.dropTable('threads');
+    await knex.schema.dropTable('threads');
   }
-  return undefined;
 }

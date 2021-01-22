@@ -4,21 +4,24 @@ import { v4 } from 'uuid';
 
 
 class ThreadsDao {
-  async insert(thread: Thread): Promise<void> {
+  async insert({ uuid, referenceUuid, status, route }: Thread): Promise<string | null> {
+    const newUuid: string = v4();
     await knex('threads').insert({
-      uuid: v4(),
-      reference_uuid: thread.referenceUuid,
-      status: thread.status,
-      route: thread.route,
+      uuid: newUuid,
+      reference_uuid: referenceUuid,
+      status,
+      route,
     });
+
+    return newUuid;
   }
 
-  async getByReferenceUuid(referenceUuid: string): Promise<Thread[]> {
-    const threads: Thread[] = await knex('threads')
-      .select('threads.*')
+  async getByReferenceUuid(referenceUuid: string): Promise<Thread | null> {
+    const thread: Thread | null = await knex('threads')
+      .first('threads.*')
       .where('reference_uuid', referenceUuid);
 
-    return threads;
+    return thread;
   }
 }
 

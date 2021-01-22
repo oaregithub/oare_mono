@@ -2,49 +2,27 @@
   <v-menu offset-y>
     <template #activator="{ on, attrs }">
       <div
-        style="white-space: nowrap"
         v-if="markWord"
         @mouseover="hover = true"
         @mouseleave="hover = false"
       >
         <template v-if="hover">
           <mark>
-            <span
-              v-if="hasHtml"
-              v-html="word"
-              v-bind="attrs"
-              v-on="on"
-              class="test-spelling"
-            ></span>
-            <span v-else class="test-spelling" v-bind="attrs" v-on="on">{{
-              word
-            }}</span>
+            <span class="test-spelling" v-bind="attrs" v-on="on">
+              <slot></slot>
+            </span>
           </mark>
         </template>
         <template v-else>
-          <span
-            v-if="hasHtml"
-            v-html="word"
-            v-bind="attrs"
-            v-on="on"
-            class="test-spelling"
-          ></span>
-          <span v-else class="test-spelling" v-bind="attrs" v-on="on">{{
-            word
-          }}</span>
+          <span class="test-spelling" v-bind="attrs" v-on="on">
+            <slot></slot>
+          </span>
         </template>
       </div>
       <div v-else>
-        <span
-          v-if="hasHtml"
-          v-html="word"
-          v-bind="attrs"
-          v-on="on"
-          class="test-spelling"
-        ></span>
-        <span v-else class="test-spelling" v-bind="attrs" v-on="on">{{
-          word
-        }}</span>
+        <span class="test-spelling" v-bind="attrs" v-on="on">
+          <slot></slot>
+        </span>
       </div>
     </template>
     <v-list>
@@ -83,33 +61,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'UtilList',
   props: {
     word: {
-      type: String as PropType<string>,
+      type: String,
       required: true,
     },
-    hasHtml: {
-      type: Boolean as PropType<boolean>,
-      required: false,
-    },
     hasComment: {
-      type: Boolean as PropType<boolean>,
+      type: Boolean,
       default: true,
     },
     hasEdit: {
-      type: Boolean as PropType<boolean>,
+      type: Boolean,
       default: true,
     },
     hasDelete: {
-      type: Boolean as PropType<boolean>,
+      type: Boolean,
       default: true,
     },
     markWord: {
-      type: Boolean as PropType<boolean>,
+      type: Boolean,
       default: false,
     },
   },
@@ -122,8 +96,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.test-comment {
-}
-</style>

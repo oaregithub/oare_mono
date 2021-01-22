@@ -14,21 +14,20 @@
           @clicked-commenting="isCommenting = true"
           :has-edit="false"
           :has-delete="false"
-          :word="
-            `<span class=&quot;font-weight-bold&quot;>` + title + `</span>`
-          "
-          :has-html="true"
+          :word="title"
         >
+          <span class="font-weight-bold">{{ title }}</span>
         </UtilList>
 
         <CommentWordDisplay
-          v-if="isCommenting"
+          v-model="isCommenting"
           :route="`/dictionaryWord/${wordInfo.word}`"
           :uuid="wordInfo.uuid"
           :word="wordInfo.word"
           @submit="isCommenting = false"
           @input="isCommenting = false"
-        />
+          >{{ wordInfo.word }}</CommentWordDisplay
+        >
       </v-row>
 
       <word-name-edit

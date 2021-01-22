@@ -21,21 +21,23 @@
           @clicked-commenting="isCommenting = true"
           :has-edit="false"
           :has-delete="false"
-          :word="`<em class='font-weight-bold mr-1'>${formInfo.form}</em>`"
-          :has-html="true"
+          :word="formInfo.form"
           :mark-word="true"
         >
+          <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
         </UtilList>
 
         <CommentWordDisplay
-          v-if="isCommenting"
+          v-model="isCommenting"
           :route="`/dictionaryWord/${word.uuid}`"
           :uuid="formInfo.uuid"
-          :word="`<em class='font-weight-bold mr-1'>${formInfo.form}</em>`"
+          :word="formInfo.form"
           @submit="isCommenting = false"
           @input="isCommenting = false"
-          :index="idx"
-        />
+          ><em class="font-weight-bold mr-1">{{
+            formInfo.form
+          }}</em></CommentWordDisplay
+        >
         <div class="mr-1">({{ formInfo.cases }})</div>
         <div
           v-for="(spelling, idx) in formInfo.spellings"
@@ -47,21 +49,26 @@
             @clicked-commenting="isCommenting = true"
             :has-edit="false"
             :has-delete="false"
-            :word="correctedHtmlSpelling(spelling.explicitSpelling)"
-            :has-html="true"
+            :word="spelling.explicitSpelling"
             :mark-word="true"
           >
+            <span
+              v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
+            ></span>
           </UtilList>
 
           <CommentWordDisplay
-            v-if="isCommenting"
+            v-model="isCommenting"
             :route="`/dictionaryWord/${word.uuid}`"
             :uuid="spelling.uuid"
-            :word="correctedHtmlSpelling(spelling.explicitSpelling)"
+            :word="spelling.explicitSpelling"
             @submit="isCommenting = false"
             @input="isCommenting = false"
-            :index="idx"
-          />
+          >
+            <span
+              v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
+            ></span>
+          </CommentWordDisplay>
         </div>
       </div>
     </template>
