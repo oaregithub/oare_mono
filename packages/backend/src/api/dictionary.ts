@@ -66,8 +66,13 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
           loc: { last_column: errorIndex },
         },
       } = e;
+
+      let errorChar = spelling[errorIndex];
+      if (errorIndex === spelling.length) {
+        errorChar = 'EOF';
+      }
       const response: CheckSpellingResponse = {
-        errors: [`Unexpected token: ${spelling[errorIndex]}`],
+        errors: [`Unexpected token: ${errorChar}`],
       };
       res.json(response);
       return;

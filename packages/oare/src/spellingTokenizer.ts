@@ -85,6 +85,6 @@ export const spellingHtmlReading = (spelling: string): string => {
       })
       .join('');
   } catch (e) {
-    return `<mark style="background-color: #ffb3b3>${spelling}</mark>`;
+    return `<mark style="background-color: #ffb3b3">${spelling}</mark>`;
   }
 };
