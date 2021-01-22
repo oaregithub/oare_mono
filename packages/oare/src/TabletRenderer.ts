@@ -214,9 +214,6 @@ export default class TabletRenderer {
         }
         formattedReading = this.applyDamageMarkup(markup, formattedReading);
         break;
-      case '...':
-        formattedReading = '...';
-        break;
       case 'damage':
       case 'partialDamage':
         formattedReading = this.applyDamageMarkup(markup, reading);
