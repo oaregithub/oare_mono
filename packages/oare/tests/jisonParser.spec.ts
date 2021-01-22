@@ -98,4 +98,19 @@ describe('spelling grammar test', () => {
       '<sup>d</sup>PUZUR₄-IŠTAR',
     );
   });
+
+  it('parses fractional numbers', () => {
+    tokenizeExplicitSpelling('1/2+3');
+    tokenizeExplicitSpelling('5/6+0.333');
+  });
+
+  it('rejects invalid fractions', () => {
+    expect(() => tokenizeExplicitSpelling('3/5')).toThrow();
+    expect(() => tokenizeExplicitSpelling('1/7')).toThrow();
+  });
+
+  it('converts fractions to unicode', () => {
+    expect(spellingHtmlReading('1/3+4')).toBe('⅓+4');
+    expect(spellingHtmlReading('5+2/3')).toBe('5+⅔');
+  });
 });
