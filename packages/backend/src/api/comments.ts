@@ -25,7 +25,7 @@ router.route('/comments').post(async (req, res, next) => {
     comment.createdAt = new Date();
 
     // Insert comment.
-    const newCommentUuid: string | null = await commentsDao.insert(comment);
+    const newCommentUuid = await commentsDao.insert(comment);
 
     res.json({
       commentUuid: newCommentUuid,

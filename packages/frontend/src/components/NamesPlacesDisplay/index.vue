@@ -1,10 +1,11 @@
 <template>
-  <DictionaryDisplay
-    :wordList="wordList"
-    :letter="letter"
-    :route="route"
-    :searchFilter="searchFilter"
-  >
+  <span>
+      <DictionaryDisplay
+              :wordList="wordList"
+              :letter="letter"
+              :route="route"
+              :searchFilter="searchFilter"
+      >
     <template #translation="{ word }" v-if="route === 'names'">
       <div>
         {{ word.translation || '(no trans.)' }}
@@ -13,66 +14,58 @@
 
     <template #forms="{ word }">
       <div
-        v-for="(formInfo, idx) in word.forms"
-        :key="idx"
-        class="d-flex flex-wrap pl-4"
+              v-for="(formInfo, idx) in word.forms"
+              :key="idx"
+              class="d-flex flex-wrap pl-4"
       >
         <UtilList
-          @clicked-commenting="isCommenting = true"
-          :has-edit="false"
-          :has-delete="false"
-          :word="formInfo.form"
-          :mark-word="true"
+                @clicked-commenting="isCommented"
+                :has-edit="false"
+                :has-delete="false"
+                :word="formInfo.form"
+                :route='`/dictionaryWord/${word.uuid}`'
+                :uuid='formInfo.uuid'
+                :mark-word="true"
         >
           <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
         </UtilList>
 
-        <CommentWordDisplay
-          v-model="isCommenting"
-          :route="`/dictionaryWord/${word.uuid}`"
-          :uuid="formInfo.uuid"
-          :word="formInfo.form"
-          @submit="isCommenting = false"
-          @input="isCommenting = false"
-          ><em class="font-weight-bold mr-1">{{
-            formInfo.form
-          }}</em></CommentWordDisplay
-        >
         <div class="mr-1">({{ formInfo.cases }})</div>
         <div
-          v-for="(spelling, idx) in formInfo.spellings"
-          :key="idx"
-          class="spelling-container"
+                v-for="(spelling, idx) in formInfo.spellings"
+                :key="idx"
+                class="d-flex"
         >
-          <span v-if="idx > 0" class="spelling-container-space">, </span>
+          <span v-if="idx > 0" class='mr-1'>, </span>
           <UtilList
-            @clicked-commenting="isCommenting = true"
-            :has-edit="false"
-            :has-delete="false"
-            :word="spelling.explicitSpelling"
-            :mark-word="true"
+                  @clicked-commenting="isCommented"
+                  :has-edit="false"
+                  :has-delete="false"
+                  :word="spelling.explicitSpelling"
+                  :route='`/dictionaryWord/${word.uuid}`'
+                  :uuid='spelling.uuid'
+                  :mark-word="true"
           >
             <span
-              v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
+                    v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
             ></span>
           </UtilList>
-
-          <CommentWordDisplay
-            v-model="isCommenting"
-            :route="`/dictionaryWord/${word.uuid}`"
-            :uuid="spelling.uuid"
-            :word="spelling.explicitSpelling"
-            @submit="isCommenting = false"
-            @input="isCommenting = false"
-          >
-            <span
-              v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
-            ></span>
-          </CommentWordDisplay>
         </div>
       </div>
     </template>
   </DictionaryDisplay>
+      <CommentWordDisplay
+              v-if="isCommenting"
+              :route="selectedRoute"
+              :uuid="selectedUuid"
+              :word="selectedWord"
+              @submit="isCommenting = false"
+              @input="isCommenting = false"
+      ><em class="font-weight-bold mr-1">{{
+    selectedWord
+    }}</em></CommentWordDisplay
+      >
+  </span>
 </template>
 
 <script lang="ts">
@@ -104,8 +97,11 @@ export default defineComponent({
     },
   },
 
-  setup() {
+  setup(props, {emit}) {
     const isCommenting = ref(false);
+    const selectedWord = ref('');
+    const selectedUuid = ref('');
+    const selectedRoute = ref('');
     const correctedHtmlSpelling = (spelling: string) => {
       let rawHtml = spellingHtmlReading(spelling);
       const firstLetterIndex = rawHtml.indexOf('<em>') + 4;
@@ -114,6 +110,13 @@ export default defineComponent({
         rawHtml.charAt(firstLetterIndex).toUpperCase()
       );
     };
+
+    const isCommented = (word: string, uuid: string, route: string) => {
+      isCommenting.value = true;
+      selectedWord.value = word;
+      selectedUuid.value = uuid;
+      selectedRoute.value = route;
+    }
 
     const searchFilter = (search: string, word: NameOrPlace) => {
       const lowerSearch = search ? search.toLowerCase() : '';
@@ -138,6 +141,10 @@ export default defineComponent({
     };
 
     return {
+      isCommented,
+      selectedWord,
+      selectedUuid,
+      selectedRoute,
       isCommenting,
       searchFilter,
       correctedHtmlSpelling,
@@ -145,15 +152,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.spelling-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-}
-.spelling-container-space {
-  margin-right: 3px;
-}
-</style>

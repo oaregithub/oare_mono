@@ -28,7 +28,7 @@
     <v-list>
       <v-list-item
         v-if="hasComment"
-        @click="$emit('clicked-commenting')"
+        @click="$emit('clicked-commenting', word, uuid, route)"
         class="test-comment"
       >
         <v-list-item-title>
@@ -69,6 +69,14 @@ export default defineComponent({
     word: {
       type: String,
       required: true,
+    },
+    route: {
+      type: String,
+      required: false,
+    },
+    uuid: {
+      type: String,
+      required: false,
     },
     hasComment: {
       type: Boolean,
