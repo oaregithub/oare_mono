@@ -97,11 +97,11 @@ class PermissionsDao {
     return this.ALL_PERMISSIONS.filter((permission) => permissions.includes(permission.name));
   }
 
-  async addPermission(groupId: number, permission: PermissionItem) {
+  async addPermission(groupId: number, { type, name }: PermissionItem) {
     await knex('permissions').insert({
       group_id: groupId,
-      type: permission.type,
-      permission: permission.name,
+      type,
+      permission: name,
     });
   }
 
