@@ -27,8 +27,8 @@
               :has-edit="false"
               :has-delete="false"
               :word="wordInfo.word"
-              :route='`/dictionaryWord/${wordInfo.uuid}`'
-              :uuid='wordInfo.uuid'
+              :route="`/dictionaryWord/${wordInfo.uuid}`"
+              :uuid="wordInfo.uuid"
               :mark-word="true"
             >
               {{ wordInfo.word }}
@@ -45,16 +45,15 @@
       <v-icon>mdi-chevron-up</v-icon>
     </v-btn>
 
-
     <CommentWordDisplay
-            v-model="isCommenting"
-            :route="selectedRoute"
-            :uuid="selectedUuid"
-            :word="selectedWord"
-            @submit="isCommenting = false"
-            @input="isCommenting = false"
-    >{{ selectedWord }}</CommentWordDisplay>
-
+      v-model="isCommenting"
+      :route="selectedRoute"
+      :uuid="selectedUuid"
+      :word="selectedWord"
+      @submit="isCommenting = false"
+      @input="isCommenting = false"
+      >{{ selectedWord }}</CommentWordDisplay
+    >
   </div>
 </template>
 
@@ -130,7 +129,7 @@ export default defineComponent({
       selectedWord.value = word;
       selectedUuid.value = uuid;
       selectedRoute.value = route;
-    }
+    };
 
     const encodedLetter = (letter: string) => encodeURIComponent(letter);
 

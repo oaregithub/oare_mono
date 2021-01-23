@@ -1,70 +1,70 @@
 <template>
   <span>
-      <DictionaryDisplay
-              :wordList="wordList"
-              :letter="letter"
-              :route="route"
-              :searchFilter="searchFilter"
-      >
-    <template #translation="{ word }" v-if="route === 'names'">
-      <div>
-        {{ word.translation || '(no trans.)' }}
-      </div>
-    </template>
-
-    <template #forms="{ word }">
-      <div
-              v-for="(formInfo, idx) in word.forms"
-              :key="idx"
-              class="d-flex flex-wrap pl-4"
-      >
-        <UtilList
-                @clicked-commenting="isCommented"
-                :has-edit="false"
-                :has-delete="false"
-                :word="formInfo.form"
-                :route='`/dictionaryWord/${word.uuid}`'
-                :uuid='formInfo.uuid'
-                :mark-word="true"
-        >
-          <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
-        </UtilList>
-
-        <div class="mr-1">({{ formInfo.cases }})</div>
-        <div
-                v-for="(spelling, idx) in formInfo.spellings"
-                :key="idx"
-                class="d-flex"
-        >
-          <span v-if="idx > 0" class='mr-1'>, </span>
-          <UtilList
-                  @clicked-commenting="isCommented"
-                  :has-edit="false"
-                  :has-delete="false"
-                  :word="spelling.explicitSpelling"
-                  :route='`/dictionaryWord/${word.uuid}`'
-                  :uuid='spelling.uuid'
-                  :mark-word="true"
-          >
-            <span
-                    v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
-            ></span>
-          </UtilList>
+    <DictionaryDisplay
+      :wordList="wordList"
+      :letter="letter"
+      :route="route"
+      :searchFilter="searchFilter"
+    >
+      <template #translation="{ word }" v-if="route === 'names'">
+        <div>
+          {{ word.translation || '(no trans.)' }}
         </div>
-      </div>
-    </template>
-  </DictionaryDisplay>
-      <CommentWordDisplay
-              v-if="isCommenting"
-              :route="selectedRoute"
-              :uuid="selectedUuid"
-              :word="selectedWord"
-              @submit="isCommenting = false"
-              @input="isCommenting = false"
+      </template>
+
+      <template #forms="{ word }">
+        <div
+          v-for="(formInfo, idx) in word.forms"
+          :key="idx"
+          class="d-flex flex-wrap pl-4"
+        >
+          <UtilList
+            @clicked-commenting="isCommented"
+            :has-edit="false"
+            :has-delete="false"
+            :word="formInfo.form"
+            :route="`/dictionaryWord/${word.uuid}`"
+            :uuid="formInfo.uuid"
+            :mark-word="true"
+          >
+            <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
+          </UtilList>
+
+          <div class="mr-1">({{ formInfo.cases }})</div>
+          <div
+            v-for="(spelling, idx) in formInfo.spellings"
+            :key="idx"
+            class="d-flex"
+          >
+            <span v-if="idx > 0" class="mr-1">, </span>
+            <UtilList
+              @clicked-commenting="isCommented"
+              :has-edit="false"
+              :has-delete="false"
+              :word="spelling.explicitSpelling"
+              :route="`/dictionaryWord/${word.uuid}`"
+              :uuid="spelling.uuid"
+              :mark-word="true"
+            >
+              <span
+                v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
+              ></span>
+            </UtilList>
+          </div>
+        </div>
+      </template>
+    </DictionaryDisplay>
+    <CommentWordDisplay
+      v-if="isCommenting"
+      :route="selectedRoute"
+      :uuid="selectedUuid"
+      :word="selectedWord"
+      @submit="isCommenting = false"
+      @input="isCommenting = false"
       ><em class="font-weight-bold mr-1">{{
-    selectedWord
-    }}</em></CommentWordDisplay
-      >
+        selectedWord
+      }}</em></CommentWordDisplay
+    >
   </span>
 </template>
 
@@ -97,7 +97,7 @@ export default defineComponent({
     },
   },
 
-  setup(props, {emit}) {
+  setup(props, { emit }) {
     const isCommenting = ref(false);
     const selectedWord = ref('');
     const selectedUuid = ref('');
@@ -116,7 +116,7 @@ export default defineComponent({
       selectedWord.value = word;
       selectedUuid.value = uuid;
       selectedRoute.value = route;
-    }
+    };
 
     const searchFilter = (search: string, word: NameOrPlace) => {
       const lowerSearch = search ? search.toLowerCase() : '';
