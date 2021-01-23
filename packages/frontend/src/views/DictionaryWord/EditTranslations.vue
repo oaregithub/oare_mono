@@ -120,7 +120,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const store = sl.get('store');
 
-    const permissions = computed(() => store.getters.permissions.dictionary);
+    const permissions = computed(() => store.getters.permissions);
     const isEditing = ref(false);
     const isLoading = ref(false);
 
@@ -200,23 +200,31 @@ export default defineComponent({
     };
 
     const canEdit = computed(() =>
-      permissions.value.some(perm => perm.includes('TRANSLATION'))
+      permissions.value.some(perm => perm.name.includes('TRANSLATION'))
     );
 
     const canAddTranslations = computed(() =>
-      permissions.value.includes('ADD_TRANSLATION')
+      permissions.value
+        .map(permission => permission.name)
+        .includes('ADD_TRANSLATION')
     );
 
     const canDeleteTranslations = computed(() =>
-      permissions.value.includes('DELETE_TRANSLATION')
+      permissions.value
+        .map(permission => permission.name)
+        .includes('DELETE_TRANSLATION')
     );
 
     const canUpdateTranslations = computed(() =>
-      permissions.value.includes('UPDATE_TRANSLATION')
+      permissions.value
+        .map(permission => permission.name)
+        .includes('UPDATE_TRANSLATION')
     );
 
     const canUpdateTranslationsOrder = computed(() =>
-      permissions.value.includes('UPDATE_TRANSLATION_ORDER')
+      permissions.value
+        .map(permission => permission.name)
+        .includes('UPDATE_TRANSLATION_ORDER')
     );
 
     return {

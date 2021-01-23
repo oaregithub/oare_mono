@@ -19,9 +19,7 @@ describe('FormsDisplay test', () => {
   };
   const mockStore = {
     getters: {
-      permissions: {
-        dictionary: ['UPDATE_FORM'],
-      },
+      permissions: [{ name: 'UPDATE_FORM' }],
     },
   };
   const mockForm = {

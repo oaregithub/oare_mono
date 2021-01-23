@@ -12,9 +12,7 @@ localVue.use(VueCompositionApi);
 describe('DictionaryWord test', () => {
   const mockStore = {
     getters: {
-      permissions: {
-        dictionary: [],
-      },
+      permissions: [],
     },
   };
 
@@ -72,9 +70,7 @@ describe('DictionaryWord test', () => {
     const wrapper = createWrapper({
       store: {
         getters: {
-          permissions: {
-            dictionary: ['UPDATE_WORD_SPELLING'],
-          },
+          permissions: [{ name: 'UPDATE_WORD_SPELLING' }],
         },
       },
     });

@@ -91,7 +91,7 @@ export default defineComponent({
     const isEditingTranslations = ref(false);
 
     const canEditTranslations = computed(() =>
-      permissions.value.dictionary.some(perm => perm.includes('TRANSLATION'))
+      permissions.value.some(perm => perm.name.includes('TRANSLATION'))
     );
 
     const partsOfSpeech = computed(() =>

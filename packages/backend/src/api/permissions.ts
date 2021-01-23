@@ -2,7 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/adminRoute';
-import { PermissionResponse, UpdatePermissionPayload } from '@oare/types';
+import { PermissionItem, UpdatePermissionPayload } from '@oare/types';
 
 const router = express.Router();
 
@@ -36,10 +36,10 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const { type, permission }: UpdatePermissionPayload = req.body;
+      const { permission }: UpdatePermissionPayload = req.body;
 
       const PermissionsDao = sl.get('PermissionsDao');
-      await PermissionsDao.addPermission(groupId, type, permission);
+      await PermissionsDao.addPermission(groupId, permission);
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -50,7 +50,7 @@ router.route('/permissions/:groupId/:permission').delete(adminRoute, async (req,
   try {
     const { groupId, permission } = (req.params as unknown) as {
       groupId: number;
-      permission: PermissionResponse[keyof PermissionResponse][number];
+      permission: PermissionItem['name'];
     };
     const PermissionsDao = sl.get('PermissionsDao');
     await PermissionsDao.removePermission(groupId, permission);
