@@ -42,6 +42,7 @@
         v-model="sideData.text"
         outlined
         class="mb-3 test-side-text"
+        auto-grow
       />
     </div>
     <v-btn
