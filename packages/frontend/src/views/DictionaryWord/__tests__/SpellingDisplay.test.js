@@ -19,9 +19,7 @@ describe('SpellingDisplay test', () => {
 
   const mockStore = {
     getters: {
-      permissions: {
-        dictionary: ['UPDATE_FORM'],
-      },
+      permissions: [{ name: 'UPDATE_FORM' }],
     },
   };
 
@@ -202,9 +200,7 @@ describe('SpellingDisplay test', () => {
     const wrapper = createWrapper({
       store: {
         getters: {
-          permissions: {
-            dictionary: [],
-          },
+          permissions: [],
         },
       },
     });

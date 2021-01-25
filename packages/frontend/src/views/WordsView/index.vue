@@ -51,7 +51,7 @@ import {
 } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
 import defaultServer from '@/serverProxy';
-import { DictionaryWord, PermissionResponse, ItemProperty } from '@oare/types';
+import { DictionaryWord, ItemProperty } from '@oare/types';
 import defaultActions from '@/globalActions';
 import sl from '@/serviceLocator';
 

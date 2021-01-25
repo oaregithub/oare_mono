@@ -431,35 +431,31 @@ export interface LoginRegisterResponse {
 
 // Permissions
 
-export interface AllPermissions {
-  dictionary: AllPermissionsItem<DictionaryPermission>[];
-  pages: AllPermissionsItem<PagesPermission>[];
-}
+export type PermissionItem = DictionaryPermission | PagePermission;
 
-export interface AllPermissionsItem<T> {
-  name: T;
+export interface PermissionTemplate {
   description: string;
+  dependency?: PermissionItem['name'];
 }
 
-export type DictionaryPermission =
-  | "UPDATE_WORD_SPELLING"
+export interface DictionaryPermission extends PermissionTemplate {
+  name: "UPDATE_WORD_SPELLING"
   | "ADD_TRANSLATION"
   | "DELETE_TRANSLATION"
   | "UPDATE_TRANSLATION"
   | "UPDATE_TRANSLATION_ORDER"
   | "UPDATE_FORM"
   | "ADD_SPELLING";
+  type: 'dictionary';
+}
 
-export type PagesPermission = "WORDS" | "NAMES" | "PLACES";
-
-export interface PermissionResponse {
-  dictionary: DictionaryPermission[];
-  pages: PagesPermission[];
+export interface PagePermission extends PermissionTemplate {
+  name: "WORDS" | "NAMES" | "PLACES";
+  type: 'pages';
 }
 
 export interface UpdatePermissionPayload {
-  type: keyof PermissionResponse;
-  permission: PermissionResponse[keyof PermissionResponse][number];
+  permission: PermissionItem;
 }
 
 // Blacklist Permissions

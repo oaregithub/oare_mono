@@ -69,7 +69,6 @@ export type MarkupType =
   | 'isWrittenOverErasure'
   | 'isWrittenBelowTheLine'
   | 'broken'
-  | '...'
   | 'isSealImpression';
 
 export interface MarkupUnit {
