@@ -50,6 +50,32 @@ export const normalizeSign = (sign: string): string => {
   return normalizedSign.join('');
 };
 
+/**
+ * If num is a fraction, it will be converted to a unicode character
+ */
+export const normalizeNumber = (num: string): string => {
+  switch (num) {
+    case '1/2':
+      return '½';
+    case '1/3':
+      return '⅓';
+    case '1/4':
+      return '¼';
+    case '1/5':
+      return '⅕';
+    case '1/6':
+      return '⅙';
+    case '2/3':
+      return '⅔';
+    case '3/4':
+      return '¾';
+    case '5/6':
+      return '⅚';
+    default:
+      return num;
+  }
+};
+
 export const spellingHtmlReading = (spelling: string): string => {
   if (!spelling) {
     return '';
@@ -79,7 +105,11 @@ export const spellingHtmlReading = (spelling: string): string => {
         if (tokenType === 'SPACE') {
           return ' ';
         }
-        if (['NUMBER', 'SIGN', '+', '.', '-'].includes(tokenType)) {
+
+        if (tokenType === 'NUMBER') {
+          return normalizeNumber(tokenText);
+        }
+        if (['SIGN', '+', '.', '-'].includes(tokenType)) {
           return tokenText;
         }
         return '';
