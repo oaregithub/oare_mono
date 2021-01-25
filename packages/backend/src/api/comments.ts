@@ -12,13 +12,13 @@ router.route('/comments').post(async (req, res, next) => {
     const threadsDao = sl.get('ThreadsDao');
 
     // Check if thread already exists.
-    const foundThread: Thread | null = await threadsDao.getByReferenceUuid(thread.referenceUuid);
+    const foundThread: Thread[] | null = await threadsDao.getByReferenceUuid(thread.referenceUuid);
 
     if (!foundThread) {
       // Create new thread.
       comment.threadUuid = await threadsDao.insert(thread);
     } else {
-      comment.threadUuid = foundThread.uuid;
+      comment.threadUuid = foundThread[0].uuid;
     }
 
     // MySQL datetime format.

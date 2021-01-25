@@ -72,11 +72,11 @@ export default defineComponent({
     },
     route: {
       type: String,
-      required: false,
+      default: '',
     },
     uuid: {
       type: String,
-      required: false,
+      default: '',
     },
     hasComment: {
       type: Boolean,
