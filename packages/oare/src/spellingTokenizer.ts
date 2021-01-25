@@ -34,6 +34,7 @@ export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
 
 const isDigit = (char: string): boolean => !!char.match(/^\d$/);
 
+// 8320 is the unicode for subscripted 0
 const subscriptNumber = (normalNumber: string): string =>
   String.fromCharCode(8320 + Number(normalNumber));
 

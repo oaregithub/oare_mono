@@ -153,7 +153,9 @@ export default defineComponent({
     const totalOccurrences = ref(0);
 
     const canEdit = computed(() =>
-      store.getters.permissions.dictionary.includes('UPDATE_FORM')
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('UPDATE_FORM')
     );
 
     const htmlSpelling = computed(() =>

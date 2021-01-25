@@ -75,21 +75,21 @@
           class="test-words"
           text
           to="/words/A"
-          v-if="pagesPermissions.includes('WORDS')"
+          v-if="permissions.includes('WORDS')"
           >Words</v-btn
         >
         <v-btn
           class="test-names"
           text
           to="/names/A"
-          v-if="pagesPermissions.includes('NAMES')"
+          v-if="permissions.includes('NAMES')"
           >Names</v-btn
         >
         <v-btn
           class="test-places"
           text
           to="/places/A"
-          v-if="pagesPermissions.includes('PLACES')"
+          v-if="permissions.includes('PLACES')"
           >Places</v-btn
         >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
@@ -144,7 +144,9 @@ export default defineComponent({
     const firstName = computed(() =>
       store.getters.user ? store.getters.user.firstName : ''
     );
-    const pagesPermissions = computed(() => store.getters.permissions.pages);
+    const permissions = computed(() =>
+      store.getters.permissions.map(permission => permission.name)
+    );
 
     const logout = () => {
       store.logout();
@@ -177,7 +179,7 @@ export default defineComponent({
       isAdmin,
       isAuthenticated,
       firstName,
-      pagesPermissions,
+      permissions,
     };
   },
 });

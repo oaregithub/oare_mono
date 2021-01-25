@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueCompositionAPI from '@vue/composition-api';
-import { LoginRegisterResponse, PermissionResponse } from '@oare/types';
-import { reactive, computed, shallowReadonly } from '@vue/composition-api';
+import { LoginRegisterResponse, PermissionItem } from '@oare/types';
+import { reactive } from '@vue/composition-api';
 
 Vue.use(VueCompositionAPI);
 
@@ -9,17 +9,14 @@ export interface State {
   landed: boolean;
   user: null | LoginRegisterResponse;
   authComplete: boolean;
-  permissions: PermissionResponse;
+  permissions: PermissionItem[];
 }
 
 const state: State = reactive({
   landed: false,
   user: null,
   authComplete: false,
-  permissions: {
-    dictionary: [],
-    pages: [],
-  },
+  permissions: [],
 });
 
 export default {
@@ -31,13 +28,12 @@ export default {
   },
   logout: () => {
     state.user = null;
-    state.permissions.dictionary = [];
-    state.permissions.pages = [];
+    state.permissions = [];
   },
   setAuthComplete: () => {
     state.authComplete = true;
   },
-  setPermissions: (permissions: PermissionResponse) => {
+  setPermissions: (permissions: PermissionItem[]) => {
     state.permissions = permissions;
   },
   getters: {
