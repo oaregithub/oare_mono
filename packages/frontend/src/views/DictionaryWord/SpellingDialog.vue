@@ -146,12 +146,10 @@ import {
   SearchDiscourseSpellingRow,
   DictionaryForm,
   FormSpelling,
-  SpellingText,
 } from '@oare/types';
 import {
   defineComponent,
   ref,
-  reactive,
   Ref,
   watch,
   PropType,

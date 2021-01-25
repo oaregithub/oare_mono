@@ -58,7 +58,7 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
-import { updateUrl, formattedSearchCharacter } from './utils';
+import { formattedSearchCharacter } from './utils';
 import ResultTable from './ResultTable.vue';
 import { highlightedItem } from './utils';
 import useQueryParam from '@/hooks/useQueryParam';
