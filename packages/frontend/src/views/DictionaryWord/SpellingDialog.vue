@@ -420,6 +420,8 @@ export default defineComponent({
           }
           spellingSearchResults.value = [];
           discourseSearchResults.value = [];
+          selectedDiscourses.value = [];
+          discourseOptions.value.page = 1;
         } else {
           if (props.spelling) {
             searchSpellings(spellingInput.value);
