@@ -22,10 +22,10 @@ router.route('/login').post(async (req, res, next) => {
       next(new HttpBadRequest('Invalid credentials'));
       return;
     }
-
     const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
     const response: LoginRegisterResponse = {
       id: user.id,
+      uuid: user.uuid,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,

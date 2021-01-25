@@ -7,7 +7,7 @@ import TextDiscourseDao from '../TextDiscourseDao';
 export interface DictionarySpellingRows {
   uuid: string;
   referenceUuid: string;
-  explicitSpelling: string | null;
+  explicitSpelling: string;
 }
 
 class DictionarySpellingDao {

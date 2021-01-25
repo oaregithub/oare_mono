@@ -35,6 +35,7 @@ router.route('/register').post(async (req, res, next) => {
 
     const response: LoginRegisterResponse = {
       id: user.id,
+      uuid: user.uuid,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,

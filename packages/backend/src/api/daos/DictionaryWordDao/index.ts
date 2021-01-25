@@ -4,6 +4,7 @@ import {
   NameOrPlace,
   SearchSpellingResultRow,
   CopyWithPartial,
+  ExplicitSpelling,
 } from '@oare/types';
 import knex from '@/connection';
 import { DictionarySpellingRows } from '@/api/daos/DictionarySpellingDao';
@@ -74,7 +75,7 @@ export interface NamePlaceQueryRow {
   translation: string | null;
   form: string | null;
   cases: string | null;
-  spellings: string | null;
+  spellings: ExplicitSpelling[] | null;
 }
 
 export interface SearchWordsQueryRow {
@@ -278,7 +279,7 @@ class DictionaryWordDao {
     dictionaryWords.forEach((dictWord: WordQueryWordResultRow) => {
       let translation: string | null = '';
       const abbreviations: Record<string, Set<string | null>> = {};
-      const explicitSpellings: Record<string, Set<string | null>> = {};
+      const explicitSpellings: Record<string, Set<ExplicitSpelling>> = {};
       let forms: FormRow[] = [];
 
       // Get all forms associated with the current word.
@@ -291,9 +292,12 @@ class DictionaryWordDao {
         if (form.uuid !== undefined && dictionarySpellingsMapped[form.uuid] !== undefined) {
           dictionarySpellingsMapped[form.uuid].forEach((spelling: DictionarySpellingRows) => {
             if (explicitSpellings[form.uuid] === undefined) {
-              explicitSpellings[form.uuid] = new Set<string | null>().add(spelling.explicitSpelling);
+              explicitSpellings[form.uuid] = new Set<ExplicitSpelling>().add({
+                uuid: spelling.uuid,
+                explicitSpelling: spelling.explicitSpelling,
+              });
             } else {
-              explicitSpellings[form.uuid].add(spelling.explicitSpelling);
+              explicitSpellings[form.uuid].add({ uuid: spelling.uuid, explicitSpelling: spelling.explicitSpelling });
             }
           });
         }
@@ -330,8 +334,7 @@ class DictionaryWordDao {
             translation,
             form: form.form,
             cases: abbreviations[form.uuid] !== undefined ? Array.from(abbreviations[form.uuid]).join('/') : null,
-            spellings:
-              explicitSpellings[form.uuid] !== undefined ? Array.from(explicitSpellings[form.uuid]).join(',') : null,
+            spellings: explicitSpellings[form.uuid] !== undefined ? Array.from(explicitSpellings[form.uuid]) : null,
           } as NamePlaceQueryRow);
         });
       } else {

@@ -51,6 +51,7 @@
       :key="index"
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
+      :word-uuid="wordInfo.uuid"
     />
   </div>
 </template>
