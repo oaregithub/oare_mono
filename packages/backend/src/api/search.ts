@@ -14,7 +14,6 @@ const router = express.Router();
 router.route('/search/spellings/discourse').get(async (req, res, next) => {
   try {
     const textDiscourseDao = sl.get('TextDiscourseDao');
-    const aliasDao = sl.get('AliasDao');
 
     const { spelling, page: queryPage, limit: queryLimit } = (req.query as unknown) as SearchSpellingPayload;
     const limit = queryLimit ? Number(queryLimit) : 10;
@@ -24,32 +23,19 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
       page,
       limit,
     });
-    const textNames = await Promise.all(searchRows.map((r) => aliasDao.textAliasNames(r.textUuid)));
+
     const textReadings = await Promise.all(searchRows.map((r) => textDiscourseDao.getTextSpellings(r.textUuid)));
 
-    const rows: SearchDiscourseSpellingRow[] = searchRows
-      .map((row, i) => ({
-        uuid: row.uuid,
-        line: row.line,
-        wordOnTablet: row.wordOnTablet,
-        textName: textNames[i],
-        textUuid: row.textUuid,
-        readings: textReadings[i].filter(
-          (tr) => tr.wordOnTablet >= row.wordOnTablet - 5 && tr.wordOnTablet <= row.wordOnTablet + 5,
-        ),
-      }))
-      .sort((a, b) => {
-        const nameCompare = a.textName.localeCompare(b.textName);
-
-        if (nameCompare === 0) {
-          if (a.line === b.line) {
-            return a.wordOnTablet > b.wordOnTablet ? 1 : -1;
-          }
-          return a.line > b.line ? 1 : -1;
-        }
-
-        return nameCompare;
-      });
+    const rows: SearchDiscourseSpellingRow[] = searchRows.map((row, i) => ({
+      uuid: row.uuid,
+      line: row.line,
+      wordOnTablet: row.wordOnTablet,
+      textName: row.textName,
+      textUuid: row.textUuid,
+      readings: textReadings[i].filter(
+        (tr) => tr.wordOnTablet >= row.wordOnTablet - 5 && tr.wordOnTablet <= row.wordOnTablet + 5,
+      ),
+    }));
 
     const response: SearchDiscourseSpellingResponse = {
       rows,

@@ -48,15 +48,15 @@ describe('search test', () => {
   describe('GET /search/spellings/discourse', () => {
     const spelling = 'fakeSpelling';
     const PATH = `${API_PATH}/search/spellings/discourse?spelling=${spelling}`;
+    const textName = 'Example text';
     const searchRows = [
       {
+        textName,
         textUuid: 'text-uuid',
         line: 1,
         wordOnTablet: 10,
       },
     ];
-
-    const textName = 'Example text';
 
     const textReadings = [
       {
@@ -64,10 +64,6 @@ describe('search test', () => {
         spelling: 'fakeSpelling',
       },
     ];
-
-    const AliasDao = {
-      textAliasNames: jest.fn().mockResolvedValue(textName),
-    };
 
     const TextDiscourseDao = {
       searchTextDiscourseSpellings: jest.fn().mockResolvedValue({
@@ -78,7 +74,6 @@ describe('search test', () => {
     };
 
     const setup = () => {
-      sl.set('AliasDao', AliasDao);
       sl.set('TextDiscourseDao', TextDiscourseDao);
     };
 
@@ -113,7 +108,6 @@ describe('search test', () => {
       await sendRequest();
 
       expect(TextDiscourseDao.searchTextDiscourseSpellings).toHaveBeenCalledWith(spelling, { limit: 10, page: 1 });
-      expect(AliasDao.textAliasNames).toHaveBeenCalledWith('text-uuid');
       expect(TextDiscourseDao.getTextSpellings).toHaveBeenCalledWith('text-uuid');
     });
 
@@ -121,15 +115,6 @@ describe('search test', () => {
       sl.set('TextDiscourseDao', {
         ...TextDiscourseDao,
         searchTextDiscourseSpellings: jest.fn().mockRejectedValue('Failed to search discourse spellings'),
-      });
-      const response = await sendRequest();
-
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if get text alias fails', async () => {
-      sl.set('AliasDao', {
-        textAliasNames: jest.fn().mockRejectedValue('Cannot get text alias'),
       });
       const response = await sendRequest();
 

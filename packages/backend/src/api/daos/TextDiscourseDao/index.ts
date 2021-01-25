@@ -1,11 +1,5 @@
 import knex from '@/connection';
-import {
-  SpellingOccurrencesResponse,
-  DiscourseLineSpelling,
-  Pagination,
-  SearchDiscourseSpellingRow,
-  SpellingOccurrenceRow,
-} from '@oare/types';
+import { DiscourseLineSpelling, Pagination, SearchDiscourseSpellingRow, SpellingOccurrenceRow } from '@oare/types';
 import Knex from 'knex';
 
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
@@ -55,8 +49,16 @@ class TextDiscourseDao {
     const totalResults = countRow?.count || 0;
 
     const rows: SearchDiscourseSpellingRow[] = await createBaseQuery()
-      .select('td.uuid', 'td.text_uuid AS textUuid', 'te.line', 'td.word_on_tablet AS wordOnTablet')
+      .select(
+        'td.uuid',
+        'td.text_uuid AS textUuid',
+        'te.line',
+        'td.word_on_tablet AS wordOnTablet',
+        'text.name AS textName',
+      )
       .innerJoin('text_epigraphy AS te', 'te.discourse_uuid', 'td.uuid')
+      .innerJoin('text', 'text.uuid', 'td.text_uuid')
+      .orderBy('text.name', 'te.line')
       .groupBy('td.uuid')
       .limit(limit)
       .offset(page * limit);
