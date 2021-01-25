@@ -9,13 +9,13 @@
           @input="setDictionarySearch"
           placeholder="Dictionary"
           outlined
-          @keyup.enter.native="performSearch"
+          @keyup.enter.native="resetSearch"
         />
         <v-btn
           class="test-submit-button"
           color="primary"
           :disabled="!canSearch || searchLoading"
-          @click="performSearch"
+          @click="resetSearch"
           >Search</v-btn
         >
       </v-col>
@@ -135,6 +135,11 @@ export default defineComponent({
       }
     };
 
+    const resetSearch = () => {
+      page.value = '1';
+      performSearch();
+    };
+
     onMounted(performSearch);
 
     watch([page, rows], performSearch, { immediate: false });
@@ -179,6 +184,7 @@ export default defineComponent({
       headers,
       lastSearch,
       wordLink,
+      resetSearch,
     };
   },
 });

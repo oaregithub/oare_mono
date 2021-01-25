@@ -8,7 +8,7 @@
           :value="textTitleSearch"
           @input="setTextTitleSearch"
           placeholder="Text title"
-          @keyup.enter="searchTexts"
+          @keyup.enter="resetSearch"
           outlined
         />
         {{ $t('search.characterSequenceDescription') }}
@@ -17,12 +17,12 @@
           :value="translitSearch"
           @input="setTranslitSearch"
           :placeholder="$t('search.characterSequences')"
-          @keyup.enter="searchTexts"
+          @keyup.enter="resetSearch"
           outlined
         ></v-text-field>
         <v-btn
           class="test-submit-button"
-          @click="searchTexts"
+          @click="resetSearch"
           color="primary"
           :disabled="!canPerformSearch"
           >{{ $t('search.searchBtnText') }}</v-btn
@@ -133,6 +133,11 @@ export default defineComponent({
       }
     };
 
+    const resetSearch = () => {
+      page.value = '1';
+      searchTexts();
+    };
+
     watch([page, rows], searchTexts, { immediate: false });
 
     onMounted(searchTexts);
@@ -153,6 +158,7 @@ export default defineComponent({
       headers,
       highlightedItem,
       searchTexts,
+      resetSearch,
     };
   },
 });
