@@ -16,7 +16,11 @@
       >
     </div>
     <v-text-field
-      v-model="notesData"
+      :value="notesData"
+      @input="
+        notesData = $event;
+        isDirty = true;
+      "
       label="Notes"
       placeholder="Explain why you're making these changes"
       class="mt-6 test-notes"
@@ -25,7 +29,11 @@
       <div class="d-flex justify-space-between align-baseline">
         <v-col cols="6">
           <v-autocomplete
-            v-model="sideData.side"
+            :value="sideData.side"
+            @input="
+              sideData.side = $event;
+              isDirty = true;
+            "
             :items="usableSides(sideData.side)"
             class="test-side-select"
           />
@@ -39,7 +47,11 @@
         >
       </div>
       <v-textarea
-        v-model="sideData.text"
+        :value="sideData.text"
+        @input="
+          sideData.text = $event;
+          isDirty = true;
+        "
         outlined
         class="mb-3 test-side-text"
         auto-grow
@@ -94,15 +106,12 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    draftSaveLoading: {
-      type: Boolean,
-      default: false,
-    },
   },
-  setup({ sides, notes, textUuid, draftSaveLoading }, { emit }) {
+  setup({ sides, notes, textUuid }, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
+    const isDirty = ref(false);
     const textData = ref<EpigraphyEditorSideData[]>([]);
     const saveLoading = ref(false);
     const removeDialog = ref({
@@ -131,10 +140,12 @@ export default defineComponent({
         emit('save-draft', textData.value);
         emit('update:notes', notesData.value);
         actions.showSnackbar('Successfully saved draft');
+        isDirty.value = false;
       } catch {
         actions.showErrorSnackbar('Failed to save draft');
+      } finally {
+        saveLoading.value = false;
       }
-      saveLoading.value = false;
     };
 
     const openRemoveDialog = (sideIdx: number) => {
@@ -148,6 +159,7 @@ export default defineComponent({
         ...textData.value.slice(0, deleteSide),
         ...textData.value.slice(deleteSide + 1),
       ];
+      isDirty.value = true;
     };
 
     const addSide = () => {
@@ -155,6 +167,7 @@ export default defineComponent({
         side: '',
         text: '',
       });
+      isDirty.value = true;
     };
 
     const usableSides = (usedSide: string) => {
@@ -186,9 +199,8 @@ export default defineComponent({
       addSide,
       usableSides,
       notesData,
+      isDirty,
     };
   },
 });
 </script>
-
-<style></style>

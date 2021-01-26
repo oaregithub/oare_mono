@@ -82,7 +82,6 @@
           ref="epigEditor"
           @save-draft="draftContent = $event"
           @close-editor="toggleEdit"
-          :draftSaveLoading.sync="draftSaveLoading"
           :notes.sync="draftNotes"
         />
       </v-col>
@@ -209,7 +208,6 @@ export default defineComponent({
     let isEditing: Ref<boolean> = ref(false);
     let draftContent: Ref<EpigraphyEditorSideData[] | null> = ref(null);
     const draftNotes = ref('');
-    let draftSaveLoading: Ref<boolean> = ref(false);
     const cdli: Ref<string | null> = ref(null);
     const color = ref('');
     const colorMeaning = ref('');
@@ -348,7 +346,6 @@ export default defineComponent({
       isEditing,
       toggleEdit,
       editorSideData,
-      draftSaveLoading,
       draftContent,
       draftNotes,
       discourseUnits,
