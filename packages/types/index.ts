@@ -488,7 +488,7 @@ export type CopyWithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
 // Comment Request
 
 export interface CommentRequest {
-  comment: Comment,
+  comment: CommentInsert,
   thread: Thread
 }
 
@@ -497,11 +497,31 @@ export interface CommentResponse {
   threadUuid: string | null,
 }
 
-export interface Comment {
+export interface CommentInsert {
   uuid: string | null,
   threadUuid: string | null,
   userUuid: string | null,
   createdAt: Date | null,
+  deleted: boolean,
+  text: string,
+}
+
+export interface Comment {
+  uuid: string,
+  threadUuid: string,
+  userUuid: string,
+  createdAt: Date,
+  deleted: boolean,
+  text: string,
+}
+
+export interface CommentDisplay {
+  uuid: string,
+  threadUuid: string,
+  userUuid: string,
+  userFirstName: string,
+  userLastName: string,
+  createdAt: Date,
   deleted: boolean,
   text: string,
 }
@@ -511,4 +531,9 @@ export interface Thread {
   referenceUuid: string,
   status: "New" | "Pending" | "In Progress" | "Completed",
   route: string,
+}
+
+export interface ThreadWithComments {
+    thread: Thread,
+    comments: CommentDisplay[]
 }

@@ -9,12 +9,52 @@
     :closeButton="true"
     :persistent="false"
   >
-    <v-row>
-      <v-col cols="12">
-        <h1><slot></slot></h1>
-      </v-col>
-      <v-col cols="12">
-        <v-container fluid>
+
+    <div class='d-flex justify-center'>
+      <h1><slot></slot></h1>
+    </div>
+
+      <v-list>
+        <v-list-item-group
+                v-model="selectedItem"
+                color="primary"
+        >
+          <div class='d-flex flex-wrap'>
+            <v-list-item v-for='(threadWithComment, idx) in threadsWithComments' :key='idx' class='d-flex'
+            >
+              <v-list-item-title>
+                {{`Thread ${idx}`}}
+              </v-list-item-title>
+              <v-icon v-if='selectedItem == idx'>mdi-menu-up</v-icon>
+              <v-icon v-else>mdi-menu-down</v-icon>
+            </v-list-item>
+          </div>
+
+          <template v-if='threadsWithComments[selectedItem]'>
+            <div class='d-flex flex-row mb-3' v-for='(comment, idx) in threadsWithComments[selectedItem].comments' :key='idx'>
+              <template v-if='!comment.deleted'>
+                  <div class='d-flex flex-column'>
+                    <span class='mr-5'>{{comment.userLastName}}, {{comment.userFirstName}}</span>
+                    <span>{{new Date(comment.createdAt).toDateString()}}</span>
+                  </div>
+                <div class='d-flex flex-row flex-grow-1'>
+                  <v-card v-if='comment.userUuid != userUuid'
+                          elevation='2'
+                          class='other-comments'>
+                    <v-card-text>{{comment.text}}</v-card-text>
+                  </v-card>
+                  <v-card v-else
+                          elevation='2'
+                          class='curr-user-comments'>
+                    <v-card-text>{{comment.text}}</v-card-text>
+                  </v-card>
+                </div>
+              </template>
+            </div>
+          </template>
+        </v-list-item-group>
+      </v-list>
+    <v-container fluid>
           <v-textarea
             name="comment"
             label="Comment"
@@ -23,15 +63,13 @@
             v-model="userComment"
           ></v-textarea>
         </v-container>
-      </v-col>
-    </v-row>
   </oare-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+  import { defineComponent, ref, onMounted, Ref } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { Comment, CommentResponse, Thread, CommentRequest } from '@oare/types';
+  import { CommentResponse, Thread, CommentRequest, ThreadWithComments, CommentInsert } from '@oare/types';
 
 export default defineComponent({
   name: 'DictionaryWordDisplay',
@@ -55,10 +93,22 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const loading = ref(false);
+    let threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
+    const selectedItem = ref<number>(0);
     const userComment = ref('');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
+    const userUuid = ref<string|null>('');
+    userUuid.value = store.getters.user ? store.getters.user.uuid : null
+
+    const getThreadsWithComments = async () => {
+              try {
+                threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(props.uuid);
+              } catch {
+                actions.showErrorSnackbar('Failed to get threads');
+              }
+    }
 
     const insertComment = async () => {
       if (store.getters.user === null) {
@@ -71,21 +121,30 @@ export default defineComponent({
         return;
       }
 
-      const userUuid = store.getters.user ? store.getters.user.uuid : null;
       loading.value = true;
       try {
-        const comment: Comment = {
+        const comment: CommentInsert = {
           uuid: null,
           threadUuid: null,
-          userUuid: userUuid,
+          userUuid: store.getters.user ? store.getters.user.uuid : null,
           createdAt: null,
           deleted: false,
           text: userComment.value,
         };
+
+        let threadUuid: string | null = null;
+        let threadStatus: 'New' | 'Pending' | 'In Progress' | 'Completed' = 'New';
+        threadsWithComments.value.forEach((threadWithComments: ThreadWithComments, index) => {
+          if (index === selectedItem.value) {
+            threadUuid = threadWithComments.thread.uuid
+            threadStatus = threadWithComments.thread.status;
+          }
+        })
+        
         const thread: Thread = {
-          uuid: null,
+          uuid: threadUuid,
           referenceUuid: props.uuid,
-          status: 'New',
+          status: threadStatus,
           route: props.route,
         };
         const request: CommentRequest = { comment, thread };
@@ -96,6 +155,8 @@ export default defineComponent({
           actions.showSnackbar(
             `Successfully added the comment for ${props.word}`
           );
+          userComment.value = '';
+          await getThreadsWithComments();
           emit('submit');
         } else {
           actions.showErrorSnackbar('Failed to insert the comment');
@@ -107,7 +168,12 @@ export default defineComponent({
       }
     };
 
+    onMounted(getThreadsWithComments);
+
     return {
+      userUuid,
+      threadsWithComments,
+      selectedItem,
       insertComment,
       userComment,
     };
@@ -115,4 +181,12 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+  .other-comments {
+    border-radius: 0 10px 10px 10px !important;
+  }
+  .curr-user-comments {
+    border-radius: 10px 0 10px 10px !important;
+    background-color: #fafafa !important;
+  }
+</style>
