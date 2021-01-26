@@ -36,6 +36,52 @@ describe('dictionary api test', () => {
       isAdmin: true,
     }),
   };
+  const MockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'ADD_TRANSLATION',
+        type: 'dictionary',
+        description: 'Allow group users to add translations to existing words',
+        dependency: 'WORDS',
+      },
+      {
+        name: 'DELETE_TRANSLATION',
+        type: 'dictionary',
+        description: 'Allow group users to delete existing word translations',
+        dependency: 'WORDS',
+      },
+      {
+        name: 'UPDATE_FORM',
+        type: 'dictionary',
+        description: 'Allow group users to make changes to form(s) of words',
+        dependency: 'WORDS',
+      },
+      {
+        name: 'UPDATE_TRANSLATION',
+        type: 'dictionary',
+        description: 'Allow group users to make changes to translations of existing words',
+        dependency: 'WORDS',
+      },
+      {
+        name: 'UPDATE_TRANSLATION_ORDER',
+        type: 'dictionary',
+        description: 'Allow group users to adjust the order of existing word translations',
+        dependency: 'WORDS',
+      },
+      {
+        name: 'UPDATE_WORD_SPELLING',
+        type: 'dictionary',
+        description: 'Allow group users to change the spelling of existing words',
+        dependency: 'WORDS',
+      },
+      {
+        name: 'ADD_SPELLING',
+        type: 'dictionary',
+        description: 'Allow group users to add new spellings to existing words',
+        dependency: 'WORDS',
+      },
+    ]),
+  };
 
   const setup = ({ FormDao, WordDao, LoggingDao, UserDao, DiscourseDao, cache } = {}) => {
     sl.set('DictionaryFormDao', FormDao || MockDictionaryFormDao);
@@ -44,6 +90,7 @@ describe('dictionary api test', () => {
     sl.set('TextDiscourseDao', DiscourseDao);
     sl.set('UserDao', UserDao || MockUserDao);
     sl.set('cache', cache || mockCache);
+    sl.set('PermissionsDao', MockPermissionsDao);
   };
 
   describe('GET /dictionary/:uuid', () => {
@@ -108,7 +155,7 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(401);
     });
 
-    it('prevents non-admins from posting', async () => {
+    it('prevents users without permission from posting', async () => {
       setup({
         UserDao: {
           getUserByEmail: jest.fn().mockResolvedValue({
@@ -116,7 +163,9 @@ describe('dictionary api test', () => {
           }),
         },
       });
-
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
+      });
       const response = await request(app).post(PATH).send({ word: 'newWord' }).set('Cookie', 'jwt=token');
       expect(response.status).toBe(403);
     });
@@ -187,7 +236,7 @@ describe('dictionary api test', () => {
       });
     });
 
-    it('prevents non-admins from posting', async () => {
+    it('prevents users without permission from posting', async () => {
       setup();
       let response = await request(app).post(PATH).send({ translations: updatedTranslations });
       expect(response.status).toBe(401);
@@ -198,6 +247,9 @@ describe('dictionary api test', () => {
             isAdmin: false,
           }),
         },
+      });
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       response = await request(app).post(PATH).send({ translations: updatedTranslations }).set('Cookie', 'jwt=token');
 
@@ -263,7 +315,7 @@ describe('dictionary api test', () => {
       });
     });
 
-    it('prevents non-admins from posting', async () => {
+    it('prevents users without permission from posting', async () => {
       setup();
       let response = await request(app).post(PATH).send({ uuid: 'test-uuid', form: 'newForm' });
       expect(response.status).toBe(401);
@@ -274,6 +326,9 @@ describe('dictionary api test', () => {
             isAdmin: false,
           }),
         },
+      });
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       response = await request(app).post(PATH).send({ uuid: 'form-uuid', form: 'newForm' }).set('Cookie', 'jwt=token');
       expect(response.status).toBe(403);
@@ -414,6 +469,7 @@ describe('dictionary api test', () => {
       sl.set('LoggingEditsDao', LoggingEditsDao);
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
       sl.set('utils', mockUtils);
+      sl.set('PermissionsDao', MockPermissionsDao);
     };
 
     const sendRequest = () => request(app).put(PATH).send(mockPayload).set('Cookie', 'jwt=token');
@@ -423,11 +479,9 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(401);
     });
 
-    it("doesn't allow non-admins to post", async () => {
-      sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
+    it("doesn't allow users without permission to post", async () => {
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       const response = await sendRequest();
       expect(response.status).toBe(403);
@@ -560,6 +614,7 @@ describe('dictionary api test', () => {
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
       sl.set('LoggingEditsDao', LoggingEditsDao);
       sl.set('TextDiscourseDao', TextDiscourseDao);
+      sl.set('PermissionsDao', MockPermissionsDao);
     };
 
     const sendRequest = () => request(app).post(PATH).send(payload).set('Cookie', 'jwt=token');
@@ -569,11 +624,9 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(401);
     });
 
-    it("doesn't allow non-admins to post", async () => {
-      sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
+    it("doesn't allow users without permission to post", async () => {
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       const response = await sendRequest();
       expect(response.status).toBe(403);
@@ -709,6 +762,7 @@ describe('dictionary api test', () => {
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
       sl.set('TextDiscourseDao', TextDiscourseDao);
       sl.set('LoggingEditsDao', LoggingEditsDao);
+      sl.set('PermissionsDao', MockPermissionsDao);
     };
 
     const sendRequest = () => request(app).delete(PATH).set('Cookie', 'jwt=token');
@@ -718,13 +772,10 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(401);
     });
 
-    it("doesn't allow non-admins to delete", async () => {
-      sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
+    it("doesn't allow users without permission to delete", async () => {
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
       });
-
       const response = await sendRequest();
       expect(response.status).toBe(403);
     });
