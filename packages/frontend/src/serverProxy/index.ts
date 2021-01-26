@@ -22,6 +22,7 @@ import textInfo from './text_info';
 import searchCollectionNames from './search_collection_names';
 import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
+import comments from '@/serverProxy/comments';
 
 const serverProxy = {
   ...textGroups,
@@ -48,6 +49,7 @@ const serverProxy = {
   ...searchCollectionNames,
   ...collectionGroups,
   ...resetPassword,
+  ...comments,
 };
 
 export type ServerProxyType = typeof serverProxy;

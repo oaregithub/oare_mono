@@ -21,6 +21,8 @@ import FieldDao from '@/api/daos/FieldDao';
 import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
 import UserGroupDao from '@/api/daos/UserGroupDao';
 import PermissionsDao from '@/api/daos/PermissionsDao';
+import CommentsDao from '@/api/daos/CommentsDao';
+import ThreadsDao from '@/api/daos/ThreadsDao';
 import utils from '@/utils';
 import mailer from '@/mailer';
 
@@ -50,6 +52,8 @@ export type ServiceTypes = {
   ResetPasswordLinksDao: typeof ResetPasswordLinksDao;
   UserGroupDao: typeof UserGroupDao;
   PermissionsDao: typeof PermissionsDao;
+  CommentsDao: typeof CommentsDao;
+  ThreadsDao: typeof ThreadsDao;
   utils: typeof utils;
   mailer: typeof mailer;
 };

@@ -190,10 +190,15 @@ export interface RemoveUsersFromGroupPayload {
 
 // Names and Places
 
+export interface ExplicitSpelling {
+  uuid: string;
+  explicitSpelling: string
+}
+
 export interface OnomasticonForm {
   uuid: string;
   form: string;
-  spellings: string[];
+  spellings: ExplicitSpelling[];
   cases: string | null;
 }
 export interface NameOrPlace {
@@ -423,6 +428,7 @@ export interface RegisterPayload {
 
 export interface LoginRegisterResponse {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -478,3 +484,31 @@ export interface ResetPasswordPayload {
 //CopyWithPartial
 
 export type CopyWithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+
+// Comment Request
+
+export interface CommentRequest {
+  comment: Comment,
+  thread: Thread
+}
+
+export interface CommentResponse {
+  commentUuid: string | null,
+  threadUuid: string | null,
+}
+
+export interface Comment {
+  uuid: string | null,
+  threadUuid: string | null,
+  userUuid: string | null,
+  createdAt: Date | null,
+  deleted: boolean,
+  text: string,
+}
+
+export interface Thread {
+  uuid: string | null,
+  referenceUuid: string,
+  status: "New" | "Pending" | "In Progress" | "Completed",
+  route: string,
+}

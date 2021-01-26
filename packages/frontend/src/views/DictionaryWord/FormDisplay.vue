@@ -17,14 +17,38 @@
       >
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
-      <strong class="mr-1">{{ form.form }}</strong>
+
+      <UtilList
+        @clicked-commenting="isCommenting = true"
+        :has-edit="false"
+        :has-delete="false"
+        :word="form.form"
+      >
+        <strong class="mr-1">{{ form.form }}</strong>
+      </UtilList>
+
+      <CommentWordDisplay
+        v-model="isCommenting"
+        :route="`/dictionaryWord/${wordUuid}`"
+        :uuid="form.uuid"
+        :word="form.form"
+        @submit="isCommenting = false"
+        @input="isCommenting = false"
+        >{{ form.form }}</CommentWordDisplay
+      >
+
       <grammar-display :form="form" />
-      <span>
-        <span v-for="(s, index) in form.spellings" :key="index">
+      <span class="d-flex flex-row flex-wrap mb-0">
+        <span
+          class="d-flex flex-row mb-0"
+          v-for="(s, index) in form.spellings"
+          :key="index"
+        >
           <spelling-display
             :spelling="s"
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
             :form="form"
+            :word-uuid="wordUuid"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -63,6 +87,7 @@
                 newSpelling => updateSpelling(index, newSpelling)
               "
               :form="form"
+              :word-uuid="wordUuid"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -83,12 +108,16 @@ import sl from '@/serviceLocator';
 import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
 import SpellingDialog from './SpellingDialog.vue';
+import UtilList from '../../components/UtilList/index.vue';
+import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 
 export default defineComponent({
   components: {
     GrammarDisplay,
     SpellingDisplay,
     SpellingDialog,
+    UtilList,
+    CommentWordDisplay,
   },
   props: {
     form: {
@@ -99,6 +128,10 @@ export default defineComponent({
       type: Function as PropType<(newForm: DictionaryForm) => void>,
       required: true,
     },
+    wordUuid: {
+      type: String as PropType<string>,
+      required: false,
+    },
   },
   setup(props) {
     const store = sl.get('store');
@@ -108,6 +141,7 @@ export default defineComponent({
     const spellingDialogOpen = ref(false);
     const editing = ref(false);
     const loading = ref(false);
+    const isCommenting = ref(false);
     const editForm = ref({
       ...props.form,
     });
@@ -147,6 +181,7 @@ export default defineComponent({
     };
 
     return {
+      isCommenting,
       editing,
       canEdit,
       canAddSpelling,

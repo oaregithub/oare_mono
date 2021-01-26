@@ -21,9 +21,21 @@
     <div v-for="wordInfo in filteredWords" :key="wordInfo.uuid" class="mb-3">
       <div class="d-flex">
         <slot name="word" :word="wordInfo">
-          <div class="font-weight-bold mr-1">{{ wordInfo.word }}</div>
+          <div class="font-weight-bold mr-1">
+            <UtilList
+              @clicked-commenting="isCommented"
+              :has-edit="false"
+              :has-delete="false"
+              :word="wordInfo.word"
+              :route="`/dictionaryWord/${wordInfo.uuid}`"
+              :uuid="wordInfo.uuid"
+              :mark-word="true"
+            >
+              {{ wordInfo.word }}
+            </UtilList>
+          </div>
         </slot>
-        <slot name="translation" :word="wordInfo"> </slot>
+        <slot name="translation" :word="wordInfo"></slot>
       </div>
       <div>
         <slot name="forms" :word="wordInfo"></slot>
@@ -32,6 +44,16 @@
     <v-btn fab fixed bottom right @click="$vuetify.goTo(0)" color="info">
       <v-icon>mdi-chevron-up</v-icon>
     </v-btn>
+
+    <CommentWordDisplay
+      v-model="isCommenting"
+      :route="selectedRoute"
+      :uuid="selectedUuid"
+      :word="selectedWord"
+      @submit="isCommenting = false"
+      @input="isCommenting = false"
+      >{{ selectedWord }}</CommentWordDisplay
+    >
   </div>
 </template>
 
@@ -46,6 +68,8 @@ import {
   PropType,
 } from '@vue/composition-api';
 import useQueryParam from '@/hooks/useQueryParam';
+import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import UtilList from '../../components/UtilList/index.vue';
 
 export interface DisplayableWord {
   uuid: string;
@@ -54,6 +78,10 @@ export interface DisplayableWord {
 
 export default defineComponent({
   name: 'DictionaryDisplay',
+  components: {
+    CommentWordDisplay,
+    UtilList,
+  },
   props: {
     wordList: {
       type: Array as PropType<DisplayableWord[]>,
@@ -78,6 +106,10 @@ export default defineComponent({
   },
   setup(props, context) {
     const letters = ref(Object.keys(AkkadianLetterGroupsUpper));
+    const selectedWord = ref('');
+    const selectedUuid = ref('');
+    const selectedRoute = ref('');
+    const isCommenting = ref(false);
     const [wordSearch, setWordSearch] = useQueryParam('filter', '');
 
     const wordsByLetter = computed(() => {
@@ -91,6 +123,14 @@ export default defineComponent({
         props.searchFilter(wordSearch.value, word)
       );
     });
+
+    const isCommented = (word: string, uuid: string, route: string) => {
+      isCommenting.value = true;
+      selectedWord.value = word;
+      selectedUuid.value = uuid;
+      selectedRoute.value = route;
+    };
+
     const encodedLetter = (letter: string) => encodeURIComponent(letter);
 
     watch(
@@ -100,6 +140,11 @@ export default defineComponent({
     );
 
     return {
+      isCommented,
+      selectedWord,
+      selectedUuid,
+      selectedRoute,
+      isCommenting,
       letters,
       encodedLetter,
       wordSearch,

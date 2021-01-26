@@ -24,6 +24,7 @@ import textInfo from './api/text_info';
 import searchCollectionNames from './api/search_collection_names';
 import collectionGroups from './api/collection_groups';
 import resetPassword from './api/reset_password';
+import comments from './api/comments';
 
 export const API_PATH = '/api/v2';
 
@@ -53,4 +54,5 @@ export default (app: Express) => {
   app.use(API_PATH, searchCollectionNames);
   app.use(API_PATH, collectionGroups);
   app.use(API_PATH, resetPassword);
+  app.use(API_PATH, comments);
 };
