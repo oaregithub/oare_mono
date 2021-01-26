@@ -8,10 +8,7 @@
         @click="createDraft"
         >Save draft</oare-loader-button
       >
-      <v-btn
-        color="info"
-        @click="$emit('close-editor')"
-        class="test-close-editor"
+      <v-btn color="info" @click="closeEditor" class="test-close-editor"
         >Close editor</v-btn
       >
     </div>
@@ -74,6 +71,15 @@
       Are you sure you want to remove this side? All edits you have made to it
       will be lost.
     </OareDialog>
+
+    <OareDialog
+      v-model="unsavedDialog"
+      title="Unsaved Changes"
+      @submit="$emit('close-editor')"
+    >
+      You have unsaved changes. Are you sure you want to close the editor?
+      Unsaved changes will be lost.
+    </OareDialog>
   </div>
 </template>
 
@@ -84,6 +90,8 @@ import {
   ref,
   onMounted,
   computed,
+  onBeforeMount,
+  onBeforeUnmount,
 } from '@vue/composition-api';
 import { EpigraphicUnitSide } from '@oare/oare';
 import sl from '@/serviceLocator';
@@ -118,6 +126,7 @@ export default defineComponent({
       open: false,
       deleteSide: -1,
     });
+    const unsavedDialog = ref(false);
     const notesData = ref(notes);
     const sideTypes = computed(() => [
       '',
@@ -145,6 +154,14 @@ export default defineComponent({
         actions.showErrorSnackbar('Failed to save draft');
       } finally {
         saveLoading.value = false;
+      }
+    };
+
+    const closeEditor = () => {
+      if (isDirty.value) {
+        unsavedDialog.value = true;
+      } else {
+        emit('close-editor');
       }
     };
 
@@ -180,6 +197,18 @@ export default defineComponent({
       );
     };
 
+    onBeforeMount(() => {
+      if (isDirty.value) {
+        console.log('hi');
+      }
+    });
+
+    onBeforeUnmount(() => {
+      if (isDirty.value) {
+        console.log('hi');
+      }
+    });
+
     onMounted(() => {
       // We'll be making edits, so make a copy of the data
       // so it isn't updated in the parent
@@ -200,6 +229,8 @@ export default defineComponent({
       usableSides,
       notesData,
       isDirty,
+      unsavedDialog,
+      closeEditor,
     };
   },
 });
