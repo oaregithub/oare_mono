@@ -31,12 +31,10 @@
         v-else
       >
         <EpigraphyEditor
-          :sides="editorSideData"
+          :draft="draftContent"
           :textUuid="textUuid"
-          ref="epigEditor"
-          @save-draft="draftContent = $event"
+          @save-draft="draft = $event"
           @close-editor="toggleEdit"
-          :notes.sync="draftNotes"
         />
       </v-col>
       <v-col cols="12" sm="5" md="7" v-if="cdli && isAdmin" class="relative">
@@ -58,6 +56,7 @@ import {
   EpigraphicUnit,
   MarkupUnit,
 } from '@oare/oare';
+import { TextDraft } from '@oare/types';
 import {
   defineComponent,
   reactive,
@@ -84,10 +83,7 @@ interface EpigraphyState {
   textName: string;
 }
 
-export interface EpigraphyEditorSideData {
-  side: EpigraphicUnitSide | string;
-  text: string;
-}
+export type DraftContent = Pick<TextDraft, 'content' | 'notes'>;
 
 export default defineComponent({
   name: 'EpigraphyView',
@@ -148,8 +144,8 @@ export default defineComponent({
       ];
     });
     const discourseUnits: Ref<DiscourseUnit[]> = ref([]);
-    let isEditing: Ref<boolean> = ref(false);
-    let draftContent: Ref<EpigraphyEditorSideData[] | null> = ref(null);
+    let isEditing = ref(false);
+    let draft = ref<DraftContent | null>(null);
     const draftNotes = ref('');
     const cdli: Ref<string | null> = ref(null);
     const color = ref('');
@@ -159,24 +155,23 @@ export default defineComponent({
       isEditing.value = !isEditing.value;
     };
 
-    const editorSideData = computed(() => {
-      if (draftContent.value) {
-        return draftContent.value;
+    const draftContent = computed<DraftContent>(() => {
+      if (draft.value) {
+        return draft.value;
       }
 
-      const sideData: EpigraphyEditorSideData[] = [];
       const draftRenderer = createTabletRenderer(
         epigraphicUnits.value,
         markupUnits.value,
         { lineNumbers: true }
       );
-      for (const side of draftRenderer.sides) {
-        sideData.push({
-          side: side,
+      return {
+        content: draftRenderer.sides.map(side => ({
+          side,
           text: draftRenderer.sideReading(side),
-        });
-      }
-      return sideData;
+        })),
+        notes: '',
+      };
     });
 
     onMounted(async () => {
@@ -218,9 +213,8 @@ export default defineComponent({
         epigraphyState.loading = false;
         // If the user is an editor, get the draft content
         if (epigraphyState.canWrite) {
-          const res = await server.getSingleDraft(textUuid);
-          draftContent.value = res.content;
-          draftNotes.value = res.notes;
+          const { content, notes } = await server.getSingleDraft(textUuid);
+          draft.value = { content, notes };
         }
       }
     });
@@ -231,7 +225,7 @@ export default defineComponent({
       ...toRefs(epigraphyState),
       isEditing,
       toggleEdit,
-      editorSideData,
+      draft,
       draftContent,
       draftNotes,
       discourseUnits,

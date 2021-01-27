@@ -192,7 +192,7 @@ export interface RemoveUsersFromGroupPayload {
 
 export interface ExplicitSpelling {
   uuid: string;
-  explicitSpelling: string
+  explicitSpelling: string;
 }
 
 export interface OnomasticonForm {
@@ -393,7 +393,7 @@ export interface UpdateCollectionPermissionPayload {
 
 // Text Drafts
 export interface TextDraftSideContent {
-  side: EpigraphicUnitSide;
+  side: EpigraphicUnitSide | "";
   text: string;
 }
 
@@ -441,23 +441,24 @@ export type PermissionItem = DictionaryPermission | PagePermission;
 
 export interface PermissionTemplate {
   description: string;
-  dependency?: PermissionItem['name'];
+  dependency?: PermissionItem["name"];
 }
 
 export interface DictionaryPermission extends PermissionTemplate {
-  name: "UPDATE_WORD_SPELLING"
-  | "ADD_TRANSLATION"
-  | "DELETE_TRANSLATION"
-  | "UPDATE_TRANSLATION"
-  | "UPDATE_TRANSLATION_ORDER"
-  | "UPDATE_FORM"
-  | "ADD_SPELLING";
-  type: 'dictionary';
+  name:
+    | "UPDATE_WORD_SPELLING"
+    | "ADD_TRANSLATION"
+    | "DELETE_TRANSLATION"
+    | "UPDATE_TRANSLATION"
+    | "UPDATE_TRANSLATION_ORDER"
+    | "UPDATE_FORM"
+    | "ADD_SPELLING";
+  type: "dictionary";
 }
 
 export interface PagePermission extends PermissionTemplate {
   name: "WORDS" | "NAMES" | "PLACES";
-  type: 'pages';
+  type: "pages";
 }
 
 export interface UpdatePermissionPayload {
@@ -466,7 +467,7 @@ export interface UpdatePermissionPayload {
 
 // Blacklist Permissions
 
-export type PermissionsListType = 'Text' | 'Collection';
+export type PermissionsListType = "Text" | "Collection";
 
 // Text Info
 
@@ -488,27 +489,27 @@ export type CopyWithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
 // Comment Request
 
 export interface CommentRequest {
-  comment: Comment,
-  thread: Thread
+  comment: Comment;
+  thread: Thread;
 }
 
 export interface CommentResponse {
-  commentUuid: string | null,
-  threadUuid: string | null,
+  commentUuid: string | null;
+  threadUuid: string | null;
 }
 
 export interface Comment {
-  uuid: string | null,
-  threadUuid: string | null,
-  userUuid: string | null,
-  createdAt: Date | null,
-  deleted: boolean,
-  text: string,
+  uuid: string | null;
+  threadUuid: string | null;
+  userUuid: string | null;
+  createdAt: Date | null;
+  deleted: boolean;
+  text: string;
 }
 
 export interface Thread {
-  uuid: string | null,
-  referenceUuid: string,
-  status: "New" | "Pending" | "In Progress" | "Completed",
-  route: string,
+  uuid: string | null;
+  referenceUuid: string;
+  status: "New" | "Pending" | "In Progress" | "Completed";
+  route: string;
 }

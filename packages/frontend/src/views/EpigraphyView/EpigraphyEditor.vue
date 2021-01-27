@@ -13,16 +13,16 @@
       >
     </div>
     <v-text-field
-      :value="notesData"
+      :value="localDraft.notes"
       @input="
-        notesData = $event;
+        localDraft.notes = $event;
         isDirty = true;
       "
       label="Notes"
       placeholder="Explain why you're making these changes"
       class="mt-6 test-notes"
     />
-    <div v-for="(sideData, idx) in textData" :key="idx">
+    <div v-for="(sideData, idx) in localDraft.content" :key="idx">
       <div class="d-flex justify-space-between align-baseline">
         <v-col cols="6">
           <v-autocomplete
@@ -55,7 +55,7 @@
       />
     </div>
     <v-btn
-      v-if="textData.length < sideTypes.length"
+      v-if="localDraft.content.length < sideTypes.length"
       text
       color="primary"
       @click="addSide"
@@ -84,30 +84,17 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  PropType,
-  ref,
-  onMounted,
-  computed,
-  onBeforeMount,
-  onBeforeUnmount,
-} from '@vue/composition-api';
+import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
+import _ from 'lodash';
 import { EpigraphicUnitSide } from '@oare/oare';
 import sl from '@/serviceLocator';
-import { EpigraphyEditorSideData } from './index.vue';
+import { DraftContent } from './index.vue';
 
 export default defineComponent({
   name: 'EpigraphyEditor',
   props: {
-    // List of objects with "key" => side
-    // and "lines" => list of line readings
-    sides: {
-      type: Array as PropType<EpigraphyEditorSideData[]>,
-      required: true,
-    },
-    notes: {
-      type: String,
+    draft: {
+      type: Object as PropType<DraftContent>,
       required: true,
     },
     textUuid: {
@@ -115,19 +102,18 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ sides, notes, textUuid }, { emit }) {
+  setup({ draft, textUuid }, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
     const isDirty = ref(false);
-    const textData = ref<EpigraphyEditorSideData[]>([]);
     const saveLoading = ref(false);
     const removeDialog = ref({
       open: false,
       deleteSide: -1,
     });
     const unsavedDialog = ref(false);
-    const notesData = ref(notes);
+    const localDraft = ref(_.cloneDeep(draft));
     const sideTypes = computed(() => [
       '',
       'obv.',
@@ -143,11 +129,10 @@ export default defineComponent({
 
       try {
         await server.createDraft(textUuid, {
-          content: JSON.stringify(textData.value),
-          notes: notesData.value,
+          content: JSON.stringify(localDraft.value.content),
+          notes: localDraft.value.notes,
         });
-        emit('save-draft', textData.value);
-        emit('update:notes', notesData.value);
+        emit('save-draft', localDraft.value);
         actions.showSnackbar('Successfully saved draft');
         isDirty.value = false;
       } catch {
@@ -172,15 +157,15 @@ export default defineComponent({
 
     const removeSide = () => {
       const deleteSide = removeDialog.value.deleteSide;
-      textData.value = [
-        ...textData.value.slice(0, deleteSide),
-        ...textData.value.slice(deleteSide + 1),
+      localDraft.value.content = [
+        ...localDraft.value.content.slice(0, deleteSide),
+        ...localDraft.value.content.slice(deleteSide + 1),
       ];
       isDirty.value = true;
     };
 
     const addSide = () => {
-      textData.value.push({
+      localDraft.value.content.push({
         side: '',
         text: '',
       });
@@ -188,7 +173,7 @@ export default defineComponent({
     };
 
     const usableSides = (usedSide: string) => {
-      const usedSides = textData.value.map(sideData => sideData.side);
+      const usedSides = localDraft.value.content.map(sideData => sideData.side);
       return sideTypes.value.filter(
         side =>
           side === '' ||
@@ -197,28 +182,8 @@ export default defineComponent({
       );
     };
 
-    onBeforeMount(() => {
-      if (isDirty.value) {
-        console.log('hi');
-      }
-    });
-
-    onBeforeUnmount(() => {
-      if (isDirty.value) {
-        console.log('hi');
-      }
-    });
-
-    onMounted(() => {
-      // We'll be making edits, so make a copy of the data
-      // so it isn't updated in the parent
-      for (const sideData of sides) {
-        textData.value.push({ ...sideData });
-      }
-    });
-
     return {
-      textData,
+      localDraft,
       sideTypes,
       saveLoading,
       removeDialog,
@@ -227,7 +192,6 @@ export default defineComponent({
       removeSide,
       addSide,
       usableSides,
-      notesData,
       isDirty,
       unsavedDialog,
       closeEditor,
