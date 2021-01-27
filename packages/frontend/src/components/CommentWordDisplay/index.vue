@@ -10,11 +10,13 @@
     :persistent="false"
   >
     <v-row>
-      <v-col cols='10'>
+      <v-col cols="10">
         <h1><slot></slot></h1>
       </v-col>
       <v-col>
-        <v-btn @click='selectedItem = undefined' color='primary'>Add Thread</v-btn>
+        <v-btn @click="selectedItem = undefined" color="primary"
+          >Add Thread</v-btn
+        >
       </v-col>
     </v-row>
 
@@ -30,7 +32,8 @@
             "
             v-for="(threadWithComment, idx) in threadsWithComments"
             :key="idx"
-            class="d-flex" style='max-width: 33%'
+            class="d-flex"
+            style="max-width: 33%"
           >
             <v-list-item-title>
               {{ `Thread ${idx + 1} (${threadWithComment.thread.status})` }}
@@ -48,12 +51,10 @@
           >
             <template v-if="!comment.deleted">
               <v-col cols="2">
-                <span v-if='comment.userUuid'
+                <span v-if="comment.userUuid"
                   >{{ comment.userLastName }}, {{ comment.userFirstName }}</span
                 >
-                <span v-else
-                >Administrator</span
-                >
+                <span v-else>Administrator</span>
                 <hr />
                 <span>{{
                   new Date(comment.createdAt)
@@ -107,7 +108,13 @@
       ></v-textarea>
     </v-container>
 
-    <v-row v-if="selectedItem !== undefined && threadsWithComments.length && loggedInUser.isAdmin">
+    <v-row
+      v-if="
+        selectedItem !== undefined &&
+          threadsWithComments.length &&
+          loggedInUser.isAdmin
+      "
+    >
       <v-col cols="5">
         <v-select
           v-model="selectedStatus"
@@ -122,11 +129,11 @@
     </v-row>
 
     <OareDialog
-            v-model="confirmDeleteDialog"
-            title="Confirm Delete"
-            cancelText="No, don't delete"
-            submitText="Yes, delete"
-            @submit="deleteComment()"
+      v-model="confirmDeleteDialog"
+      title="Confirm Delete"
+      cancelText="No, don't delete"
+      submitText="Yes, delete"
+      @submit="deleteComment()"
     >
       Are you sure you want to delete the comment?
     </OareDialog>
@@ -134,14 +141,16 @@
 </template>
 
 <script lang="ts">
-  import {
-    defineComponent,
-    ref,
-    onMounted,
-    Ref,
-    watch,
-    computed, onBeforeMount, onUpdated,
-  } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  Ref,
+  watch,
+  computed,
+  onBeforeMount,
+  onUpdated,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import {
   CommentResponse,
@@ -193,7 +202,7 @@ export default defineComponent({
           threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(
             props.uuid
           );
-            if (
+          if (
             selectedStatus.value == 'New' &&
             selectedThreadUuid.value == '' &&
             threadsWithComments.value[0]
@@ -212,7 +221,7 @@ export default defineComponent({
     const setDeleteValues = (commentUuid: string) => {
       selectedCommentUuidToDelete.value = commentUuid;
       confirmDeleteDialog.value = true;
-    }
+    };
 
     const getSelectedThreadStatus = (
       status: 'New' | 'Pending' | 'In Progress' | 'Completed',
@@ -287,7 +296,9 @@ export default defineComponent({
       }
 
       if (userComment.value.length > 1000) {
-        actions.showErrorSnackbar('Character count exceeded, please shorten the comment.');
+        actions.showErrorSnackbar(
+          'Character count exceeded, please shorten the comment.'
+        );
         return;
       }
 
@@ -295,7 +306,8 @@ export default defineComponent({
       try {
         const comment: CommentInsert = {
           uuid: null,
-          threadUuid: selectedItem.value !== undefined ? selectedThreadUuid.value : null,
+          threadUuid:
+            selectedItem.value !== undefined ? selectedThreadUuid.value : null,
           userUuid: loggedInUser.value ? loggedInUser.value.uuid : null,
           createdAt: null,
           deleted: false,
@@ -335,7 +347,7 @@ export default defineComponent({
     onUpdated(getThreadsWithComments);
 
     const loggedInUser = computed(() =>
-            store.getters.user ? store.getters.user : null
+      store.getters.user ? store.getters.user : null
     );
 
     return {
