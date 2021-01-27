@@ -22,36 +22,7 @@
             :markupUnits="markupUnits"
           />
         </v-row>
-        <p
-          v-if="discourseRenderer && isAdmin"
-          class="mt-5 oare-title font-weight-regular"
-        >
-          <span
-            v-for="line in discourseRenderer.lines"
-            :key="line"
-            class="mr-1"
-          >
-            <sup>{{ line }})</sup
-            ><span v-html="discourseRenderer.lineReading(line)" />
-          </span>
-        </p>
-        <v-treeview
-          v-if="isAdmin"
-          open-all
-          dense
-          :items="discourseUnits"
-          item-children="units"
-          item-key="uuid"
-          item-text="spelling"
-        >
-          <template #label="{ item }">
-            <div
-              :class="`${discourseColor(item.type)}--text`"
-              style="white-space: normal"
-              v-html="discourseReading(item)"
-            ></div>
-          </template>
-        </v-treeview>
+        <DiscourseReading :discourseUnits="discourseUnits" />
       </v-col>
       <v-col
         cols="12"
@@ -82,8 +53,6 @@
 <script lang="ts">
 import {
   createTabletRenderer,
-  DiscourseRenderer,
-  DiscourseHtmlRenderer,
   EpigraphicUnitSide,
   DiscourseUnit,
   EpigraphicUnit,
@@ -106,6 +75,7 @@ import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './Stoplight.vue';
 import EpigraphyReading from './EpigraphyReading.vue';
 import EpigraphyImage from './EpigraphyImage.vue';
+import DiscourseReading from './DiscourseReading.vue';
 
 interface EpigraphyState {
   loading: boolean;
@@ -126,6 +96,7 @@ export default defineComponent({
     Stoplight,
     EpigraphyReading,
     EpigraphyImage,
+    DiscourseReading,
   },
   props: {
     textUuid: {
@@ -177,7 +148,6 @@ export default defineComponent({
       ];
     });
     const discourseUnits: Ref<DiscourseUnit[]> = ref([]);
-    let discourseRenderer: Ref<DiscourseRenderer | null> = ref(null);
     let isEditing: Ref<boolean> = ref(false);
     let draftContent: Ref<EpigraphyEditorSideData[] | null> = ref(null);
     const draftNotes = ref('');
@@ -209,53 +179,6 @@ export default defineComponent({
       return sideData;
     });
 
-    const discourseColor = (discourseType: string) => {
-      switch (discourseType) {
-        case 'paragraph':
-          return 'red';
-        case 'sentence':
-          return 'blue';
-        case 'clause':
-          return 'purple';
-        case 'phrase':
-          return 'green';
-        default:
-          return 'black';
-      }
-    };
-
-    const discourseReading = (discourse: DiscourseUnit) => {
-      let reading;
-      if (
-        (discourse.type === 'discourseUnit' || discourse.type === 'sentence') &&
-        discourse.translation
-      ) {
-        reading = discourse.translation;
-      } else if (
-        (discourse.type === 'paragraph' ||
-          discourse.type === 'clause' ||
-          discourse.type === 'phrase') &&
-        discourse.paragraphLabel
-      ) {
-        reading = discourse.paragraphLabel;
-      } else if (discourse.type === 'word') {
-        if (discourse.transcription && discourse.spelling) {
-          reading = `${discourse.transcription} (${discourse.spelling})`;
-        } else {
-          reading = discourse.spelling;
-        }
-      } else {
-        reading = discourse.spelling;
-      }
-
-      if (discourse.type === 'paragraph') {
-        reading = `<strong><em>${reading}</em></strong>`;
-      } else if (discourse.type === 'clause' || discourse.type === 'phrase') {
-        reading = `<em>${reading}</em>`;
-      }
-      return reading;
-    };
-
     onMounted(async () => {
       try {
         epigraphyState.loading = true;
@@ -281,9 +204,6 @@ export default defineComponent({
           collection.value = collectionInfo;
         }
 
-        discourseRenderer.value = new DiscourseHtmlRenderer(
-          discourseUnits.value
-        );
         epigraphyState.canWrite = canWrite;
         epigraphyState.textName = textName;
       } catch (err) {
@@ -315,10 +235,7 @@ export default defineComponent({
       draftContent,
       draftNotes,
       discourseUnits,
-      discourseRenderer,
       breadcrumbItems,
-      discourseColor,
-      discourseReading,
       isAdmin,
       cdli,
       color,
