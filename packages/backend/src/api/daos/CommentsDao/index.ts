@@ -17,6 +17,12 @@ class CommentsDao {
     return newUuid;
   }
 
+  async updateDelete(uuid: string): Promise<void> {
+    await knex('comments').where({ uuid }).update({
+      deleted: true,
+    });
+  }
+
   async getAllByThreadUuid(threadUuid: string): Promise<Comment[]> {
     const comments = await knex('comments')
       .select(
@@ -27,7 +33,8 @@ class CommentsDao {
         'comments.deleted',
         'comments.comment AS text',
       )
-      .where('comments.thread_uuid', threadUuid);
+      .where('comments.thread_uuid', threadUuid)
+      .orderBy('comments.created_at');
 
     return comments;
   }

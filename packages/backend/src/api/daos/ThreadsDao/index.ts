@@ -16,6 +16,12 @@ class ThreadsDao {
     return newUuid;
   }
 
+  async update({ uuid, referenceUuid, status, route }: Thread): Promise<void> {
+    await knex('threads').where('uuid', uuid).update({
+      status,
+    });
+  }
+
   async getByReferenceUuid(referenceUuid: string): Promise<Thread[] | null> {
     const thread: Thread[] | null = await knex('threads')
       .select(
@@ -29,8 +35,8 @@ class ThreadsDao {
     return thread;
   }
 
-  async getByUuid(uuid: string): Promise<Thread[] | null> {
-    const thread: Thread[] | null = await knex('threads')
+  async getByUuid(uuid: string): Promise<Thread | null> {
+    const thread: Thread | null = await knex('threads')
       .first(
         'threads.uuid AS uuid',
         'threads.reference_uuid AS referenceUuid',

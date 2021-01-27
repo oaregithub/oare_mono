@@ -49,4 +49,35 @@ router.route('/threads/:referenceUuid').get(async (req, res, next) => {
   }
 });
 
+router.route('/threads').put(async (req, res, next) => {
+  try {
+    const thread: Thread = req.body;
+    const threadsDao = sl.get('ThreadsDao');
+    const commentsDao = sl.get('CommentsDao');
+    const userDao = sl.get('UserDao');
+
+    const prevThread = await threadsDao.getByUuid(thread.uuid || '');
+    if (prevThread === null) {
+      throw new HttpInternalError('Previous Thread was not found');
+    }
+
+    await threadsDao.update(thread);
+
+    await commentsDao.insert({
+      uuid: null,
+      threadUuid: thread.uuid,
+      userUuid: null,
+      createdAt: new Date(),
+      deleted: false,
+      text: `The status was changed from ${prevThread?.status} to ${thread.status}`,
+    });
+
+    res.json({
+      success: true,
+    });
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 export default router;

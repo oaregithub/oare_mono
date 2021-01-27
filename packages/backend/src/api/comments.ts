@@ -35,4 +35,18 @@ router.route('/comments').post(async (req, res, next) => {
   }
 });
 
+router.route('/comments/:uuid').delete(async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const commentsDao = sl.get('CommentsDao');
+    await commentsDao.updateDelete(uuid);
+
+    res.json({
+      success: true,
+    });
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 export default router;
