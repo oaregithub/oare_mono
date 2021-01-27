@@ -17,27 +17,10 @@
         v-if="!isEditing"
       >
         <v-row>
-          <div v-if="renderer" class="mr-10">
-            <div
-              v-for="sideName in renderer.sides"
-              :key="sideName"
-              class="d-flex"
-            >
-              <div class="sideName oare-title mr-4">
-                {{ sideName }}
-              </div>
-              <div>
-                <div
-                  v-for="lineNum in renderer.linesOnSide(sideName)"
-                  :key="lineNum"
-                  class="oare-title"
-                >
-                  <sup>{{ lineNum }}.&nbsp;</sup>
-                  <span v-html="renderer.lineReading(lineNum)" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <EpigraphyReading
+            :epigraphicUnits="epigraphicUnits"
+            :markupUnits="markupUnits"
+          />
         </v-row>
         <p
           v-if="discourseRenderer && isAdmin"
@@ -86,24 +69,10 @@
         />
       </v-col>
       <v-col cols="12" sm="5" md="7" v-if="cdli && isAdmin" class="relative">
-        <img
-          v-if="!errors.photo"
-          :src="`https://cdli.ucla.edu/dl/photo/${cdli}.jpg`"
-          @error="errors.photo = true"
-          class="cdliImage"
-          :class="{ fixed: $vuetify.breakpoint.smAndUp }"
-          @load="hasPicture = true"
-        />
-        <img
-          v-else-if="!errors.lineart"
-          :src="`https://cdli.ucla.edu/dl/lineart/${cdli}_l.jpg`"
-          @error="
-            errors.lineart = true;
-            cdli = null;
-          "
-          class="cdliImage"
-          :class="{ fixed: $vuetify.breakpoint.smAndUp }"
-          @load="hasPicture = true"
+        <EpigraphyImage
+          :cdli="cdli"
+          @image-loaded="hasPicture = true"
+          @image-error="cdli = null"
         />
       </v-col>
     </v-row>
@@ -111,16 +80,14 @@
 </template>
 
 <script lang="ts">
-import { mapActions } from 'vuex';
 import {
   createTabletRenderer,
   DiscourseRenderer,
   DiscourseHtmlRenderer,
-  EpigraphicUnit,
-  MarkupUnit,
   EpigraphicUnitSide,
   DiscourseUnit,
-  TabletRenderer,
+  EpigraphicUnit,
+  MarkupUnit,
 } from '@oare/oare';
 import {
   defineComponent,
@@ -137,6 +104,8 @@ import EpigraphyEditor from './EpigraphyEditor.vue';
 import router from '@/router';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './Stoplight.vue';
+import EpigraphyReading from './EpigraphyReading.vue';
+import EpigraphyImage from './EpigraphyImage.vue';
 
 interface EpigraphyState {
   loading: boolean;
@@ -155,6 +124,8 @@ export default defineComponent({
   components: {
     EpigraphyEditor,
     Stoplight,
+    EpigraphyReading,
+    EpigraphyImage,
   },
   props: {
     textUuid: {
@@ -172,6 +143,9 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
+    const epigraphicUnits = ref<EpigraphicUnit[]>([]);
+    const markupUnits = ref<MarkupUnit[]>([]);
+
     const epigraphyState = reactive<EpigraphyState>({
       loading: false,
       collection: '',
@@ -179,7 +153,6 @@ export default defineComponent({
       textName: '',
     });
 
-    let renderer: Ref<TabletRenderer | null> = ref(null);
     let collection: Ref<{ uuid: string; name: string }> = ref({
       uuid: '',
       name: '',
@@ -221,14 +194,10 @@ export default defineComponent({
         return draftContent.value;
       }
 
-      if (!renderer.value) {
-        return [];
-      }
-
       const sideData: EpigraphyEditorSideData[] = [];
       const draftRenderer = createTabletRenderer(
-        renderer.value.getEpigraphicUnits(),
-        renderer.value.getMarkupUnits(),
+        epigraphicUnits.value,
+        markupUnits.value,
         { lineNumbers: true }
       );
       for (const side of draftRenderer.sides) {
@@ -292,28 +261,26 @@ export default defineComponent({
         epigraphyState.loading = true;
         const {
           collection: collectionInfo,
-          units: epigUnits,
+          units,
           canWrite,
           textName,
           cdliNum,
           color: epColor,
           colorMeaning: epColorMeaning,
-          markups: markupUnits,
+          markups,
           discourseUnits: textDiscourseUnits,
         } = await server.getEpigraphicInfo(textUuid);
         color.value = epColor;
         colorMeaning.value = epColorMeaning;
         discourseUnits.value = textDiscourseUnits;
         cdli.value = cdliNum;
+        epigraphicUnits.value = units;
+        markupUnits.value = markups;
 
         if (collectionInfo) {
           collection.value = collectionInfo;
         }
 
-        renderer.value = createTabletRenderer(epigUnits, markupUnits, {
-          textFormat: 'html',
-          admin: store.getters.isAdmin,
-        });
         discourseRenderer.value = new DiscourseHtmlRenderer(
           discourseUnits.value
         );
@@ -342,7 +309,6 @@ export default defineComponent({
 
     return {
       ...toRefs(epigraphyState),
-      renderer,
       isEditing,
       toggleEdit,
       editorSideData,
@@ -355,13 +321,11 @@ export default defineComponent({
       discourseReading,
       isAdmin,
       cdli,
-      errors: ref({
-        photo: false,
-        lineart: false,
-      }),
       color,
       colorMeaning,
       hasPicture,
+      epigraphicUnits,
+      markupUnits,
     };
   },
 });
@@ -374,21 +338,5 @@ export default defineComponent({
 
 .relative {
   position: relative;
-}
-
-.fixed {
-  position: fixed;
-}
-
-.cdliImage {
-  max-height: 50vh;
-
-  @media (min-height: 660px) {
-    max-height: 65vh;
-  }
-
-  @media (min-height: 1000px) {
-    max-height: 80vh;
-  }
 }
 </style>
