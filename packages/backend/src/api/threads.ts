@@ -27,7 +27,7 @@ router.route('/threads/:referenceUuid').get(async (req, res, next) => {
             commentDisplays.push({
               uuid: comments[j].uuid,
               threadUuid: comments[j].threadUuid,
-              userUuid: comments[j].userUuid,
+              userUuid: comments[j].userUuid ? comments[j].userUuid : null,
               userFirstName: user ? user.firstName : '',
               userLastName: user ? user.lastName : '',
               createdAt: new Date(comments[j].createdAt),

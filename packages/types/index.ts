@@ -518,7 +518,7 @@ export interface Comment {
 export interface CommentDisplay {
   uuid: string,
   threadUuid: string,
-  userUuid: string,
+  userUuid: string | null,
   userFirstName: string,
   userLastName: string,
   createdAt: Date,

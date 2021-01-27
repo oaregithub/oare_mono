@@ -9,9 +9,14 @@
     :closeButton="true"
     :persistent="false"
   >
-    <div class="d-flex justify-center">
-      <h1><slot></slot></h1>
-    </div>
+    <v-row>
+      <v-col cols='10'>
+        <h1><slot></slot></h1>
+      </v-col>
+      <v-col>
+        <v-btn @click='selectedItem = undefined' color='primary'>Add Thread</v-btn>
+      </v-col>
+    </v-row>
 
     <v-list>
       <v-list-item-group v-model="selectedItem" color="primary">
@@ -25,10 +30,10 @@
             "
             v-for="(threadWithComment, idx) in threadsWithComments"
             :key="idx"
-            class="d-flex"
+            class="d-flex" style='max-width: 33%'
           >
             <v-list-item-title>
-              {{ `Thread ${idx + 1}` }}
+              {{ `Thread ${idx + 1} (${threadWithComment.thread.status})` }}
             </v-list-item-title>
             <v-icon v-if="selectedItem == idx">mdi-menu-up</v-icon>
             <v-icon v-else>mdi-menu-down</v-icon>
@@ -43,8 +48,11 @@
           >
             <template v-if="!comment.deleted">
               <v-col cols="2">
-                <span
+                <span v-if='comment.userUuid'
                   >{{ comment.userLastName }}, {{ comment.userFirstName }}</span
+                >
+                <span v-else
+                >Administrator</span
                 >
                 <hr />
                 <span>{{
@@ -57,7 +65,7 @@
               </v-col>
               <v-col cols="9">
                 <v-card
-                  v-if="comment.userUuid != userUuid"
+                  v-if="comment.userUuid != loggedInUser.uuid"
                   elevation="2"
                   class="other-comments"
                 >
@@ -67,20 +75,11 @@
                   <v-card-text>{{ comment.text }}</v-card-text>
                 </v-card>
               </v-col>
-              <v-col cols="1" v-if="comment.userUuid == userUuid">
-                <v-btn icon @click="confirmDeleteDialog = true">
+              <v-col cols="1" v-if="comment.userUuid == loggedInUser.uuid">
+                <v-btn icon @click="setDeleteValues(comment.uuid)">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </v-col>
-              <OareDialog
-                v-if="confirmDeleteDialog"
-                title="Confirm Delete"
-                cancelText="No, don't delete"
-                submitText="Yes, delete"
-                @submit="deleteComment(comment.uuid)"
-              >
-                Are you sure you want to delete the comment?
-              </OareDialog>
             </template>
           </v-row>
         </template>
@@ -89,7 +88,7 @@
 
     <div
       class="d-flex justify-center align-center"
-      v-if="selectedItem === undefined"
+      v-if="selectedItem === undefined || !threadsWithComments.length"
     >
       <h1>
         <v-icon large color="primary">mdi-forum-outline</v-icon> Creating A New
@@ -104,10 +103,11 @@
         auto-grow
         prepend-icon="mdi-comment"
         v-model="userComment"
+        counter="1000"
       ></v-textarea>
     </v-container>
 
-    <v-row v-if="selectedItem !== undefined">
+    <v-row v-if="selectedItem !== undefined && threadsWithComments.length && loggedInUser.isAdmin">
       <v-col cols="5">
         <v-select
           v-model="selectedStatus"
@@ -120,17 +120,28 @@
         ></v-select>
       </v-col>
     </v-row>
+
+    <OareDialog
+            v-model="confirmDeleteDialog"
+            title="Confirm Delete"
+            cancelText="No, don't delete"
+            submitText="Yes, delete"
+            @submit="deleteComment()"
+    >
+      Are you sure you want to delete the comment?
+    </OareDialog>
   </oare-dialog>
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  onMounted,
-  Ref,
-  watch,
-} from '@vue/composition-api';
+  import {
+    defineComponent,
+    ref,
+    onMounted,
+    Ref,
+    watch,
+    computed, onBeforeMount, onUpdated,
+  } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import {
   CommentResponse,
@@ -166,6 +177,7 @@ export default defineComponent({
     let threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
     const selectedItem = ref<number>(0);
     const selectedThreadUuid = ref<string | null>('');
+    const selectedCommentUuidToDelete = ref<string>('');
     const userComment = ref('');
     const selectedStatus = ref<'New' | 'Pending' | 'In Progress' | 'Completed'>(
       'New'
@@ -174,8 +186,6 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-    const userUuid = ref<string | null>('');
-    userUuid.value = store.getters.user ? store.getters.user.uuid : null;
 
     const getThreadsWithComments = async () => {
       try {
@@ -183,7 +193,7 @@ export default defineComponent({
           threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(
             props.uuid
           );
-          if (
+            if (
             selectedStatus.value == 'New' &&
             selectedThreadUuid.value == '' &&
             threadsWithComments.value[0]
@@ -199,11 +209,15 @@ export default defineComponent({
       }
     };
 
+    const setDeleteValues = (commentUuid: string) => {
+      selectedCommentUuidToDelete.value = commentUuid;
+      confirmDeleteDialog.value = true;
+    }
+
     const getSelectedThreadStatus = (
       status: 'New' | 'Pending' | 'In Progress' | 'Completed',
       threadUuid: string | null
     ) => {
-      console.log(status, threadUuid);
       selectedStatus.value = status;
       selectedThreadUuid.value = threadUuid;
     };
@@ -246,11 +260,11 @@ export default defineComponent({
       }
     };
 
-    const deleteComment = async (uuid: string) => {
+    const deleteComment = async () => {
       confirmDeleteDialog.value = false;
       try {
         loading.value = true;
-        await server.deleteComment(uuid);
+        await server.deleteComment(selectedCommentUuidToDelete.value);
 
         actions.showSnackbar('Successfully deleted the comment');
         await getThreadsWithComments();
@@ -272,12 +286,17 @@ export default defineComponent({
         return;
       }
 
+      if (userComment.value.length > 1000) {
+        actions.showErrorSnackbar('Character count exceeded, please shorten the comment.');
+        return;
+      }
+
       loading.value = true;
       try {
         const comment: CommentInsert = {
           uuid: null,
-          threadUuid: null,
-          userUuid: store.getters.user ? store.getters.user.uuid : null,
+          threadUuid: selectedItem.value !== undefined ? selectedThreadUuid.value : null,
+          userUuid: loggedInUser.value ? loggedInUser.value.uuid : null,
           createdAt: null,
           deleted: false,
           text: userComment.value,
@@ -313,15 +332,21 @@ export default defineComponent({
 
     watch(() => selectedStatus.value, updateThread);
 
-    onMounted(getThreadsWithComments);
+    onUpdated(getThreadsWithComments);
+
+    const loggedInUser = computed(() =>
+            store.getters.user ? store.getters.user : null
+    );
 
     return {
+      selectedCommentUuidToDelete,
       confirmDeleteDialog,
       statuses,
       selectedStatus,
-      userUuid,
+      loggedInUser,
       threadsWithComments,
       selectedItem,
+      setDeleteValues,
       getSelectedThreadStatus,
       deleteComment,
       insertComment,
