@@ -19,7 +19,7 @@ import permissionsRoute from '@/middlewares/permissionsRoute';
 
 const router = express.Router();
 
-router.route('/dictionary/spellings').post(permissionsRoute(['ADD_SPELLING']), async (req, res, next) => {
+router.route('/dictionary/spellings').post(permissionsRoute('ADD_SPELLING'), async (req, res, next) => {
   try {
     const DictionarySpellingDao = sl.get('DictionarySpellingDao');
     const LoggingEditsDao = sl.get('LoggingEditsDao');
@@ -120,7 +120,7 @@ router
       next(new HttpInternalError(err));
     }
   })
-  .post(permissionsRoute(['UPDATE_WORD_SPELLING']), async (req, res, next) => {
+  .post(permissionsRoute('UPDATE_WORD_SPELLING'), async (req, res, next) => {
     try {
       const DictionaryWordDao = sl.get('DictionaryWordDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
@@ -149,40 +149,35 @@ router
     }
   });
 
-router
-  .route('/dictionary/translations/:uuid')
-  .post(
-    permissionsRoute(['ADD_TRANSLATION', 'DELETE_TRANSLATION', 'UPDATE_TRANSLATION', 'UPDATE_TRANSLATION_ORDER']),
-    async (req, res, next) => {
-      try {
-        const cache = sl.get('cache');
-        const DictionaryWordDao = sl.get('DictionaryWordDao');
+router.route('/dictionary/translations/:uuid').post(permissionsRoute('UPDATE_TRANSLATION'), async (req, res, next) => {
+  try {
+    const cache = sl.get('cache');
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
 
-        const { uuid } = req.params;
-        const { translations }: UpdateDictionaryTranslationPayload = req.body;
+    const { uuid } = req.params;
+    const { translations }: UpdateDictionaryTranslationPayload = req.body;
 
-        const updatedTranslations = await DictionaryWordDao.updateTranslations(req.user!.uuid, uuid, translations);
+    const updatedTranslations = await DictionaryWordDao.updateTranslations(req.user!.uuid, uuid, translations);
 
-        // Updated word, cache must be cleared
-        cache.clear(
-          {
-            req: {
-              originalUrl: `${API_PATH}/words`,
-              method: 'GET',
-            },
-          },
-          { exact: false },
-        );
-        res.json({
-          translations: updatedTranslations,
-        });
-      } catch (err) {
-        next(new HttpInternalError(err));
-      }
-    },
-  );
+    // Updated word, cache must be cleared
+    cache.clear(
+      {
+        req: {
+          originalUrl: `${API_PATH}/words`,
+          method: 'GET',
+        },
+      },
+      { exact: false },
+    );
+    res.json({
+      translations: updatedTranslations,
+    });
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
-router.route('/dictionary/forms/:uuid').post(permissionsRoute(['UPDATE_FORM']), async (req, res, next) => {
+router.route('/dictionary/forms/:uuid').post(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
   try {
     const DictionaryFormDao = sl.get('DictionaryFormDao');
     const LoggingEditsDao = sl.get('LoggingEditsDao');
@@ -261,7 +256,7 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
 
 router
   .route('/dictionary/spellings/:uuid')
-  .put(permissionsRoute(['UPDATE_FORM']), async (req, res, next) => {
+  .put(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid: spellingUuid } = req.params;
       const { spelling, discourseUuids }: UpdateFormSpellingPayload = req.body;
@@ -303,7 +298,7 @@ router
       next(new HttpInternalError(err));
     }
   })
-  .delete(permissionsRoute(['UPDATE_FORM']), async (req, res, next) => {
+  .delete(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid } = req.params;
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');

@@ -8,11 +8,16 @@
         color="#757575"
         class="mt-3"
       />
-      <v-btn v-if="!isLoading && canEdit" icon class="mt-n2" @click="saveEdits">
+      <v-btn
+        v-if="!isLoading && canUpdateTranslations"
+        icon
+        class="mt-n2"
+        @click="saveEdits"
+      >
         <v-icon>mdi-check</v-icon>
       </v-btn>
       <v-btn
-        v-if="!isLoading && canEdit"
+        v-if="!isLoading && canUpdateTranslations"
         icon
         class="mt-n2"
         @click="closeEditor"
@@ -36,23 +41,21 @@
         </v-col>
         <div v-if="!isLoading" class="d-flex mt-5">
           <v-btn
-            v-if="idx !== 0 && canUpdateTranslationsOrder"
+            v-if="idx !== 0 && canUpdateTranslations"
             icon
             @click="moveTranslation(idx, idx - 1)"
           >
             <v-icon>mdi-chevron-up</v-icon>
           </v-btn>
           <v-btn
-            v-if="
-              idx !== localTranslations.length - 1 && canUpdateTranslationsOrder
-            "
+            v-if="idx !== localTranslations.length - 1 && canUpdateTranslations"
             icon
             @click="moveTranslation(idx, idx + 1)"
           >
             <v-icon>mdi-chevron-down</v-icon>
           </v-btn>
           <v-btn
-            v-if="canDeleteTranslations"
+            v-if="canUpdateTranslations"
             icon
             @click="removeTranslation(idx)"
           >
@@ -71,7 +74,7 @@
         </v-col>
       </div>
       <v-btn
-        v-if="canAddTranslations"
+        v-if="canUpdateTranslations"
         color="primary"
         @click="addTranslation"
         text
@@ -199,32 +202,10 @@ export default defineComponent({
       });
     };
 
-    const canEdit = computed(() =>
-      permissions.value.some(perm => perm.name.includes('TRANSLATION'))
-    );
-
-    const canAddTranslations = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('ADD_TRANSLATION')
-    );
-
-    const canDeleteTranslations = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('DELETE_TRANSLATION')
-    );
-
     const canUpdateTranslations = computed(() =>
       permissions.value
         .map(permission => permission.name)
         .includes('UPDATE_TRANSLATION')
-    );
-
-    const canUpdateTranslationsOrder = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('UPDATE_TRANSLATION_ORDER')
     );
 
     return {
@@ -232,15 +213,11 @@ export default defineComponent({
       addTranslation,
       removeTranslation,
       localTranslations,
-      canEdit,
       isEditing,
       closeEditor,
       saveEdits,
       isLoading,
-      canAddTranslations,
-      canDeleteTranslations,
       canUpdateTranslations,
-      canUpdateTranslationsOrder,
       newTranslations,
     };
   },

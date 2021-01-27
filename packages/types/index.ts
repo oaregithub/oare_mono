@@ -440,10 +440,7 @@ export interface PermissionTemplate {
 
 export interface DictionaryPermission extends PermissionTemplate {
   name: "UPDATE_WORD_SPELLING"
-  | "ADD_TRANSLATION"
-  | "DELETE_TRANSLATION"
   | "UPDATE_TRANSLATION"
-  | "UPDATE_TRANSLATION_ORDER"
   | "UPDATE_FORM"
   | "ADD_SPELLING";
   type: 'dictionary';

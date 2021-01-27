@@ -4,7 +4,7 @@ import { PermissionItem } from '@oare/types';
 import sl from '@/serviceLocator';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 
-const permissionsRoute = (permissions: PermissionItem['name'][]) => async (
+const permissionsRoute = (permission: PermissionItem['name']) => async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -20,13 +20,11 @@ const permissionsRoute = (permissions: PermissionItem['name'][]) => async (
       }
 
       if (user) {
-        const userPermissions = (await PermissionsDao.getUserPermissions(user)).map((permission) => permission.name);
+        const userPermissions = (await PermissionsDao.getUserPermissions(user)).map((perm) => perm.name);
 
-        permissions.forEach((permission) => {
-          if (userPermissions.includes(permission)) {
-            hasPermission = true;
-          }
-        });
+        if (userPermissions.includes(permission)) {
+          hasPermission = true;
+        }
       }
 
       if (hasPermission) {
@@ -36,7 +34,7 @@ const permissionsRoute = (permissions: PermissionItem['name'][]) => async (
       }
     };
 
-    authenticatedRoute(req, res, await permissionGuard);
+    authenticatedRoute(req, res, permissionGuard);
   } catch (err) {
     next(new HttpInternalError(err));
   }
