@@ -12,14 +12,14 @@ import {
   SpellingOccurrencesResponse,
 } from '@oare/types';
 import { tokenizeExplicitSpelling, createTabletRenderer, Token, normalizeSign } from '@oare/oare';
-import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
+import permissionsRoute from '@/middlewares/permissionsRoute';
 
 const router = express.Router();
 
-router.route('/dictionary/spellings').post(adminRoute, async (req, res, next) => {
+router.route('/dictionary/spellings').post(permissionsRoute('ADD_SPELLING'), async (req, res, next) => {
   try {
     const DictionarySpellingDao = sl.get('DictionarySpellingDao');
     const LoggingEditsDao = sl.get('LoggingEditsDao');
@@ -120,7 +120,7 @@ router
       next(new HttpInternalError(err));
     }
   })
-  .post(adminRoute, async (req, res, next) => {
+  .post(permissionsRoute('UPDATE_WORD_SPELLING'), async (req, res, next) => {
     try {
       const DictionaryWordDao = sl.get('DictionaryWordDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
@@ -149,7 +149,7 @@ router
     }
   });
 
-router.route('/dictionary/translations/:uuid').post(adminRoute, async (req, res, next) => {
+router.route('/dictionary/translations/:uuid').post(permissionsRoute('UPDATE_TRANSLATION'), async (req, res, next) => {
   try {
     const cache = sl.get('cache');
     const DictionaryWordDao = sl.get('DictionaryWordDao');
@@ -177,7 +177,7 @@ router.route('/dictionary/translations/:uuid').post(adminRoute, async (req, res,
   }
 });
 
-router.route('/dictionary/forms/:uuid').post(adminRoute, async (req, res, next) => {
+router.route('/dictionary/forms/:uuid').post(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
   try {
     const DictionaryFormDao = sl.get('DictionaryFormDao');
     const LoggingEditsDao = sl.get('LoggingEditsDao');
@@ -256,7 +256,7 @@ router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => 
 
 router
   .route('/dictionary/spellings/:uuid')
-  .put(adminRoute, async (req, res, next) => {
+  .put(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid: spellingUuid } = req.params;
       const { spelling, discourseUuids }: UpdateFormSpellingPayload = req.body;
@@ -298,7 +298,7 @@ router
       next(new HttpInternalError(err));
     }
   })
-  .delete(adminRoute, async (req, res, next) => {
+  .delete(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid } = req.params;
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');

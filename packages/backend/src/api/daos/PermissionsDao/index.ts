@@ -21,18 +21,6 @@ class PermissionsDao {
       description: 'Allow group users to view "Places" tab and access associated pages',
     },
     {
-      name: 'ADD_TRANSLATION',
-      type: 'dictionary',
-      description: 'Allow group users to add translations to existing words',
-      dependency: 'WORDS',
-    },
-    {
-      name: 'DELETE_TRANSLATION',
-      type: 'dictionary',
-      description: 'Allow group users to delete existing word translations',
-      dependency: 'WORDS',
-    },
-    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',
@@ -42,12 +30,6 @@ class PermissionsDao {
       name: 'UPDATE_TRANSLATION',
       type: 'dictionary',
       description: 'Allow group users to make changes to translations of existing words',
-      dependency: 'WORDS',
-    },
-    {
-      name: 'UPDATE_TRANSLATION_ORDER',
-      type: 'dictionary',
-      description: 'Allow group users to adjust the order of existing word translations',
       dependency: 'WORDS',
     },
     {
