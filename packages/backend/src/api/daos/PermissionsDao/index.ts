@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { PermissionItem } from '@oare/types';
+import { PermissionItem, PermissionName } from '@oare/types';
 import sl from '@/serviceLocator';
 import { UserRow } from '../UserDao';
 
@@ -58,14 +58,12 @@ class PermissionsDao {
     }
 
     if (user) {
-      const groupIds: number[] = [];
-      const groups = await UserGroupDao.getGroupsOfUser(user.id);
-      groups.forEach((group) => groupIds.push(group));
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
 
-      const permissions: string[] = (await knex('permissions').select('permission').whereIn('group_id', groupIds)).map(
-        (row) => row.permission,
-      );
-      return this.ALL_PERMISSIONS.filter((permission) => permissions.includes(permission.name));
+      const userPermissions: PermissionName[] = (
+        await knex('permissions').select('permission').whereIn('group_id', groupIds)
+      ).map((row) => row.permission);
+      return this.ALL_PERMISSIONS.filter((permission) => userPermissions.includes(permission.name));
     }
 
     return [];
@@ -79,7 +77,7 @@ class PermissionsDao {
     return this.ALL_PERMISSIONS.filter((permission) => permissions.includes(permission.name));
   }
 
-  async addPermission(groupId: number, { type, name }: PermissionItem) {
+  async addGroupPermission(groupId: number, { type, name }: PermissionItem) {
     await knex('permissions').insert({
       group_id: groupId,
       type,
@@ -87,7 +85,7 @@ class PermissionsDao {
     });
   }
 
-  async removePermission(groupId: number, permission: PermissionItem['name']) {
+  async removePermission(groupId: number, permission: PermissionName) {
     await knex('permissions').where('group_id', groupId).andWhere('permission', permission).del();
   }
 }

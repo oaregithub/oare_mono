@@ -75,7 +75,7 @@ const mockPayload = {
 const mockPermissionsDao = {
   getUserPermissions: jest.fn().mockResolvedValue(mockPermissions),
   getGroupPermissions: jest.fn().mockResolvedValue(mockPermissions),
-  addPermission: jest.fn().mockResolvedValue(),
+  addGroupPermission: jest.fn().mockResolvedValue(),
   removePermission: jest.fn().mockResolvedValue(),
   getAllPermissions: jest.fn().mockResolvedValue(mockPermissions),
 };
@@ -112,8 +112,8 @@ describe('GET /userpermissions', () => {
   });
 });
 
-describe('GET /permissions', () => {
-  const PATH = `${API_PATH}/permissions`;
+describe('GET /allpermissions', () => {
+  const PATH = `${API_PATH}/allpermissions`;
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {
@@ -228,14 +228,14 @@ describe('POST /permissions/:groupId', () => {
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
-    expect(mockPermissionsDao.addPermission).toHaveBeenCalledWith(String(groupId), mockPayload.permission);
+    expect(mockPermissionsDao.addGroupPermission).toHaveBeenCalledWith(String(groupId), mockPayload.permission);
     expect(response.status).toBe(201);
   });
 
   it('returns 500 on failed addition', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
-      addPermission: jest.fn().mockRejectedValue('permissions addition failed'),
+      addGroupPermission: jest.fn().mockRejectedValue('permissions addition failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -243,7 +243,7 @@ describe('POST /permissions/:groupId', () => {
 
   it('returns 401 for non-logged in users', async () => {
     const response = await request(app).post(PATH).send(mockPayload);
-    expect(mockPermissionsDao.addPermission).not.toHaveBeenCalled();
+    expect(mockPermissionsDao.addGroupPermission).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 
@@ -254,7 +254,7 @@ describe('POST /permissions/:groupId', () => {
       }),
     });
     const response = await sendRequest();
-    expect(mockPermissionsDao.addPermission).not.toHaveBeenCalled();
+    expect(mockPermissionsDao.addGroupPermission).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
 });

@@ -1,18 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
-import { PermissionItem } from '@oare/types';
+import { PermissionName } from '@oare/types';
 import sl from '@/serviceLocator';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 
-const permissionsRoute = (permission: PermissionItem['name']) => async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+const permissionsRoute = (permission: PermissionName) => async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { user } = req;
     const PermissionsDao = sl.get('PermissionsDao');
-    let hasPermission = false;
 
     const permissionGuard = async (err?: any) => {
       if (err) {
@@ -23,15 +18,12 @@ const permissionsRoute = (permission: PermissionItem['name']) => async (
         const userPermissions = (await PermissionsDao.getUserPermissions(user)).map((perm) => perm.name);
 
         if (userPermissions.includes(permission)) {
-          hasPermission = true;
+          next();
+          return;
         }
       }
 
-      if (hasPermission) {
-        next();
-      } else {
-        next(new HttpForbidden('You do not have permission to perform this function.'));
-      }
+      next(new HttpForbidden('You do not have permission to perform this function.'));
     };
 
     authenticatedRoute(req, res, permissionGuard);
