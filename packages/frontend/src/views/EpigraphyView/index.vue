@@ -7,35 +7,16 @@
       <Stoplight :color="color" :colorMeaning="colorMeaning" />
     </template>
     <template #title:post v-if="canWrite && !hideDetails">
-      <v-btn v-if="!isEditing" color="primary" @click="toggleEdit">Edit</v-btn>
+      <v-btn
+        v-if="!isEditing"
+        color="primary"
+        :to="`/epigraphies/${textUuid}/edit`"
+        >Edit</v-btn
+      >
     </template>
     <v-row>
-      <v-col
-        cols="12"
-        :sm="hasPicture ? 7 : 12"
-        :md="hasPicture ? 5 : 12"
-        v-if="!isEditing"
-      >
-        <v-row>
-          <EpigraphyReading
-            :epigraphicUnits="epigraphicUnits"
-            :markupUnits="markupUnits"
-          />
-        </v-row>
-        <DiscourseReading :discourseUnits="discourseUnits" />
-      </v-col>
-      <v-col
-        cols="12"
-        :sm="hasPicture ? 7 : 12"
-        :md="hasPicture ? 5 : 12"
-        v-else
-      >
-        <EpigraphyEditor
-          :draft="draftContent"
-          :textUuid="textUuid"
-          @save-draft="draft = $event"
-          @close-editor="toggleEdit"
-        />
+      <v-col cols="12" :sm="hasPicture ? 7 : 12" :md="hasPicture ? 5 : 12">
+        <router-view v-bind="routeProps" v-on="routeActions"></router-view>
       </v-col>
       <v-col cols="12" sm="5" md="7" v-if="cdli && isAdmin" class="relative">
         <EpigraphyImage
@@ -51,7 +32,6 @@
 <script lang="ts">
 import {
   createTabletRenderer,
-  EpigraphicUnitSide,
   DiscourseUnit,
   EpigraphicUnit,
   MarkupUnit,
@@ -69,12 +49,10 @@ import {
 import sl from '@/serviceLocator';
 
 import EpigraphyEditor from './EpigraphyEditor.vue';
-import router from '@/router';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './Stoplight.vue';
-import EpigraphyReading from './EpigraphyReading.vue';
 import EpigraphyImage from './EpigraphyImage.vue';
-import DiscourseReading from './DiscourseReading.vue';
+import EpigraphyFullDisplay from './EpigraphyFullDisplay.vue';
 
 interface EpigraphyState {
   loading: boolean;
@@ -90,9 +68,8 @@ export default defineComponent({
   components: {
     EpigraphyEditor,
     Stoplight,
-    EpigraphyReading,
     EpigraphyImage,
-    DiscourseReading,
+    EpigraphyFullDisplay,
   },
   props: {
     textUuid: {
@@ -109,6 +86,7 @@ export default defineComponent({
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = reactive(sl.get('router'));
 
     const epigraphicUnits = ref<EpigraphicUnit[]>([]);
     const markupUnits = ref<MarkupUnit[]>([]);
@@ -120,12 +98,12 @@ export default defineComponent({
       textName: '',
     });
 
-    let collection: Ref<{ uuid: string; name: string }> = ref({
+    const collection: Ref<{ uuid: string; name: string }> = ref({
       uuid: '',
       name: '',
     });
     const hasPicture = ref(false);
-    let breadcrumbItems = computed(() => {
+    const breadcrumbItems = computed(() => {
       const letterGroup = getLetterGroup(collection.value.name);
 
       return [
@@ -144,16 +122,41 @@ export default defineComponent({
       ];
     });
     const discourseUnits: Ref<DiscourseUnit[]> = ref([]);
-    let isEditing = ref(false);
-    let draft = ref<DraftContent | null>(null);
+    const draft = ref<DraftContent | null>(null);
     const draftNotes = ref('');
     const cdli: Ref<string | null> = ref(null);
     const color = ref('');
     const colorMeaning = ref('');
 
-    const toggleEdit = () => {
-      isEditing.value = !isEditing.value;
-    };
+    const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
+
+    const isEditing = computed(
+      () => router.currentRoute.name === 'epigraphyEditor'
+    );
+
+    const routeProps = computed(() => {
+      if (router.currentRoute.name === 'epigraphyEditor') {
+        return {
+          draft: draftContent.value,
+        };
+      }
+
+      return {
+        epigraphicUnits: epigraphicUnits.value,
+        markupUnits: markupUnits.value,
+        discourseUnits: discourseUnits.value,
+      };
+    });
+
+    const routeActions = computed(() => {
+      if (router.currentRoute.name === 'epigraphyEditor') {
+        return {
+          'save-draft': updateDraft,
+        };
+      }
+
+      return {};
+    });
 
     const draftContent = computed<DraftContent>(() => {
       if (draft.value) {
@@ -224,7 +227,6 @@ export default defineComponent({
     return {
       ...toRefs(epigraphyState),
       isEditing,
-      toggleEdit,
       draft,
       draftContent,
       draftNotes,
@@ -237,6 +239,8 @@ export default defineComponent({
       hasPicture,
       epigraphicUnits,
       markupUnits,
+      routeProps,
+      routeActions,
     };
   },
 });

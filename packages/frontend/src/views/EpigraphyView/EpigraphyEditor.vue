@@ -8,7 +8,10 @@
         @click="createDraft"
         >Save draft</oare-loader-button
       >
-      <v-btn color="info" @click="closeEditor" class="test-close-editor"
+      <v-btn
+        color="info"
+        :to="`/epigraphies/${textUuid}`"
+        class="test-close-editor"
         >Close editor</v-btn
       >
     </div>
@@ -75,7 +78,7 @@
     <OareDialog
       v-model="unsavedDialog"
       title="Unsaved Changes"
-      @submit="$emit('close-editor')"
+      @submit="closeEditor"
     >
       You have unsaved changes. Are you sure you want to close the editor?
       Unsaved changes will be lost.
@@ -105,6 +108,7 @@ export default defineComponent({
   setup({ draft, textUuid }, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = sl.get('router');
 
     const isDirty = ref(false);
     const saveLoading = ref(false);
@@ -124,6 +128,10 @@ export default defineComponent({
       'r.e.',
     ]);
 
+    const closeEditor = () => {
+      router.push(`/epigraphies/${textUuid}`);
+    };
+
     const createDraft = async () => {
       saveLoading.value = true;
 
@@ -139,14 +147,6 @@ export default defineComponent({
         actions.showErrorSnackbar('Failed to save draft');
       } finally {
         saveLoading.value = false;
-      }
-    };
-
-    const closeEditor = () => {
-      if (isDirty.value) {
-        unsavedDialog.value = true;
-      } else {
-        emit('close-editor');
       }
     };
 
