@@ -439,9 +439,11 @@ export interface LoginRegisterResponse {
 
 export type PermissionItem = DictionaryPermission | PagePermission;
 
+export type PermissionName = PermissionItem['name'];
+
 export interface PermissionTemplate {
   description: string;
-  dependency?: PermissionItem['name'];
+  dependency?: PermissionName;
 }
 
 export interface DictionaryPermission extends PermissionTemplate {

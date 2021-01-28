@@ -33,7 +33,7 @@ describe('OareAppBar.vue', () => {
       email: 'test@gmail.com',
       isAdmin: false,
     }),
-    getPermissions: jest.fn().mockResolvedValue([]),
+    getUserPermissions: jest.fn().mockResolvedValue([]),
   };
 
   const mockProps = {
@@ -89,7 +89,7 @@ describe('OareAppBar.vue', () => {
 
   it('sets permissions on load', async () => {
     await createWrapper();
-    expect(mockServer.getPermissions).toHaveBeenCalled();
+    expect(mockServer.getUserPermissions).toHaveBeenCalled();
     expect(mockStore.setPermissions).toHaveBeenCalled();
   });
 
