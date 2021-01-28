@@ -60,7 +60,7 @@ class PermissionsDao {
     if (user) {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
 
-      const userPermissions: string[] = (
+      const userPermissions: PermissionName[] = (
         await knex('permissions').select('permission').whereIn('group_id', groupIds)
       ).map((row) => row.permission);
       return this.ALL_PERMISSIONS.filter((permission) => userPermissions.includes(permission.name));
