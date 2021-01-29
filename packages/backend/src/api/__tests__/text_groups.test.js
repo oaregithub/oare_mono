@@ -21,7 +21,7 @@ const mockGET = [
 ];
 
 const mockPOST = {
-  texts: [
+  items: [
     {
       uuid: 'uuid1',
       canRead: true,

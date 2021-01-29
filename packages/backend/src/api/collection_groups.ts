@@ -1,11 +1,11 @@
 import express from 'express';
-import { AddCollectionsPayload, UpdateCollectionPermissionPayload, CollectionGroup } from '@oare/types';
+import { AddTextCollectionPayload, UpdateTextCollectionListPayload, TextCollectionGroup } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
-async function canInsert(groupId: number, collections: CollectionGroup[]) {
+async function canInsert(groupId: number, collections: TextCollectionGroup[]) {
   const CollectionGroupDao = sl.get('CollectionGroupDao');
   const groupCollections = (await CollectionGroupDao.getCollections(groupId)).map((collection) => collection.uuid);
   for (let i = 0; i < collections.length; i += 1) {
@@ -57,7 +57,7 @@ router
       const CollectionGroupDao = sl.get('CollectionGroupDao');
       const OareGroupDao = sl.get('OareGroupDao');
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const { collections }: AddCollectionsPayload = req.body;
+      const { items }: AddTextCollectionPayload = req.body;
 
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
@@ -65,12 +65,12 @@ router
         return;
       }
 
-      if (!(await canInsert(groupId, collections))) {
+      if (!(await canInsert(groupId, items))) {
         next(new HttpBadRequest('One or more of the selected collections is already blacklisted'));
         return;
       }
 
-      const insertRows = collections.map(({ uuid, canRead, canWrite }) => ({
+      const insertRows = items.map(({ uuid, canRead, canWrite }) => ({
         collection_uuid: uuid,
         group_id: groupId,
         can_read: canRead,
@@ -89,7 +89,7 @@ router
       const OareGroupDao = sl.get('OareGroupDao');
       const CollectionGroupDao = sl.get('CollectionGroupDao');
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const { uuid, canRead, canWrite }: UpdateCollectionPermissionPayload = req.body;
+      const { uuid, canRead, canWrite }: UpdateTextCollectionListPayload = req.body;
 
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {

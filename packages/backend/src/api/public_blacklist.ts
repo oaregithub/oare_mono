@@ -71,21 +71,21 @@ router
     try {
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-      const { texts }: AddPublicBlacklistPayload = req.body;
+      const { items }: AddPublicBlacklistPayload = req.body;
 
-      if (!(await canInsert(texts))) {
+      if (!(await canInsert(items))) {
         next(new HttpBadRequest('One or more of the selected texts is already blacklisted'));
         return;
       }
 
-      const insertRows = texts.map((item) => ({
+      const insertRows = items.map((item) => ({
         uuid: item.uuid,
         type: item.type,
       }));
 
       const insertIds = await PublicBlacklistDao.addPublicTexts(insertRows, async (trx) => {
         await Promise.all(
-          texts.map((text) => LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'public_blacklist', text.uuid, trx)),
+          items.map((item) => LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'public_blacklist', item.uuid, trx)),
         );
       });
       clearCache();

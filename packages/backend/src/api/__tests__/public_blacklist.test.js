@@ -20,7 +20,7 @@ const mockGET = [
   },
 ];
 const mockPOST = {
-  texts: [
+  items: [
     {
       uuid: 'uuid3',
       type: 'text',
@@ -148,7 +148,7 @@ describe('POST /public_blacklist', () => {
 
   it('returns 400 when texts are already blacklisted', async () => {
     const mockExistingPOST = {
-      texts: [
+      items: [
         {
           uuid: 'uuid1',
           type: 'text',

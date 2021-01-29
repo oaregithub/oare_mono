@@ -18,7 +18,7 @@ const mockGET = [
   },
 ];
 const mockPOST = {
-  collections: [
+  items: [
     {
       uuid: 'uuid3',
       canRead: false,
@@ -167,7 +167,7 @@ describe('POST /collection_groups', () => {
 
   it('returns 400 when texts are already blacklisted', async () => {
     const mockExistingPOST = {
-      collections: [
+      items: [
         {
           uuid: 'uuid1',
           canRead: true,
