@@ -12,9 +12,9 @@ async function getBlacklistCollections() {
 }
 
 async function addTextsToPublicBlacklist(
-  texts: AddPublicBlacklistPayload
+  items: AddPublicBlacklistPayload
 ): Promise<number[]> {
-  return await axios.post('/public_blacklist', texts);
+  return await axios.post('/public_blacklist', items);
 }
 
 async function removeTextsFromPublicBlacklist(uuids: string[]) {

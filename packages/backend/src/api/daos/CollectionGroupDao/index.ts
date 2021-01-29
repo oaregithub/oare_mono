@@ -1,4 +1,4 @@
-import { CollectionListItem, CollectionPermissionsItem } from '@oare/types';
+import { CollectionPermissionsItem } from '@oare/types';
 import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
 import AliasDao from '../AliasDao';

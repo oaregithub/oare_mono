@@ -1,9 +1,7 @@
 import { PublicBlacklistPayloadItem, Text, CollectionListItem } from '@oare/types';
 import knex from '@/connection';
 import Knex from 'knex';
-import sl from '@/serviceLocator';
 import AliasDao from '../AliasDao';
-import { UserRow } from '../UserDao';
 
 class PublicBlacklistDao {
   async getBlacklistedTexts(): Promise<Text[]> {
