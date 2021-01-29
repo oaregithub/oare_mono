@@ -159,7 +159,7 @@ export default defineComponent({
       try {
         const user = await serverProxy.refreshToken();
         store.setUser(user);
-        const permissions = await serverProxy.getPermissions();
+        const permissions = await serverProxy.getUserPermissions();
         store.setPermissions(permissions);
       } catch (error) {
         if (!(error.response && error.response.status === 400)) {

@@ -2,7 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/adminRoute';
-import { PermissionItem, UpdatePermissionPayload } from '@oare/types';
+import { UpdatePermissionPayload, PermissionName } from '@oare/types';
 
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router
       const { permission }: UpdatePermissionPayload = req.body;
 
       const PermissionsDao = sl.get('PermissionsDao');
-      await PermissionsDao.addPermission(groupId, permission);
+      await PermissionsDao.addGroupPermission(groupId, permission);
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -50,7 +50,7 @@ router.route('/permissions/:groupId/:permission').delete(adminRoute, async (req,
   try {
     const { groupId, permission } = (req.params as unknown) as {
       groupId: number;
-      permission: PermissionItem['name'];
+      permission: PermissionName;
     };
     const PermissionsDao = sl.get('PermissionsDao');
     await PermissionsDao.removePermission(groupId, permission);
@@ -60,7 +60,7 @@ router.route('/permissions/:groupId/:permission').delete(adminRoute, async (req,
   }
 });
 
-router.route('/permissions').get(adminRoute, async (_req, res, next) => {
+router.route('/allpermissions').get(adminRoute, async (_req, res, next) => {
   try {
     const PermissionsDao = sl.get('PermissionsDao');
     const allPermissions = await PermissionsDao.getAllPermissions();

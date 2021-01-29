@@ -25,37 +25,38 @@
                   {{ permission.description }}
                 </v-list-item-subtitle>
               </v-list-item-content>
-              <v-menu
-                v-if="
-                  permission.dependency &&
-                    !allGroupPermissions.includes(permission.dependency)
-                "
-                offset-y
-                open-on-hover
-              >
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on" class="ml-2" color="error">
-                    mdi-information-outline
-                  </v-icon>
-                </template>
-                <v-card class="pa-3">
-                  <span
+              <v-list-item-action>
+                <v-tooltip
+                  left
+                  :disabled="
+                    !permission.dependency ||
+                      groupPermissionNames.includes(permission.dependency)
+                  "
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <div v-bind="attrs" v-on="on">
+                      <v-switch
+                        :input-value="
+                          groupPermissionNames.includes(permission.name)
+                        "
+                        @change="updatePermission(permission, $event)"
+                        :disabled="
+                          permission.dependency &&
+                            !groupPermissionNames.includes(
+                              permission.dependency
+                            )
+                        "
+                        class="test-switch"
+                      >
+                      </v-switch>
+                    </div>
+                  </template>
+                  <span v-if="permission.dependency"
                     >To enable, the
                     {{ formatName(permission.dependency) }} permission must be
                     enabled</span
                   >
-                </v-card>
-              </v-menu>
-              <v-list-item-action>
-                <v-switch
-                  :input-value="allGroupPermissions.includes(permission.name)"
-                  @change="updatePermission(permission, $event)"
-                  :disabled="
-                    permission.dependency &&
-                      !allGroupPermissions.includes(permission.dependency)
-                  "
-                >
-                </v-switch>
+                </v-tooltip>
               </v-list-item-action>
             </v-list-item>
           </div>
@@ -73,8 +74,11 @@ import {
   Ref,
   computed,
 } from '@vue/composition-api';
-import { PermissionItem, UpdatePermissionPayload } from '@oare/types';
-import { DataTableHeader } from 'vuetify';
+import {
+  PermissionItem,
+  UpdatePermissionPayload,
+  PermissionName,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -101,7 +105,7 @@ export default defineComponent({
 
     const groupPermissions: Ref<PermissionItem[]> = ref([]);
 
-    const allGroupPermissions: Ref<string[]> = computed(() => {
+    const groupPermissionNames: Ref<PermissionName[]> = computed(() => {
       return groupPermissions.value.map(permission => permission.name);
     });
 
@@ -119,7 +123,7 @@ export default defineComponent({
           const payload: UpdatePermissionPayload = {
             permission,
           };
-          await server.addPermission(groupId, payload);
+          await server.addGroupPermission(groupId, payload);
         } else {
           await server.removePermission(groupId, permission.name);
         }
@@ -155,7 +159,7 @@ export default defineComponent({
       allPermissionsOptions,
       allPermissionTypes,
       groupPermissions,
-      allGroupPermissions,
+      groupPermissionNames,
       formatName,
       updatePermission,
     };
