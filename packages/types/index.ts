@@ -153,7 +153,7 @@ export interface PublicBlacklistPayloadItem {
 }
 
 export interface AddPublicBlacklistPayload {
-  texts: PublicBlacklistPayloadItem[];
+  items: PublicBlacklistPayloadItem[];
 }
 
 export interface Blacklists {
@@ -343,12 +343,22 @@ export interface SpellingOccurrencesResponse {
   rows: SpellingOccurrenceResponseRow[];
 }
 
-// Text Groups
+// Text and Collection Groups
 
-export interface TextGroup {
+export interface TextCollectionGroup {
   uuid: string;
   canWrite: boolean;
   canRead: boolean;
+}
+
+export interface AddTextCollectionPayload {
+  items: TextCollectionGroup[];
+}
+
+export interface UpdateTextCollectionListPayload {
+  uuid: string;
+  canRead: boolean;
+  canWrite: boolean;
 }
 
 export interface Text {
@@ -358,35 +368,7 @@ export interface Text {
   uuid: string;
 }
 
-export interface AddTextPayload {
-  texts: TextGroup[];
-}
-
-export interface UpdateTextPermissionPayload {
-  uuid: string;
-  canRead: boolean;
-  canWrite: boolean;
-}
-
-// Collection Groups
-
-export interface CollectionGroup {
-  uuid: string;
-  canWrite: boolean;
-  canRead: boolean;
-}
-
 export interface CollectionPermissionsItem extends CollectionListItem {
-  canRead: boolean;
-  canWrite: boolean;
-}
-
-export interface AddCollectionsPayload {
-  collections: CollectionGroup[];
-}
-
-export interface UpdateCollectionPermissionPayload {
-  uuid: string;
   canRead: boolean;
   canWrite: boolean;
 }

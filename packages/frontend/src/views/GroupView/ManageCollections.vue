@@ -1,5 +1,5 @@
 <template>
-  <permissions-item-list
+  <text-collection-list
     :groupId="groupId"
     itemType="Collection"
     :getItems="server.getGroupCollections"
@@ -11,10 +11,10 @@
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import PermissionsItemList from '../AdminView/PermissionsItemList.vue';
+import TextCollectionList from '../AdminView/TextCollectionList.vue';
 
 export default defineComponent({
-  components: { PermissionsItemList },
+  components: { TextCollectionList },
   props: {
     groupId: {
       type: String,

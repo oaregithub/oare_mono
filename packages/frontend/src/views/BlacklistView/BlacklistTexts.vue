@@ -1,5 +1,5 @@
 <template>
-  <permissions-item-list
+  <text-collection-list
     itemType="Text"
     :getItems="server.getPublicBlacklist"
     :removeItems="server.removeTextsFromPublicBlacklist"
@@ -9,10 +9,10 @@
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import PermissionsItemList from '../AdminView/PermissionsItemList.vue';
+import TextCollectionList from '../AdminView/TextCollectionList.vue';
 
 export default defineComponent({
-  components: { PermissionsItemList },
+  components: { TextCollectionList },
   setup() {
     const server = sl.get('serverProxy');
 

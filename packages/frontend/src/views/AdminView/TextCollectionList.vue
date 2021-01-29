@@ -90,15 +90,13 @@ import {
   ref,
   Ref,
   onMounted,
-  watch,
   computed,
   PropType,
 } from '@vue/composition-api';
 import {
   CollectionPermissionsItem,
   Text,
-  UpdateCollectionPermissionPayload,
-  UpdateTextPermissionPayload,
+  UpdateTextCollectionListPayload,
   PermissionsListType,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
@@ -126,12 +124,7 @@ export default defineComponent({
     },
     updatePermissions: {
       type: Function as PropType<
-        (
-          groupId: number,
-          payload:
-            | UpdateTextPermissionPayload
-            | UpdateCollectionPermissionPayload
-        ) => void
+        (groupId: number, payload: UpdateTextCollectionListPayload) => void
       >,
       required: false,
     },

@@ -1,8 +1,8 @@
 import axios from '../axiosInstance';
 import {
   CollectionPermissionsItem,
-  AddCollectionsPayload,
-  UpdateCollectionPermissionPayload,
+  AddTextCollectionPayload,
+  UpdateTextCollectionListPayload,
 } from '@oare/types';
 
 async function getGroupCollections(
@@ -13,7 +13,7 @@ async function getGroupCollections(
 }
 
 async function addGroupCollections(
-  payload: AddCollectionsPayload,
+  payload: AddTextCollectionPayload,
   groupId: number
 ): Promise<void> {
   await axios.post(`/collection_groups/${groupId}`, payload);
@@ -21,7 +21,7 @@ async function addGroupCollections(
 
 async function updateCollectionPermissions(
   groupId: number,
-  payload: UpdateCollectionPermissionPayload
+  payload: UpdateTextCollectionListPayload
 ): Promise<void> {
   await axios.patch(`/collection_groups/${groupId}`, payload);
 }

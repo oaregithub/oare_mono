@@ -183,8 +183,7 @@ import {
   SearchTextNamesPayload,
   SearchCollectionNamesPayload,
   SearchCollectionNamesResponse,
-  AddTextPayload,
-  AddCollectionsPayload,
+  AddTextCollectionPayload,
   AddPublicBlacklistPayload,
   CopyWithPartial,
   Pagination,
@@ -230,10 +229,7 @@ export default defineComponent({
     addItems: {
       type: Function as PropType<
         (
-          payload:
-            | AddTextPayload
-            | AddCollectionsPayload
-            | AddPublicBlacklistPayload,
+          payload: AddTextCollectionPayload | AddPublicBlacklistPayload,
           groupId?: Number
         ) => void
       >,
@@ -351,13 +347,7 @@ export default defineComponent({
       }));
       addItemsLoading.value = true;
       try {
-        await addItems(
-          {
-            texts: items,
-            collections: items,
-          },
-          Number(groupId)
-        );
+        await addItems({ items }, Number(groupId));
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );

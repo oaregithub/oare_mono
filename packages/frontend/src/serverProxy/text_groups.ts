@@ -1,8 +1,12 @@
 import axios from '../axiosInstance';
-import { Text, AddTextPayload, UpdateTextPermissionPayload } from '@oare/types';
+import {
+  Text,
+  AddTextCollectionPayload,
+  UpdateTextCollectionListPayload,
+} from '@oare/types';
 
 async function addTextGroups(
-  payload: AddTextPayload,
+  payload: AddTextCollectionPayload,
   groupId: number
 ): Promise<void> {
   await axios.post(`/text_groups/${groupId}`, payload);
@@ -24,7 +28,7 @@ async function removeTextsFromGroup(
 
 async function updateText(
   groupId: number,
-  payload: UpdateTextPermissionPayload
+  payload: UpdateTextCollectionListPayload
 ) {
   await axios.patch(`/text_groups/${groupId}`, payload);
 }

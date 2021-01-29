@@ -1,8 +1,7 @@
-import { Text, Blacklists, CollectionListItem } from '@oare/types';
+import { Text, Blacklists } from '@oare/types';
 import knex from '@/connection';
 import userGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
-import AliasDao from '../AliasDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import { UserRow } from '../UserDao';
 
