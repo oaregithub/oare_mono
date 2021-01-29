@@ -1,5 +1,5 @@
 <template>
-  <add-permissions-items
+  <add-text-collection
     itemType="Collection"
     :editPermissions="false"
     :searchItems="server.searchCollectionNames"
@@ -10,11 +10,11 @@
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import AddPermissionsItems from '../AdminView/AddPermissionsItems.vue';
+import AddTextCollection from '../AdminView/AddTextCollection.vue';
 
 export default defineComponent({
   name: 'AddBlacklistCollections',
-  components: { AddPermissionsItems },
+  components: { AddTextCollection },
   beforeRouteLeave(_to, from, next) {
     if (from.query.saved) {
       next();

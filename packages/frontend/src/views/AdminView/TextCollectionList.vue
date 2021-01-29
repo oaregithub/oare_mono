@@ -90,7 +90,6 @@ import {
   ref,
   Ref,
   onMounted,
-  watch,
   computed,
   PropType,
 } from '@vue/composition-api';
