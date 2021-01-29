@@ -52,6 +52,7 @@
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
       :word-uuid="wordInfo.uuid"
+      @clicked-util-list="emitUtilList"
     />
   </div>
 </template>
@@ -61,7 +62,7 @@ import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import {
   DictionaryWordResponse,
   DictionaryForm,
-  DictionaryWordTranslation,
+  DictionaryWordTranslation, UtilListDisplay,
 } from '@oare/types';
 import FormDisplay from './FormDisplay.vue';
 import EditTranslations from './EditTranslations.vue';
@@ -86,7 +87,7 @@ export default defineComponent({
     FormDisplay,
     EditTranslations,
   },
-  setup({ wordInfo, updateWordInfo }) {
+  setup({ wordInfo, updateWordInfo }, {emit}) {
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
@@ -125,7 +126,12 @@ export default defineComponent({
       });
     };
 
+    const emitUtilList = (utilDisplay: UtilListDisplay) => {
+      emit('clicked-util-list', utilDisplay);
+    }
+
     return {
+      emitUtilList,
       canEditTranslations,
       isEditingTranslations,
       updateTranslations,

@@ -1,35 +1,18 @@
 <template>
-  <v-menu offset-y>
-    <template #activator="{ on, attrs }">
-      <div
-        v-if="markWord"
-        @mouseover="hover = true"
-        @mouseleave="hover = false"
-      >
-        <template v-if="hover">
-          <mark>
-            <span class="test-spelling" v-bind="attrs" v-on="on">
-              <slot></slot>
-            </span>
-          </mark>
-        </template>
-        <template v-else>
-          <span class="test-spelling" v-bind="attrs" v-on="on">
-            <slot></slot>
-          </span>
-        </template>
-      </div>
-      <div v-else>
-        <span class="test-spelling" v-bind="attrs" v-on="on">
-          <slot></slot>
-        </span>
-      </div>
-    </template>
+  <oare-dialog
+          :value='value'
+          @input="$emit('input', $event)"
+          :width="500"
+          :show-submit='false'
+          :show-cancel='false'
+          :closeButton="true"
+          :persistent="false"
+  >
     <v-list>
       <v-list-item
-        v-if="hasComment"
-        @click="$emit('clicked-commenting', word, uuid, route)"
-        class="test-comment"
+              v-if="hasComment"
+              @click="$emit('clicked-commenting')"
+              class="test-comment"
       >
         <v-list-item-title>
           <v-icon>mdi-comment</v-icon>
@@ -37,9 +20,9 @@
         </v-list-item-title>
       </v-list-item>
       <v-list-item
-        v-if="hasEdit"
-        @click="$emit('clicked-editing')"
-        class="test-pencil"
+              v-if="hasEdit"
+              @click="$emit('clicked-editing')"
+              class="test-pencil"
       >
         <v-list-item-title>
           <v-icon>mdi-pencil</v-icon>
@@ -47,9 +30,9 @@
         </v-list-item-title>
       </v-list-item>
       <v-list-item
-        v-if="hasDelete"
-        @click="$emit('clicked-deleting')"
-        class="test-close"
+              v-if="hasDelete"
+              @click="$emit('clicked-deleting')"
+              class="test-close"
       >
         <v-list-item-title>
           <v-icon>mdi-close</v-icon>
@@ -57,26 +40,18 @@
         </v-list-item-title>
       </v-list-item>
     </v-list>
-  </v-menu>
+  </oare-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'UtilList',
   props: {
-    word: {
-      type: String,
-      required: true,
-    },
-    route: {
-      type: String,
-      default: '',
-    },
-    uuid: {
-      type: String,
-      default: '',
+    value: {
+      type: Boolean,
+      default: false,
     },
     hasComment: {
       type: Boolean,
@@ -90,16 +65,10 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
-    markWord: {
-      type: Boolean,
-      default: false,
-    },
   },
   setup(props) {
-    const hover = ref(false);
 
     return {
-      hover,
     };
   },
 });

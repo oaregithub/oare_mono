@@ -537,3 +537,19 @@ export interface ThreadWithComments {
     thread: Thread,
     comments: CommentDisplay[]
 }
+
+// Util List (Commenting, Editing and Deleting popup)
+
+export type UtilListType = 'WORD' | 'FORM' | 'SPELLING' | 'EPIGRAPHY' | 'DISCOURSE' | 'NONE';
+
+export interface UtilListDisplay {
+  comment: boolean,
+  edit: boolean,
+  delete: boolean,
+  word: string,
+  uuid: string,
+  route: string,
+  type: UtilListType,
+  form?: DictionaryForm,
+  formSpelling?: FormSpelling,
+}

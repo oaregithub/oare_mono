@@ -1,15 +1,6 @@
 <template>
   <span class="d-flex flex-row mb-0">
-    <UtilList
-      v-if="canEdit"
-      @clicked-commenting="isCommenting = true"
-      @clicked-editing="isEditing = true"
-      @clicked-deleting="deleteSpellingDialog = true"
-      :word="spelling.spelling"
-      class="testing-spelling"
-    >
-      <span v-html="htmlSpelling"></span>
-    </UtilList>
+    <span v-if="canEdit" @click="emitSpelling({comment: true, edit: true, delete: true, word: spelling.spelling, uuid: spelling.uuid, route: `/dictionaryWord/${wordUuid}`, type: 'SPELLING', form: form, formSpelling: spelling})" class="testing-spelling" v-html="htmlSpelling"></span>
     <span
       v-else
       v-html="htmlSpelling"
@@ -23,17 +14,7 @@
       }}</a
       >)</span
     >
-    <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
-    <CommentWordDisplay
-      v-model="isCommenting"
-      :route="`/dictionaryWord/${wordUuid}`"
-      :uuid="spelling.uuid"
-      :word="spelling.spelling"
-      @submit="isCommenting = false"
-      @input="isCommenting = false"
-    >
-      <span v-html="htmlSpelling"></span>
-    </CommentWordDisplay>
+
     <OareDialog
       v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
@@ -70,18 +51,6 @@
         </template>
       </v-data-table>
     </OareDialog>
-    <OareDialog
-      v-model="deleteSpellingDialog"
-      title="Delete spelling"
-      submitText="Yes, delete"
-      cancelText="No, don't delete"
-      :persistent="false"
-      @submit="deleteSpelling"
-      :submitLoading="deleteLoading"
-    >
-      Are you sure you want to delete the spelling {{ spelling.spelling }} from
-      this form? This action cannot be undone.
-    </OareDialog>
   </span>
 </template>
 
@@ -99,6 +68,7 @@ import {
   FormSpelling,
   DictionaryForm,
   SearchDiscourseSpellingRow,
+  UtilListDisplay,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
@@ -129,7 +99,7 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props) {
+  setup(props, {emit}) {
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -139,6 +109,7 @@ export default defineComponent({
     const search = ref('');
     const addSpellingDialog = ref(false);
     const deleteSpellingDialog = ref(false);
+    const showUtilList = ref(false);
     const deleteLoading = ref(false);
     const isEditing = ref(false);
     const isCommenting = ref(false);
@@ -206,11 +177,17 @@ export default defineComponent({
       }
     };
 
+    const emitSpelling = (utilDisplay: UtilListDisplay) => {
+      emit('clicked-util-list', utilDisplay)
+    }
+
     watch(tableOptions, getReferences);
 
     watch(search, _.debounce(getReferences, 500));
 
     return {
+      emitSpelling,
+      showUtilList,
       addSpellingDialog,
       deleteSpellingDialog,
       deleteLoading,

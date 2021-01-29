@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 
 class ThreadsDao {
-  async insert({ uuid, referenceUuid, status, route }: Thread): Promise<string> {
+  async insert({ referenceUuid, status, route }: Thread): Promise<string> {
     const newUuid: string = v4();
     await knex('threads').insert({
       uuid: newUuid,
@@ -16,7 +16,7 @@ class ThreadsDao {
     return newUuid;
   }
 
-  async update({ uuid, referenceUuid, status, route }: Thread): Promise<void> {
+  async update({ uuid, status }: Thread): Promise<void> {
     await knex('threads').where('uuid', uuid).update({
       status,
     });

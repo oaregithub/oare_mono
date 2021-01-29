@@ -8,6 +8,7 @@
     :show-cancel="true"
     :closeButton="true"
     :persistent="false"
+    :submitLoading="loading"
   >
     <v-row>
       <v-col cols="10">
@@ -66,17 +67,17 @@
               </v-col>
               <v-col cols="9">
                 <v-card
-                  v-if="comment.userUuid != loggedInUser.uuid"
+                  v-if="comment.userUuid !== loggedInUser.uuid"
                   elevation="2"
-                  class="other-comments"
+                  class="rounded-lg"
                 >
                   <v-card-text>{{ comment.text }}</v-card-text>
                 </v-card>
-                <v-card v-else elevation="2" class="curr-user-comments">
+                <v-card v-else elevation="2" class="rounded-lg" color='#fafafa'>
                   <v-card-text>{{ comment.text }}</v-card-text>
                 </v-card>
               </v-col>
-              <v-col cols="1" v-if="comment.userUuid == loggedInUser.uuid">
+              <v-col cols="1" v-if="comment.userUuid === loggedInUser.uuid || loggedInUser.isAdmin">
                 <v-btn icon @click="setDeleteValues(comment.uuid)">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
@@ -148,8 +149,6 @@ import {
   Ref,
   watch,
   computed,
-  onBeforeMount,
-  onUpdated,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import {
@@ -183,7 +182,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const loading = ref(false);
     const confirmDeleteDialog = ref(false);
-    let threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
+    const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
     const selectedItem = ref<number>(0);
     const selectedThreadUuid = ref<string | null>('');
     const selectedCommentUuidToDelete = ref<string>('');
@@ -199,12 +198,14 @@ export default defineComponent({
     const getThreadsWithComments = async () => {
       try {
         if (props.uuid) {
+          loading.value = true;
           threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(
             props.uuid
           );
+          // If no thread is selected, automatically select the first thread (Upon initialization).
           if (
-            selectedStatus.value == 'New' &&
-            selectedThreadUuid.value == '' &&
+            selectedStatus.value === 'New' &&
+            selectedThreadUuid.value === '' &&
             threadsWithComments.value[0]
           ) {
             getSelectedThreadStatus(
@@ -215,6 +216,8 @@ export default defineComponent({
         }
       } catch (e) {
         actions.showErrorSnackbar('Failed to get threads');
+      } finally {
+        loading.value = false;
       }
     };
 
@@ -245,8 +248,8 @@ export default defineComponent({
 
       // Only update if status changes from the original value.
       if (
-        threadStatus != selectedStatus.value &&
-        threadUuid == selectedThreadUuid.value
+        threadStatus !== selectedStatus.value &&
+        threadUuid === selectedThreadUuid.value
       ) {
         const thread: Thread = {
           uuid: threadUuid,
@@ -339,18 +342,20 @@ export default defineComponent({
         actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
         loading.value = false;
+        userComment.value = '';
       }
     };
 
     watch(() => selectedStatus.value, updateThread);
 
-    onUpdated(getThreadsWithComments);
+    onMounted(getThreadsWithComments);
 
     const loggedInUser = computed(() =>
       store.getters.user ? store.getters.user : null
     );
 
     return {
+      loading,
       selectedCommentUuidToDelete,
       confirmDeleteDialog,
       statuses,
@@ -367,13 +372,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.other-comments {
-  border-radius: 0 10px 10px 10px !important;
-}
-.curr-user-comments {
-  border-radius: 10px 0 10px 10px !important;
-  background-color: #fafafa !important;
-}
-</style>
