@@ -46,6 +46,7 @@
                               permission.dependency
                             )
                         "
+                        class="test-switch"
                       >
                       </v-switch>
                     </div>
