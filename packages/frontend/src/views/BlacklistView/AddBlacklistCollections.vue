@@ -2,7 +2,6 @@
   <add-text-collection
     itemType="Collection"
     :editPermissions="false"
-    :searchItems="server.searchCollectionNames"
     :addItems="server.addTextsToPublicBlacklist"
   />
 </template>

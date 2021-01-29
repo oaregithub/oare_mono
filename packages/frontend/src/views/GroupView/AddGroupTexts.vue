@@ -3,7 +3,6 @@
     :groupId="groupId"
     itemType="Text"
     :editPermissions="true"
-    :searchItems="server.searchTextNames"
     :addItems="server.addTextGroups"
   />
 </template>
