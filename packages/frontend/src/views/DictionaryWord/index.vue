@@ -11,16 +11,29 @@
           <v-icon class="test-pencil">mdi-pencil</v-icon>
         </v-btn>
 
-        <span @click='openUtilList({comment: true, edit: false, delete: false, word: wordInfo.word, uuid: wordInfo.uuid, route: `/dictionaryWord/${wordInfo.word}`, type: "WORD"})' class="font-weight-bold">
+        <span
+          @click="
+            openUtilList({
+              comment: true,
+              edit: false,
+              delete: false,
+              word: wordInfo.word,
+              uuid: wordInfo.uuid,
+              route: `/dictionaryWord/${wordInfo.word}`,
+              type: 'WORD',
+            })
+          "
+          class="font-weight-bold"
+        >
           {{ title }}
         </span>
 
         <UtilList
-          v-model='utilListOpen'
+          v-model="utilListOpen"
           @clicked-commenting="beginCommenting"
-          @clicked-editing='beginEditing'
-          @clicked-deleting='beginDeleting'
-          :has-comment='utilList.comment'
+          @clicked-editing="beginEditing"
+          @clicked-deleting="beginDeleting"
+          :has-comment="utilList.comment"
           :has-edit="utilList.edit"
           :has-delete="utilList.delete"
         ></UtilList>
@@ -31,7 +44,8 @@
           :word="utilList.word"
           @submit="isCommenting = false"
           @input="isCommenting = false"
-          >{{ utilList.word }}</CommentWordDisplay>
+          >{{ utilList.word }}</CommentWordDisplay
+        >
       </v-row>
 
       <word-name-edit
@@ -53,38 +67,48 @@
     />
 
     <template v-if="isEditing && utilList.type === 'SPELLING'">
-      <spelling-dialog :form="utilList.form" :spelling="utilList.formSpelling" v-model="isEditing" />
+      <spelling-dialog
+        :form="utilList.form"
+        :spelling="utilList.formSpelling"
+        v-model="isEditing"
+      />
     </template>
 
     <OareDialog
-            v-if='isDeleting && utilList.type === "SPELLING"'
-            v-model="isDeleting"
-            title="Delete spelling"
-            submitText="Yes, delete"
-            cancelText="No, don't delete"
-            :persistent="false"
-            @submit="deleteSpelling"
-            :submitLoading="deleteSpellingLoading"
+      v-if="isDeleting && utilList.type === 'SPELLING'"
+      v-model="isDeleting"
+      title="Delete spelling"
+      submitText="Yes, delete"
+      cancelText="No, don't delete"
+      :persistent="false"
+      @submit="deleteSpelling"
+      :submitLoading="deleteSpellingLoading"
     >
-      Are you sure you want to delete the spelling {{ utilList.word }} from
-      this form? This action cannot be undone.
+      Are you sure you want to delete the spelling {{ utilList.word }} from this
+      form? This action cannot be undone.
     </OareDialog>
   </OareContentView>
 </template>
 
 <script lang="ts">
-  import {
-    defineComponent,
-    ref,
-    Ref,
-    computed,
-    PropType,
-    watch,
-    provide,
-    InjectionKey, inject,
-  } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  Ref,
+  computed,
+  PropType,
+  watch,
+  provide,
+  InjectionKey,
+  inject,
+} from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { DictionaryForm, DictionaryWordResponse, UtilListDisplay, UtilListType } from '@oare/types';
+import {
+  DictionaryForm,
+  DictionaryWordResponse,
+  UtilListDisplay,
+  UtilListType,
+} from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
@@ -93,7 +117,6 @@ import sl from '@/serviceLocator';
 import UtilList from '../../components/UtilList/index.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 import SpellingDialog from './SpellingDialog.vue';
-
 
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
@@ -120,7 +143,15 @@ export default defineComponent({
 
     const loading = ref(true);
     const utilListOpen = ref(false);
-    const utilList = ref<UtilListDisplay>({comment: false, edit: false, delete: false, word: '', uuid: '', route: '', type: 'NONE'});
+    const utilList = ref<UtilListDisplay>({
+      comment: false,
+      edit: false,
+      delete: false,
+      word: '',
+      uuid: '',
+      route: '',
+      type: 'NONE',
+    });
     const isCommenting = ref(false);
     const isEditing = ref(false);
     const isDeleting = ref(false);
@@ -151,22 +182,22 @@ export default defineComponent({
     const beginCommenting = () => {
       utilListOpen.value = false;
       isCommenting.value = true;
-    }
+    };
 
     const beginEditing = () => {
       utilListOpen.value = false;
       isEditing.value = true;
-    }
+    };
 
     const beginDeleting = () => {
       utilListOpen.value = false;
       isDeleting.value = true;
-    }
+    };
 
     const openUtilList = (emittedUtilList: UtilListDisplay) => {
       utilListOpen.value = true;
       utilList.value = emittedUtilList;
-    }
+    };
 
     provide(ReloadKey, loadDictionaryInfo);
 

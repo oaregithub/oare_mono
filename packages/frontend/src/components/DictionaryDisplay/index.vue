@@ -21,7 +21,20 @@
     <div v-for="wordInfo in filteredWords" :key="wordInfo.uuid" class="mb-3">
       <div class="d-flex">
         <slot name="word" :word="wordInfo">
-          <div class="font-weight-bold mr-1" @click='$emit("clicked-util-list", {comment: true, edit: false, delete: false, word: wordInfo.word, uuid: wordInfo.uuid, route: `/dictionaryWord/${wordInfo.uuid}`, type: "WORD"})'>
+          <div
+            class="font-weight-bold mr-1"
+            @click="
+              $emit('clicked-util-list', {
+                comment: true,
+                edit: false,
+                delete: false,
+                word: wordInfo.word,
+                uuid: wordInfo.uuid,
+                route: `/dictionaryWord/${wordInfo.uuid}`,
+                type: 'WORD',
+              })
+            "
+          >
             {{ wordInfo.word }}
           </div>
         </slot>

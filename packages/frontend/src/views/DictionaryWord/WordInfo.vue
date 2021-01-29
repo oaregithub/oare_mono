@@ -62,7 +62,8 @@ import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import {
   DictionaryWordResponse,
   DictionaryForm,
-  DictionaryWordTranslation, UtilListDisplay,
+  DictionaryWordTranslation,
+  UtilListDisplay,
 } from '@oare/types';
 import FormDisplay from './FormDisplay.vue';
 import EditTranslations from './EditTranslations.vue';
@@ -87,7 +88,7 @@ export default defineComponent({
     FormDisplay,
     EditTranslations,
   },
-  setup({ wordInfo, updateWordInfo }, {emit}) {
+  setup({ wordInfo, updateWordInfo }, { emit }) {
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
@@ -128,7 +129,7 @@ export default defineComponent({
 
     const emitUtilList = (utilDisplay: UtilListDisplay) => {
       emit('clicked-util-list', utilDisplay);
-    }
+    };
 
     return {
       emitUtilList,

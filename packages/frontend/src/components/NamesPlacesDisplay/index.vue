@@ -5,7 +5,7 @@
       :letter="letter"
       :route="route"
       :searchFilter="searchFilter"
-      @clicked-util-list='openUtilList'
+      @clicked-util-list="openUtilList"
     >
       <template #translation="{ word }" v-if="route === 'names'">
         <div>
@@ -19,7 +19,20 @@
           :key="idx"
           class="d-flex flex-wrap pl-4"
         >
-          <em @click='openUtilList({comment: true, edit: false, delete: false, word: formInfo.form, uuid: formInfo.uuid, route: `/dictionaryWord/${word.uuid}`, type: "FORM"})' class="font-weight-bold mr-1">
+          <em
+            @click="
+              openUtilList({
+                comment: true,
+                edit: false,
+                delete: false,
+                word: formInfo.form,
+                uuid: formInfo.uuid,
+                route: `/dictionaryWord/${word.uuid}`,
+                type: 'FORM',
+              })
+            "
+            class="font-weight-bold mr-1"
+          >
             {{ formInfo.form }}
           </em>
 
@@ -30,18 +43,29 @@
             class="d-flex"
           >
             <span v-if="idx > 0" class="mr-1">, </span>
-            <span @click='openUtilList({comment: true, edit: true, delete: true, word: spelling.explicitSpelling, uuid: spelling.uuid, route: `/dictionaryWord/${word.uuid}`, type: "SPELLING"})'
-                  v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
+            <span
+              @click="
+                openUtilList({
+                  comment: true,
+                  edit: true,
+                  delete: true,
+                  word: spelling.explicitSpelling,
+                  uuid: spelling.uuid,
+                  route: `/dictionaryWord/${word.uuid}`,
+                  type: 'SPELLING',
+                })
+              "
+              v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
             ></span>
           </div>
         </div>
       </template>
     </DictionaryDisplay>
     <UtilList
-            v-model='utilListOpen'
-            @clicked-commenting="beginCommenting"
-            :has-edit="false"
-            :has-delete="false"
+      v-model="utilListOpen"
+      @clicked-commenting="beginCommenting"
+      :has-edit="false"
+      :has-delete="false"
     ></UtilList>
     <CommentWordDisplay
       v-if="isCommenting"
@@ -89,7 +113,15 @@ export default defineComponent({
   setup(props, { emit }) {
     const isCommenting = ref(false);
     const utilListOpen = ref(false);
-    const utilList = ref<UtilListDisplay>({comment: false, edit: false, delete: false, word: '', uuid: '', route: '', type: 'NONE'});
+    const utilList = ref<UtilListDisplay>({
+      comment: false,
+      edit: false,
+      delete: false,
+      word: '',
+      uuid: '',
+      route: '',
+      type: 'NONE',
+    });
     const selectedWord = ref('');
     const selectedUuid = ref('');
     const selectedRoute = ref('');

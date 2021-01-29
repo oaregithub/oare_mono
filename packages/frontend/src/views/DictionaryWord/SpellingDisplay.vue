@@ -1,6 +1,23 @@
 <template>
   <span class="d-flex flex-row mb-0">
-    <span v-if="canEdit" @click="emitSpelling({comment: true, edit: true, delete: true, word: spelling.spelling, uuid: spelling.uuid, route: `/dictionaryWord/${wordUuid}`, type: 'SPELLING', form: form, formSpelling: spelling})" class="testing-spelling" v-html="htmlSpelling"></span>
+    <span
+      v-if="canEdit"
+      @click="
+        emitSpelling({
+          comment: true,
+          edit: true,
+          delete: true,
+          word: spelling.spelling,
+          uuid: spelling.uuid,
+          route: `/dictionaryWord/${wordUuid}`,
+          type: 'SPELLING',
+          form: form,
+          formSpelling: spelling,
+        })
+      "
+      class="testing-spelling"
+      v-html="htmlSpelling"
+    ></span>
     <span
       v-else
       v-html="htmlSpelling"
@@ -99,7 +116,7 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props, {emit}) {
+  setup(props, { emit }) {
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -178,8 +195,8 @@ export default defineComponent({
     };
 
     const emitSpelling = (utilDisplay: UtilListDisplay) => {
-      emit('clicked-util-list', utilDisplay)
-    }
+      emit('clicked-util-list', utilDisplay);
+    };
 
     watch(tableOptions, getReferences);
 

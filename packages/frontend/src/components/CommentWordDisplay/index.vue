@@ -73,11 +73,16 @@
                 >
                   <v-card-text>{{ comment.text }}</v-card-text>
                 </v-card>
-                <v-card v-else elevation="2" class="rounded-lg" color='#fafafa'>
+                <v-card v-else elevation="2" class="rounded-lg" color="#fafafa">
                   <v-card-text>{{ comment.text }}</v-card-text>
                 </v-card>
               </v-col>
-              <v-col cols="1" v-if="comment.userUuid === loggedInUser.uuid || loggedInUser.isAdmin">
+              <v-col
+                cols="1"
+                v-if="
+                  comment.userUuid === loggedInUser.uuid || loggedInUser.isAdmin
+                "
+              >
                 <v-btn icon @click="setDeleteValues(comment.uuid)">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>

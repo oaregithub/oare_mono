@@ -1,18 +1,18 @@
 <template>
   <oare-dialog
-          :value='value'
-          @input="$emit('input', $event)"
-          :width="500"
-          :show-submit='false'
-          :show-cancel='false'
-          :closeButton="true"
-          :persistent="false"
+    :value="value"
+    @input="$emit('input', $event)"
+    :width="500"
+    :show-submit="false"
+    :show-cancel="false"
+    :closeButton="true"
+    :persistent="false"
   >
     <v-list>
       <v-list-item
-              v-if="hasComment"
-              @click="$emit('clicked-commenting')"
-              class="test-comment"
+        v-if="hasComment"
+        @click="$emit('clicked-commenting')"
+        class="test-comment"
       >
         <v-list-item-title>
           <v-icon>mdi-comment</v-icon>
@@ -20,9 +20,9 @@
         </v-list-item-title>
       </v-list-item>
       <v-list-item
-              v-if="hasEdit"
-              @click="$emit('clicked-editing')"
-              class="test-pencil"
+        v-if="hasEdit"
+        @click="$emit('clicked-editing')"
+        class="test-pencil"
       >
         <v-list-item-title>
           <v-icon>mdi-pencil</v-icon>
@@ -30,9 +30,9 @@
         </v-list-item-title>
       </v-list-item>
       <v-list-item
-              v-if="hasDelete"
-              @click="$emit('clicked-deleting')"
-              class="test-close"
+        v-if="hasDelete"
+        @click="$emit('clicked-deleting')"
+        class="test-close"
       >
         <v-list-item-title>
           <v-icon>mdi-close</v-icon>
@@ -67,9 +67,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-
-    return {
-    };
+    return {};
   },
 });
 </script>

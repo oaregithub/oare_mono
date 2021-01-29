@@ -18,8 +18,20 @@
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
-
-      <strong @click="emitUtilList({comment: true, edit: false, delete: false, word: form.form, uuid: form.uuid, route: `/dictionaryWord/${wordUuid}`, type: 'FORM'})" class="mr-1">
+      <strong
+        @click="
+          emitUtilList({
+            comment: true,
+            edit: false,
+            delete: false,
+            word: form.form,
+            uuid: form.uuid,
+            route: `/dictionaryWord/${wordUuid}`,
+            type: 'FORM',
+          })
+        "
+        class="mr-1"
+      >
         {{ form.form }}
       </strong>
 
@@ -35,7 +47,7 @@
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
             :form="form"
             :word-uuid="wordUuid"
-            @clicked-util-list='emitUtilList'
+            @clicked-util-list="emitUtilList"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -75,7 +87,7 @@
               "
               :form="form"
               :word-uuid="wordUuid"
-              @clicked-util-list='emitUtilList'
+              @clicked-util-list="emitUtilList"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -91,7 +103,12 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
-import { DictionaryForm, FormSpelling, SpellingText, UtilListDisplay } from '@oare/types';
+import {
+  DictionaryForm,
+  FormSpelling,
+  SpellingText,
+  UtilListDisplay,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
@@ -121,7 +138,7 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props, {emit}) {
+  setup(props, { emit }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -170,7 +187,7 @@ export default defineComponent({
 
     const emitUtilList = (utilDisplay: UtilListDisplay) => {
       emit('clicked-util-list', utilDisplay);
-    }
+    };
 
     return {
       emitUtilList,
