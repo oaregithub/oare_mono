@@ -123,7 +123,6 @@ export default defineComponent({
     });
     const discourseUnits: Ref<DiscourseUnit[]> = ref([]);
     const draft = ref<DraftContent | null>(null);
-    const draftNotes = ref('');
     const cdli: Ref<string | null> = ref(null);
     const color = ref('');
     const colorMeaning = ref('');
@@ -229,7 +228,6 @@ export default defineComponent({
       isEditing,
       draft,
       draftContent,
-      draftNotes,
       discourseUnits,
       breadcrumbItems,
       isAdmin,
