@@ -226,7 +226,6 @@ export default defineComponent({
     return {
       ...toRefs(epigraphyState),
       isEditing,
-      draft,
       draftContent,
       discourseUnits,
       breadcrumbItems,

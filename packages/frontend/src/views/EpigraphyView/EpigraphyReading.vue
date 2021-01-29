@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, computed } from '@vue/composition-api';
 import { EpigraphicUnit, MarkupUnit, createTabletRenderer } from '@oare/oare';
 import sl from '@/serviceLocator';
 
@@ -35,13 +35,15 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ epigraphicUnits, markupUnits }) {
+  setup(props) {
     const store = sl.get('store');
 
-    const renderer = createTabletRenderer(epigraphicUnits, markupUnits, {
-      admin: store.getters.isAdmin,
-      textFormat: 'html',
-    });
+    const renderer = computed(() =>
+      createTabletRenderer(props.epigraphicUnits, props.markupUnits, {
+        admin: store.getters.isAdmin,
+        textFormat: 'html',
+      })
+    );
 
     return {
       renderer,

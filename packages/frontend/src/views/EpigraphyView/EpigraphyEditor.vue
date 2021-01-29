@@ -8,10 +8,7 @@
         @click="createDraft"
         >Save draft</oare-loader-button
       >
-      <v-btn
-        color="info"
-        :to="`/epigraphies/${textUuid}`"
-        class="test-close-editor"
+      <v-btn color="info" @click="closeEditor" class="test-close-editor"
         >Close editor</v-btn
       >
     </div>
@@ -87,7 +84,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  computed,
+  watch,
+} from '@vue/composition-api';
 import _ from 'lodash';
 import { EpigraphicUnitSide } from '@oare/oare';
 import sl from '@/serviceLocator';
@@ -105,7 +108,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ draft, textUuid }, { emit }) {
+  setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
@@ -117,7 +120,15 @@ export default defineComponent({
       deleteSide: -1,
     });
     const unsavedDialog = ref(false);
-    const localDraft = ref(_.cloneDeep(draft));
+    const localDraft = ref(_.cloneDeep(props.draft));
+
+    watch(
+      () => props.draft,
+      () => {
+        localDraft.value = _.cloneDeep(props.draft);
+      },
+      { deep: true }
+    );
     const sideTypes = computed(() => [
       '',
       'obv.',
@@ -129,14 +140,14 @@ export default defineComponent({
     ]);
 
     const closeEditor = () => {
-      router.push(`/epigraphies/${textUuid}`);
+      router.push(`/epigraphies/${props.textUuid}`);
     };
 
     const createDraft = async () => {
       saveLoading.value = true;
 
       try {
-        await server.createDraft(textUuid, {
+        await server.createDraft(props.textUuid, {
           content: JSON.stringify(localDraft.value.content),
           notes: localDraft.value.notes,
         });
