@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import AddTextCollection from '../AdminView/AddTextCollection.vue';
 

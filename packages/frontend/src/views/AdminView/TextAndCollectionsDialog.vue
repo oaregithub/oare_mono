@@ -7,14 +7,17 @@
     :show-cancel="false"
     :closeButton="true"
     :persistent="false"
+    :title="itemType === 'Text' ? name : ''"
   >
-    <EpigraphyView
-      v-if="itemType === 'Text'"
-      :textUuid="uuid"
-      :hideDetails="true"
-    ></EpigraphyView>
+    <v-progress-linear v-if="loading" indeterminate />
+    <EpigraphyFullDisplay
+      v-if="itemType === 'Text' && !loading"
+      :epigraphicUnits="epigraphicUnits"
+      :markupUnits="markupUnits"
+      :discourseUnits="discourseUnits"
+    ></EpigraphyFullDisplay>
     <CollectionTexts
-      v-if="itemType === 'Collection'"
+      v-if="itemType === 'Collection' && !loading"
       :collectionUuid="uuid"
       :hideDetails="true"
     ></CollectionTexts>
@@ -22,17 +25,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { PermissionsListType } from '@oare/types';
+import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/oare';
+import sl from '@/serviceLocator';
 import OareDialog from '../../components/base/OareDialog.vue';
-import EpigraphyView from '../EpigraphyView/index.vue';
+import EpigraphyFullDisplay from '../EpigraphyView/EpigraphyFullDisplay.vue';
 import CollectionTexts from '../CollectionTexts/index.vue';
 
 export default defineComponent({
   name: 'TextAndCollectionsDialog',
   components: {
     OareDialog,
-    EpigraphyView,
+    EpigraphyFullDisplay,
     CollectionTexts,
   },
   props: {
@@ -44,10 +49,54 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    name: {
+      type: String,
+      required: true,
+    },
     itemType: {
       type: String as PropType<PermissionsListType>,
       required: true,
     },
+  },
+  setup(props) {
+    const epigraphicUnits = ref<EpigraphicUnit[]>([]);
+    const markupUnits = ref<MarkupUnit[]>([]);
+    const discourseUnits = ref<DiscourseUnit[]>([]);
+    const loading = ref(false);
+
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+
+    watch(
+      () => props.value,
+      async open => {
+        if (open && props.itemType === 'Text') {
+          try {
+            loading.value = true;
+            const {
+              markups,
+              units,
+              discourseUnits: dUnits,
+            } = await server.getEpigraphicInfo(props.uuid);
+            epigraphicUnits.value = units;
+            markupUnits.value = markups;
+            discourseUnits.value = dUnits;
+          } catch {
+            actions.showErrorSnackbar('Failed to load text info.');
+          } finally {
+            loading.value = false;
+          }
+        }
+      },
+      { immediate: true }
+    );
+
+    return {
+      loading,
+      epigraphicUnits,
+      discourseUnits,
+      markupUnits,
+    };
   },
 });
 </script>
