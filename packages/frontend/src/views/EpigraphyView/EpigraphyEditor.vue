@@ -136,7 +136,11 @@ export default defineComponent({
 
     const confirmUnsaved = () => {
       if (isDirty.value) {
-        actions.showUnsavedChangesWarning(closeEditor);
+        actions.showUnsavedChangesWarning((navigate?: boolean) => {
+          if (navigate !== false) {
+            closeEditor();
+          }
+        });
       } else {
         closeEditor();
       }
