@@ -8,7 +8,7 @@
         @click="createDraft"
         >Save draft</oare-loader-button
       >
-      <v-btn color="info" @click="closeEditor" class="test-close-editor"
+      <v-btn color="info" @click="confirmUnsaved" class="test-close-editor"
         >Close editor</v-btn
       >
     </div>
@@ -71,15 +71,6 @@
       Are you sure you want to remove this side? All edits you have made to it
       will be lost.
     </OareDialog>
-
-    <OareDialog
-      v-model="unsavedDialog"
-      title="Unsaved Changes"
-      @submit="closeEditor"
-    >
-      You have unsaved changes. Are you sure you want to close the editor?
-      Unsaved changes will be lost.
-    </OareDialog>
   </div>
 </template>
 
@@ -141,6 +132,14 @@ export default defineComponent({
 
     const closeEditor = () => {
       router.push(`/epigraphies/${props.textUuid}`);
+    };
+
+    const confirmUnsaved = () => {
+      if (isDirty.value) {
+        actions.showUnsavedChangesWarning(closeEditor);
+      } else {
+        closeEditor();
+      }
     };
 
     const createDraft = async () => {
@@ -206,6 +205,7 @@ export default defineComponent({
       isDirty,
       unsavedDialog,
       closeEditor,
+      confirmUnsaved,
     };
   },
 });
