@@ -185,6 +185,7 @@ export default defineComponent({
           colorMeaning: epColorMeaning,
           markups,
           discourseUnits: textDiscourseUnits,
+          draft: textDraft,
         } = await server.getEpigraphicInfo(textUuid);
         color.value = epColor;
         colorMeaning.value = epColorMeaning;
@@ -192,6 +193,7 @@ export default defineComponent({
         cdli.value = cdliNum;
         epigraphicUnits.value = units;
         markupUnits.value = markups;
+        draft.value = textDraft || null;
 
         if (collectionInfo) {
           collection.value = collectionInfo;
@@ -209,11 +211,6 @@ export default defineComponent({
         }
       } finally {
         epigraphyState.loading = false;
-        // If the user is an editor, get the draft content
-        if (epigraphyState.canWrite) {
-          const { content, notes } = await server.getSingleDraft(textUuid);
-          draft.value = { content, notes };
-        }
       }
     });
 

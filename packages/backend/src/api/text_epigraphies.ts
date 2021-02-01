@@ -16,6 +16,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const AliasDao = sl.get('AliasDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const CollectionGroupDao = sl.get('CollectionGroupDao');
+    const TextDraftsDao = sl.get('TextDraftsDao');
 
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
@@ -71,6 +72,12 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       canWrite = false;
     }
 
+    let draft;
+
+    if (user) {
+      draft = await TextDraftsDao.getDraft(user?.id, textUuid);
+    }
+
     res.json({
       textName,
       collection,
@@ -81,6 +88,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       colorMeaning,
       markups,
       discourseUnits,
+      ...(draft ? { draft } : {}),
     });
   } catch (err) {
     next(new HttpInternalError(err));
