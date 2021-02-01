@@ -4,7 +4,7 @@ import {
   CollectionText,
   SearchNamesResponse,
   SearchNamesResultRow,
-  PermissionsListType,
+  SearchNamesPayload,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -46,19 +46,13 @@ function collectionTextQuery(
 }
 
 class HierarchyDao {
-  async getBySearchTerm(
-    page: number,
-    rows: number,
-    searchText: string,
-    type: PermissionsListType,
-    groupId?: number,
-  ): Promise<SearchNamesResponse> {
+  async getBySearchTerm({ page, rows, search, type, groupId }: SearchNamesPayload): Promise<SearchNamesResponse> {
     function createBaseQuery() {
       const query = knex('hierarchy')
         .distinct('hierarchy.uuid')
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
         .where('hierarchy.type', type.toLowerCase())
-        .andWhere('alias.name', 'like', `%${searchText}%`);
+        .andWhere('alias.name', 'like', `%${search}%`);
       if (groupId) {
         if (type === 'Text') {
           return query.whereNotIn('hierarchy.uuid', knex('text_group').select('text_uuid').where('group_id', groupId));
@@ -79,7 +73,17 @@ class HierarchyDao {
       .orderBy('alias.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    const names = await Promise.all(searchResponse.map((item) => aliasDao.textAliasNames(item.uuid)));
+
+    let names: string[];
+    if (type === 'Text') {
+      names = (
+        await Promise.all(
+          searchResponse.map((text) => knex('text').select('text.name').first().where('text.uuid', text.uuid)),
+        )
+      ).map((text) => text.name);
+    } else if (type === 'Collection') {
+      names = await Promise.all(searchResponse.map((collection) => aliasDao.textAliasNames(collection.uuid)));
+    }
 
     let epigraphyStatus: boolean[] = [];
     if (type === 'Text') {
@@ -89,7 +93,7 @@ class HierarchyDao {
     const matchingItems: SearchNamesResultRow[] = searchResponse.map((item, index) => ({
       ...item,
       name: names[index],
-      hasEpigraphy: type === 'Text' ? epigraphyStatus[index] : undefined,
+      hasEpigraphy: type === 'Text' ? epigraphyStatus[index] : false,
     }));
 
     const count = await createBaseQuery()

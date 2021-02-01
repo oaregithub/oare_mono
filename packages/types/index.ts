@@ -233,7 +233,7 @@ export interface SearchTextsResponse {
 export interface SearchNamesResultRow {
   uuid: string;
   name: string;
-  hasEpigraphy?: boolean;
+  hasEpigraphy: boolean;
 }
 
 export interface SearchNamesPayload {
