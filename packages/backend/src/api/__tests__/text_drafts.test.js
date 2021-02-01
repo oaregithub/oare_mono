@@ -12,10 +12,9 @@ describe('Text drafts test', () => {
     const payload = { content: 'content', notes: 'notes' };
 
     const TextDraftsDao = {
-      draftExists: jest.fn().mockResolvedValue(true),
-      createDraft: jest.fn().mockResolvedValue(null),
+      createDraft: jest.fn().mockResolvedValue(),
       getDraft: jest.fn().mockResolvedValue({ uuid: draftUuid }),
-      updateDraft: jest.fn().mockResolvedValue(null),
+      updateDraft: jest.fn().mockResolvedValue(),
     };
 
     const UserDao = {
@@ -46,7 +45,7 @@ describe('Text drafts test', () => {
       setup();
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
-        draftExists: jest.fn().mockResolvedValue(false),
+        getDraft: jest.fn().mockResolvedValue(null),
       });
 
       await sendRequest();
@@ -61,22 +60,11 @@ describe('Text drafts test', () => {
       expect(TextDraftsDao.updateDraft).toHaveBeenCalledWith(draftUuid, payload.content, payload.notes);
     });
 
-    it('returns 500 if draft exists check fails', async () => {
-      setup();
-      sl.set('TextDraftsDao', {
-        ...TextDraftsDao,
-        draftExists: jest.fn().mockRejectedValue('Draft exists failed'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
     it('returns 500 if create draft fails', async () => {
       setup();
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
-        draftExists: jest.fn().mockResolvedValue(false),
+        getDraft: jest.fn().mockResolvedValue(null),
         createDraft: jest.fn().mockRejectedValue('Create draft failed'),
       });
 

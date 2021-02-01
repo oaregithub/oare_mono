@@ -120,6 +120,12 @@ describe('GET /text_epigraphies/:uuid', () => {
     ]),
   };
 
+  const mockTextDraftsDao = {
+    getDraft: jest.fn().mockResolvedValue({
+      content: 'my draft',
+    }),
+  };
+
   const setup = () => {
     sl.set('AliasDao', mockAliasDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
@@ -129,6 +135,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
+    sl.set('TextDraftsDao', mockTextDraftsDao);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -262,6 +269,16 @@ describe('GET /text_epigraphies/:uuid', () => {
       ...mockTextGroupDao,
       userHasWritePermission: jest.fn().mockRejectedValue(null),
     });
+    const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 500 when failing to retrieve from text drafts dao', async () => {
+    sl.set('TextDraftsDao', {
+      ...mockTextDraftsDao,
+      getDraft: jest.fn().mockRejectedValue("Couldn't get draft"),
+    });
+
     const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
     expect(response.status).toBe(500);
   });

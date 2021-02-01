@@ -10,13 +10,7 @@ async function getDrafts(): Promise<TextDraft[]> {
   return data;
 }
 
-async function getSingleDraft(textUuid: string): Promise<TextDraft> {
-  const { data } = await axios.get(`/text_drafts/${textUuid}`);
-  return data;
-}
-
 export default {
   createDraft,
   getDrafts,
-  getSingleDraft,
 };
