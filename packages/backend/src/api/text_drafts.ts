@@ -1,6 +1,6 @@
 import express from 'express';
 import { AddTextDraftPayload } from '@oare/types';
-import { HttpBadRequest, HttpInternalError } from '@/exceptions';
+import { HttpInternalError } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import sl from '@/serviceLocator';
 
