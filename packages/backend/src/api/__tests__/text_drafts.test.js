@@ -106,4 +106,54 @@ describe('Text drafts test', () => {
       expect(response.status).toBe(500);
     });
   });
+
+  describe('GET /text_drafts', () => {
+    const PATH = `${API_PATH}/text_drafts`;
+    const drafts = [
+      {
+        content: 'content',
+        notes: 'notes',
+      },
+    ];
+
+    const userId = 1;
+    const mockTextDraftsDao = {
+      getAllDrafts: jest.fn().mockResolvedValue(drafts),
+    };
+
+    const mockUserDao = {
+      getUserByEmail: jest.fn().mockResolvedValue({
+        id: userId,
+      }),
+    };
+
+    beforeEach(() => {
+      sl.set('TextDraftsDao', mockTextDraftsDao);
+      sl.set('UserDao', mockUserDao);
+    });
+
+    const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+
+    it('returns list of drafts', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(drafts);
+      expect(mockTextDraftsDao.getAllDrafts).toHaveBeenCalledWith(userId);
+    });
+
+    it('returns 401 when not logged in', async () => {
+      const response = await request(app).get(PATH);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 500 when getting drafts fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...mockTextDraftsDao,
+        getAllDrafts: jest.fn().mockRejectedValue('failed to get drafts'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
 });
