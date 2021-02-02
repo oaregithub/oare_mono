@@ -46,13 +46,13 @@ function collectionTextQuery(
 }
 
 class HierarchyDao {
-  async getBySearchTerm({ page, rows, search, type, groupId }: SearchNamesPayload): Promise<SearchNamesResponse> {
+  async getBySearchTerm({ page, limit, filter, type, groupId }: SearchNamesPayload): Promise<SearchNamesResponse> {
     function createBaseQuery() {
       const query = knex('hierarchy')
         .distinct('hierarchy.uuid')
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
         .where('hierarchy.type', type.toLowerCase())
-        .andWhere('alias.name', 'like', `%${search}%`);
+        .andWhere('alias.name', 'like', `%${filter}%`);
       if (groupId) {
         if (type === 'Text') {
           return query.whereNotIn('hierarchy.uuid', knex('text_group').select('text_uuid').where('group_id', groupId));
@@ -71,16 +71,15 @@ class HierarchyDao {
 
     const searchResponse = await createBaseQuery()
       .orderBy('alias.name')
-      .limit(rows)
-      .offset((page - 1) * rows);
+      .limit(limit)
+      .offset((page - 1) * limit);
 
     let names: string[];
     if (type === 'Text') {
-      names = (
-        await Promise.all(
-          searchResponse.map((text) => knex('text').select('text.name').first().where('text.uuid', text.uuid)),
-        )
-      ).map((text) => text.name);
+      const TextDao = sl.get('TextDao');
+      names = (await Promise.all(searchResponse.map((text) => TextDao.getTextByUuid(text.uuid)))).map(
+        (text) => text.name,
+      );
     } else if (type === 'Collection') {
       names = await Promise.all(searchResponse.map((collection) => aliasDao.textAliasNames(collection.uuid)));
     }

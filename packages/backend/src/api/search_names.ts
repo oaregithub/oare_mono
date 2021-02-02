@@ -7,11 +7,13 @@ const router = express.Router();
 
 router.route('/search_names').get(async (req, res, next) => {
   const HierarchyDao = sl.get('HierarchyDao');
+  const utils = sl.get('utils');
   try {
+    const { page, limit, filter } = utils.extractPagination(req.query);
     const searchParams: SearchNamesPayload = {
-      page: Number(req.query.page as string),
-      rows: Number(req.query.rows as string),
-      search: req.query.search as string,
+      page,
+      limit,
+      filter,
       groupId: req.query.groupId as string,
       type: req.query.type as PermissionsListType,
     };

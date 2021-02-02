@@ -238,8 +238,8 @@ export interface SearchNamesResultRow {
 
 export interface SearchNamesPayload {
   page: number;
-  rows: number;
-  search: string;
+  limit: number;
+  filter: string;
   groupId?: string;
   type: PermissionsListType;
 }

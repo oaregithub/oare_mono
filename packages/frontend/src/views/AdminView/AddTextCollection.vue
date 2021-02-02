@@ -285,8 +285,8 @@ export default defineComponent({
         getItemsLoading.value = true;
         const response = await server.searchNames({
           page: searchOptions.value.page,
-          rows: searchOptions.value.itemsPerPage,
-          search: search.value,
+          limit: searchOptions.value.itemsPerPage,
+          filter: search.value,
           groupId,
           type: itemType,
         });
@@ -407,8 +407,8 @@ export default defineComponent({
       selectedListLoading.value = true;
       const response = await server.searchNames({
         page: searchOptions.value.page,
-        rows: serverCount.value,
-        search: search.value,
+        limit: serverCount.value,
+        filter: search.value,
         groupId,
         type: itemType,
       });
