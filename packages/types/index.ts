@@ -1,4 +1,9 @@
-import { EpigraphicUnitSide } from "@oare/oare";
+import {
+  EpigraphicUnitSide,
+  EpigraphicUnit,
+  MarkupUnit,
+  DiscourseUnit,
+} from "@oare/oare";
 export interface User {
   id: number;
   first_name: string;
@@ -475,4 +480,22 @@ export interface Thread {
   referenceUuid: string;
   status: "New" | "Pending" | "In Progress" | "Completed";
   route: string;
+}
+
+// Text epigraphy response
+
+export interface EpigraphyResponse {
+  canWrite: boolean;
+  textName: string;
+  collection: {
+    uuid: string;
+    name: string;
+  };
+  cdliNum: string | null;
+  units: EpigraphicUnit[];
+  color: string;
+  colorMeaning: string;
+  markups: MarkupUnit[];
+  discourseUnits: DiscourseUnit[];
+  draft?: TextDraft;
 }
