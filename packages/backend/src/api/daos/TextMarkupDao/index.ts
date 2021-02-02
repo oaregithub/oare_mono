@@ -7,7 +7,7 @@ class TextMarkupDao {
       .select(
         'text_markup.reference_uuid AS referenceUuid',
         'text_markup.type AS type',
-        'text_markup.#_value AS value',
+        'text_markup.num_value AS value',
         'text_markup.start_char AS startChar',
         'text_markup.end_char as endChar',
       )
