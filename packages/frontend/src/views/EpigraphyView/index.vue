@@ -1,12 +1,15 @@
 <template>
-  <OareContentView :title="textName" :loading="loading">
+  <OareContentView :title="textInfo.textName" :loading="loading">
     <template #header>
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
-    <template #title:pre>
-      <Stoplight :color="color" :colorMeaning="colorMeaning" />
+    <template #title:pre v-if="textInfo.color && textInfo.colorMeaning">
+      <Stoplight
+        :color="textInfo.color"
+        :colorMeaning="textInfo.colorMeaning"
+      />
     </template>
-    <template #title:post v-if="canWrite">
+    <template #title:post v-if="textInfo.canWrite">
       <v-btn
         v-if="!isEditing"
         color="primary"
@@ -18,11 +21,17 @@
       <v-col cols="12" :sm="hasPicture ? 7 : 12" :md="hasPicture ? 5 : 12">
         <router-view v-bind="routeProps" v-on="routeActions"></router-view>
       </v-col>
-      <v-col cols="12" sm="5" md="7" v-if="cdli && isAdmin" class="relative">
+      <v-col
+        cols="12"
+        sm="5"
+        md="7"
+        v-if="textInfo.cdliNum && isAdmin"
+        class="relative"
+      >
         <EpigraphyImage
-          :cdli="cdli"
+          :cdli="textInfo.cdliNum"
           @image-loaded="hasPicture = true"
-          @image-error="cdli = null"
+          @image-error="textInfo.cdliNum = null"
         />
       </v-col>
     </v-row>
@@ -30,36 +39,23 @@
 </template>
 
 <script lang="ts">
-import {
-  createTabletRenderer,
-  DiscourseUnit,
-  EpigraphicUnit,
-  MarkupUnit,
-} from '@oare/oare';
+import { createTabletRenderer } from '@oare/oare';
 import { TextDraft } from '@oare/types';
 import {
   defineComponent,
   reactive,
-  toRefs,
   ref,
-  Ref,
   onMounted,
   computed,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
+import { EpigraphyResponse } from '@/serverProxy/epigraphies';
 
 import EpigraphyEditor from './EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './Stoplight.vue';
 import EpigraphyImage from './EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyFullDisplay.vue';
-
-interface EpigraphyState {
-  loading: boolean;
-  collection: string;
-  canWrite: boolean;
-  textName: string;
-}
 
 export type DraftContent = Pick<TextDraft, 'content' | 'notes'>;
 
@@ -84,23 +80,28 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = reactive(sl.get('router'));
 
-    const epigraphicUnits = ref<EpigraphicUnit[]>([]);
-    const markupUnits = ref<MarkupUnit[]>([]);
-
-    const epigraphyState = reactive<EpigraphyState>({
-      loading: false,
-      collection: '',
+    const loading = ref(false);
+    const draft = ref<DraftContent | null>(null);
+    const hasPicture = ref(false);
+    const textInfo = ref<EpigraphyResponse>({
       canWrite: false,
       textName: '',
+      collection: {
+        uuid: '',
+        name: '',
+      },
+      cdliNum: '',
+      units: [],
+      color: '',
+      colorMeaning: '',
+      markups: [],
+      discourseUnits: [],
     });
 
-    const collection: Ref<{ uuid: string; name: string }> = ref({
-      uuid: '',
-      name: '',
-    });
-    const hasPicture = ref(false);
+    const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
+
     const breadcrumbItems = computed(() => {
-      const letterGroup = getLetterGroup(collection.value.name);
+      const letterGroup = getLetterGroup(textInfo.value.collection.name);
 
       return [
         {
@@ -112,18 +113,11 @@ export default defineComponent({
           text: letterGroup,
         },
         {
-          link: `/collections/name/${collection.value.uuid}`,
-          text: collection.value.name,
+          link: `/collections/name/${textInfo.value.collection.uuid}`,
+          text: textInfo.value.collection.name,
         },
       ];
     });
-    const discourseUnits: Ref<DiscourseUnit[]> = ref([]);
-    const draft = ref<DraftContent | null>(null);
-    const cdli: Ref<string | null> = ref(null);
-    const color = ref('');
-    const colorMeaning = ref('');
-
-    const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
     const isEditing = computed(
       () => router.currentRoute.name === 'epigraphyEditor'
@@ -137,9 +131,9 @@ export default defineComponent({
       }
 
       return {
-        epigraphicUnits: epigraphicUnits.value,
-        markupUnits: markupUnits.value,
-        discourseUnits: discourseUnits.value,
+        epigraphicUnits: textInfo.value.units,
+        markupUnits: textInfo.value.markups,
+        discourseUnits: textInfo.value.discourseUnits,
       };
     });
 
@@ -159,8 +153,8 @@ export default defineComponent({
       }
 
       const draftRenderer = createTabletRenderer(
-        epigraphicUnits.value,
-        markupUnits.value,
+        textInfo.value.units,
+        textInfo.value.markups,
         { lineNumbers: true }
       );
       return {
@@ -172,35 +166,13 @@ export default defineComponent({
       };
     });
 
+    const isAdmin = computed(() => store.getters.isAdmin);
+
     onMounted(async () => {
       try {
-        epigraphyState.loading = true;
-        const {
-          collection: collectionInfo,
-          units,
-          canWrite,
-          textName,
-          cdliNum,
-          color: epColor,
-          colorMeaning: epColorMeaning,
-          markups,
-          discourseUnits: textDiscourseUnits,
-          draft: textDraft,
-        } = await server.getEpigraphicInfo(textUuid);
-        color.value = epColor;
-        colorMeaning.value = epColorMeaning;
-        discourseUnits.value = textDiscourseUnits;
-        cdli.value = cdliNum;
-        epigraphicUnits.value = units;
-        markupUnits.value = markups;
-        draft.value = textDraft || null;
-
-        if (collectionInfo) {
-          collection.value = collectionInfo;
-        }
-
-        epigraphyState.canWrite = canWrite;
-        epigraphyState.textName = textName;
+        loading.value = true;
+        textInfo.value = await server.getEpigraphicInfo(textUuid);
+        draft.value = textInfo.value.draft || null;
       } catch (err) {
         if (err.response) {
           if (err.response.status === 403) {
@@ -210,37 +182,26 @@ export default defineComponent({
           actions.showErrorSnackbar('Error loading text. Please try again.');
         }
       } finally {
-        epigraphyState.loading = false;
+        loading.value = false;
       }
     });
 
-    const isAdmin = computed(() => store.getters.isAdmin);
-
     return {
-      ...toRefs(epigraphyState),
+      textInfo,
       isEditing,
       draftContent,
-      discourseUnits,
       breadcrumbItems,
       isAdmin,
-      cdli,
-      color,
-      colorMeaning,
       hasPicture,
-      epigraphicUnits,
-      markupUnits,
       routeProps,
       routeActions,
+      loading,
     };
   },
 });
 </script>
 
-<style scoped lang="scss">
-.sideName {
-  min-width: 50px;
-}
-
+<style scoped>
 .relative {
   position: relative;
 }
