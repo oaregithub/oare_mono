@@ -1,6 +1,7 @@
 import express from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
+import { EpigraphyResponse } from '@oare/types';
 
 const router = express.Router();
 
@@ -78,7 +79,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       draft = await TextDraftsDao.getDraft(user?.id, textUuid);
     }
 
-    res.json({
+    const response: EpigraphyResponse = {
       textName,
       collection,
       units,
@@ -89,7 +90,9 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       markups,
       discourseUnits,
       ...(draft ? { draft } : {}),
-    });
+    };
+
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

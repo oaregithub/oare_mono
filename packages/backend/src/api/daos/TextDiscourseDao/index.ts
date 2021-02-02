@@ -1,12 +1,13 @@
 import knex from '@/connection';
 import { DiscourseLineSpelling, Pagination, SearchDiscourseSpellingRow, SpellingOccurrenceRow } from '@oare/types';
+import { DiscourseUnit, DiscourseUnitType } from '@oare/oare';
 import Knex from 'knex';
 
 import { createdNestedDiscourses, setDiscourseReading } from './utils';
 
 export interface DiscourseRow {
   uuid: string;
-  type: string | null;
+  type: DiscourseUnitType;
   wordOnTablet: number | null;
   parentUuid: string | null;
   spelling: string | null;
@@ -16,17 +17,6 @@ export interface DiscourseRow {
   translation: string | null;
 }
 
-export interface NestedDiscourse {
-  uuid: string;
-  type: string | null;
-  spelling?: string;
-  transcription?: string;
-  line?: number;
-  wordOnTablet?: number;
-  units: NestedDiscourse[];
-  paragraphLabel?: string;
-  translation?: string;
-}
 export interface SearchDiscourseSpellingDaoResponse {
   totalResults: number;
   rows: SearchDiscourseSpellingRow[];
@@ -104,7 +94,7 @@ class TextDiscourseDao {
     await knex('text_discourse').update({ transcription: newTranscription }).where({ uuid });
   }
 
-  async getTextDiscourseUnits(textUuid: string): Promise<NestedDiscourse[]> {
+  async getTextDiscourseUnits(textUuid: string): Promise<DiscourseUnit[]> {
     const discourseQuery = knex('text_discourse')
       .select(
         'text_discourse.uuid',
