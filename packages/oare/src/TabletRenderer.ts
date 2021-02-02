@@ -172,7 +172,7 @@ export default class TabletRenderer {
     let formattedReading = reading;
     switch (markup.type) {
       case 'isCollatedReading':
-        formattedReading += '%';
+        formattedReading = `*${formattedReading}*`;
         break;
       case 'alternateSign':
       case 'isEmendedReading': {

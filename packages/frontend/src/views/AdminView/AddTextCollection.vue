@@ -17,6 +17,7 @@
     <text-and-collections-dialog
       :key="dialogUuid"
       :uuid="dialogUuid"
+      :name="dialogName"
       :itemType="itemType"
       v-model="textsAndCollectionsDialog"
     />
@@ -85,7 +86,7 @@
             <template #[`item.name`]="{ item }">
               <a
                 v-if="item.hasEpigraphy || itemType === 'Collection'"
-                @click="setupDialog(item.uuid)"
+                @click="setupDialog(item.uuid, item.name)"
                 class="text-decoration-underline"
                 >{{ item.name }}</a
               >
@@ -147,7 +148,7 @@
             <template #[`item.name`]="{ item }">
               <a
                 v-if="item.hasEpigraphy || itemType === 'Collection'"
-                @click="setupDialog(item.uuid)"
+                @click="setupDialog(item.uuid, item.name)"
                 class="text-decoration-underline"
                 >{{ item.name }}</a
               >
@@ -238,6 +239,7 @@ export default defineComponent({
     const selectAllMessage = ref(false);
     const textsAndCollectionsDialog = ref(false);
     const dialogUuid = ref('');
+    const dialogName = ref('');
     const selectedListPage = ref(1);
 
     const [page, setPage] = useQueryParam('page', '1');
@@ -430,8 +432,9 @@ export default defineComponent({
       );
     }
 
-    const setupDialog = (uuid: string) => {
+    const setupDialog = (uuid: string, name: string) => {
       dialogUuid.value = uuid;
+      dialogName.value = name;
       textsAndCollectionsDialog.value = true;
     };
 
@@ -527,6 +530,7 @@ export default defineComponent({
       selectedListLoading,
       textsAndCollectionsDialog,
       dialogUuid,
+      dialogName,
       setupDialog,
       selectedListPage,
     };

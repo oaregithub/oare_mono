@@ -1,5 +1,6 @@
 import axios from '../axiosInstance';
 import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/oare';
+import { TextDraft } from '@oare/types';
 
 export interface EpigraphyResponse {
   canWrite: boolean;
@@ -14,6 +15,7 @@ export interface EpigraphyResponse {
   colorMeaning: string;
   markups: MarkupUnit[];
   discourseUnits: DiscourseUnit[];
+  draft?: TextDraft;
 }
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
   let { data } = await axios.get(`/text_epigraphies/${textUuid}`);
