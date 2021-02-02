@@ -3,7 +3,6 @@
     :groupId="groupId"
     itemType="Collection"
     :editPermissions="true"
-    :searchItems="server.searchCollectionNames"
     :addItems="server.addGroupCollections"
   />
 </template>

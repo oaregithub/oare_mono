@@ -11,8 +11,8 @@ localVue.use(VueCompositionApi);
 
 describe('AddBlacklistTexts test', () => {
   const mockServer = {
-    searchTextNames: jest.fn().mockResolvedValue({
-      texts: [
+    searchNames: jest.fn().mockResolvedValue({
+      items: [
         {
           uuid: 'test1',
           name: 'test1',
@@ -59,7 +59,7 @@ describe('AddBlacklistTexts test', () => {
   it('successfully retrieves all texts on load', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockServer.searchTextNames).toHaveBeenCalled();
+    expect(mockServer.searchNames).toHaveBeenCalled();
     expect(wrapper.html()).toContain('test1');
   });
 
@@ -67,7 +67,7 @@ describe('AddBlacklistTexts test', () => {
     createWrapper({
       server: {
         ...mockServer,
-        searchTextNames: jest.fn().mockRejectedValue('failed text load'),
+        searchNames: jest.fn().mockRejectedValue('failed text load'),
       },
     });
     await flushPromises();

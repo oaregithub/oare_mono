@@ -4,6 +4,7 @@ interface Text {
   id: number;
   uuid: string;
   type: string;
+  name: string;
 }
 
 interface TextUuid {

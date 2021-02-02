@@ -228,42 +228,24 @@ export interface SearchTextsResponse {
   results: SearchTextsResultRow[];
 }
 
-// Search Text Names
+//SearchNames
 
-export interface SearchTextNamesResultRow {
+export interface SearchNamesResultRow {
   uuid: string;
   name: string;
   hasEpigraphy: boolean;
 }
 
-export interface SearchTextNamesPayload {
+export interface SearchNamesPayload {
   page: number;
-  rows: number;
-  search: string;
+  limit: number;
+  filter: string;
   groupId?: string;
+  type: PermissionsListType;
 }
 
-export interface SearchTextNamesResponse {
-  texts: SearchTextNamesResultRow[];
-  count: number;
-}
-
-//Search Collection Names
-
-export interface SearchCollectionNamesResultRow {
-  uuid: string;
-  name: string;
-}
-
-export interface SearchCollectionNamesPayload {
-  page: number;
-  rows: number;
-  search: string;
-  groupId?: string;
-}
-
-export interface SearchCollectionNamesResponse {
-  collections: SearchCollectionNamesResultRow[];
+export interface SearchNamesResponse {
+  items: SearchNamesResultRow[];
   count: number;
 }
 
