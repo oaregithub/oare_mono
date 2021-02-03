@@ -49,7 +49,7 @@ import {
   computed,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { EpigraphyResponse } from '@/serverProxy/epigraphies';
+import { EpigraphyResponse } from '@oare/types';
 
 import EpigraphyEditor from './EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
