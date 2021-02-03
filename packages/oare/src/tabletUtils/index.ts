@@ -16,10 +16,16 @@ export function markupsMatchDamage(
     }
 
     const damageTypes = ['damage', 'partialDamage'];
-    if (damageTypes.includes(markup.type) && markupType === 'missingSigns') {
+    if (
+      damageTypes.includes(markup.type) &&
+      markupType === 'undeterminedSigns'
+    ) {
       return true;
     }
-    if (damageTypes.includes(markupType) && markup.type === 'missingSigns') {
+    if (
+      damageTypes.includes(markupType) &&
+      markup.type === 'undeterminedSigns'
+    ) {
       return true;
     }
     return false;
@@ -34,7 +40,7 @@ export function getMarkupByDamageType(
 }
 
 /**
- * markupType is guaranteed to be one of 'damage', 'partialDamage', or 'missingSigns'
+ * markupType is guaranteed to be one of 'damage', 'partialDamage', or 'undeterminedSigns'
  */
 export function unitMatchesDamageType(
   neighbor: EpigraphicUnit,
@@ -47,7 +53,7 @@ export function unitMatchesDamageType(
       }
 
       const damages = [markupType, markup.type];
-      if (damages.includes('damage') && damages.includes('missingSigns')) {
+      if (damages.includes('damage') && damages.includes('undeterminedSigns')) {
         return true;
       }
       return false;

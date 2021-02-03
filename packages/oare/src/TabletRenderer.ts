@@ -204,7 +204,7 @@ export default class TabletRenderer {
       case 'isWrittenAsLigature':
         formattedReading = `+${formattedReading}`;
         break;
-      case 'missingSigns':
+      case 'undeterminedSigns':
         if (markup.value) {
           if (markup.value > 0) {
             formattedReading = 'x'.repeat(markup.value);
@@ -235,7 +235,9 @@ export default class TabletRenderer {
 
   protected addStartBracket(markup: MarkupUnit, reading: string): string {
     const bracket =
-      markup.type === 'damage' || markup.type === 'missingSigns' ? '[' : '⸢';
+      markup.type === 'damage' || markup.type === 'undeterminedSigns'
+        ? '['
+        : '⸢';
 
     let formattedReading = reading;
     if (markup.startChar === null) {
@@ -253,7 +255,9 @@ export default class TabletRenderer {
 
   protected addEndBracket(markup: MarkupUnit, reading: string): string {
     const bracket =
-      markup.type === 'damage' || markup.type === 'missingSigns' ? ']' : '⸣';
+      markup.type === 'damage' || markup.type === 'undeterminedSigns'
+        ? ']'
+        : '⸣';
 
     let formattedReading = reading;
     if (markup.endChar === null) {
