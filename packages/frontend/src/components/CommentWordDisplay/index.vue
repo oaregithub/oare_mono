@@ -161,7 +161,7 @@ import {
   Thread,
   CommentRequest,
   ThreadWithComments,
-  CommentInsert,
+  CommentInsert, ThreadStatus,
 } from '@oare/types';
 
 export default defineComponent({
@@ -184,15 +184,15 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const loading = ref(false);
     const confirmDeleteDialog = ref(false);
     const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
-    const selectedItem = ref<number>(0);
+    const selectedItem = ref<number>(-1);
     const selectedThreadUuid = ref<string | null>('');
     const selectedCommentUuidToDelete = ref<string>('');
     const userComment = ref('');
-    const selectedStatus = ref<'New' | 'Pending' | 'In Progress' | 'Completed'>(
+    const selectedStatus = ref<ThreadStatus>(
       'New'
     );
     const statuses = ref(['New', 'Pending', 'In Progress', 'Completed']);
@@ -207,17 +207,6 @@ export default defineComponent({
           threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(
             props.uuid
           );
-          // If no thread is selected, automatically select the first thread (Upon initialization).
-          if (
-            selectedStatus.value === 'New' &&
-            selectedThreadUuid.value === '' &&
-            threadsWithComments.value[0]
-          ) {
-            getSelectedThreadStatus(
-              threadsWithComments.value[0].thread.status,
-              threadsWithComments.value[0].thread.uuid
-            );
-          }
         }
       } catch (e) {
         actions.showErrorSnackbar('Failed to get threads');
@@ -232,7 +221,7 @@ export default defineComponent({
     };
 
     const getSelectedThreadStatus = (
-      status: 'New' | 'Pending' | 'In Progress' | 'Completed',
+      status: ThreadStatus,
       threadUuid: string | null
     ) => {
       selectedStatus.value = status;

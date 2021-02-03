@@ -38,7 +38,7 @@
           :has-delete="utilList.delete"
         ></UtilList>
         <CommentWordDisplay
-          v-model="isCommenting"
+          v-if="isCommenting"
           :route="utilList.route"
           :uuid="utilList.uuid"
           :word="utilList.word"

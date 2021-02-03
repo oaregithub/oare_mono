@@ -526,10 +526,12 @@ export interface CommentDisplay {
   text: string,
 }
 
+export type ThreadStatus = "New" | "Pending" | "In Progress" | "Completed";
+
 export interface Thread {
   uuid: string | null,
   referenceUuid: string,
-  status: "New" | "Pending" | "In Progress" | "Completed",
+  status: ThreadStatus,
   route: string,
 }
 
