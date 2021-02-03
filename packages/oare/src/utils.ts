@@ -151,7 +151,7 @@ export const applyMarkup = (
       case 'isWrittenAsLigature':
         formattedReading = `+${formattedReading}`;
         break;
-      case 'missingSigns':
+      case 'undeterminedSigns':
         if (markup.value && markup.value > 0) {
           formattedReading = 'x'.repeat(markup.value);
         }

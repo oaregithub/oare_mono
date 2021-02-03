@@ -63,7 +63,7 @@ export type MarkupType =
   | 'superfluous'
   | 'uncertain'
   | 'isWrittenAsLigature'
-  | 'missingSigns'
+  | 'undeterminedSigns'
   | 'damage'
   | 'partialDamage'
   | 'isWrittenOverErasure'
