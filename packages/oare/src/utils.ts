@@ -3,7 +3,7 @@ import {
   MarkupType,
   EpigraphicUnitType,
   MarkupUnit,
-} from './index';
+} from '@oare/types';
 
 export const isBracket = (char: string): boolean =>
   ['[', ']', '⸢', '⸣'].includes(char);

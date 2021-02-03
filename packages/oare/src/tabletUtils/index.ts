@@ -4,7 +4,7 @@ import {
   EpigraphicUnit,
   EpigraphicUnitWithMarkup,
   EpigraphicUnitType,
-} from '..';
+} from '@oare/types';
 
 export function markupsMatchDamage(
   markupUnits: MarkupUnit[],
