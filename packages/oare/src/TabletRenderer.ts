@@ -188,7 +188,7 @@ export default class TabletRenderer {
       case 'isWrittenWithinPrevSign':
         formattedReading = `×${formattedReading}`;
         break;
-      case 'missing':
+      case 'omitted':
         formattedReading = `‹${formattedReading}›`;
         break;
       case 'signEmended':

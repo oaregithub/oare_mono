@@ -1,0 +1,9 @@
+import * as Knex from 'knex';
+
+export async function up(knex: Knex): Promise<void> {
+  await knex('text_markup').update({ type: 'omitted' }).where({ type: 'missing' });
+}
+
+export async function down(knex: Knex): Promise<void> {
+  await knex('text_markup').update({ type: 'missing' }).where({ type: 'omitted' });
+}

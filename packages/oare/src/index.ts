@@ -58,7 +58,7 @@ export type MarkupType =
   | 'erasure'
   | 'isUninterpreted'
   | 'isWrittenWithinPrevSign'
-  | 'missing'
+  | 'omitted'
   | 'signEmended'
   | 'superfluous'
   | 'uncertain'
