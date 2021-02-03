@@ -191,7 +191,7 @@ export default class TabletRenderer {
       case 'omitted':
         formattedReading = `‹${formattedReading}›`;
         break;
-      case 'signEmended':
+      case 'originalSign':
         formattedReading += '!';
         break;
       case 'superfluous':
