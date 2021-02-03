@@ -78,6 +78,25 @@ describe('DictionaryWord test', () => {
     expect(wrapper.get('.test-pencil'));
   });
 
+  it('shows error when deleting spelling fails', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        removeSpelling: jest
+          .fn()
+          .mockRejectedValue('Failed to delete spelling'),
+      },
+    });
+
+    await wrapper.get('.testing-spelling').trigger('click');
+    await wrapper.get('.test-close').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
   it('does not show pencil icon if user does not have edit permission', async () => {
     const wrapper = createWrapper();
     await flushPromises();

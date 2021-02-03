@@ -22,7 +22,7 @@
     <span
       v-else
       v-html="htmlSpelling"
-      class="test-spelling testing-spelling"
+      class="test-spelling"
     ></span>
 
     &nbsp;
@@ -126,7 +126,6 @@ export default defineComponent({
 
     const search = ref('');
     const addSpellingDialog = ref(false);
-    const deleteSpellingDialog = ref(false);
     const showUtilList = ref(false);
     const deleteLoading = ref(false);
     const isEditing = ref(false);
@@ -182,19 +181,6 @@ export default defineComponent({
       }
     };
 
-    const deleteSpelling = async () => {
-      try {
-        deleteLoading.value = true;
-        await server.removeSpelling(props.spelling.uuid);
-        actions.showSnackbar('Successfully removed spelling');
-        reload && reload();
-      } catch {
-        actions.showErrorSnackbar('Failed to delete spelling');
-      } finally {
-        deleteLoading.value = false;
-      }
-    };
-
     const emitSpelling = (utilDisplay: UtilListDisplay) => {
       emit('clicked-util-list', utilDisplay);
     };
@@ -207,7 +193,6 @@ export default defineComponent({
       emitSpelling,
       showUtilList,
       addSpellingDialog,
-      deleteSpellingDialog,
       deleteLoading,
       headers,
       search,
@@ -216,7 +201,6 @@ export default defineComponent({
       isCommenting,
       editLoading,
       htmlSpelling,
-      deleteSpelling,
       referencesLoading,
       spellingOccurrences,
       tableOptions,

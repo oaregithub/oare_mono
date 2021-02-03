@@ -17,6 +17,13 @@ describe('SpellingDisplay test', () => {
     totalOccurrences: 12,
   };
 
+  const form = {
+    form: 'form',
+    spellings: [],
+  }
+
+  const wordUuid = 'testUuid';
+
   const mockStore = {
     getters: {
       permissions: [{ name: 'UPDATE_FORM' }],
@@ -69,10 +76,8 @@ describe('SpellingDisplay test', () => {
       localVue,
       propsData: {
         spelling,
-        form: {
-          form: 'form',
-          spellings: [],
-        },
+        form,
+        wordUuid,
       },
       stubs: ['router-link'],
       provide: {
@@ -178,23 +183,21 @@ describe('SpellingDisplay test', () => {
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
-  it('shows error when deleting spelling fails', async () => {
-    const wrapper = createWrapper({
-      server: {
-        ...mockServer,
-        removeSpelling: jest
-          .fn()
-          .mockRejectedValue('Failed to delete spelling'),
-      },
-    });
-
-    await wrapper.get('.test-spelling').trigger('click');
-    await wrapper.get('.test-close').trigger('click');
-    await wrapper.get('.test-submit-btn').trigger('click');
-    await flushPromises();
-
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-    expect(reload).not.toHaveBeenCalled();
+  it('emits spelling deletion', async () => {
+    const wrapper = createWrapper();
+    await wrapper.get('.testing-spelling').trigger('click');
+    expect(wrapper.emitted('clicked-util-list')).toBeTruthy();
+    expect(wrapper.emitted('clicked-util-list')).toEqual([[{
+      comment: true,
+      edit: true,
+      delete: true,
+      word: spelling.spelling,
+      uuid: spelling.uuid,
+      route: `/dictionaryWord/${wordUuid}`,
+      type: 'SPELLING',
+      form: form,
+      formSpelling: spelling,
+    }]]);
   });
 
   it("doesn't allow editing without permissions", async () => {
