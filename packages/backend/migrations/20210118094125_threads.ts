@@ -4,6 +4,8 @@ export async function up(knex: Knex): Promise<void> {
   const exists = await knex.schema.hasTable('threads');
   if (!exists) {
     return knex.schema.createTable('threads', (table) => {
+      table.charset('utf8');
+      table.collate('utf8_general_ci');
       table.increments('id');
       table.uuid('uuid').notNullable().unique();
       table.uuid('reference_uuid').notNullable();
