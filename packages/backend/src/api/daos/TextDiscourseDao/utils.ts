@@ -1,8 +1,19 @@
-import { DiscourseRow, NestedDiscourse } from './index';
+import { DiscourseUnit } from '@oare/oare';
+import { DiscourseRow } from './index';
 
-export function createdNestedDiscourses(discourseRows: DiscourseRow[], parentUuid: string | null): NestedDiscourse[] {
+export function discourseUnitOrder(discourse: DiscourseUnit): number {
+  if (discourse.wordOnTablet) {
+    return Number(discourse.wordOnTablet);
+  }
+  if (discourse.units.length < 1) {
+    return 0;
+  }
+  return discourseUnitOrder(discourse.units[0]);
+}
+
+export function createdNestedDiscourses(discourseRows: DiscourseRow[], parentUuid: string | null): DiscourseUnit[] {
   const children = discourseRows.filter((row) => row.parentUuid === parentUuid);
-  const discourses: NestedDiscourse[] = [];
+  const discourses: DiscourseUnit[] = [];
 
   children.forEach(({ type, uuid, spelling, transcription, line, wordOnTablet, paragraphLabel, translation }) => {
     const unitChildren = createdNestedDiscourses(discourseRows, uuid);
@@ -26,7 +37,7 @@ export function createdNestedDiscourses(discourseRows: DiscourseRow[], parentUui
   return discourses;
 }
 
-export function setDiscourseReading(discourse: NestedDiscourse): void {
+export function setDiscourseReading(discourse: DiscourseUnit): void {
   if (discourse.units.length < 1) {
     return;
   }
@@ -38,14 +49,4 @@ export function setDiscourseReading(discourse: NestedDiscourse): void {
       return u.spelling || '';
     })
     .join(' ');
-}
-
-export function discourseUnitOrder(discourse: NestedDiscourse): number {
-  if (discourse.wordOnTablet) {
-    return Number(discourse.wordOnTablet);
-  }
-  if (discourse.units.length < 1) {
-    return 0;
-  }
-  return discourseUnitOrder(discourse.units[0]);
 }

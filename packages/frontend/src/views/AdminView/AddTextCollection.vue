@@ -177,28 +177,14 @@ import sl from '@/serviceLocator';
 import TextAndCollectionsDialog from './TextAndCollectionsDialog.vue';
 import {
   Text,
-  SearchTextNamesResponse,
   PermissionsListType,
   CollectionPermissionsItem,
-  SearchTextNamesPayload,
-  SearchCollectionNamesPayload,
-  SearchCollectionNamesResponse,
   AddTextCollectionPayload,
   AddPublicBlacklistPayload,
-  CopyWithPartial,
   Pagination,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
-
-interface TextsCollectionsReponse
-  extends SearchTextNamesResponse,
-    SearchCollectionNamesResponse {}
-
-type SearchItemsResponse = CopyWithPartial<
-  TextsCollectionsReponse,
-  'texts' | 'collections'
->;
 
 export default defineComponent({
   name: 'AddPermissionsItems',
@@ -218,14 +204,6 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-    searchItems: {
-      type: Function as PropType<
-        (
-          payload: SearchTextNamesPayload | SearchCollectionNamesPayload
-        ) => SearchItemsResponse
-      >,
-      required: true,
-    },
     addItems: {
       type: Function as PropType<
         (
@@ -236,7 +214,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ groupId, itemType, editPermissions, searchItems, addItems }) {
+  setup({ groupId, itemType, editPermissions, addItems }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
@@ -307,28 +285,20 @@ export default defineComponent({
     const getItems = async () => {
       try {
         getItemsLoading.value = true;
-        const response = await searchItems({
+        const response = await server.searchNames({
           page: searchOptions.value.page,
-          rows: searchOptions.value.itemsPerPage,
-          search: search.value,
+          limit: searchOptions.value.itemsPerPage,
+          filter: search.value,
           groupId,
+          type: itemType,
         });
-        if (response.texts) {
-          unaddedItems.value = response.texts.map(text => ({
-            name: text.name,
-            uuid: text.uuid,
-            canRead: true,
-            canWrite: false,
-            hasEpigraphy: text.hasEpigraphy,
-          }));
-        } else if (response.collections) {
-          unaddedItems.value = response.collections.map(collection => ({
-            name: collection.name,
-            uuid: collection.uuid,
-            canRead: true,
-            canWrite: false,
-          }));
-        }
+        unaddedItems.value = response.items.map(item => ({
+          name: item.name,
+          uuid: item.uuid,
+          canRead: true,
+          canWrite: false,
+          hasEpigraphy: item.hasEpigraphy,
+        }));
         serverCount.value = response.count;
       } catch {
         actions.showErrorSnackbar(
@@ -437,37 +407,24 @@ export default defineComponent({
 
     async function selectFullList() {
       selectedListLoading.value = true;
-      const response = await searchItems({
+      const response = await server.searchNames({
         page: searchOptions.value.page,
-        rows: serverCount.value,
-        search: search.value,
+        limit: serverCount.value,
+        filter: search.value,
         groupId,
+        type: itemType,
       });
       const selectedItemsUuids = selectedItems.value.map(item => item.uuid);
-      if (response.texts) {
-        const textsToAdd = response.texts
-          .map(text => ({
-            name: text.name,
-            uuid: text.uuid,
-            canRead: true,
-            canWrite: false,
-            hasEpigraphy: text.hasEpigraphy,
-          }))
-          .filter(text => !selectedItemsUuids.includes(text.uuid));
-        textsToAdd.forEach(text => selectedItems.value.push(text));
-      } else if (response.collections) {
-        const collectionsToAdd = response.collections
-          .map(collection => ({
-            name: collection.name,
-            uuid: collection.uuid,
-            canRead: true,
-            canWrite: false,
-          }))
-          .filter(collection => !selectedItemsUuids.includes(collection.uuid));
-        collectionsToAdd.forEach(collection =>
-          selectedItems.value.push(collection)
-        );
-      }
+      const itemsToAdd = response.items
+        .map(item => ({
+          name: item.name,
+          uuid: item.uuid,
+          canRead: true,
+          canWrite: false,
+          hasEpigraphy: item.hasEpigraphy,
+        }))
+        .filter(item => !selectedItemsUuids.includes(item.uuid));
+      itemsToAdd.forEach(item => selectedItems.value.push(item));
       selectedListLoading.value = false;
       selectAllMessage.value = false;
       actions.showSnackbar(

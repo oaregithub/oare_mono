@@ -2,7 +2,6 @@ import textGroups from './text_groups';
 import groups from './groups';
 import users from './users';
 import userGroups from './user_groups';
-import searchTextNames from './search_text_names';
 import dictionary from './dictionary';
 import searchTexts from './search';
 import collections from './collections';
@@ -19,7 +18,7 @@ import logout from './logout';
 import refreshToken from './refresh_token';
 import publicBlacklist from './public_blacklist';
 import textInfo from './text_info';
-import searchCollectionNames from './search_collection_names';
+import searchNames from './search_names';
 import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
 import comments from '@/serverProxy/comments';
@@ -29,7 +28,6 @@ const serverProxy = {
   ...groups,
   ...users,
   ...userGroups,
-  ...searchTextNames,
   ...dictionary,
   ...searchTexts,
   ...collections,
@@ -46,7 +44,7 @@ const serverProxy = {
   ...refreshToken,
   ...publicBlacklist,
   ...textInfo,
-  ...searchCollectionNames,
+  ...searchNames,
   ...collectionGroups,
   ...resetPassword,
   ...comments,
