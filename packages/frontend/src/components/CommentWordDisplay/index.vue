@@ -161,7 +161,8 @@ import {
   Thread,
   CommentRequest,
   ThreadWithComments,
-  CommentInsert, ThreadStatus,
+  CommentInsert,
+  ThreadStatus,
 } from '@oare/types';
 
 export default defineComponent({
@@ -192,9 +193,7 @@ export default defineComponent({
     const selectedThreadUuid = ref<string | null>('');
     const selectedCommentUuidToDelete = ref<string>('');
     const userComment = ref('');
-    const selectedStatus = ref<ThreadStatus>(
-      'New'
-    );
+    const selectedStatus = ref<ThreadStatus>('New');
     const statuses = ref(['New', 'Pending', 'In Progress', 'Completed']);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');

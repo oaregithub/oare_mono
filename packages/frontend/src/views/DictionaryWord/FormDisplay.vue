@@ -19,6 +19,7 @@
       </v-btn>
 
       <strong
+        style='cursor: pointer'
         @click="
           emitUtilList({
             comment: true,

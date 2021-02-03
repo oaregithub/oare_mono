@@ -24,6 +24,7 @@
             })
           "
           class="font-weight-bold"
+          style='cursor: pointer'
         >
           {{ title }}
         </span>

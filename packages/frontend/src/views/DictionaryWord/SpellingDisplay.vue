@@ -16,6 +16,7 @@
         })
       "
       class="testing-spelling"
+      style='cursor: pointer'
       v-html="htmlSpelling"
     ></span>
     <span
