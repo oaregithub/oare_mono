@@ -1,4 +1,4 @@
-import { DiscourseUnit } from "@oare/oare";
+import { DiscourseUnit } from "./textDiscourse";
 import { TextDraft } from './drafts';
 
 export interface TextInfoResponse {
