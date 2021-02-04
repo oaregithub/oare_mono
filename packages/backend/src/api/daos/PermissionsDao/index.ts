@@ -44,6 +44,16 @@ class PermissionsDao {
       description: 'Allow group users to add new spellings to existing words',
       dependency: 'WORDS',
     },
+    {
+      name: 'VIEW_EPIGRAPHY_IMAGES',
+      type: 'text',
+      description: 'Allow group users to view images associated with text epigraphies',
+    },
+    {
+      name: 'VIEW_TEXT_DISCOURSE',
+      type: 'text',
+      description: 'Allow group users to view text discourses associated with text epigraphies',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {

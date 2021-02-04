@@ -35,6 +35,11 @@ describe('Epigraphy View', () => {
   const mockStore = {
     getters: {
       isAdmin: jest.fn().mockResolvedValue(false),
+      permissions: [
+        {
+          name: 'VIEW_EPIGRAPHY_IMAGES',
+        },
+      ],
     },
   };
 
@@ -53,10 +58,10 @@ describe('Epigraphy View', () => {
     stubs: ['router-link', 'router-view'],
   };
 
-  const createWrapper = ({ server } = {}) => {
+  const createWrapper = ({ server, store } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
-    sl.set('store', mockStore);
+    sl.set('store', store || mockStore);
     sl.set('router', mockRouter);
 
     return mount(EpigraphyView, renderOptions);
@@ -71,5 +76,23 @@ describe('Epigraphy View', () => {
     });
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('displays image when user has permission', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('.test-cdli-image').exists()).toBe(true);
+  });
+
+  it('does not display images when user does not have permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        getters: {
+          permissions: [],
+        },
+      },
+    });
+    await flushPromises();
+    expect(wrapper.find('.test-cdli-image').exists()).toBe(false);
   });
 });

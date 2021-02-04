@@ -25,8 +25,8 @@
         cols="12"
         sm="5"
         md="7"
-        v-if="textInfo.cdliNum && isAdmin"
-        class="relative"
+        v-if="canViewEpigraphyImages"
+        class="relative test-cdli-image"
       >
         <EpigraphyImage
           :cdli="textInfo.cdliNum"
@@ -168,6 +168,14 @@ export default defineComponent({
 
     const isAdmin = computed(() => store.getters.isAdmin);
 
+    const canViewEpigraphyImages = computed(
+      () =>
+        textInfo.value.cdliNum &&
+        store.getters.permissions
+          .map(permission => permission.name)
+          .includes('VIEW_EPIGRAPHY_IMAGES')
+    );
+
     onMounted(async () => {
       try {
         loading.value = true;
@@ -196,6 +204,7 @@ export default defineComponent({
       routeProps,
       routeActions,
       loading,
+      canViewEpigraphyImages,
     };
   },
 });
