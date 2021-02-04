@@ -23,7 +23,7 @@
         <slot name="word" :word="wordInfo">
           <div
             class="font-weight-bold mr-1"
-            style='cursor: pointer'
+            style="cursor: pointer"
             @click="
               $emit('clicked-util-list', {
                 comment: true,

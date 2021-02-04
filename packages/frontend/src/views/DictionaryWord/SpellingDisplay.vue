@@ -16,14 +16,10 @@
         })
       "
       class="testing-spelling"
-      style='cursor: pointer'
+      style="cursor: pointer"
       v-html="htmlSpelling"
     ></span>
-    <span
-      v-else
-      v-html="htmlSpelling"
-      class="test-spelling"
-    ></span>
+    <span v-else v-html="htmlSpelling" class="test-spelling"></span>
 
     &nbsp;
     <span v-if="spelling.totalOccurrences > 0">

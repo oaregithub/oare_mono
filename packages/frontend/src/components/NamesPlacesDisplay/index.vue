@@ -32,7 +32,7 @@
               })
             "
             class="font-weight-bold mr-1"
-            style='cursor: pointer'
+            style="cursor: pointer"
           >
             {{ formInfo.form }}
           </em>
@@ -45,7 +45,7 @@
           >
             <span v-if="idx > 0" class="mr-1">, </span>
             <span
-              style='cursor: pointer'
+              style="cursor: pointer"
               @click="
                 openUtilList({
                   comment: true,

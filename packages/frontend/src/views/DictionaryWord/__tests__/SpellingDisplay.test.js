@@ -20,7 +20,7 @@ describe('SpellingDisplay test', () => {
   const form = {
     form: 'form',
     spellings: [],
-  }
+  };
 
   const wordUuid = 'testUuid';
 
@@ -187,17 +187,21 @@ describe('SpellingDisplay test', () => {
     const wrapper = createWrapper();
     await wrapper.get('.testing-spelling').trigger('click');
     expect(wrapper.emitted('clicked-util-list')).toBeTruthy();
-    expect(wrapper.emitted('clicked-util-list')).toEqual([[{
-      comment: true,
-      edit: true,
-      delete: true,
-      word: spelling.spelling,
-      uuid: spelling.uuid,
-      route: `/dictionaryWord/${wordUuid}`,
-      type: 'SPELLING',
-      form: form,
-      formSpelling: spelling,
-    }]]);
+    expect(wrapper.emitted('clicked-util-list')).toEqual([
+      [
+        {
+          comment: true,
+          edit: true,
+          delete: true,
+          word: spelling.spelling,
+          uuid: spelling.uuid,
+          route: `/dictionaryWord/${wordUuid}`,
+          type: 'SPELLING',
+          form: form,
+          formSpelling: spelling,
+        },
+      ],
+    ]);
   });
 
   it("doesn't allow editing without permissions", async () => {
