@@ -26,7 +26,7 @@
         sm="5"
         md="7"
         v-if="canViewEpigraphyImages"
-        class="relative"
+        class="relative test-cdli-image"
       >
         <EpigraphyImage
           :cdli="textInfo.cdliNum"
@@ -168,10 +168,12 @@ export default defineComponent({
 
     const isAdmin = computed(() => store.getters.isAdmin);
 
-    const canViewEpigraphyImages = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('VIEW_EPIGRAPHY_IMAGES')
+    const canViewEpigraphyImages = computed(
+      () =>
+        textInfo.value.cdliNum &&
+        store.getters.permissions
+          .map(permission => permission.name)
+          .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
     onMounted(async () => {

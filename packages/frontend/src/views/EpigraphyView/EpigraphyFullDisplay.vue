@@ -7,6 +7,7 @@
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"
+      class="test-discourses"
     />
   </div>
 </template>
