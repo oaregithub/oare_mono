@@ -189,7 +189,7 @@ export default defineComponent({
     const loading = ref(false);
     const confirmDeleteDialog = ref(false);
     const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
-    const selectedItem = ref<number>(-1);
+    const selectedItem = ref<number|undefined>(undefined);
     const selectedThreadUuid = ref<string | null>('');
     const selectedCommentUuidToDelete = ref<string>('');
     const userComment = ref('');
