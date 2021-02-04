@@ -70,8 +70,9 @@
     </OareDialog>
 
     <UtilList
+      v-if='utilListOpen'
+      v-model="utilListOpen"
       class="test-util-list-displayed"
-      v-if="utilListOpen"
       @clicked-commenting="beginCommenting"
       @clicked-editing="beginEditing"
       @clicked-deleting="beginDeleting"
