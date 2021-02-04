@@ -178,7 +178,7 @@ export default defineComponent({
     };
 
     const sendSpelling = (utilDisplay: UtilListDisplay) => {
-      sendToUtilList && sendToUtilList(utilDisplay)
+      sendToUtilList && sendToUtilList(utilDisplay);
     };
 
     watch(tableOptions, getReferences);

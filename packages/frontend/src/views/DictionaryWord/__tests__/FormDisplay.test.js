@@ -109,5 +109,5 @@ describe('FormsDisplay test', () => {
     const wrapper = createWrapper();
     await wrapper.get('.test-form-util-list').trigger('click');
     expect(toUtilList).toHaveBeenCalled();
-  })
+  });
 });

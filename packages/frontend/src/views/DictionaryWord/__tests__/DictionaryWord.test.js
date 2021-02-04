@@ -109,5 +109,5 @@ describe('DictionaryWord test', () => {
     expect(wrapper.find('.test-util-list-displayed').exists()).toBe(false);
     await wrapper.get('.test-word-util-list').trigger('click');
     expect(wrapper.find('.test-util-list-displayed').exists()).toBe(true);
-  })
+  });
 });

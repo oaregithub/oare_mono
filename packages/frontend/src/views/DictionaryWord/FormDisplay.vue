@@ -101,7 +101,13 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, PropType, ref, computed, inject } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  computed,
+  inject,
+} from '@vue/composition-api';
 import {
   DictionaryForm,
   FormSpelling,
@@ -187,7 +193,7 @@ export default defineComponent({
     };
 
     const sendUtilList = (utilDisplay: UtilListDisplay) => {
-      sendToUtilList && sendToUtilList(utilDisplay)
+      sendToUtilList && sendToUtilList(utilDisplay);
     };
 
     return {

@@ -70,25 +70,24 @@
     </OareDialog>
 
     <UtilList
-            class="test-util-list-displayed"
-            v-if="utilListOpen"
-            @clicked-commenting="beginCommenting"
-            @clicked-editing="beginEditing"
-            @clicked-deleting="beginDeleting"
-            :has-comment="utilList.comment"
-            :has-edit="utilList.edit"
-            :has-delete="utilList.delete"
+      class="test-util-list-displayed"
+      v-if="utilListOpen"
+      @clicked-commenting="beginCommenting"
+      @clicked-editing="beginEditing"
+      @clicked-deleting="beginDeleting"
+      :has-comment="utilList.comment"
+      :has-edit="utilList.edit"
+      :has-delete="utilList.delete"
     ></UtilList>
     <CommentWordDisplay
-            v-if="isCommenting"
-            :route="utilList.route"
-            :uuid="utilList.uuid"
-            :word="utilList.word"
-            @submit="isCommenting = false"
-            @input="isCommenting = false"
-    >{{ utilList.word }}</CommentWordDisplay
+      v-if="isCommenting"
+      :route="utilList.route"
+      :uuid="utilList.uuid"
+      :word="utilList.word"
+      @submit="isCommenting = false"
+      @input="isCommenting = false"
+      >{{ utilList.word }}</CommentWordDisplay
     >
-
   </OareContentView>
 </template>
 
@@ -120,7 +119,9 @@ import UtilList from '../../components/UtilList/index.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 import SpellingDialog from './SpellingDialog.vue';
 
-export const SendUtilList: InjectionKey<(utilDisplay: UtilListDisplay) => Promise<void>> = Symbol();
+export const SendUtilList: InjectionKey<(
+  utilDisplay: UtilListDisplay
+) => Promise<void>> = Symbol();
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
@@ -246,7 +247,7 @@ export default defineComponent({
         deleteSpellingLoading.value = true;
         await serverProxy.removeSpelling(utilList.value.uuid);
         actions.showSnackbar('Successfully removed spelling');
-        await loadDictionaryInfo()
+        await loadDictionaryInfo();
       } catch {
         actions.showErrorSnackbar('Failed to delete spelling');
       } finally {
