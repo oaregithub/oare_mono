@@ -27,7 +27,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import { DiscourseUnit, DiscourseHtmlRenderer } from '@oare/oare';
+import { DiscourseUnit } from '@oare/types';
+import { DiscourseHtmlRenderer } from '@oare/oare';
 
 export default defineComponent({
   props: {

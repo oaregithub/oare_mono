@@ -1,28 +1,9 @@
+import { Token } from '@oare/types';
 import bnf from './spellingGrammar';
 
 const Jison = require('jison');
 
 const parser = new Jison.Parser(bnf);
-
-type TokenType =
-  | 'NUMBER'
-  | 'SIGN'
-  | 'SPACE'
-  | '+'
-  | '.'
-  | '-'
-  | 'DETSEPARATOR'
-  | 'COMPSEPARATOR'
-  | '('
-  | ')'
-  | '{'
-  | '}'
-  | '$end';
-
-export interface Token {
-  tokenName: TokenType[];
-  tokenText: string;
-}
 
 export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
   const tokens: Token[] = [];

@@ -1,6 +1,6 @@
 /* eslint-disable dot-notation */
+import { EpigraphicUnit, MarkupUnit, TabletHtmlOptions } from '@oare/types';
 import TabletRenderer from './TabletRenderer';
-import { EpigraphicUnit, MarkupUnit, TabletHtmlOptions } from './index';
 
 const superscriptRegex = /<sup>.*<\/sup>$/;
 

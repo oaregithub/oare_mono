@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/oare';
+import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/types';
 import { EpigraphicQueryRow } from './index';
 
 export default function getSearchQuery(characters: string[], textTitle: string, blacklist: string[]) {

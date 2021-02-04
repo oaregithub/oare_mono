@@ -1,6 +1,5 @@
 import _ from 'lodash';
-import { SearchTextsResultRow } from '@oare/types';
-import { EpigraphicUnit } from '@oare/oare';
+import { SearchTextsResultRow, EpigraphicUnit } from '@oare/types';
 import knex from '@/connection';
 import getSearchQuery, { convertEpigraphicUnitRows } from './utils';
 import aliasDao from '../AliasDao';
