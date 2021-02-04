@@ -70,7 +70,7 @@
     </OareDialog>
 
     <UtilList
-      v-if='utilListOpen'
+      v-if="utilListOpen"
       v-model="utilListOpen"
       class="test-util-list-displayed"
       @clicked-commenting="beginCommenting"
