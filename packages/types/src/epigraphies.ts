@@ -58,7 +58,7 @@ export type MarkupType =
   | 'isUninterpreted'
   | 'isWrittenWithinPrevSign'
   | 'omitted'
-  | 'signEmended'
+  | 'originalSign'
   | 'superfluous'
   | 'uncertain'
   | 'isWrittenAsLigature'

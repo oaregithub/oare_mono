@@ -20,7 +20,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from '@vue/composition-api';
-import { EpigraphicUnit, MarkupUnit, createTabletRenderer } from '@oare/oare';
+import { createTabletRenderer } from '@oare/oare';
+import { EpigraphicUnit, MarkupUnit } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({

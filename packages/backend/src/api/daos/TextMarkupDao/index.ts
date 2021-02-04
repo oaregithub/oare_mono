@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { MarkupUnit } from '@oare/oare';
+import { MarkupUnit } from '@oare/types';
 
 class TextMarkupDao {
   async getMarkups(textUuid: string): Promise<MarkupUnit[]> {

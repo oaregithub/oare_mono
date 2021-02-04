@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
-import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/oare';
+import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/types';
 import EpigraphyReading from './EpigraphyReading.vue';
 import DiscourseReading from './DiscourseReading.vue';
 

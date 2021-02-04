@@ -83,7 +83,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import _ from 'lodash';
-import { EpigraphicUnitSide } from '@oare/oare';
+import { EpigraphicUnitSide } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DraftContent } from './index.vue';
 
