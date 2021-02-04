@@ -83,9 +83,6 @@
           <span v-for="(s, index) in form.spellings" :key="index">
             <spelling-display
               :spelling="s"
-              :updateSpelling="
-                newSpelling => updateSpelling(index, newSpelling)
-              "
               :form="form"
               :word-uuid="wordUuid"
               @clicked-util-list="emitUtilList"
@@ -177,15 +174,6 @@ export default defineComponent({
       }
     };
 
-    const updateSpelling = (index: number, newSpelling: FormSpelling) => {
-      const spellings = [...props.form.spellings];
-      spellings[index] = newSpelling;
-      props.updateForm({
-        ...props.form,
-        spellings,
-      });
-    };
-
     const emitUtilList = (utilDisplay: UtilListDisplay) => {
       emit('clicked-util-list', utilDisplay);
     };
@@ -199,7 +187,6 @@ export default defineComponent({
       editForm,
       loading,
       saveFormEdit,
-      updateSpelling,
       spellingDialogOpen,
     };
   },
