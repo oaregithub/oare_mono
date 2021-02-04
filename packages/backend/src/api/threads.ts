@@ -12,40 +12,42 @@ router.route('/threads/:referenceUuid').get(async (req, res, next) => {
     const commentsDao = sl.get('CommentsDao');
     const userDao = sl.get('UserDao');
 
+    // This shouldn't return null. If the given reference UUID doesn't have any threads,
+    // it should return an empty array
     const threads: Thread[] | null = await threadsDao.getByReferenceUuid(referenceUuid);
     let results: ThreadWithComments[] = [];
 
     const getUsersByComments = async (comments: Comment[]): Promise<CommentDisplay[]> => {
       return Promise.all(
-        comments.map((comment: Comment) =>
-          userDao.getUserByUuid(comment.userUuid).then((user) => {
-            return {
-              uuid: comment.uuid,
-              threadUuid: comment.threadUuid,
-              userUuid: comment.userUuid ? comment.userUuid : null,
-              userFirstName: user ? user.firstName : '',
-              userLastName: user ? user.lastName : '',
-              createdAt: new Date(comment.createdAt),
-              deleted: comment.deleted,
-              text: comment.text,
-            } as CommentDisplay;
-          }),
-        ),
+        comments.map(async (comment: Comment) => {
+          const user = await userDao.getUserByUuid(comment.userUuid);
+
+          return {
+            uuid: comment.uuid,
+            threadUuid: comment.threadUuid,
+            userUuid: comment.userUuid ? comment.userUuid : null,
+            userFirstName: user ? user.firstName : '',
+            userLastName: user ? user.lastName : '',
+            createdAt: new Date(comment.createdAt),
+            deleted: comment.deleted,
+            text: comment.text,
+          } as CommentDisplay;
+        }),
       );
     };
 
+    // CommentDisplay should extend the Comment type since it has all the same properties
+
     if (threads) {
       results = await Promise.all(
-        threads.map((thread) =>
-          commentsDao.getAllByThreadUuid(thread.uuid || '').then((comments) => {
-            return getUsersByComments(comments).then((commentDisplays) => {
-              return {
-                thread,
-                comments: commentDisplays,
-              } as ThreadWithComments;
-            });
-          }),
-        ),
+        threads.map(async (thread) => {
+          const comments = await commentsDao.getAllByThreadUuid(thread.uuid || '');
+          const commentDisplays = await getUsersByComments(comments);
+          return {
+            thread,
+            comments: commentDisplays,
+          };
+        }),
       );
     }
 
