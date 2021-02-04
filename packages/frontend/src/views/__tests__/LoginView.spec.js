@@ -18,7 +18,7 @@ describe('LoginView test', () => {
       email: 'test@email.com',
       isAdmin: false,
     }),
-    getPermissions: jest.fn().mockResolvedValue({
+    getUserPermissions: jest.fn().mockResolvedValue({
       dictionary: [],
     }),
   };
@@ -68,7 +68,7 @@ describe('LoginView test', () => {
       password: 'password',
     });
     expect(mockStore.setUser).toHaveBeenCalled();
-    expect(mockServer.getPermissions).toHaveBeenCalled();
+    expect(mockServer.getUserPermissions).toHaveBeenCalled();
     expect(mockStore.setPermissions).toHaveBeenCalled();
   });
 

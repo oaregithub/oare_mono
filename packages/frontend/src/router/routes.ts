@@ -31,6 +31,8 @@ import AddGroupCollections from '@/views/GroupView/AddGroupCollections.vue';
 import SendResetPasswordEmailView from '@/views/SendResetPasswordEmailView.vue';
 import ResetPasswordView from '@/views/ResetPasswordView.vue';
 import ManagePermissions from '@/views/GroupView/ManagePermissions.vue';
+import EpigraphyEditor from '@/views/EpigraphyView/EpigraphyEditor.vue';
+import EpigraphyFullDisplay from '@/views/EpigraphyView/EpigraphyFullDisplay.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -83,9 +85,22 @@ const routes: RouteConfig[] = [
   },
   {
     path: '/epigraphies/:textUuid',
-    name: 'epigraphies',
     component: EpigraphyView,
     props: true,
+    children: [
+      {
+        name: 'epigraphyEditor',
+        path: 'edit',
+        component: EpigraphyEditor,
+        props: true,
+      },
+      {
+        name: 'epigraphies',
+        path: '',
+        component: EpigraphyFullDisplay,
+        props: true,
+      },
+    ],
   },
   {
     path: '/groups/:groupId',

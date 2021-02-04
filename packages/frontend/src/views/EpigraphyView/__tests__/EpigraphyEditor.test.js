@@ -11,8 +11,10 @@ localVue.use(VueCompositionApi);
 
 describe('EpigraphyEditor test', () => {
   const mockProps = {
-    sides: [],
-    notes: '',
+    draft: {
+      content: [],
+      notes: '',
+    },
     textUuid: 'test-uuid',
   };
 
@@ -24,9 +26,15 @@ describe('EpigraphyEditor test', () => {
     showSnackbar: jest.fn(),
     showErrorSnackbar: jest.fn(),
   };
+
+  const mockRouter = {
+    push: jest.fn(),
+  };
   const createWrapper = (propsData = mockProps, { server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('router', mockRouter);
+
     return mount(EpigraphyEditor, {
       vuetify,
       localVue,
@@ -34,6 +42,7 @@ describe('EpigraphyEditor test', () => {
         ...mockProps,
         ...propsData,
       },
+      stubs: ['router-link'],
     });
   };
 
@@ -46,7 +55,7 @@ describe('EpigraphyEditor test', () => {
     await saveButton.trigger('click');
     await flushPromises();
     expect(mockServer.createDraft).toHaveBeenCalledWith(mockProps.textUuid, {
-      content: JSON.stringify(mockProps.sides),
+      content: JSON.stringify(mockProps.draft.content),
       notes: 'Test note',
     });
     expect(mockActions.showSnackbar).toHaveBeenCalled();
@@ -61,12 +70,16 @@ describe('EpigraphyEditor test', () => {
 
   it('removes side', async () => {
     const wrapper = createWrapper({
-      sides: [
-        {
-          side: 'obv.',
-          text: 'Test edits',
-        },
-      ],
+      ...mockProps,
+      draft: {
+        ...mockProps.draft,
+        content: [
+          {
+            side: 'obv.',
+            text: 'Test edits',
+          },
+        ],
+      },
     });
 
     await wrapper.vm.$nextTick();
@@ -79,17 +92,23 @@ describe('EpigraphyEditor test', () => {
   it('closes editor', async () => {
     const wrapper = createWrapper();
     await wrapper.find('.test-close-editor').trigger('click');
-    expect(wrapper.emitted()['close-editor']).toBeTruthy();
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      `/epigraphies/${mockProps.textUuid}`
+    );
   });
 
   it('saves draft with edits', async () => {
     const wrapper = createWrapper({
-      sides: [
-        {
-          side: 'obv.',
-          text: 'Test reading',
-        },
-      ],
+      ...mockProps,
+      draft: {
+        ...mockProps.draft,
+        content: [
+          {
+            side: 'obv.',
+            text: '',
+          },
+        ],
+      },
     });
 
     await wrapper.vm.$nextTick();

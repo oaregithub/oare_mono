@@ -1,6 +1,7 @@
 import express from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
+import { EpigraphyResponse } from '@oare/types';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const AliasDao = sl.get('AliasDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const CollectionGroupDao = sl.get('CollectionGroupDao');
+    const TextDraftsDao = sl.get('TextDraftsDao');
 
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
@@ -71,7 +73,13 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       canWrite = false;
     }
 
-    res.json({
+    let draft;
+
+    if (user) {
+      draft = await TextDraftsDao.getDraft(user?.id, textUuid);
+    }
+
+    const response: EpigraphyResponse = {
       textName,
       collection,
       units,
@@ -81,7 +89,10 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       colorMeaning,
       markups,
       discourseUnits,
-    });
+      ...(draft ? { draft } : {}),
+    };
+
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

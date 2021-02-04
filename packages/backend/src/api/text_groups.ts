@@ -1,5 +1,5 @@
 import express from 'express';
-import { AddTextPayload, UpdateTextPermissionPayload } from '@oare/types';
+import { AddTextCollectionPayload, UpdateTextCollectionListPayload } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
@@ -41,7 +41,7 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const { texts }: AddTextPayload = req.body;
+      const { items }: AddTextCollectionPayload = req.body;
 
       const TextGroupDao = sl.get('TextGroupDao');
       const OareGroupDao = sl.get('OareGroupDao');
@@ -55,8 +55,8 @@ router
       }
 
       // Make sure that given text UUIDs exist
-      for (let i = 0; i < texts.length; i += 1) {
-        const text = texts[i];
+      for (let i = 0; i < items.length; i += 1) {
+        const text = items[i];
         const existingText = await TextDao.getTextByUuid(text.uuid);
         if (!existingText) {
           next(new HttpBadRequest(`Text UUID is invalid: ${text.uuid}`));
@@ -65,7 +65,7 @@ router
       }
 
       // TODO make sure each text is not already associated with group
-      const insertRows = texts.map((text) => ({
+      const insertRows = items.map((text) => ({
         text_uuid: text.uuid,
         group_id: groupId,
         can_read: text.canRead,
@@ -82,7 +82,7 @@ router
   .patch(adminRoute, async (req, res, next) => {
     try {
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const { uuid, canRead, canWrite }: UpdateTextPermissionPayload = req.body;
+      const { uuid, canRead, canWrite }: UpdateTextCollectionListPayload = req.body;
 
       const TextGroupDao = sl.get('TextGroupDao');
       const OareGroupDao = sl.get('OareGroupDao');

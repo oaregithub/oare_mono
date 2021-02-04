@@ -12,9 +12,14 @@
     "server": "yarn workspace @oare/backend dev",
     "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test && yarn workspace @oare/oare test jisonParser.spec.ts",
     "migrate:make": "yarn workspace @oare/backend migrate:make",
-    "migrate:latest": "NODE_ENV=development yarn workspace @oare/backend migrate:latest",
-    "migrate:latest-prod": "NODE_ENV=production yarn workspace @oare/backend migrate:latest",
-    "migrate:rollback": "NODE_ENV=development yarn workspace @oare/backend migrate:rollback"
+    "migrate:latest": "yarn workspace @oare/backend migrate:latest",
+    "migrate:down": "yarn workspace @oare/backend migrate:down",
+    "migrate:up": "yarn workspace @oare/backend migrate:up",
+    "migrate:rollback": "yarn workspace @oare/backend migrate:rollback",
+    "migrate:up-prod": "NODE_ENV=production yarn migrate:up",
+    "migrate:latest-prod": "NODE_ENV=production yarn migrate:latest",
+    "migrate:rollback-prod": "NODE_ENV=production yarn migrate:rollback",
+    "migrate:down-prod": "NODE_ENV=production yarn migrate:down"
   },
   "workspaces": {
     "packages": [

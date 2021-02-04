@@ -11,8 +11,8 @@ localVue.use(VueCompositionApi);
 
 describe('AddBlacklistCollections test', () => {
   const mockServer = {
-    searchCollectionNames: jest.fn().mockResolvedValue({
-      collections: [
+    searchNames: jest.fn().mockResolvedValue({
+      items: [
         {
           uuid: 'test1',
           name: 'test1',
@@ -59,7 +59,7 @@ describe('AddBlacklistCollections test', () => {
   it('successfully retrieves all collections on load', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockServer.searchCollectionNames).toHaveBeenCalled();
+    expect(mockServer.searchNames).toHaveBeenCalled();
     expect(wrapper.html()).toContain('test1');
   });
 
@@ -67,9 +67,7 @@ describe('AddBlacklistCollections test', () => {
     createWrapper({
       server: {
         ...mockServer,
-        searchCollectionNames: jest
-          .fn()
-          .mockRejectedValue('failed collections load'),
+        searchNames: jest.fn().mockRejectedValue('failed collections load'),
       },
     });
     await flushPromises();

@@ -1,7 +1,6 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { render } from '@testing-library/vue';
 import EpigraphyView from '../index.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
@@ -12,7 +11,6 @@ localVue.use(VueCompositionApi);
 
 describe('Epigraphy View', () => {
   const mockServer = {
-    getDiscourseUnits: jest.fn().mockResolvedValue({}),
     getEpigraphicInfo: jest.fn().mockResolvedValue({
       collection: {
         uuid: 'test',
@@ -24,8 +22,9 @@ describe('Epigraphy View', () => {
       cdliNum: 'test',
       color: 'red',
       colorMeaning: 'test meaning',
+      discourseUnits: [],
+      markups: [],
     }),
-    getEpigraphicMarkups: jest.fn().mockResolvedValue({}),
     getSingleDraft: jest.fn().mockResolvedValue({}),
   };
 
@@ -39,19 +38,26 @@ describe('Epigraphy View', () => {
     },
   };
 
+  const mockRouter = {
+    currentRoute: {
+      name: 'epigraphy',
+    },
+  };
+
   const renderOptions = {
     localVue,
     vuetify,
     propsData: {
       textUuid: '123',
     },
-    stubs: ['router-link'],
+    stubs: ['router-link', 'router-view'],
   };
 
   const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
     sl.set('store', mockStore);
+    sl.set('router', mockRouter);
 
     return mount(EpigraphyView, renderOptions);
   };
@@ -61,28 +67,6 @@ describe('Epigraphy View', () => {
       server: {
         ...mockServer,
         getEpigraphicInfo: jest.fn().mockRejectedValue({}),
-      },
-    });
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
-  it('displays error on epigraphic markup load fail', async () => {
-    createWrapper({
-      server: {
-        ...mockServer,
-        getEpigraphicMarkups: jest.fn().mockRejectedValue({}),
-      },
-    });
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
-  it('displays error on discourse units load fail', async () => {
-    createWrapper({
-      server: {
-        ...mockServer,
-        getDiscourseUnits: jest.fn().mockRejectedValue({}),
       },
     });
     await flushPromises();

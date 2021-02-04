@@ -1,21 +1,20 @@
 <template>
-  <add-permissions-items
+  <add-text-collection
     :groupId="groupId"
     itemType="Text"
     :editPermissions="true"
-    :searchItems="server.searchTextNames"
     :addItems="server.addTextGroups"
   />
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import AddPermissionsItems from '../AdminView/AddPermissionsItems.vue';
+import AddTextCollection from '../AdminView/AddTextCollection.vue';
 
 export default defineComponent({
   name: 'AddGroupTexts',
-  components: { AddPermissionsItems },
+  components: { AddTextCollection },
   props: {
     groupId: {
       type: String,

@@ -134,10 +134,10 @@ export const applyMarkup = (
       case 'isWrittenWithinPrevSign':
         formattedReading = `×${formattedReading}`;
         break;
-      case 'missing':
+      case 'omitted':
         formattedReading = `<${formattedReading}>`;
         break;
-      case 'signEmended':
+      case 'originalSign':
         formattedReading += '!';
         break;
       case 'superfluous':
@@ -151,7 +151,7 @@ export const applyMarkup = (
       case 'isWrittenAsLigature':
         formattedReading = `+${formattedReading}`;
         break;
-      case 'missingSigns':
+      case 'undeterminedSigns':
         if (markup.value && markup.value > 0) {
           formattedReading = 'x'.repeat(markup.value);
         }

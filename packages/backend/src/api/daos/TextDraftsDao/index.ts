@@ -31,19 +31,16 @@ function getBaseDraftQuery(userId: number) {
 }
 
 class TextDraftsDao {
-  async draftExists(userId: number, textUuid: string): Promise<boolean> {
-    const row = await knex('text_drafts').first().where('creator', userId).andWhere('text_uuid', textUuid);
-    return !!row;
-  }
+  async getDraft(userId: number, textUuid: string): Promise<TextDraft | null> {
+    const draft: TextDraftRow | null = await getBaseDraftQuery(userId).first().andWhere('text_uuid', textUuid);
 
-  async getDraft(userId: number, textUuid: string): Promise<TextDraft> {
-    const draft: TextDraftRow = await getBaseDraftQuery(userId).first().andWhere('text_uuid', textUuid);
-
-    return {
-      ...draft,
-      textName: draft.textName.trim(),
-      content: JSON.parse(draft.content),
-    };
+    return draft
+      ? {
+          ...draft,
+          textName: draft.textName.trim(),
+          content: JSON.parse(draft.content),
+        }
+      : null;
   }
 
   async createDraft(userId: number, textUuid: string, content: string, notes: string) {

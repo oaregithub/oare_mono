@@ -4,7 +4,7 @@
       <template #[`item.textName`]="{ item }">
         <router-link
           :to="{
-            name: 'epigraphies',
+            name: 'epigraphyEditor',
             params: { textUuid: item.textUuid },
           }"
           >{{ item.textName }}</router-link

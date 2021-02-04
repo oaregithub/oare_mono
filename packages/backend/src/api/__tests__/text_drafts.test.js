@@ -12,10 +12,9 @@ describe('Text drafts test', () => {
     const payload = { content: 'content', notes: 'notes' };
 
     const TextDraftsDao = {
-      draftExists: jest.fn().mockResolvedValue(true),
-      createDraft: jest.fn().mockResolvedValue(null),
+      createDraft: jest.fn().mockResolvedValue(),
       getDraft: jest.fn().mockResolvedValue({ uuid: draftUuid }),
-      updateDraft: jest.fn().mockResolvedValue(null),
+      updateDraft: jest.fn().mockResolvedValue(),
     };
 
     const UserDao = {
@@ -46,7 +45,7 @@ describe('Text drafts test', () => {
       setup();
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
-        draftExists: jest.fn().mockResolvedValue(false),
+        getDraft: jest.fn().mockResolvedValue(null),
       });
 
       await sendRequest();
@@ -61,22 +60,11 @@ describe('Text drafts test', () => {
       expect(TextDraftsDao.updateDraft).toHaveBeenCalledWith(draftUuid, payload.content, payload.notes);
     });
 
-    it('returns 500 if draft exists check fails', async () => {
-      setup();
-      sl.set('TextDraftsDao', {
-        ...TextDraftsDao,
-        draftExists: jest.fn().mockRejectedValue('Draft exists failed'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
     it('returns 500 if create draft fails', async () => {
       setup();
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
-        draftExists: jest.fn().mockResolvedValue(false),
+        getDraft: jest.fn().mockResolvedValue(null),
         createDraft: jest.fn().mockRejectedValue('Create draft failed'),
       });
 
@@ -100,6 +88,56 @@ describe('Text drafts test', () => {
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
         updateDraft: jest.fn().mockRejectedValue('Update draft failed'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /text_drafts', () => {
+    const PATH = `${API_PATH}/text_drafts`;
+    const drafts = [
+      {
+        content: 'content',
+        notes: 'notes',
+      },
+    ];
+
+    const userId = 1;
+    const mockTextDraftsDao = {
+      getAllDrafts: jest.fn().mockResolvedValue(drafts),
+    };
+
+    const mockUserDao = {
+      getUserByEmail: jest.fn().mockResolvedValue({
+        id: userId,
+      }),
+    };
+
+    beforeEach(() => {
+      sl.set('TextDraftsDao', mockTextDraftsDao);
+      sl.set('UserDao', mockUserDao);
+    });
+
+    const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+
+    it('returns list of drafts', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(drafts);
+      expect(mockTextDraftsDao.getAllDrafts).toHaveBeenCalledWith(userId);
+    });
+
+    it('returns 401 when not logged in', async () => {
+      const response = await request(app).get(PATH);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 500 when getting drafts fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...mockTextDraftsDao,
+        getAllDrafts: jest.fn().mockRejectedValue('failed to get drafts'),
       });
 
       const response = await sendRequest();
