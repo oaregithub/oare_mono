@@ -12,9 +12,7 @@ router.route('/threads/:referenceUuid').get(async (req, res, next) => {
     const commentsDao = sl.get('CommentsDao');
     const userDao = sl.get('UserDao');
 
-    // This shouldn't return null. If the given reference UUID doesn't have any threads,
-    // it should return an empty array
-    const threads: Thread[] | null = await threadsDao.getByReferenceUuid(referenceUuid);
+    const threads: Thread[] = await threadsDao.getByReferenceUuid(referenceUuid);
     let results: ThreadWithComments[] = [];
 
     const getUsersByComments = async (comments: Comment[]): Promise<CommentDisplay[]> => {
@@ -36,20 +34,16 @@ router.route('/threads/:referenceUuid').get(async (req, res, next) => {
       );
     };
 
-    // CommentDisplay should extend the Comment type since it has all the same properties
-
-    if (threads) {
-      results = await Promise.all(
-        threads.map(async (thread) => {
-          const comments = await commentsDao.getAllByThreadUuid(thread.uuid || '');
-          const commentDisplays = await getUsersByComments(comments);
-          return {
-            thread,
-            comments: commentDisplays,
-          };
-        }),
-      );
-    }
+    results = await Promise.all(
+      threads.map(async (thread) => {
+        const comments = await commentsDao.getAllByThreadUuid(thread.uuid || '');
+        const commentDisplays = await getUsersByComments(comments);
+        return {
+          thread,
+          comments: commentDisplays,
+        };
+      }),
+    );
 
     res.json(results);
   } catch (err) {
