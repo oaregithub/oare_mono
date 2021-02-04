@@ -35,6 +35,7 @@ describe('Epigraphy View', () => {
   const mockStore = {
     getters: {
       isAdmin: jest.fn().mockResolvedValue(false),
+      permissions: ['VIEW_TEXT_DISCOURSE'],
     },
   };
 

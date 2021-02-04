@@ -4,15 +4,19 @@
       :epigraphicUnits="epigraphicUnits"
       :markupUnits="markupUnits"
     />
-    <DiscourseReading :discourseUnits="discourseUnits" />
+    <DiscourseReading
+      v-if="canViewDiscourses"
+      :discourseUnits="discourseUnits"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, computed } from '@vue/composition-api';
 import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/types';
 import EpigraphyReading from './EpigraphyReading.vue';
 import DiscourseReading from './DiscourseReading.vue';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
@@ -32,6 +36,19 @@ export default defineComponent({
   components: {
     EpigraphyReading,
     DiscourseReading,
+  },
+  setup() {
+    const store = sl.get('store');
+
+    const canViewDiscourses = computed(() =>
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('VIEW_TEXT_DISCOURSE')
+    );
+
+    return {
+      canViewDiscourses,
+    };
   },
 });
 </script>
