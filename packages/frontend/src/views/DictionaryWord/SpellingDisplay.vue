@@ -3,7 +3,7 @@
     <span
       v-if="canEdit"
       @click="
-        emitSpelling({
+        sendSpelling({
           comment: true,
           edit: true,
           delete: true,
@@ -88,7 +88,7 @@ import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
-import { ReloadKey } from './index.vue';
+import { SendUtilList } from './index.vue';
 import SpellingDialog from './SpellingDialog.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
@@ -113,12 +113,12 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-    const reload = inject(ReloadKey);
+    const sendToUtilList = inject(SendUtilList);
 
     const search = ref('');
     const addSpellingDialog = ref(false);
@@ -177,8 +177,8 @@ export default defineComponent({
       }
     };
 
-    const emitSpelling = (utilDisplay: UtilListDisplay) => {
-      emit('clicked-util-list', utilDisplay);
+    const sendSpelling = (utilDisplay: UtilListDisplay) => {
+      sendToUtilList && sendToUtilList(utilDisplay)
     };
 
     watch(tableOptions, getReferences);
@@ -186,7 +186,7 @@ export default defineComponent({
     watch(search, _.debounce(getReferences, 500));
 
     return {
-      emitSpelling,
+      sendSpelling,
       showUtilList,
       addSpellingDialog,
       deleteLoading,

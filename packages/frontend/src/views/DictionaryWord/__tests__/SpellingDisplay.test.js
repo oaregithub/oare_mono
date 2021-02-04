@@ -2,7 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
-import { ReloadKey } from '../index.vue';
+import { SendUtilList } from '../index.vue';
 import SpellingDisplay from '../SpellingDisplay.vue';
 import sl from '../../../serviceLocator';
 
@@ -64,7 +64,7 @@ describe('SpellingDisplay test', () => {
     debounce: cb => cb,
   };
 
-  const reload = jest.fn();
+  const toUtilList = jest.fn();
 
   const createWrapper = ({ server, store } = {}) => {
     sl.set('store', store || mockStore);
@@ -81,7 +81,7 @@ describe('SpellingDisplay test', () => {
       },
       stubs: ['router-link'],
       provide: {
-        [ReloadKey]: reload,
+        [SendUtilList]: toUtilList,
       },
     });
   };
@@ -183,25 +183,10 @@ describe('SpellingDisplay test', () => {
   //   expect(mockActions.showSnackbar).toHaveBeenCalled();
   // });
 
-  it('emits spelling deletion', async () => {
+  it('sends spelling deletion request', async () => {
     const wrapper = createWrapper();
     await wrapper.get('.testing-spelling').trigger('click');
-    expect(wrapper.emitted('clicked-util-list')).toBeTruthy();
-    expect(wrapper.emitted('clicked-util-list')).toEqual([
-      [
-        {
-          comment: true,
-          edit: true,
-          delete: true,
-          word: spelling.spelling,
-          uuid: spelling.uuid,
-          route: `/dictionaryWord/${wordUuid}`,
-          type: 'SPELLING',
-          form: form,
-          formSpelling: spelling,
-        },
-      ],
-    ]);
+    expect(toUtilList).toHaveBeenCalled();
   });
 
   it("doesn't allow editing without permissions", async () => {

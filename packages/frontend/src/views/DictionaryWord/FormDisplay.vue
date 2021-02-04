@@ -21,7 +21,7 @@
       <strong
         style="cursor: pointer"
         @click="
-          emitUtilList({
+          sendUtilList({
             comment: true,
             edit: false,
             delete: false,
@@ -31,7 +31,7 @@
             type: 'FORM',
           })
         "
-        class="mr-1"
+        class="mr-1 test-form-util-list"
       >
         {{ form.form }}
       </strong>
@@ -48,7 +48,6 @@
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
             :form="form"
             :word-uuid="wordUuid"
-            @clicked-util-list="emitUtilList"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -83,9 +82,11 @@
           <span v-for="(s, index) in form.spellings" :key="index">
             <spelling-display
               :spelling="s"
+              :updateSpelling="
+                newSpelling => updateSpelling(index, newSpelling)
+              "
               :form="form"
               :word-uuid="wordUuid"
-              @clicked-util-list="emitUtilList"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -100,7 +101,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
+  import { defineComponent, PropType, ref, computed, inject } from '@vue/composition-api';
 import {
   DictionaryForm,
   FormSpelling,
@@ -113,6 +114,7 @@ import SpellingDisplay from './SpellingDisplay.vue';
 import SpellingDialog from './SpellingDialog.vue';
 import UtilList from '../../components/UtilList/index.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
+import { SendUtilList } from './index.vue';
 
 export default defineComponent({
   components: {
@@ -136,10 +138,11 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const sendToUtilList = inject(SendUtilList);
 
     const spellingDialogOpen = ref(false);
     const editing = ref(false);
@@ -174,12 +177,21 @@ export default defineComponent({
       }
     };
 
-    const emitUtilList = (utilDisplay: UtilListDisplay) => {
-      emit('clicked-util-list', utilDisplay);
+    const updateSpelling = (index: number, newSpelling: FormSpelling) => {
+      const spellings = [...props.form.spellings];
+      spellings[index] = newSpelling;
+      props.updateForm({
+        ...props.form,
+        spellings,
+      });
+    };
+
+    const sendUtilList = (utilDisplay: UtilListDisplay) => {
+      sendToUtilList && sendToUtilList(utilDisplay)
     };
 
     return {
-      emitUtilList,
+      sendUtilList,
       isCommenting,
       editing,
       canEdit,
@@ -187,6 +199,7 @@ export default defineComponent({
       editForm,
       loading,
       saveFormEdit,
+      updateSpelling,
       spellingDialogOpen,
     };
   },
