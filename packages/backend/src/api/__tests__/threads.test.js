@@ -172,7 +172,7 @@ describe('comments api test', () => {
         getUserByUuid: jest.fn().mockResolvedValue(null),
         getUserByEmail: jest.fn().mockResolvedValue({
           isAdmin: true,
-        },
+        }),
       });
 
       const response = await sendRequest();
@@ -200,7 +200,7 @@ describe('comments api test', () => {
       return thread;
     };
 
-    const sendRequest = async ({ overrideThread } = {}) => {
+    const sendRequest = async ({ overrideThread, cookie = true } = {}) => {
       if (cookie) {
         return request(app).put(PATH).set('Cookie', 'jwt=token').send(getPayload(overrideThread));
       } else {
@@ -226,7 +226,7 @@ describe('comments api test', () => {
       sl.set('UserDao', {
         getUserByEmail: jest.fn().mockResolvedValue({
           isAdmin: false,
-        },
+        }),
       });
 
       const response = await sendRequest();

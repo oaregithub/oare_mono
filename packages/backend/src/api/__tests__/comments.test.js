@@ -17,7 +17,6 @@ describe('comments api test', () => {
   };
 
   const MockUserDao = {
-    insert: jest.fn().mockResolvedValue(threadsDaoInsertResolveValue),
     getUserByEmail: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
