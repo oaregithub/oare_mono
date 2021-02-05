@@ -107,9 +107,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-    const utilList = inject<(utilDisplay: UtilListDisplay) => Promise<void>>(
-      SendUtilList
-    );
+    const utilList = inject(SendUtilList);
 
     const search = ref('');
     const addSpellingDialog = ref(false);
