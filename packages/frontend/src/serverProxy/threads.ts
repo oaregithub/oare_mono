@@ -10,9 +10,8 @@ async function getThreadsWithCommentsByReferenceUuid(
   return data;
 }
 
-async function updateThread(thread: Thread): Promise<boolean> {
-  const { data } = await axios.put('/threads', thread);
-  return data;
+async function updateThread(thread: Thread): Promise<void> {
+  await axios.put('/threads', thread);
 }
 
 export default {
