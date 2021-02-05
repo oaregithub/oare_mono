@@ -20,17 +20,7 @@
 
       <strong
         style="cursor: pointer"
-        @click="
-          sendUtilList({
-            comment: true,
-            edit: false,
-            delete: false,
-            word: form.form,
-            uuid: form.uuid,
-            route: `/dictionaryWord/${wordUuid}`,
-            type: 'FORM',
-          })
-        "
+        @click="openUtilList"
         class="mr-1 test-form-util-list"
       >
         {{ form.form }}
@@ -148,7 +138,7 @@ export default defineComponent({
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const sendToUtilList = inject(SendUtilList);
+    const utilList = inject<(utilDisplay: UtilListDisplay) => Promise<void>>(SendUtilList);
 
     const spellingDialogOpen = ref(false);
     const editing = ref(false);
@@ -192,12 +182,20 @@ export default defineComponent({
       });
     };
 
-    const sendUtilList = (utilDisplay: UtilListDisplay) => {
-      sendToUtilList && sendToUtilList(utilDisplay);
+    const openUtilList = () => {
+      utilList && utilList({
+        comment: true,
+        edit: false,
+        delete: false,
+        word: props.form.form,
+        uuid: props.form.uuid,
+        route: `/dictionaryWord/${props.wordUuid}`,
+        type: 'FORM',
+      });
     };
 
     return {
-      sendUtilList,
+      openUtilList,
       isCommenting,
       editing,
       canEdit,

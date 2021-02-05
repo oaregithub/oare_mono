@@ -2,19 +2,7 @@
   <span class="d-flex flex-row mb-0">
     <span
       v-if="canEdit"
-      @click="
-        sendSpelling({
-          comment: true,
-          edit: true,
-          delete: true,
-          word: spelling.spelling,
-          uuid: spelling.uuid,
-          route: `/dictionaryWord/${wordUuid}`,
-          type: 'SPELLING',
-          form: form,
-          formSpelling: spelling,
-        })
-      "
+      @click="openUtilList"
       class="testing-spelling"
       style="cursor: pointer"
       v-html="htmlSpelling"
@@ -69,15 +57,15 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  reactive,
-  computed,
-  PropType,
-  watch,
-  inject,
-} from '@vue/composition-api';
+  import {
+    defineComponent,
+    ref,
+    reactive,
+    computed,
+    PropType,
+    watch,
+    inject, InjectionKey,
+  } from '@vue/composition-api';
 import {
   FormSpelling,
   DictionaryForm,
@@ -109,8 +97,8 @@ export default defineComponent({
       required: true,
     },
     wordUuid: {
-      type: String as PropType<string>,
-      required: false,
+      type: String,
+      required: true,
     },
   },
   setup(props) {
@@ -118,7 +106,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-    const sendToUtilList = inject(SendUtilList);
+    const utilList = inject<(utilDisplay: UtilListDisplay) => Promise<void>>(SendUtilList);
 
     const search = ref('');
     const addSpellingDialog = ref(false);
@@ -177,8 +165,18 @@ export default defineComponent({
       }
     };
 
-    const sendSpelling = (utilDisplay: UtilListDisplay) => {
-      sendToUtilList && sendToUtilList(utilDisplay);
+    const openUtilList = () => {
+      utilList && utilList({
+        comment: true,
+        edit: true,
+        delete: true,
+        word: props.spelling.spelling,
+        uuid: props.wordUuid,
+        route: `/dictionaryWord/${props.wordUuid}`,
+        type: 'SPELLING',
+        form: props.form,
+        formSpelling: props.spelling,
+      });
     };
 
     watch(tableOptions, getReferences);
@@ -186,7 +184,7 @@ export default defineComponent({
     watch(search, _.debounce(getReferences, 500));
 
     return {
-      sendSpelling,
+      openUtilList,
       showUtilList,
       addSpellingDialog,
       deleteLoading,

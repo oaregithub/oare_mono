@@ -12,17 +12,7 @@
         </v-btn>
 
         <span
-          @click="
-            openUtilList({
-              comment: true,
-              edit: false,
-              delete: false,
-              word: wordInfo.word,
-              uuid: wordInfo.uuid,
-              route: `/dictionaryWord/${wordInfo.word}`,
-              type: 'WORD',
-            })
-          "
+          @click="sendWordInfoToUtilList"
           class="font-weight-bold test-word-util-list"
           style="cursor: pointer"
         >
@@ -198,6 +188,18 @@ export default defineComponent({
       isDeleting.value = true;
     };
 
+    const sendWordInfoToUtilList = () => {
+      openUtilList({
+        comment: true,
+        edit: false,
+        delete: false,
+        word: wordInfo.value !== null ? wordInfo.value.word : '',
+        uuid: props.uuid,
+        route: `/dictionaryWord/${props.uuid}`,
+        type: 'WORD',
+      })
+    }
+
     const openUtilList = (injectedUtilList: UtilListDisplay) => {
       utilListOpen.value = true;
       utilList.value = injectedUtilList;
@@ -258,6 +260,7 @@ export default defineComponent({
     };
 
     return {
+      sendWordInfoToUtilList,
       isDeleting,
       utilList,
       beginDeleting,
