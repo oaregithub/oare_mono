@@ -102,4 +102,12 @@ describe('DictionaryWord test', () => {
     await flushPromises();
     expect(wrapper.find('.test-pencil').exists()).toBe(false);
   });
+
+  it('check util list displays', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('.test-util-list-displayed').exists()).toBe(false);
+    await wrapper.get('.test-word-util-list').trigger('click');
+    expect(wrapper.find('.test-util-list-displayed').exists()).toBe(true);
+  });
 });

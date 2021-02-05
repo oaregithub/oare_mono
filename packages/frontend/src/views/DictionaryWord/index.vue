@@ -12,41 +12,12 @@
         </v-btn>
 
         <span
-          @click="
-            openUtilList({
-              comment: true,
-              edit: false,
-              delete: false,
-              word: wordInfo.word,
-              uuid: wordInfo.uuid,
-              route: `/dictionaryWord/${wordInfo.word}`,
-              type: 'WORD',
-            })
-          "
-          class="font-weight-bold"
+          @click="sendWordInfoToUtilList"
+          class="font-weight-bold test-word-util-list"
           style="cursor: pointer"
         >
           {{ title }}
         </span>
-
-        <UtilList
-          v-model="utilListOpen"
-          @clicked-commenting="beginCommenting"
-          @clicked-editing="beginEditing"
-          @clicked-deleting="beginDeleting"
-          :has-comment="utilList.comment"
-          :has-edit="utilList.edit"
-          :has-delete="utilList.delete"
-        ></UtilList>
-        <CommentWordDisplay
-          v-if="isCommenting"
-          :route="utilList.route"
-          :uuid="utilList.uuid"
-          :word="utilList.word"
-          @submit="isCommenting = false"
-          @input="isCommenting = false"
-          >{{ utilList.word }}</CommentWordDisplay
-        >
       </v-row>
 
       <word-name-edit
@@ -64,7 +35,6 @@
       :wordInfo="wordInfo"
       :wordUuid="uuid"
       :updateWordInfo="updateWordInfo"
-      @clicked-util-list="openUtilList"
     />
 
     <template v-if="isEditing && utilList.type === 'SPELLING'">
@@ -88,6 +58,27 @@
       Are you sure you want to delete the spelling {{ utilList.word }} from this
       form? This action cannot be undone.
     </OareDialog>
+
+    <UtilList
+      v-if="utilListOpen"
+      v-model="utilListOpen"
+      class="test-util-list-displayed"
+      @clicked-commenting="beginCommenting"
+      @clicked-editing="beginEditing"
+      @clicked-deleting="beginDeleting"
+      :has-comment="utilList.comment"
+      :has-edit="utilList.edit"
+      :has-delete="utilList.delete"
+    ></UtilList>
+    <CommentWordDisplay
+      v-if="isCommenting"
+      :route="utilList.route"
+      :uuid="utilList.uuid"
+      :word="utilList.word"
+      @submit="isCommenting = false"
+      @input="isCommenting = false"
+      >{{ utilList.word }}</CommentWordDisplay
+    >
   </OareContentView>
 </template>
 
@@ -119,6 +110,9 @@ import UtilList from '../../components/UtilList/index.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 import SpellingDialog from './SpellingDialog.vue';
 
+export const SendUtilList: InjectionKey<(
+  utilDisplay: UtilListDisplay
+) => Promise<void>> = Symbol();
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
@@ -140,7 +134,6 @@ export default defineComponent({
     const store = sl.get('store');
     const serverProxy = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const reload = inject(ReloadKey);
 
     const loading = ref(true);
     const utilListOpen = ref(false);
@@ -195,13 +188,25 @@ export default defineComponent({
       isDeleting.value = true;
     };
 
-    const openUtilList = (emittedUtilList: UtilListDisplay) => {
-      utilListOpen.value = true;
-      utilList.value = emittedUtilList;
+    const sendWordInfoToUtilList = () => {
+      openUtilList({
+        comment: true,
+        edit: false,
+        delete: false,
+        word: wordInfo.value ? wordInfo.value.word : '',
+        uuid: props.uuid,
+        route: `/dictionaryWord/${props.uuid}`,
+        type: 'WORD',
+      });
     };
 
-    provide(ReloadKey, loadDictionaryInfo);
+    const openUtilList = (injectedUtilList: UtilListDisplay) => {
+      utilListOpen.value = true;
+      utilList.value = injectedUtilList;
+    };
 
+    provide(SendUtilList, openUtilList);
+    provide(ReloadKey, loadDictionaryInfo);
     watch(props, loadDictionaryInfo, { immediate: true });
 
     const breadcrumbItems = computed(() => {
@@ -245,15 +250,17 @@ export default defineComponent({
         deleteSpellingLoading.value = true;
         await serverProxy.removeSpelling(utilList.value.uuid);
         actions.showSnackbar('Successfully removed spelling');
-        reload && reload();
+        await loadDictionaryInfo();
       } catch {
         actions.showErrorSnackbar('Failed to delete spelling');
       } finally {
         deleteSpellingLoading.value = false;
+        isDeleting.value = false;
       }
     };
 
     return {
+      sendWordInfoToUtilList,
       isDeleting,
       utilList,
       beginDeleting,
