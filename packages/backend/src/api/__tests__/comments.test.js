@@ -118,7 +118,7 @@ describe('comments api test', () => {
     it('returns 200 upon successfully deleted comment', async () => {
       setup();
 
-      const response = sendRequest();
+      const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
         success: true,
