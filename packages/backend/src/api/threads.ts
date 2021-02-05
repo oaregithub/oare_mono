@@ -56,7 +56,6 @@ router.route('/threads').put(async (req, res, next) => {
     const thread: Thread = req.body;
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
-    const userDao = sl.get('UserDao');
 
     const prevThread = await threadsDao.getByUuid(thread.uuid || '');
     if (prevThread === null) {
