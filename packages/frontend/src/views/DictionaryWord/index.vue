@@ -193,7 +193,7 @@ export default defineComponent({
         comment: true,
         edit: false,
         delete: false,
-        word: wordInfo.value !== null ? wordInfo.value.word : '',
+        word: wordInfo.value ? wordInfo.value.word : '',
         uuid: props.uuid,
         route: `/dictionaryWord/${props.uuid}`,
         type: 'WORD',
