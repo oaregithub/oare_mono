@@ -4,15 +4,16 @@ import request from 'supertest';
 import sl from '@/serviceLocator';
 
 describe('comments api test', () => {
-  const commentsDaoResolveValue = 'commentUuid';
+  const commentsDaoInsertResolveValue = 'commentUuid';
+  const commentsDaoUpdateDeleteResolveValue = 'commentUpdateDeleteUuid';
   const MockCommentsDao = {
-    insert: jest.fn().mockResolvedValue(commentsDaoResolveValue),
-    updateDelete: jest.fn().mockResolvedValue(commentsDaoResolveValue),
+    insert: jest.fn().mockResolvedValue(commentsDaoInsertResolveValue),
+    updateDelete: jest.fn().mockResolvedValue(commentsDaoUpdateDeleteResolveValue),
   };
 
-  const threadsDaoResolveValue = 'threadUuid';
+  const threadsDaoInsertResolveValue = 'threadUuid';
   const MockThreadsDao = {
-    insert: jest.fn().mockResolvedValue(threadsDaoResolveValue),
+    insert: jest.fn().mockResolvedValue(threadsDaoInsertResolveValue),
   };
 
   const setup = ({ CommentsDao, ThreadsDao } = {}) => {
@@ -20,77 +21,89 @@ describe('comments api test', () => {
     sl.set('ThreadsDao', ThreadsDao || MockThreadsDao);
   };
 
+  const validComment = {
+    uuid: 'uuid',
+    threadUuid: 'threadUuid',
+    userUuid: 'userUuid',
+    createdAt: null,
+    deleted: false,
+    text: 'text',
+  };
+
+  const validThread = {
+    uuid: 'uuid',
+    referenceUuid: 'wordUuid',
+    status: 'New',
+    route: 'route',
+  };
+
+  const doesNotExistThread = {
+    uuid: null,
+    referenceUuid: 'wordUuid',
+    status: 'New',
+    route: 'route',
+  };
+
   const getPayload = ({ Comment, Thread } = {}) => {
-    const comment = Comment || {
-      uuid: null,
-      threadUuid: null,
-      userUuid: 'userUuid',
-      createdAt: null,
-      deleted: false,
-      text: 'text',
-    };
-    const thread = Thread || {
-      uuid: null,
-      referenceUuid: 'wordUuid',
-      status: 'New',
-      route: 'route',
-    };
+    const comment = Comment || validComment;
+    const thread = Thread || validThread;
 
     return { comment, thread };
   };
 
   describe('POST /comments', () => {
     const PATH = `${API_PATH}/comments`;
+    const sendRequest = async ({ Comment, Thread } = {}) => {
+      return request(app)
+        .post(PATH)
+        .send(getPayload({ Comment, Thread }));
+    };
 
-    it('returns successful comment and thread info', async () => {
+    it('returns successful 200, comment and thread info', async () => {
       setup();
-      const response = await request(app).post(PATH).send(getPayload());
+      const response = await sendRequest({
+        Thread: doesNotExistThread,
+      });
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
-        commentUuid: commentsDaoResolveValue,
-        threadUuid: threadsDaoResolveValue,
+        commentUuid: commentsDaoInsertResolveValue,
+        threadUuid: threadsDaoInsertResolveValue,
       });
     });
 
-    it('returns successful, thread already exists', async () => {
+    it('returns 200 successful, thread already exists', async () => {
       setup();
 
       const payload = getPayload({
         Comment: null,
-        Thread: {
-          uuid: 'threadExists',
-          referenceUuid: 'wordUuid',
-          status: 'New',
-          route: 'route',
-        },
       });
 
-      const response = await request(app).post(PATH).send(payload);
+      const response = await sendRequest(payload);
       expect(response.status).toBe(200);
       expect(MockThreadsDao.insert).not.toHaveBeenCalled();
       expect(MockCommentsDao.insert).toHaveBeenCalled();
 
     });
 
-    it('fails inserting thread', async () => {
+    it('returns 500 on failed thread insertion', async () => {
       setup({
-        ...MockCommentsDao,
         ThreadsDao: {
-          insert: jest.fn().mockRejectedValue(null),
+          insert: jest.fn().mockRejectedValue('Send 500 upon failing to insert a thread'),
         },
       });
-      const response = await request(app).post(PATH).send(getPayload());
+      const response = await sendRequest({
+        Thread: doesNotExistThread,
+      });
       expect(response.status).toBe(500);
     });
 
-    it('fails inserting comment', async () => {
+    it('returns 500 on failed inserting comment', async () => {
       setup({
         CommentsDao: {
-          insert: jest.fn().mockRejectedValue(null),
+          insert: jest.fn().mockRejectedValue('Send 500 upon failing to insert a comment'),
         },
-        ...MockThreadsDao,
       });
-      const response = await request(app).post(PATH).send(getPayload());
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
   });
@@ -98,10 +111,14 @@ describe('comments api test', () => {
   describe('DELETE /comments/:uuid', () => {
     const PATH = `${API_PATH}/comments/testUuid`;
 
-    it('returns successfully deleted comment', async () => {
+    const sendRequest = async () => {
+      return request(app).delete(PATH);
+    };
+
+    it('returns 200 upon successfully deleted comment', async () => {
       setup();
 
-      const response = await request(app).delete(PATH);
+      const response = sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
         success: true,
@@ -110,13 +127,12 @@ describe('comments api test', () => {
 
     it('returns 500 when unable to delete a comment', async () => {
       setup({
-        ...MockThreadsDao,
         CommentsDao: {
-          updateDelete: jest.fn().mockRejectedValue(null),
+          updateDelete: jest.fn().mockRejectedValue('Send 500 upon failing to delete a comment'),
         },
       });
 
-      const response = await request(app).delete(PATH);
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
   });
