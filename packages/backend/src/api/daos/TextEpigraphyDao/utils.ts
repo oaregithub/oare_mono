@@ -47,8 +47,10 @@ function mapSideNumberToSideName(side: number): EpigraphicUnitSide {
       return 'u.e.';
     case 5:
       return 'le.e.';
+    case 6:
+      return 'r.e.';
     default:
-      return 're.e.';
+      return 'obv.';
   }
 }
 
