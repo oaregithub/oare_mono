@@ -197,8 +197,8 @@ export default defineComponent({
         uuid: props.uuid,
         route: `/dictionaryWord/${props.uuid}`,
         type: 'WORD',
-      })
-    }
+      });
+    };
 
     const openUtilList = (injectedUtilList: UtilListDisplay) => {
       utilListOpen.value = true;

@@ -57,15 +57,16 @@
 </template>
 
 <script lang="ts">
-  import {
-    defineComponent,
-    ref,
-    reactive,
-    computed,
-    PropType,
-    watch,
-    inject, InjectionKey,
-  } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  reactive,
+  computed,
+  PropType,
+  watch,
+  inject,
+  InjectionKey,
+} from '@vue/composition-api';
 import {
   FormSpelling,
   DictionaryForm,
@@ -106,7 +107,9 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-    const utilList = inject<(utilDisplay: UtilListDisplay) => Promise<void>>(SendUtilList);
+    const utilList = inject<(utilDisplay: UtilListDisplay) => Promise<void>>(
+      SendUtilList
+    );
 
     const search = ref('');
     const addSpellingDialog = ref(false);
@@ -166,17 +169,18 @@ export default defineComponent({
     };
 
     const openUtilList = () => {
-      utilList && utilList({
-        comment: true,
-        edit: true,
-        delete: true,
-        word: props.spelling.spelling,
-        uuid: props.wordUuid,
-        route: `/dictionaryWord/${props.wordUuid}`,
-        type: 'SPELLING',
-        form: props.form,
-        formSpelling: props.spelling,
-      });
+      utilList &&
+        utilList({
+          comment: true,
+          edit: true,
+          delete: true,
+          word: props.spelling.spelling,
+          uuid: props.wordUuid,
+          route: `/dictionaryWord/${props.wordUuid}`,
+          type: 'SPELLING',
+          form: props.form,
+          formSpelling: props.spelling,
+        });
     };
 
     watch(tableOptions, getReferences);
