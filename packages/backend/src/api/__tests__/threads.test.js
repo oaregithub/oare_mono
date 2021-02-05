@@ -47,6 +47,9 @@ describe('comments api test', () => {
   };
   const MockUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue(userDaoGetUserByUuidResolveValue),
+    getUserByEmail: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
   };
 
   const threadFoundInfo = {
@@ -87,8 +90,12 @@ describe('comments api test', () => {
   describe('GET /threads/:referenceUuid', () => {
     const PATH = `${API_PATH}/threads/testReferenceUuid`;
 
-    const sendRequest = async () => {
-      return request(app).get(PATH);
+    const sendRequest = async ({ cookie = true } = {}) => {
+      if (cookie) {
+        return request(app).get(PATH).set('Cookie', 'jwt=token');
+      } else {
+        return request(app).get(PATH);
+      }
     };
 
     it('returns successful thread, comment and user info.', async () => {
@@ -102,6 +109,14 @@ describe('comments api test', () => {
           comments: [commentWithFoundUserInfo],
         },
       ]);
+    });
+
+    it('returns 401, for non-logged in users.', async () => {
+      setup();
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
     });
 
     it('returns 500, invalid comment.', async () => {
@@ -134,7 +149,7 @@ describe('comments api test', () => {
         },
       });
 
-      const response = await request(app).get(PATH);
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
@@ -172,6 +187,9 @@ describe('comments api test', () => {
       setup({
         UserDao: {
           getUserByUuid: jest.fn().mockResolvedValue(null),
+          getUserByEmail: jest.fn().mockResolvedValue({
+            isAdmin: true,
+          }),
         },
       });
 
@@ -200,8 +218,12 @@ describe('comments api test', () => {
       return thread;
     };
 
-    const sendRequest = async ({ Thread } = {}) => {
-      return request(app).put(PATH).send(getPayload(Thread));
+    const sendRequest = async ({ Thread, cookie = true } = {}) => {
+      if (cookie) {
+        return request(app).put(PATH).set('Cookie', 'jwt=token').send(getPayload(Thread));
+      } else {
+        return request(app).put(PATH).send(getPayload(Thread));
+      }
     };
 
     it('returns successful thread, comment and user info.', async () => {
@@ -212,6 +234,26 @@ describe('comments api test', () => {
       expect(JSON.parse(response.text)).toEqual({
         success: true,
       });
+    });
+
+    it('returns 401 for non-logged in users.', async () => {
+      setup();
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 403 for non-admin users.', async () => {
+      setup({
+        UserDao: {
+          getUserByEmail: jest.fn().mockResolvedValue({
+            isAdmin: false,
+          }),
+        },
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
     });
 
     it('invalid thread uuid.', async () => {

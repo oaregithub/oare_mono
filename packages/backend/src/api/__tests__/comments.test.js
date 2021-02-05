@@ -16,9 +16,17 @@ describe('comments api test', () => {
     insert: jest.fn().mockResolvedValue(threadsDaoInsertResolveValue),
   };
 
-  const setup = ({ CommentsDao, ThreadsDao } = {}) => {
+  const MockUserDao = {
+    insert: jest.fn().mockResolvedValue(threadsDaoInsertResolveValue),
+    getUserByEmail: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
+  };
+
+  const setup = ({ CommentsDao, ThreadsDao, UserDao } = {}) => {
     sl.set('CommentsDao', CommentsDao || MockCommentsDao);
     sl.set('ThreadsDao', ThreadsDao || MockThreadsDao);
+    sl.set('UserDao', UserDao || MockUserDao);
   };
 
   const validComment = {
@@ -53,10 +61,17 @@ describe('comments api test', () => {
 
   describe('POST /comments', () => {
     const PATH = `${API_PATH}/comments`;
-    const sendRequest = async ({ Comment, Thread } = {}) => {
-      return request(app)
-        .post(PATH)
-        .send(getPayload({ Comment, Thread }));
+    const sendRequest = async ({ Comment, Thread, cookie = true } = {}) => {
+      if (cookie) {
+        return request(app)
+          .post(PATH)
+          .set('Cookie', 'jwt=token')
+          .send(getPayload({ Comment, Thread }));
+      } else {
+        return request(app)
+          .post(PATH)
+          .send(getPayload({ Comment, Thread }));
+      }
     };
 
     it('returns successful 200, comment and thread info', async () => {
@@ -85,6 +100,14 @@ describe('comments api test', () => {
 
     });
 
+    it('returns 401 on non-logged in user', async () => {
+      setup();
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
+    });
+
     it('returns 500 on failed thread insertion', async () => {
       setup({
         ThreadsDao: {
@@ -111,8 +134,12 @@ describe('comments api test', () => {
   describe('DELETE /comments/:uuid', () => {
     const PATH = `${API_PATH}/comments/testUuid`;
 
-    const sendRequest = async () => {
-      return request(app).delete(PATH);
+    const sendRequest = async ({ cookie = true } = {}) => {
+      if (cookie) {
+        return request(app).delete(PATH).set('Cookie', 'jwt=token');
+      } else {
+        return request(app).delete(PATH);
+      }
     };
 
     it('returns 200 upon successfully deleted comment', async () => {
@@ -134,6 +161,14 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+    });
+
+    it('returns 401 when user is not logged-in', async () => {
+      setup();
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
     });
   });
 });
