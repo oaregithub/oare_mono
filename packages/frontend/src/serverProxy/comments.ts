@@ -8,9 +8,8 @@ async function insertComment(
   return data;
 }
 
-async function deleteComment(uuid: string): Promise<boolean> {
-  const { data } = await axios.delete(`/comments/${encodeURIComponent(uuid)}`);
-  return data;
+async function deleteComment(uuid: string): Promise<void> {
+  await axios.delete(`/comments/${encodeURIComponent(uuid)}`);
 }
 
 export default {
