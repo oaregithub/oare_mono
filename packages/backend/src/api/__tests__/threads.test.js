@@ -4,7 +4,7 @@ import request from 'supertest';
 import sl from '@/serviceLocator';
 
 describe('comments api test', () => {
-  const commentsDaoGetAllByThreadUuidResolveValue = [
+  const commentsGetAllByThreadUuid = [
     {
       uuid: 'string',
       threadUuid: 'string',
@@ -17,11 +17,11 @@ describe('comments api test', () => {
     },
   ];
   const MockCommentsDao = {
-    getAllByThreadUuid: jest.fn().mockResolvedValue(commentsDaoGetAllByThreadUuidResolveValue),
-    insert: jest.fn().mockResolvedValue({}),
+    getAllByThreadUuid: jest.fn().mockResolvedValue(commentsGetAllByThreadUuid),
+    insert: jest.fn().mockResolvedValue(''),
   };
 
-  const threadsDaoGetByReferenceUuidResolveValue = [
+  const threadsGetByReferenceUuid = [
     {
       uuid: 'string',
       referenceUuid: 'string',
@@ -30,23 +30,17 @@ describe('comments api test', () => {
     },
   ];
   const MockThreadsDao = {
-    getByReferenceUuid: jest.fn().mockResolvedValue(threadsDaoGetByReferenceUuidResolveValue),
+    getByReferenceUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
     update: jest.fn().mockResolvedValue({}),
-    getByUuid: jest.fn().mockResolvedValue(''),
+    getByUuid: jest.fn().mockResolvedValue({}),
   };
 
-  const userDaoGetUserByUuidResolveValue = {
-    number: 1,
-    uuid: 'test',
+  const userGetUserByUuid = {
     firstName: 'first',
     lastName: 'last',
-    email: 'email',
-    passwordHash: 'hash',
-    isAdmin: true,
-    createdOn: 'date',
   };
   const MockUserDao = {
-    getUserByUuid: jest.fn().mockResolvedValue(userDaoGetUserByUuidResolveValue),
+    getUserByUuid: jest.fn().mockResolvedValue(userGetUserByUuid),
     getUserByEmail: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
@@ -81,11 +75,13 @@ describe('comments api test', () => {
     userLastName: '',
   };
 
-  const setup = ({ CommentsDao, ThreadsDao, UserDao } = {}) => {
-    sl.set('CommentsDao', CommentsDao || MockCommentsDao);
-    sl.set('ThreadsDao', ThreadsDao || MockThreadsDao);
-    sl.set('UserDao', UserDao || MockUserDao);
+  const setup = () => {
+    sl.set('CommentsDao', MockCommentsDao);
+    sl.set('ThreadsDao', MockThreadsDao);
+    sl.set('UserDao', MockUserDao);
   };
+
+  beforeEach(setup);
 
   describe('GET /threads/:referenceUuid', () => {
     const PATH = `${API_PATH}/threads/testReferenceUuid`;
@@ -99,7 +95,6 @@ describe('comments api test', () => {
     };
 
     it('returns successful thread, comment and user info.', async () => {
-      setup();
 
       const response = await sendRequest();
       expect(response.status).toBe(200);
@@ -112,7 +107,6 @@ describe('comments api test', () => {
     });
 
     it('returns 401, for non-logged in users.', async () => {
-      setup();
       const response = await sendRequest({
         cookie: false,
       });
@@ -120,10 +114,8 @@ describe('comments api test', () => {
     });
 
     it('returns 500, invalid comment.', async () => {
-      setup({
-        CommentsDao: {
-          getAllByThreadUuid: jest.fn().mockRejectedValue('returns 500 when passed an invalid comment.'),
-        },
+      sl.set('CommentsDao', {
+        getAllByThreadUuid: jest.fn().mockRejectedValue('Erro getting an invalid comment.'),
       });
 
       const response = await sendRequest();
@@ -132,10 +124,8 @@ describe('comments api test', () => {
     });
 
     it('returns 500, invalid thread.', async () => {
-      setup({
-        ThreadsDao: {
-          getByReferenceUuid: jest.fn().mockRejectedValue('returns 500 when passed an invalid thread.'),
-        },
+      sl.set('ThreadsDao', {
+        getByReferenceUuid: jest.fn().mockRejectedValue('Error getting an invalid thread.'),
       });
 
       const response = await sendRequest();
@@ -143,10 +133,8 @@ describe('comments api test', () => {
     });
 
     it('returns 500, invalid user.', async () => {
-      setup({
-        UserDao: {
-          getUserByUuid: jest.fn().mockRejectedValue('returns 500 when given an invalid user.'),
-        },
+      sl.set('UserDao', {
+        getUserByUuid: jest.fn().mockRejectedValue('Error getting an invalid user.'),
       });
 
       const response = await sendRequest();
@@ -154,10 +142,8 @@ describe('comments api test', () => {
     });
 
     it('returns 200, even when no thread is found.', async () => {
-      setup({
-        ThreadsDao: {
-          getByReferenceUuid: jest.fn().mockResolvedValue([]),
-        },
+      sl.set('ThreadsDao', {
+        getByReferenceUuid: jest.fn().mockResolvedValue([]),
       });
 
       const response = await sendRequest();
@@ -166,10 +152,8 @@ describe('comments api test', () => {
     });
 
     it('returns 200, even when no comments are found.', async () => {
-      setup({
-        CommentsDao: {
-          getAllByThreadUuid: jest.fn().mockResolvedValue([]),
-        },
+      sl.set('CommentsDao', {
+        getAllByThreadUuid: jest.fn().mockResolvedValue([]),
       });
 
       const response = await sendRequest();
@@ -184,12 +168,10 @@ describe('comments api test', () => {
     });
 
     it('returns 200, even when no user is found.', async () => {
-      setup({
-        UserDao: {
-          getUserByUuid: jest.fn().mockResolvedValue(null),
-          getUserByEmail: jest.fn().mockResolvedValue({
-            isAdmin: true,
-          }),
+      sl.set('UserDao', {
+        getUserByUuid: jest.fn().mockResolvedValue(null),
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: true,
         },
       });
 
@@ -207,8 +189,8 @@ describe('comments api test', () => {
   describe('PUT /threads', () => {
     const PATH = `${API_PATH}/threads`;
 
-    const getPayload = ({ Thread } = {}) => {
-      const thread = Thread || {
+    const getPayload = ({ overrideThread } = {}) => {
+      const thread = overrideThread || {
         uuid: 'string',
         referenceUuid: 'string',
         status: 'New',
@@ -218,26 +200,21 @@ describe('comments api test', () => {
       return thread;
     };
 
-    const sendRequest = async ({ Thread, cookie = true } = {}) => {
+    const sendRequest = async ({ overrideThread } = {}) => {
       if (cookie) {
-        return request(app).put(PATH).set('Cookie', 'jwt=token').send(getPayload(Thread));
+        return request(app).put(PATH).set('Cookie', 'jwt=token').send(getPayload(overrideThread));
       } else {
-        return request(app).put(PATH).send(getPayload(Thread));
+        return request(app).put(PATH).send(getPayload(overrideThread));
       }
     };
 
     it('returns successful thread, comment and user info.', async () => {
-      setup();
 
       const response = await sendRequest();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual({
-        success: true,
-      });
     });
 
     it('returns 401 for non-logged in users.', async () => {
-      setup();
       const response = await sendRequest({
         cookie: false,
       });
@@ -245,24 +222,22 @@ describe('comments api test', () => {
     });
 
     it('returns 403 for non-admin users.', async () => {
-      setup({
-        UserDao: {
-          getUserByEmail: jest.fn().mockResolvedValue({
-            isAdmin: false,
-          }),
+
+      sl.set('UserDao', {
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: false,
         },
       });
+
       const response = await sendRequest();
       expect(response.status).toBe(403);
     });
 
     it('invalid thread uuid.', async () => {
-      setup({
-        ThreadsDao: {
-          getByReferenceUuid: jest.fn().mockResolvedValue(threadsDaoGetByReferenceUuidResolveValue),
-          update: jest.fn().mockResolvedValue({}),
-          getByUuid: jest.fn().mockResolvedValue(null),
-        },
+      sl.set('ThreadsDao', {
+        getByReferenceUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
+        update: jest.fn().mockResolvedValue({}),
+        getByUuid: jest.fn().mockResolvedValue(null),
       });
 
       const response = await sendRequest();
@@ -270,12 +245,10 @@ describe('comments api test', () => {
     });
 
     it('500 reject error for thread update.', async () => {
-      setup({
-        ThreadsDao: {
-          getByReferenceUuid: jest.fn().mockResolvedValue(threadsDaoGetByReferenceUuidResolveValue),
-          update: jest.fn().mockRejectedValue('returns 500 when thread unable to be updated.'),
-          getByUuid: jest.fn().mockResolvedValue(''),
-        },
+      sl.set('ThreadsDao', {
+        getByReferenceUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
+        update: jest.fn().mockRejectedValue('Error, thread unable to be updated.'),
+        getByUuid: jest.fn().mockResolvedValue(''),
       });
 
       const response = await sendRequest();
@@ -283,11 +256,9 @@ describe('comments api test', () => {
     });
 
     it('500 reject error for admin comment insert.', async () => {
-      setup({
-        CommentsDao: {
-          getAllByThreadUuid: jest.fn().mockResolvedValue(threadsDaoGetByReferenceUuidResolveValue),
-          insert: jest.fn().mockRejectedValue('returns 500 when admin comment unable to be inserted.'),
-        },
+      sl.set('CommentsDao', {
+        getAllByThreadUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
+        insert: jest.fn().mockRejectedValue('Error when admin comment unable to be inserted.'),
       });
 
       const response = await sendRequest();

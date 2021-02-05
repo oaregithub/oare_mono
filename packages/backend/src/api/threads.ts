@@ -75,9 +75,7 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
       text: `The status was changed from ${prevThread?.status} to ${thread.status}`,
     });
 
-    res.json({
-      success: true,
-    });
+    res.status(200).end();
   } catch (err) {
     next(new HttpInternalError(err));
   }

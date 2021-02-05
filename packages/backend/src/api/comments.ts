@@ -42,9 +42,7 @@ router.route('/comments/:uuid').delete(authenticatedRoute, async (req, res, next
     const commentsDao = sl.get('CommentsDao');
     await commentsDao.updateDelete(uuid);
 
-    res.json({
-      success: true,
-    });
+    res.status(200).end();
   } catch (err) {
     next(new HttpInternalError(err));
   }
