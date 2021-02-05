@@ -10,7 +10,7 @@ export async function up(knex: Knex): Promise<void> {
       table.text('description').notNullable();
       table.text('stacktrace').nullable();
       table.timestamp('timestamp').notNullable();
-      table.string('status');
+      table.string('status').notNullable();
 
       table.foreign('user_uuid').references('user.uuid');
     });
