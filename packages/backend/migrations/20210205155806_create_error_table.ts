@@ -5,7 +5,10 @@ export async function up(knex: Knex): Promise<void> {
 
   if (!hasTable) {
     await knex.schema.createTable('errors', (table) => {
+      table.charset('utf8');
+      table.collate('utf8_general_ci');
       table.increments('id');
+      table.uuid('uuid').notNullable().unique();
       table.uuid('user_uuid').nullable();
       table.text('description').notNullable();
       table.text('stacktrace').nullable();
