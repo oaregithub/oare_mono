@@ -40,7 +40,7 @@ export function getMarkupByDamageType(
 }
 
 /**
- * markupType is guaranteed to be one of 'damage', 'partialDamage', or 'undeterminedSigns'
+ * markupType is guaranteed to be one of 'damage', 'partialDamage'
  */
 export function unitMatchesDamageType(
   neighbor: EpigraphicUnit,

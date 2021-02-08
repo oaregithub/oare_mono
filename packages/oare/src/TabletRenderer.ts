@@ -11,6 +11,8 @@ import {
   convertMarkedUpUnitsToLineReading,
 } from './tabletUtils';
 
+const a = 3;
+
 export default class TabletRenderer {
   protected epigraphicUnits: EpigraphicUnit[] = [];
 
