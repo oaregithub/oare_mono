@@ -63,16 +63,8 @@ describe('comments api test', () => {
   describe('POST /comments', () => {
     const PATH = `${API_PATH}/comments`;
     const sendRequest = async ({ overrideComment, overrideThread, cookie = true } = {}) => {
-      if (cookie) {
-        return request(app)
-          .post(PATH)
-          .set('Cookie', 'jwt=token')
-          .send(getPayload({ overrideComment, overrideThread }));
-      } else {
-        return request(app)
-          .post(PATH)
-          .send(getPayload({ overrideComment, overrideThread }));
-      }
+      const req = request(app).post(PATH).send(getPayload({ overrideComment, overrideThread }));
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
 
     it('returns successful 200, comment and thread info', async () => {
@@ -102,6 +94,7 @@ describe('comments api test', () => {
 
     it('returns 500 on failed thread insertion', async () => {
       sl.set('ThreadsDao', {
+        ...MockThreadsDao,
         insert: jest.fn().mockRejectedValue('Error inserting a thread'),
       });
       const response = await sendRequest({
@@ -123,11 +116,8 @@ describe('comments api test', () => {
     const PATH = `${API_PATH}/comments/testUuid`;
 
     const sendRequest = async ({ cookie = true } = {}) => {
-      if (cookie) {
-        return request(app).delete(PATH).set('Cookie', 'jwt=token');
-      } else {
-        return request(app).delete(PATH);
-      }
+      const req = request(app).delete(PATH);
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
 
     it('returns 200 upon successfully deleted comment', async () => {
@@ -138,6 +128,7 @@ describe('comments api test', () => {
 
     it('returns 500 when unable to delete a comment', async () => {
       sl.set('CommentsDao', {
+        ...MockCommentsDao,
         updateDelete: jest.fn().mockRejectedValue('Error deleting a comment'),
       });
 
