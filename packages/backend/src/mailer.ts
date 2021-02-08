@@ -1,7 +1,15 @@
 import mailgun from 'mailgun-js';
 
 const mailer = {
-  sendMail: async ({ to, subject, text }: { to: string; subject: string; text: string }) => {
+  sendMail: async ({
+    to,
+    subject,
+    text,
+  }: {
+    to: string;
+    subject: string;
+    text: string;
+  }) => {
     if (process.env.MG_API_KEY) {
       const mg = mailgun({
         apiKey: process.env.MG_API_KEY,

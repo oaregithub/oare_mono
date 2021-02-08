@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
-    "lint": "yarn workspace @oare/frontend run lint",
-    "lint:fix": "yarn workspace @oare/frontend lint:fix",
+    "lint": "yarn run eslint ./packages/backend/{src,migrations}/**/*.ts --fix",
+    "lint:fix": "yarn lint --fix",
     "build": "./build.sh",
     "zip": "cd packages/backend && zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare && cp oare_build.zip ../..",
     "bootstrap": "lerna bootstrap --use-workspaces",
@@ -27,6 +27,8 @@
     ]
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.12.13",
+    "@babel/preset-typescript": "^7.12.13",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
     "eslint": "^7.19.0",

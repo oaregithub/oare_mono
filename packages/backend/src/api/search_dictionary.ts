@@ -8,7 +8,11 @@ const router = express.Router();
 
 router.route('/search_dictionary').get(async (req, res, next) => {
   try {
-    const { search, page, rows } = (req.query as unknown) as DictionarySearchPayload;
+    const {
+      search,
+      page,
+      rows,
+    } = (req.query as unknown) as DictionarySearchPayload;
 
     const results = await dictionaryWordDao.searchWords(search, page, rows);
     cache.insert({ req }, results);

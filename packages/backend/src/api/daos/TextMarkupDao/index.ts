@@ -9,9 +9,13 @@ class TextMarkupDao {
         'text_markup.type AS type',
         'text_markup.num_value AS value',
         'text_markup.start_char AS startChar',
-        'text_markup.end_char as endChar',
+        'text_markup.end_char as endChar'
       )
-      .innerJoin('text_epigraphy', 'text_markup.reference_uuid', 'text_epigraphy.uuid')
+      .innerJoin(
+        'text_epigraphy',
+        'text_markup.reference_uuid',
+        'text_epigraphy.uuid'
+      )
       .where('text_epigraphy.text_uuid', textUuid);
     const rows: MarkupUnit[] = await query;
     return rows;

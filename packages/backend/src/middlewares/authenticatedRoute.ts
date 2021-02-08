@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { HttpInternalError, HttpUnauthorized } from '@/exceptions';
 
-async function authenticatedRoute(req: Request, _res: Response, next: NextFunction) {
+async function authenticatedRoute(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) {
   try {
     const { user } = req;
     if (!user) {

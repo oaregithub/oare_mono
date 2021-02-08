@@ -11,10 +11,17 @@
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaVersion": 11,
-    "parser": "@typescript-eslint/parser",
-    "sourceType": "module"
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": [
+        ["@babel/preset-env", { "targets": { "node": "current" } }],
+        "@babel/preset-typescript"
+      ]
+    }
   },
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
@@ -35,16 +42,20 @@
     "no-await-in-loop": "off",
     "import/no-unresolved": "off",
     "import/no-extraneous-dependencies": "off",
-    "comma-dangle": [
-      "error",
-      {
-        "objects": "only-multiline",
-        "functions": "never"
-      }
-    ],
+    "comma-dangle": ["error", "only-multiline"],
     "arrow-parens": ["error", "as-needed"],
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "off"
+    "@typescript-eslint/no-unused-vars": "off",
+    "camelcase": "off",
+    "no-restricted-globals": "off",
+    "func-names": "off",
+    "no-use-before-define": "off",
+    "no-param-reassign": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-namespace": "off"
   },
   "settings": {
     "import/resolver": {

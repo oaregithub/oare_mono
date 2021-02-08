@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-async function collectionsMiddleware(req: Request, res: Response, next: NextFunction) {
+async function collectionsMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const user = req.user || null;
   const uuid = req.params.uuid as string;
 
