@@ -2,10 +2,12 @@ import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import { CommentDisplay, Thread, ThreadWithComments, Comment } from '@oare/types';
+import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import adminRoute from '@/middlewares/adminRoute';
 
 const router = express.Router();
 
-router.route('/threads/:referenceUuid').get(async (req, res, next) => {
+router.route('/threads/:referenceUuid').get(authenticatedRoute, async (req, res, next) => {
   try {
     const { referenceUuid } = req.params;
     const threadsDao = sl.get('ThreadsDao');
@@ -51,7 +53,7 @@ router.route('/threads/:referenceUuid').get(async (req, res, next) => {
   }
 });
 
-router.route('/threads').put(async (req, res, next) => {
+router.route('/threads').put(adminRoute, async (req, res, next) => {
   try {
     const thread: Thread = req.body;
     const threadsDao = sl.get('ThreadsDao');

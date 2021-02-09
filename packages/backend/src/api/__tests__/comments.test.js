@@ -16,9 +16,16 @@ describe('comments api test', () => {
     insert: jest.fn().mockResolvedValue(threadsUuid),
   };
 
+  const MockUserDao = {
+    getUserByEmail: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
+  };
+
   const setup = () => {
     sl.set('CommentsDao', MockCommentsDao);
     sl.set('ThreadsDao', MockThreadsDao);
+    sl.set('UserDao', MockUserDao);
   };
 
   beforeEach(setup);
@@ -55,8 +62,9 @@ describe('comments api test', () => {
 
   describe('POST /comments', () => {
     const PATH = `${API_PATH}/comments`;
-    const sendRequest = async ({ overrideComment, overrideThread } = {}) => {
-      return request(app).post(PATH).send(getPayload({ overrideComment, overrideThread }));
+    const sendRequest = async ({ overrideComment, overrideThread, cookie = true } = {}) => {
+      const req = request(app).post(PATH).send(getPayload({ overrideComment, overrideThread }));
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
 
     it('returns successful 200, comment and thread info', async () => {
@@ -77,8 +85,16 @@ describe('comments api test', () => {
       expect(MockCommentsDao.insert).toHaveBeenCalled();
     });
 
+    it('returns 401 on non-logged in user', async () => {
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
+    });
+
     it('returns 500 on failed thread insertion', async () => {
       sl.set('ThreadsDao', {
+        ...MockThreadsDao,
         insert: jest.fn().mockRejectedValue('Error inserting a thread'),
       });
       const response = await sendRequest({
@@ -99,8 +115,9 @@ describe('comments api test', () => {
   describe('DELETE /comments/:uuid', () => {
     const PATH = `${API_PATH}/comments/testUuid`;
 
-    const sendRequest = async () => {
-      return request(app).delete(PATH);
+    const sendRequest = async ({ cookie = true } = {}) => {
+      const req = request(app).delete(PATH);
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
 
     it('returns 200 upon successfully deleted comment', async () => {
@@ -111,11 +128,20 @@ describe('comments api test', () => {
 
     it('returns 500 when unable to delete a comment', async () => {
       sl.set('CommentsDao', {
+        ...MockCommentsDao,
         updateDelete: jest.fn().mockRejectedValue('Error deleting a comment'),
       });
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+    });
+
+    it('returns 401 when user is not logged-in', async () => {
+      setup();
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
     });
   });
 });
