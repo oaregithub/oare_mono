@@ -5,6 +5,7 @@
       :letter="letter"
       :route="route"
       :searchFilter="searchFilter"
+      @clicked-util-list="openUtilList"
     >
       <template #translation="{ word }" v-if="route === 'names'">
         <div>
@@ -18,17 +19,23 @@
           :key="idx"
           class="d-flex flex-wrap pl-4"
         >
-          <UtilList
-            @clicked-commenting="isCommented"
-            :has-edit="false"
-            :has-delete="false"
-            :word="formInfo.form"
-            :route="`/dictionaryWord/${word.uuid}`"
-            :uuid="formInfo.uuid"
-            :mark-word="true"
+          <em
+            @click="
+              openUtilList({
+                comment: true,
+                edit: false,
+                delete: false,
+                word: formInfo.form,
+                uuid: formInfo.uuid,
+                route: `/dictionaryWord/${word.uuid}`,
+                type: 'FORM',
+              })
+            "
+            class="font-weight-bold mr-1"
+            style="cursor: pointer"
           >
-            <em class="font-weight-bold mr-1">{{ formInfo.form }}</em>
-          </UtilList>
+            {{ formInfo.form }}
+          </em>
 
           <div class="mr-1">({{ formInfo.cases }})</div>
           <div
@@ -37,32 +44,40 @@
             class="d-flex"
           >
             <span v-if="idx > 0" class="mr-1">, </span>
-            <UtilList
-              @clicked-commenting="isCommented"
-              :has-edit="false"
-              :has-delete="false"
-              :word="spelling.explicitSpelling"
-              :route="`/dictionaryWord/${word.uuid}`"
-              :uuid="spelling.uuid"
-              :mark-word="true"
-            >
-              <span
-                v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
-              ></span>
-            </UtilList>
+            <span
+              style="cursor: pointer"
+              @click="
+                openUtilList({
+                  comment: true,
+                  edit: true,
+                  delete: true,
+                  word: spelling.explicitSpelling,
+                  uuid: spelling.uuid,
+                  route: `/dictionaryWord/${word.uuid}`,
+                  type: 'SPELLING',
+                })
+              "
+              v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
+            ></span>
           </div>
         </div>
       </template>
     </DictionaryDisplay>
+    <UtilList
+      v-model="utilListOpen"
+      @clicked-commenting="beginCommenting"
+      :has-edit="false"
+      :has-delete="false"
+    ></UtilList>
     <CommentWordDisplay
       v-if="isCommenting"
-      :route="selectedRoute"
-      :uuid="selectedUuid"
-      :word="selectedWord"
+      :route="utilList.route"
+      :uuid="utilList.uuid"
+      :word="utilList.word"
       @submit="isCommenting = false"
       @input="isCommenting = false"
       ><em class="font-weight-bold mr-1">{{
-        selectedWord
+        utilList.word.charAt(0).toUpperCase() + utilList.word.slice(1)
       }}</em></CommentWordDisplay
     >
   </span>
@@ -70,7 +85,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import { NameOrPlace } from '@oare/types';
+import { NameOrPlace, UtilListDisplay } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
 import CommentWordDisplay from '../CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
@@ -99,6 +114,16 @@ export default defineComponent({
 
   setup(props, { emit }) {
     const isCommenting = ref(false);
+    const utilListOpen = ref(false);
+    const utilList = ref<UtilListDisplay>({
+      comment: false,
+      edit: false,
+      delete: false,
+      word: '',
+      uuid: '',
+      route: '',
+      type: 'NONE',
+    });
     const selectedWord = ref('');
     const selectedUuid = ref('');
     const selectedRoute = ref('');
@@ -111,11 +136,14 @@ export default defineComponent({
       );
     };
 
-    const isCommented = (word: string, uuid: string, route: string) => {
+    const beginCommenting = () => {
+      utilListOpen.value = false;
       isCommenting.value = true;
-      selectedWord.value = word;
-      selectedUuid.value = uuid;
-      selectedRoute.value = route;
+    };
+
+    const openUtilList = (inputUtilList: UtilListDisplay) => {
+      utilListOpen.value = true;
+      utilList.value = inputUtilList;
     };
 
     const searchFilter = (search: string, word: NameOrPlace) => {
@@ -141,7 +169,10 @@ export default defineComponent({
     };
 
     return {
-      isCommented,
+      utilList,
+      beginCommenting,
+      utilListOpen,
+      openUtilList,
       selectedWord,
       selectedUuid,
       selectedRoute,

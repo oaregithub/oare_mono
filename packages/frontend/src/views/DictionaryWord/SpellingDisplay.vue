@@ -1,20 +1,13 @@
 <template>
   <span class="d-flex flex-row mb-0">
-    <UtilList
-      v-if="canEdit"
-      @clicked-commenting="isCommenting = true"
-      @clicked-editing="isEditing = true"
-      @clicked-deleting="deleteSpellingDialog = true"
-      :word="spelling.spelling"
-      class="testing-spelling"
-    >
-      <span v-html="htmlSpelling"></span>
-    </UtilList>
     <span
-      v-else
+      v-if="canEdit"
+      @click="openUtilList"
+      class="testing-spelling"
+      style="cursor: pointer"
       v-html="htmlSpelling"
-      class="test-spelling testing-spelling"
     ></span>
+    <span v-else v-html="htmlSpelling" class="test-spelling"></span>
 
     &nbsp;
     <span v-if="spelling.totalOccurrences > 0">
@@ -23,17 +16,7 @@
       }}</a
       >)</span
     >
-    <spelling-dialog :form="form" :spelling="spelling" v-model="isEditing" />
-    <CommentWordDisplay
-      v-model="isCommenting"
-      :route="`/dictionaryWord/${wordUuid}`"
-      :uuid="spelling.uuid"
-      :word="spelling.spelling"
-      @submit="isCommenting = false"
-      @input="isCommenting = false"
-    >
-      <span v-html="htmlSpelling"></span>
-    </CommentWordDisplay>
+
     <OareDialog
       v-model="addSpellingDialog"
       :title="`Texts for ${spelling.spelling}`"
@@ -70,18 +53,6 @@
         </template>
       </v-data-table>
     </OareDialog>
-    <OareDialog
-      v-model="deleteSpellingDialog"
-      title="Delete spelling"
-      submitText="Yes, delete"
-      cancelText="No, don't delete"
-      :persistent="false"
-      @submit="deleteSpelling"
-      :submitLoading="deleteLoading"
-    >
-      Are you sure you want to delete the spelling {{ spelling.spelling }} from
-      this form? This action cannot be undone.
-    </OareDialog>
   </span>
 </template>
 
@@ -94,17 +65,19 @@ import {
   PropType,
   watch,
   inject,
+  InjectionKey,
 } from '@vue/composition-api';
 import {
   FormSpelling,
   DictionaryForm,
   SearchDiscourseSpellingRow,
+  UtilListDisplay,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
-import { ReloadKey } from './index.vue';
+import { SendUtilList } from './index.vue';
 import SpellingDialog from './SpellingDialog.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
@@ -125,8 +98,8 @@ export default defineComponent({
       required: true,
     },
     wordUuid: {
-      type: String as PropType<string>,
-      required: false,
+      type: String,
+      required: true,
     },
   },
   setup(props) {
@@ -134,11 +107,11 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-    const reload = inject(ReloadKey);
+    const utilList = inject(SendUtilList);
 
     const search = ref('');
     const addSpellingDialog = ref(false);
-    const deleteSpellingDialog = ref(false);
+    const showUtilList = ref(false);
     const deleteLoading = ref(false);
     const isEditing = ref(false);
     const isCommenting = ref(false);
@@ -193,17 +166,19 @@ export default defineComponent({
       }
     };
 
-    const deleteSpelling = async () => {
-      try {
-        deleteLoading.value = true;
-        await server.removeSpelling(props.spelling.uuid);
-        actions.showSnackbar('Successfully removed spelling');
-        reload && reload();
-      } catch {
-        actions.showErrorSnackbar('Failed to delete spelling');
-      } finally {
-        deleteLoading.value = false;
-      }
+    const openUtilList = () => {
+      utilList &&
+        utilList({
+          comment: true,
+          edit: true,
+          delete: true,
+          word: props.spelling.spelling,
+          uuid: props.spelling.uuid,
+          route: `/dictionaryWord/${props.wordUuid}`,
+          type: 'SPELLING',
+          form: props.form,
+          formSpelling: props.spelling,
+        });
     };
 
     watch(tableOptions, getReferences);
@@ -211,8 +186,9 @@ export default defineComponent({
     watch(search, _.debounce(getReferences, 500));
 
     return {
+      openUtilList,
+      showUtilList,
       addSpellingDialog,
-      deleteSpellingDialog,
       deleteLoading,
       headers,
       search,
@@ -221,7 +197,6 @@ export default defineComponent({
       isCommenting,
       editLoading,
       htmlSpelling,
-      deleteSpelling,
       referencesLoading,
       spellingOccurrences,
       tableOptions,

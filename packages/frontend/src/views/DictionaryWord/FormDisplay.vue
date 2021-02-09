@@ -18,24 +18,13 @@
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
-      <UtilList
-        @clicked-commenting="isCommenting = true"
-        :has-edit="false"
-        :has-delete="false"
-        :word="form.form"
+      <strong
+        style="cursor: pointer"
+        @click="openUtilList"
+        class="mr-1 test-form-util-list"
       >
-        <strong class="mr-1">{{ form.form }}</strong>
-      </UtilList>
-
-      <CommentWordDisplay
-        v-model="isCommenting"
-        :route="`/dictionaryWord/${wordUuid}`"
-        :uuid="form.uuid"
-        :word="form.form"
-        @submit="isCommenting = false"
-        @input="isCommenting = false"
-        >{{ form.form }}</CommentWordDisplay
-      >
+        {{ form.form }}
+      </strong>
 
       <grammar-display :form="form" />
       <span class="d-flex flex-row flex-wrap mb-0">
@@ -102,14 +91,26 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
-import { DictionaryForm, FormSpelling, SpellingText } from '@oare/types';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  computed,
+  inject,
+} from '@vue/composition-api';
+import {
+  DictionaryForm,
+  FormSpelling,
+  SpellingText,
+  UtilListDisplay,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
 import SpellingDialog from './SpellingDialog.vue';
 import UtilList from '../../components/UtilList/index.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
+import { SendUtilList } from './index.vue';
 
 export default defineComponent({
   components: {
@@ -137,6 +138,7 @@ export default defineComponent({
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const utilList = inject(SendUtilList);
 
     const spellingDialogOpen = ref(false);
     const editing = ref(false);
@@ -180,7 +182,21 @@ export default defineComponent({
       });
     };
 
+    const openUtilList = () => {
+      utilList &&
+        utilList({
+          comment: true,
+          edit: false,
+          delete: false,
+          word: props.form.form,
+          uuid: props.form.uuid,
+          route: `/dictionaryWord/${props.wordUuid}`,
+          type: 'FORM',
+        });
+    };
+
     return {
+      openUtilList,
       isCommenting,
       editing,
       canEdit,
