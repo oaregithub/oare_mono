@@ -14,3 +14,4 @@ export * from './src/utils';
 export * from './src/words';
 export * from './src/tokens';
 export * from './src/textDiscourse';
+export * from './src/errors';
