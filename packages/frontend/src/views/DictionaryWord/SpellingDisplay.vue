@@ -173,7 +173,7 @@ export default defineComponent({
           edit: true,
           delete: true,
           word: props.spelling.spelling,
-          uuid: props.wordUuid,
+          uuid: props.spelling.uuid,
           route: `/dictionaryWord/${props.wordUuid}`,
           type: 'SPELLING',
           form: props.form,
