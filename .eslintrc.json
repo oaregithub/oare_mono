@@ -8,8 +8,7 @@
   "extends": [
     "airbnb-base",
     "prettier",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/eslint-recommended"
   ],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
@@ -23,7 +22,7 @@
       ]
     }
   },
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": ["vue", "@typescript-eslint", "prettier"],
   "rules": {
     "prettier/prettier": ["error"],
     "quotes": ["error", "single", { "avoidEscape": true }],
@@ -66,12 +65,10 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/packages/frontend/**/*.vue",
-        "**/packages/frontend/**/*.{j,t}s"
-      ],
-      "plugins": ["vue"],
-      "extends": ["plugin:vue/essential"]
+      "files": ["./packages/frontend/**/*.vue"],
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser"
+      }
     }
   ]
 }

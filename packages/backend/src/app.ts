@@ -9,7 +9,6 @@ import cacheMiddleware from './middlewares/cache';
 import userMiddleware from './middlewares/user';
 
 const app = express();
-
 // Prevent CORS issue
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
-    "lint": "yarn run eslint ./packages/backend/{src,migrations}/**/*.ts --fix",
+    "lint": "yarn run eslint \"./packages/backend/{src,migrations}/**/*.ts\"",
     "lint:fix": "yarn lint --fix",
     "build": "./build.sh",
     "zip": "cd packages/backend && zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare && cp oare_build.zip ../..",
@@ -31,6 +31,8 @@
     "@babel/preset-typescript": "^7.12.13",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "babel-preset-vue": "^2.0.2",
     "eslint": "^7.19.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.2.0",
@@ -41,7 +43,8 @@
     "husky": "^4.3.0",
     "lerna": "^3.22.1",
     "lint-staged": "^10.4.0",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "vue-eslint-parser": "^7.4.1"
   },
   "dependencies": {
     "concurrently": "^5.3.0"
