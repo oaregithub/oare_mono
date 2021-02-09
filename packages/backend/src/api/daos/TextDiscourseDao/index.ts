@@ -1,6 +1,12 @@
 import knex from '@/connection';
-import { DiscourseLineSpelling, Pagination, SearchDiscourseSpellingRow, SpellingOccurrenceRow } from '@oare/types';
-import { DiscourseUnit, DiscourseUnitType } from '@oare/oare';
+import {
+  DiscourseLineSpelling,
+  Pagination,
+  SearchDiscourseSpellingRow,
+  SpellingOccurrenceRow,
+  DiscourseUnit,
+  DiscourseUnitType,
+} from '@oare/types';
 import Knex from 'knex';
 
 import { createdNestedDiscourses, setDiscourseReading } from './utils';

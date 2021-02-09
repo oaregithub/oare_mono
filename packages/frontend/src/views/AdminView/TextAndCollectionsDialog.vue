@@ -26,8 +26,12 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
-import { PermissionsListType } from '@oare/types';
-import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/oare';
+import {
+  EpigraphicUnit,
+  MarkupUnit,
+  DiscourseUnit,
+  PermissionsListType,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import OareDialog from '../../components/base/OareDialog.vue';
 import EpigraphyFullDisplay from '../EpigraphyView/EpigraphyFullDisplay.vue';

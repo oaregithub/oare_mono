@@ -1,4 +1,4 @@
-import { EpigraphicUnitSide } from '@oare/oare';
+import { EpigraphicUnitSide } from './epigraphies';
 
 export interface TextDraftSideContent {
   side: EpigraphicUnitSide | "";

@@ -1,4 +1,4 @@
-import { DiscourseUnit } from '@oare/oare';
+import { DiscourseUnit } from '@oare/types';
 import { DiscourseRow } from './index';
 
 export function discourseUnitOrder(discourse: DiscourseUnit): number {

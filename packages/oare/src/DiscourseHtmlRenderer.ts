@@ -1,7 +1,5 @@
-import DiscourseRenderer, {
-  DiscourseUnit,
-  lineReadingHelper,
-} from './DiscourseRenderer';
+import { DiscourseUnit } from '@oare/types';
+import DiscourseRenderer, { lineReadingHelper } from './DiscourseRenderer';
 
 export default class DiscourseHtmlRenderer extends DiscourseRenderer {
   constructor(discourseUnits: DiscourseUnit[]) {

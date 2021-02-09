@@ -12,3 +12,5 @@ export * from './src/search';
 export * from './src/searchNames';
 export * from './src/utils';
 export * from './src/words';
+export * from './src/tokens';
+export * from './src/textDiscourse';

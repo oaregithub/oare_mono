@@ -1,7 +1,6 @@
 <template>
   <add-text-collection
     itemType="Text"
-    :editPermissions="false"
     :addItems="server.addTextsToPublicBlacklist"
   />
 </template>

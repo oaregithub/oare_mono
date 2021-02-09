@@ -10,8 +10,9 @@ import {
   AddFormSpellingResponse,
   CheckSpellingResponse,
   SpellingOccurrencesResponse,
+  Token,
 } from '@oare/types';
-import { tokenizeExplicitSpelling, createTabletRenderer, Token, normalizeSign } from '@oare/oare';
+import { tokenizeExplicitSpelling, createTabletRenderer, normalizeSign } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';

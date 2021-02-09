@@ -1,21 +1,15 @@
 import {
   EpigraphicUnit,
   MarkupUnit,
-  EpigraphicUnitType,
   EpigraphicUnitSide,
-} from './index';
+  EpigraphicUnitWithMarkup,
+} from '@oare/types';
 
 import {
   getMarkupByDamageType,
   unitMatchesDamageType,
   convertMarkedUpUnitsToLineReading,
 } from './tabletUtils';
-
-export interface EpigraphicUnitWithMarkup {
-  type: EpigraphicUnitType;
-  reading: string;
-  discourseUuid: string | null;
-}
 
 export default class TabletRenderer {
   protected epigraphicUnits: EpigraphicUnit[] = [];
