@@ -1,7 +1,7 @@
 import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  const hasTable = knex.schema.hasTable('errors');
+  const hasTable = await knex.schema.hasTable('errors');
 
   if (!hasTable) {
     await knex.schema.createTable('errors', (table) => {
