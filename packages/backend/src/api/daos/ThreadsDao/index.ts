@@ -63,7 +63,7 @@ class ThreadsDao {
       .leftJoin('dictionary_word', 'threads.reference_uuid', 'dictionary_word.uuid')
       .leftJoin('dictionary_form', 'threads.reference_uuid', 'dictionary_form.uuid')
       .leftJoin('dictionary_spelling', 'threads.reference_uuid', 'dictionary_spelling.uuid')
-      .where('uuid', uuid);
+      .where('threads.uuid', uuid);
 
     let word = null;
 

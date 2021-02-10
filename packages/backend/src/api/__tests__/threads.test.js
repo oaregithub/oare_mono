@@ -324,7 +324,9 @@ describe('comments api test', () => {
     it('returns 500 when CommentsDao.getAllByUserUuidGroupedByThread throws an error.', async () => {
       sl.set('CommentsDao', {
         ...MockCommentsDao,
-        getAllByUserUuidGroupedByThread: jest.fn().mockRejectedValue(null),
+        getAllByUserUuidGroupedByThread: jest
+          .fn()
+          .mockRejectedValue('Error when getting comments by userUuid, grouped by thread.'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
@@ -333,7 +335,7 @@ describe('comments api test', () => {
     it('returns 500 when ThreadsDao.getByUuid throws an error.', async () => {
       sl.set('ThreadsDao', {
         ...MockThreadsDao,
-        getByUuid: jest.fn().mockRejectedValue(null),
+        getByUuid: jest.fn().mockRejectedValue('Error when getting thread by its uuid.'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
@@ -351,7 +353,7 @@ describe('comments api test', () => {
     it('returns 500 when ThreadsDao.getThreadWord throws an error.', async () => {
       sl.set('ThreadsDao', {
         ...MockThreadsDao,
-        getThreadWord: jest.fn().mockRejectedValue(null),
+        getThreadWord: jest.fn().mockRejectedValue('Error when retrieving word/form/spelling associated with thread.'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
