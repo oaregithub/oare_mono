@@ -80,7 +80,10 @@ describe('AddGroupCollections test', () => {
   it('successfully adds collections to group', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
+    await wrapper
+      .findAll('.v-data-table__checkbox')
+      .at(1)
+      .trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     expect(mockServer.addGroupCollections).toHaveBeenCalled();
@@ -99,7 +102,10 @@ describe('AddGroupCollections test', () => {
       },
     });
     await flushPromises();
-    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
+    await wrapper
+      .findAll('.v-data-table__checkbox')
+      .at(1)
+      .trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
