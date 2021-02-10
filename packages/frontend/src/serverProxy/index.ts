@@ -23,6 +23,7 @@ import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
 import comments from '@/serverProxy/comments';
 import errors from '@/serverProxy/errors';
+import threads from '@/serverProxy/threads';
 
 const serverProxy = {
   ...textGroups,
@@ -50,6 +51,7 @@ const serverProxy = {
   ...resetPassword,
   ...comments,
   ...errors,
+  ...threads,
 };
 
 export type ServerProxyType = typeof serverProxy;
