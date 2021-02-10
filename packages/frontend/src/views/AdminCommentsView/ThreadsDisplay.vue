@@ -1,14 +1,14 @@
 <template>
-	<div class='ma-5'>
-		<h2>Comments</h2>
+  <div class="ma-5">
+    <h2>Comments</h2>
 
-		<div v-for='(thread, idx) in threads' :key='idx'>
-			<h1>{{thread}}</h1>
-		</div>
-	</div>
+    <div v-for="(thread, idx) in threads" :key="idx">
+      <h1>{{ thread }}</h1>
+    </div>
+  </div>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 
 export default defineComponent({
@@ -21,14 +21,9 @@ export default defineComponent({
   },
 
   setup(props) {
-
     const groupedByThreads = ref({});
 
-
-
-    return {
-
-	}
+    return {};
   },
 });
 </script>
