@@ -117,8 +117,8 @@
     <v-row
       v-if="
         selectedItem !== undefined &&
-          threadsWithComments.length &&
-          loggedInUser.isAdmin
+        threadsWithComments.length &&
+        loggedInUser.isAdmin
       "
     >
       <v-col cols="5">

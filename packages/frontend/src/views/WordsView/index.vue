@@ -27,7 +27,7 @@
           <span
             v-if="
               word.translations.length > 0 &&
-                word.specialClassifications.length > 0
+              word.specialClassifications.length > 0
             "
             >;</span
           >
