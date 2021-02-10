@@ -2,6 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import FormDisplay from '../FormDisplay.vue';
+import { SendUtilList } from '../index.vue';
 import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
 
@@ -39,6 +40,7 @@ describe('FormsDisplay test', () => {
   };
 
   const updateForm = jest.fn();
+  const toUtilList = jest.fn();
 
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('serverProxy', server || mockServer);
@@ -53,6 +55,9 @@ describe('FormsDisplay test', () => {
         updateForm,
       },
       stubs: ['spelling-dialog'],
+      provide: {
+        [SendUtilList]: toUtilList,
+      },
     });
   };
 
@@ -98,5 +103,11 @@ describe('FormsDisplay test', () => {
     await flushPromises();
 
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('check that utils list was sent', async () => {
+    const wrapper = createWrapper();
+    await wrapper.get('.test-form-util-list').trigger('click');
+    expect(toUtilList).toHaveBeenCalled();
   });
 });

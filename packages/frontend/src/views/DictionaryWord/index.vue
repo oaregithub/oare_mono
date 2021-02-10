@@ -10,28 +10,18 @@
         >
           <v-icon class="test-pencil">mdi-pencil</v-icon>
         </v-btn>
-        <UtilList
-          @clicked-commenting="isCommenting = true"
-          :has-edit="false"
-          :has-delete="false"
-          :word="title"
-        >
-          <span class="font-weight-bold">{{ title }}</span>
-        </UtilList>
 
-        <CommentWordDisplay
-          v-model="isCommenting"
-          :route="`/dictionaryWord/${wordInfo.word}`"
-          :uuid="wordInfo.uuid"
-          :word="wordInfo.word"
-          @submit="isCommenting = false"
-          @input="isCommenting = false"
-          >{{ wordInfo.word }}</CommentWordDisplay
+        <span
+          @click="sendWordInfoToUtilList"
+          class="font-weight-bold test-word-util-list"
+          style="cursor: pointer"
         >
+          {{ title }}
+        </span>
       </v-row>
 
       <word-name-edit
-        v-else-if="wordInfo"
+        v-else-if="wordInfo && utilList.type === 'WORD'"
         :word.sync="wordInfo.word"
         :wordUuid="uuid"
         @close-edit="isEditing = false"
@@ -46,6 +36,49 @@
       :wordUuid="uuid"
       :updateWordInfo="updateWordInfo"
     />
+
+    <template v-if="isEditing && utilList.type === 'SPELLING'">
+      <spelling-dialog
+        :form="utilList.form"
+        :spelling="utilList.formSpelling"
+        v-model="isEditing"
+      />
+    </template>
+
+    <OareDialog
+      v-if="isDeleting && utilList.type === 'SPELLING'"
+      v-model="isDeleting"
+      title="Delete spelling"
+      submitText="Yes, delete"
+      cancelText="No, don't delete"
+      :persistent="false"
+      @submit="deleteSpelling"
+      :submitLoading="deleteSpellingLoading"
+    >
+      Are you sure you want to delete the spelling {{ utilList.word }} from this
+      form? This action cannot be undone.
+    </OareDialog>
+
+    <UtilList
+      v-if="utilListOpen"
+      v-model="utilListOpen"
+      class="test-util-list-displayed"
+      @clicked-commenting="beginCommenting"
+      @clicked-editing="beginEditing"
+      @clicked-deleting="beginDeleting"
+      :has-comment="utilList.comment"
+      :has-edit="utilList.edit"
+      :has-delete="utilList.delete"
+    ></UtilList>
+    <CommentWordDisplay
+      v-if="isCommenting"
+      :route="utilList.route"
+      :uuid="utilList.uuid"
+      :word="utilList.word"
+      @submit="isCommenting = false"
+      @input="isCommenting = false"
+      >{{ utilList.word }}</CommentWordDisplay
+    >
   </OareContentView>
 </template>
 
@@ -59,9 +92,15 @@ import {
   watch,
   provide,
   InjectionKey,
+  inject,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { DictionaryForm, DictionaryWordResponse } from '@oare/types';
+import {
+  DictionaryForm,
+  DictionaryWordResponse,
+  UtilListDisplay,
+  UtilListType,
+} from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
@@ -69,7 +108,11 @@ import router from '@/router';
 import sl from '@/serviceLocator';
 import UtilList from '../../components/UtilList/index.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
+import SpellingDialog from './SpellingDialog.vue';
 
+export const SendUtilList: InjectionKey<(
+  utilDisplay: UtilListDisplay
+) => Promise<void>> = Symbol();
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
@@ -79,6 +122,7 @@ export default defineComponent({
     WordNameEdit,
     UtilList,
     CommentWordDisplay,
+    SpellingDialog,
   },
   props: {
     uuid: {
@@ -92,9 +136,21 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const loading = ref(true);
+    const utilListOpen = ref(false);
+    const utilList = ref<UtilListDisplay>({
+      comment: false,
+      edit: false,
+      delete: false,
+      word: '',
+      uuid: '',
+      route: '',
+      type: 'NONE',
+    });
     const isCommenting = ref(false);
     const isEditing = ref(false);
+    const isDeleting = ref(false);
     const wordInfo = ref<DictionaryWordResponse | null>(null);
+    const deleteSpellingLoading = ref(false);
 
     const canUpdateWordSpelling = computed(() =>
       store.getters.permissions
@@ -117,8 +173,40 @@ export default defineComponent({
       }
     };
 
-    provide(ReloadKey, loadDictionaryInfo);
+    const beginCommenting = () => {
+      utilListOpen.value = false;
+      isCommenting.value = true;
+    };
 
+    const beginEditing = () => {
+      utilListOpen.value = false;
+      isEditing.value = true;
+    };
+
+    const beginDeleting = () => {
+      utilListOpen.value = false;
+      isDeleting.value = true;
+    };
+
+    const sendWordInfoToUtilList = () => {
+      openUtilList({
+        comment: true,
+        edit: false,
+        delete: false,
+        word: wordInfo.value ? wordInfo.value.word : '',
+        uuid: props.uuid,
+        route: `/dictionaryWord/${props.uuid}`,
+        type: 'WORD',
+      });
+    };
+
+    const openUtilList = (injectedUtilList: UtilListDisplay) => {
+      utilListOpen.value = true;
+      utilList.value = injectedUtilList;
+    };
+
+    provide(SendUtilList, openUtilList);
+    provide(ReloadKey, loadDictionaryInfo);
     watch(props, loadDictionaryInfo, { immediate: true });
 
     const breadcrumbItems = computed(() => {
@@ -157,7 +245,31 @@ export default defineComponent({
       return '';
     });
 
+    const deleteSpelling = async () => {
+      try {
+        deleteSpellingLoading.value = true;
+        await serverProxy.removeSpelling(utilList.value.uuid);
+        actions.showSnackbar('Successfully removed spelling');
+        await loadDictionaryInfo();
+      } catch {
+        actions.showErrorSnackbar('Failed to delete spelling');
+      } finally {
+        deleteSpellingLoading.value = false;
+        isDeleting.value = false;
+      }
+    };
+
     return {
+      sendWordInfoToUtilList,
+      isDeleting,
+      utilList,
+      beginDeleting,
+      beginEditing,
+      deleteSpelling,
+      deleteSpellingLoading,
+      openUtilList,
+      beginCommenting,
+      utilListOpen,
       isCommenting,
       loading,
       wordInfo,
