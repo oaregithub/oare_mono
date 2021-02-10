@@ -113,4 +113,32 @@ router.route('/threads/user/:userUuid').get(authenticatedRoute, async (req, res,
   }
 });
 
+router.route('/threads').get(adminRoute, async (req, res, next) => {
+  try {
+    const threadsDao = sl.get('ThreadsDao');
+    const commentsDao = sl.get('CommentsDao');
+
+    const threads = await threadsDao.getAll();
+
+    const results: ThreadDisplay[] = await Promise.all(
+      threads.map(async (thread) => {
+        const threadWord = await threadsDao.getThreadWord(thread.uuid || '');
+        const comment = await commentsDao.getLatestCommentByThreadUuid(thread.uuid || '');
+        return {
+          uuid: thread.uuid,
+          word: threadWord,
+          status: thread.status,
+          route: thread.route,
+          latestComment: comment ? comment.text : '',
+        } as ThreadDisplay;
+      }),
+    );
+
+    res.json(results);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+
 export default router;

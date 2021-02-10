@@ -55,6 +55,22 @@ class CommentsDao {
 
     return comments;
   }
+
+  async getLatestCommentByThreadUuid(threadUuid: string): Promise<Comment | null> {
+    const comment = await knex('comments')
+    .first(
+      'comments.uuid',
+      'comments.thread_uuid AS threadUuid',
+      'comments.user_uuid AS userUuid',
+      'comments.created_at AS createdAt',
+      'comments.deleted',
+      'comments.comment AS text',
+    )
+      .where('comments.thread_uuid', threadUuid)
+      .orderBy('comments.created_at')
+
+    return comment;
+  }
 }
 
 export default new CommentsDao();
