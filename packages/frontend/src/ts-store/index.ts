@@ -1,7 +1,6 @@
 import Vue from 'vue';
-import VueCompositionAPI from '@vue/composition-api';
+import VueCompositionAPI, { reactive } from '@vue/composition-api';
 import { LoginRegisterResponse, PermissionItem } from '@oare/types';
-import { reactive } from '@vue/composition-api';
 
 Vue.use(VueCompositionAPI);
 
