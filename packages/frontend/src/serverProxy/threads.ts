@@ -1,5 +1,5 @@
 import axios from '../axiosInstance';
-import { Thread, ThreadWithComments } from '@oare/types';
+import { Thread, ThreadDisplay, ThreadWithComments } from '@oare/types';
 
 async function getThreadsWithCommentsByReferenceUuid(
   referenceUuid: string
@@ -14,7 +14,15 @@ async function updateThread(thread: Thread): Promise<void> {
   await axios.put('/threads', thread);
 }
 
+async function getThreadsByUserUuid(userUuid: string): Promise<ThreadDisplay> {
+  const { data } = await axios.get(
+    `/threads/user/${encodeURIComponent(userUuid)}`
+  );
+  return data;
+}
+
 export default {
   getThreadsWithCommentsByReferenceUuid,
   updateThread,
+  getThreadsByUserUuid,
 };
