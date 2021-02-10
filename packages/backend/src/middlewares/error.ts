@@ -10,7 +10,7 @@ const errorMiddleware = async (error: HttpException, request: Request, response:
 
   if (process.env.NODE_ENV !== 'test') {
     const userUuid = request.user ? request.user.uuid : null;
-    const stacktrace = new Error().stack || null;
+    const stacktrace = error.stack || null;
 
     const insertRow: InsertErrorsRow = {
       userUuid,
