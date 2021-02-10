@@ -23,13 +23,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  computed,
-  onBeforeMount,
-} from '@vue/composition-api';
-import hideSidebarRoutes from './hideSidebarRoutes';
+import { defineComponent, ref, computed } from '@vue/composition-api';
 import OareSidebar from './components/base/OareSidebar/index.vue';
 import defaultRouter from './router';
 
