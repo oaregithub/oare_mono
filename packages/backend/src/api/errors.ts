@@ -15,12 +15,7 @@ router.route('/errors').post(async (req, res, next) => {
     const { description, stacktrace, status }: ErrorsPayload = req.body;
     const timestamp = new Date();
 
-    let userUuid;
-    if (user) {
-      userUuid = user.uuid;
-    } else {
-      userUuid = null;
-    }
+    const userUuid = user ? user.uuid : null;
 
     const insertRow: ErrorsRow = {
       uuid,
