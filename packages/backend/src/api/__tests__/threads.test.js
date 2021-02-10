@@ -16,9 +16,20 @@ describe('comments api test', () => {
       userLastName: 'last',
     },
   ];
+  const commentsGetAllGroupedByThead= [
+    {
+      uuid: 'string',
+      threadUuid: 'string',
+      userUuid: 'string',
+      createdAt: '',
+      deleted: 'boolean',
+      text: 'string',
+    },
+  ];
   const MockCommentsDao = {
     getAllByThreadUuid: jest.fn().mockResolvedValue(commentsGetAllByThreadUuid),
     insert: jest.fn().mockResolvedValue(''),
+    getAllByUserUuidGroupedByThread: jest.fn().mockResolvedValue(commentsGetAllGroupedByThead)
   };
 
   const threadsGetByReferenceUuid = [
@@ -29,10 +40,20 @@ describe('comments api test', () => {
       route: 'route',
     },
   ];
+  const threadsGetByUuid = {
+    uuid: 'string',
+    referenceUuid: 'string',
+    status: 'New',
+    route: 'route',
+  }
+
+  const threadWord = 'threadWord';
+
   const MockThreadsDao = {
     getByReferenceUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
     update: jest.fn().mockResolvedValue({}),
-    getByUuid: jest.fn().mockResolvedValue({}),
+    getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
+    getThreadWord: jest.fn().mockResolvedValue(threadWord),
   };
 
   const userGetUserByUuid = {
@@ -255,6 +276,83 @@ describe('comments api test', () => {
         insert: jest.fn().mockRejectedValue('Error when admin comment unable to be inserted.'),
       });
 
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /threads/user/:userUuid', () => {
+    const PATH = `${API_PATH}/threads/user/testUserUuid`;
+
+    const sendRequest = async ({ cookie = true } = {}) => {
+      const req = request(app).get(PATH);
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
+    };
+
+    it('returns successful thread display info.', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([
+        {
+          uuid: threadsGetByUuid.uuid,
+          word: threadWord,
+          status: threadsGetByUuid.status,
+          route: threadsGetByUuid.route,
+          latestComment: commentsGetAllGroupedByThead[0].text,
+        },
+      ]);
+    });
+
+    it('returns 401 when non-logged in user accesses endpoint.', async () => {
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 500 when CommentsDao.getAllByUserUuidGroupedByThread throws an error.', async () => {
+      sl.set('CommentsDao', {
+        ...MockCommentsDao,
+        getAllByUserUuidGroupedByThread: jest
+          .fn()
+          .mockRejectedValue('Error when getting comments by userUuid, grouped by thread.'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when ThreadsDao.getByUuid throws an error.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getByUuid: jest.fn().mockRejectedValue('Error when getting thread by its uuid.'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when ThreadsDao.getByUuid returns null (should never happen).', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getByUuid: jest.fn().mockResolvedValue(null),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when ThreadsDao.getThreadWord throws an error.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getThreadWord: jest.fn().mockRejectedValue('Error when retrieving word/form/spelling associated with thread.'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when ThreadsDao.getThreadWord returns null (should never happen).', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getThreadWord: jest.fn().mockResolvedValue(null),
+      });
       const response = await sendRequest();
       expect(response.status).toBe(500);
     });
