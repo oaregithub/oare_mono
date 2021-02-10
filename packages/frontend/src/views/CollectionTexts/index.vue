@@ -151,7 +151,7 @@ export default defineComponent({
 
     watch(
       search,
-      _.debounce(function () {
+      _.debounce(function() {
         setPage('1');
         getCollectionTexts();
       }, 500),
