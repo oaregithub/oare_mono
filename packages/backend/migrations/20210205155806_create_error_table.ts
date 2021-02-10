@@ -4,7 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   const hasTable = await knex.schema.hasTable('errors');
 
   if (!hasTable) {
-    await knex.schema.createTable('errors', (table) => {
+    await knex.schema.createTable('errors', table => {
       table.charset('utf8');
       table.collate('utf8_general_ci');
       table.increments('id');
