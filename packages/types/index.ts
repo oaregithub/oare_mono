@@ -14,4 +14,7 @@ export * from './src/utils';
 export * from './src/words';
 export * from './src/tokens';
 export * from './src/textDiscourse';
+<<<<<<< HEAD
 export * from './src/errors';
+=======
+>>>>>>> master
