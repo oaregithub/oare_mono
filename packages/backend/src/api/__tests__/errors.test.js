@@ -51,8 +51,18 @@ describe('POST /errors', () => {
 
 describe('GET /errors', () => {
   const PATH = `${API_PATH}/errors`;
+  const mockErrorsRow = [
+    {
+      uuid: 'testUuid',
+      user_uuid: 'testUserUuid',
+      description: 'testDescription',
+      stacktrace: 'testStacktrace',
+      timestamp: 'testTimestamp',
+      status: 'testStatus',
+    },
+  ];
   const mockErrorsDao = {
-    getErrorLog: jest.fn().mockResolvedValue(),
+    getErrorLog: jest.fn().mockResolvedValue(mockErrorsRow),
   };
   const mockUserDao = {
     getUserByEmail: jest.fn().mockResolvedValue({
@@ -80,6 +90,7 @@ describe('GET /errors', () => {
   it('returns 200 on successful error log retrieval', async () => {
     const response = await sendRequest();
     expect(mockErrorsDao.getErrorLog).toHaveBeenCalled();
+    expect(JSON.parse(response.text)).toEqual(mockErrorsRow);
     expect(response.status).toBe(200);
   });
 
