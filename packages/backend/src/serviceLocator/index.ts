@@ -23,6 +23,7 @@ import UserGroupDao from '@/api/daos/UserGroupDao';
 import PermissionsDao from '@/api/daos/PermissionsDao';
 import CommentsDao from '@/api/daos/CommentsDao';
 import ThreadsDao from '@/api/daos/ThreadsDao';
+import ErrorsDao from '@/api/daos/ErrorsDao';
 import utils from '@/utils';
 import mailer from '@/mailer';
 
@@ -54,6 +55,7 @@ export type ServiceTypes = {
   PermissionsDao: typeof PermissionsDao;
   CommentsDao: typeof CommentsDao;
   ThreadsDao: typeof ThreadsDao;
+  ErrorsDao: typeof ErrorsDao;
   utils: typeof utils;
   mailer: typeof mailer;
 };

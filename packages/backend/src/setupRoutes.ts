@@ -24,6 +24,7 @@ import searchNames from './api/search_names';
 import collectionGroups from './api/collection_groups';
 import resetPassword from './api/reset_password';
 import comments from './api/comments';
+import errors from './api/errors';
 import threads from './api/threads';
 
 export const API_PATH = '/api/v2';
@@ -54,5 +55,6 @@ export default (app: Express) => {
   app.use(API_PATH, collectionGroups);
   app.use(API_PATH, resetPassword);
   app.use(API_PATH, comments);
+  app.use(API_PATH, errors);
   app.use(API_PATH, threads);
 };
