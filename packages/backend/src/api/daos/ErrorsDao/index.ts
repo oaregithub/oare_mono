@@ -1,6 +1,13 @@
 import knex from '@/connection';
-import { ErrorsRow, InsertErrorsRow } from '@oare/types';
+import { ErrorsRow } from '@oare/types';
 import { v4 } from 'uuid';
+
+export interface InsertErrorsRow {
+  userUuid: string | null;
+  description: string;
+  stacktrace: string | null;
+  status: string;
+}
 
 class ErrorsDao {
   async logError({ userUuid, description, stacktrace, status }: InsertErrorsRow): Promise<void> {
