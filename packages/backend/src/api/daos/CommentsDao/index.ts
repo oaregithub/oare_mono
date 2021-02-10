@@ -38,6 +38,23 @@ class CommentsDao {
 
     return comments;
   }
+
+  async getAllByUserUuidGroupedByThread(userUuid: string): Promise<Comment[]> {
+    const comments = await knex('comments')
+      .select(
+        'comments.uuid',
+        'comments.thread_uuid AS threadUuid',
+        'comments.user_uuid AS userUuid',
+        'comments.created_at AS createdAt',
+        'comments.deleted',
+        'comments.comment AS text',
+      )
+      .where('comments.user_uuid', userUuid)
+      .orderBy('comments.created_at')
+      .groupBy('comments.thread_uuid');
+
+    return comments;
+  }
 }
 
 export default new CommentsDao();
