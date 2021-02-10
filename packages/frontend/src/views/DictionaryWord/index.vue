@@ -110,9 +110,9 @@ import UtilList from '../../components/UtilList/index.vue';
 import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
 import SpellingDialog from './SpellingDialog.vue';
 
-export const SendUtilList: InjectionKey<
-  (utilDisplay: UtilListDisplay) => Promise<void>
-> = Symbol();
+export const SendUtilList: InjectionKey<(
+  utilDisplay: UtilListDisplay
+) => Promise<void>> = Symbol();
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
