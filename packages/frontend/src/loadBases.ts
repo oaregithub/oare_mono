@@ -2,7 +2,7 @@ import Vue from 'vue';
 import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
 
-export default function () {
+export default function() {
   const requireComponent = require.context(
     '@/components/base',
     false,
