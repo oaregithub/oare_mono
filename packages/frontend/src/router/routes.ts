@@ -33,6 +33,7 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue';
 import ManagePermissions from '@/views/GroupView/ManagePermissions.vue';
 import EpigraphyEditor from '@/views/EpigraphyView/EpigraphyEditor.vue';
 import EpigraphyFullDisplay from '@/views/EpigraphyView/EpigraphyFullDisplay.vue';
+import AdminCommentsView from '@/views/AdminCommentsView/index.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -43,6 +44,11 @@ const routes: RouteConfig[] = [
     path: '/admin/groups',
     name: 'adminGroups',
     component: AdminGroupView,
+  },
+  {
+    path: '/admin/comments',
+    name: 'adminComments',
+    component: AdminCommentsView,
   },
   {
     path: '/admin/blacklist',
