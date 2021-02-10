@@ -21,7 +21,7 @@ async function getThreadsByUserUuid(userUuid: string): Promise<ThreadDisplay> {
   return data;
 }
 
-async function getAllThreads(): Promise<ThreadDisplay> {
+async function getAllThreads(): Promise<ThreadDisplay[]> {
   const { data } = await axios.get('/threads');
   return data;
 }
