@@ -22,11 +22,8 @@ import searchNames from './search_names';
 import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
 import comments from '@/serverProxy/comments';
-<<<<<<< HEAD
 import errors from '@/serverProxy/errors';
-=======
 import threads from '@/serverProxy/threads';
->>>>>>> master
 
 const serverProxy = {
   ...textGroups,
@@ -53,11 +50,8 @@ const serverProxy = {
   ...collectionGroups,
   ...resetPassword,
   ...comments,
-<<<<<<< HEAD
   ...errors,
-=======
   ...threads,
->>>>>>> master
 };
 
 export type ServerProxyType = typeof serverProxy;
