@@ -30,7 +30,7 @@
                   left
                   :disabled="
                     !permission.dependency ||
-                      groupPermissionNames.includes(permission.dependency)
+                    groupPermissionNames.includes(permission.dependency)
                   "
                 >
                   <template v-slot:activator="{ on, attrs }">
@@ -42,9 +42,7 @@
                         @change="updatePermission(permission, $event)"
                         :disabled="
                           permission.dependency &&
-                            !groupPermissionNames.includes(
-                              permission.dependency
-                            )
+                          !groupPermissionNames.includes(permission.dependency)
                         "
                         class="test-switch"
                       >

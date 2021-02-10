@@ -77,10 +77,7 @@ describe('AddBlacklistCollections test', () => {
   it('successfully adds collections to blacklist', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(1)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     expect(mockServer.addTextsToPublicBlacklist).toHaveBeenCalled();
@@ -99,10 +96,7 @@ describe('AddBlacklistCollections test', () => {
       },
     });
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(1)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
