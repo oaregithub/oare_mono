@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
-    "lint": "yarn run eslint \"./packages/backend/{src,migrations}/**/*.ts\"",
+    "lint": "yarn run eslint \"./packages/{frontend,backend}/**/*.ts\"",
     "lint:fix": "yarn lint --fix",
     "build": "./build.sh",
     "zip": "cd packages/backend && zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare && cp oare_build.zip ../..",
