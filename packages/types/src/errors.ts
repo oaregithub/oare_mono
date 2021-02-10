@@ -12,3 +12,10 @@ export interface ErrorsRow {
   timestamp: Date;
   status: string;
 }
+
+export interface InsertErrorsRow {
+  userUuid: string | null;
+  description: string;
+  stacktrace: string | null;
+  status: string;
+}
