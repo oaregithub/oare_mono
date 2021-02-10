@@ -26,10 +26,20 @@ describe('comments api test', () => {
       text: 'string',
     },
   ];
+
+  const commentsGetLatestComment = {
+    uuid: 'string',
+    threadUuid: 'string',
+    userUuid: 'string',
+    createdAt: '',
+    deleted: 'boolean',
+    text: 'string',
+  }
   const MockCommentsDao = {
     getAllByThreadUuid: jest.fn().mockResolvedValue(commentsGetAllByThreadUuid),
     insert: jest.fn().mockResolvedValue(''),
-    getAllByUserUuidGroupedByThread: jest.fn().mockResolvedValue(commentsGetAllGroupedByThead)
+    getAllByUserUuidGroupedByThread: jest.fn().mockResolvedValue(commentsGetAllGroupedByThead),
+    getLatestCommentByThreadUuid: jest.fn().mockResolvedValue(commentsGetLatestComment)
   };
 
   const threadsGetByReferenceUuid = [
@@ -54,6 +64,7 @@ describe('comments api test', () => {
     update: jest.fn().mockResolvedValue({}),
     getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
     getThreadWord: jest.fn().mockResolvedValue(threadWord),
+    getAll: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
   };
 
   const userGetUserByUuid = {
@@ -353,6 +364,75 @@ describe('comments api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /threads', () => {
+    const PATH = `${API_PATH}/threads`;
+
+    const sendRequest = async ({ cookie = true } = {}) => {
+      const req = request(app).get(PATH);
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
+    };
+
+    it('returns 200, successful thread display all info.', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([
+        {
+          uuid: threadsGetByUuid.uuid,
+          word: threadWord,
+          status: threadsGetByUuid.status,
+          route: threadsGetByUuid.route,
+          latestComment: commentsGetLatestComment.text,
+        },
+      ]);
+    });
+
+    it('returns 200, successful returns empty list of threads if none found.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getAll: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([]);
+    });
+
+    it('returns 500, unsuccessfully retrieves all threads.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getAll: jest.fn().mockRejectedValue('Error when returning all threads'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500, unsuccessfully retrieves latest comment.', async () => {
+      sl.set('CommentsDao', {
+        ...MockCommentsDao,
+        getLatestCommentByThreadUuid: jest.fn().mockRejectedValue('Error when returning latest comment'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 401 when non-logged in user tries to access route.', async () => {
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 403 when non-admin user tries to access route.', async () => {
+      sl.set('UserDao', {
+        ...MockUserDao,
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: false,
+        }),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
     });
   });
 });
