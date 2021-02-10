@@ -1,8 +1,9 @@
 import express from 'express';
-import { ErrorsPayload, InsertErrorsRow } from '@oare/types';
+import { ErrorsPayload } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '../middlewares/adminRoute';
+import { InsertErrorsRow } from './daos/ErrorsDao';
 
 const router = express.Router();
 
