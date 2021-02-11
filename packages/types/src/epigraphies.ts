@@ -1,5 +1,5 @@
-import { DiscourseUnit } from "./textDiscourse";
-import { TextDraft } from "./drafts";
+import { DiscourseUnit } from './textDiscourse';
+import { TextDraft } from './drafts';
 
 export interface TextInfoResponse {
   name: string;
@@ -22,18 +22,18 @@ export interface EpigraphyResponse {
 }
 
 export type EpigraphicUnitType =
-  | "phonogram"
-  | "logogram"
-  | "number"
-  | "determinative";
+  | 'phonogram'
+  | 'logogram'
+  | 'number'
+  | 'determinative';
 
 export type EpigraphicUnitSide =
-  | "obv."
-  | "lo.e."
-  | "rev."
-  | "u.e."
-  | "le.e."
-  | "r.e."
+  | 'obv.'
+  | 'lo.e.'
+  | 'rev.'
+  | 'u.e.'
+  | 'le.e.'
+  | 'r.e.'
   | 0;
 
 export interface EpigraphicUnit {
@@ -51,24 +51,24 @@ export interface EpigraphicUnit {
 }
 
 export type MarkupType =
-  | "isCollatedReading"
-  | "alternateSign"
-  | "isEmendedReading"
-  | "erasure"
-  | "isUninterpreted"
-  | "isWrittenWithinPrevSign"
-  | "omitted"
-  | "originalSign"
-  | "superfluous"
-  | "uncertain"
-  | "isWrittenAsLigature"
-  | "undeterminedSigns"
-  | "damage"
-  | "partialDamage"
-  | "isWrittenOverErasure"
-  | "isWrittenBelowTheLine"
-  | "broken"
-  | "isSealImpression";
+  | 'isCollatedReading'
+  | 'alternateSign'
+  | 'isEmendedReading'
+  | 'erasure'
+  | 'isUninterpreted'
+  | 'isWrittenWithinPrevSign'
+  | 'omitted'
+  | 'originalSign'
+  | 'superfluous'
+  | 'uncertain'
+  | 'isWrittenAsLigature'
+  | 'undeterminedSigns'
+  | 'damage'
+  | 'partialDamage'
+  | 'isWrittenOverErasure'
+  | 'isWrittenBelowTheLine'
+  | 'broken'
+  | 'isSealImpression';
 
 export interface MarkupUnit {
   referenceUuid: string;
@@ -78,7 +78,7 @@ export interface MarkupUnit {
   endChar: null | number;
 }
 
-export type TextFormatType = "regular" | "html";
+export type TextFormatType = 'regular' | 'html';
 export interface TextFormatOptions {
   format?: TextFormatType;
   markup?: boolean;
