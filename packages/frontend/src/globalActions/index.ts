@@ -13,6 +13,7 @@ const showErrorSnackbar = (text: string): void => {
 };
 
 const showUnsavedChangesWarning = (next: Function): void => {
+  // eslint-disable-next-line no-alert
   const response = window.confirm(
     'Any changes made will be lost. Would you like to continue anyways?'
   );

@@ -15,7 +15,10 @@ import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao, { FieldShortRow } from '../FieldDao';
 import AliasDao from '../AliasDao';
 import DictionaryFormDao, { FormRow } from '../DictionaryFormDao';
-import ItemPropertiesDao, { ItemPropertyRow, ItemPropertyShortRow } from '../ItemPropertiesDao';
+import ItemPropertiesDao, {
+  ItemPropertyRow,
+  ItemPropertyShortRow,
+} from '../ItemPropertiesDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -113,13 +116,20 @@ class DictionaryWordDao {
     }
 
     const rows: SearchSpellingRow[] = await knex
-      .select('dw.uuid AS wordUuid', 'dw.word', 'df.uuid AS formUuid', 'df.form')
+      .select(
+        'dw.uuid AS wordUuid',
+        'dw.word',
+        'df.uuid AS formUuid',
+        'df.form'
+      )
       .from('dictionary_word AS dw')
       .innerJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
       .innerJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
       .where('ds.explicit_spelling', spelling);
 
-    const formGrammars = await Promise.all(rows.map((r) => DictionaryFormDao.getFormGrammar(r.formUuid)));
+    const formGrammars = await Promise.all(
+      rows.map(r => DictionaryFormDao.getFormGrammar(r.formUuid))
+    );
 
     return rows.map((row, i) => ({
       word: row.word,
@@ -136,7 +146,7 @@ class DictionaryWordDao {
     const letters = letter.split('/');
     let query = knex('dictionary_word').select('uuid', 'word');
 
-    letters.forEach((l) => {
+    letters.forEach(l => {
       query = query.orWhere('word', 'like', `${l}%`);
     });
 
@@ -148,7 +158,7 @@ class DictionaryWordDao {
     const allTranslations = await this.getAllTranslations();
 
     return words
-      .map((word) => {
+      .map(word => {
         const translations = allTranslations
           .filter(({ dictionaryUuid }) => word.uuid === dictionaryUuid)
           .sort((a, b) => {
@@ -161,7 +171,7 @@ class DictionaryWordDao {
 
             return a.primacy - b.primacy;
           })
-          .map((tr) => ({
+          .map(tr => ({
             uuid: tr.fieldUuid,
             translation: tr.field,
           }));
@@ -169,9 +179,15 @@ class DictionaryWordDao {
         return {
           uuid: word.uuid,
           word: word.word,
-          partsOfSpeech: partsOfSpeech.filter(({ referenceUuid }) => referenceUuid === word.uuid),
-          specialClassifications: specialClassifications.filter(({ referenceUuid }) => referenceUuid === word.uuid),
-          verbalThematicVowelTypes: verbalThematicVowelTypes.filter(({ referenceUuid }) => referenceUuid === word.uuid),
+          partsOfSpeech: partsOfSpeech.filter(
+            ({ referenceUuid }) => referenceUuid === word.uuid
+          ),
+          specialClassifications: specialClassifications.filter(
+            ({ referenceUuid }) => referenceUuid === word.uuid
+          ),
+          verbalThematicVowelTypes: verbalThematicVowelTypes.filter(
+            ({ referenceUuid }) => referenceUuid === word.uuid
+          ),
           translations,
         };
       })
@@ -180,17 +196,28 @@ class DictionaryWordDao {
 
   async getAllTranslations(): Promise<TranslationRow[]> {
     const rows: TranslationRow[] = await knex('dictionary_word')
-      .select('dictionary_word.uuid AS dictionaryUuid', 'field.uuid AS fieldUuid', 'field.primacy', 'field.field')
+      .select(
+        'dictionary_word.uuid AS dictionaryUuid',
+        'field.uuid AS fieldUuid',
+        'field.primacy',
+        'field.field'
+      )
       .innerJoin('field', 'field.reference_uuid', 'dictionary_word.uuid');
     return rows;
   }
 
   async getNames(letter: string): Promise<NameOrPlace[]> {
-    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.NAMES_TYPE, letter);
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(
+      this.NAMES_TYPE,
+      letter
+    );
     return nestedFormsAndSpellings(results);
   }
 
-  async getDictionaryWordsByType(type: string, letter: string): Promise<WordQueryWordResultRow[]> {
+  async getDictionaryWordsByType(
+    type: string,
+    letter: string
+  ): Promise<WordQueryWordResultRow[]> {
     // REGEX = Starts with open parenthesis followed by upperCase 'letter' OR just starts with upperCase 'letter'
     const letters = letter.split('/');
 
@@ -227,9 +254,13 @@ class DictionaryWordDao {
     return results;
   }
 
-  async getItemPropertyRowsByAliasName(aliasName: string): Promise<ItemPropertyShortRow[]> {
+  async getItemPropertyRowsByAliasName(
+    aliasName: string
+  ): Promise<ItemPropertyShortRow[]> {
     const itemPropertiesDao = sl.get('ItemPropertiesDao');
-    const results: ItemPropertyShortRow[] = await itemPropertiesDao.getItemPropertyRowsByAliasName(aliasName);
+    const results: ItemPropertyShortRow[] = await itemPropertiesDao.getItemPropertyRowsByAliasName(
+      aliasName
+    );
     return results;
   }
 
@@ -241,26 +272,38 @@ class DictionaryWordDao {
 
   private reduceByReferenceUuid(
     iterable: PartialWordCombination[],
-    hasMultiplePerReferenceUuid?: boolean,
+    hasMultiplePerReferenceUuid?: boolean
   ): Record<string, PartialWordCombination | PartialWordCombination[]> {
     let results: Record<string, any> = {};
 
     if (hasMultiplePerReferenceUuid) {
-      results = iterable.reduce((map: Record<string, PartialWordCombination[]>, obj: PartialWordCombination) => {
-        if (map[obj.referenceUuid] === undefined) {
-          map[obj.referenceUuid] = [obj];
-        } else {
-          const returnObjs = map[obj.referenceUuid];
-          returnObjs.push(obj);
-          map[obj.referenceUuid] = returnObjs;
-        }
-        return map;
-      }, {});
+      results = iterable.reduce(
+        (
+          map: Record<string, PartialWordCombination[]>,
+          obj: PartialWordCombination
+        ) => {
+          if (map[obj.referenceUuid] === undefined) {
+            map[obj.referenceUuid] = [obj];
+          } else {
+            const returnObjs = map[obj.referenceUuid];
+            returnObjs.push(obj);
+            map[obj.referenceUuid] = returnObjs;
+          }
+          return map;
+        },
+        {}
+      );
     } else {
-      results = iterable.reduce((map: Record<string, PartialWordCombination>, obj: PartialWordCombination) => {
-        map[obj.referenceUuid] = obj;
-        return map;
-      }, {});
+      results = iterable.reduce(
+        (
+          map: Record<string, PartialWordCombination>,
+          obj: PartialWordCombination
+        ) => {
+          map[obj.referenceUuid] = obj;
+          return map;
+        },
+        {}
+      );
     }
 
     return results;
@@ -272,7 +315,7 @@ class DictionaryWordDao {
     dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]>,
     fieldsMapped: Record<string, FieldShortRow>,
     itemPropertiesMapped: Record<string, ItemPropertyShortRow[]>,
-    aliasesMapped: Record<string, AliasWithName>,
+    aliasesMapped: Record<string, AliasWithName>
   ): NamePlaceQueryRow[] {
     // Join results for NamePlaceQuery.
     const results: NamePlaceQueryRow[] = [];
@@ -289,17 +332,25 @@ class DictionaryWordDao {
 
       // Get all explicitSpellings for each form associated with the current word.
       forms.forEach((form: FormRow) => {
-        if (form.uuid !== undefined && dictionarySpellingsMapped[form.uuid] !== undefined) {
-          dictionarySpellingsMapped[form.uuid].forEach((spelling: DictionarySpellingRows) => {
-            if (explicitSpellings[form.uuid] === undefined) {
-              explicitSpellings[form.uuid] = new Set<ExplicitSpelling>().add({
-                uuid: spelling.uuid,
-                explicitSpelling: spelling.explicitSpelling,
-              });
-            } else {
-              explicitSpellings[form.uuid].add({ uuid: spelling.uuid, explicitSpelling: spelling.explicitSpelling });
+        if (
+          form.uuid !== undefined &&
+          dictionarySpellingsMapped[form.uuid] !== undefined
+        ) {
+          dictionarySpellingsMapped[form.uuid].forEach(
+            (spelling: DictionarySpellingRows) => {
+              if (explicitSpellings[form.uuid] === undefined) {
+                explicitSpellings[form.uuid] = new Set<ExplicitSpelling>().add({
+                  uuid: spelling.uuid,
+                  explicitSpelling: spelling.explicitSpelling,
+                });
+              } else {
+                explicitSpellings[form.uuid].add({
+                  uuid: spelling.uuid,
+                  explicitSpelling: spelling.explicitSpelling,
+                });
+              }
             }
-          });
+          );
         }
       });
 
@@ -310,14 +361,22 @@ class DictionaryWordDao {
 
       // Get all abbreviations for each form associated with the current word.
       forms.forEach((form: FormRow) => {
-        const properties: ItemPropertyShortRow[] = itemPropertiesMapped[form.uuid];
+        const properties: ItemPropertyShortRow[] =
+          itemPropertiesMapped[form.uuid];
         if (properties !== undefined) {
           properties.forEach((property: ItemPropertyShortRow) => {
-            if (property.valueUuid !== null && aliasesMapped[property.valueUuid] !== undefined) {
+            if (
+              property.valueUuid !== null &&
+              aliasesMapped[property.valueUuid] !== undefined
+            ) {
               if (abbreviations[form.uuid] === undefined) {
-                abbreviations[form.uuid] = new Set<string | null>().add(aliasesMapped[property.valueUuid].name);
+                abbreviations[form.uuid] = new Set<string | null>().add(
+                  aliasesMapped[property.valueUuid].name
+                );
               } else {
-                abbreviations[form.uuid].add(aliasesMapped[property.valueUuid].name);
+                abbreviations[form.uuid].add(
+                  aliasesMapped[property.valueUuid].name
+                );
               }
             }
           });
@@ -326,15 +385,21 @@ class DictionaryWordDao {
 
       // Change format for display and add to results.
       if (forms.length !== 0) {
-        forms.forEach((form) => {
+        forms.forEach(form => {
           results.push({
             uuid: dictWord.uuid,
             word: dictWord.word,
             formUuid: form.uuid,
             translation,
             form: form.form,
-            cases: abbreviations[form.uuid] !== undefined ? Array.from(abbreviations[form.uuid]).join('/') : null,
-            spellings: explicitSpellings[form.uuid] !== undefined ? Array.from(explicitSpellings[form.uuid]) : null,
+            cases:
+              abbreviations[form.uuid] !== undefined
+                ? Array.from(abbreviations[form.uuid]).join('/')
+                : null,
+            spellings:
+              explicitSpellings[form.uuid] !== undefined
+                ? Array.from(explicitSpellings[form.uuid])
+                : null,
           } as NamePlaceQueryRow);
         });
       } else {
@@ -355,7 +420,14 @@ class DictionaryWordDao {
 
   async getNamesOrPlaces(type: string, letter: string) {
     // Query the needed tables.
-    const [dictionaryWords, dictionaryForms, dictionarySpellings, fields, itemProperties, aliases] = await Promise.all([
+    const [
+      dictionaryWords,
+      dictionaryForms,
+      dictionarySpellings,
+      fields,
+      itemProperties,
+      aliases,
+    ] = await Promise.all([
       this.getDictionaryWordsByType(type, letter),
       this.getDictionaryFormRows(),
       this.getDictionarySpellingRows(),
@@ -365,24 +437,27 @@ class DictionaryWordDao {
     ]);
 
     // Map to referenceUuid for O(1) lookup.
-    const dictionaryFormsMapped: Record<string, FormRow[]> = <Record<string, FormRow[]>>(
-      this.reduceByReferenceUuid(dictionaryForms, true)
+    const dictionaryFormsMapped: Record<string, FormRow[]> = <
+      Record<string, FormRow[]>
+    >this.reduceByReferenceUuid(dictionaryForms, true);
+
+    const dictionarySpellingsMapped: Record<
+      string,
+      DictionarySpellingRows[]
+    > = <Record<string, DictionarySpellingRows[]>>(
+      this.reduceByReferenceUuid(dictionarySpellings, true)
     );
 
-    const dictionarySpellingsMapped: Record<string, DictionarySpellingRows[]> = <
-      Record<string, DictionarySpellingRows[]>
-    >this.reduceByReferenceUuid(dictionarySpellings, true);
+    const fieldsMapped: Record<string, FieldShortRow> = <
+      Record<string, FieldShortRow>
+    >this.reduceByReferenceUuid(fields);
+    const itemPropertiesMapped: Record<string, ItemPropertyShortRow[]> = <
+      Record<string, ItemPropertyShortRow[]>
+    >this.reduceByReferenceUuid(itemProperties, true);
 
-    const fieldsMapped: Record<string, FieldShortRow> = <Record<string, FieldShortRow>>(
-      this.reduceByReferenceUuid(fields)
-    );
-    const itemPropertiesMapped: Record<string, ItemPropertyShortRow[]> = <Record<string, ItemPropertyShortRow[]>>(
-      this.reduceByReferenceUuid(itemProperties, true)
-    );
-
-    const aliasesMapped: Record<string, AliasWithName> = <Record<string, AliasWithName>>(
-      this.reduceByReferenceUuid(aliases)
-    );
+    const aliasesMapped: Record<string, AliasWithName> = <
+      Record<string, AliasWithName>
+    >this.reduceByReferenceUuid(aliases);
 
     const results: NamePlaceQueryRow[] = this.parseNamesOrPlacesQueries(
       dictionaryWords,
@@ -390,22 +465,29 @@ class DictionaryWordDao {
       dictionarySpellingsMapped,
       fieldsMapped,
       itemPropertiesMapped,
-      aliasesMapped,
+      aliasesMapped
     );
 
     return results;
   }
 
   async getPlaces(letter: string): Promise<NameOrPlace[]> {
-    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(this.PLACE_TYPE, letter);
+    const results: NamePlaceQueryRow[] = await this.getNamesOrPlaces(
+      this.PLACE_TYPE,
+      letter
+    );
     return nestedFormsAndSpellings(results);
   }
 
-  async getWordTranslations(wordUuid: string): Promise<DictionaryWordTranslation[]> {
-    const translations = (await FieldDao.getByReferenceUuid(wordUuid)).map(({ uuid, field }) => ({
-      uuid,
-      translation: field,
-    })) as DictionaryWordTranslation[];
+  async getWordTranslations(
+    wordUuid: string
+  ): Promise<DictionaryWordTranslation[]> {
+    const translations = (await FieldDao.getByReferenceUuid(wordUuid)).map(
+      ({ uuid, field }) => ({
+        uuid,
+        translation: field,
+      })
+    ) as DictionaryWordTranslation[];
 
     return translations;
   }
@@ -419,31 +501,44 @@ class DictionaryWordDao {
     return rows;
   }
 
-  async getSpecialClassifications(wordUuid?: string): Promise<ItemPropertyRow[]> {
+  async getSpecialClassifications(
+    wordUuid?: string
+  ): Promise<ItemPropertyRow[]> {
     const rows = await ItemPropertiesDao.getProperties(
       'Special Classifications',
-      wordUuid ? { referenceUuid: wordUuid } : {},
+      wordUuid ? { referenceUuid: wordUuid } : {}
     );
 
     return rows;
   }
 
-  async getVerbalThematicVowelTypes(wordUuid?: string): Promise<ItemPropertyRow[]> {
+  async getVerbalThematicVowelTypes(
+    wordUuid?: string
+  ): Promise<ItemPropertyRow[]> {
     const rows = await ItemPropertiesDao.getProperties(
       'Verbal Thematic Vowel Type',
-      wordUuid ? { referenceUuid: wordUuid } : {},
+      wordUuid ? { referenceUuid: wordUuid } : {}
     );
 
-    return rows.filter((r) => !r.name.endsWith('-Class'));
+    return rows.filter(r => !r.name.endsWith('-Class'));
   }
 
   async getWordName(wordUuid: string): Promise<string> {
-    const { word }: { word: string } = await knex('dictionary_word').select('word').where('uuid', wordUuid).first();
+    const { word }: { word: string } = await knex('dictionary_word')
+      .select('word')
+      .where('uuid', wordUuid)
+      .first();
     return word;
   }
 
   async getGrammaticalInfo(wordUuid: string): Promise<DictionaryWord> {
-    const [word, partsOfSpeech, specialClassifications, verbalThematicVowelTypes, translations] = await Promise.all([
+    const [
+      word,
+      partsOfSpeech,
+      specialClassifications,
+      verbalThematicVowelTypes,
+      translations,
+    ] = await Promise.all([
       this.getWordName(wordUuid),
       this.getPartsOfSpeech(wordUuid),
       this.getSpecialClassifications(wordUuid),
@@ -476,9 +571,13 @@ class DictionaryWordDao {
         'dw.uuid',
         'dw.type',
         'dw.word AS name',
-        knex.raw("GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"),
+        knex.raw(
+          "GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"
+        ),
         'df.form',
-        knex.raw("GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings"),
+        knex.raw(
+          "GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings"
+        )
       )
       .groupBy('df.uuid');
     const rows: SearchWordsQueryRow[] = await query;
@@ -499,7 +598,7 @@ class DictionaryWordDao {
   async updateTranslations(
     userUuid: string,
     wordUuid: string,
-    translations: DictionaryWordTranslation[],
+    translations: DictionaryWordTranslation[]
   ): Promise<DictionaryWordTranslation[]> {
     const currentTranslations = await this.getWordTranslations(wordUuid);
     const translationsWithPrimacy = translations.map((tr, index) => ({
@@ -508,16 +607,18 @@ class DictionaryWordDao {
     }));
 
     // Insert new translations
-    let newTranslations = translationsWithPrimacy.filter((tr) => tr.uuid === '');
+    let newTranslations = translationsWithPrimacy.filter(tr => tr.uuid === '');
     const insertedUuids = await Promise.all(
-      newTranslations.map((tr) =>
-        FieldDao.insertField(wordUuid, 'definition', tr.translation, { primacy: tr.primacy }),
-      ),
+      newTranslations.map(tr =>
+        FieldDao.insertField(wordUuid, 'definition', tr.translation, {
+          primacy: tr.primacy,
+        })
+      )
     );
     await Promise.all(
-      insertedUuids.map((fieldUuid) => {
-        return LoggingEditsDao.logEdit('INSERT', userUuid, 'field', fieldUuid);
-      }),
+      insertedUuids.map(fieldUuid =>
+        LoggingEditsDao.logEdit('INSERT', userUuid, 'field', fieldUuid)
+      )
     );
     newTranslations = newTranslations.map((tr, index) => ({
       ...tr,
@@ -525,18 +626,30 @@ class DictionaryWordDao {
     }));
 
     // Update existing translations
-    const existingTranslations = translationsWithPrimacy.filter((tr) => tr.uuid !== '');
-    await Promise.all(existingTranslations.map((tr) => LoggingEditsDao.logEdit('UPDATE', userUuid, 'field', tr.uuid)));
+    const existingTranslations = translationsWithPrimacy.filter(
+      tr => tr.uuid !== ''
+    );
     await Promise.all(
-      existingTranslations.map((tr) => FieldDao.updateField(tr.uuid, tr.translation, { primacy: tr.primacy })),
+      existingTranslations.map(tr =>
+        LoggingEditsDao.logEdit('UPDATE', userUuid, 'field', tr.uuid)
+      )
+    );
+    await Promise.all(
+      existingTranslations.map(tr =>
+        FieldDao.updateField(tr.uuid, tr.translation, { primacy: tr.primacy })
+      )
     );
 
     // Delete removed translations
     const combinedTranslations = [...newTranslations, ...existingTranslations];
-    const currentTranslationUuids = currentTranslations.map((tr) => tr.uuid);
-    const remainingTranslationUuids = combinedTranslations.map((tr) => tr.uuid);
-    const deletedTranslationUuids = currentTranslationUuids.filter((uuid) => !remainingTranslationUuids.includes(uuid));
-    await Promise.all(deletedTranslationUuids.map((uuid) => FieldDao.deleteField(uuid)));
+    const currentTranslationUuids = currentTranslations.map(tr => tr.uuid);
+    const remainingTranslationUuids = combinedTranslations.map(tr => tr.uuid);
+    const deletedTranslationUuids = currentTranslationUuids.filter(
+      uuid => !remainingTranslationUuids.includes(uuid)
+    );
+    await Promise.all(
+      deletedTranslationUuids.map(uuid => FieldDao.deleteField(uuid))
+    );
 
     return combinedTranslations
       .sort((a, b) => {
@@ -544,7 +657,7 @@ class DictionaryWordDao {
         if (a.primacy < b.primacy) return -1;
         return 0;
       })
-      .map((tr) => ({
+      .map(tr => ({
         translation: tr.translation,
         uuid: tr.uuid,
       }));

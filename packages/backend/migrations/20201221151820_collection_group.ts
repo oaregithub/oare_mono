@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 export async function up(knex: Knex): Promise<void> {
   const exists = await knex.schema.hasTable('collection_group');
   if (!exists) {
-    return knex.schema.createTable('collection_group', (table) => {
+    return knex.schema.createTable('collection_group', table => {
       table.increments('id');
       table.uuid('collection_uuid').notNullable();
       table.integer('group_id').notNullable();

@@ -11,7 +11,11 @@ router.route('/register').post(async (req, res, next) => {
     const { firstName, lastName, email, password }: RegisterPayload = req.body;
     const existingUser = await userDao.emailExists(email);
     if (existingUser) {
-      next(new HttpBadRequest(`The email ${email} is already in use, please choose another.`));
+      next(
+        new HttpBadRequest(
+          `The email ${email} is already in use, please choose another.`
+        )
+      );
       return;
     }
 

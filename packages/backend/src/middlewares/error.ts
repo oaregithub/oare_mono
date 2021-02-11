@@ -3,7 +3,12 @@ import HttpException from '@/exceptions/HttpException';
 import { InsertErrorsRow } from '../api/daos/ErrorsDao';
 import sl from '../serviceLocator';
 
-const errorMiddleware = async (error: HttpException, request: Request, response: Response, _next: NextFunction) => {
+const errorMiddleware = async (
+  error: HttpException,
+  request: Request,
+  response: Response,
+  _next: NextFunction
+) => {
   const ErrorsDao = sl.get('ErrorsDao');
   const status = error.status || 500;
   const message = error.message || 'Something went wrong';
@@ -20,7 +25,7 @@ const errorMiddleware = async (error: HttpException, request: Request, response:
     };
 
     await ErrorsDao.logError(insertRow);
-    console.log(message);
+    console.log(message); // eslint-disable-line no-console
   }
   response.status(status).send({
     status,

@@ -23,7 +23,9 @@ router
       }
 
       const ResetPasswordLinksDao = sl.get('ResetPasswordLinksDao');
-      const resetUuid = await ResetPasswordLinksDao.createResetPasswordLink(user.uuid);
+      const resetUuid = await ResetPasswordLinksDao.createResetPasswordLink(
+        user.uuid
+      );
 
       const mailer = sl.get('mailer');
 
@@ -33,7 +35,9 @@ router
         text: `Hello ${
           user.firstName
         },\n\nYou have requested to reset your password at oare.byu.edu. Please follow this link to reset your password: ${
-          process.env.NODE_ENV === 'development' ? 'localhost:8080' : 'https://oare.byu.edu'
+          process.env.NODE_ENV === 'development'
+            ? 'localhost:8080'
+            : 'https://oare.byu.edu'
         }/reset_password/${resetUuid}.\n\nOARE Team`,
       });
       res.status(200).end();
@@ -46,18 +50,24 @@ router
       const { newPassword, resetUuid }: ResetPasswordPayload = req.body;
       const ResetPasswordLinksDao = sl.get('ResetPasswordLinksDao');
 
-      const resetRow = await ResetPasswordLinksDao.getResetPasswordRow(resetUuid);
+      const resetRow = await ResetPasswordLinksDao.getResetPasswordRow(
+        resetUuid
+      );
 
       if (!resetRow) {
-        next(new HttpBadRequest('The link you tried to use to reset your password is invalid.'));
+        next(
+          new HttpBadRequest(
+            'The link you tried to use to reset your password is invalid.'
+          )
+        );
         return;
       }
 
       if (Date.now() >= resetRow.expiration.getTime()) {
         next(
           new HttpBadRequest(
-            'The link you tried to use to reset your password is expired. When a reset link is sent to your email, you have 30 minutes before it expires. Please try again.',
-          ),
+            'The link you tried to use to reset your password is expired. When a reset link is sent to your email, you have 30 minutes before it expires. Please try again.'
+          )
         );
         return;
       }
@@ -67,14 +77,16 @@ router
 
       if (!user) {
         next(
-          new HttpBadRequest('You tried to reset the password for an invalid user. The user may have been deleted.'),
+          new HttpBadRequest(
+            'You tried to reset the password for an invalid user. The user may have been deleted.'
+          )
         );
         return;
       }
 
       const utils = sl.get('utils');
 
-      await utils.createTransaction(async (trx) => {
+      await utils.createTransaction(async trx => {
         await UserDao.updatePassword(resetRow.userUuid, newPassword, trx);
         await ResetPasswordLinksDao.invalidateResetRow(resetRow.uuid, trx);
       });

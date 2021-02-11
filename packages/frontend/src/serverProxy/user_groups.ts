@@ -1,9 +1,9 @@
-import axios from '../axiosInstance';
 import {
   User,
   AddUsersToGroupPayload,
   RemoveUsersFromGroupPayload,
 } from '@oare/types';
+import axios from '../axiosInstance';
 
 async function addUsersToGroup(
   groupId: number,

@@ -33,7 +33,12 @@ class RefreshTokenDao {
     };
   }
 
-  async insertToken(token: string, expiration: Date, email: string, ipAddress: string) {
+  async insertToken(
+    token: string,
+    expiration: Date,
+    email: string,
+    ipAddress: string
+  ) {
     await this.deleteToken(email, ipAddress);
     return knex('refresh_tokens').insert({
       token,

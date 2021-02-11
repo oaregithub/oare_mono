@@ -1,5 +1,5 @@
-import axios from '../axiosInstance';
 import { Thread, ThreadWithComments } from '@oare/types';
+import axios from '../axiosInstance';
 
 async function getThreadsWithCommentsByReferenceUuid(
   referenceUuid: string

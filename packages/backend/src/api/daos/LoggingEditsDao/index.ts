@@ -7,7 +7,7 @@ class LoggingEditsDao {
     userUuid: string,
     tableName: string,
     uuid: string,
-    trx?: Knex.Transaction,
+    trx?: Knex.Transaction
   ) {
     const k = trx || knex;
     let prevRow: string | null = null;

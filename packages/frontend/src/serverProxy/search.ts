@@ -10,14 +10,14 @@ import {
 async function searchTexts(
   payload: SearchTextsPayload
 ): Promise<SearchTextsResponse> {
-  let { data } = await axios.get('/search', { params: payload });
+  const { data } = await axios.get('/search', { params: payload });
   return data;
 }
 
 async function searchSpellings(
   spelling: string
 ): Promise<SearchSpellingResultRow[]> {
-  let { data } = await axios.get('/search/spellings', {
+  const { data } = await axios.get('/search/spellings', {
     params: {
       spelling,
     },
@@ -30,7 +30,7 @@ async function searchSpellingDiscourse(
   spelling: string,
   { page, limit }: Pagination
 ): Promise<SearchDiscourseSpellingResponse> {
-  let { data } = await axios.get('/search/spellings/discourse', {
+  const { data } = await axios.get('/search/spellings/discourse', {
     params: {
       spelling,
       page,

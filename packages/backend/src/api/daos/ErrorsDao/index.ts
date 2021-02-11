@@ -10,7 +10,12 @@ export interface InsertErrorsRow {
 }
 
 class ErrorsDao {
-  async logError({ userUuid, description, stacktrace, status }: InsertErrorsRow): Promise<void> {
+  async logError({
+    userUuid,
+    description,
+    stacktrace,
+    status,
+  }: InsertErrorsRow): Promise<void> {
     const uuid = v4();
     const timestamp = new Date();
 
@@ -27,7 +32,14 @@ class ErrorsDao {
 
   async getErrorLog(page: number, limit: number): Promise<ErrorsRow[]> {
     const response: ErrorsRow[] = await knex('errors')
-      .select('uuid', 'user_uuid', 'description', 'stacktrace', 'timestamp', 'status')
+      .select(
+        'uuid',
+        'user_uuid',
+        'description',
+        'stacktrace',
+        'timestamp',
+        'status'
+      )
       .orderBy('errors.timestamp', 'desc')
       .limit(limit)
       .offset((page - 1) * limit);
