@@ -15,7 +15,11 @@ router
 
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
-        next(new HttpBadRequest(`Cannot retrieve information on non existent group with ID ${groupId}`));
+        next(
+          new HttpBadRequest(
+            `Cannot retrieve information on non existent group with ID ${groupId}`
+          )
+        );
         return;
       }
 

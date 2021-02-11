@@ -19,7 +19,7 @@ export interface ItemPropertyShortRow {
 class ItemProperties {
   async getProperties(
     referenceType: string,
-    { abbreviation, referenceUuid }: GetItemPropertiesOptions = {},
+    { abbreviation, referenceUuid }: GetItemPropertiesOptions = {}
   ): Promise<ItemPropertyRow[]> {
     let query = knex('item_properties AS ip')
       .select('ip.uuid', 'ip.reference_uuid AS referenceUuid', 'a2.name')
@@ -38,9 +38,17 @@ class ItemProperties {
     return query;
   }
 
-  async getItemPropertyRowsByAliasName(aliasName: string): Promise<ItemPropertyShortRow[]> {
-    const itemProperties: ItemPropertyShortRow[] = await knex('item_properties AS ip')
-      .select('ip.uuid', 'ip.reference_uuid AS referenceUuid', 'ip.value_uuid AS valueUuid')
+  async getItemPropertyRowsByAliasName(
+    aliasName: string
+  ): Promise<ItemPropertyShortRow[]> {
+    const itemProperties: ItemPropertyShortRow[] = await knex(
+      'item_properties AS ip'
+    )
+      .select(
+        'ip.uuid',
+        'ip.reference_uuid AS referenceUuid',
+        'ip.value_uuid AS valueUuid'
+      )
       .innerJoin('alias AS a', 'a.reference_uuid', 'ip.variable_uuid')
       .where('a.name', aliasName);
     return itemProperties;

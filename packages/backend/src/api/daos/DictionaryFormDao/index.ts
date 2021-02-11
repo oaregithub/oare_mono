@@ -17,21 +17,39 @@ export interface FormRow {
 }
 
 function getCliticSuffixUuid(grammarRows: FormGrammarRow[]): string | null {
-  const cliticRow = grammarRows.find((row) => row.variable === 'Clitic' && row.valueName === 'Suffix pronoun');
+  const cliticRow = grammarRows.find(
+    row => row.variable === 'Clitic' && row.valueName === 'Suffix pronoun'
+  );
   return cliticRow ? cliticRow.propertyUuid : null;
 }
 
-function getVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string | null): string[] {
-  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid !== cliticUuid);
+function getVariables(
+  variable: string,
+  grammarRows: FormGrammarRow[],
+  cliticUuid: string | null
+): string[] {
+  const valueRows = grammarRows.filter(
+    row => row.variable === variable && row.parentUuid !== cliticUuid
+  );
 
-  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
+  const values = valueRows
+    .map(row => row.valueAbbrev || '')
+    .filter(row => row !== '');
   return values;
 }
 
-function getSuffixVariables(variable: string, grammarRows: FormGrammarRow[], cliticUuid: string): string[] {
-  const valueRows = grammarRows.filter((row) => row.variable === variable && row.parentUuid === cliticUuid);
+function getSuffixVariables(
+  variable: string,
+  grammarRows: FormGrammarRow[],
+  cliticUuid: string
+): string[] {
+  const valueRows = grammarRows.filter(
+    row => row.variable === variable && row.parentUuid === cliticUuid
+  );
 
-  const values = valueRows.map((row) => row.valueAbbrev || '').filter((row) => row !== '');
+  const values = valueRows
+    .map(row => row.valueAbbrev || '')
+    .filter(row => row !== '');
   return values;
 }
 
@@ -47,7 +65,7 @@ class DictionaryFormDao {
         'ip.parent_uuid AS parentUuid',
         'a1.name AS variable',
         'a2.name AS valueName',
-        'a3.name AS valueAbbrev',
+        'a3.name AS valueAbbrev'
       )
       .leftJoin('item_properties AS ip', 'ip.reference_uuid', 'df.uuid')
       .leftJoin('alias AS a1', 'a1.reference_uuid', 'ip.variable_uuid')
@@ -66,7 +84,9 @@ class DictionaryFormDao {
         'Case',
         'Gender',
         'Grammatical Number',
-      ].map((varValue) => getSuffixVariables(varValue, grammarRows, cliticSuffixUuid));
+      ].map(varValue =>
+        getSuffixVariables(varValue, grammarRows, cliticSuffixUuid)
+      );
       suffix = {
         persons,
         cases,
@@ -75,7 +95,17 @@ class DictionaryFormDao {
       };
     }
 
-    const [stems, tenses, cases, states, moods, persons, grammaticalNumbers, morphologicalForms, genders] = [
+    const [
+      stems,
+      tenses,
+      cases,
+      states,
+      moods,
+      persons,
+      grammaticalNumbers,
+      morphologicalForms,
+      genders,
+    ] = [
       'Stem',
       'Tense',
       'Case',
@@ -85,7 +115,7 @@ class DictionaryFormDao {
       'Grammatical Number',
       'Morphological Form',
       'Gender',
-    ].map((varType) => getVariables(varType, grammarRows, cliticSuffixUuid));
+    ].map(varType => getVariables(varType, grammarRows, cliticSuffixUuid));
 
     return {
       stems,
@@ -98,16 +128,21 @@ class DictionaryFormDao {
       morphologicalForms,
       genders,
       suffix,
-      clitics: getVariables('Clitic', grammarRows, cliticSuffixUuid).sort((a, b) => {
-        if (a === 'suf.') return 1;
-        if (b === 'suf.') return -1;
-        return 0;
-      }),
+      clitics: getVariables('Clitic', grammarRows, cliticSuffixUuid).sort(
+        (a, b) => {
+          if (a === 'suf.') return 1;
+          if (b === 'suf.') return -1;
+          return 0;
+        }
+      ),
     };
   }
 
   async getForm(formUuid: string): Promise<DictionaryForm> {
-    const { form }: { form: string } = await knex('dictionary_form').select('form').where('uuid', formUuid).first();
+    const { form }: { form: string } = await knex('dictionary_form')
+      .select('form')
+      .where('uuid', formUuid)
+      .first();
     const spellings = await DictionarySpellingDao.getFormSpellings(formUuid);
     const grammar = await this.getFormGrammar(formUuid);
 
@@ -120,18 +155,27 @@ class DictionaryFormDao {
   }
 
   async formExists(formUuid: string): Promise<boolean> {
-    const row = await knex('dictionary_form').select().where('uuid', formUuid).first();
+    const row = await knex('dictionary_form')
+      .select()
+      .where('uuid', formUuid)
+      .first();
     return !!row;
   }
 
   async getWordForms(wordUuid: string): Promise<DictionaryForm[]> {
-    const forms: { uuid: string; form: string }[] = await knex('dictionary_form')
+    const forms: { uuid: string; form: string }[] = await knex(
+      'dictionary_form'
+    )
       .select('uuid', 'form')
       .where('reference_uuid', wordUuid);
 
-    const formSpellings = await Promise.all(forms.map((f) => DictionarySpellingDao.getFormSpellings(f.uuid)));
+    const formSpellings = await Promise.all(
+      forms.map(f => DictionarySpellingDao.getFormSpellings(f.uuid))
+    );
 
-    const formGrammars = await Promise.all(forms.map((f) => this.getFormGrammar(f.uuid)));
+    const formGrammars = await Promise.all(
+      forms.map(f => this.getFormGrammar(f.uuid))
+    );
 
     return forms
       .map((form, i) => ({
@@ -146,7 +190,7 @@ class DictionaryFormDao {
     const forms: FormRow[] = await knex('dictionary_form AS df').select(
       'df.uuid',
       'df.reference_uuid AS referenceUuid',
-      'df.form',
+      'df.form'
     );
     return forms;
   }

@@ -1,4 +1,4 @@
-import { DiscourseUnit } from "./textDiscourse";
+import { DiscourseUnit } from './textDiscourse';
 import { TextDraft } from './drafts';
 
 export interface TextInfoResponse {
@@ -33,7 +33,7 @@ export type EpigraphicUnitSide =
   | 'rev.'
   | 'u.e.'
   | 'le.e.'
-  | 're.e.'
+  | 'r.e.'
   | 0;
 
 export interface EpigraphicUnit {

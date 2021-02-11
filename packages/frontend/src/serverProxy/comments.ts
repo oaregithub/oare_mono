@@ -1,5 +1,5 @@
-import axios from '../axiosInstance';
 import { CommentRequest, CommentResponse } from '@oare/types';
+import axios from '../axiosInstance';
 
 async function insertComment(
   request: CommentRequest
@@ -8,6 +8,11 @@ async function insertComment(
   return data;
 }
 
+async function deleteComment(uuid: string): Promise<void> {
+  await axios.delete(`/comments/${encodeURIComponent(uuid)}`);
+}
+
 export default {
   insertComment,
+  deleteComment,
 };

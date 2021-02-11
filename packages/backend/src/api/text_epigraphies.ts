@@ -22,14 +22,19 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     // Make sure user has access to the text he wishes to access
     if (!user || !user.isAdmin) {
       const { blacklist } = await TextGroupDao.getUserBlacklist(user);
-      const collectionBlacklist = await CollectionGroupDao.getUserCollectionBlacklist(user);
+      const collectionBlacklist = await CollectionGroupDao.getUserCollectionBlacklist(
+        user
+      );
       const collectionOfText = await HierarchyDao.getCollectionOfText(textUuid);
 
-      if (blacklist.includes(textUuid) || collectionBlacklist.includes(collectionOfText)) {
+      if (
+        blacklist.includes(textUuid) ||
+        collectionBlacklist.includes(collectionOfText)
+      ) {
         next(
           new HttpForbidden(
-            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.',
-          ),
+            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
+          )
         );
         return;
       }
@@ -40,11 +45,13 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
     const cdliNum = await TextDao.getCdliNum(textUuid);
     const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
-    const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(textUuid);
+    const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
+      textUuid
+    );
 
     let markups = await TextMarkupDao.getMarkups(textUuid);
     const refTypes: { [key: string]: Set<string> } = {};
-    markups = markups.filter((markup) => {
+    markups = markups.filter(markup => {
       if (refTypes[markup.referenceUuid]) {
         if (refTypes[markup.referenceUuid].has(markup.type)) {
           return false;
@@ -56,7 +63,7 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
       refTypes[markup.referenceUuid].add(markup.type);
       return true;
     });
-    markups.sort((a) => {
+    markups.sort(a => {
       if (a.type === 'damage' || a.type === 'partialDamage') {
         return -1;
       }

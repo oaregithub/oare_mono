@@ -23,6 +23,7 @@ import UserGroupDao from '@/api/daos/UserGroupDao';
 import PermissionsDao from '@/api/daos/PermissionsDao';
 import CommentsDao from '@/api/daos/CommentsDao';
 import ThreadsDao from '@/api/daos/ThreadsDao';
+import ErrorsDao from '@/api/daos/ErrorsDao';
 import utils from '@/utils';
 import mailer from '@/mailer';
 
@@ -54,16 +55,22 @@ export type ServiceTypes = {
   PermissionsDao: typeof PermissionsDao;
   CommentsDao: typeof CommentsDao;
   ThreadsDao: typeof ThreadsDao;
+  ErrorsDao: typeof ErrorsDao;
   utils: typeof utils;
   mailer: typeof mailer;
 };
 
 export default {
-  set<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(instanceId: K, instance: V): void {
+  set<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(
+    instanceId: K,
+    instance: V
+  ): void {
     instances[instanceId] = instance;
   },
 
-  get<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(instanceId: K): V {
+  get<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(
+    instanceId: K
+  ): V {
     return instances[instanceId];
   },
 };

@@ -2,7 +2,6 @@
   <add-text-collection
     :groupId="groupId"
     itemType="Collection"
-    :editPermissions="true"
     :addItems="server.addGroupCollections"
   />
 </template>

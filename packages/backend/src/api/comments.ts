@@ -1,24 +1,24 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { CommentRequest, CommentResponse, Thread } from '@oare/types';
+import { CommentRequest, CommentResponse } from '@oare/types';
+import authenticatedRoute from '@/middlewares/authenticatedRoute';
 
 const router = express.Router();
 
-router.route('/comments').post(async (req, res, next) => {
+router.route('/comments').post(authenticatedRoute, async (req, res, next) => {
   try {
     const { comment, thread }: CommentRequest = req.body;
     const commentsDao = sl.get('CommentsDao');
     const threadsDao = sl.get('ThreadsDao');
 
     // Check if thread already exists.
-    const foundThread: Thread[] | null = await threadsDao.getByReferenceUuid(thread.referenceUuid);
 
-    if (!foundThread) {
+    if (!thread.uuid) {
       // Create new thread.
       comment.threadUuid = await threadsDao.insert(thread);
     } else {
-      comment.threadUuid = foundThread[0].uuid;
+      comment.threadUuid = thread.uuid;
     }
 
     // MySQL datetime format.
@@ -35,5 +35,19 @@ router.route('/comments').post(async (req, res, next) => {
     next(new HttpInternalError(err));
   }
 });
+
+router
+  .route('/comments/:uuid')
+  .delete(authenticatedRoute, async (req, res, next) => {
+    try {
+      const { uuid } = req.params;
+      const commentsDao = sl.get('CommentsDao');
+      await commentsDao.updateDelete(uuid);
+
+      res.status(200).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;

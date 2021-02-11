@@ -17,7 +17,9 @@ async function adminRoute(req: Request, res: Response, next: NextFunction) {
       if (user && user.isAdmin) {
         next();
       } else {
-        next(new HttpForbidden('You are not authenticated to access this route'));
+        next(
+          new HttpForbidden('You are not authenticated to access this route')
+        );
       }
     };
 

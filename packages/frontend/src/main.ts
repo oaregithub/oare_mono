@@ -6,15 +6,15 @@ import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
 import tsStore from '@/ts-store';
 import _ from 'lodash';
+import { NavigationGuard, Route, NavigationGuardNext } from 'vue-router';
+import EventBus, { ACTIONS } from '@/EventBus';
 import App from './App.vue';
 import router from './router';
 import 'vuetify/dist/vuetify.min.css';
 import './styles/base.css';
 import vuetify from './plugins/vuetify';
 import loadBases from './loadBases';
-import { NavigationGuard, Route, NavigationGuardNext } from 'vue-router';
 import i18n from './i18n';
-import EventBus, { ACTIONS } from '@/EventBus';
 import 'flag-icon-css/css/flag-icon.css';
 
 sl.set('serverProxy', serverProxy);

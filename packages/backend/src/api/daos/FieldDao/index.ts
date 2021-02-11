@@ -30,7 +30,12 @@ class FieldDao {
       .orderBy('primacy');
   }
 
-  async insertField(referenceUuid: string, type: 'definition', field: string, options?: FieldOptions): Promise<string> {
+  async insertField(
+    referenceUuid: string,
+    type: 'definition',
+    field: string,
+    options?: FieldOptions
+  ): Promise<string> {
     const uuid = v4();
     await knex('field').insert({
       uuid,
@@ -56,7 +61,7 @@ class FieldDao {
     const fields: FieldShortRow[] = await knex('field AS f').select(
       'f.uuid',
       'f.reference_uuid AS referenceUuid',
-      'f.field',
+      'f.field'
     );
     return fields;
   }

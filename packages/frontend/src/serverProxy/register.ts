@@ -2,7 +2,7 @@ import axios from '@/axiosInstance';
 import { RegisterPayload } from '@oare/types';
 
 async function register(payload: RegisterPayload) {
-  let { data } = await axios.post('/register', payload);
+  const { data } = await axios.post('/register', payload);
   return data;
 }
 

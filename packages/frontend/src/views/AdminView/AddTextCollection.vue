@@ -4,16 +4,10 @@
     :loading="loading"
   >
     <template #header>
-      <router-link
-        :to="
-          groupId
-            ? `/groups/${groupId}/${itemType.toLowerCase()}s`
-            : `/admin/blacklist/${itemType.toLowerCase()}s`
-        "
+      <router-link :to="backLink"
         >&larr; Back to {{ itemType.toLowerCase() }} view
       </router-link>
     </template>
-
     <text-and-collections-dialog
       :key="dialogUuid"
       :uuid="dialogUuid"
@@ -21,7 +15,6 @@
       :itemType="itemType"
       v-model="textsAndCollectionsDialog"
     />
-
     <v-container>
       <v-row align="center" justify="center">
         <OareDialog
@@ -41,15 +34,16 @@
               >Add selected {{ itemType }}s ({{ selectedItems.length }})</v-btn
             >
           </template>
-          {{ confirmAddMessage }}
+          Are you sure you want to add the following
+          {{ itemType.toLowerCase() }}(s) to {{ groupName }}?
           <v-data-table :headers="selectedItemsHeaders" :items="selectedItems">
-            <template v-if="editPermissions" #[`item.canRead`]="{ item }">
+            <template v-if="groupId" #[`item.canRead`]="{ item }">
               <v-checkbox
                 :input-value="item.canRead"
                 @change="updateItemToAddRead(item.uuid, $event)"
               />
             </template>
-            <template v-if="editPermissions" #[`item.canWrite`]="{ item }">
+            <template v-if="groupId" #[`item.canWrite`]="{ item }">
               <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
             </template>
           </v-data-table>
@@ -92,13 +86,13 @@
               >
               <span v-else>{{ item.name }}</span>
             </template>
-            <template v-if="editPermissions" #[`item.canRead`]="{ item }">
+            <template v-if="groupId" #[`item.canRead`]="{ item }">
               <v-checkbox
                 :input-value="item.canRead"
                 @change="updateItemToAddRead(item.uuid, $event)"
               />
             </template>
-            <template v-if="editPermissions" #[`item.canWrite`]="{ item }">
+            <template v-if="groupId" #[`item.canWrite`]="{ item }">
               <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
             </template>
             <template slot="no-data">
@@ -108,27 +102,12 @@
         </v-col>
         <v-col cols="8">
           <h3>All {{ itemType }}s</h3>
-          <v-card
+          <select-all-message
             v-if="selectAllMessage"
-            color="grey lighten-3"
-            class="my-2"
-            elevation="0"
-          >
-            <v-container>
-              <v-row>
-                <v-spacer />
-                <span class="px-2"
-                  >All <b>{{ rows }}</b> {{ itemType.toLowerCase() }}s on this
-                  page are selected.</span
-                >
-                <a @click="selectFullList" class="px-2"
-                  >Select all {{ serverCount }}
-                  {{ itemType.toLowerCase() }}s.</a
-                >
-                <v-spacer />
-              </v-row>
-            </v-container>
-          </v-card>
+            :itemType="itemType"
+            :serverCount="serverCount"
+            @select-full-list="selectFullList"
+          />
           <v-data-table
             :loading="getItemsLoading"
             :headers="itemsHeaders"
@@ -185,11 +164,13 @@ import {
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
+import SelectAllMessage from './SelectAllMessage.vue';
 
 export default defineComponent({
   name: 'AddPermissionsItems',
   components: {
     TextAndCollectionsDialog,
+    SelectAllMessage,
   },
   props: {
     groupId: {
@@ -198,10 +179,6 @@ export default defineComponent({
     },
     itemType: {
       type: String as PropType<PermissionsListType>,
-      required: true,
-    },
-    editPermissions: {
-      type: Boolean,
       required: true,
     },
     addItems: {
@@ -214,13 +191,13 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ groupId, itemType, editPermissions, addItems }) {
+  setup({ groupId, itemType, addItems }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
     const _ = sl.get('lodash');
 
-    const selectedItemsHeaders: Ref<DataTableHeader[]> = editPermissions
+    const selectedItemsHeaders: Ref<DataTableHeader[]> = groupId
       ? ref([
           { text: 'Name', value: 'name' },
           { text: 'Can view?', value: 'canRead' },
@@ -267,19 +244,10 @@ export default defineComponent({
     const unaddedItems: Ref<Text[] | CollectionPermissionsItem[]> = ref([]);
 
     const groupName = ref('');
-    const confirmAddMessage = computed(() => {
-      if (groupId) {
-        return `Are you sure you want to add the following
-          ${itemType.toLowerCase()}(s) and permission(s) to the group named
-          ${groupName.value}?`;
-      } else {
-        return `Are you sure you want to add the following ${itemType.toLowerCase()}(s) 
-        to the public blacklist? This will prevent all users from viewing and editing these 
-        ${itemType.toLowerCase()}(s) unless otherwise authorized.`;
-      }
-    });
-    const itemLink = computed(() =>
-      itemType === 'Collection' ? '/collections/name/' : '/epigraphies/'
+    const backLink = computed(() =>
+      groupId
+        ? `/groups/${groupId}/${itemType.toLowerCase()}s`
+        : `/admin/blacklist/${itemType.toLowerCase()}s`
     );
 
     const getItems = async () => {
@@ -326,11 +294,7 @@ export default defineComponent({
           ...router,
           query: { saved: 'true' },
         });
-        if (groupId) {
-          router.push(`/groups/${groupId}/${itemType.toLowerCase()}s`);
-        } else {
-          router.push(`/admin/blacklist/${itemType.toLowerCase()}s`);
-        }
+        router.push(backLink.value);
       } catch {
         actions.showErrorSnackbar(
           `Error adding ${itemType.toLowerCase()}(s). Please try again.`
@@ -454,6 +418,7 @@ export default defineComponent({
     watch(
       search,
       _.debounce(async () => {
+        selectAllMessage.value = false;
         if (!search.value) {
           search.value = '';
         }
@@ -464,8 +429,6 @@ export default defineComponent({
         immediate: false,
       }
     );
-
-    watch(search, () => (selectAllMessage.value = false));
 
     watch(textsAndCollectionsDialog, () => {
       if (textsAndCollectionsDialog.value) {
@@ -521,8 +484,6 @@ export default defineComponent({
       updateItemToAddRead,
       selectItem,
       selectAll,
-      confirmAddMessage,
-      itemLink,
       unselectAll,
       selectAllMessage,
       rows,
@@ -533,6 +494,7 @@ export default defineComponent({
       dialogName,
       setupDialog,
       selectedListPage,
+      backLink,
     };
   },
 });

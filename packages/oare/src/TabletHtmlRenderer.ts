@@ -34,7 +34,7 @@ function isMarkupChar(char: string): boolean {
 
 function italicize(word: string) {
   let reading: string = '';
-  word.split('').forEach((char) => {
+  word.split('').forEach(char => {
     if (isMarkupChar(char)) {
       reading += char;
     } else {
@@ -59,7 +59,7 @@ export default class TabletHtmlRenderer extends TabletRenderer {
 
   constructor(
     renderer: TabletRenderer,
-    { admin, highlightDiscourses }: TabletHtmlOptions = {},
+    { admin, highlightDiscourses }: TabletHtmlOptions = {}
   ) {
     super(renderer.getEpigraphicUnits(), renderer.getMarkupUnits());
     this.renderer = renderer;

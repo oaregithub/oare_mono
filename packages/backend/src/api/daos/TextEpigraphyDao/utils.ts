@@ -2,9 +2,17 @@ import knex from '@/connection';
 import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/types';
 import { EpigraphicQueryRow } from './index';
 
-export default function getSearchQuery(characters: string[], textTitle: string, blacklist: string[]) {
+export default function getSearchQuery(
+  characters: string[],
+  textTitle: string,
+  blacklist: string[]
+) {
   // Join text table so text names can be returned
-  let query = knex('text_epigraphy').join('text', 'text.uuid', 'text_epigraphy.text_uuid');
+  let query = knex('text_epigraphy').join(
+    'text',
+    'text.uuid',
+    'text_epigraphy.text_uuid'
+  );
 
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
@@ -16,7 +24,11 @@ export default function getSearchQuery(characters: string[], textTitle: string, 
     query = query.join(`text_epigraphy AS t${index}`, function () {
       this.on(`t${index}.text_uuid`, 'text_epigraphy.text_uuid')
         .andOn(knex.raw(`t${index}.reading = ?`, char))
-        .andOn(knex.raw(`t${index}.char_on_tablet=text_epigraphy.char_on_tablet + ${index}`));
+        .andOn(
+          knex.raw(
+            `t${index}.char_on_tablet=text_epigraphy.char_on_tablet + ${index}`
+          )
+        );
     });
   });
 
@@ -54,9 +66,11 @@ function mapSideNumberToSideName(side: number): EpigraphicUnitSide {
   }
 }
 
-export function convertEpigraphicUnitRows(units: EpigraphicQueryRow[]): EpigraphicUnit[] {
+export function convertEpigraphicUnitRows(
+  units: EpigraphicQueryRow[]
+): EpigraphicUnit[] {
   return units
-    .map((unit) => {
+    .map(unit => {
       const mappedUnit: EpigraphicUnit = {
         ...unit,
         side: mapSideNumberToSideName(unit.side),
@@ -70,5 +84,5 @@ export function convertEpigraphicUnitRows(units: EpigraphicQueryRow[]): Epigraph
 
       return mappedUnit;
     })
-    .filter((item) => item.charOnTablet !== null);
+    .filter(item => item.charOnTablet !== null);
 }

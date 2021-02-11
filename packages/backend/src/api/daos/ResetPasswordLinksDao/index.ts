@@ -48,7 +48,9 @@ class ResetPasswordLinksDao {
 
   async invalidateResetRow(uuid: string, trx?: Transaction): Promise<void> {
     const k = trx || knex;
-    await k('reset_password_links').update({ expiration: new Date() }).where({ uuid });
+    await k('reset_password_links')
+      .update({ expiration: new Date() })
+      .where({ uuid });
   }
 }
 

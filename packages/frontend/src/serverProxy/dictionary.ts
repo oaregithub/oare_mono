@@ -1,4 +1,3 @@
-import axios from '../axiosInstance';
 import {
   DictionaryWordResponse,
   UpdateDictionaryWordPayload,
@@ -14,6 +13,7 @@ import {
   SearchDiscourseSpellingRow,
   SpellingOccurrencesResponse,
 } from '@oare/types';
+import axios from '../axiosInstance';
 
 /**
  * Return forms and spellings of a dictionary word
@@ -22,7 +22,7 @@ import {
 async function getDictionaryInfo(
   uuid: string
 ): Promise<DictionaryWordResponse> {
-  let { data } = await axios.get(`/dictionary/${uuid}`);
+  const { data } = await axios.get(`/dictionary/${uuid}`);
   return data;
 }
 

@@ -1,16 +1,15 @@
-import axios from '../axiosInstance';
-
 import {
   CollectionListItem,
   CollectionResponse,
   CollectionInfo,
 } from '@oare/types';
+import axios from '../axiosInstance';
 
 /**
  * Returns the list of collections in the corpus
  */
 async function getAllCollections(): Promise<CollectionListItem[]> {
-  let { data } = await axios.get('/collections');
+  const { data } = await axios.get('/collections');
   return data;
 }
 

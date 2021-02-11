@@ -14,7 +14,11 @@ router.route('/logout').get(async (req, res) => {
     expires: new Date(new Date().getTime() - 1),
   };
 
-  res.cookie('refreshToken', '', options).cookie('jwt', '', options).status(200).end();
+  res
+    .cookie('refreshToken', '', options)
+    .cookie('jwt', '', options)
+    .status(200)
+    .end();
 });
 
 export default router;
