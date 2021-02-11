@@ -1,12 +1,12 @@
 import knex from '@/connection';
-import { ErrorsRow } from '@oare/types';
+import { ErrorsRow, ErrorStatus } from '@oare/types';
 import { v4 } from 'uuid';
 
 export interface InsertErrorsRow {
   userUuid: string | null;
   description: string;
   stacktrace: string | null;
-  status: string;
+  status: ErrorStatus;
 }
 
 class ErrorsDao {
@@ -45,6 +45,10 @@ class ErrorsDao {
       .offset((page - 1) * limit);
 
     return response;
+  }
+
+  async updateErrorStatus(uuid: string, status: string): Promise<void> {
+    await knex('errors').update({ status }).where({ uuid });
   }
 }
 
