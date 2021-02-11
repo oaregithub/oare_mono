@@ -1,9 +1,9 @@
 import express from 'express';
-import { ErrorsRow, ErrorsPayload } from '@oare/types';
+import { ErrorsPayload } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { v4 } from 'uuid';
 import adminRoute from '../middlewares/adminRoute';
+import { InsertErrorsRow } from './daos/ErrorsDao';
 
 const router = express.Router();
 
@@ -13,19 +13,15 @@ router
     try {
       const ErrorsDao = sl.get('ErrorsDao');
 
-      const uuid = v4();
       const user = req.user || null;
       const { description, stacktrace, status }: ErrorsPayload = req.body;
-      const timestamp = new Date();
 
       const userUuid = user ? user.uuid : null;
 
-      const insertRow: ErrorsRow = {
-        uuid,
-        user_uuid: userUuid,
+      const insertRow: InsertErrorsRow = {
+        userUuid,
         description,
         stacktrace,
-        timestamp,
         status,
       };
 
