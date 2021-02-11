@@ -25,7 +25,7 @@ describe('spelling grammar test', () => {
 
   it('returns html spelling for signs', () => {
     expect(spellingHtmlReading('ab-ša-ra-ni')).toBe(
-      '<em>ab</em>-<em>ša</em>-<em>ra</em>-<em>ni</em>',
+      '<em>ab</em>-<em>ša</em>-<em>ra</em>-<em>ni</em>'
     );
   });
 
@@ -61,7 +61,7 @@ describe('spelling grammar test', () => {
 
   it('errors on sign phrase in determinative', () => {
     expect(() =>
-      tokenizeExplicitSpelling('(TÚG.ḪI.A)ba-ad-de-te-er-mi-na-ti-ve'),
+      tokenizeExplicitSpelling('(TÚG.ḪI.A)ba-ad-de-te-er-mi-na-ti-ve')
     ).toThrow();
   });
 
@@ -82,7 +82,7 @@ describe('spelling grammar test', () => {
 
   it('correct html reading for determinants', () => {
     expect(spellingHtmlReading('(TÚG)a-bar')).toBe(
-      '<sup>TÚG</sup><em>a</em>-<em>bar</em>',
+      '<sup>TÚG</sup><em>a</em>-<em>bar</em>'
     );
   });
 
@@ -92,10 +92,10 @@ describe('spelling grammar test', () => {
 
   it('converts normal numbers to small numbers', () => {
     expect(spellingHtmlReading('eš15-ra-at')).toBe(
-      '<em>eš₁₅</em>-<em>ra</em>-<em>at</em>',
+      '<em>eš₁₅</em>-<em>ra</em>-<em>at</em>'
     );
     expect(spellingHtmlReading('(d)PUZUR4-IŠTAR')).toBe(
-      '<sup>d</sup>PUZUR₄-IŠTAR',
+      '<sup>d</sup>PUZUR₄-IŠTAR'
     );
   });
 

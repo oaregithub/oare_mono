@@ -21,7 +21,7 @@ const subscriptNumber = (normalNumber: string): string =>
 
 export const normalizeSign = (sign: string): string => {
   const normalizedSign = sign.split('');
-  [1, 2].forEach((negIdx) => {
+  [1, 2].forEach(negIdx => {
     const signIdx = normalizedSign.length - negIdx;
     if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
       normalizedSign[signIdx] = subscriptNumber(normalizedSign[signIdx]);
