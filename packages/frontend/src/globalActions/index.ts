@@ -9,10 +9,15 @@ const showSnackbar = (text: string, options: SnackbarActions = {}): void => {
   EventBus.$emit(ACTIONS.TOAST, { text, ...options });
 };
 
-const showErrorSnackbar = async (text: string): Promise<void> => {
+const showErrorSnackbar = async (
+  text: string,
+  devErrorText?: string
+): Promise<void> => {
   const server = sl.get('serverProxy');
+  const description = devErrorText || text;
+
   await server.logError({
-    description: text,
+    description,
     stacktrace: null,
     status: 'New',
   });
