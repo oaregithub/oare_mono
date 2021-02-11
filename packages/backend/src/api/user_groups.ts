@@ -1,5 +1,8 @@
 import express from 'express';
-import { AddUsersToGroupPayload, RemoveUsersFromGroupPayload } from '@oare/types';
+import {
+  AddUsersToGroupPayload,
+  RemoveUsersFromGroupPayload,
+} from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
@@ -76,7 +79,11 @@ router
 
       // Make sure each association does not already exist
       if (!(await canInsert(groupId, userIds))) {
-        next(new HttpBadRequest(`One or more of given users already exist in group with ID ${groupId}`));
+        next(
+          new HttpBadRequest(
+            `One or more of given users already exist in group with ID ${groupId}`
+          )
+        );
         return;
       }
 
@@ -113,7 +120,9 @@ router
 
       // Make sure each user to delete actually belongs to the group
       if (!(await canDelete(groupId, userIds))) {
-        next(new HttpBadRequest('Not all given users belong to the given group'));
+        next(
+          new HttpBadRequest('Not all given users belong to the given group')
+        );
         return;
       }
 

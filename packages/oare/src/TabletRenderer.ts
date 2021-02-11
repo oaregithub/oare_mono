@@ -26,7 +26,7 @@ export default class TabletRenderer {
 
   constructor(
     epigraphicUnits: EpigraphicUnit[],
-    markupUnits: MarkupUnit[] = [],
+    markupUnits: MarkupUnit[] = []
   ) {
     this.epigraphicUnits = epigraphicUnits;
     this.markupUnits = markupUnits;
@@ -35,7 +35,7 @@ export default class TabletRenderer {
 
   public tabletReading(): string {
     let reading: string = '';
-    this.sides.forEach((side) => {
+    this.sides.forEach(side => {
       reading += `${side}\n`;
       reading += `${this.sideReading(side)}\n\n`;
     });
@@ -44,7 +44,7 @@ export default class TabletRenderer {
 
   get sides(): EpigraphicUnitSide[] {
     const orderedSides: EpigraphicUnitSide[] = [];
-    this.epigraphicUnits.forEach((unit) => {
+    this.epigraphicUnits.forEach(unit => {
       if (!orderedSides.includes(unit.side)) {
         orderedSides.push(unit.side);
       }
@@ -56,14 +56,14 @@ export default class TabletRenderer {
   get lines(): number[] {
     const lineSet = this.epigraphicUnits.reduce(
       (curSet, unit) => curSet.add(unit.line),
-      new Set<number>(),
+      new Set<number>()
     );
     return Array.from(lineSet).sort((a, b) => a - b);
   }
 
   public sideReading(side: EpigraphicUnitSide): string {
     const lineReadings: string[] = [];
-    this.linesOnSide(side).forEach((lineNum) => {
+    this.linesOnSide(side).forEach(lineNum => {
       lineReadings.push(`${this.lineReading(lineNum)}`);
     });
     return lineReadings.join('\n');
@@ -84,13 +84,13 @@ export default class TabletRenderer {
    */
   private getUnitsOnLine(lineNum: number) {
     return this.epigraphicUnits
-      .filter((item) => item.line === lineNum)
+      .filter(item => item.line === lineNum)
       .sort((a, b) => a.charOnTablet - b.charOnTablet);
   }
 
   public linesOnSide(side: EpigraphicUnitSide): number[] {
     const unitsOnSide = this.epigraphicUnits
-      .filter((unit) => unit.side === side)
+      .filter(unit => unit.side === side)
       .sort((a, b) => a.charOnTablet - b.charOnTablet);
 
     const lines: number[] = [];
@@ -110,7 +110,7 @@ export default class TabletRenderer {
     const markupMap = this.getMarkupReferenceMap();
     this.epigraphicUnits = this.epigraphicUnits
       .sort((a, b) => a.charOnTablet - b.charOnTablet)
-      .map((epigraphy) => {
+      .map(epigraphy => {
         const markedEpig: EpigraphicUnit = {
           ...epigraphy,
         };
@@ -128,7 +128,7 @@ export default class TabletRenderer {
    */
   private getMarkupReferenceMap() {
     const markupMap: { [key: string]: MarkupUnit[] } = {};
-    this.markupUnits.forEach((markup) => {
+    this.markupUnits.forEach(markup => {
       if (!markupMap[markup.referenceUuid]) {
         markupMap[markup.referenceUuid] = [];
       }
@@ -138,9 +138,9 @@ export default class TabletRenderer {
   }
 
   protected addMarkupToEpigraphicUnits(
-    epigUnits: EpigraphicUnit[],
+    epigUnits: EpigraphicUnit[]
   ): EpigraphicUnitWithMarkup[] {
-    return epigUnits.map((unit) => ({
+    return epigUnits.map(unit => ({
       type: unit.type || 'phonogram',
       reading: this.markedUpEpigraphicReading(unit),
       discourseUuid: unit.discourseUuid,
@@ -154,7 +154,7 @@ export default class TabletRenderer {
   protected markedUpEpigraphicReading(unit: EpigraphicUnit): string {
     if (unit.markups) {
       let markedUpReading = unit.reading;
-      unit.markups.forEach((markup) => {
+      unit.markups.forEach(markup => {
         markedUpReading = this.applySingleMarkup(markup, markedUpReading || '');
       });
       return markedUpReading || '';
@@ -290,7 +290,7 @@ export default class TabletRenderer {
       startOrEnd === 'start' ? [-1, 'endChar'] : [1, 'startChar'];
 
     const neighbor = this.epigraphicUnits.find(
-      (item) => item.charOnTablet === unit.charOnTablet + tabletDiff,
+      item => item.charOnTablet === unit.charOnTablet + tabletDiff
     );
 
     if (!neighbor || !neighbor.markups) {
@@ -312,19 +312,19 @@ export default class TabletRenderer {
   }
 
   private getEpigraphicUnitByUuid(uuid: string) {
-    return this.epigraphicUnits.find((unit) => unit.uuid === uuid);
+    return this.epigraphicUnits.find(unit => unit.uuid === uuid);
   }
 
   public getMarkupsByLineNumber(line: number): MarkupUnit[] {
     const epigUuids = this.epigraphicUnits
-      .filter((unit) => unit.line === line)
-      .map((unit) => unit.uuid);
-    return this.markupUnits.filter((unit) =>
-      epigUuids.includes(unit.referenceUuid),
+      .filter(unit => unit.line === line)
+      .map(unit => unit.uuid);
+    return this.markupUnits.filter(unit =>
+      epigUuids.includes(unit.referenceUuid)
     );
   }
 
   public getEpigraphicUnitsByLine(line: number): EpigraphicUnit[] {
-    return this.epigraphicUnits.filter((unit) => unit.line === line);
+    return this.epigraphicUnits.filter(unit => unit.line === line);
   }
 }

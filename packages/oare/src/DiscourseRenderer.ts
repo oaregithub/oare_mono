@@ -6,9 +6,9 @@ function getRenderersHelper(
   units: DiscourseUnit[],
   renderers: DiscourseRenderer[],
   type: DiscourseUnitType,
-  RenderClass: typeof DiscourseRenderer,
+  RenderClass: typeof DiscourseRenderer
 ) {
-  units.forEach((unit) => {
+  units.forEach(unit => {
     if (unit.type === 'paragraph') {
       renderers.push(new RenderClass(unit.units));
     } else {
@@ -37,7 +37,7 @@ export default class DiscourseRenderer {
       this.discourseUnits,
       renderers,
       'paragraph',
-      this.renderClass,
+      this.renderClass
     );
     return renderers;
   }
@@ -48,7 +48,7 @@ export default class DiscourseRenderer {
       this.discourseUnits,
       renderers,
       'sentence',
-      this.renderClass,
+      this.renderClass
     );
     return renderers;
   }
@@ -62,12 +62,12 @@ export default class DiscourseRenderer {
 
 function getLineNums(units: DiscourseUnit[]): number[] {
   const lines: Set<number> = new Set();
-  units.forEach((unit) => {
+  units.forEach(unit => {
     if (unit.line) {
       lines.add(unit.line);
     }
     const childrenLines = getLineNums(unit.units);
-    childrenLines.forEach((line) => lines.add(line));
+    childrenLines.forEach(line => lines.add(line));
   });
   return Array.from(lines).sort((a, b) => a - b);
 }
@@ -79,9 +79,9 @@ export function lineReadingHelper(
   units: DiscourseUnit[],
   line: number,
   words: string[],
-  trRenderer: TranscriptionRenderFunc = (word) => word,
+  trRenderer: TranscriptionRenderFunc = word => word
 ) {
-  units.forEach((unit) => {
+  units.forEach(unit => {
     if (unit.line === line) {
       if (unit.transcription) {
         words.push(trRenderer(unit.transcription));

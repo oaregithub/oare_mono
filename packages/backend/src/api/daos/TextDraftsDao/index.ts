@@ -21,7 +21,7 @@ function getBaseDraftQuery(userId: number) {
       'text_drafts.text_uuid AS textUuid',
       'text_drafts.content',
       'alias.name AS textName',
-      'notes',
+      'notes'
     )
     .innerJoin('hierarchy', 'hierarchy.uuid', 'text_drafts.text_uuid')
     .innerJoin('alias', 'text_drafts.text_uuid', 'alias.reference_uuid')
@@ -32,7 +32,9 @@ function getBaseDraftQuery(userId: number) {
 
 class TextDraftsDao {
   async getDraft(userId: number, textUuid: string): Promise<TextDraft | null> {
-    const draft: TextDraftRow | null = await getBaseDraftQuery(userId).first().andWhere('text_uuid', textUuid);
+    const draft: TextDraftRow | null = await getBaseDraftQuery(userId)
+      .first()
+      .andWhere('text_uuid', textUuid);
 
     return draft
       ? {
@@ -43,7 +45,12 @@ class TextDraftsDao {
       : null;
   }
 
-  async createDraft(userId: number, textUuid: string, content: string, notes: string) {
+  async createDraft(
+    userId: number,
+    textUuid: string,
+    content: string,
+    notes: string
+  ) {
     const creation = new Date();
     await knex('text_drafts').insert({
       uuid: v4(),
@@ -70,7 +77,7 @@ class TextDraftsDao {
 
     const rows: TextDraftRow[] = await query;
     return rows
-      .map((row) => ({
+      .map(row => ({
         ...row,
         textName: row.textName.trim(),
         content: JSON.parse(row.content),

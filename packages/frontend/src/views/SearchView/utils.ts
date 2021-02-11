@@ -46,7 +46,7 @@ export const updateUrl = (searchOptions: Readonly<SearchOptions>) => {
 
 export const highlightedItem = (item: string, search: string) => {
   const components: string[] = [];
-  for (let i = 0; i < item.length; i++) {
+  for (let i = 0; i < item.length; i += 1) {
     if (
       item.substring(i, i + search.length).toLowerCase() ===
       search.toLowerCase()

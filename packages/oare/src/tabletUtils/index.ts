@@ -8,9 +8,9 @@ import {
 
 export function markupsMatchDamage(
   markupUnits: MarkupUnit[],
-  markupType: MarkupType,
+  markupType: MarkupType
 ): boolean {
-  return markupUnits.some((markup) => {
+  return markupUnits.some(markup => {
     if (markup.type === markupType) {
       return true;
     }
@@ -34,20 +34,20 @@ export function markupsMatchDamage(
 
 export function getMarkupByDamageType(
   markupUnits: MarkupUnit[],
-  damageType: MarkupType,
+  damageType: MarkupType
 ): MarkupUnit | undefined {
-  return markupUnits.find((unit) => unit.type === damageType);
+  return markupUnits.find(unit => unit.type === damageType);
 }
 
 /**
- * markupType is guaranteed to be one of 'damage', 'partialDamage', or 'undeterminedSigns'
+ * markupType is guaranteed to be one of 'damage', 'partialDamage'
  */
 export function unitMatchesDamageType(
   neighbor: EpigraphicUnit,
-  markupType: MarkupType,
+  markupType: MarkupType
 ): boolean {
   if (neighbor.markups) {
-    const match = neighbor.markups.some((markup) => {
+    const match = neighbor.markups.some(markup => {
       if (markup.type === markupType) {
         return true;
       }
@@ -64,12 +64,12 @@ export function unitMatchesDamageType(
 }
 
 export function separateEpigraphicUnitsByWord(
-  characters: EpigraphicUnitWithMarkup[],
+  characters: EpigraphicUnitWithMarkup[]
 ): EpigraphicUnitWithMarkup[][] {
   const words: EpigraphicUnitWithMarkup[][] = [];
   let lastDiscourseUuid: string | null = '';
   let curWordIdx = -1;
-  characters.forEach((character) => {
+  characters.forEach(character => {
     if (lastDiscourseUuid === character.discourseUuid) {
       words[curWordIdx].push(character);
     } else {
@@ -83,7 +83,7 @@ export function separateEpigraphicUnitsByWord(
 
 export function getEpigraphicSeparator(
   type1: EpigraphicUnitType,
-  type2: EpigraphicUnitType,
+  type2: EpigraphicUnitType
 ): string {
   if (type1 === 'determinative' || type2 === 'determinative') {
     return '';
@@ -101,7 +101,7 @@ export function getEpigraphicSeparator(
 }
 
 export function epigraphicWordWithSeparators(
-  characters: EpigraphicUnitWithMarkup[],
+  characters: EpigraphicUnitWithMarkup[]
 ): string {
   let wordWithSeparators = '';
   characters.forEach((character, index) => {
@@ -109,7 +109,7 @@ export function epigraphicWordWithSeparators(
     if (index !== characters.length - 1) {
       wordWithSeparators += getEpigraphicSeparator(
         character.type,
-        characters[index + 1].type,
+        characters[index + 1].type
       );
     }
   });
@@ -117,12 +117,12 @@ export function epigraphicWordWithSeparators(
 }
 
 export function convertMarkedUpUnitsToLineReading(
-  characters: EpigraphicUnitWithMarkup[],
+  characters: EpigraphicUnitWithMarkup[]
 ): string {
   const epigraphicWords: EpigraphicUnitWithMarkup[][] = separateEpigraphicUnitsByWord(
-    characters,
+    characters
   );
   return epigraphicWords
-    .map((word) => epigraphicWordWithSeparators(word))
+    .map(word => epigraphicWordWithSeparators(word))
     .join(' ');
 }

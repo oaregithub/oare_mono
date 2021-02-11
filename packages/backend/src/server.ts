@@ -67,5 +67,5 @@ sl.set('utils', utils);
 sl.set('mailer', mailer);
 
 app.listen(8081, () => {
-  console.log('Listening on port 8081');
+  console.log('Listening on port 8081'); // eslint-disable-line no-console
 });

@@ -1,14 +1,14 @@
-import axios from '../axiosInstance';
 import {
   CollectionPermissionsItem,
   AddTextCollectionPayload,
   UpdateTextCollectionListPayload,
 } from '@oare/types';
+import axios from '../axiosInstance';
 
 async function getGroupCollections(
   groupId: number
 ): Promise<CollectionPermissionsItem[]> {
-  let { data } = await axios.get(`/collection_groups/${groupId}`);
+  const { data } = await axios.get(`/collection_groups/${groupId}`);
   return data;
 }
 

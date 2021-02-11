@@ -9,7 +9,9 @@ router.route('/names/:letter').get(async (req, res, next) => {
     const { letter } = req.params;
     const cache = sl.get('cache');
     const DictionaryWordDao = sl.get('DictionaryWordDao');
-    const dictionaryNames = await DictionaryWordDao.getNames(letter.toLowerCase());
+    const dictionaryNames = await DictionaryWordDao.getNames(
+      letter.toLowerCase()
+    );
 
     cache.insert({ req }, dictionaryNames);
     res.json(dictionaryNames);

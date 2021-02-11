@@ -8,7 +8,10 @@ import RefreshTokenDao from '@/api/daos/RefreshTokenDao';
 export function hashPassword(password: string, salt?: string): string {
   const pSalt = salt || cryptoRandomString({ length: 8 });
 
-  const pass = crypto.createHmac('sha256', pSalt).update(password).digest('hex');
+  const pass = crypto
+    .createHmac('sha256', pSalt)
+    .update(password)
+    .digest('hex');
 
   return `sha256$${pSalt}$${pass}`;
 }
