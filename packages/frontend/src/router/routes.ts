@@ -16,6 +16,7 @@ import EpigraphyView from '../views/EpigraphyView/index.vue';
 import Drafts from '../views/DashboardView/Drafts.vue';
 import Profile from '../views/DashboardView/Profile.vue';
 import LandingPage from '../views/LandingPage.vue';
+import KnownIssues from '../views/KnownIssues.vue';
 import WordsView from '../views/WordsView/index.vue';
 import NamesView from '../views/NamesView/index.vue';
 import PlacesView from '../views/PlacesView/index.vue';
@@ -38,6 +39,10 @@ const routes: RouteConfig[] = [
   {
     path: '/',
     component: LandingPage,
+  },
+  {
+    path: '/issues',
+    component: KnownIssues,
   },
   {
     path: '/admin/groups',
