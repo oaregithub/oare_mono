@@ -47,7 +47,7 @@ class ErrorsDao {
     return response;
   }
 
-  async updateErrorStatus(uuid: string, status: string): Promise<void> {
+  async updateErrorStatus(uuid: string, status: ErrorStatus): Promise<void> {
     await knex('errors').update({ status }).where({ uuid });
   }
 }
