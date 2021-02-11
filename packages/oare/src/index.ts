@@ -1,17 +1,17 @@
-import { EpigraphicUnit, MarkupUnit, CreateTabletRendererOptions } from '@oare/types';
+import {
+  EpigraphicUnit,
+  MarkupUnit,
+  CreateTabletRendererOptions,
+} from '@oare/types';
 import TabletRenderer from './TabletRenderer';
 import TabletHtmlRenderer from './TabletHtmlRenderer';
 import TabletLineNumRenderer from './TabletLineNumRenderer';
 
-export {
-  default as DiscourseRenderer,
-} from './DiscourseRenderer';
+export { default as DiscourseRenderer } from './DiscourseRenderer';
 export { default as DiscourseHtmlRenderer } from './DiscourseHtmlRenderer';
 export { default as TabletHtmlRenderer } from './TabletHtmlRenderer';
 export { default as TabletLineNumRenderer } from './TabletLineNumRenderer';
-export {
-  default as TabletRenderer,
-} from './TabletRenderer';
+export { default as TabletRenderer } from './TabletRenderer';
 
 export {
   spellingHtmlReading,
@@ -57,7 +57,7 @@ const createTabletRenderer = (
     lineNumbers = false,
     admin = false,
     highlightDiscourses = [],
-  }: CreateTabletRendererOptions = {},
+  }: CreateTabletRendererOptions = {}
 ): TabletRenderer => {
   let renderer = new TabletRenderer(epigraphicUnits, markupUnits);
   if (textFormat === 'html') {

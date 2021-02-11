@@ -13,7 +13,7 @@ export default class DiscourseHtmlRenderer extends DiscourseRenderer {
       this.discourseUnits,
       line,
       words,
-      (word: string) => `<em>${word}</em>`,
+      (word: string) => `<em>${word}</em>`
     );
     return words.join(' ');
   }
