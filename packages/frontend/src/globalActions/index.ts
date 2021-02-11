@@ -25,6 +25,16 @@ const showErrorSnackbar = async (
   EventBus.$emit(ACTIONS.TOAST, { text, error: true });
 };
 
+const logError = async (description: string, error?: Error): Promise<void> => {
+  const server = sl.get('serverProxy');
+  const stacktrace = error?.stack || null;
+  await server.logError({
+    description,
+    stacktrace,
+    status: 'New',
+  });
+};
+
 const showUnsavedChangesWarning = (next: Function): void => {
   // eslint-disable-next-line no-alert
   const response = window.confirm(
@@ -40,6 +50,7 @@ const showUnsavedChangesWarning = (next: Function): void => {
 const globalActions = {
   showSnackbar,
   showErrorSnackbar,
+  logError,
   showUnsavedChangesWarning,
 };
 
