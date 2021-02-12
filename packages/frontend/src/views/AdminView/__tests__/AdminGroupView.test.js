@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
-import AdminGroupView from '../AdminGroupView.vue';
 import flushPromises from 'flush-promises';
+import AdminGroupView from '../AdminGroupView.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();

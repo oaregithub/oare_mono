@@ -71,7 +71,12 @@
       }
     },
     {
-      "files": ["./packages/**/*.{test,spec}.{js,ts}"],
+      "files": [
+        "**/*.spec.js",
+        "**/*.test.js",
+        "**/{jest-setup,setup-jest}.js",
+        "**/__mocks__/*.js"
+      ],
       "env": {
         "jest": true
       }

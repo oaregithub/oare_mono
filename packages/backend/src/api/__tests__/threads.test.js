@@ -92,7 +92,6 @@ describe('comments api test', () => {
     };
 
     it('returns successful thread, comment and user info.', async () => {
-
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([
@@ -113,18 +112,21 @@ describe('comments api test', () => {
     it('returns 500, invalid comment.', async () => {
       sl.set('CommentsDao', {
         ...MockCommentsDao,
-        getAllByThreadUuid: jest.fn().mockRejectedValue('Erro getting an invalid comment.'),
+        getAllByThreadUuid: jest
+          .fn()
+          .mockRejectedValue('Erro getting an invalid comment.'),
       });
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
-
     });
 
     it('returns 500, invalid thread.', async () => {
       sl.set('ThreadsDao', {
         ...MockThreadsDao,
-        getByReferenceUuid: jest.fn().mockRejectedValue('Error getting an invalid thread.'),
+        getByReferenceUuid: jest
+          .fn()
+          .mockRejectedValue('Error getting an invalid thread.'),
       });
 
       const response = await sendRequest();
@@ -134,7 +136,9 @@ describe('comments api test', () => {
     it('returns 500, invalid user.', async () => {
       sl.set('UserDao', {
         ...MockUserDao,
-        getUserByUuid: jest.fn().mockRejectedValue('Error getting an invalid user.'),
+        getUserByUuid: jest
+          .fn()
+          .mockRejectedValue('Error getting an invalid user.'),
       });
 
       const response = await sendRequest();
@@ -204,7 +208,6 @@ describe('comments api test', () => {
     };
 
     it('returns successful thread, comment and user info.', async () => {
-
       const response = await sendRequest();
       expect(response.status).toBe(200);
     });
@@ -217,7 +220,6 @@ describe('comments api test', () => {
     });
 
     it('returns 403 for non-admin users.', async () => {
-
       sl.set('UserDao', {
         ...MockUserDao,
         getUserByEmail: jest.fn().mockResolvedValue({
@@ -242,7 +244,9 @@ describe('comments api test', () => {
     it('500 reject error for thread update.', async () => {
       sl.set('ThreadsDao', {
         ...MockThreadsDao,
-        update: jest.fn().mockRejectedValue('Error, thread unable to be updated.'),
+        update: jest
+          .fn()
+          .mockRejectedValue('Error, thread unable to be updated.'),
       });
 
       const response = await sendRequest();
@@ -252,7 +256,9 @@ describe('comments api test', () => {
     it('500 reject error for admin comment insert.', async () => {
       sl.set('CommentsDao', {
         ...MockCommentsDao,
-        insert: jest.fn().mockRejectedValue('Error when admin comment unable to be inserted.'),
+        insert: jest
+          .fn()
+          .mockRejectedValue('Error when admin comment unable to be inserted.'),
       });
 
       const response = await sendRequest();

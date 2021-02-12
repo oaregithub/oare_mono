@@ -82,7 +82,9 @@ describe('GET /public_blacklist', () => {
 
   it('returns 500 on failed blacklist retrieval', async () => {
     sl.set('PublicBlacklistDao', {
-      getBlacklistedTexts: jest.fn().mockRejectedValue('Remove blacklist text failed'),
+      getBlacklistedTexts: jest
+        .fn()
+        .mockRejectedValue('Remove blacklist text failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -112,7 +114,8 @@ describe('POST /public_blacklist', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -159,7 +162,10 @@ describe('POST /public_blacklist', () => {
         },
       ],
     };
-    const response = await request(app).post(PATH).send(mockExistingPOST).set('Cookie', 'jwt=token');
+    const response = await request(app)
+      .post(PATH)
+      .send(mockExistingPOST)
+      .set('Cookie', 'jwt=token');
     expect(mockPublicBlacklistDao.addPublicTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
@@ -189,7 +195,8 @@ describe('DELETE /public_blacklist', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).delete(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).delete(PATH).set('Cookie', 'jwt=token');
 
   it('returns 200 on successful deletion', async () => {
     const response = await sendRequest();
@@ -224,7 +231,9 @@ describe('DELETE /public_blacklist', () => {
   });
 
   it('returns 400 when texts to be deleted are not blacklisted', async () => {
-    const response = await request(app).delete(`${API_PATH}/public_blacklist/uuid3`).set('Cookie', 'jwt=token');
+    const response = await request(app)
+      .delete(`${API_PATH}/public_blacklist/uuid3`)
+      .set('Cookie', 'jwt=token');
     expect(mockPublicBlacklistDao.removePublicTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
