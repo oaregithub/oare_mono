@@ -69,6 +69,12 @@
       "parserOptions": {
         "parser": "@typescript-eslint/parser"
       }
+    },
+    {
+      "files": ["./packages/**/*.{test,spec}.{js,ts}"],
+      "env": {
+        "jest": true
+      }
     }
   ]
 }
