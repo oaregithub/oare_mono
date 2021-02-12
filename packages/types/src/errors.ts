@@ -1,7 +1,7 @@
 export interface ErrorsPayload {
   description: string;
   stacktrace: string | null;
-  status: string;
+  status: ErrorStatus;
 }
 
 export interface ErrorsRow {
@@ -10,5 +10,12 @@ export interface ErrorsRow {
   description: string;
   stacktrace: string | null;
   timestamp: Date;
-  status: string;
+  status: ErrorStatus;
+}
+
+export type ErrorStatus = 'New' | 'In Progress' | 'Resolved';
+
+export interface UpdateErrorStatusPayload {
+  uuid: string;
+  status: ErrorStatus;
 }

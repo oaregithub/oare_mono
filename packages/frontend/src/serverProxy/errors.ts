@@ -1,4 +1,9 @@
-import { ErrorsPayload, Pagination, ErrorsRow } from '@oare/types';
+import {
+  ErrorsPayload,
+  Pagination,
+  ErrorsRow,
+  UpdateErrorStatusPayload,
+} from '@oare/types';
 import axios from '../axiosInstance';
 
 async function logError(payload: ErrorsPayload): Promise<void> {
@@ -12,7 +17,14 @@ async function getErrorLog(payload: Pagination): Promise<ErrorsRow[]> {
   return data;
 }
 
+async function updateErrorStatus(
+  payload: UpdateErrorStatusPayload
+): Promise<void> {
+  await axios.patch('/errors', payload);
+}
+
 export default {
   logError,
   getErrorLog,
+  updateErrorStatus,
 };
