@@ -228,10 +228,7 @@ export default class TabletRenderer {
   }
 
   protected addStartBracket(markup: MarkupUnit, reading: string): string {
-    const bracket =
-      markup.type === 'damage' || markup.type === 'undeterminedSigns'
-        ? '['
-        : '⸢';
+    const bracket = markup.type === 'damage' ? '[' : '⸢';
 
     let formattedReading = reading;
     if (markup.startChar === null) {
@@ -248,10 +245,7 @@ export default class TabletRenderer {
   }
 
   protected addEndBracket(markup: MarkupUnit, reading: string): string {
-    const bracket =
-      markup.type === 'damage' || markup.type === 'undeterminedSigns'
-        ? ']'
-        : '⸣';
+    const bracket = markup.type === 'damage' ? ']' : '⸣';
 
     let formattedReading = reading;
     if (markup.endChar === null) {
