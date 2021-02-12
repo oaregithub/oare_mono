@@ -1,9 +1,9 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
+import flushPromises from 'flush-promises';
 import { ReloadKey } from '../index.vue';
 import SpellingDialog from '../SpellingDialog.vue';
-import flushPromises from 'flush-promises';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();

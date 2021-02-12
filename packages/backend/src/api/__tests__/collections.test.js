@@ -62,7 +62,9 @@ describe('GET /collections', () => {
 
   it('returns 500 on failed collections retrieval', async () => {
     sl.set('HierarchyDao', {
-      getAllCollections: jest.fn().mockRejectedValue('failed collections retrieval'),
+      getAllCollections: jest
+        .fn()
+        .mockRejectedValue('failed collections retrieval'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -92,7 +94,9 @@ describe('GET /collections/:uuid', () => {
 
   it('returns 500 on failed collection texts retrieval', async () => {
     sl.set('HierarchyDao', {
-      getCollectionTexts: jest.fn().mockRejectedValue('failed collection texts retrieval'),
+      getCollectionTexts: jest
+        .fn()
+        .mockRejectedValue('failed collection texts retrieval'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

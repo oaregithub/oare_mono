@@ -26,7 +26,8 @@ describe('POST /errors', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockErrorsPayload).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockErrorsPayload).set('Cookie', 'jwt=token');
 
   it('returns 201 on successful error log', async () => {
     const response = await sendRequest();
@@ -116,6 +117,68 @@ describe('GET /errors', () => {
   it('does not allow non-logged-in users to retrieve error log', async () => {
     const response = await request(app).get(PATH);
     expect(mockErrorsDao.getErrorLog).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
+  });
+});
+
+describe('PATCH /errors', () => {
+  const PATH = `${API_PATH}/errors`;
+  const mockUpdateErrorStatusPayload = {
+    uuid: 'testUuid',
+    status: 'In Progress',
+  };
+  const mockErrorsDao = {
+    updateErrorStatus: jest.fn().mockResolvedValue(),
+  };
+  const mockUserDao = {
+    getUserByEmail: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
+  };
+
+  const setup = () => {
+    sl.set('ErrorsDao', mockErrorsDao);
+    sl.set('UserDao', mockUserDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app)
+      .patch(PATH)
+      .send(mockUpdateErrorStatusPayload)
+      .set('Cookie', 'jwt=token');
+
+  it('returns 204 on successful status update', async () => {
+    const response = await sendRequest();
+    expect(mockErrorsDao.updateErrorStatus).toHaveBeenCalled();
+    expect(response.status).toBe(204);
+  });
+
+  it('returns 500 on failed status update', async () => {
+    sl.set('ErrorsDao', {
+      updateErrorStatus: jest.fn().mockRejectedValue('failed status update'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('does not allow non-admins to update error status', async () => {
+    sl.set('UserDao', {
+      getUserByEmail: jest.fn().mockResolvedValue({
+        isAdmin: false,
+      }),
+    });
+    const response = await sendRequest();
+    expect(mockErrorsDao.updateErrorStatus).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
+  });
+
+  it('does not allow non-logged-in users to update error status', async () => {
+    const response = await request(app)
+      .patch(PATH)
+      .send(mockUpdateErrorStatusPayload);
+    expect(mockErrorsDao.updateErrorStatus).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 });
