@@ -3,22 +3,19 @@
     <h2>Comments</h2>
 
     <div class='ma-5'>
-      <div v-for="(threadsCollection, word) in groupedByThreads" :key="word">
+      <div class='mb-4' v-for="(threadsCollection, word) in groupedByThreads" :key="word">
         <h2>{{capitalizeFirstLetter(word)}}</h2>
         <v-divider></v-divider>
         <div v-for='(thread, idx) in threadsCollection' :key='idx' class=''>
           <v-hover v-slot='{ hover }'>
             <v-card :elevation='hover ? 5 : 50' class='pl-3 pr-3 pt-1 pb-1 ma-2'>
               <v-row>
-                <v-col cols='1'>Thread {{idx}}</v-col>
+                <v-col cols='1'>Thread {{idx + 1}}</v-col>
                 <v-col cols='2'>({{thread.status}})</v-col>
                 <v-col cols='9'>{{shortenComment(thread.latestComment)}}</v-col>
               </v-row>
             </v-card>
           </v-hover>
-
-
-<!--          <h3>Thread {{idx}} - ({{thread.status}}): {{thread.latestComment}}</h3>-->
         </div>
       </div>
     </div>
@@ -27,7 +24,7 @@
 </template>
 
 <script lang="ts">
-  import { computed, defineComponent, onMounted, onUpdated, PropType, ref, watch } from '@vue/composition-api';
+  import { computed, defineComponent, PropType, } from '@vue/composition-api';
 import { ThreadDisplay } from '@oare/types/build/src/comments';
 
 export default defineComponent({
@@ -58,7 +55,7 @@ export default defineComponent({
     }
 
     const shortenComment = (text: string) => {
-      return text.length > 120 ? text.substr(0, 120) + '. . .' : text;
+      return text.length > 120 ? text.substr(0, 120) + ' . . . . .' : text;
     }
     const groupedByThreads = computed(() => props.threads ? groupThreadsByWord() : []);
 
