@@ -1,5 +1,8 @@
 <template>
   <OareContentView title="Known Issues">
+    <template #header>
+      <OareBreadcrumbs :items="breadcrumbs" />
+    </template>
     <v-row justify="center" class="title font-weight-regular">
       <v-col cols="12" lg="10">
         <p>
@@ -45,7 +48,28 @@
           through
           <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>.
         </p>
+        <router-link to="/">Go home</router-link>
       </v-col>
     </v-row>
   </OareContentView>
 </template>
+
+<script lang="ts">
+import { defineComponent, ref } from '@vue/composition-api';
+import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
+
+export default defineComponent({
+  setup() {
+    const breadcrumbs = ref<BreadcrumbItem[]>([
+      {
+        link: '/',
+        text: 'Home',
+      },
+    ]);
+
+    return {
+      breadcrumbs,
+    };
+  },
+});
+</script>
