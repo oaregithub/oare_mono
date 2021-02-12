@@ -115,7 +115,16 @@ export default class TabletRenderer {
           ...epigraphy,
         };
         if (markupMap[epigraphy.uuid]) {
-          markedEpig.markups = markupMap[epigraphy.uuid];
+          // Sort so that damages are applied last
+          markedEpig.markups = markupMap[epigraphy.uuid].sort((a, b) => {
+            if (a.type === 'damage' || a.type === 'partialDamage') {
+              return 1;
+            }
+            if (b.type === 'damage' || b.type === 'partialDamage') {
+              return -1;
+            }
+            return 0;
+          });
         }
 
         return markedEpig;
@@ -126,7 +135,7 @@ export default class TabletRenderer {
    * Maps an epigraphic unit's UUID to a list
    * of its markup units
    */
-  private getMarkupReferenceMap() {
+  private getMarkupReferenceMap(): Record<string, MarkupUnit[]> {
     const markupMap: { [key: string]: MarkupUnit[] } = {};
     this.markupUnits.forEach(markup => {
       if (!markupMap[markup.referenceUuid]) {
@@ -134,6 +143,7 @@ export default class TabletRenderer {
       }
       markupMap[markup.referenceUuid].push(markup);
     });
+
     return markupMap;
   }
 
@@ -206,7 +216,6 @@ export default class TabletRenderer {
             formattedReading = '...';
           }
         }
-        formattedReading = this.applyDamageMarkup(markup, formattedReading);
         break;
       case 'damage':
       case 'partialDamage':
