@@ -49,7 +49,7 @@ router
       const ErrorsDao = sl.get('ErrorsDao');
       const { uuid, status }: UpdateErrorStatusPayload = req.body;
 
-      await ErrorsDao.updateErrorStatus(uuid, status);
+      await ErrorsDao.updateErrorStatus({ uuid, status });
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));

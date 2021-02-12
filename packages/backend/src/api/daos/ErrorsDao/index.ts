@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { ErrorsRow, ErrorStatus } from '@oare/types';
+import { ErrorsRow, ErrorStatus, UpdateErrorStatusPayload } from '@oare/types';
 import { v4 } from 'uuid';
 
 export interface InsertErrorsRow {
@@ -47,7 +47,10 @@ class ErrorsDao {
     return response;
   }
 
-  async updateErrorStatus(uuid: string, status: ErrorStatus): Promise<void> {
+  async updateErrorStatus({
+    uuid,
+    status,
+  }: UpdateErrorStatusPayload): Promise<void> {
     await knex('errors').update({ status }).where({ uuid });
   }
 }
