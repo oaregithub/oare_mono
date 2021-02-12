@@ -1,4 +1,5 @@
 import EventBus, { ACTIONS } from '@/EventBus';
+import sl from '../serviceLocator';
 
 export interface SnackbarActions {
   onAction?: () => void;
@@ -8,8 +9,30 @@ const showSnackbar = (text: string, options: SnackbarActions = {}): void => {
   EventBus.$emit(ACTIONS.TOAST, { text, ...options });
 };
 
-const showErrorSnackbar = (text: string): void => {
+const showErrorSnackbar = async (
+  text: string,
+  devErrorText?: string
+): Promise<void> => {
+  const server = sl.get('serverProxy');
+  const description = devErrorText || text;
+
+  await server.logError({
+    description,
+    stacktrace: null,
+    status: 'New',
+  });
+
   EventBus.$emit(ACTIONS.TOAST, { text, error: true });
+};
+
+const logError = async (description: string, error?: Error): Promise<void> => {
+  const server = sl.get('serverProxy');
+  const stacktrace = error?.stack || null;
+  await server.logError({
+    description,
+    stacktrace,
+    status: 'New',
+  });
 };
 
 const showUnsavedChangesWarning = (next: Function): void => {
@@ -27,6 +50,7 @@ const showUnsavedChangesWarning = (next: Function): void => {
 const globalActions = {
   showSnackbar,
   showErrorSnackbar,
+  logError,
   showUnsavedChangesWarning,
 };
 
