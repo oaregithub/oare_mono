@@ -25,11 +25,11 @@ router
     try {
       const uuid = req.params.uuid as string;
       const user = req.user || null;
-      const page = req.query.page ? ((req.query.page as unknown) as number) : 1;
-      const rows = req.query.rows
-        ? ((req.query.rows as unknown) as number)
-        : 10;
-      const search = req.query.query ? (req.query.query as string) : '';
+      const utils = sl.get('utils');
+
+      const { filter: search, limit: rows, page } = utils.extractPagination(
+        req.query
+      );
 
       const HierarchyDao = sl.get('HierarchyDao');
 

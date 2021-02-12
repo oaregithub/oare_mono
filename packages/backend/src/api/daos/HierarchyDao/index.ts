@@ -23,26 +23,21 @@ function collectionTextQuery(
   blacklist: string[],
   whitelist: string[]
 ) {
-  if (collectionIsBlacklisted) {
-    const query = knex('hierarchy')
-      .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
-      .leftJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
-      .where('hierarchy.parent_uuid', uuid)
-      .andWhere('alias.name', 'like', `%${search}%`)
-      .andWhere(function () {
-        this.whereIn('hierarchy.uuid', whitelist);
-      });
-    return query;
-  }
   const query = knex('hierarchy')
     .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
     .leftJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
     .where('hierarchy.parent_uuid', uuid)
-    .andWhere('alias.name', 'like', `%${search}%`)
-    .andWhere(function () {
-      this.whereNotIn('hierarchy.uuid', blacklist);
+    .andWhere('alias.name', 'like', `%${search}%`);
+
+  if (collectionIsBlacklisted) {
+    return query.andWhere(function () {
+      this.whereIn('hierarchy.uuid', whitelist);
     });
-  return query;
+  }
+
+  return query.andWhere(function () {
+    this.whereNotIn('hierarchy.uuid', blacklist);
+  });
 }
 
 class HierarchyDao {
