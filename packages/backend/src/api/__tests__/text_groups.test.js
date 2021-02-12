@@ -96,7 +96,9 @@ describe('GET /text_groups/:groupId', () => {
 
   it('returns 500 on failed epigraphy status retrieval', async () => {
     sl.set('TextEpigraphyDao', {
-      hasEpigraphy: jest.fn().mockRejectedValue('failed epigraphy status check'),
+      hasEpigraphy: jest
+        .fn()
+        .mockRejectedValue('failed epigraphy status check'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -150,7 +152,8 @@ describe('POST /text_groups/:groupId', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -211,7 +214,8 @@ describe('PATCH /text_groups/:groupId', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
 
   it('returns 204 on successful texts permission change', async () => {
     const response = await sendRequest();
@@ -287,7 +291,8 @@ describe('DELETE /text_groups/:groupId/:textUuid', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).delete(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).delete(PATH).set('Cookie', 'jwt=token');
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();

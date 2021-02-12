@@ -89,7 +89,9 @@ describe('GET /collection_groups', () => {
 
   it('returns 500 on failed collection group retrieval', async () => {
     sl.set('CollectionGroupDao', {
-      getCollections: jest.fn().mockRejectedValue('Retrieve collection group failed'),
+      getCollections: jest
+        .fn()
+        .mockRejectedValue('Retrieve collection group failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -123,7 +125,8 @@ describe('POST /collection_groups', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -180,7 +183,10 @@ describe('POST /collection_groups', () => {
         },
       ],
     };
-    const response = await request(app).post(PATH).send(mockExistingPOST).set('Cookie', 'jwt=token');
+    const response = await request(app)
+      .post(PATH)
+      .send(mockExistingPOST)
+      .set('Cookie', 'jwt=token');
     expect(mockCollectionGroupDao.addCollections).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
@@ -213,7 +219,8 @@ describe('PATCH /collection_groups', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
 
   it('return 204 on successful collections permission change', async () => {
     const response = await sendRequest();
@@ -242,7 +249,9 @@ describe('PATCH /collection_groups', () => {
   it('returns 500 on failed permissions update', async () => {
     sl.set('CollectionGroupDao', {
       ...mockCollectionGroupDao,
-      update: jest.fn().mockRejectedValue('failed collection group permission update'),
+      update: jest
+        .fn()
+        .mockRejectedValue('failed collection group permission update'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -294,7 +303,8 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).delete(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).delete(PATH).set('Cookie', 'jwt=token');
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
@@ -322,7 +332,9 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
   it('returns 500 on failed delete', async () => {
     sl.set('CollectionGroupDao', {
       ...mockCollectionGroupDao,
-      removeCollection: jest.fn().mockRejectedValue('failed collection group removal'),
+      removeCollection: jest
+        .fn()
+        .mockRejectedValue('failed collection group removal'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -337,7 +349,9 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
   });
 
   it('returns 400 when texts to be deleted are not in the collection group permissions', async () => {
-    const response = await request(app).delete(`${API_PATH}/collection_groups/1/uuid3`).set('Cookie', 'jwt=token');
+    const response = await request(app)
+      .delete(`${API_PATH}/collection_groups/1/uuid3`)
+      .set('Cookie', 'jwt=token');
     expect(mockCollectionGroupDao.removeCollection).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });

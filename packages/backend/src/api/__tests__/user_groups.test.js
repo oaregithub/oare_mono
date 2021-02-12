@@ -116,7 +116,8 @@ describe('POST /user_groups/:groupId', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockPOSTDELETE).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockPOSTDELETE).set('Cookie', 'jwt=token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();

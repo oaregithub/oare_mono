@@ -26,7 +26,8 @@ describe('POST /errors', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockErrorsPayload).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockErrorsPayload).set('Cookie', 'jwt=token');
 
   it('returns 201 on successful error log', async () => {
     const response = await sendRequest();

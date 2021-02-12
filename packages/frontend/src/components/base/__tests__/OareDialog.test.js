@@ -8,8 +8,8 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('OareDialog', () => {
-  const createWrapper = (props = {}) => {
-    return mount(OareDialog, {
+  const createWrapper = (props = {}) =>
+    mount(OareDialog, {
       localVue,
       vuetify,
       propsData: {
@@ -18,7 +18,6 @@ describe('OareDialog', () => {
         ...props,
       },
     });
-  };
 
   test('matches snapshot', () => {
     const wrapper = createWrapper();

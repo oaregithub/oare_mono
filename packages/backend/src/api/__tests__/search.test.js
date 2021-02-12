@@ -37,7 +37,9 @@ describe('search test', () => {
 
     it('returns 500 when search fails', async () => {
       sl.set('DictionaryWordDao', {
-        searchSpellings: jest.fn().mockRejectedValue('Failed to search spellings'),
+        searchSpellings: jest
+          .fn()
+          .mockRejectedValue('Failed to search spellings'),
       });
 
       const response = await sendRequest();
@@ -107,14 +109,20 @@ describe('search test', () => {
     it('calls appropriate DAOs', async () => {
       await sendRequest();
 
-      expect(TextDiscourseDao.searchTextDiscourseSpellings).toHaveBeenCalledWith(spelling, { limit: 10, page: 1 });
-      expect(TextDiscourseDao.getTextSpellings).toHaveBeenCalledWith('text-uuid');
+      expect(
+        TextDiscourseDao.searchTextDiscourseSpellings
+      ).toHaveBeenCalledWith(spelling, { limit: 10, page: 1 });
+      expect(TextDiscourseDao.getTextSpellings).toHaveBeenCalledWith(
+        'text-uuid'
+      );
     });
 
     it('returns 500 if searching spellings fails', async () => {
       sl.set('TextDiscourseDao', {
         ...TextDiscourseDao,
-        searchTextDiscourseSpellings: jest.fn().mockRejectedValue('Failed to search discourse spellings'),
+        searchTextDiscourseSpellings: jest
+          .fn()
+          .mockRejectedValue('Failed to search discourse spellings'),
       });
       const response = await sendRequest();
 
@@ -124,7 +132,9 @@ describe('search test', () => {
     it('returns 500 if get text spellings fails', async () => {
       sl.set('TextDiscourseDao', {
         ...TextDiscourseDao,
-        getTextSpellings: jest.fn().mockRejectedValue('Cannot get text spellings'),
+        getTextSpellings: jest
+          .fn()
+          .mockRejectedValue('Cannot get text spellings'),
       });
 
       const response = await sendRequest();

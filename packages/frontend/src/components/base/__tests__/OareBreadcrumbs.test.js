@@ -46,9 +46,7 @@ describe('OareBreadcrumbs test', () => {
   });
 
   test('does not show > character at end of items', () => {
-    const breadcrumbTexts = createWrapper()
-      .text()
-      .trim();
+    const breadcrumbTexts = createWrapper().text().trim();
     expect(breadcrumbTexts.slice(-1)).not.toBe('>');
   });
 });

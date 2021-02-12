@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import BlacklistTexts from '../BlacklistTexts.vue';
 import flushPromises from 'flush-promises';
+import BlacklistTexts from '../BlacklistTexts.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();

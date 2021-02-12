@@ -28,7 +28,8 @@ describe('Text drafts test', () => {
       sl.set('TextDraftsDao', TextDraftsDao);
     };
 
-    const sendRequest = () => request(app).post(PATH).send(payload).set('Cookie', 'jwt=token');
+    const sendRequest = () =>
+      request(app).post(PATH).send(payload).set('Cookie', 'jwt=token');
 
     it('returns 401 when user is not logged in', async () => {
       const response = await request(app).post(PATH).send(payload);
@@ -49,7 +50,12 @@ describe('Text drafts test', () => {
       });
 
       await sendRequest();
-      expect(TextDraftsDao.createDraft).toHaveBeenCalledWith(userId, textUuid, payload.content, payload.notes);
+      expect(TextDraftsDao.createDraft).toHaveBeenCalledWith(
+        userId,
+        textUuid,
+        payload.content,
+        payload.notes
+      );
     });
 
     it('updates draft if it already exists', async () => {
@@ -57,7 +63,11 @@ describe('Text drafts test', () => {
       await sendRequest();
 
       expect(TextDraftsDao.getDraft).toHaveBeenCalledWith(userId, textUuid);
-      expect(TextDraftsDao.updateDraft).toHaveBeenCalledWith(draftUuid, payload.content, payload.notes);
+      expect(TextDraftsDao.updateDraft).toHaveBeenCalledWith(
+        draftUuid,
+        payload.content,
+        payload.notes
+      );
     });
 
     it('returns 500 if create draft fails', async () => {

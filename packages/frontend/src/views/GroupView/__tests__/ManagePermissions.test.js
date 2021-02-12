@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import ManagePermissions from '../ManagePermissions.vue';
 import flushPromises from 'flush-promises';
+import ManagePermissions from '../ManagePermissions.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
