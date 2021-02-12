@@ -187,6 +187,7 @@ export default defineComponent({
   },
   setup(props) {
     const loading = ref(false);
+    console.log("First Commit");
     const confirmDeleteDialog = ref(false);
     const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
     const selectedItem = ref<number | undefined>(undefined);
