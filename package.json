@@ -10,7 +10,7 @@
     "bootstrap": "lerna bootstrap --use-workspaces",
     "client": "yarn workspace @oare/frontend serve",
     "server": "yarn workspace @oare/backend dev",
-    "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test && yarn workspace @oare/oare test jisonParser.spec.ts",
+    "test": "yarn workspace @oare/frontend test && yarn workspace @oare/backend test && yarn workspace @oare/oare test",
     "migrate:make": "yarn workspace @oare/backend migrate:make",
     "migrate:latest": "yarn workspace @oare/backend migrate:latest",
     "migrate:down": "yarn workspace @oare/backend migrate:down",
