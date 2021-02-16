@@ -11,6 +11,7 @@ import sl from '@/serviceLocator';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
+import TextEpigraphyDao from '../TextEpigraphyDao';
 
 export interface CollectionPermissionResponse extends CollectionResponse {
   isForbidden: boolean;
@@ -24,7 +25,6 @@ function collectionTextQuery(
   whitelist: string[]
 ) {
   const query = knex('hierarchy')
-    .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
     .leftJoin('text', 'text.uuid', 'hierarchy.uuid')
     .where('hierarchy.parent_uuid', uuid)
     .andWhere('text.name', 'like', `%${search}%`);
@@ -98,7 +98,6 @@ class HierarchyDao {
 
     let epigraphyStatus: boolean[] = [];
     if (type === 'Text') {
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       epigraphyStatus = await Promise.all(
         searchResponse.map(item => TextEpigraphyDao.hasEpigraphy(item.uuid))
       );
@@ -188,32 +187,34 @@ class HierarchyDao {
       totalTexts = countRow.count as number;
     }
 
-    const texts: CollectionText[] = await collectionTextQuery(
+    const texts: Omit<
+      CollectionText,
+      'hasEpigraphy'
+    >[] = await collectionTextQuery(
       uuid,
       search,
       collectionIsBlacklisted,
       blacklist,
       whitelist
     )
-      .distinct(
-        'hierarchy.id',
-        'hierarchy.uuid',
-        'hierarchy.type',
-        'text.name',
-        knex.raw(
-          '(CASE WHEN text_epigraphy.uuid IS NULL THEN false ELSE true END) AS hasEpigraphy'
-        )
-      )
+      .distinct('hierarchy.id', 'hierarchy.uuid', 'hierarchy.type', 'text.name')
       .groupBy('hierarchy.uuid')
       .orderBy('text.name')
       .limit(rows)
       .offset((page - 1) * rows);
 
+    const hasEpigraphies = await Promise.all(
+      texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid))
+    );
+
     const isForbidden = collectionIsBlacklisted && texts.length === 0;
 
     return {
       totalTexts,
-      texts,
+      texts: texts.map((text, idx) => ({
+        ...text,
+        hasEpigraphy: hasEpigraphies[idx],
+      })),
       isForbidden,
     };
   }
