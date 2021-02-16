@@ -1,35 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpBadRequest } from '@/exceptions';
-import RefreshTokenDao from '../api/daos/RefreshTokenDao';
-import UserDao from '../api/daos/UserDao';
-import utils from '../utils';
+import { HttpUnauthorized } from '@/exceptions';
 
-const authFirst = async (req: Request, res: Response, next: NextFunction) => {
-  const { jwt, refreshToken } = req.cookies;
-
-  if (jwt) {
+/**
+ * This middleware guards routes that do not require a logged-in user,
+ * but will behave differently if the user is logged in. For example,
+ * the Collections page will show different collections if the user
+ * is logged in and has more viewing permissions than the public.
+ * If a refresh token is provided (meaning the JWT expired), then
+ * the route throws a 401 to force the frontend to refresh and then
+ * call the route again.
+ */
+const authFirst = async (req: Request, _res: Response, next: NextFunction) => {
+  if (req.user) {
     next();
     return;
   }
 
+  const { refreshToken } = req.cookies;
   if (refreshToken) {
-    const token = await RefreshTokenDao.getTokenInfo(refreshToken);
-    try {
-      utils.validateRefreshToken(req, token);
-    } catch (err) {
-      next(new HttpBadRequest(err));
-      return;
-    }
-
-    const user = await UserDao.getUserByEmail(token!.email);
-
-    if (!user) {
-      next(new HttpBadRequest('User does not exist'));
-      return;
-    }
-
-    req.user = user;
-    next();
+    next(new HttpUnauthorized('Refresh first'));
   } else {
     next();
   }

@@ -50,7 +50,6 @@
     "func-names": "off",
     "no-use-before-define": "off",
     "no-param-reassign": "off",
-    "no-throw-literal": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-non-null-assertion": "off",

@@ -22,7 +22,7 @@ router.route('/collections').get(authFirst, async (req, res, next) => {
 
 router
   .route('/collections/:uuid')
-  .get(collectionsMiddleware, async (req, res, next) => {
+  .get(authFirst, collectionsMiddleware, async (req, res, next) => {
     try {
       const uuid = req.params.uuid as string;
       const user = req.user || null;

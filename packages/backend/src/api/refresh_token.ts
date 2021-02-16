@@ -2,7 +2,6 @@ import express from 'express';
 import { LoginRegisterResponse } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { sendJwtCookie } from '@/security';
-import sl from '@/serviceLocator';
 import RefreshTokenDao from './daos/RefreshTokenDao';
 import UserDao from './daos/UserDao';
 
@@ -16,20 +15,27 @@ router.route('/refresh_token').get(async (req, res, next) => {
       return;
     }
 
-    const utils = sl.get('utils');
     const token = await RefreshTokenDao.getTokenInfo(refreshToken);
-    try {
-      utils.validateRefreshToken(req, token);
-    } catch (err) {
-      next(new HttpBadRequest(err));
+    if (!token) {
+      next(new HttpBadRequest('Invalid token'));
+      return;
+    }
+
+    if (req.ip !== token.ipAddress) {
+      next(new HttpBadRequest('Invalid IP address'));
+      return;
+    }
+
+    if (Date.now() >= token.expiration.getTime()) {
+      next(new HttpBadRequest('Refresh token is expired'));
       return;
     }
 
     const user: LoginRegisterResponse | null = await UserDao.getUserByEmail(
-      token!.email
+      token.email
     );
 
-    (await sendJwtCookie(token!.ipAddress, res, token!.email)).json(user).end();
+    (await sendJwtCookie(token.ipAddress, res, token.email)).json(user).end();
   } catch (err) {
     next(new HttpInternalError(err));
   }
