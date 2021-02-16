@@ -2,10 +2,11 @@ import express from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
 import sl from '@/serviceLocator';
+import authFirst from '../middlewares/authFirst';
 
 const router = express.Router();
 
-router.route('/collections').get(async (req, res, next) => {
+router.route('/collections').get(authFirst, async (req, res, next) => {
   try {
     const user = req.user || null;
     const isAdmin = user ? user.isAdmin : false;

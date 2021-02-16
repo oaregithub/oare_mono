@@ -1,7 +1,9 @@
+import { Request } from 'express';
 import knex from '@/connection';
 import Knex from 'knex';
 import { ParsedQs } from 'qs';
 import { Pagination } from '@oare/types';
+import { RefreshToken } from '../api/daos/RefreshTokenDao';
 
 const createTransaction = async (
   cb: (trx: Knex.Transaction) => Promise<void>
@@ -36,7 +38,25 @@ const extractPagination = (
   };
 };
 
+const validateRefreshToken = (
+  req: Request,
+  token: RefreshToken | null
+): void => {
+  if (!token) {
+    throw 'Invalid token';
+  }
+
+  if (req.ip !== token.ipAddress) {
+    throw 'Invalid IP address';
+  }
+
+  if (Date.now() >= token.expiration.getTime()) {
+    throw 'Refresh token is expired';
+  }
+};
+
 export default {
   createTransaction,
   extractPagination,
+  validateRefreshToken,
 };
