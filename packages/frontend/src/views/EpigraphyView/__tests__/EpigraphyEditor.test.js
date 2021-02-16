@@ -1,9 +1,9 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
+import flushPromises from 'flush-promises';
 import EpigraphyEditor from '../EpigraphyEditor.vue';
 import sl from '../../../serviceLocator';
-import flushPromises from 'flush-promises';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();

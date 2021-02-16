@@ -16,16 +16,10 @@ export function markupsMatchDamage(
     }
 
     const damageTypes = ['damage', 'partialDamage'];
-    if (
-      damageTypes.includes(markup.type) &&
-      markupType === 'undeterminedSigns'
-    ) {
+    if (damageTypes.includes(markup.type)) {
       return true;
     }
-    if (
-      damageTypes.includes(markupType) &&
-      markup.type === 'undeterminedSigns'
-    ) {
+    if (damageTypes.includes(markupType)) {
       return true;
     }
     return false;
@@ -53,7 +47,7 @@ export function unitMatchesDamageType(
       }
 
       const damages = [markupType, markup.type];
-      if (damages.includes('damage') && damages.includes('undeterminedSigns')) {
+      if (damages.includes('damage')) {
         return true;
       }
       return false;

@@ -42,14 +42,15 @@
         </p>
         <p class="blue--text text--lighten-1">
           <em>
-            Please be advised, we are still working out kinks. Use
-            transliterations at your own risk at this point. Many texts display
-            nicely, but some do not. In addition, we are still auditing the
-            data. Original transliterations of text published before roughly
-            2008 arise from the Old Assyrian Text Project and sources drawn to
-            create that project. Transliterations from more recent publications
-            were checked within OARE/OCHRE, but some errors were introduced in
-            converting to the format used for this database.</em
+            Please be advised, we are still working out
+            <router-link to="/issues">kinks</router-link>. Use transliterations
+            at your own risk at this point. Many texts display nicely, but some
+            do not. In addition, we are still auditing the data. Original
+            transliterations of text published before roughly 2008 arise from
+            the Old Assyrian Text Project and sources drawn to create that
+            project. Transliterations from more recent publications were checked
+            within OARE/OCHRE, but some errors were introduced in converting to
+            the format used for this database.</em
           >
         </p>
         <p>

@@ -1,5 +1,5 @@
 import express from 'express';
-import { ErrorsPayload } from '@oare/types';
+import { ErrorsPayload, UpdateErrorStatusPayload } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '../middlewares/adminRoute';
@@ -40,6 +40,17 @@ router
 
       const response = await ErrorsDao.getErrorLog(page, limit);
       res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  })
+  .patch(adminRoute, async (req, res, next) => {
+    try {
+      const ErrorsDao = sl.get('ErrorsDao');
+      const { uuid, status }: UpdateErrorStatusPayload = req.body;
+
+      await ErrorsDao.updateErrorStatus({ uuid, status });
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }

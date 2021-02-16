@@ -45,20 +45,26 @@ describe('POST /reset_password', () => {
     const response = await sendRequest();
 
     expect(response.status).toBe(200);
-    expect(ResetPasswordLinksDao.createResetPasswordLink).not.toHaveBeenCalled();
+    expect(
+      ResetPasswordLinksDao.createResetPasswordLink
+    ).not.toHaveBeenCalled();
     expect(sendMail).not.toHaveBeenCalled();
   });
 
   it('successfully sends email', async () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
-    expect(ResetPasswordLinksDao.createResetPasswordLink).toHaveBeenCalledWith(mockUser.uuid);
+    expect(ResetPasswordLinksDao.createResetPasswordLink).toHaveBeenCalledWith(
+      mockUser.uuid
+    );
     expect(sendMail).toHaveBeenCalled();
   });
 
   it('returns 500 if creating link fails', async () => {
     sl.set('ResetPasswordLinksDao', {
-      createResetPasswordLink: jest.fn().mockRejectedValue('Failed to create password link'),
+      createResetPasswordLink: jest
+        .fn()
+        .mockRejectedValue('Failed to create password link'),
     });
 
     const response = await sendRequest();
@@ -68,12 +74,16 @@ describe('POST /reset_password', () => {
 
   it('returns 500 if user dao fails', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockRejectedValue('Failed to get user by email'),
+      getUserByEmail: jest
+        .fn()
+        .mockRejectedValue('Failed to get user by email'),
     });
 
     const response = await sendRequest();
     expect(response.status).toBe(500);
-    expect(ResetPasswordLinksDao.createResetPasswordLink).not.toHaveBeenCalled();
+    expect(
+      ResetPasswordLinksDao.createResetPasswordLink
+    ).not.toHaveBeenCalled();
     expect(sendMail).not.toHaveBeenCalled();
   });
 
@@ -118,7 +128,7 @@ describe('PATCH /reset_password', () => {
   };
 
   const utils = {
-    createTransaction: jest.fn(async (cb) => {
+    createTransaction: jest.fn(async cb => {
       await cb();
     }),
   };
@@ -197,7 +207,9 @@ describe('PATCH /reset_password', () => {
   it('returns 500 if invalidating the reset row fails', async () => {
     sl.set('ResetPasswordLinksDao', {
       ...ResetPasswordLinksDao,
-      invalidateResetRow: jest.fn().mockRejectedValue('Failed to invalidate reset row'),
+      invalidateResetRow: jest
+        .fn()
+        .mockRejectedValue('Failed to invalidate reset row'),
     });
 
     const response = await sendRequest();

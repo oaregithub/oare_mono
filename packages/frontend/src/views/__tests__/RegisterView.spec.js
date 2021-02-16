@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
-import RegisterView from '../RegisterView.vue';
 import flushPromises from 'flush-promises';
+import RegisterView from '../RegisterView.vue';
 import sl from '../../serviceLocator';
 
 const vuetify = new Vuetify();

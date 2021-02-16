@@ -161,7 +161,8 @@ describe('groups api test', () => {
       sl.set('OareGroupDao', OareGroupDao);
     };
 
-    const sendRequest = () => request(app).post(PATH).set('Cookie', 'jwt=token');
+    const sendRequest = () =>
+      request(app).post(PATH).set('Cookie', 'jwt=token');
 
     it("doesn't allow non-logged-in users to post", async () => {
       const response = await request(app).post(PATH);

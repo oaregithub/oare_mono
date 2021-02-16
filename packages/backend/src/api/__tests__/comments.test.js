@@ -62,8 +62,14 @@ describe('comments api test', () => {
 
   describe('POST /comments', () => {
     const PATH = `${API_PATH}/comments`;
-    const sendRequest = async ({ overrideComment, overrideThread, cookie = true } = {}) => {
-      const req = request(app).post(PATH).send(getPayload({ overrideComment, overrideThread }));
+    const sendRequest = async ({
+      overrideComment,
+      overrideThread,
+      cookie = true,
+    } = {}) => {
+      const req = request(app)
+        .post(PATH)
+        .send(getPayload({ overrideComment, overrideThread }));
       return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
 
@@ -121,7 +127,6 @@ describe('comments api test', () => {
     };
 
     it('returns 200 upon successfully deleted comment', async () => {
-
       const response = await sendRequest();
       expect(response.status).toBe(200);
     });

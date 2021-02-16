@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import ManageCollections from '../ManageCollections.vue';
 import flushPromises from 'flush-promises';
+import ManageCollections from '../ManageCollections.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
@@ -115,10 +115,7 @@ describe('ManageCollections test', () => {
   it('removes collections', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(0)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(0).trigger('click');
     await wrapper.get('.test-actions').trigger('click');
     await wrapper.get('.test-remove-items').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
