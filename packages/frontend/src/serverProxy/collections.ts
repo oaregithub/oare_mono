@@ -2,6 +2,7 @@ import {
   CollectionListItem,
   CollectionResponse,
   CollectionInfo,
+  Pagination,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -18,14 +19,10 @@ async function getAllCollections(): Promise<CollectionListItem[]> {
  */
 async function getCollectionTexts(
   uuid: string,
-  { page, rows, query }: { page: number; rows: number; query: string }
+  pagination: Pagination
 ): Promise<CollectionResponse> {
   const { data: texts } = await axios.get(`/collections/${uuid}`, {
-    params: {
-      page,
-      rows,
-      query,
-    },
+    params: pagination,
   });
 
   return texts;

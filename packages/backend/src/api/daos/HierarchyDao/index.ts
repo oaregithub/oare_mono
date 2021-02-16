@@ -25,9 +25,9 @@ function collectionTextQuery(
 ) {
   const query = knex('hierarchy')
     .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
-    .leftJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
+    .leftJoin('text', 'text.uuid', 'hierarchy.uuid')
     .where('hierarchy.parent_uuid', uuid)
-    .andWhere('alias.name', 'like', `%${search}%`);
+    .andWhere('text.name', 'like', `%${search}%`);
 
   if (collectionIsBlacklisted) {
     return query.andWhere(function () {
@@ -188,7 +188,7 @@ class HierarchyDao {
       totalTexts = countRow.count as number;
     }
 
-    const collectionRowsQuery = collectionTextQuery(
+    const texts: CollectionText[] = await collectionTextQuery(
       uuid,
       search,
       collectionIsBlacklisted,
@@ -199,25 +199,15 @@ class HierarchyDao {
         'hierarchy.id',
         'hierarchy.uuid',
         'hierarchy.type',
-        'alias.name',
+        'text.name',
         knex.raw(
           '(CASE WHEN text_epigraphy.uuid IS NULL THEN false ELSE true END) AS hasEpigraphy'
         )
       )
       .groupBy('hierarchy.uuid')
-      .orderBy('alias.name')
+      .orderBy('text.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    let texts: CollectionText[] = await collectionRowsQuery;
-
-    const textNames = await Promise.all(
-      texts.map(result => aliasDao.textAliasNames(result.uuid))
-    );
-
-    texts = texts.map((result, i) => ({
-      ...result,
-      name: textNames[i],
-    }));
 
     const isForbidden = collectionIsBlacklisted && texts.length === 0;
 
