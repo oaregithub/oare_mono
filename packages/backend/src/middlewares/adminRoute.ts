@@ -4,14 +4,10 @@ import authenticatedRoute from './authenticatedRoute';
 
 async function adminRoute(req: Request, res: Response, next: NextFunction) {
   try {
-    // if (process.env.NODE_ENV === 'development') {
-    //   next();
-    //   return;
-    // }
-
     const navigateAdmin = (err?: any) => {
       if (err) {
         next(err);
+        return;
       }
       const { user } = req;
       if (user && user.isAdmin) {

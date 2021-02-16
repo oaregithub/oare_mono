@@ -72,6 +72,8 @@ const authFirstRoutes = [
   'words',
   'dashboardProfile',
   'login',
+  'collections',
+  'collectionTexts',
 ];
 const authFirstGuard: NavigationGuard = (to, _from, next) => {
   guardRoute(authFirstRoutes, to, next, next);
