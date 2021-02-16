@@ -34,6 +34,26 @@ export type EpigraphicUnitSide =
   | 'u.e.'
   | 'le.e.'
   | 'r.e.'
+  | 'mirror text'
+  | 'legend'
+  | 'suppl. tablet'
+  | 'vs.!'
+  | 'near hilt'
+  | 'obv. col. i'
+  | 'obv. col. ii'
+  | 'le.e. col. i'
+  | 'le.e. col. ii'
+  | 'le.e. col. iii'
+  | 'col. i'
+  | 'col. ii'
+  | 'col. iii'
+  | 'col. iv'
+  | 'col. v'
+  | 'col. vi'
+  | "col. i'"
+  | "col. ii'"
+  | "col. iii'"
+  | "col. iv'"
   | 0;
 
 export interface EpigraphicUnit {
