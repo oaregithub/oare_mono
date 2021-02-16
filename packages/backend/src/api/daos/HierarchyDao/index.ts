@@ -12,32 +12,10 @@ import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
 import TextEpigraphyDao from '../TextEpigraphyDao';
+import CollectionGroupDao from '../CollectionGroupDao';
 
 export interface CollectionPermissionResponse extends CollectionResponse {
   isForbidden: boolean;
-}
-
-function collectionTextQuery(
-  uuid: string,
-  search: string,
-  collectionIsBlacklisted: boolean,
-  blacklist: string[],
-  whitelist: string[]
-) {
-  const query = knex('hierarchy')
-    .leftJoin('text', 'text.uuid', 'hierarchy.uuid')
-    .where('hierarchy.parent_uuid', uuid)
-    .andWhere('text.name', 'like', `%${search}%`);
-
-  if (collectionIsBlacklisted) {
-    return query.andWhere(function () {
-      this.whereIn('hierarchy.uuid', whitelist);
-    });
-  }
-
-  return query.andWhere(function () {
-    this.whereNotIn('hierarchy.uuid', blacklist);
-  });
 }
 
 class HierarchyDao {
@@ -130,7 +108,6 @@ class HierarchyDao {
     isAdmin: boolean,
     user: UserRow | null
   ): Promise<CollectionListItem[]> {
-    const CollectionGroupDao = sl.get('CollectionGroupDao');
     const blacklistedUuids = await CollectionGroupDao.getUserCollectionBlacklist(
       user
     );
@@ -161,7 +138,29 @@ class HierarchyDao {
     uuid: string,
     { page = 1, rows = 10, search = '' }
   ): Promise<CollectionPermissionResponse> {
-    const CollectionGroupDao = sl.get('CollectionGroupDao');
+    const collectionTextQuery = (
+      collectionUuid: string,
+      textSearch: string,
+      collectionIsBlacklisted: boolean,
+      blacklist: string[],
+      whitelist: string[]
+    ) => {
+      const query = knex('hierarchy')
+        .leftJoin('text', 'text.uuid', 'hierarchy.uuid')
+        .where('hierarchy.parent_uuid', collectionUuid)
+        .andWhere('text.name', 'like', `%${textSearch}%`);
+
+      if (collectionIsBlacklisted) {
+        return query.andWhere(function () {
+          this.whereIn('hierarchy.uuid', whitelist);
+        });
+      }
+
+      return query.andWhere(function () {
+        this.whereNotIn('hierarchy.uuid', blacklist);
+      });
+    };
+
     const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(
       uuid,
       userId
