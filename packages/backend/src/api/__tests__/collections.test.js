@@ -16,7 +16,6 @@ const mockGETCollections = [
 
 const mockGETCollectionTexts = {
   totalTexts: 2,
-  isForbidden: false,
   texts: [
     {
       id: 'id1',
@@ -74,12 +73,25 @@ describe('GET /collections', () => {
 describe('GET /collections/:uuid', () => {
   const uuid = 'mockUuid';
   const PATH = `${API_PATH}/collections/${uuid}`;
+
+  const mockCollectionGroupDao = {
+    canViewCollection: jest.fn().mockResolvedValue(true),
+  };
+
   const mockHierarchyDao = {
     getCollectionTexts: jest.fn().mockResolvedValue(mockGETCollectionTexts),
   };
 
+  const mockUtils = {
+    extractPagination: jest
+      .fn()
+      .mockReturnValue({ filter: '', limit: 10, page: 1 }),
+  };
+
   const setup = () => {
+    sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('HierarchyDao', mockHierarchyDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);
@@ -102,12 +114,22 @@ describe('GET /collections/:uuid', () => {
     expect(response.status).toBe(500);
   });
 
+  it('returns 500 if canViewCollection fails', async () => {
+    sl.set('CollectionGroupDao', {
+      ...mockCollectionGroupDao,
+      canViewCollection: jest
+        .fn()
+        .mockRejectedValue('failed to check if can view collection'),
+    });
+
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
   it('returns 403 if collection is forbidden', async () => {
-    sl.set('HierarchyDao', {
-      getCollectionTexts: jest.fn().mockResolvedValue({
-        ...mockGETCollectionTexts,
-        isForbidden: true,
-      }),
+    sl.set('CollectionGroupDao', {
+      ...mockCollectionGroupDao,
+      canViewCollection: jest.fn().mockResolvedValue(false),
     });
     const response = await sendRequest();
     expect(response.status).toBe(403);
