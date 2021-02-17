@@ -76,8 +76,8 @@ export function separateEpigraphicUnitsByWord(
 }
 
 export function getEpigraphicSeparator(
-  type1: EpigraphicUnitType,
-  type2: EpigraphicUnitType
+  type1: EpigraphicUnitType | null,
+  type2: EpigraphicUnitType | null
 ): string {
   if (type1 === 'determinative' || type2 === 'determinative') {
     return '';
@@ -113,6 +113,7 @@ export function epigraphicWordWithSeparators(
 export function convertMarkedUpUnitsToLineReading(
   characters: EpigraphicUnitWithMarkup[]
 ): string {
+  console.log(characters);
   const epigraphicWords: EpigraphicUnitWithMarkup[][] = separateEpigraphicUnitsByWord(
     characters
   );

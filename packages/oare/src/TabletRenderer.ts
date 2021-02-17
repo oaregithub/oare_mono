@@ -85,13 +85,13 @@ export default class TabletRenderer {
   private getUnitsOnLine(lineNum: number) {
     return this.epigraphicUnits
       .filter(item => item.line === lineNum)
-      .sort((a, b) => a.charOnTablet - b.charOnTablet);
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
   }
 
   public linesOnSide(side: EpigraphicUnitSide): number[] {
     const unitsOnSide = this.epigraphicUnits
       .filter(unit => unit.side === side)
-      .sort((a, b) => a.charOnTablet - b.charOnTablet);
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
 
     const lines: number[] = [];
     unitsOnSide.forEach(({ line }) => {
@@ -109,7 +109,7 @@ export default class TabletRenderer {
   private attachMarkupsToEpigraphicUnits() {
     const markupMap = this.getMarkupReferenceMap();
     this.epigraphicUnits = this.epigraphicUnits
-      .sort((a, b) => a.charOnTablet - b.charOnTablet)
+      .sort((a, b) => a.objOnTablet - b.objOnTablet)
       .map(epigraphy => {
         const markedEpig: EpigraphicUnit = {
           ...epigraphy,
@@ -151,7 +151,7 @@ export default class TabletRenderer {
     epigUnits: EpigraphicUnit[]
   ): EpigraphicUnitWithMarkup[] {
     return epigUnits.map(unit => ({
-      type: unit.type || 'phonogram',
+      type: unit.epigType === 'region' ? null : unit.type || 'phonogram',
       reading: this.markedUpEpigraphicReading(unit),
       discourseUuid: unit.discourseUuid,
     }));

@@ -56,6 +56,19 @@ export type EpigraphicUnitSide =
   | "col. iv'"
   | 0;
 
+type EpigraphyType =
+  | 'column'
+  | 'epigraphicUnit'
+  | 'line'
+  | 'number'
+  | 'region'
+  | 'section'
+  | 'separator'
+  | 'sign'
+  | 'stamp'
+  | 'undeterminedLines'
+  | 'undeterminedSigns';
+
 export interface EpigraphicUnit {
   uuid: string;
   side: EpigraphicUnitSide;
@@ -66,6 +79,7 @@ export interface EpigraphicUnit {
   objOnTablet: number;
   discourseUuid: string | null;
   reading: string | null;
+  epigType: EpigraphyType;
   type: EpigraphicUnitType | null;
   value: null | string;
   markups?: MarkupUnit[];
@@ -117,7 +131,7 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
 }
 
 export interface EpigraphicUnitWithMarkup {
-  type: EpigraphicUnitType;
+  type: EpigraphicUnitType | null;
   reading: string;
   discourseUuid: string | null;
 }
