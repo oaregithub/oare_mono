@@ -15,6 +15,7 @@ describe('tablet renderer tests', () => {
           type: 'phonogram',
           uuid: 'uuid',
           value: null,
+          objOnTablet: 1,
         },
       ],
       [

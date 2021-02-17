@@ -63,6 +63,7 @@ export interface EpigraphicUnit {
   line: number;
   charOnLine: number;
   charOnTablet: number;
+  objOnTablet: number;
   discourseUuid: string | null;
   reading: string | null;
   type: EpigraphicUnitType | null;
