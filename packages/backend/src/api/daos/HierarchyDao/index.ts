@@ -14,10 +14,6 @@ import { UserRow } from '../UserDao';
 import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
 
-export interface CollectionPermissionResponse extends CollectionResponse {
-  isForbidden: boolean;
-}
-
 class HierarchyDao {
   async getBySearchTerm({
     page,
@@ -137,7 +133,7 @@ class HierarchyDao {
     userId: UserRow | null,
     uuid: string,
     { page = 1, rows = 10, search = '' }
-  ): Promise<CollectionPermissionResponse> {
+  ): Promise<CollectionResponse> {
     const collectionTextQuery = (
       collectionUuid: string,
       textSearch: string,
@@ -206,15 +202,12 @@ class HierarchyDao {
       texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid))
     );
 
-    const isForbidden = collectionIsBlacklisted && texts.length === 0;
-
     return {
       totalTexts,
       texts: texts.map((text, idx) => ({
         ...text,
         hasEpigraphy: hasEpigraphies[idx],
       })),
-      isForbidden,
     };
   }
 

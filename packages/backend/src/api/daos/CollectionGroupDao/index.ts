@@ -1,9 +1,11 @@
+import _ from 'lodash';
 import { CollectionPermissionsItem } from '@oare/types';
 import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
 import AliasDao from '../AliasDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
+import HierarchyDao from '../HierarchyDao';
 import { UserRow } from '../UserDao';
 
 export interface CollectionGroupRow {
@@ -73,7 +75,7 @@ class CollectionGroupDao {
       return false;
     }
 
-    const userCollections: CollectionPermissionsItem[] = (
+    let userCollections: CollectionPermissionsItem[] = (
       await PublicBlacklistDao.getBlacklistedCollections()
     ).map(collection => ({
       ...collection,
@@ -83,13 +85,10 @@ class CollectionGroupDao {
 
     if (user) {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
-      for (let i = 0; i < groupIds.length; i += 1) {
-        const groupId = groupIds[i];
-        const collections = await this.getCollections(groupId);
-        collections.forEach(collection => {
-          userCollections.push(collection);
-        });
-      }
+      const groupCollections = await Promise.all(
+        groupIds.map(id => this.getCollections(id))
+      );
+      userCollections = [...userCollections, ..._.flatten(groupCollections)];
     }
 
     const whitelistedUuids = userCollections
@@ -106,6 +105,35 @@ class CollectionGroupDao {
       return true;
     }
     return false;
+  }
+
+  async canViewCollection(
+    collectionUuid: string,
+    user: UserRow | null
+  ): Promise<boolean> {
+    const isBlacklisted = await this.collectionIsBlacklisted(
+      collectionUuid,
+      user
+    );
+
+    if (isBlacklisted) {
+      if (user) {
+        // Check if collection contains any WHITELISTED texts
+        const userTexts = await TextGroupDao.getTextsByUser(user.id);
+        const userTextCollections = await Promise.all(
+          userTexts
+            .filter(text => text.canRead)
+            .map(text => HierarchyDao.getEpigraphyCollection(text.uuid))
+        );
+
+        return userTextCollections
+          .map(collection => collection.uuid)
+          .includes(collectionUuid);
+      }
+      return false;
+    }
+
+    return true;
   }
 
   async getCollections(groupId: number): Promise<CollectionPermissionsItem[]> {
