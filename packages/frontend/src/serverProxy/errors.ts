@@ -1,7 +1,7 @@
 import {
   ErrorsPayload,
   Pagination,
-  ErrorsRow,
+  ErrorsResponse,
   UpdateErrorStatusPayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
@@ -10,7 +10,7 @@ async function logError(payload: ErrorsPayload): Promise<void> {
   await axios.post('/errors', payload);
 }
 
-async function getErrorLog(payload: Pagination): Promise<ErrorsRow[]> {
+async function getErrorLog(payload: Pagination): Promise<ErrorsResponse> {
   const { data } = await axios.get('/errors', {
     params: payload,
   });
