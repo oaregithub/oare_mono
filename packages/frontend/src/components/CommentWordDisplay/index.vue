@@ -12,16 +12,15 @@
   >
     <v-row>
       <v-col cols="10">
-        <h1 class='text-capitalize'><slot></slot></h1>
+        <h1 class='text-capitalize text--primary'><slot></slot></h1>
       </v-col>
     </v-row>
-
-    <v-row style='height: 500px'>
-      <v-col cols="3" class='overflow-y-auto' style='max-height: 500px'>
-        <h2 class='mb-3'>Threads</h2>
+    <v-row class='comment-display-height'>
+      <v-col cols="3" class='overflow-y-auto comment-display-height'>
+        <h2 class='mb-3 text--primary'>Threads</h2>
         <v-divider/>
         <v-card elevation='0' :color="(threadWithComment.thread.uuid === selectedThreadWithComments.thread.uuid) ? '#fafafa' : '#ffffff'"  v-for='(threadWithComment, idx) in threadsWithComments' :key='idx'>
-          <div style='cursor: pointer' class='pl-2 pr-2' >
+          <div class='pl-2 pr-2 cursor-display'>
             <v-row @click='setSelectedThreadWithComment(threadWithComment)'>
               <v-col cols='9'>
                 <h2>{{threadWithComment.thread.name ? threadWithComment.thread.name : `Untitled ${idx}`}}</h2>
@@ -35,7 +34,7 @@
                 <div class='mt-n3'>
                   <span class='text-subtitle-2'>{{threadWithComment.thread.status}}</span>
                   <v-icon
-                          v-if='loggedInUser.isAdmin'
+                          v-if='loggedInUser && loggedInUser.isAdmin'
                           class='mt-n1'
                           v-bind="attrs"
                           v-on="on"
@@ -55,34 +54,23 @@
           </div>
           <v-divider/>
         </v-card>
-
         <div class='flex justify-center align-content-center mt-5'>
-          <v-btn @click='selectedThreadWithComments.thread.uuid = null' elevation='0' color='white'>
-            <v-icon color='#215da3'>mdi-plus</v-icon>
-            <h3 style='color: #215da3'>Add Thread</h3>
+          <v-btn @click='selectedThreadWithComments.thread.uuid = null' elevation='0' color='#ffffff'>
+            <v-icon color='primary'>mdi-plus</v-icon>
+            <h3 class='text--primary'>Add Thread</h3>
           </v-btn>
-
         </div>
-
       </v-col>
       <v-divider class='mr-5 ml-5' vertical/>
-      <v-col cols="8" class='overflow-y-auto' style='max-height: 500px'>
-        <h2 class='mb-3'>Comments</h2>
-        <temtplate v-if='selectedThreadWithComments.thread && selectedThreadWithComments.thread.uuid !== null'>
+      <v-col cols="8" class='overflow-y-auto comment-display-height'>
+        <h2 class='mb-3 text--primary'>Comments</h2>
+        <template v-if='selectedThreadWithComments.thread && selectedThreadWithComments.thread.uuid !== null'>
           <v-row class='mb-3' v-for='(comment, idx) in selectedThreadWithComments.comments' :key='idx'>
-            <v-col cols="3" align='center' justify='center' v-if='loggedInUser.uuid !== comment.userUuid'>
-            <span style='color: #215da3' v-if="comment.userUuid"
-            >{{ comment.userFirstName }} {{ comment.userLastName }}</span
-            >
-              <span style='color: #215da3' v-else>Administrator</span>
-              <hr color='#215da3' />
-              <span style='color: #215da3'>{{
-              new Date(comment.createdAt)
-                .toDateString()
-                .substr(
-                  new Date(comment.createdAt).toDateString().indexOf(' ')
-                )
-            }}</span>
+            <v-col cols="3" align='center' justify='center' v-if='loggedInUser && loggedInUser.uuid !== comment.userUuid'>
+            <span class='text--primary' v-if="comment.userUuid">{{ comment.userFirstName }} {{ comment.userLastName }}</span>
+              <span class='text--primary' v-else>Administrator</span>
+              <hr class='primary' />
+              <span class='text--primary'>{{formatCommentDateTime(comment.createdAt)}}</span>
             </v-col>
             <v-col cols="8">
               <v-card
@@ -95,36 +83,28 @@
                 <v-card-text v-else class='font-weight-bold'> <v-icon>mdi-comment-remove</v-icon> This comment has been deleted.</v-card-text>
               </v-card>
             </v-col>
-            <v-col cols="3" align='center' justify='center' v-if='loggedInUser.uuid === comment.userUuid'>
-            <span style='color: #215da3' v-if="comment.userUuid"
+            <v-col cols="3" align='center' justify='center' v-if='loggedInUser && loggedInUser.uuid === comment.userUuid'>
+            <span class='text--primary' v-if="comment.userUuid"
             >{{ comment.userFirstName }} {{ comment.userLastName }}</span
             >
-              <span style='color: #215da3' v-else>Administrator</span>
-              <hr color='#215da3' />
-              <span style='color: #215da3'>{{
-              new Date(comment.createdAt)
-                .toDateString()
-                .substr(
-                  new Date(comment.createdAt).toDateString().indexOf(' ')
-                )
-            }}</span>
+              <span class='text--primary' v-else>Administrator</span>
+              <hr class='primary' />
+              <span class='text--primary'>{{
+                formatCommentDateTime(comment.createdAt)}}</span>
             </v-col>
             <v-col
                     cols="1"
                     class='pr-2'
-                    v-if="
-            (comment.userUuid === loggedInUser.uuid || loggedInUser.isAdmin) && !comment.deleted
-          "
+                    v-if="canDeleteComment(comment)"
             >
               <v-btn icon @click="setDeleteValues(comment.uuid)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-col>
           </v-row>
-        </temtplate>
+        </template>
         <div
-                class="flex-column d-flex justify-center align-center"
-                style='height: 80%; width: 100%'
+                class="flex-column d-flex justify-center align-center no-thread-selected-display"
                 v-else
         >
           <h1>
@@ -133,7 +113,6 @@
           <h2 class='mb-10 mt-10'>OR</h2>
           <h1><v-icon class='mt-n2' large color="primary">mdi-plus-circle</v-icon>Add a comment to start a new thread</h1>
         </div>
-
         <v-row>
           <v-col cols='11'>
             <v-textarea
@@ -152,10 +131,8 @@
             </v-btn>
           </v-col>
         </v-row>
-
       </v-col>
     </v-row>
-
     <OareDialog
       v-model="confirmDeleteDialog"
       title="Confirm Delete"
@@ -177,10 +154,9 @@
               label="New Thread Name"
               v-model='editedThreadValue'
       ></v-text-field>
-      <span style='color: red' v-if="!validateThreadName()">{{editErrorMessage}}</span>
+      <span class='error--text' v-if="!validateThreadName()">{{editErrorMessage}}</span>
     </OareDialog>
   </oare-dialog>
-
 </template>
 
 <script lang="ts">
@@ -199,7 +175,7 @@ import {
   CommentRequest,
   ThreadWithComments,
   CommentInsert,
-  ThreadStatus,
+  ThreadStatus, CommentDisplay,
 } from '@oare/types';
 
 export default defineComponent({
@@ -244,6 +220,19 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const store = sl.get('store');
 
+    const formatCommentDateTime = (datetime: string): string => {
+      return new Date(datetime)
+              .toDateString()
+              .substr(new Date(datetime).toDateString().indexOf(' '));
+    }
+
+    const canDeleteComment = (comment: CommentDisplay) => {
+      return loggedInUser.value
+              && (comment.userUuid === loggedInUser.value.uuid || loggedInUser.value.isAdmin)
+              && comment.userUuid !== null
+              && !comment.deleted
+    }
+
     const findAndSetSelectedThread = (newThreadsWithComments: ThreadWithComments[]) => {
       if (selectedThreadWithComments.value) {
         newThreadsWithComments.forEach((threadWithComments) => {
@@ -264,10 +253,17 @@ export default defineComponent({
       if (editedThreadValue.value === '') {
         editErrorMessage.value = 'Cannot be empty.'
         valid = false;
-      }
-      if (editedThreadValue.value === selectedThreadWithComments.value.thread.name) {
+      } else if (editedThreadValue.value === selectedThreadWithComments.value.thread.name) {
         editErrorMessage.value = 'Cannot have the same name.'
         valid = false;
+      }
+      else {
+        threadsWithComments.value.forEach((threadWithComment) => {
+          if (threadWithComment.thread.name === editedThreadValue.value) {
+            editErrorMessage.value = 'Cannot have the same name as another thread.'
+            valid = false;
+          }
+        })
       }
 
       return valid;
@@ -283,7 +279,7 @@ export default defineComponent({
           findAndSetSelectedThread(threadsWithComments.value);
         }
       } catch (e) {
-        await actions.showErrorSnackbar('Failed to get threads');
+        actions.showErrorSnackbar('Failed to get threads');
       } finally {
         loading.value = false;
       }
@@ -309,7 +305,7 @@ export default defineComponent({
           actions.showSnackbar('Successfully updated the thread');
           await getThreadsWithComments();
         } catch {
-          await actions.showErrorSnackbar('Failed to update the thread');
+          actions.showErrorSnackbar('Failed to update the thread');
         } finally {
           loading.value = false;
         }
@@ -325,7 +321,7 @@ export default defineComponent({
         actions.showSnackbar('Successfully deleted the comment');
         await getThreadsWithComments();
       } catch {
-        await actions.showErrorSnackbar('Failed to delete the comment');
+        actions.showErrorSnackbar('Failed to delete the comment');
       } finally {
         loading.value = false;
       }
@@ -333,17 +329,17 @@ export default defineComponent({
 
     const insertComment = async () => {
       if (store.getters.user === null) {
-        await actions.showErrorSnackbar('Please login before making a comment.');
+        actions.showErrorSnackbar('Please login before making a comment.');
         return;
       }
 
       if (!userComment.value) {
-        await actions.showErrorSnackbar('Please enter a comment.');
+        actions.showErrorSnackbar('Please enter a comment.');
         return;
       }
 
       if (userComment.value.length > 1000) {
-        await actions.showErrorSnackbar(
+        actions.showErrorSnackbar(
           'Character count exceeded, please shorten the comment.'
         );
         return;
@@ -382,10 +378,10 @@ export default defineComponent({
           selectedThreadWithComments.value.thread.uuid = response.threadUuid;
           await getThreadsWithComments();
         } else {
-          await actions.showErrorSnackbar('Failed to insert the comment');
+          actions.showErrorSnackbar('Failed to insert the comment');
         }
       } catch {
-        await actions.showErrorSnackbar('Failed to insert the comment');
+        actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
         loading.value = false;
         userComment.value = '';
@@ -394,7 +390,7 @@ export default defineComponent({
 
     const editThreadName = async () => {
       if (!validateThreadName()) {
-        await actions.showErrorSnackbar('Invalid Thread Name');
+        actions.showErrorSnackbar('Invalid Thread Name');
         return;
       }
       confirmEditThreadNameDialog.value = false;
@@ -404,7 +400,7 @@ export default defineComponent({
         console.log("Add edit call to backend here...");
         actions.showSnackbar(`Successfully edited the thread name.`);
       } catch {
-        await actions.showErrorSnackbar('Failed to edit thread name');
+        actions.showErrorSnackbar('Failed to edit thread name');
       } finally {
         loading.value = false;
         editedThreadValue.value = '';
@@ -418,6 +414,8 @@ export default defineComponent({
     );
 
     return {
+      formatCommentDateTime,
+      canDeleteComment,
       updateThreadStatus,
       openEditThreadDialog,
       validateThreadName,
@@ -442,3 +440,18 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+  .comment-display-height {
+    height: 500px;
+    max-height: 500px;
+  }
+  .no-thread-selected-display {
+    height: 80%;
+    width: 100%;
+  }
+  .cursor-display {
+    cursor: pointer;
+  }
+</style>
+

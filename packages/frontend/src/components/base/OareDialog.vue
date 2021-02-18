@@ -110,7 +110,7 @@ export default defineComponent({
     },
     actionTitle: {
       type: String,
-      default: null,
+      required: false,
     },
   },
   setup({ closeOnSubmit }, { emit }) {
