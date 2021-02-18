@@ -103,7 +103,10 @@ export type MarkupType =
   | 'isWrittenOverErasure'
   | 'isWrittenBelowTheLine'
   | 'broken'
-  | 'isSealImpression';
+  | 'isSealImpression'
+  | 'uninscribed'
+  | 'ruling'
+  | 'isStampSealImpression';
 
 export interface MarkupUnit {
   referenceUuid: string;

@@ -4,11 +4,13 @@ import {
   EpigraphicUnitSide,
   EpigraphicUnitWithMarkup,
 } from '@oare/types';
+import _ from 'lodash';
 
 import {
   getMarkupByDamageType,
   unitMatchesDamageType,
   convertMarkedUpUnitsToLineReading,
+  regionReading,
 } from './tabletUtils';
 
 export default class TabletRenderer {
@@ -30,7 +32,32 @@ export default class TabletRenderer {
   ) {
     this.epigraphicUnits = epigraphicUnits;
     this.markupUnits = markupUnits;
+    this.addLineNumbersToRegions();
     this.attachMarkupsToEpigraphicUnits();
+  }
+
+  private addLineNumbersToRegions() {
+    this.epigraphicUnits = this.epigraphicUnits.map(unit => {
+      if (unit.epigType === 'region') {
+        const { objOnTablet } = unit;
+        // Find line before this one
+        const prevUnitIdx = _.findLastIndex(
+          this.epigraphicUnits,
+          backUnit =>
+            backUnit.line !== null && backUnit.objOnTablet < objOnTablet
+        );
+        const objLine =
+          prevUnitIdx === -1
+            ? 0.1
+            : this.epigraphicUnits[prevUnitIdx].line + 0.1;
+        return {
+          ...unit,
+          line: objLine,
+        };
+      }
+
+      return unit;
+    });
   }
 
   public tabletReading(): string {
@@ -72,8 +99,13 @@ export default class TabletRenderer {
   /**
    * Return the epigraphic reading at a specific line number
    */
-  public lineReading(lineNum: number) {
+  public lineReading(lineNum: number): string {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
+
+    if (unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region') {
+      return regionReading(unitsOnLine[0]);
+    }
+
     const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
     return convertMarkedUpUnitsToLineReading(charactersWithMarkup);
   }
@@ -152,7 +184,10 @@ export default class TabletRenderer {
   ): EpigraphicUnitWithMarkup[] {
     return epigUnits.map(unit => ({
       type: unit.epigType === 'region' ? null : unit.type || 'phonogram',
-      reading: this.markedUpEpigraphicReading(unit),
+      reading:
+        unit.epigType === 'region'
+          ? unit.reading || ''
+          : this.markedUpEpigraphicReading(unit),
       discourseUuid: unit.discourseUuid,
     }));
   }
