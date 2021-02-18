@@ -1,6 +1,7 @@
 import knex from '@/connection';
 import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/types';
 import { EpigraphicQueryRow } from './index';
+import sideNumbers from './sideNumbers';
 
 export default function getSearchQuery(
   characters: string[],
@@ -48,22 +49,7 @@ export default function getSearchQuery(
 }
 
 function mapSideNumberToSideName(side: number): EpigraphicUnitSide {
-  switch (side) {
-    case 1:
-      return 'obv.';
-    case 2:
-      return 'lo.e.';
-    case 3:
-      return 'rev.';
-    case 4:
-      return 'u.e.';
-    case 5:
-      return 'le.e.';
-    case 6:
-      return 'r.e.';
-    default:
-      return 'obv.';
-  }
+  return sideNumbers[side] || 'obv.';
 }
 
 export function convertEpigraphicUnitRows(

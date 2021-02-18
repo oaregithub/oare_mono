@@ -11,39 +11,8 @@ import sl from '@/serviceLocator';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
 import { UserRow } from '../UserDao';
-
-export interface CollectionPermissionResponse extends CollectionResponse {
-  isForbidden: boolean;
-}
-
-function collectionTextQuery(
-  uuid: string,
-  search: string,
-  collectionIsBlacklisted: boolean,
-  blacklist: string[],
-  whitelist: string[]
-) {
-  if (collectionIsBlacklisted) {
-    const query = knex('hierarchy')
-      .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
-      .leftJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
-      .where('hierarchy.parent_uuid', uuid)
-      .andWhere('alias.name', 'like', `%${search}%`)
-      .andWhere(function () {
-        this.whereIn('hierarchy.uuid', whitelist);
-      });
-    return query;
-  }
-  const query = knex('hierarchy')
-    .leftJoin('text_epigraphy', 'text_epigraphy.text_uuid', 'hierarchy.uuid')
-    .leftJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
-    .where('hierarchy.parent_uuid', uuid)
-    .andWhere('alias.name', 'like', `%${search}%`)
-    .andWhere(function () {
-      this.whereNotIn('hierarchy.uuid', blacklist);
-    });
-  return query;
-}
+import TextEpigraphyDao from '../TextEpigraphyDao';
+import CollectionGroupDao from '../CollectionGroupDao';
 
 class HierarchyDao {
   async getBySearchTerm({
@@ -103,7 +72,6 @@ class HierarchyDao {
 
     let epigraphyStatus: boolean[] = [];
     if (type === 'Text') {
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       epigraphyStatus = await Promise.all(
         searchResponse.map(item => TextEpigraphyDao.hasEpigraphy(item.uuid))
       );
@@ -136,7 +104,6 @@ class HierarchyDao {
     isAdmin: boolean,
     user: UserRow | null
   ): Promise<CollectionListItem[]> {
-    const CollectionGroupDao = sl.get('CollectionGroupDao');
     const blacklistedUuids = await CollectionGroupDao.getUserCollectionBlacklist(
       user
     );
@@ -166,8 +133,30 @@ class HierarchyDao {
     userId: UserRow | null,
     uuid: string,
     { page = 1, rows = 10, search = '' }
-  ): Promise<CollectionPermissionResponse> {
-    const CollectionGroupDao = sl.get('CollectionGroupDao');
+  ): Promise<CollectionResponse> {
+    const collectionTextQuery = (
+      collectionUuid: string,
+      textSearch: string,
+      collectionIsBlacklisted: boolean,
+      blacklist: string[],
+      whitelist: string[]
+    ) => {
+      const query = knex('hierarchy')
+        .leftJoin('text', 'text.uuid', 'hierarchy.uuid')
+        .where('hierarchy.parent_uuid', collectionUuid)
+        .andWhere('text.name', 'like', `%${textSearch}%`);
+
+      if (collectionIsBlacklisted) {
+        return query.andWhere(function () {
+          this.whereIn('hierarchy.uuid', whitelist);
+        });
+      }
+
+      return query.andWhere(function () {
+        this.whereNotIn('hierarchy.uuid', blacklist);
+      });
+    };
+
     const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(
       uuid,
       userId
@@ -193,43 +182,32 @@ class HierarchyDao {
       totalTexts = countRow.count as number;
     }
 
-    const collectionRowsQuery = collectionTextQuery(
+    const texts: Omit<
+      CollectionText,
+      'hasEpigraphy'
+    >[] = await collectionTextQuery(
       uuid,
       search,
       collectionIsBlacklisted,
       blacklist,
       whitelist
     )
-      .distinct(
-        'hierarchy.id',
-        'hierarchy.uuid',
-        'hierarchy.type',
-        'alias.name',
-        knex.raw(
-          '(CASE WHEN text_epigraphy.uuid IS NULL THEN false ELSE true END) AS hasEpigraphy'
-        )
-      )
+      .distinct('hierarchy.id', 'hierarchy.uuid', 'hierarchy.type', 'text.name')
       .groupBy('hierarchy.uuid')
-      .orderBy('alias.name')
+      .orderBy('text.name')
       .limit(rows)
       .offset((page - 1) * rows);
-    let texts: CollectionText[] = await collectionRowsQuery;
 
-    const textNames = await Promise.all(
-      texts.map(result => aliasDao.textAliasNames(result.uuid))
+    const hasEpigraphies = await Promise.all(
+      texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid))
     );
-
-    texts = texts.map((result, i) => ({
-      ...result,
-      name: textNames[i],
-    }));
-
-    const isForbidden = collectionIsBlacklisted && texts.length === 0;
 
     return {
       totalTexts,
-      texts,
-      isForbidden,
+      texts: texts.map((text, idx) => ({
+        ...text,
+        hasEpigraphy: hasEpigraphies[idx],
+      })),
     };
   }
 

@@ -2,10 +2,11 @@ import express from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
 import sl from '@/serviceLocator';
+import authFirst from '../middlewares/authFirst';
 
 const router = express.Router();
 
-router.route('/collections').get(async (req, res, next) => {
+router.route('/collections').get(authFirst, async (req, res, next) => {
   try {
     const user = req.user || null;
     const isAdmin = user ? user.isAdmin : false;
@@ -21,15 +22,29 @@ router.route('/collections').get(async (req, res, next) => {
 
 router
   .route('/collections/:uuid')
-  .get(collectionsMiddleware, async (req, res, next) => {
+  .get(authFirst, collectionsMiddleware, async (req, res, next) => {
     try {
+      const CollectionGroupDao = sl.get('CollectionGroupDao');
       const uuid = req.params.uuid as string;
       const user = req.user || null;
-      const page = req.query.page ? ((req.query.page as unknown) as number) : 1;
-      const rows = req.query.rows
-        ? ((req.query.rows as unknown) as number)
-        : 10;
-      const search = req.query.query ? (req.query.query as string) : '';
+      const utils = sl.get('utils');
+
+      const canViewCollection = await CollectionGroupDao.canViewCollection(
+        uuid,
+        req.user
+      );
+      if (!canViewCollection) {
+        next(
+          new HttpForbidden(
+            'You do not have permission to view this collection. If you think this is a mistake, please contact your administrator.'
+          )
+        );
+        return;
+      }
+
+      const { filter: search, limit: rows, page } = utils.extractPagination(
+        req.query
+      );
 
       const HierarchyDao = sl.get('HierarchyDao');
 
@@ -38,15 +53,6 @@ router
         rows,
         search,
       });
-
-      if (response.isForbidden) {
-        next(
-          new HttpForbidden(
-            'You do not have permission to view this collection. If you think this is a mistake, please contact your administrator.'
-          )
-        );
-        return;
-      }
 
       res.json(response);
     } catch (err) {

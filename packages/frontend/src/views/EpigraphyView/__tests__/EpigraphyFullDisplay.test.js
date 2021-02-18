@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import EpigraphyFullDisplay from '../EpigraphyFullDisplay.vue';
 import flushPromises from 'flush-promises';
+import EpigraphyFullDisplay from '../EpigraphyFullDisplay.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();

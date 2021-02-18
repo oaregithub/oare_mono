@@ -24,15 +24,11 @@ describe('OareContentView', () => {
   });
 
   it('shows title', () => {
-    expect(
-      createWrapper()
-        .find('.test-content-title')
-        .text()
-    ).toBe(TITLE);
+    expect(createWrapper().find('.test-content-title').text()).toBe(TITLE);
   });
 
   it('shows loading bar when given loading prop', () => {
-    let wrapper = createWrapper({ loading: true });
+    const wrapper = createWrapper({ loading: true });
 
     expect(wrapper.findComponent({ name: 'v-progress-linear' })).not.toBe(null);
   });
