@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import AddBlacklistTexts from '../AddBlacklistTexts.vue';
 import flushPromises from 'flush-promises';
+import AddBlacklistTexts from '../AddBlacklistTexts.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
@@ -77,10 +77,7 @@ describe('AddBlacklistTexts test', () => {
   it('successfully adds texts to blacklist', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(1)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     expect(mockServer.addTextsToPublicBlacklist).toHaveBeenCalled();
@@ -99,10 +96,7 @@ describe('AddBlacklistTexts test', () => {
       },
     });
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(1)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();

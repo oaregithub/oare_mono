@@ -108,8 +108,8 @@ export default defineComponent({
       try {
         const collectionResp = await server.getCollectionTexts(collectionUuid, {
           page: Number(page.value),
-          rows: Number(rows.value),
-          query: search.value,
+          limit: Number(rows.value),
+          filter: search.value,
         });
         totalTexts.value = collectionResp.totalTexts;
         texts.value = collectionResp.texts;

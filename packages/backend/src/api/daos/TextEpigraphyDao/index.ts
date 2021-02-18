@@ -29,7 +29,10 @@ class TextEpigraphyDao {
         'sign_reading.uuid'
       )
       .where('text_uuid', textUuid)
-      .andWhereNot('char_on_tablet', null)
+      .andWhere(function () {
+        this.whereNot('text_epigraphy.char_on_tablet', null);
+        this.orWhere('text_epigraphy.type', 'region');
+      })
       .select(
         'text_epigraphy.uuid',
         'text_epigraphy.side',
@@ -39,11 +42,12 @@ class TextEpigraphyDao {
         'text_epigraphy.char_on_line AS charOnLine',
         'text_epigraphy.char_on_tablet AS charOnTablet',
         'text_epigraphy.discourse_uuid AS discourseUuid',
+        'text_epigraphy.object_on_tablet AS objOnTablet',
         'sign_reading.reading',
         'sign_reading.type',
         'sign_reading.value'
       )
-      .orderBy('text_epigraphy.char_on_tablet');
+      .orderBy('text_epigraphy.object_on_tablet');
 
     if (minLine) {
       query = query.andWhere('text_epigraphy.line', '>=', minLine);

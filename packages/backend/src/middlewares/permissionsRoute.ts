@@ -10,14 +10,15 @@ const permissionsRoute = (permission: PermissionName) => async (
   next: NextFunction
 ) => {
   try {
-    const { user } = req;
     const PermissionsDao = sl.get('PermissionsDao');
 
     const permissionGuard = async (err?: any) => {
       if (err) {
         next(err);
+        return;
       }
 
+      const { user } = req;
       if (user) {
         const userPermissions = (
           await PermissionsDao.getUserPermissions(user)

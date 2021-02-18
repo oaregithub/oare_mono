@@ -1,6 +1,7 @@
+import _ from 'lodash';
 import { Text, Blacklists } from '@oare/types';
 import knex from '@/connection';
-import userGroupDao from '../UserGroupDao';
+import UserGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import { UserRow } from '../UserDao';
@@ -21,7 +22,7 @@ class TextGroupDao {
     const userTexts = await PublicBlacklistDao.getBlacklistedTexts();
 
     if (user) {
-      const groupIds = await userGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
       for (let i = 0; i < groupIds.length; i += 1) {
         const groupId = groupIds[i];
         const texts = await this.getTexts(groupId);
@@ -71,8 +72,17 @@ class TextGroupDao {
     }));
   }
 
+  async getTextsByUser(userId: number): Promise<Text[]> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+    const groupTexts = await Promise.all(
+      groupIds.map(groupId => this.getTexts(groupId))
+    );
+
+    return _.flatten(groupTexts);
+  }
+
   async userHasWritePermission(uuid: string, userId: number): Promise<boolean> {
-    const groupIds = await userGroupDao.getGroupsOfUser(userId);
+    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
 
     // Select all rows for given uuid
     const textRows = await knex('text_group')

@@ -16,6 +16,7 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue';
 import ManagePermissions from '@/views/GroupView/ManagePermissions.vue';
 import EpigraphyEditor from '@/views/EpigraphyView/EpigraphyEditor.vue';
 import EpigraphyFullDisplay from '@/views/EpigraphyView/EpigraphyFullDisplay.vue';
+import KnownIssues from '../views/KnownIssues.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import AdminGroupView from '../views/AdminView/AdminGroupView.vue';
@@ -38,6 +39,10 @@ const routes: RouteConfig[] = [
   {
     path: '/',
     component: LandingPage,
+  },
+  {
+    path: '/issues',
+    component: KnownIssues,
   },
   {
     path: '/admin/groups',
