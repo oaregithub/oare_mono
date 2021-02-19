@@ -1,14 +1,14 @@
 <template>
   <oare-dialog
-    :value="value"
-    @input="$emit('input', $event)"
-    :width="1000"
-    :show-submit="false"
-    :show-cancel="false"
+    :actionTitle="'Add Comment'"
     :closeButton="true"
     :persistent="false"
+    :show-cancel="false"
+    :show-submit="false"
     :submitLoading="loading"
-    :actionTitle="'Add Comment'"
+    :value="value"
+    :width="1000"
+    @input="$emit('input', $event)"
   >
     <v-row>
       <v-col cols="10">
@@ -16,17 +16,17 @@
       </v-col>
     </v-row>
     <v-row class='comment-display-height'>
-      <v-col cols="3" class='overflow-y-auto comment-display-height'>
+      <v-col class='overflow-y-auto comment-display-height' cols="3">
         <h2 class='mb-3 text--primary'>Threads</h2>
         <v-divider/>
-        <v-card elevation='0' :color="(threadWithComment.thread.uuid === selectedThreadWithComments.thread.uuid) ? '#fafafa' : '#ffffff'"  v-for='(threadWithComment, idx) in threadsWithComments' :key='idx'>
+        <v-card :color="(threadWithComment.thread.uuid === selectedThreadWithComments.thread.uuid) ? '#fafafa' : '#ffffff'" :key='idx'  elevation='0' v-for='(threadWithComment, idx) in threadsWithComments'>
           <div class='pl-2 pr-2 cursor-display'>
             <v-row @click='setSelectedThreadWithComment(threadWithComment)'>
               <v-col cols='9'>
                 <h2>{{threadWithComment.thread.name ? threadWithComment.thread.name : `Untitled ${idx}`}}</h2>
               </v-col>
               <v-col cols='1'>
-                <v-icon @click='openEditThreadDialog' color="primary" class='mb-n2'>mdi-pencil</v-icon>
+                <v-icon @click='openEditThreadDialog' class='mb-n2' color="primary">mdi-pencil</v-icon>
               </v-col>
             </v-row>
             <v-menu offset-y>
@@ -34,18 +34,18 @@
                 <div class='mt-n3'>
                   <span class='text-subtitle-2'>{{threadWithComment.thread.status}}</span>
                   <v-icon
-                          v-if='loggedInUser && loggedInUser.isAdmin'
+                          @click='setSelectedThreadWithComment(threadWithComment)'
                           class='mt-n1'
                           v-bind="attrs"
-                          v-on="on"
-                          @click='setSelectedThreadWithComment(threadWithComment)'>mdi-chevron-down</v-icon>
+                          v-if='loggedInUser && loggedInUser.isAdmin'
+                          v-on="on">mdi-chevron-down</v-icon>
                 </div>
               </template>
               <v-list>
                 <v-list-item
-                        v-for="(status, index) in statuses"
                         :key="index"
                         @click='updateThreadStatus(status)'
+                        v-for="(status, index) in statuses"
                 >
                   <v-list-item-title>{{ status }}</v-list-item-title>
                 </v-list-item>
@@ -54,19 +54,19 @@
           </div>
           <v-divider/>
         </v-card>
-        <div class='flex justify-center align-content-center mt-5'>
-          <v-btn @click='selectedThreadWithComments.thread.uuid = null' elevation='0' color='#ffffff'>
+        <div class='flex justify-center align-content-center mt-5' v-if='selectedThreadWithComments.thread.uuid !== null'>
+          <v-btn @click='selectedThreadWithComments.thread.uuid = null' color='#ffffff' elevation='0'>
             <v-icon color='primary'>mdi-plus</v-icon>
             <h3 class='text--primary'>Add Thread</h3>
           </v-btn>
         </div>
       </v-col>
       <v-divider class='mr-5 ml-5' vertical/>
-      <v-col cols="8" class='overflow-y-auto comment-display-height'>
+      <v-col class='overflow-y-auto comment-display-height' cols="8">
         <h2 class='mb-3 text--primary'>Comments</h2>
         <template v-if='selectedThreadWithComments.thread && selectedThreadWithComments.thread.uuid !== null'>
-          <v-row class='mb-3' v-for='(comment, idx) in selectedThreadWithComments.comments' :key='idx'>
-            <v-col cols="3" align='center' justify='center' v-if='loggedInUser && loggedInUser.uuid !== comment.userUuid'>
+          <v-row :key='idx' class='mb-3' v-for='(comment, idx) in selectedThreadWithComments.comments'>
+            <v-col align='center' cols="3" justify='center' v-if='loggedInUser && loggedInUser.uuid !== comment.userUuid'>
             <span class='text--primary' v-if="comment.userUuid">{{ comment.userFirstName }} {{ comment.userLastName }}</span>
               <span class='text--primary' v-else>Administrator</span>
               <hr class='primary' />
@@ -74,16 +74,16 @@
             </v-col>
             <v-col cols="8">
               <v-card
-                      outlined
-                      elevation='1'
                       class="rounded-lg"
                       color='#fafafa'
+                      elevation='1'
+                      outlined
               >
                 <v-card-text v-if='!comment.deleted'>{{ comment.text }}</v-card-text>
-                <v-card-text v-else class='font-weight-bold'> <v-icon>mdi-comment-remove</v-icon> This comment has been deleted.</v-card-text>
+                <v-card-text class='font-weight-bold' v-else> <v-icon>mdi-comment-remove</v-icon> This comment has been deleted.</v-card-text>
               </v-card>
             </v-col>
-            <v-col cols="3" align='center' justify='center' v-if='loggedInUser && loggedInUser.uuid === comment.userUuid'>
+            <v-col align='center' cols="3" justify='center' v-if='loggedInUser && loggedInUser.uuid === comment.userUuid'>
             <span class='text--primary' v-if="comment.userUuid"
             >{{ comment.userFirstName }} {{ comment.userLastName }}</span
             >
@@ -93,11 +93,11 @@
                 formatCommentDateTime(comment.createdAt)}}</span>
             </v-col>
             <v-col
-                    cols="1"
                     class='pr-2'
+                    cols="1"
                     v-if="canDeleteComment(comment)"
             >
-              <v-btn icon @click="setDeleteValues(comment.uuid)">
+              <v-btn @click="setDeleteValues(comment.uuid)" icon>
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-col>
@@ -108,21 +108,21 @@
                 v-else
         >
           <h1>
-            <v-icon large color="primary">mdi-forum-outline</v-icon> Please select a thread to view comments
+            <v-icon color="primary" large>mdi-forum-outline</v-icon> Please select a thread to view comments
           </h1>
           <h2 class='mb-10 mt-10'>OR</h2>
-          <h1><v-icon class='mt-n2' large color="primary">mdi-plus-circle</v-icon>Add a comment to start a new thread</h1>
+          <h1><v-icon class='mt-n2' color="primary" large>mdi-plus-circle</v-icon>Add a comment to start a new thread</h1>
         </div>
         <v-row>
           <v-col cols='11'>
             <v-textarea
-                    outlined
-                    class='pa-0'
-                    label="Add comment..."
-                    rows="1"
                     auto-grow
-                    v-model="userComment"
+                    class='pa-0'
                     counter="1000"
+                    label="Add comment..."
+                    outlined
+                    rows="1"
+                    v-model="userComment"
             ></v-textarea>
           </v-col>
           <v-col cols='1'>
@@ -134,21 +134,21 @@
       </v-col>
     </v-row>
     <OareDialog
-      v-model="confirmDeleteDialog"
-      title="Confirm Delete"
+      @submit="deleteComment()"
       cancelText="No, don't delete"
       submitText="Yes, delete"
-      @submit="deleteComment()"
+      title="Confirm Delete"
+      v-model="confirmDeleteDialog"
     >
       Are you sure you want to delete the comment?
     </OareDialog>
     <OareDialog
-            v-model="confirmEditThreadNameDialog"
-            title="Edit"
+            @input="editedThreadValue = ''"
+            @submit="editThreadName()"
             cancelText="Cancel"
             submitText="Submit"
-            @submit="editThreadName()"
-            @input="editedThreadValue = ''"
+            title="Edit"
+            v-model="confirmEditThreadNameDialog"
     >
       <v-text-field
               label="New Thread Name"
@@ -444,7 +444,6 @@ export default defineComponent({
 <style scoped>
   .comment-display-height {
     height: 500px;
-    max-height: 500px;
   }
   .no-thread-selected-display {
     height: 80%;
