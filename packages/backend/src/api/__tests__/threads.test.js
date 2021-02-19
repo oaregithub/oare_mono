@@ -270,13 +270,13 @@ describe('comments api test', () => {
   describe('PUT /threads/name', () => {
     const PATH = `${API_PATH}/threads/name`;
 
-    const getPayload = ({ overrideThreadName } = {}) => {
-      const updateThreadName = overrideThreadName || {
+    const getPayload = ({ overrideThread } = {}) => {
+      const newUpdateThreadName = overrideThread || {
         threadUuid: 'testUuid',
         newName: 'testName',
       };
 
-      return updateThreadName;
+      return newUpdateThreadName;
     };
 
     const sendRequest = async ({ overrideThread, cookie = true } = {}) => {
@@ -286,7 +286,7 @@ describe('comments api test', () => {
 
     it('returns 200 when thread name is successfully updated.', async () => {
       const response = await sendRequest();
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(204);
     });
 
     it('returns 401 for non-logged in users.', async () => {

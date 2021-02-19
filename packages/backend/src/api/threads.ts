@@ -103,7 +103,7 @@ router
 
       await threadsDao.updateThreadName(threadUuid, newName);
 
-      res.status(200).end();
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
