@@ -46,6 +46,12 @@ class ThreadsDao {
 
     return thread;
   }
+
+  async updateThreadName(uuid: string, newName: string): Promise<void> {
+    await knex('threads').where('uuid', uuid).update({
+      name: newName,
+    });
+  }
 }
 
 export default new ThreadsDao();

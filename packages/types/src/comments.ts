@@ -43,6 +43,11 @@ export interface Thread {
   route: string;
 }
 
+export interface UpdateThreadNameRequest {
+  threadUuid: string,
+  newName: string,
+}
+
 export interface ThreadWithComments {
   thread: Thread;
   comments: CommentDisplay[];
