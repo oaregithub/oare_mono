@@ -20,7 +20,7 @@
         <h2 class='mb-3 text--primary'>Threads</h2>
         <v-divider/>
         <v-card :color="(threadWithComment.thread.uuid === selectedThreadWithComments.thread.uuid) ? '#fafafa' : '#ffffff'" :key='idx'  elevation='0' v-for='(threadWithComment, idx) in threadsWithComments'>
-          <div class='pl-2 pr-2 cursor-display'>
+          <div class='pl-2 pr-2'>
             <v-row @click='setSelectedThreadWithComment(threadWithComment)'>
               <v-col cols='9'>
                 <h2>{{threadWithComment.thread.name ? threadWithComment.thread.name : `Untitled ${idx}`}}</h2>
@@ -116,6 +116,7 @@
         <v-row>
           <v-col cols='11'>
             <v-textarea
+                    autofocus
                     auto-grow
                     class='pa-0'
                     counter="1000"
@@ -125,9 +126,9 @@
                     v-model="userComment"
             ></v-textarea>
           </v-col>
-          <v-col cols='1'>
-            <v-btn @click='insertComment' class='mb-n7' icon>
-              <v-icon>mdi-send</v-icon>
+          <v-col cols='1' class='ml-n3'>
+            <v-btn :disabled="userComment === ''" @click='insertComment' class='mb-n7' icon>
+              <v-icon color='primary'>mdi-send</v-icon>
             </v-btn>
           </v-col>
         </v-row>
@@ -205,7 +206,7 @@ export default defineComponent({
     const editedThreadValue = ref('');
     const editErrorMessage = ref('');
     const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
-    const selectedThreadWithComments: Ref<ThreadWithComments> = ref({thread: {
+    const selectedThreadWithComments = ref<ThreadWithComments>({thread: {
         uuid: null,
         name: null,
         referenceUuid: '',
@@ -330,11 +331,6 @@ export default defineComponent({
     const insertComment = async () => {
       if (store.getters.user === null) {
         actions.showErrorSnackbar('Please login before making a comment.');
-        return;
-      }
-
-      if (!userComment.value) {
-        actions.showErrorSnackbar('Please enter a comment.');
         return;
       }
 
