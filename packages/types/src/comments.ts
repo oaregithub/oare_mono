@@ -44,8 +44,8 @@ export interface Thread {
 }
 
 export interface UpdateThreadNameRequest {
-  threadUuid: string,
-  newName: string,
+  threadUuid: string;
+  newName: string;
 }
 
 export interface ThreadWithComments {
