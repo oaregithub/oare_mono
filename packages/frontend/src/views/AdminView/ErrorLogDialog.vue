@@ -10,48 +10,47 @@
     :width="750"
     :persistent="false"
   >
-  <v-container>
-    <v-row class="py-2">
-      <div>
-        <h3>Status</h3>
-        <v-select
-          dense
-          :items="statusItems"
-          :label="error.status"
-          @input="updateStatus"
-        ></v-select>
-      </div>
-    </v-row>
+    <v-container>
+      <v-row class="py-2">
+        <div>
+          <h3>Status</h3>
+          <v-select
+            dense
+            :items="statusItems"
+            :label="error.status"
+            @input="updateStatus"
+          ></v-select>
+        </div>
+      </v-row>
 
-    <v-row class="py-2">
-      <div>
-        <h3>User</h3>
-        <span>{{ error.user_uuid }}</span>
-      </div>
-    </v-row>
+      <v-row class="py-2">
+        <div>
+          <h3>User</h3>
+          <span>{{ error.user_uuid }}</span>
+        </div>
+      </v-row>
 
-    <v-row class="py-2">
-      <div>
-        <h3>Timestamp</h3>
-        <span>{{ formatTimestamp(error.timestamp) }}</span>
-      </div>
-    </v-row>
+      <v-row class="py-2">
+        <div>
+          <h3>Timestamp</h3>
+          <span>{{ formatTimestamp(error.timestamp) }}</span>
+        </div>
+      </v-row>
 
-    <v-row class="py-2">
-      <div>
-        <h3>Description</h3>
-        <span>{{ error.description }}</span>
-      </div>
-    </v-row>
+      <v-row class="py-2">
+        <div>
+          <h3>Description</h3>
+          <span>{{ error.description }}</span>
+        </div>
+      </v-row>
 
-    <v-row class="py-2" v-if="error.stacktrace">
-      <div>
-        <h3>Stacktrace</h3>
-        <span>{{ error.stacktrace }}</span>
-      </div>
-    </v-row>
-  </v-container>
-
+      <v-row class="py-2" v-if="error.stacktrace">
+        <div>
+          <h3>Stacktrace</h3>
+          <span>{{ error.stacktrace }}</span>
+        </div>
+      </v-row>
+    </v-container>
   </oare-dialog>
 </template>
 
@@ -80,21 +79,16 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const statusItems: ErrorStatus[] = [
-      'New',
-      'In Progress',
-      'Resolved',
-    ];
+    const statusItems: ErrorStatus[] = ['New', 'In Progress', 'Resolved'];
 
     const formatTimestamp = (timestamp: Date) => {
-      return new Date(timestamp).toLocaleString('en-US', 
-        {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric'
-        });
+      return new Date(timestamp).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      });
     };
 
     const updateStatus = async (status: ErrorStatus) => {
@@ -105,7 +99,10 @@ export default defineComponent({
           status: error.status,
         });
       } catch {
-        actions.showErrorSnackbar('Error updating error status. Please try again.', 'udpateErrorStatus failed');
+        actions.showErrorSnackbar(
+          'Error updating error status. Please try again.',
+          'updateErrorStatus failed'
+        );
       }
     };
 
