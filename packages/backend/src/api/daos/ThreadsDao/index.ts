@@ -27,7 +27,8 @@ class ThreadsDao {
         'threads.uuid AS uuid',
         'threads.reference_uuid AS referenceUuid',
         'threads.status AS status',
-        'threads.route AS route'
+        'threads.route AS route',
+        'threads.name AS name',
       )
       .where('reference_uuid', referenceUuid);
 
@@ -40,7 +41,8 @@ class ThreadsDao {
         'threads.uuid AS uuid',
         'threads.reference_uuid AS referenceUuid',
         'threads.status AS status',
-        'threads.route AS route'
+        'threads.route AS route',
+        'threads.name AS name',
       )
       .where('uuid', uuid);
 
