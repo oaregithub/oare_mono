@@ -35,7 +35,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import { DataTableHeader, DataOptions } from 'vuetify';
-import { ErrorsRow } from '@oare/types';
+import { ErrorsRowWithUser } from '@oare/types';
 import sl from '../../serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import ErrorLogDialog from '@/views/AdminView/ErrorLogDialog.vue';
@@ -57,8 +57,8 @@ export default defineComponent({
       { text: 'Description', value: 'description', width: '50%' },
     ]);
 
-    const errorList: Ref<ErrorsRow[]> = ref([]);
-    const dialogError: Ref<Partial<ErrorsRow>> = ref({});
+    const errorList: Ref<ErrorsRowWithUser[]> = ref([]);
+    const dialogError: Ref<Partial<ErrorsRowWithUser>> = ref({});
     const serverCount = ref(0);
 
     const [page, setPage] = useQueryParam('page', '1');
@@ -105,7 +105,7 @@ export default defineComponent({
         });
     };
 
-    const setupDialog = (error: ErrorsRow) => {
+    const setupDialog = (error: ErrorsRowWithUser) => {
       dialogError.value = error;
       showErrorDetails.value = true;
     };

@@ -58,7 +58,7 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, Ref } from '@vue/composition-api';
 import OareDialog from '../../components/base/OareDialog.vue';
-import { ErrorsRow, ErrorStatus } from '@oare/types';
+import { ErrorsRowWithUser, ErrorStatus } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -72,12 +72,13 @@ export default defineComponent({
       default: false,
     },
     error: {
-      type: Object as PropType<ErrorsRow>,
+      type: Object as PropType<ErrorsRowWithUser>,
       required: true,
     },
   },
   setup({ error }) {
     const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
 
     const statusItems: ErrorStatus[] = [
       'New',
@@ -97,11 +98,15 @@ export default defineComponent({
     };
 
     const updateStatus = async (status: ErrorStatus) => {
-      error.status = status;
-      await server.updateErrorStatus({
-        uuid: error.uuid,
-        status: error.status,
-      });
+      try {
+        error.status = status;
+        await server.updateErrorStatus({
+          uuid: error.uuid,
+          status: error.status,
+        });
+      } catch {
+        actions.showErrorSnackbar('Error updating error status. Please try again.', 'udpateErrorStatus failed');
+      }
     };
 
     return {
