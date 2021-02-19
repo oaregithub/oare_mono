@@ -50,7 +50,7 @@ class ThreadsDao {
   }
 
   async updateThreadName(uuid: string, newName: string): Promise<void> {
-    await knex('threads').where('uuid', uuid).update({
+    await knex('threads').where({ uuid }).update({
       name: newName,
     });
   }
