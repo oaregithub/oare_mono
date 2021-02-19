@@ -23,10 +23,10 @@
           <div class='pl-2 pr-2'>
             <v-row @click='setSelectedThreadWithComment(threadWithComment)'>
               <v-col cols='9'>
-                <h2>{{threadWithComment.thread.name ? threadWithComment.thread.name : `Untitled ${idx}`}}</h2>
+                <h2>{{displayThreadName(threadWithComment.thread.name, idx)}}</h2>
               </v-col>
               <v-col cols='1'>
-                <v-icon @click='openEditThreadDialog' class='mb-n2' color="primary">mdi-pencil</v-icon>
+                <v-icon @click='openEditThreadDialog(displayThreadName(threadWithComment.thread.name, idx))' class='mb-n2' color="primary">mdi-pencil</v-icon>
               </v-col>
             </v-row>
             <v-menu offset-y>
@@ -221,6 +221,10 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const store = sl.get('store');
 
+    const displayThreadName = (threadName: string | null, idx: number) => {
+      return threadName ? threadName : `Untitled ${idx}`
+    }
+
     const formatCommentDateTime = (datetime: string): string => {
       return new Date(datetime)
               .toDateString()
@@ -244,9 +248,9 @@ export default defineComponent({
       }
     }
 
-    const openEditThreadDialog = () => {
+    const openEditThreadDialog = (displayedThreadName: string) => {
       confirmEditThreadNameDialog.value = true;
-      editedThreadValue.value = selectedThreadWithComments.value.thread.name || '';
+      editedThreadValue.value = displayedThreadName;
     }
 
     const validateThreadName = () => {
@@ -422,6 +426,7 @@ export default defineComponent({
     );
 
     return {
+      displayThreadName,
       formatCommentDateTime,
       canDeleteComment,
       updateThreadStatus,
