@@ -176,7 +176,7 @@ import {
   CommentRequest,
   ThreadWithComments,
   CommentInsert,
-  ThreadStatus, CommentDisplay,
+  ThreadStatus, CommentDisplay, UpdateThreadNameRequest,
 } from '@oare/types';
 
 export default defineComponent({
@@ -389,12 +389,24 @@ export default defineComponent({
         actions.showErrorSnackbar('Invalid Thread Name');
         return;
       }
+
+      if (selectedThreadWithComments.value.thread.uuid === null) {
+        actions.showErrorSnackbar('Thread has not been selected');
+        return;
+      }
+
       confirmEditThreadNameDialog.value = false;
+
+      const request: UpdateThreadNameRequest = {
+        threadUuid: selectedThreadWithComments.value.thread.uuid,
+        newName: editedThreadValue.value
+      }
 
       loading.value = true;
       try {
-        console.log("Add edit call to backend here...");
+        await server.updateThreadName(request)
         actions.showSnackbar(`Successfully edited the thread name.`);
+        await getThreadsWithComments();
       } catch {
         actions.showErrorSnackbar('Failed to edit thread name');
       } finally {
