@@ -1,4 +1,8 @@
-import { Thread, ThreadWithComments, UpdateThreadNameRequest } from '@oare/types';
+import {
+  Thread,
+  ThreadWithComments,
+  UpdateThreadNameRequest,
+} from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getThreadsWithCommentsByReferenceUuid(
@@ -14,7 +18,9 @@ async function updateThread(thread: Thread): Promise<void> {
   await axios.put('/threads', thread);
 }
 
-async function updateThreadName(threadNameRequest: UpdateThreadNameRequest): Promise<void> {
+async function updateThreadName(
+  threadNameRequest: UpdateThreadNameRequest
+): Promise<void> {
   await axios.put('/threads/name', threadNameRequest);
 }
 
