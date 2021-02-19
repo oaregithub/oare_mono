@@ -35,7 +35,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({}, { emit }) {
+  setup(_props, { emit }) {
     const emitSelectAll = () => emit('select-full-list');
 
     return {
