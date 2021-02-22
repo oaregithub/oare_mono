@@ -5,7 +5,7 @@ module.exports = {
 
   transform: {
     '.*\\.(vue)$': 'vue-jest',
-    '^.+\\.js$': '<rootDir>/node_modules/babel-jest',
+    '^.+\\.js$': 'babel-jest',
   },
 
   clearMocks: true,
