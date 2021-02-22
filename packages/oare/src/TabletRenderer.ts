@@ -37,27 +37,31 @@ export default class TabletRenderer {
   }
 
   private addLineNumbersToRegions() {
-    this.epigraphicUnits = this.epigraphicUnits.map(unit => {
-      if (unit.epigType === 'region') {
-        const { objOnTablet } = unit;
-        // Find line before this one
-        const prevUnitIdx = _.findLastIndex(
-          this.epigraphicUnits,
-          backUnit =>
-            backUnit.line !== null && backUnit.objOnTablet < objOnTablet
-        );
-        const objLine =
-          prevUnitIdx === -1
-            ? 0.1
-            : this.epigraphicUnits[prevUnitIdx].line + 0.1;
-        return {
-          ...unit,
-          line: objLine,
-        };
-      }
+    this.epigraphicUnits = this.epigraphicUnits.reduce<EpigraphicUnit[]>(
+      (newUnits, unit) => {
+        if (unit.epigType === 'region') {
+          const { objOnTablet } = unit;
+          // Find line before this one
+          const prevUnitIdx = _.findLastIndex(
+            newUnits,
+            backUnit =>
+              backUnit.line !== null && backUnit.objOnTablet < objOnTablet
+          );
+          const objLine =
+            prevUnitIdx === -1 ? 0.1 : newUnits[prevUnitIdx].line + 0.1;
+          return [
+            ...newUnits,
+            {
+              ...unit,
+              line: objLine,
+            },
+          ];
+        }
 
-      return unit;
-    });
+        return [...newUnits, unit];
+      },
+      []
+    );
   }
 
   public tabletReading(): string {
