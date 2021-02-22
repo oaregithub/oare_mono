@@ -37,10 +37,10 @@ exports[`LoginView test matches snapshot 1`] = `
       </div>
     </div>
     <p class="subtitle error--text test-error-text"></p>
-    <router-link-stub to="/send_reset_password_email" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content">Forgot your password?</span></router-link-stub>
-    <router-link-stub to="/register" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content"></span></router-link-stub> <br>
+    <router-link-stub to="/send_reset_password_email" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content">Forgot your password?</span></router-link-stub>
+    <router-link-stub to="/register" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content"></span></router-link-stub> <br>
   </div>
-  <div class="v-card__actions"><button type="button" disabled="disabled" class="text-right test-signin-btn v-btn v-btn--contained v-btn--disabled theme--light v-size--default" color="primary"><span class="v-btn__content">
+  <div class="v-card__actions"><button type="button" disabled="disabled" class="text-right test-signin-btn v-btn v-btn--disabled v-btn--has-bg theme--light v-size--default" color="primary"><span class="v-btn__content">
 
     </span></button></div>
 </div>

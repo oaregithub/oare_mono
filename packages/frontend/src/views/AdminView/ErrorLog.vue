@@ -40,6 +40,7 @@ import { ErrorsRowWithUser, ErrorStatus } from '@oare/types';
 import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import ErrorLogDialog from '@/views/AdminView/ErrorLogDialog.vue';
+import { DateTime } from 'luxon';
 
 export default defineComponent({
   components: {
@@ -99,13 +100,9 @@ export default defineComponent({
     };
 
     const formatTimestamp = (timestamp: Date) => {
-      return new Date(timestamp).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      });
+      return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
+        DateTime.DATETIME_MED
+      );
     };
 
     const setupDialog = (error: ErrorsRowWithUser) => {

@@ -73,6 +73,6 @@ exports[`OareSidebar test matches snapshot 1`] = `
         </div>
       </div>
     </div>
-  </div> <button type="button" class="mb-3 test-clear-btn v-btn v-btn--contained theme--light v-size--default error"><span class="v-btn__content">Clear</span></button> <button type="button" disabled="disabled" class="mb-3 test-search-btn v-btn v-btn--contained v-btn--disabled theme--light v-size--default"><span class="v-btn__content">Search</span></button>
+  </div> <button type="button" class="mb-3 test-clear-btn v-btn v-btn--is-elevated v-btn--has-bg theme--light v-size--default error"><span class="v-btn__content">Clear</span></button> <button type="button" disabled="disabled" class="mb-3 test-search-btn v-btn v-btn--disabled v-btn--has-bg theme--light v-size--default"><span class="v-btn__content">Search</span></button>
 </div>
 `;

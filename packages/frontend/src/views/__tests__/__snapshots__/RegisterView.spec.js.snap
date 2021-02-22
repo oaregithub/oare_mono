@@ -82,11 +82,11 @@ exports[`RegisterView test matches snapshot 1`] = `
       </div>
     </div>
     <p class="subtitle error--text test-error-msg"></p>
-    <router-link-stub to="/login" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--flat v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content">
+    <router-link-stub to="/login" tag="a" activeclass="v-btn--active" exactactiveclass="v-btn--active" ariacurrentvalue="page" event="click" class="text-none v-btn v-btn--router v-btn--text theme--light v-size--default"><span class="v-btn__content">
     string
   </span></router-link-stub>
   </div>
-  <div class="v-card__actions"><button type="button" disabled="disabled" class="test-register-btn v-btn v-btn--contained v-btn--disabled theme--light v-size--default" color="primary"><span class="v-btn__content">
+  <div class="v-card__actions"><button type="button" disabled="disabled" class="test-register-btn v-btn v-btn--disabled v-btn--has-bg theme--light v-size--default" color="primary"><span class="v-btn__content">
       string
     </span></button></div>
 </div>

@@ -59,6 +59,7 @@
 import { defineComponent, PropType, ref, Ref } from '@vue/composition-api';
 import OareDialog from '../../components/base/OareDialog.vue';
 import { ErrorsRowWithUser, ErrorStatus } from '@oare/types';
+import { DateTime } from 'luxon';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -83,13 +84,9 @@ export default defineComponent({
     const statusItems: ErrorStatus[] = ['New', 'In Progress', 'Resolved'];
 
     const formatTimestamp = (timestamp: Date) => {
-      return new Date(timestamp).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      });
+      return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
+        DateTime.DATETIME_MED
+      );
     };
 
     const updateStatus = async (status: ErrorStatus) => {
