@@ -106,6 +106,7 @@
             v-if="selectAllMessage"
             :itemType="itemType"
             :serverCount="serverCount"
+            :rows="rows"
             @select-full-list="selectFullList"
           />
           <v-data-table
