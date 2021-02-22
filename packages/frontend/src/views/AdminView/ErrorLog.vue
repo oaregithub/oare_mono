@@ -4,11 +4,12 @@
       :error="dialogError"
       :key="dialogError.uuid"
       v-model="showErrorDetails"
+      @update-status="updateStatus"
     />
     <OareContentView :loading="loading" title="Error Log">
       <v-data-table
         :headers="listHeaders"
-        class="mt-3"
+        class="mt-3 table-cursor"
         item-key="uuid"
         :items="errorList"
         :options.sync="searchOptions"
@@ -18,9 +19,9 @@
         }"
         @click:row="setupDialog"
       >
-      <template #[`item.timestamp`]="{ item }">
-        <span>{{ formatTimestamp(item.timestamp) }}</span>
-      </template>
+        <template #[`item.timestamp`]="{ item }">
+          <span>{{ formatTimestamp(item.timestamp) }}</span>
+        </template>
       </v-data-table>
     </OareContentView>
   </div>
@@ -35,8 +36,8 @@ import {
   watch,
 } from '@vue/composition-api';
 import { DataTableHeader, DataOptions } from 'vuetify';
-import { ErrorsRowWithUser } from '@oare/types';
-import sl from '../../serviceLocator';
+import { ErrorsRowWithUser, ErrorStatus } from '@oare/types';
+import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import ErrorLogDialog from '@/views/AdminView/ErrorLogDialog.vue';
 
@@ -79,7 +80,10 @@ export default defineComponent({
         loading.value = true;
         await getErrorLog();
       } catch {
-        actions.showErrorSnackbar('Error retrieving error log. Please try again.', 'server.getErrorLog failed');
+        actions.showErrorSnackbar(
+          'Error retrieving error log. Please try again.',
+          'server.getErrorLog failed'
+        );
       } finally {
         loading.value = false;
       }
@@ -95,19 +99,22 @@ export default defineComponent({
     };
 
     const formatTimestamp = (timestamp: Date) => {
-      return new Date(timestamp).toLocaleString('en-US',
-        {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric'
-        });
+      return new Date(timestamp).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      });
     };
 
     const setupDialog = (error: ErrorsRowWithUser) => {
       dialogError.value = error;
       showErrorDetails.value = true;
+    };
+
+    const updateStatus = (status: ErrorStatus) => {
+      dialogError.value.status = status;
     };
 
     watch(searchOptions, async () => {
@@ -136,9 +143,14 @@ export default defineComponent({
       formatTimestamp,
       dialogError,
       setupDialog,
+      updateStatus,
     };
   },
 });
 </script>
 
-<style></style>
+<style scoped>
+.table-cursor >>> tbody tr:hover {
+  cursor: pointer;
+}
+</style>

@@ -2,8 +2,8 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
+import sl from '@/serviceLocator';
 import ErrorLog from '../ErrorLog.vue';
-import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();

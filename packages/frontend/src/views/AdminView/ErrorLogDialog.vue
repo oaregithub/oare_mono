@@ -19,6 +19,7 @@
             :items="statusItems"
             :label="error.status"
             @input="updateStatus"
+            class="test-status"
           ></v-select>
         </div>
       </v-row>
@@ -26,7 +27,7 @@
       <v-row class="py-2">
         <div>
           <h3>User</h3>
-          <span>{{ error.user_uuid }}</span>
+          <span class="test-user-name">{{ error.userName }}</span>
         </div>
       </v-row>
 
@@ -40,14 +41,14 @@
       <v-row class="py-2">
         <div>
           <h3>Description</h3>
-          <span>{{ error.description }}</span>
+          <span class="test-description">{{ error.description }}</span>
         </div>
       </v-row>
 
       <v-row class="py-2" v-if="error.stacktrace">
         <div>
           <h3>Stacktrace</h3>
-          <span>{{ error.stacktrace }}</span>
+          <span class="test-stacktrace">{{ error.stacktrace }}</span>
         </div>
       </v-row>
     </v-container>
@@ -75,7 +76,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ error }) {
+  setup({ error }, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
@@ -93,7 +94,7 @@ export default defineComponent({
 
     const updateStatus = async (status: ErrorStatus) => {
       try {
-        error.status = status;
+        emit('update-status', status);
         await server.updateErrorStatus({
           uuid: error.uuid,
           status: error.status,
