@@ -100,13 +100,18 @@ export default class TabletRenderer {
     return lineReadings.join('\n');
   }
 
+  public isRegion(lineNum: number): boolean {
+    const unitsOnLine = this.getUnitsOnLine(lineNum);
+    return unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region';
+  }
+
   /**
    * Return the epigraphic reading at a specific line number
    */
   public lineReading(lineNum: number): string {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
 
-    if (unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region') {
+    if (this.isRegion(lineNum)) {
       return regionReading(unitsOnLine[0]);
     }
 

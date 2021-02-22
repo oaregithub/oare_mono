@@ -149,7 +149,7 @@ export function regionReading(unit: EpigraphicUnit): string {
     }
 
     if (markupType === 'ruling') {
-      return `${markupValue} ${'-'.repeat(15)}`;
+      return '-'.repeat(12);
     }
 
     if (markupType === 'isStampSealImpression') {
