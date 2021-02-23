@@ -4,11 +4,13 @@ import {
   EpigraphicUnitSide,
   EpigraphicUnitWithMarkup,
 } from '@oare/types';
+import _ from 'lodash';
 
 import {
   getMarkupByDamageType,
   unitMatchesDamageType,
   convertMarkedUpUnitsToLineReading,
+  regionReading,
 } from './tabletUtils';
 
 export default class TabletRenderer {
@@ -30,7 +32,36 @@ export default class TabletRenderer {
   ) {
     this.epigraphicUnits = epigraphicUnits;
     this.markupUnits = markupUnits;
+    this.addLineNumbersToRegions();
     this.attachMarkupsToEpigraphicUnits();
+  }
+
+  private addLineNumbersToRegions() {
+    this.epigraphicUnits = this.epigraphicUnits.reduce<EpigraphicUnit[]>(
+      (newUnits, unit) => {
+        if (unit.epigType === 'region') {
+          const { objOnTablet } = unit;
+          // Find line before this one
+          const prevUnitIdx = _.findLastIndex(
+            newUnits,
+            backUnit =>
+              backUnit.line !== null && backUnit.objOnTablet < objOnTablet
+          );
+          const objLine =
+            prevUnitIdx === -1 ? 0.1 : newUnits[prevUnitIdx].line + 0.1;
+          return [
+            ...newUnits,
+            {
+              ...unit,
+              line: objLine,
+            },
+          ];
+        }
+
+        return [...newUnits, unit];
+      },
+      []
+    );
   }
 
   public tabletReading(): string {
@@ -69,11 +100,21 @@ export default class TabletRenderer {
     return lineReadings.join('\n');
   }
 
+  public isRegion(lineNum: number): boolean {
+    const unitsOnLine = this.getUnitsOnLine(lineNum);
+    return unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region';
+  }
+
   /**
    * Return the epigraphic reading at a specific line number
    */
-  public lineReading(lineNum: number) {
+  public lineReading(lineNum: number): string {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
+
+    if (this.isRegion(lineNum)) {
+      return regionReading(unitsOnLine[0]);
+    }
+
     const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
     return convertMarkedUpUnitsToLineReading(charactersWithMarkup);
   }
@@ -85,13 +126,13 @@ export default class TabletRenderer {
   private getUnitsOnLine(lineNum: number) {
     return this.epigraphicUnits
       .filter(item => item.line === lineNum)
-      .sort((a, b) => a.charOnTablet - b.charOnTablet);
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
   }
 
   public linesOnSide(side: EpigraphicUnitSide): number[] {
     const unitsOnSide = this.epigraphicUnits
       .filter(unit => unit.side === side)
-      .sort((a, b) => a.charOnTablet - b.charOnTablet);
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
 
     const lines: number[] = [];
     unitsOnSide.forEach(({ line }) => {
@@ -109,7 +150,7 @@ export default class TabletRenderer {
   private attachMarkupsToEpigraphicUnits() {
     const markupMap = this.getMarkupReferenceMap();
     this.epigraphicUnits = this.epigraphicUnits
-      .sort((a, b) => a.charOnTablet - b.charOnTablet)
+      .sort((a, b) => a.objOnTablet - b.objOnTablet)
       .map(epigraphy => {
         const markedEpig: EpigraphicUnit = {
           ...epigraphy,
@@ -151,8 +192,11 @@ export default class TabletRenderer {
     epigUnits: EpigraphicUnit[]
   ): EpigraphicUnitWithMarkup[] {
     return epigUnits.map(unit => ({
-      type: unit.type || 'phonogram',
-      reading: this.markedUpEpigraphicReading(unit),
+      type: unit.epigType === 'region' ? null : unit.type || 'phonogram',
+      reading:
+        unit.epigType === 'region'
+          ? unit.reading || ''
+          : this.markedUpEpigraphicReading(unit),
       discourseUuid: unit.discourseUuid,
     }));
   }

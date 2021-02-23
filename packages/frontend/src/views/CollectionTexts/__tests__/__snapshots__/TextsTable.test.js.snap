@@ -8,7 +8,7 @@ Object {
     />
     <div>
       <div
-        class="v-data-table theme--light"
+        class="v-data-table v-data-table--has-bottom theme--light"
       >
         <div
           class="v-data-table__wrapper"
@@ -103,7 +103,7 @@ Object {
                         10
                       </div>
                       <input
-                        aria-label="$vuetify.dataTable.itemsPerPageText"
+                        aria-label="Rows per page:"
                         aria-readonly="false"
                         autocomplete="off"
                         id="input-10"
@@ -147,7 +147,7 @@ Object {
           >
             <button
               aria-label="Previous page"
-              class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+              class="v-btn v-btn--disabled v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
               disabled="disabled"
               type="button"
             >
@@ -166,7 +166,7 @@ Object {
           >
             <button
               aria-label="Next page"
-              class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+              class="v-btn v-btn--disabled v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
               disabled="disabled"
               type="button"
             >
@@ -186,7 +186,7 @@ Object {
   </body>,
   "container": <div>
     <div
-      class="v-data-table theme--light"
+      class="v-data-table v-data-table--has-bottom theme--light"
     >
       <div
         class="v-data-table__wrapper"
@@ -281,7 +281,7 @@ Object {
                       10
                     </div>
                     <input
-                      aria-label="$vuetify.dataTable.itemsPerPageText"
+                      aria-label="Rows per page:"
                       aria-readonly="false"
                       autocomplete="off"
                       id="input-10"
@@ -325,7 +325,7 @@ Object {
         >
           <button
             aria-label="Previous page"
-            class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+            class="v-btn v-btn--disabled v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
             disabled="disabled"
             type="button"
           >
@@ -344,7 +344,7 @@ Object {
         >
           <button
             aria-label="Next page"
-            class="v-btn v-btn--disabled v-btn--flat v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
+            class="v-btn v-btn--disabled v-btn--icon v-btn--round v-btn--text theme--light v-size--default"
             disabled="disabled"
             type="button"
           >
