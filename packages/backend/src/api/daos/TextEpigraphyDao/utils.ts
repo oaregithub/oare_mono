@@ -55,20 +55,18 @@ function mapSideNumberToSideName(side: number): EpigraphicUnitSide {
 export function convertEpigraphicUnitRows(
   units: EpigraphicQueryRow[]
 ): EpigraphicUnit[] {
-  return units
-    .map(unit => {
-      const mappedUnit: EpigraphicUnit = {
-        ...unit,
-        side: mapSideNumberToSideName(unit.side),
-      };
-      if (unit.reading === null) {
-        mappedUnit.reading = unit.epigReading;
-      } else if (mappedUnit.reading !== mappedUnit.value) {
-        mappedUnit.reading = unit.value;
-        mappedUnit.type = 'number';
-      }
+  return units.map(unit => {
+    const mappedUnit: EpigraphicUnit = {
+      ...unit,
+      side: mapSideNumberToSideName(unit.side),
+    };
+    if (unit.reading === null) {
+      mappedUnit.reading = unit.epigReading;
+    } else if (mappedUnit.reading !== mappedUnit.value) {
+      mappedUnit.reading = unit.value;
+      mappedUnit.type = 'number';
+    }
 
-      return mappedUnit;
-    })
-    .filter(item => item.charOnTablet !== null);
+    return mappedUnit;
+  });
 }
