@@ -19,3 +19,12 @@ export interface UpdateErrorStatusPayload {
   uuid: string;
   status: ErrorStatus;
 }
+
+export interface ErrorsResponse {
+  errors: ErrorsRowWithUser[];
+  count: number;
+}
+
+export interface ErrorsRowWithUser extends ErrorsRow {
+  userName: string;
+}
