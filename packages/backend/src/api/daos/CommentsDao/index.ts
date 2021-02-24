@@ -53,7 +53,7 @@ class CommentsDao {
         'comments.user_uuid AS userUuid',
         'comments.created_at AS createdAt',
         'comments.deleted',
-        'comments.comment AS text',
+        'comments.comment AS text'
       )
       .where('comments.user_uuid', userUuid)
       .orderBy('comments.created_at')

@@ -16,7 +16,7 @@ describe('comments api test', () => {
       userLastName: 'last',
     },
   ];
-  const commentsGetAllGroupedByThead= [
+  const commentsGetAllGroupedByThead = [
     {
       uuid: 'string',
       threadUuid: 'string',
@@ -29,7 +29,9 @@ describe('comments api test', () => {
   const MockCommentsDao = {
     getAllByThreadUuid: jest.fn().mockResolvedValue(commentsGetAllByThreadUuid),
     insert: jest.fn().mockResolvedValue(''),
-    getAllByUserUuidGroupedByThread: jest.fn().mockResolvedValue(commentsGetAllGroupedByThead)
+    getAllByUserUuidGroupedByThread: jest
+      .fn()
+      .mockResolvedValue(commentsGetAllGroupedByThead),
   };
 
   const threadsGetByReferenceUuid = [
@@ -45,7 +47,7 @@ describe('comments api test', () => {
     referenceUuid: 'string',
     status: 'New',
     route: 'route',
-  }
+  };
 
   const threadWord = 'threadWord';
 
@@ -321,7 +323,9 @@ describe('comments api test', () => {
         ...MockCommentsDao,
         getAllByUserUuidGroupedByThread: jest
           .fn()
-          .mockRejectedValue('Error when getting comments by userUuid, grouped by thread.'),
+          .mockRejectedValue(
+            'Error when getting comments by userUuid, grouped by thread.'
+          ),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
@@ -330,7 +334,9 @@ describe('comments api test', () => {
     it('returns 500 when ThreadsDao.getByUuid throws an error.', async () => {
       sl.set('ThreadsDao', {
         ...MockThreadsDao,
-        getByUuid: jest.fn().mockRejectedValue('Error when getting thread by its uuid.'),
+        getByUuid: jest
+          .fn()
+          .mockRejectedValue('Error when getting thread by its uuid.'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
@@ -348,7 +354,11 @@ describe('comments api test', () => {
     it('returns 500 when ThreadsDao.getThreadWord throws an error.', async () => {
       sl.set('ThreadsDao', {
         ...MockThreadsDao,
-        getThreadWord: jest.fn().mockRejectedValue('Error when retrieving word/form/spelling associated with thread.'),
+        getThreadWord: jest
+          .fn()
+          .mockRejectedValue(
+            'Error when retrieving word/form/spelling associated with thread.'
+          ),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);

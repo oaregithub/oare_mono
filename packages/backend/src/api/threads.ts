@@ -8,7 +8,6 @@ import {
   Comment,
   ThreadStatus,
   ThreadDisplay,
-
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -96,36 +95,42 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
   }
 });
 
-router.route('/threads/user/:userUuid').get(authenticatedRoute, async (req, res, next) => {
-  try {
-    const { userUuid } = req.params;
-    const threadsDao = sl.get('ThreadsDao');
-    const commentsDao = sl.get('CommentsDao');
+router
+  .route('/threads/user/:userUuid')
+  .get(authenticatedRoute, async (req, res, next) => {
+    try {
+      const { userUuid } = req.params;
+      const threadsDao = sl.get('ThreadsDao');
+      const commentsDao = sl.get('CommentsDao');
 
-    const comments = await commentsDao.getAllByUserUuidGroupedByThread(userUuid);
+      const comments = await commentsDao.getAllByUserUuidGroupedByThread(
+        userUuid
+      );
 
-    const results: ThreadDisplay[] = await Promise.all(
-      comments.map(async (comment) => {
-        const thread = await threadsDao.getByUuid(comment.threadUuid);
-        const threadWord = await threadsDao.getThreadWord(comment.threadUuid);
+      const results: ThreadDisplay[] = await Promise.all(
+        comments.map(async comment => {
+          const thread = await threadsDao.getByUuid(comment.threadUuid);
+          const threadWord = await threadsDao.getThreadWord(comment.threadUuid);
 
-        if (thread === null || threadWord === null) {
-          throw new HttpInternalError('Unable to retrieve thread for specific user');
-        }
-        return {
-          uuid: thread.uuid,
-          word: threadWord,
-          status: thread.status,
-          route: thread.route,
-          latestComment: comment.text,
-        } as ThreadDisplay;
-      }),
-    );
+          if (thread === null || threadWord === null) {
+            throw new HttpInternalError(
+              'Unable to retrieve thread for specific user'
+            );
+          }
+          return {
+            uuid: thread.uuid,
+            word: threadWord,
+            status: thread.status,
+            route: thread.route,
+            latestComment: comment.text,
+          } as ThreadDisplay;
+        })
+      );
 
-    res.json(results);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      res.json(results);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;

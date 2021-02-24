@@ -58,11 +58,23 @@ class ThreadsDao {
       .first(
         'dictionary_word.word AS word',
         'dictionary_form.form AS form',
-        'dictionary_spelling.spelling AS spelling',
+        'dictionary_spelling.spelling AS spelling'
       )
-      .leftJoin('dictionary_word', 'threads.reference_uuid', 'dictionary_word.uuid')
-      .leftJoin('dictionary_form', 'threads.reference_uuid', 'dictionary_form.uuid')
-      .leftJoin('dictionary_spelling', 'threads.reference_uuid', 'dictionary_spelling.uuid')
+      .leftJoin(
+        'dictionary_word',
+        'threads.reference_uuid',
+        'dictionary_word.uuid'
+      )
+      .leftJoin(
+        'dictionary_form',
+        'threads.reference_uuid',
+        'dictionary_form.uuid'
+      )
+      .leftJoin(
+        'dictionary_spelling',
+        'threads.reference_uuid',
+        'dictionary_spelling.uuid'
+      )
       .where('threads.uuid', uuid);
 
     let word = null;
