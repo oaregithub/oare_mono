@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'SelectAllMessage',
@@ -30,8 +30,12 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+    rows: {
+      type: String,
+      required: true,
+    },
   },
-  setup({ itemType }, { emit }) {
+  setup(_props, { emit }) {
     const emitSelectAll = () => emit('select-full-list');
 
     return {

@@ -12,7 +12,7 @@ Object {
           class="fixed"
         >
           <router-link-stub
-            class="mr-2 mb-2 v-btn v-btn--contained v-btn--fab v-btn--round v-btn--router theme--light v-size--small primary"
+            class="mr-2 mb-2 v-btn v-btn--is-elevated v-btn--fab v-btn--has-bg v-btn--round v-btn--router theme--light v-size--small primary"
           >
             <span
               class="v-btn__content"
@@ -21,7 +21,7 @@ Object {
             </span>
           </router-link-stub>
           <router-link-stub
-            class="mr-2 mb-2 v-btn v-btn--contained v-btn--fab v-btn--round v-btn--router theme--light v-size--small primary"
+            class="mr-2 mb-2 v-btn v-btn--is-elevated v-btn--fab v-btn--has-bg v-btn--round v-btn--router theme--light v-size--small primary"
           >
             <span
               class="v-btn__content"
@@ -30,7 +30,7 @@ Object {
             </span>
           </router-link-stub>
           <router-link-stub
-            class="mr-2 mb-2 v-btn v-btn--contained v-btn--fab v-btn--round v-btn--router theme--light v-size--small primary"
+            class="mr-2 mb-2 v-btn v-btn--is-elevated v-btn--fab v-btn--has-bg v-btn--round v-btn--router theme--light v-size--small primary"
           >
             <span
               class="v-btn__content"
@@ -97,7 +97,7 @@ Object {
         class="fixed"
       >
         <router-link-stub
-          class="mr-2 mb-2 v-btn v-btn--contained v-btn--fab v-btn--round v-btn--router theme--light v-size--small primary"
+          class="mr-2 mb-2 v-btn v-btn--is-elevated v-btn--fab v-btn--has-bg v-btn--round v-btn--router theme--light v-size--small primary"
         >
           <span
             class="v-btn__content"
@@ -106,7 +106,7 @@ Object {
           </span>
         </router-link-stub>
         <router-link-stub
-          class="mr-2 mb-2 v-btn v-btn--contained v-btn--fab v-btn--round v-btn--router theme--light v-size--small primary"
+          class="mr-2 mb-2 v-btn v-btn--is-elevated v-btn--fab v-btn--has-bg v-btn--round v-btn--router theme--light v-size--small primary"
         >
           <span
             class="v-btn__content"
@@ -115,7 +115,7 @@ Object {
           </span>
         </router-link-stub>
         <router-link-stub
-          class="mr-2 mb-2 v-btn v-btn--contained v-btn--fab v-btn--round v-btn--router theme--light v-size--small primary"
+          class="mr-2 mb-2 v-btn v-btn--is-elevated v-btn--fab v-btn--has-bg v-btn--round v-btn--router theme--light v-size--small primary"
         >
           <span
             class="v-btn__content"

@@ -25,6 +25,10 @@ export default defineComponent({
           label: 'Public Blacklist',
           path: '/admin/blacklist/texts',
         },
+        {
+          label: 'Error Log',
+          path: '/admin/errors',
+        },
       ],
     });
 
