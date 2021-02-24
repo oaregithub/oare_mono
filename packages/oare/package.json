@@ -16,6 +16,7 @@
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "axios": "^0.19.2",
+    "babel-jest": "^26.6.3",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
@@ -27,9 +28,9 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "@oare/types": "^1.0.0",
     "@types/node": "^13.11.0",
-    "jison": "git+https://github.com/oaregithub/jison.git",
-    "@oare/types": "^1.0.0"
+    "jison": "git+https://github.com/oaregithub/jison.git"
   },
   "files": [
     "build"

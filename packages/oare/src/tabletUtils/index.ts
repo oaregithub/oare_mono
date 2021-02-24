@@ -76,8 +76,8 @@ export function separateEpigraphicUnitsByWord(
 }
 
 export function getEpigraphicSeparator(
-  type1: EpigraphicUnitType,
-  type2: EpigraphicUnitType
+  type1: EpigraphicUnitType | null,
+  type2: EpigraphicUnitType | null
 ): string {
   if (type1 === 'determinative' || type2 === 'determinative') {
     return '';
@@ -108,6 +108,58 @@ export function epigraphicWordWithSeparators(
     }
   });
   return wordWithSeparators;
+}
+
+export function regionReading(unit: EpigraphicUnit): string {
+  if (unit.markups) {
+    // Sort isSealImpression to the top. It's the only region
+    // type that can have multiple markups
+    unit.markups.sort((a, b) => {
+      if (a.type === 'isSealImpression') {
+        return -1;
+      }
+      if (b.type === 'isSealImpression') {
+        return 1;
+      }
+      return 0;
+    });
+
+    const { type: markupType, value: markupValue } = unit.markups[0];
+    const { reading } = unit;
+
+    if (markupType === 'isSealImpression') {
+      if (reading === null) {
+        return 'Seal Impression';
+      }
+      return `Seal Impression ${reading}`;
+    }
+
+    if (markupType === 'broken') {
+      return 'broken';
+    }
+
+    if (markupType === 'uninscribed') {
+      if (markupValue === null) {
+        return 'uninscribed';
+      }
+      if (markupValue === 1) {
+        return '1 uninscribed line';
+      }
+      return `${markupValue} uninscribed lines`;
+    }
+
+    if (markupType === 'ruling') {
+      return '-'.repeat(12);
+    }
+
+    if (markupType === 'isStampSealImpression') {
+      const valueReading = `(${markupValue})`;
+      return `Stamp Seal Impression ${reading || ''} ${
+        markupValue !== null ? valueReading : ''
+      }`.trim();
+    }
+  }
+  return '';
 }
 
 export function convertMarkedUpUnitsToLineReading(

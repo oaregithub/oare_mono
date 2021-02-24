@@ -43,6 +43,7 @@ class TextEpigraphyDao {
         'text_epigraphy.char_on_tablet AS charOnTablet',
         'text_epigraphy.discourse_uuid AS discourseUuid',
         'text_epigraphy.object_on_tablet AS objOnTablet',
+        'text_epigraphy.type AS epigType',
         'sign_reading.reading',
         'sign_reading.type',
         'sign_reading.value'
