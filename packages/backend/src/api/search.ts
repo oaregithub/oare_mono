@@ -6,6 +6,7 @@ import {
   SearchDiscourseSpellingRow,
   SearchDiscourseSpellingResponse,
 } from '@oare/types';
+import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
@@ -74,6 +75,7 @@ router.route('/search').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDao = sl.get('TextDao');
+    const TextMarkupDao = sl.get('TextMarkupDao');
 
     const {
       page,
@@ -84,33 +86,37 @@ router.route('/search').get(async (req, res, next) => {
     const characters = charsPayload || [];
     const user = req.user || null;
 
-    const totalRows = await TextEpigraphyDao.searchTextsTotal({
-      characters,
-      title,
-    });
-
-    const textMatches = await TextEpigraphyDao.searchTexts({
-      characters,
-      pagination: { limit: rows, page },
-      title,
-      userUuid: user ? user.uuid : null,
-    });
+    const [totalRows, textMatches] = await Promise.all([
+      TextEpigraphyDao.searchTextsTotal({
+        characters,
+        title,
+      }),
+      TextEpigraphyDao.searchTexts({
+        characters,
+        pagination: { limit: rows, page },
+        title,
+        userUuid: user ? user.uuid : null,
+      }),
+    ]);
 
     const texts = await Promise.all(
       textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
     );
 
     const lineReadings = await Promise.all(
-      textMatches.map(({ uuid, lines }) =>
-        Promise.all(
-          lines.map(line =>
-            TextEpigraphyDao.getMarkedUpLineReading(uuid, line, {
-              lineNumbers: true,
-              textFormat: 'html',
-            })
-          )
-        )
-      )
+      textMatches.map(async ({ uuid, lines }) => {
+        const [epigraphicUnits, markupUnits] = await Promise.all([
+          TextEpigraphyDao.getEpigraphicUnits(uuid),
+          TextMarkupDao.getMarkups(uuid),
+        ]);
+
+        const renderer = createTabletRenderer(epigraphicUnits, markupUnits, {
+          textFormat: 'html',
+          lineNumbers: true,
+        });
+
+        return lines.map(line => renderer.lineReading(line));
+      })
     );
 
     const response: SearchTextsResponse = {

@@ -1,22 +1,12 @@
 import _ from 'lodash';
-import {
-  EpigraphicUnit,
-  Pagination,
-  CreateTabletRendererOptions,
-} from '@oare/types';
+import { EpigraphicUnit, Pagination } from '@oare/types';
 import knex from '@/connection';
-import { createTabletRenderer } from '@oare/oare';
-import TextMarkupDao from '../TextMarkupDao';
 import {
   getSearchQuery,
   convertEpigraphicUnitRows,
   getSequentialCharacterQuery,
 } from './utils';
 
-export interface EpigraphyReadingRow {
-  reading: string;
-  line: number;
-}
 export interface EpigraphicQueryRow extends Omit<EpigraphicUnit, 'side'> {
   side: number;
   epigReading: string;
@@ -27,12 +17,12 @@ export interface GetEpigraphicUnitsOptions {
   maxLine?: number;
 }
 
-export interface NewSearchTextsResponse {
+export interface TextUuidWithLines {
   uuid: string;
   lines: number[];
 }
 
-export interface NewSearchTextsArgs {
+export interface SearchTextArgs {
   characters: string[];
   title: string;
   userUuid: string | null;
@@ -85,31 +75,11 @@ class TextEpigraphyDao {
     return convertEpigraphicUnitRows(units);
   }
 
-  async getMarkedUpLineReading(
-    textUuid: string,
-    line: number,
-    options?: CreateTabletRendererOptions
-  ): Promise<string> {
-    const epigraphicUnits = await this.getEpigraphicUnits(textUuid, {
-      maxLine: line,
-      minLine: line,
-    });
-
-    const markupUnits = await TextMarkupDao.getMarkups(textUuid, line);
-
-    const renderer = createTabletRenderer(
-      epigraphicUnits,
-      markupUnits,
-      options
-    );
-    return renderer.lineReading(line);
-  }
-
   private async getMatchingTexts({
     characters,
     title,
     pagination,
-  }: NewSearchTextsArgs): Promise<string[]> {
+  }: SearchTextArgs): Promise<string[]> {
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
       title
@@ -136,9 +106,7 @@ class TextEpigraphyDao {
     return rows.map(({ line }) => line);
   }
 
-  async searchTexts(
-    args: NewSearchTextsArgs
-  ): Promise<NewSearchTextsResponse[]> {
+  async searchTexts(args: SearchTextArgs): Promise<TextUuidWithLines[]> {
     // List of text UUIDs matching the search
     const textUuids = await this.getMatchingTexts(args);
 
@@ -156,7 +124,7 @@ class TextEpigraphyDao {
   async searchTextsTotal({
     characters,
     title,
-  }: Pick<NewSearchTextsArgs, 'characters' | 'title'>): Promise<number> {
+  }: Pick<SearchTextArgs, 'characters' | 'title'>): Promise<number> {
     const totalRows: number = (
       await getSearchQuery(characters, title)
         .select(knex.raw('COUNT(DISTINCT text_epigraphy.text_uuid) AS count'))

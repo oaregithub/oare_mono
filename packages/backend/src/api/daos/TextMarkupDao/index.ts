@@ -21,8 +21,28 @@ class TextMarkupDao {
     if (typeof line !== 'undefined') {
       query = query.andWhere('text_epigraphy.line', line);
     }
-    const rows: MarkupUnit[] = await query;
-    return rows;
+
+    let markups: MarkupUnit[] = await query;
+    const refTypes: { [key: string]: Set<string> } = {};
+    markups = markups.filter(markup => {
+      if (refTypes[markup.referenceUuid]) {
+        if (refTypes[markup.referenceUuid].has(markup.type)) {
+          return false;
+        }
+      } else {
+        refTypes[markup.referenceUuid] = new Set();
+      }
+
+      refTypes[markup.referenceUuid].add(markup.type);
+      return true;
+    });
+    markups.sort(a => {
+      if (a.type === 'damage' || a.type === 'partialDamage') {
+        return -1;
+      }
+      return 0;
+    });
+    return markups;
   }
 }
 
