@@ -5,9 +5,9 @@ import {
   UpdateErrorStatusPayload,
   ErrorsResponse,
   ErrorsRowWithUser,
+  GetErrorsPayload,
 } from '@oare/types';
 import { v4 } from 'uuid';
-import sl from '@/serviceLocator';
 
 export interface InsertErrorsRow {
   userUuid: string | null;
@@ -37,39 +37,49 @@ class ErrorsDao {
     await knex('errors').insert(insertRow);
   }
 
-  async getErrorLog(page: number, limit: number): Promise<ErrorsResponse> {
-    const UserDao = sl.get('UserDao');
-    const response: ErrorsRow[] = await knex('errors')
-      .select(
-        'uuid',
-        'user_uuid',
-        'description',
-        'stacktrace',
-        'timestamp',
-        'status'
-      )
-      .orderBy('errors.timestamp', 'desc')
-      .limit(limit)
-      .offset((page - 1) * limit);
+  async getErrorLog(payload: GetErrorsPayload): Promise<ErrorsResponse> {
+    function baseQuery() {
+      return knex('errors')
+        .select(
+          'errors.uuid',
+          'errors.user_uuid',
+          'errors.description',
+          'errors.stacktrace',
+          'errors.timestamp',
+          'errors.status',
+          knex.raw('CONCAT(user.first_name, " ", user.last_name) AS userName')
+        )
+        .leftJoin('user', 'user.uuid', 'errors.user_uuid')
+        .where('errors.status', 'like', `%${payload.filters.status}%`)
+        .modify(qb => {
+          if (payload.filters.user !== '') {
+            qb.where(
+              knex.raw('CONCAT(user.first_name, " ", user.last_name)'),
+              'like',
+              `%${payload.filters.user}%`
+            );
+          }
+        })
+        .where('errors.description', 'like', `%${payload.filters.description}%`)
+        .modify(qb => {
+          if (payload.filters.stacktrace !== '') {
+            qb.where(
+              'errors.stacktrace',
+              'like',
+              `%${payload.filters.stacktrace}%`
+            );
+          }
+        });
+    }
 
-    const users = await Promise.all(
-      response.map(row =>
-        row.user_uuid ? UserDao.getUserByUuid(row.user_uuid) : null
-      )
-    );
+    const errors: ErrorsRowWithUser[] = await baseQuery()
+      .orderBy(payload.sort.type, payload.sort.direction)
+      .limit(payload.pagination.limit)
+      .offset((payload.pagination.page - 1) * payload.pagination.limit);
 
-    const userNames = users.map(row =>
-      row ? `${row.firstName} ${row.lastName}` : 'No User'
-    );
-
-    const errors: ErrorsRowWithUser[] = response.map((row, index) => ({
-      ...row,
-      userName: userNames[index],
-    }));
-
-    const totalItems = await knex('errors')
+    const totalItems = await baseQuery()
       .count({
-        count: knex.raw('distinct uuid'),
+        count: knex.raw('distinct errors.uuid'),
       })
       .first();
     let count = 0;

@@ -1,5 +1,9 @@
 import express from 'express';
-import { ErrorsPayload, UpdateErrorStatusPayload } from '@oare/types';
+import {
+  ErrorsPayload,
+  GetErrorsPayload,
+  UpdateErrorStatusPayload,
+} from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '../middlewares/adminRoute';
@@ -34,11 +38,11 @@ router
   .get(adminRoute, async (req, res, next) => {
     try {
       const ErrorsDao = sl.get('ErrorsDao');
-      const utils = sl.get('utils');
 
-      const { page, limit } = utils.extractPagination(req.query);
+      const payloadString = (req.query.payload as unknown) as string;
+      const payload: GetErrorsPayload = JSON.parse(payloadString);
 
-      const response = await ErrorsDao.getErrorLog(page, limit);
+      const response = await ErrorsDao.getErrorLog(payload);
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
