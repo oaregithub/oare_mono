@@ -34,6 +34,7 @@ import LandingPage from '../views/LandingPage.vue';
 import WordsView from '../views/WordsView/index.vue';
 import NamesView from '../views/NamesView/index.vue';
 import PlacesView from '../views/PlacesView/index.vue';
+import ErrorLog from '../views/AdminView/ErrorLog.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -65,6 +66,11 @@ const routes: RouteConfig[] = [
         component: BlacklistCollections,
       },
     ],
+  },
+  {
+    path: '/admin/errors',
+    name: 'adminErrors',
+    component: ErrorLog,
   },
   {
     path: '/addblacklist/texts',
