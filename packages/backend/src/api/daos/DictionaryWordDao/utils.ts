@@ -8,13 +8,15 @@ import {
   GrammarInfoResult,
 } from './index';
 
-export function nestedFormsAndSpellings(flatNames: NamePlaceQueryRow[]): NameOrPlace[] {
+export function nestedFormsAndSpellings(
+  flatNames: NamePlaceQueryRow[]
+): NameOrPlace[] {
   const wordList = getWordList(flatNames);
   const allNames: NameOrPlace[] = [];
 
   // Insert forms into list with each word
-  wordList.forEach((word) => {
-    const names = flatNames.filter((nameInfo) => nameInfo.word === word);
+  wordList.forEach(word => {
+    const names = flatNames.filter(nameInfo => nameInfo.word === word);
     allNames.push(getNestedNameInfo(names));
   });
 
@@ -32,7 +34,7 @@ export function nestedFormsAndSpellings(flatNames: NamePlaceQueryRow[]): NameOrP
 
 function getWordList(flatNames: NamePlaceQueryRow[]): string[] {
   const wordList = new Set<string>();
-  flatNames.forEach((nameInfo) => {
+  flatNames.forEach(nameInfo => {
     wordList.add(nameInfo.word);
   });
 
@@ -64,13 +66,19 @@ function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NameOrPlace {
 }
 
 export function prepareWords(words: WordQueryRow[]): WordQueryResultRow[] {
-  const wordsWithLists = words.map((wordInfo) => ({
+  const wordsWithLists = words.map(wordInfo => ({
     ...wordInfo,
-    partsOfSpeech: wordInfo.partsOfSpeech ? wordInfo.partsOfSpeech.split(',') : [],
-    verbalThematicVowelTypes: wordInfo.verbalThematicVowelTypes
-      ? wordInfo.verbalThematicVowelTypes.split(',').map((vowelType) => vowelType.replace('-Class', ''))
+    partsOfSpeech: wordInfo.partsOfSpeech
+      ? wordInfo.partsOfSpeech.split(',')
       : [],
-    specialClassifications: wordInfo.specialClassifications ? wordInfo.specialClassifications.split(',') : [],
+    verbalThematicVowelTypes: wordInfo.verbalThematicVowelTypes
+      ? wordInfo.verbalThematicVowelTypes
+          .split(',')
+          .map(vowelType => vowelType.replace('-Class', ''))
+      : [],
+    specialClassifications: wordInfo.specialClassifications
+      ? wordInfo.specialClassifications.split(',')
+      : [],
   }));
   wordsWithLists.sort((a, b) => {
     if (a.word.toLowerCase() < b.word.toLowerCase()) {
@@ -87,7 +95,7 @@ export function prepareWords(words: WordQueryRow[]): WordQueryResultRow[] {
 
 function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   const wordMap: { [key: string]: SearchWordsQueryRow[] } = {};
-  wordRows.forEach((row) => {
+  wordRows.forEach(row => {
     if (row.uuid && !wordMap[row.uuid]) {
       wordMap[row.uuid] = [];
     }
@@ -96,21 +104,24 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   return wordMap;
 }
 
-export function assembleSearchResult(rows: SearchWordsQueryRow[], search: string): DictionarySearchRow[] {
+export function assembleSearchResult(
+  rows: SearchWordsQueryRow[],
+  search: string
+): DictionarySearchRow[] {
   const lowerSearch = search.toLowerCase();
   const wordMap = mapWordsToRows(rows);
 
   const searchResults: DictionarySearchRow[] = [];
-  Object.values(wordMap).forEach((wordRows) => {
+  Object.values(wordMap).forEach(wordRows => {
     const { uuid, type, name, translations } = wordRows[0];
     const matches: string[] = [];
 
-    wordRows.forEach((wordRow) => {
+    wordRows.forEach(wordRow => {
       const { form, spellings } = wordRow;
       const spellingsList = spellings ? spellings.split(', ') : [];
       if (
         (form && form.toLowerCase().includes(lowerSearch)) ||
-        spellingsList.some((s) => s.toLowerCase().includes(lowerSearch))
+        spellingsList.some(s => s.toLowerCase().includes(lowerSearch))
       ) {
         const spelling = spellings ? `: ${spellings}` : '';
         matches.push(`${form}: ${spelling}`);
@@ -118,7 +129,9 @@ export function assembleSearchResult(rows: SearchWordsQueryRow[], search: string
     });
 
     const matchingTranslations = translations
-      ? translations.split(';').filter((tr) => tr.toLowerCase().includes(lowerSearch))
+      ? translations
+          .split(';')
+          .filter(tr => tr.toLowerCase().includes(lowerSearch))
       : [];
     searchResults.push({
       uuid,
@@ -141,8 +154,12 @@ export function assembleSearchResult(rows: SearchWordsQueryRow[], search: string
   return searchResults;
 }
 
-function getVariables(value: string, grammarRows: GrammarInfoRow[], abbreviation = true): string[] {
-  const valueRow = grammarRows.find((row) => row.value === value);
+function getVariables(
+  value: string,
+  grammarRows: GrammarInfoRow[],
+  abbreviation = true
+): string[] {
+  const valueRow = grammarRows.find(row => row.value === value);
   if (!valueRow) {
     return [];
   }
@@ -153,8 +170,12 @@ function getVariables(value: string, grammarRows: GrammarInfoRow[], abbreviation
   return valueRow.variableNames ? valueRow.variableNames.split(';') : [];
 }
 
-export function assembleGrammarInfoResult(grammarRows: GrammarInfoRow[]): GrammarInfoResult {
-  const translations = grammarRows[0].translations ? grammarRows[0].translations.split('#!') : [];
+export function assembleGrammarInfoResult(
+  grammarRows: GrammarInfoRow[]
+): GrammarInfoResult {
+  const translations = grammarRows[0].translations
+    ? grammarRows[0].translations.split('#!')
+    : [];
 
   return {
     uuid: grammarRows[0].uuid,
@@ -165,8 +186,15 @@ export function assembleGrammarInfoResult(grammarRows: GrammarInfoRow[]): Gramma
     morphologicalForms: getVariables('Morphological Form', grammarRows),
     partsOfSpeech: getVariables('Part of Speech', grammarRows),
     persons: getVariables('Person', grammarRows),
-    specialClassifications: getVariables('Special Classifications', grammarRows, false),
+    specialClassifications: getVariables(
+      'Special Classifications',
+      grammarRows,
+      false
+    ),
     translations,
-    verbalThematicVowelTypes: getVariables('Verbal Thematic Vowel Type', grammarRows),
+    verbalThematicVowelTypes: getVariables(
+      'Verbal Thematic Vowel Type',
+      grammarRows
+    ),
   };
 }

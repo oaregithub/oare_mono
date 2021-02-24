@@ -9,7 +9,6 @@ import cacheMiddleware from './middlewares/cache';
 import userMiddleware from './middlewares/user';
 
 const app = express();
-
 // Prevent CORS issue
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
@@ -18,7 +17,7 @@ if (process.env.NODE_ENV === 'development') {
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
     res.header(
       'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma',
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma'
     );
 
     // intercept OPTIONS
@@ -35,7 +34,7 @@ app.use(cookieParser());
 app.use(
   express.urlencoded({
     extended: true,
-  }),
+  })
 );
 app.use(userMiddleware);
 app.use(cacheMiddleware);

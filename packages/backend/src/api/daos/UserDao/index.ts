@@ -36,7 +36,10 @@ class UserDao {
     return this.getUserByColumn('uuid', uuid);
   }
 
-  private async getUserByColumn(column: string, value: string | number): Promise<UserRow | null> {
+  private async getUserByColumn(
+    column: string,
+    value: string | number
+  ): Promise<UserRow | null> {
     const user: UserRow | null = await knex('user')
       .first(
         'id',
@@ -46,7 +49,7 @@ class UserDao {
         'email',
         'password_hash AS passwordHash',
         'is_admin AS isAdmin',
-        'created_on AS createdOn',
+        'created_on AS createdOn'
       )
       .where(column, value);
 
@@ -84,7 +87,9 @@ class UserDao {
   }
 
   async userIsAdmin(uuid: string): Promise<boolean> {
-    const { isAdmin } = await knex('user').first('is_admin AS isAdmin').where('uuid', uuid);
+    const { isAdmin } = await knex('user')
+      .first('is_admin AS isAdmin')
+      .where('uuid', uuid);
     return isAdmin;
   }
 
@@ -94,10 +99,14 @@ class UserDao {
       'uuid',
       'first_name AS firstName',
       'last_name AS lastName',
-      'email',
+      'email'
     );
-    const groupObjects = await Promise.all(users.map((user) => UserGroupDao.getGroupsOfUser(user.id)));
-    const adminStatus = await Promise.all(users.map((user) => this.userIsAdmin(user.uuid)));
+    const groupObjects = await Promise.all(
+      users.map(user => UserGroupDao.getGroupsOfUser(user.id))
+    );
+    const adminStatus = await Promise.all(
+      users.map(user => this.userIsAdmin(user.uuid))
+    );
     return users.map(({ id, firstName, lastName, email }, index) => ({
       id,
       first_name: firstName,
@@ -108,9 +117,15 @@ class UserDao {
     }));
   }
 
-  async updatePassword(userUuid: string, newPassword: string, trx?: Transaction): Promise<void> {
+  async updatePassword(
+    userUuid: string,
+    newPassword: string,
+    trx?: Transaction
+  ): Promise<void> {
     const k = trx || knex;
-    await k('user').update('password_hash', hashPassword(newPassword)).where('uuid', userUuid);
+    await k('user')
+      .update('password_hash', hashPassword(newPassword))
+      .where('uuid', userUuid);
   }
 }
 

@@ -1,4 +1,4 @@
-import { DictionaryForm, FormSpelling } from "./dictionary";
+import { DictionaryForm, FormSpelling } from './dictionary';
 
 export interface CommentRequest {
   comment: CommentInsert;
@@ -33,7 +33,7 @@ export interface CommentDisplay extends Comment {
   userLastName: string;
 }
 
-export type ThreadStatus = "New" | "Pending" | "In Progress" | "Completed";
+export type ThreadStatus = 'New' | 'Pending' | 'In Progress' | 'Completed';
 
 export interface Thread {
   uuid: string | null;
@@ -58,12 +58,12 @@ export interface ThreadDisplay {
 // Util List (Commenting, Editing and Deleting popup)
 
 export type UtilListType =
-  | "WORD"
-  | "FORM"
-  | "SPELLING"
-  | "EPIGRAPHY"
-  | "DISCOURSE"
-  | "NONE";
+  | 'WORD'
+  | 'FORM'
+  | 'SPELLING'
+  | 'EPIGRAPHY'
+  | 'DISCOURSE'
+  | 'NONE';
 
 export interface UtilListDisplay {
   comment: boolean;

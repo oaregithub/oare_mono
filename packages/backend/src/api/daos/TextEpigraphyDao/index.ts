@@ -2,7 +2,6 @@ import _ from 'lodash';
 import { SearchTextsResultRow, EpigraphicUnit } from '@oare/types';
 import knex from '@/connection';
 import getSearchQuery, { convertEpigraphicUnitRows } from './utils';
-import aliasDao from '../AliasDao';
 
 export interface EpigraphyReadingRow {
   reading: string;
@@ -21,12 +20,19 @@ export interface GetEpigraphicUnitsOptions {
 class TextEpigraphyDao {
   async getEpigraphicUnits(
     textUuid: string,
-    { maxLine, minLine }: GetEpigraphicUnitsOptions = {},
+    { maxLine, minLine }: GetEpigraphicUnitsOptions = {}
   ): Promise<EpigraphicUnit[]> {
     let query = knex('text_epigraphy')
-      .leftJoin('sign_reading', 'text_epigraphy.reading_uuid', 'sign_reading.uuid')
+      .leftJoin(
+        'sign_reading',
+        'text_epigraphy.reading_uuid',
+        'sign_reading.uuid'
+      )
       .where('text_uuid', textUuid)
-      .andWhereNot('char_on_tablet', null)
+      .andWhere(function () {
+        this.whereNot('text_epigraphy.char_on_tablet', null);
+        this.orWhere('text_epigraphy.type', 'region');
+      })
       .select(
         'text_epigraphy.uuid',
         'text_epigraphy.side',
@@ -36,11 +42,13 @@ class TextEpigraphyDao {
         'text_epigraphy.char_on_line AS charOnLine',
         'text_epigraphy.char_on_tablet AS charOnTablet',
         'text_epigraphy.discourse_uuid AS discourseUuid',
+        'text_epigraphy.object_on_tablet AS objOnTablet',
+        'text_epigraphy.type AS epigType',
         'sign_reading.reading',
         'sign_reading.type',
-        'sign_reading.value',
+        'sign_reading.value'
       )
-      .orderBy('text_epigraphy.char_on_tablet');
+      .orderBy('text_epigraphy.object_on_tablet');
 
     if (minLine) {
       query = query.andWhere('text_epigraphy.line', '>=', minLine);
@@ -55,7 +63,11 @@ class TextEpigraphyDao {
     return convertEpigraphicUnitRows(units);
   }
 
-  async totalSearchRows(characters: string[], textTitle: string, blacklist: string[]) {
+  async totalSearchRows(
+    characters: string[],
+    textTitle: string,
+    blacklist: string[]
+  ) {
     const totalRows: number = (
       await getSearchQuery(characters, textTitle, blacklist)
         .select(knex.raw('COUNT(DISTINCT text_epigraphy.text_uuid) AS count'))
@@ -68,7 +80,7 @@ class TextEpigraphyDao {
     characters: string[],
     textTitle: string,
     blacklist: string[],
-    { page = 1, rows = 10 },
+    { page = 1, rows = 10 }
   ): Promise<SearchTextsResultRow[]> {
     // Gets list of texts with their UUIDs that match the query
     const getTextQuery = getSearchQuery(characters, textTitle, blacklist)
@@ -91,7 +103,7 @@ class TextEpigraphyDao {
           .select('reading', 'line');
 
         const epigraphyRows: EpigraphyReadingRow[] = await searchEpigraphyQuery;
-        const epigraphyReadings = epigraphyRows.map((row) => row.reading);
+        const epigraphyReadings = epigraphyRows.map(row => row.reading);
 
         // Get all matches in the text
         const numChars = characters.length;
@@ -104,8 +116,8 @@ class TextEpigraphyDao {
             if (!matchingLines.includes(line)) {
               matchingLines.push(line);
               const lineReading = epigraphyRows
-                .filter((row) => row.line === line)
-                .map((row) => row.reading)
+                .filter(row => row.line === line)
+                .map(row => row.reading)
                 .join(' ');
 
               matches.push(`${line}. ${lineReading}`);
@@ -120,7 +132,9 @@ class TextEpigraphyDao {
   }
 
   async hasEpigraphy(uuid: string): Promise<boolean> {
-    const response = await knex('text_epigraphy').first('uuid').where('text_uuid', uuid);
+    const response = await knex('text_epigraphy')
+      .first('uuid')
+      .where('text_uuid', uuid);
     return !!response;
   }
 }

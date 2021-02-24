@@ -6,28 +6,30 @@ import sl from '@/serviceLocator';
 
 const router = express.Router();
 
-router.route('/text_drafts/:textUuid').post(authenticatedRoute, async (req, res, next) => {
-  const TextDraftsDao = sl.get('TextDraftsDao');
+router
+  .route('/text_drafts/:textUuid')
+  .post(authenticatedRoute, async (req, res, next) => {
+    const TextDraftsDao = sl.get('TextDraftsDao');
 
-  try {
-    const { textUuid } = req.params;
-    const userId = req.user!.id;
+    try {
+      const { textUuid } = req.params;
+      const userId = req.user!.id;
 
-    const { content, notes }: AddTextDraftPayload = req.body;
+      const { content, notes }: AddTextDraftPayload = req.body;
 
-    const draft = await TextDraftsDao.getDraft(userId, textUuid);
+      const draft = await TextDraftsDao.getDraft(userId, textUuid);
 
-    if (!draft) {
-      await TextDraftsDao.createDraft(userId, textUuid, content, notes);
-    } else {
-      await TextDraftsDao.updateDraft(draft.uuid, content, notes);
+      if (!draft) {
+        await TextDraftsDao.createDraft(userId, textUuid, content, notes);
+      } else {
+        await TextDraftsDao.updateDraft(draft.uuid, content, notes);
+      }
+
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
     }
-
-    res.status(201).end();
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+  });
 
 router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
   const TextDraftsDao = sl.get('TextDraftsDao');

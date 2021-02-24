@@ -1,5 +1,5 @@
-import axios from '../axiosInstance';
 import { TextDraft, AddTextDraftPayload } from '@oare/types';
+import axios from '../axiosInstance';
 
 async function createDraft(textUuid: string, payload: AddTextDraftPayload) {
   await axios.post(`/text_drafts/${textUuid}`, payload);

@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 export async function up(knex: Knex): Promise<void> {
   const exists = await knex.schema.hasTable('threads');
   if (!exists) {
-    return knex.schema.createTable('threads', (table) => {
+    return knex.schema.createTable('threads', table => {
       table.charset('utf8');
       table.collate('utf8_general_ci');
       table.increments('id');

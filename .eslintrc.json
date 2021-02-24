@@ -1,0 +1,85 @@
+{
+  "root": true,
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
+  "extends": [
+    "airbnb-base",
+    "prettier",
+    "plugin:@typescript-eslint/eslint-recommended"
+  ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": [
+        ["@babel/preset-env", { "targets": { "node": "current" } }],
+        "@babel/preset-typescript"
+      ]
+    }
+  },
+  "plugins": ["vue", "@typescript-eslint", "prettier"],
+  "rules": {
+    "prettier/prettier": ["error"],
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "mjs": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "class-methods-use-this": "off",
+    "no-await-in-loop": "off",
+    "import/no-unresolved": "off",
+    "import/no-extraneous-dependencies": "off",
+    "comma-dangle": ["error", "only-multiline"],
+    "arrow-parens": ["error", "as-needed"],
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "camelcase": "off",
+    "no-restricted-globals": "off",
+    "func-names": "off",
+    "no-use-before-define": "off",
+    "no-param-reassign": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-namespace": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
+  "overrides": [
+    {
+      "files": ["./packages/frontend/**/*.vue"],
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser"
+      }
+    },
+    {
+      "files": [
+        "**/*.spec.js",
+        "**/*.test.js",
+        "**/{jest-setup,setup-jest}.js",
+        "**/__mocks__/*.js"
+      ],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

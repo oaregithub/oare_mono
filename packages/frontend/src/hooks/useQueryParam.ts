@@ -7,9 +7,8 @@ const getUrlParams = () => {
   return new URLSearchParams();
 };
 
-const getQueryStringVal = (key: string): string | null => {
-  return getUrlParams().get(key);
-};
+const getQueryStringVal = (key: string): string | null =>
+  getUrlParams().get(key);
 
 const useQueryParam = (
   key: string,

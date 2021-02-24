@@ -1,16 +1,16 @@
-import axios from '../axiosInstance';
-
 import {
   CollectionListItem,
   CollectionResponse,
   CollectionInfo,
+  Pagination,
 } from '@oare/types';
+import axios from '../axiosInstance';
 
 /**
  * Returns the list of collections in the corpus
  */
 async function getAllCollections(): Promise<CollectionListItem[]> {
-  let { data } = await axios.get('/collections');
+  const { data } = await axios.get('/collections');
   return data;
 }
 
@@ -19,14 +19,10 @@ async function getAllCollections(): Promise<CollectionListItem[]> {
  */
 async function getCollectionTexts(
   uuid: string,
-  { page, rows, query }: { page: number; rows: number; query: string }
+  pagination: Pagination
 ): Promise<CollectionResponse> {
   const { data: texts } = await axios.get(`/collections/${uuid}`, {
-    params: {
-      page,
-      rows,
-      query,
-    },
+    params: pagination,
   });
 
   return texts;

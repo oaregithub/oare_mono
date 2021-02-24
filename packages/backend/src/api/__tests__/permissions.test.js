@@ -7,17 +7,20 @@ const mockPermissions = [
   {
     name: 'WORDS',
     type: 'pages',
-    description: 'Allow group users to view "Words" tab and access associated pages',
+    description:
+      'Allow group users to view "Words" tab and access associated pages',
   },
   {
     name: 'NAMES',
     type: 'pages',
-    description: 'Allow group users to view "Names" tab and access associated pages',
+    description:
+      'Allow group users to view "Names" tab and access associated pages',
   },
   {
     name: 'PLACES',
     type: 'pages',
-    description: 'Allow group users to view "Places" tab and access associated pages',
+    description:
+      'Allow group users to view "Places" tab and access associated pages',
   },
   {
     name: 'ADD_TRANSLATION',
@@ -40,13 +43,15 @@ const mockPermissions = [
   {
     name: 'UPDATE_TRANSLATION',
     type: 'dictionary',
-    description: 'Allow group users to make changes to translations of existing words',
+    description:
+      'Allow group users to make changes to translations of existing words',
     dependency: 'WORDS',
   },
   {
     name: 'UPDATE_TRANSLATION_ORDER',
     type: 'dictionary',
-    description: 'Allow group users to adjust the order of existing word translations',
+    description:
+      'Allow group users to adjust the order of existing word translations',
     dependency: 'WORDS',
   },
   {
@@ -186,7 +191,9 @@ describe('GET /permissions/:groupId', () => {
   it('returns 500 on failed user permission retrieval', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
-      getGroupPermissions: jest.fn().mockRejectedValue('get user permissions failed'),
+      getGroupPermissions: jest
+        .fn()
+        .mockRejectedValue('get user permissions failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -224,18 +231,24 @@ describe('POST /permissions/:groupId', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockPayload).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockPayload).set('Cookie', 'jwt=token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
-    expect(mockPermissionsDao.addGroupPermission).toHaveBeenCalledWith(String(groupId), mockPayload.permission);
+    expect(mockPermissionsDao.addGroupPermission).toHaveBeenCalledWith(
+      String(groupId),
+      mockPayload.permission
+    );
     expect(response.status).toBe(201);
   });
 
   it('returns 500 on failed addition', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
-      addGroupPermission: jest.fn().mockRejectedValue('permissions addition failed'),
+      addGroupPermission: jest
+        .fn()
+        .mockRejectedValue('permissions addition failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -274,7 +287,8 @@ describe('DELETE /permissions/:groupId/:permission', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).delete(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).delete(PATH).set('Cookie', 'jwt=token');
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
@@ -285,7 +299,9 @@ describe('DELETE /permissions/:groupId/:permission', () => {
   it('returns 500 on failed deletion', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
-      removePermission: jest.fn().mockRejectedValue('permissions deletion failed'),
+      removePermission: jest
+        .fn()
+        .mockRejectedValue('permissions deletion failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

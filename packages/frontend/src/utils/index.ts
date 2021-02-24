@@ -13,30 +13,24 @@ const formGrammarString = (form: DictionaryForm): string => {
       suffix += '-ma';
     }
   }
-  return (
+  return `${
     form.stems.join('') +
     form.morphologicalForms
       .filter(mf => mf === 'stv.' || mf === 'inf')
       .join('') +
-    form.tenses.join('') +
-    ' ' +
-    form.persons.join('') +
-    form.genders.join('') +
-    form.grammaticalNumbers.join('') +
-    form.cases.join('') +
-    ' ' +
-    form.states.join('') +
-    form.moods.join('') +
-    form.clitics
-      .map(clitic => {
-        if (clitic === 'suf.') return '+';
-        if (clitic === 'vent') return '+vent';
-        return clitic;
-      })
-      .filter(clitic => clitic !== '-ma')
-      .join('') +
-    suffix
-  ).trim();
+    form.tenses.join('')
+  } ${form.persons.join('')}${form.genders.join(
+    ''
+  )}${form.grammaticalNumbers.join('')}${form.cases.join(
+    ''
+  )} ${form.states.join('')}${form.moods.join('')}${form.clitics
+    .map(clitic => {
+      if (clitic === 'suf.') return '+';
+      if (clitic === 'vent') return '+vent';
+      return clitic;
+    })
+    .filter(clitic => clitic !== '-ma')
+    .join('')}${suffix}`.trim();
 };
 
 export default {

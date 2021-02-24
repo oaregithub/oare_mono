@@ -16,7 +16,7 @@ class OareGroupDao {
         'oare_group.id',
         'oare_group.name',
         'oare_group.created_on',
-        knex.raw('COUNT(user_group.id) AS num_users'),
+        knex.raw('COUNT(user_group.id) AS num_users')
       )
       .leftJoin('user_group', 'user_group.group_id', 'oare_group.id')
       .groupBy('oare_group.id');

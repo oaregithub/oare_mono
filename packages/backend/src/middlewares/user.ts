@@ -16,7 +16,10 @@ async function attachUser(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    const { email } = jwt.verify(token, process.env.OARE_JWT_TOKEN || '') as UserRow;
+    const { email } = jwt.verify(
+      token,
+      process.env.OARE_JWT_TOKEN || ''
+    ) as UserRow;
     const user = await UserDao.getUserByEmail(email);
     req.user = user;
     next();
