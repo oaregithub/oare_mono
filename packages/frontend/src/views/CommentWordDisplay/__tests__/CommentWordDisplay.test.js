@@ -59,20 +59,12 @@ const mockActions = {
 };
 
 const adminUser = {
-  id: 1,
   uuid: 'uuid',
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'fake@fake.com',
   isAdmin: true,
 };
 
 const nonAdminUser = {
-  id: 1,
   uuid: 'uuid',
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'fake@fake.com',
   isAdmin: false,
 };
 
@@ -113,7 +105,7 @@ describe('CommentWordDisplay test', () => {
     expect(mockActions.showErrorSnackbar).not.toHaveBeenCalled();
   });
 
-  it('fails to load threads with comments on mount', async () => {
+  it('shows error snackbar when fails to load threads with comments on mount', async () => {
     sl.set('serverProxy', {
       ...mockServer,
       getThreadsWithCommentsByReferenceUuid: jest
@@ -131,22 +123,22 @@ describe('CommentWordDisplay test', () => {
   it('edit thread status if admin user', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const testDropdown = await wrapper.findAll('.test-status-dropdown').at(0); // First dropdown
-    testDropdown.trigger('click');
+    const testDropdown = wrapper.findAll('.test-status-dropdown').at(0); // First dropdown
+    await testDropdown.trigger('click');
 
-    const threadMenu = await wrapper.findAll('.test-thread-menu').at(0);
-    const testDropdownItemNew = await threadMenu
+    const threadMenu = wrapper.findAll('.test-thread-menu').at(0);
+    const testDropdownItemNew = threadMenu
       .findAll('.test-status-dropdown-item')
       .at(0); // New in First dropdown
-    testDropdownItemNew.trigger('click');
+    await testDropdownItemNew.trigger('click');
     await flushPromises();
     // Should not update when status is the same (New == New)
     expect(mockServer.updateThread).not.toHaveBeenCalled();
 
-    const testDropdownItemPending = await threadMenu
+    const testDropdownItemPending = threadMenu
       .findAll('.test-status-dropdown-item')
       .at(1); // Pending in First dropdown
-    testDropdownItemPending.trigger('click');
+    await testDropdownItemPending.trigger('click');
     await flushPromises();
 
     // Should update when status is different (Pending !== New)
@@ -172,10 +164,8 @@ describe('CommentWordDisplay test', () => {
 
     const wrapper = createWrapper();
     await flushPromises();
-    const testDropdown = await wrapper
-      .findAll('.test-status-dropdown')
-      .exists();
-    expect(testDropdown).toBeFalsy();
+    const testDropdown = wrapper.findAll('.test-status-dropdown').exists();
+    expect(testDropdown).toBe(false);
   });
 
   it('inserts comment', async () => {
@@ -189,7 +179,7 @@ describe('CommentWordDisplay test', () => {
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
-  it('fails to insert a comment', async () => {
+  it('shows error snackbar when fails to insert a comment', async () => {
     sl.set('serverProxy', {
       ...mockServer,
       insertComment: jest
@@ -206,7 +196,7 @@ describe('CommentWordDisplay test', () => {
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
-  it('fails to insert a comment because of invalid response', async () => {
+  it('shows error snackbar when fails to insert a comment because of invalid response', async () => {
     sl.set('serverProxy', {
       ...mockServer,
       insertComment: jest.fn().mockResolvedValue(null),
@@ -224,10 +214,10 @@ describe('CommentWordDisplay test', () => {
   it('edits a thread name', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const firstThreadEditPencil = await wrapper
+    const firstThreadEditPencil = wrapper
       .findAll('.test-edit-thread-name-dialog')
       .at(0);
-    firstThreadEditPencil.trigger('click');
+    await firstThreadEditPencil.trigger('click');
 
     const editDialog = await wrapper.get('.test-edit-dialog');
     await editDialog
@@ -246,7 +236,7 @@ describe('CommentWordDisplay test', () => {
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
-  it('fails to edit a thread name', async () => {
+  it('show error snackbar when fails to edit a thread name', async () => {
     sl.set('serverProxy', {
       ...mockServer,
       updateThreadName: jest
@@ -255,10 +245,10 @@ describe('CommentWordDisplay test', () => {
     });
     const wrapper = createWrapper();
     await flushPromises();
-    const firstThreadEditPencil = await wrapper
+    const firstThreadEditPencil = wrapper
       .findAll('.test-edit-thread-name-dialog')
       .at(0);
-    firstThreadEditPencil.trigger('click');
+    await firstThreadEditPencil.trigger('click');
 
     const editDialog = await wrapper.get('.test-edit-dialog');
     await editDialog
@@ -296,12 +286,12 @@ describe('CommentWordDisplay test', () => {
     await flushPromises();
 
     await wrapper.get('.test-select-thread').trigger('click');
-    const exists = await wrapper.findAll('.test-delete-comment').exists();
+    const exists = wrapper.findAll('.test-delete-comment').exists();
 
-    expect(exists).toBeFalsy();
+    expect(exists).toBe(false);
   });
 
-  it('fails to delete a comment', async () => {
+  it('show error snackbar when unable to delete a comment', async () => {
     sl.set('serverProxy', {
       ...mockServer,
       deleteComment: jest
