@@ -62,7 +62,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import useQueryParam from '@/hooks/useQueryParam';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import CommentWordDisplay from '@/views/CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
 
 export interface DisplayableWord {

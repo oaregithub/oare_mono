@@ -79,7 +79,7 @@ import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
 import { SendUtilList } from './index.vue';
 import SpellingDialog from './SpellingDialog.vue';
-import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
+import CommentWordDisplay from '../CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
 
 export default defineComponent({

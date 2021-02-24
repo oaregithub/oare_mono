@@ -37,9 +37,15 @@ export type ThreadStatus = 'New' | 'Pending' | 'In Progress' | 'Completed';
 
 export interface Thread {
   uuid: string | null;
+  name: string | null;
   referenceUuid: string;
   status: ThreadStatus;
   route: string;
+}
+
+export interface UpdateThreadNameRequest {
+  threadUuid: string;
+  newName: string;
 }
 
 export interface ThreadWithComments {

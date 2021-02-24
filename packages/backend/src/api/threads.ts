@@ -6,6 +6,7 @@ import {
   Thread,
   ThreadWithComments,
   Comment,
+  UpdateThreadNameRequest,
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -92,5 +93,20 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
     next(new HttpInternalError(err));
   }
 });
+
+router
+  .route('/threads/name')
+  .put(authenticatedRoute, async (req, res, next) => {
+    try {
+      const { threadUuid, newName }: UpdateThreadNameRequest = req.body;
+      const threadsDao = sl.get('ThreadsDao');
+
+      await threadsDao.updateThreadName(threadUuid, newName);
+
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;
