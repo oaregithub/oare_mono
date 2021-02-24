@@ -109,7 +109,7 @@ import GrammarDisplay from './GrammarDisplay.vue';
 import SpellingDisplay from './SpellingDisplay.vue';
 import SpellingDialog from './SpellingDialog.vue';
 import UtilList from '../../components/UtilList/index.vue';
-import CommentWordDisplay from '../../components/CommentWordDisplay/index.vue';
+import CommentWordDisplay from '../CommentWordDisplay/index.vue';
 import { SendUtilList } from './index.vue';
 
 export default defineComponent({
