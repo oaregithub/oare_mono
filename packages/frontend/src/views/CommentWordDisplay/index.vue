@@ -58,7 +58,7 @@
                   }}</span>
                   <v-icon
                     @click="setSelectedThreadWithComment(threadWithComment)"
-                    class="mt-n1"
+                    class="mt-n1 test-status-dropdown"
                     v-bind="attrs"
                     v-if="loggedInUser && loggedInUser.isAdmin"
                     v-on="on"
@@ -68,6 +68,7 @@
               </template>
               <v-list>
                 <v-list-item
+                  class="test-status-dropdown-item"
                   :key="index"
                   @click="updateThreadStatus(status)"
                   v-for="(status, index) in statuses"
