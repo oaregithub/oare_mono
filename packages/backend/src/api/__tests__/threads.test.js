@@ -12,8 +12,6 @@ describe('comments api test', () => {
       createdAt: '',
       deleted: 'boolean',
       text: 'string',
-      userFirstName: 'first',
-      userLastName: 'last',
     },
   ];
   const commentsGetAllGroupedByThead = [
@@ -54,7 +52,7 @@ describe('comments api test', () => {
   const MockThreadsDao = {
     getByReferenceUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
     update: jest.fn().mockResolvedValue({}),
-    getByUuid: jest.fn().mockResolvedValue({}),
+    getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
     updateThreadName: jest.fn().mockResolvedValue({}),
     getThreadWord: jest.fn().mockResolvedValue(threadWord),
   };
@@ -344,11 +342,10 @@ describe('comments api test', () => {
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([
         {
-          uuid: threadsGetByUuid.uuid,
+          thread: threadsGetByUuid,
           word: threadWord,
-          status: threadsGetByUuid.status,
-          route: threadsGetByUuid.route,
-          latestComment: commentsGetAllGroupedByThead[0].text,
+          latestCommentDate: commentsGetAllByThreadUuid[0].createdAt,
+          comments: commentsGetAllByThreadUuid,
         },
       ]);
     });

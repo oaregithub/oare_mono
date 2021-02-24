@@ -104,14 +104,20 @@ router
       const threadsDao = sl.get('ThreadsDao');
       const commentsDao = sl.get('CommentsDao');
 
+      // All the threads the user is associated with (in comment form)
       const comments = await commentsDao.getAllByUserUuidGroupedByThread(
-        userUuid
+        userUuid,
+        true
       );
 
       const results: ThreadDisplay[] = await Promise.all(
         comments.map(async comment => {
           const thread = await threadsDao.getByUuid(comment.threadUuid);
           const threadWord = await threadsDao.getThreadWord(comment.threadUuid);
+          const threadComments = await commentsDao.getAllByThreadUuid(
+            comment.threadUuid,
+            true
+          );
 
           if (thread === null || threadWord === null) {
             throw new HttpInternalError(
@@ -119,11 +125,10 @@ router
             );
           }
           return {
-            uuid: thread.uuid,
+            thread,
             word: threadWord,
-            status: thread.status,
-            route: thread.route,
-            latestComment: comment.text,
+            latestCommentDate: threadComments[0].createdAt, // Most recent comment
+            comments: threadComments,
           } as ThreadDisplay;
         })
       );

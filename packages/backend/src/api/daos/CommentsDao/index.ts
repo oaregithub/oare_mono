@@ -29,7 +29,10 @@ class CommentsDao {
     });
   }
 
-  async getAllByThreadUuid(threadUuid: string): Promise<Comment[]> {
+  async getAllByThreadUuid(
+    threadUuid: string,
+    mostRecent = false
+  ): Promise<Comment[]> {
     const comments = await knex('comments')
       .select(
         'comments.uuid',
@@ -40,12 +43,15 @@ class CommentsDao {
         'comments.comment AS text'
       )
       .where('comments.thread_uuid', threadUuid)
-      .orderBy('comments.created_at');
+      .orderBy('comments.created_at', mostRecent ? 'desc' : 'asc');
 
     return comments;
   }
 
-  async getAllByUserUuidGroupedByThread(userUuid: string): Promise<Comment[]> {
+  async getAllByUserUuidGroupedByThread(
+    userUuid: string,
+    mostRecent = false
+  ): Promise<Comment[]> {
     const comments = await knex('comments')
       .select(
         'comments.uuid',
@@ -56,7 +62,7 @@ class CommentsDao {
         'comments.comment AS text'
       )
       .where('comments.user_uuid', userUuid)
-      .orderBy('comments.created_at')
+      .orderBy('comments.created_at', mostRecent ? 'desc' : 'asc')
       .groupBy('comments.thread_uuid');
 
     return comments;

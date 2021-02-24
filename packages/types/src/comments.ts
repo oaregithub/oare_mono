@@ -54,11 +54,10 @@ export interface ThreadWithComments {
 }
 
 export interface ThreadDisplay {
-  uuid: string;
+  thread: Thread;
   word: string;
-  status: ThreadStatus;
-  route: string;
-  latestComment: string;
+  latestCommentDate: Date;
+  comments: Comment[];
 }
 
 // Util List (Commenting, Editing and Deleting popup)
