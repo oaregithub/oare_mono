@@ -30,8 +30,11 @@
           elevation="0"
           v-for="(threadWithComment, idx) in threadsWithComments"
         >
-          <div class="pl-2 pr-2">
-            <v-row @click="setSelectedThreadWithComment(threadWithComment)">
+          <div class="pl-2 pr-2 pt-2 pb-2">
+            <v-row
+              class="test-select-thread"
+              @click="setSelectedThreadWithComment(threadWithComment)"
+            >
               <v-col cols="9">
                 <h2>
                   {{ displayThreadName(threadWithComment.thread.name, idx) }}
@@ -44,13 +47,13 @@
                       displayThreadName(threadWithComment.thread.name, idx)
                     )
                   "
-                  class="mb-n2"
+                  class="mb-n2 test-edit-thread-name-dialog"
                   color="primary"
                   >mdi-pencil</v-icon
                 >
               </v-col>
             </v-row>
-            <v-menu offset-y>
+            <v-menu offset-y class="test-thread-menu">
               <template v-slot:activator="{ on, attrs }">
                 <div class="mt-n3">
                   <span class="text-subtitle-2">{{
@@ -68,10 +71,10 @@
               </template>
               <v-list>
                 <v-list-item
-                  class="test-status-dropdown-item"
                   :key="index"
                   @click="updateThreadStatus(status)"
                   v-for="(status, index) in statuses"
+                  class="test-status-dropdown-item"
                 >
                   <v-list-item-title>{{ status }}</v-list-item-title>
                 </v-list-item>
@@ -150,7 +153,11 @@
               }}</span>
             </v-col>
             <v-col class="pr-2" cols="1" v-if="canDeleteComment(comment)">
-              <v-btn @click="setDeleteValues(comment.uuid)" icon>
+              <v-btn
+                class="test-delete-comment"
+                @click="setDeleteValues(comment.uuid)"
+                icon
+              >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-col>
@@ -175,7 +182,7 @@
             <v-textarea
               autofocus
               auto-grow
-              class="pa-0"
+              class="pa-0 test-comment"
               counter="1000"
               label="Add comment..."
               outlined
@@ -187,7 +194,7 @@
             <v-btn
               :disabled="userComment === ''"
               @click="insertComment"
-              class="mb-n7"
+              class="mb-n7 test-insert-comment"
               icon
             >
               <v-icon color="primary">mdi-send</v-icon>
@@ -197,6 +204,7 @@
       </v-col>
     </v-row>
     <OareDialog
+      class="test-delete-dialog"
       @submit="deleteComment()"
       cancelText="No, don't delete"
       submitText="Yes, delete"
@@ -206,6 +214,7 @@
       Are you sure you want to delete the comment?
     </OareDialog>
     <OareDialog
+      class="test-edit-dialog"
       @input="editedThreadValue = ''"
       @submit="editThreadName()"
       cancelText="Cancel"
@@ -216,6 +225,7 @@
       <v-text-field
         label="New Thread Name"
         v-model="editedThreadValue"
+        class="test-edit-thread-name"
       ></v-text-field>
       <span class="error--text" v-if="!validateThreadName()">{{
         editErrorMessage
@@ -382,6 +392,7 @@ export default defineComponent({
 
     const updateThreadStatus = async (status: ThreadStatus) => {
       // Only update if status changes from the original value.
+
       if (status !== selectedThreadWithComments.value.thread.status) {
         try {
           loading.value = true;
