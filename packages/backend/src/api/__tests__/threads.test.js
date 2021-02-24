@@ -54,7 +54,8 @@ describe('comments api test', () => {
   const MockThreadsDao = {
     getByReferenceUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
     update: jest.fn().mockResolvedValue({}),
-    getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
+    getByUuid: jest.fn().mockResolvedValue({}),
+    updateThreadName: jest.fn().mockResolvedValue({}),
     getThreadWord: jest.fn().mockResolvedValue(threadWord),
   };
 
@@ -289,6 +290,47 @@ describe('comments api test', () => {
     });
   });
 
+  describe('PUT /threads/name', () => {
+    const PATH = `${API_PATH}/threads/name`;
+
+    const getPayload = ({ overrideThread } = {}) => {
+      const newUpdateThreadName = overrideThread || {
+        threadUuid: 'testUuid',
+        newName: 'testName',
+      };
+
+      return newUpdateThreadName;
+    };
+
+    const sendRequest = async ({ overrideThread, cookie = true } = {}) => {
+      const req = request(app).put(PATH).send(getPayload(overrideThread));
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
+    };
+
+    it('returns 200 when thread name is successfully updated.', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(204);
+    });
+
+    it('returns 401 for non-logged in users.', async () => {
+      const response = await sendRequest({
+        cookie: false,
+      });
+      expect(response.status).toBe(401);
+    });
+
+    it('500 reject error for thread name update.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        updateThreadName: jest
+          .fn()
+          .mockRejectedValue('Error, thread name unable to be updated.'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
   describe('GET /threads/user/:userUuid', () => {
     const PATH = `${API_PATH}/threads/user/testUserUuid`;
 
