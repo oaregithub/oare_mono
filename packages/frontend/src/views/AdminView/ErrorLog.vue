@@ -71,6 +71,7 @@
           </v-col>
           <v-col cols="10" class="pl-8">
             <v-data-table
+              :loading="searchLoading"
               :headers="listHeaders"
               class="mt-3 table-cursor"
               item-key="uuid"
@@ -87,6 +88,9 @@
               </template>
               <template #[`item.timestamp`]="{ item }">
                 <span>{{ formatTimestamp(item.timestamp) }}</span>
+              </template>
+              <template #[`item.stacktrace`]="{ item }">
+                <span>{{ formatStacktrace(item.stacktrace) }}</span>
               </template>
             </v-data-table>
           </v-col>
@@ -121,12 +125,14 @@ export default defineComponent({
     const _ = sl.get('lodash');
 
     const loading = ref(false);
+    const searchLoading = ref(false);
     const showErrorDetails = ref(false);
     const listHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Status', value: 'status', width: '10%' },
-      { text: 'Timestamp', value: 'timestamp', width: '20%' },
-      { text: 'User', value: 'userName', width: '20%' },
-      { text: 'Description', value: 'description', width: '50%' },
+      { text: 'Timestamp', value: 'timestamp', width: '15%' },
+      { text: 'User', value: 'userName', width: '15%' },
+      { text: 'Description', value: 'description', width: '30%' },
+      { text: 'Stacktrace', value: 'stacktrace', width: '30%' },
     ]);
 
     const errorList: Ref<ErrorsRowWithUser[]> = ref([]);
@@ -162,50 +168,61 @@ export default defineComponent({
       mustSort: false,
     });
 
-    const formatName = (name: string) => {
-      const noCamelCase = name.replace(/([A-Z])/g, ' $1');
-      return `${noCamelCase.charAt(0).toUpperCase()}${noCamelCase.slice(1)}`;
-    };
-
     onMounted(async () => {
       try {
         loading.value = true;
         await getErrorLog();
-      } catch {
-        actions.showErrorSnackbar(
-          'Error retrieving error log. Please try again.',
-          'server.getErrorLog failed'
-        );
       } finally {
         loading.value = false;
       }
     });
 
     const getErrorLog = async () => {
-      const response = await server.getErrorLog({
-        filters: {
-          status: status.value as ErrorStatus | '',
-          user: user.value,
-          description: description.value,
-          stacktrace: stacktrace.value,
-        },
-        sort: {
-          type: sort.value as SortType,
-          direction: direction.value as 'asc' | 'desc',
-        },
-        pagination: {
-          page: Number(page.value),
-          limit: Number(limit.value),
-        },
-      });
-      errorList.value = response.errors;
-      serverCount.value = response.count;
+      try {
+        searchLoading.value = true;
+        const response = await server.getErrorLog({
+          filters: {
+            status: status.value as ErrorStatus | '',
+            user: user.value,
+            description: description.value,
+            stacktrace: stacktrace.value,
+          },
+          sort: {
+            type: sort.value as SortType,
+            direction: direction.value as 'asc' | 'desc',
+          },
+          pagination: {
+            page: Number(page.value),
+            limit: Number(limit.value),
+          },
+        });
+        errorList.value = response.errors;
+        serverCount.value = response.count;
+      } catch {
+        actions.showErrorSnackbar(
+          'Error loading error log. Please try again',
+          'server.getErrorLog failed'
+        );
+      } finally {
+        searchLoading.value = false;
+      }
     };
 
     const formatTimestamp = (timestamp: Date) => {
       return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
         DateTime.DATETIME_MED
       );
+    };
+
+    // Formats sorting option names from camelCase to capitalized, readable English. Ex: 'userName' to 'User Name'
+    const formatName = (name: string) => {
+      const noCamelCase = name.replace(/([A-Z])/g, ' $1');
+      return `${noCamelCase.charAt(0).toUpperCase()}${noCamelCase.slice(1)}`;
+    };
+
+    // Limits stacktrace text in table to 60 characters and adds ellipsis
+    const formatStacktrace = (stacktrace: string | null) => {
+      return stacktrace ? `${stacktrace.slice(0, 60)}...` : 'No Stacktrace';
     };
 
     const setupDialog = (error: ErrorsRowWithUser) => {
@@ -254,6 +271,7 @@ export default defineComponent({
 
     return {
       loading,
+      searchLoading,
       listHeaders,
       errorList,
       page,
@@ -269,6 +287,7 @@ export default defineComponent({
       showErrorDetails,
       getErrorLog,
       serverCount,
+      formatStacktrace,
       formatTimestamp,
       dialogError,
       setupDialog,

@@ -45,22 +45,22 @@ describe('ErrorLogDialog Test', () => {
   it('correctly displays dialog', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const testStatus = await wrapper.get('.test-status');
+    const testStatus = wrapper.get('.test-status');
     expect(testStatus.text()).toBe('testStatus');
-    const testName = await wrapper.get('.test-user-name');
+    const testName = wrapper.get('.test-user-name');
     expect(testName.text()).toBe('testName');
-    const testDescription = await wrapper.get('.test-description');
+    const testDescription = wrapper.get('.test-description');
     expect(testDescription.text()).toBe('testDescription');
-    const testStacktrace = await wrapper.get('.test-stacktrace');
+    const testStacktrace = wrapper.get('.test-stacktrace');
     expect(testStacktrace.text()).toBe('testStacktrace');
   });
 
   it('updates status on dropdown select', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const testDropdown = await wrapper.get('.v-select__selections');
+    const testDropdown = wrapper.get('.v-select__selections');
     await testDropdown.trigger('click');
-    const testOption = await wrapper.findAll('.v-list-item__title').at(1);
+    const testOption = wrapper.findAll('.v-list-item__title').at(1);
     await testOption.trigger('click');
     await flushPromises();
     expect(mockServer.updateErrorStatus).toHaveBeenCalled();
@@ -73,9 +73,9 @@ describe('ErrorLogDialog Test', () => {
       },
     });
     await flushPromises();
-    const testDropdown = await wrapper.get('.v-select__selections');
+    const testDropdown = wrapper.get('.v-select__selections');
     await testDropdown.trigger('click');
-    const testOption = await wrapper.findAll('.v-list-item__title').at(1);
+    const testOption = wrapper.findAll('.v-list-item__title').at(1);
     await testOption.trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();

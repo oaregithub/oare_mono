@@ -87,9 +87,9 @@ describe('ErrorLog test', () => {
   it('filters by status and clears', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusFilter = await wrapper.get('.test-status-filter input');
+    const statusFilter = wrapper.get('.test-status-filter input');
     await statusFilter.trigger('click');
-    const option = await wrapper.findAll('.v-list-item__title').at(1);
+    const option = wrapper.findAll('.v-list-item__title').at(1);
     await option.trigger('click');
     await flushPromises();
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
@@ -106,7 +106,7 @@ describe('ErrorLog test', () => {
   it('filters by user and clears', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const userFilter = await wrapper.get('.test-user-filter input');
+    const userFilter = wrapper.get('.test-user-filter input');
     await userFilter.setValue('test');
     await flushPromises();
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
@@ -123,7 +123,7 @@ describe('ErrorLog test', () => {
   it('filters by description and clears', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const descriptionFilter = await wrapper.get('.test-desc-filter input');
+    const descriptionFilter = wrapper.get('.test-desc-filter input');
     await descriptionFilter.setValue('test');
     await flushPromises();
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
@@ -140,7 +140,7 @@ describe('ErrorLog test', () => {
   it('filters by stacktrace and clears', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const stacktraceFilter = await wrapper.get('.test-stack-filter input');
+    const stacktraceFilter = wrapper.get('.test-stack-filter input');
     await stacktraceFilter.setValue('test');
     await flushPromises();
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
@@ -157,7 +157,7 @@ describe('ErrorLog test', () => {
   it('sorts by status', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = await wrapper.findAll('.test-sort input').at(0);
+    const statusSort = wrapper.findAll('.test-sort input').at(0);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
@@ -171,7 +171,7 @@ describe('ErrorLog test', () => {
   it('sorts by timestamp', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = await wrapper.findAll('.test-sort input').at(1);
+    const statusSort = wrapper.findAll('.test-sort input').at(1);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
@@ -185,7 +185,7 @@ describe('ErrorLog test', () => {
   it('sorts by user name', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = await wrapper.findAll('.test-sort input').at(2);
+    const statusSort = wrapper.findAll('.test-sort input').at(2);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
@@ -199,7 +199,7 @@ describe('ErrorLog test', () => {
   it('sorts by description', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = await wrapper.findAll('.test-sort input').at(3);
+    const statusSort = wrapper.findAll('.test-sort input').at(3);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
@@ -213,9 +213,7 @@ describe('ErrorLog test', () => {
   it('changes sort direction', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const ascendingButton = await wrapper
-      .findAll('.test-sort-direction input')
-      .at(0);
+    const ascendingButton = wrapper.findAll('.test-sort-direction input').at(0);
     await ascendingButton.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
