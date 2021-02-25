@@ -14,23 +14,12 @@ describe('comments api test', () => {
       text: 'string',
     },
   ];
-  const commentsGetAllGroupedByThread = [
-    {
-      uuid: 'string',
-      threadUuid: 'string',
-      userUuid: 'string',
-      createdAt: '',
-      deleted: 'boolean',
-      text: 'string',
-    },
-  ];
   const MockCommentsDao = {
     getAllByThreadUuid: jest.fn().mockResolvedValue(commentsGetAllByThreadUuid),
     insert: jest.fn().mockResolvedValue(''),
-    getAllByUserUuidGroupedByThread: jest
-      .fn()
-      .mockResolvedValue(commentsGetAllGroupedByThread),
   };
+
+  const threadUuids = ['uuid1'];
 
   const threadsGetByReferenceUuid = [
     {
@@ -55,6 +44,7 @@ describe('comments api test', () => {
     getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
     updateThreadName: jest.fn().mockResolvedValue({}),
     getThreadWord: jest.fn().mockResolvedValue(threadWord),
+    getAllThreadUuidsByUserUuid: jest.fn().mockResolvedValue(threadUuids),
   };
 
   const userGetUserByUuid = {
@@ -127,6 +117,7 @@ describe('comments api test', () => {
     it('returns 401, for non-logged in users.', async () => {
       const response = await sendRequest(false);
       expect(response.status).toBe(401);
+      expect(MockThreadsDao.getByReferenceUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500, invalid comment.', async () => {
@@ -134,11 +125,12 @@ describe('comments api test', () => {
         ...MockCommentsDao,
         getAllByThreadUuid: jest
           .fn()
-          .mockRejectedValue('Erro getting an invalid comment.'),
+          .mockRejectedValue('Error getting an invalid comment.'),
       });
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockUserDao.getUserByUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500, invalid thread.', async () => {
@@ -151,6 +143,7 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockCommentsDao.getAllByThreadUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500, invalid user.', async () => {
@@ -163,6 +156,7 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockCommentsDao.getAllByThreadUuid).toHaveBeenCalled();
     });
 
     it('returns 200, even when no thread is found.', async () => {
@@ -237,6 +231,7 @@ describe('comments api test', () => {
         cookie: false,
       });
       expect(response.status).toBe(401);
+      expect(MockThreadsDao.getByUuid).not.toHaveBeenCalled();
     });
 
     it('returns 403 for non-admin users.', async () => {
@@ -249,6 +244,7 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(403);
+      expect(MockThreadsDao.getByUuid).not.toHaveBeenCalled();
     });
 
     it('invalid thread uuid.', async () => {
@@ -259,6 +255,7 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.update).not.toHaveBeenCalled();
     });
 
     it('500 reject error for thread update.', async () => {
@@ -271,6 +268,8 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.getByUuid).toHaveBeenCalled();
+      expect(MockCommentsDao.insert).not.toHaveBeenCalled();
     });
 
     it('500 reject error for admin comment insert.', async () => {
@@ -283,6 +282,7 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.update).toHaveBeenCalled();
     });
   });
 
@@ -313,6 +313,7 @@ describe('comments api test', () => {
         cookie: false,
       });
       expect(response.status).toBe(401);
+      expect(MockThreadsDao.updateThreadName).not.toHaveBeenCalled();
     });
 
     it('500 reject error for thread name update.', async () => {
@@ -353,10 +354,10 @@ describe('comments api test', () => {
       expect(response.status).toBe(401);
     });
 
-    it('returns 500 when CommentsDao.getAllByUserUuidGroupedByThread throws an error.', async () => {
-      sl.set('CommentsDao', {
-        ...MockCommentsDao,
-        getAllByUserUuidGroupedByThread: jest
+    it('returns 500 when ThreadsDao.getAllThreadUuidsByUserUuid throws an error.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getAllThreadUuidsByUserUuid: jest
           .fn()
           .mockRejectedValue(
             'Error when getting comments by userUuid, grouped by thread.'
@@ -364,6 +365,7 @@ describe('comments api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.getByUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500 when ThreadsDao.getByUuid throws an error.', async () => {
@@ -375,6 +377,7 @@ describe('comments api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
     });
 
     it('returns 500 when ThreadsDao.getByUuid returns null (should never happen).', async () => {
@@ -384,6 +387,7 @@ describe('comments api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
     });
 
     it('returns 500 when ThreadsDao.getThreadWord throws an error.', async () => {
@@ -397,6 +401,7 @@ describe('comments api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
     });
 
     it('returns 500 when ThreadsDao.getThreadWord returns null (should never happen).', async () => {
@@ -406,6 +411,7 @@ describe('comments api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
+      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
     });
   });
 });
