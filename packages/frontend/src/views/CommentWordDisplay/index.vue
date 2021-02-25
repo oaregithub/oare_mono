@@ -188,6 +188,8 @@
               outlined
               rows="1"
               v-model="userComment"
+              @keydown.meta.enter="insertComment"
+              @keydown.ctrl.enter="insertComment"
             ></v-textarea>
           </v-col>
           <v-col cols="1" class="ml-n3">
@@ -434,6 +436,11 @@ export default defineComponent({
         actions.showErrorSnackbar(
           'Character count exceeded, please shorten the comment.'
         );
+        return;
+      }
+
+      if (userComment.value === '') {
+        actions.showErrorSnackbar('Please enter a comment before submitting.');
         return;
       }
 
