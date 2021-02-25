@@ -54,26 +54,7 @@ router
         textUuid
       );
 
-      let markups = await TextMarkupDao.getMarkups(textUuid);
-      const refTypes: { [key: string]: Set<string> } = {};
-      markups = markups.filter(markup => {
-        if (refTypes[markup.referenceUuid]) {
-          if (refTypes[markup.referenceUuid].has(markup.type)) {
-            return false;
-          }
-        } else {
-          refTypes[markup.referenceUuid] = new Set();
-        }
-
-        refTypes[markup.referenceUuid].add(markup.type);
-        return true;
-      });
-      markups.sort(a => {
-        if (a.type === 'damage' || a.type === 'partialDamage') {
-          return -1;
-        }
-        return 0;
-      });
+      const markups = await TextMarkupDao.getMarkups(textUuid);
 
       let canWrite: boolean;
       if (user) {

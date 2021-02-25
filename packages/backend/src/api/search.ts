@@ -6,6 +6,7 @@ import {
   SearchDiscourseSpellingRow,
   SearchDiscourseSpellingResponse,
 } from '@oare/types';
+import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
@@ -72,40 +73,62 @@ router.route('/search/spellings').get(async (req, res, next) => {
 
 router.route('/search').get(async (req, res, next) => {
   try {
-    const textGroupDao = sl.get('TextGroupDao');
-    const textEpigraphyDao = sl.get('TextEpigraphyDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const TextDao = sl.get('TextDao');
+    const TextMarkupDao = sl.get('TextMarkupDao');
 
     const {
       page,
       rows,
-      textTitle,
+      textTitle: title,
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
     const characters = charsPayload || [];
     const user = req.user || null;
 
-    const { blacklist } = await textGroupDao.getUserBlacklist(user);
-    const totalRows = await textEpigraphyDao.totalSearchRows(
-      characters,
-      textTitle,
-      blacklist
-    );
-    const texts = await textEpigraphyDao.searchTexts(
-      characters,
-      textTitle,
-      blacklist,
-      {
-        page,
-        rows,
-      }
+    const [totalRows, textMatches] = await Promise.all([
+      TextEpigraphyDao.searchTextsTotal({
+        characters,
+        title,
+      }),
+      TextEpigraphyDao.searchTexts({
+        characters,
+        pagination: { limit: rows, page },
+        title,
+        userUuid: user ? user.uuid : null,
+      }),
+    ]);
+
+    const texts = await Promise.all(
+      textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
     );
 
-    const searchResults: SearchTextsResponse = {
+    const lineReadings = await Promise.all(
+      textMatches.map(async ({ uuid, lines }) => {
+        const [epigraphicUnits, markupUnits] = await Promise.all([
+          TextEpigraphyDao.getEpigraphicUnits(uuid),
+          TextMarkupDao.getMarkups(uuid),
+        ]);
+
+        const renderer = createTabletRenderer(epigraphicUnits, markupUnits, {
+          textFormat: 'html',
+          lineNumbers: true,
+        });
+
+        return lines.map(line => renderer.lineReading(line));
+      })
+    );
+
+    const response: SearchTextsResponse = {
       totalRows,
-      results: texts,
+      results: textMatches.map((match, index) => ({
+        ...match,
+        name: texts[index].name,
+        matches: lineReadings[index],
+      })),
     };
 
-    res.json(searchResults);
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }
