@@ -4,6 +4,115 @@ import request from 'supertest';
 import sl from '@/serviceLocator';
 
 describe('search test', () => {
+  describe('GET /search', () => {
+    const PATH = `${API_PATH}/search`;
+    const matchingTexts = [
+      {
+        uuid: 'textUuid',
+        lines: [1],
+      },
+    ];
+    const TextEpigraphyDao = {
+      searchTextsTotal: jest.fn().mockResolvedValue(1),
+      searchTexts: jest.fn().mockResolvedValue(matchingTexts),
+      // Rendering a proper line reading is out of the scope of this test
+      getEpigraphicUnits: jest.fn().mockResolvedValue([]),
+    };
+
+    const TextDao = {
+      getTextByUuid: jest.fn().mockResolvedValue({
+        name: 'Test Text',
+      }),
+    };
+
+    const TextMarkupDao = {
+      // Rendering markups is out of the scope of this test
+      getMarkups: jest.fn().mockResolvedValue([]),
+    };
+
+    beforeEach(() => {
+      sl.set('TextEpigraphyDao', TextEpigraphyDao);
+      sl.set('TextDao', TextDao);
+      sl.set('TextMarkupDao', TextMarkupDao);
+    });
+
+    const query = {
+      characters: ['a', 'na'],
+      title: 'CCT',
+      page: 1,
+      rows: 10,
+    };
+
+    const sendRequest = () => request(app).get(PATH).query(query);
+
+    it('returns search results', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual({
+        totalRows: 1,
+        results: matchingTexts.map(text => ({
+          ...text,
+          name: 'Test Text',
+          matches: [''],
+        })),
+      });
+    });
+
+    it('returns 500 if searching total results fails', async () => {
+      sl.set('TextEpigraphyDao', {
+        ...TextEpigraphyDao,
+        searchTextsTotal: jest
+          .fn()
+          .mockRejectedValue('Failed to search texts total'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 if searching texts fails', async () => {
+      sl.set('TextEpigraphyDao', {
+        ...TextEpigraphyDao,
+        searchTexts: jest.fn().mockRejectedValue('Failed to search texts'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 if getting text by uuid fails', async () => {
+      sl.set('TextDao', {
+        ...TextDao,
+        getTextByUuid: jest.fn().mockRejectedValue('Failed to get text'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 if getting epigraphic units fails', async () => {
+      sl.set('TextEpigraphyDao', {
+        ...TextEpigraphyDao,
+        getEpigraphicUnits: jest
+          .fn()
+          .mockRejectedValue('Failed to get epig units'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 if getting markups fails', async () => {
+      sl.set('TextMarkupDao', {
+        ...TextMarkupDao,
+        getMarkups: jest.fn().mockRejectedValue('Failed to get markups'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
   describe('GET /search/spellings', () => {
     const PATH = `${API_PATH}/search/spellings?spelling=fakeSpelling`;
     const searchResults = [

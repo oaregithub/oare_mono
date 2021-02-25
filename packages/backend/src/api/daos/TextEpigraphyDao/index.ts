@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import { SearchTextsResultRow, EpigraphicUnit } from '@oare/types';
+import { EpigraphicUnit, Pagination } from '@oare/types';
 import knex from '@/connection';
-import getSearchQuery, { convertEpigraphicUnitRows } from './utils';
+import {
+  getSearchQuery,
+  convertEpigraphicUnitRows,
+  getSequentialCharacterQuery,
+} from './utils';
 
-export interface EpigraphyReadingRow {
-  reading: string;
-  line: number;
-}
 export interface EpigraphicQueryRow extends Omit<EpigraphicUnit, 'side'> {
   side: number;
   epigReading: string;
@@ -15,6 +15,18 @@ export interface EpigraphicQueryRow extends Omit<EpigraphicUnit, 'side'> {
 export interface GetEpigraphicUnitsOptions {
   minLine?: number;
   maxLine?: number;
+}
+
+export interface TextUuidWithLines {
+  uuid: string;
+  lines: number[];
+}
+
+export interface SearchTextArgs {
+  characters: string[];
+  title: string;
+  userUuid: string | null;
+  pagination: Pagination;
 }
 
 class TextEpigraphyDao {
@@ -63,72 +75,63 @@ class TextEpigraphyDao {
     return convertEpigraphicUnitRows(units);
   }
 
-  async totalSearchRows(
-    characters: string[],
-    textTitle: string,
-    blacklist: string[]
-  ) {
+  private async getMatchingTexts({
+    characters,
+    title,
+    pagination,
+  }: SearchTextArgs): Promise<string[]> {
+    const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
+      characters,
+      title
+    )
+      .select('text_epigraphy.text_uuid AS uuid')
+      .orderBy('text.name')
+      .groupBy('text_epigraphy.text_uuid')
+      .limit(pagination.limit)
+      .offset((pagination.page - 1) * pagination.limit);
+
+    return matchingTexts.map(({ uuid }) => uuid);
+  }
+
+  private async getMatchingLines(
+    textUuid: string,
+    characters: string[]
+  ): Promise<number[]> {
+    const query = getSequentialCharacterQuery(characters);
+    const rows: Array<{ line: number }> = await query
+      .distinct('text_epigraphy.line')
+      .orderBy('text_epigraphy.line')
+      .where('text_epigraphy.text_uuid', textUuid);
+
+    return rows.map(({ line }) => line);
+  }
+
+  async searchTexts(args: SearchTextArgs): Promise<TextUuidWithLines[]> {
+    // List of text UUIDs matching the search
+    const textUuids = await this.getMatchingTexts(args);
+
+    // For each text UUID, get a list of lines that match the search
+    const textLines = await Promise.all(
+      textUuids.map(uuid => this.getMatchingLines(uuid, args.characters))
+    );
+
+    return textUuids.map((uuid, index) => ({
+      uuid,
+      lines: textLines[index],
+    }));
+  }
+
+  async searchTextsTotal({
+    characters,
+    title,
+  }: Pick<SearchTextArgs, 'characters' | 'title'>): Promise<number> {
     const totalRows: number = (
-      await getSearchQuery(characters, textTitle, blacklist)
+      await getSearchQuery(characters, title)
         .select(knex.raw('COUNT(DISTINCT text_epigraphy.text_uuid) AS count'))
         .first()
     ).count;
+
     return totalRows;
-  }
-
-  async searchTexts(
-    characters: string[],
-    textTitle: string,
-    blacklist: string[],
-    { page = 1, rows = 10 }
-  ): Promise<SearchTextsResultRow[]> {
-    // Gets list of texts with their UUIDs that match the query
-    const getTextQuery = getSearchQuery(characters, textTitle, blacklist)
-      .orderBy('text.name')
-      .groupBy('text_epigraphy.text_uuid')
-      .limit(rows)
-      .offset((page - 1) * rows)
-      .select('text_epigraphy.text_uuid AS uuid', 'text.name');
-    const texts: SearchTextsResultRow[] = await getTextQuery;
-
-    // For each text, get its surrounding characters as context
-    if (characters.length > 0) {
-      for (let i = 0; i < texts.length; i += 1) {
-        const { uuid } = texts[i];
-
-        const searchEpigraphyQuery = knex('text_epigraphy')
-          .where('text_uuid', uuid)
-          .andWhereNot('char_on_tablet', null)
-          .orderBy('char_on_tablet')
-          .select('reading', 'line');
-
-        const epigraphyRows: EpigraphyReadingRow[] = await searchEpigraphyQuery;
-        const epigraphyReadings = epigraphyRows.map(row => row.reading);
-
-        // Get all matches in the text
-        const numChars = characters.length;
-        const matchingLines: number[] = [];
-        const matches: string[] = [];
-        for (let j = 0; j <= epigraphyRows.length - characters.length; j += 1) {
-          if (_.isEqual(epigraphyReadings.slice(j, j + numChars), characters)) {
-            // Get the line matching the search result
-            const { line } = epigraphyRows[j];
-            if (!matchingLines.includes(line)) {
-              matchingLines.push(line);
-              const lineReading = epigraphyRows
-                .filter(row => row.line === line)
-                .map(row => row.reading)
-                .join(' ');
-
-              matches.push(`${line}. ${lineReading}`);
-            }
-          }
-        }
-        texts[i].matches = matches;
-      }
-    }
-
-    return texts;
   }
 
   async hasEpigraphy(uuid: string): Promise<boolean> {

@@ -2,8 +2,8 @@ import knex from '@/connection';
 import { MarkupUnit } from '@oare/types';
 
 class TextMarkupDao {
-  async getMarkups(textUuid: string): Promise<MarkupUnit[]> {
-    const query = await knex('text_markup')
+  async getMarkups(textUuid: string, line?: number): Promise<MarkupUnit[]> {
+    let query = knex('text_markup')
       .select(
         'text_markup.reference_uuid AS referenceUuid',
         'text_markup.type AS type',
@@ -17,8 +17,32 @@ class TextMarkupDao {
         'text_epigraphy.uuid'
       )
       .where('text_epigraphy.text_uuid', textUuid);
-    const rows: MarkupUnit[] = await query;
-    return rows;
+
+    if (typeof line !== 'undefined') {
+      query = query.andWhere('text_epigraphy.line', line);
+    }
+
+    let markups: MarkupUnit[] = await query;
+    const refTypes: { [key: string]: Set<string> } = {};
+    markups = markups.filter(markup => {
+      if (refTypes[markup.referenceUuid]) {
+        if (refTypes[markup.referenceUuid].has(markup.type)) {
+          return false;
+        }
+      } else {
+        refTypes[markup.referenceUuid] = new Set();
+      }
+
+      refTypes[markup.referenceUuid].add(markup.type);
+      return true;
+    });
+    markups.sort(a => {
+      if (a.type === 'damage' || a.type === 'partialDamage') {
+        return -1;
+      }
+      return 0;
+    });
+    return markups;
   }
 }
 
