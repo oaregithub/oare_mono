@@ -180,11 +180,11 @@ router.route('/threads').get(adminRoute, async (req, res, next) => {
     const sortByLatestComment = (a: ThreadDisplay, b: ThreadDisplay) => {
       if (a.latestCommentDate < b.latestCommentDate) {
         return 1;
-      } else if (b.latestCommentDate < a.latestCommentDate) {
-        return -1;
-      } else {
-        return 0;
       }
+      if (b.latestCommentDate < a.latestCommentDate) {
+        return -1;
+      }
+      return 0;
     };
 
     results.sort(sortByLatestComment);
