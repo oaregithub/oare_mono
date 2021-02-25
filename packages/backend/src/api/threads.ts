@@ -162,24 +162,37 @@ router.route('/threads').get(adminRoute, async (req, res, next) => {
     const threads = await threadsDao.getAll();
 
     const results: ThreadDisplay[] = await Promise.all(
-      threads.map(async (thread) => {
+      threads.map(async thread => {
         const threadWord = await threadsDao.getThreadWord(thread.uuid || '');
-        const comment = await commentsDao.getLatestCommentByThreadUuid(thread.uuid || '');
+        const comments = await commentsDao.getAllByThreadUuid(
+          thread.uuid || '',
+          true
+        );
         return {
-          uuid: thread.uuid,
+          thread,
           word: threadWord,
-          status: thread.status,
-          route: thread.route,
-          latestComment: comment ? comment.text : '',
+          latestCommentDate: comments[0].createdAt,
+          comments,
         } as ThreadDisplay;
-      }),
+      })
     );
+
+    const sortByLatestComment = (a: ThreadDisplay, b: ThreadDisplay) => {
+      if (a.latestCommentDate < b.latestCommentDate) {
+        return 1;
+      } else if (b.latestCommentDate < a.latestCommentDate) {
+        return -1;
+      } else {
+        return 0;
+      }
+    };
+
+    results.sort(sortByLatestComment);
 
     res.json(results);
   } catch (err) {
     next(new HttpInternalError(err));
   }
 });
-
 
 export default router;

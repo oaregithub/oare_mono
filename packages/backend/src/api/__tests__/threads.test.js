@@ -25,14 +25,6 @@ describe('comments api test', () => {
     },
   ];
 
-  const commentsGetLatestComment = {
-    uuid: 'string',
-    threadUuid: 'string',
-    userUuid: 'string',
-    createdAt: '',
-    deleted: 'boolean',
-    text: 'string',
-  }
   const MockCommentsDao = {
     getAllByThreadUuid: jest.fn().mockResolvedValue(commentsGetAllByThreadUuid),
     insert: jest.fn().mockResolvedValue(''),
@@ -422,7 +414,7 @@ describe('comments api test', () => {
   describe('GET /threads', () => {
     const PATH = `${API_PATH}/threads`;
 
-    const sendRequest = async ({ cookie = true } = {}) => {
+    const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);
       return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
@@ -432,11 +424,10 @@ describe('comments api test', () => {
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([
         {
-          uuid: threadsGetByUuid.uuid,
+          thread: threadsGetByUuid,
           word: threadWord,
-          status: threadsGetByUuid.status,
-          route: threadsGetByUuid.route,
-          latestComment: commentsGetLatestComment.text,
+          latestCommentDate: commentsGetAllByThreadUuid[0].createdAt,
+          comments: commentsGetAllByThreadUuid,
         },
       ]);
     });
@@ -463,16 +454,18 @@ describe('comments api test', () => {
     it('returns 500, unsuccessfully retrieves latest comment.', async () => {
       sl.set('CommentsDao', {
         ...MockCommentsDao,
-        getLatestCommentByThreadUuid: jest.fn().mockRejectedValue('Error when returning latest comment'),
+        getAllByThreadUuid: jest
+          .fn()
+          .mockRejectedValue(
+            'Error when returning all comments by thread uuid'
+          ),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
     it('returns 401 when non-logged in user tries to access route.', async () => {
-      const response = await sendRequest({
-        cookie: false,
-      });
+      const response = await sendRequest(false);
       expect(response.status).toBe(401);
     });
 
