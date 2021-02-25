@@ -14,7 +14,7 @@ describe('comments api test', () => {
       text: 'string',
     },
   ];
-  const commentsGetAllGroupedByThead = [
+  const commentsGetAllGroupedByThread = [
     {
       uuid: 'string',
       threadUuid: 'string',
@@ -29,7 +29,7 @@ describe('comments api test', () => {
     insert: jest.fn().mockResolvedValue(''),
     getAllByUserUuidGroupedByThread: jest
       .fn()
-      .mockResolvedValue(commentsGetAllGroupedByThead),
+      .mockResolvedValue(commentsGetAllGroupedByThread),
   };
 
   const threadsGetByReferenceUuid = [
@@ -108,7 +108,7 @@ describe('comments api test', () => {
   describe('GET /threads/:referenceUuid', () => {
     const PATH = `${API_PATH}/threads/testReferenceUuid`;
 
-    const sendRequest = async ({ cookie = true } = {}) => {
+    const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);
       return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
@@ -125,9 +125,7 @@ describe('comments api test', () => {
     });
 
     it('returns 401, for non-logged in users.', async () => {
-      const response = await sendRequest({
-        cookie: false,
-      });
+      const response = await sendRequest(false);
       expect(response.status).toBe(401);
     });
 
@@ -332,7 +330,7 @@ describe('comments api test', () => {
   describe('GET /threads/user/:userUuid', () => {
     const PATH = `${API_PATH}/threads/user/testUserUuid`;
 
-    const sendRequest = async ({ cookie = true } = {}) => {
+    const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);
       return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
@@ -351,9 +349,7 @@ describe('comments api test', () => {
     });
 
     it('returns 401 when non-logged in user accesses endpoint.', async () => {
-      const response = await sendRequest({
-        cookie: false,
-      });
+      const response = await sendRequest(false);
       expect(response.status).toBe(401);
     });
 
