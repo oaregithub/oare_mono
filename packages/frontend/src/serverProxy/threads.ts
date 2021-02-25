@@ -1,4 +1,9 @@
-import { Thread, ThreadDisplay, ThreadWithComments, UpdateThreadNameRequest } from '@oare/types';
+import {
+  Thread,
+  ThreadDisplay,
+  ThreadWithComments,
+  UpdateThreadNameRequest,
+} from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getThreadsWithCommentsByReferenceUuid(
