@@ -33,8 +33,10 @@ class Cache {
     if (exact) {
       delete this.responses[keyString(key)];
     } else {
-      const keys = Object.keys(this.responses).filter((k) => JSON.parse(k).url.startsWith(key.req.originalUrl));
-      keys.forEach((k) => delete this.responses[k]);
+      const keys = Object.keys(this.responses).filter(k =>
+        JSON.parse(k).url.startsWith(key.req.originalUrl)
+      );
+      keys.forEach(k => delete this.responses[k]);
     }
   }
 }

@@ -1,5 +1,10 @@
+import {
+  Thread,
+  ThreadDisplay,
+  ThreadWithComments,
+  UpdateThreadNameRequest,
+} from '@oare/types';
 import axios from '../axiosInstance';
-import { Thread, ThreadDisplay, ThreadWithComments } from '@oare/types';
 
 async function getThreadsWithCommentsByReferenceUuid(
   referenceUuid: string
@@ -21,6 +26,12 @@ async function getThreadsByUserUuid(userUuid: string): Promise<ThreadDisplay> {
   return data;
 }
 
+async function updateThreadName(
+  threadNameRequest: UpdateThreadNameRequest
+): Promise<void> {
+  await axios.put('/threads/name', threadNameRequest);
+}
+
 async function getAllThreads(): Promise<ThreadDisplay> {
   const { data } = await axios.get('/threads');
   return data;
@@ -31,4 +42,5 @@ export default {
   updateThread,
   getThreadsByUserUuid,
   getAllThreads,
+  updateThreadName,
 };

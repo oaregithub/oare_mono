@@ -4,18 +4,25 @@ import { PermissionName } from '@oare/types';
 import sl from '@/serviceLocator';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 
-const permissionsRoute = (permission: PermissionName) => async (req: Request, res: Response, next: NextFunction) => {
+const permissionsRoute = (permission: PermissionName) => async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { user } = req;
     const PermissionsDao = sl.get('PermissionsDao');
 
     const permissionGuard = async (err?: any) => {
       if (err) {
         next(err);
+        return;
       }
 
+      const { user } = req;
       if (user) {
-        const userPermissions = (await PermissionsDao.getUserPermissions(user)).map((perm) => perm.name);
+        const userPermissions = (
+          await PermissionsDao.getUserPermissions(user)
+        ).map(perm => perm.name);
 
         if (userPermissions.includes(permission)) {
           next();
@@ -23,7 +30,11 @@ const permissionsRoute = (permission: PermissionName) => async (req: Request, re
         }
       }
 
-      next(new HttpForbidden('You do not have permission to perform this function.'));
+      next(
+        new HttpForbidden(
+          'You do not have permission to perform this function.'
+        )
+      );
     };
 
     authenticatedRoute(req, res, permissionGuard);

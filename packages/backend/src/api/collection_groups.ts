@@ -1,5 +1,9 @@
 import express from 'express';
-import { AddTextCollectionPayload, UpdateTextCollectionListPayload, TextCollectionGroup } from '@oare/types';
+import {
+  AddTextCollectionPayload,
+  UpdateTextCollectionListPayload,
+  TextCollectionGroup,
+} from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import { API_PATH } from '@/setupRoutes';
@@ -7,7 +11,9 @@ import sl from '@/serviceLocator';
 
 async function canInsert(groupId: number, collections: TextCollectionGroup[]) {
   const CollectionGroupDao = sl.get('CollectionGroupDao');
-  const groupCollections = (await CollectionGroupDao.getCollections(groupId)).map((collection) => collection.uuid);
+  const groupCollections = (
+    await CollectionGroupDao.getCollections(groupId)
+  ).map(collection => collection.uuid);
   for (let i = 0; i < collections.length; i += 1) {
     if (groupCollections.includes(collections[i].uuid)) {
       return false;
@@ -18,7 +24,9 @@ async function canInsert(groupId: number, collections: TextCollectionGroup[]) {
 
 async function canRemove(groupId: number, uuid: string) {
   const CollectionGroupDao = sl.get('CollectionGroupDao');
-  const groupCollections = (await CollectionGroupDao.getCollections(groupId)).map((collection) => collection.uuid);
+  const groupCollections = (
+    await CollectionGroupDao.getCollections(groupId)
+  ).map(collection => collection.uuid);
   if (!groupCollections.includes(uuid)) {
     return false;
   }
@@ -34,7 +42,7 @@ function clearCache() {
         method: 'GET',
       },
     },
-    { exact: false },
+    { exact: false }
   );
 }
 
@@ -66,7 +74,11 @@ router
       }
 
       if (!(await canInsert(groupId, items))) {
-        next(new HttpBadRequest('One or more of the selected collections is already blacklisted'));
+        next(
+          new HttpBadRequest(
+            'One or more of the selected collections is already blacklisted'
+          )
+        );
         return;
       }
 
@@ -89,7 +101,11 @@ router
       const OareGroupDao = sl.get('OareGroupDao');
       const CollectionGroupDao = sl.get('CollectionGroupDao');
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const { uuid, canRead, canWrite }: UpdateTextCollectionListPayload = req.body;
+      const {
+        uuid,
+        canRead,
+        canWrite,
+      }: UpdateTextCollectionListPayload = req.body;
 
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
@@ -97,9 +113,14 @@ router
         return;
       }
 
-      const collectionExists = await CollectionGroupDao.containsAssociation(groupId, uuid);
+      const collectionExists = await CollectionGroupDao.containsAssociation(
+        groupId,
+        uuid
+      );
       if (!collectionExists) {
-        next(new HttpBadRequest(`Cannot update collection not in group: ${uuid}`));
+        next(
+          new HttpBadRequest(`Cannot update collection not in group: ${uuid}`)
+        );
         return;
       }
 
@@ -111,29 +132,38 @@ router
     }
   });
 
-router.route('/collection_groups/:groupId/:uuid').delete(adminRoute, async (req, res, next) => {
-  try {
-    const CollectionGroupDao = sl.get('CollectionGroupDao');
-    const OareGroupDao = sl.get('OareGroupDao');
-    const { groupId, uuid } = (req.params as unknown) as { groupId: number; uuid: string };
+router
+  .route('/collection_groups/:groupId/:uuid')
+  .delete(adminRoute, async (req, res, next) => {
+    try {
+      const CollectionGroupDao = sl.get('CollectionGroupDao');
+      const OareGroupDao = sl.get('OareGroupDao');
+      const { groupId, uuid } = (req.params as unknown) as {
+        groupId: number;
+        uuid: string;
+      };
 
-    const existingGroup = await OareGroupDao.getGroupById(groupId);
-    if (!existingGroup) {
-      next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
-      return;
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
+      if (!existingGroup) {
+        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
+        return;
+      }
+
+      if (!(await canRemove(groupId, uuid))) {
+        next(
+          new HttpBadRequest(
+            'One or more of the selected collections does not exist in the blacklist'
+          )
+        );
+        return;
+      }
+
+      await CollectionGroupDao.removeCollection(groupId, uuid);
+      clearCache();
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
     }
-
-    if (!(await canRemove(groupId, uuid))) {
-      next(new HttpBadRequest('One or more of the selected collections does not exist in the blacklist'));
-      return;
-    }
-
-    await CollectionGroupDao.removeCollection(groupId, uuid);
-    clearCache();
-    res.status(204).end();
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+  });
 
 export default router;

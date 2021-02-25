@@ -3,7 +3,13 @@ import knex from '@/connection';
 import { v4 } from 'uuid';
 
 class CommentsDao {
-  async insert({ threadUuid, userUuid, createdAt, deleted, text }: CommentInsert): Promise<string> {
+  async insert({
+    threadUuid,
+    userUuid,
+    createdAt,
+    deleted,
+    text,
+  }: CommentInsert): Promise<string> {
     const newUuid: string = v4();
     await knex('comments').insert({
       uuid: newUuid,
@@ -23,7 +29,10 @@ class CommentsDao {
     });
   }
 
-  async getAllByThreadUuid(threadUuid: string): Promise<Comment[]> {
+  async getAllByThreadUuid(
+    threadUuid: string,
+    mostRecent = false
+  ): Promise<Comment[]> {
     const comments = await knex('comments')
       .select(
         'comments.uuid',
@@ -31,15 +40,18 @@ class CommentsDao {
         'comments.user_uuid AS userUuid',
         'comments.created_at AS createdAt',
         'comments.deleted',
-        'comments.comment AS text',
+        'comments.comment AS text'
       )
       .where('comments.thread_uuid', threadUuid)
-      .orderBy('comments.created_at');
+      .orderBy('comments.created_at', mostRecent ? 'desc' : 'asc');
 
     return comments;
   }
 
-  async getAllByUserUuidGroupedByThread(userUuid: string): Promise<Comment[]> {
+  async getAllByUserUuidGroupedByThread(
+    userUuid: string,
+    mostRecent = false
+  ): Promise<Comment[]> {
     const comments = await knex('comments')
       .select(
         'comments.uuid',
@@ -47,10 +59,10 @@ class CommentsDao {
         'comments.user_uuid AS userUuid',
         'comments.created_at AS createdAt',
         'comments.deleted',
-        'comments.comment AS text',
+        'comments.comment AS text'
       )
       .where('comments.user_uuid', userUuid)
-      .orderBy('comments.created_at')
+      .orderBy('comments.created_at', mostRecent ? 'desc' : 'asc')
       .groupBy('comments.thread_uuid');
 
     return comments;

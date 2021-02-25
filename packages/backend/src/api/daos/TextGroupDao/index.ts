@@ -1,6 +1,7 @@
+import _ from 'lodash';
 import { Text, Blacklists } from '@oare/types';
 import knex from '@/connection';
-import userGroupDao from '../UserGroupDao';
+import UserGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import { UserRow } from '../UserDao';
@@ -21,24 +22,26 @@ class TextGroupDao {
     const userTexts = await PublicBlacklistDao.getBlacklistedTexts();
 
     if (user) {
-      const groupIds = await userGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
       for (let i = 0; i < groupIds.length; i += 1) {
         const groupId = groupIds[i];
         const texts = await this.getTexts(groupId);
-        texts.forEach((text) => {
+        texts.forEach(text => {
           userTexts.push(text);
         });
       }
     }
 
-    const whitelistedUuids = userTexts.filter((text) => text.canRead).map((text) => text.uuid);
+    const whitelistedUuids = userTexts
+      .filter(text => text.canRead)
+      .map(text => text.uuid);
     const blacklistedUuids = userTexts
-      .filter((text) => !text.canRead && !whitelistedUuids.includes(text.uuid))
-      .map((text) => text.uuid);
+      .filter(text => !text.canRead && !whitelistedUuids.includes(text.uuid))
+      .map(text => text.uuid);
 
     if (!user || !user?.isAdmin) {
       const unpublishedTextUuids = await textDao.getUnpublishedTextUuids();
-      unpublishedTextUuids.forEach((uuid) => {
+      unpublishedTextUuids.forEach(uuid => {
         blacklistedUuids.push(uuid);
       });
     }
@@ -55,22 +58,31 @@ class TextGroupDao {
         'text_group.text_uuid AS uuid',
         'text_group.can_read AS canRead',
         'text_group.can_write AS canWrite',
-        'alias.name',
+        'alias.name'
       )
       .innerJoin('hierarchy', 'hierarchy.uuid', 'text_group.text_uuid')
       .innerJoin('alias', 'text_group.text_uuid', 'alias.reference_uuid')
       .where('group_id', groupId)
       .groupBy('text_group.text_uuid');
 
-    return results.map((item) => ({
+    return results.map(item => ({
       ...item,
       canWrite: !!item.canWrite,
       canRead: !!item.canRead,
     }));
   }
 
+  async getTextsByUser(userId: number): Promise<Text[]> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+    const groupTexts = await Promise.all(
+      groupIds.map(groupId => this.getTexts(groupId))
+    );
+
+    return _.flatten(groupTexts);
+  }
+
   async userHasWritePermission(uuid: string, userId: number): Promise<boolean> {
-    const groupIds = await userGroupDao.getGroupsOfUser(userId);
+    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
 
     // Select all rows for given uuid
     const textRows = await knex('text_group')
@@ -86,12 +98,23 @@ class TextGroupDao {
     return false;
   }
 
-  async containsAssociation(groupId: number, textUuid: string): Promise<boolean> {
-    const row = await knex('text_group').first().where('text_uuid', textUuid).andWhere('group_id', groupId);
+  async containsAssociation(
+    groupId: number,
+    textUuid: string
+  ): Promise<boolean> {
+    const row = await knex('text_group')
+      .first()
+      .where('text_uuid', textUuid)
+      .andWhere('group_id', groupId);
     return !!row;
   }
 
-  async update(groupId: number, textUuid: string, canWrite: boolean, canRead: boolean): Promise<void> {
+  async update(
+    groupId: number,
+    textUuid: string,
+    canWrite: boolean,
+    canRead: boolean
+  ): Promise<void> {
     await knex('text_group')
       .where('text_uuid', textUuid)
       .andWhere('group_id', groupId)
@@ -107,7 +130,10 @@ class TextGroupDao {
   }
 
   async removeText(groupId: number, uuid: string): Promise<void> {
-    await knex('text_group').where('text_uuid', uuid).andWhere('group_id', groupId).del();
+    await knex('text_group')
+      .where('text_uuid', uuid)
+      .andWhere('group_id', groupId)
+      .del();
   }
 }
 

@@ -1,5 +1,5 @@
-import axios from '../axiosInstance';
 import { CommentRequest, CommentResponse } from '@oare/types';
+import axios from '../axiosInstance';
 
 async function insertComment(
   request: CommentRequest

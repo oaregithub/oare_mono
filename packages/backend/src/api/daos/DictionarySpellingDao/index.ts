@@ -11,9 +11,15 @@ export interface DictionarySpellingRows {
 }
 
 class DictionarySpellingDao {
-  async updateSpelling(uuid: string, newSpelling: string, trx?: Knex.Transaction): Promise<void> {
+  async updateSpelling(
+    uuid: string,
+    newSpelling: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
     const k = trx || knex;
-    await k('dictionary_spelling').update('explicit_spelling', newSpelling).where({ uuid });
+    await k('dictionary_spelling')
+      .update('explicit_spelling', newSpelling)
+      .where({ uuid });
   }
 
   async getFormSpellings(formUuid: string): Promise<FormSpelling[]> {
@@ -26,7 +32,9 @@ class DictionarySpellingDao {
       .select('uuid', 'explicit_spelling AS spelling')
       .where('reference_uuid', formUuid);
 
-    const spellingOccurrences = await Promise.all(rows.map((r) => TextDiscourseDao.getTotalSpellingTexts(r.uuid)));
+    const spellingOccurrences = await Promise.all(
+      rows.map(r => TextDiscourseDao.getTotalSpellingTexts(r.uuid))
+    );
 
     return rows.map((r, i) => ({
       ...r,
@@ -34,7 +42,10 @@ class DictionarySpellingDao {
     }));
   }
 
-  async spellingExistsOnForm(formUuid: string, spelling: string): Promise<boolean> {
+  async spellingExistsOnForm(
+    formUuid: string,
+    spelling: string
+  ): Promise<boolean> {
     const row = await knex('dictionary_spelling')
       .select()
       .where({
@@ -57,7 +68,10 @@ class DictionarySpellingDao {
     return uuid;
   }
 
-  async deleteSpelling(spellingUuid: string, trx?: Knex.Transaction): Promise<void> {
+  async deleteSpelling(
+    spellingUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
     const k = trx || knex;
 
     await k('dictionary_spelling').del().where('uuid', spellingUuid);
@@ -73,10 +87,12 @@ class DictionarySpellingDao {
   }
 
   async getDictionarySpellingRows(): Promise<DictionarySpellingRows[]> {
-    const spellings: DictionarySpellingRows[] = await knex('dictionary_spelling AS ds').select(
-        'ds.uuid',
-        'ds.reference_uuid AS referenceUuid',
-        'ds.explicit_spelling AS explicitSpelling',
+    const spellings: DictionarySpellingRows[] = await knex(
+      'dictionary_spelling AS ds'
+    ).select(
+      'ds.uuid',
+      'ds.reference_uuid AS referenceUuid',
+      'ds.explicit_spelling AS explicitSpelling'
     );
     return spellings;
   }

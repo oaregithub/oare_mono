@@ -1,7 +1,7 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { CommentRequest, CommentResponse, Thread } from '@oare/types';
+import { CommentRequest, CommentResponse } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 
 const router = express.Router();
@@ -36,16 +36,18 @@ router.route('/comments').post(authenticatedRoute, async (req, res, next) => {
   }
 });
 
-router.route('/comments/:uuid').delete(authenticatedRoute, async (req, res, next) => {
-  try {
-    const { uuid } = req.params;
-    const commentsDao = sl.get('CommentsDao');
-    await commentsDao.updateDelete(uuid);
+router
+  .route('/comments/:uuid')
+  .delete(authenticatedRoute, async (req, res, next) => {
+    try {
+      const { uuid } = req.params;
+      const commentsDao = sl.get('CommentsDao');
+      await commentsDao.updateDelete(uuid);
 
-    res.status(200).end();
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      res.status(200).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;

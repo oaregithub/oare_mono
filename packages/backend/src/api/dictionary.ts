@@ -12,7 +12,11 @@ import {
   SpellingOccurrencesResponse,
   Token,
 } from '@oare/types';
-import { tokenizeExplicitSpelling, createTabletRenderer, normalizeSign } from '@oare/oare';
+import {
+  tokenizeExplicitSpelling,
+  createTabletRenderer,
+  normalizeSign,
+} from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
@@ -20,38 +24,62 @@ import permissionsRoute from '@/middlewares/permissionsRoute';
 
 const router = express.Router();
 
-router.route('/dictionary/spellings').post(permissionsRoute('ADD_SPELLING'), async (req, res, next) => {
-  try {
-    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
-    const LoggingEditsDao = sl.get('LoggingEditsDao');
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
+router
+  .route('/dictionary/spellings')
+  .post(permissionsRoute('ADD_SPELLING'), async (req, res, next) => {
+    try {
+      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-    const { formUuid, spelling, discourseUuids }: AddFormSpellingPayload = req.body;
-    const spellingExists = await DictionarySpellingDao.spellingExistsOnForm(formUuid, spelling);
+      const {
+        formUuid,
+        spelling,
+        discourseUuids,
+      }: AddFormSpellingPayload = req.body;
+      const spellingExists = await DictionarySpellingDao.spellingExistsOnForm(
+        formUuid,
+        spelling
+      );
 
-    if (spellingExists) {
-      next(new HttpBadRequest('Spelling already exists on form'));
-      return;
+      if (spellingExists) {
+        next(new HttpBadRequest('Spelling already exists on form'));
+        return;
+      }
+
+      const spellingUuid = await DictionarySpellingDao.addSpelling(
+        formUuid,
+        spelling
+      );
+      await LoggingEditsDao.logEdit(
+        'INSERT',
+        req.user!.uuid,
+        'dictionary_spelling',
+        spellingUuid
+      );
+
+      await Promise.all(
+        discourseUuids.map(discourseUuid =>
+          LoggingEditsDao.logEdit(
+            'UPDATE',
+            req.user!.uuid,
+            'text_discourse',
+            discourseUuid
+          )
+        )
+      );
+      await Promise.all(
+        discourseUuids.map(discourseUuid =>
+          TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid)
+        )
+      );
+
+      const response: AddFormSpellingResponse = { uuid: spellingUuid };
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
     }
-
-    const spellingUuid = await DictionarySpellingDao.addSpelling(formUuid, spelling);
-    await LoggingEditsDao.logEdit('INSERT', req.user!.uuid, 'dictionary_spelling', spellingUuid);
-
-    await Promise.all(
-      discourseUuids.map((discourseUuid) =>
-        LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', discourseUuid),
-      ),
-    );
-    await Promise.all(
-      discourseUuids.map((discourseUuid) => TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid)),
-    );
-
-    const response: AddFormSpellingResponse = { uuid: spellingUuid };
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+  });
 
 router.route('/dictionary/spellings/check').get(async (req, res, next) => {
   try {
@@ -80,19 +108,24 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
     }
 
     const SignReadingDao = sl.get('SignReadingDao');
-    const signs = tokens.filter(({ tokenName: [tokenType] }) => tokenType === 'SIGN');
+    const signs = tokens.filter(
+      ({ tokenName: [tokenType] }) => tokenType === 'SIGN'
+    );
     const signExistences = await Promise.all(
-      signs.map((token) => SignReadingDao.hasSign(normalizeSign(token.tokenText))),
+      signs.map(token => SignReadingDao.hasSign(normalizeSign(token.tokenText)))
     );
 
-    if (signExistences.every((v) => v)) {
+    if (signExistences.every(v => v)) {
       const response: CheckSpellingResponse = { errors: [] };
       res.json(response);
     } else {
       const response: CheckSpellingResponse = {
         errors: signs
           .filter((_exists, i) => !signExistences[i])
-          .map((token) => `${normalizeSign(token.tokenText)} is not a valid sign reading`),
+          .map(
+            token =>
+              `${normalizeSign(token.tokenText)} is not a valid sign reading`
+          ),
       };
       res.json(response);
     }
@@ -131,7 +164,12 @@ router
       const { word }: UpdateDictionaryWordPayload = req.body;
       const userUuid = req.user!.uuid;
 
-      await LoggingEditsDao.logEdit('UPDATE', userUuid, 'dictionary_word', uuid);
+      await LoggingEditsDao.logEdit(
+        'UPDATE',
+        userUuid,
+        'dictionary_word',
+        uuid
+      );
       await DictionaryWordDao.updateWordSpelling(uuid, word);
 
       // Updated word, cache must be cleared
@@ -142,7 +180,7 @@ router
             method: 'GET',
           },
         },
-        { exact: false },
+        { exact: false }
       );
       res.json({ word });
     } catch (err) {
@@ -150,110 +188,143 @@ router
     }
   });
 
-router.route('/dictionary/translations/:uuid').post(permissionsRoute('UPDATE_TRANSLATION'), async (req, res, next) => {
-  try {
-    const cache = sl.get('cache');
-    const DictionaryWordDao = sl.get('DictionaryWordDao');
+router
+  .route('/dictionary/translations/:uuid')
+  .post(permissionsRoute('UPDATE_TRANSLATION'), async (req, res, next) => {
+    try {
+      const cache = sl.get('cache');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
 
-    const { uuid } = req.params;
-    const { translations }: UpdateDictionaryTranslationPayload = req.body;
+      const { uuid } = req.params;
+      const { translations }: UpdateDictionaryTranslationPayload = req.body;
 
-    const updatedTranslations = await DictionaryWordDao.updateTranslations(req.user!.uuid, uuid, translations);
+      const updatedTranslations = await DictionaryWordDao.updateTranslations(
+        req.user!.uuid,
+        uuid,
+        translations
+      );
 
-    // Updated word, cache must be cleared
-    cache.clear(
-      {
-        req: {
-          originalUrl: `${API_PATH}/words`,
-          method: 'GET',
+      // Updated word, cache must be cleared
+      cache.clear(
+        {
+          req: {
+            originalUrl: `${API_PATH}/words`,
+            method: 'GET',
+          },
         },
-      },
-      { exact: false },
-    );
-    res.json({
-      translations: updatedTranslations,
-    });
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
-
-router.route('/dictionary/forms/:uuid').post(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
-  try {
-    const DictionaryFormDao = sl.get('DictionaryFormDao');
-    const LoggingEditsDao = sl.get('LoggingEditsDao');
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
-
-    const { uuid: formUuid } = req.params;
-    const formData: DictionaryForm = req.body;
-    const userUuid = req.user!.uuid;
-
-    await LoggingEditsDao.logEdit('UPDATE', userUuid, 'dictionary_form', formUuid);
-    await DictionaryFormDao.updateForm(formUuid, formData.form);
-
-    const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(formUuid);
-    await Promise.all(
-      discourseUuids.map((uuid) => LoggingEditsDao.logEdit('UPDATE', userUuid, 'text_discourse', uuid)),
-    );
-    await Promise.all(discourseUuids.map((uuid) => TextDiscourseDao.updateDiscourseTranscription(uuid, formData.form)));
-    res.json({
-      uuid: formUuid,
-      form: formData,
-    });
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
-
-router.route('/dictionary/spellings/:uuid/texts').get(async (req, res, next) => {
-  try {
-    const utils = sl.get('utils');
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const TextMarkupDao = sl.get('TextMarkupDao');
-
-    const { uuid } = req.params;
-    const pagination = utils.extractPagination(req.query);
-
-    const { rows, totalResults } = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
-
-    const epigraphicUnits = await Promise.all(
-      rows.map(({ textUuid }) => TextEpigraphyDao.getEpigraphicUnits(textUuid)),
-    );
-
-    const markupUnits = await Promise.all(rows.map(({ textUuid }) => TextMarkupDao.getMarkups(textUuid)));
-
-    const readings = rows.map((row, index) => {
-      const units = epigraphicUnits[index];
-      const markups = markupUnits[index];
-
-      const renderer = createTabletRenderer(units, markups, {
-        lineNumbers: true,
-        textFormat: 'html',
-        highlightDiscourses: [row.discourseUuid],
+        { exact: false }
+      );
+      res.json({
+        translations: updatedTranslations,
       });
-      const linesList = renderer.lines;
-      const lineIdx = linesList.indexOf(row.line);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
-      const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
-      const endIdx = lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
+router
+  .route('/dictionary/forms/:uuid')
+  .post(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
+    try {
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-      return _.range(startIdx, endIdx + 1).map((idx) => renderer.lineReading(linesList[idx]));
-    });
+      const { uuid: formUuid } = req.params;
+      const formData: DictionaryForm = req.body;
+      const userUuid = req.user!.uuid;
 
-    const response: SpellingOccurrencesResponse = {
-      totalResults,
-      rows: rows.map((r, index) => ({
-        ...r,
-        readings: readings[index],
-      })),
-    };
+      await LoggingEditsDao.logEdit(
+        'UPDATE',
+        userUuid,
+        'dictionary_form',
+        formUuid
+      );
+      await DictionaryFormDao.updateForm(formUuid, formData.form);
 
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(
+        formUuid
+      );
+      await Promise.all(
+        discourseUuids.map(uuid =>
+          LoggingEditsDao.logEdit('UPDATE', userUuid, 'text_discourse', uuid)
+        )
+      );
+      await Promise.all(
+        discourseUuids.map(uuid =>
+          TextDiscourseDao.updateDiscourseTranscription(uuid, formData.form)
+        )
+      );
+      res.json({
+        uuid: formUuid,
+        form: formData,
+      });
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
+  .route('/dictionary/spellings/:uuid/texts')
+  .get(async (req, res, next) => {
+    try {
+      const utils = sl.get('utils');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+      const TextMarkupDao = sl.get('TextMarkupDao');
+
+      const { uuid } = req.params;
+      const pagination = utils.extractPagination(req.query);
+
+      const {
+        rows,
+        totalResults,
+      } = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+
+      const epigraphicUnits = await Promise.all(
+        rows.map(({ textUuid }) =>
+          TextEpigraphyDao.getEpigraphicUnits(textUuid)
+        )
+      );
+
+      const markupUnits = await Promise.all(
+        rows.map(({ textUuid }) => TextMarkupDao.getMarkups(textUuid))
+      );
+
+      const readings = rows.map((row, index) => {
+        const units = epigraphicUnits[index];
+        const markups = markupUnits[index];
+
+        const renderer = createTabletRenderer(units, markups, {
+          lineNumbers: true,
+          textFormat: 'html',
+          highlightDiscourses: [row.discourseUuid],
+        });
+        const linesList = renderer.lines;
+        const lineIdx = linesList.indexOf(row.line);
+
+        const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
+        const endIdx =
+          lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
+
+        return _.range(startIdx, endIdx + 1).map(idx =>
+          renderer.lineReading(linesList[idx])
+        );
+      });
+
+      const response: SpellingOccurrencesResponse = {
+        totalResults,
+        rows: rows.map((r, index) => ({
+          ...r,
+          readings: readings[index],
+        })),
+      };
+
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 router
   .route('/dictionary/spellings/:uuid')
@@ -267,30 +338,56 @@ router
       const utils = sl.get('utils');
 
       // If it doesn't exist in text_discourse, update
-      const currentSpelling = await DictionarySpellingDao.getSpellingByUuid(spellingUuid);
-      const discourseHasSpelling = await TextDiscourseDao.hasSpelling(spellingUuid);
+      const currentSpelling = await DictionarySpellingDao.getSpellingByUuid(
+        spellingUuid
+      );
+      const discourseHasSpelling = await TextDiscourseDao.hasSpelling(
+        spellingUuid
+      );
       if (currentSpelling !== spelling && discourseHasSpelling) {
         next(
           new HttpBadRequest(
-            'Updating a spelling that exists in text_discourse is currently not supported. Try again at a future date.',
-          ),
+            'Updating a spelling that exists in text_discourse is currently not supported. Try again at a future date.'
+          )
         );
         return;
       }
 
-      await utils.createTransaction(async (trx) => {
+      await utils.createTransaction(async trx => {
         if (currentSpelling !== spelling) {
-          await DictionarySpellingDao.updateSpelling(spellingUuid, spelling, trx);
-          await LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'dictionary_spelling', spellingUuid, trx);
+          await DictionarySpellingDao.updateSpelling(
+            spellingUuid,
+            spelling,
+            trx
+          );
+          await LoggingEditsDao.logEdit(
+            'UPDATE',
+            req.user!.uuid,
+            'dictionary_spelling',
+            spellingUuid,
+            trx
+          );
         }
 
         await Promise.all(
-          discourseUuids.map((discourseUuid) =>
-            LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', discourseUuid, trx),
-          ),
+          discourseUuids.map(discourseUuid =>
+            LoggingEditsDao.logEdit(
+              'UPDATE',
+              req.user!.uuid,
+              'text_discourse',
+              discourseUuid,
+              trx
+            )
+          )
         );
         await Promise.all(
-          discourseUuids.map((discourseUuid) => TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid, trx)),
+          discourseUuids.map(discourseUuid =>
+            TextDiscourseDao.updateSpellingUuid(
+              discourseUuid,
+              spellingUuid,
+              trx
+            )
+          )
         );
       });
 
@@ -306,14 +403,23 @@ router
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
 
-      await TextDiscourseDao.unsetSpellingUuid(uuid, async (trx) => {
+      await TextDiscourseDao.unsetSpellingUuid(uuid, async trx => {
         await DictionarySpellingDao.deleteSpelling(uuid, trx);
 
-        const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(uuid, trx);
+        const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(
+          uuid,
+          trx
+        );
         await Promise.all(
-          discourseRowUuids.map((rowUuid) =>
-            LoggingEditsDao.logEdit('UPDATE', req.user!.uuid, 'text_discourse', rowUuid, trx),
-          ),
+          discourseRowUuids.map(rowUuid =>
+            LoggingEditsDao.logEdit(
+              'UPDATE',
+              req.user!.uuid,
+              'text_discourse',
+              rowUuid,
+              trx
+            )
+          )
         );
       });
 

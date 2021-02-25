@@ -1,8 +1,8 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
-import AddGroupCollections from '../AddGroupCollections.vue';
 import flushPromises from 'flush-promises';
+import AddGroupCollections from '../AddGroupCollections.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
@@ -80,10 +80,7 @@ describe('AddGroupCollections test', () => {
   it('successfully adds collections to group', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(1)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     expect(mockServer.addGroupCollections).toHaveBeenCalled();
@@ -102,10 +99,7 @@ describe('AddGroupCollections test', () => {
       },
     });
     await flushPromises();
-    await wrapper
-      .findAll('.v-data-table__checkbox')
-      .at(1)
-      .trigger('click');
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();

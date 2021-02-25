@@ -1,24 +1,7 @@
 import { RouteConfig } from 'vue-router';
-import LoginView from '../views/LoginView.vue';
-import RegisterView from '../views/RegisterView.vue';
-import AdminGroupView from '../views/AdminView/AdminGroupView.vue';
-import AdminTextView from '../views/AdminView/AdminTextView.vue';
-import GroupView from '../views/GroupView/index.vue';
 import ManageMembers from '@/views/GroupView/ManageMembers.vue';
 import ManageTexts from '@/views/GroupView/ManageTexts.vue';
 import ManageCollections from '@/views/GroupView/ManageCollections.vue';
-import CollectionTexts from '../views/CollectionTexts/index.vue';
-import CollectionsView from '../views/CollectionsView/index.vue';
-import SearchView from '../views/SearchView/index.vue';
-import ForbiddenView from '../views/ForbiddenView.vue';
-import DictionaryWord from '../views/DictionaryWord/index.vue';
-import EpigraphyView from '../views/EpigraphyView/index.vue';
-import Drafts from '../views/DashboardView/Drafts.vue';
-import Profile from '../views/DashboardView/Profile.vue';
-import LandingPage from '../views/LandingPage.vue';
-import WordsView from '../views/WordsView/index.vue';
-import NamesView from '../views/NamesView/index.vue';
-import PlacesView from '../views/PlacesView/index.vue';
 import DictionarySearch from '@/views/SearchView/DictionarySearch.vue';
 import TextsSearch from '@/views/SearchView/TextsSearch.vue';
 import AddGroupUsers from '@/views/GroupView/AddGroupUsers.vue';
@@ -33,11 +16,34 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue';
 import ManagePermissions from '@/views/GroupView/ManagePermissions.vue';
 import EpigraphyEditor from '@/views/EpigraphyView/EpigraphyEditor.vue';
 import EpigraphyFullDisplay from '@/views/EpigraphyView/EpigraphyFullDisplay.vue';
+import KnownIssues from '../views/KnownIssues.vue';
+import LoginView from '../views/LoginView.vue';
+import RegisterView from '../views/RegisterView.vue';
+import AdminGroupView from '../views/AdminView/AdminGroupView.vue';
+import AdminTextView from '../views/AdminView/AdminTextView.vue';
+import GroupView from '../views/GroupView/index.vue';
+import CollectionTexts from '../views/CollectionTexts/index.vue';
+import CollectionsView from '../views/CollectionsView/index.vue';
+import SearchView from '../views/SearchView/index.vue';
+import ForbiddenView from '../views/ForbiddenView.vue';
+import DictionaryWord from '../views/DictionaryWord/index.vue';
+import EpigraphyView from '../views/EpigraphyView/index.vue';
+import Drafts from '../views/DashboardView/Drafts.vue';
+import Profile from '../views/DashboardView/Profile.vue';
+import LandingPage from '../views/LandingPage.vue';
+import WordsView from '../views/WordsView/index.vue';
+import NamesView from '../views/NamesView/index.vue';
+import PlacesView from '../views/PlacesView/index.vue';
+import ErrorLog from '../views/AdminView/ErrorLog.vue';
 
 const routes: RouteConfig[] = [
   {
     path: '/',
     component: LandingPage,
+  },
+  {
+    path: '/issues',
+    component: KnownIssues,
   },
   {
     path: '/admin/groups',
@@ -60,6 +66,11 @@ const routes: RouteConfig[] = [
         component: BlacklistCollections,
       },
     ],
+  },
+  {
+    path: '/admin/errors',
+    name: 'adminErrors',
+    component: ErrorLog,
   },
   {
     path: '/addblacklist/texts',

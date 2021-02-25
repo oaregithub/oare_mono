@@ -1,5 +1,8 @@
 import express from 'express';
-import { AddTextCollectionPayload, UpdateTextCollectionListPayload } from '@oare/types';
+import {
+  AddTextCollectionPayload,
+  UpdateTextCollectionListPayload,
+} from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
@@ -14,7 +17,7 @@ function clearCache() {
         method: 'GET',
       },
     },
-    { exact: false },
+    { exact: false }
   );
 }
 
@@ -28,7 +31,9 @@ router
       const TextGroupDao = sl.get('TextGroupDao');
       const { groupId } = (req.params as unknown) as { groupId: number };
       const texts = await TextGroupDao.getTexts(groupId);
-      const epigraphyStatus = await Promise.all(texts.map((text) => TextEpigraphyDao.hasEpigraphy(text.uuid)));
+      const epigraphyStatus = await Promise.all(
+        texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid))
+      );
       const response = texts.map((text, index) => ({
         ...text,
         hasEpigraphy: epigraphyStatus[index],
@@ -65,7 +70,7 @@ router
       }
 
       // TODO make sure each text is not already associated with group
-      const insertRows = items.map((text) => ({
+      const insertRows = items.map(text => ({
         text_uuid: text.uuid,
         group_id: groupId,
         can_read: text.canRead,
@@ -82,7 +87,11 @@ router
   .patch(adminRoute, async (req, res, next) => {
     try {
       const { groupId } = (req.params as unknown) as { groupId: number };
-      const { uuid, canRead, canWrite }: UpdateTextCollectionListPayload = req.body;
+      const {
+        uuid,
+        canRead,
+        canWrite,
+      }: UpdateTextCollectionListPayload = req.body;
 
       const TextGroupDao = sl.get('TextGroupDao');
       const OareGroupDao = sl.get('OareGroupDao');
@@ -109,30 +118,40 @@ router
     }
   });
 
-router.route('/text_groups/:groupId/:textUuid').delete(adminRoute, async (req, res, next) => {
-  try {
-    const TextGroupDao = sl.get('TextGroupDao');
-    const OareGroupDao = sl.get('OareGroupDao');
-    const { groupId, textUuid } = (req.params as unknown) as { groupId: number; textUuid: string };
+router
+  .route('/text_groups/:groupId/:textUuid')
+  .delete(adminRoute, async (req, res, next) => {
+    try {
+      const TextGroupDao = sl.get('TextGroupDao');
+      const OareGroupDao = sl.get('OareGroupDao');
+      const { groupId, textUuid } = (req.params as unknown) as {
+        groupId: number;
+        textUuid: string;
+      };
 
-    const existingGroup = await OareGroupDao.getGroupById(groupId);
-    if (!existingGroup) {
-      next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
-      return;
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
+      if (!existingGroup) {
+        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
+        return;
+      }
+
+      const textExists = await TextGroupDao.containsAssociation(
+        groupId,
+        textUuid
+      );
+      if (!textExists) {
+        next(
+          new HttpBadRequest(`Cannot remove text not in group: ${textUuid}`)
+        );
+        return;
+      }
+
+      await TextGroupDao.removeText(groupId, textUuid);
+      clearCache();
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
     }
-
-    const textExists = await TextGroupDao.containsAssociation(groupId, textUuid);
-    if (!textExists) {
-      next(new HttpBadRequest(`Cannot remove text not in group: ${textUuid}`));
-      return;
-    }
-
-    await TextGroupDao.removeText(groupId, textUuid);
-    clearCache();
-    res.status(204).end();
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+  });
 
 export default router;

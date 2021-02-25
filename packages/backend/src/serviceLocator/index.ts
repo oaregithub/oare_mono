@@ -61,11 +61,16 @@ export type ServiceTypes = {
 };
 
 export default {
-  set<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(instanceId: K, instance: V): void {
+  set<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(
+    instanceId: K,
+    instance: V
+  ): void {
     instances[instanceId] = instance;
   },
 
-  get<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(instanceId: K): V {
+  get<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(
+    instanceId: K
+  ): V {
     return instances[instanceId];
   },
 };

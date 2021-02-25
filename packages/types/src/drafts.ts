@@ -1,7 +1,7 @@
 import { EpigraphicUnitSide } from './epigraphies';
 
 export interface TextDraftSideContent {
-  side: EpigraphicUnitSide | "";
+  side: EpigraphicUnitSide | '';
   text: string;
 }
 

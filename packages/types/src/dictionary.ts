@@ -99,7 +99,7 @@ export interface SearchDiscourseSpellingResponse {
 export interface SearchSpellingResultRow {
   wordUuid: string;
   word: string;
-  form: Omit<DictionaryForm, "spellings">;
+  form: Omit<DictionaryForm, 'spellings'>;
 }
 
 export interface SearchSpellingPayload {
@@ -115,7 +115,7 @@ export interface Pagination {
 }
 
 export interface DictionarySearchRow extends SearchTextsResultRow {
-  type: "word" | "PN" | "GN";
+  type: 'word' | 'PN' | 'GN';
   translations: string[];
 }
 

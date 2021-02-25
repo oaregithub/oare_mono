@@ -1,3 +1,6 @@
+import comments from '@/serverProxy/comments';
+import errors from '@/serverProxy/errors';
+import threads from '@/serverProxy/threads';
 import textGroups from './text_groups';
 import groups from './groups';
 import users from './users';
@@ -21,9 +24,6 @@ import textInfo from './text_info';
 import searchNames from './search_names';
 import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
-import comments from '@/serverProxy/comments';
-import errors from '@/serverProxy/errors';
-import threads from '@/serverProxy/threads';
 
 const serverProxy = {
   ...textGroups,

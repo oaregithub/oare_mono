@@ -15,16 +15,25 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
   try {
     const textDiscourseDao = sl.get('TextDiscourseDao');
 
-    const { spelling, page: queryPage, limit: queryLimit } = (req.query as unknown) as SearchSpellingPayload;
+    const {
+      spelling,
+      page: queryPage,
+      limit: queryLimit,
+    } = (req.query as unknown) as SearchSpellingPayload;
     const limit = queryLimit ? Number(queryLimit) : 10;
     const page = queryPage ? Number(queryPage) : 1;
 
-    const { rows: searchRows, totalResults } = await textDiscourseDao.searchTextDiscourseSpellings(spelling, {
+    const {
+      rows: searchRows,
+      totalResults,
+    } = await textDiscourseDao.searchTextDiscourseSpellings(spelling, {
       page,
       limit,
     });
 
-    const textReadings = await Promise.all(searchRows.map((r) => textDiscourseDao.getTextSpellings(r.textUuid)));
+    const textReadings = await Promise.all(
+      searchRows.map(r => textDiscourseDao.getTextSpellings(r.textUuid))
+    );
 
     const rows: SearchDiscourseSpellingRow[] = searchRows.map((row, i) => ({
       uuid: row.uuid,
@@ -33,7 +42,9 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
       textName: row.textName,
       textUuid: row.textUuid,
       readings: textReadings[i].filter(
-        (tr) => tr.wordOnTablet >= row.wordOnTablet - 5 && tr.wordOnTablet <= row.wordOnTablet + 5,
+        tr =>
+          tr.wordOnTablet >= row.wordOnTablet - 5 &&
+          tr.wordOnTablet <= row.wordOnTablet + 5
       ),
     }));
 
@@ -64,16 +75,30 @@ router.route('/search').get(async (req, res, next) => {
     const textGroupDao = sl.get('TextGroupDao');
     const textEpigraphyDao = sl.get('TextEpigraphyDao');
 
-    const { page, rows, textTitle, characters: charsPayload } = (req.query as unknown) as SearchTextsPayload;
+    const {
+      page,
+      rows,
+      textTitle,
+      characters: charsPayload,
+    } = (req.query as unknown) as SearchTextsPayload;
     const characters = charsPayload || [];
     const user = req.user || null;
 
     const { blacklist } = await textGroupDao.getUserBlacklist(user);
-    const totalRows = await textEpigraphyDao.totalSearchRows(characters, textTitle, blacklist);
-    const texts = await textEpigraphyDao.searchTexts(characters, textTitle, blacklist, {
-      page,
-      rows,
-    });
+    const totalRows = await textEpigraphyDao.totalSearchRows(
+      characters,
+      textTitle,
+      blacklist
+    );
+    const texts = await textEpigraphyDao.searchTexts(
+      characters,
+      textTitle,
+      blacklist,
+      {
+        page,
+        rows,
+      }
+    );
 
     const searchResults: SearchTextsResponse = {
       totalRows,
