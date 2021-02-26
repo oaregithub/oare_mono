@@ -45,6 +45,7 @@ describe('comments api test', () => {
     updateThreadName: jest.fn().mockResolvedValue({}),
     getThreadWord: jest.fn().mockResolvedValue(threadWord),
     getAll: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
+    getAllThreadUuidsByUserUuid: jest.fn().mockResolvedValue(threadUuids),
   };
 
   const userGetUserByUuid = {
