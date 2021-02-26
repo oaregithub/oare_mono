@@ -89,8 +89,8 @@
               <template #[`item.timestamp`]="{ item }">
                 <span>{{ formatTimestamp(item.timestamp) }}</span>
               </template>
-              <template #[`item.stacktrace`]="{ item }">
-                <span>{{ formatStacktrace(item.stacktrace) }}</span>
+              <template #[`item.stacktrace`]>
+                <a>View stacktrace</a>
               </template>
             </v-data-table>
           </v-col>
@@ -129,10 +129,10 @@ export default defineComponent({
     const showErrorDetails = ref(false);
     const listHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Status', value: 'status', width: '10%' },
-      { text: 'Timestamp', value: 'timestamp', width: '15%' },
+      { text: 'Timestamp', value: 'timestamp', width: '20%' },
       { text: 'User', value: 'userName', width: '15%' },
-      { text: 'Description', value: 'description', width: '30%' },
-      { text: 'Stacktrace', value: 'stacktrace', width: '30%' },
+      { text: 'Description', value: 'description', width: '40%' },
+      { text: 'Stacktrace', value: 'stacktrace', width: '15%' },
     ]);
 
     const errorList: Ref<ErrorsRowWithUser[]> = ref([]);
@@ -220,11 +220,6 @@ export default defineComponent({
       return `${noCamelCase.charAt(0).toUpperCase()}${noCamelCase.slice(1)}`;
     };
 
-    // Limits stacktrace text in table to 60 characters and adds ellipsis
-    const formatStacktrace = (stacktrace: string | null) => {
-      return stacktrace ? `${stacktrace.slice(0, 60)}...` : 'No Stacktrace';
-    };
-
     const setupDialog = (error: ErrorsRowWithUser) => {
       dialogError.value = error;
       showErrorDetails.value = true;
@@ -287,7 +282,6 @@ export default defineComponent({
       showErrorDetails,
       getErrorLog,
       serverCount,
-      formatStacktrace,
       formatTimestamp,
       dialogError,
       setupDialog,
