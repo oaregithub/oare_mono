@@ -60,7 +60,7 @@ describe('GET /errors', () => {
     },
     sort: {
       type: 'timestamp',
-      direction: 'desc',
+      desc: false,
     },
     pagination: {
       page: 1,
