@@ -24,26 +24,20 @@
 
     <template #[`item.matches`]="{ item }">
       <slot name="item.matches" :item="item">
-        <div v-for="(match, index) in item.matches" :key="index">
-          {{ match }}
-        </div>
+        <div
+          v-for="(match, index) in item.matches"
+          :key="index"
+          v-html="match"
+        ></div>
       </slot>
     </template>
   </v-data-table>
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  watch,
-  computed,
-  PropType,
-} from '@vue/composition-api';
+import { defineComponent, ref, watch, PropType } from '@vue/composition-api';
 import { DataTableHeader } from 'vuetify';
 import { SearchTextsResultRow } from '@oare/types';
-import router from '../../router';
-import { updateUrl } from './utils';
 
 export default defineComponent({
   props: {

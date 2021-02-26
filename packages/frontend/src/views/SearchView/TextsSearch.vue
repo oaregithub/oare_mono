@@ -69,7 +69,7 @@ export default defineComponent({
   components: {
     ResultTable,
   },
-  setup(props, context) {
+  setup() {
     const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
     const searchLoading = ref(false);
     const totalSearchResults = ref(0);
@@ -163,5 +163,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style></style>
