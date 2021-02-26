@@ -6,6 +6,8 @@ import {
   Thread,
   ThreadWithComments,
   Comment,
+  ThreadStatus,
+  ThreadDisplay,
   UpdateThreadNameRequest,
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
@@ -49,9 +51,7 @@ router
 
       results = await Promise.all(
         threads.map(async thread => {
-          const comments = await commentsDao.getAllByThreadUuid(
-            thread.uuid || ''
-          );
+          const comments = await commentsDao.getAllByThreadUuid(thread.uuid);
           const commentDisplays = await getUsersByComments(comments);
           return {
             thread,
@@ -72,7 +72,7 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
-    const prevThread = await threadsDao.getByUuid(thread.uuid || '');
+    const prevThread = await threadsDao.getByUuid(thread.uuid);
     if (prevThread === null) {
       throw new HttpInternalError('Previous Thread was not found');
     }
@@ -95,6 +95,49 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
 });
 
 router
+  .route('/threads/user/:userUuid')
+  .get(authenticatedRoute, async (req, res, next) => {
+    try {
+      const { userUuid } = req.params;
+      const threadsDao = sl.get('ThreadsDao');
+      const commentsDao = sl.get('CommentsDao');
+
+      const threadUuids = await threadsDao.getAllThreadUuidsByUserUuid(
+        userUuid,
+        true
+      );
+
+      const results: ThreadDisplay[] = await Promise.all(
+        threadUuids.map(async threadUuid => {
+          const [thread, threadWord, threadComments] = await Promise.all([
+            threadsDao.getByUuid(threadUuid),
+            threadsDao.getThreadWord(threadUuid),
+            commentsDao.getAllByThreadUuid(threadUuid, true),
+          ]);
+
+          if (thread === null || threadWord === null) {
+            next(
+              new HttpInternalError(
+                'Unable to retrieve thread for specific user'
+              )
+            );
+          }
+          return {
+            thread,
+            word: threadWord,
+            latestCommentDate: threadComments[0].createdAt, // Most recent comment
+            comments: threadComments,
+          } as ThreadDisplay;
+        })
+      );
+
+      res.json(results);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
   .route('/threads/name')
   .put(authenticatedRoute, async (req, res, next) => {
     try {
@@ -108,5 +151,46 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+router.route('/threads').get(adminRoute, async (req, res, next) => {
+  try {
+    const threadsDao = sl.get('ThreadsDao');
+    const commentsDao = sl.get('CommentsDao');
+
+    const threads = await threadsDao.getAll();
+
+    const results: ThreadDisplay[] = await Promise.all(
+      threads.map(async thread => {
+        const threadWord = await threadsDao.getThreadWord(thread.uuid);
+        const comments = await commentsDao.getAllByThreadUuid(
+          thread.uuid,
+          true
+        );
+        return {
+          thread,
+          word: threadWord,
+          latestCommentDate: comments[0].createdAt,
+          comments,
+        } as ThreadDisplay;
+      })
+    );
+
+    const sortByLatestComment = (a: ThreadDisplay, b: ThreadDisplay) => {
+      if (a.latestCommentDate < b.latestCommentDate) {
+        return 1;
+      }
+      if (b.latestCommentDate < a.latestCommentDate) {
+        return -1;
+      }
+      return 0;
+    };
+
+    results.sort(sortByLatestComment);
+
+    res.json(results);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 export default router;

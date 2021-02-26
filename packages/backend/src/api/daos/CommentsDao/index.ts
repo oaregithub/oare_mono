@@ -29,7 +29,10 @@ class CommentsDao {
     });
   }
 
-  async getAllByThreadUuid(threadUuid: string): Promise<Comment[]> {
+  async getAllByThreadUuid(
+    threadUuid: string,
+    mostRecent = false
+  ): Promise<Comment[]> {
     const comments = await knex('comments')
       .select(
         'comments.uuid',
@@ -40,7 +43,7 @@ class CommentsDao {
         'comments.comment AS text'
       )
       .where('comments.thread_uuid', threadUuid)
-      .orderBy('comments.created_at');
+      .orderBy('comments.created_at', mostRecent ? 'desc' : 'asc');
 
     return comments;
   }
