@@ -73,7 +73,7 @@ class ErrorsDao {
     }
 
     const errors: ErrorsRowWithUser[] = await baseQuery()
-      .orderBy(payload.sort.type, payload.sort.direction)
+      .orderBy(payload.sort.type, payload.sort.desc ? 'desc' : 'asc')
       .limit(payload.pagination.limit)
       .offset((payload.pagination.page - 1) * payload.pagination.limit);
 

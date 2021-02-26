@@ -45,29 +45,6 @@
                 class="pb-2 test-stack-filter"
               />
             </div>
-            <div class="my-8">
-              <h3>Sort</h3>
-              <v-radio-group
-                v-model="sort"
-                label="Sort By"
-                class="ma-0 test-sort"
-              >
-                <v-radio
-                  v-for="option in sortOptions"
-                  :key="option"
-                  :label="formatName(option)"
-                  :value="option"
-                />
-              </v-radio-group>
-              <v-radio-group
-                v-model="direction"
-                label="Direction"
-                class="ma-0 test-sort-direction"
-              >
-                <v-radio label="Ascending" value="asc" />
-                <v-radio label="Descending" value="desc" />
-              </v-radio-group>
-            </div>
           </v-col>
           <v-col cols="10" class="pl-8">
             <v-data-table
@@ -132,7 +109,12 @@ export default defineComponent({
       { text: 'Timestamp', value: 'timestamp', width: '20%' },
       { text: 'User', value: 'userName', width: '15%' },
       { text: 'Description', value: 'description', width: '40%' },
-      { text: 'Stacktrace', value: 'stacktrace', width: '15%' },
+      {
+        text: 'Stacktrace',
+        value: 'stacktrace',
+        width: '15%',
+        sortable: false,
+      },
     ]);
 
     const errorList: Ref<ErrorsRowWithUser[]> = ref([]);
@@ -142,30 +124,23 @@ export default defineComponent({
     const [page, setPage] = useQueryParam('page', '1');
     const [limit, setRows] = useQueryParam('rows', '10');
     const [sort, setSort] = useQueryParam('sort', 'timestamp');
-    const [direction, setDirection] = useQueryParam('direction', 'desc');
+    const [desc, setDesc] = useQueryParam('desc', 'true');
     const [status, setStatus] = useQueryParam('status', '');
     const [user, setUser] = useQueryParam('user', '');
     const [description, setDescription] = useQueryParam('description', '');
     const [stacktrace, setStacktrace] = useQueryParam('stacktrace', '');
-
-    const sortOptions: SortType[] = [
-      'status',
-      'timestamp',
-      'userName',
-      'description',
-    ];
 
     const statusOptions: ErrorStatus[] = ['New', 'In Progress', 'Resolved'];
 
     const searchOptions: Ref<DataOptions> = ref({
       page: Number(page.value),
       itemsPerPage: Number(limit.value),
-      sortBy: [],
-      sortDesc: [],
+      sortBy: [sort.value],
+      sortDesc: [Boolean(desc.value)],
       groupBy: [],
       groupDesc: [],
       multiSort: false,
-      mustSort: false,
+      mustSort: true,
     });
 
     onMounted(async () => {
@@ -189,7 +164,7 @@ export default defineComponent({
           },
           sort: {
             type: sort.value as SortType,
-            direction: direction.value as 'asc' | 'desc',
+            desc: desc.value === 'true',
           },
           pagination: {
             page: Number(page.value),
@@ -214,12 +189,6 @@ export default defineComponent({
       );
     };
 
-    // Formats sorting option names from camelCase to capitalized, readable English. Ex: 'userName' to 'User Name'
-    const formatName = (name: string) => {
-      const noCamelCase = name.replace(/([A-Z])/g, ' $1');
-      return `${noCamelCase.charAt(0).toUpperCase()}${noCamelCase.slice(1)}`;
-    };
-
     const setupDialog = (error: ErrorsRowWithUser) => {
       dialogError.value = error;
       showErrorDetails.value = true;
@@ -233,6 +202,8 @@ export default defineComponent({
       try {
         setPage(String(searchOptions.value.page));
         setRows(String(searchOptions.value.itemsPerPage));
+        setSort(searchOptions.value.sortBy[0]);
+        setDesc(String(searchOptions.value.sortDesc[0]));
         await getErrorLog();
       } catch {
         actions.showErrorSnackbar(
@@ -242,12 +213,10 @@ export default defineComponent({
     });
 
     watch(
-      [sort, direction, status, user, description, stacktrace],
+      [status, user, description, stacktrace],
       _.debounce(async () => {
         try {
           searchOptions.value.page = 1;
-          setSort(sort.value);
-          setDirection(direction.value);
           setStatus(status.value || '');
           setUser(user.value || '');
           setDescription(description.value || '');
@@ -272,7 +241,7 @@ export default defineComponent({
       page,
       limit,
       sort,
-      direction,
+      desc,
       status,
       user,
       description,
@@ -286,8 +255,6 @@ export default defineComponent({
       dialogError,
       setupDialog,
       updateStatus,
-      sortOptions,
-      formatName,
       statusOptions,
     };
   },

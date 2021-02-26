@@ -42,7 +42,7 @@ export interface GetErrorsPayload {
   };
   sort: {
     type: SortType;
-    direction: 'asc' | 'desc';
+    desc: boolean;
   };
   pagination: Pagination;
 }

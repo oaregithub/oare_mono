@@ -36,7 +36,7 @@ describe('ErrorLog test', () => {
     },
     sort: {
       type: 'timestamp',
-      direction: 'desc',
+      desc: true,
     },
     pagination: {
       page: 1,
@@ -157,13 +157,13 @@ describe('ErrorLog test', () => {
   it('sorts by status', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = wrapper.findAll('.test-sort input').at(0);
+    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(0);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
       sort: {
-        ...mockGetPayload.sort,
         type: 'status',
+        desc: false,
       },
     });
   });
@@ -171,13 +171,13 @@ describe('ErrorLog test', () => {
   it('sorts by timestamp', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = wrapper.findAll('.test-sort input').at(1);
+    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(1);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
       sort: {
-        ...mockGetPayload.sort,
         type: 'timestamp',
+        desc: false,
       },
     });
   });
@@ -185,13 +185,13 @@ describe('ErrorLog test', () => {
   it('sorts by user name', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = wrapper.findAll('.test-sort input').at(2);
+    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(2);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
       sort: {
-        ...mockGetPayload.sort,
         type: 'userName',
+        desc: false,
       },
     });
   });
@@ -199,13 +199,13 @@ describe('ErrorLog test', () => {
   it('sorts by description', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const statusSort = wrapper.findAll('.test-sort input').at(3);
+    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(3);
     await statusSort.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
       sort: {
-        ...mockGetPayload.sort,
         type: 'description',
+        desc: false,
       },
     });
   });
@@ -213,13 +213,20 @@ describe('ErrorLog test', () => {
   it('changes sort direction', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const ascendingButton = wrapper.findAll('.test-sort-direction input').at(0);
-    await ascendingButton.trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
       ...mockGetPayload,
       sort: {
         type: 'description',
-        direction: 'asc',
+        desc: true,
+      },
+    });
+    const timestampArrow = wrapper.findAll('.v-data-table-header__icon').at(3);
+    await timestampArrow.trigger('click');
+    expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
+      ...mockGetPayload,
+      sort: {
+        type: 'description',
+        desc: false,
       },
     });
   });
