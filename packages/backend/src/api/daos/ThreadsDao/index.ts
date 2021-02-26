@@ -8,6 +8,10 @@ export interface ThreadWordRow {
   spelling: string;
 }
 
+interface ThreadUuid {
+  uuid: string;
+}
+
 class ThreadsDao {
   async insert({ referenceUuid, status, route }: Thread): Promise<string> {
     const newUuid: string = v4();
@@ -98,6 +102,19 @@ class ThreadsDao {
     }
 
     return word;
+  }
+
+  async getAllThreadUuidsByUserUuid(
+    userUuid: string,
+    mostRecent = false
+  ): Promise<string[]> {
+    const threads: ThreadUuid[] = await knex('threads')
+      .distinct('threads.uuid')
+      .innerJoin('comments', 'threads.uuid', 'comments.thread_uuid')
+      .where('comments.user_uuid', userUuid)
+      .orderBy('comments.created_at', mostRecent ? 'desc' : 'asc');
+
+    return threads.map(thread => thread.uuid);
   }
 
   async getAll(): Promise<Thread[]> {

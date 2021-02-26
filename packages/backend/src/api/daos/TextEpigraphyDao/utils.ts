@@ -1,22 +1,16 @@
+import * as Knex from 'knex';
 import knex from '@/connection';
 import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/types';
 import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
 
-export default function getSearchQuery(
+export function getSequentialCharacterQuery(
   characters: string[],
-  textTitle: string,
-  blacklist: string[]
-) {
-  // Join text table so text names can be returned
-  let query = knex('text_epigraphy').join(
-    'text',
-    'text.uuid',
-    'text_epigraphy.text_uuid'
-  );
-
+  baseQuery?: Knex.QueryBuilder
+): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
+  let query = baseQuery || knex('text_epigraphy');
   characters.forEach((char, index) => {
     if (index < 1) {
       return;
@@ -33,16 +27,24 @@ export default function getSearchQuery(
     });
   });
 
-  // Don't return texts in the user's blacklist
-  query = query.where(function () {
-    this.whereNotIn('text_epigraphy.text_uuid', blacklist);
-  });
-
   if (characters.length > 0) {
     query = query.andWhere('text_epigraphy.reading', characters[0]);
   }
 
-  if (textTitle !== '') {
+  return query;
+}
+
+export function getSearchQuery(characters: string[], textTitle: string) {
+  // Join text table so text names can be returned
+  let query = knex('text_epigraphy').join(
+    'text',
+    'text.uuid',
+    'text_epigraphy.text_uuid'
+  );
+
+  query = getSequentialCharacterQuery(characters, query);
+
+  if (textTitle) {
     query = query.andWhere('text.name', 'like', `%${textTitle}%`);
   }
   return query;

@@ -102,24 +102,24 @@ router
       const threadsDao = sl.get('ThreadsDao');
       const commentsDao = sl.get('CommentsDao');
 
-      // All the threads the user is associated with (in comment form)
-      const comments = await commentsDao.getAllByUserUuidGroupedByThread(
+      const threadUuids = await threadsDao.getAllThreadUuidsByUserUuid(
         userUuid,
         true
       );
 
       const results: ThreadDisplay[] = await Promise.all(
-        comments.map(async comment => {
-          const thread = await threadsDao.getByUuid(comment.threadUuid);
-          const threadWord = await threadsDao.getThreadWord(comment.threadUuid);
-          const threadComments = await commentsDao.getAllByThreadUuid(
-            comment.threadUuid,
-            true
-          );
+        threadUuids.map(async threadUuid => {
+          const [thread, threadWord, threadComments] = await Promise.all([
+            threadsDao.getByUuid(threadUuid),
+            threadsDao.getThreadWord(threadUuid),
+            commentsDao.getAllByThreadUuid(threadUuid, true),
+          ]);
 
           if (thread === null || threadWord === null) {
-            throw new HttpInternalError(
-              'Unable to retrieve thread for specific user'
+            next(
+              new HttpInternalError(
+                'Unable to retrieve thread for specific user'
+              )
             );
           }
           return {
