@@ -1,16 +1,16 @@
 <template>
   <div v-if="renderer" class="mr-10">
     <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
-      <div class="sideName oare-title mr-4">
+      <div class="side-name oare-title mr-4">
         {{ sideName }}
       </div>
       <div>
         <div
           v-for="lineNum in renderer.linesOnSide(sideName)"
           :key="lineNum"
-          class="oare-title"
+          class="oare-title d-flex"
         >
-          <sup v-if="!renderer.isRegion(lineNum)">{{ lineNum }}.&nbsp;</sup>
+          <sup class="line-num pt-3">{{ lineNumber(lineNum) }}&nbsp;</sup>
           <span v-html="renderer.lineReading(lineNum)" />
         </div>
       </div>
@@ -46,9 +46,23 @@ export default defineComponent({
       })
     );
 
+    const lineNumber = (line: number): string =>
+      renderer.value.isRegion(line) ? '' : `${line}.`;
+
     return {
       renderer,
+      lineNumber,
     };
   },
 });
 </script>
+
+<style scoped>
+.line-num {
+  width: 25px;
+}
+
+.side-name {
+  width: 50px;
+}
+</style>
