@@ -85,10 +85,10 @@
         </v-card>
         <div
           class="flex justify-center align-content-center mt-5"
-          v-if="selectedThreadWithComments.thread.uuid !== null"
+          v-if="selectedThreadWithComments.thread.uuid"
         >
           <v-btn
-            @click="selectedThreadWithComments.thread.uuid = null"
+            @click="selectedThreadWithComments.thread.uuid = ''"
             color="#ffffff"
             elevation="0"
           >
@@ -103,7 +103,7 @@
         <template
           v-if="
             selectedThreadWithComments.thread &&
-            selectedThreadWithComments.thread.uuid !== null
+            selectedThreadWithComments.thread.uuid
           "
         >
           <v-row
@@ -284,7 +284,7 @@ export default defineComponent({
     const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
     const selectedThreadWithComments = ref<ThreadWithComments>({
       thread: {
-        uuid: null,
+        uuid: '',
         name: null,
         referenceUuid: '',
         status: 'New',
@@ -443,7 +443,7 @@ export default defineComponent({
           uuid: null,
           threadUuid: selectedThreadWithComments.value.thread.uuid
             ? selectedThreadWithComments.value.thread.uuid
-            : null,
+            : '',
           userUuid: loggedInUser.value ? loggedInUser.value.uuid : null,
           createdAt: null,
           deleted: false,
@@ -451,9 +451,9 @@ export default defineComponent({
         };
 
         // If creating new thread
-        if (selectedThreadWithComments.value.thread.uuid === null) {
+        if (!selectedThreadWithComments.value.thread.uuid) {
           selectedThreadWithComments.value.thread = {
-            uuid: null,
+            uuid: '',
             name: null,
             referenceUuid: props.uuid,
             status: 'New',
@@ -491,7 +491,7 @@ export default defineComponent({
         return;
       }
 
-      if (selectedThreadWithComments.value.thread.uuid === null) {
+      if (!selectedThreadWithComments.value.thread.uuid) {
         actions.showErrorSnackbar('Thread has not been selected');
         return;
       }

@@ -51,9 +51,7 @@ router
 
       results = await Promise.all(
         threads.map(async thread => {
-          const comments = await commentsDao.getAllByThreadUuid(
-            thread.uuid || ''
-          );
+          const comments = await commentsDao.getAllByThreadUuid(thread.uuid);
           const commentDisplays = await getUsersByComments(comments);
           return {
             thread,
@@ -74,7 +72,7 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
-    const prevThread = await threadsDao.getByUuid(thread.uuid || '');
+    const prevThread = await threadsDao.getByUuid(thread.uuid);
     if (prevThread === null) {
       throw new HttpInternalError('Previous Thread was not found');
     }
@@ -163,9 +161,9 @@ router.route('/threads').get(adminRoute, async (req, res, next) => {
 
     const results: ThreadDisplay[] = await Promise.all(
       threads.map(async thread => {
-        const threadWord = await threadsDao.getThreadWord(thread.uuid || '');
+        const threadWord = await threadsDao.getThreadWord(thread.uuid);
         const comments = await commentsDao.getAllByThreadUuid(
-          thread.uuid || '',
+          thread.uuid,
           true
         );
         return {
