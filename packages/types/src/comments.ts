@@ -6,8 +6,8 @@ export interface CommentRequest {
 }
 
 export interface CommentResponse {
-  commentUuid: string | null;
-  threadUuid: string | null;
+  commentUuid: string;
+  threadUuid: string;
 }
 
 export interface CommentInsert {
@@ -36,7 +36,7 @@ export interface CommentDisplay extends Comment {
 export type ThreadStatus = 'New' | 'Pending' | 'In Progress' | 'Completed';
 
 export interface Thread {
-  uuid: string | null;
+  uuid: string;
   name: string | null;
   referenceUuid: string;
   status: ThreadStatus;

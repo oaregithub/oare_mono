@@ -116,6 +116,18 @@ class ThreadsDao {
 
     return threads.map(thread => thread.uuid);
   }
+
+  async getAll(): Promise<Thread[]> {
+    const threads: Thread[] = await knex('threads').select(
+      'threads.uuid AS uuid',
+      'threads.name AS name',
+      'threads.reference_uuid AS referenceUuid',
+      'threads.status AS status',
+      'threads.route AS route'
+    );
+
+    return threads;
+  }
 }
 
 export default new ThreadsDao();

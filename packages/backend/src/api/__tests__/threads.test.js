@@ -44,6 +44,7 @@ describe('comments api test', () => {
     getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
     updateThreadName: jest.fn().mockResolvedValue({}),
     getThreadWord: jest.fn().mockResolvedValue(threadWord),
+    getAll: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
     getAllThreadUuidsByUserUuid: jest.fn().mockResolvedValue(threadUuids),
   };
 
@@ -412,6 +413,76 @@ describe('comments api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(500);
       expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /threads', () => {
+    const PATH = `${API_PATH}/threads`;
+
+    const sendRequest = async (cookie = true) => {
+      const req = request(app).get(PATH);
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
+    };
+
+    it('returns 200, successful thread display all info.', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([
+        {
+          thread: threadsGetByUuid,
+          word: threadWord,
+          latestCommentDate: commentsGetAllByThreadUuid[0].createdAt,
+          comments: commentsGetAllByThreadUuid,
+        },
+      ]);
+    });
+
+    it('returns 200, successful returns empty list of threads if none found.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getAll: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([]);
+    });
+
+    it('returns 500, unsuccessfully retrieves all threads.', async () => {
+      sl.set('ThreadsDao', {
+        ...MockThreadsDao,
+        getAll: jest.fn().mockRejectedValue('Error when returning all threads'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500, unsuccessfully retrieves latest comment.', async () => {
+      sl.set('CommentsDao', {
+        ...MockCommentsDao,
+        getAllByThreadUuid: jest
+          .fn()
+          .mockRejectedValue(
+            'Error when returning all comments by thread uuid'
+          ),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 401 when non-logged in user tries to access route.', async () => {
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 403 when non-admin user tries to access route.', async () => {
+      sl.set('UserDao', {
+        ...MockUserDao,
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: false,
+        }),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
     });
   });
 });

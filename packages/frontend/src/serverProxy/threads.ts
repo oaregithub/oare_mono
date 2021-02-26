@@ -32,9 +32,15 @@ async function updateThreadName(
   await axios.put('/threads/name', threadNameRequest);
 }
 
+async function getAllThreads(): Promise<ThreadDisplay> {
+  const { data } = await axios.get('/threads');
+  return data;
+}
+
 export default {
   getThreadsWithCommentsByReferenceUuid,
   updateThread,
   getThreadsByUserUuid,
+  getAllThreads,
   updateThreadName,
 };
