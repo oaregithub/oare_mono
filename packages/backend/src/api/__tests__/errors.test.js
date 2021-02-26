@@ -51,7 +51,23 @@ describe('POST /errors', () => {
 });
 
 describe('GET /errors', () => {
-  const PATH = `${API_PATH}/errors`;
+  const mockGetPayload = {
+    filters: {
+      status: '',
+      user: '',
+      description: '',
+      stacktrace: '',
+    },
+    sort: {
+      type: 'timestamp',
+      desc: false,
+    },
+    pagination: {
+      page: 1,
+      limit: 10,
+    },
+  };
+  const PATH = `${API_PATH}/errors?payload=${JSON.stringify(mockGetPayload)}`;
   const mockErrorsRow = [
     {
       uuid: 'testUuid',
@@ -71,17 +87,10 @@ describe('GET /errors', () => {
       isAdmin: true,
     }),
   };
-  const mockUtils = {
-    extractPagination: jest.fn().mockResolvedValue({
-      page: 1,
-      filter: 10,
-    }),
-  };
 
   const setup = () => {
     sl.set('ErrorsDao', mockErrorsDao);
     sl.set('UserDao', mockUserDao);
-    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);

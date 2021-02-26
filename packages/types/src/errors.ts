@@ -1,3 +1,5 @@
+import { Pagination } from './dictionary';
+
 export interface ErrorsPayload {
   description: string;
   stacktrace: string | null;
@@ -27,4 +29,20 @@ export interface ErrorsResponse {
 
 export interface ErrorsRowWithUser extends ErrorsRow {
   userName: string;
+}
+
+export type SortType = 'status' | 'timestamp' | 'description' | 'userName';
+
+export interface GetErrorsPayload {
+  filters: {
+    status: ErrorStatus | '';
+    user: string;
+    description: string;
+    stacktrace: string;
+  };
+  sort: {
+    type: SortType;
+    desc: boolean;
+  };
+  pagination: Pagination;
 }

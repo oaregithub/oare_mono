@@ -27,7 +27,7 @@
       <v-row class="py-2">
         <div>
           <h3>User</h3>
-          <span class="test-user-name">{{ error.userName }}</span>
+          <span class="test-user-name">{{ error.userName || 'No User' }}</span>
         </div>
       </v-row>
 
