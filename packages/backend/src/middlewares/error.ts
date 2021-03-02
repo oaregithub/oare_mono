@@ -14,17 +14,19 @@ const errorMiddleware = async (
   const message = error.message || 'Something went wrong';
 
   if (process.env.NODE_ENV !== 'test') {
-    const userUuid = request.user ? request.user.uuid : null;
-    const stacktrace = error.stack || null;
+    if (!error.preventLog) {
+      const userUuid = request.user ? request.user.uuid : null;
+      const stacktrace = error.stack || null;
 
-    const insertRow: InsertErrorsRow = {
-      userUuid,
-      description: message,
-      stacktrace,
-      status: 'New',
-    };
+      const insertRow: InsertErrorsRow = {
+        userUuid,
+        description: message,
+        stacktrace,
+        status: 'New',
+      };
 
-    await ErrorsDao.logError(insertRow);
+      await ErrorsDao.logError(insertRow);
+    }
     console.log(message); // eslint-disable-line no-console
   }
   response.status(status).send({
