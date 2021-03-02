@@ -38,4 +38,29 @@ describe('tablet renderer tests', () => {
 
     expect(renderer.lineReading(1)).toBe('[x]');
   });
+
+  it('renders undeterminedSigns with erasure', () => {
+    const renderer = createTabletRenderer(
+      [
+        {
+          uuid: 'uuid',
+          line: 10,
+          reading: null,
+        },
+      ],
+      [
+        {
+          referenceUuid: 'uuid',
+          type: 'erasure',
+        },
+        {
+          referenceUuid: 'uuid',
+          type: 'undeterminedSigns',
+          value: 1,
+        },
+      ]
+    );
+
+    expect(renderer.lineReading(10)).toBe('{x}');
+  });
 });

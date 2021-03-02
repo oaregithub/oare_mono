@@ -156,12 +156,13 @@ export default class TabletRenderer {
           ...epigraphy,
         };
         if (markupMap[epigraphy.uuid]) {
-          // Sort so that damages are applied last
+          const damageTypes = ['damage', 'partialDamage', 'erasure'];
+          // Sort so that damages and erasures are applied last
           markedEpig.markups = markupMap[epigraphy.uuid].sort((a, b) => {
-            if (a.type === 'damage' || a.type === 'partialDamage') {
+            if (damageTypes.includes(a.type)) {
               return 1;
             }
-            if (b.type === 'damage' || b.type === 'partialDamage') {
+            if (damageTypes.includes(b.type)) {
               return -1;
             }
             return 0;
