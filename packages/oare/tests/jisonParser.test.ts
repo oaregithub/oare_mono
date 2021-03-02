@@ -113,4 +113,10 @@ describe('spelling grammar test', () => {
     expect(spellingHtmlReading('1/3+4')).toBe('⅓+4');
     expect(spellingHtmlReading('5+2/3')).toBe('5+⅔');
   });
+
+  it('parses numbers at beginning of alphabetic phrase', () => {
+    tokenizeExplicitSpelling('9-tí-iš-e-šu-šu');
+    tokenizeExplicitSpelling('1.PÚZUR.IŠTAR');
+    tokenizeExplicitSpelling('10-ri-šu');
+  });
 });
