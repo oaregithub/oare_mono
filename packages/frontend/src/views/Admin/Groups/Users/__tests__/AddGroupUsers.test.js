@@ -12,14 +12,14 @@ localVue.use(VueCompositionApi);
 describe('AddGroupUsers test', () => {
   const mockUsers = [
     {
-      id: 1,
+      uuid: '1',
       first_name: 'Steve',
       last_name: 'Rogers',
       email: 'steve@gmail.com',
       groups: [1],
     },
     {
-      id: 2,
+      uuid: '2',
       first_name: 'Tony',
       last_name: 'Stark',
       email: 'tony@gmail.com',
@@ -115,7 +115,7 @@ describe('AddGroupUsers test', () => {
     await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.addUsersToGroup).toHaveBeenCalledWith(1, {
-      userIds: [2],
+      userUuids: ['2'],
     });
     expect(mockActions.showSnackbar).toHaveBeenCalled();
     expect(wrapper.html()).toContain('Tony Stark');

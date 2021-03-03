@@ -52,18 +52,9 @@
 </template>
 
 <script lang="ts">
-import defaultServerProxy from '@/serverProxy';
 import _ from 'lodash';
-import {
-  defineComponent,
-  PropType,
-  ref,
-  Ref,
-  onMounted,
-  watch,
-  computed,
-} from '@vue/composition-api';
-import { User, GetUserResponse } from '@oare/types';
+import { defineComponent, ref, Ref, onMounted } from '@vue/composition-api';
+import { GetUserResponse } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -72,12 +63,8 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    serverProxy: {
-      type: Object as PropType<typeof defaultServerProxy>,
-      default: () => defaultServerProxy,
-    },
   },
-  setup({ serverProxy, groupId }) {
+  setup({ groupId }) {
     const deleteUserLoading = ref(false);
     const deleteUserDialog = ref(false);
     const loading = ref(true);
@@ -90,10 +77,10 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const removeUsers = async () => {
-      const userIds = selectedDeleteUsers.value.map(user => user.id);
+      const userUuids = selectedDeleteUsers.value.map(user => user.uuid);
       deleteUserLoading.value = true;
       try {
-        await server.removeUsersFromGroup(Number(groupId), { userIds });
+        await server.removeUsersFromGroup(Number(groupId), { userUuids });
         deleteUserDialog.value = false;
         selectedDeleteUsers.value = [];
         actions.showSnackbar('Successfully removed user(s).');
@@ -105,7 +92,7 @@ export default defineComponent({
         deleteUserLoading.value = false;
       }
       groupUsers.value = groupUsers.value.filter(
-        user => !userIds.includes(user.id)
+        user => !userUuids.includes(user.uuid)
       );
     };
 

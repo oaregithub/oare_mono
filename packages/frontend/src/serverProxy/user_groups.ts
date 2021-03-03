@@ -1,5 +1,4 @@
 import {
-  User,
   AddUsersToGroupPayload,
   RemoveUsersFromGroupPayload,
 } from '@oare/types';
