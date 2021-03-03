@@ -22,7 +22,7 @@ class TextGroupDao {
     const userTexts = await PublicBlacklistDao.getBlacklistedTexts();
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
       for (let i = 0; i < groupIds.length; i += 1) {
         const groupId = groupIds[i];
         const texts = await this.getTexts(groupId);
@@ -72,8 +72,8 @@ class TextGroupDao {
     }));
   }
 
-  async getTextsByUser(userId: number): Promise<Text[]> {
-    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+  async getTextsByUser(userUuid: string): Promise<Text[]> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userUuid);
     const groupTexts = await Promise.all(
       groupIds.map(groupId => this.getTexts(groupId))
     );
@@ -81,8 +81,11 @@ class TextGroupDao {
     return _.flatten(groupTexts);
   }
 
-  async userHasWritePermission(uuid: string, userId: number): Promise<boolean> {
-    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+  async userHasWritePermission(
+    uuid: string,
+    userUuid: string
+  ): Promise<boolean> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userUuid);
 
     // Select all rows for given uuid
     const textRows = await knex('text_group')

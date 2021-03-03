@@ -87,7 +87,7 @@
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { NameOrPlace, UtilListDisplay } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
-import CommentWordDisplay from '../../views/CommentWordDisplay/index.vue';
+import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
 import { spellingHtmlReading } from '@oare/oare';
 
