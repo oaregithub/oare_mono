@@ -72,7 +72,7 @@ router
       for (let i = 0; i < userUuids.length; i += 1) {
         const existingUser = await UserDao.getUserByUuid(userUuids[i]);
         if (!existingUser) {
-          next(new HttpBadRequest(`User ID ${userUuids[i]} does not exist`));
+          next(new HttpBadRequest(`User UUID ${userUuids[i]} does not exist`));
           return;
         }
       }
@@ -113,7 +113,9 @@ router
       for (let i = 0; i < userUuids.length; i += 1) {
         const existingUser = await UserDao.getUserByUuid(userUuids[i]);
         if (!existingUser) {
-          next(new HttpInternalError(`User ID ${userUuids[i]} does not exist`));
+          next(
+            new HttpInternalError(`User UUID ${userUuids[i]} does not exist`)
+          );
           return;
         }
       }
