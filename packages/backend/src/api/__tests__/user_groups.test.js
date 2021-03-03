@@ -19,7 +19,7 @@ const mockGET = [
 ];
 
 const mockPOSTDELETE = {
-  userIds: [1, 2, 3, 4, 5],
+  userUuids: ['1', '2', '3', '4', '5'],
 };
 
 describe('GET /user_groups/:groupId', () => {
@@ -98,7 +98,7 @@ describe('POST /user_groups/:groupId', () => {
     getGroupById: jest.fn().mockResolvedValue(true),
   };
   const mockUserDao = {
-    getUserById: jest.fn().mockResolvedValue(true),
+    getUserByUuid: jest.fn().mockResolvedValue(true),
     getUserByEmail: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
@@ -122,7 +122,7 @@ describe('POST /user_groups/:groupId', () => {
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
     expect(mockOareGroupDao.getGroupById).toHaveBeenCalled();
-    expect(mockUserDao.getUserById).toHaveBeenCalled();
+    expect(mockUserDao.getUserByUuid).toHaveBeenCalled();
     expect(mockUserGroupDao.addUsersToGroup).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
@@ -166,7 +166,7 @@ describe('POST /user_groups/:groupId', () => {
   it('returns 400 if user does not exist', async () => {
     sl.set('UserDao', {
       ...mockUserDao,
-      getUserById: jest.fn().mockResolvedValue(false),
+      getUserByUuid: jest.fn().mockResolvedValue(false),
     });
     const response = await sendRequest();
     expect(response.status).toBe(400);

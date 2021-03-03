@@ -12,14 +12,14 @@ localVue.use(VueCompositionApi);
 describe('ManageMembers test', () => {
   const mockUsers = [
     {
-      id: 1,
+      uuid: '1',
       first_name: 'Steve',
       last_name: 'Rogers',
       email: 'steve@gmail.com',
       groups: [1],
     },
     {
-      id: 2,
+      uuid: '2',
       first_name: 'Tony',
       last_name: 'Stark',
       email: 'tony@gmail.com',
@@ -77,7 +77,7 @@ describe('ManageMembers test', () => {
     await wrapper.find('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.removeUsersFromGroup).toHaveBeenCalledWith(1, {
-      userIds: [1],
+      userUuids: ['1'],
     });
   });
 

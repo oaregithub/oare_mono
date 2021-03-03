@@ -16,11 +16,11 @@ export interface DeleteGroupPayload {
 }
 
 export interface AddUsersToGroupPayload {
-  userIds: number[];
+  userUuids: string[];
 }
 
 export interface RemoveUsersFromGroupPayload {
-  userIds: number[];
+  userUuids: string[];
 }
 
 export interface TextCollectionGroup {

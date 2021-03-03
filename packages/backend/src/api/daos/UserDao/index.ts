@@ -102,13 +102,14 @@ class UserDao {
       'email'
     );
     const groupObjects = await Promise.all(
-      users.map(user => UserGroupDao.getGroupsOfUser(user.id))
+      users.map(user => UserGroupDao.getGroupsOfUser(user.uuid))
     );
     const adminStatus = await Promise.all(
       users.map(user => this.userIsAdmin(user.uuid))
     );
-    return users.map(({ id, firstName, lastName, email }, index) => ({
+    return users.map(({ id, uuid, firstName, lastName, email }, index) => ({
       id,
+      uuid,
       first_name: firstName,
       last_name: lastName,
       email,
