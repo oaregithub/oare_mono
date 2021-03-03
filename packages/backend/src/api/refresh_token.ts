@@ -11,23 +11,23 @@ router.route('/refresh_token').get(async (req, res, next) => {
   try {
     const { refreshToken } = req.cookies;
     if (!refreshToken) {
-      next(new HttpBadRequest('No refresh token provided'));
+      next(new HttpBadRequest('No refresh token provided', true));
       return;
     }
 
     const token = await RefreshTokenDao.getTokenInfo(refreshToken);
     if (!token) {
-      next(new HttpBadRequest('Invalid token'));
+      next(new HttpBadRequest('Invalid token', true));
       return;
     }
 
     if (req.ip !== token.ipAddress) {
-      next(new HttpBadRequest('Invalid IP address'));
+      next(new HttpBadRequest('Invalid IP address', true));
       return;
     }
 
     if (Date.now() >= token.expiration.getTime()) {
-      next(new HttpBadRequest('Refresh token is expired'));
+      next(new HttpBadRequest('Refresh token is expired', true));
       return;
     }
 
