@@ -60,10 +60,10 @@ router
       if (user) {
         canWrite = user.isAdmin
           ? true
-          : (await TextGroupDao.userHasWritePermission(textUuid, user.id)) ||
+          : (await TextGroupDao.userHasWritePermission(textUuid, user.uuid)) ||
             (await CollectionGroupDao.userHasWritePermission(
               textUuid,
-              user.id
+              user.uuid
             ));
       } else {
         canWrite = false;
