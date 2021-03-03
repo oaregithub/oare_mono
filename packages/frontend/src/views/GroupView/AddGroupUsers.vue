@@ -95,11 +95,11 @@ export default defineComponent({
     const addUsersDialog = ref(false);
 
     const addUsers = async () => {
-      const userIds = selectedUsers.value.map(user => user.id);
+      const userUuids = selectedUsers.value.map(user => user.uuid);
       addUsersLoading.value = true;
       try {
         await server.addUsersToGroup(Number(groupId), {
-          userIds: userIds,
+          userUuids,
         });
         selectedUsers.value = [];
         addUsersDialog.value = false;

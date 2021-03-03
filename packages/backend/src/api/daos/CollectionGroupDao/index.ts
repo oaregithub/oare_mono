@@ -40,7 +40,7 @@ class CollectionGroupDao {
     }));
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
       for (let i = 0; i < groupIds.length; i += 1) {
         const groupId = groupIds[i];
         const collections = await this.getCollections(groupId);
@@ -84,7 +84,7 @@ class CollectionGroupDao {
     }));
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
       const groupCollections = await Promise.all(
         groupIds.map(id => this.getCollections(id))
       );
@@ -119,7 +119,7 @@ class CollectionGroupDao {
     if (isBlacklisted) {
       if (user) {
         // Check if collection contains any WHITELISTED texts
-        const userTexts = await TextGroupDao.getTextsByUser(user.id);
+        const userTexts = await TextGroupDao.getTextsByUser(user.uuid);
         const userTextCollections = await Promise.all(
           userTexts
             .filter(text => text.canRead)
@@ -156,8 +156,11 @@ class CollectionGroupDao {
     }));
   }
 
-  async userHasWritePermission(uuid: string, userId: number): Promise<boolean> {
-    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+  async userHasWritePermission(
+    uuid: string,
+    userUuid: string
+  ): Promise<boolean> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userUuid);
 
     const collectionUuid = await knex('hierarchy')
       .select('parent_uuid AS uuid')

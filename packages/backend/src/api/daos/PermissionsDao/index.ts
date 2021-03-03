@@ -74,7 +74,7 @@ class PermissionsDao {
     }
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
 
       const userPermissions: PermissionName[] = (
         await knex('permissions')
