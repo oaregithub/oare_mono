@@ -66,8 +66,9 @@
               <template #[`item.timestamp`]="{ item }">
                 <span>{{ formatTimestamp(item.timestamp) }}</span>
               </template>
-              <template #[`item.stacktrace`]>
-                <a>View stacktrace</a>
+              <template #[`item.stacktrace`]="{ item }">
+                <a v-if="item.stacktrace">View stacktrace</a>
+                <span v-else>No stacktrace</span>
               </template>
             </v-data-table>
           </v-col>
