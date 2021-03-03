@@ -12,7 +12,7 @@ export interface TextDraftRow {
   notes: string;
 }
 
-function getBaseDraftQuery(userId: number) {
+function getBaseDraftQuery(userUuid: string) {
   return knex('text_drafts')
     .select(
       'text_drafts.created_at AS createdAt',
@@ -26,13 +26,16 @@ function getBaseDraftQuery(userId: number) {
     .innerJoin('hierarchy', 'hierarchy.uuid', 'text_drafts.text_uuid')
     .innerJoin('alias', 'text_drafts.text_uuid', 'alias.reference_uuid')
     .orderBy('alias.name')
-    .where('creator', userId)
+    .where('user_uuid', userUuid)
     .groupBy('text_drafts.uuid');
 }
 
 class TextDraftsDao {
-  async getDraft(userId: number, textUuid: string): Promise<TextDraft | null> {
-    const draft: TextDraftRow | null = await getBaseDraftQuery(userId)
+  async getDraft(
+    userUuid: string,
+    textUuid: string
+  ): Promise<TextDraft | null> {
+    const draft: TextDraftRow | null = await getBaseDraftQuery(userUuid)
       .first()
       .andWhere('text_uuid', textUuid);
 
@@ -46,7 +49,7 @@ class TextDraftsDao {
   }
 
   async createDraft(
-    userId: number,
+    userUuid: string,
     textUuid: string,
     content: string,
     notes: string
@@ -54,7 +57,7 @@ class TextDraftsDao {
     const creation = new Date();
     await knex('text_drafts').insert({
       uuid: v4(),
-      creator: userId,
+      user_uuid: userUuid,
       created_at: creation,
       updated_at: creation,
       text_uuid: textUuid,
@@ -72,8 +75,8 @@ class TextDraftsDao {
     });
   }
 
-  async getAllDrafts(userId: number): Promise<TextDraft[]> {
-    const query = getBaseDraftQuery(userId);
+  async getAllDrafts(userUuid: string): Promise<TextDraft[]> {
+    const query = getBaseDraftQuery(userUuid);
 
     const rows: TextDraftRow[] = await query;
     return rows

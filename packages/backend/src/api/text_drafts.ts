@@ -13,14 +13,14 @@ router
 
     try {
       const { textUuid } = req.params;
-      const userId = req.user!.id;
+      const userUuid = req.user!.uuid;
 
       const { content, notes }: AddTextDraftPayload = req.body;
 
-      const draft = await TextDraftsDao.getDraft(userId, textUuid);
+      const draft = await TextDraftsDao.getDraft(userUuid, textUuid);
 
       if (!draft) {
-        await TextDraftsDao.createDraft(userId, textUuid, content, notes);
+        await TextDraftsDao.createDraft(userUuid, textUuid, content, notes);
       } else {
         await TextDraftsDao.updateDraft(draft.uuid, content, notes);
       }
@@ -35,9 +35,9 @@ router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
   const TextDraftsDao = sl.get('TextDraftsDao');
 
   try {
-    const userId = req!.user!.id;
+    const userUuid = req!.user!.uuid;
 
-    const drafts = await TextDraftsDao.getAllDrafts(userId);
+    const drafts = await TextDraftsDao.getAllDrafts(userUuid);
     res.json(drafts);
   } catch (err) {
     next(new HttpInternalError(err));
