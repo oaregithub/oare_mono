@@ -11,7 +11,6 @@ export interface RegisterPayload {
 }
 
 export interface LoginRegisterResponse {
-  id: number;
   uuid: string;
   firstName: string;
   lastName: string;

@@ -22,7 +22,7 @@ class UserGroupDao {
 
   async getUsersInGroup(groupId: number): Promise<User[]> {
     const users: User[] = await knex('user')
-      .innerJoin('user_group', 'user.id', 'user_group.user_id')
+      .innerJoin('user_group', 'user.uuid', 'user_group.user_uuid')
       .where('user_group.group_id', groupId)
       .select(
         'user.id',
