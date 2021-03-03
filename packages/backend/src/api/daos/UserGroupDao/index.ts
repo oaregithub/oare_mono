@@ -34,24 +34,17 @@ class UserGroupDao {
     return users;
   }
 
-  async addUsersToGroup(
-    groupId: number,
-    userUuids: string[]
-  ): Promise<number[]> {
-    const rows = userUuids.map(uuid => ({
+  async addUserToGroup(groupId: number, userUuid: string): Promise<void> {
+    await knex('user_group').insert({
       group_id: groupId,
-      user_uuid: uuid,
-    }));
-    const ids: number[] = await knex('user_group').insert(rows);
-    return ids;
+      user_uuid: userUuid,
+    });
   }
 
-  async removeUsersFromGroup(groupId: number, userUuids: string[]) {
+  async removeUserFromGroup(groupId: number, userUuid: string) {
     await knex('user_group')
       .where('group_id', groupId)
-      .andWhere(function () {
-        this.whereIn('user_uuid', userUuids);
-      })
+      .andWhere('user_uuid', userUuid)
       .del();
   }
 }
