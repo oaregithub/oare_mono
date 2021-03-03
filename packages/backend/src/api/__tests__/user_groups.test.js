@@ -121,9 +121,9 @@ describe('POST /user_groups/:groupId', () => {
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
-    // expect(mockOareGroupDao.getGroupById).toHaveBeenCalled();
-    // expect(mockUserDao.getUserByUuid).toHaveBeenCalled();
-    // expect(mockUserGroupDao.addUserToGroup).toHaveBeenCalled();
+    expect(mockOareGroupDao.getGroupById).toHaveBeenCalled();
+    expect(mockUserDao.getUserByUuid).toHaveBeenCalled();
+    expect(mockUserGroupDao.addUserToGroup).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 
