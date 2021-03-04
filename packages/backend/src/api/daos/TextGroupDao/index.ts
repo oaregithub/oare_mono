@@ -4,7 +4,7 @@ import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
-import { UserRow } from '../UserDao';
+import UserDao from '../UserDao';
 
 export interface TextGroupRow {
   text_uuid: string;
@@ -14,7 +14,9 @@ export interface TextGroupRow {
 }
 
 class TextGroupDao {
-  async getUserBlacklist(user: UserRow | null): Promise<Blacklists> {
+  async getUserBlacklist(userUuid: string | null): Promise<Blacklists> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
     if (user && user.isAdmin) {
       return { blacklist: [], whitelist: [] };
     }

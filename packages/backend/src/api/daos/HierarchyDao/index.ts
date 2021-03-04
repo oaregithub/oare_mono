@@ -10,7 +10,7 @@ import knex from '@/connection';
 import sl from '@/serviceLocator';
 import textGroupDao from '../TextGroupDao';
 import aliasDao from '../AliasDao';
-import { UserRow } from '../UserDao';
+import UserDao from '../UserDao';
 import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
 
@@ -101,11 +101,13 @@ class HierarchyDao {
   }
 
   async getAllCollections(
-    isAdmin: boolean,
-    user: UserRow | null
+    userUuid: string | null
   ): Promise<CollectionListItem[]> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+    const isAdmin = user ? user.isAdmin : false;
+
     const blacklistedUuids = await CollectionGroupDao.getUserCollectionBlacklist(
-      user
+      userUuid
     );
 
     let collectionsQuery = knex('hierarchy')
@@ -130,10 +132,12 @@ class HierarchyDao {
   }
 
   async getCollectionTexts(
-    userId: UserRow | null,
+    userUuid: string | null,
     uuid: string,
     { page = 1, rows = 10, search = '' }
   ): Promise<CollectionResponse> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
     const collectionTextQuery = (
       collectionUuid: string,
       textSearch: string,
@@ -159,10 +163,10 @@ class HierarchyDao {
 
     const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(
       uuid,
-      userId
+      userUuid
     );
     const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(
-      userId
+      userUuid
     );
 
     const countRow = await collectionTextQuery(

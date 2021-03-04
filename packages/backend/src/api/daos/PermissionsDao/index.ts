@@ -1,7 +1,7 @@
 import knex from '@/connection';
 import { PermissionItem, PermissionName } from '@oare/types';
-import sl from '@/serviceLocator';
-import { UserRow } from '../UserDao';
+import UserDao from '../UserDao';
+import UserGroupDao from '../UserGroupDao';
 
 class PermissionsDao {
   readonly ALL_PERMISSIONS: PermissionItem[] = [
@@ -66,8 +66,8 @@ class PermissionsDao {
     return this.ALL_PERMISSIONS;
   }
 
-  async getUserPermissions(user: UserRow | null): Promise<PermissionItem[]> {
-    const UserGroupDao = sl.get('UserGroupDao');
+  async getUserPermissions(userUuid: string | null): Promise<PermissionItem[]> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
 
     if (user && user.isAdmin) {
       return this.ALL_PERMISSIONS;
