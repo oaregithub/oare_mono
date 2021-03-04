@@ -136,8 +136,6 @@ class HierarchyDao {
     uuid: string,
     { page = 1, rows = 10, search = '' }
   ): Promise<CollectionResponse> {
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
-
     const collectionTextQuery = (
       collectionUuid: string,
       textSearch: string,
