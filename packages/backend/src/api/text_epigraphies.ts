@@ -72,7 +72,7 @@ router
       let draft;
 
       if (user) {
-        draft = await TextDraftsDao.getDraft(user?.id, textUuid);
+        draft = await TextDraftsDao.getDraft(user.uuid, textUuid);
       }
 
       const response: EpigraphyResponse = {
