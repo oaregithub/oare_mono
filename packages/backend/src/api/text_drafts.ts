@@ -37,7 +37,7 @@ router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
   try {
     const userUuid = req.user!.uuid;
 
-    const drafts = await TextDraftsDao.getAllDrafts(userId);
+    const drafts = await TextDraftsDao.getAllDrafts(userUuid);
     res.json(drafts);
   } catch (err) {
     next(new HttpInternalError(err));
