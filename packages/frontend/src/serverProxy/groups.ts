@@ -1,4 +1,8 @@
-import { Group, CreateGroupPayload, DeleteGroupPayload } from '@oare/types';
+import {
+  Group,
+  CreateGroupPayload,
+  UpdateGroupDescriptionPayload,
+} from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getAllGroups(): Promise<Group[]> {
@@ -27,9 +31,17 @@ async function createGroup(payload: CreateGroupPayload): Promise<number> {
   return id;
 }
 
+async function updateGroupDescription(
+  groupId: number,
+  payload: UpdateGroupDescriptionPayload
+): Promise<void> {
+  await axios.patch(`/groups/${groupId}`, payload);
+}
+
 export default {
   getGroupName,
   deleteGroup,
   getAllGroups,
   createGroup,
+  updateGroupDescription,
 };

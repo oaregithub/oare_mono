@@ -82,6 +82,7 @@ describe('AdminGroupView test', () => {
 
     expect(mockServer.createGroup).toHaveBeenCalledWith({
       groupName: 'New group',
+      description: '',
     });
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
