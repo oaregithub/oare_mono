@@ -5,10 +5,16 @@ export interface Group {
   name: string;
   created_on: Date;
   num_users: number;
+  description: string | null;
 }
 
 export interface CreateGroupPayload {
   groupName: string;
+  description: string;
+}
+
+export interface UpdateGroupDescriptionPayload {
+  description: string;
 }
 
 export interface DeleteGroupPayload {

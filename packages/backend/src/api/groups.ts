@@ -1,5 +1,9 @@
 import express from 'express';
-import { Group, CreateGroupPayload, DeleteGroupPayload } from '@oare/types';
+import {
+  Group,
+  CreateGroupPayload,
+  UpdateGroupDescriptionPayload,
+} from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
@@ -54,7 +58,7 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const OareGroupDao = sl.get('OareGroupDao');
-      const { groupName }: CreateGroupPayload = req.body;
+      const { groupName, description }: CreateGroupPayload = req.body;
 
       const existingGroup = await OareGroupDao.getGroupByName(groupName);
       if (existingGroup) {
@@ -62,10 +66,31 @@ router
         return;
       }
 
-      const groupId = await OareGroupDao.createGroup(groupName);
+      const groupId = await OareGroupDao.createGroup(groupName, description);
       res.json({
         id: groupId,
       });
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  })
+  .patch(adminRoute, async (req, res, next) => {
+    try {
+      const OareGroupDao = sl.get('OareGroupDao');
+      const { groupId } = (req.params as unknown) as { groupId: number };
+      const { description }: UpdateGroupDescriptionPayload = req.body;
+
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
+      if (!existingGroup) {
+        next(
+          new HttpBadRequest(
+            'Cannot update description because group does not exist'
+          )
+        );
+        return;
+      }
+
+      await OareGroupDao.updateGroupDescription(groupId, description);
     } catch (err) {
       next(new HttpInternalError(err));
     }
