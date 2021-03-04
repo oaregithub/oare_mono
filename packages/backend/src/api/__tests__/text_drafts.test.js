@@ -7,7 +7,7 @@ describe('Text drafts test', () => {
   describe('POST /text_drafts/:textUuid', () => {
     const textUuid = 'test-uuid';
     const draftUuid = 'draft-uuid';
-    const userId = 1;
+    const userUuid = '1';
     const PATH = `${API_PATH}/text_drafts/${textUuid}`;
     const payload = { content: 'content', notes: 'notes' };
 
@@ -19,7 +19,7 @@ describe('Text drafts test', () => {
 
     const UserDao = {
       getUserByEmail: jest.fn().mockResolvedValue({
-        id: userId,
+        uuid: userUuid,
       }),
     };
 
@@ -51,7 +51,7 @@ describe('Text drafts test', () => {
 
       await sendRequest();
       expect(TextDraftsDao.createDraft).toHaveBeenCalledWith(
-        userId,
+        userUuid,
         textUuid,
         payload.content,
         payload.notes
@@ -62,7 +62,7 @@ describe('Text drafts test', () => {
       setup();
       await sendRequest();
 
-      expect(TextDraftsDao.getDraft).toHaveBeenCalledWith(userId, textUuid);
+      expect(TextDraftsDao.getDraft).toHaveBeenCalledWith(userUuid, textUuid);
       expect(TextDraftsDao.updateDraft).toHaveBeenCalledWith(
         draftUuid,
         payload.content,
@@ -114,14 +114,14 @@ describe('Text drafts test', () => {
       },
     ];
 
-    const userId = 1;
+    const userUuid = '1';
     const mockTextDraftsDao = {
       getAllDrafts: jest.fn().mockResolvedValue(drafts),
     };
 
     const mockUserDao = {
       getUserByEmail: jest.fn().mockResolvedValue({
-        id: userId,
+        uuid: userUuid,
       }),
     };
 
@@ -136,7 +136,7 @@ describe('Text drafts test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(drafts);
-      expect(mockTextDraftsDao.getAllDrafts).toHaveBeenCalledWith(userId);
+      expect(mockTextDraftsDao.getAllDrafts).toHaveBeenCalledWith(userUuid);
     });
 
     it('returns 401 when not logged in', async () => {
