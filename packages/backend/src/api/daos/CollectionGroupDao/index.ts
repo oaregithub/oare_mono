@@ -33,7 +33,7 @@ class CollectionGroupDao {
         })
     ).map(collection => collection.uuid);
 
-    const userCollections: CollectionPermissionsItem[] = (
+    let userCollections: CollectionPermissionsItem[] = (
       await PublicBlacklistDao.getBlacklistedCollections()
     ).map(collection => ({
       ...collection,
@@ -43,13 +43,12 @@ class CollectionGroupDao {
 
     if (user) {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
-      for (let i = 0; i < groupIds.length; i += 1) {
-        const groupId = groupIds[i];
-        const collections = await this.getCollections(groupId);
-        collections.forEach(collection => {
-          userCollections.push(collection);
-        });
-      }
+      await Promise.all(
+        groupIds.map(async groupId => {
+          const collections = await this.getCollections(groupId);
+          userCollections = [...userCollections, ...collections];
+        })
+      );
     }
 
     const whitelistedUuids = userCollections
