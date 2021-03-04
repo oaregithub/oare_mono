@@ -140,7 +140,7 @@ export default defineComponent({
       }
       try {
         addGroupLoading.value = true;
-        let id = await server.createGroup({
+        const id = await server.createGroup({
           groupName: groupName.value,
           description: '',
         });
