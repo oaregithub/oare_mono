@@ -140,13 +140,17 @@ export default defineComponent({
       }
       try {
         addGroupLoading.value = true;
-        let id = await server.createGroup({ groupName: groupName.value });
+        const id = await server.createGroup({
+          groupName: groupName.value,
+          description: '',
+        });
 
         groups.value.push({
           id,
           name: groupName.value,
           created_on: new Date(),
           num_users: 0,
+          description: '',
         });
         actions.showSnackbar('Successfully created group');
         addDialog.value = false;
