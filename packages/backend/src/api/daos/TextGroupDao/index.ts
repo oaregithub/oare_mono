@@ -21,17 +21,16 @@ class TextGroupDao {
       return { blacklist: [], whitelist: [] };
     }
 
-    const userTexts = await PublicBlacklistDao.getBlacklistedTexts();
+    let userTexts = await PublicBlacklistDao.getBlacklistedTexts();
 
     if (user) {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
-      for (let i = 0; i < groupIds.length; i += 1) {
-        const groupId = groupIds[i];
-        const texts = await this.getTexts(groupId);
-        texts.forEach(text => {
-          userTexts.push(text);
-        });
-      }
+      await Promise.all(
+        groupIds.map(async groupId => {
+          const texts = await this.getTexts(groupId);
+          userTexts = [...userTexts, ...texts];
+        })
+      );
     }
 
     const whitelistedUuids = userTexts
