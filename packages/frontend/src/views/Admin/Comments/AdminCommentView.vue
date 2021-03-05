@@ -29,7 +29,7 @@
       </template>
       <template #[`item.comments`]="{ item }">
         <div class="pt-2 pb-2">
-          <div v-for="(comment, idx) in item.comments">
+          <div v-for="(comment, idx) in item.comments" :key="idx">
             <span v-if="idx <= 2">{{
               formatCommentText(idx, comment.text)
             }}</span>
@@ -37,6 +37,7 @@
           <div
             v-if="item.comments.length > 3"
             @click="setSelectedComments(item.comments)"
+            class="test-view-all-comments"
           >
             <v-btn
               color="primary"
@@ -56,17 +57,22 @@
       </template>
     </v-data-table>
     <oare-dialog
-      v-if="selectedComments.length"
+      v-if="selectedComments.length !== 0"
       :title="'All Comments'"
-      :value="selectedComments.length"
+      :value="selectedComments.length !== 0"
       :width="500"
       :closeButton="true"
       :persistent="false"
       :show-cancel="false"
       :show-submit="false"
       @input="setSelectedComments([])"
+      class="test-view-all-comments-dialog"
     >
-      <div v-for="(comment, idx) in selectedComments" :key="idx">
+      <div
+        v-for="(comment, idx) in selectedComments"
+        :key="idx"
+        class="test-comment"
+      >
         {{ formatCommentText(idx, comment.text, true) }}
       </div>
     </oare-dialog>
