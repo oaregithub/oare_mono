@@ -58,11 +58,13 @@ describe('GroupsView', () => {
     const editButton = wrapper.get('.mdi-pencil');
     await editButton.trigger('click');
     const editDescriptionBox = wrapper.get('.test-description input');
-    await editDescriptionBox.setValue('test');
+    await editDescriptionBox.setValue('testDescription2');
     const submitButton = wrapper.get('.test-check');
     await submitButton.trigger('click');
     await flushPromises();
     expect(mockServer.updateGroupDescription).toHaveBeenCalled();
+    await flushPromises();
+    expect(wrapper.html()).toContain('testDescription2');
   });
 
   it('does not update description when close button clicked', async () => {
@@ -71,11 +73,12 @@ describe('GroupsView', () => {
     const editButton = wrapper.get('.mdi-pencil');
     await editButton.trigger('click');
     const editDescriptionBox = wrapper.get('.test-description input');
-    await editDescriptionBox.setValue('test');
+    await editDescriptionBox.setValue('falseTest');
     const closeButton = wrapper.get('.test-close');
     await closeButton.trigger('click');
     await flushPromises();
     expect(mockServer.updateGroupDescription).not.toHaveBeenCalled();
+    expect(wrapper.html()).not.toContain('falseTest');
   });
 
   it('shows error snackbar on failed description update', async () => {
@@ -96,5 +99,21 @@ describe('GroupsView', () => {
     await submitButton.trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('disables submit button when group description is too long', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    const editButton = wrapper.get('.mdi-pencil');
+    await editButton.trigger('click');
+    const editDescriptionBox = wrapper.get('.test-description input');
+    await editDescriptionBox.setValue(
+      `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+    );
+    const submitButton = wrapper.get('.test-check');
+    expect(submitButton.element).toBeDisabled();
   });
 });

@@ -27,7 +27,12 @@
           />
         </v-col>
         <v-col cols="4" class="pa-0">
-          <v-btn icon @click="saveDescriptionEdit" class="test-check">
+          <v-btn
+            icon
+            @click="saveDescriptionEdit"
+            class="test-check"
+            :disabled="editDescription.length > 200"
+          >
             <v-icon>mdi-check</v-icon>
           </v-btn>
           <v-btn icon @click="editingDescription = false" class="test-close">

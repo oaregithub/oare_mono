@@ -59,6 +59,13 @@ router
         return;
       }
 
+      if (description.length > 200) {
+        next(
+          new HttpBadRequest('Group description must be 200 characters or less')
+        );
+        return;
+      }
+
       await OareGroupDao.updateGroupDescription(groupId, description);
       res.status(204).end();
     } catch (err) {
