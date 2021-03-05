@@ -6,6 +6,9 @@ import {
   convertEpigraphicUnitRows,
   getSequentialCharacterQuery,
 } from './utils';
+import TextGroupDao from '../TextGroupDao';
+import CollectionGroupDao from '../CollectionGroupDao';
+import UserGroupDao from '../UserGroupDao';
 
 export interface EpigraphicQueryRow extends Omit<EpigraphicUnit, 'side'> {
   side: number;
@@ -79,10 +82,28 @@ class TextEpigraphyDao {
     characters,
     title,
     pagination,
+    userUuid,
   }: SearchTextArgs): Promise<string[]> {
+    const { blacklist, whitelist } = await TextGroupDao.getUserBlacklist(
+      userUuid
+    );
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid);
+    let collectionBlacklist: string[] = [];
+    await Promise.all(
+      groups.map(async group => {
+        const groupBlacklist = (
+          await CollectionGroupDao.getCollections(group)
+        ).map(collection => collection.uuid);
+        collectionBlacklist = [...collectionBlacklist, ...groupBlacklist];
+      })
+    );
+
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
-      title
+      title,
+      blacklist,
+      whitelist,
+      collectionBlacklist
     )
       .select('text_epigraphy.text_uuid AS uuid')
       .orderBy('text.name')
@@ -124,9 +145,33 @@ class TextEpigraphyDao {
   async searchTextsTotal({
     characters,
     title,
-  }: Pick<SearchTextArgs, 'characters' | 'title'>): Promise<number> {
+    userUuid,
+  }: Pick<
+    SearchTextArgs,
+    'characters' | 'title' | 'userUuid'
+  >): Promise<number> {
+    const { blacklist, whitelist } = await TextGroupDao.getUserBlacklist(
+      userUuid
+    );
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid);
+    let collectionBlacklist: string[] = [];
+    await Promise.all(
+      groups.map(async group => {
+        const groupBlacklist = (
+          await CollectionGroupDao.getCollections(group)
+        ).map(collection => collection.uuid);
+        collectionBlacklist = [...collectionBlacklist, ...groupBlacklist];
+      })
+    );
+
     const totalRows: number = (
-      await getSearchQuery(characters, title)
+      await getSearchQuery(
+        characters,
+        title,
+        blacklist,
+        whitelist,
+        collectionBlacklist
+      )
         .select(knex.raw('COUNT(DISTINCT text_epigraphy.text_uuid) AS count'))
         .first()
     ).count;

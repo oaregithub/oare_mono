@@ -90,6 +90,7 @@ router.route('/search').get(async (req, res, next) => {
       TextEpigraphyDao.searchTextsTotal({
         characters,
         title,
+        userUuid: user ? user.uuid : null,
       }),
       TextEpigraphyDao.searchTexts({
         characters,
