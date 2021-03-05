@@ -116,7 +116,8 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        groupName.value = await server.getGroupName(Number(groupId));
+        const groupInfo = await server.getGroupInfo(Number(groupId));
+        groupName.value = groupInfo.name;
         allUsers.value = await server.getAllUsers();
       } catch {
         actions.showErrorSnackbar(

@@ -42,6 +42,28 @@ router
     } catch (err) {
       next(new HttpInternalError(err));
     }
+  })
+  .patch(adminRoute, async (req, res, next) => {
+    try {
+      const OareGroupDao = sl.get('OareGroupDao');
+      const groupId = Number(req.params.id);
+      const { description }: UpdateGroupDescriptionPayload = req.body;
+
+      const existingGroup = await OareGroupDao.getGroupById(groupId);
+      if (!existingGroup) {
+        next(
+          new HttpBadRequest(
+            'Cannot update description because group does not exist'
+          )
+        );
+        return;
+      }
+
+      await OareGroupDao.updateGroupDescription(groupId, description);
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
   });
 
 router
@@ -70,27 +92,6 @@ router
       res.json({
         id: groupId,
       });
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  })
-  .patch(adminRoute, async (req, res, next) => {
-    try {
-      const OareGroupDao = sl.get('OareGroupDao');
-      const { groupId } = (req.params as unknown) as { groupId: number };
-      const { description }: UpdateGroupDescriptionPayload = req.body;
-
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(
-          new HttpBadRequest(
-            'Cannot update description because group does not exist'
-          )
-        );
-        return;
-      }
-
-      await OareGroupDao.updateGroupDescription(groupId, description);
     } catch (err) {
       next(new HttpInternalError(err));
     }

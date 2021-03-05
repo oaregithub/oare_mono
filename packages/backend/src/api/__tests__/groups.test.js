@@ -23,6 +23,7 @@ describe('groups api test', () => {
       name: 'Test Group',
       created_on: JSON.stringify(new Date()),
       num_users: 1,
+      description: 'Test Description',
     };
     const OareGroupDao = {
       getGroupById: jest.fn().mockResolvedValue(mockGroup),
@@ -264,6 +265,78 @@ describe('groups api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
+    });
+  });
+
+  describe('PATCH /groups/:id', () => {
+    const groupId = 1;
+    const PATH = `${API_PATH}/groups/${groupId}`;
+
+    const mockPATCH = {
+      description: 'Test Description',
+    };
+
+    const mockOareGroupDao = {
+      updateGroupDescription: jest.fn().mockResolvedValue(),
+      getGroupById: jest.fn().mockResolvedValue(true),
+    };
+
+    const setup = () => {
+      sl.set('OareGroupDao', mockOareGroupDao);
+      sl.set('UserDao', {
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: true,
+        }),
+      });
+    };
+
+    beforeEach(setup);
+
+    const sendRequest = () =>
+      request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
+
+    it('returns 204 on successful description update', async () => {
+      const response = await sendRequest();
+      expect(mockOareGroupDao.updateGroupDescription).toHaveBeenCalled();
+      expect(response.status).toBe(204);
+    });
+
+    it('returns 500 on failed description update', async () => {
+      sl.set('OareGroupDao', {
+        ...mockOareGroupDao,
+        updateGroupDescription: jest
+          .fn()
+          .mockRejectedValue('failed description update'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 400 when group does not exist', async () => {
+      sl.set('OareGroupDao', {
+        ...mockOareGroupDao,
+        getGroupById: jest.fn().mockResolvedValue(false),
+      });
+      const response = await sendRequest();
+      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
+      expect(response.status).toBe(400);
+    });
+
+    it('does not allow non-admins to update description', async () => {
+      sl.set('UserDao', {
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: false,
+        }),
+      });
+      const response = await sendRequest();
+      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
+      expect(response.status).toBe(403);
+    });
+
+    it('does not allow non-logged-in users to update description', async () => {
+      const response = await request(app).patch(PATH).send(mockPATCH);
+      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
+      expect(response.status).toBe(401);
     });
   });
 });
