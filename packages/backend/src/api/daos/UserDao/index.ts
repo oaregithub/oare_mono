@@ -6,7 +6,6 @@ import { hashPassword } from '@/security';
 import UserGroupDao from '../UserGroupDao';
 
 export interface UserRow {
-  id: number;
   uuid: string;
   firstName: string;
   lastName: string;
@@ -20,11 +19,6 @@ class UserDao {
   async emailExists(email: string): Promise<boolean> {
     const user = await knex('user').first().where({ email });
     return !!user;
-  }
-
-  async getUserById(id: number): Promise<UserRow | null> {
-    const user = await this.getUserByColumn('id', id);
-    return user;
   }
 
   async getUserByEmail(email: string): Promise<UserRow | null> {
@@ -42,7 +36,6 @@ class UserDao {
   ): Promise<UserRow | null> {
     const user: UserRow | null = await knex('user')
       .first(
-        'id',
         'uuid',
         'first_name AS firstName',
         'last_name AS lastName',
@@ -94,8 +87,10 @@ class UserDao {
   }
 
   async getAllUsers(): Promise<GetUserResponse[]> {
-    const users: UserRow[] = await knex('user').select(
-      'id',
+    const users: Pick<
+      UserRow,
+      'uuid' | 'firstName' | 'lastName' | 'email'
+    >[] = await knex('user').select(
       'uuid',
       'first_name AS firstName',
       'last_name AS lastName',
@@ -107,8 +102,7 @@ class UserDao {
     const adminStatus = await Promise.all(
       users.map(user => this.userIsAdmin(user.uuid))
     );
-    return users.map(({ id, uuid, firstName, lastName, email }, index) => ({
-      id,
+    return users.map(({ uuid, firstName, lastName, email }, index) => ({
       uuid,
       first_name: firstName,
       last_name: lastName,

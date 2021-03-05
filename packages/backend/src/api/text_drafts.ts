@@ -35,7 +35,7 @@ router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
   const TextDraftsDao = sl.get('TextDraftsDao');
 
   try {
-    const userUuid = req!.user!.uuid;
+    const userUuid = req.user!.uuid;
 
     const drafts = await TextDraftsDao.getAllDrafts(userUuid);
     res.json(drafts);

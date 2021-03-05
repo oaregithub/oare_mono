@@ -12,6 +12,7 @@ router
     try {
       const textUuid = String(req.params.uuid);
       const user = req.user || null;
+      const userUuid = user ? user.uuid : null;
       const TextMarkupDao = sl.get('TextMarkupDao');
       const TextDao = sl.get('TextDao');
       const HierarchyDao = sl.get('HierarchyDao');
@@ -24,9 +25,9 @@ router
 
       // Make sure user has access to the text he wishes to access
       if (!user || !user.isAdmin) {
-        const { blacklist } = await TextGroupDao.getUserBlacklist(user);
+        const { blacklist } = await TextGroupDao.getUserBlacklist(userUuid);
         const collectionBlacklist = await CollectionGroupDao.getUserCollectionBlacklist(
-          user
+          userUuid
         );
         const collectionOfText = await HierarchyDao.getCollectionOfText(
           textUuid
