@@ -6,7 +6,7 @@ import AliasDao from '../AliasDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
 import HierarchyDao from '../HierarchyDao';
-import { UserRow } from '../UserDao';
+import UserDao from '../UserDao';
 
 export interface CollectionGroupRow {
   collection_uuid: string;
@@ -16,12 +16,14 @@ export interface CollectionGroupRow {
 }
 
 class CollectionGroupDao {
-  async getUserCollectionBlacklist(user: UserRow | null): Promise<string[]> {
+  async getUserCollectionBlacklist(userUuid: string | null): Promise<string[]> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
     if (user && user.isAdmin) {
       return [];
     }
 
-    const { whitelist } = await TextGroupDao.getUserBlacklist(user);
+    const { whitelist } = await TextGroupDao.getUserBlacklist(userUuid);
     const collectionsWithWhitelistedTexts: string[] = (
       await knex('hierarchy')
         .select('parent_uuid AS uuid')
@@ -31,7 +33,7 @@ class CollectionGroupDao {
         })
     ).map(collection => collection.uuid);
 
-    const userCollections: CollectionPermissionsItem[] = (
+    let userCollections: CollectionPermissionsItem[] = (
       await PublicBlacklistDao.getBlacklistedCollections()
     ).map(collection => ({
       ...collection,
@@ -41,13 +43,12 @@ class CollectionGroupDao {
 
     if (user) {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
-      for (let i = 0; i < groupIds.length; i += 1) {
-        const groupId = groupIds[i];
-        const collections = await this.getCollections(groupId);
-        collections.forEach(collection => {
-          userCollections.push(collection);
-        });
-      }
+      await Promise.all(
+        groupIds.map(async groupId => {
+          const collections = await this.getCollections(groupId);
+          userCollections = [...userCollections, ...collections];
+        })
+      );
     }
 
     const whitelistedUuids = userCollections
@@ -69,8 +70,10 @@ class CollectionGroupDao {
 
   async collectionIsBlacklisted(
     uuid: string,
-    user: UserRow | null
+    userUuid: string | null
   ): Promise<boolean> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
     if (user && user.isAdmin) {
       return false;
     }
@@ -109,11 +112,13 @@ class CollectionGroupDao {
 
   async canViewCollection(
     collectionUuid: string,
-    user: UserRow | null
+    userUuid: string | null
   ): Promise<boolean> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
     const isBlacklisted = await this.collectionIsBlacklisted(
       collectionUuid,
-      user
+      userUuid
     );
 
     if (isBlacklisted) {
