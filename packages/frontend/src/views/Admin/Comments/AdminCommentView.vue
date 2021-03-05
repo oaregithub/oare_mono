@@ -4,7 +4,6 @@
       :loading="searchLoading"
       :headers="tableHeaders"
       class="mt-3 table-cursor"
-      align-v="start"
       item-key="uuid"
       :items="threadDisplays"
       :options.sync="searchOptions"
@@ -14,9 +13,7 @@
       }"
     >
       <template #[`item.status`]="{ item }">
-        <div class="d-flex align-start flex-column fill-height pt-2 pb-2">
-          <span class="text--primary">{{ item.thread.status }}</span>
-        </div>
+        {{ item.thread.status }}
       </template>
       <template #[`item.thread`]="{ item }">
         <div class="d-flex align-start flex-column fill-height pt-2 pb-2">
@@ -39,7 +36,7 @@
           </div>
           <div
             v-if="item.comments.length > 3"
-            @click="setSelectedThreadUuid(item.thread.uuid)"
+            @click="setSelectedComments(item.comments)"
           >
             <v-btn
               color="primary"
@@ -59,17 +56,17 @@
       </template>
     </v-data-table>
     <oare-dialog
-      v-if="selectedThreadUuid !== ''"
-      :title="'Extended Comments'"
-      :value="selectedThreadUuid !== ''"
+      v-if="selectedComments.length"
+      :title="'All Comments'"
+      :value="selectedComments.length"
       :width="500"
       :closeButton="true"
       :persistent="false"
       :show-cancel="false"
       :show-submit="false"
-      @input="setSelectedThreadUuid('')"
+      @input="setSelectedComments([])"
     >
-      <div v-for="(comment, idx) in getCommentsByTheadUuid(selectedThreadUuid)">
+      <div v-for="(comment, idx) in selectedComments" :key="idx">
         {{ formatCommentText(idx, comment.text, true) }}
       </div>
     </oare-dialog>
@@ -99,7 +96,7 @@ export default defineComponent({
     const threadDisplays: Ref<ThreadDisplay[]> = ref([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const selectedThreadUuid = ref('');
+    const selectedComments: Ref<Comment[]> = ref([]);
     const [desc, setDesc] = useQueryParam('desc', 'true');
     const [sort, setSort] = useQueryParam('sort', 'timestamp');
     const [page, setPage] = useQueryParam('page', '1');
@@ -153,16 +150,8 @@ export default defineComponent({
       );
     };
 
-    const getCommentsByTheadUuid = (threadUuid: string): Comment[] => {
-      const threadDisp = threadDisplays.value.find(threadDis => {
-        return threadDis.thread.uuid === threadUuid;
-      });
-
-      return threadDisp ? threadDisp.comments : [];
-    };
-
-    const setSelectedThreadUuid = (uuid: string) => {
-      selectedThreadUuid.value = uuid;
+    const setSelectedComments = (comments: Comment[]) => {
+      selectedComments.value = comments;
     };
 
     onMounted(async () => {
@@ -196,9 +185,8 @@ export default defineComponent({
       searchOptions,
       formatTimestamp,
       formatCommentText,
-      selectedThreadUuid,
-      setSelectedThreadUuid,
-      getCommentsByTheadUuid,
+      selectedComments,
+      setSelectedComments,
     };
   },
 });
