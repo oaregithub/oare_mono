@@ -12,7 +12,7 @@ interface TextUuid {
 }
 
 class TextDao {
-  async getTextByUuid(uuid: string): Promise<Text> {
+  async getTextByUuid(uuid: string): Promise<Text | null> {
     const text: Text = await knex('text').first().where({ uuid });
     return text;
   }

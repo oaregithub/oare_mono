@@ -28,6 +28,7 @@ import UserGroupDao from './api/daos/UserGroupDao';
 import CommentsDao from './api/daos/CommentsDao';
 import ThreadsDao from './api/daos/ThreadsDao';
 import ErrorsDao from './api/daos/ErrorsDao';
+import CollectionDao from './api/daos/CollectionDao';
 
 declare global {
   namespace Express {
@@ -63,6 +64,7 @@ sl.set('UserGroupDao', UserGroupDao);
 sl.set('CommentsDao', CommentsDao);
 sl.set('ThreadsDao', ThreadsDao);
 sl.set('ErrorsDao', ErrorsDao);
+sl.set('CollectionDao', CollectionDao);
 sl.set('utils', utils);
 sl.set('mailer', mailer);
 

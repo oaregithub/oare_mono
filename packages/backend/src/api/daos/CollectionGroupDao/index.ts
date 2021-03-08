@@ -7,6 +7,7 @@ import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
 import HierarchyDao from '../HierarchyDao';
 import UserDao from '../UserDao';
+import CollectionDao from '../CollectionDao';
 
 export interface CollectionGroupRow {
   collection_uuid: string;
@@ -149,8 +150,11 @@ class CollectionGroupDao {
         'can_write AS canWrite'
       )
       .where('group_id', groupId);
-    const collectionNames = await Promise.all(
-      results.map(collection => AliasDao.textAliasNames(collection.uuid))
+    const collections = await Promise.all(
+      results.map(({ uuid }) => CollectionDao.getCollectionByUuid(uuid))
+    );
+    const collectionNames = collections.map(collection =>
+      collection ? collection.name : ''
     );
 
     return results.map((collection, index) => ({

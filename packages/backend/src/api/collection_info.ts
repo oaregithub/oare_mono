@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
 import sl from '@/serviceLocator';
 
@@ -11,12 +11,16 @@ router
     try {
       const uuid = req.params.uuid as string;
 
-      const AliasDao = sl.get('AliasDao');
+      const CollectionDao = sl.get('CollectionDao');
 
-      const name = await AliasDao.textAliasNames(uuid);
-      res.json({
-        name,
-      });
+      const collection = await CollectionDao.getCollectionByUuid(uuid);
+
+      if (!collection) {
+        next(new HttpBadRequest(`Non-existent collection UUID: ${uuid}`));
+        return;
+      }
+
+      res.json(collection);
     } catch (err) {
       next(new HttpInternalError(err));
     }

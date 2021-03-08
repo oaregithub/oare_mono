@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError, HttpForbidden } from '@/exceptions';
+import { HttpInternalError, HttpForbidden, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { EpigraphyResponse } from '@oare/types';
 import authFirst from '@/middlewares/authFirst';
@@ -18,10 +18,16 @@ router
       const HierarchyDao = sl.get('HierarchyDao');
       const TextGroupDao = sl.get('TextGroupDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const AliasDao = sl.get('AliasDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const CollectionGroupDao = sl.get('CollectionGroupDao');
       const TextDraftsDao = sl.get('TextDraftsDao');
+
+      const text = await TextDao.getTextByUuid(textUuid);
+
+      if (!text) {
+        next(new HttpBadRequest(`Text with UUID ${textUuid} does not exist`));
+        return;
+      }
 
       // Make sure user has access to the text he wishes to access
       if (!user || !user.isAdmin) {
@@ -46,7 +52,6 @@ router
         }
       }
 
-      const textName = await AliasDao.textAliasNames(textUuid);
       const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
       const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
       const cdliNum = await TextDao.getCdliNum(textUuid);
@@ -77,7 +82,7 @@ router
       }
 
       const response: EpigraphyResponse = {
-        textName,
+        textName: text.name,
         collection,
         units,
         canWrite,
