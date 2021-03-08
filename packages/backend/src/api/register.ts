@@ -1,5 +1,5 @@
 import express from 'express';
-import { RegisterPayload, LoginRegisterResponse } from '@oare/types';
+import { RegisterPayload, User } from '@oare/types';
 import * as security from '@/security';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import userDao from './daos/UserDao';
@@ -37,15 +37,7 @@ router.route('/register').post(async (req, res, next) => {
 
     const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
 
-    const response: LoginRegisterResponse = {
-      uuid: user.uuid,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      isAdmin: !!user.isAdmin,
-    };
-
-    cookieRes.status(201).json(response);
+    cookieRes.status(201).json(user);
   } catch (err) {
     next(new HttpInternalError(err));
   }
