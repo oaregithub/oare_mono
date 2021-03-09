@@ -25,17 +25,22 @@ router
 
       // Make sure user has access to the text he wishes to access
       if (!user || !user.isAdmin) {
-        const { blacklist } = await TextGroupDao.getUserBlacklist(userUuid);
-        const collectionBlacklist = await CollectionGroupDao.getUserCollectionBlacklist(
-          userUuid
-        );
+        const {
+          blacklist: textBlacklist,
+          whitelist: textWhitelist,
+        } = await TextGroupDao.getUserBlacklist(userUuid);
+        const {
+          blacklist: collectionBlacklist,
+        } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
         const collectionOfText = await HierarchyDao.getCollectionOfText(
           textUuid
         );
 
         if (
-          blacklist.includes(textUuid) ||
-          collectionBlacklist.includes(collectionOfText)
+          textBlacklist.includes(textUuid) ||
+          (collectionBlacklist.includes(collectionOfText) &&
+            !textWhitelist.includes(textUuid))
         ) {
           next(
             new HttpForbidden(
