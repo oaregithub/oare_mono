@@ -107,12 +107,7 @@ describe('GroupsView', () => {
     const editButton = wrapper.get('.mdi-pencil');
     await editButton.trigger('click');
     const editDescriptionBox = wrapper.get('.test-description input');
-    await editDescriptionBox.setValue(
-      `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
-    );
+    await editDescriptionBox.setValue('a'.repeat(201));
     const submitButton = wrapper.get('.test-check');
     expect(submitButton.element).toBeDisabled();
   });
