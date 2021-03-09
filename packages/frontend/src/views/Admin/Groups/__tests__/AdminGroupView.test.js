@@ -114,6 +114,7 @@ describe('AdminGroupView test', () => {
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+    expect(mockServer.createGroup).not.toHaveBeenCalled();
   });
 
   it('shows error snackbar if adding group fails', async () => {
