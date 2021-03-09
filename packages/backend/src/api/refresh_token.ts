@@ -1,5 +1,4 @@
 import express from 'express';
-import { User } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { sendJwtCookie } from '@/security';
 import RefreshTokenDao from './daos/RefreshTokenDao';

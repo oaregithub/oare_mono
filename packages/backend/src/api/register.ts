@@ -1,5 +1,5 @@
 import express from 'express';
-import { RegisterPayload, User } from '@oare/types';
+import { RegisterPayload } from '@oare/types';
 import * as security from '@/security';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import userDao from './daos/UserDao';
