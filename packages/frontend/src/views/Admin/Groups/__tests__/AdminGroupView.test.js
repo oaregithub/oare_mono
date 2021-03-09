@@ -14,19 +14,21 @@ describe('AdminGroupView test', () => {
     {
       id: 0,
       name: 'Test Group',
+      description: 'Test Description',
       created_on: new Date(),
       num_users: 1,
     },
     {
       id: 1,
       name: 'Test Group 2',
+      description: 'Test Description 2',
       created_on: new Date(),
       num_users: 2,
     },
   ];
   const mockServer = {
     getAllGroups: jest.fn().mockResolvedValue(mockGroups),
-    createGroup: jest.fn().mockResolvedValue(2),
+    createGroup: jest.fn().mockResolvedValue(),
     deleteGroup: jest.fn().mockResolvedValue(null),
   };
 
@@ -85,6 +87,34 @@ describe('AdminGroupView test', () => {
       description: '',
     });
     expect(mockActions.showSnackbar).toHaveBeenCalled();
+  });
+
+  it('successfully adds a group with a description', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.get('.test-add-group').trigger('click');
+    await wrapper.get('.test-group-name input').setValue('Group Name');
+    await wrapper
+      .get('.test-group-description input')
+      .setValue('Group Description');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockServer.createGroup).toHaveBeenCalledWith({
+      groupName: 'Group Name',
+      description: 'Group Description',
+    });
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
+  });
+
+  it('does not allow blank group names', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.get('.test-add-group').trigger('click');
+    await wrapper.get('.test-group-name input').setValue('');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+    expect(mockServer.createGroup).not.toHaveBeenCalled();
   });
 
   it('shows error snackbar if adding group fails', async () => {
