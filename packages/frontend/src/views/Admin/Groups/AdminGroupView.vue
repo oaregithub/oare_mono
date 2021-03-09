@@ -61,6 +61,9 @@
           >{{ item.name }}</router-link
         >
       </template>
+      <template #[`item.description`]="{ item }">
+        <span>{{ item.description || 'No group description' }}</span>
+      </template>
     </v-data-table>
     <OareDialog
       v-model="confirmDeleteDialog"
@@ -101,10 +104,17 @@ export default defineComponent({
       {
         text: 'Group Name',
         value: 'name',
+        width: '25%',
+      },
+      {
+        text: 'Description',
+        value: 'description',
+        width: '60%',
       },
       {
         text: 'Users',
         value: 'num_users',
+        width: '15%',
       },
     ]);
     const groups: Ref<Group[]> = ref([]);

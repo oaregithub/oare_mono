@@ -25,7 +25,9 @@ describe('AddGroupTexts test', () => {
       count: 2,
     }),
     addTextGroups: jest.fn().mockResolvedValue(null),
-    getGroupName: jest.fn().mockResolvedValue('testGroup'),
+    getGroupInfo: jest.fn().mockResolvedValue({
+      name: 'testGroup',
+    }),
   };
 
   const mockActions = {
@@ -70,7 +72,7 @@ describe('AddGroupTexts test', () => {
   it('successfully retrieves group name', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockServer.getGroupName).toHaveBeenCalled();
+    expect(mockServer.getGroupInfo).toHaveBeenCalled();
     expect(wrapper.html()).toContain('testGroup');
   });
 
@@ -78,7 +80,9 @@ describe('AddGroupTexts test', () => {
     createWrapper({
       server: {
         ...mockServer,
-        getGroupName: jest.fn().mockRejectedValue('failed name retrieval'),
+        getGroupInfo: jest
+          .fn()
+          .mockRejectedValue('failed group info retrieval'),
       },
     });
     await flushPromises();
