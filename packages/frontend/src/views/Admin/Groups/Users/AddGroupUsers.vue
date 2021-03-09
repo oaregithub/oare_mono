@@ -38,7 +38,6 @@
       class="mt-3"
       show-select
       v-model="selectedUsers"
-      item-key="uuid"
     >
       <template #[`item.name`]="{ item }">
         <span class="test-name">
