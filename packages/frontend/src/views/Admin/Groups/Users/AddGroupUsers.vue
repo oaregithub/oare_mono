@@ -34,6 +34,7 @@
     <v-data-table
       :headers="usersHeaders"
       :items="unaddedUsers"
+      item-key="uuid"
       class="mt-3"
       show-select
       v-model="selectedUsers"
