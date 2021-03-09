@@ -38,6 +38,7 @@
     <v-data-table
       :headers="usersHeaders"
       :items="groupUsers"
+      item-key="uuid"
       class="mt-3"
       show-select
       v-model="selectedDeleteUsers"
