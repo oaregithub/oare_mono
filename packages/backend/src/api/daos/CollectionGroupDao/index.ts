@@ -2,7 +2,6 @@ import _ from 'lodash';
 import { CollectionPermissionsItem } from '@oare/types';
 import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
-import AliasDao from '../AliasDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
 import HierarchyDao from '../HierarchyDao';

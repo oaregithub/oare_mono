@@ -9,7 +9,6 @@ import {
 import knex from '@/connection';
 import sl from '@/serviceLocator';
 import textGroupDao from '../TextGroupDao';
-import aliasDao from '../AliasDao';
 import UserDao from '../UserDao';
 import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
