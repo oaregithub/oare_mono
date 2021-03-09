@@ -8,10 +8,10 @@ const router = express.Router();
 
 router.route('/userpermissions').get(async (req, res, next) => {
   try {
-    const { user } = req;
+    const userUuid = req.user ? req.user.uuid : null;
     const PermissionsDao = sl.get('PermissionsDao');
 
-    const permissions = await PermissionsDao.getUserPermissions(user);
+    const permissions = await PermissionsDao.getUserPermissions(userUuid);
 
     res.json(permissions);
   } catch (err) {

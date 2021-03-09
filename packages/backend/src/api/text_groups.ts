@@ -59,14 +59,15 @@ router
         return;
       }
 
-      // Make sure that given text UUIDs exist
-      for (let i = 0; i < items.length; i += 1) {
-        const text = items[i];
-        const existingText = await TextDao.getTextByUuid(text.uuid);
-        if (!existingText) {
-          next(new HttpBadRequest(`Text UUID is invalid: ${text.uuid}`));
-          return;
-        }
+      // Make sure all text UUIDs exist
+      const texts = await Promise.all(
+        items.map(({ uuid }) => TextDao.getTextByUuid(uuid))
+      );
+      if (texts.some(text => !text)) {
+        next(
+          new HttpBadRequest('One or more of given text UUIDs does not exist')
+        );
+        return;
       }
 
       // TODO make sure each text is not already associated with group

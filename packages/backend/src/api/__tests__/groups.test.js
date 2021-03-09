@@ -276,6 +276,10 @@ describe('groups api test', () => {
       description: 'Test Description',
     };
 
+    const tooLongPATCH = {
+      description: 'a'.repeat(201),
+    };
+
     const mockOareGroupDao = {
       updateGroupDescription: jest.fn().mockResolvedValue(),
       getGroupById: jest.fn().mockResolvedValue(true),
@@ -337,6 +341,15 @@ describe('groups api test', () => {
       const response = await request(app).patch(PATH).send(mockPATCH);
       expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
       expect(response.status).toBe(401);
+    });
+
+    it('returns 400 if description is too long', async () => {
+      const response = await request(app)
+        .patch(PATH)
+        .send(tooLongPATCH)
+        .set('Cookie', 'jwt=token');
+      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
+      expect(response.status).toBe(400);
     });
   });
 });
