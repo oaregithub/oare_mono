@@ -13,15 +13,15 @@ describe('ManageMembers test', () => {
   const mockUsers = [
     {
       uuid: '1',
-      first_name: 'Steve',
-      last_name: 'Rogers',
+      firstName: 'Steve',
+      lastName: 'Rogers',
       email: 'steve@gmail.com',
       groups: [1],
     },
     {
       uuid: '2',
-      first_name: 'Tony',
-      last_name: 'Stark',
+      firstName: 'Tony',
+      lastName: 'Stark',
       email: 'tony@gmail.com',
       groups: [2],
     },

@@ -3,20 +3,12 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const mockGET = [
-  {
-    id: 1,
-    first_name: 'first1',
-    last_name: 'last1',
-    email: 'email1',
-  },
-  {
-    id: 2,
-    first_name: 'first2',
-    last_name: 'last2',
-    email: 'email2',
-  },
-];
+const mockUser = {
+  id: 1,
+  firstName: 'first1',
+  lastName: 'last1',
+  email: 'email1',
+};
 
 const mockPOSTDELETE = {
   userUuids: ['1', '2', '3', '4', '5'],
@@ -29,17 +21,20 @@ describe('GET /user_groups/:groupId', () => {
     getGroupById: jest.fn().mockResolvedValue(true),
   };
   const mockUserGroupDao = {
-    getUsersInGroup: jest.fn().mockResolvedValue(mockGET),
+    getUsersInGroup: jest.fn().mockResolvedValue(['uuid']),
+  };
+
+  const mockUserDao = {
+    getUserByEmail: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
+    getUserByUuid: jest.fn().mockResolvedValue(mockUser),
   };
 
   const setup = () => {
     sl.set('OareGroupDao', mockOareGroupDao);
     sl.set('UserGroupDao', mockUserGroupDao);
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
-        isAdmin: true,
-      }),
-    });
+    sl.set('UserDao', mockUserDao);
   };
 
   beforeEach(setup);
@@ -51,7 +46,7 @@ describe('GET /user_groups/:groupId', () => {
     expect(mockOareGroupDao.getGroupById).toHaveBeenCalled();
     expect(mockUserGroupDao.getUsersInGroup).toHaveBeenCalled();
     expect(response.status).toBe(200);
-    expect(JSON.parse(response.text)).toEqual(mockGET);
+    expect(JSON.parse(response.text)).toEqual([mockUser]);
   });
 
   it('returns 500 on failed group retrieval', async () => {
