@@ -319,7 +319,7 @@ export default defineComponent({
       try {
         await getItems();
         groupName.value = groupId
-          ? await server.getGroupName(Number(groupId))
+          ? (await server.getGroupInfo(Number(groupId))).name
           : 'Public Blacklist';
       } catch {
         actions.showErrorSnackbar(

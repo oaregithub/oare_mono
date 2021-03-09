@@ -27,7 +27,9 @@ describe('AddGroupUsers test', () => {
     },
   ];
   const mockServer = {
-    getGroupName: jest.fn().mockResolvedValue('testGroup'),
+    getGroupInfo: jest.fn().mockResolvedValue({
+      name: 'testGroup',
+    }),
     getAllUsers: jest.fn().mockResolvedValue(mockUsers),
     addUsersToGroup: jest.fn().mockResolvedValue(null),
   };
@@ -59,7 +61,7 @@ describe('AddGroupUsers test', () => {
   it('retrieves group name', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockServer.getGroupName).toHaveBeenCalled();
+    expect(mockServer.getGroupInfo).toHaveBeenCalled();
     expect(wrapper.html()).toContain('testGroup');
   });
 
@@ -67,7 +69,7 @@ describe('AddGroupUsers test', () => {
     createWrapper({
       server: {
         ...mockServer,
-        getGroupName: jest.fn().mockRejectedValue(null),
+        getGroupInfo: jest.fn().mockRejectedValue(null),
       },
     });
     await flushPromises();
