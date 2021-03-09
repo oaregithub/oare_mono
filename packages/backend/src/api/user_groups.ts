@@ -17,6 +17,7 @@ router
 
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
+      const UserDao = sl.get('UserDao');
 
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
@@ -24,7 +25,11 @@ router
         return;
       }
 
-      res.json(await UserGroupDao.getUsersInGroup(groupId));
+      const userUuids = await UserGroupDao.getUsersInGroup(groupId);
+      const users = await Promise.all(
+        userUuids.map(uuid => UserDao.getUserByUuid(uuid))
+      );
+      res.json(users.filter(user => !!user));
     } catch (err) {
       next(new HttpInternalError(err));
     }

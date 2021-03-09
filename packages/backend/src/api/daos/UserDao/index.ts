@@ -104,8 +104,8 @@ class UserDao {
     );
     return users.map(({ uuid, firstName, lastName, email }, index) => ({
       uuid,
-      first_name: firstName,
-      last_name: lastName,
+      firstName,
+      lastName,
       email,
       groups: groupObjects[index],
       isAdmin: adminStatus[index],

@@ -39,9 +39,7 @@ class OareGroupDao {
     groupId: number,
     description: string
   ): Promise<void> {
-    await knex('oare_group')
-      .update('description', description)
-      .where({ groupId });
+    await knex('oare_group').where('id', groupId).update({ description });
   }
 }
 
