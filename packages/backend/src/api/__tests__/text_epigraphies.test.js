@@ -75,7 +75,10 @@ describe('GET /text_epigraphies/:uuid', () => {
   };
 
   const mockCollectionGroupDao = {
-    getUserCollectionBlacklist: jest.fn().mockResolvedValue([]),
+    getUserCollectionBlacklist: jest.fn().mockResolvedValue({
+      blacklist: [],
+      whitelist: [],
+    }),
   };
 
   const mockTextDao = {
@@ -132,6 +135,15 @@ describe('GET /text_epigraphies/:uuid', () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
     expect(JSON.parse(response.text)).toEqual(mockResponse);
+  });
+
+  it('returns 400 if text does not exist', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTextByUuid: jest.fn().mockResolvedValue(null),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
   });
 
   it('returns 400 if text does not exist', async () => {

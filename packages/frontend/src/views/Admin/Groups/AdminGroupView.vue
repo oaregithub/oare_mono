@@ -21,6 +21,13 @@
         class="test-group-name"
         autofocus
       />
+      <v-text-field
+        v-model="groupDescription"
+        @keyup.enter="submitGroup"
+        outlined
+        label="Group Description (Optional)"
+        class="test-group-description"
+      />
     </OareDialog>
 
     <v-menu>
@@ -122,6 +129,7 @@ export default defineComponent({
     const loading = ref(false);
     const addDialog = ref(false);
     const groupName = ref('');
+    const groupDescription = ref('');
     const addGroupLoading = ref(false);
     const deleteGroupLoading = ref(false);
     const confirmDeleteDialog = ref(false);
@@ -129,6 +137,7 @@ export default defineComponent({
     watch(addDialog, open => {
       if (!open) {
         groupName.value = '';
+        groupDescription.value = '';
       }
     });
 
@@ -152,7 +161,7 @@ export default defineComponent({
         addGroupLoading.value = true;
         const id = await server.createGroup({
           groupName: groupName.value,
-          description: '',
+          description: groupDescription.value,
         });
 
         groups.value.push({
@@ -160,7 +169,7 @@ export default defineComponent({
           name: groupName.value,
           created_on: new Date(),
           num_users: 0,
-          description: '',
+          description: groupDescription.value,
         });
         actions.showSnackbar('Successfully created group');
         addDialog.value = false;
@@ -198,6 +207,7 @@ export default defineComponent({
       loading,
       addDialog,
       groupName,
+      groupDescription,
       deleteGroupLoading,
       addGroupLoading,
       submitGroup,
