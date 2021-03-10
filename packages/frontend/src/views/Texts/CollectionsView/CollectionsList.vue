@@ -23,20 +23,16 @@
 <script lang="ts">
 import {
   defineComponent,
-  ref,
-  Ref,
-  onMounted,
-  computed,
   PropType,
 } from '@vue/composition-api';
-import { CollectionListItem } from '@oare/types';
+import { Collection } from '@oare/types';
 import { letterGroups } from './utils';
 
 export default defineComponent({
   name: 'CollectionsList',
   props: {
     collections: {
-      type: Array as PropType<CollectionListItem[]>,
+      type: Array as PropType<Collection[]>,
       required: true,
     },
   },

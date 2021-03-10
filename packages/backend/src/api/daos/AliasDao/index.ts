@@ -30,23 +30,6 @@ class AliasDao {
     return rows;
   }
 
-  async textAliasNames(textUuid: string): Promise<string> {
-    const aliases = await this.getAllNames(textUuid);
-    const primaryRow = aliases.find(
-      alias => alias.primacy === null || alias.primacy === 1
-    );
-    const secondaryRows = aliases.filter(
-      alias => alias.uuid !== primaryRow?.uuid
-    );
-
-    let secondaryNames = '';
-    if (secondaryRows.length > 0) {
-      secondaryNames = ` (${secondaryRows.map(alias => alias.name).join('')})`;
-    }
-
-    return `${primaryRow?.name}${secondaryNames}`;
-  }
-
   async getAliasesByType(type: string): Promise<AliasWithName[]> {
     const aliases: AliasWithName[] = await knex('alias AS a')
       .select('a.uuid', 'a.reference_uuid AS referenceUuid', 'a.name')

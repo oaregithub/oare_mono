@@ -12,7 +12,7 @@ import {
   onMounted,
   computed,
 } from '@vue/composition-api';
-import { CollectionListItem } from '@oare/types';
+import { Collection } from '@oare/types';
 import { letterGroups } from './utils';
 import CollectionsList from './CollectionsList.vue';
 import sl from '@/serviceLocator';
@@ -30,7 +30,7 @@ export default defineComponent({
   },
   setup(props) {
     const loading = ref(false);
-    const collections: Ref<CollectionListItem[]> = ref([]);
+    const collections: Ref<Collection[]> = ref([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
