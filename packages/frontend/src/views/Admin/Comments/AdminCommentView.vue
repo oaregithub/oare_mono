@@ -155,7 +155,7 @@ export default defineComponent({
     const [status, setStatus] = useQueryParam('status', '');
     const [thread, setThread] = useQueryParam('thread', '');
     const [item, setItem] = useQueryParam('item', '');
-    const [comments, setComments] = useQueryParam('comments', '');
+    const [comment, setComment] = useQueryParam('comment', '');
     const statusOptions: ThreadStatus[] = [
       'New',
       'In Progress',
@@ -190,7 +190,7 @@ export default defineComponent({
             status: (status.value as unknown) as ThreadStatus[],
             thread: thread.value,
             item: item.value,
-            comments: comments.value,
+            comment: comment.value,
           },
           sort: {
             type: sort.value as CommentSortType,
@@ -259,14 +259,14 @@ export default defineComponent({
     });
 
     watch(
-      [status, thread, item, comments],
+      [status, thread, item, comment],
       _.debounce(async () => {
         try {
           searchOptions.value.page = 1;
           setStatus(status.value || '');
           setThread(thread.value || '');
           setItem(item.value || '');
-          setComments(comments.value || '');
+          setComment(comment.value || '');
           await getAllThreadsWithComments();
         } catch {
           actions.showErrorSnackbar(
@@ -287,7 +287,7 @@ export default defineComponent({
       status,
       thread,
       item,
-      comments,
+      comment,
       statusOptions,
       serverCount,
       loading,

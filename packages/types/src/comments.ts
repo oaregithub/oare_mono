@@ -87,7 +87,7 @@ export type CommentSortType =
   | 'status'
   | 'thread'
   | 'item'
-  | 'comments'
+  | 'comment'
   | 'timestamp';
 
 export interface AllCommentsRequest {
@@ -95,7 +95,7 @@ export interface AllCommentsRequest {
     status: ThreadStatus[];
     thread: string;
     item: string;
-    comments: string;
+    comment: string;
   };
   sort: {
     type: CommentSortType;
