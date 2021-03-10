@@ -16,16 +16,10 @@
         {{ item.thread.status }}
       </template>
       <template #[`item.thread`]="{ item }">
-        <div class="d-flex align-start flex-column fill-height pt-2 pb-2">
-          <span class="text--primary">{{
-            item.thread.name || 'Untitled'
-          }}</span>
-        </div>
+        {{ item.thread.name || 'Untitled' }}
       </template>
       <template #[`item.item`]="{ item }">
-        <div class="d-flex align-start flex-column fill-height pt-2 pb-2">
-          <span class="text--primary">{{ item.word }}</span>
-        </div>
+        {{ item.word }}
       </template>
       <template #[`item.comments`]="{ item }">
         <div class="pt-2 pb-2">
@@ -51,14 +45,12 @@
         </div>
       </template>
       <template #[`item.timestamp`]="{ item }">
-        <div class="d-flex align-start flex-column fill-height pt-2 pb-2">
-          <span>{{ formatTimestamp(item.latestCommentDate) }}</span>
-        </div>
+        {{ formatTimestamp(item.latestCommentDate) }}
       </template>
     </v-data-table>
     <oare-dialog
       v-if="selectedComments.length !== 0"
-      :title="'All Comments'"
+      title="All Comments"
       :value="selectedComments.length !== 0"
       :width="500"
       :closeButton="true"
