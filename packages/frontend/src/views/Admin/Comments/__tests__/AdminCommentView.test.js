@@ -43,13 +43,25 @@ const mockThreadDisplays = [
   },
 ];
 
+const mockServerCount = 1;
+
+const mockResponse = {
+  threads: mockThreadDisplays,
+  count: mockServerCount,
+};
+
 const mockServer = {
-  getAllThreads: jest.fn().mockResolvedValue(mockThreadDisplays),
+  getAllThreads: jest.fn().mockResolvedValue(mockResponse),
+};
+
+const mockLodash = {
+  debounce: cb => cb,
 };
 
 const setup = () => {
   sl.set('serverProxy', mockServer);
   sl.set('globalActions', mockActions);
+  sl.set('lodash', mockLodash);
 };
 
 beforeEach(setup);
