@@ -92,7 +92,7 @@ export type CommentSortType =
 
 export interface AllCommentsRequest {
   filters: {
-    status: ThreadStatus | '';
+    status: ThreadStatus[];
     thread: string;
     item: string;
     comments: string;
@@ -102,4 +102,10 @@ export interface AllCommentsRequest {
     desc: boolean;
   };
   pagination: Pagination;
+  userUuid?: string;
+}
+
+export interface AllCommentsResponse {
+  threads: ThreadDisplay[];
+  count: number;
 }
