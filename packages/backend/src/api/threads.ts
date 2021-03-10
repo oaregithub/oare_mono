@@ -162,8 +162,6 @@ router.route('/threads').get(authenticatedRoute, async (req, res, next) => {
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
-    console.log('HELLOOOOOOOOOO');
-
     const threadRows = await threadsDao.getAll(request);
 
     const results: ThreadDisplay[] = await Promise.all(
