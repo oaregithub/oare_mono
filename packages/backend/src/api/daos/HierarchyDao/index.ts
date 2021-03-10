@@ -1,5 +1,5 @@
 import {
-  CollectionListItem,
+  Collection,
   CollectionResponse,
   CollectionText,
   SearchNamesResponse,
@@ -8,11 +8,11 @@ import {
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
-import textGroupDao from '../TextGroupDao';
-import aliasDao from '../AliasDao';
-import { UserRow } from '../UserDao';
+import UserDao from '../UserDao';
 import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
+import TextGroupDao from '../TextGroupDao';
+import CollectionDao from '../CollectionDao';
 
 class HierarchyDao {
   async getBySearchTerm({
@@ -49,7 +49,7 @@ class HierarchyDao {
         .whereNull('public_blacklist.uuid');
     }
 
-    const searchResponse = await createBaseQuery()
+    const searchResponse: Array<{ uuid: string }> = await createBaseQuery()
       .orderBy('alias.name')
       .limit(limit)
       .offset((page - 1) * limit);
@@ -61,13 +61,15 @@ class HierarchyDao {
         await Promise.all(
           searchResponse.map(text => TextDao.getTextByUuid(text.uuid))
         )
-      ).map(text => text.name);
+      ).map(text => (text ? text.name : ''));
     } else if (type === 'Collection') {
-      names = await Promise.all(
-        searchResponse.map(collection =>
-          aliasDao.textAliasNames(collection.uuid)
+      names = (
+        await Promise.all(
+          searchResponse.map(collection =>
+            CollectionDao.getCollectionByUuid(collection.uuid)
+          )
         )
-      );
+      ).map(collection => (collection ? collection.name : ''));
     }
 
     let epigraphyStatus: boolean[] = [];
@@ -100,17 +102,29 @@ class HierarchyDao {
     };
   }
 
-  async getAllCollections(
-    isAdmin: boolean,
-    user: UserRow | null
-  ): Promise<CollectionListItem[]> {
-    const blacklistedUuids = await CollectionGroupDao.getUserCollectionBlacklist(
-      user
+  async getAllCollections(userUuid: string | null): Promise<Collection[]> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+    const isAdmin = user ? user.isAdmin : false;
+
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
+    const { whitelist: textWhitelist } = await TextGroupDao.getUserBlacklist(
+      userUuid
+    );
+    const collectionsOfWhitelistedTexts = await Promise.all(
+      textWhitelist.map(text => this.getCollectionOfText(text))
+    );
+
+    // Returns collections that are blacklisted that do not contain whitelisted texts (for collection list display)
+    const collectionsToHide = collectionBlacklist.filter(
+      collection => !collectionsOfWhitelistedTexts.includes(collection)
     );
 
     let collectionsQuery = knex('hierarchy')
       .select('hierarchy.uuid')
-      .whereNotIn('uuid', blacklistedUuids)
+      .whereNotIn('uuid', collectionsToHide)
       .andWhere('hierarchy.type', 'collection');
 
     if (!isAdmin) {
@@ -118,10 +132,12 @@ class HierarchyDao {
     }
 
     const collections: { uuid: string }[] = await collectionsQuery;
-    const collectionNameQueries = collections.map(collection =>
-      aliasDao.textAliasNames(collection.uuid)
-    );
-    const collectionNames = await Promise.all(collectionNameQueries);
+
+    const collectionNames = (
+      await Promise.all(
+        collections.map(({ uuid }) => CollectionDao.getCollectionByUuid(uuid))
+      )
+    ).map(collection => (collection ? collection.name : ''));
 
     return collections.map(({ uuid }, idx) => ({
       name: collectionNames[idx],
@@ -130,7 +146,7 @@ class HierarchyDao {
   }
 
   async getCollectionTexts(
-    userId: UserRow | null,
+    userUuid: string | null,
     uuid: string,
     { page = 1, rows = 10, search = '' }
   ): Promise<CollectionResponse> {
@@ -157,12 +173,13 @@ class HierarchyDao {
       });
     };
 
-    const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(
-      uuid,
-      userId
-    );
-    const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(
-      userId
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const collectionIsBlacklisted = collectionBlacklist.includes(uuid);
+
+    const { blacklist, whitelist } = await TextGroupDao.getUserBlacklist(
+      userUuid
     );
 
     const countRow = await collectionTextQuery(
@@ -211,8 +228,8 @@ class HierarchyDao {
     };
   }
 
-  async getEpigraphyCollection(epigUuid: string): Promise<CollectionListItem> {
-    const collection: CollectionListItem = await knex('hierarchy')
+  async getEpigraphyCollection(epigUuid: string): Promise<Collection> {
+    const collection: Collection = await knex('hierarchy')
       .first('hierarchy.parent_uuid AS uuid', 'alias.name')
       .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.parent_uuid')
       .where('hierarchy.uuid', epigUuid);
@@ -227,7 +244,7 @@ class HierarchyDao {
   }
 
   async getCollectionOfText(uuid: string): Promise<string> {
-    const collection: CollectionListItem = await knex('hierarchy')
+    const collection: Collection = await knex('hierarchy')
       .first('parent_uuid AS uuid')
       .where('uuid', uuid);
     return collection.uuid;

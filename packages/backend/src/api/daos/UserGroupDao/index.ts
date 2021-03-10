@@ -1,4 +1,3 @@
-import { User } from '@oare/types';
 import knex from '@/connection';
 
 export interface UserGroupRow {
@@ -20,38 +19,26 @@ class UserGroupDao {
     return rows.map(row => row.group_id);
   }
 
-  async getUsersInGroup(groupId: number): Promise<User[]> {
-    const users: User[] = await knex('user')
-      .innerJoin('user_group', 'user.id', 'user_group.user_id')
+  async getUsersInGroup(groupId: number): Promise<string[]> {
+    const userUuids: Array<{ uuid: string }> = await knex('user')
+      .innerJoin('user_group', 'user.uuid', 'user_group.user_uuid')
       .where('user_group.group_id', groupId)
-      .select(
-        'user.id',
-        'user.uuid',
-        'user.first_name',
-        'user.last_name',
-        'user.email'
-      );
-    return users;
+      .select('user.uuid');
+
+    return userUuids.map(({ uuid }) => uuid);
   }
 
-  async addUsersToGroup(
-    groupId: number,
-    userUuids: string[]
-  ): Promise<number[]> {
-    const rows = userUuids.map(uuid => ({
+  async addUserToGroup(groupId: number, userUuid: string): Promise<void> {
+    await knex('user_group').insert({
       group_id: groupId,
-      user_uuid: uuid,
-    }));
-    const ids: number[] = await knex('user_group').insert(rows);
-    return ids;
+      user_uuid: userUuid,
+    });
   }
 
-  async removeUsersFromGroup(groupId: number, userUuids: string[]) {
+  async removeUserFromGroup(groupId: number, userUuid: string) {
     await knex('user_group')
       .where('group_id', groupId)
-      .andWhere(function () {
-        this.whereIn('user_uuid', userUuids);
-      })
+      .andWhere('user_uuid', userUuid)
       .del();
   }
 }

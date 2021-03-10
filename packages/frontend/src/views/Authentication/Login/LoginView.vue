@@ -38,10 +38,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
+import { defineComponent, ref, PropType } from '@vue/composition-api';
 import { NavigationGuard } from 'vue-router';
 import sl from '@/serviceLocator';
-import i18n from '../../../i18n';
 import defaultRouter from '../../../router';
 import Router from 'vue-router';
 
@@ -85,7 +84,7 @@ export default defineComponent({
       };
 
       try {
-        let response = await server.login(userData);
+        const response = await server.login(userData);
         store.setUser(response);
         const permissions = await server.getUserPermissions();
         store.setPermissions(permissions);

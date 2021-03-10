@@ -19,7 +19,6 @@ import logout from './api/logout';
 import refreshToken from './api/refresh_token';
 import permissions from './api/permissions';
 import publicBlacklist from './api/public_blacklist';
-import textInfo from './api/text_info';
 import searchNames from './api/search_names';
 import collectionGroups from './api/collection_groups';
 import resetPassword from './api/reset_password';
@@ -50,7 +49,6 @@ export default (app: Express) => {
   app.use(API_PATH, refreshToken);
   app.use(API_PATH, permissions);
   app.use(API_PATH, publicBlacklist);
-  app.use(API_PATH, textInfo);
   app.use(API_PATH, searchNames);
   app.use(API_PATH, collectionGroups);
   app.use(API_PATH, resetPassword);

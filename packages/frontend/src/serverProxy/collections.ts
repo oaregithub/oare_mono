@@ -1,5 +1,5 @@
 import {
-  CollectionListItem,
+  Collection,
   CollectionResponse,
   CollectionInfo,
   Pagination,
@@ -9,7 +9,7 @@ import axios from '../axiosInstance';
 /**
  * Returns the list of collections in the corpus
  */
-async function getAllCollections(): Promise<CollectionListItem[]> {
+async function getAllCollections(): Promise<Collection[]> {
   const { data } = await axios.get('/collections');
   return data;
 }

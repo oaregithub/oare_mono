@@ -3,36 +3,24 @@ export interface LoginPayload {
   password: string;
 }
 
-export interface RegisterPayload {
+export interface RegisterPayload extends LoginPayload {
   firstName: string;
   lastName: string;
-  password: string;
-  email: string;
 }
 
-export interface LoginRegisterResponse {
-  id: number;
+export interface User {
   uuid: string;
   firstName: string;
   lastName: string;
   email: string;
   isAdmin: boolean;
+}
+
+export interface GetUserResponse extends User {
+  groups: number[];
 }
 
 export interface ResetPasswordPayload {
   resetUuid: string;
   newPassword: string;
-}
-
-export interface User {
-  id: number;
-  uuid: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-}
-
-export interface GetUserResponse extends User {
-  groups: number[];
-  isAdmin: boolean;
 }

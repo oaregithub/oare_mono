@@ -24,6 +24,7 @@ import PermissionsDao from '@/api/daos/PermissionsDao';
 import CommentsDao from '@/api/daos/CommentsDao';
 import ThreadsDao from '@/api/daos/ThreadsDao';
 import ErrorsDao from '@/api/daos/ErrorsDao';
+import CollectionDao from '@/api/daos/CollectionDao';
 import utils from '@/utils';
 import mailer from '@/mailer';
 
@@ -31,6 +32,7 @@ const instances: { [key: string]: any } = {};
 
 export type ServiceTypes = {
   AliasDao: typeof AliasDao;
+  CollectionDao: typeof CollectionDao;
   DictionaryFormDao: typeof DictionaryFormDao;
   DictionaryWordDao: typeof DictionaryWordDao;
   DictionarySpellingDao: typeof DictionarySpellingDao;

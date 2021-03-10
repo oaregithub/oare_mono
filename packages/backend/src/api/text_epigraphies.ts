@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError, HttpForbidden } from '@/exceptions';
+import { HttpInternalError, HttpForbidden, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { EpigraphyResponse } from '@oare/types';
 import authFirst from '@/middlewares/authFirst';
@@ -12,29 +12,41 @@ router
     try {
       const textUuid = String(req.params.uuid);
       const user = req.user || null;
+      const userUuid = user ? user.uuid : null;
       const TextMarkupDao = sl.get('TextMarkupDao');
       const TextDao = sl.get('TextDao');
       const HierarchyDao = sl.get('HierarchyDao');
       const TextGroupDao = sl.get('TextGroupDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const AliasDao = sl.get('AliasDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const CollectionGroupDao = sl.get('CollectionGroupDao');
       const TextDraftsDao = sl.get('TextDraftsDao');
 
+      const text = await TextDao.getTextByUuid(textUuid);
+
+      if (!text) {
+        next(new HttpBadRequest(`Text with UUID ${textUuid} does not exist`));
+        return;
+      }
+
       // Make sure user has access to the text he wishes to access
       if (!user || !user.isAdmin) {
-        const { blacklist } = await TextGroupDao.getUserBlacklist(user);
-        const collectionBlacklist = await CollectionGroupDao.getUserCollectionBlacklist(
-          user
-        );
+        const {
+          blacklist: textBlacklist,
+          whitelist: textWhitelist,
+        } = await TextGroupDao.getUserBlacklist(userUuid);
+        const {
+          blacklist: collectionBlacklist,
+        } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
         const collectionOfText = await HierarchyDao.getCollectionOfText(
           textUuid
         );
 
         if (
-          blacklist.includes(textUuid) ||
-          collectionBlacklist.includes(collectionOfText)
+          textBlacklist.includes(textUuid) ||
+          (collectionBlacklist.includes(collectionOfText) &&
+            !textWhitelist.includes(textUuid))
         ) {
           next(
             new HttpForbidden(
@@ -45,7 +57,6 @@ router
         }
       }
 
-      const textName = await AliasDao.textAliasNames(textUuid);
       const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
       const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
       const cdliNum = await TextDao.getCdliNum(textUuid);
@@ -72,11 +83,11 @@ router
       let draft;
 
       if (user) {
-        draft = await TextDraftsDao.getDraft(user?.id, textUuid);
+        draft = await TextDraftsDao.getDraft(user.uuid, textUuid);
       }
 
       const response: EpigraphyResponse = {
-        textName,
+        textName: text.name,
         collection,
         units,
         canWrite,

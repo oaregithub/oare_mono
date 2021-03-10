@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import cache from '@/cache';
+import cache, { CacheKey } from '@/cache';
 
 function cacheMiddleware(req: Request, res: Response, next: NextFunction) {
-  const userId = req.user ? req.user.id : null;
-  const key = { req, userId };
+  const key: CacheKey = { req };
   if (cache.contains(key)) {
     res.json(cache.retrieve(key));
     return;

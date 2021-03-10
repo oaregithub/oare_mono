@@ -63,9 +63,7 @@
 import { RegisterPayload } from '@oare/types';
 import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
 import Router from 'vue-router';
-import { Store } from 'vuex';
 import sl from '@/serviceLocator';
-import i18n from '../../../i18n';
 import defaultRouter from '../../../router';
 
 export interface FormRef {
@@ -151,7 +149,7 @@ export default defineComponent({
       };
 
       try {
-        let user = await server.register(userData);
+        const user = await server.register(userData);
         store.setUser(user);
         router.push('/');
       } catch (e) {

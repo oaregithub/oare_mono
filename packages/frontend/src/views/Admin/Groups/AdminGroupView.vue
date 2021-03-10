@@ -21,6 +21,13 @@
         class="test-group-name"
         autofocus
       />
+      <v-text-field
+        v-model="groupDescription"
+        @keyup.enter="submitGroup"
+        outlined
+        label="Group Description (Optional)"
+        class="test-group-description"
+      />
     </OareDialog>
 
     <v-menu>
@@ -60,6 +67,9 @@
           class="test-group-name"
           >{{ item.name }}</router-link
         >
+      </template>
+      <template #[`item.description`]="{ item }">
+        <span>{{ item.description || 'No group description' }}</span>
       </template>
     </v-data-table>
     <OareDialog
@@ -101,10 +111,17 @@ export default defineComponent({
       {
         text: 'Group Name',
         value: 'name',
+        width: '25%',
+      },
+      {
+        text: 'Description',
+        value: 'description',
+        width: '60%',
       },
       {
         text: 'Users',
         value: 'num_users',
+        width: '15%',
       },
     ]);
     const groups: Ref<Group[]> = ref([]);
@@ -112,6 +129,7 @@ export default defineComponent({
     const loading = ref(false);
     const addDialog = ref(false);
     const groupName = ref('');
+    const groupDescription = ref('');
     const addGroupLoading = ref(false);
     const deleteGroupLoading = ref(false);
     const confirmDeleteDialog = ref(false);
@@ -119,6 +137,7 @@ export default defineComponent({
     watch(addDialog, open => {
       if (!open) {
         groupName.value = '';
+        groupDescription.value = '';
       }
     });
 
@@ -140,13 +159,17 @@ export default defineComponent({
       }
       try {
         addGroupLoading.value = true;
-        let id = await server.createGroup({ groupName: groupName.value });
+        const id = await server.createGroup({
+          groupName: groupName.value,
+          description: groupDescription.value,
+        });
 
         groups.value.push({
           id,
           name: groupName.value,
           created_on: new Date(),
           num_users: 0,
+          description: groupDescription.value,
         });
         actions.showSnackbar('Successfully created group');
         addDialog.value = false;
@@ -184,6 +207,7 @@ export default defineComponent({
       loading,
       addDialog,
       groupName,
+      groupDescription,
       deleteGroupLoading,
       addGroupLoading,
       submitGroup,

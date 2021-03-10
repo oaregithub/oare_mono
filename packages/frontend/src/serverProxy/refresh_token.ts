@@ -1,7 +1,7 @@
 import axios from '@/axiosInstance';
-import { LoginRegisterResponse } from '@oare/types';
+import { User } from '@oare/types';
 
-async function refreshToken(): Promise<LoginRegisterResponse> {
+async function refreshToken(): Promise<User> {
   const { data } = await axios.get('/refresh_token');
   return data;
 }
