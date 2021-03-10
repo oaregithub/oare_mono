@@ -1,4 +1,4 @@
-export interface CollectionListItem {
+export interface Collection {
   uuid: string;
   name: string;
 }

@@ -1,4 +1,4 @@
-import { CollectionListItem } from './collection';
+import { Collection } from './collection';
 
 export interface Group {
   id: number;
@@ -52,7 +52,7 @@ export interface Text {
   uuid: string;
 }
 
-export interface CollectionPermissionsItem extends CollectionListItem {
+export interface CollectionPermissionsItem extends Collection {
   canRead: boolean;
   canWrite: boolean;
 }

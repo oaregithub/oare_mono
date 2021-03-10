@@ -8,7 +8,7 @@ describe('GET /text_epigraphies/:uuid', () => {
   const PATH = `${API_PATH}/text_epigraphies/${textUuid}`;
 
   const mockJSON = {
-    textName: 'Test Alias',
+    textName: 'Text Name',
     collection: {
       uuid: '12345',
       name: 'Test Collection',
@@ -49,10 +49,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     ],
   };
 
-  const mockAliasDao = {
-    textAliasNames: jest.fn().mockResolvedValue('Test Alias'),
-  };
-
   const mockTextEpigraphyDao = {
     getEpigraphicUnits: jest.fn().mockResolvedValue([
       {
@@ -79,7 +75,10 @@ describe('GET /text_epigraphies/:uuid', () => {
   };
 
   const mockCollectionGroupDao = {
-    getUserCollectionBlacklist: jest.fn().mockResolvedValue([]),
+    getUserCollectionBlacklist: jest.fn().mockResolvedValue({
+      blacklist: [],
+      whitelist: [],
+    }),
   };
 
   const mockHierarchyDao = {
@@ -95,6 +94,9 @@ describe('GET /text_epigraphies/:uuid', () => {
     getTranslitStatus: jest.fn().mockResolvedValue({
       color: 'red',
       colorMeaning: 'Test Color Meaning',
+    }),
+    getTextByUuid: jest.fn().mockResolvedValue({
+      name: 'Text Name',
     }),
   };
 
@@ -127,7 +129,6 @@ describe('GET /text_epigraphies/:uuid', () => {
   };
 
   const setup = () => {
-    sl.set('AliasDao', mockAliasDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('TextGroupDao', mockTextGroupDao);
     sl.set('HierarchyDao', mockHierarchyDao);
@@ -148,6 +149,15 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(JSON.parse(response.text)).toEqual(mockJSON);
   });
 
+  it('returns 400 if text does not exist', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTextByUuid: jest.fn().mockResolvedValue(null),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
   it('does not allow blacklisted texts to be seen', async () => {
     sl.set('TextGroupDao', {
       ...mockTextGroupDao,
@@ -157,7 +167,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     });
     const response = await sendRequest();
     expect(response.status).toBe(403);
-    expect(mockAliasDao.textAliasNames).not.toHaveBeenCalled();
     expect(mockTextEpigraphyDao.getEpigraphicUnits).not.toHaveBeenCalled();
     expect(mockHierarchyDao.getEpigraphyCollection).not.toHaveBeenCalled();
     expect(mockTextDao.getCdliNum).not.toHaveBeenCalled();
@@ -205,9 +214,10 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(response.status).toBe(500);
   });
 
-  it('returns 500 on failed alias name retrieval', async () => {
-    sl.set('AliasDao', {
-      textAliasNames: jest.fn().mockRejectedValue(null),
+  it('returns 500 on failed text retrieval', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTextByUuid: jest.fn().mockRejectedValue('Failed to get text'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

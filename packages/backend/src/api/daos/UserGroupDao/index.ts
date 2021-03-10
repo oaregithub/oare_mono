@@ -1,4 +1,3 @@
-import { User } from '@oare/types';
 import knex from '@/connection';
 
 export interface UserGroupRow {
@@ -20,18 +19,13 @@ class UserGroupDao {
     return rows.map(row => row.group_id);
   }
 
-  async getUsersInGroup(groupId: number): Promise<User[]> {
-    const users: User[] = await knex('user')
+  async getUsersInGroup(groupId: number): Promise<string[]> {
+    const userUuids: Array<{ uuid: string }> = await knex('user')
       .innerJoin('user_group', 'user.uuid', 'user_group.user_uuid')
       .where('user_group.group_id', groupId)
-      .select(
-        'user.id',
-        'user.uuid',
-        'user.first_name',
-        'user.last_name',
-        'user.email'
-      );
-    return users;
+      .select('user.uuid');
+
+    return userUuids.map(({ uuid }) => uuid);
   }
 
   async addUserToGroup(groupId: number, userUuid: string): Promise<void> {

@@ -26,7 +26,7 @@
       Are you sure you want to add the following users to this group?
       <v-list>
         <v-list-item v-for="(user, index) in selectedUsers" :key="index">
-          {{ user.first_name + ' ' + user.last_name }}
+          {{ user.firstName + ' ' + user.lastName }}
         </v-list-item>
       </v-list>
     </OareDialog>
@@ -34,13 +34,14 @@
     <v-data-table
       :headers="usersHeaders"
       :items="unaddedUsers"
+      item-key="uuid"
       class="mt-3"
       show-select
       v-model="selectedUsers"
     >
       <template #[`item.name`]="{ item }">
         <span class="test-name">
-          {{ item.first_name + ' ' + item.last_name }}
+          {{ item.firstName + ' ' + item.lastName }}
         </span>
       </template>
     </v-data-table>
@@ -50,14 +51,12 @@
 <script lang="ts">
 import {
   defineComponent,
-  PropType,
   ref,
   Ref,
   onMounted,
-  watch,
   computed,
 } from '@vue/composition-api';
-import { User, GetUserResponse } from '@oare/types';
+import { GetUserResponse } from '@oare/types';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import { DataTableHeader } from 'vuetify';
@@ -85,7 +84,7 @@ export default defineComponent({
       return allUsers.value
         .filter(user => !user.groups.includes(Number(groupId)) && !user.isAdmin)
         .sort((a, b) => {
-          return a.first_name.charCodeAt(0) - b.first_name.charCodeAt(0);
+          return a.firstName.charCodeAt(0) - b.firstName.charCodeAt(0);
         });
     });
     const selectedUsers: Ref<GetUserResponse[]> = ref([]);

@@ -30,7 +30,7 @@
           <v-list-item
             v-for="(user, index) in selectedDeleteUsers"
             :key="index"
-            >{{ user.first_name + ' ' + user.last_name }}</v-list-item
+            >{{ user.firstName + ' ' + user.lastName }}</v-list-item
           >
         </v-list>
       </OareDialog>
@@ -38,13 +38,14 @@
     <v-data-table
       :headers="usersHeaders"
       :items="groupUsers"
+      item-key="uuid"
       class="mt-3"
       show-select
       v-model="selectedDeleteUsers"
     >
       <template #[`item.name`]="{ item }"
         ><span class="test-name">{{
-          item.first_name + ' ' + item.last_name
+          item.firstName + ' ' + item.lastName
         }}</span></template
       >
     </v-data-table>

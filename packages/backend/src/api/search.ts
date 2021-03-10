@@ -100,9 +100,11 @@ router.route('/search').get(async (req, res, next) => {
       }),
     ]);
 
-    const texts = await Promise.all(
-      textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
-    );
+    const textNames = (
+      await Promise.all(
+        textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
+      )
+    ).map(text => (text ? text.name : ''));
 
     const lineReadings = await Promise.all(
       textMatches.map(async ({ uuid, lines }) => {
@@ -124,7 +126,7 @@ router.route('/search').get(async (req, res, next) => {
       totalRows,
       results: textMatches.map((match, index) => ({
         ...match,
-        name: texts[index].name,
+        name: textNames[index],
         matches: lineReadings[index],
       })),
     };
