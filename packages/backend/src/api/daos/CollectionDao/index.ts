@@ -16,8 +16,10 @@ class CollectionDao {
 
   async getTextCollectionUuid(textUuid: string): Promise<string | null> {
     const collection: { uuid: string } | null = await knex('collection')
-      .first('parent_uuid AS uuid')
-      .where('uuid', textUuid);
+      .select('collection.uuid')
+      .innerJoin('hierarchy', 'hierarchy.parent_uuid', 'collection.uuid')
+      .where('hierarchy.uuid', textUuid)
+      .first();
     return collection ? collection.uuid : null;
   }
 
