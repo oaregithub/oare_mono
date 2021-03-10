@@ -166,7 +166,7 @@ export default defineComponent({
       { text: 'Status', value: 'status', width: '10%' },
       { text: 'Thread', value: 'thread', width: '20%' },
       { text: 'Item', value: 'item', width: '15%' },
-      { text: 'Comments', value: 'comment', width: '40%' },
+      { text: 'Comments', value: 'comment', width: '40%', sortable: false },
       { text: 'Timestamp', value: 'timestamp', width: '15%' },
     ]);
 

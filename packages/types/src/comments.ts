@@ -83,12 +83,7 @@ export interface UtilListDisplay {
   formSpelling?: FormSpelling;
 }
 
-export type CommentSortType =
-  | 'status'
-  | 'thread'
-  | 'item'
-  | 'comment'
-  | 'timestamp';
+export type CommentSortType = 'status' | 'thread' | 'item' | 'timestamp';
 
 export interface AllCommentsRequest {
   filters: {
