@@ -15,7 +15,7 @@
               class="pt-2 test-status-filter"
             />
             <v-text-field
-              v-model="thread"
+              v-model="name"
               label="Thread"
               single-line
               hide-details
@@ -56,7 +56,7 @@
             <template #[`item.status`]="{ item }">
               {{ item.thread.status }}
             </template>
-            <template #[`item.thread`]="{ item }">
+            <template #[`item.name`]="{ item }">
               {{ item.thread.name || 'Untitled' }}
             </template>
             <template #[`item.item`]="{ item }">
@@ -153,7 +153,7 @@ export default defineComponent({
     const [page, setPage] = useQueryParam('page', '1');
     const [limit, setRows] = useQueryParam('rows', '10');
     const [status, setStatus] = useQueryParam('status', '');
-    const [thread, setThread] = useQueryParam('thread', '');
+    const [name, setName] = useQueryParam('name', '');
     const [item, setItem] = useQueryParam('item', '');
     const [comment, setComment] = useQueryParam('comment', '');
     const statusOptions: ThreadStatus[] = [
@@ -164,7 +164,7 @@ export default defineComponent({
     ];
     const tableHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Status', value: 'status', width: '10%' },
-      { text: 'Thread', value: 'thread', width: '20%' },
+      { text: 'Thread', value: 'name', width: '20%' },
       { text: 'Item', value: 'item', width: '15%' },
       { text: 'Comments', value: 'comment', width: '40%', sortable: false },
       { text: 'Timestamp', value: 'timestamp', width: '15%' },
@@ -188,7 +188,7 @@ export default defineComponent({
         const request: AllCommentsRequest = {
           filters: {
             status: (status.value as unknown) as ThreadStatus[],
-            thread: thread.value,
+            thread: name.value,
             item: item.value,
             comment: comment.value,
           },
@@ -259,12 +259,12 @@ export default defineComponent({
     });
 
     watch(
-      [status, thread, item, comment],
+      [status, name, item, comment],
       _.debounce(async () => {
         try {
           searchOptions.value.page = 1;
           setStatus(status.value || '');
-          setThread(thread.value || '');
+          setName(name.value || '');
           setItem(item.value || '');
           setComment(comment.value || '');
           await getAllThreadsWithComments();
@@ -285,7 +285,7 @@ export default defineComponent({
       page,
       limit,
       status,
-      thread,
+      name,
       item,
       comment,
       statusOptions,
