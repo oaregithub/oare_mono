@@ -62,7 +62,7 @@
             <template #[`item.item`]="{ item }">
               {{ item.word }}
             </template>
-            <template #[`item.comments`]="{ item }">
+            <template #[`item.comment`]="{ item }">
               <div class="pt-2 pb-2">
                 <div v-for="(comment, idx) in item.comments" :key="idx">
                   <span v-if="idx <= 2">{{
