@@ -62,16 +62,16 @@
             <template #[`item.item`]="{ item }">
               {{ item.word }}
             </template>
-            <template #[`item.comments`]="{ item }">
+            <template #[`item.comment`]="{ item }">
               <div class="pt-2 pb-2">
-                <div v-for="(comment, idx) in item.comments" :key="idx">
+                <div v-for="(comment, idx) in item.comment" :key="idx">
                   <span v-if="idx <= 2">{{
                     formatCommentText(idx, comment.text)
                   }}</span>
                 </div>
                 <div
-                  v-if="item.comments.length > 3"
-                  @click="setSelectedComments(item.comments)"
+                  v-if="item.comment.length > 3"
+                  @click="setSelectedComments(item.comment)"
                   class="test-view-all-comments"
                 >
                   <v-btn
@@ -166,7 +166,7 @@ export default defineComponent({
       { text: 'Status', value: 'status', width: '10%' },
       { text: 'Thread', value: 'thread', width: '20%' },
       { text: 'Item', value: 'item', width: '15%' },
-      { text: 'Comments', value: 'comments', width: '40%' },
+      { text: 'Comments', value: 'comment', width: '40%' },
       { text: 'Timestamp', value: 'timestamp', width: '15%' },
     ]);
 
