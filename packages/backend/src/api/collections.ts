@@ -10,10 +10,14 @@ router.route('/collections').get(authFirst, async (req, res, next) => {
   try {
     const userUuid = req.user ? req.user.uuid : null;
 
-    const HierarchyDao = sl.get('HierarchyDao');
+    const CollectionDao = sl.get('CollectionDao');
 
-    const collections = await HierarchyDao.getAllCollections(userUuid);
-    res.json(collections);
+    const collectionUuids = await CollectionDao.getAllCollections(userUuid);
+    const collections = await Promise.all(
+      collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
+    );
+
+    res.json(collections.filter(collection => collection));
   } catch (err) {
     next(new HttpInternalError(err));
   }

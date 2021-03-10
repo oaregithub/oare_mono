@@ -1,5 +1,6 @@
 import { DiscourseUnit } from './textDiscourse';
 import { TextDraft } from './drafts';
+import { Collection } from './collection';
 
 export interface TextInfoResponse {
   name: string;
@@ -8,10 +9,7 @@ export interface TextInfoResponse {
 export interface EpigraphyResponse {
   canWrite: boolean;
   textName: string;
-  collection: {
-    uuid: string;
-    name: string;
-  };
+  collection: Collection;
   cdliNum: string | null;
   units: EpigraphicUnit[];
   color: string;

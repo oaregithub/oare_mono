@@ -36,12 +36,19 @@ const mockGETCollectionTexts = {
 
 describe('GET /collections', () => {
   const PATH = `${API_PATH}/collections`;
-  const mockHierarchyDao = {
-    getAllCollections: jest.fn().mockResolvedValue(mockGETCollections),
+  const collectionUuid = 'collection-uuid';
+  const collection = {
+    uuid: collectionUuid,
+    name: 'collection name',
+  };
+
+  const mockCollectionDao = {
+    getAllCollections: jest.fn().mockResolvedValue([collectionUuid]),
+    getCollectionByUuid: jest.fn().mockResolvedValue(collection),
   };
 
   const setup = () => {
-    sl.set('HierarchyDao', mockHierarchyDao);
+    sl.set('CollectionDao', mockCollectionDao);
     sl.set('UserDao', {
       getUserByEmail: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -55,15 +62,27 @@ describe('GET /collections', () => {
 
   it('returns 200 on successful collections retrieval', async () => {
     const response = await sendRequest();
-    expect(mockHierarchyDao.getAllCollections).toHaveBeenCalled();
+    expect(mockCollectionDao.getAllCollections).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
   it('returns 500 on failed collections retrieval', async () => {
-    sl.set('HierarchyDao', {
+    sl.set('CollectionDao', {
+      ...mockCollectionDao,
       getAllCollections: jest
         .fn()
         .mockRejectedValue('failed collections retrieval'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 500 on failed collection retrieval by uuid', async () => {
+    sl.set('CollectionDao', {
+      ...mockCollectionDao,
+      getCollectionByUuid: jest
+        .fn()
+        .mockRejectedValue('failed to get collection'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
