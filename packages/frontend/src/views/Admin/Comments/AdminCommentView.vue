@@ -31,7 +31,7 @@
               class="pt-2 pb-2 test-desc-filter"
             />
             <v-text-field
-              v-model="comments"
+              v-model="comment"
               label="Comment"
               single-line
               hide-details
