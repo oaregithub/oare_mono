@@ -75,7 +75,10 @@ describe('GET /text_epigraphies/:uuid', () => {
   };
 
   const mockCollectionGroupDao = {
-    getUserCollectionBlacklist: jest.fn().mockResolvedValue([]),
+    getUserCollectionBlacklist: jest.fn().mockResolvedValue({
+      blacklist: [],
+      whitelist: [],
+    }),
   };
 
   const mockHierarchyDao = {

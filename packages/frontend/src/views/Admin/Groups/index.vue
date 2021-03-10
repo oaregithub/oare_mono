@@ -7,7 +7,7 @@
 
     <b class="mb-2">Description</b>
     <div v-if="!editingDescription">
-      <span>{{ groupDescription }}</span>
+      <span>{{ groupDescription || 'No group description' }}</span>
       <v-btn icon class="test-pencil mt-n2" @click="editingDescription = true">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
@@ -21,8 +21,7 @@
             class="pa-0 test-description"
             :rules="[
               v =>
-                (v && v.length <= 200) ||
-                'Description must be 200 characters or less',
+                v.length <= 200 || 'Description must be 200 characters or less',
             ]"
           />
         </v-col>

@@ -8,10 +8,10 @@ import {
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
-import textGroupDao from '../TextGroupDao';
 import UserDao from '../UserDao';
 import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
+import TextGroupDao from '../TextGroupDao';
 import CollectionDao from '../CollectionDao';
 
 class HierarchyDao {
@@ -106,13 +106,25 @@ class HierarchyDao {
     const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
     const isAdmin = user ? user.isAdmin : false;
 
-    const blacklistedUuids = await CollectionGroupDao.getUserCollectionBlacklist(
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
+    const { whitelist: textWhitelist } = await TextGroupDao.getUserBlacklist(
       userUuid
+    );
+    const collectionsOfWhitelistedTexts = await Promise.all(
+      textWhitelist.map(text => this.getCollectionOfText(text))
+    );
+
+    // Returns collections that are blacklisted that do not contain whitelisted texts (for collection list display)
+    const collectionsToHide = collectionBlacklist.filter(
+      collection => !collectionsOfWhitelistedTexts.includes(collection)
     );
 
     let collectionsQuery = knex('hierarchy')
       .select('hierarchy.uuid')
-      .whereNotIn('uuid', blacklistedUuids)
+      .whereNotIn('uuid', collectionsToHide)
       .andWhere('hierarchy.type', 'collection');
 
     if (!isAdmin) {
@@ -161,11 +173,12 @@ class HierarchyDao {
       });
     };
 
-    const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(
-      uuid,
-      userUuid
-    );
-    const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const collectionIsBlacklisted = collectionBlacklist.includes(uuid);
+
+    const { blacklist, whitelist } = await TextGroupDao.getUserBlacklist(
       userUuid
     );
 

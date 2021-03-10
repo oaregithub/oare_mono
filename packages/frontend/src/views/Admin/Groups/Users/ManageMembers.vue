@@ -38,10 +38,10 @@
     <v-data-table
       :headers="usersHeaders"
       :items="groupUsers"
+      item-key="uuid"
       class="mt-3"
       show-select
       v-model="selectedDeleteUsers"
-      item-key="uuid"
     >
       <template #[`item.name`]="{ item }"
         ><span class="test-name">{{
