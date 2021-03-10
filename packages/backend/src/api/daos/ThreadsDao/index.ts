@@ -140,8 +140,8 @@ class ThreadsDao {
   }
 
   async getAll(request: AllCommentsRequest): Promise<AllThreadResponse> {
-    const baseQuery = () => {
-      return knex('threads')
+    const baseQuery = () =>
+      knex('threads')
         .select(
           'threads.uuid AS uuid',
           'threads.name AS name',
@@ -211,7 +211,6 @@ class ThreadsDao {
           }
         })
         .groupBy('threads.uuid');
-    };
 
     const threads: AllThreadRow[] = await baseQuery()
       .orderBy(request.sort.type, request.sort.desc ? 'desc' : 'asc')
