@@ -34,19 +34,33 @@ export function getSequentialCharacterQuery(
   return query;
 }
 
-export function getSearchQuery(characters: string[], textTitle: string) {
+export function getSearchQuery(
+  characters: string[],
+  textTitle: string,
+  textBlacklist: string[],
+  textWhitelist: string[],
+  collectionBlacklist: string[]
+) {
   // Join text table so text names can be returned
-  let query = knex('text_epigraphy').join(
-    'text',
-    'text.uuid',
-    'text_epigraphy.text_uuid'
-  );
+  let query = knex('text_epigraphy')
+    .join('text', 'text.uuid', 'text_epigraphy.text_uuid')
+    .join('hierarchy', 'hierarchy.uuid', 'text_epigraphy.text_uuid');
 
   query = getSequentialCharacterQuery(characters, query);
 
   if (textTitle) {
     query = query.andWhere('text.name', 'like', `%${textTitle}%`);
   }
+
+  // Prevents blacklisted texts from appearing in search results (including texts in blacklisted collections)
+  query = query.whereNotIn('text_epigraphy.text_uuid', textBlacklist);
+  query = query.andWhere(q => {
+    q.whereNotIn('hierarchy.parent_uuid', collectionBlacklist).or.whereIn(
+      'text_epigraphy.text_uuid',
+      textWhitelist
+    );
+  });
+
   return query;
 }
 
