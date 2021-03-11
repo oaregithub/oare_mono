@@ -25,6 +25,8 @@ interface AllThreadResponse {
   count: number;
 }
 
+const NULL_THREAD_NAME = 'Untitled';
+
 class ThreadsDao {
   async insert({ referenceUuid, status, route }: Thread): Promise<string> {
     const newUuid: string = v4();
@@ -130,6 +132,13 @@ class ThreadsDao {
     return threads.map(thread => thread.uuid);
   }
 
+  private static isNullThreadName(name: string): boolean {
+    return (
+      NULL_THREAD_NAME.includes(name) ||
+      NULL_THREAD_NAME.toLowerCase().includes(name)
+    );
+  }
+
   async getAll(
     request: AllCommentsRequest,
     userUuid: string | null
@@ -175,7 +184,17 @@ class ThreadsDao {
           }
 
           if (request.filters.thread !== '') {
-            qb.andWhere('threads.name', 'like', `%${request.filters.thread}%`);
+            qb.andWhere(function () {
+              this.where(
+                'threads.name',
+                'like',
+                `%${request.filters.thread}%`
+              ).modify(qbInner => {
+                if (ThreadsDao.isNullThreadName(request.filters.thread)) {
+                  qbInner.orWhereNull('threads.name');
+                }
+              });
+            });
           }
 
           if (request.filters.item !== '') {
