@@ -7,7 +7,7 @@ describe('GET /text_epigraphies/:uuid', () => {
   const textUuid = 12345;
   const PATH = `${API_PATH}/text_epigraphies/${textUuid}`;
 
-  const mockJSON = {
+  const mockResponse = {
     textName: 'Text Name',
     collection: {
       uuid: '12345',
@@ -34,7 +34,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     markups: [
       {
         referenceUuid: '12345',
-        type: '.isCollatedReading',
+        type: 'isCollatedReading',
         value: null,
         startChar: null,
         endChar: null,
@@ -81,14 +81,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     }),
   };
 
-  const mockHierarchyDao = {
-    getEpigraphyCollection: jest.fn().mockResolvedValue({
-      uuid: '12345',
-      name: 'Test Collection',
-    }),
-    getCollectionOfText: jest.fn().mockResolvedValue('mockCollectionUuid'),
-  };
-
   const mockTextDao = {
     getCdliNum: jest.fn().mockResolvedValue('TestCdliNum'),
     getTranslitStatus: jest.fn().mockResolvedValue({
@@ -101,15 +93,7 @@ describe('GET /text_epigraphies/:uuid', () => {
   };
 
   const mockTextMarkupDao = {
-    getMarkups: jest.fn().mockResolvedValue([
-      {
-        referenceUuid: '12345',
-        type: '.isCollatedReading',
-        value: null,
-        startChar: null,
-        endChar: null,
-      },
-    ]),
+    getMarkups: jest.fn().mockResolvedValue(mockResponse.markups),
   };
 
   const mockTextDiscourseDao = {
@@ -128,15 +112,19 @@ describe('GET /text_epigraphies/:uuid', () => {
     }),
   };
 
+  const mockCollectionDao = {
+    getTextCollection: jest.fn().mockResolvedValue(mockResponse.collection),
+  };
+
   const setup = () => {
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('TextGroupDao', mockTextGroupDao);
-    sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('TextDao', mockTextDao);
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('TextDraftsDao', mockTextDraftsDao);
+    sl.set('CollectionDao', mockCollectionDao);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -146,7 +134,16 @@ describe('GET /text_epigraphies/:uuid', () => {
   it('returns 200 on successful data retrieval', async () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
-    expect(JSON.parse(response.text)).toEqual(mockJSON);
+    expect(JSON.parse(response.text)).toEqual(mockResponse);
+  });
+
+  it('returns 400 if text does not exist', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTextByUuid: jest.fn().mockResolvedValue(null),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
   });
 
   it('returns 400 if text does not exist', async () => {
@@ -168,7 +165,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     const response = await sendRequest();
     expect(response.status).toBe(403);
     expect(mockTextEpigraphyDao.getEpigraphicUnits).not.toHaveBeenCalled();
-    expect(mockHierarchyDao.getEpigraphyCollection).not.toHaveBeenCalled();
     expect(mockTextDao.getCdliNum).not.toHaveBeenCalled();
     expect(mockTextDao.getTranslitStatus).not.toHaveBeenCalled();
     expect(mockTextMarkupDao.getMarkups).not.toHaveBeenCalled();
@@ -232,8 +228,10 @@ describe('GET /text_epigraphies/:uuid', () => {
   });
 
   it('returns 500 on failed collections retrieval', async () => {
-    sl.set('HierarchyDao', {
-      getEpigraphyCollection: jest.fn().mockRejectedValue(null),
+    sl.set('CollectionDao', {
+      getTextCollection: jest
+        .fn()
+        .mockRejectedValue('could not retrieve collection'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

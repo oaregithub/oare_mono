@@ -15,17 +15,24 @@ router
       const userUuid = user ? user.uuid : null;
       const TextMarkupDao = sl.get('TextMarkupDao');
       const TextDao = sl.get('TextDao');
-      const HierarchyDao = sl.get('HierarchyDao');
       const TextGroupDao = sl.get('TextGroupDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const CollectionGroupDao = sl.get('CollectionGroupDao');
       const TextDraftsDao = sl.get('TextDraftsDao');
+      const CollectionDao = sl.get('CollectionDao');
 
       const text = await TextDao.getTextByUuid(textUuid);
 
       if (!text) {
         next(new HttpBadRequest(`Text with UUID ${textUuid} does not exist`));
+        return;
+      }
+
+      const collection = await CollectionDao.getTextCollection(text.uuid);
+
+      if (!collection) {
+        next(new HttpBadRequest('Text does not belong to a valid collection'));
         return;
       }
 
@@ -39,13 +46,9 @@ router
           blacklist: collectionBlacklist,
         } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
 
-        const collectionOfText = await HierarchyDao.getCollectionOfText(
-          textUuid
-        );
-
         if (
           textBlacklist.includes(textUuid) ||
-          (collectionBlacklist.includes(collectionOfText) &&
+          (collectionBlacklist.includes(collection.uuid) &&
             !textWhitelist.includes(textUuid))
         ) {
           next(
@@ -58,7 +61,6 @@ router
       }
 
       const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
-      const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
       const cdliNum = await TextDao.getCdliNum(textUuid);
       const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
       const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(

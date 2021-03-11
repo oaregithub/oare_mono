@@ -4,7 +4,6 @@ import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
-import HierarchyDao from '../HierarchyDao';
 import UserDao from '../UserDao';
 import CollectionDao from '../CollectionDao';
 
@@ -79,11 +78,11 @@ class CollectionGroupDao {
         const userTextCollections = await Promise.all(
           userTexts
             .filter(text => text.canRead)
-            .map(text => HierarchyDao.getEpigraphyCollection(text.uuid))
+            .map(text => CollectionDao.getTextCollection(text.uuid))
         );
 
         return userTextCollections
-          .map(collection => collection.uuid)
+          .map(collection => (collection ? collection.uuid : ''))
           .includes(collectionUuid);
       }
       return false;
