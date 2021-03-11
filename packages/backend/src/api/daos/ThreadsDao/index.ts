@@ -25,6 +25,12 @@ interface AllThreadResponse {
   count: number;
 }
 
+const NULL_THREAD_NAME = 'Untitled';
+
+const isNullThreadName = (name: string): boolean =>
+  NULL_THREAD_NAME.includes(name) ||
+  NULL_THREAD_NAME.toLowerCase().includes(name);
+
 class ThreadsDao {
   async insert({ referenceUuid, status, route }: Thread): Promise<string> {
     const newUuid: string = v4();
@@ -175,7 +181,17 @@ class ThreadsDao {
           }
 
           if (request.filters.thread !== '') {
-            qb.andWhere('threads.name', 'like', `%${request.filters.thread}%`);
+            qb.andWhere(function () {
+              this.where(
+                'threads.name',
+                'like',
+                `%${request.filters.thread}%`
+              ).modify(qbInner => {
+                if (isNullThreadName(request.filters.thread)) {
+                  qbInner.orWhereNull('threads.name');
+                }
+              });
+            });
           }
 
           if (request.filters.item !== '') {
