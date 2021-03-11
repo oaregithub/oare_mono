@@ -9,6 +9,8 @@ import {
   ThreadStatus,
   ThreadDisplay,
   UpdateThreadNameRequest,
+  AllCommentsRequest,
+  AllCommentsResponse,
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -152,42 +154,43 @@ router
     }
   });
 
-router.route('/threads').get(adminRoute, async (req, res, next) => {
+router.route('/threads').get(authenticatedRoute, async (req, res, next) => {
   try {
+    const requestString = (req.query.request as unknown) as string;
+    const request: AllCommentsRequest = JSON.parse(requestString);
+
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
-    const threads = await threadsDao.getAll();
+    const userUuid = req.user ? req.user.uuid : null;
+
+    const threadRows = await threadsDao.getAll(request, userUuid);
 
     const results: ThreadDisplay[] = await Promise.all(
-      threads.map(async thread => {
-        const threadWord = await threadsDao.getThreadWord(thread.uuid);
+      threadRows.threads.map(async threadRow => {
         const comments = await commentsDao.getAllByThreadUuid(
-          thread.uuid,
+          threadRow.uuid,
           true
         );
         return {
-          thread,
-          word: threadWord,
-          latestCommentDate: comments[0].createdAt,
+          thread: {
+            uuid: threadRow.uuid,
+            name: threadRow.name,
+            referenceUuid: threadRow.referenceUuid,
+            status: threadRow.status,
+            route: threadRow.route,
+          },
+          word: threadRow.item,
+          latestCommentDate: new Date(threadRow.timestamp),
           comments,
         } as ThreadDisplay;
       })
     );
 
-    const sortByLatestComment = (a: ThreadDisplay, b: ThreadDisplay) => {
-      if (a.latestCommentDate < b.latestCommentDate) {
-        return 1;
-      }
-      if (b.latestCommentDate < a.latestCommentDate) {
-        return -1;
-      }
-      return 0;
-    };
-
-    results.sort(sortByLatestComment);
-
-    res.json(results);
+    res.json({
+      threads: results,
+      count: threadRows.count,
+    } as AllCommentsResponse);
   } catch (err) {
     next(new HttpInternalError(err));
   }
