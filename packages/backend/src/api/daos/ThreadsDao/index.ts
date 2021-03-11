@@ -1,11 +1,7 @@
-import {
-  AllCommentsRequest,
-  AllCommentsResponse,
-  Thread,
-  ThreadStatus,
-} from '@oare/types';
+import { AllCommentsRequest, Thread } from '@oare/types';
 import knex from '@/connection';
 import { v4 } from 'uuid';
+import sl from '@/serviceLocator';
 
 export interface ThreadWordRow {
   word: string;
@@ -17,12 +13,7 @@ interface ThreadUuid {
   uuid: string;
 }
 
-interface AllThreadRow {
-  uuid: string;
-  name: string;
-  referenceUuid: string;
-  status: ThreadStatus;
-  route: string;
+interface AllThreadRow extends Thread {
   comment: string;
   userUuid: string;
   timestamp: string;
@@ -139,7 +130,13 @@ class ThreadsDao {
     return threads.map(thread => thread.uuid);
   }
 
-  async getAll(request: AllCommentsRequest): Promise<AllThreadResponse> {
+  async getAll(
+    request: AllCommentsRequest,
+    userUuid: string | null
+  ): Promise<AllThreadResponse> {
+    const userDao = sl.get('UserDao');
+    const isAdmin = userUuid ? await userDao.userIsAdmin(userUuid) : false;
+
     const baseQuery = () =>
       knex('threads')
         .select(
@@ -206,8 +203,8 @@ class ThreadsDao {
           }
 
           // Only display threads from user if not admin.
-          if (request.userUuid) {
-            qb.andWhere('comments.user_uuid', request.userUuid);
+          if (!isAdmin) {
+            qb.andWhere('comments.user_uuid', userUuid);
           }
         })
         .groupBy('threads.uuid');

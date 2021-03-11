@@ -162,7 +162,9 @@ router.route('/threads').get(authenticatedRoute, async (req, res, next) => {
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
-    const threadRows = await threadsDao.getAll(request);
+    const userUuid = req.user ? req.user.uuid : null;
+
+    const threadRows = await threadsDao.getAll(request, userUuid);
 
     const results: ThreadDisplay[] = await Promise.all(
       threadRows.threads.map(async threadRow => {
