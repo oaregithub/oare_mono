@@ -20,7 +20,7 @@
               single-line
               hide-details
               clearable
-              class="pt-0 pb-2 test-user-filter"
+              class="pt-0 pb-2 test-name-filter"
             />
             <v-text-field
               v-model="item"
@@ -28,7 +28,7 @@
               single-line
               hide-details
               clearable
-              class="pt-2 pb-2 test-desc-filter"
+              class="pt-2 pb-2 test-item-filter"
             />
             <v-text-field
               v-model="comment"
@@ -36,7 +36,7 @@
               single-line
               hide-details
               clearable
-              class="pb-2 test-stack-filter"
+              class="pb-2 test-comment-filter"
             />
           </div>
         </v-col>
@@ -152,7 +152,7 @@ export default defineComponent({
     const [sort, setSort] = useQueryParam('sort', 'timestamp');
     const [page, setPage] = useQueryParam('page', '1');
     const [limit, setRows] = useQueryParam('rows', '10');
-    const [status, setStatus] = useQueryParam('status', '');
+    const status = ref<ThreadStatus[]>([]);
     const [name, setName] = useQueryParam('name', '');
     const [item, setItem] = useQueryParam('item', '');
     const [comment, setComment] = useQueryParam('comment', '');
@@ -263,7 +263,6 @@ export default defineComponent({
       _.debounce(async () => {
         try {
           searchOptions.value.page = 1;
-          setStatus(status.value || '');
           setName(name.value || '');
           setItem(item.value || '');
           setComment(comment.value || '');
