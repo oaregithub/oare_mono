@@ -170,12 +170,12 @@ class ThreadsDao {
           'dictionary_spelling.uuid'
         )
         .modify(qb => {
-          if (request.filters.thread !== '') {
-            qb.where('threads.name', 'like', `%${request.filters.thread}%`);
+          if (request.filters.status.length !== 0) {
+            qb.whereIn('threads.status', request.filters.status);
           }
 
-          if (request.filters.status.length !== 0) {
-            qb.andWhere('threads.status', 'in', request.filters.status);
+          if (request.filters.thread !== '') {
+            qb.andWhere('threads.name', 'like', `%${request.filters.thread}%`);
           }
 
           if (request.filters.item !== '') {
