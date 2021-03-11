@@ -27,12 +27,9 @@ interface AllThreadResponse {
 
 const NULL_THREAD_NAME = 'Untitled';
 
-const isNullThreadName = (name: string): boolean => {
-  return (
-    NULL_THREAD_NAME.includes(name) ||
-    NULL_THREAD_NAME.toLowerCase().includes(name)
-  );
-};
+const isNullThreadName = (name: string): boolean =>
+  NULL_THREAD_NAME.includes(name) ||
+  NULL_THREAD_NAME.toLowerCase().includes(name);
 
 class ThreadsDao {
   async insert({ referenceUuid, status, route }: Thread): Promise<string> {
