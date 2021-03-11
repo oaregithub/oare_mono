@@ -29,6 +29,10 @@ export default defineComponent({
           label: 'Error Log',
           path: '/admin/errors',
         },
+        {
+          label: 'Comments',
+          path: '/admin/comments',
+        },
       ],
     });
 

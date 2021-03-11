@@ -35,6 +35,7 @@ import WordsView from '../views/Words/index.vue';
 import NamesView from '../views/Names/index.vue';
 import PlacesView from '../views/Places/index.vue';
 import ErrorLog from '../views/Admin/ErrorLog/ErrorLog.vue';
+import AdminCommentView from '../views/Admin/Comments/AdminCommentView.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -71,6 +72,11 @@ const routes: RouteConfig[] = [
     path: '/admin/errors',
     name: 'adminErrors',
     component: ErrorLog,
+  },
+  {
+    path: '/admin/comments',
+    name: 'adminComments',
+    component: AdminCommentView,
   },
   {
     path: '/addblacklist/texts',

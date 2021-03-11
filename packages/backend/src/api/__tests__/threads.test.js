@@ -36,6 +36,23 @@ describe('comments api test', () => {
     route: 'route',
   };
 
+  const getAllThreads = {
+    threads: [
+      {
+        uuid: 'testUuid',
+        name: 'testName',
+        referenceUuid: 'testReferenceUuid',
+        status: 'New',
+        route: 'testRoute',
+        comment: 'testComment',
+        userUuid: 'testUserUuid',
+        timestamp: 'testTimestamp',
+        item: 'testItem',
+      },
+    ],
+    count: 1,
+  };
+
   const threadWord = 'threadWord';
 
   const MockThreadsDao = {
@@ -44,7 +61,7 @@ describe('comments api test', () => {
     getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
     updateThreadName: jest.fn().mockResolvedValue({}),
     getThreadWord: jest.fn().mockResolvedValue(threadWord),
-    getAll: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
+    getAll: jest.fn().mockResolvedValue(getAllThreads),
     getAllThreadUuidsByUserUuid: jest.fn().mockResolvedValue(threadUuids),
   };
 
@@ -417,7 +434,26 @@ describe('comments api test', () => {
   });
 
   describe('GET /threads', () => {
-    const PATH = `${API_PATH}/threads`;
+    const mockGetRequest = {
+      filters: {
+        status: '',
+        name: '',
+        item: '',
+        timestamp: '',
+      },
+      sort: {
+        type: 'timestamp',
+        desc: false,
+      },
+      pagination: {
+        page: 1,
+        limit: 10,
+      },
+    };
+
+    const PATH = `${API_PATH}/threads?request=${JSON.stringify(
+      mockGetRequest
+    )}`;
 
     const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);
@@ -427,24 +463,33 @@ describe('comments api test', () => {
     it('returns 200, successful thread display all info.', async () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([
-        {
-          thread: threadsGetByUuid,
-          word: threadWord,
-          latestCommentDate: commentsGetAllByThreadUuid[0].createdAt,
-          comments: commentsGetAllByThreadUuid,
-        },
-      ]);
+      expect(JSON.parse(response.text)).toEqual({
+        threads: [
+          {
+            thread: {
+              uuid: getAllThreads.threads[0].uuid,
+              name: getAllThreads.threads[0].name,
+              referenceUuid: getAllThreads.threads[0].referenceUuid,
+              status: getAllThreads.threads[0].status,
+              route: getAllThreads.threads[0].route,
+            },
+            word: getAllThreads.threads[0].item,
+            latestCommentDate: null,
+            comments: commentsGetAllByThreadUuid,
+          },
+        ],
+        count: 1,
+      });
     });
 
     it('returns 200, successful returns empty list of threads if none found.', async () => {
       sl.set('ThreadsDao', {
         ...MockThreadsDao,
-        getAll: jest.fn().mockResolvedValue([]),
+        getAll: jest.fn().mockResolvedValue({ threads: [], count: 0 }),
       });
       const response = await sendRequest();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([]);
+      expect(JSON.parse(response.text)).toEqual({ threads: [], count: 0 });
     });
 
     it('returns 500, unsuccessfully retrieves all threads.', async () => {
@@ -472,17 +517,6 @@ describe('comments api test', () => {
     it('returns 401 when non-logged in user tries to access route.', async () => {
       const response = await sendRequest(false);
       expect(response.status).toBe(401);
-    });
-
-    it('returns 403 when non-admin user tries to access route.', async () => {
-      sl.set('UserDao', {
-        ...MockUserDao,
-        getUserByEmail: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
     });
   });
 });

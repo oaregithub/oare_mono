@@ -37,7 +37,7 @@ describe('search test', () => {
     });
 
     const query = {
-      characters: ['a', 'na'],
+      characters: 'a-na',
       title: 'CCT',
       page: 1,
       rows: 10,

@@ -58,7 +58,6 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
-import { formattedSearchCharacter } from '../utils';
 import ResultTable from '../components/ResultTable.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
@@ -93,18 +92,6 @@ export default defineComponent({
       },
     ]);
 
-    const searchCharsArray = computed(() => {
-      let chars = translitSearch.value
-        .trim()
-        .split(/[\s\-.]+/)
-        .map(formattedSearchCharacter);
-
-      if (chars.length === 1 && chars[0] === '') {
-        return [];
-      }
-      return chars;
-    });
-
     const canPerformSearch = computed(() => {
       return translitSearch.value.trim() || textTitleSearch.value.trim();
     });
@@ -118,7 +105,7 @@ export default defineComponent({
           totalRows,
           results,
         }: SearchTextsResponse = await server.searchTexts({
-          characters: [...searchCharsArray.value],
+          characters: translitSearch.value,
           textTitle: textTitleSearch.value,
           page: Number(page.value),
           rows: Number(rows.value),

@@ -9,6 +9,7 @@ import {
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
+import { stringToCharsArray } from '@/api/daos/TextEpigraphyDao/utils';
 
 const router = express.Router();
 
@@ -83,7 +84,8 @@ router.route('/search').get(async (req, res, next) => {
       textTitle: title,
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
-    const characters = charsPayload || [];
+
+    const characters = charsPayload ? stringToCharsArray(charsPayload) : [];
     const user = req.user || null;
 
     const [totalRows, textMatches] = await Promise.all([
