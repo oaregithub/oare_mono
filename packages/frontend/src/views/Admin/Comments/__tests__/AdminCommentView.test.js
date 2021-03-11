@@ -20,6 +20,23 @@ const mockActions = {
   showErrorSnackbar: jest.fn(),
 };
 
+const mockRequest = {
+  filters: {
+    status: '',
+    name: '',
+    item: '',
+    comment: '',
+  },
+  sort: {
+    type: 'timestamp',
+    desc: true,
+  },
+  pagination: {
+    page: 1,
+    limit: 10,
+  },
+};
+
 const date = new Date();
 const comment1 = {
   text: 'comment1',
@@ -118,5 +135,24 @@ describe('AdminCommentView test', () => {
       .get('.test-view-all-comments-dialog')
       .get('.test-dialog-title');
     expect(viewAllCommentsDialogTitle.html()).toContain('All Comments');
+  });
+
+  it('filters by status and clears', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    const statusFilter = wrapper.get('.test-status-filter input');
+    await statusFilter.trigger('click');
+    const option = wrapper.findAll('.v-list-item__title').at(1);
+    await option.trigger('click');
+    await flushPromises();
+    expect(mockServer.getAllThreads).toHaveBeenLastCalledWith({
+      ...mockRequest,
+      filters: {
+        ...mockRequest.filters,
+        status: 'In Progress',
+      },
+    });
+    await wrapper.findAll('button.mdi-close').trigger('click');
+    expect(mockServer.getAllThreads).toHaveBeenLastCalledWith(mockRequest);
   });
 });
