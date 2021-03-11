@@ -77,6 +77,7 @@ router.route('/search').get(async (req, res, next) => {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDao = sl.get('TextDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
+    const SignReadingDao = sl.get('SignReadingDao');
 
     const {
       page,
@@ -85,7 +86,12 @@ router.route('/search').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
 
-    const characters = charsPayload ? stringToCharsArray(charsPayload) : [];
+    const charactersArray = charsPayload
+      ? stringToCharsArray(charsPayload)
+      : [];
+    const characters = await Promise.all(
+      charactersArray.map(sign => SignReadingDao.getUuidBySign(sign))
+    );
     const user = req.user || null;
 
     const [totalRows, textMatches] = await Promise.all([
