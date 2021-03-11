@@ -97,7 +97,6 @@ export interface AllCommentsRequest {
     desc: boolean;
   };
   pagination: Pagination;
-  userUuid?: string;
 }
 
 export interface AllCommentsResponse {
