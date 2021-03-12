@@ -57,7 +57,15 @@
               {{ item.thread.status }}
             </template>
             <template #[`item.name`]="{ item }">
-              {{ item.thread.name || 'Untitled' }}
+              <v-btn
+                @click="setupThreadDialog(item)"
+                plain
+                small
+                elevation="0"
+                class="font-weight-bold ml-n3"
+              >
+                {{ item.thread.name || 'Untitled' }}</v-btn
+              >
             </template>
             <template #[`item.item`]="{ item }">
               {{ item.word }}
@@ -113,6 +121,16 @@
         {{ formatCommentText(idx, comment.text, true) }}
       </div>
     </oare-dialog>
+    <comment-word-display
+      v-if="isViewingThread"
+      :route="selectedThreadDisplay.thread.route"
+      :uuid="selectedThreadDisplay.thread.referenceUuid"
+      :word="selectedThreadDisplay.word"
+      @submit="isViewingThread = false"
+      @input="isViewingThread = false"
+    >
+      {{ selectedThreadDisplay.word }}
+    </comment-word-display>
   </OareContentView>
 </template>
 
@@ -132,14 +150,17 @@ import {
   CommentSortType,
   ThreadStatus,
   AllCommentsResponse,
+  Thread,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataOptions, DataTableHeader } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
 import { DateTime } from 'luxon';
+import CommentWordDisplay from '../../../../components/CommentWordDisplay/index.vue';
 
 export default defineComponent({
   name: 'CommentView',
+  components: { CommentWordDisplay },
   props: {
     isUserComments: {
       type: Boolean,
@@ -149,6 +170,7 @@ export default defineComponent({
 
   setup({ isUserComments }) {
     const loading = ref(false);
+    const isViewingThread = ref(false);
     const searchLoading = ref(false);
     const threadDisplays: Ref<ThreadDisplay[]> = ref([]);
     const server = sl.get('serverProxy');
@@ -156,6 +178,18 @@ export default defineComponent({
     const _ = sl.get('lodash');
     const serverCount = ref(0);
     const selectedComments: Ref<Comment[]> = ref([]);
+    const selectedThreadDisplay: Ref<ThreadDisplay> = ref({
+      thread: {
+        uuid: '',
+        name: null,
+        referenceUuid: '',
+        status: 'New',
+        route: '',
+      },
+      word: '',
+      latestCommentDate: new Date(),
+      comments: [],
+    });
     const [desc, setDesc] = useQueryParam('desc', 'true');
     const [sort, setSort] = useQueryParam('sort', 'timestamp');
     const [page, setPage] = useQueryParam('page', '1');
@@ -283,7 +317,15 @@ export default defineComponent({
       }
     );
 
+    const setupThreadDialog = (threadDisplay: ThreadDisplay) => {
+      isViewingThread.value = true;
+      selectedThreadDisplay.value = threadDisplay;
+    };
+
     return {
+      setupThreadDialog,
+      selectedThreadDisplay,
+      isViewingThread,
       desc,
       sort,
       page,
