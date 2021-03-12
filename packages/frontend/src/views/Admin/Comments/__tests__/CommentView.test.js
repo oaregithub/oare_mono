@@ -1,41 +1,14 @@
 import Vuetify from 'vuetify';
-import VueCompositionApi from '@vue/composition-api';
+import VueCompositionApi, { PropType } from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
 import { DateTime } from 'luxon';
-import AdminCommentView from '../AdminCommentView.vue';
+import CommentView from '../components/CommentView.vue';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
-
-const renderOptions = {
-  localVue,
-  vuetify,
-};
-
-const mockActions = {
-  showSnackbar: jest.fn(),
-  showErrorSnackbar: jest.fn(),
-};
-
-const mockRequest = {
-  filters: {
-    status: [],
-    thread: '',
-    item: '',
-    comment: '',
-  },
-  sort: {
-    type: 'timestamp',
-    desc: true,
-  },
-  pagination: {
-    page: 1,
-    limit: 10,
-  },
-};
 
 const date = new Date();
 const comment1 = {
@@ -62,6 +35,37 @@ const mockThreadDisplays = [
 
 const mockServerCount = 1;
 
+const renderOptions = {
+  localVue,
+  vuetify,
+  propsData: {
+    isUserComments: false,
+  },
+};
+
+const mockActions = {
+  showSnackbar: jest.fn(),
+  showErrorSnackbar: jest.fn(),
+};
+
+const mockRequest = {
+  filters: {
+    status: [],
+    thread: '',
+    item: '',
+    comment: '',
+  },
+  sort: {
+    type: 'timestamp',
+    desc: true,
+  },
+  pagination: {
+    page: 1,
+    limit: 10,
+  },
+  isUserComments: false,
+};
+
 const mockResponse = {
   threads: mockThreadDisplays,
   count: mockServerCount,
@@ -83,13 +87,12 @@ const setup = () => {
 
 beforeEach(setup);
 
-describe('AdminCommentView test', () => {
-  const createWrapper = () => mount(AdminCommentView, renderOptions);
+describe('CommentView test', () => {
+  const createWrapper = () => mount(CommentView, renderOptions);
 
   it('successfully retrieves thread displays on load', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockServer.getAllThreads).toHaveBeenCalled();
     expect(wrapper.html()).toContain('comment1');
     expect(wrapper.html()).toContain('comment2');
     expect(wrapper.html()).toContain('comment3');
@@ -101,19 +104,6 @@ describe('AdminCommentView test', () => {
       DateTime.DATETIME_MED
     );
     expect(wrapper.html()).toContain(timestamp);
-    expect(mockActions.showErrorSnackbar).not.toHaveBeenCalled();
-  });
-
-  it('display error when fails to load thread displays', async () => {
-    sl.set('serverProxy', {
-      getAllThreads: jest
-        .fn()
-        .mockRejectedValue('Unable to retrieve thread displays'),
-    });
-
-    createWrapper();
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
   it('display see more comments popup when more than three comments', async () => {
@@ -135,6 +125,25 @@ describe('AdminCommentView test', () => {
       .get('.test-view-all-comments-dialog')
       .get('.test-dialog-title');
     expect(viewAllCommentsDialogTitle.html()).toContain('All Comments');
+  });
+
+  it('successfully retrieves thread displays on load for admins', async () => {
+    createWrapper();
+    await flushPromises();
+    expect(mockServer.getAllThreads).toHaveBeenLastCalledWith(mockRequest);
+    expect(mockActions.showErrorSnackbar).not.toHaveBeenCalled();
+  });
+
+  it('display error when fails to load thread displays', async () => {
+    sl.set('serverProxy', {
+      getAllThreads: jest
+        .fn()
+        .mockRejectedValue('Unable to retrieve thread displays'),
+    });
+
+    createWrapper();
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
   it('filters by status and clears', async () => {
