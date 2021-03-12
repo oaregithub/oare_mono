@@ -66,14 +66,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     ]),
   };
 
-  const mockTextGroupDao = {
-    userHasWritePermission: jest.fn().mockResolvedValue(false),
-    getUserBlacklist: jest.fn().mockResolvedValue({
-      blacklist: ['67890'],
-      whitelist: [],
-    }),
-  };
-
   const mockCollectionGroupDao = {
     getUserCollectionBlacklist: jest.fn().mockResolvedValue({
       blacklist: [],
@@ -116,15 +108,20 @@ describe('GET /text_epigraphies/:uuid', () => {
     getTextCollection: jest.fn().mockResolvedValue(mockResponse.collection),
   };
 
+  const mockCollectionTextUtils = {
+    canViewText: jest.fn().mockResolvedValue(true),
+    canEditText: jest.fn().mockResolvedValue(false),
+  };
+
   const setup = () => {
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
-    sl.set('TextGroupDao', mockTextGroupDao);
     sl.set('TextDao', mockTextDao);
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('TextDraftsDao', mockTextDraftsDao);
     sl.set('CollectionDao', mockCollectionDao);
+    sl.set('CollectionTextUtils', mockCollectionTextUtils);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -156,11 +153,9 @@ describe('GET /text_epigraphies/:uuid', () => {
   });
 
   it('does not allow blacklisted texts to be seen', async () => {
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest
-        .fn()
-        .mockResolvedValue({ blacklist: ['12345'], whitelist: [] }),
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
+      canViewText: jest.fn().mockResolvedValue(false),
     });
     const response = await sendRequest();
     expect(response.status).toBe(403);
@@ -171,40 +166,12 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(mockTextDiscourseDao.getTextDiscourseUnits).not.toHaveBeenCalled();
   });
 
-  it('does not allow non-admin user to see blacklisted texts', async () => {
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
-        isAdmin: false,
-      }),
-    });
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest
+  it('returns 500 when failing to check if text is viewable', async () => {
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
+      canViewText: jest
         .fn()
-        .mockResolvedValue({ blacklist: ['12345'], whitelist: [] }),
-    });
-    const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
-    expect(response.status).toBe(403);
-  });
-
-  it('allows admins to see blacklisted texts', async () => {
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
-        isAdmin: true,
-      }),
-    });
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest.fn().mockResolvedValue(['12345']),
-    });
-    const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
-    expect(response.status).toBe(200);
-  });
-
-  it('returns 500 on failed blacklist check', async () => {
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest.fn().mockRejectedValue(null),
+        .mockRejectedValue('failed to check if text is viewable'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -272,14 +239,9 @@ describe('GET /text_epigraphies/:uuid', () => {
   });
 
   it('returns 500 on failed write permission check', async () => {
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
-        isAdmin: false,
-      }),
-    });
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      userHasWritePermission: jest.fn().mockRejectedValue(null),
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
+      canEditText: jest.fn().mockRejectedValue(null),
     });
     const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
     expect(response.status).toBe(500);

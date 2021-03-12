@@ -1,22 +1,16 @@
-import UserDao from '../UserDao';
-import TextGroupDao from '../TextGroupDao';
-import CollectionGroupDao from '../CollectionGroupDao';
-import PublicBlacklistDao from '../PublicBlacklistDao';
-import CollectionDao from '../CollectionDao';
+import sl from '@/serviceLocator';
 
 class CollectionTextUtils {
-  /**
-   * Returns true if the user will be able to view the given text with textUuid.
-   * The user can view the text if one of the following is true:
-   *
-   * 1. The text is not publicly blacklisted, and its group is not publicly blacklisted
-   * 2. The user belongs to a group where the text is whitelisted, or the text's group is whitelisted
-   * 3. The user is an admin
-   */
   async canViewText(
     textUuid: string,
     userUuid: string | null
   ): Promise<boolean> {
+    const UserDao = sl.get('UserDao');
+    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const CollectionDao = sl.get('CollectionDao');
+    const TextGroupDao = sl.get('TextGroupDao');
+    const CollectionGroupDao = sl.get('CollectionGroupDao');
+
     const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
     const publiclyViewable = await PublicBlacklistDao.isTextPubliclyViewable(
       textUuid
@@ -40,10 +34,13 @@ class CollectionTextUtils {
       blacklist: collectionBlacklist,
     } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
 
+    if (textWhitelist.includes(textUuid)) {
+      return true;
+    }
+
     if (
       textBlacklist.includes(textUuid) ||
-      (collectionBlacklist.includes(collectionUuid || '') &&
-        !textWhitelist.includes(textUuid))
+      collectionBlacklist.includes(collectionUuid || '')
     ) {
       return false;
     }
@@ -55,7 +52,12 @@ class CollectionTextUtils {
     textUuid: string,
     userUuid: string | null
   ): Promise<boolean> {
-    const canView = await this.canViewText(textUuid, userUuid);
+    const UserDao = sl.get('UserDao');
+    const TextGroupDao = sl.get('TextGroupDao');
+    const CollectionGroupDao = sl.get('CollectionGroupDao');
+    const CTUtils = sl.get('CollectionTextUtils');
+
+    const canView = await CTUtils.canViewText(textUuid, userUuid);
     const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
 
     if (!canView || !user) {
