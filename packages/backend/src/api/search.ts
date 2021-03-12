@@ -90,12 +90,11 @@ router.route('/search').get(async (req, res, next) => {
       ? stringToCharsArray(charsPayload)
       : [];
 
-    const canPerformSearch = !(
-      await Promise.all(
-        charactersArray.map(sign => SignReadingDao.hasSign(sign))
-      )
-    ).includes(false);
-    if (!canPerformSearch) {
+    const signExistences = await Promise.all(
+      charactersArray.map(sign => SignReadingDao.hasSign(sign))
+    );
+
+    if (signExistences.includes(false)) {
       const response: SearchTextsResponse = {
         totalRows: 0,
         results: [],
