@@ -20,7 +20,20 @@ const subscriptNumber = (normalNumber: string): string =>
   String.fromCharCode(8320 + Number(normalNumber));
 
 export const normalizeSign = (sign: string): string => {
-  const normalizedSign = sign.split('');
+  let normalizedSign = sign.split('');
+  const lastIdx = normalizedSign.length - 1;
+  const penultimateIdx = normalizedSign.length - 2;
+
+  const isSingleDigit =
+    isDigit(normalizedSign[lastIdx]) &&
+    !isDigit(normalizedSign[penultimateIdx]);
+  if (isSingleDigit) {
+    if (normalizedSign[lastIdx].match(/^[1-3]$/)) {
+      normalizedSign = normalizeTilde(normalizedSign);
+      return normalizedSign.join('');
+    }
+  }
+
   [1, 2].forEach(negIdx => {
     const signIdx = normalizedSign.length - negIdx;
     if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
@@ -55,6 +68,58 @@ export const normalizeNumber = (num: string): string => {
     default:
       return num;
   }
+};
+
+export const normalizeTilde = (splitSign: string[]): string[] => {
+  const firstVowelIndex = indexOfFirstVowel(splitSign);
+
+  if (firstVowelIndex >= 0) {
+    const vowel = splitSign[firstVowelIndex];
+    const number = Number(splitSign[splitSign.length - 1]);
+
+    const correctedVowel = normalizeVowel(vowel, number);
+    splitSign[firstVowelIndex] = correctedVowel;
+    splitSign.pop();
+  }
+
+  return splitSign;
+};
+
+export const normalizeVowel = (vowel: string, number: number): string => {
+  const idx = number - 1;
+  switch (vowel) {
+    case 'a':
+      return ['a', 'á', 'à'][idx];
+    case 'e':
+      return ['e', 'é', 'è'][idx];
+    case 'i':
+      return ['i', 'í', 'ì'][idx];
+    case 'o':
+      return ['o', 'ó', 'ò'][idx];
+    case 'u':
+      return ['u', 'ú', 'ù'][idx];
+    case 'A':
+      return ['A', 'Á', 'À'][idx];
+    case 'E':
+      return ['E', 'É', 'È'][idx];
+    case 'I':
+      return ['I', 'Í', 'Ì'][idx];
+    case 'O':
+      return ['O', 'Ó', 'Ò'][idx];
+    case 'U':
+      return ['U', 'Ú', 'Ú'][idx];
+    default:
+      return vowel;
+  }
+};
+
+export const indexOfFirstVowel = (splitSign: string[]): number => {
+  const vowels = ['A', 'E', 'I', 'O', 'U', 'a', 'e', 'i', 'o', 'u'];
+  const firstVowel = splitSign.find(char => vowels.includes(char));
+  if (firstVowel) {
+    return splitSign.indexOf(firstVowel);
+  }
+  return -1;
 };
 
 export const spellingHtmlReading = (spelling: string): string => {
