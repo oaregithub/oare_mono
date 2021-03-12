@@ -32,6 +32,7 @@ describe('search test', () => {
 
     const mockSignReadingDao = {
       getUuidBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
+      hasSign: jest.fn().mockResolvedValue(true),
     };
 
     beforeEach(() => {

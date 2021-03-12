@@ -5,13 +5,13 @@ import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
-  characters: string[],
+  characterUuids: string[],
   baseQuery?: Knex.QueryBuilder
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
   let query = baseQuery || knex('text_epigraphy');
-  characters.forEach((char, index) => {
+  characterUuids.forEach((char, index) => {
     if (index < 1) {
       return;
     }
@@ -27,8 +27,8 @@ export function getSequentialCharacterQuery(
     });
   });
 
-  if (characters.length > 0) {
-    query = query.andWhere('text_epigraphy.reading_uuid', characters[0]);
+  if (characterUuids.length > 0) {
+    query = query.andWhere('text_epigraphy.reading_uuid', characterUuids[0]);
   }
 
   return query;

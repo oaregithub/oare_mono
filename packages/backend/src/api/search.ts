@@ -89,19 +89,34 @@ router.route('/search').get(async (req, res, next) => {
     const charactersArray = charsPayload
       ? stringToCharsArray(charsPayload)
       : [];
-    const characters = await Promise.all(
+
+    const canPerformSearch = !(
+      await Promise.all(
+        charactersArray.map(sign => SignReadingDao.hasSign(sign))
+      )
+    ).includes(false);
+    if (!canPerformSearch) {
+      const response: SearchTextsResponse = {
+        totalRows: 0,
+        results: [],
+      };
+      res.json(response);
+      return;
+    }
+
+    const characterUuids = await Promise.all(
       charactersArray.map(sign => SignReadingDao.getUuidBySign(sign))
     );
     const user = req.user || null;
 
     const [totalRows, textMatches] = await Promise.all([
       TextEpigraphyDao.searchTextsTotal({
-        characters,
+        characters: characterUuids,
         title,
         userUuid: user ? user.uuid : null,
       }),
       TextEpigraphyDao.searchTexts({
-        characters,
+        characters: characterUuids,
         pagination: { limit: rows, page },
         title,
         userUuid: user ? user.uuid : null,
