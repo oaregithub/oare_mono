@@ -25,6 +25,7 @@ import CommentsDao from '@/api/daos/CommentsDao';
 import ThreadsDao from '@/api/daos/ThreadsDao';
 import ErrorsDao from '@/api/daos/ErrorsDao';
 import CollectionDao from '@/api/daos/CollectionDao';
+import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
 import utils from '@/utils';
 import mailer from '@/mailer';
 
@@ -58,6 +59,7 @@ export type ServiceTypes = {
   CommentsDao: typeof CommentsDao;
   ThreadsDao: typeof ThreadsDao;
   ErrorsDao: typeof ErrorsDao;
+  CollectionTextUtils: typeof CollectionTextUtils;
   utils: typeof utils;
   mailer: typeof mailer;
 };

@@ -1,21 +1,27 @@
 import { PublicBlacklistPayloadItem, Text, Collection } from '@oare/types';
 import knex from '@/connection';
+import sl from '@/serviceLocator';
 import Knex from 'knex';
 import TextDao from '../TextDao';
-import CollectionDao from '../CollectionDao';
 
 class PublicBlacklistDao {
+  async getBlacklistedTextUuids(): Promise<string[]> {
+    const rows: Array<{ uuid: string }> = await knex('public_blacklist')
+      .select('uuid')
+      .where('type', 'text');
+
+    return rows.map(({ uuid }) => uuid);
+  }
+
   async getBlacklistedTexts(): Promise<Text[]> {
-    const results: Text[] = await knex('public_blacklist')
-      .select('public_blacklist.uuid')
-      .where('public_blacklist.type', 'text');
+    const textUuids = await this.getBlacklistedTextUuids();
 
     const textNames = (
-      await Promise.all(results.map(text => TextDao.getTextByUuid(text.uuid)))
+      await Promise.all(textUuids.map(uuid => TextDao.getTextByUuid(uuid)))
     ).map(text => (text ? text.name : ''));
 
-    return results.map((item, index) => ({
-      ...item,
+    return textUuids.map((uuid, index) => ({
+      uuid,
       name: textNames[index],
       canWrite: false,
       canRead: false,
@@ -51,21 +57,52 @@ class PublicBlacklistDao {
     });
   }
 
-  async getBlacklistedCollections(): Promise<Collection[]> {
-    const blacklistCollections = await knex('public_blacklist')
+  async getBlacklistedCollectionUuids(): Promise<string[]> {
+    const collectionUuids: Array<{ uuid: string }> = await knex(
+      'public_blacklist'
+    )
       .select('uuid')
       .where('type', 'collection');
+
+    return collectionUuids.map(({ uuid }) => uuid);
+  }
+
+  async getBlacklistedCollections(): Promise<Collection[]> {
+    const CollectionDao = sl.get('CollectionDao');
+
+    const collectionUuids = await this.getBlacklistedCollectionUuids();
+
     const collectionNames = (
       await Promise.all(
-        blacklistCollections.map(collection =>
-          CollectionDao.getCollectionByUuid(collection.uuid)
-        )
+        collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
       )
     ).map(collection => (collection ? collection.name : ''));
-    return blacklistCollections.map((collection, index) => ({
+
+    return collectionUuids.map((uuid, index) => ({
       name: collectionNames[index],
-      uuid: collection.uuid,
+      uuid,
     }));
+  }
+
+  async isTextPubliclyViewable(textUuid: string): Promise<boolean> {
+    const PBDao = sl.get('PublicBlacklistDao');
+    const CollectionDao = sl.get('CollectionDao');
+
+    const textUuids = await PBDao.getBlacklistedTextUuids();
+    if (textUuids.includes(textUuid)) {
+      return false;
+    }
+
+    const collectionUuids = await PBDao.getBlacklistedCollectionUuids();
+    const textCollectionUuid = await CollectionDao.getTextCollectionUuid(
+      textUuid
+    );
+
+    if (collectionUuids.includes(textCollectionUuid || '')) {
+      return false;
+    }
+
+    return true;
   }
 }
 
