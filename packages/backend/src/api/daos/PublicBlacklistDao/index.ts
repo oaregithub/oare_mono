@@ -1,8 +1,8 @@
 import { PublicBlacklistPayloadItem, Text, Collection } from '@oare/types';
 import knex from '@/connection';
+import sl from '@/serviceLocator';
 import Knex from 'knex';
 import TextDao from '../TextDao';
-import CollectionDao from '../CollectionDao';
 
 class PublicBlacklistDao {
   async getBlacklistedTextUuids(): Promise<string[]> {
@@ -68,6 +68,8 @@ class PublicBlacklistDao {
   }
 
   async getBlacklistedCollections(): Promise<Collection[]> {
+    const CollectionDao = sl.get('CollectionDao');
+
     const collectionUuids = await this.getBlacklistedCollectionUuids();
 
     const collectionNames = (
@@ -83,17 +85,24 @@ class PublicBlacklistDao {
   }
 
   async isTextPubliclyViewable(textUuid: string): Promise<boolean> {
-    const textUuids = await this.getBlacklistedTextUuids();
+    const PBDao = sl.get('PublicBlacklistDao');
+    const CollectionDao = sl.get('CollectionDao');
+
+    const textUuids = await PBDao.getBlacklistedTextUuids();
     if (textUuids.includes(textUuid)) {
-      return true;
+      return false;
     }
 
-    const collectionUuids = await this.getBlacklistedCollectionUuids();
+    const collectionUuids = await PBDao.getBlacklistedCollectionUuids();
     const textCollectionUuid = await CollectionDao.getTextCollectionUuid(
       textUuid
     );
 
-    return collectionUuids.includes(textCollectionUuid || '');
+    if (collectionUuids.includes(textCollectionUuid || '')) {
+      return false;
+    }
+
+    return true;
   }
 }
 
