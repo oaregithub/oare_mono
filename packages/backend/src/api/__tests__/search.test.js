@@ -30,10 +30,16 @@ describe('search test', () => {
       getMarkups: jest.fn().mockResolvedValue([]),
     };
 
+    const mockSignReadingDao = {
+      getUuidBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
+      hasSign: jest.fn().mockResolvedValue(true),
+    };
+
     beforeEach(() => {
       sl.set('TextEpigraphyDao', TextEpigraphyDao);
       sl.set('TextDao', TextDao);
       sl.set('TextMarkupDao', TextMarkupDao);
+      sl.set('SignReadingDao', mockSignReadingDao);
     });
 
     const query = {
