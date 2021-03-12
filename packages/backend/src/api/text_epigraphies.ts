@@ -10,22 +10,35 @@ router
   .route('/text_epigraphies/:uuid')
   .get(authFirst, async (req, res, next) => {
     try {
-      const textUuid = String(req.params.uuid);
-      const user = req.user || null;
+      const { uuid: textUuid } = req.params;
+      const { user } = req;
       const userUuid = user ? user.uuid : null;
       const TextMarkupDao = sl.get('TextMarkupDao');
       const TextDao = sl.get('TextDao');
-      const TextGroupDao = sl.get('TextGroupDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const CollectionGroupDao = sl.get('CollectionGroupDao');
       const TextDraftsDao = sl.get('TextDraftsDao');
       const CollectionDao = sl.get('CollectionDao');
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
 
       const text = await TextDao.getTextByUuid(textUuid);
 
       if (!text) {
         next(new HttpBadRequest(`Text with UUID ${textUuid} does not exist`));
+        return;
+      }
+
+      const canViewText = await CollectionTextUtils.canViewText(
+        textUuid,
+        userUuid
+      );
+
+      if (!canViewText) {
+        next(
+          new HttpForbidden(
+            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
+          )
+        );
         return;
       }
 
@@ -36,57 +49,20 @@ router
         return;
       }
 
-      // Make sure user has access to the text he wishes to access
-      if (!user || !user.isAdmin) {
-        const {
-          blacklist: textBlacklist,
-          whitelist: textWhitelist,
-        } = await TextGroupDao.getUserBlacklist(userUuid);
-        const {
-          blacklist: collectionBlacklist,
-        } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
-
-        if (
-          textBlacklist.includes(textUuid) ||
-          (collectionBlacklist.includes(collection.uuid) &&
-            !textWhitelist.includes(textUuid))
-        ) {
-          next(
-            new HttpForbidden(
-              'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
-            )
-          );
-          return;
-        }
-      }
-
       const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
       const cdliNum = await TextDao.getCdliNum(textUuid);
       const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
       const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
         textUuid
       );
-
       const markups = await TextMarkupDao.getMarkups(textUuid);
-
-      let canWrite: boolean;
-      if (user) {
-        canWrite = user.isAdmin
-          ? true
-          : (await TextGroupDao.userHasWritePermission(textUuid, user.uuid)) ||
-            (await CollectionGroupDao.userHasWritePermission(
-              textUuid,
-              user.uuid
-            ));
-      } else {
-        canWrite = false;
-      }
-
-      let draft;
-
-      if (user) {
-        draft = await TextDraftsDao.getDraft(user.uuid, textUuid);
-      }
+      const canWrite = await CollectionTextUtils.canEditText(
+        textUuid,
+        userUuid
+      );
+      const draft = user
+        ? await TextDraftsDao.getDraft(user.uuid, textUuid)
+        : null;
 
       const response: EpigraphyResponse = {
         textName: text.name,
