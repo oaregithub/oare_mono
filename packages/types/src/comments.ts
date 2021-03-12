@@ -97,6 +97,7 @@ export interface AllCommentsRequest {
     desc: boolean;
   };
   pagination: Pagination;
+  isUserComments: boolean;
 }
 
 export interface AllCommentsResponse {

@@ -1,5 +1,5 @@
 <template>
-  <OareContentView :loading="initialLoading" title="Comments">
+  <OareContentView :loading="loading" title="Comments">
     <v-container class="pa-0">
       <v-row>
         <v-col cols="2">
@@ -131,6 +131,7 @@ import {
   AllCommentsRequest,
   CommentSortType,
   ThreadStatus,
+  AllCommentsResponse,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataOptions, DataTableHeader } from 'vuetify';
@@ -140,31 +141,20 @@ import { DateTime } from 'luxon';
 export default defineComponent({
   name: 'CommentView',
   props: {
-    threadDisplays: {
-      type: Array as PropType<ThreadDisplay[]>,
-      required: true,
-    },
-    serverCount: {
-      type: Number,
-      required: true,
-    },
-    searchLoading: {
+    isUserComments: {
       type: Boolean,
-      required: true,
-    },
-    initialLoading: {
-      type: Boolean,
-      required: true,
+      default: true,
     },
   },
 
-  setup(props, { emit }) {
+  setup({ isUserComments }) {
     const loading = ref(false);
-    // const threadDisplays: Ref<ThreadDisplay[]> = ref([]);
+    const searchLoading = ref(false);
+    const threadDisplays: Ref<ThreadDisplay[]> = ref([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
-    // const serverCount = ref(0);
+    const serverCount = ref(0);
     const selectedComments: Ref<Comment[]> = ref([]);
     const [desc, setDesc] = useQueryParam('desc', 'true');
     const [sort, setSort] = useQueryParam('sort', 'timestamp');
@@ -199,25 +189,36 @@ export default defineComponent({
       mustSort: true,
     });
 
-    const getAllThreadsWithComments = () => {
-      const request: AllCommentsRequest = {
-        filters: {
-          status: (status.value as unknown) as ThreadStatus[],
-          thread: name.value,
-          item: item.value,
-          comment: comment.value,
-        },
-        sort: {
-          type: sort.value as CommentSortType,
-          desc: desc.value === 'true',
-        },
-        pagination: {
-          page: Number(page.value),
-          limit: Number(limit.value),
-        },
-      };
+    const getAllThreadsWithComments = async () => {
+      try {
+        searchLoading.value = true;
 
-      emit('input', request);
+        const request: AllCommentsRequest = {
+          filters: {
+            status: (status.value as unknown) as ThreadStatus[],
+            thread: name.value,
+            item: item.value,
+            comment: comment.value,
+          },
+          sort: {
+            type: sort.value as CommentSortType,
+            desc: desc.value === 'true',
+          },
+          pagination: {
+            page: Number(page.value),
+            limit: Number(limit.value),
+          },
+          isUserComments,
+        };
+
+        const response = await server.getAllThreads(request);
+        threadDisplays.value = response.threads;
+        serverCount.value = response.count;
+      } catch (e) {
+        actions.showErrorSnackbar('Failed to get threads');
+      } finally {
+        searchLoading.value = false;
+      }
     };
 
     const formatTimestamp = (timestamp: Date) => {
@@ -243,23 +244,34 @@ export default defineComponent({
       selectedComments.value = comments;
     };
 
+    onMounted(async () => {
+      try {
+        loading.value = true;
+        await getAllThreadsWithComments();
+      } catch (e) {
+        actions.showErrorSnackbar('Failed to get threads');
+      } finally {
+        loading.value = false;
+      }
+    });
+
     watch(searchOptions, async () => {
       setPage(String(searchOptions.value.page));
       setRows(String(searchOptions.value.itemsPerPage));
       setSort(searchOptions.value.sortBy[0]);
       setDesc(String(searchOptions.value.sortDesc[0]));
-      getAllThreadsWithComments();
+      await getAllThreadsWithComments();
     });
 
     watch(
       [status, name, item, comment],
-      _.debounce(() => {
+      _.debounce(async () => {
         try {
           searchOptions.value.page = 1;
           setName(name.value || '');
           setItem(item.value || '');
           setComment(comment.value || '');
-          getAllThreadsWithComments();
+          await getAllThreadsWithComments();
         } catch {
           actions.showErrorSnackbar(
             'Error filtering or sorting comments. Please try again.'
@@ -282,6 +294,9 @@ export default defineComponent({
       comment,
       statusOptions,
       loading,
+      searchLoading,
+      threadDisplays,
+      serverCount,
       tableHeaders,
       searchOptions,
       formatTimestamp,
