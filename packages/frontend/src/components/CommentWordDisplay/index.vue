@@ -244,6 +244,7 @@ import {
   Ref,
   watch,
   computed,
+  PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import {
@@ -275,6 +276,10 @@ export default defineComponent({
     value: {
       type: Boolean,
       default: true,
+    },
+    initialThreadUuid: {
+      type: String,
+      default: null,
     },
   },
   setup(props) {
@@ -523,7 +528,17 @@ export default defineComponent({
       }
     };
 
-    onMounted(getThreadsWithComments);
+    onMounted(async () => {
+      if (props.initialThreadUuid !== null) {
+        selectedThreadWithComments.value.thread.uuid = props.initialThreadUuid;
+      }
+
+      try {
+        await getThreadsWithComments();
+      } catch (e) {
+        actions.showErrorSnackbar('Failed to get threads');
+      }
+    });
 
     const loggedInUser = computed(() =>
       store.getters.user ? store.getters.user : null

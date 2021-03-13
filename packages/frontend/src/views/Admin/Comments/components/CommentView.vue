@@ -126,6 +126,7 @@
       :route="selectedThreadDisplay.thread.route"
       :uuid="selectedThreadDisplay.thread.referenceUuid"
       :word="selectedThreadDisplay.word"
+      :initial-thread-uuid="selectedThreadDisplay.thread.uuid"
       @submit="isViewingThread = false"
       @input="isViewingThread = false"
     >
