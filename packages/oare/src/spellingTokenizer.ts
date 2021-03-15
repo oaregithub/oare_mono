@@ -107,7 +107,7 @@ export const normalizeVowel = (vowel: string, number: number): string => {
     case 'O':
       return ['O', 'Ó', 'Ò'][idx];
     case 'U':
-      return ['U', 'Ú', 'Ú'][idx];
+      return ['U', 'Ú', 'Ù'][idx];
     default:
       return vowel;
   }
