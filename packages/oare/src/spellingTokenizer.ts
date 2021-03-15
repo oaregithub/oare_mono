@@ -20,17 +20,17 @@ const subscriptNumber = (normalNumber: string): string =>
   String.fromCharCode(8320 + Number(normalNumber));
 
 export const normalizeSign = (sign: string): string => {
-  let normalizedSign = sign.split('');
+  const normalizedSign = sign.split('');
   const lastIdx = normalizedSign.length - 1;
   const penultimateIdx = normalizedSign.length - 2;
 
   const isSingleDigit =
+    normalizedSign.length >= 2 &&
     isDigit(normalizedSign[lastIdx]) &&
     !isDigit(normalizedSign[penultimateIdx]);
   if (isSingleDigit) {
     if (normalizedSign[lastIdx].match(/^[1-3]$/)) {
-      normalizedSign = normalizeTilde(normalizedSign);
-      return normalizedSign.join('');
+      return normalizeTilde(sign);
     }
   }
 
@@ -70,21 +70,32 @@ export const normalizeNumber = (num: string): string => {
   }
 };
 
-export const normalizeTilde = (splitSign: string[]): string[] => {
-  const firstVowelIndex = indexOfFirstVowel(splitSign);
+/**
+ * Called if sign ends in 1, 2, or 3. These numbers indicate accentuation rather than subscripting.
+ * @param sign The sign that contains a vowel that needs to be accentuated
+ * @returns The corrected sign with an accentuated vowel
+ */
+export const normalizeTilde = (sign: string): string => {
+  const firstVowelIndex = indexOfFirstVowel(sign);
 
   if (firstVowelIndex >= 0) {
-    const vowel = splitSign[firstVowelIndex];
-    const number = Number(splitSign[splitSign.length - 1]);
+    const vowel = sign[firstVowelIndex];
+    const number = Number(sign[sign.length - 1]);
 
     const correctedVowel = normalizeVowel(vowel, number);
-    splitSign[firstVowelIndex] = correctedVowel;
-    splitSign.pop();
+    sign = sign.replace(vowel, correctedVowel);
+    sign = sign.slice(0, -1);
   }
-
-  return splitSign;
+  return sign;
 };
 
+/**
+ * Accentuates first vowel in sign if marked with 1, 2, or 3.
+ * Ex: a1 = a, a2 = á, a3 = à
+ * @param vowel The vowel that needs to be accentuated
+ * @param number The number at the end of the sign. Indicates which accentuation to use
+ * @returns Accentuated vowel
+ */
 export const normalizeVowel = (vowel: string, number: number): string => {
   const idx = number - 1;
   switch (vowel) {
@@ -113,7 +124,8 @@ export const normalizeVowel = (vowel: string, number: number): string => {
   }
 };
 
-export const indexOfFirstVowel = (splitSign: string[]): number => {
+export const indexOfFirstVowel = (sign: string): number => {
+  const splitSign = sign.split('');
   const vowels = ['A', 'E', 'I', 'O', 'U', 'a', 'e', 'i', 'o', 'u'];
   const firstVowel = splitSign.find(char => vowels.includes(char));
   if (firstVowel) {
