@@ -21,6 +21,19 @@ const subscriptNumber = (normalNumber: string): string =>
 
 export const normalizeSign = (sign: string): string => {
   const normalizedSign = sign.split('');
+  const lastIdx = normalizedSign.length - 1;
+  const penultimateIdx = normalizedSign.length - 2;
+
+  const isSingleDigit =
+    normalizedSign.length >= 2 &&
+    isDigit(normalizedSign[lastIdx]) &&
+    !isDigit(normalizedSign[penultimateIdx]);
+  if (isSingleDigit) {
+    if (normalizedSign[lastIdx].match(/^[1-3]$/)) {
+      return normalizeTilde(sign);
+    }
+  }
+
   [1, 2].forEach(negIdx => {
     const signIdx = normalizedSign.length - negIdx;
     if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
@@ -55,6 +68,70 @@ export const normalizeNumber = (num: string): string => {
     default:
       return num;
   }
+};
+
+/**
+ * Called if sign ends in 1, 2, or 3. These numbers indicate accentuation rather than subscripting.
+ * @param sign The sign that contains a vowel that needs to be accentuated
+ * @returns The corrected sign with an accentuated vowel
+ */
+export const normalizeTilde = (sign: string): string => {
+  const firstVowelIndex = indexOfFirstVowel(sign);
+
+  if (firstVowelIndex >= 0) {
+    const vowel = sign[firstVowelIndex];
+    const number = Number(sign[sign.length - 1]);
+
+    const correctedVowel = normalizeVowel(vowel, number);
+    sign = sign.replace(vowel, correctedVowel);
+    sign = sign.slice(0, -1);
+  }
+  return sign;
+};
+
+/**
+ * Accentuates first vowel in sign if marked with 1, 2, or 3.
+ * Ex: a1 = a, a2 = á, a3 = à
+ * @param vowel The vowel that needs to be accentuated
+ * @param number The number at the end of the sign. Indicates which accentuation to use
+ * @returns Accentuated vowel
+ */
+export const normalizeVowel = (vowel: string, number: number): string => {
+  const idx = number - 1;
+  switch (vowel) {
+    case 'a':
+      return ['a', 'á', 'à'][idx];
+    case 'e':
+      return ['e', 'é', 'è'][idx];
+    case 'i':
+      return ['i', 'í', 'ì'][idx];
+    case 'o':
+      return ['o', 'ó', 'ò'][idx];
+    case 'u':
+      return ['u', 'ú', 'ù'][idx];
+    case 'A':
+      return ['A', 'Á', 'À'][idx];
+    case 'E':
+      return ['E', 'É', 'È'][idx];
+    case 'I':
+      return ['I', 'Í', 'Ì'][idx];
+    case 'O':
+      return ['O', 'Ó', 'Ò'][idx];
+    case 'U':
+      return ['U', 'Ú', 'Ù'][idx];
+    default:
+      return vowel;
+  }
+};
+
+export const indexOfFirstVowel = (sign: string): number => {
+  const splitSign = sign.split('');
+  const vowels = ['A', 'E', 'I', 'O', 'U', 'a', 'e', 'i', 'o', 'u'];
+  const firstVowel = splitSign.find(char => vowels.includes(char));
+  if (firstVowel) {
+    return splitSign.indexOf(firstVowel);
+  }
+  return -1;
 };
 
 export const spellingHtmlReading = (spelling: string): string => {
