@@ -130,7 +130,7 @@ describe('Text drafts test', () => {
 
     const userUuid = '1';
     const mockTextDraftsDao = {
-      getAllDrafts: jest.fn().mockResolvedValue(['draft-uuid']),
+      getAllDraftUuids: jest.fn().mockResolvedValue(['draft-uuid']),
       getDraftByUuid: jest.fn().mockResolvedValue(draft),
     };
 
@@ -151,7 +151,7 @@ describe('Text drafts test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([draft]);
-      expect(mockTextDraftsDao.getAllDrafts).toHaveBeenCalledWith(userUuid);
+      expect(mockTextDraftsDao.getAllDraftUuids).toHaveBeenCalledWith(userUuid);
     });
 
     it('returns 401 when not logged in', async () => {
@@ -162,7 +162,7 @@ describe('Text drafts test', () => {
     it('returns 500 when getting drafts fails', async () => {
       sl.set('TextDraftsDao', {
         ...mockTextDraftsDao,
-        getAllDrafts: jest.fn().mockRejectedValue('failed to get drafts'),
+        getAllDraftUuids: jest.fn().mockRejectedValue('failed to get drafts'),
       });
 
       const response = await sendRequest();

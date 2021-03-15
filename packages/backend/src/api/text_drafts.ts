@@ -46,7 +46,7 @@ router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
   try {
     const userUuid = req.user!.uuid;
 
-    const draftUuids = await TextDraftsDao.getAllDrafts(userUuid);
+    const draftUuids = await TextDraftsDao.getAllDraftUuids(userUuid);
     const drafts: TextDraft[] = await Promise.all(
       draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
     );

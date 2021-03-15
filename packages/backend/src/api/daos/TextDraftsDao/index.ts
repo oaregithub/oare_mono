@@ -27,12 +27,14 @@ function getBaseDraftQuery(userUuid: string) {
 
 class TextDraftsDao {
   async draftExists(draftUuid: string): Promise<boolean> {
-    const row = await knex('text_drafts').select().where('uuid', draftUuid);
+    const row = await knex('text_drafts')
+      .select()
+      .where('uuid', draftUuid)
+      .first();
     return !!row;
   }
 
   async getDraftByUuid(draftUuid: string): Promise<TextDraft> {
-    throw new Error('doesnt work');
     const exists = await this.draftExists(draftUuid);
     if (!exists) {
       throw new Error(`Draft with UUID ${draftUuid} does not exist`);
@@ -102,7 +104,7 @@ class TextDraftsDao {
     });
   }
 
-  async getAllDrafts(userUuid: string): Promise<string[]> {
+  async getAllDraftUuids(userUuid: string): Promise<string[]> {
     interface DraftTextRow {
       uuid: string;
       textUuid: string;
