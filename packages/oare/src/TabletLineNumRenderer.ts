@@ -7,7 +7,7 @@ export default class TabletLineNumRenderer extends TabletRenderer {
   private renderer: TabletRenderer | null = null;
 
   constructor(renderer: TabletRenderer) {
-    super(renderer.getEpigraphicUnits(), renderer.getMarkupUnits());
+    super(renderer.getEpigraphicUnits());
     this.renderer = renderer;
   }
 

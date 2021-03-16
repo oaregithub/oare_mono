@@ -1,9 +1,6 @@
 <template>
   <div>
-    <EpigraphyReading
-      :epigraphicUnits="epigraphicUnits"
-      :markupUnits="markupUnits"
-    />
+    <EpigraphyReading :epigraphicUnits="epigraphicUnits" />
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"
@@ -23,10 +20,6 @@ export default defineComponent({
   props: {
     epigraphicUnits: {
       type: Array as PropType<EpigraphicUnit[]>,
-      required: true,
-    },
-    markupUnits: {
-      type: Array as PropType<MarkupUnit[]>,
       required: true,
     },
     discourseUnits: {

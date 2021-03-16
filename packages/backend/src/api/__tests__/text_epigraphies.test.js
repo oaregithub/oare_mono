@@ -25,21 +25,22 @@ describe('GET /text_epigraphies/:uuid', () => {
         reading: 'Test Reading',
         type: null,
         value: null,
+        markups: [
+          {
+            referenceUuid: '12345',
+            type: 'isCollatedReading',
+            value: null,
+            startChar: null,
+            endChar: null,
+          },
+        ],
       },
     ],
     canWrite: false,
     cdliNum: 'TestCdliNum',
     color: 'red',
     colorMeaning: 'Test Color Meaning',
-    markups: [
-      {
-        referenceUuid: '12345',
-        type: 'isCollatedReading',
-        value: null,
-        startChar: null,
-        endChar: null,
-      },
-    ],
+
     discourseUnits: [
       {
         uuid: '12345',
@@ -62,6 +63,15 @@ describe('GET /text_epigraphies/:uuid', () => {
         reading: 'Test Reading',
         type: null,
         value: null,
+        markups: [
+          {
+            referenceUuid: '12345',
+            type: 'isCollatedReading',
+            value: null,
+            startChar: null,
+            endChar: null,
+          },
+        ],
       },
     ]),
   };
@@ -82,10 +92,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     getTextByUuid: jest.fn().mockResolvedValue({
       name: 'Text Name',
     }),
-  };
-
-  const mockTextMarkupDao = {
-    getMarkups: jest.fn().mockResolvedValue(mockResponse.markups),
   };
 
   const mockTextDiscourseDao = {
@@ -116,7 +122,6 @@ describe('GET /text_epigraphies/:uuid', () => {
   const setup = () => {
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('TextDao', mockTextDao);
-    sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('TextDraftsDao', mockTextDraftsDao);
@@ -162,7 +167,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(mockTextEpigraphyDao.getEpigraphicUnits).not.toHaveBeenCalled();
     expect(mockTextDao.getCdliNum).not.toHaveBeenCalled();
     expect(mockTextDao.getTranslitStatus).not.toHaveBeenCalled();
-    expect(mockTextMarkupDao.getMarkups).not.toHaveBeenCalled();
     expect(mockTextDiscourseDao.getTextDiscourseUnits).not.toHaveBeenCalled();
   });
 
@@ -225,14 +229,6 @@ describe('GET /text_epigraphies/:uuid', () => {
   it('returns 500 on failed discourse units retrieval', async () => {
     sl.set('TextDiscourseDao', {
       getTextDiscourseUnits: jest.fn().mockRejectedValue(null),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(500);
-  });
-
-  it('returns 500 on failed markups retrieval', async () => {
-    sl.set('TextMarkupDao', {
-      getMarkups: jest.fn().mockRejectedValue(null),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

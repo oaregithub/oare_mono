@@ -13,7 +13,6 @@ router
       const { uuid: textUuid } = req.params;
       const { user } = req;
       const userUuid = user ? user.uuid : null;
-      const TextMarkupDao = sl.get('TextMarkupDao');
       const TextDao = sl.get('TextDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
@@ -55,7 +54,6 @@ router
       const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
         textUuid
       );
-      const markups = await TextMarkupDao.getMarkups(textUuid);
       const canWrite = await CollectionTextUtils.canEditText(
         textUuid,
         userUuid
@@ -72,7 +70,6 @@ router
         cdliNum,
         color,
         colorMeaning,
-        markups,
         discourseUnits,
         ...(draft ? { draft } : {}),
       };

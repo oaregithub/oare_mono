@@ -13,7 +13,6 @@
     <EpigraphyFullDisplay
       v-if="itemType === 'Text' && !loading"
       :epigraphicUnits="epigraphicUnits"
-      :markupUnits="markupUnits"
       :discourseUnits="discourseUnits"
     ></EpigraphyFullDisplay>
     <CollectionTexts
@@ -64,7 +63,6 @@ export default defineComponent({
   },
   setup(props) {
     const epigraphicUnits = ref<EpigraphicUnit[]>([]);
-    const markupUnits = ref<MarkupUnit[]>([]);
     const discourseUnits = ref<DiscourseUnit[]>([]);
     const loading = ref(false);
 
@@ -78,12 +76,10 @@ export default defineComponent({
           try {
             loading.value = true;
             const {
-              markups,
               units,
               discourseUnits: dUnits,
             } = await server.getEpigraphicInfo(props.uuid);
             epigraphicUnits.value = units;
-            markupUnits.value = markups;
             discourseUnits.value = dUnits;
           } catch {
             actions.showErrorSnackbar('Failed to load text info.');
@@ -99,7 +95,6 @@ export default defineComponent({
       loading,
       epigraphicUnits,
       discourseUnits,
-      markupUnits,
     };
   },
 });

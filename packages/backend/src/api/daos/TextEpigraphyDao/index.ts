@@ -8,8 +8,10 @@ import {
 } from './utils';
 import TextGroupDao from '../TextGroupDao';
 import CollectionGroupDao from '../CollectionGroupDao';
+import TextMarkupDao from '../TextMarkupDao';
 
-export interface EpigraphicQueryRow extends Omit<EpigraphicUnit, 'side'> {
+export interface EpigraphicQueryRow
+  extends Omit<EpigraphicUnit, 'side' | 'markups'> {
   side: number;
   epigReading: string;
 }
@@ -75,8 +77,9 @@ class TextEpigraphyDao {
     }
 
     const units: EpigraphicQueryRow[] = await query;
+    const markupUnits = await TextMarkupDao.getMarkups(textUuid);
 
-    return convertEpigraphicUnitRows(units);
+    return convertEpigraphicUnitRows(units, markupUnits);
   }
 
   private async getMatchingTexts({

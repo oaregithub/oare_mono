@@ -94,7 +94,6 @@ export default defineComponent({
       units: [],
       color: '',
       colorMeaning: '',
-      markups: [],
       discourseUnits: [],
     });
 
@@ -132,7 +131,6 @@ export default defineComponent({
 
       return {
         epigraphicUnits: textInfo.value.units,
-        markupUnits: textInfo.value.markups,
         discourseUnits: textInfo.value.discourseUnits,
       };
     });
@@ -152,11 +150,9 @@ export default defineComponent({
         return draft.value;
       }
 
-      const draftRenderer = createTabletRenderer(
-        textInfo.value.units,
-        textInfo.value.markups,
-        { lineNumbers: true }
-      );
+      const draftRenderer = createTabletRenderer(textInfo.value.units, {
+        lineNumbers: true,
+      });
       return {
         content: draftRenderer.sides.map(side => ({
           side,
