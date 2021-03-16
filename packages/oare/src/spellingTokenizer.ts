@@ -20,9 +20,9 @@ const subscriptNumber = (normalNumber: string): string =>
   String.fromCharCode(8320 + Number(normalNumber));
 
 export const normalizeSign = (sign: string): string => {
-  sign = normalizeConsonants(sign);
-  sign = normalizeVowels(sign);
-  return sign;
+  let normalizedSign = normalizeConsonants(sign);
+  normalizedSign = normalizeVowels(normalizedSign);
+  return normalizedSign;
 };
 
 /**
@@ -115,15 +115,15 @@ export const normalizeAccentedVowel = (
  * @returns Sign with converted consonants
  */
 export const normalizeConsonants = (sign: string): string => {
-  sign = sign.replace(/sz/g, 'š');
-  sign = sign.replace(/s,/g, 'ṣ');
-  sign = sign.replace(/t,/g, 'ṭ');
-  sign = sign.replace(/SZ/g, 'Š');
-  sign = sign.replace(/S,/g, 'Ṣ');
-  sign = sign.replace(/T,/g, 'Ṭ');
-  sign = sign.replace(/h/g, 'ḫ');
-  sign = sign.replace(/H/g, 'Ḫ');
-  return sign;
+  let newSign = sign.replace(/sz/g, 'š');
+  newSign = newSign.replace(/s,/g, 'ṣ');
+  newSign = newSign.replace(/t,/g, 'ṭ');
+  newSign = newSign.replace(/SZ/g, 'Š');
+  newSign = newSign.replace(/S,/g, 'Ṣ');
+  newSign = newSign.replace(/T,/g, 'Ṭ');
+  newSign = newSign.replace(/h/g, 'ḫ');
+  newSign = newSign.replace(/H/g, 'Ḫ');
+  return newSign;
 };
 
 /**
