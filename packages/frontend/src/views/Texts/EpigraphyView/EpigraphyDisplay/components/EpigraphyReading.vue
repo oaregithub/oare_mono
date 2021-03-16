@@ -11,7 +11,18 @@
           class="oare-title d-flex"
         >
           <sup class="line-num pt-3">{{ lineNumber(lineNum) }}&nbsp;</sup>
-          <span v-html="renderer.lineReading(lineNum)" />
+          <span
+            v-if="renderer.isRegion(lineNum)"
+            v-html="renderer.lineReading(lineNum)"
+          />
+          <span v-else>
+            <span
+              v-for="(word, index) in renderer.getLineWords(lineNum)"
+              :key="index"
+              v-html="word.reading"
+              class="mr-1"
+            />
+          </span>
         </div>
       </div>
     </div>
