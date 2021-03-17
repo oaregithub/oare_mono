@@ -572,7 +572,7 @@ export default defineComponent({
 
     watch(
       () => selectedThreadWithComments.value.thread.route,
-      () => setWordUuidFromThreadRoute,
+      () => setWordUuidFromThreadRoute(),
       { immediate: false }
     );
 
