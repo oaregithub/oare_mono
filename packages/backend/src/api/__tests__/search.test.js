@@ -31,7 +31,7 @@ describe('search test', () => {
     };
 
     const mockSignReadingDao = {
-      getUuidBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
+      getUuidsBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
       hasSign: jest.fn().mockResolvedValue(true),
     };
 
@@ -71,13 +71,13 @@ describe('search test', () => {
           ...query,
           characters: 'asz2-hu3-SZU-t,um-s,e2-HU-tam3',
         });
-      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('áš');
-      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ḫù');
-      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ŠU');
-      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ṭum');
-      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ṣé');
-      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ḪU');
-      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('tàm');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('áš');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ḫù');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ŠU');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ṭum');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ṣé');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ḪU');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('tàm');
       expect(response.status).toBe(200);
     });
 
