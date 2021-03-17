@@ -26,7 +26,13 @@ const comment4 = {
 
 const mockThreadDisplays = [
   {
-    thread: { name: 'testName', status: 'testStatus' },
+    thread: {
+      uuid: 'testThreadUuid',
+      name: 'testName',
+      status: 'testStatus',
+      referenceUuid: 'testReferenceUuid',
+      route: 'testRoute',
+    },
     word: 'testItem',
     latestCommentDate: date,
     comments: [comment1, comment2, comment3, comment4],
@@ -271,5 +277,18 @@ describe('CommentView test', () => {
         desc: false,
       },
     });
+  });
+
+  it('display comment dialog when thread name selected', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    let dialog = wrapper.findAll('.test-comment-word-display').exists();
+    expect(dialog).toBe(false);
+    const threadNameButton = wrapper.findAll('.test-thread-name').at(0);
+    await threadNameButton.trigger('click');
+
+    dialog = wrapper.findAll('.test-comment-word-display').exists();
+    expect(dialog).toBe(true);
   });
 });

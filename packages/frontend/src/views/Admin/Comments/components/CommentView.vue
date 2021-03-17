@@ -62,7 +62,7 @@
                 plain
                 small
                 elevation="0"
-                class="font-weight-bold ml-n3"
+                class="font-weight-bold ml-n3 test-thread-name"
                 color="primary"
               >
                 {{ item.thread.name || 'Untitled' }}</v-btn
@@ -130,6 +130,7 @@
       :initial-thread-uuid="selectedThreadDisplay.thread.uuid"
       @submit="isViewingThread = false"
       @input="isViewingThread = false"
+      class="test-comment-word-display"
     >
       {{ selectedThreadDisplay.word }}
     </comment-word-display>

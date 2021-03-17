@@ -206,7 +206,10 @@
       </v-col>
     </v-row>
 
-    <div v-if="initialThreadUuid && dictionaryWordUuid">
+    <div
+      v-if="initialThreadUuid && dictionaryWordUuid"
+      class="test-comment-footer"
+    >
       <v-divider class="mt-3 mb-3" />
       <DictionaryWord
         :uuid="dictionaryWordUuid"

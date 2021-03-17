@@ -94,6 +94,7 @@ describe('CommentWordDisplay test', () => {
         word: propsWord,
         route: propsRoute,
         uuid: propsUuid,
+        initialThreadUuid: testThread.uuid,
       },
       stubs: ['router-link'],
     });
