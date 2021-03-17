@@ -64,6 +64,23 @@ describe('search test', () => {
       });
     });
 
+    it('normalizes consonants and vowels', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: 'asz2-hu3-SZU-t,um-s,e2-HU-tam3',
+        });
+      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('áš');
+      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ḫù');
+      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ŠU');
+      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ṭum');
+      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ṣé');
+      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('ḪU');
+      expect(mockSignReadingDao.getUuidBySign).toHaveBeenCalledWith('tàm');
+      expect(response.status).toBe(200);
+    });
+
     it('returns 500 if searching total results fails', async () => {
       sl.set('TextEpigraphyDao', {
         ...TextEpigraphyDao,

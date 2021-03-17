@@ -20,28 +20,9 @@ const subscriptNumber = (normalNumber: string): string =>
   String.fromCharCode(8320 + Number(normalNumber));
 
 export const normalizeSign = (sign: string): string => {
-  const normalizedSign = sign.split('');
-  const lastIdx = normalizedSign.length - 1;
-  const penultimateIdx = normalizedSign.length - 2;
-
-  const isSingleDigit =
-    normalizedSign.length >= 2 &&
-    isDigit(normalizedSign[lastIdx]) &&
-    !isDigit(normalizedSign[penultimateIdx]);
-  if (isSingleDigit) {
-    if (normalizedSign[lastIdx].match(/^[1-3]$/)) {
-      return normalizeTilde(sign);
-    }
-  }
-
-  [1, 2].forEach(negIdx => {
-    const signIdx = normalizedSign.length - negIdx;
-    if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
-      normalizedSign[signIdx] = subscriptNumber(normalizedSign[signIdx]);
-    }
-  });
-
-  return normalizedSign.join('');
+  let normalizedSign = normalizeConsonants(sign);
+  normalizedSign = normalizeVowels(normalizedSign);
+  return normalizedSign;
 };
 
 /**
@@ -82,7 +63,7 @@ export const normalizeTilde = (sign: string): string => {
     const vowel = sign[firstVowelIndex];
     const number = Number(sign[sign.length - 1]);
 
-    const correctedVowel = normalizeVowel(vowel, number);
+    const correctedVowel = normalizeAccentedVowel(vowel, number);
     sign = sign.replace(vowel, correctedVowel);
     sign = sign.slice(0, -1);
   }
@@ -96,7 +77,10 @@ export const normalizeTilde = (sign: string): string => {
  * @param number The number at the end of the sign. Indicates which accentuation to use
  * @returns Accentuated vowel
  */
-export const normalizeVowel = (vowel: string, number: number): string => {
+export const normalizeAccentedVowel = (
+  vowel: string,
+  number: number
+): string => {
   const idx = number - 1;
   switch (vowel) {
     case 'a':
@@ -122,6 +106,47 @@ export const normalizeVowel = (vowel: string, number: number): string => {
     default:
       return vowel;
   }
+};
+
+/**
+ * Converts various consonant forms to normalized unicode form
+ * Ex: t,um -> ṭum, szu -> šu
+ * @param sign The sign whose consonants will be normalized
+ * @returns Sign with converted consonants
+ */
+export const normalizeConsonants = (sign: string): string => {
+  let newSign = sign.replace(/sz/g, 'š');
+  newSign = newSign.replace(/s,/g, 'ṣ');
+  newSign = newSign.replace(/t,/g, 'ṭ');
+  newSign = newSign.replace(/SZ/g, 'Š');
+  newSign = newSign.replace(/S,/g, 'Ṣ');
+  newSign = newSign.replace(/T,/g, 'Ṭ');
+  newSign = newSign.replace(/h/g, 'ḫ');
+  newSign = newSign.replace(/H/g, 'Ḫ');
+  return newSign;
+};
+
+/**
+ * Normalized vowel numbers (1-3 are accentuated, 4+ are subscripted)
+ * @param sign The sign whose vowels will be normalized
+ * @returns Sign with converted vowels
+ */
+export const normalizeVowels = (sign: string): string => {
+  const normalizedSign = sign.split('');
+
+  const isSingleDigitRegex = /^[aáàeéèiíìoóòuúùbdgklmnpqrstwyzAÁÀEÉÈIÍÌOÓÒUÚÙBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ]+[1-3]$/;
+  if (sign.match(isSingleDigitRegex)) {
+    return normalizeTilde(sign);
+  }
+
+  [1, 2].forEach(negIdx => {
+    const signIdx = normalizedSign.length - negIdx;
+    if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
+      normalizedSign[signIdx] = subscriptNumber(normalizedSign[signIdx]);
+    }
+  });
+
+  return normalizedSign.join('');
 };
 
 export const indexOfFirstVowel = (sign: string): number => {
