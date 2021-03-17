@@ -133,17 +133,10 @@ export const normalizeConsonants = (sign: string): string => {
  */
 export const normalizeVowels = (sign: string): string => {
   const normalizedSign = sign.split('');
-  const lastIdx = normalizedSign.length - 1;
-  const penultimateIdx = normalizedSign.length - 2;
 
-  const isSingleDigit =
-    normalizedSign.length >= 2 &&
-    isDigit(normalizedSign[lastIdx]) &&
-    !isDigit(normalizedSign[penultimateIdx]);
-  if (isSingleDigit) {
-    if (normalizedSign[lastIdx].match(/^[1-3]$/)) {
-      return normalizeTilde(sign);
-    }
+  const isSingleDigitRegex = /^[aáàeéèiíìoóòuúùbdgklmnpqrstwyzAÁÀEÉÈIÍÌOÓÒUÚÙBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ]+[1-3]$/;
+  if (sign.match(isSingleDigitRegex)) {
+    return normalizeTilde(sign);
   }
 
   [1, 2].forEach(negIdx => {
