@@ -4,6 +4,7 @@ import {
   EpigraphicUnit,
   EpigraphicUnitWithMarkup,
   EpigraphicUnitType,
+  EpigraphicWord,
 } from '@oare/types';
 
 export function markupsMatchDamage(
@@ -165,10 +166,23 @@ export function regionReading(unit: EpigraphicUnit): string {
 export function convertMarkedUpUnitsToLineReading(
   characters: EpigraphicUnitWithMarkup[]
 ): string {
-  const epigraphicWords: EpigraphicUnitWithMarkup[][] = separateEpigraphicUnitsByWord(
-    characters
-  );
+  const epigraphicWords = separateEpigraphicUnitsByWord(characters);
   return epigraphicWords
     .map(word => epigraphicWordWithSeparators(word))
     .join(' ');
+}
+
+export function convertMarkedUpUnitsToEpigraphicWords(
+  characters: EpigraphicUnitWithMarkup[]
+): EpigraphicWord[] {
+  const epigraphicWords = separateEpigraphicUnitsByWord(characters);
+  return epigraphicWords.map(word => ({
+    reading: epigraphicWordWithSeparators(word),
+    discourseUuid: word[0].discourseUuid,
+    signs: word.map(({ signUuid, readingUuid, reading }) => ({
+      signUuid,
+      readingUuid,
+      reading,
+    })),
+  }));
 }

@@ -81,6 +81,8 @@ export interface EpigraphicUnit {
   type: EpigraphicUnitType | null;
   value: null | string;
   markups?: MarkupUnit[];
+  readingUuid: string;
+  signUuid: string;
 }
 
 export type MarkupType =
@@ -131,8 +133,17 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
   textFormat?: TextFormatType;
 }
 
-export interface EpigraphicUnitWithMarkup {
+export interface EpigraphicUnitWithMarkup
+  extends Pick<EpigraphicUnit, 'readingUuid' | 'signUuid'> {
   type: EpigraphicUnitType | null;
   reading: string;
   discourseUuid: string | null;
+}
+
+export interface EpigraphicSign
+  extends Pick<EpigraphicUnit, 'signUuid' | 'readingUuid' | 'reading'> {}
+
+export interface EpigraphicWord
+  extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
+  signs: EpigraphicSign[];
 }

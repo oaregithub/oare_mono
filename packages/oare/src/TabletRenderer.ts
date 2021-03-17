@@ -3,6 +3,7 @@ import {
   MarkupUnit,
   EpigraphicUnitSide,
   EpigraphicUnitWithMarkup,
+  EpigraphicWord,
 } from '@oare/types';
 import _ from 'lodash';
 
@@ -10,6 +11,7 @@ import {
   getMarkupByDamageType,
   unitMatchesDamageType,
   convertMarkedUpUnitsToLineReading,
+  convertMarkedUpUnitsToEpigraphicWords,
   regionReading,
 } from './tabletUtils';
 
@@ -119,6 +121,12 @@ export default class TabletRenderer {
     return convertMarkedUpUnitsToLineReading(charactersWithMarkup);
   }
 
+  public getLineWords(lineNum: number): EpigraphicWord[] {
+    const unitsOnLine = this.getUnitsOnLine(lineNum);
+    const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
+    return convertMarkedUpUnitsToEpigraphicWords(charactersWithMarkup);
+  }
+
   /**
    * Return an in order list of epigraphic units
    * on a given line.
@@ -199,6 +207,8 @@ export default class TabletRenderer {
           ? unit.reading || ''
           : this.markedUpEpigraphicReading(unit),
       discourseUuid: unit.discourseUuid,
+      readingUuid: unit.readingUuid,
+      signUuid: unit.signUuid,
     }));
   }
 

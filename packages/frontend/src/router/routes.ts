@@ -36,6 +36,7 @@ import NamesView from '../views/Names/index.vue';
 import PlacesView from '../views/Places/index.vue';
 import ErrorLog from '../views/Admin/ErrorLog/ErrorLog.vue';
 import AdminCommentView from '../views/Admin/Comments/AdminCommentView.vue';
+import UserCommentView from '../views/Dashboard/UserCommentView.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -212,6 +213,11 @@ const routes: RouteConfig[] = [
     path: '/dashboard/profile',
     name: 'dashboardProfile',
     component: Profile,
+  },
+  {
+    path: '/dashboard/comments',
+    name: 'dashboardComments',
+    component: UserCommentView,
   },
   {
     path: '/words/:letter',
