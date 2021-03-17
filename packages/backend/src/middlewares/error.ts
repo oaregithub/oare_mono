@@ -11,7 +11,8 @@ const errorMiddleware = async (
 ) => {
   const ErrorsDao = sl.get('ErrorsDao');
   const status = error.status || 500;
-  const message = error.message || 'Something went wrong';
+  const message =
+    typeof error.message === 'string' ? error.message : 'Something went wrong';
 
   if (process.env.NODE_ENV !== 'test') {
     if (!error.preventLog) {
