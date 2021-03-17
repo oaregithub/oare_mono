@@ -52,6 +52,7 @@
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
       :word-uuid="wordInfo.uuid"
+      :uuid-to-highlight="uuidToHighlight"
       @clicked-util-list="emitUtilList"
     />
   </div>
@@ -82,6 +83,10 @@ export default defineComponent({
     wordInfo: {
       type: Object as PropType<DictionaryWordResponse>,
       required: true,
+    },
+    uuidToHighlight: {
+      type: String,
+      default: null,
     },
   },
   components: {

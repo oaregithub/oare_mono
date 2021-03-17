@@ -208,7 +208,10 @@
 
     <div v-if="initialThreadUuid !== null && dictionaryWordUuid !== ''">
       <v-divider class="mt-3 mb-3" />
-      <DictionaryWord :uuid="dictionaryWordUuid"></DictionaryWord>
+      <DictionaryWord
+        :uuid="dictionaryWordUuid"
+        :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
+      ></DictionaryWord>
     </div>
 
     <OareDialog

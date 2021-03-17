@@ -16,7 +16,8 @@
           class="font-weight-bold test-word-util-list"
           style="cursor: pointer"
         >
-          {{ title }}
+          <mark v-if="uuid === uuidToHighlight">{{ title }}</mark>
+          <template v-else>{{ title }}</template>
         </span>
       </v-row>
 
@@ -35,6 +36,7 @@
       :wordInfo="wordInfo"
       :wordUuid="uuid"
       :updateWordInfo="updateWordInfo"
+      :uuid-to-highlight="uuidToHighlight"
     />
 
     <template v-if="isEditing && utilList.type === 'SPELLING'">
@@ -128,6 +130,10 @@ export default defineComponent({
     uuid: {
       type: String,
       required: true,
+    },
+    uuidToHighlight: {
+      type: String,
+      default: null,
     },
   },
   setup(props, context) {

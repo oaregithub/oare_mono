@@ -1,13 +1,25 @@
 <template>
   <span class="d-flex flex-row mb-0">
-    <span
-      v-if="canEdit"
-      @click="openUtilList"
-      class="testing-spelling"
-      style="cursor: pointer"
-      v-html="htmlSpelling"
-    ></span>
-    <span v-else v-html="htmlSpelling" class="test-spelling"></span>
+    <mark v-if="spelling.uuid === uuidToHighlight">
+      <span
+        v-if="canEdit"
+        @click="openUtilList"
+        class="testing-spelling"
+        style="cursor: pointer"
+        v-html="htmlSpelling"
+      ></span>
+      <span v-else v-html="htmlSpelling" class="test-spelling"></span>
+    </mark>
+    <template v-else>
+      <span
+        v-if="canEdit"
+        @click="openUtilList"
+        class="testing-spelling"
+        style="cursor: pointer"
+        v-html="htmlSpelling"
+      ></span>
+      <span v-else v-html="htmlSpelling" class="test-spelling"></span>
+    </template>
 
     &nbsp;
     <span v-if="spelling.totalOccurrences > 0">
@@ -100,6 +112,10 @@ export default defineComponent({
     wordUuid: {
       type: String,
       required: true,
+    },
+    uuidToHighlight: {
+      type: String,
+      default: null,
     },
   },
   setup(props) {

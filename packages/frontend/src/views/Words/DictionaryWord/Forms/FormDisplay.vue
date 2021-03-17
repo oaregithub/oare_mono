@@ -23,7 +23,8 @@
         @click="openUtilList"
         class="mr-1 test-form-util-list"
       >
-        {{ form.form }}
+        <mark v-if="form.uuid === uuidToHighlight">{{ form.form }}</mark>
+        <template v-else>{{ form.form }}</template>
       </strong>
 
       <grammar-display :form="form" />
@@ -38,6 +39,7 @@
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
             :form="form"
             :word-uuid="wordUuid"
+            :uuid-to-highlight="uuidToHighlight"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -77,6 +79,7 @@
               "
               :form="form"
               :word-uuid="wordUuid"
+              :uuid-to-highlight="uuidToHighlight"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -132,6 +135,10 @@ export default defineComponent({
     wordUuid: {
       type: String as PropType<string>,
       required: false,
+    },
+    uuidToHighlight: {
+      type: String,
+      default: null,
     },
   },
   setup(props) {
