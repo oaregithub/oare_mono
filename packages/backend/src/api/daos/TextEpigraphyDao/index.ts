@@ -25,7 +25,7 @@ export interface TextUuidWithLines {
 }
 
 export interface SearchTextArgs {
-  characters: string[];
+  characters: string[][];
   title: string;
   userUuid: string | null;
   pagination: Pagination;
@@ -109,7 +109,7 @@ class TextEpigraphyDao {
 
   private async getMatchingLines(
     textUuid: string,
-    characters: string[]
+    characters: string[][]
   ): Promise<number[]> {
     const query = getSequentialCharacterQuery(characters);
     const rows: Array<{ line: number }> = await query
