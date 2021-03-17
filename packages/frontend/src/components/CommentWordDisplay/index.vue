@@ -206,7 +206,7 @@
       </v-col>
     </v-row>
 
-    <div v-if="initialThreadUuid !== null && dictionaryWordUuid !== ''">
+    <div v-if="initialThreadUuid && dictionaryWordUuid">
       <v-divider class="mt-3 mb-3" />
       <DictionaryWord
         :uuid="dictionaryWordUuid"
@@ -569,7 +569,7 @@ export default defineComponent({
 
     watch(
       () => selectedThreadWithComments.value.thread.route,
-      () => setWordUuidFromThreadRoute(),
+      () => setWordUuidFromThreadRoute,
       { immediate: false }
     );
 

@@ -158,7 +158,7 @@ import sl from '@/serviceLocator';
 import { DataOptions, DataTableHeader } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
 import { DateTime } from 'luxon';
-import CommentWordDisplay from '../../../../components/CommentWordDisplay/index.vue';
+import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 
 export default defineComponent({
   name: 'CommentView',
