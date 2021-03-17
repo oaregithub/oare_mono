@@ -387,6 +387,16 @@ export default defineComponent({
           threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(
             props.uuid
           );
+
+          // Auto select first thread if another thread is not explicitly stated.
+          if (
+            threadsWithComments.value.length > 0 &&
+            props.initialThreadUuid === null
+          ) {
+            selectedThreadWithComments.value.thread.uuid =
+              threadsWithComments.value[0].thread.uuid;
+          }
+
           findAndSetSelectedThread(threadsWithComments.value);
         }
       } catch (e) {
