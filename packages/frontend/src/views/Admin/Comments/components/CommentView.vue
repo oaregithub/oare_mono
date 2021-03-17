@@ -63,6 +63,7 @@
                 small
                 elevation="0"
                 class="font-weight-bold ml-n3"
+                color="primary"
               >
                 {{ item.thread.name || 'Untitled' }}</v-btn
               >

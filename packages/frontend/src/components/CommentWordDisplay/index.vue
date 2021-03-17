@@ -205,6 +205,12 @@
         </v-row>
       </v-col>
     </v-row>
+
+    <div v-if="initialThreadUuid !== null && dictionaryWordUuid !== ''">
+      <v-divider class="mt-3 mb-3" />
+      <DictionaryWord :uuid="dictionaryWordUuid"></DictionaryWord>
+    </div>
+
     <OareDialog
       class="test-delete-dialog"
       @submit="deleteComment()"
@@ -259,7 +265,10 @@ import {
 } from '@oare/types';
 
 export default defineComponent({
-  name: 'DictionaryWordDisplay',
+  name: 'CommentWordDisplay',
+  components: {
+    DictionaryWord: () => import('../../views/Words/DictionaryWord/index.vue'),
+  },
   props: {
     word: {
       type: String,
@@ -283,6 +292,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const dictionaryWordUuid = ref('');
     const loading = ref(false);
     const confirmDeleteDialog = ref(false);
     const confirmEditThreadNameDialog = ref(false);
@@ -544,7 +554,20 @@ export default defineComponent({
       store.getters.user ? store.getters.user : null
     );
 
+    watch(
+      () => selectedThreadWithComments.value.thread.route,
+      () => setWordUuidFromThreadRoute(),
+      { immediate: false }
+    );
+
+    const setWordUuidFromThreadRoute = () => {
+      dictionaryWordUuid.value = selectedThreadWithComments.value.thread.route.substr(
+        selectedThreadWithComments.value.thread.route.indexOf('/', 2) + 1
+      );
+    };
+
     return {
+      dictionaryWordUuid,
       displayThreadName,
       formatCommentDateTime,
       canDeleteComment,
