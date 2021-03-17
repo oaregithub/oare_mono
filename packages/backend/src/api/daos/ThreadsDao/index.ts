@@ -218,8 +218,8 @@ class ThreadsDao {
             qb.andWhere('comment', 'like', `%${request.filters.comment}%`);
           }
 
-          // Only display threads from user if not admin.
-          if (!isAdmin) {
+          // Only display threads from user if not admin OR using the comments page from the user dashboard.
+          if (!isAdmin || request.isUserComments) {
             qb.andWhere('comments.user_uuid', userUuid);
           }
         })

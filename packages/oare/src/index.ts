@@ -17,6 +17,7 @@ export {
   spellingHtmlReading,
   tokenizeExplicitSpelling,
   normalizeSign,
+  normalizeNumber,
 } from './spellingTokenizer';
 
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';
