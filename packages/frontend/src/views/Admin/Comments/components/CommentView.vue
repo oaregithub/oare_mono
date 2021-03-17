@@ -148,8 +148,8 @@ export default defineComponent({
   },
 
   setup({ isUserComments }) {
-    const loading = ref(false);
     const searchLoading = ref(false);
+    const loading = ref(false);
     const threadDisplays: Ref<ThreadDisplay[]> = ref([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
