@@ -214,7 +214,9 @@
       <DictionaryWord
         :uuid="dictionaryWordUuid"
         :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
-      ></DictionaryWord>
+        :allow-commenting="false"
+      >
+      </DictionaryWord>
     </div>
 
     <OareDialog
@@ -273,7 +275,7 @@ import {
 export default defineComponent({
   name: 'CommentWordDisplay',
   components: {
-    DictionaryWord: () => import('../../views/Words/DictionaryWord/index.vue'),
+    DictionaryWord: () => import('@/views/Words/DictionaryWord/index.vue'),
   },
   props: {
     word: {

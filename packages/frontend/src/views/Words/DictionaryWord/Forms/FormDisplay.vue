@@ -112,7 +112,6 @@ import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
 import SpellingDialog from './components/SpellingDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import { SendUtilList } from '../index.vue';
 
 export default defineComponent({
@@ -121,7 +120,6 @@ export default defineComponent({
     SpellingDisplay,
     SpellingDialog,
     UtilList,
-    CommentWordDisplay,
   },
   props: {
     form: {
