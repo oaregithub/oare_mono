@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from '@vue/composition-api';
-import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/types';
+import { EpigraphicUnit, DiscourseUnit } from '@oare/types';
 import EpigraphyReading from './components/EpigraphyReading.vue';
 import DiscourseReading from './components/DiscourseReading.vue';
 import sl from '@/serviceLocator';

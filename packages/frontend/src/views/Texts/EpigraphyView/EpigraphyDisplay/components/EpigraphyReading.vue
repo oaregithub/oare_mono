@@ -13,7 +13,7 @@
           <sup class="line-num pt-3">{{ lineNumber(lineNum) }}&nbsp;</sup>
           <span
             v-if="renderer.isRegion(lineNum)"
-            v-html="lineReading(lineNum)"
+            v-html="renderer.lineReading(lineNum)"
           />
           <span v-else>
             <span
@@ -56,16 +56,9 @@ export default defineComponent({
     const lineNumber = (line: number): string =>
       renderer.value.isRegion(line) ? '' : `${line}.`;
 
-    const lineReading = (line: number): string => {
-      // console.log(renderer.value.lineReading(line));
-      console.log('line reading');
-      return renderer.value.lineReading(line);
-    };
-
     return {
       renderer,
       lineNumber,
-      lineReading,
     };
   },
 });
