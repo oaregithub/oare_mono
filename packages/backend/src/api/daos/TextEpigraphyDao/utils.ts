@@ -1,7 +1,7 @@
 import * as Knex from 'knex';
 import knex from '@/connection';
 import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/types';
-import { normalizeNumber, normalizeSign } from '@oare/oare';
+import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
 import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
 
@@ -88,20 +88,25 @@ export function convertEpigraphicUnitRows(
   });
 }
 
-export const formattedSearchCharacter = (char: string): string => {
+export const formattedSearchCharacter = (char: string): string[] => {
   // Formats fractions
-  char = normalizeNumber(char);
+  char = normalizeFraction(char);
 
   // Formats subscripts when user puts number at end
   char = normalizeSign(char);
-  return char;
+
+  // Formats numbers
+  char = normalizeNumber(char);
+
+  const allChars = char.split(/[\s\-.]+/);
+  return allChars;
 };
 
 export const stringToCharsArray = (search: string): string[] => {
   const chars = search
     .trim()
     .split(/[\s\-.]+/)
-    .map(formattedSearchCharacter);
+    .flatMap(formattedSearchCharacter);
 
   if (chars.length === 1 && chars[0] === '') {
     return [];
