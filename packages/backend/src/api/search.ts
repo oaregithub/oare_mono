@@ -103,7 +103,7 @@ router.route('/search').get(async (req, res, next) => {
     }
 
     const characterUuids = await Promise.all(
-      charactersArray.map(sign => SignReadingDao.getUuidBySign(sign))
+      charactersArray.map(sign => SignReadingDao.getUuidsBySign(sign))
     );
     const user = req.user || null;
 

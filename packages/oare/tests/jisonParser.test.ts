@@ -113,4 +113,24 @@ describe('spelling grammar test', () => {
     expect(spellingHtmlReading('1/3+4')).toBe('⅓+4');
     expect(spellingHtmlReading('5+2/3')).toBe('5+⅔');
   });
+
+  it('normalizes vowels 1-3', () => {
+    expect(spellingHtmlReading('tam1')).toBe('<em>tam</em>');
+    expect(spellingHtmlReading('tam2')).toBe('<em>tám</em>');
+    expect(spellingHtmlReading('tam3')).toBe('<em>tàm</em>');
+    expect(spellingHtmlReading('TAM1')).toBe('TAM');
+    expect(spellingHtmlReading('TAM2')).toBe('TÁM');
+    expect(spellingHtmlReading('TAM3')).toBe('TÀM');
+  });
+
+  it('normalizes foreign consonants', () => {
+    expect(spellingHtmlReading('szu')).toBe('<em>šu</em>');
+    expect(spellingHtmlReading('s,u')).toBe('<em>ṣu</em>');
+    expect(spellingHtmlReading('t,um')).toBe('<em>ṭum</em>');
+    expect(spellingHtmlReading('hu')).toBe('<em>ḫu</em>');
+    expect(spellingHtmlReading('SZU')).toBe('ŠU');
+    expect(spellingHtmlReading('S,U')).toBe('ṢU');
+    expect(spellingHtmlReading('T,UM')).toBe('ṬUM');
+    expect(spellingHtmlReading('HU')).toBe('ḪU');
+  });
 });

@@ -26,7 +26,7 @@ describe('search test', () => {
     };
 
     const mockSignReadingDao = {
-      getUuidBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
+      getUuidsBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
       hasSign: jest.fn().mockResolvedValue(true),
     };
 
@@ -56,6 +56,42 @@ describe('search test', () => {
           matches: [''],
         })),
       });
+    });
+
+    it('normalizes consonants and vowels', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: 'asz2-hu3-SZU-t,um-s,e2-HU-tam3',
+        });
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('áš');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ḫù');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ŠU');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ṭum');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ṣé');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ḪU');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('tàm');
+      expect(response.status).toBe(200);
+    });
+
+    it('normalizes numbers', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: '2AŠ-3-4DIŠ-12AŠ-23DIŠ-34-1/2',
+        });
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('2AŠ'); // 2AŠ
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('3DIŠ'); // 3
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('4DIŠ'); // 4DIŠ
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('1U'); // 12AŠ
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('2AŠ');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('2U'); // 23DIŠ;
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('3DIŠ');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('3U'); // 34
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('4DIŠ');
+      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('½'); // 1/2
     });
 
     it('returns 500 if searching total results fails', async () => {

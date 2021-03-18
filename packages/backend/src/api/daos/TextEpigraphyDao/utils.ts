@@ -1,12 +1,12 @@
 import * as Knex from 'knex';
 import knex from '@/connection';
 import { EpigraphicUnit, EpigraphicUnitSide, MarkupUnit } from '@oare/types';
-import { normalizeNumber, normalizeSign } from '@oare/oare';
+import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
 import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
-  characterUuids: string[],
+  characterUuids: string[][],
   baseQuery?: Knex.QueryBuilder
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
@@ -19,7 +19,7 @@ export function getSequentialCharacterQuery(
 
     query = query.join(`text_epigraphy AS t${index}`, function () {
       this.on(`t${index}.text_uuid`, 'text_epigraphy.text_uuid')
-        .andOn(knex.raw(`t${index}.reading_uuid = ?`, char))
+        .andOnIn(`t${index}.reading_uuid`, char)
         .andOn(
           knex.raw(
             `t${index}.char_on_tablet=text_epigraphy.char_on_tablet + ${index}`
@@ -29,14 +29,14 @@ export function getSequentialCharacterQuery(
   });
 
   if (characterUuids.length > 0) {
-    query = query.andWhere('text_epigraphy.reading_uuid', characterUuids[0]);
+    query = query.whereIn('text_epigraphy.reading_uuid', characterUuids[0]);
   }
 
   return query;
 }
 
 export function getSearchQuery(
-  characters: string[],
+  characters: string[][],
   textTitle: string,
   textBlacklist: string[],
   textWhitelist: string[],
@@ -94,20 +94,25 @@ export function convertEpigraphicUnitRows(
   });
 }
 
-export const formattedSearchCharacter = (char: string): string => {
+export const formattedSearchCharacter = (char: string): string[] => {
   // Formats fractions
-  char = normalizeNumber(char);
+  char = normalizeFraction(char);
 
   // Formats subscripts when user puts number at end
   char = normalizeSign(char);
-  return char;
+
+  // Formats numbers
+  char = normalizeNumber(char);
+
+  const allChars = char.split(/[\s\-.]+/);
+  return allChars;
 };
 
 export const stringToCharsArray = (search: string): string[] => {
   const chars = search
     .trim()
     .split(/[\s\-.]+/)
-    .map(formattedSearchCharacter);
+    .flatMap(formattedSearchCharacter);
 
   if (chars.length === 1 && chars[0] === '') {
     return [];

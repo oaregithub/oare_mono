@@ -15,7 +15,7 @@
             v-if="renderer.isRegion(lineNum)"
             v-html="lineReading(lineNum)"
           />
-          <span>
+          <span v-else>
             <span
               v-for="(word, index) in renderer.getLineWords(lineNum)"
               :key="index"
