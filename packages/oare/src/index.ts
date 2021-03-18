@@ -17,6 +17,7 @@ export {
   spellingHtmlReading,
   tokenizeExplicitSpelling,
   normalizeSign,
+  normalizeFraction,
   normalizeNumber,
 } from './spellingTokenizer';
 

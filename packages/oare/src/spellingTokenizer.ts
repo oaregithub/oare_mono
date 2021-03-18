@@ -26,9 +26,31 @@ export const normalizeSign = (sign: string): string => {
 };
 
 /**
- * If num is a fraction, it will be converted to a unicode character
+ * Converts numbers to proper format
+ * Ex: 25 -> 2U-5DIŠ, 25AŠ -> 2U-5AŠ, 2 -> 2DIŠ, etc.
+ * @param num The sign that may be a number that needs to be normalized
+ * @returns The correctly formatted sign, if a number
  */
 export const normalizeNumber = (num: string): string => {
+  let normalizedNum = num;
+  if (num.match(/^\d$/)) {
+    normalizedNum = `${normalizedNum.charAt(0)}DIŠ`;
+  } else if (num.match(/^\d0$/)) {
+    normalizedNum = `${normalizedNum.charAt(0)}U`;
+  } else if (num.match(/^\d{2}$/)) {
+    normalizedNum = `${normalizedNum.charAt(0)}U-${normalizedNum.charAt(1)}DIŠ`;
+  } else if (num.match(/^\d{2}AŠ/)) {
+    normalizedNum = `${normalizedNum.charAt(0)}U-${normalizedNum.charAt(1)}AŠ`;
+  } else if (num.match(/^\d{2}DIŠ/)) {
+    normalizedNum = `${normalizedNum.charAt(0)}U-${normalizedNum.charAt(1)}DIŠ`;
+  }
+  return normalizedNum;
+};
+
+/**
+ * If num is a fraction, it will be converted to a unicode character
+ */
+export const normalizeFraction = (num: string): string => {
   switch (num) {
     case '1/2':
       return '½';
@@ -139,12 +161,14 @@ export const normalizeVowels = (sign: string): string => {
     return normalizeTilde(sign);
   }
 
-  [1, 2].forEach(negIdx => {
-    const signIdx = normalizedSign.length - negIdx;
-    if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
-      normalizedSign[signIdx] = subscriptNumber(normalizedSign[signIdx]);
-    }
-  });
+  if (!sign.match(/^\d{1,2}$/)) {
+    [1, 2].forEach(negIdx => {
+      const signIdx = normalizedSign.length - negIdx;
+      if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
+        normalizedSign[signIdx] = subscriptNumber(normalizedSign[signIdx]);
+      }
+    });
+  }
 
   return normalizedSign.join('');
 };
@@ -190,7 +214,7 @@ export const spellingHtmlReading = (spelling: string): string => {
         }
 
         if (tokenType === 'NUMBER') {
-          return normalizeNumber(tokenText);
+          return normalizeFraction(tokenText);
         }
         if (['SIGN', '+', '.', '-'].includes(tokenType)) {
           return tokenText;
