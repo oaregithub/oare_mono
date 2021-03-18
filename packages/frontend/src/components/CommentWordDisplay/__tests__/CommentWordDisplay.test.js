@@ -51,6 +51,14 @@ const mockServer = {
   deleteComment: jest.fn().mockResolvedValue({}),
   insertComment: jest.fn().mockResolvedValue(commentResponse),
   updateThreadName: jest.fn().mockResolvedValue({}),
+  getDictionaryInfo: jest.fn().mockResolvedValue({
+    word: 'testingWord',
+    forms: [],
+    partsOfSpeech: [],
+    verbalThematicVowelTypes: [],
+    specialClassifications: [],
+    translations: [],
+  }),
 };
 
 const mockActions = {
@@ -71,6 +79,7 @@ const nonAdminUser = {
 const mockStore = {
   getters: {
     user: adminUser,
+    permissions: [],
   },
 };
 
@@ -160,6 +169,7 @@ describe('CommentWordDisplay test', () => {
       ...mockStore,
       getters: {
         user: nonAdminUser,
+        permissions: [],
       },
     });
 
@@ -280,6 +290,7 @@ describe('CommentWordDisplay test', () => {
       ...mockStore,
       getters: {
         user: nonAdminUser,
+        permissions: [],
       },
     });
 
