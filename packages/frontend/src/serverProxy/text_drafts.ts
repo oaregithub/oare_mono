@@ -5,8 +5,8 @@ async function createDraft(textUuid: string, payload: AddTextDraftPayload) {
   await axios.post(`/text_drafts/${textUuid}`, payload);
 }
 
-async function getDrafts(): Promise<TextDraft[]> {
-  const { data } = await axios.get('/text_drafts');
+async function getDrafts(userUuid: string): Promise<TextDraft[]> {
+  const { data } = await axios.get(`/text_drafts/user/${userUuid}`);
   return data;
 }
 

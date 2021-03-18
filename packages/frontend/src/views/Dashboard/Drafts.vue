@@ -31,6 +31,7 @@ export default defineComponent({
     const drafts: Ref<TextDraft[]> = ref([]);
     const actions = sl.get('globalActions');
     const server = sl.get('serverProxy');
+    const store = sl.get('store');
 
     const dateFormat = (dateStr: string) => {
       return moment(dateStr).format('MMMM D, YYYY h:mm a');
@@ -50,7 +51,13 @@ export default defineComponent({
     onMounted(async () => {
       draftsLoading.value = true;
       try {
-        drafts.value = await server.getDrafts();
+        const userUuid = store.getters.user ? store.getters.user.uuid : null;
+
+        if (userUuid) {
+          drafts.value = await server.getDrafts(userUuid);
+        } else {
+          actions.showErrorSnackbar('You are not logged in');
+        }
       } catch {
         actions.showErrorSnackbar('Error loading drafts. Please try again.');
       } finally {

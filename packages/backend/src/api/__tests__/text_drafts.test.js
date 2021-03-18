@@ -121,14 +121,14 @@ describe('Text drafts test', () => {
     });
   });
 
-  describe('GET /text_drafts', () => {
-    const PATH = `${API_PATH}/text_drafts`;
+  describe('GET /text_drafts/user/:userUuid', () => {
+    const userUuid = 'user-uuid';
+    const PATH = `${API_PATH}/text_drafts/user/${userUuid}`;
     const draft = {
       content: 'content',
       notes: 'notes',
     };
 
-    const userUuid = '1';
     const mockTextDraftsDao = {
       getAllDraftUuids: jest.fn().mockResolvedValue(['draft-uuid']),
       getDraftByUuid: jest.fn().mockResolvedValue(draft),
@@ -137,6 +137,7 @@ describe('Text drafts test', () => {
     const mockUserDao = {
       getUserByEmail: jest.fn().mockResolvedValue({
         uuid: userUuid,
+        isAdmin: false,
       }),
     };
 
@@ -177,6 +178,33 @@ describe('Text drafts test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+    });
+
+    it("returns 403 if user is not admin and tries to access another user's drafts", async () => {
+      sl.set('UserDao', {
+        ...mockUserDao,
+        getUserByEmail: jest.fn().mockResolvedValue({
+          uuid: 'other-user',
+          isAdmin: false,
+        }),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it("allows admins to access any user's drafts", async () => {
+      sl.set('UserDao', {
+        ...mockUserDao,
+        getUserByEmail: jest.fn().mockResolvedValue({
+          uuid: 'other-user',
+          isAdmin: true,
+        }),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([draft]);
     });
   });
 });
