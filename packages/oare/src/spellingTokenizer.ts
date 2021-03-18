@@ -35,6 +35,8 @@ export const normalizeNumber = (num: string): string => {
   let normalizedNum = num;
   if (num.match(/^\d$/)) {
     normalizedNum = `${normalizedNum.charAt(0)}DIŠ`;
+  } else if (num.match(/^\d0$/)) {
+    normalizedNum = `${normalizedNum.charAt(0)}U`;
   } else if (num.match(/^\d{2}$/)) {
     normalizedNum = `${normalizedNum.charAt(0)}U-${normalizedNum.charAt(1)}DIŠ`;
   } else if (num.match(/^\d{2}AŠ/)) {
