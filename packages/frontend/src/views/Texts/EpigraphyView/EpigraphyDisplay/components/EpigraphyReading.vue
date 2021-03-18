@@ -13,9 +13,9 @@
           <sup class="line-num pt-3">{{ lineNumber(lineNum) }}&nbsp;</sup>
           <span
             v-if="renderer.isRegion(lineNum)"
-            v-html="renderer.lineReading(lineNum)"
+            v-html="lineReading(lineNum)"
           />
-          <span v-else>
+          <span>
             <span
               v-for="(word, index) in renderer.getLineWords(lineNum)"
               :key="index"
@@ -46,19 +46,26 @@ export default defineComponent({
   setup(props) {
     const store = sl.get('store');
 
-    const renderer = computed(() =>
-      createTabletRenderer(props.epigraphicUnits, {
+    const renderer = computed(() => {
+      return createTabletRenderer(props.epigraphicUnits, {
         admin: store.getters.isAdmin,
         textFormat: 'html',
-      })
-    );
+      });
+    });
 
     const lineNumber = (line: number): string =>
       renderer.value.isRegion(line) ? '' : `${line}.`;
 
+    const lineReading = (line: number): string => {
+      // console.log(renderer.value.lineReading(line));
+      console.log('line reading');
+      return renderer.value.lineReading(line);
+    };
+
     return {
       renderer,
       lineNumber,
+      lineReading,
     };
   },
 });

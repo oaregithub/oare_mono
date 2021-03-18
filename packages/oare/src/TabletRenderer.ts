@@ -33,6 +33,15 @@ export default class TabletRenderer {
     this.epigraphicUnits = this.epigraphicUnits.map(unit => ({
       ...unit,
       markups: unit.markups.sort((a, b) => {
+        // Sort isSealImpression to the top. It's the only region
+        // type that can have multiple markups
+
+        if (a.type === 'isSealImpression') {
+          return 1;
+        }
+        if (b.type === 'isSealImpression') {
+          return -1;
+        }
         if (damageTypes.includes(a.type)) {
           return 1;
         }
