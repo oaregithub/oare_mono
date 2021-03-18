@@ -19,7 +19,7 @@ export function getSequentialCharacterQuery(
 
     query = query.join(`text_epigraphy AS t${index}`, function () {
       this.on(`t${index}.text_uuid`, 'text_epigraphy.text_uuid')
-        .andOn(knex.raw(`t${index}.reading_uuid IN ?`, char))
+        .andOnIn(`t${index}.reading_uuid`, char)
         .andOn(
           knex.raw(
             `t${index}.char_on_tablet=text_epigraphy.char_on_tablet + ${index}`
