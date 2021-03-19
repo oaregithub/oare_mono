@@ -26,7 +26,13 @@ const comment4 = {
 
 const mockThreadDisplays = [
   {
-    thread: { name: 'testName', status: 'testStatus' },
+    thread: {
+      uuid: 'uuid1',
+      name: 'testName',
+      status: 'testStatus',
+      referenceUuid: 'testReferenceUuid',
+      route: 'testRoute',
+    },
     word: 'testItem',
     latestCommentDate: date,
     comments: [comment1, comment2, comment3, comment4],
@@ -41,6 +47,7 @@ const renderOptions = {
   propsData: {
     isUserComments: false,
   },
+  stubs: ['router-link'],
 };
 
 const mockActions = {
@@ -71,8 +78,57 @@ const mockResponse = {
   count: mockServerCount,
 };
 
+const testThread = {
+  uuid: 'uuid1',
+  name: 'threadName1',
+  referenceUuid: 'itemUuid',
+  status: 'New',
+  route: '/dictionaryWord/uuid',
+};
+
+const testComment = {
+  uuid: 'commentUuid',
+  threadUuid: 'threadUuid',
+  userUuid: 'userUuid',
+  createdAt: new Date(),
+  deleted: false,
+  text: 'this is the comment text',
+  userFirstName: 'firstName',
+  userLastName: 'lastName',
+};
+
+const mockThreadDisplaysResponse = [
+  {
+    thread: testThread,
+    comments: [testComment],
+  },
+];
+
 const mockServer = {
   getAllThreads: jest.fn().mockResolvedValue(mockResponse),
+  getThreadsWithCommentsByReferenceUuid: jest
+    .fn()
+    .mockResolvedValue(mockThreadDisplaysResponse),
+  getDictionaryInfo: jest.fn().mockResolvedValue({
+    word: 'testingWord',
+    forms: [],
+    partsOfSpeech: [],
+    verbalThematicVowelTypes: [],
+    specialClassifications: [],
+    translations: [],
+  }),
+};
+
+const adminUser = {
+  uuid: 'uuid',
+  isAdmin: true,
+};
+
+const mockStore = {
+  getters: {
+    user: adminUser,
+    permissions: [],
+  },
 };
 
 const mockLodash = {
@@ -83,6 +139,7 @@ const setup = () => {
   sl.set('serverProxy', mockServer);
   sl.set('globalActions', mockActions);
   sl.set('lodash', mockLodash);
+  sl.set('store', mockStore);
 };
 
 beforeEach(setup);
@@ -271,5 +328,29 @@ describe('CommentView test', () => {
         desc: false,
       },
     });
+  });
+
+  it('display comment dialog when thread name selected', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    let dialog = wrapper.findAll('.test-comment-word-display').exists();
+    expect(dialog).toBe(false);
+    const threadNameButton = wrapper.findAll('.test-thread-name').at(0);
+    await threadNameButton.trigger('click');
+
+    dialog = wrapper.findAll('.test-comment-word-display').exists();
+    expect(dialog).toBe(true);
+  });
+
+  it('display footer in comment dialog', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    const threadNameButton = wrapper.findAll('.test-thread-name').at(0);
+    await threadNameButton.trigger('click');
+
+    await flushPromises();
+    expect(mockServer.getDictionaryInfo).toHaveBeenCalled();
   });
 });

@@ -62,7 +62,6 @@ import {
   PropType,
 } from '@vue/composition-api';
 import useQueryParam from '@/hooks/useQueryParam';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
 
 export interface DisplayableWord {
@@ -73,7 +72,6 @@ export interface DisplayableWord {
 export default defineComponent({
   name: 'DictionaryDisplay',
   components: {
-    CommentWordDisplay,
     UtilList,
   },
   props: {

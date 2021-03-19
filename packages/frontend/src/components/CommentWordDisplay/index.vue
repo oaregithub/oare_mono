@@ -205,6 +205,20 @@
         </v-row>
       </v-col>
     </v-row>
+
+    <div
+      v-if="initialThreadUuid && dictionaryWordUuid"
+      class="test-comment-footer"
+    >
+      <v-divider class="mt-3 mb-3" />
+      <DictionaryWord
+        :uuid="dictionaryWordUuid"
+        :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
+        :allow-commenting="false"
+      >
+      </DictionaryWord>
+    </div>
+
     <OareDialog
       class="test-delete-dialog"
       @submit="deleteComment()"
@@ -244,6 +258,7 @@ import {
   Ref,
   watch,
   computed,
+  PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import {
@@ -258,7 +273,10 @@ import {
 } from '@oare/types';
 
 export default defineComponent({
-  name: 'DictionaryWordDisplay',
+  name: 'CommentWordDisplay',
+  components: {
+    DictionaryWord: () => import('@/views/Words/DictionaryWord/index.vue'),
+  },
   props: {
     word: {
       type: String,
@@ -276,8 +294,13 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
+    initialThreadUuid: {
+      type: String,
+      default: null,
+    },
   },
   setup(props) {
+    const dictionaryWordUuid = ref('');
     const loading = ref(false);
     const confirmDeleteDialog = ref(false);
     const confirmEditThreadNameDialog = ref(false);
@@ -372,6 +395,16 @@ export default defineComponent({
           threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(
             props.uuid
           );
+
+          // Auto select first thread if another thread is not explicitly stated.
+          if (
+            threadsWithComments.value.length > 0 &&
+            props.initialThreadUuid === null
+          ) {
+            selectedThreadWithComments.value.thread.uuid =
+              threadsWithComments.value[0].thread.uuid;
+          }
+
           findAndSetSelectedThread(threadsWithComments.value);
         }
       } catch (e) {
@@ -523,13 +556,36 @@ export default defineComponent({
       }
     };
 
-    onMounted(getThreadsWithComments);
+    onMounted(async () => {
+      if (props.initialThreadUuid !== null) {
+        selectedThreadWithComments.value.thread.uuid = props.initialThreadUuid;
+      }
+
+      try {
+        await getThreadsWithComments();
+      } catch (e) {
+        actions.showErrorSnackbar('Failed to get threads');
+      }
+    });
 
     const loggedInUser = computed(() =>
       store.getters.user ? store.getters.user : null
     );
 
+    watch(
+      () => selectedThreadWithComments.value.thread.route,
+      () => setWordUuidFromThreadRoute(),
+      { immediate: false }
+    );
+
+    const setWordUuidFromThreadRoute = () => {
+      dictionaryWordUuid.value = selectedThreadWithComments.value.thread.route.substr(
+        selectedThreadWithComments.value.thread.route.indexOf('/', 2) + 1
+      );
+    };
+
     return {
+      dictionaryWordUuid,
       displayThreadName,
       formatCommentDateTime,
       canDeleteComment,

@@ -1,13 +1,25 @@
 <template>
   <span class="d-flex flex-row mb-0">
-    <span
-      v-if="canEdit"
-      @click="openUtilList"
-      class="testing-spelling"
-      style="cursor: pointer"
-      v-html="htmlSpelling"
-    ></span>
-    <span v-else v-html="htmlSpelling" class="test-spelling"></span>
+    <mark v-if="spelling.uuid === uuidToHighlight">
+      <span
+        v-if="canEdit"
+        @click="openUtilList"
+        class="testing-spelling"
+        :class="{ 'cursor-display': cursor }"
+        v-html="htmlSpelling"
+      ></span>
+      <span v-else v-html="htmlSpelling" class="test-spelling"></span>
+    </mark>
+    <template v-else>
+      <span
+        v-if="canEdit"
+        @click="openUtilList"
+        class="testing-spelling"
+        :class="{ 'cursor-display': cursor }"
+        v-html="htmlSpelling"
+      ></span>
+      <span v-else v-html="htmlSpelling" class="test-spelling"></span>
+    </template>
 
     &nbsp;
     <span v-if="spelling.totalOccurrences > 0">
@@ -79,13 +91,11 @@ import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
 import { SendUtilList } from '../../index.vue';
 import SpellingDialog from './SpellingDialog.vue';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import UtilList from '@/components/UtilList/index.vue';
 
 export default defineComponent({
   components: {
     SpellingDialog,
-    CommentWordDisplay,
     UtilList,
   },
   props: {
@@ -100,6 +110,14 @@ export default defineComponent({
     wordUuid: {
       type: String,
       required: true,
+    },
+    uuidToHighlight: {
+      type: String,
+      default: null,
+    },
+    cursor: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props) {
@@ -205,3 +223,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>

@@ -19,11 +19,12 @@
       </v-btn>
 
       <strong
-        style="cursor: pointer"
         @click="openUtilList"
         class="mr-1 test-form-util-list"
+        :class="{ 'cursor-display': cursor }"
       >
-        {{ form.form }}
+        <mark v-if="form.uuid === uuidToHighlight">{{ form.form }}</mark>
+        <template v-else>{{ form.form }}</template>
       </strong>
 
       <grammar-display :form="form" />
@@ -38,6 +39,8 @@
             :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
             :form="form"
             :word-uuid="wordUuid"
+            :uuid-to-highlight="uuidToHighlight"
+            :cursor="cursor"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -77,6 +80,8 @@
               "
               :form="form"
               :word-uuid="wordUuid"
+              :uuid-to-highlight="uuidToHighlight"
+              :cursor="cursor"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -109,7 +114,6 @@ import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
 import SpellingDialog from './components/SpellingDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import { SendUtilList } from '../index.vue';
 
 export default defineComponent({
@@ -118,7 +122,6 @@ export default defineComponent({
     SpellingDisplay,
     SpellingDialog,
     UtilList,
-    CommentWordDisplay,
   },
   props: {
     form: {
@@ -132,6 +135,14 @@ export default defineComponent({
     wordUuid: {
       type: String as PropType<string>,
       required: false,
+    },
+    uuidToHighlight: {
+      type: String,
+      default: null,
+    },
+    cursor: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props) {
@@ -210,3 +221,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>
