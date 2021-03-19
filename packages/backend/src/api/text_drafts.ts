@@ -1,7 +1,8 @@
 import express from 'express';
-import { AddTextDraftPayload, TextDraft } from '@oare/types';
+import { AddTextDraftPayload, TextDraft, TextDraftWithUser } from '@oare/types';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
 
 const router = express.Router();
@@ -56,7 +57,9 @@ router
         return;
       }
 
-      const draftUuids = await TextDraftsDao.getAllDraftUuids(userUuidParam);
+      const draftUuids = await TextDraftsDao.getAllDraftUuidsByUser(
+        userUuidParam
+      );
       const drafts: TextDraft[] = await Promise.all(
         draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
       );
@@ -66,5 +69,32 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+router.route('/text_drafts').get(adminRoute, async (_req, res, next) => {
+  try {
+    const TextDraftsDao = sl.get('TextDraftsDao');
+    const UserDao = sl.get('UserDao');
+
+    const draftUuids = await TextDraftsDao.getAllDraftUuids();
+    const drafts = await Promise.all(
+      draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
+    );
+    const users = await Promise.all(
+      drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
+    );
+
+    const draftsWithUser: TextDraftWithUser[] = drafts.map((draft, index) => ({
+      ...draft,
+      user: {
+        firstName: users[index].firstName,
+        lastName: users[index].lastName,
+        uuid: users[index].uuid,
+      },
+    }));
+    res.json(draftsWithUser);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 export default router;
