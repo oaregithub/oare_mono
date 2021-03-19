@@ -33,6 +33,10 @@ export default defineComponent({
           label: 'Comments',
           path: '/admin/comments',
         },
+        {
+          label: 'Text Drafts',
+          path: '/admin/drafts',
+        },
       ],
     });
 
