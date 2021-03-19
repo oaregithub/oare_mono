@@ -76,7 +76,6 @@ router.route('/search').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDao = sl.get('TextDao');
-    const TextMarkupDao = sl.get('TextMarkupDao');
     const SignReadingDao = sl.get('SignReadingDao');
 
     const {
@@ -130,12 +129,9 @@ router.route('/search').get(async (req, res, next) => {
 
     const lineReadings = await Promise.all(
       textMatches.map(async ({ uuid, lines }) => {
-        const [epigraphicUnits, markupUnits] = await Promise.all([
-          TextEpigraphyDao.getEpigraphicUnits(uuid),
-          TextMarkupDao.getMarkups(uuid),
-        ]);
+        const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(uuid);
 
-        const renderer = createTabletRenderer(epigraphicUnits, markupUnits, {
+        const renderer = createTabletRenderer(epigraphicUnits, {
           textFormat: 'html',
           lineNumbers: true,
         });

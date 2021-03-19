@@ -25,11 +25,6 @@ describe('search test', () => {
       }),
     };
 
-    const TextMarkupDao = {
-      // Rendering markups is out of the scope of this test
-      getMarkups: jest.fn().mockResolvedValue([]),
-    };
-
     const mockSignReadingDao = {
       getUuidsBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
       hasSign: jest.fn().mockResolvedValue(true),
@@ -38,7 +33,6 @@ describe('search test', () => {
     beforeEach(() => {
       sl.set('TextEpigraphyDao', TextEpigraphyDao);
       sl.set('TextDao', TextDao);
-      sl.set('TextMarkupDao', TextMarkupDao);
       sl.set('SignReadingDao', mockSignReadingDao);
     });
 
@@ -138,16 +132,6 @@ describe('search test', () => {
         getEpigraphicUnits: jest
           .fn()
           .mockRejectedValue('Failed to get epig units'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if getting markups fails', async () => {
-      sl.set('TextMarkupDao', {
-        ...TextMarkupDao,
-        getMarkups: jest.fn().mockRejectedValue('Failed to get markups'),
       });
 
       const response = await sendRequest();

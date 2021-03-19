@@ -53,7 +53,6 @@ export const AkkadianLetterGroupsUpper: { [key: string]: string } = {
  */
 const createTabletRenderer = (
   epigraphicUnits: EpigraphicUnit[],
-  markupUnits: MarkupUnit[],
   {
     textFormat = 'regular',
     lineNumbers = false,
@@ -61,7 +60,7 @@ const createTabletRenderer = (
     highlightDiscourses = [],
   }: CreateTabletRendererOptions = {}
 ): TabletRenderer => {
-  let renderer = new TabletRenderer(epigraphicUnits, markupUnits);
+  let renderer = new TabletRenderer(epigraphicUnits);
   if (textFormat === 'html') {
     renderer = new TabletHtmlRenderer(renderer, { admin, highlightDiscourses });
   }

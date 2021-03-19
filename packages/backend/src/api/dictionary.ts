@@ -271,7 +271,6 @@ router
       const utils = sl.get('utils');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const TextMarkupDao = sl.get('TextMarkupDao');
 
       const { uuid } = req.params;
       const pagination = utils.extractPagination(req.query);
@@ -287,15 +286,10 @@ router
         )
       );
 
-      const markupUnits = await Promise.all(
-        rows.map(({ textUuid }) => TextMarkupDao.getMarkups(textUuid))
-      );
-
       const readings = rows.map((row, index) => {
         const units = epigraphicUnits[index];
-        const markups = markupUnits[index];
 
-        const renderer = createTabletRenderer(units, markups, {
+        const renderer = createTabletRenderer(units, {
           lineNumbers: true,
           textFormat: 'html',
           highlightDiscourses: [row.discourseUuid],

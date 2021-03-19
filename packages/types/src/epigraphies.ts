@@ -14,7 +14,6 @@ export interface EpigraphyResponse {
   units: EpigraphicUnit[];
   color: string;
   colorMeaning: string;
-  markups: MarkupUnit[];
   discourseUnits: DiscourseUnit[];
   draft?: TextDraft;
 }
@@ -80,7 +79,7 @@ export interface EpigraphicUnit {
   epigType: EpigraphyType;
   type: EpigraphicUnitType | null;
   value: null | string;
-  markups?: MarkupUnit[];
+  markups: MarkupUnit[];
   readingUuid: string;
   signUuid: string;
 }

@@ -1,9 +1,6 @@
 <template>
   <div>
-    <EpigraphyReading
-      :epigraphicUnits="epigraphicUnits"
-      :markupUnits="markupUnits"
-    />
+    <EpigraphyReading :epigraphicUnits="epigraphicUnits" />
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"
@@ -14,7 +11,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from '@vue/composition-api';
-import { EpigraphicUnit, MarkupUnit, DiscourseUnit } from '@oare/types';
+import { EpigraphicUnit, DiscourseUnit } from '@oare/types';
 import EpigraphyReading from './components/EpigraphyReading.vue';
 import DiscourseReading from './components/DiscourseReading.vue';
 import sl from '@/serviceLocator';
@@ -23,10 +20,6 @@ export default defineComponent({
   props: {
     epigraphicUnits: {
       type: Array as PropType<EpigraphicUnit[]>,
-      required: true,
-    },
-    markupUnits: {
-      type: Array as PropType<MarkupUnit[]>,
       required: true,
     },
     discourseUnits: {

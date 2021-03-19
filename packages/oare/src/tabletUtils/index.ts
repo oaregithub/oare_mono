@@ -113,18 +113,6 @@ export function epigraphicWordWithSeparators(
 
 export function regionReading(unit: EpigraphicUnit): string {
   if (unit.markups) {
-    // Sort isSealImpression to the top. It's the only region
-    // type that can have multiple markups
-    unit.markups.sort((a, b) => {
-      if (a.type === 'isSealImpression') {
-        return -1;
-      }
-      if (b.type === 'isSealImpression') {
-        return 1;
-      }
-      return 0;
-    });
-
     const { type: markupType, value: markupValue } = unit.markups[0];
     const { reading } = unit;
 

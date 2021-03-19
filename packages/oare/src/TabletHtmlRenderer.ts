@@ -61,7 +61,7 @@ export default class TabletHtmlRenderer extends TabletRenderer {
     renderer: TabletRenderer,
     { admin, highlightDiscourses }: TabletHtmlOptions = {}
   ) {
-    super(renderer.getEpigraphicUnits(), renderer.getMarkupUnits());
+    super(renderer.getEpigraphicUnits());
     this.renderer = renderer;
     this.admin = admin || false;
     this.highlightDiscourses = highlightDiscourses || [];

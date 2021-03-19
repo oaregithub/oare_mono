@@ -1,6 +1,6 @@
 import * as Knex from 'knex';
 import knex from '@/connection';
-import { EpigraphicUnit, EpigraphicUnitSide } from '@oare/types';
+import { EpigraphicUnit, EpigraphicUnitSide, MarkupUnit } from '@oare/types';
 import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
 import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
@@ -70,12 +70,18 @@ function mapSideNumberToSideName(side: number): EpigraphicUnitSide {
 }
 
 export function convertEpigraphicUnitRows(
-  units: EpigraphicQueryRow[]
+  units: EpigraphicQueryRow[],
+  markupUnits: MarkupUnit[]
 ): EpigraphicUnit[] {
   return units.map(unit => {
+    const unitMarkups = markupUnits.filter(
+      markup => markup.referenceUuid === unit.uuid
+    );
+
     const mappedUnit: EpigraphicUnit = {
       ...unit,
       side: mapSideNumberToSideName(unit.side),
+      markups: unitMarkups,
     };
     if (unit.reading === null) {
       mappedUnit.reading = unit.epigReading;

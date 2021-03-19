@@ -32,7 +32,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed } from '@vue/composition-api';
 import { createTabletRenderer } from '@oare/oare';
-import { EpigraphicUnit, MarkupUnit } from '@oare/types';
+import { EpigraphicUnit } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -42,20 +42,16 @@ export default defineComponent({
       type: Array as PropType<EpigraphicUnit[]>,
       required: true,
     },
-    markupUnits: {
-      type: Array as PropType<MarkupUnit[]>,
-      required: true,
-    },
   },
   setup(props) {
     const store = sl.get('store');
 
-    const renderer = computed(() =>
-      createTabletRenderer(props.epigraphicUnits, props.markupUnits, {
+    const renderer = computed(() => {
+      return createTabletRenderer(props.epigraphicUnits, {
         admin: store.getters.isAdmin,
         textFormat: 'html',
-      })
-    );
+      });
+    });
 
     const lineNumber = (line: number): string =>
       renderer.value.isRegion(line) ? '' : `${line}.`;
