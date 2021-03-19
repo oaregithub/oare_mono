@@ -5,7 +5,7 @@
         v-if="canEdit"
         @click="openUtilList"
         class="testing-spelling"
-        style="cursor: pointer"
+        :class="{ 'cursor-display': cursor }"
         v-html="htmlSpelling"
       ></span>
       <span v-else v-html="htmlSpelling" class="test-spelling"></span>
@@ -15,7 +15,7 @@
         v-if="canEdit"
         @click="openUtilList"
         class="testing-spelling"
-        style="cursor: pointer"
+        :class="{ 'cursor-display': cursor }"
         v-html="htmlSpelling"
       ></span>
       <span v-else v-html="htmlSpelling" class="test-spelling"></span>
@@ -114,6 +114,10 @@ export default defineComponent({
     uuidToHighlight: {
       type: String,
       default: null,
+    },
+    cursor: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props) {
@@ -219,3 +223,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>

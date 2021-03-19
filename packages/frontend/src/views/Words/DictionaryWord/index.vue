@@ -19,7 +19,7 @@
         <span
           @click="sendWordInfoToUtilList"
           class="font-weight-bold test-word-util-list"
-          style="cursor: pointer"
+          :class="{ 'cursor-display': allowCommenting }"
         >
           <mark v-if="uuid === uuidToHighlight">{{ title }}</mark>
           <template v-else>{{ title }}</template>
@@ -47,6 +47,7 @@
       :wordUuid="uuid"
       :updateWordInfo="updateWordInfo"
       :uuid-to-highlight="uuidToHighlight"
+      :cursor="allowCommenting"
     />
 
     <template v-if="isEditing && utilList.type === 'SPELLING'">
@@ -313,3 +314,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>

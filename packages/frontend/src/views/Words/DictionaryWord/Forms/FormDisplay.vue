@@ -19,9 +19,9 @@
       </v-btn>
 
       <strong
-        style="cursor: pointer"
         @click="openUtilList"
         class="mr-1 test-form-util-list"
+        :class="{ 'cursor-display': cursor }"
       >
         <mark v-if="form.uuid === uuidToHighlight">{{ form.form }}</mark>
         <template v-else>{{ form.form }}</template>
@@ -40,6 +40,7 @@
             :form="form"
             :word-uuid="wordUuid"
             :uuid-to-highlight="uuidToHighlight"
+            :cursor="cursor"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -80,6 +81,7 @@
               :form="form"
               :word-uuid="wordUuid"
               :uuid-to-highlight="uuidToHighlight"
+              :cursor="cursor"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -137,6 +139,10 @@ export default defineComponent({
     uuidToHighlight: {
       type: String,
       default: null,
+    },
+    cursor: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props) {
@@ -215,3 +221,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>
