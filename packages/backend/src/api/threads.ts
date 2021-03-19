@@ -97,49 +97,6 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
 });
 
 router
-  .route('/threads/user/:userUuid')
-  .get(authenticatedRoute, async (req, res, next) => {
-    try {
-      const { userUuid } = req.params;
-      const threadsDao = sl.get('ThreadsDao');
-      const commentsDao = sl.get('CommentsDao');
-
-      const threadUuids = await threadsDao.getAllThreadUuidsByUserUuid(
-        userUuid,
-        true
-      );
-
-      const results: ThreadDisplay[] = await Promise.all(
-        threadUuids.map(async threadUuid => {
-          const [thread, threadWord, threadComments] = await Promise.all([
-            threadsDao.getByUuid(threadUuid),
-            threadsDao.getThreadWord(threadUuid),
-            commentsDao.getAllByThreadUuid(threadUuid, true),
-          ]);
-
-          if (thread === null || threadWord === null) {
-            next(
-              new HttpInternalError(
-                'Unable to retrieve thread for specific user'
-              )
-            );
-          }
-          return {
-            thread,
-            word: threadWord,
-            latestCommentDate: threadComments[0].createdAt, // Most recent comment
-            comments: threadComments,
-          } as ThreadDisplay;
-        })
-      );
-
-      res.json(results);
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  });
-
-router
   .route('/threads/name')
   .put(authenticatedRoute, async (req, res, next) => {
     try {
