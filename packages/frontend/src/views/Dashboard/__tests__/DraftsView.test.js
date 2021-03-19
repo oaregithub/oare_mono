@@ -18,28 +18,49 @@ describe('DashboardDraftsView', () => {
     showErrorSnackbar: jest.fn(),
   };
 
-  const createWrapper = ({ server, actions } = {}) => {
-    sl.set('serverProxy', server || mockServer);
-    sl.set('globalActions', actions || mockActions);
+  const userUuid = 'user-uuid';
+  const mockStore = {
+    getters: {
+      user: {
+        uuid: userUuid,
+      },
+    },
+  };
 
-    return mount(DashboardDrafts, {
+  beforeEach(() => {
+    sl.set('serverProxy', mockServer);
+    sl.set('globalActions', mockActions);
+    sl.set('store', mockStore);
+  });
+
+  const createWrapper = () =>
+    mount(DashboardDrafts, {
       vuetify,
       localVue,
     });
-  };
 
   it('retrieves drafts on load', async () => {
     createWrapper();
     await flushPromises();
-    expect(mockServer.getDrafts).toHaveBeenCalled();
+    expect(mockServer.getDrafts).toHaveBeenCalledWith(userUuid);
   });
 
   it('shows error snackbar when drafts fails to load', async () => {
-    createWrapper({
-      server: {
-        getDrafts: jest.fn().mockRejectedValue(null),
-      },
+    sl.set('serverProxy', {
+      getDrafts: jest.fn().mockRejectedValue(null),
     });
+
+    createWrapper();
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('shows error snackbar if user is not logged in', async () => {
+    sl.set('store', {
+      ...mockStore,
+      getters: {},
+    });
+    createWrapper();
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });

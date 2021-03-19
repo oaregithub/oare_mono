@@ -1,6 +1,6 @@
 import express from 'express';
 import { AddTextDraftPayload, TextDraft } from '@oare/types';
-import { HttpBadRequest, HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import sl from '@/serviceLocator';
 
@@ -40,21 +40,31 @@ router
     }
   });
 
-router.route('/text_drafts').get(authenticatedRoute, async (req, res, next) => {
-  const TextDraftsDao = sl.get('TextDraftsDao');
+router
+  .route('/text_drafts/user/:userUuid')
+  .get(authenticatedRoute, async (req, res, next) => {
+    try {
+      const { userUuid: userUuidParam } = req.params;
+      const TextDraftsDao = sl.get('TextDraftsDao');
+      const userUuid = req.user!.uuid;
+      const isAdmin = req.user ? req.user.isAdmin : false;
 
-  try {
-    const userUuid = req.user!.uuid;
+      if (userUuidParam !== userUuid && !isAdmin) {
+        next(
+          new HttpForbidden('You do not have permission to access this route')
+        );
+        return;
+      }
 
-    const draftUuids = await TextDraftsDao.getAllDraftUuids(userUuid);
-    const drafts: TextDraft[] = await Promise.all(
-      draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
-    );
+      const draftUuids = await TextDraftsDao.getAllDraftUuids(userUuidParam);
+      const drafts: TextDraft[] = await Promise.all(
+        draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
+      );
 
-    res.json(drafts);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      res.json(drafts);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;
