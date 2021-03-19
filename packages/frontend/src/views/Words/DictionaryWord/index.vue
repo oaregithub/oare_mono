@@ -6,7 +6,12 @@
           v-if="canUpdateWordSpelling && !isEditing"
           icon
           class="mt-n2 mr-1"
-          @click="isEditing = true"
+          @click="
+            () => {
+              isEditing = true;
+              utilList.type = 'WORD';
+            }
+          "
         >
           <v-icon class="test-pencil">mdi-pencil</v-icon>
         </v-btn>
@@ -14,9 +19,10 @@
         <span
           @click="sendWordInfoToUtilList"
           class="font-weight-bold test-word-util-list"
-          style="cursor: pointer"
+          :class="{ 'cursor-display': allowCommenting }"
         >
-          {{ title }}
+          <mark v-if="uuid === uuidToHighlight">{{ title }}</mark>
+          <template v-else>{{ title }}</template>
         </span>
       </v-row>
 
@@ -24,7 +30,12 @@
         v-else-if="wordInfo && utilList.type === 'WORD'"
         :word.sync="wordInfo.word"
         :wordUuid="uuid"
-        @close-edit="isEditing = false"
+        @close-edit="
+          () => {
+            isEditing = false;
+            utilList.type = 'NONE';
+          }
+        "
       />
     </template>
     <template #header>
@@ -35,6 +46,8 @@
       :wordInfo="wordInfo"
       :wordUuid="uuid"
       :updateWordInfo="updateWordInfo"
+      :uuid-to-highlight="uuidToHighlight"
+      :cursor="allowCommenting"
     />
 
     <template v-if="isEditing && utilList.type === 'SPELLING'">
@@ -70,14 +83,15 @@
       :has-edit="utilList.edit"
       :has-delete="utilList.delete"
     ></UtilList>
-    <CommentWordDisplay
+    <component
+      :is="commentComponent"
       v-if="isCommenting"
       :route="utilList.route"
       :uuid="utilList.uuid"
       :word="utilList.word"
       @submit="isCommenting = false"
       @input="isCommenting = false"
-      >{{ utilList.word }}</CommentWordDisplay
+      >{{ utilList.word }}</component
     >
   </OareContentView>
 </template>
@@ -107,7 +121,6 @@ import WordNameEdit from './WordNameEdit.vue';
 import router from '@/router';
 import sl from '@/serviceLocator';
 import UtilList from '@/components/UtilList/index.vue';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import SpellingDialog from './Forms/components/SpellingDialog.vue';
 
 export const SendUtilList: InjectionKey<
@@ -121,13 +134,20 @@ export default defineComponent({
     WordInfo,
     WordNameEdit,
     UtilList,
-    CommentWordDisplay,
     SpellingDialog,
   },
   props: {
     uuid: {
       type: String,
       required: true,
+    },
+    uuidToHighlight: {
+      type: String,
+      default: null,
+    },
+    allowCommenting: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props, context) {
@@ -201,6 +221,10 @@ export default defineComponent({
     };
 
     const openUtilList = (injectedUtilList: UtilListDisplay) => {
+      if (!props.allowCommenting && injectedUtilList.comment) {
+        return;
+      }
+
       utilListOpen.value = true;
       utilList.value = injectedUtilList;
     };
@@ -259,7 +283,15 @@ export default defineComponent({
       }
     };
 
+    // To avoid circular dependencies
+    const commentComponent = computed(() =>
+      props.allowCommenting
+        ? () => import('@/components/CommentWordDisplay/index.vue')
+        : null
+    );
+
     return {
+      commentComponent,
       sendWordInfoToUtilList,
       isDeleting,
       utilList,
@@ -282,3 +314,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>
