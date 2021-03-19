@@ -3,7 +3,7 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-describe('comments api test', () => {
+describe('threads api test', () => {
   const commentsGetAllByThreadUuid = [
     {
       uuid: 'string',
@@ -344,92 +344,6 @@ describe('comments api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
-    });
-  });
-  describe('GET /threads/user/:userUuid', () => {
-    const PATH = `${API_PATH}/threads/user/testUserUuid`;
-
-    const sendRequest = async (cookie = true) => {
-      const req = request(app).get(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
-    };
-
-    it('returns successful thread display info.', async () => {
-      const response = await sendRequest();
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([
-        {
-          thread: threadsGetByUuid,
-          word: threadWord,
-          latestCommentDate: commentsGetAllByThreadUuid[0].createdAt,
-          comments: commentsGetAllByThreadUuid,
-        },
-      ]);
-    });
-
-    it('returns 401 when non-logged in user accesses endpoint.', async () => {
-      const response = await sendRequest(false);
-      expect(response.status).toBe(401);
-    });
-
-    it('returns 500 when ThreadsDao.getAllThreadUuidsByUserUuid throws an error.', async () => {
-      sl.set('ThreadsDao', {
-        ...MockThreadsDao,
-        getAllThreadUuidsByUserUuid: jest
-          .fn()
-          .mockRejectedValue(
-            'Error when getting comments by userUuid, grouped by thread.'
-          ),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(MockThreadsDao.getByUuid).not.toHaveBeenCalled();
-    });
-
-    it('returns 500 when ThreadsDao.getByUuid throws an error.', async () => {
-      sl.set('ThreadsDao', {
-        ...MockThreadsDao,
-        getByUuid: jest
-          .fn()
-          .mockRejectedValue('Error when getting thread by its uuid.'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
-    });
-
-    it('returns 500 when ThreadsDao.getByUuid returns null (should never happen).', async () => {
-      sl.set('ThreadsDao', {
-        ...MockThreadsDao,
-        getByUuid: jest.fn().mockResolvedValue(null),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
-    });
-
-    it('returns 500 when ThreadsDao.getThreadWord throws an error.', async () => {
-      sl.set('ThreadsDao', {
-        ...MockThreadsDao,
-        getThreadWord: jest
-          .fn()
-          .mockRejectedValue(
-            'Error when retrieving word/form/spelling associated with thread.'
-          ),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
-    });
-
-    it('returns 500 when ThreadsDao.getThreadWord returns null (should never happen).', async () => {
-      sl.set('ThreadsDao', {
-        ...MockThreadsDao,
-        getThreadWord: jest.fn().mockResolvedValue(null),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(MockThreadsDao.getAllThreadUuidsByUserUuid).toHaveBeenCalled();
     });
   });
 
