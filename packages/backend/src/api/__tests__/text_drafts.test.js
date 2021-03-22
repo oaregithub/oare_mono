@@ -130,7 +130,7 @@ describe('Text drafts test', () => {
     };
 
     const mockTextDraftsDao = {
-      getAllDraftUuids: jest.fn().mockResolvedValue(['draft-uuid']),
+      getAllDraftUuidsByUser: jest.fn().mockResolvedValue(['draft-uuid']),
       getDraftByUuid: jest.fn().mockResolvedValue(draft),
     };
 
@@ -152,7 +152,9 @@ describe('Text drafts test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([draft]);
-      expect(mockTextDraftsDao.getAllDraftUuids).toHaveBeenCalledWith(userUuid);
+      expect(mockTextDraftsDao.getAllDraftUuidsByUser).toHaveBeenCalledWith(
+        userUuid
+      );
     });
 
     it('returns 401 when not logged in', async () => {
@@ -163,7 +165,9 @@ describe('Text drafts test', () => {
     it('returns 500 when getting drafts fails', async () => {
       sl.set('TextDraftsDao', {
         ...mockTextDraftsDao,
-        getAllDraftUuids: jest.fn().mockRejectedValue('failed to get drafts'),
+        getAllDraftUuidsByUser: jest
+          .fn()
+          .mockRejectedValue('failed to get drafts'),
       });
 
       const response = await sendRequest();
@@ -205,6 +209,108 @@ describe('Text drafts test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([draft]);
+    });
+  });
+
+  describe('GET /text_drafts', () => {
+    const PATH = `${API_PATH}/text_drafts`;
+
+    const draft = {
+      userUuid: 'user-uuid',
+    };
+
+    const TextDraftsDao = {
+      getAllDraftUuids: jest.fn().mockResolvedValue(['draft-uuid']),
+      getDraftByUuid: jest.fn().mockResolvedValue(draft),
+    };
+
+    const user = {
+      firstName: 'John',
+      lastName: 'Doe',
+      uuid: 'user-uuid',
+    };
+
+    const UserDao = {
+      getUserByEmail: jest.fn().mockResolvedValue({
+        isAdmin: true,
+      }),
+      getUserByUuid: jest.fn().mockResolvedValue(user),
+    };
+
+    beforeEach(() => {
+      sl.set('TextDraftsDao', TextDraftsDao);
+      sl.set('UserDao', UserDao);
+    });
+
+    const sendRequest = (cookie = true) => {
+      const req = request(app).get(PATH);
+
+      if (cookie) {
+        return req.set('Cookie', 'jwt=token');
+      }
+      return req;
+    };
+
+    it('gets drafts with users attached', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([
+        {
+          ...draft,
+          user,
+        },
+      ]);
+    });
+
+    it("doesn't allow non-admins to access route", async () => {
+      sl.set('UserDao', {
+        ...UserDao,
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: false,
+        }),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it("doesn't allow non-logged-in users to access route", async () => {
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 500 if getting draft uuids fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        getAllDraftUuids: jest
+          .fn()
+          .mockRejectedValue('failed to get draft uuids'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 if getting draft by uuid fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        getDraftByUuid: jest
+          .fn()
+          .mockRejectedValue("couldn't get draft by uuid"),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 if getting user by uuid fails', async () => {
+      sl.set('UserDao', {
+        ...UserDao,
+        getUserByUuid: jest.fn().mockRejectedValue("couldn't get user by uuid"),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
     });
   });
 });

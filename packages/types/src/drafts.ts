@@ -1,4 +1,5 @@
 import { EpigraphicUnitSide } from './epigraphies';
+import { User } from './login';
 
 export interface TextDraftSideContent {
   side: EpigraphicUnitSide | '';
@@ -13,6 +14,11 @@ export interface TextDraft {
   uuid: string;
   content: TextDraftSideContent[];
   notes: string;
+  userUuid: string;
+}
+
+export interface TextDraftWithUser extends Omit<TextDraft, 'userUuid'> {
+  user: Pick<User, 'firstName' | 'lastName' | 'uuid'>;
 }
 
 export interface AddTextDraftPayload {

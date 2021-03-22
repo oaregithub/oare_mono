@@ -26,8 +26,13 @@ class UserDao {
     return user;
   }
 
-  async getUserByUuid(uuid: string): Promise<UserRow | null> {
-    return this.getUserByColumn('uuid', uuid);
+  async getUserByUuid(uuid: string): Promise<UserRow> {
+    const row = await this.getUserByColumn('uuid', uuid);
+    if (!row) {
+      throw new Error(`User with UUID ${uuid} does not exist`);
+    }
+
+    return row;
   }
 
   private async getUserByColumn(

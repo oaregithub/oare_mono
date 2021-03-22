@@ -40,25 +40,12 @@ router
       const { userUuids }: AddUsersToGroupPayload = req.body;
 
       const OareGroupDao = sl.get('OareGroupDao');
-      const UserDao = sl.get('UserDao');
       const UserGroupDao = sl.get('UserGroupDao');
 
       // Make sure that the group ID exists
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
-        return;
-      }
-
-      // Make sure each user UUID exists
-      const users = await Promise.all(
-        userUuids.map(uuid => UserDao.getUserByUuid(uuid))
-      );
-      if (users.some(u => !u)) {
-        const badIndex = users.indexOf(null);
-        next(
-          new HttpBadRequest(`User UUID ${userUuids[badIndex]} does not exist`)
-        );
         return;
       }
 
