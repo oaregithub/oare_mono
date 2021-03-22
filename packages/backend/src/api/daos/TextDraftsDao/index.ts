@@ -1,4 +1,4 @@
-import { TextDraft } from '@oare/types';
+import { TextDraft, UuidRow } from '@oare/types';
 import { v4 } from 'uuid';
 import knex from '@/connection';
 import CollectionTextUtils from '../CollectionTextUtils';
@@ -47,6 +47,7 @@ class TextDraftsDao {
         'text_drafts.uuid',
         'text_drafts.text_uuid AS textUuid',
         'text_drafts.content',
+        'text_drafts.user_uuid AS userUuid',
         'text.name AS textName',
         'notes'
       )
@@ -104,7 +105,7 @@ class TextDraftsDao {
     });
   }
 
-  async getAllDraftUuids(userUuid: string): Promise<string[]> {
+  async getAllDraftUuidsByUser(userUuid: string): Promise<string[]> {
     interface DraftTextRow {
       uuid: string;
       textUuid: string;
@@ -124,6 +125,11 @@ class TextDraftsDao {
     );
 
     return draftUuids.filter((_, index) => canEdits[index]);
+  }
+
+  async getAllDraftUuids(): Promise<string[]> {
+    const draftUuids: UuidRow[] = await knex('text_drafts').select('uuid');
+    return draftUuids.map(({ uuid }) => uuid);
   }
 }
 

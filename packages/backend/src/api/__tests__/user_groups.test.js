@@ -93,7 +93,6 @@ describe('POST /user_groups/:groupId', () => {
     getGroupById: jest.fn().mockResolvedValue(true),
   };
   const mockUserDao = {
-    getUserByUuid: jest.fn().mockResolvedValue(true),
     getUserByEmail: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
@@ -117,7 +116,6 @@ describe('POST /user_groups/:groupId', () => {
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
     expect(mockOareGroupDao.getGroupById).toHaveBeenCalled();
-    expect(mockUserDao.getUserByUuid).toHaveBeenCalled();
     expect(mockUserGroupDao.addUserToGroup).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
@@ -153,15 +151,6 @@ describe('POST /user_groups/:groupId', () => {
     sl.set('OareGroupDao', {
       ...mockOareGroupDao,
       getGroupById: jest.fn().mockResolvedValue(false),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(400);
-  });
-
-  it('returns 400 if user does not exist', async () => {
-    sl.set('UserDao', {
-      ...mockUserDao,
-      getUserByUuid: jest.fn().mockResolvedValue(false),
     });
     const response = await sendRequest();
     expect(response.status).toBe(400);
