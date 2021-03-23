@@ -30,32 +30,16 @@
     </v-data-table>
 
     <OareDialog
-      v-if="viewingDraft"
       v-model="dialogOpen"
       title="Draft Content"
       :width="1000"
       class="test-content-dialog"
+      :show-submit="false"
+      :show-cancel="false"
+      :close-button="true"
+      :persistent="false"
     >
-      <v-col>
-        <v-row>
-          <span class="font-weight-bold mr-1">Notes:</span>
-          {{ viewingDraft.notes }}
-        </v-row>
-        <v-row>
-          <v-col
-            v-for="(sideData, sideIndex) in viewingDraft.content"
-            :key="sideIndex"
-          >
-            <v-row>{{ sideData.side }}</v-row>
-            <v-row
-              v-for="(line, lineIndex) in sideData.text.split('\n')"
-              :key="`line${lineIndex}`"
-            >
-              {{ line }}
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-col>
+      <DraftContentPopup :draft="viewingDraft" />
     </OareDialog>
   </OareContentView>
 </template>
@@ -66,9 +50,13 @@ import { TextDraftWithUser } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
 import { DateTime } from 'luxon';
+import DraftContentPopup from './DraftContentPopup.vue';
 
 export default defineComponent({
   name: 'AdminDraftsView',
+  components: {
+    DraftContentPopup,
+  },
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -103,8 +91,6 @@ export default defineComponent({
     };
 
     const openDialog = (draft: TextDraftWithUser) => {
-      console.log('opening dialog');
-      console.log(draft);
       viewingDraft.value = { ...draft };
       dialogOpen.value = true;
     };

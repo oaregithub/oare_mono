@@ -75,12 +75,4 @@ describe('AdminDraftsView test', () => {
     await wrapper.get('.test-view-content').trigger('click');
     expect(wrapper.find('.test-content-dialog').exists()).toBe(true);
   });
-
-  it.only('dialog contains notes', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-
-    await wrapper.get('.test-view-content').trigger('click');
-    expect(wrapper.html()).toContain(`Notes: ${draft.notes}`);
-  });
 });
