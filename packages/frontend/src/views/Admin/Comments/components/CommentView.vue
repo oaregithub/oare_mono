@@ -144,7 +144,6 @@ import {
   Ref,
   ref,
   watch,
-  PropType,
 } from '@vue/composition-api';
 import {
   ThreadDisplay,
@@ -152,14 +151,12 @@ import {
   AllCommentsRequest,
   CommentSortType,
   ThreadStatus,
-  AllCommentsResponse,
-  Thread,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataOptions, DataTableHeader } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
-import { DateTime } from 'luxon';
 import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import { formatTimestamp } from '@/utils';
 
 export default defineComponent({
   name: 'CommentView',
@@ -181,7 +178,7 @@ export default defineComponent({
     const _ = sl.get('lodash');
     const serverCount = ref(0);
     const selectedComments: Ref<Comment[]> = ref([]);
-    const selectedThreadDisplay: Ref<ThreadDisplay> = ref({
+    const selectedThreadDisplay = ref<ThreadDisplay>({
       thread: {
         uuid: '',
         name: null,
@@ -256,12 +253,6 @@ export default defineComponent({
       } finally {
         searchLoading.value = false;
       }
-    };
-
-    const formatTimestamp = (timestamp: Date) => {
-      return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
-        DateTime.DATETIME_MED
-      );
     };
 
     const formatCommentText = (idx: number, text: string, extended = false) => {

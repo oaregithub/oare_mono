@@ -49,7 +49,7 @@ import { defineComponent, ref, onMounted } from '@vue/composition-api';
 import { TextDraftWithUser } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
-import { DateTime } from 'luxon';
+import { formatTimestamp } from '@/utils';
 import DraftContentPopup from './DraftContentPopup.vue';
 
 export default defineComponent({
@@ -83,12 +83,6 @@ export default defineComponent({
         loading.value = false;
       }
     });
-
-    const formatTimestamp = (timestamp: Date) => {
-      return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
-        DateTime.DATETIME_MED
-      );
-    };
 
     const openDialog = (draft: TextDraftWithUser) => {
       viewingDraft.value = { ...draft };
