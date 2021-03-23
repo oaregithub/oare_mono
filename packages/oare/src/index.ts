@@ -16,10 +16,13 @@ export { default as TabletRenderer } from './TabletRenderer';
 export {
   spellingHtmlReading,
   tokenizeExplicitSpelling,
+} from './spellingTokenizer';
+
+export {
   normalizeSign,
   normalizeFraction,
   normalizeNumber,
-} from './spellingTokenizer';
+} from './signNormalizer';
 
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';
 export const AkkadianAlphabetUpper = 'ĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZ';
