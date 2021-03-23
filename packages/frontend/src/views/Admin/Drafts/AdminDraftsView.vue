@@ -21,7 +21,7 @@
         <v-btn
           plain
           text
-          class="font-weight-bold ml-n3"
+          class="font-weight-bold ml-n3 test-view-content"
           color="primary"
           @click="openDialog(item)"
           >View content</v-btn
@@ -34,6 +34,7 @@
       v-model="dialogOpen"
       title="Draft Content"
       :width="1000"
+      class="test-content-dialog"
     >
       <v-col>
         <v-row>
@@ -102,6 +103,8 @@ export default defineComponent({
     };
 
     const openDialog = (draft: TextDraftWithUser) => {
+      console.log('opening dialog');
+      console.log(draft);
       viewingDraft.value = { ...draft };
       dialogOpen.value = true;
     };
