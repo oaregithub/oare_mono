@@ -36,6 +36,13 @@ const extractPagination = (
   };
 };
 
+export const parsedQuery = (url: string): URLSearchParams => {
+  const queryIndex = url.indexOf('?');
+  const queryString = queryIndex > 0 ? url.slice(queryIndex + 1) : '';
+
+  return new URLSearchParams(queryString);
+};
+
 export default {
   createTransaction,
   extractPagination,

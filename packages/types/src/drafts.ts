@@ -1,5 +1,6 @@
 import { EpigraphicUnitSide } from './epigraphies';
 import { User } from './login';
+import { SortOrder } from './utils';
 
 export interface TextDraftSideContent {
   side: EpigraphicUnitSide | '';
@@ -24,4 +25,11 @@ export interface TextDraftWithUser extends Omit<TextDraft, 'userUuid'> {
 export interface AddTextDraftPayload {
   content: string;
   notes: string;
+}
+
+export type GetDraftsSortType = 'text' | 'author' | 'updated';
+
+export interface DraftQueryOptions {
+  sortBy?: GetDraftsSortType;
+  sortOrder?: SortOrder;
 }
