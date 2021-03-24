@@ -201,6 +201,10 @@ class DictionaryFormDao {
       .select('reference_uuid AS referenceUuid')
       .first();
 
+    if (!row) {
+      throw new Error(`Form with UUID ${formUuid} does not exist`);
+    }
+
     return row.referenceUuid;
   }
 }

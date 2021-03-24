@@ -1080,6 +1080,7 @@ describe('dictionary api test', () => {
       getSpellingUuidsByDiscourseUuid: jest
         .fn()
         .mockResolvedValue(['spelling-uuid']),
+      textDiscourseExists: jest.fn().mockResolvedValue(true),
     };
 
     const mockDictionarySpellingDao = {
@@ -1131,6 +1132,7 @@ describe('dictionary api test', () => {
     it('returns 200 on success and null response when no spellings are found', async () => {
       const singleMockTextDiscourseDao = {
         getSpellingUuidsByDiscourseUuid: jest.fn().mockResolvedValue([]),
+        textDiscourseExists: jest.fn().mockResolvedValue(true),
       };
       sl.set('TextDiscourseDao', {
         ...singleMockTextDiscourseDao,
@@ -1150,6 +1152,24 @@ describe('dictionary api test', () => {
       ).not.toHaveBeenCalled();
       expect(mockDictionaryFormDao.getWordForms).not.toHaveBeenCalled();
       expect(mockDictionaryWordDao.getGrammaticalInfo).not.toHaveBeenCalled();
+    });
+
+    it('returns 400 on invalid text discourse UUID', async () => {
+      sl.set('TextDiscourseDao', {
+        textDiscourseExists: jest.fn().mockResolvedValue(false),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(400);
+    });
+
+    it('returns 500 when checking invalid text discourse UUID fails', async () => {
+      sl.set('TextDiscourseDao', {
+        textDiscourseExists: jest
+          .fn()
+          .mockRejectedValue('Failed to check if discourse uuid is valid'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
     });
 
     it('returns 500 when getting spelling uuid by discourse uuid fails', async () => {

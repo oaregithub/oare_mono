@@ -433,6 +433,18 @@ router
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
 
+      const textDiscourseExists = await TextDiscourseDao.textDiscourseExists(
+        discourseUuid
+      );
+      if (!textDiscourseExists) {
+        next(
+          new HttpBadRequest(
+            `Cannot retrieve information on the text discourse with UUID ${discourseUuid}`
+          )
+        );
+        return;
+      }
+
       const spellingUuids = await TextDiscourseDao.getSpellingUuidsByDiscourseUuid(
         discourseUuid
       );

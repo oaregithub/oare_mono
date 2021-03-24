@@ -103,6 +103,10 @@ class DictionarySpellingDao {
       .select('reference_uuid AS referenceUuid')
       .first();
 
+    if (!row) {
+      throw new Error(`Spelling with UUID ${spellingUuid} does not exist`);
+    }
+
     return row.referenceUuid;
   }
 }
