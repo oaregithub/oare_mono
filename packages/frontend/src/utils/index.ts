@@ -34,11 +34,10 @@ const formGrammarString = (form: DictionaryForm): string => {
     .join('')}${suffix}`.trim();
 };
 
-export const formatTimestamp = (timestamp: Date) => {
-  return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
+export const formatTimestamp = (timestamp: Date) =>
+  DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
     DateTime.DATETIME_MED
   );
-};
 
 export default {
   formGrammarString,
