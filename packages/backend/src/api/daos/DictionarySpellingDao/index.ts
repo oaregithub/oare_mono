@@ -96,6 +96,15 @@ class DictionarySpellingDao {
     );
     return spellings;
   }
+
+  async getFormUuidBySpellingUuid(spellingUuid: string): Promise<string> {
+    const row: { referenceUuid: string } = await knex('dictionary_spelling')
+      .where('uuid', spellingUuid)
+      .select('reference_uuid AS referenceUuid')
+      .first();
+
+    return row.referenceUuid;
+  }
 }
 
 export default new DictionarySpellingDao();

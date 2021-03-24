@@ -237,6 +237,15 @@ class TextDiscourseDao {
       }
     });
   }
+
+  async getSpellingUuidsByDiscourseUuid(
+    discourseUuid: string
+  ): Promise<string[]> {
+    const rows: { spellingUuid: string }[] = await knex('text_discourse')
+      .select('spelling_uuid AS spellingUuid')
+      .where('uuid', discourseUuid);
+    return rows[0].spellingUuid !== null ? rows.map(r => r.spellingUuid) : [];
+  }
 }
 
 export default new TextDiscourseDao();
