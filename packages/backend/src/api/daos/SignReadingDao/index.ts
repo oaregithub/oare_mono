@@ -13,6 +13,13 @@ class SignReadingDao {
       .where('reading', sign);
     return rows.map(row => row.uuid);
   }
+
+  async getUuidsBySignArray(signs: string[]): Promise<string[]> {
+    const rows: UuidRow[] = await knex('sign_reading')
+      .select('uuid')
+      .whereIn('reading', signs);
+    return rows.map(row => row.uuid);
+  }
 }
 
 export default new SignReadingDao();

@@ -26,7 +26,7 @@ describe('search test', () => {
     };
 
     const mockSignReadingDao = {
-      getUuidsBySign: jest.fn().mockResolvedValue('mockSignReadingUuid'),
+      getUuidsBySignArray: jest.fn().mockResolvedValue(['mockSignReadingUuid']),
       hasSign: jest.fn().mockResolvedValue(true),
     };
 
@@ -65,13 +65,27 @@ describe('search test', () => {
           ...query,
           characters: 'asz2-hu3-SZU-t,um-s,e2-HU-tam3',
         });
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('áš');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ḫù');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ŠU');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ṭum');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ṣé');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('ḪU');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('tàm');
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        'áš',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        'ḫù',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        'ŠU',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        'ṭum',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        'ṣé',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        'ḪU',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        'tàm',
+      ]);
       expect(response.status).toBe(200);
     });
 
@@ -82,16 +96,59 @@ describe('search test', () => {
           ...query,
           characters: '2AŠ-3-4DIŠ-12AŠ-23DIŠ-34-1/2',
         });
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('2AŠ'); // 2AŠ
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('3DIŠ'); // 3
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('4DIŠ'); // 4DIŠ
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('1U'); // 12AŠ
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('2AŠ');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('2U'); // 23DIŠ;
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('3DIŠ');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('3U'); // 34
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('4DIŠ');
-      expect(mockSignReadingDao.getUuidsBySign).toHaveBeenCalledWith('½'); // 1/2
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '2AŠ',
+      ]); // 2AŠ
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '3DIŠ',
+      ]); // 3
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '4DIŠ',
+      ]); // 4DIŠ
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '1U',
+      ]); // 12AŠ
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '2AŠ',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '2U',
+      ]); // 23DIŠ;
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '3DIŠ',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '3U',
+      ]); // 34
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '4DIŠ',
+      ]);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith([
+        '½',
+      ]); // 1/2
+      expect(response.status).toBe(200);
+    });
+
+    it('parses intellisearch wildcard (*)', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: '*um-IŠ*AR',
+        });
+      const consonants = 'bdgklmnpqrstwyzBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ'.split('');
+      // *um
+      const firstSearchArray = consonants.map(consonant => `${consonant}um`);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith(
+        firstSearchArray
+      );
+
+      // IŠ*AR
+      const secondSearchArray = consonants.map(consonant => `IŠ${consonant}AR`);
+      expect(mockSignReadingDao.getUuidsBySignArray).toHaveBeenCalledWith(
+        secondSearchArray
+      );
+      expect(response.status).toBe(200);
     });
 
     it('returns 500 if searching total results fails', async () => {

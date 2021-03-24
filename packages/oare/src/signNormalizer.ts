@@ -141,7 +141,7 @@ export const normalizeConsonants = (sign: string): string => {
 export const normalizeVowels = (sign: string): string => {
   const normalizedSign = sign.split('');
 
-  const isSingleDigitRegex = /^[aáàeéèiíìoóòuúùbdgklmnpqrstwyzAÁÀEÉÈIÍÌOÓÒUÚÙBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ]+[1-3]$/;
+  const isSingleDigitRegex = /^\D+[1-3]$/;
   if (sign.match(isSingleDigitRegex)) {
     return normalizeTilde(sign);
   }

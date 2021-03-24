@@ -10,6 +10,7 @@ import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { stringToCharsArray } from '@/api/daos/TextEpigraphyDao/utils';
+import { applyIntellisearch } from '@/api/daos/SignReadingDao/utils';
 
 const router = express.Router();
 
@@ -88,22 +89,10 @@ router.route('/search').get(async (req, res, next) => {
     const charactersArray = charsPayload
       ? stringToCharsArray(charsPayload)
       : [];
-
-    const signExistences = await Promise.all(
-      charactersArray.map(sign => SignReadingDao.hasSign(sign))
-    );
-
-    if (signExistences.includes(false)) {
-      const response: SearchTextsResponse = {
-        totalRows: 0,
-        results: [],
-      };
-      res.json(response);
-      return;
-    }
+    const signsArray = applyIntellisearch(charactersArray);
 
     const characterUuids = await Promise.all(
-      charactersArray.map(sign => SignReadingDao.getUuidsBySign(sign))
+      signsArray.map(signs => SignReadingDao.getUuidsBySignArray(signs))
     );
     const user = req.user || null;
 
