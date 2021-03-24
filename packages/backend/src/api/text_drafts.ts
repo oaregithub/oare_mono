@@ -1,9 +1,16 @@
 import express from 'express';
-import { AddTextDraftPayload, TextDraft, TextDraftWithUser } from '@oare/types';
+import {
+  AddTextDraftPayload,
+  TextDraft,
+  TextDraftWithUser,
+  GetDraftsSortType,
+  SortOrder,
+} from '@oare/types';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
+import { parsedQuery } from '@/utils';
 
 const router = express.Router();
 
@@ -70,12 +77,19 @@ router
     }
   });
 
-router.route('/text_drafts').get(adminRoute, async (_req, res, next) => {
+router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
   try {
     const TextDraftsDao = sl.get('TextDraftsDao');
     const UserDao = sl.get('UserDao');
 
-    const draftUuids = await TextDraftsDao.getAllDraftUuids();
+    const query = parsedQuery(req.originalUrl);
+    const sortBy = (query.get('sortBy') || 'updated') as GetDraftsSortType;
+    const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
+
+    const draftUuids = await TextDraftsDao.getAllDraftUuids({
+      sortBy,
+      sortOrder,
+    });
     const drafts = await Promise.all(
       draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
     );
