@@ -1,4 +1,5 @@
 import sl from '@/serviceLocator';
+import { User } from '@oare/types';
 import AliasDao from '@/api/daos/AliasDao';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
@@ -18,7 +19,7 @@ import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import utils from '@/utils';
 import app from './app';
 import mailer from './mailer';
-import UserDao, { UserRow } from './api/daos/UserDao';
+import UserDao from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
 import SignReadingDao from './api/daos/SignReadingDao';
 import CollectionGroupDao from './api/daos/CollectionGroupDao';
@@ -34,7 +35,7 @@ import CollectionTextUtils from './api/daos/CollectionTextUtils';
 declare global {
   namespace Express {
     interface Request {
-      user: UserRow | null;
+      user: User | null;
     }
   }
 }
