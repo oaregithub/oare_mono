@@ -262,6 +262,26 @@ describe('Text drafts test', () => {
       ]);
     });
 
+    it('uses sort options', async () => {
+      const query = {
+        sortBy: 'author',
+        sortOrder: 'asc',
+      };
+      const response = await sendRequest().query(query);
+
+      expect(response.status).toBe(200);
+      expect(TextDraftsDao.getAllDraftUuids).toHaveBeenCalledWith(query);
+    });
+
+    it('sorts by updated date by default', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(TextDraftsDao.getAllDraftUuids).toHaveBeenCalledWith({
+        sortBy: 'updated',
+        sortOrder: 'desc',
+      });
+    });
+
     it("doesn't allow non-admins to access route", async () => {
       sl.set('UserDao', {
         ...UserDao,
