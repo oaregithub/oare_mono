@@ -244,7 +244,9 @@ class TextDiscourseDao {
     const rows: { spellingUuid: string }[] = await knex('text_discourse')
       .select('spelling_uuid AS spellingUuid')
       .where('uuid', discourseUuid);
-    return rows[0].spellingUuid !== null ? rows.map(r => r.spellingUuid) : [];
+    return rows
+      .filter(row => row.spellingUuid !== null)
+      .map(r => r.spellingUuid);
   }
 }
 
