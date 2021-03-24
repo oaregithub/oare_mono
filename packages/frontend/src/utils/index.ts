@@ -1,4 +1,5 @@
 import { DictionaryForm } from '@oare/types';
+import { DateTime } from 'luxon';
 
 const formGrammarString = (form: DictionaryForm): string => {
   let suffix = '';
@@ -32,6 +33,11 @@ const formGrammarString = (form: DictionaryForm): string => {
     .filter(clitic => clitic !== '-ma')
     .join('')}${suffix}`.trim();
 };
+
+export const formatTimestamp = (timestamp: Date) =>
+  DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
+    DateTime.DATETIME_MED
+  );
 
 export default {
   formGrammarString,

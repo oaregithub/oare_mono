@@ -56,11 +56,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, Ref } from '@vue/composition-api';
+import { defineComponent, PropType } from '@vue/composition-api';
 import OareDialog from '@/components/base/OareDialog.vue';
 import { ErrorsRowWithUser, ErrorStatus } from '@oare/types';
-import { DateTime } from 'luxon';
 import sl from '@/serviceLocator';
+import { formatTimestamp } from '@/utils';
 
 export default defineComponent({
   name: 'ErrorLogDialog',
@@ -82,12 +82,6 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const statusItems: ErrorStatus[] = ['New', 'In Progress', 'Resolved'];
-
-    const formatTimestamp = (timestamp: Date) => {
-      return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
-        DateTime.DATETIME_MED
-      );
-    };
 
     const updateStatus = async (status: ErrorStatus) => {
       try {

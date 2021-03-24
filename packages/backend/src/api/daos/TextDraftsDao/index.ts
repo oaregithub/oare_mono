@@ -128,7 +128,9 @@ class TextDraftsDao {
   }
 
   async getAllDraftUuids(): Promise<string[]> {
-    const draftUuids: UuidRow[] = await knex('text_drafts').select('uuid');
+    const draftUuids: UuidRow[] = await knex('text_drafts')
+      .select('uuid')
+      .orderBy('updated_at', 'desc');
     return draftUuids.map(({ uuid }) => uuid);
   }
 }

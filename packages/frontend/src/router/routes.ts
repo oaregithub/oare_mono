@@ -21,6 +21,7 @@ import LoginView from '../views/Authentication/Login/LoginView.vue';
 import RegisterView from '../views/Authentication/Register/RegisterView.vue';
 import AdminGroupView from '../views/Admin/Groups/AdminGroupView.vue';
 import AdminTextView from '../views/Admin/PublicBlacklist/AdminTextView.vue';
+import AdminDraftsView from '../views/Admin/Drafts/AdminDraftsView.vue';
 import GroupView from '../views/Admin/Groups/index.vue';
 import CollectionTexts from '../views/Texts/CollectionTexts/index.vue';
 import CollectionsView from '../views/Texts/CollectionsView/index.vue';
@@ -78,6 +79,11 @@ const routes: RouteConfig[] = [
     path: '/admin/comments',
     name: 'adminComments',
     component: AdminCommentView,
+  },
+  {
+    path: '/admin/drafts',
+    name: 'adminDrafts',
+    component: AdminDraftsView,
   },
   {
     path: '/addblacklist/texts',
