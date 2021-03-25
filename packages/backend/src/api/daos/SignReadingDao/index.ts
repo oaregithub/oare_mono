@@ -14,7 +14,12 @@ class SignReadingDao {
     return rows.map(row => row.uuid);
   }
 
-  async getUuidsBySignArray(signs: string[]): Promise<string[]> {
+  /**
+   * Gets all valid sign uuids from array of possible intellisearch signs
+   * @param signs array of all possible signs from intellisearch query
+   * @returns sign uuids for valid signs found in the array of possible signs
+   */
+  async getIntellisearchSignUuids(signs: string[]): Promise<string[]> {
     const rows: UuidRow[] = await knex('sign_reading')
       .select('uuid')
       .whereIn('reading', signs);

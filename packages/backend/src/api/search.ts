@@ -92,7 +92,7 @@ router.route('/search').get(async (req, res, next) => {
     const signsArray = applyIntellisearch(charactersArray);
 
     const characterUuids = await Promise.all(
-      signsArray.map(signs => SignReadingDao.getUuidsBySignArray(signs))
+      signsArray.map(signs => SignReadingDao.getIntellisearchSignUuids(signs))
     );
     const user = req.user || null;
 

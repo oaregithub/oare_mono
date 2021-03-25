@@ -105,7 +105,7 @@ class TextEpigraphyDao {
     )
       .select('text_epigraphy.text_uuid AS uuid')
       .orderBy('text.name')
-      .groupBy('text_epigraphy.text_uuid')
+      .groupBy('text.name')
       .limit(pagination.limit)
       .offset((pagination.page - 1) * pagination.limit);
 
@@ -164,7 +164,7 @@ class TextEpigraphyDao {
         textWhitelist,
         collectionBlacklist
       )
-        .select(knex.raw('COUNT(DISTINCT text_epigraphy.text_uuid) AS count'))
+        .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
         .first()
     ).count;
 
