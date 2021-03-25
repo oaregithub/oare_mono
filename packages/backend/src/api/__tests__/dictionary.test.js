@@ -1071,4 +1071,155 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(500);
     });
   });
+
+  describe('GET /dictionary/textDiscourse/:discourseUuid', () => {
+    const discourseUuid = 'discourse-uuid';
+    const PATH = `${API_PATH}/dictionary/textDiscourse/${discourseUuid}`;
+
+    const mockTextDiscourseDao = {
+      getSpellingUuidsByDiscourseUuid: jest
+        .fn()
+        .mockResolvedValue(['spelling-uuid']),
+      textDiscourseExists: jest.fn().mockResolvedValue(true),
+    };
+
+    const mockDictionarySpellingDao = {
+      getFormUuidBySpellingUuid: jest.fn().mockResolvedValue('form-uuid'),
+    };
+
+    const wordForms = [{ uuid: 'form-uuid' }, { uuid: 'not-form-uuid' }];
+    const mockDictionaryFormDao = {
+      getDictionaryWordUuidByFormUuid: jest.fn().mockResolvedValue('word-uuid'),
+      getWordForms: jest.fn().mockResolvedValue(wordForms),
+    };
+
+    const grammaticalInfo = { uuid: 'word-uuid' };
+    const mockDictionaryWordDao = {
+      getGrammaticalInfo: jest.fn().mockResolvedValue(grammaticalInfo),
+    };
+
+    const textDiscourseSetup = () => {
+      sl.set('TextDiscourseDao', mockTextDiscourseDao);
+      sl.set('DictionarySpellingDao', mockDictionarySpellingDao);
+      sl.set('DictionaryFormDao', mockDictionaryFormDao);
+      sl.set('DictionaryWordDao', mockDictionaryWordDao);
+    };
+
+    beforeEach(textDiscourseSetup);
+
+    const sendRequest = () => request(app).get(PATH);
+
+    it('returns 200 on success', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual({
+        ...grammaticalInfo,
+        forms: [{ uuid: 'form-uuid' }],
+      });
+      expect(
+        mockTextDiscourseDao.getSpellingUuidsByDiscourseUuid
+      ).toHaveBeenCalled();
+      expect(
+        mockDictionarySpellingDao.getFormUuidBySpellingUuid
+      ).toHaveBeenCalled();
+      expect(
+        mockDictionaryFormDao.getDictionaryWordUuidByFormUuid
+      ).toHaveBeenCalled();
+      expect(mockDictionaryFormDao.getWordForms).toHaveBeenCalled();
+      expect(mockDictionaryWordDao.getGrammaticalInfo).toHaveBeenCalled();
+    });
+
+    it('returns 200 on success and null response when no spellings are found', async () => {
+      const singleMockTextDiscourseDao = {
+        getSpellingUuidsByDiscourseUuid: jest.fn().mockResolvedValue([]),
+        textDiscourseExists: jest.fn().mockResolvedValue(true),
+      };
+      sl.set('TextDiscourseDao', {
+        ...singleMockTextDiscourseDao,
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(null);
+      expect(
+        singleMockTextDiscourseDao.getSpellingUuidsByDiscourseUuid
+      ).toHaveBeenCalled();
+      expect(
+        mockDictionarySpellingDao.getFormUuidBySpellingUuid
+      ).not.toHaveBeenCalled();
+      expect(
+        mockDictionaryFormDao.getDictionaryWordUuidByFormUuid
+      ).not.toHaveBeenCalled();
+      expect(mockDictionaryFormDao.getWordForms).not.toHaveBeenCalled();
+      expect(mockDictionaryWordDao.getGrammaticalInfo).not.toHaveBeenCalled();
+    });
+
+    it('returns 400 on invalid text discourse UUID', async () => {
+      sl.set('TextDiscourseDao', {
+        textDiscourseExists: jest.fn().mockResolvedValue(false),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(400);
+    });
+
+    it('returns 500 when checking invalid text discourse UUID fails', async () => {
+      sl.set('TextDiscourseDao', {
+        textDiscourseExists: jest
+          .fn()
+          .mockRejectedValue('Failed to check if discourse uuid is valid'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when getting spelling uuid by discourse uuid fails', async () => {
+      sl.set('TextDiscourseDao', {
+        getSpellingUuidsByDiscourseUuid: jest
+          .fn()
+          .mockRejectedValue(
+            'Failed to get spelling uuids from discourse uuid'
+          ),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+    it('returns 500 when getting form uuid fails', async () => {
+      sl.set('DictionarySpellingDao', {
+        getFormUuidBySpellingUuid: jest
+          .fn()
+          .mockRejectedValue('Failed to get form uuid by spelling uuid'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+    it('returns 500 when getting word uuid fails', async () => {
+      sl.set('DictionaryFormDao', {
+        ...mockDictionaryFormDao,
+        getDictionaryWordUuidByFormUuid: jest
+          .fn()
+          .mockRejectedValue('Failed to get word uuid by form uuid'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+    it('returns 500 when getting word forms fails', async () => {
+      sl.set('DictionaryFormDao', {
+        ...mockDictionaryFormDao,
+        getWordForms: jest
+          .fn()
+          .mockRejectedValue('Failed to get forms by word uuid'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+    it('returns 500 when getting grammatical info fails', async () => {
+      sl.set('DictionaryWordDao', {
+        getGrammaticalInfo: jest
+          .fn()
+          .mockRejectedValue('Failed to get grammatical info by word uuid'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
 });
