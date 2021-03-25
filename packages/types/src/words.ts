@@ -18,6 +18,7 @@ export interface DictionaryWordParseInfo {
 }
 
 export interface DictionaryWordResponse extends DictionaryWordParseInfo {
+  uuid: string;
   word: string;
   forms: DictionaryForm[];
 }
