@@ -33,6 +33,21 @@ export interface SearchTextArgs {
   pagination: Pagination;
 }
 
+export interface signSeries{
+    id: integer;
+    uuid: string;
+    type: string;
+    line: decimal, 5, 2;
+    reading: string;
+    char_on_tablet: integer;
+}
+
+export interface anchor{
+    id: integer;
+    textUuid: string;
+    type: string;
+    line: decimal, 5, 2;
+}
 class TextEpigraphyDao {
   async getEpigraphicUnits(
     textUuid: string,
@@ -177,6 +192,41 @@ class TextEpigraphyDao {
       .where('text_uuid', uuid);
     return !!response;
   }
+
+   /* this seems to do what I want with one exception:
+   I'd like it to ensure that char_on_tablet is continuous...
+   don't know how to do that... */
+  async getSignSeries(anchor[]): Promise<signSeries[]> {
+    const sign: signSeries[] = await knex('text_epigraphy')
+        .select('id',
+                'uuid',
+                'type',
+                'line',
+                'reading',
+                'char_on_tablet as charOnTablet'
+                )
+        .where('id', ">=", anchor.id)
+        .andWhere('text_uuid', anchor.textUuid)
+        .andWhere('line', anchor.line)
+        .andWhere('type', anchor.type);
+    return sign;
+  }
+
+  async getFirstMissingWordAnchor (): Promise<anchor[]> {
+    const AnchorInfo = knex('text_epigraphy')
+      .select(
+        min('id'),
+        'text_uuid as textUuid',
+        'line',
+        'type'
+        )
+        .whereIn('type', ['sign','number'])
+        .andWhere('discourseUuid',null);
+    return AnchorInfo;
+  }
+
+
+
 }
 
 export default new TextEpigraphyDao();
