@@ -1,23 +1,18 @@
-import { knexConfig } from "@/connection";
-import { TabletHtmlRenderer } from "@oare/oare/build";
-import * as Knex from "knex";
-import { each } from "lodash";
+import { knexConfig } from '@/connection';
+import { TabletHtmlRenderer } from '@oare/oare/build';
+import * as Knex from 'knex';
+import { each } from 'lodash';
 
 /* 
 This version is meant to mockup the wide open version first. 
 */
 
-
 export async function up(knex: Knex): Promise<void> {
-    /* utterly unstarted  */
-    let newPsbleWrd = signSeries.map(this)
-           
-            
+  /* utterly unstarted  */
+  const newPsbleWrd = signSeries.map(this);
 }
 
-export async function down(knex: Knex): Promise<void> {
-}
-
+export async function down(knex: Knex): Promise<void> {}
 
 /*   This is just the (hacky) SQL version of what I was trying to do...
 DELIMITER $$
@@ -176,7 +171,3 @@ BEGIN
 DELIMITER ;
 
 */
-
-
-
-
