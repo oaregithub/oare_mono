@@ -14,13 +14,20 @@ import { createdNestedDiscourses, setDiscourseReading } from './utils';
 export interface DiscourseRow {
   uuid: string;
   type: DiscourseUnitType;
+  childNum: number | null;
   wordOnTablet: number | null;
+  textUuid: string;
+  treeUuid: string;
   parentUuid: string | null;
+  spellingUuid: string | null;
   spelling: string | null;
+  explicitSpelling: string | null;
   transcription: string | null;
   line: number | null;
   paragraphLabel: string | null;
   translation: string | null;
+  objectInText: number | null;
+
 }
 
 export interface SearchDiscourseSpellingDaoResponse {
@@ -125,13 +132,19 @@ class TextDiscourseDao {
       .select(
         'text_discourse.uuid',
         'text_discourse.type',
+        'text_discourse.child_num AS childNum',
         'text_discourse.word_on_tablet AS wordOnTablet',
+        'text_discourse.text_uuid AS textUuid',
+        'text_discourse.tree_uuid AS treeUuid',
         'text_discourse.parent_uuid AS parentUuid',
+        'text_discourse.spelling_uuid AS spellingUuid',
         'text_discourse.spelling',
+        'text_discourse.explicit_spelling AS explicitSpelling',
         'text_discourse.transcription',
         'text_epigraphy.line',
         'alias.name AS paragraphLabel',
-        'field.field AS translation'
+        'field.field AS translation',
+        'text_discourse.obj_in_text AS objectInText',
       )
       .leftJoin(
         'text_epigraphy',
