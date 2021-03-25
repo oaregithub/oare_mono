@@ -1,4 +1,4 @@
-import { TextDraft, AddTextDraftPayload } from '@oare/types';
+import { TextDraft, AddTextDraftPayload, TextDraftWithUser } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function createDraft(textUuid: string, payload: AddTextDraftPayload) {
@@ -10,7 +10,13 @@ async function getDrafts(userUuid: string): Promise<TextDraft[]> {
   return data;
 }
 
+async function getAllDrafts(): Promise<TextDraftWithUser[]> {
+  const { data } = await axios.get('/text_drafts');
+  return data;
+}
+
 export default {
   createDraft,
   getDrafts,
+  getAllDrafts,
 };

@@ -1,4 +1,4 @@
-import { TextDraft, UuidRow } from '@oare/types';
+import { TextDraft, UuidRow, DraftQueryOptions } from '@oare/types';
 import { v4 } from 'uuid';
 import knex from '@/connection';
 import CollectionTextUtils from '../CollectionTextUtils';
@@ -127,8 +127,28 @@ class TextDraftsDao {
     return draftUuids.filter((_, index) => canEdits[index]);
   }
 
-  async getAllDraftUuids(): Promise<string[]> {
-    const draftUuids: UuidRow[] = await knex('text_drafts').select('uuid');
+  async getAllDraftUuids({
+    sortBy,
+    sortOrder,
+  }: DraftQueryOptions): Promise<string[]> {
+    const draftUuids: UuidRow[] = await knex('text_drafts')
+      .select(
+        'text_drafts.uuid',
+        knex.raw('CONCAT(user.first_name, " ", user.last_name) AS author')
+      )
+      .innerJoin('user', 'user.uuid', 'text_drafts.user_uuid')
+      .modify(qb => {
+        if (sortBy === 'text') {
+          qb.innerJoin('text', 'text.uuid', 'text_drafts.text_uuid').orderBy(
+            'text.name',
+            sortOrder
+          );
+        } else if (sortBy === 'updated') {
+          qb.orderBy('text_drafts.updated_at', sortOrder);
+        } else if (sortBy === 'author') {
+          qb.orderBy('author', sortOrder);
+        }
+      });
     return draftUuids.map(({ uuid }) => uuid);
   }
 }
