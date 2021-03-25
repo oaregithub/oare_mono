@@ -95,6 +95,15 @@ async function getSpellingTextOccurrences(
   return data;
 }
 
+async function getDictionaryInfoByDiscourseUuid(
+  discourseUuid: string
+): Promise<DictionaryWordResponse | null> {
+  const { data } = await axios.get(
+    `/dictionary/textDiscourse/${discourseUuid}`
+  );
+  return data;
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -105,4 +114,5 @@ export default {
   removeSpelling,
   checkSpelling,
   getSpellingTextOccurrences,
+  getDictionaryInfoByDiscourseUuid,
 };

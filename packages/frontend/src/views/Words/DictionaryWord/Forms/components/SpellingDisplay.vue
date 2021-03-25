@@ -2,7 +2,7 @@
   <span class="d-flex flex-row mb-0">
     <mark v-if="spelling.uuid === uuidToHighlight">
       <span
-        v-if="canEdit"
+        v-if="canEdit && allowEditing"
         @click="openUtilList"
         class="testing-spelling"
         :class="{ 'cursor-display': cursor }"
@@ -12,7 +12,7 @@
     </mark>
     <template v-else>
       <span
-        v-if="canEdit"
+        v-if="canEdit && allowEditing"
         @click="openUtilList"
         class="testing-spelling"
         :class="{ 'cursor-display': cursor }"
@@ -116,6 +116,10 @@ export default defineComponent({
       default: null,
     },
     cursor: {
+      type: Boolean,
+      default: true,
+    },
+    allowEditing: {
       type: Boolean,
       default: true,
     },

@@ -2,7 +2,7 @@
   <div>
     <div class="d-flex mb-3">
       <v-btn
-        v-if="canEditTranslations && !isEditingTranslations"
+        v-if="canEditTranslations && !isEditingTranslations && allowEditing"
         icon
         class="mt-n2"
         @click="isEditingTranslations = true"
@@ -11,7 +11,7 @@
       </v-btn>
 
       <edit-translations
-        v-if="isEditingTranslations"
+        v-if="isEditingTranslations && allowEditing"
         @close-editor="isEditingTranslations = false"
         :translations="wordInfo.translations"
         @update:translations="updateTranslations"
@@ -54,6 +54,7 @@
       :word-uuid="wordInfo.uuid"
       :uuid-to-highlight="uuidToHighlight"
       :cursor="cursor"
+      :allow-editing="allowEditing"
       @clicked-util-list="emitUtilList"
     />
   </div>
@@ -90,6 +91,10 @@ export default defineComponent({
       default: null,
     },
     cursor: {
+      type: Boolean,
+      default: true,
+    },
+    allowEditing: {
       type: Boolean,
       default: true,
     },
