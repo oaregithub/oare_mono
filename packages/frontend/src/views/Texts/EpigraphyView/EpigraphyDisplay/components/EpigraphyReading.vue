@@ -20,7 +20,7 @@
               v-for="(word, index) in renderer.getLineWords(lineNum)"
               :key="index"
               v-html="word.reading"
-              class="mr-1 cursor-display"
+              class="mr-1 cursor-display test-rendered-word"
               @click="openDialog(word.discourseUuid)"
             />
           </span>
@@ -29,6 +29,8 @@
     </div>
 
     <oare-dialog
+      v-if="viewingDialog"
+      class="test-rendering-word-dialog"
       :closeButton="true"
       :persistent="false"
       :show-cancel="false"

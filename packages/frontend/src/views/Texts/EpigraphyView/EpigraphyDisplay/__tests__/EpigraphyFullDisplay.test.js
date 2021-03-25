@@ -17,21 +17,62 @@ describe('EpigraphyFullDisplay View', () => {
           name: 'VIEW_TEXT_DISCOURSE',
         },
       ],
+      isAdmin: true,
     },
+  };
+
+  const mockServer = {
+    getDictionaryInfoByDiscourseUuid: jest.fn().mockResolvedValue({
+      uuid: 'test-word-uuid',
+      word: 'test-word',
+      forms: [],
+      partsOfSpeech: [],
+      verbalThematicVowelTypes: [],
+      specialClassifications: [],
+      translations: [],
+    }),
+  };
+
+  const mostEpigraphicUnits = [
+    {
+      charOnLine: 4,
+      charOnTablet: 4,
+      column: 0,
+      discourseUuid: 'test-discourse-uuid',
+      epigReading: 'GIN',
+      epigType: 'sign',
+      line: 1,
+      markups: [],
+      objOnTablet: null,
+      reading: 'GIN',
+      readingUuid: 'test-reading-uuid',
+      side: 'obv.',
+      signUuid: 'test-sign-uuid',
+      type: 'logogram',
+      uuid: 'test-uuid',
+      value: 'GIN',
+    },
+  ];
+
+  const mockActions = {
+    showSnackbar: jest.fn(),
+    showErrorSnackbar: jest.fn(),
   };
 
   const renderOptions = {
     localVue,
     vuetify,
     propsData: {
-      epigraphicUnits: [],
+      epigraphicUnits: mostEpigraphicUnits,
       markupUnits: [],
       discourseUnits: [],
     },
   };
 
-  const createWrapper = ({ store } = {}) => {
+  const createWrapper = ({ store, server, actions } = {}) => {
     sl.set('store', store || mockStore);
+    sl.set('serverProxy', server || mockServer);
+    sl.set('globalActions', actions || mockActions);
 
     return mount(EpigraphyFullDisplay, renderOptions);
   };
@@ -52,5 +93,54 @@ describe('EpigraphyFullDisplay View', () => {
     });
     await flushPromises();
     expect(wrapper.find('.test-discourses').exists()).toBe(false);
+  });
+
+  it('display epigraphy reading dialog when word is selected', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    const readings = await wrapper.get('.test-epigraphies');
+    expect(readings.html()).toContain('GIN');
+    expect(mockActions.showSnackbar).not.toHaveBeenCalled();
+
+    let dialogExists = await wrapper
+      .find('.test-rendering-word-dialog')
+      .exists();
+    expect(dialogExists).toBe(false);
+    await readings.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+
+    dialogExists = await wrapper.find('.test-rendering-word-dialog').exists();
+    expect(dialogExists).toBe(true);
+  });
+
+  it('display snackbar if no spelling for discourseUuid and dialog does not display', async () => {
+    const wrapper = createWrapper({
+      server: {
+        getDictionaryInfoByDiscourseUuid: jest.fn().mockResolvedValue(null),
+      },
+    });
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
+
+    const dialogExists = await wrapper
+      .find('.test-rendering-word-dialog')
+      .exists();
+    expect(dialogExists).toBe(false);
+  });
+
+  it('display error snackbar when unable to retrieve word info for rendered word', async () => {
+    const wrapper = createWrapper({
+      server: {
+        getDictionaryInfoByDiscourseUuid: jest
+          .fn()
+          .mockRejectedValue('Unable to retrieve word info by discourseUuid'),
+      },
+    });
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });
