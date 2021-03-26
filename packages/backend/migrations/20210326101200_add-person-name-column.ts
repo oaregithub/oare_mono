@@ -1,31 +1,31 @@
 import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  const hasColumn = await knex.schema.hasColumn('person', 'pn_uuid');
-  const hasColumn2 = await knex.schema.hasColumn('person', 'label');
+  const hasNameUuidColumn = await knex.schema.hasColumn('person', 'name_uuid');
+  const hasLabelColumn = await knex.schema.hasColumn('person', 'label');
 
-  if (!hasColumn) {
+  if (!hasNameUuidColumn) {
     await knex.raw(
-      'ALTER TABLE person ADD COLUMN pn_uuid CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER uuid;'
+      'ALTER TABLE person ADD COLUMN name_uuid CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER uuid;'
     );
   }
-    if (!hasColumn2) {
+  if (!hasLabelColumn) {
     await knex.raw(
-      'ALTER TABLE person ADD COLUMN label VARCHAR(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER uuid;'
+      'ALTER TABLE person ADD COLUMN label VARCHAR(225) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER name_uuid;'
     );
-    }
+  }
 }
 
 export async function down(knex: Knex): Promise<void> {
-    const hasColumn = await knex.schema.hasColumn('person', 'pn_uuid');
-    const hasColumn2 = await knex.schema.hasColumn('person', 'label');
+  const hasNameUuidColumn = await knex.schema.hasColumn('person', 'name_uuid');
+  const hasLabelColumn = await knex.schema.hasColumn('person', 'label');
 
-  if (hasColumn2) {
+  if (hasNameUuidColumn) {
     await knex.schema.table('person', table => {
-      table.dropColumn('pn_uuid');
+      table.dropColumn('name_uuid');
     });
   }
-    if (hasColumn2) {
+  if (hasLabelColumn) {
     await knex.schema.table('person', table => {
       table.dropColumn('label');
     });
