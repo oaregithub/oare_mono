@@ -3,7 +3,7 @@
     <template #title>
       <v-row v-if="!isEditing" class="px-3">
         <v-btn
-          v-if="canUpdateWordSpelling && !isEditing"
+          v-if="canUpdateWordSpelling && !isEditing && allowEditing"
           icon
           class="mt-n2 mr-1"
           @click="
@@ -27,7 +27,7 @@
       </v-row>
 
       <word-name-edit
-        v-else-if="wordInfo && utilList.type === 'WORD'"
+        v-else-if="wordInfo && utilList.type === 'WORD' && allowEditing"
         :word.sync="wordInfo.word"
         :wordUuid="uuid"
         @close-edit="
@@ -39,7 +39,7 @@
       />
     </template>
     <template #header>
-      <OareBreadcrumbs :items="breadcrumbItems" />
+      <OareBreadcrumbs v-if="allowBreadcrumbs" :items="breadcrumbItems" />
     </template>
     <WordInfo
       v-if="wordInfo"
@@ -48,9 +48,10 @@
       :updateWordInfo="updateWordInfo"
       :uuid-to-highlight="uuidToHighlight"
       :cursor="allowCommenting"
+      :allow-editing="allowEditing"
     />
 
-    <template v-if="isEditing && utilList.type === 'SPELLING'">
+    <template v-if="isEditing && utilList.type === 'SPELLING' && allowEditing">
       <spelling-dialog
         :form="utilList.form"
         :spelling="utilList.formSpelling"
@@ -59,7 +60,7 @@
     </template>
 
     <OareDialog
-      v-if="isDeleting && utilList.type === 'SPELLING'"
+      v-if="isDeleting && utilList.type === 'SPELLING' && allowDeleting"
       v-model="isDeleting"
       title="Delete spelling"
       submitText="Yes, delete"
@@ -141,11 +142,27 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    selectedWordInfo: {
+      type: Object as PropType<DictionaryWordResponse>,
+      default: null,
+    },
     uuidToHighlight: {
       type: String,
       default: null,
     },
     allowCommenting: {
+      type: Boolean,
+      default: true,
+    },
+    allowEditing: {
+      type: Boolean,
+      default: true,
+    },
+    allowDeleting: {
+      type: Boolean,
+      default: true,
+    },
+    allowBreadcrumbs: {
       type: Boolean,
       default: true,
     },
@@ -185,7 +202,11 @@ export default defineComponent({
     const loadDictionaryInfo = async () => {
       loading.value = true;
       try {
-        wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
+        if (props.selectedWordInfo) {
+          wordInfo.value = props.selectedWordInfo;
+        } else {
+          wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
+        }
       } catch {
         actions.showErrorSnackbar('Failed to retrieve dictionary info');
       } finally {

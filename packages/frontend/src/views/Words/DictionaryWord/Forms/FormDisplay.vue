@@ -2,7 +2,7 @@
   <div>
     <div v-if="!editing" class="d-flex">
       <v-btn
-        v-if="canAddSpelling && !editing"
+        v-if="canAddSpelling && !editing && allowEditing"
         icon
         class="mt-n2 mr-1"
         @click="spellingDialogOpen = true"
@@ -10,7 +10,7 @@
         <v-icon>mdi-plus</v-icon>
       </v-btn>
       <v-btn
-        v-if="canEdit"
+        v-if="canEdit && allowEditing"
         icon
         class="test-pencil mt-n2"
         @click="editing = true"
@@ -41,6 +41,7 @@
             :word-uuid="wordUuid"
             :uuid-to-highlight="uuidToHighlight"
             :cursor="cursor"
+            :allow-editing="allowEditing"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -82,6 +83,7 @@
               :word-uuid="wordUuid"
               :uuid-to-highlight="uuidToHighlight"
               :cursor="cursor"
+              :allow-editing="allowEditing"
             />
             <span v-if="index !== form.spellings.length - 1" class="mr-1"
               >,</span
@@ -141,6 +143,10 @@ export default defineComponent({
       default: null,
     },
     cursor: {
+      type: Boolean,
+      default: true,
+    },
+    allowEditing: {
       type: Boolean,
       default: true,
     },
