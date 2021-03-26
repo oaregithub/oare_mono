@@ -48,6 +48,10 @@ export default defineComponent({
         onAction.value = options.onAction || (() => {});
         actionText.value = options.actionText || 'Close';
       });
+
+      EventBus.$on(ACTIONS.CLOSE_TOAST, () => {
+        showSnackbar.value = false;
+      });
     });
 
     return {

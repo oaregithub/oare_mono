@@ -96,6 +96,7 @@ export default defineComponent({
         discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
           discourseUuid
         );
+        actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;
         } else {

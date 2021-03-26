@@ -57,6 +57,7 @@ describe('EpigraphyFullDisplay View', () => {
   const mockActions = {
     showSnackbar: jest.fn(),
     showErrorSnackbar: jest.fn(),
+    closeSnackbar: jest.fn(),
   };
 
   const renderOptions = {
