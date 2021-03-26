@@ -22,6 +22,7 @@ export {
   normalizeSign,
   normalizeFraction,
   normalizeNumber,
+  indexOfFirstVowel,
 } from './signNormalizer';
 
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';

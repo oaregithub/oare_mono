@@ -165,7 +165,7 @@ export const normalizeVowels = (sign: string): string => {
  */
 export const indexOfFirstVowel = (sign: string): number => {
   const splitSign = sign.split('');
-  const vowels = ['A', 'E', 'I', 'O', 'U', 'a', 'e', 'i', 'o', 'u'];
+  const vowels = 'AÁÀEÉÈIÍÌOÓÒUÚÙaáàeéèiíìoóòuúù'.split('');
   const firstVowel = splitSign.find(char => vowels.includes(char));
   if (firstVowel) {
     return splitSign.indexOf(firstVowel);
