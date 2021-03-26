@@ -139,14 +139,17 @@ class TextDraftsDao {
       .innerJoin('user', 'user.uuid', 'text_drafts.user_uuid')
       .modify(qb => {
         if (sortBy === 'text') {
-          qb.innerJoin('text', 'text.uuid', 'text_drafts.text_uuid').orderBy(
-            'text.name',
-            sortOrder
-          );
+          qb.innerJoin('text', 'text.uuid', 'text_drafts.text_uuid').orderBy([
+            { column: 'text.name', order: sortOrder },
+            { column: 'updated_at', order: 'desc' },
+          ]);
         } else if (sortBy === 'updated') {
           qb.orderBy('text_drafts.updated_at', sortOrder);
         } else if (sortBy === 'author') {
-          qb.orderBy('author', sortOrder);
+          qb.orderBy([
+            { column: 'author', order: sortOrder },
+            { column: 'updated_at', order: 'desc' },
+          ]);
         }
       });
     return draftUuids.map(({ uuid }) => uuid);
