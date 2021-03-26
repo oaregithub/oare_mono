@@ -122,7 +122,7 @@ describe('EpigraphyFullDisplay View', () => {
     await flushPromises();
     await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
     await flushPromises();
-    expect(mockActions.showSnackbar).toHaveBeenCalled();
+    expect(mockActions.showSnackbar).toHaveBeenCalledTimes(2);
 
     const dialogExists = await wrapper
       .find('.test-rendering-word-dialog')

@@ -36,9 +36,8 @@
       :show-cancel="false"
       :show-submit="false"
       :submitLoading="loading"
-      :value="viewingDialog"
       :width="400"
-      @input="viewingDialog = false"
+      v-model="viewingDialog"
     >
       <dictionary-word
         v-if="discourseWordInfo"
@@ -93,6 +92,7 @@ export default defineComponent({
     const openDialog = async (discourseUuid: string) => {
       try {
         loading.value = true;
+        actions.showSnackbar('Fetching discourse information...');
         discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
           discourseUuid
         );
