@@ -1,6 +1,9 @@
 <template>
   <div>
-    <EpigraphyReading :epigraphicUnits="epigraphicUnits" />
+    <EpigraphyReading
+      class="test-epigraphies"
+      :epigraphicUnits="epigraphicUnits"
+    />
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"

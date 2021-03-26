@@ -9,6 +9,10 @@ const showSnackbar = (text: string, options: SnackbarActions = {}): void => {
   EventBus.$emit(ACTIONS.TOAST, { text, ...options });
 };
 
+const closeSnackbar = (): void => {
+  EventBus.$emit(ACTIONS.CLOSE_TOAST);
+};
+
 const showErrorSnackbar = async (
   text: string,
   devErrorText?: string
@@ -52,6 +56,7 @@ const globalActions = {
   showErrorSnackbar,
   logError,
   showUnsavedChangesWarning,
+  closeSnackbar,
 };
 
 export type GlobalActionsType = typeof globalActions;
