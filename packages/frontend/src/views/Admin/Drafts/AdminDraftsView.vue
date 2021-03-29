@@ -1,11 +1,11 @@
 <template>
   <OareContentView title="Text Drafts">
-    <v-data-table
-      :loading="loading"
+    <oare-data-table
       :headers="headers"
       item-key="uuid"
-      :items="items"
-      :options.sync="sortOptions"
+      :items="drafts"
+      :fetchItems="loadDrafts"
+      defaultSort="updatedAt"
     >
       <template #[`item.text`]="{ item }">
         <router-link :to="`/epigraphies/${item.textUuid}`">{{
@@ -28,7 +28,7 @@
           >View content</v-btn
         >
       </template>
-    </v-data-table>
+    </oare-data-table>
 
     <OareDialog
       v-model="dialogOpen"
@@ -52,6 +52,7 @@ import sl from '@/serviceLocator';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import { formatTimestamp } from '@/utils';
 import useQueryParam from '@/hooks/useQueryParam';
+import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 import DraftContentPopup from './DraftContentPopup.vue';
 
 export default defineComponent({
@@ -88,12 +89,12 @@ export default defineComponent({
       mustSort: true,
     });
 
-    const loadDrafts = async () => {
+    const loadDrafts = async (options: OareDataTableOptions) => {
       try {
         loading.value = true;
         const allDrafts = await server.getAllDrafts({
-          sortBy: sortBy.value as GetDraftsSortType,
-          sortOrder: sortDesc.value === 'true' ? 'desc' : 'asc',
+          sortBy: options.sortBy as GetDraftsSortType,
+          sortOrder: options.sortDesc ? 'desc' : 'asc',
         });
         drafts.value = [...allDrafts];
       } catch {
@@ -103,16 +104,16 @@ export default defineComponent({
       }
     };
 
-    watch(sortOptions, (newOptions, oldOptions) => {
-      if (
-        newOptions.page === oldOptions.page &&
-        newOptions.itemsPerPage === oldOptions.itemsPerPage
-      ) {
-        setSortBy(newOptions.sortBy[0]);
-        setSortDesc(String(newOptions.sortDesc[0]));
-        loadDrafts();
-      }
-    });
+    // watch(sortOptions, (newOptions, oldOptions) => {
+    //   if (
+    //     newOptions.page === oldOptions.page &&
+    //     newOptions.itemsPerPage === oldOptions.itemsPerPage
+    //   ) {
+    //     setSortBy(newOptions.sortBy[0]);
+    //     setSortDesc(String(newOptions.sortDesc[0]));
+    //     loadDrafts();
+    //   }
+    // });
 
     const items = computed(() => (loading.value ? [] : drafts.value));
 
@@ -130,6 +131,8 @@ export default defineComponent({
       dialogOpen,
       openDialog,
       sortOptions,
+      loadDrafts,
+      drafts,
     };
   },
 });
