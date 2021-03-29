@@ -130,6 +130,8 @@ class TextDraftsDao {
   async getAllDraftUuids({
     sortBy,
     sortOrder,
+    page,
+    limit,
   }: DraftQueryOptions): Promise<string[]> {
     const draftUuids: UuidRow[] = await knex('text_drafts')
       .select(
@@ -148,7 +150,9 @@ class TextDraftsDao {
         } else if (sortBy === 'author') {
           qb.orderBy('author', sortOrder);
         }
-      });
+      })
+      .limit(limit)
+      .offset((page - 1) * limit);
     return draftUuids.map(({ uuid }) => uuid);
   }
 }

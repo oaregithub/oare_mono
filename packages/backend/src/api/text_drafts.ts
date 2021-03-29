@@ -10,7 +10,7 @@ import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
-import { parsedQuery } from '@/utils';
+import utils, { parsedQuery } from '@/utils';
 
 const router = express.Router();
 
@@ -85,10 +85,13 @@ router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
     const query = parsedQuery(req.originalUrl);
     const sortBy = (query.get('sortBy') || 'updated') as GetDraftsSortType;
     const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
+    const { page, limit } = utils.extractPagination(req.query);
 
     const draftUuids = await TextDraftsDao.getAllDraftUuids({
       sortBy,
       sortOrder,
+      page,
+      limit,
     });
     const drafts = await Promise.all(
       draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))

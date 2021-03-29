@@ -1,6 +1,7 @@
 import { EpigraphicUnitSide } from './epigraphies';
 import { User } from './login';
 import { SortOrder } from './utils';
+import { Pagination } from './dictionary';
 
 export interface TextDraftSideContent {
   side: EpigraphicUnitSide | '';
@@ -29,7 +30,7 @@ export interface AddTextDraftPayload {
 
 export type GetDraftsSortType = 'text' | 'author' | 'updated';
 
-export interface DraftQueryOptions {
+export interface DraftQueryOptions extends Pagination {
   sortBy?: GetDraftsSortType;
   sortOrder?: SortOrder;
 }
