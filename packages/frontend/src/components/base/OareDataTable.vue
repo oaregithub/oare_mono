@@ -68,10 +68,6 @@ export default defineComponent({
       >,
       required: true,
     },
-    serverPagination: {
-      type: Boolean,
-      default: true,
-    },
   },
   setup({
     defaultSort,
@@ -80,7 +76,6 @@ export default defineComponent({
     defaultRows,
     fetchItems,
     errorMessage,
-    serverPagination,
   }) {
     const actions = sl.get('globalActions');
     const [sortBy, setSortBy] = useQueryParam('sortBy', defaultSort);

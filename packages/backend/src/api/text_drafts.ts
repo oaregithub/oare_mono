@@ -84,7 +84,7 @@ router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
     const UserDao = sl.get('UserDao');
 
     const query = parsedQuery(req.originalUrl);
-    const sortBy = (query.get('sortBy') || 'updated') as GetDraftsSortType;
+    const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
     const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
     const { page, limit } = utils.extractPagination(req.query);
 

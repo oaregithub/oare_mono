@@ -47,12 +47,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from '@vue/composition-api';
+import { defineComponent, ref, computed } from '@vue/composition-api';
 import { TextDraftWithUser, GetDraftsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
-import { DataTableHeader, DataOptions } from 'vuetify';
+import { DataTableHeader } from 'vuetify';
 import { formatTimestamp } from '@/utils';
-import useQueryParam from '@/hooks/useQueryParam';
 import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 import DraftContentPopup from './DraftContentPopup.vue';
 
@@ -77,30 +76,14 @@ export default defineComponent({
       { text: 'Content', value: 'content', sortable: false },
     ]);
 
-    const [sortBy, setSortBy] = useQueryParam('sortBy', 'updatedAt');
-    const [sortDesc, setSortDesc] = useQueryParam('sortDesc', 'true');
-    const [page, setPage] = useQueryParam('page', '1');
-    const [limit, setLimit] = useQueryParam('rows', '10');
-
-    const sortOptions = ref<DataOptions>({
-      page: Number(page.value),
-      itemsPerPage: Number(limit.value),
-      sortBy: [sortBy.value],
-      sortDesc: [sortDesc.value === 'true'],
-      groupBy: [],
-      groupDesc: [],
-      multiSort: false,
-      mustSort: true,
-    });
-
     const loadDrafts = async (options: OareDataTableOptions) => {
       try {
         loading.value = true;
         const draftData = await server.getAllDrafts({
           sortBy: options.sortBy as GetDraftsSortType,
           sortOrder: options.sortDesc ? 'desc' : 'asc',
-          page: Number(page.value),
-          limit: Number(limit.value),
+          page: options.page,
+          limit: options.rows,
         });
         drafts.value = [...draftData.drafts];
         totalDrafts.value = draftData.totalDrafts;
@@ -110,24 +93,6 @@ export default defineComponent({
         loading.value = false;
       }
     };
-
-    // watch(sortOptions, (newOptions, oldOptions) => {
-    //   if (
-    //     newOptions.page === oldOptions.page &&
-    //     newOptions.itemsPerPage === oldOptions.itemsPerPage
-    //   ) {
-    //     setSortBy(newOptions.sortBy[0]);
-    //     setSortDesc(String(newOptions.sortDesc[0]));
-    //     loadDrafts();
-    //   }
-    // });
-    // watch(sortOptions, newOptions => {
-    //   setSortBy(newOptions.sortBy[0]);
-    //   setSortDesc(String(newOptions.sortDesc[0]));
-    //   setPage(String(newOptions.page));
-    //   setLimit(String(newOptions.itemsPerPage));
-    //   loadDrafts();
-    // });
 
     const items = computed(() => (loading.value ? [] : drafts.value));
 
@@ -144,7 +109,6 @@ export default defineComponent({
       viewingDraft,
       dialogOpen,
       openDialog,
-      sortOptions,
       loadDrafts,
       drafts,
       totalDrafts,

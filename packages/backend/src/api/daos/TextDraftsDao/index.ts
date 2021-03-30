@@ -150,7 +150,7 @@ class TextDraftsDao {
             { column: 'text.name', order: sortOrder },
             { column: 'updated_at', order: 'desc' },
           ]);
-        } else if (sortBy === 'updated') {
+        } else if (sortBy === 'updatedAt') {
           qb.orderBy('text_drafts.updated_at', sortOrder);
         } else if (sortBy === 'author') {
           qb.orderBy([
