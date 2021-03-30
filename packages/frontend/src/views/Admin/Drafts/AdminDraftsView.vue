@@ -4,7 +4,8 @@
       :loading="loading"
       :headers="headers"
       item-key="uuid"
-      :items="drafts"
+      :items="items"
+      :options.sync="sortOptions"
     >
       <template #[`item.text`]="{ item }">
         <router-link :to="`/epigraphies/${item.textUuid}`">{{
@@ -45,11 +46,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from '@vue/composition-api';
-import { TextDraftWithUser } from '@oare/types';
+import { defineComponent, ref, computed, watch } from '@vue/composition-api';
+import { TextDraftWithUser, GetDraftsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
-import { DataTableHeader } from 'vuetify';
+import { DataTableHeader, DataOptions } from 'vuetify';
 import { formatTimestamp } from '@/utils';
+import useQueryParam from '@/hooks/useQueryParam';
 import DraftContentPopup from './DraftContentPopup.vue';
 
 export default defineComponent({
@@ -69,20 +71,50 @@ export default defineComponent({
       { text: 'Text', value: 'text' },
       { text: 'Author', value: 'author' },
       { text: 'Last Updated', value: 'updatedAt' },
-      { text: 'Content', value: 'content' },
+      { text: 'Content', value: 'content', sortable: false },
     ]);
 
-    onMounted(async () => {
+    const [sortBy, setSortBy] = useQueryParam('sortBy', 'updatedAt');
+    const [sortDesc, setSortDesc] = useQueryParam('sortDesc', 'true');
+
+    const sortOptions = ref<DataOptions>({
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: [sortBy.value],
+      sortDesc: [sortDesc.value === 'true'],
+      groupBy: [],
+      groupDesc: [],
+      multiSort: false,
+      mustSort: true,
+    });
+
+    const loadDrafts = async () => {
       try {
         loading.value = true;
-        const allDrafts = await server.getAllDrafts();
+        const allDrafts = await server.getAllDrafts({
+          sortBy: sortBy.value as GetDraftsSortType,
+          sortOrder: sortDesc.value === 'true' ? 'desc' : 'asc',
+        });
         drafts.value = [...allDrafts];
       } catch {
         actions.showErrorSnackbar('Failed to retrieve user drafts');
       } finally {
         loading.value = false;
       }
+    };
+
+    watch(sortOptions, (newOptions, oldOptions) => {
+      if (
+        newOptions.page === oldOptions.page &&
+        newOptions.itemsPerPage === oldOptions.itemsPerPage
+      ) {
+        setSortBy(newOptions.sortBy[0]);
+        setSortDesc(String(newOptions.sortDesc[0]));
+        loadDrafts();
+      }
     });
+
+    const items = computed(() => (loading.value ? [] : drafts.value));
 
     const openDialog = (draft: TextDraftWithUser) => {
       viewingDraft.value = { ...draft };
@@ -91,12 +123,13 @@ export default defineComponent({
 
     return {
       loading,
-      drafts,
+      items,
       headers,
       formatTimestamp,
       viewingDraft,
       dialogOpen,
       openDialog,
+      sortOptions,
     };
   },
 });
