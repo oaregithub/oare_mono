@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
 import { TextDraftWithUser, GetDraftsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
@@ -94,8 +94,6 @@ export default defineComponent({
       }
     };
 
-    const items = computed(() => (loading.value ? [] : drafts.value));
-
     const openDialog = (draft: TextDraftWithUser) => {
       viewingDraft.value = { ...draft };
       dialogOpen.value = true;
@@ -103,7 +101,6 @@ export default defineComponent({
 
     return {
       loading,
-      items,
       headers,
       formatTimestamp,
       viewingDraft,
