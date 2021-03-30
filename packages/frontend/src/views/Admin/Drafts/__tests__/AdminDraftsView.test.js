@@ -61,57 +61,11 @@ describe('AdminDraftsView test', () => {
     expect(wrapper.html()).toContain('Mar 22, 2021, 2:26 PM');
   });
 
-  it('shows error snackbar if getting drafts fails', async () => {
-    sl.set('serverProxy', {
-      ...server,
-      getAllDrafts: jest.fn().mockRejectedValue('could not get drafts'),
-    });
-    createWrapper();
-    await flushPromises();
-    expect(actions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
   it('clicking on View Content opens dialog', async () => {
     const wrapper = createWrapper();
     await flushPromises();
 
     await wrapper.get('.test-view-content').trigger('click');
     expect(wrapper.find('.test-content-dialog').exists()).toBe(true);
-  });
-
-  const expectSort = async (wrapper, index, column, asc = true) => {
-    await wrapper.findAll('th').at(index).trigger('click');
-    await flushPromises();
-
-    expect(server.getAllDrafts).toHaveBeenCalledWith({
-      sortBy: column,
-      sortOrder: asc ? 'asc' : 'desc',
-      page: 1,
-      limit: 10,
-    });
-  };
-
-  it('sorts by updated', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-
-    await expectSort(wrapper, 2, 'updatedAt', false);
-    await expectSort(wrapper, 2, 'updatedAt');
-  });
-
-  it('sorts by author', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-
-    await expectSort(wrapper, 1, 'author');
-    await expectSort(wrapper, 1, 'author', false);
-  });
-
-  it('sorts by text', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-
-    await expectSort(wrapper, 0, 'text');
-    await expectSort(wrapper, 0, 'text', false);
   });
 });
