@@ -5,6 +5,7 @@ import {
   TextDraftWithUser,
   GetDraftsSortType,
   SortOrder,
+  TextDraftsResponse,
 } from '@oare/types';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
@@ -93,6 +94,8 @@ router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
       page,
       limit,
     });
+
+    const totalDrafts = await TextDraftsDao.totalDrafts();
     const drafts = await Promise.all(
       draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
     );
@@ -108,7 +111,12 @@ router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
         uuid: users[index].uuid,
       },
     }));
-    res.json(draftsWithUser);
+
+    const response: TextDraftsResponse = {
+      drafts: draftsWithUser,
+      totalDrafts,
+    };
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

@@ -23,6 +23,11 @@ export interface TextDraftWithUser extends Omit<TextDraft, 'userUuid'> {
   user: Pick<User, 'firstName' | 'lastName' | 'uuid'>;
 }
 
+export interface TextDraftsResponse {
+  totalDrafts: number;
+  drafts: TextDraftWithUser[];
+}
+
 export interface AddTextDraftPayload {
   content: string;
   notes: string;

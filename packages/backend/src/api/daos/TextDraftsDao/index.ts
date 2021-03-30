@@ -127,6 +127,11 @@ class TextDraftsDao {
     return draftUuids.filter((_, index) => canEdits[index]);
   }
 
+  async totalDrafts(): Promise<number> {
+    const row = await knex('text_drafts').count({ count: 'uuid' }).first();
+    return row ? Number(row.count) : 0;
+  }
+
   async getAllDraftUuids({
     sortBy,
     sortOrder,

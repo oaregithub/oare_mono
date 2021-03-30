@@ -30,7 +30,10 @@ describe('AdminDraftsView test', () => {
     },
   };
   const server = {
-    getAllDrafts: jest.fn().mockResolvedValue([draft]),
+    getAllDrafts: jest.fn().mockResolvedValue({
+      totalDrafts: 1,
+      drafts: [draft],
+    }),
   };
 
   const actions = {
@@ -83,6 +86,8 @@ describe('AdminDraftsView test', () => {
     expect(server.getAllDrafts).toHaveBeenCalledWith({
       sortBy: column,
       sortOrder: asc ? 'asc' : 'desc',
+      page: 1,
+      limit: 10,
     });
   };
 
