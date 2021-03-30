@@ -30,7 +30,10 @@ describe('AdminDraftsView test', () => {
     },
   };
   const server = {
-    getAllDrafts: jest.fn().mockResolvedValue([draft]),
+    getAllDrafts: jest.fn().mockResolvedValue({
+      totalDrafts: 1,
+      drafts: [draft],
+    }),
   };
 
   const actions = {
@@ -74,5 +77,41 @@ describe('AdminDraftsView test', () => {
 
     await wrapper.get('.test-view-content').trigger('click');
     expect(wrapper.find('.test-content-dialog').exists()).toBe(true);
+  });
+
+  const expectSort = async (wrapper, index, column, asc = true) => {
+    await wrapper.findAll('th').at(index).trigger('click');
+    await flushPromises();
+
+    expect(server.getAllDrafts).toHaveBeenCalledWith({
+      sortBy: column,
+      sortOrder: asc ? 'asc' : 'desc',
+      page: 1,
+      limit: 10,
+    });
+  };
+
+  it('sorts by updated', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await expectSort(wrapper, 2, 'updatedAt', false);
+    await expectSort(wrapper, 2, 'updatedAt');
+  });
+
+  it('sorts by author', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await expectSort(wrapper, 1, 'author');
+    await expectSort(wrapper, 1, 'author', false);
+  });
+
+  it('sorts by text', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await expectSort(wrapper, 0, 'text');
+    await expectSort(wrapper, 0, 'text', false);
   });
 });

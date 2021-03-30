@@ -1,4 +1,9 @@
-import { TextDraft, AddTextDraftPayload, TextDraftWithUser } from '@oare/types';
+import {
+  TextDraft,
+  AddTextDraftPayload,
+  TextDraftsResponse,
+  DraftQueryOptions,
+} from '@oare/types';
 import axios from '../axiosInstance';
 
 async function createDraft(textUuid: string, payload: AddTextDraftPayload) {
@@ -10,8 +15,12 @@ async function getDrafts(userUuid: string): Promise<TextDraft[]> {
   return data;
 }
 
-async function getAllDrafts(): Promise<TextDraftWithUser[]> {
-  const { data } = await axios.get('/text_drafts');
+async function getAllDrafts(
+  options: DraftQueryOptions
+): Promise<TextDraftsResponse> {
+  const { data } = await axios.get('/text_drafts', {
+    params: options,
+  });
   return data;
 }
 
