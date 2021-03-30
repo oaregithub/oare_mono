@@ -24,7 +24,8 @@ export function getSequentialCharacterQuery(
           knex.raw(
             `t${index}.char_on_tablet=text_epigraphy.char_on_tablet + ${index}`
           )
-        );
+        )
+        .andOn(knex.raw(`t${index}.line=text_epigraphy.line`));
     });
   });
 
