@@ -222,6 +222,7 @@ describe('Text drafts test', () => {
     const TextDraftsDao = {
       getAllDraftUuids: jest.fn().mockResolvedValue(['draft-uuid']),
       getDraftByUuid: jest.fn().mockResolvedValue(draft),
+      totalDrafts: jest.fn().mockResolvedValue(1),
     };
 
     const user = {
@@ -254,18 +255,23 @@ describe('Text drafts test', () => {
     it('gets drafts with users attached', async () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([
-        {
-          ...draft,
-          user,
-        },
-      ]);
+      expect(JSON.parse(response.text)).toEqual({
+        totalDrafts: 1,
+        drafts: [
+          {
+            ...draft,
+            user,
+          },
+        ],
+      });
     });
 
     it('uses sort options', async () => {
       const query = {
         sortBy: 'author',
         sortOrder: 'asc',
+        page: '1',
+        limit: '10',
       };
       const response = await sendRequest().query(query);
 
@@ -279,6 +285,8 @@ describe('Text drafts test', () => {
       expect(TextDraftsDao.getAllDraftUuids).toHaveBeenCalledWith({
         sortBy: 'updated',
         sortOrder: 'desc',
+        page: 0,
+        limit: 10,
       });
     });
 

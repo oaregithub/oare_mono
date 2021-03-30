@@ -127,9 +127,16 @@ class TextDraftsDao {
     return draftUuids.filter((_, index) => canEdits[index]);
   }
 
+  async totalDrafts(): Promise<number> {
+    const row = await knex('text_drafts').count({ count: 'uuid' }).first();
+    return row ? Number(row.count) : 0;
+  }
+
   async getAllDraftUuids({
     sortBy,
     sortOrder,
+    page,
+    limit,
   }: DraftQueryOptions): Promise<string[]> {
     const draftUuids: UuidRow[] = await knex('text_drafts')
       .select(
@@ -151,7 +158,9 @@ class TextDraftsDao {
             { column: 'updated_at', order: 'desc' },
           ]);
         }
-      });
+      })
+      .limit(limit)
+      .offset((page - 1) * limit);
     return draftUuids.map(({ uuid }) => uuid);
   }
 }
