@@ -6,6 +6,7 @@
       :items="drafts"
       :fetchItems="loadDrafts"
       defaultSort="updatedAt"
+      :server-items-length="totalDrafts"
     >
       <template #[`item.text`]="{ item }">
         <router-link :to="`/epigraphies/${item.textUuid}`">{{
@@ -67,6 +68,7 @@ export default defineComponent({
     const drafts = ref<TextDraftWithUser[]>([]);
     const viewingDraft = ref<TextDraftWithUser | null>(null);
     const dialogOpen = ref(false);
+    const totalDrafts = ref(0);
 
     const headers = ref<DataTableHeader[]>([
       { text: 'Text', value: 'text' },
@@ -77,10 +79,12 @@ export default defineComponent({
 
     const [sortBy, setSortBy] = useQueryParam('sortBy', 'updatedAt');
     const [sortDesc, setSortDesc] = useQueryParam('sortDesc', 'true');
+    const [page, setPage] = useQueryParam('page', '1');
+    const [limit, setLimit] = useQueryParam('rows', '10');
 
     const sortOptions = ref<DataOptions>({
-      page: 1,
-      itemsPerPage: 10,
+      page: Number(page.value),
+      itemsPerPage: Number(limit.value),
       sortBy: [sortBy.value],
       sortDesc: [sortDesc.value === 'true'],
       groupBy: [],
@@ -92,11 +96,14 @@ export default defineComponent({
     const loadDrafts = async (options: OareDataTableOptions) => {
       try {
         loading.value = true;
-        const allDrafts = await server.getAllDrafts({
+        const draftData = await server.getAllDrafts({
           sortBy: options.sortBy as GetDraftsSortType,
           sortOrder: options.sortDesc ? 'desc' : 'asc',
+          page: Number(page.value),
+          limit: Number(limit.value),
         });
-        drafts.value = [...allDrafts];
+        drafts.value = [...draftData.drafts];
+        totalDrafts.value = draftData.totalDrafts;
       } catch {
         actions.showErrorSnackbar('Failed to retrieve user drafts');
       } finally {
@@ -113,6 +120,13 @@ export default defineComponent({
     //     setSortDesc(String(newOptions.sortDesc[0]));
     //     loadDrafts();
     //   }
+    // });
+    // watch(sortOptions, newOptions => {
+    //   setSortBy(newOptions.sortBy[0]);
+    //   setSortDesc(String(newOptions.sortDesc[0]));
+    //   setPage(String(newOptions.page));
+    //   setLimit(String(newOptions.itemsPerPage));
+    //   loadDrafts();
     // });
 
     const items = computed(() => (loading.value ? [] : drafts.value));
@@ -133,6 +147,7 @@ export default defineComponent({
       sortOptions,
       loadDrafts,
       drafts,
+      totalDrafts,
     };
   },
 });
