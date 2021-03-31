@@ -38,4 +38,6 @@ export type GetDraftsSortType = 'text' | 'author' | 'updatedAt';
 export interface DraftQueryOptions extends Pagination {
   sortBy?: GetDraftsSortType;
   sortOrder?: SortOrder;
+  textFilter?: string;
+  authorFilter?: string;
 }
