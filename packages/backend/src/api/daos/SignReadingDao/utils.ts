@@ -1,4 +1,4 @@
-import { indexOfFirstVowel } from '@oare/oare';
+import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 
 export const applyIntellisearch = (signs: string[]): string[][] => {
   let signArray = signs.map(sign => [sign]);
@@ -92,9 +92,7 @@ export const getSubscriptVowelOptions = (): string[] => {
   const subscripts: string[] = [];
   for (let i = 4; i <= maxSubscript; i += 1) {
     const individualNumbers = String(i).split('');
-    const subscriptedNumbers = individualNumbers
-      .map(num => String.fromCharCode(8320 + Number(num)))
-      .join('');
+    const subscriptedNumbers = individualNumbers.map(subscriptNumber).join('');
     subscripts.push(subscriptedNumbers);
   }
   return subscripts;
