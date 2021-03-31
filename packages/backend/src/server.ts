@@ -16,7 +16,7 @@ import cache from '@/cache';
 import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
-import utils from '@/utils';
+import * as utils from '@/utils';
 import app from './app';
 import mailer from './mailer';
 import UserDao from './api/daos/UserDao';

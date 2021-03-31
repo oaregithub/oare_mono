@@ -26,7 +26,7 @@ import ThreadsDao from '@/api/daos/ThreadsDao';
 import ErrorsDao from '@/api/daos/ErrorsDao';
 import CollectionDao from '@/api/daos/CollectionDao';
 import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
-import utils from '@/utils';
+import * as utils from '@/utils';
 import mailer from '@/mailer';
 
 const instances: { [key: string]: any } = {};
