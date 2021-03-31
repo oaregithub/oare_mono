@@ -33,7 +33,7 @@ export interface AddTextDraftPayload {
   notes: string;
 }
 
-export type GetDraftsSortType = 'text' | 'author' | 'updated';
+export type GetDraftsSortType = 'text' | 'author' | 'updatedAt';
 
 export interface DraftQueryOptions extends Pagination {
   sortBy?: GetDraftsSortType;

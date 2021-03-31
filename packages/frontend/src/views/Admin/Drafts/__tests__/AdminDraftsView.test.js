@@ -61,16 +61,6 @@ describe('AdminDraftsView test', () => {
     expect(wrapper.html()).toContain('Mar 22, 2021, 2:26 PM');
   });
 
-  it('shows error snackbar if getting drafts fails', async () => {
-    sl.set('serverProxy', {
-      ...server,
-      getAllDrafts: jest.fn().mockRejectedValue('could not get drafts'),
-    });
-    createWrapper();
-    await flushPromises();
-    expect(actions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
   it('clicking on View Content opens dialog', async () => {
     const wrapper = createWrapper();
     await flushPromises();

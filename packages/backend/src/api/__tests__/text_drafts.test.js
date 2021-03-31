@@ -283,7 +283,7 @@ describe('Text drafts test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(TextDraftsDao.getAllDraftUuids).toHaveBeenCalledWith({
-        sortBy: 'updated',
+        sortBy: 'updatedAt',
         sortOrder: 'desc',
         page: 0,
         limit: 10,

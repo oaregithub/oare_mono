@@ -1,11 +1,11 @@
 <template>
   <OareContentView title="Text Drafts">
-    <v-data-table
-      :loading="loading"
+    <oare-data-table
       :headers="headers"
       item-key="uuid"
-      :items="items"
-      :options.sync="sortOptions"
+      :items="drafts"
+      :fetchItems="loadDrafts"
+      defaultSort="updatedAt"
       :server-items-length="totalDrafts"
     >
       <template #[`item.text`]="{ item }">
@@ -29,7 +29,7 @@
           >View content</v-btn
         >
       </template>
-    </v-data-table>
+    </oare-data-table>
 
     <OareDialog
       v-model="dialogOpen"
@@ -47,12 +47,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
 import { TextDraftWithUser, GetDraftsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
-import { DataTableHeader, DataOptions } from 'vuetify';
+import { DataTableHeader } from 'vuetify';
 import { formatTimestamp } from '@/utils';
-import useQueryParam from '@/hooks/useQueryParam';
+import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 import DraftContentPopup from './DraftContentPopup.vue';
 
 export default defineComponent({
@@ -76,30 +76,14 @@ export default defineComponent({
       { text: 'Content', value: 'content', sortable: false },
     ]);
 
-    const [sortBy, setSortBy] = useQueryParam('sortBy', 'updatedAt');
-    const [sortDesc, setSortDesc] = useQueryParam('sortDesc', 'true');
-    const [page, setPage] = useQueryParam('page', '1');
-    const [limit, setLimit] = useQueryParam('rows', '10');
-
-    const sortOptions = ref<DataOptions>({
-      page: Number(page.value),
-      itemsPerPage: Number(limit.value),
-      sortBy: [sortBy.value],
-      sortDesc: [sortDesc.value === 'true'],
-      groupBy: [],
-      groupDesc: [],
-      multiSort: false,
-      mustSort: true,
-    });
-
-    const loadDrafts = async () => {
+    const loadDrafts = async (options: OareDataTableOptions) => {
       try {
         loading.value = true;
         const draftData = await server.getAllDrafts({
-          sortBy: sortBy.value as GetDraftsSortType,
-          sortOrder: sortDesc.value === 'true' ? 'desc' : 'asc',
-          page: Number(page.value),
-          limit: Number(limit.value),
+          sortBy: options.sortBy as GetDraftsSortType,
+          sortOrder: options.sortDesc ? 'desc' : 'asc',
+          page: options.page,
+          limit: options.rows,
         });
         drafts.value = [...draftData.drafts];
         totalDrafts.value = draftData.totalDrafts;
@@ -110,16 +94,6 @@ export default defineComponent({
       }
     };
 
-    watch(sortOptions, newOptions => {
-      setSortBy(newOptions.sortBy[0]);
-      setSortDesc(String(newOptions.sortDesc[0]));
-      setPage(String(newOptions.page));
-      setLimit(String(newOptions.itemsPerPage));
-      loadDrafts();
-    });
-
-    const items = computed(() => (loading.value ? [] : drafts.value));
-
     const openDialog = (draft: TextDraftWithUser) => {
       viewingDraft.value = { ...draft };
       dialogOpen.value = true;
@@ -127,13 +101,13 @@ export default defineComponent({
 
     return {
       loading,
-      items,
       headers,
       formatTimestamp,
       viewingDraft,
       dialogOpen,
       openDialog,
-      sortOptions,
+      loadDrafts,
+      drafts,
       totalDrafts,
     };
   },
