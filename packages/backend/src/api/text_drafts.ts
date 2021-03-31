@@ -11,7 +11,7 @@ import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
-import utils, { parsedQuery } from '@/utils';
+import { parsedQuery, extractPagination } from '@/utils';
 
 const router = express.Router();
 
@@ -86,7 +86,7 @@ router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
     const query = parsedQuery(req.originalUrl);
     const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
     const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
-    const { page, limit } = utils.extractPagination(req.query);
+    const { page, limit } = extractPagination(req.query);
 
     const draftUuids = await TextDraftsDao.getAllDraftUuids({
       sortBy,

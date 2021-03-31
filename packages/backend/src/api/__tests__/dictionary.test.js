@@ -2,7 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
-import utils from '@/utils';
+import * as utils from '@/utils';
 
 describe('dictionary api test', () => {
   const mockForms = [];
