@@ -54,8 +54,9 @@
     </v-row>
 
     <OareDialog
+      v-if="viewingDraft"
       v-model="dialogOpen"
-      title="Draft Content"
+      :title="`${viewingDraft.textName} Draft`"
       :width="1000"
       class="test-content-dialog"
       :show-submit="false"
@@ -63,16 +64,25 @@
       :close-button="true"
       :persistent="false"
     >
-      <DraftContentPopup :draft="viewingDraft" />
+      <div class="d-flex">
+        <span class="font-weight-bold mr-1">Notes:</span>
+        {{ viewingDraft.notes || 'No notes' }}
+      </div>
+      <code-diff
+        :old-string="viewingDraft.originalText"
+        :new-string="draftText"
+        output-format="side-by-side"
+      />
     </OareDialog>
   </OareContentView>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from '@vue/composition-api';
+import { defineComponent, ref, watch, computed } from '@vue/composition-api';
 import { TextDraftWithUser, GetDraftsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
+import CodeDiff from 'vue-code-diff';
 import { formatTimestamp } from '@/utils';
 import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 import useQueryParam from '@/hooks/useQueryParam';
@@ -82,6 +92,7 @@ export default defineComponent({
   name: 'AdminDraftsView',
   components: {
     DraftContentPopup,
+    CodeDiff,
   },
   setup() {
     const server = sl.get('serverProxy');
@@ -102,6 +113,18 @@ export default defineComponent({
       { text: 'Last Updated', value: 'updatedAt' },
       { text: 'Content', value: 'content', sortable: false },
     ]);
+
+    const draftText = computed(() => {
+      if (!viewingDraft.value) {
+        return '';
+      }
+
+      return viewingDraft.value.content
+        .map(({ side, text }) => {
+          return `${side}\n${text}`;
+        })
+        .join('\n');
+    });
 
     const loadDrafts = async (newOptions: OareDataTableOptions) => {
       try {
@@ -148,6 +171,7 @@ export default defineComponent({
       totalDrafts,
       authorFilter,
       textFilter,
+      draftText,
     };
   },
 });

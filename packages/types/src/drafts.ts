@@ -21,6 +21,7 @@ export interface TextDraft {
 
 export interface TextDraftWithUser extends Omit<TextDraft, 'userUuid'> {
   user: Pick<User, 'firstName' | 'lastName' | 'uuid'>;
+  originalText: string;
 }
 
 export interface TextDraftsResponse {
