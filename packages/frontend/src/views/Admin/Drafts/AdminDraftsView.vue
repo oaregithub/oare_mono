@@ -64,14 +64,16 @@
       :close-button="true"
       :persistent="false"
     >
-      <div class="d-flex">
-        <span class="font-weight-bold mr-1">Notes:</span>
+      <div class="d-flex mb-2">
+        <span class="font-weight-bold mr-1">Author Notes:</span>
         {{ viewingDraft.notes || 'No notes' }}
       </div>
       <code-diff
         :old-string="viewingDraft.originalText"
         :new-string="draftText"
         output-format="side-by-side"
+        :render-nothing-when-empty="false"
+        :draw-file-list="true"
       />
     </OareDialog>
   </OareContentView>
@@ -82,10 +84,10 @@ import { defineComponent, ref, watch, computed } from '@vue/composition-api';
 import { TextDraftWithUser, GetDraftsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
-import CodeDiff from 'vue-code-diff';
 import { formatTimestamp } from '@/utils';
 import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 import useQueryParam from '@/hooks/useQueryParam';
+import CodeDiff from 'vue-code-diff';
 import DraftContentPopup from './DraftContentPopup.vue';
 
 export default defineComponent({
@@ -120,9 +122,7 @@ export default defineComponent({
       }
 
       return viewingDraft.value.content
-        .map(({ side, text }) => {
-          return `${side}\n${text}`;
-        })
+        .map(({ side, text }) => `${side}\n${text}`)
         .join('\n');
     });
 
