@@ -76,6 +76,7 @@ class UserDao {
       uuid: v4(),
       first_name: firstName,
       last_name: lastName,
+      full_name: `${firstName} ${lastName}`,
       email,
       password_hash: passwordHash,
       is_admin: isAdmin,
