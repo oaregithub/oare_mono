@@ -337,6 +337,7 @@ class TextDiscourseDao {
     });
     let newDiscourseRow.uuid = newUuid;
     )
+    return newUuid; // I'm not sure I actually need to return this...
   }
 
 }
