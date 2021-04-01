@@ -86,6 +86,8 @@ router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
     const query = parsedQuery(req.originalUrl);
     const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
     const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
+    const textFilter = query.get('textFilter') || '';
+    const authorFilter = query.get('authorFilter') || '';
     const { page, limit } = extractPagination(req.query);
 
     const draftUuids = await TextDraftsDao.getAllDraftUuids({
@@ -93,9 +95,14 @@ router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
       sortOrder,
       page,
       limit,
+      textFilter,
+      authorFilter,
     });
 
-    const totalDrafts = await TextDraftsDao.totalDrafts();
+    const totalDrafts = await TextDraftsDao.totalDrafts({
+      authorFilter,
+      textFilter,
+    });
     const drafts = await Promise.all(
       draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
     );

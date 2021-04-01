@@ -272,6 +272,8 @@ describe('Text drafts test', () => {
         sortOrder: 'asc',
         page: '1',
         limit: '10',
+        authorFilter: 'abc',
+        textFilter: 'CCT',
       };
       const response = await sendRequest().query(query);
 
@@ -287,6 +289,8 @@ describe('Text drafts test', () => {
         sortOrder: 'desc',
         page: 0,
         limit: 10,
+        authorFilter: '',
+        textFilter: '',
       });
     });
 

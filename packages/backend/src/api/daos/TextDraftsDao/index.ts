@@ -127,8 +127,23 @@ class TextDraftsDao {
     return draftUuids.filter((_, index) => canEdits[index]);
   }
 
-  async totalDrafts(): Promise<number> {
-    const row = await knex('text_drafts').count({ count: 'uuid' }).first();
+  private baseDraftQuery({
+    authorFilter,
+    textFilter,
+  }: Pick<DraftQueryOptions, 'authorFilter' | 'textFilter'>) {
+    return knex('text_drafts')
+      .innerJoin('user', 'user.uuid', 'text_drafts.user_uuid')
+      .innerJoin('text', 'text.uuid', 'text_drafts.text_uuid')
+      .where('text.name', 'like', `%${textFilter || ''}%`)
+      .andWhere('user.full_name', 'like', `%${authorFilter || ''}%`);
+  }
+
+  async totalDrafts(
+    options: Pick<DraftQueryOptions, 'authorFilter' | 'textFilter'>
+  ): Promise<number> {
+    const row = await this.baseDraftQuery(options)
+      .count({ count: 'text_drafts.uuid' })
+      .first();
     return row ? Number(row.count) : 0;
   }
 
@@ -137,16 +152,17 @@ class TextDraftsDao {
     sortOrder,
     page,
     limit,
+    authorFilter,
+    textFilter,
   }: DraftQueryOptions): Promise<string[]> {
-    const draftUuids: UuidRow[] = await knex('text_drafts')
-      .select(
-        'text_drafts.uuid',
-        knex.raw('CONCAT(user.first_name, " ", user.last_name) AS author')
-      )
-      .innerJoin('user', 'user.uuid', 'text_drafts.user_uuid')
+    const draftUuids: UuidRow[] = await this.baseDraftQuery({
+      authorFilter,
+      textFilter,
+    })
+      .select('text_drafts.uuid')
       .modify(qb => {
         if (sortBy === 'text') {
-          qb.innerJoin('text', 'text.uuid', 'text_drafts.text_uuid').orderBy([
+          qb.orderBy([
             { column: 'text.name', order: sortOrder },
             { column: 'updated_at', order: 'desc' },
           ]);
@@ -154,7 +170,7 @@ class TextDraftsDao {
           qb.orderBy('text_drafts.updated_at', sortOrder);
         } else if (sortBy === 'author') {
           qb.orderBy([
-            { column: 'author', order: sortOrder },
+            { column: 'user.full_name', order: sortOrder },
             { column: 'updated_at', order: 'desc' },
           ]);
         }
