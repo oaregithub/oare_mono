@@ -1,5 +1,6 @@
 import { DiscourseUnit } from '@oare/types';
-import { DiscourseRow } from './index';
+import { DiscourseRow, NewDiscourseRow } from './index';
+import knex from '@/connection';
 
 export function discourseUnitOrder(discourse: DiscourseUnit): number {
   if (discourse.wordOnTablet) {
@@ -65,4 +66,34 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
       return u.spelling || '';
     })
     .join(' ');
+}
+
+export function incrementIncrementalsBeforeInsert(
+  newDiscourseRow: NewDiscourseRow
+  ): void {
+  if (newDiscourseRow.childNum !== null) {
+    const incrementChildNum = knex('text_discourse')
+      .where({
+        text_uuid: newDiscourseRow.textUuid,
+        parent_uuid: newDiscourseRow.parentUuid,
+      })
+      .andWhere('child_num', '>=', newDiscourseRow.childNum)
+      .increment('child_num');
+  }
+  if (newDiscourseRow.wordOnTablet !== null) {
+    const incrementWordOnTablet = knex('text_discourse')
+      .where({
+        text_uuid: newDiscourseRow.textUuid
+         })
+      .andWhere('word_on_tablet', '>=', newDiscourseRow.wordOnTablet)
+      .increment('word_on_tablet');
+  }
+  if (newDiscourseRow.objInText !== null) {
+   const incrementObjInText = knex('text_discourse')
+    .where({
+      text_uuid: newDiscourseRow.textUuid
+      })
+    .andWhere('obj_in_text', '>=', newDiscourseRow.objInText)
+    .increment('obj_in_text');
+  }
 }

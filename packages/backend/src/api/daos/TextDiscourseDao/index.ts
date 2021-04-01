@@ -8,8 +8,12 @@ import {
   DiscourseUnitType,
 } from '@oare/types';
 import Knex from 'knex';
-
-import { createdNestedDiscourses, setDiscourseReading } from './utils';
+import { v4 } from 'uuid';
+import {
+  createdNestedDiscourses,
+  setDiscourseReading,
+  incrementIncrementalsBeforeInsert
+} from './utils';
 
 export interface DiscourseRow {
   uuid: string;
@@ -21,6 +25,20 @@ export interface DiscourseRow {
   line: number | null;
   paragraphLabel: string | null;
   translation: string | null;
+}
+
+export interface NewDiscourseRow extends DiscourseRow {
+  childNum: number | null;
+  textUuid: string | null;
+  treeUuid: string | null;
+  explicitSpelling: string | null;
+  spellingUuid: string | null;
+  objInText: number | null;
+  textEpigraphyUuid: string[] | null;
+}
+
+export interface NewDiscourseRowBatch {
+  newDiscourseRows: NewDiscourseRow[];
 }
 
 export interface SearchDiscourseSpellingDaoResponse {
@@ -256,6 +274,71 @@ class TextDiscourseDao {
       .first();
     return !!row;
   }
+
+  /*
+  This is intended to create a new row after the batch has been created via
+  text spelling edit pop-up where we use query logic to find matching
+  spellings - add button there to search text_epigraphy instead of text_discourse
+  (use text-epigraphyDao getUuidBySign - the more advanced search we have)
+  and then create object newDiscourseRow with the matching uuids to 
+  textEpigraphyUuid [] from getSequenctialCharacterQuery()
+  -need to iterate child_num, word_on_tablet, obj_in_text in text_discourse
+  -need to determine type as word
+  -need to determine previous word (max row with discourse_uuid before first sign in word)
+  */
+
+  // this probably goes in textEpigraphyDao
+  // very cumbersome 
+  async getPreviousWordUuid(newDiscourseRow: NewDiscourseRow): Promise<string> {
+    const newWordCharOnTablet = await knex('text_epigraphy')
+      .where({ uuid: newDiscourseRow.textEpigraphyUuid })
+      .first()
+      .select('char_on_tablet');
+    const previousWordChar = await knex('text_epigraphy')
+      .where({ text_uuid: newDiscourseRow.textUuid })
+      .andWhere(function () {
+        this.where('char_on_tablet', '<', newWordCharOnTablet)
+      })
+      .max('char_on_tablet')
+      .first();
+    const previousWordUuid = await knex('text_epigraphy')
+      .where({
+        char_on_tablet: previousWordChar,
+        text_uuid: newDiscourseRow.textUuid
+      })
+      .select('discourse_uuid')
+      .first();
+    return previousWordUuid;
+  }
+
+  async insertNewDiscourseRowsFromTextEpigraphy(
+    newDiscourseRows: NewDiscourseRowBatch,
+    discourseUnitType: DiscourseUnitType,
+    spellingUuid: string,
+    explicitSpelling: string,
+    transcription: string
+  ): Promise<string[]> {
+    
+    newDiscourseRows.forEach(()
+      const newUuid = v4();  // OR?   NewDiscourseRow.uuid = () => v4();
+      const makeRoomForNewRow = this.getPreviousWordUuid(newDiscourseRow);
+      const buidNewRow = await knex('text_discourse').insert({
+        uuid: newUuid, 
+        type: discourseUnitType,
+        child_num: newDiscourseRow.childNum, 
+        word_on_tablet: newDiscourseRow.wordOnTablet,
+        text_uuid: newDiscourseRow.textUuid,
+        tree_uuid: newDiscourseRow.treeUuid,
+        parent_uuid: newDiscourseRow.parentUuid,
+        spelling_uuid: spellingUuid,
+        explicit_spelling: explicitSpelling,
+        transcription: transcription,
+      obj_in_text: newDiscourseRows.newDiscourseRow.wordOnTablet
+    });
+    let newDiscourseRow.uuid = newUuid;
+    )
+  }
+
 }
 
 export default new TextDiscourseDao();
