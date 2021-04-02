@@ -4,13 +4,11 @@ export async function up(knex: Knex): Promise<void> {
   const hasTable = await knex.schema.hasTable('cache_status');
   if (!hasTable) {
     await knex.schema.createTable('cache_status', table => {
-      table.boolean('is_enabled');
-      table.dateTime('expires');
+      table.dateTime('disable_expires');
     });
 
     await knex('cache_status').insert({
-      is_enabled: true,
-      expires: new Date(),
+      disable_expires: new Date(),
     });
   }
 }
