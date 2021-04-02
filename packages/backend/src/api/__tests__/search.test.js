@@ -2,6 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
+import { getSubscriptVowelOptions } from '../daos/SignReadingDao/utils';
 
 describe('search test', () => {
   describe('GET /search', () => {
@@ -131,7 +132,7 @@ describe('search test', () => {
       expect(response.status).toBe(200);
     });
 
-    it('parses intellisearch wildcard (*)', async () => {
+    it('parses intellisearch asterisk wildcard (*)', async () => {
       const response = await request(app)
         .get(PATH)
         .query({
@@ -150,6 +151,67 @@ describe('search test', () => {
       expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         secondSearchArray
       );
+      expect(response.status).toBe(200);
+    });
+
+    it('parses intellisearch ampersand wildcard (&)', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: '&tam-&tu',
+        });
+      const subscriptVowelOptions = getSubscriptVowelOptions();
+
+      // &tam
+      const firstSignAccentedVowels = ['tam', 'tám', 'tàm'];
+      const firstSignSubscriptVowels = subscriptVowelOptions.map(
+        vowel => `tam${vowel}`
+      );
+      const firstSignPossibleVowels = [
+        ...firstSignAccentedVowels,
+        ...firstSignSubscriptVowels,
+      ];
+      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        firstSignPossibleVowels
+      );
+
+      // &tu
+      const secondSignAccentedVowels = ['tu', 'tú', 'tù'];
+      const secondSignSubscriptVowels = subscriptVowelOptions.map(
+        vowel => `tu${vowel}`
+      );
+      const secondSignPossibleVowels = [
+        ...secondSignAccentedVowels,
+        ...secondSignSubscriptVowels,
+      ];
+      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        secondSignPossibleVowels
+      );
+
+      expect(response.status).toBe(200);
+    });
+
+    it('parses intellisearch brackets ([])', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: '[tm]u[rm]-[bdn]a',
+        });
+
+      // [tm]u[rm]
+      const firstSignArray = ['tur', 'tum', 'mur', 'mum'];
+      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        firstSignArray
+      );
+
+      // [bdn]a
+      const secondSignArray = ['ba', 'da', 'na'];
+      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        secondSignArray
+      );
+
       expect(response.status).toBe(200);
     });
 
