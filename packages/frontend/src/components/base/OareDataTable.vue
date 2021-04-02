@@ -68,6 +68,10 @@ export default defineComponent({
       >,
       required: true,
     },
+    watchedParams: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
   },
   setup({
     defaultSort,
@@ -76,6 +80,7 @@ export default defineComponent({
     defaultRows,
     fetchItems,
     errorMessage,
+    watchedParams,
   }) {
     const actions = sl.get('globalActions');
     const [sortBy, setSortBy] = useQueryParam('sortBy', defaultSort);
@@ -106,12 +111,11 @@ export default defineComponent({
       sortDesc: sortDesc.value === 'true',
     }));
 
-    watch(sortOptions, async newOptions => {
-      setSortBy(newOptions.sortBy[0]);
-      setSortDesc(String(newOptions.sortDesc[0]));
-      setPage(String(newOptions.page));
-      setRows(String(newOptions.itemsPerPage));
+    const queryParams = watchedParams.map(
+      paramName => useQueryParam(paramName, '')[0]
+    );
 
+    const performFetch = async () => {
       try {
         loading.value = true;
         await fetchItems(tableOptions.value);
@@ -120,6 +124,17 @@ export default defineComponent({
       } finally {
         loading.value = false;
       }
+    };
+
+    watch(queryParams, performFetch);
+
+    watch(sortOptions, newOptions => {
+      setSortBy(newOptions.sortBy[0]);
+      setSortDesc(String(newOptions.sortDesc[0]));
+      setPage(String(newOptions.page));
+      setRows(String(newOptions.itemsPerPage));
+
+      performFetch();
     });
 
     return {
