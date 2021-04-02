@@ -36,7 +36,7 @@
       :show-cancel="false"
       :show-submit="false"
       :submitLoading="loading"
-      :width="400"
+      :width="600"
       v-model="viewingDialog"
     >
       <dictionary-word
