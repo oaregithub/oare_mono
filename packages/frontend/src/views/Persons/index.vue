@@ -9,6 +9,12 @@ import { defineComponent, ref } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'PersonsView',
+  props: {
+    letter: {
+      type: String,
+      required: true,
+    },
+  },
 
   setup() {
     const loading = ref(false);
