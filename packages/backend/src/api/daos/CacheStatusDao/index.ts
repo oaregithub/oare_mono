@@ -23,7 +23,7 @@ class CacheStatusDao {
 
   async enableCache(): Promise<void> {
     const updateRow = {
-      disable_expires: Date.now(),
+      disable_expires: new Date(),
     };
     await knex('cache_status').update(updateRow);
   }
