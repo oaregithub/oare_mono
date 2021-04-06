@@ -12,6 +12,7 @@
           outlined
         />
         {{ $t('search.characterSequenceDescription') }}
+        <search-information-card/>
         <v-text-field
           class="test-character-search"
           :value="translitSearch"
@@ -59,6 +60,7 @@ import {
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
 import ResultTable from '../components/ResultTable.vue';
+import SearchInformationCard from './components/SearchInformationCard.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
@@ -67,6 +69,7 @@ export default defineComponent({
   name: 'TextsSearch',
   components: {
     ResultTable,
+    SearchInformationCard,
   },
   setup() {
     const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
