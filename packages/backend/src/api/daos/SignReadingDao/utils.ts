@@ -1,4 +1,20 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
+import sl from '@/serviceLocator';
+import { stringToCharsArray } from '../TextEpigraphyDao/utils';
+
+export async function prepareCharactersForSearch(
+  charsPayload: string | undefined
+): Promise<string[][]> {
+  const SignReadingDao = sl.get('SignReadingDao');
+
+  const charactersArray = charsPayload ? stringToCharsArray(charsPayload) : [];
+  const signsArray = applyIntellisearch(charactersArray);
+
+  const characterUuids = await Promise.all(
+    signsArray.map(signs => SignReadingDao.getIntellisearchSignUuids(signs))
+  );
+  return characterUuids;
+}
 
 export const applyIntellisearch = (signs: string[]): string[][] => {
   let signArray = signs.map(sign => [sign]);

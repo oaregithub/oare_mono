@@ -102,7 +102,6 @@ export default defineComponent({
       searchLoading.value = true;
       try {
         let {
-          totalRows,
           results,
         }: SearchTextsResponse = await server.searchTexts({
           characters: translitSearch.value,
@@ -110,8 +109,6 @@ export default defineComponent({
           page: Number(page.value),
           rows: Number(rows.value),
         });
-
-        totalSearchResults.value = totalRows;
         searchResults.value = results;
       } catch {
         actions.showErrorSnackbar('Error searching texts. Please try again.');
@@ -120,9 +117,18 @@ export default defineComponent({
       }
     };
 
-    const resetSearch = () => {
+    const resetSearch = async () => {
       page.value = '1';
+      totalSearchResults.value = -1;
       searchTexts();
+      try {
+        totalSearchResults.value = await server.searchTextsTotal({
+          characters: translitSearch.value,
+          textTitle: textTitleSearch.value,
+        });
+      } catch {
+        actions.showErrorSnackbar('Error getting texts total. Please try again.');
+      }
     };
 
     watch([page, rows], searchTexts, { immediate: false });
