@@ -15,7 +15,7 @@ import {
   setDiscourseReading,
   incrementChildNum,
   incrementWordOnTablet,
-  incrementObjInText
+  incrementObjInText,
 } from './utils';
 
 export interface DiscourseRow {
@@ -273,31 +273,24 @@ class TextDiscourseDao {
       .first();
     return !!row;
   }
-
-  async insertNewDiscourseRowsFromTextEpigraphy(
-    newDiscourseRows: NewDiscourseRow[],
+  
+  async insertNewDiscourseRowFromTextEpigraphy(
+    newDiscourseRow: NewDiscourseRow,
     spellingUuid: string,
     explicitSpelling: string,
     transcription: string
   ): Promise<void> {
-    await Promise.all(newDiscourseRows.map((newDiscourseRow) => {
-      newDiscourseRow.uuid = v4();
-      const anchorInfo = TextEpigraphyDao.getAnchorInfo(
-        newDiscourseRow.textEpigraphyUuids);
-      this.getRowInfoWithAnchorInfo(
-        anchorInfo,
-        newDiscourseRow
-      );
-      incrementWordOnTablet(
-        newDiscourseRow.textUuid,
-        newDiscourseRow.wordOnTablet
-      );
-      incrementObjInText(
-        newDiscourseRow.textUuid,
-        newDiscourseRow.objInText
-      );
-      knex('text_discourse')
-        .insert({
+        newDiscourseRow.uuid = v4();
+        const anchorInfo = await TextEpigraphyDao.getAnchorInfo(
+          newDiscourseRow.textEpigraphyUuids
+        );
+        await this.getRowInfoWithAnchorInfo(anchorInfo, newDiscourseRow);
+        await incrementWordOnTablet(
+          newDiscourseRow.textUuid,
+          newDiscourseRow.wordOnTablet
+        );
+        await incrementObjInText(newDiscourseRow.textUuid, newDiscourseRow.objInText);
+        await knex('text_discourse').insert({
           uuid: newDiscourseRow.uuid,
           type: newDiscourseRow.type,
           child_num: newDiscourseRow.childNum,
@@ -307,29 +300,24 @@ class TextDiscourseDao {
           parent_uuid: newDiscourseRow.parentUuid,
           spelling_uuid: spellingUuid,
           explicit_spelling: explicitSpelling,
-          transcription: transcription,
-          obj_in_text: newDiscourseRow.wordOnTablet
+          transcription,
+          obj_in_text: newDiscourseRow.wordOnTablet,
         });
-      this.addDiscourseUuid(
-        newDiscourseRow.textEpigraphyUuids,
-        newDiscourseRow.uuid
-      );
-    })
-    )
+        await this.addDiscourseUuid(
+          newDiscourseRow.textEpigraphyUuids,
+          newDiscourseRow.uuid
+        );
   }
 
   async addDiscourseUuid(
-    textEpigraphyUuids: string[] | null,
+    textEpigraphyUuids: string[],
     uuid: string
   ): Promise<void> {
-    if (textEpigraphyUuids) {
-      await Promise.all(textEpigraphyUuids.map((txtEpigUuid) => {
-        knex('text_epigraphy')
-          .update('discourse_uuid', uuid)
-          .where('uuid', txtEpigUuid);
-      })
-      )
-    }
+    textEpigraphyUuids.forEach(txtEpigUuid =>
+      knex('text_epigraphy')
+        .update('discourse_uuid', uuid)
+        .where('uuid', txtEpigUuid)
+    );
   }
 
   async getRowInfoWithAnchorInfo(
@@ -338,17 +326,18 @@ class TextDiscourseDao {
   ): Promise<void> {
     newDiscourseRow = await knex('text_discourse')
       .where('uuid', anchorInfo.anchorUuid)
-      .select('word_on_tablet AS wordOnTablet',
+      .select(
+        'word_on_tablet AS wordOnTablet',
         'obj_in_text AS objInText',
         'child_num AS childNum',
         'text_uuid AS textUUid',
-        'tree_uuid AS treeUuid',
-    )
+        'tree_uuid AS treeUuid'
+      )
       .first();
     newDiscourseRow.parentUuid = await knex('text_discourse')
       .where({
-        'text_uuid': newDiscourseRow.textUuid,
-        'type': 'discourseUnit'
+        text_uuid: newDiscourseRow.textUuid,
+        type: 'discourseUnit',
       })
       .pluck('uuid')
       .first();
@@ -358,13 +347,15 @@ class TextDiscourseDao {
       .pluck('child_num AS childNum')
       .orderBy('child_num', 'desc')
       .first();
-    if (newDiscourseRow.childNum)
-    newDiscourseRow.childNum++;
-    if (newDiscourseRow.wordOnTablet
-      && newDiscourseRow.objInText
-      && anchorInfo.anchorDirection == 'up')
-    { newDiscourseRow.wordOnTablet++; 
-      newDiscourseRow.objInText++;}
+    if (newDiscourseRow.childNum) newDiscourseRow.childNum += 1;
+    if (
+      newDiscourseRow.wordOnTablet &&
+      newDiscourseRow.objInText &&
+      anchorInfo.anchorDirection === 'up'
+    ) {
+      newDiscourseRow.wordOnTablet += 1;
+      newDiscourseRow.objInText += 1;
+    }
   }
 }
 export default new TextDiscourseDao();

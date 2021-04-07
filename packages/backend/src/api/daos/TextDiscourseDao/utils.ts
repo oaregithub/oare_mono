@@ -69,9 +69,9 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
 }
 
 export async function incrementChildNum(
-        textUuid: string,
-        parentUuid: string | null,
-        childNum: number | null
+  textUuid: string,
+  parentUuid: string | null,
+  childNum: number | null
 ): Promise<void> {
   if (childNum && parentUuid) {
     await knex('text_discourse')
@@ -85,11 +85,11 @@ export async function incrementChildNum(
 }
 
 export async function incrementWordOnTablet(
-        textUuid: string,
-        wordOnTablet: number | null
+  textUuid: string,
+  wordOnTablet: number | null
 ): Promise<void> {
   if (wordOnTablet) {
-     await knex('text_discourse')
+    await knex('text_discourse')
       .where({
         text_uuid: textUuid,
       })
@@ -99,10 +99,10 @@ export async function incrementWordOnTablet(
 }
 
 export async function incrementObjInText(
-        textUuid: string,
-        objInText: number | null
+  textUuid: string,
+  objInText: number | null
 ): Promise<void> {
-   if (objInText) {
+  if (objInText) {
     await knex('text_discourse')
       .where({
         text_uuid: textUuid,
@@ -113,9 +113,9 @@ export async function incrementObjInText(
 }
 
 export async function decrementChildNum(
-        textUuid: string,
-        parentUuid: string | null,
-        childNum: number | null
+  textUuid: string,
+  parentUuid: string | null,
+  childNum: number | null
 ): Promise<void> {
   if (childNum && parentUuid) {
     await knex('text_discourse')
@@ -129,11 +129,11 @@ export async function decrementChildNum(
 }
 
 export async function decrementWordOnTablet(
-        textUuid: string,
-        wordOnTablet: number | null
+  textUuid: string,
+  wordOnTablet: number | null
 ): Promise<void> {
   if (wordOnTablet) {
-     await knex('text_discourse')
+    await knex('text_discourse')
       .where({
         text_uuid: textUuid,
       })
@@ -143,8 +143,8 @@ export async function decrementWordOnTablet(
 }
 
 export async function decrementObjInText(
-        textUuid: string,
-        objInText: number | null
+  textUuid: string,
+  objInText: number | null
 ): Promise<void> {
   if (objInText) {
     await knex('text_discourse')

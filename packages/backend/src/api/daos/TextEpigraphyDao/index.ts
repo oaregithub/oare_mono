@@ -183,44 +183,40 @@ class TextEpigraphyDao {
     return !!response;
   }
 
-  async getAnchorInfo(
-    textEpigraphyUuids: string[]
-  ): Promise<AnchorInfo> {
-      const textUuid: string = await knex('text_epigraphy')
-        .whereIn('uuid', textEpigraphyUuids)
-        .pluck('text_uuid AS textUuid')
-        .first();
-      const newWordCharOnTablet: string = await knex('text_epigraphy')
-        .whereIn('uuid', textEpigraphyUuids)
-        .pluck('char_on_tablet')
-        .first();
-      const anchorInfo: AnchorInfo = await knex('text_epigraphy')
-        .where('text_uuid', textUuid)
-        .whereNotNull('discourse_uuid')
-        .andWhere(function () {
-          this.where('char_on_tablet', '<', newWordCharOnTablet)
-        })
-        .pluck('discourse_uuid AS anchorUuid')
-        .orderBy('char_on_tablet', 'desc')
-        .first();
-      if (anchorInfo.anchorUuid) {
-        anchorInfo.anchorDirection = 'up';
-      }
-      else {
+  async getAnchorInfo(textEpigraphyUuids: string[]): Promise<AnchorInfo> {
+    const textUuid: string = await knex('text_epigraphy')
+      .whereIn('uuid', textEpigraphyUuids)
+      .pluck('text_uuid AS textUuid')
+      .first();
+    const newWordCharOnTablet: string = await knex('text_epigraphy')
+      .whereIn('uuid', textEpigraphyUuids)
+      .pluck('char_on_tablet')
+      .first();
+    const anchorInfo: AnchorInfo = await knex('text_epigraphy')
+      .where('text_uuid', textUuid)
+      .whereNotNull('discourse_uuid')
+      .andWhere(function () {
+        this.where('char_on_tablet', '<', newWordCharOnTablet);
+      })
+      .pluck('discourse_uuid AS anchorUuid')
+      .orderBy('char_on_tablet', 'desc')
+      .first();
+    if (anchorInfo.anchorUuid) {
+      anchorInfo.anchorDirection = 'up';
+    } else {
       anchorInfo.anchorUuid = await knex('text_epigraphy')
         .where('text_uuid', textUuid)
         .whereNotNull('discourse_uuid')
         .andWhere(function () {
-          this.where('char_on_tablet', '>', newWordCharOnTablet)
+          this.where('char_on_tablet', '>', newWordCharOnTablet);
         })
         .pluck('discourse_uuid')
         .orderBy('char_on_tablet', 'asc')
         .first();
       anchorInfo.anchorDirection = 'down';
-      }
+    }
     return anchorInfo;
   }
 }
-
 
 export default new TextEpigraphyDao();
