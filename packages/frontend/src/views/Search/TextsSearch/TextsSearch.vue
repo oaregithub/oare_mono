@@ -83,7 +83,7 @@ export default defineComponent({
 
     const [translitSearch, setTranslitSearch] = useQueryParam('translit', '');
     const [textTitleSearch, setTextTitleSearch] = useQueryParam('title', '');
-    const [rows, setRows] = useQueryParam('rows', '10');
+    const [rows, setRows] = useQueryParam('rows', '100');
     const [page, setPage] = useQueryParam('page', '1');
 
     const headers = ref([
@@ -125,8 +125,8 @@ export default defineComponent({
     const resetSearch = async () => {
       page.value = '1';
       totalSearchResults.value = -1;
-      searchTexts();
       searchTotalLoading.value = true;
+      searchTexts();
       try {
         totalSearchResults.value = await server.searchTextsTotal({
           characters: translitSearch.value,
@@ -141,7 +141,7 @@ export default defineComponent({
 
     watch([page, rows], searchTexts, { immediate: false });
 
-    onMounted(searchTexts);
+    onMounted(resetSearch);
 
     return {
       searchResults,
