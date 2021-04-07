@@ -6,19 +6,19 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      Brute character sequence search supports various intelligent search features:
+      Brute character sequence search supports various search features:
       <ol>
         <li>
-          <b>*</b> serves as a wildcard representing any consonant. e.g.: 'a-*a' will search for 'a-ba', 'a-na', 'a-da', etc.
+          Use <b>*</b> to represent all Assyrian consonants (e.g., 'a-*a' will search for 'a-ba', 'a-na', 'a-ta', etc.).
         </li>
         <li>
-          <b>&amp;</b> serves as a wildcard representing various forms of a vowel when placed at the beginning of a sign. e.g.: '&amp;tam' will search for 'tam', 'tám', 'tàm', 'tam₄', etc.
+          Use <b>&amp;</b> at the beginning of a sign to query all readings in that sequence (e.g., '&amp;tam' will search for 'tam', 'tám', 'tàm', 'tam₄', etc.).
         </li>
         <li>
-          <b>[]</b> serves as an indicator for a set of specified possible consonants. e.g.: 'a-[bd]a' will search for 'a-ba' and 'a-da'.
+          Use <b>[]</b> to bracket a set of consonants to include in your query (e.g., 'a-[bp]a' will search for 'a-ba' and 'a-pa').
         </li>
         <li>
-          Searches can be formatted similar to other databases. e.g.: 's,u2-ba1 tam4' will search for 'ṣú-ba tam₄'
+          If preferred, use cdli style conventions (e.g., 's,u2-ba1-tam4' will search for 'ṣú-ba-tam₄').
         </li>
       </ol>
       Thus, '&amp;[bdt]a*' would form a valid search that would return results for 'bar', 'dan', 'dam', 'tám', etc. 
