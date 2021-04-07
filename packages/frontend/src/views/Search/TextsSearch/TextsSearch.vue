@@ -33,6 +33,7 @@
       :searchResults="searchResults"
       :loading="searchLoading"
       :totalSearchResults="totalSearchResults"
+      :searchTotalLoading="searchTotalLoading"
       :page="Number(page)"
       @update:page="p => setPage(String(p))"
       :rows="Number(rows)"
@@ -71,6 +72,7 @@ export default defineComponent({
   setup() {
     const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
     const searchLoading = ref(false);
+    const searchTotalLoading = ref(false);
     const totalSearchResults = ref(0);
 
     const server = sl.get('serverProxy');
@@ -121,6 +123,7 @@ export default defineComponent({
       page.value = '1';
       totalSearchResults.value = -1;
       searchTexts();
+      searchTotalLoading.value = true;
       try {
         totalSearchResults.value = await server.searchTextsTotal({
           characters: translitSearch.value,
@@ -128,6 +131,8 @@ export default defineComponent({
         });
       } catch {
         actions.showErrorSnackbar('Error getting texts total. Please try again.');
+      } finally {
+        searchTotalLoading.value = false;
       }
     };
 
@@ -152,6 +157,7 @@ export default defineComponent({
       highlightedItem,
       searchTexts,
       resetSearch,
+      searchTotalLoading,
     };
   },
 });
