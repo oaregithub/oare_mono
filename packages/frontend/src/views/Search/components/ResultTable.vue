@@ -32,7 +32,7 @@
       </slot>
     </template>
     <template #[`footer.page-text`]="items">
-      <div v-if="!items.itemsLength">–</div>
+      <div v-if="!items.itemsLength || !items.pageStart || !items.pageStop">–</div>
       <div v-else>
         {{ items.pageStart }} - {{ items.pageStop }} of {{ searchTotalLoading ? 'Loading...' : items.itemsLength }}
       </div>

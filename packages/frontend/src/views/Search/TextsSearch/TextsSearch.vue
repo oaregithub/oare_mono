@@ -122,11 +122,10 @@ export default defineComponent({
       }
     };
 
-    const resetSearch = async () => {
-      page.value = '1';
-      totalSearchResults.value = -1;
+    const searchTextsTotal = async () => {
+      if (!canPerformSearch) return;
+
       searchTotalLoading.value = true;
-      searchTexts();
       try {
         totalSearchResults.value = await server.searchTextsTotal({
           characters: translitSearch.value,
@@ -139,9 +138,19 @@ export default defineComponent({
       }
     };
 
+    const resetSearch = async () => {
+      page.value = '1';
+      totalSearchResults.value = -1;
+      searchTexts();
+      searchTextsTotal();
+    };
+
     watch([page, rows], searchTexts, { immediate: false });
 
-    onMounted(resetSearch);
+    onMounted(async () => {
+      searchTexts();
+      searchTextsTotal();
+    });
 
     return {
       searchResults,
