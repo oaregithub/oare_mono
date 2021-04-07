@@ -273,40 +273,43 @@ class TextDiscourseDao {
       .first();
     return !!row;
   }
-  
+
   async insertNewDiscourseRowFromTextEpigraphy(
     newDiscourseRow: NewDiscourseRow,
     spellingUuid: string,
     explicitSpelling: string,
     transcription: string
   ): Promise<void> {
-        newDiscourseRow.uuid = v4();
-        const anchorInfo = await TextEpigraphyDao.getAnchorInfo(
-          newDiscourseRow.textEpigraphyUuids
-        );
-        await this.getRowInfoWithAnchorInfo(anchorInfo, newDiscourseRow);
-        await incrementWordOnTablet(
-          newDiscourseRow.textUuid,
-          newDiscourseRow.wordOnTablet
-        );
-        await incrementObjInText(newDiscourseRow.textUuid, newDiscourseRow.objInText);
-        await knex('text_discourse').insert({
-          uuid: newDiscourseRow.uuid,
-          type: newDiscourseRow.type,
-          child_num: newDiscourseRow.childNum,
-          word_on_tablet: newDiscourseRow.wordOnTablet,
-          text_uuid: newDiscourseRow.textUuid,
-          tree_uuid: newDiscourseRow.treeUuid,
-          parent_uuid: newDiscourseRow.parentUuid,
-          spelling_uuid: spellingUuid,
-          explicit_spelling: explicitSpelling,
-          transcription,
-          obj_in_text: newDiscourseRow.wordOnTablet,
-        });
-        await this.addDiscourseUuid(
-          newDiscourseRow.textEpigraphyUuids,
-          newDiscourseRow.uuid
-        );
+    newDiscourseRow.uuid = v4();
+    const anchorInfo = await TextEpigraphyDao.getAnchorInfo(
+      newDiscourseRow.textEpigraphyUuids
+    );
+    await this.getRowInfoWithAnchorInfo(anchorInfo, newDiscourseRow);
+    await incrementWordOnTablet(
+      newDiscourseRow.textUuid,
+      newDiscourseRow.wordOnTablet
+    );
+    await incrementObjInText(
+      newDiscourseRow.textUuid,
+      newDiscourseRow.objInText
+    );
+    await knex('text_discourse').insert({
+      uuid: newDiscourseRow.uuid,
+      type: newDiscourseRow.type,
+      child_num: newDiscourseRow.childNum,
+      word_on_tablet: newDiscourseRow.wordOnTablet,
+      text_uuid: newDiscourseRow.textUuid,
+      tree_uuid: newDiscourseRow.treeUuid,
+      parent_uuid: newDiscourseRow.parentUuid,
+      spelling_uuid: spellingUuid,
+      explicit_spelling: explicitSpelling,
+      transcription,
+      obj_in_text: newDiscourseRow.wordOnTablet,
+    });
+    await this.addDiscourseUuid(
+      newDiscourseRow.textEpigraphyUuids,
+      newDiscourseRow.uuid
+    );
   }
 
   async addDiscourseUuid(
