@@ -147,7 +147,8 @@ export default defineComponent({
 
     watch([page, rows], searchTexts, { immediate: false });
 
-    onMounted(async () => {
+    onMounted(() => {
+      totalSearchResults.value = Number(rows.value) * Number(page.value);
       searchTexts();
       searchTextsTotal();
     });
