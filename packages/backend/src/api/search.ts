@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   SearchTextsResponse,
+  SearchTextsCountPayload,
   SearchTextsPayload,
   SearchSpellingPayload,
   SearchDiscourseSpellingRow,
@@ -79,7 +80,7 @@ router.route('/search/count').get(async (req, res, next) => {
     const {
       textTitle: title,
       characters: charsPayload,
-    } = (req.query as unknown) as SearchTextsPayload;
+    } = (req.query as unknown) as SearchTextsCountPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
