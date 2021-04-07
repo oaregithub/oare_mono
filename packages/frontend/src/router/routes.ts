@@ -38,6 +38,7 @@ import PlacesView from '../views/Places/index.vue';
 import ErrorLog from '../views/Admin/ErrorLog/ErrorLog.vue';
 import AdminCommentView from '../views/Admin/Comments/AdminCommentView.vue';
 import UserCommentView from '../views/Dashboard/UserCommentView.vue';
+import AdminSettings from '../views/Admin/Settings/AdminSettings.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -84,6 +85,11 @@ const routes: RouteConfig[] = [
     path: '/admin/drafts',
     name: 'adminDrafts',
     component: AdminDraftsView,
+  },
+  {
+    path: '/admin/settings',
+    name: 'adminSettings',
+    component: AdminSettings,
   },
   {
     path: '/addblacklist/texts',
