@@ -31,6 +31,7 @@ import ThreadsDao from './api/daos/ThreadsDao';
 import ErrorsDao from './api/daos/ErrorsDao';
 import CollectionDao from './api/daos/CollectionDao';
 import CollectionTextUtils from './api/daos/CollectionTextUtils';
+import CacheStatusDao from './api/daos/CacheStatusDao';
 
 declare global {
   namespace Express {
@@ -67,6 +68,7 @@ sl.set('CommentsDao', CommentsDao);
 sl.set('ThreadsDao', ThreadsDao);
 sl.set('ErrorsDao', ErrorsDao);
 sl.set('CollectionDao', CollectionDao);
+sl.set('CacheStatusDao', CacheStatusDao);
 sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('utils', utils);
 sl.set('mailer', mailer);

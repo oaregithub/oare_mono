@@ -3,6 +3,9 @@ import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 export const applyIntellisearch = (signs: string[]): string[][] => {
   let signArray = signs.map(sign => [sign]);
 
+  // Apply Brackets ([])
+  signArray = signArray.map(applyBrackets);
+
   // Apply Asterisk Wildcard (*)
   signArray = signArray.map(applyAsteriskWildcard);
 
@@ -49,6 +52,23 @@ export const applyAmpersandWildcard = (signs: string[]): string[] => {
     });
   }
   return wildcardSigns;
+};
+
+export const applyBrackets = (signs: string[]): string[] => {
+  let bracketSigns: string[] = signs;
+  const bracketSubstrings = signs[0].match(/\[[^[]*\]/g) || [];
+
+  // Removes brackets from substring and forms array of possible characters. Ex: '[tm]' => ['t','m']
+  const charsInBrackets = bracketSubstrings.map(char =>
+    char.slice(1, -1).split('')
+  );
+
+  bracketSubstrings.forEach((_, index) => {
+    bracketSigns = bracketSigns.flatMap(sign =>
+      charsInBrackets[index].map(char => sign.replace(/\[[^[]*\]/, char))
+    );
+  });
+  return bracketSigns;
 };
 
 /**

@@ -23,6 +23,7 @@ import publicBlacklist from './public_blacklist';
 import searchNames from './search_names';
 import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
+import cacheStatus from './cache_status';
 
 const serverProxy = {
   ...textGroups,
@@ -50,6 +51,7 @@ const serverProxy = {
   ...comments,
   ...errors,
   ...threads,
+  ...cacheStatus,
 };
 
 export type ServerProxyType = typeof serverProxy;

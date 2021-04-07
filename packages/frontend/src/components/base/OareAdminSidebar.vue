@@ -37,6 +37,10 @@ export default defineComponent({
           label: 'Text Drafts',
           path: '/admin/drafts',
         },
+        {
+          label: 'Admin Settings',
+          path: '/admin/settings',
+        },
       ],
     });
 
