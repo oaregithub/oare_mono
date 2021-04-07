@@ -68,32 +68,90 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
     .join(' ');
 }
 
-export function incrementIncrementalsBeforeInsert(
-  newDiscourseRow: NewDiscourseRow
-): void {
-  if (newDiscourseRow.childNum !== null) {
-    const incrementChildNum = knex('text_discourse')
+export async function incrementChildNum(
+        textUuid: string,
+        parentUuid: string | null,
+        childNum: number | null
+): Promise<void> {
+  if (childNum && parentUuid) {
+    await knex('text_discourse')
       .where({
-        text_uuid: newDiscourseRow.textUuid,
-        parent_uuid: newDiscourseRow.parentUuid,
+        text_uuid: textUuid,
+        parent_uuid: parentUuid,
       })
-      .andWhere('child_num', '>=', newDiscourseRow.childNum)
-      .increment('child_num');
+      .andWhere('child_num', '>=', childNum)
+      .increment('child_num', 1);
   }
-  if (newDiscourseRow.wordOnTablet !== null) {
-    const incrementWordOnTablet = knex('text_discourse')
+}
+
+export async function incrementWordOnTablet(
+        textUuid: string,
+        wordOnTablet: number | null
+): Promise<void> {
+  if (wordOnTablet) {
+     await knex('text_discourse')
       .where({
-        text_uuid: newDiscourseRow.textUuid,
+        text_uuid: textUuid,
       })
-      .andWhere('word_on_tablet', '>=', newDiscourseRow.wordOnTablet)
-      .increment('word_on_tablet');
+      .andWhere('word_on_tablet', '>=', wordOnTablet)
+      .increment('word_on_tablet', 1);
   }
-  if (newDiscourseRow.objInText !== null) {
-    const incrementObjInText = knex('text_discourse')
+}
+
+export async function incrementObjInText(
+        textUuid: string,
+        objInText: number | null
+): Promise<void> {
+   if (objInText) {
+    await knex('text_discourse')
       .where({
-        text_uuid: newDiscourseRow.textUuid,
+        text_uuid: textUuid,
       })
-      .andWhere('obj_in_text', '>=', newDiscourseRow.objInText)
-      .increment('obj_in_text');
+      .andWhere('obj_in_text', '>=', objInText)
+      .increment('obj_in_text', 1);
+  }
+}
+
+export async function decrementChildNum(
+        textUuid: string,
+        parentUuid: string | null,
+        childNum: number | null
+): Promise<void> {
+  if (childNum && parentUuid) {
+    await knex('text_discourse')
+      .where({
+        text_uuid: textUuid,
+        parent_uuid: parentUuid,
+      })
+      .andWhere('child_num', '>', childNum)
+      .decrement('child_num', 1);
+  }
+}
+
+export async function decrementWordOnTablet(
+        textUuid: string,
+        wordOnTablet: number | null
+): Promise<void> {
+  if (wordOnTablet) {
+     await knex('text_discourse')
+      .where({
+        text_uuid: textUuid,
+      })
+      .andWhere('word_on_tablet', '>', wordOnTablet)
+      .decrement('word_on_tablet', 1);
+  }
+}
+
+export async function decrementObjInText(
+        textUuid: string,
+        objInText: number | null
+): Promise<void> {
+  if (objInText) {
+    await knex('text_discourse')
+      .where({
+        text_uuid: textUuid,
+      })
+      .andWhere('obj_in_text', '>', objInText)
+      .decrement('obj_in_text', 1);
   }
 }
