@@ -25,6 +25,18 @@ class SignReadingDao {
       .whereIn('reading', signs);
     return rows.map(row => row.uuid);
   }
+
+  async getMatchingSigns(sign: string): Promise<string[]> {
+    const matchingSigns = await knex('sign_reading AS sr1')
+      .select('sr2.reading')
+      .innerJoin(
+        'sign_reading AS sr2',
+        'sr1.reference_uuid',
+        'sr2.reference_uuid'
+      )
+      .where('sr1.reading', sign);
+    return matchingSigns.map(row => row.reading);
+  }
 }
 
 export default new SignReadingDao();
