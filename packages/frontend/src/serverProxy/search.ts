@@ -1,6 +1,7 @@
 import axios from '@/axiosInstance';
 import {
   SearchTextsResponse,
+  SearchTextsCountPayload,
   SearchTextsPayload,
   SearchSpellingResultRow,
   SearchDiscourseSpellingResponse,
@@ -11,6 +12,13 @@ async function searchTexts(
   payload: SearchTextsPayload
 ): Promise<SearchTextsResponse> {
   const { data } = await axios.get('/search', { params: payload });
+  return data;
+}
+
+async function searchTextsTotal(
+  payload: SearchTextsCountPayload
+): Promise<number> {
+  const { data } = await axios.get('/search/count', { params: payload });
   return data;
 }
 
@@ -45,4 +53,5 @@ export default {
   searchSpellings,
   searchSpellingDiscourse,
   searchTexts,
+  searchTextsTotal,
 };

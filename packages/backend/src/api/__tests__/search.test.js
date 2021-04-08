@@ -14,7 +14,6 @@ describe('search test', () => {
       },
     ];
     const TextEpigraphyDao = {
-      searchTextsTotal: jest.fn().mockResolvedValue(1),
       searchTexts: jest.fn().mockResolvedValue(matchingTexts),
       // Rendering a proper line reading is out of the scope of this test
       getEpigraphicUnits: jest.fn().mockResolvedValue([]),
@@ -31,6 +30,7 @@ describe('search test', () => {
         .fn()
         .mockResolvedValue(['mockSignReadingUuid']),
       hasSign: jest.fn().mockResolvedValue(true),
+      getMatchingSigns: jest.fn().mockResolvedValue(['lì']),
     };
 
     beforeEach(() => {
@@ -52,7 +52,6 @@ describe('search test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
-        totalRows: 1,
         results: matchingTexts.map(text => ({
           ...text,
           name: 'Test Text',
@@ -215,16 +214,20 @@ describe('search test', () => {
       expect(response.status).toBe(200);
     });
 
-    it('returns 500 if searching total results fails', async () => {
-      sl.set('TextEpigraphyDao', {
-        ...TextEpigraphyDao,
-        searchTextsTotal: jest
-          .fn()
-          .mockRejectedValue('Failed to search texts total'),
-      });
+    it('parses intellisearch dollar sign ($)', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: '$lì-$lam₅-tam',
+        });
 
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
+      expect(mockSignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(2);
+      expect(
+        mockSignReadingDao.getIntellisearchSignUuids
+      ).toHaveBeenCalledTimes(3);
+
+      expect(response.status).toBe(200);
     });
 
     it('returns 500 if searching texts fails', async () => {
@@ -255,6 +258,51 @@ describe('search test', () => {
           .mockRejectedValue('Failed to get epig units'),
       });
 
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /search/count', () => {
+    const PATH = `${API_PATH}/search/count`;
+
+    const mockTextEpigraphyDao = {
+      searchTextsTotal: jest.fn().mockResolvedValue(10),
+    };
+
+    const mockSignReadingDao = {
+      getIntellisearchSignUuids: jest
+        .fn()
+        .mockResolvedValue(['mockSignReadingUuid']),
+      hasSign: jest.fn().mockResolvedValue(true),
+    };
+
+    beforeEach(() => {
+      sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
+      sl.set('SignReadingDao', mockSignReadingDao);
+    });
+
+    const query = {
+      characters: 'a-na',
+      title: 'CCT',
+    };
+
+    const sendRequest = () => request(app).get(PATH).query(query);
+
+    it('returns search count', async () => {
+      const response = await sendRequest();
+      expect(mockTextEpigraphyDao.searchTextsTotal).toHaveBeenCalled();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(10);
+    });
+
+    it('returns 500 on failed search count', async () => {
+      sl.set('TextEpigraphyDao', {
+        ...mockTextEpigraphyDao,
+        searchTextsTotal: jest
+          .fn()
+          .mockRejectedValue('failed to retrieve search total'),
+      });
       const response = await sendRequest();
       expect(response.status).toBe(500);
     });
