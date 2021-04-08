@@ -11,7 +11,11 @@ export interface SearchTextsPayload {
   rows: number;
 }
 
+export interface SearchTextsCountPayload {
+  characters?: string;
+  textTitle: string;
+}
+
 export interface SearchTextsResponse {
-  totalRows: number;
   results: SearchTextsResultRow[];
 }
