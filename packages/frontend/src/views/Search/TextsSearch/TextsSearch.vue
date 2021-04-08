@@ -102,44 +102,44 @@ export default defineComponent({
     });
 
     const searchTexts = async () => {
-      if (!canPerformSearch.value) return;
-
-      searchLoading.value = true;
-      try {
-        let {
-          results,
-        }: SearchTextsResponse = await server.searchTexts({
-          characters: translitSearch.value,
-          textTitle: textTitleSearch.value,
-          page: Number(page.value),
-          rows: Number(rows.value),
-        });
-        searchResults.value = results;
-      } catch {
-        actions.showErrorSnackbar('Error searching texts. Please try again.');
-      } finally {
-        searchLoading.value = false;
+      if (canPerformSearch.value) {
+        searchLoading.value = true;
+        try {
+          let {
+            results,
+          }: SearchTextsResponse = await server.searchTexts({
+            characters: translitSearch.value,
+            textTitle: textTitleSearch.value,
+            page: Number(page.value),
+            rows: Number(rows.value),
+          });
+          searchResults.value = results;
+        } catch {
+          actions.showErrorSnackbar('Error searching texts. Please try again.');
+        } finally {
+          searchLoading.value = false;
+        }
       }
     };
 
     const searchTextsTotal = async () => {
-      if (!canPerformSearch.value) return;
-
-      searchTotalLoading.value = true;
-      try {
-        totalSearchResults.value = await server.searchTextsTotal({
-          characters: translitSearch.value,
-          textTitle: textTitleSearch.value,
-        });
-      } catch {
-        actions.showErrorSnackbar('Error getting texts total. Please try again.');
-      } finally {
-        searchTotalLoading.value = false;
+      if (canPerformSearch.value) {
+        searchTotalLoading.value = true;
+        try {
+          totalSearchResults.value = await server.searchTextsTotal({
+            characters: translitSearch.value,
+            textTitle: textTitleSearch.value,
+          });
+        } catch {
+          actions.showErrorSnackbar('Error getting texts total. Please try again.');
+        } finally {
+          searchTotalLoading.value = false;
+        }
       }
     };
 
     const resetSearch = async () => {
-      page.value = '1';
+      setPage('1');
       totalSearchResults.value = -1;
       searchTexts();
       searchTextsTotal();
