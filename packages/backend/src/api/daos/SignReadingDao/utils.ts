@@ -1,6 +1,9 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
+import sl from '@/serviceLocator';
 
-export const applyIntellisearch = (signs: string[]): string[][] => {
+export const applyIntellisearch = async (
+  signs: string[]
+): Promise<string[][]> => {
   let signArray = signs.map(sign => [sign]);
 
   // Apply Brackets ([])
@@ -11,6 +14,9 @@ export const applyIntellisearch = (signs: string[]): string[][] => {
 
   // Apply Ampersand Wildcard (&)
   signArray = signArray.map(applyAmpersandWildcard);
+
+  // Apply Dollar Symbol ($)
+  signArray = await Promise.all(signArray.map(applyDollarSymbol));
 
   return signArray;
 };
@@ -69,6 +75,23 @@ export const applyBrackets = (signs: string[]): string[] => {
     );
   });
   return bracketSigns;
+};
+
+export const applyDollarSymbol = async (signs: string[]): Promise<string[]> => {
+  const SignReadingDao = sl.get('SignReadingDao');
+
+  let dollarSigns: string[] = signs;
+  const beginsWithDollarSymbol = !!signs[0].match(/^\$/);
+
+  if (beginsWithDollarSymbol) {
+    dollarSigns = dollarSigns.map(sign => sign.substr(1));
+    dollarSigns = (
+      await Promise.all(
+        dollarSigns.map(sign => SignReadingDao.getMatchingSigns(sign))
+      )
+    ).flat();
+  }
+  return dollarSigns;
 };
 
 /**

@@ -31,6 +31,7 @@ describe('search test', () => {
         .fn()
         .mockResolvedValue(['mockSignReadingUuid']),
       hasSign: jest.fn().mockResolvedValue(true),
+      getMatchingSigns: jest.fn().mockResolvedValue(['lì']),
     };
 
     beforeEach(() => {
@@ -211,6 +212,22 @@ describe('search test', () => {
       expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         secondSignArray
       );
+
+      expect(response.status).toBe(200);
+    });
+
+    it('parses intellisearch dollar sign ($)', async () => {
+      const response = await request(app)
+        .get(PATH)
+        .query({
+          ...query,
+          characters: '$lì-$lam₅-tam',
+        });
+
+      expect(mockSignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(2);
+      expect(
+        mockSignReadingDao.getIntellisearchSignUuids
+      ).toHaveBeenCalledTimes(3);
 
       expect(response.status).toBe(200);
     });

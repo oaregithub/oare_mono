@@ -18,6 +18,9 @@
           Use <b>[]</b> to bracket a set of consonants to include in your query (e.g., 'a-[bp]a' will search for 'a-ba' and 'a-pa').
         </li>
         <li>
+          Use <b>$</b> to query all instances of the sign regardless of reading entered (e.g., '$ba' will search for both the 'ba' and 'pá' readings of the sign BA).
+        </li>
+        <li>
           If preferred, use cdli style conventions (e.g., 's,u2-ba1-tam4' will search for 'ṣú-ba-tam₄').
         </li>
       </ol>
