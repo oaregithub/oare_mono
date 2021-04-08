@@ -123,7 +123,7 @@ export default defineComponent({
     };
 
     const searchTextsTotal = async () => {
-      if (!canPerformSearch) return;
+      if (!canPerformSearch.value) return;
 
       searchTotalLoading.value = true;
       try {
