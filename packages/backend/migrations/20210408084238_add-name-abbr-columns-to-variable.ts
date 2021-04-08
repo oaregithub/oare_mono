@@ -2,7 +2,7 @@ import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const hasNameColumn = await knex.schema.hasColumn('variable', 'name');
-  const hasAbbreviatioColumn = await knex.schema.hasColumn(
+  const hasAbbreviationColumn = await knex.schema.hasColumn(
     'variable',
     'abbreviation'
   );
@@ -12,7 +12,7 @@ export async function up(knex: Knex): Promise<void> {
       'ALTER TABLE variable ADD COLUMN name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER type; '
     );
   }
-  if (!hasAbbreviatioColumn) {
+  if (!hasAbbreviationColumn) {
     await knex.raw(
       'ALTER TABLE variable ADD COLUMN abbreviation CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER name;'
     );
