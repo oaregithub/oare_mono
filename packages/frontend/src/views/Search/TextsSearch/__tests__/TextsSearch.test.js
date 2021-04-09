@@ -12,6 +12,7 @@ localVue.use(VueCompositionApi);
 describe('TextsSearch', () => {
   const mockServer = {
     searchTexts: jest.fn().mockResolvedValue({ totalRows: 0, results: [] }),
+    searchTextsTotal: jest.fn().mockResolvedValue(10),
   };
 
   const mockActions = {
@@ -45,6 +46,7 @@ describe('TextsSearch', () => {
   it('displays error on failed text title search', async () => {
     const wrapper = createWrapper({
       server: {
+        ...mockServer,
         searchTexts: jest.fn().mockRejectedValue(null),
       },
     });
@@ -66,12 +68,38 @@ describe('TextsSearch', () => {
   it('displays error on failed character sequence search', async () => {
     const wrapper = createWrapper({
       server: {
+        ...mockServer,
         searchTexts: jest.fn().mockRejectedValue(null),
       },
     });
     const input = wrapper.find('.test-character-search input');
     await input.setValue('a');
     await wrapper.find('.test-submit-button').trigger('click');
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('retrieves search results count', async () => {
+    const wrapper = createWrapper();
+    const input = wrapper.find('.test-character-search input');
+    await input.setValue('a');
+    await wrapper.find('.test-submit-button').trigger('click');
+    await flushPromises();
+    expect(mockServer.searchTextsTotal).toHaveBeenCalled();
+  });
+
+  it('displays error failed search count retrieval', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        searchTextsTotal: jest
+          .fn()
+          .mockRejectedValue('failed to retrieve search count'),
+      },
+    });
+    const input = wrapper.find('.test-character-search input');
+    await input.setValue('a');
+    await wrapper.find('.test-submit-button').trigger('click');
+    await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });

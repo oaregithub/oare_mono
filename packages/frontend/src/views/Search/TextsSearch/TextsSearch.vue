@@ -12,6 +12,7 @@
           outlined
         />
         {{ $t('search.characterSequenceDescription') }}
+        <search-information-card/>
         <v-text-field
           class="test-character-search"
           :value="translitSearch"
@@ -33,6 +34,7 @@
       :searchResults="searchResults"
       :loading="searchLoading"
       :totalSearchResults="totalSearchResults"
+      :searchTotalLoading="searchTotalLoading"
       :page="Number(page)"
       @update:page="p => setPage(String(p))"
       :rows="Number(rows)"
@@ -59,6 +61,7 @@ import {
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
 import ResultTable from '../components/ResultTable.vue';
+import SearchInformationCard from './components/SearchInformationCard.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
@@ -67,10 +70,12 @@ export default defineComponent({
   name: 'TextsSearch',
   components: {
     ResultTable,
+    SearchInformationCard,
   },
   setup() {
     const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
     const searchLoading = ref(false);
+    const searchTotalLoading = ref(false);
     const totalSearchResults = ref(0);
 
     const server = sl.get('serverProxy');
@@ -78,7 +83,7 @@ export default defineComponent({
 
     const [translitSearch, setTranslitSearch] = useQueryParam('translit', '');
     const [textTitleSearch, setTextTitleSearch] = useQueryParam('title', '');
-    const [rows, setRows] = useQueryParam('rows', '10');
+    const [rows, setRows] = useQueryParam('rows', '100');
     const [page, setPage] = useQueryParam('page', '1');
 
     const headers = ref([
@@ -97,37 +102,56 @@ export default defineComponent({
     });
 
     const searchTexts = async () => {
-      if (!canPerformSearch.value) return;
-
-      searchLoading.value = true;
-      try {
-        let {
-          totalRows,
-          results,
-        }: SearchTextsResponse = await server.searchTexts({
-          characters: translitSearch.value,
-          textTitle: textTitleSearch.value,
-          page: Number(page.value),
-          rows: Number(rows.value),
-        });
-
-        totalSearchResults.value = totalRows;
-        searchResults.value = results;
-      } catch {
-        actions.showErrorSnackbar('Error searching texts. Please try again.');
-      } finally {
-        searchLoading.value = false;
+      if (canPerformSearch.value) {
+        searchLoading.value = true;
+        try {
+          let {
+            results,
+          }: SearchTextsResponse = await server.searchTexts({
+            characters: translitSearch.value,
+            textTitle: textTitleSearch.value,
+            page: Number(page.value),
+            rows: Number(rows.value),
+          });
+          searchResults.value = results;
+        } catch {
+          actions.showErrorSnackbar('Error searching texts. Please try again.');
+        } finally {
+          searchLoading.value = false;
+        }
       }
     };
 
-    const resetSearch = () => {
-      page.value = '1';
+    const searchTextsTotal = async () => {
+      if (canPerformSearch.value) {
+        searchTotalLoading.value = true;
+        try {
+          totalSearchResults.value = await server.searchTextsTotal({
+            characters: translitSearch.value,
+            textTitle: textTitleSearch.value,
+          });
+        } catch {
+          actions.showErrorSnackbar('Error getting texts total. Please try again.');
+        } finally {
+          searchTotalLoading.value = false;
+        }
+      }
+    };
+
+    const resetSearch = async () => {
+      setPage('1');
+      totalSearchResults.value = -1;
       searchTexts();
+      searchTextsTotal();
     };
 
     watch([page, rows], searchTexts, { immediate: false });
 
-    onMounted(searchTexts);
+    onMounted(() => {
+      totalSearchResults.value = Number(rows.value) * Number(page.value);
+      searchTexts();
+      searchTextsTotal();
+    });
 
     return {
       searchResults,
@@ -146,6 +170,7 @@ export default defineComponent({
       highlightedItem,
       searchTexts,
       resetSearch,
+      searchTotalLoading,
     };
   },
 });
