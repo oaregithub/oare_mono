@@ -8,6 +8,7 @@ import {
   TextDraftsResponse,
   CreateDraftPayload,
 } from '@oare/types';
+import { createTabletRenderer } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -83,8 +84,9 @@ router
   .route('/text_drafts')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const TextDraftsDao = sl.get('TextDraftsDao');
       const UserDao = sl.get('UserDao');
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+      const TextDraftsDao = sl.get('TextDraftsDao');
 
       const query = parsedQuery(req.originalUrl);
       const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
@@ -113,9 +115,21 @@ router
         drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
       );
 
+      const epigraphicUnitsPerText = await Promise.all(
+        drafts.map(({ textUuid }) =>
+          TextEpigraphyDao.getEpigraphicUnits(textUuid)
+        )
+      );
+
+      const originalTexts = epigraphicUnitsPerText.map(units => {
+        const renderer = createTabletRenderer(units, { lineNumbers: true });
+        return renderer.tabletReading();
+      });
+
       const draftsWithUser: TextDraftWithUser[] = drafts.map(
         (draft, index) => ({
           ...draft,
+          originalText: originalTexts[index],
           user: {
             firstName: users[index].firstName,
             lastName: users[index].lastName,

@@ -112,7 +112,7 @@ export function epigraphicWordWithSeparators(
 }
 
 export function regionReading(unit: EpigraphicUnit): string {
-  if (unit.markups) {
+  if (unit.markups.length > 0) {
     const { type: markupType, value: markupValue } = unit.markups[0];
     const { reading } = unit;
 

@@ -203,6 +203,10 @@ describe('Text drafts test', () => {
       totalDrafts: jest.fn().mockResolvedValue(1),
     };
 
+    const TextEpigraphyDao = {
+      getEpigraphicUnits: jest.fn().mockResolvedValue([]),
+    };
+
     const user = {
       firstName: 'John',
       lastName: 'Doe',
@@ -219,6 +223,7 @@ describe('Text drafts test', () => {
     beforeEach(() => {
       sl.set('TextDraftsDao', TextDraftsDao);
       sl.set('UserDao', UserDao);
+      sl.set('TextEpigraphyDao', TextEpigraphyDao);
     });
 
     const sendRequest = (cookie = true) => {
@@ -238,6 +243,7 @@ describe('Text drafts test', () => {
         drafts: [
           {
             ...draft,
+            originalText: '',
             user,
           },
         ],
