@@ -64,10 +64,10 @@
       :close-button="true"
       :persistent="false"
     >
-      <div class="d-flex mb-2">
+      <span class="mb-2">
         <span class="font-weight-bold mr-1">Author Notes:</span>
         {{ viewingDraft.notes || 'No notes' }}
-      </div>
+      </span>
       <code-diff
         :old-string="viewingDraft.originalText"
         :new-string="draftText"
