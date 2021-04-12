@@ -61,7 +61,7 @@ class TextDraftsDao {
     };
   }
 
-  async getDraft(
+  async getDraftByTextUuid(
     userUuid: string,
     textUuid: string
   ): Promise<TextDraft | null> {

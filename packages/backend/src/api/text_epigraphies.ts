@@ -59,7 +59,7 @@ router
         userUuid
       );
       const draft = user
-        ? await TextDraftsDao.getDraft(user.uuid, textUuid)
+        ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid)
         : null;
 
       const response: EpigraphyResponse = {

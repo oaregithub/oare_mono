@@ -1,11 +1,12 @@
 import express from 'express';
 import {
-  AddTextDraftPayload,
+  DraftPayload,
   TextDraft,
   TextDraftWithUser,
   GetDraftsSortType,
   SortOrder,
   TextDraftsResponse,
+  CreateDraftPayload,
 } from '@oare/types';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
@@ -25,7 +26,7 @@ router
       const { textUuid } = req.params;
       const userUuid = req.user!.uuid;
 
-      const { content, notes }: AddTextDraftPayload = req.body;
+      const { content, notes }: DraftPayload = req.body;
 
       const canEdit = await CollectionTextUtils.canEditText(textUuid, userUuid);
       if (!canEdit) {
@@ -35,7 +36,7 @@ router
         return;
       }
 
-      const draft = await TextDraftsDao.getDraft(userUuid, textUuid);
+      const draft = await TextDraftsDao.getDraftByTextUuid(userUuid, textUuid);
 
       if (!draft) {
         await TextDraftsDao.createDraft(userUuid, textUuid, content, notes);
@@ -78,55 +79,93 @@ router
     }
   });
 
-router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
-  try {
+router
+  .route('/text_drafts')
+  .get(adminRoute, async (req, res, next) => {
+    try {
+      const TextDraftsDao = sl.get('TextDraftsDao');
+      const UserDao = sl.get('UserDao');
+
+      const query = parsedQuery(req.originalUrl);
+      const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
+      const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
+      const textFilter = query.get('textFilter') || '';
+      const authorFilter = query.get('authorFilter') || '';
+      const { page, limit } = extractPagination(req.query);
+
+      const draftUuids = await TextDraftsDao.getAllDraftUuids({
+        sortBy,
+        sortOrder,
+        page,
+        limit,
+        textFilter,
+        authorFilter,
+      });
+
+      const totalDrafts = await TextDraftsDao.totalDrafts({
+        authorFilter,
+        textFilter,
+      });
+      const drafts = await Promise.all(
+        draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
+      );
+      const users = await Promise.all(
+        drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
+      );
+
+      const draftsWithUser: TextDraftWithUser[] = drafts.map(
+        (draft, index) => ({
+          ...draft,
+          user: {
+            firstName: users[index].firstName,
+            lastName: users[index].lastName,
+            uuid: users[index].uuid,
+          },
+        })
+      );
+
+      const response: TextDraftsResponse = {
+        drafts: draftsWithUser,
+        totalDrafts,
+      };
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  })
+  .post(authenticatedRoute, async (req, res, next) => {
     const TextDraftsDao = sl.get('TextDraftsDao');
-    const UserDao = sl.get('UserDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-    const query = parsedQuery(req.originalUrl);
-    const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
-    const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
-    const textFilter = query.get('textFilter') || '';
-    const authorFilter = query.get('authorFilter') || '';
-    const { page, limit } = extractPagination(req.query);
+    try {
+      const userUuid = req.user!.uuid;
 
-    const draftUuids = await TextDraftsDao.getAllDraftUuids({
-      sortBy,
-      sortOrder,
-      page,
-      limit,
-      textFilter,
-      authorFilter,
-    });
+      const { content, notes, textUuid }: CreateDraftPayload = req.body;
 
-    const totalDrafts = await TextDraftsDao.totalDrafts({
-      authorFilter,
-      textFilter,
-    });
-    const drafts = await Promise.all(
-      draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
-    );
-    const users = await Promise.all(
-      drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
-    );
+      const canEdit = await CollectionTextUtils.canEditText(textUuid, userUuid);
+      if (!canEdit) {
+        next(
+          new HttpBadRequest('You do not have permission to edit this draft')
+        );
+        return;
+      }
 
-    const draftsWithUser: TextDraftWithUser[] = drafts.map((draft, index) => ({
-      ...draft,
-      user: {
-        firstName: users[index].firstName,
-        lastName: users[index].lastName,
-        uuid: users[index].uuid,
-      },
-    }));
+      const draft = await TextDraftsDao.getDraftByTextUuid(userUuid, textUuid);
+      if (!draft) {
+        await TextDraftsDao.createDraft(userUuid, textUuid, content, notes);
+      } else {
+        next(
+          new HttpBadRequest(
+            `You have already created a draft on the text with UUID ${textUuid}`
+          )
+        );
+        return;
+      }
 
-    const response: TextDraftsResponse = {
-      drafts: draftsWithUser,
-      totalDrafts,
-    };
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;
