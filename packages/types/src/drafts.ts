@@ -38,6 +38,10 @@ export interface CreateDraftPayload extends DraftPayload {
   textUuid: string;
 }
 
+export interface CreateDraftResponse {
+  draftUuid: string;
+}
+
 export type GetDraftsSortType = 'text' | 'author' | 'updatedAt';
 
 export interface DraftQueryOptions extends Pagination {

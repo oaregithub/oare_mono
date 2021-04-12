@@ -5,7 +5,7 @@
         color="primary"
         class="mr-2 test-save"
         :loading="saveLoading"
-        @click="createDraft"
+        @click="saveDraft"
         >Save draft</oare-loader-button
       >
       <v-btn color="info" @click="confirmUnsaved" class="test-close-editor"
@@ -146,14 +146,27 @@ export default defineComponent({
       }
     };
 
-    const createDraft = async () => {
+    const saveDraft = async () => {
       saveLoading.value = true;
 
       try {
-        await server.createDraft(props.textUuid, {
-          content: JSON.stringify(localDraft.value.content),
-          notes: localDraft.value.notes,
-        });
+        if (!props.draft.uuid) {
+          const { draftUuid } = await server.createDraft({
+            content: JSON.stringify(localDraft.value.content),
+            notes: localDraft.value.notes,
+            textUuid: props.textUuid,
+          });
+
+          localDraft.value = {
+            ...localDraft.value,
+            uuid: draftUuid,
+          };
+        } else {
+          await server.updateDraft(props.textUuid, {
+            content: JSON.stringify(localDraft.value.content),
+            notes: localDraft.value.notes,
+          });
+        }
         emit('save-draft', localDraft.value);
         actions.showSnackbar('Successfully saved draft');
         isDirty.value = false;
@@ -201,7 +214,7 @@ export default defineComponent({
       sideTypes,
       saveLoading,
       removeDialog,
-      createDraft,
+      saveDraft,
       openRemoveDialog,
       removeSide,
       addSide,

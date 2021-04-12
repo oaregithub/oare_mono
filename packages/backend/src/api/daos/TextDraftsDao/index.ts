@@ -83,10 +83,12 @@ class TextDraftsDao {
     textUuid: string,
     content: string,
     notes: string
-  ) {
+  ): Promise<string> {
     const creation = new Date();
+    const uuid = v4();
+
     await knex('text_drafts').insert({
-      uuid: v4(),
+      uuid,
       user_uuid: userUuid,
       created_at: creation,
       updated_at: creation,
@@ -94,6 +96,8 @@ class TextDraftsDao {
       content,
       notes,
     });
+
+    return uuid;
   }
 
   async updateDraft(draftUuid: string, content: string, notes: string) {

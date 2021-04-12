@@ -7,6 +7,7 @@ import {
   SortOrder,
   TextDraftsResponse,
   CreateDraftPayload,
+  CreateDraftResponse,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
@@ -19,7 +20,7 @@ const router = express.Router();
 
 router
   .route('/text_drafts/:textUuid')
-  .post(authenticatedRoute, async (req, res, next) => {
+  .patch(authenticatedRoute, async (req, res, next) => {
     const TextDraftsDao = sl.get('TextDraftsDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
@@ -40,10 +41,14 @@ router
       const draft = await TextDraftsDao.getDraftByTextUuid(userUuid, textUuid);
 
       if (!draft) {
-        await TextDraftsDao.createDraft(userUuid, textUuid, content, notes);
-      } else {
-        await TextDraftsDao.updateDraft(draft.uuid, content, notes);
+        next(
+          new HttpBadRequest(
+            `There is no draft for the current user for the text with UUID ${textUuid}`
+          )
+        );
+        return;
       }
+      await TextDraftsDao.updateDraft(draft.uuid, content, notes);
 
       res.status(201).end();
     } catch (err) {
@@ -165,9 +170,7 @@ router
       }
 
       const draft = await TextDraftsDao.getDraftByTextUuid(userUuid, textUuid);
-      if (!draft) {
-        await TextDraftsDao.createDraft(userUuid, textUuid, content, notes);
-      } else {
+      if (draft) {
         next(
           new HttpBadRequest(
             `You have already created a draft on the text with UUID ${textUuid}`
@@ -176,7 +179,18 @@ router
         return;
       }
 
-      res.status(201).end();
+      const draftUuid = await TextDraftsDao.createDraft(
+        userUuid,
+        textUuid,
+        content,
+        notes
+      );
+
+      const response: CreateDraftResponse = {
+        draftUuid,
+      };
+
+      res.status(201).json(response);
     } catch (err) {
       next(new HttpInternalError(err));
     }
