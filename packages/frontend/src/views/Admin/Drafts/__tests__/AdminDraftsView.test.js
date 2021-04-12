@@ -54,7 +54,7 @@ describe('AdminDraftsView test', () => {
     mount(AdminDraftsView, {
       localVue,
       vuetify,
-      stubs: ['router-link'],
+      stubs: ['router-link', 'code-diff'],
     });
 
   it('displays drafts', async () => {

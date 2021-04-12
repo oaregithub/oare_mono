@@ -54,8 +54,9 @@
     </v-row>
 
     <OareDialog
+      v-if="viewingDraft"
       v-model="dialogOpen"
-      title="Draft Content"
+      :title="`${viewingDraft.textName} Draft`"
       :width="1000"
       class="test-content-dialog"
       :show-submit="false"
@@ -63,25 +64,37 @@
       :close-button="true"
       :persistent="false"
     >
-      <DraftContentPopup :draft="viewingDraft" />
+      <span class="mb-2">
+        <span class="font-weight-bold mr-1">Author Notes:</span>
+        {{ viewingDraft.notes || 'No notes' }}
+      </span>
+      <code-diff
+        :old-string="viewingDraft.originalText"
+        :new-string="draftText"
+        output-format="side-by-side"
+        :render-nothing-when-empty="false"
+        :draw-file-list="true"
+      />
     </OareDialog>
   </OareContentView>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from '@vue/composition-api';
+import { defineComponent, ref, watch, computed } from '@vue/composition-api';
 import { TextDraftWithUser, GetDraftsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
 import { formatTimestamp } from '@/utils';
 import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 import useQueryParam from '@/hooks/useQueryParam';
+import CodeDiff from 'vue-code-diff';
 import DraftContentPopup from './DraftContentPopup.vue';
 
 export default defineComponent({
   name: 'AdminDraftsView',
   components: {
     DraftContentPopup,
+    CodeDiff,
   },
   setup() {
     const server = sl.get('serverProxy');
@@ -102,6 +115,16 @@ export default defineComponent({
       { text: 'Last Updated', value: 'updatedAt' },
       { text: 'Content', value: 'content', sortable: false },
     ]);
+
+    const draftText = computed(() => {
+      if (!viewingDraft.value) {
+        return '';
+      }
+
+      return viewingDraft.value.content
+        .map(({ side, text }) => `${side}\n${text}`)
+        .join('\n');
+    });
 
     const loadDrafts = async (newOptions: OareDataTableOptions) => {
       try {
@@ -148,6 +171,7 @@ export default defineComponent({
       totalDrafts,
       authorFilter,
       textFilter,
+      draftText,
     };
   },
 });
