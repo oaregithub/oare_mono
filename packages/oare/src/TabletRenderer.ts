@@ -82,12 +82,10 @@ export default class TabletRenderer {
   }
 
   public tabletReading(): string {
-    let reading: string = '';
-    this.sides.forEach(side => {
-      reading += `${side}\n`;
-      reading += `${this.sideReading(side)}\n\n`;
-    });
-    return reading.trim();
+    return this.sides
+      .map(side => `${side}\n${this.sideReading(side)}`)
+      .join('\n')
+      .trim();
   }
 
   get sides(): EpigraphicUnitSide[] {
