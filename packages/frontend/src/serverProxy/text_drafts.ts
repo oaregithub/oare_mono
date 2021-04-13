@@ -1,6 +1,5 @@
 import {
   TextDraft,
-  CreateDraftPayload,
   TextDraftsResponse,
   DraftQueryOptions,
   DraftPayload,
@@ -9,14 +8,14 @@ import {
 import axios from '../axiosInstance';
 
 async function createDraft(
-  payload: CreateDraftPayload
+  payload: DraftPayload
 ): Promise<CreateDraftResponse> {
   const { data } = await axios.post('/text_drafts', payload);
   return data;
 }
 
-async function updateDraft(textUuid: string, payload: DraftPayload) {
-  await axios.patch(`/text_drafts/${textUuid}`, payload);
+async function updateDraft(draftUuid: string, payload: DraftPayload) {
+  await axios.patch(`/text_drafts/${draftUuid}`, payload);
 }
 
 async function getDrafts(userUuid: string): Promise<TextDraft[]> {

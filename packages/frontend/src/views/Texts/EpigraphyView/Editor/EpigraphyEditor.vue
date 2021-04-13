@@ -148,24 +148,21 @@ export default defineComponent({
 
     const saveDraft = async () => {
       saveLoading.value = true;
-
       try {
+        const draftPayload = {
+          content: JSON.stringify(localDraft.value.content),
+          notes: localDraft.value.notes,
+          textUuid: props.textUuid,
+        };
         if (!props.draft.uuid) {
-          const { draftUuid } = await server.createDraft({
-            content: JSON.stringify(localDraft.value.content),
-            notes: localDraft.value.notes,
-            textUuid: props.textUuid,
-          });
+          const { draftUuid } = await server.createDraft(draftPayload);
 
           localDraft.value = {
             ...localDraft.value,
             uuid: draftUuid,
           };
         } else {
-          await server.updateDraft(props.textUuid, {
-            content: JSON.stringify(localDraft.value.content),
-            notes: localDraft.value.notes,
-          });
+          await server.updateDraft(props.draft.uuid, draftPayload);
         }
         emit('save-draft', localDraft.value);
         actions.showSnackbar('Successfully saved draft');

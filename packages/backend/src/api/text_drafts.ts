@@ -6,7 +6,6 @@ import {
   GetDraftsSortType,
   SortOrder,
   TextDraftsResponse,
-  CreateDraftPayload,
   CreateDraftResponse,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
@@ -19,16 +18,22 @@ import { parsedQuery, extractPagination } from '@/utils';
 const router = express.Router();
 
 router
-  .route('/text_drafts/:textUuid')
+  .route('/text_drafts/:draftUuid')
   .patch(authenticatedRoute, async (req, res, next) => {
-    const TextDraftsDao = sl.get('TextDraftsDao');
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-
     try {
-      const { textUuid } = req.params;
+      const TextDraftsDao = sl.get('TextDraftsDao');
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
+      const { draftUuid } = req.params;
       const userUuid = req.user!.uuid;
 
-      const { content, notes }: DraftPayload = req.body;
+      const { content, notes, textUuid }: DraftPayload = req.body;
+
+      const draftExists = await TextDraftsDao.draftExists(draftUuid);
+
+      if (!draftExists) {
+        next(new HttpBadRequest(`There is no draft with UUID ${draftUuid}`));
+        return;
+      }
 
       const canEdit = await CollectionTextUtils.canEditText(textUuid, userUuid);
       if (!canEdit) {
@@ -38,17 +43,7 @@ router
         return;
       }
 
-      const draft = await TextDraftsDao.getDraftByTextUuid(userUuid, textUuid);
-
-      if (!draft) {
-        next(
-          new HttpBadRequest(
-            `There is no draft for the current user for the text with UUID ${textUuid}`
-          )
-        );
-        return;
-      }
-      await TextDraftsDao.updateDraft(draft.uuid, content, notes);
+      await TextDraftsDao.updateDraft(draftUuid, content, notes);
 
       res.status(201).end();
     } catch (err) {
@@ -159,7 +154,7 @@ router
     try {
       const userUuid = req.user!.uuid;
 
-      const { content, notes, textUuid }: CreateDraftPayload = req.body;
+      const { content, notes, textUuid }: DraftPayload = req.body;
 
       const canEdit = await CollectionTextUtils.canEditText(textUuid, userUuid);
       if (!canEdit) {

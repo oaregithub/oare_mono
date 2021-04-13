@@ -14,12 +14,14 @@ describe('EpigraphyEditor test', () => {
     draft: {
       content: [],
       notes: '',
+      uuid: null,
     },
     textUuid: 'test-uuid',
   };
 
   const mockServer = {
-    createDraft: jest.fn().mockResolvedValue(null),
+    createDraft: jest.fn().mockResolvedValue({ draftUuid: 'draft-uuid' }),
+    updateDraft: jest.fn().mockResolvedValue(),
   };
 
   const mockActions = {
@@ -30,6 +32,7 @@ describe('EpigraphyEditor test', () => {
   const mockRouter = {
     push: jest.fn(),
   };
+
   const createWrapper = (propsData = mockProps, { server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
@@ -54,9 +57,33 @@ describe('EpigraphyEditor test', () => {
     await notesInput.setValue('Test note');
     await saveButton.trigger('click');
     await flushPromises();
-    expect(mockServer.createDraft).toHaveBeenCalledWith(mockProps.textUuid, {
+    expect(mockServer.createDraft).toHaveBeenCalledWith({
+      textUuid: mockProps.textUuid,
       content: JSON.stringify(mockProps.draft.content),
       notes: 'Test note',
+    });
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
+  });
+
+  it('updates draft if it already exists', async () => {
+    const wrapper = createWrapper({
+      ...mockProps,
+      draft: {
+        ...mockProps.draft,
+        uuid: 'draft-uuid',
+      },
+    });
+
+    const notesInput = wrapper.find('.test-notes input');
+    const saveButton = wrapper.find('.test-save');
+
+    await notesInput.setValue('Test note');
+    await saveButton.trigger('click');
+    await flushPromises();
+    expect(mockServer.updateDraft).toHaveBeenCalledWith('draft-uuid', {
+      content: JSON.stringify(mockProps.draft.content),
+      notes: 'Test note',
+      textUuid: mockProps.textUuid,
     });
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
@@ -116,7 +143,8 @@ describe('EpigraphyEditor test', () => {
     await textarea.setValue('New reading');
     await wrapper.find('.test-save').trigger('click');
 
-    expect(mockServer.createDraft).toHaveBeenCalledWith(mockProps.textUuid, {
+    expect(mockServer.createDraft).toHaveBeenCalledWith({
+      textUuid: mockProps.textUuid,
       content: JSON.stringify([
         {
           side: 'obv.',

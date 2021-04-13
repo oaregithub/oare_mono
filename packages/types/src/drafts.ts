@@ -29,13 +29,8 @@ export interface TextDraftsResponse {
   drafts: TextDraftWithUser[];
 }
 
-export interface DraftPayload {
+export interface DraftPayload extends Pick<TextDraft, 'notes' | 'textUuid'> {
   content: string;
-  notes: string;
-}
-
-export interface CreateDraftPayload extends DraftPayload {
-  textUuid: string;
 }
 
 export interface CreateDraftResponse {
