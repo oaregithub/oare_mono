@@ -24,8 +24,8 @@ export const applyIntellisearch = async (
   // Apply Brackets ([])
   signArray = signArray.map(applyBrackets);
 
-  // Apply Asterisk Wildcard (*)
-  signArray = signArray.map(applyAsteriskWildcard);
+  // Apply Consonant Wildcard (C)
+  signArray = signArray.map(applyConsonantWildcard);
 
   // Apply Ampersand Wildcard (&)
   signArray = signArray.map(applyAmpersandWildcard);
@@ -36,14 +36,14 @@ export const applyIntellisearch = async (
   return signArray;
 };
 
-export const applyAsteriskWildcard = (signs: string[]): string[] => {
+export const applyConsonantWildcard = (signs: string[]): string[] => {
   const wildcardConsonants = 'bdgklmnpqrstwyzBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ'.split('');
-  const numberOfWildcards = (signs[0].match(/\*/g) || []).length;
+  const numberOfWildcards = (signs[0].match(/C/g) || []).length;
 
   let wildcardSigns: string[] = signs;
   for (let i = 0; i < numberOfWildcards; i += 1) {
     wildcardSigns = wildcardSigns.flatMap(sign =>
-      wildcardConsonants.map(consonant => sign.replace('*', consonant))
+      wildcardConsonants.map(consonant => sign.replace('C', consonant))
     );
   }
 

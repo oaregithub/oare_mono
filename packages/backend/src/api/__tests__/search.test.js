@@ -131,21 +131,21 @@ describe('search test', () => {
       expect(response.status).toBe(200);
     });
 
-    it('parses intellisearch asterisk wildcard (*)', async () => {
+    it('parses intellisearch consonant wildcard (C)', async () => {
       const response = await request(app)
         .get(PATH)
         .query({
           ...query,
-          characters: '*um-IŠ*AR',
+          characters: 'Cum-IŠCAR',
         });
       const consonants = 'bdgklmnpqrstwyzBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ'.split('');
-      // *um
+      // Cum
       const firstSearchArray = consonants.map(consonant => `${consonant}um`);
       expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         firstSearchArray
       );
 
-      // IŠ*AR
+      // IŠCAR
       const secondSearchArray = consonants.map(consonant => `IŠ${consonant}AR`);
       expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         secondSearchArray
