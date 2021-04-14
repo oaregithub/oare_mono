@@ -29,9 +29,12 @@ export interface TextDraftsResponse {
   drafts: TextDraftWithUser[];
 }
 
-export interface AddTextDraftPayload {
+export interface DraftPayload extends Pick<TextDraft, 'notes' | 'textUuid'> {
   content: string;
-  notes: string;
+}
+
+export interface CreateDraftResponse {
+  draftUuid: string;
 }
 
 export type GetDraftsSortType = 'text' | 'author' | 'updatedAt';

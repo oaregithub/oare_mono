@@ -1,11 +1,12 @@
 import express from 'express';
 import {
-  AddTextDraftPayload,
+  DraftPayload,
   TextDraft,
   TextDraftWithUser,
   GetDraftsSortType,
   SortOrder,
   TextDraftsResponse,
+  CreateDraftResponse,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
@@ -17,16 +18,22 @@ import { parsedQuery, extractPagination } from '@/utils';
 const router = express.Router();
 
 router
-  .route('/text_drafts/:textUuid')
-  .post(authenticatedRoute, async (req, res, next) => {
-    const TextDraftsDao = sl.get('TextDraftsDao');
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-
+  .route('/text_drafts/:draftUuid')
+  .patch(authenticatedRoute, async (req, res, next) => {
     try {
-      const { textUuid } = req.params;
+      const TextDraftsDao = sl.get('TextDraftsDao');
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
+      const { draftUuid } = req.params;
       const userUuid = req.user!.uuid;
 
-      const { content, notes }: AddTextDraftPayload = req.body;
+      const { content, notes, textUuid }: DraftPayload = req.body;
+
+      const draftExists = await TextDraftsDao.draftExists(draftUuid);
+
+      if (!draftExists) {
+        next(new HttpBadRequest(`There is no draft with UUID ${draftUuid}`));
+        return;
+      }
 
       const canEdit = await CollectionTextUtils.canEditText(textUuid, userUuid);
       if (!canEdit) {
@@ -36,13 +43,7 @@ router
         return;
       }
 
-      const draft = await TextDraftsDao.getDraft(userUuid, textUuid);
-
-      if (!draft) {
-        await TextDraftsDao.createDraft(userUuid, textUuid, content, notes);
-      } else {
-        await TextDraftsDao.updateDraft(draft.uuid, content, notes);
-      }
+      await TextDraftsDao.updateDraft(draftUuid, content, notes);
 
       res.status(201).end();
     } catch (err) {
@@ -79,68 +80,115 @@ router
     }
   });
 
-router.route('/text_drafts').get(adminRoute, async (req, res, next) => {
-  try {
+router
+  .route('/text_drafts')
+  .get(adminRoute, async (req, res, next) => {
+    try {
+      const UserDao = sl.get('UserDao');
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+      const TextDraftsDao = sl.get('TextDraftsDao');
+
+      const query = parsedQuery(req.originalUrl);
+      const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
+      const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
+      const textFilter = query.get('textFilter') || '';
+      const authorFilter = query.get('authorFilter') || '';
+      const { page, limit } = extractPagination(req.query);
+
+      const draftUuids = await TextDraftsDao.getAllDraftUuids({
+        sortBy,
+        sortOrder,
+        page,
+        limit,
+        textFilter,
+        authorFilter,
+      });
+
+      const totalDrafts = await TextDraftsDao.totalDrafts({
+        authorFilter,
+        textFilter,
+      });
+      const drafts = await Promise.all(
+        draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
+      );
+      const users = await Promise.all(
+        drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
+      );
+
+      const epigraphicUnitsPerText = await Promise.all(
+        drafts.map(({ textUuid }) =>
+          TextEpigraphyDao.getEpigraphicUnits(textUuid)
+        )
+      );
+
+      const originalTexts = epigraphicUnitsPerText.map(units => {
+        const renderer = createTabletRenderer(units, { lineNumbers: true });
+        return renderer.tabletReading();
+      });
+
+      const draftsWithUser: TextDraftWithUser[] = drafts.map(
+        (draft, index) => ({
+          ...draft,
+          originalText: originalTexts[index],
+          user: {
+            firstName: users[index].firstName,
+            lastName: users[index].lastName,
+            uuid: users[index].uuid,
+          },
+        })
+      );
+
+      const response: TextDraftsResponse = {
+        drafts: draftsWithUser,
+        totalDrafts,
+      };
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  })
+  .post(authenticatedRoute, async (req, res, next) => {
     const TextDraftsDao = sl.get('TextDraftsDao');
-    const UserDao = sl.get('UserDao');
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-    const query = parsedQuery(req.originalUrl);
-    const sortBy = (query.get('sortBy') || 'updatedAt') as GetDraftsSortType;
-    const sortOrder = (query.get('sortOrder') || 'desc') as SortOrder;
-    const textFilter = query.get('textFilter') || '';
-    const authorFilter = query.get('authorFilter') || '';
-    const { page, limit } = extractPagination(req.query);
+    try {
+      const userUuid = req.user!.uuid;
 
-    const draftUuids = await TextDraftsDao.getAllDraftUuids({
-      sortBy,
-      sortOrder,
-      page,
-      limit,
-      textFilter,
-      authorFilter,
-    });
+      const { content, notes, textUuid }: DraftPayload = req.body;
 
-    const totalDrafts = await TextDraftsDao.totalDrafts({
-      authorFilter,
-      textFilter,
-    });
-    const drafts = await Promise.all(
-      draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
-    );
-    const users = await Promise.all(
-      drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
-    );
+      const canEdit = await CollectionTextUtils.canEditText(textUuid, userUuid);
+      if (!canEdit) {
+        next(
+          new HttpBadRequest('You do not have permission to edit this draft')
+        );
+        return;
+      }
 
-    const epigraphicUnitsPerText = await Promise.all(
-      drafts.map(({ textUuid }) =>
-        TextEpigraphyDao.getEpigraphicUnits(textUuid)
-      )
-    );
+      const draft = await TextDraftsDao.getDraftByTextUuid(userUuid, textUuid);
+      if (draft) {
+        next(
+          new HttpBadRequest(
+            `You have already created a draft on the text with UUID ${textUuid}`
+          )
+        );
+        return;
+      }
 
-    const originalTexts = epigraphicUnitsPerText.map(units => {
-      const renderer = createTabletRenderer(units, { lineNumbers: true });
-      return renderer.tabletReading();
-    });
+      const draftUuid = await TextDraftsDao.createDraft(
+        userUuid,
+        textUuid,
+        content,
+        notes
+      );
 
-    const draftsWithUser: TextDraftWithUser[] = drafts.map((draft, index) => ({
-      ...draft,
-      originalText: originalTexts[index],
-      user: {
-        firstName: users[index].firstName,
-        lastName: users[index].lastName,
-        uuid: users[index].uuid,
-      },
-    }));
+      const response: CreateDraftResponse = {
+        draftUuid,
+      };
 
-    const response: TextDraftsResponse = {
-      drafts: draftsWithUser,
-      totalDrafts,
-    };
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      res.status(201).json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;
