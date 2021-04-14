@@ -6,6 +6,11 @@ export interface SpellingText {
   text: string;
 }
 
+export interface DisplayableWord {
+  uuid: string;
+  word: string;
+}
+
 export interface FormSpelling {
   uuid: string;
   spelling: string;
