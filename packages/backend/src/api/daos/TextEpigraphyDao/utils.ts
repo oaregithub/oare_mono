@@ -6,38 +6,47 @@ import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
-  characterUuids: string[][],
+  characterSets: string[][][],
   baseQuery?: Knex.QueryBuilder
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
   let query = baseQuery || knex('text_epigraphy');
-  characterUuids.forEach((char, index) => {
-    if (index < 1) {
-      return;
-    }
+  characterSets.forEach((charSet, idx) => {
+    charSet.forEach((char, index) => {
+      if (idx < 1 && index < 1) {
+        return;
+      }
 
-    query = query.join(`text_epigraphy AS t${index}`, function () {
-      this.on(`t${index}.text_uuid`, 'text_epigraphy.text_uuid')
-        .andOnIn(`t${index}.reading_uuid`, char)
-        .andOn(
-          knex.raw(
-            `t${index}.char_on_tablet=text_epigraphy.char_on_tablet + ${index}`
+      query = query.join(`text_epigraphy AS t${idx}${index}`, function () {
+        this.on(`t${idx}${index}.text_uuid`, 'text_epigraphy.text_uuid')
+          .andOnIn(`t${idx}${index}.reading_uuid`, char)
+          .andOn(
+            knex.raw(
+              `t${idx}${index}.char_on_tablet=${
+                idx === 0 ? 'text_epigraphy' : `t${idx}0`
+              }.char_on_tablet + ${index}`
+            )
           )
-        )
-        .andOn(knex.raw(`t${index}.line=text_epigraphy.line`));
+          .andOn(
+            knex.raw(
+              `t${idx}${index}.line=${
+                idx === 0 ? 'text_epigraphy' : `t${idx}0`
+              }.line`
+            )
+          );
+      });
     });
+    if (idx < 1 && characterSets[0].length > 0) {
+      query = query.whereIn('text_epigraphy.reading_uuid', characterSets[0][0]);
+    }
   });
-
-  if (characterUuids.length > 0) {
-    query = query.whereIn('text_epigraphy.reading_uuid', characterUuids[0]);
-  }
 
   return query;
 }
 
 export function getSearchQuery(
-  characters: string[][],
+  characters: string[][][],
   textTitle: string,
   textBlacklist: string[],
   textWhitelist: string[],

@@ -27,7 +27,7 @@ export interface TextUuidWithLines {
 }
 
 export interface SearchTextArgs {
-  characters: string[][];
+  characters: string[][][];
   title: string;
   userUuid: string | null;
   pagination: Pagination;
@@ -114,15 +114,22 @@ class TextEpigraphyDao {
 
   private async getMatchingLines(
     textUuid: string,
-    characters: string[][]
+    characters: string[][][]
   ): Promise<number[]> {
-    const query = getSequentialCharacterQuery(characters);
-    const rows: Array<{ line: number }> = await query
-      .distinct('text_epigraphy.line')
-      .orderBy('text_epigraphy.line')
-      .where('text_epigraphy.text_uuid', textUuid);
+    const rows: Array<{ line: number }> = (
+      await Promise.all(
+        characters.map((_, index) => {
+          const query = getSequentialCharacterQuery(characters);
+          return query
+            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
+            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
+            .where('text_epigraphy.text_uuid', textUuid);
+        })
+      )
+    ).flat();
 
-    return rows.map(({ line }) => line);
+    const lines = rows.map(({ line }) => line).sort((a, b) => a - b);
+    return [...new Set(lines)];
   }
 
   async searchTexts(args: SearchTextArgs): Promise<TextUuidWithLines[]> {
