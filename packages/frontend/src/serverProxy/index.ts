@@ -20,10 +20,10 @@ import register from './register';
 import logout from './logout';
 import refreshToken from './refresh_token';
 import publicBlacklist from './public_blacklist';
-import textInfo from './text_info';
 import searchNames from './search_names';
 import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
+import cacheStatus from './cache_status';
 
 const serverProxy = {
   ...textGroups,
@@ -45,13 +45,13 @@ const serverProxy = {
   ...logout,
   ...refreshToken,
   ...publicBlacklist,
-  ...textInfo,
   ...searchNames,
   ...collectionGroups,
   ...resetPassword,
   ...comments,
   ...errors,
   ...threads,
+  ...cacheStatus,
 };
 
 export type ServerProxyType = typeof serverProxy;

@@ -4,7 +4,7 @@ import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
 import textDao from '../TextDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
-import { UserRow } from '../UserDao';
+import UserDao from '../UserDao';
 
 export interface TextGroupRow {
   text_uuid: string;
@@ -14,22 +14,23 @@ export interface TextGroupRow {
 }
 
 class TextGroupDao {
-  async getUserBlacklist(user: UserRow | null): Promise<Blacklists> {
+  async getUserBlacklist(userUuid: string | null): Promise<Blacklists> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
     if (user && user.isAdmin) {
       return { blacklist: [], whitelist: [] };
     }
 
-    const userTexts = await PublicBlacklistDao.getBlacklistedTexts();
+    let userTexts = await PublicBlacklistDao.getBlacklistedTexts();
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
-      for (let i = 0; i < groupIds.length; i += 1) {
-        const groupId = groupIds[i];
-        const texts = await this.getTexts(groupId);
-        texts.forEach(text => {
-          userTexts.push(text);
-        });
-      }
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
+      await Promise.all(
+        groupIds.map(async groupId => {
+          const texts = await this.getTexts(groupId);
+          userTexts = [...userTexts, ...texts];
+        })
+      );
     }
 
     const whitelistedUuids = userTexts
@@ -72,8 +73,8 @@ class TextGroupDao {
     }));
   }
 
-  async getTextsByUser(userId: number): Promise<Text[]> {
-    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+  async getTextsByUser(userUuid: string): Promise<Text[]> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userUuid);
     const groupTexts = await Promise.all(
       groupIds.map(groupId => this.getTexts(groupId))
     );
@@ -81,8 +82,11 @@ class TextGroupDao {
     return _.flatten(groupTexts);
   }
 
-  async userHasWritePermission(uuid: string, userId: number): Promise<boolean> {
-    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+  async userHasWritePermission(
+    uuid: string,
+    userUuid: string
+  ): Promise<boolean> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userUuid);
 
     // Select all rows for given uuid
     const textRows = await knex('text_group')

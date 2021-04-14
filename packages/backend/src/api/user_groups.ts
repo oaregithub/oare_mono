@@ -7,29 +7,6 @@ import adminRoute from '@/middlewares/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-async function canInsert(groupId: number, userIds: number[]) {
-  for (let i = 0; i < userIds.length; i += 1) {
-    const UserGroupDao = sl.get('UserGroupDao');
-    const inGroup = await UserGroupDao.userInGroup(groupId, userIds[i]);
-    if (inGroup) {
-      return false;
-    }
-  }
-  return true;
-}
-
-async function canDelete(groupId: number, userIds: number[]) {
-  for (let i = 0; i < userIds.length; i += 1) {
-    const UserGroupDao = sl.get('UserGroupDao');
-    const inGroup = await UserGroupDao.userInGroup(groupId, userIds[i]);
-
-    if (!inGroup) {
-      return false;
-    }
-  }
-  return true;
-}
-
 const router = express.Router();
 
 router
@@ -40,6 +17,7 @@ router
 
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
+      const UserDao = sl.get('UserDao');
 
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
@@ -47,7 +25,11 @@ router
         return;
       }
 
-      res.json(await UserGroupDao.getUsersInGroup(groupId));
+      const userUuids = await UserGroupDao.getUsersInGroup(groupId);
+      const users = await Promise.all(
+        userUuids.map(uuid => UserDao.getUserByUuid(uuid))
+      );
+      res.json(users.filter(user => !!user));
     } catch (err) {
       next(new HttpInternalError(err));
     }
@@ -55,10 +37,9 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const { groupId }: { groupId: number } = req.params as any;
-      const { userIds }: AddUsersToGroupPayload = req.body;
+      const { userUuids }: AddUsersToGroupPayload = req.body;
 
       const OareGroupDao = sl.get('OareGroupDao');
-      const UserDao = sl.get('UserDao');
       const UserGroupDao = sl.get('UserGroupDao');
 
       // Make sure that the group ID exists
@@ -68,17 +49,11 @@ router
         return;
       }
 
-      // Make sure each user ID exists
-      for (let i = 0; i < userIds.length; i += 1) {
-        const existingUser = await UserDao.getUserById(userIds[i]);
-        if (!existingUser) {
-          next(new HttpBadRequest(`User ID ${userIds[i]} does not exist`));
-          return;
-        }
-      }
-
-      // Make sure each association does not already exist
-      if (!(await canInsert(groupId, userIds))) {
+      // Make sure users are not already in group
+      const userInGroup = await Promise.all(
+        userUuids.map(uuid => UserGroupDao.userInGroup(groupId, uuid))
+      );
+      if (userInGroup.some(inGroup => inGroup)) {
         next(
           new HttpBadRequest(
             `One or more of given users already exist in group with ID ${groupId}`
@@ -87,8 +62,11 @@ router
         return;
       }
 
-      const insertIds = await UserGroupDao.addUsersToGroup(groupId, userIds);
-      res.status(201).json(insertIds);
+      await Promise.all(
+        userUuids.map(uuid => UserGroupDao.addUserToGroup(groupId, uuid))
+      );
+
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
@@ -96,10 +74,9 @@ router
   .delete(adminRoute, async (req, res, next) => {
     try {
       const { groupId }: { groupId: number } = req.params as any;
-      const { userIds }: RemoveUsersFromGroupPayload = req.query as any;
+      const { userUuids }: RemoveUsersFromGroupPayload = req.query as any;
 
       const OareGroupDao = sl.get('OareGroupDao');
-      const UserDao = sl.get('UserDao');
       const UserGroupDao = sl.get('UserGroupDao');
 
       // Make sure that the group ID exists
@@ -109,24 +86,9 @@ router
         return;
       }
 
-      // Make sure each user ID exists
-      for (let i = 0; i < userIds.length; i += 1) {
-        const existingUser = await UserDao.getUserById(userIds[i]);
-        if (!existingUser) {
-          next(new HttpInternalError(`User ID ${userIds[i]} does not exist`));
-          return;
-        }
-      }
-
-      // Make sure each user to delete actually belongs to the group
-      if (!(await canDelete(groupId, userIds))) {
-        next(
-          new HttpBadRequest('Not all given users belong to the given group')
-        );
-        return;
-      }
-
-      await UserGroupDao.removeUsersFromGroup(groupId, userIds);
+      await Promise.all(
+        userUuids.map(uuid => UserGroupDao.removeUserFromGroup(groupId, uuid))
+      );
       res.end();
     } catch (err) {
       next(new HttpInternalError(err));

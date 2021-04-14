@@ -3,7 +3,7 @@ import Knex from 'knex';
 import { ParsedQs } from 'qs';
 import { Pagination } from '@oare/types';
 
-const createTransaction = async (
+export const createTransaction = async (
   cb: (trx: Knex.Transaction) => Promise<void>
 ): Promise<void> => {
   await knex.transaction(async trx => {
@@ -17,7 +17,7 @@ export interface ExtractPaginationOptions {
   defaultFilter?: string;
 }
 
-const extractPagination = (
+export const extractPagination = (
   query: ParsedQs,
   { defaultPage, defaultLimit, defaultFilter }: ExtractPaginationOptions = {}
 ): Required<Pagination> => {
@@ -36,7 +36,9 @@ const extractPagination = (
   };
 };
 
-export default {
-  createTransaction,
-  extractPagination,
+export const parsedQuery = (url: string): URLSearchParams => {
+  const queryIndex = url.indexOf('?');
+  const queryString = queryIndex > 0 ? url.slice(queryIndex + 1) : '';
+
+  return new URLSearchParams(queryString);
 };

@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   SearchTextsResponse,
+  SearchTextsCountPayload,
   SearchTextsPayload,
   SearchSpellingPayload,
   SearchDiscourseSpellingRow,
@@ -9,6 +10,7 @@ import {
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
+import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
 
 const router = express.Router();
 
@@ -71,11 +73,34 @@ router.route('/search/spellings').get(async (req, res, next) => {
   }
 });
 
+router.route('/search/count').get(async (req, res, next) => {
+  try {
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
+    const {
+      textTitle: title,
+      characters: charsPayload,
+    } = (req.query as unknown) as SearchTextsCountPayload;
+
+    const characterUuids = await prepareCharactersForSearch(charsPayload);
+    const user = req.user || null;
+
+    const totalRows = await TextEpigraphyDao.searchTextsTotal({
+      characters: characterUuids,
+      title,
+      userUuid: user ? user.uuid : null,
+    });
+
+    res.json(totalRows);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 router.route('/search').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDao = sl.get('TextDao');
-    const TextMarkupDao = sl.get('TextMarkupDao');
 
     const {
       page,
@@ -83,34 +108,28 @@ router.route('/search').get(async (req, res, next) => {
       textTitle: title,
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
-    const characters = charsPayload || [];
+
+    const characterUuids = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
 
-    const [totalRows, textMatches] = await Promise.all([
-      TextEpigraphyDao.searchTextsTotal({
-        characters,
-        title,
-      }),
-      TextEpigraphyDao.searchTexts({
-        characters,
-        pagination: { limit: rows, page },
-        title,
-        userUuid: user ? user.uuid : null,
-      }),
-    ]);
+    const textMatches = await TextEpigraphyDao.searchTexts({
+      characters: characterUuids,
+      pagination: { limit: rows, page },
+      title,
+      userUuid: user ? user.uuid : null,
+    });
 
-    const texts = await Promise.all(
-      textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
-    );
+    const textNames = (
+      await Promise.all(
+        textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
+      )
+    ).map(text => (text ? text.name : ''));
 
     const lineReadings = await Promise.all(
       textMatches.map(async ({ uuid, lines }) => {
-        const [epigraphicUnits, markupUnits] = await Promise.all([
-          TextEpigraphyDao.getEpigraphicUnits(uuid),
-          TextMarkupDao.getMarkups(uuid),
-        ]);
+        const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(uuid);
 
-        const renderer = createTabletRenderer(epigraphicUnits, markupUnits, {
+        const renderer = createTabletRenderer(epigraphicUnits, {
           textFormat: 'html',
           lineNumbers: true,
         });
@@ -120,10 +139,9 @@ router.route('/search').get(async (req, res, next) => {
     );
 
     const response: SearchTextsResponse = {
-      totalRows,
       results: textMatches.map((match, index) => ({
         ...match,
-        name: texts[index].name,
+        name: textNames[index],
         matches: lineReadings[index],
       })),
     };

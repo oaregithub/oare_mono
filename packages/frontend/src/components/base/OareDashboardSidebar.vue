@@ -25,6 +25,10 @@ export default defineComponent({
           label: 'Drafts',
           path: 'drafts',
         },
+        {
+          label: 'Comments',
+          path: 'comments',
+        },
       ],
     });
 

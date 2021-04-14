@@ -1,5 +1,6 @@
 import { Token } from '@oare/types';
 import bnf from './spellingGrammar';
+import { normalizeSign, normalizeFraction } from './signNormalizer';
 
 const Jison = require('jison');
 
@@ -11,50 +12,6 @@ export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
 
   parser.parse(spelling.trim());
   return tokens;
-};
-
-const isDigit = (char: string): boolean => !!char.match(/^\d$/);
-
-// 8320 is the unicode for subscripted 0
-const subscriptNumber = (normalNumber: string): string =>
-  String.fromCharCode(8320 + Number(normalNumber));
-
-export const normalizeSign = (sign: string): string => {
-  const normalizedSign = sign.split('');
-  [1, 2].forEach(negIdx => {
-    const signIdx = normalizedSign.length - negIdx;
-    if (normalizedSign.length >= negIdx && isDigit(normalizedSign[signIdx])) {
-      normalizedSign[signIdx] = subscriptNumber(normalizedSign[signIdx]);
-    }
-  });
-
-  return normalizedSign.join('');
-};
-
-/**
- * If num is a fraction, it will be converted to a unicode character
- */
-export const normalizeNumber = (num: string): string => {
-  switch (num) {
-    case '1/2':
-      return '½';
-    case '1/3':
-      return '⅓';
-    case '1/4':
-      return '¼';
-    case '1/5':
-      return '⅕';
-    case '1/6':
-      return '⅙';
-    case '2/3':
-      return '⅔';
-    case '3/4':
-      return '¾';
-    case '5/6':
-      return '⅚';
-    default:
-      return num;
-  }
 };
 
 export const spellingHtmlReading = (spelling: string): string => {
@@ -88,7 +45,7 @@ export const spellingHtmlReading = (spelling: string): string => {
         }
 
         if (tokenType === 'NUMBER') {
-          return normalizeNumber(tokenText);
+          return normalizeFraction(tokenText);
         }
         if (['SIGN', '+', '.', '-'].includes(tokenType)) {
           return tokenText;

@@ -29,6 +29,18 @@ export default defineComponent({
           label: 'Error Log',
           path: '/admin/errors',
         },
+        {
+          label: 'Comments',
+          path: '/admin/comments',
+        },
+        {
+          label: 'Text Drafts',
+          path: '/admin/drafts',
+        },
+        {
+          label: 'Admin Settings',
+          path: '/admin/settings',
+        },
       ],
     });
 

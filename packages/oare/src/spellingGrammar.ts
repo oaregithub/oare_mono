@@ -13,7 +13,7 @@ export default `/* lexical grammar */
 "{-}"                 return 'COMPSEPARATOR'
 ([0-9]+("."[0-9]+)?\b|"LÁ")("+"([0-9]+("."[0-9]+)?\b|"LÁ"))+ return 'NUMBERPHRASE'
 [0-9]+               return 'DIGITS'
-[\u00C0-\u017FĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz]+([₀₁₂₃₄₅₆₇₈₉]|[0-9]){0,2}  return 'SIGN'
+[\u00C0-\u017FĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz,]+([₀₁₂₃₄₅₆₇₈₉]|[0-9]){0,2}  return 'SIGN'
 "("                 return "("
 ")"                 return ")"
 "{"                 return "{"

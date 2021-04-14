@@ -1,40 +1,44 @@
 import { RouteConfig } from 'vue-router';
-import ManageMembers from '@/views/GroupView/ManageMembers.vue';
-import ManageTexts from '@/views/GroupView/ManageTexts.vue';
-import ManageCollections from '@/views/GroupView/ManageCollections.vue';
-import DictionarySearch from '@/views/SearchView/DictionarySearch.vue';
-import TextsSearch from '@/views/SearchView/TextsSearch.vue';
-import AddGroupUsers from '@/views/GroupView/AddGroupUsers.vue';
-import BlacklistTexts from '@/views/BlacklistView/BlacklistTexts.vue';
-import BlacklistCollections from '@/views/BlacklistView/BlacklistCollections.vue';
-import AddBlacklistTexts from '@/views/BlacklistView/AddBlacklistTexts.vue';
-import AddGroupTexts from '@/views/GroupView/AddGroupTexts.vue';
-import AddBlacklistCollections from '@/views/BlacklistView/AddBlacklistCollections.vue';
-import AddGroupCollections from '@/views/GroupView/AddGroupCollections.vue';
-import SendResetPasswordEmailView from '@/views/SendResetPasswordEmailView.vue';
-import ResetPasswordView from '@/views/ResetPasswordView.vue';
-import ManagePermissions from '@/views/GroupView/ManagePermissions.vue';
-import EpigraphyEditor from '@/views/EpigraphyView/EpigraphyEditor.vue';
-import EpigraphyFullDisplay from '@/views/EpigraphyView/EpigraphyFullDisplay.vue';
-import KnownIssues from '../views/KnownIssues.vue';
-import LoginView from '../views/LoginView.vue';
-import RegisterView from '../views/RegisterView.vue';
-import AdminGroupView from '../views/AdminView/AdminGroupView.vue';
-import AdminTextView from '../views/AdminView/AdminTextView.vue';
-import GroupView from '../views/GroupView/index.vue';
-import CollectionTexts from '../views/CollectionTexts/index.vue';
-import CollectionsView from '../views/CollectionsView/index.vue';
-import SearchView from '../views/SearchView/index.vue';
-import ForbiddenView from '../views/ForbiddenView.vue';
-import DictionaryWord from '../views/DictionaryWord/index.vue';
-import EpigraphyView from '../views/EpigraphyView/index.vue';
-import Drafts from '../views/DashboardView/Drafts.vue';
-import Profile from '../views/DashboardView/Profile.vue';
-import LandingPage from '../views/LandingPage.vue';
-import WordsView from '../views/WordsView/index.vue';
-import NamesView from '../views/NamesView/index.vue';
-import PlacesView from '../views/PlacesView/index.vue';
-import ErrorLog from '../views/AdminView/ErrorLog.vue';
+import ManageMembers from '@/views/Admin/Groups/Users/ManageMembers.vue';
+import ManageTexts from '@/views/Admin/Groups/Texts/ManageTexts.vue';
+import ManageCollections from '@/views/Admin/Groups/Collections/ManageCollections.vue';
+import DictionarySearch from '@/views/Search/DictionarySearch/DictionarySearch.vue';
+import TextsSearch from '@/views/Search/TextsSearch/TextsSearch.vue';
+import AddGroupUsers from '@/views/Admin/Groups/Users/AddGroupUsers.vue';
+import BlacklistTexts from '@/views/Admin/PublicBlacklist/Texts/BlacklistTexts.vue';
+import BlacklistCollections from '@/views/Admin/PublicBlacklist/Collections/BlacklistCollections.vue';
+import AddBlacklistTexts from '@/views/Admin/PublicBlacklist/Texts/AddBlacklistTexts.vue';
+import AddGroupTexts from '@/views/Admin/Groups/Texts/AddGroupTexts.vue';
+import AddBlacklistCollections from '@/views/Admin/PublicBlacklist/Collections/AddBlacklistCollections.vue';
+import AddGroupCollections from '@/views/Admin/Groups/Collections/AddGroupCollections.vue';
+import SendResetPasswordEmailView from '@/views/Authentication/ResetPassword/SendResetPasswordEmailView.vue';
+import ResetPasswordView from '@/views/Authentication/ResetPassword/ResetPasswordView.vue';
+import ManagePermissions from '@/views/Admin/Groups/Permissions/ManagePermissions.vue';
+import EpigraphyEditor from '@/views/Texts/EpigraphyView/Editor/EpigraphyEditor.vue';
+import EpigraphyFullDisplay from '@/views/Texts/EpigraphyView/EpigraphyDisplay/EpigraphyFullDisplay.vue';
+import KnownIssues from '../views/Home/KnownIssues.vue';
+import LoginView from '../views/Authentication/Login/LoginView.vue';
+import RegisterView from '../views/Authentication/Register/RegisterView.vue';
+import AdminGroupView from '../views/Admin/Groups/AdminGroupView.vue';
+import AdminTextView from '../views/Admin/PublicBlacklist/AdminTextView.vue';
+import AdminDraftsView from '../views/Admin/Drafts/AdminDraftsView.vue';
+import GroupView from '../views/Admin/Groups/index.vue';
+import CollectionTexts from '../views/Texts/CollectionTexts/index.vue';
+import CollectionsView from '../views/Texts/CollectionsView/index.vue';
+import SearchView from '../views/Search/index.vue';
+import ForbiddenView from '../views/Authentication/Forbidden/ForbiddenView.vue';
+import DictionaryWord from '../views/Words/DictionaryWord/index.vue';
+import EpigraphyView from '../views/Texts/EpigraphyView/index.vue';
+import Drafts from '../views/Dashboard/Drafts.vue';
+import Profile from '../views/Dashboard/Profile.vue';
+import LandingPage from '../views/Home/LandingPage.vue';
+import WordsView from '../views/Words/index.vue';
+import NamesView from '../views/Names/index.vue';
+import PlacesView from '../views/Places/index.vue';
+import ErrorLog from '../views/Admin/ErrorLog/ErrorLog.vue';
+import AdminCommentView from '../views/Admin/Comments/AdminCommentView.vue';
+import UserCommentView from '../views/Dashboard/UserCommentView.vue';
+import AdminSettings from '../views/Admin/Settings/AdminSettings.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -71,6 +75,21 @@ const routes: RouteConfig[] = [
     path: '/admin/errors',
     name: 'adminErrors',
     component: ErrorLog,
+  },
+  {
+    path: '/admin/comments',
+    name: 'adminComments',
+    component: AdminCommentView,
+  },
+  {
+    path: '/admin/drafts',
+    name: 'adminDrafts',
+    component: AdminDraftsView,
+  },
+  {
+    path: '/admin/settings',
+    name: 'adminSettings',
+    component: AdminSettings,
   },
   {
     path: '/addblacklist/texts',
@@ -206,6 +225,11 @@ const routes: RouteConfig[] = [
     path: '/dashboard/profile',
     name: 'dashboardProfile',
     component: Profile,
+  },
+  {
+    path: '/dashboard/comments',
+    name: 'dashboardComments',
+    component: UserCommentView,
   },
   {
     path: '/words/:letter',

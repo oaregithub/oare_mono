@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import { UserRow } from '@/api/daos/UserDao';
+import { User } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
@@ -19,7 +19,7 @@ async function attachUser(req: Request, res: Response, next: NextFunction) {
     const { email } = jwt.verify(
       token,
       process.env.OARE_JWT_TOKEN || ''
-    ) as UserRow;
+    ) as User;
     const user = await UserDao.getUserByEmail(email);
     req.user = user;
     next();

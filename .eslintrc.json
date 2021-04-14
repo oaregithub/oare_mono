@@ -38,7 +38,6 @@
       }
     ],
     "class-methods-use-this": "off",
-    "no-await-in-loop": "off",
     "import/no-unresolved": "off",
     "import/no-extraneous-dependencies": "off",
     "comma-dangle": ["error", "only-multiline"],

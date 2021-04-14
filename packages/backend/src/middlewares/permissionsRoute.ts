@@ -21,7 +21,7 @@ const permissionsRoute = (permission: PermissionName) => async (
       const { user } = req;
       if (user) {
         const userPermissions = (
-          await PermissionsDao.getUserPermissions(user)
+          await PermissionsDao.getUserPermissions(user.uuid)
         ).map(perm => perm.name);
 
         if (userPermissions.includes(permission)) {

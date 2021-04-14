@@ -1,37 +1,32 @@
 import express from 'express';
-import { LoginRegisterResponse, LoginPayload } from '@oare/types';
+import { LoginPayload } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import * as security from '@/security';
-import userDao from './daos/UserDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
 router.route('/login').post(async (req, res, next) => {
   try {
+    const UserDao = sl.get('UserDao');
     const { email, password }: LoginPayload = req.body;
-    const user = await userDao.getUserByEmail(email);
+    const user = await UserDao.getUserByEmail(email);
 
     if (!user) {
       next(new HttpBadRequest(`Non existent email: ${email}`));
       return;
     }
 
-    if (security.checkPassword(password, user.passwordHash)) {
+    const passwordHash = await UserDao.getUserPasswordHash(user.uuid);
+
+    if (security.checkPassword(password, passwordHash)) {
       req.user = user;
     } else {
       next(new HttpBadRequest('Invalid credentials'));
       return;
     }
     const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
-    const response: LoginRegisterResponse = {
-      id: user.id,
-      uuid: user.uuid,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      isAdmin: !!user.isAdmin,
-    };
-    cookieRes.json(response);
+    cookieRes.json(user);
   } catch (err) {
     next(new HttpInternalError(err));
   }

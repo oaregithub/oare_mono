@@ -119,4 +119,23 @@ describe('spelling grammar test', () => {
     tokenizeExplicitSpelling('1.PÚZUR.IŠTAR');
     tokenizeExplicitSpelling('10-ri-šu');
   });
+  it('normalizes vowels 1-3', () => {
+    expect(spellingHtmlReading('tam1')).toBe('<em>tam</em>');
+    expect(spellingHtmlReading('tam2')).toBe('<em>tám</em>');
+    expect(spellingHtmlReading('tam3')).toBe('<em>tàm</em>');
+    expect(spellingHtmlReading('TAM1')).toBe('TAM');
+    expect(spellingHtmlReading('TAM2')).toBe('TÁM');
+    expect(spellingHtmlReading('TAM3')).toBe('TÀM');
+  });
+
+  it('normalizes foreign consonants', () => {
+    expect(spellingHtmlReading('szu')).toBe('<em>šu</em>');
+    expect(spellingHtmlReading('s,u')).toBe('<em>ṣu</em>');
+    expect(spellingHtmlReading('t,um')).toBe('<em>ṭum</em>');
+    expect(spellingHtmlReading('hu')).toBe('<em>ḫu</em>');
+    expect(spellingHtmlReading('SZU')).toBe('ŠU');
+    expect(spellingHtmlReading('S,U')).toBe('ṢU');
+    expect(spellingHtmlReading('T,UM')).toBe('ṬUM');
+    expect(spellingHtmlReading('HU')).toBe('ḪU');
+  });
 });

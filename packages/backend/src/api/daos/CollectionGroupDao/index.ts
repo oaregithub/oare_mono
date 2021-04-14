@@ -1,12 +1,11 @@
 import _ from 'lodash';
-import { CollectionPermissionsItem } from '@oare/types';
+import { CollectionPermissionsItem, Blacklists } from '@oare/types';
 import knex from '@/connection';
 import UserGroupDao from '../UserGroupDao';
-import AliasDao from '../AliasDao';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 import TextGroupDao from '../TextGroupDao';
-import HierarchyDao from '../HierarchyDao';
-import { UserRow } from '../UserDao';
+import UserDao from '../UserDao';
+import CollectionDao from '../CollectionDao';
 
 export interface CollectionGroupRow {
   collection_uuid: string;
@@ -16,63 +15,13 @@ export interface CollectionGroupRow {
 }
 
 class CollectionGroupDao {
-  async getUserCollectionBlacklist(user: UserRow | null): Promise<string[]> {
+  async getUserCollectionBlacklist(
+    userUuid: string | null
+  ): Promise<Blacklists> {
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
     if (user && user.isAdmin) {
-      return [];
-    }
-
-    const { whitelist } = await TextGroupDao.getUserBlacklist(user);
-    const collectionsWithWhitelistedTexts: string[] = (
-      await knex('hierarchy')
-        .select('parent_uuid AS uuid')
-        .where('type', 'text')
-        .andWhere(function () {
-          this.whereIn('uuid', whitelist);
-        })
-    ).map(collection => collection.uuid);
-
-    const userCollections: CollectionPermissionsItem[] = (
-      await PublicBlacklistDao.getBlacklistedCollections()
-    ).map(collection => ({
-      ...collection,
-      canRead: false,
-      canWrite: false,
-    }));
-
-    if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
-      for (let i = 0; i < groupIds.length; i += 1) {
-        const groupId = groupIds[i];
-        const collections = await this.getCollections(groupId);
-        collections.forEach(collection => {
-          userCollections.push(collection);
-        });
-      }
-    }
-
-    const whitelistedUuids = userCollections
-      .filter(
-        collection =>
-          collection.canRead ||
-          collectionsWithWhitelistedTexts.includes(collection.uuid)
-      )
-      .map(collection => collection.uuid);
-    const blacklistedUuids = userCollections
-      .filter(
-        collection =>
-          !collection.canRead && !whitelistedUuids.includes(collection.uuid)
-      )
-      .map(collection => collection.uuid);
-
-    return blacklistedUuids;
-  }
-
-  async collectionIsBlacklisted(
-    uuid: string,
-    user: UserRow | null
-  ): Promise<boolean> {
-    if (user && user.isAdmin) {
-      return false;
+      return { blacklist: [], whitelist: [] };
     }
 
     let userCollections: CollectionPermissionsItem[] = (
@@ -84,50 +33,56 @@ class CollectionGroupDao {
     }));
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.id);
-      const groupCollections = await Promise.all(
-        groupIds.map(id => this.getCollections(id))
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
+      await Promise.all(
+        groupIds.map(async groupId => {
+          const collections = await this.getCollections(groupId);
+          userCollections = [...userCollections, ...collections];
+        })
       );
-      userCollections = [...userCollections, ..._.flatten(groupCollections)];
     }
 
-    const whitelistedUuids = userCollections
+    const whitelistedCollections = userCollections
       .filter(collection => collection.canRead)
       .map(collection => collection.uuid);
-    const blacklistedUuids = userCollections
+
+    const blacklistedCollections = userCollections
       .filter(
         collection =>
-          !collection.canRead && !whitelistedUuids.includes(collection.uuid)
+          !collection.canRead &&
+          !whitelistedCollections.includes(collection.uuid)
       )
       .map(collection => collection.uuid);
 
-    if (blacklistedUuids.includes(uuid)) {
-      return true;
-    }
-    return false;
+    return {
+      blacklist: blacklistedCollections,
+      whitelist: whitelistedCollections,
+    };
   }
 
   async canViewCollection(
     collectionUuid: string,
-    user: UserRow | null
+    userUuid: string | null
   ): Promise<boolean> {
-    const isBlacklisted = await this.collectionIsBlacklisted(
-      collectionUuid,
-      user
-    );
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+
+    const {
+      blacklist: collectionBlacklist,
+    } = await this.getUserCollectionBlacklist(userUuid);
+    const isBlacklisted = collectionBlacklist.includes(collectionUuid);
 
     if (isBlacklisted) {
       if (user) {
         // Check if collection contains any WHITELISTED texts
-        const userTexts = await TextGroupDao.getTextsByUser(user.id);
+        const userTexts = await TextGroupDao.getTextsByUser(user.uuid);
         const userTextCollections = await Promise.all(
           userTexts
             .filter(text => text.canRead)
-            .map(text => HierarchyDao.getEpigraphyCollection(text.uuid))
+            .map(text => CollectionDao.getTextCollection(text.uuid))
         );
 
         return userTextCollections
-          .map(collection => collection.uuid)
+          .map(collection => (collection ? collection.uuid : ''))
           .includes(collectionUuid);
       }
       return false;
@@ -144,8 +99,11 @@ class CollectionGroupDao {
         'can_write AS canWrite'
       )
       .where('group_id', groupId);
-    const collectionNames = await Promise.all(
-      results.map(collection => AliasDao.textAliasNames(collection.uuid))
+    const collections = await Promise.all(
+      results.map(({ uuid }) => CollectionDao.getCollectionByUuid(uuid))
+    );
+    const collectionNames = collections.map(collection =>
+      collection ? collection.name : ''
     );
 
     return results.map((collection, index) => ({
@@ -156,8 +114,11 @@ class CollectionGroupDao {
     }));
   }
 
-  async userHasWritePermission(uuid: string, userId: number): Promise<boolean> {
-    const groupIds = await UserGroupDao.getGroupsOfUser(userId);
+  async userHasWritePermission(
+    uuid: string,
+    userUuid: string
+  ): Promise<boolean> {
+    const groupIds = await UserGroupDao.getGroupsOfUser(userUuid);
 
     const collectionUuid = await knex('hierarchy')
       .select('parent_uuid AS uuid')

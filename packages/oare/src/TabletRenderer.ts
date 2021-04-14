@@ -3,6 +3,7 @@ import {
   MarkupUnit,
   EpigraphicUnitSide,
   EpigraphicUnitWithMarkup,
+  EpigraphicWord,
 } from '@oare/types';
 import _ from 'lodash';
 
@@ -10,30 +11,46 @@ import {
   getMarkupByDamageType,
   unitMatchesDamageType,
   convertMarkedUpUnitsToLineReading,
+  convertMarkedUpUnitsToEpigraphicWords,
   regionReading,
 } from './tabletUtils';
 
 export default class TabletRenderer {
   protected epigraphicUnits: EpigraphicUnit[] = [];
 
-  protected markupUnits: MarkupUnit[] = [];
-
   public getEpigraphicUnits() {
     return this.epigraphicUnits;
   }
 
-  public getMarkupUnits() {
-    return this.markupUnits;
+  constructor(epigraphicUnits: EpigraphicUnit[]) {
+    this.epigraphicUnits = epigraphicUnits;
+    this.sortMarkupUnits();
+    this.addLineNumbersToRegions();
   }
 
-  constructor(
-    epigraphicUnits: EpigraphicUnit[],
-    markupUnits: MarkupUnit[] = []
-  ) {
-    this.epigraphicUnits = epigraphicUnits;
-    this.markupUnits = markupUnits;
-    this.addLineNumbersToRegions();
-    this.attachMarkupsToEpigraphicUnits();
+  private sortMarkupUnits() {
+    const damageTypes = ['damage', 'partialDamage', 'erasure'];
+    this.epigraphicUnits = this.epigraphicUnits.map(unit => ({
+      ...unit,
+      markups: unit.markups.sort((a, b) => {
+        // Sort isSealImpression to the top. It's the only region
+        // type that can have multiple markups
+
+        if (a.type === 'isSealImpression') {
+          return 1;
+        }
+        if (b.type === 'isSealImpression') {
+          return -1;
+        }
+        if (damageTypes.includes(a.type)) {
+          return 1;
+        }
+        if (damageTypes.includes(b.type)) {
+          return -1;
+        }
+        return 0;
+      }),
+    }));
   }
 
   private addLineNumbersToRegions() {
@@ -65,12 +82,10 @@ export default class TabletRenderer {
   }
 
   public tabletReading(): string {
-    let reading: string = '';
-    this.sides.forEach(side => {
-      reading += `${side}\n`;
-      reading += `${this.sideReading(side)}\n\n`;
-    });
-    return reading.trim();
+    return this.sides
+      .map(side => `${side}\n${this.sideReading(side)}`)
+      .join('\n')
+      .trim();
   }
 
   get sides(): EpigraphicUnitSide[] {
@@ -119,6 +134,12 @@ export default class TabletRenderer {
     return convertMarkedUpUnitsToLineReading(charactersWithMarkup);
   }
 
+  public getLineWords(lineNum: number): EpigraphicWord[] {
+    const unitsOnLine = this.getUnitsOnLine(lineNum);
+    const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
+    return convertMarkedUpUnitsToEpigraphicWords(charactersWithMarkup);
+  }
+
   /**
    * Return an in order list of epigraphic units
    * on a given line.
@@ -143,52 +164,6 @@ export default class TabletRenderer {
     return lines;
   }
 
-  /**
-   * Attach a list of markups to its corresponding
-   * epigraphic unit.
-   */
-  private attachMarkupsToEpigraphicUnits() {
-    const markupMap = this.getMarkupReferenceMap();
-    this.epigraphicUnits = this.epigraphicUnits
-      .sort((a, b) => a.objOnTablet - b.objOnTablet)
-      .map(epigraphy => {
-        const markedEpig: EpigraphicUnit = {
-          ...epigraphy,
-        };
-        if (markupMap[epigraphy.uuid]) {
-          const damageTypes = ['damage', 'partialDamage', 'erasure'];
-          // Sort so that damages and erasures are applied last
-          markedEpig.markups = markupMap[epigraphy.uuid].sort((a, b) => {
-            if (damageTypes.includes(a.type)) {
-              return 1;
-            }
-            if (damageTypes.includes(b.type)) {
-              return -1;
-            }
-            return 0;
-          });
-        }
-
-        return markedEpig;
-      });
-  }
-
-  /**
-   * Maps an epigraphic unit's UUID to a list
-   * of its markup units
-   */
-  private getMarkupReferenceMap(): Record<string, MarkupUnit[]> {
-    const markupMap: { [key: string]: MarkupUnit[] } = {};
-    this.markupUnits.forEach(markup => {
-      if (!markupMap[markup.referenceUuid]) {
-        markupMap[markup.referenceUuid] = [];
-      }
-      markupMap[markup.referenceUuid].push(markup);
-    });
-
-    return markupMap;
-  }
-
   protected addMarkupToEpigraphicUnits(
     epigUnits: EpigraphicUnit[]
   ): EpigraphicUnitWithMarkup[] {
@@ -199,6 +174,8 @@ export default class TabletRenderer {
           ? unit.reading || ''
           : this.markedUpEpigraphicReading(unit),
       discourseUuid: unit.discourseUuid,
+      readingUuid: unit.readingUuid,
+      signUuid: unit.signUuid,
     }));
   }
 
@@ -361,15 +338,6 @@ export default class TabletRenderer {
 
   private getEpigraphicUnitByUuid(uuid: string) {
     return this.epigraphicUnits.find(unit => unit.uuid === uuid);
-  }
-
-  public getMarkupsByLineNumber(line: number): MarkupUnit[] {
-    const epigUuids = this.epigraphicUnits
-      .filter(unit => unit.line === line)
-      .map(unit => unit.uuid);
-    return this.markupUnits.filter(unit =>
-      epigUuids.includes(unit.referenceUuid)
-    );
   }
 
   public getEpigraphicUnitsByLine(line: number): EpigraphicUnit[] {

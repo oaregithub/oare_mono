@@ -271,7 +271,6 @@ router
       const utils = sl.get('utils');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const TextMarkupDao = sl.get('TextMarkupDao');
 
       const { uuid } = req.params;
       const pagination = utils.extractPagination(req.query);
@@ -287,15 +286,10 @@ router
         )
       );
 
-      const markupUnits = await Promise.all(
-        rows.map(({ textUuid }) => TextMarkupDao.getMarkups(textUuid))
-      );
-
       const readings = rows.map((row, index) => {
         const units = epigraphicUnits[index];
-        const markups = markupUnits[index];
 
-        const renderer = createTabletRenderer(units, markups, {
+        const renderer = createTabletRenderer(units, {
           lineNumbers: true,
           textFormat: 'html',
           highlightDiscourses: [row.discourseUuid],
@@ -424,6 +418,64 @@ router
       });
 
       res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
+  .route('/dictionary/textDiscourse/:discourseUuid')
+  .get(async (req, res, next) => {
+    try {
+      const { discourseUuid } = req.params;
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+
+      const textDiscourseExists = await TextDiscourseDao.textDiscourseExists(
+        discourseUuid
+      );
+      if (!textDiscourseExists) {
+        next(
+          new HttpBadRequest(
+            `Cannot retrieve information on the text discourse with UUID ${discourseUuid}`
+          )
+        );
+        return;
+      }
+
+      const spellingUuids = await TextDiscourseDao.getSpellingUuidsByDiscourseUuid(
+        discourseUuid
+      );
+
+      let result: DictionaryWordResponse | null = null;
+
+      if (spellingUuids.length > 0) {
+        // Should only ever be one spelling associated with a "word" type in the text discourse table.
+        const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+          spellingUuids[0]
+        );
+
+        const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+          formUuid
+        );
+
+        const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(
+          wordUuid
+        );
+        const forms = await DictionaryFormDao.getWordForms(wordUuid);
+
+        // Only get the one form from the formUuid (keep all spellings of the form)
+        const selectedForms = forms.filter(form => form.uuid === formUuid);
+
+        result = {
+          ...grammarInfo,
+          forms: selectedForms,
+        };
+      }
+
+      res.json(result);
     } catch (err) {
       next(new HttpInternalError(err));
     }

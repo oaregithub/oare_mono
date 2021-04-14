@@ -1,20 +1,9 @@
 import { v4 } from 'uuid';
-import { GetUserResponse } from '@oare/types';
+import { GetUserResponse, User } from '@oare/types';
 import knex from '@/connection';
 import { Transaction } from 'knex';
 import { hashPassword } from '@/security';
 import UserGroupDao from '../UserGroupDao';
-
-export interface UserRow {
-  id: number;
-  uuid: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  passwordHash: string;
-  isAdmin: boolean;
-  createdOn: string;
-}
 
 class UserDao {
   async emailExists(email: string): Promise<boolean> {
@@ -22,34 +11,41 @@ class UserDao {
     return !!user;
   }
 
-  async getUserById(id: number): Promise<UserRow | null> {
-    const user = await this.getUserByColumn('id', id);
-    return user;
-  }
-
-  async getUserByEmail(email: string): Promise<UserRow | null> {
+  async getUserByEmail(email: string): Promise<User | null> {
     const user = await this.getUserByColumn('email', email);
     return user;
   }
 
-  async getUserByUuid(uuid: string): Promise<UserRow | null> {
-    return this.getUserByColumn('uuid', uuid);
+  async getUserByUuid(uuid: string): Promise<User> {
+    const row = await this.getUserByColumn('uuid', uuid);
+    if (!row) {
+      throw new Error(`User with UUID ${uuid} does not exist`);
+    }
+
+    return row;
+  }
+
+  async getUserPasswordHash(uuid: string): Promise<string> {
+    await this.getUserByUuid(uuid); // throw an error if the uuid does not exist
+    const { passwordHash }: { passwordHash: string } = await knex('user')
+      .select('password_hash AS passwordHash')
+      .where({ uuid })
+      .first();
+
+    return passwordHash;
   }
 
   private async getUserByColumn(
     column: string,
     value: string | number
-  ): Promise<UserRow | null> {
-    const user: UserRow | null = await knex('user')
+  ): Promise<User | null> {
+    const user: User | null = await knex('user')
       .first(
-        'id',
         'uuid',
         'first_name AS firstName',
         'last_name AS lastName',
         'email',
-        'password_hash AS passwordHash',
-        'is_admin AS isAdmin',
-        'created_on AS createdOn'
+        'is_admin AS isAdmin'
       )
       .where(column, value);
 
@@ -80,6 +76,7 @@ class UserDao {
       uuid: v4(),
       first_name: firstName,
       last_name: lastName,
+      full_name: `${firstName} ${lastName}`,
       email,
       password_hash: passwordHash,
       is_admin: isAdmin,
@@ -94,23 +91,25 @@ class UserDao {
   }
 
   async getAllUsers(): Promise<GetUserResponse[]> {
-    const users: UserRow[] = await knex('user').select(
-      'id',
+    const users: Pick<
+      User,
+      'uuid' | 'firstName' | 'lastName' | 'email'
+    >[] = await knex('user').select(
       'uuid',
       'first_name AS firstName',
       'last_name AS lastName',
       'email'
     );
     const groupObjects = await Promise.all(
-      users.map(user => UserGroupDao.getGroupsOfUser(user.id))
+      users.map(user => UserGroupDao.getGroupsOfUser(user.uuid))
     );
     const adminStatus = await Promise.all(
       users.map(user => this.userIsAdmin(user.uuid))
     );
-    return users.map(({ id, firstName, lastName, email }, index) => ({
-      id,
-      first_name: firstName,
-      last_name: lastName,
+    return users.map(({ uuid, firstName, lastName, email }, index) => ({
+      uuid,
+      firstName,
+      lastName,
       email,
       groups: groupObjects[index],
       isAdmin: adminStatus[index],

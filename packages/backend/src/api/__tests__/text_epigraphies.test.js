@@ -7,8 +7,8 @@ describe('GET /text_epigraphies/:uuid', () => {
   const textUuid = 12345;
   const PATH = `${API_PATH}/text_epigraphies/${textUuid}`;
 
-  const mockJSON = {
-    textName: 'Test Alias',
+  const mockResponse = {
+    textName: 'Text Name',
     collection: {
       uuid: '12345',
       name: 'Test Collection',
@@ -25,21 +25,22 @@ describe('GET /text_epigraphies/:uuid', () => {
         reading: 'Test Reading',
         type: null,
         value: null,
+        markups: [
+          {
+            referenceUuid: '12345',
+            type: 'isCollatedReading',
+            value: null,
+            startChar: null,
+            endChar: null,
+          },
+        ],
       },
     ],
     canWrite: false,
     cdliNum: 'TestCdliNum',
     color: 'red',
     colorMeaning: 'Test Color Meaning',
-    markups: [
-      {
-        referenceUuid: '12345',
-        type: '.isCollatedReading',
-        value: null,
-        startChar: null,
-        endChar: null,
-      },
-    ],
+
     discourseUnits: [
       {
         uuid: '12345',
@@ -47,10 +48,6 @@ describe('GET /text_epigraphies/:uuid', () => {
         units: [],
       },
     ],
-  };
-
-  const mockAliasDao = {
-    textAliasNames: jest.fn().mockResolvedValue('Test Alias'),
   };
 
   const mockTextEpigraphyDao = {
@@ -66,28 +63,24 @@ describe('GET /text_epigraphies/:uuid', () => {
         reading: 'Test Reading',
         type: null,
         value: null,
+        markups: [
+          {
+            referenceUuid: '12345',
+            type: 'isCollatedReading',
+            value: null,
+            startChar: null,
+            endChar: null,
+          },
+        ],
       },
     ]),
   };
 
-  const mockTextGroupDao = {
-    userHasWritePermission: jest.fn().mockResolvedValue(false),
-    getUserBlacklist: jest.fn().mockResolvedValue({
-      blacklist: ['67890'],
+  const mockCollectionGroupDao = {
+    getUserCollectionBlacklist: jest.fn().mockResolvedValue({
+      blacklist: [],
       whitelist: [],
     }),
-  };
-
-  const mockCollectionGroupDao = {
-    getUserCollectionBlacklist: jest.fn().mockResolvedValue([]),
-  };
-
-  const mockHierarchyDao = {
-    getEpigraphyCollection: jest.fn().mockResolvedValue({
-      uuid: '12345',
-      name: 'Test Collection',
-    }),
-    getCollectionOfText: jest.fn().mockResolvedValue('mockCollectionUuid'),
   };
 
   const mockTextDao = {
@@ -96,18 +89,9 @@ describe('GET /text_epigraphies/:uuid', () => {
       color: 'red',
       colorMeaning: 'Test Color Meaning',
     }),
-  };
-
-  const mockTextMarkupDao = {
-    getMarkups: jest.fn().mockResolvedValue([
-      {
-        referenceUuid: '12345',
-        type: '.isCollatedReading',
-        value: null,
-        startChar: null,
-        endChar: null,
-      },
-    ]),
+    getTextByUuid: jest.fn().mockResolvedValue({
+      name: 'Text Name',
+    }),
   };
 
   const mockTextDiscourseDao = {
@@ -126,16 +110,23 @@ describe('GET /text_epigraphies/:uuid', () => {
     }),
   };
 
+  const mockCollectionDao = {
+    getTextCollection: jest.fn().mockResolvedValue(mockResponse.collection),
+  };
+
+  const mockCollectionTextUtils = {
+    canViewText: jest.fn().mockResolvedValue(true),
+    canEditText: jest.fn().mockResolvedValue(false),
+  };
+
   const setup = () => {
-    sl.set('AliasDao', mockAliasDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
-    sl.set('TextGroupDao', mockTextGroupDao);
-    sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('TextDao', mockTextDao);
-    sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('TextDraftsDao', mockTextDraftsDao);
+    sl.set('CollectionDao', mockCollectionDao);
+    sl.set('CollectionTextUtils', mockCollectionTextUtils);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -145,69 +136,55 @@ describe('GET /text_epigraphies/:uuid', () => {
   it('returns 200 on successful data retrieval', async () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
-    expect(JSON.parse(response.text)).toEqual(mockJSON);
+    expect(JSON.parse(response.text)).toEqual(mockResponse);
+  });
+
+  it('returns 400 if text does not exist', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTextByUuid: jest.fn().mockResolvedValue(null),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 400 if text does not exist', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTextByUuid: jest.fn().mockResolvedValue(null),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
   });
 
   it('does not allow blacklisted texts to be seen', async () => {
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest
-        .fn()
-        .mockResolvedValue({ blacklist: ['12345'], whitelist: [] }),
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
+      canViewText: jest.fn().mockResolvedValue(false),
     });
     const response = await sendRequest();
     expect(response.status).toBe(403);
-    expect(mockAliasDao.textAliasNames).not.toHaveBeenCalled();
     expect(mockTextEpigraphyDao.getEpigraphicUnits).not.toHaveBeenCalled();
-    expect(mockHierarchyDao.getEpigraphyCollection).not.toHaveBeenCalled();
     expect(mockTextDao.getCdliNum).not.toHaveBeenCalled();
     expect(mockTextDao.getTranslitStatus).not.toHaveBeenCalled();
-    expect(mockTextMarkupDao.getMarkups).not.toHaveBeenCalled();
     expect(mockTextDiscourseDao.getTextDiscourseUnits).not.toHaveBeenCalled();
   });
 
-  it('does not allow non-admin user to see blacklisted texts', async () => {
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
-        isAdmin: false,
-      }),
-    });
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest
+  it('returns 500 when failing to check if text is viewable', async () => {
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
+      canViewText: jest
         .fn()
-        .mockResolvedValue({ blacklist: ['12345'], whitelist: [] }),
-    });
-    const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
-    expect(response.status).toBe(403);
-  });
-
-  it('allows admins to see blacklisted texts', async () => {
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
-        isAdmin: true,
-      }),
-    });
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest.fn().mockResolvedValue(['12345']),
-    });
-    const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
-    expect(response.status).toBe(200);
-  });
-
-  it('returns 500 on failed blacklist check', async () => {
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      getUserBlacklist: jest.fn().mockRejectedValue(null),
+        .mockRejectedValue('failed to check if text is viewable'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
   });
 
-  it('returns 500 on failed alias name retrieval', async () => {
-    sl.set('AliasDao', {
-      textAliasNames: jest.fn().mockRejectedValue(null),
+  it('returns 500 on failed text retrieval', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTextByUuid: jest.fn().mockRejectedValue('Failed to get text'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -222,8 +199,10 @@ describe('GET /text_epigraphies/:uuid', () => {
   });
 
   it('returns 500 on failed collections retrieval', async () => {
-    sl.set('HierarchyDao', {
-      getEpigraphyCollection: jest.fn().mockRejectedValue(null),
+    sl.set('CollectionDao', {
+      getTextCollection: jest
+        .fn()
+        .mockRejectedValue('could not retrieve collection'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -255,23 +234,10 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(response.status).toBe(500);
   });
 
-  it('returns 500 on failed markups retrieval', async () => {
-    sl.set('TextMarkupDao', {
-      getMarkups: jest.fn().mockRejectedValue(null),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(500);
-  });
-
   it('returns 500 on failed write permission check', async () => {
-    sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
-        isAdmin: false,
-      }),
-    });
-    sl.set('TextGroupDao', {
-      ...mockTextGroupDao,
-      userHasWritePermission: jest.fn().mockRejectedValue(null),
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
+      canEditText: jest.fn().mockRejectedValue(null),
     });
     const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
     expect(response.status).toBe(500);

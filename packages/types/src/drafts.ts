@@ -1,4 +1,7 @@
 import { EpigraphicUnitSide } from './epigraphies';
+import { User } from './login';
+import { SortOrder } from './utils';
+import { Pagination } from './dictionary';
 
 export interface TextDraftSideContent {
   side: EpigraphicUnitSide | '';
@@ -13,9 +16,32 @@ export interface TextDraft {
   uuid: string;
   content: TextDraftSideContent[];
   notes: string;
+  userUuid: string;
 }
 
-export interface AddTextDraftPayload {
+export interface TextDraftWithUser extends Omit<TextDraft, 'userUuid'> {
+  user: Pick<User, 'firstName' | 'lastName' | 'uuid'>;
+  originalText: string;
+}
+
+export interface TextDraftsResponse {
+  totalDrafts: number;
+  drafts: TextDraftWithUser[];
+}
+
+export interface DraftPayload extends Pick<TextDraft, 'notes' | 'textUuid'> {
   content: string;
-  notes: string;
+}
+
+export interface CreateDraftResponse {
+  draftUuid: string;
+}
+
+export type GetDraftsSortType = 'text' | 'author' | 'updatedAt';
+
+export interface DraftQueryOptions extends Pagination {
+  sortBy?: GetDraftsSortType;
+  sortOrder?: SortOrder;
+  textFilter?: string;
+  authorFilter?: string;
 }

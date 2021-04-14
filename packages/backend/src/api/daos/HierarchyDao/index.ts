@@ -1,5 +1,4 @@
 import {
-  CollectionListItem,
   CollectionResponse,
   CollectionText,
   SearchNamesResponse,
@@ -8,11 +7,10 @@ import {
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
-import textGroupDao from '../TextGroupDao';
-import aliasDao from '../AliasDao';
-import { UserRow } from '../UserDao';
 import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
+import TextGroupDao from '../TextGroupDao';
+import CollectionDao from '../CollectionDao';
 
 class HierarchyDao {
   async getBySearchTerm({
@@ -49,7 +47,7 @@ class HierarchyDao {
         .whereNull('public_blacklist.uuid');
     }
 
-    const searchResponse = await createBaseQuery()
+    const searchResponse: Array<{ uuid: string }> = await createBaseQuery()
       .orderBy('alias.name')
       .limit(limit)
       .offset((page - 1) * limit);
@@ -61,13 +59,15 @@ class HierarchyDao {
         await Promise.all(
           searchResponse.map(text => TextDao.getTextByUuid(text.uuid))
         )
-      ).map(text => text.name);
+      ).map(text => (text ? text.name : ''));
     } else if (type === 'Collection') {
-      names = await Promise.all(
-        searchResponse.map(collection =>
-          aliasDao.textAliasNames(collection.uuid)
+      names = (
+        await Promise.all(
+          searchResponse.map(collection =>
+            CollectionDao.getCollectionByUuid(collection.uuid)
+          )
         )
-      );
+      ).map(collection => (collection ? collection.name : ''));
     }
 
     let epigraphyStatus: boolean[] = [];
@@ -100,37 +100,8 @@ class HierarchyDao {
     };
   }
 
-  async getAllCollections(
-    isAdmin: boolean,
-    user: UserRow | null
-  ): Promise<CollectionListItem[]> {
-    const blacklistedUuids = await CollectionGroupDao.getUserCollectionBlacklist(
-      user
-    );
-
-    let collectionsQuery = knex('hierarchy')
-      .select('hierarchy.uuid')
-      .whereNotIn('uuid', blacklistedUuids)
-      .andWhere('hierarchy.type', 'collection');
-
-    if (!isAdmin) {
-      collectionsQuery = collectionsQuery.andWhere('hierarchy.published', true);
-    }
-
-    const collections: { uuid: string }[] = await collectionsQuery;
-    const collectionNameQueries = collections.map(collection =>
-      aliasDao.textAliasNames(collection.uuid)
-    );
-    const collectionNames = await Promise.all(collectionNameQueries);
-
-    return collections.map(({ uuid }, idx) => ({
-      name: collectionNames[idx],
-      uuid,
-    }));
-  }
-
   async getCollectionTexts(
-    userId: UserRow | null,
+    userUuid: string | null,
     uuid: string,
     { page = 1, rows = 10, search = '' }
   ): Promise<CollectionResponse> {
@@ -157,12 +128,13 @@ class HierarchyDao {
       });
     };
 
-    const collectionIsBlacklisted = await CollectionGroupDao.collectionIsBlacklisted(
-      uuid,
-      userId
-    );
-    const { blacklist, whitelist } = await textGroupDao.getUserBlacklist(
-      userId
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const collectionIsBlacklisted = collectionBlacklist.includes(uuid);
+
+    const { blacklist, whitelist } = await TextGroupDao.getUserBlacklist(
+      userUuid
     );
 
     const countRow = await collectionTextQuery(
@@ -211,26 +183,11 @@ class HierarchyDao {
     };
   }
 
-  async getEpigraphyCollection(epigUuid: string): Promise<CollectionListItem> {
-    const collection: CollectionListItem = await knex('hierarchy')
-      .first('hierarchy.parent_uuid AS uuid', 'alias.name')
-      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.parent_uuid')
-      .where('hierarchy.uuid', epigUuid);
-    return collection;
-  }
-
   async isPublished(hierarchyUuid: string): Promise<boolean> {
     const row: { published: boolean } = await knex('hierarchy')
       .first('published')
       .where('uuid', hierarchyUuid);
     return row.published;
-  }
-
-  async getCollectionOfText(uuid: string): Promise<string> {
-    const collection: CollectionListItem = await knex('hierarchy')
-      .first('parent_uuid AS uuid')
-      .where('uuid', uuid);
-    return collection.uuid;
   }
 }
 

@@ -4,6 +4,7 @@ import {
   EpigraphicUnit,
   EpigraphicUnitWithMarkup,
   EpigraphicUnitType,
+  EpigraphicWord,
 } from '@oare/types';
 
 export function markupsMatchDamage(
@@ -111,19 +112,7 @@ export function epigraphicWordWithSeparators(
 }
 
 export function regionReading(unit: EpigraphicUnit): string {
-  if (unit.markups) {
-    // Sort isSealImpression to the top. It's the only region
-    // type that can have multiple markups
-    unit.markups.sort((a, b) => {
-      if (a.type === 'isSealImpression') {
-        return -1;
-      }
-      if (b.type === 'isSealImpression') {
-        return 1;
-      }
-      return 0;
-    });
-
+  if (unit.markups.length > 0) {
     const { type: markupType, value: markupValue } = unit.markups[0];
     const { reading } = unit;
 
@@ -165,10 +154,23 @@ export function regionReading(unit: EpigraphicUnit): string {
 export function convertMarkedUpUnitsToLineReading(
   characters: EpigraphicUnitWithMarkup[]
 ): string {
-  const epigraphicWords: EpigraphicUnitWithMarkup[][] = separateEpigraphicUnitsByWord(
-    characters
-  );
+  const epigraphicWords = separateEpigraphicUnitsByWord(characters);
   return epigraphicWords
     .map(word => epigraphicWordWithSeparators(word))
     .join(' ');
+}
+
+export function convertMarkedUpUnitsToEpigraphicWords(
+  characters: EpigraphicUnitWithMarkup[]
+): EpigraphicWord[] {
+  const epigraphicWords = separateEpigraphicUnitsByWord(characters);
+  return epigraphicWords.map(word => ({
+    reading: epigraphicWordWithSeparators(word),
+    discourseUuid: word[0].discourseUuid,
+    signs: word.map(({ signUuid, readingUuid, reading }) => ({
+      signUuid,
+      readingUuid,
+      reading,
+    })),
+  }));
 }

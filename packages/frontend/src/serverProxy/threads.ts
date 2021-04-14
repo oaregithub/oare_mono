@@ -1,4 +1,6 @@
 import {
+  AllCommentsRequest,
+  AllCommentsResponse,
   Thread,
   ThreadDisplay,
   ThreadWithComments,
@@ -19,28 +21,26 @@ async function updateThread(thread: Thread): Promise<void> {
   await axios.put('/threads', thread);
 }
 
-async function getThreadsByUserUuid(userUuid: string): Promise<ThreadDisplay> {
-  const { data } = await axios.get(
-    `/threads/user/${encodeURIComponent(userUuid)}`
-  );
-  return data;
-}
-
 async function updateThreadName(
   threadNameRequest: UpdateThreadNameRequest
 ): Promise<void> {
   await axios.put('/threads/name', threadNameRequest);
 }
 
-async function getAllThreads(): Promise<ThreadDisplay> {
-  const { data } = await axios.get('/threads');
+async function getAllThreads(
+  request: AllCommentsRequest
+): Promise<AllCommentsResponse> {
+  const { data } = await axios.get('/threads', {
+    params: {
+      request,
+    },
+  });
   return data;
 }
 
 export default {
   getThreadsWithCommentsByReferenceUuid,
   updateThread,
-  getThreadsByUserUuid,
   getAllThreads,
   updateThreadName,
 };

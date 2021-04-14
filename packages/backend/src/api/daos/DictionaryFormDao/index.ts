@@ -194,6 +194,19 @@ class DictionaryFormDao {
     );
     return forms;
   }
+
+  async getDictionaryWordUuidByFormUuid(formUuid: string): Promise<string> {
+    const row: { referenceUuid: string } = await knex('dictionary_form')
+      .where('uuid', formUuid)
+      .select('reference_uuid AS referenceUuid')
+      .first();
+
+    if (!row) {
+      throw new Error(`Form with UUID ${formUuid} does not exist`);
+    }
+
+    return row.referenceUuid;
+  }
 }
 
 export default new DictionaryFormDao();

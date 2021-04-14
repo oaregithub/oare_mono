@@ -1,12 +1,12 @@
 import Vue from 'vue';
 import VueCompositionAPI, { reactive } from '@vue/composition-api';
-import { LoginRegisterResponse, PermissionItem } from '@oare/types';
+import { User, PermissionItem } from '@oare/types';
 
 Vue.use(VueCompositionAPI);
 
 export interface State {
   landed: boolean;
-  user: null | LoginRegisterResponse;
+  user: null | User;
   authComplete: boolean;
   permissions: PermissionItem[];
 }
@@ -19,7 +19,7 @@ const state: State = reactive({
 });
 
 export default {
-  setUser: (user: LoginRegisterResponse) => {
+  setUser: (user: User) => {
     state.user = user;
   },
   setLanded: (landed: boolean) => {

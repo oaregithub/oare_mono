@@ -1,4 +1,5 @@
 import sl from '@/serviceLocator';
+import { User } from '@oare/types';
 import AliasDao from '@/api/daos/AliasDao';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
@@ -15,10 +16,10 @@ import cache from '@/cache';
 import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
-import utils from '@/utils';
+import * as utils from '@/utils';
 import app from './app';
 import mailer from './mailer';
-import UserDao, { UserRow } from './api/daos/UserDao';
+import UserDao from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
 import SignReadingDao from './api/daos/SignReadingDao';
 import CollectionGroupDao from './api/daos/CollectionGroupDao';
@@ -28,11 +29,14 @@ import UserGroupDao from './api/daos/UserGroupDao';
 import CommentsDao from './api/daos/CommentsDao';
 import ThreadsDao from './api/daos/ThreadsDao';
 import ErrorsDao from './api/daos/ErrorsDao';
+import CollectionDao from './api/daos/CollectionDao';
+import CollectionTextUtils from './api/daos/CollectionTextUtils';
+import CacheStatusDao from './api/daos/CacheStatusDao';
 
 declare global {
   namespace Express {
     interface Request {
-      user: UserRow | null;
+      user: User | null;
     }
   }
 }
@@ -63,6 +67,9 @@ sl.set('UserGroupDao', UserGroupDao);
 sl.set('CommentsDao', CommentsDao);
 sl.set('ThreadsDao', ThreadsDao);
 sl.set('ErrorsDao', ErrorsDao);
+sl.set('CollectionDao', CollectionDao);
+sl.set('CacheStatusDao', CacheStatusDao);
+sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('utils', utils);
 sl.set('mailer', mailer);
 

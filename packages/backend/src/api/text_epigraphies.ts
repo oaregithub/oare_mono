@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError, HttpForbidden } from '@/exceptions';
+import { HttpInternalError, HttpForbidden, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { EpigraphyResponse } from '@oare/types';
 import authFirst from '@/middlewares/authFirst';
@@ -10,80 +10,66 @@ router
   .route('/text_epigraphies/:uuid')
   .get(authFirst, async (req, res, next) => {
     try {
-      const textUuid = String(req.params.uuid);
-      const user = req.user || null;
-      const TextMarkupDao = sl.get('TextMarkupDao');
+      const { uuid: textUuid } = req.params;
+      const { user } = req;
+      const userUuid = user ? user.uuid : null;
       const TextDao = sl.get('TextDao');
-      const HierarchyDao = sl.get('HierarchyDao');
-      const TextGroupDao = sl.get('TextGroupDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const AliasDao = sl.get('AliasDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const CollectionGroupDao = sl.get('CollectionGroupDao');
       const TextDraftsDao = sl.get('TextDraftsDao');
+      const CollectionDao = sl.get('CollectionDao');
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-      // Make sure user has access to the text he wishes to access
-      if (!user || !user.isAdmin) {
-        const { blacklist } = await TextGroupDao.getUserBlacklist(user);
-        const collectionBlacklist = await CollectionGroupDao.getUserCollectionBlacklist(
-          user
-        );
-        const collectionOfText = await HierarchyDao.getCollectionOfText(
-          textUuid
-        );
+      const text = await TextDao.getTextByUuid(textUuid);
 
-        if (
-          blacklist.includes(textUuid) ||
-          collectionBlacklist.includes(collectionOfText)
-        ) {
-          next(
-            new HttpForbidden(
-              'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
-            )
-          );
-          return;
-        }
+      if (!text) {
+        next(new HttpBadRequest(`Text with UUID ${textUuid} does not exist`));
+        return;
       }
 
-      const textName = await AliasDao.textAliasNames(textUuid);
+      const canViewText = await CollectionTextUtils.canViewText(
+        textUuid,
+        userUuid
+      );
+
+      if (!canViewText) {
+        next(
+          new HttpForbidden(
+            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
+          )
+        );
+        return;
+      }
+
+      const collection = await CollectionDao.getTextCollection(text.uuid);
+
+      if (!collection) {
+        next(new HttpBadRequest('Text does not belong to a valid collection'));
+        return;
+      }
+
       const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
-      const collection = await HierarchyDao.getEpigraphyCollection(textUuid);
       const cdliNum = await TextDao.getCdliNum(textUuid);
       const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
       const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
         textUuid
       );
-
-      const markups = await TextMarkupDao.getMarkups(textUuid);
-
-      let canWrite: boolean;
-      if (user) {
-        canWrite = user.isAdmin
-          ? true
-          : (await TextGroupDao.userHasWritePermission(textUuid, user.id)) ||
-            (await CollectionGroupDao.userHasWritePermission(
-              textUuid,
-              user.id
-            ));
-      } else {
-        canWrite = false;
-      }
-
-      let draft;
-
-      if (user) {
-        draft = await TextDraftsDao.getDraft(user?.id, textUuid);
-      }
+      const canWrite = await CollectionTextUtils.canEditText(
+        textUuid,
+        userUuid
+      );
+      const draft = user
+        ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid)
+        : null;
 
       const response: EpigraphyResponse = {
-        textName,
+        textName: text.name,
         collection,
         units,
         canWrite,
         cdliNum,
         color,
         colorMeaning,
-        markups,
         discourseUnits,
         ...(draft ? { draft } : {}),
       };

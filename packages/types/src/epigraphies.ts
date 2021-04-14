@@ -1,5 +1,6 @@
 import { DiscourseUnit } from './textDiscourse';
 import { TextDraft } from './drafts';
+import { Collection } from './collection';
 
 export interface TextInfoResponse {
   name: string;
@@ -8,15 +9,11 @@ export interface TextInfoResponse {
 export interface EpigraphyResponse {
   canWrite: boolean;
   textName: string;
-  collection: {
-    uuid: string;
-    name: string;
-  };
+  collection: Collection;
   cdliNum: string | null;
   units: EpigraphicUnit[];
   color: string;
   colorMeaning: string;
-  markups: MarkupUnit[];
   discourseUnits: DiscourseUnit[];
   draft?: TextDraft;
 }
@@ -82,7 +79,9 @@ export interface EpigraphicUnit {
   epigType: EpigraphyType;
   type: EpigraphicUnitType | null;
   value: null | string;
-  markups?: MarkupUnit[];
+  markups: MarkupUnit[];
+  readingUuid: string;
+  signUuid: string;
 }
 
 export type MarkupType =
@@ -133,8 +132,17 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
   textFormat?: TextFormatType;
 }
 
-export interface EpigraphicUnitWithMarkup {
+export interface EpigraphicUnitWithMarkup
+  extends Pick<EpigraphicUnit, 'readingUuid' | 'signUuid'> {
   type: EpigraphicUnitType | null;
   reading: string;
   discourseUuid: string | null;
+}
+
+export interface EpigraphicSign
+  extends Pick<EpigraphicUnit, 'signUuid' | 'readingUuid' | 'reading'> {}
+
+export interface EpigraphicWord
+  extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
+  signs: EpigraphicSign[];
 }

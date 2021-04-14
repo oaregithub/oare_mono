@@ -16,5 +16,12 @@ exports[`OareDashboardSidebar matches snapshot 1`] = `
       </div>
     </div>
   </router-link-stub>
+  <router-link-stub to="comments">
+    <div tabindex="0" data-testid="Comments" role="listitem" aria-selected="false" class="v-list-item v-list-item--link theme--dark">
+      <div class="v-list-item__content">
+        <div class="v-list-item__title">Comments</div>
+      </div>
+    </div>
+  </router-link-stub>
 </div>
 `;

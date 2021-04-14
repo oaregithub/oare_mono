@@ -5,13 +5,17 @@ export interface SearchTextsResultRow {
 }
 
 export interface SearchTextsPayload {
-  characters?: string[];
+  characters?: string;
   textTitle: string;
   page: number;
   rows: number;
 }
 
+export interface SearchTextsCountPayload {
+  characters?: string;
+  textTitle: string;
+}
+
 export interface SearchTextsResponse {
-  totalRows: number;
   results: SearchTextsResultRow[];
 }

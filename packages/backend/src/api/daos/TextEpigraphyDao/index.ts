@@ -6,8 +6,12 @@ import {
   convertEpigraphicUnitRows,
   getSequentialCharacterQuery,
 } from './utils';
+import TextGroupDao from '../TextGroupDao';
+import CollectionGroupDao from '../CollectionGroupDao';
+import TextMarkupDao from '../TextMarkupDao';
 
-export interface EpigraphicQueryRow extends Omit<EpigraphicUnit, 'side'> {
+export interface EpigraphicQueryRow
+  extends Omit<EpigraphicUnit, 'side' | 'markups'> {
   side: number;
   epigReading: string;
 }
@@ -23,7 +27,7 @@ export interface TextUuidWithLines {
 }
 
 export interface SearchTextArgs {
-  characters: string[];
+  characters: string[][];
   title: string;
   userUuid: string | null;
   pagination: Pagination;
@@ -56,6 +60,8 @@ class TextEpigraphyDao {
         'text_epigraphy.discourse_uuid AS discourseUuid',
         'text_epigraphy.object_on_tablet AS objOnTablet',
         'text_epigraphy.type AS epigType',
+        'text_epigraphy.sign_uuid AS signUuid',
+        'text_epigraphy.reading_uuid AS readingUuid',
         'sign_reading.reading',
         'sign_reading.type',
         'sign_reading.value'
@@ -71,22 +77,35 @@ class TextEpigraphyDao {
     }
 
     const units: EpigraphicQueryRow[] = await query;
+    const markupUnits = await TextMarkupDao.getMarkups(textUuid);
 
-    return convertEpigraphicUnitRows(units);
+    return convertEpigraphicUnitRows(units, markupUnits);
   }
 
   private async getMatchingTexts({
     characters,
     title,
     pagination,
+    userUuid,
   }: SearchTextArgs): Promise<string[]> {
+    const {
+      blacklist: textBlacklist,
+      whitelist: textWhitelist,
+    } = await TextGroupDao.getUserBlacklist(userUuid);
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
-      title
+      title,
+      textBlacklist,
+      textWhitelist,
+      collectionBlacklist
     )
       .select('text_epigraphy.text_uuid AS uuid')
       .orderBy('text.name')
-      .groupBy('text_epigraphy.text_uuid')
+      .groupBy('text.name')
       .limit(pagination.limit)
       .offset((pagination.page - 1) * pagination.limit);
 
@@ -95,7 +114,7 @@ class TextEpigraphyDao {
 
   private async getMatchingLines(
     textUuid: string,
-    characters: string[]
+    characters: string[][]
   ): Promise<number[]> {
     const query = getSequentialCharacterQuery(characters);
     const rows: Array<{ line: number }> = await query
@@ -124,10 +143,28 @@ class TextEpigraphyDao {
   async searchTextsTotal({
     characters,
     title,
-  }: Pick<SearchTextArgs, 'characters' | 'title'>): Promise<number> {
+    userUuid,
+  }: Pick<
+    SearchTextArgs,
+    'characters' | 'title' | 'userUuid'
+  >): Promise<number> {
+    const {
+      blacklist: textBlacklist,
+      whitelist: textWhitelist,
+    } = await TextGroupDao.getUserBlacklist(userUuid);
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
     const totalRows: number = (
-      await getSearchQuery(characters, title)
-        .select(knex.raw('COUNT(DISTINCT text_epigraphy.text_uuid) AS count'))
+      await getSearchQuery(
+        characters,
+        title,
+        textBlacklist,
+        textWhitelist,
+        collectionBlacklist
+      )
+        .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
         .first()
     ).count;
 

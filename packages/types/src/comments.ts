@@ -1,4 +1,5 @@
-import { DictionaryForm, FormSpelling } from './dictionary';
+import { DictionaryForm, FormSpelling, Pagination } from './dictionary';
+import { ErrorStatus, SortType } from './errors';
 
 export interface CommentRequest {
   comment: CommentInsert;
@@ -80,4 +81,26 @@ export interface UtilListDisplay {
   type: UtilListType;
   form?: DictionaryForm;
   formSpelling?: FormSpelling;
+}
+
+export type CommentSortType = 'status' | 'thread' | 'item' | 'timestamp';
+
+export interface AllCommentsRequest {
+  filters: {
+    status: ThreadStatus[];
+    thread: string;
+    item: string;
+    comment: string;
+  };
+  sort: {
+    type: CommentSortType;
+    desc: boolean;
+  };
+  pagination: Pagination;
+  isUserComments: boolean;
+}
+
+export interface AllCommentsResponse {
+  threads: ThreadDisplay[];
+  count: number;
 }
