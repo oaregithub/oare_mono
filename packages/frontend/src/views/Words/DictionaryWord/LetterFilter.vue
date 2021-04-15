@@ -25,13 +25,12 @@
 import {
   computed,
   defineComponent,
-  onMounted,
   PropType,
   ref,
   watch,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { DisplayableWord } from '@oare/types/build/src/dictionary';
+import { DisplayableWord } from '@oare/types';
 import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({

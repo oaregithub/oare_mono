@@ -42,11 +42,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import {
-  PersonDisplay,
-  EpigraphicTextWithReadings,
-  DisplayableWord,
-} from '@oare/types';
+import { PersonDisplay, EpigraphicTextWithReadings } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -72,7 +68,6 @@ export default defineComponent({
     const searchFilter = (search: string, personDisplay: PersonDisplay) => {
       const lowerSearch = search ? search.toLowerCase() : '';
 
-      // Should the filter contain the 'relation' as well?
       return (
         personDisplay.person.toLowerCase().includes(lowerSearch) ||
         personDisplay.relationPerson.toLowerCase().includes(lowerSearch)

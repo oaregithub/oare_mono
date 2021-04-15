@@ -42,16 +42,7 @@
 </template>
 
 <script lang="ts">
-import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import {
-  defineComponent,
-  ref,
-  Ref,
-  computed,
-  watch,
-  PropType,
-} from '@vue/composition-api';
-import useQueryParam from '@/hooks/useQueryParam';
+import { defineComponent, ref, PropType } from '@vue/composition-api';
 import UtilList from '../../components/UtilList/index.vue';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
 import { DisplayableWord } from '@oare/types';
