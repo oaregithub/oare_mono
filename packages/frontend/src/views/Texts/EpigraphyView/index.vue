@@ -57,7 +57,9 @@ import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
 
-export type DraftContent = Pick<TextDraft, 'content' | 'notes'>;
+export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
+  uuid: string | null;
+}
 
 export default defineComponent({
   name: 'EpigraphyView',
@@ -154,6 +156,7 @@ export default defineComponent({
         lineNumbers: true,
       });
       return {
+        uuid: null,
         content: draftRenderer.sides.map(side => ({
           side,
           text: draftRenderer.sideReading(side),
