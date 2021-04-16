@@ -82,10 +82,7 @@ router.route('/search/count').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
-    const characterANDs = charsPayload ? charsPayload.split(';') : [];
-    const characterUuids = await Promise.all(
-      characterANDs.map(charSet => prepareCharactersForSearch(charSet))
-    );
+    const characterUuids = await prepareCharactersForSearch(charsPayload);
 
     const user = req.user || null;
 
@@ -113,10 +110,7 @@ router.route('/search').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
 
-    const characterANDs = charsPayload ? charsPayload.split(';') : [];
-    const characterUuids = await Promise.all(
-      characterANDs.map(charSet => prepareCharactersForSearch(charSet))
-    );
+    const characterUuids = await prepareCharactersForSearch(charsPayload);
 
     const user = req.user || null;
 

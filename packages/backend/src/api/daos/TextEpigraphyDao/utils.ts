@@ -1,18 +1,24 @@
 import * as Knex from 'knex';
 import knex from '@/connection';
-import { EpigraphicUnit, EpigraphicUnitSide, MarkupUnit } from '@oare/types';
+import {
+  EpigraphicUnit,
+  EpigraphicUnitSide,
+  MarkupUnit,
+  SearchCooccurrence,
+} from '@oare/types';
 import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
 import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
-  characterSets: string[][][],
+  cooccurrences: SearchCooccurrence[],
   baseQuery?: Knex.QueryBuilder
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
   let query = baseQuery || knex('text_epigraphy');
-  characterSets.forEach((charSet, idx) => {
+  cooccurrences.forEach((occurrence, idx) => {
+    const charSet = occurrence.uuids;
     charSet.forEach((char, index) => {
       if (idx < 1 && index < 1) {
         return;
@@ -37,8 +43,11 @@ export function getSequentialCharacterQuery(
           );
       });
     });
-    if (idx < 1 && characterSets[0].length > 0) {
-      query = query.whereIn('text_epigraphy.reading_uuid', characterSets[0][0]);
+    if (idx < 1 && cooccurrences[0].uuids.length > 0) {
+      query = query.whereIn(
+        'text_epigraphy.reading_uuid',
+        cooccurrences[0].uuids[0]
+      );
     }
   });
 
@@ -46,7 +55,7 @@ export function getSequentialCharacterQuery(
 }
 
 export function getSearchQuery(
-  characters: string[][][],
+  characters: SearchCooccurrence[],
   textTitle: string,
   textBlacklist: string[],
   textWhitelist: string[],
@@ -57,7 +66,8 @@ export function getSearchQuery(
     .join('text', 'text.uuid', 'text_epigraphy.text_uuid')
     .join('hierarchy', 'hierarchy.uuid', 'text_epigraphy.text_uuid');
 
-  query = getSequentialCharacterQuery(characters, query);
+  const andCooccurrences = characters.filter(char => char.type === 'AND');
+  query = getSequentialCharacterQuery(andCooccurrences, query);
 
   if (textTitle) {
     query = query.andWhere('text.name', 'like', `%${textTitle}%`);
@@ -129,3 +139,16 @@ export const stringToCharsArray = (search: string): string[] => {
   }
   return chars;
 };
+
+export async function getNotOccurrenceTexts(
+  characters: SearchCooccurrence[]
+): Promise<string[]> {
+  const notCharacters = characters.filter(char => char.type === 'NOT');
+  const notTexts: Array<{ uuid: string }> =
+    notCharacters.length > 0
+      ? await getSequentialCharacterQuery(notCharacters).select(
+          'text_epigraphy.text_uuid AS uuid'
+        )
+      : [];
+  return notTexts.map(text => text.uuid);
+}

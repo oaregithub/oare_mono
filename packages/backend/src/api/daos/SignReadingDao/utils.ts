@@ -1,8 +1,9 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 import sl from '@/serviceLocator';
+import { SearchCooccurrence } from '@oare/types';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
-export async function prepareCharactersForSearch(
+export async function prepareIndividualSearchCharacters(
   charsPayload: string | undefined
 ): Promise<string[][]> {
   const SignReadingDao = sl.get('SignReadingDao');
@@ -12,6 +13,31 @@ export async function prepareCharactersForSearch(
 
   const characterUuids = await Promise.all(
     signsArray.map(signs => SignReadingDao.getIntellisearchSignUuids(signs))
+  );
+  return characterUuids;
+}
+
+export async function prepareCharactersForSearch(
+  charsPayload: string | undefined
+): Promise<SearchCooccurrence[]> {
+  const cooccurrences = charsPayload
+    ? charsPayload.split(';').map(phrase => phrase.trim())
+    : [];
+  const cooccurrenceTypes = cooccurrences.map(phrase =>
+    phrase[0] === '!' ? 'NOT' : 'AND'
+  );
+  const preppedCharUuids = await Promise.all(
+    cooccurrences.map(char => {
+      const searchCharacter = char[0] === '!' ? char.substr(1) : char;
+      return prepareIndividualSearchCharacters(searchCharacter);
+    })
+  );
+
+  const characterUuids: SearchCooccurrence[] = preppedCharUuids.map(
+    (uuids, index) => ({
+      uuids,
+      type: cooccurrenceTypes[index],
+    })
   );
   return characterUuids;
 }
