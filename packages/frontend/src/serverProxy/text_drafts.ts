@@ -32,9 +32,14 @@ async function getAllDrafts(
   return data;
 }
 
+async function deleteDraft(draftUuid: string): Promise<void> {
+  await axios.delete(`/text_drafts/${draftUuid}`);
+}
+
 export default {
   createDraft,
   getDrafts,
   getAllDrafts,
   updateDraft,
+  deleteDraft,
 };
