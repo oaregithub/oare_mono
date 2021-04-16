@@ -176,3 +176,10 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+/* This is a class on the vue-code-diff component */
+.d2h-wrapper {
+  overflow-y: scroll;
+}
+</style>

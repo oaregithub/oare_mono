@@ -4,16 +4,16 @@ import request from 'supertest';
 import sl from '@/serviceLocator';
 
 describe('Text drafts test', () => {
-  describe('POST /text_drafts/:textUuid', () => {
+  describe('POST /text_drafts', () => {
     const textUuid = 'test-uuid';
     const draftUuid = 'draft-uuid';
     const userUuid = '1';
-    const PATH = `${API_PATH}/text_drafts/${textUuid}`;
-    const payload = { content: 'content', notes: 'notes' };
+    const PATH = `${API_PATH}/text_drafts`;
+    const payload = { content: 'content', notes: 'notes', textUuid };
 
     const TextDraftsDao = {
-      createDraft: jest.fn().mockResolvedValue(),
-      getDraft: jest.fn().mockResolvedValue({ uuid: draftUuid }),
+      createDraft: jest.fn().mockResolvedValue(draftUuid),
+      getDraftByTextUuid: jest.fn().mockResolvedValue(null),
       updateDraft: jest.fn().mockResolvedValue(),
     };
 
@@ -52,45 +52,35 @@ describe('Text drafts test', () => {
       expect(response.status).toBe(401);
     });
 
-    it('returns 201 on successful update', async () => {
+    it('returns 201 on successful creation', async () => {
       setup();
       const response = await sendRequest();
       expect(response.status).toBe(201);
-    });
-
-    it('creates new draft if one does not exist', async () => {
-      setup();
-      sl.set('TextDraftsDao', {
-        ...TextDraftsDao,
-        getDraft: jest.fn().mockResolvedValue(null),
-      });
-
-      await sendRequest();
       expect(TextDraftsDao.createDraft).toHaveBeenCalledWith(
         userUuid,
         textUuid,
         payload.content,
         payload.notes
       );
+      expect(JSON.parse(response.text)).toEqual({ draftUuid });
     });
 
-    it('updates draft if it already exists', async () => {
+    it('returns 400 if draft already exists', async () => {
       setup();
-      await sendRequest();
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        getDraftByTextUuid: jest.fn().mockResolvedValue({ uuid: draftUuid }),
+      });
+      const response = await sendRequest();
 
-      expect(TextDraftsDao.getDraft).toHaveBeenCalledWith(userUuid, textUuid);
-      expect(TextDraftsDao.updateDraft).toHaveBeenCalledWith(
-        draftUuid,
-        payload.content,
-        payload.notes
-      );
+      expect(response.status).toBe(400);
     });
 
     it('returns 500 if create draft fails', async () => {
       setup();
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
-        getDraft: jest.fn().mockResolvedValue(null),
+        getDraftByTextUuid: jest.fn().mockResolvedValue(null),
         createDraft: jest.fn().mockRejectedValue('Create draft failed'),
       });
 
@@ -102,18 +92,113 @@ describe('Text drafts test', () => {
       setup();
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
-        getDraft: jest.fn().mockRejectedValue('Get draft failed'),
+        getDraftByTextUuid: jest.fn().mockRejectedValue('Get draft failed'),
       });
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
     });
+  });
 
-    it('returns 500 if update draft fails', async () => {
-      setup();
+  describe('PATCH /text_drafts/:draftUuid', () => {
+    const draftUuid = 'draft-uuid';
+    const PATH = `${API_PATH}/text_drafts/${draftUuid}`;
+
+    const draft = {
+      content: 'draft content',
+      notes: 'draft notes',
+      textUuid: 'text-uuid',
+    };
+
+    const TextDraftsDao = {
+      draftExists: jest.fn().mockResolvedValue(true),
+      updateDraft: jest.fn().mockResolvedValue(),
+    };
+
+    const CollectionTextUtils = {
+      canEditText: jest.fn().mockResolvedValue(true),
+    };
+
+    beforeEach(() => {
+      sl.set('TextDraftsDao', TextDraftsDao);
+      sl.set('CollectionTextUtils', CollectionTextUtils);
+    });
+
+    const sendRequest = (cookie = true) => {
+      const req = request(app).patch(PATH).send(draft);
+      if (cookie) {
+        return req.set('Cookie', 'jwt=token');
+      }
+      return req;
+    };
+
+    it('successfully updates draft', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(201);
+      expect(TextDraftsDao.updateDraft).toHaveBeenCalledWith(
+        draftUuid,
+        draft.content,
+        draft.notes
+      );
+    });
+
+    it("doesn't allow non-logged in user to update draft", async () => {
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 400 if draft does not exist', async () => {
       sl.set('TextDraftsDao', {
         ...TextDraftsDao,
-        updateDraft: jest.fn().mockRejectedValue('Update draft failed'),
+        draftExists: jest.fn().mockResolvedValue(false),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(400);
+      expect(TextDraftsDao.updateDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 400 if user does not have permission to edit draft', async () => {
+      sl.set('CollectionTextUtils', {
+        ...CollectionTextUtils,
+        canEditText: jest.fn().mockResolvedValue(false),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(400);
+      expect(TextDraftsDao.updateDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if checking for draft existence fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        draftExists: jest
+          .fn()
+          .mockRejectedValue('failed to check if draft exists'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(TextDraftsDao.updateDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if checking for draft edit permission fails', async () => {
+      sl.set('CollectionTextUtils', {
+        ...CollectionTextUtils,
+        canEditText: jest
+          .fn()
+          .mockRejectedValue('failed to check if user can edit text'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(TextDraftsDao.updateDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if updating draft fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        updateDraft: jest.fn().mockRejectedValue('failed to update drafts'),
       });
 
       const response = await sendRequest();
