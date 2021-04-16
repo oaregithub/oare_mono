@@ -90,27 +90,32 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
     try {
       tokens = tokenizeExplicitSpelling(spelling);
     } catch (e) {
-      const {
-        hash: {
-          loc: { last_column: errorIndex },
-        },
-      } = e;
+      let response: CheckSpellingResponse;
+      if (e.hash) {
+        const {
+          hash: {
+            loc: { last_column: errorIndex },
+          },
+        } = e;
 
-      let errorChar = spelling[errorIndex];
-      if (errorIndex === spelling.length) {
-        errorChar = 'EOF';
+        let errorChar = spelling[errorIndex];
+        if (errorIndex === spelling.length) {
+          errorChar = 'EOF';
+        }
+        response = {
+          errors: [`Unexpected token: ${errorChar}`],
+        };
+      } else {
+        response = {
+          errors: ['Invalid grammar'],
+        };
       }
-      const response: CheckSpellingResponse = {
-        errors: [`Unexpected token: ${errorChar}`],
-      };
       res.json(response);
       return;
     }
 
     const SignReadingDao = sl.get('SignReadingDao');
-    const signs = tokens.filter(
-      ({ tokenName: [tokenType] }) => tokenType === 'SIGN'
-    );
+    const signs = tokens.filter(({ tokenType }) => tokenType === 'SIGN');
     const signExistences = await Promise.all(
       signs.map(token => SignReadingDao.hasSign(normalizeSign(token.tokenText)))
     );
