@@ -1,51 +1,72 @@
-import { v4 } from 'uuid';
 import knex from '@/connection';
-import { FormSpelling } from '@oare/types';
-import Knex from 'knex';
-import TextDiscourseDao from '../TextDiscourseDao';
-
-export interface PersonHeading {
-  name: string;
-  relation: string;
-  relationName: string;
-  relationUuid: string;
-  label: string;
-}
+import { PersonDisplay } from '@oare/types';
+import utils from '../utils';
 
 class PersonDao {
-  async getPersonHeading(personUuid: string): Promise<PersonHeading> {
-    const name = await knex('dictionary_word')
-      .select('word')
-      .where(
-        'uuid',
-        '=',
-        knex('person').select('name_uuid').where('uuid', personUuid)
-      );
-    const relation = await knex('person')
-      .select('relation')
-      .where('uuid', personUuid);
-    const relationName = await knex('dictionary_word')
-      .select('word')
-      .where(
-        'uuid',
-        '=',
-        knex('person').select('relation_name_uuid').where('uuid', personUuid)
-      );
-    const relationUuid = await knex('item_properties').select();
-    const label = await knex('person')
-      .select('label')
-      .where('uuid', personUuid);
-    // const personHeading: PersonHeading = // assign each of the above to the personHeading object..
+  public readonly PERSON_TYPE = 'person';
+  public readonly CURRENT_PERSON_TYPE = 'current person';
 
-    const personHeading = {
-      name: '',
-      relation: '',
-      relationName: '',
-      relationUuid: '',
-      label: 'string',
-    } as PersonHeading;
+  async getAllPeople(letter: string): Promise<PersonDisplay[]> {
+    const letters = letter.split('/');
 
-    return personHeading;
+    const orWhereRawLetters = utils.getOrWhereForLetters(
+      letters,
+      'dictionary_word_person.word'
+    );
+
+    const people = await knex('person')
+      .select(
+        'dictionary_word_person.uuid AS uuid',
+        knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
+        'dictionary_word_person.word AS person',
+        'person.relation',
+        'dictionary_word_relation_person.word AS relationPerson',
+        'dictionary_word_relation_person.uuid AS relationPersonUuid',
+        'person.label',
+        'item_properties.level',
+        'value.name AS topValueRole',
+        'variable.name AS topVariableRole',
+        'item_properties.object_uuid AS roleObjUuid',
+        'obj_dictionary_word.word AS roleObjPerson'
+      )
+      .leftJoin(
+        'dictionary_word AS dictionary_word_person',
+        'dictionary_word_person.uuid',
+        'person.name_uuid'
+      )
+      .leftJoin(
+        'dictionary_word AS dictionary_word_relation_person',
+        'dictionary_word_relation_person.uuid',
+        'person.relation_name_uuid'
+      )
+      .leftJoin('item_properties', function () {
+        this.on('item_properties.reference_uuid', '=', 'person.uuid').andOn(
+          knex.raw(
+            'item_properties.level = (SELECT MAX(ip.level) FROM item_properties AS ip WHERE ip.reference_uuid = person.uuid)'
+          )
+        );
+      })
+      .leftJoin('value', 'value.uuid', 'item_properties.value_uuid')
+      .leftJoin('variable', 'variable.uuid', 'item_properties.variable_uuid')
+      .leftJoin(
+        'person AS obj_person',
+        'obj_person.uuid',
+        'item_properties.object_uuid'
+      )
+      .leftJoin(
+        'dictionary_word AS obj_dictionary_word',
+        'obj_dictionary_word.uuid',
+        'obj_person.name_uuid'
+      )
+      .where('person.type', this.PERSON_TYPE)
+      .andWhereRaw(orWhereRawLetters);
+
+    return people;
+  }
+
+  // Stub for now
+  async getPersonReferences(personUuid: string): Promise<string[]> {
+    return [];
   }
 }
 
@@ -63,3 +84,5 @@ class PersonDao {
 //         .whereIn('uuid', knex('item_properties').select('reference_uuid').where('object_uuid', personUuid));
 //     return refCount;
 //     }
+
+export default new PersonDao();
