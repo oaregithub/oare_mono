@@ -83,7 +83,6 @@ router.route('/search/count').get(async (req, res, next) => {
     } = (req.query as unknown) as SearchTextsCountPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
-
     const user = req.user || null;
 
     const totalRows = await TextEpigraphyDao.searchTextsTotal({
@@ -111,7 +110,6 @@ router.route('/search').get(async (req, res, next) => {
     } = (req.query as unknown) as SearchTextsPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
-
     const user = req.user || null;
 
     const textMatches = await TextEpigraphyDao.searchTexts({
