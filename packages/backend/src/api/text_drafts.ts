@@ -55,6 +55,7 @@ router
       const TextDraftsDao = sl.get('TextDraftsDao');
       const { draftUuid } = req.params;
       const userUuid = req.user!.uuid;
+      const { isAdmin } = req.user!;
 
       const draftExists = await TextDraftsDao.draftExists(draftUuid);
       if (!draftExists) {
@@ -66,7 +67,7 @@ router
         userUuid,
         draftUuid
       );
-      if (!userOwnsDraft) {
+      if (!isAdmin && !userOwnsDraft) {
         next(
           new HttpBadRequest(
             `The logged-in user does not own draft with UUID ${draftUuid}`
