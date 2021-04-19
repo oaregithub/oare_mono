@@ -50,7 +50,7 @@ describe('DashboardDraftsView', () => {
     mount(DashboardDrafts, {
       vuetify,
       localVue,
-      stubs: ['router-link'],
+      stubs: ['router-link', 'code-diff'],
     });
 
   it('retrieves drafts on load', async () => {
