@@ -17,33 +17,39 @@ export function getSequentialCharacterQuery(
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
   let query = baseQuery || knex('text_epigraphy');
-  cooccurrences.forEach((occurrence, idx) => {
+  cooccurrences.forEach((occurrence, coocIndex) => {
     const charSet = occurrence.uuids;
-    charSet.forEach((char, index) => {
-      if (idx < 1 && index < 1) {
+    charSet.forEach((char, charIndex) => {
+      if (coocIndex < 1 && charIndex < 1) {
         return;
       }
 
-      query = query.join(`text_epigraphy AS t${idx}${index}`, function () {
-        this.on(`t${idx}${index}.text_uuid`, 'text_epigraphy.text_uuid')
-          .andOnIn(`t${idx}${index}.reading_uuid`, char)
-          .andOn(
-            knex.raw(
-              `t${idx}${index}.char_on_tablet=${
-                idx === 0 ? 'text_epigraphy' : `t${idx}0`
-              }.char_on_tablet + ${index}`
-            )
+      query = query.join(
+        `text_epigraphy AS t${coocIndex}${charIndex}`,
+        function () {
+          this.on(
+            `t${coocIndex}${charIndex}.text_uuid`,
+            'text_epigraphy.text_uuid'
           )
-          .andOn(
-            knex.raw(
-              `t${idx}${index}.line=${
-                idx === 0 ? 'text_epigraphy' : `t${idx}0`
-              }.line`
+            .andOnIn(`t${coocIndex}${charIndex}.reading_uuid`, char)
+            .andOn(
+              knex.raw(
+                `t${coocIndex}${charIndex}.char_on_tablet=${
+                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}0`
+                }.char_on_tablet + ${charIndex}`
+              )
             )
-          );
-      });
+            .andOn(
+              knex.raw(
+                `t${coocIndex}${charIndex}.line=${
+                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}0`
+                }.line`
+              )
+            );
+        }
+      );
     });
-    if (idx < 1 && cooccurrences[0].uuids.length > 0) {
+    if (coocIndex < 1 && cooccurrences[0].uuids.length > 0) {
       query = query.whereIn(
         'text_epigraphy.reading_uuid',
         cooccurrences[0].uuids[0]
@@ -144,11 +150,11 @@ export async function getNotOccurrenceTexts(
   characters: SearchCooccurrence[]
 ): Promise<string[]> {
   const notCharacters = characters.filter(char => char.type === 'NOT');
-  const notTexts: Array<{ uuid: string }> =
+  const notTexts =
     notCharacters.length > 0
-      ? await getSequentialCharacterQuery(notCharacters).select(
-          'text_epigraphy.text_uuid AS uuid'
+      ? await getSequentialCharacterQuery(notCharacters).pluck(
+          'text_epigraphy.text_uuid'
         )
       : [];
-  return notTexts.map(text => text.uuid);
+  return notTexts;
 }

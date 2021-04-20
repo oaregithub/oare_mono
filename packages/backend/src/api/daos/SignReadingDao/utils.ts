@@ -4,7 +4,7 @@ import { SearchCooccurrence } from '@oare/types';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
 export async function prepareIndividualSearchCharacters(
-  charsPayload: string | undefined
+  charsPayload?: string
 ): Promise<string[][]> {
   const SignReadingDao = sl.get('SignReadingDao');
 
@@ -18,7 +18,7 @@ export async function prepareIndividualSearchCharacters(
 }
 
 export async function prepareCharactersForSearch(
-  charsPayload: string | undefined
+  charsPayload?: string
 ): Promise<SearchCooccurrence[]> {
   const cooccurrences = charsPayload
     ? charsPayload.split(';').map(phrase => phrase.trim())
