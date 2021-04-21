@@ -23,23 +23,11 @@ class DictionarySpellingDao {
   }
 
   async getFormSpellings(formUuid: string): Promise<FormSpelling[]> {
-    interface FormSpellingRow {
-      uuid: string;
-      spelling: string;
-    }
-
-    const rows: FormSpellingRow[] = await knex('dictionary_spelling')
+    const rows: FormSpelling[] = await knex('dictionary_spelling')
       .select('uuid', 'explicit_spelling AS spelling')
       .where('reference_uuid', formUuid);
 
-    const spellingOccurrences = await Promise.all(
-      rows.map(r => TextDiscourseDao.getTotalSpellingTexts(r.uuid))
-    );
-
-    return rows.map((r, i) => ({
-      ...r,
-      totalOccurrences: spellingOccurrences[i],
-    }));
+    return rows;
   }
 
   async spellingExistsOnForm(

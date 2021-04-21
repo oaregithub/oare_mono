@@ -1009,16 +1009,13 @@ describe('dictionary api test', () => {
   describe('GET /dictionary/spellings/:uuid/texts', () => {
     const spellingUuid = 'spelling-uuid';
     const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/texts`;
-    const spelllingOccurrences = [
+    const mockResponse = [
       {
         textUuid: 'text-uuid',
         textName: 'text-Name',
       },
     ];
-    const mockResponse = {
-      totalOccurrences: 1,
-      rows: spelllingOccurrences,
-    };
+
     const TextDiscourseDao = {
       getSpellingTextOccurrences: jest.fn().mockResolvedValue(mockResponse),
     };
@@ -1045,7 +1042,7 @@ describe('dictionary api test', () => {
     it('gets epigraphic units', async () => {
       await sendRequest();
       expect(TextEpigraphyDao.getEpigraphicUnits).toHaveBeenCalledTimes(
-        spelllingOccurrences.length
+        mockResponse.length
       );
     });
 
