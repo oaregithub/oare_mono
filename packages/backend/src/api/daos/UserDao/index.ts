@@ -1,4 +1,3 @@
-import { v4 } from 'uuid';
 import { GetUserResponse, User } from '@oare/types';
 import knex from '@/connection';
 import { Transaction } from 'knex';
@@ -60,12 +59,14 @@ class UserDao {
   }
 
   async createUser({
+    uuid,
     firstName,
     lastName,
     email,
     passwordHash,
     isAdmin,
   }: {
+    uuid: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -73,7 +74,7 @@ class UserDao {
     isAdmin: boolean;
   }): Promise<void> {
     await knex('user').insert({
-      uuid: v4(),
+      uuid,
       first_name: firstName,
       last_name: lastName,
       full_name: `${firstName} ${lastName}`,
