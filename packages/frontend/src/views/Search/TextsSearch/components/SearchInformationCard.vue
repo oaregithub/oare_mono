@@ -6,7 +6,13 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      Brute character sequence search supports various search features:
+      <span
+        >At present the Transliteration search is a brute character sequence
+        search. It does not respect word boundaries. This will be upgraded
+        soon.</span
+      >
+      <br />
+      <span>The transliteration search supports the following features:</span>
       <ol>
         <li>
           Use <b>C</b> to represent all Assyrian consonants (e.g., 'a-Ca' will
@@ -30,9 +36,18 @@
           If preferred, use cdli style conventions (e.g., 's,u2-ba1-tam4' will
           search for 'ṣú-ba-tam₄').
         </li>
+        Thus, '&amp;[bdt]aC' would form a valid search that would return results
+        for 'bar', 'dan', 'dam', 'tám', etc.
+        <li>
+          Use <b>;</b> to enter mulitple strings for query in the same same text
+          (e.g., a-na; mì-ma will search for co-occurences of the two strings in
+          the same text).
+        </li>
+        <li>
+          Use <b>!</b> ahead of a string to exclude texts which have that string
+          (e.g., a-na; !mì-ma will search for texts with a-na but NOT mì-ma).
+        </li>
       </ol>
-      Thus, '&amp;[bdt]aC' would form a valid search that would return results
-      for 'bar', 'dan', 'dam', 'tám', etc.
     </v-card>
   </v-menu>
 </template>
