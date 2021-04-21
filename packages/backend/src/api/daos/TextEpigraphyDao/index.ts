@@ -1,10 +1,11 @@
 import _ from 'lodash';
-import { EpigraphicUnit, Pagination } from '@oare/types';
+import { EpigraphicUnit, Pagination, SearchCooccurrence } from '@oare/types';
 import knex from '@/connection';
 import {
   getSearchQuery,
   convertEpigraphicUnitRows,
   getSequentialCharacterQuery,
+  getNotOccurrenceTexts,
 } from './utils';
 import TextGroupDao from '../TextGroupDao';
 import CollectionGroupDao from '../CollectionGroupDao';
@@ -27,7 +28,7 @@ export interface TextUuidWithLines {
 }
 
 export interface SearchTextArgs {
-  characters: string[][];
+  characters: SearchCooccurrence[];
   title: string;
   userUuid: string | null;
   pagination: Pagination;
@@ -95,6 +96,7 @@ class TextEpigraphyDao {
     const {
       blacklist: collectionBlacklist,
     } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const notUuids = await getNotOccurrenceTexts(characters);
 
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
@@ -104,6 +106,7 @@ class TextEpigraphyDao {
       collectionBlacklist
     )
       .select('text_epigraphy.text_uuid AS uuid')
+      .whereNotIn('text_epigraphy.text_uuid', notUuids)
       .orderBy('text.name')
       .groupBy('text.name')
       .limit(pagination.limit)
@@ -114,15 +117,23 @@ class TextEpigraphyDao {
 
   private async getMatchingLines(
     textUuid: string,
-    characters: string[][]
+    rawCharacters: SearchCooccurrence[]
   ): Promise<number[]> {
-    const query = getSequentialCharacterQuery(characters);
-    const rows: Array<{ line: number }> = await query
-      .distinct('text_epigraphy.line')
-      .orderBy('text_epigraphy.line')
-      .where('text_epigraphy.text_uuid', textUuid);
+    const characters = rawCharacters.filter(char => char.type === 'AND');
+    const rows: Array<{ line: number }> = (
+      await Promise.all(
+        characters.map((_char, index) => {
+          const query = getSequentialCharacterQuery(characters);
+          return query
+            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
+            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
+            .where('text_epigraphy.text_uuid', textUuid);
+        })
+      )
+    ).flat();
 
-    return rows.map(({ line }) => line);
+    const lines = rows.map(({ line }) => line).sort((a, b) => a - b);
+    return [...new Set(lines)];
   }
 
   async searchTexts(args: SearchTextArgs): Promise<TextUuidWithLines[]> {
@@ -155,6 +166,7 @@ class TextEpigraphyDao {
     const {
       blacklist: collectionBlacklist,
     } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const notUuids = await getNotOccurrenceTexts(characters);
 
     const totalRows: number = (
       await getSearchQuery(
@@ -165,6 +177,7 @@ class TextEpigraphyDao {
         collectionBlacklist
       )
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
+        .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
     ).count;
 
