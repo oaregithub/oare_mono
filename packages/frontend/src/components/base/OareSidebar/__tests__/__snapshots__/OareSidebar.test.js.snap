@@ -8,6 +8,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
   <div class="d-flex flex-column test-text-input">
     <div class="d-flex">
       <h4>Text</h4>
+      <!---->
       <div role="dialog" class="v-dialog__container">
         <!---->
       </div>
@@ -31,6 +32,9 @@ exports[`OareSidebar test matches snapshot 1`] = `
   <div class="d-flex flex-column mt-n3 test-transliteration-input">
     <div class="d-flex">
       <h4>Transliteration</h4>
+      <div class="v-menu"><button type="button" role="button" aria-haspopup="true" aria-expanded="false" class="v-icon notranslate mb-1 ml-1 v-icon--link mdi mdi-information-outline theme--light"></button>
+        <!---->
+      </div>
       <div role="dialog" class="v-dialog__container">
         <!---->
       </div>
@@ -41,7 +45,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-12" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-15" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -54,6 +58,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
   <div class="d-flex flex-column mt-n3 test-words-input">
     <div class="d-flex">
       <h4>Words</h4>
+      <!---->
       <div role="dialog" class="v-dialog__container">
         <!---->
       </div>
@@ -64,7 +69,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-17" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-20" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">

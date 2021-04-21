@@ -49,6 +49,38 @@ router
     } catch (err) {
       next(new HttpInternalError(err));
     }
+  })
+  .delete(authenticatedRoute, async (req, res, next) => {
+    try {
+      const TextDraftsDao = sl.get('TextDraftsDao');
+      const { draftUuid } = req.params;
+      const userUuid = req.user!.uuid;
+      const { isAdmin } = req.user!;
+
+      const draftExists = await TextDraftsDao.draftExists(draftUuid);
+      if (!draftExists) {
+        next(new HttpBadRequest(`There is no draft with UUID ${draftUuid}`));
+        return;
+      }
+
+      const userOwnsDraft = await TextDraftsDao.userOwnsDraft(
+        userUuid,
+        draftUuid
+      );
+      if (!isAdmin && !userOwnsDraft) {
+        next(
+          new HttpBadRequest(
+            `The logged-in user does not own draft with UUID ${draftUuid}`
+          )
+        );
+        return;
+      }
+
+      await TextDraftsDao.deleteDraft(draftUuid);
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
   });
 
 router
