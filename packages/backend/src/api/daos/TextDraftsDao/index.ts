@@ -34,6 +34,20 @@ class TextDraftsDao {
     return !!row;
   }
 
+  async userOwnsDraft(userUuid: string, draftUuid: string): Promise<boolean> {
+    const row = await knex('text_drafts')
+      .select()
+      .where('user_uuid', userUuid)
+      .andWhere('uuid', draftUuid)
+      .first();
+
+    return !!row;
+  }
+
+  async deleteDraft(draftUuid: string): Promise<void> {
+    await knex('text_drafts').del().where('uuid', draftUuid);
+  }
+
   async getDraftByUuid(draftUuid: string): Promise<TextDraft> {
     const exists = await this.draftExists(draftUuid);
     if (!exists) {
