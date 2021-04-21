@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import { Response } from 'express';
 import { v4 } from 'uuid';
 import RefreshTokenDao from '@/api/daos/RefreshTokenDao';
+import firebase from '@/firebase';
+import { User } from '@oare/types';
 
 export function hashPassword(password: string, salt?: string): string {
   const pSalt = salt || cryptoRandomString({ length: 8 });
@@ -38,23 +40,39 @@ export function createJwt(email: string, expiresIn: number) {
   return token;
 }
 
-export async function sendJwtCookie(ip: string, res: Response, email: string) {
+export async function sendJwtCookie(
+  ip: string,
+  res: Response,
+  user: Pick<User, 'email' | 'uuid'>
+) {
   const expirationSeconds = 15 * 60;
-  const token = createJwt(email, expirationSeconds);
+  const token = createJwt(user.email, expirationSeconds);
   const refreshToken = v4();
   const refreshExpire = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-  await RefreshTokenDao.insertToken(refreshToken, refreshExpire, email, ip);
+  await RefreshTokenDao.insertToken(
+    refreshToken,
+    refreshExpire,
+    user.email,
+    ip
+  );
+  const customToken = await firebase.auth().createCustomToken(user.uuid);
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== 'development',
+  };
 
   return res
     .cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
+      ...cookieOptions,
       expires: refreshExpire,
     })
     .cookie('jwt', token, {
-      secure: process.env.NODE_ENV !== 'development',
+      ...cookieOptions,
       expires: new Date(Date.now() + expirationSeconds * 1000),
-      httpOnly: true,
+    })
+    .cookie('fbJwt', customToken, {
+      ...cookieOptions,
+      expires: new Date(Date.now() + 3600 * 1000),
     });
 }
