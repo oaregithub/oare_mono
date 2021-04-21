@@ -127,4 +127,22 @@ describe('SpellingDisplay test', () => {
     expect(wrapper.find('.test-pencil').exists()).toBe(false);
     expect(wrapper.find('.test-close').exists()).toBe(false);
   });
+
+  it('retrieves total spelling occurrences on load', async () => {
+    createWrapper();
+    expect(mockServer.getSpellingTotalOccurrences).toHaveBeenCalled();
+  });
+
+  it('displays error on failed total occurrences retreival', async () => {
+    createWrapper({
+      server: {
+        ...mockServer,
+        getSpellingTotalOccurrences: jest
+          .fn()
+          .mockRejectedValue('failed to load total occurrences'),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
 });

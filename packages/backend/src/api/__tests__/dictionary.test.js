@@ -1006,6 +1006,40 @@ describe('dictionary api test', () => {
     });
   });
 
+  describe('GET /dictionary/spellings/:uuid/occurrences', () => {
+    const spellingUuid = 'spelling-uuid';
+    const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/occurrences`;
+
+    const TextDiscourseDao = {
+      getTotalSpellingTexts: jest.fn().mockResolvedValue(12),
+    };
+
+    const textOccurrencesSetup = () => {
+      sl.set('TextDiscourseDao', TextDiscourseDao);
+    };
+
+    beforeEach(textOccurrencesSetup);
+
+    const sendRequest = () => request(app).get(PATH);
+
+    it('gets total spelling occurrences', async () => {
+      const response = await sendRequest();
+      expect(response.text).toBe('12');
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 500 on failed total occurrences retreival', async () => {
+      sl.set('TextDiscourseDao', {
+        ...TextDiscourseDao,
+        getTotalSpellingTexts: jest
+          .fn()
+          .mockRejectedValue('failed to retrieve total spelling occurrences'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
   describe('GET /dictionary/spellings/:uuid/texts', () => {
     const spellingUuid = 'spelling-uuid';
     const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/texts`;
