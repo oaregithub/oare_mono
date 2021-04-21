@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import AWS from 'aws-sdk';
 
 export function initializeFirebase(cb: (err?: any) => void) {
-  if (process.env.NODE_ENV === 'production') {
+  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     const s3 = new AWS.S3();
     s3.getObject(
       {
