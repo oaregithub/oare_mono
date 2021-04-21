@@ -48,6 +48,9 @@
           (e.g., a-na; !mì-ma will search for texts with a-na but NOT mì-ma).
         </li>
       </ol>
+      <br />
+      <b>NOTE:</b> Any of these search features may increase time for search
+      results somewhat, and combinations of multiple of these features moreso.
     </v-card>
   </v-menu>
 </template>
