@@ -1,6 +1,31 @@
 <template>
   <OareContentView title="Drafts">
-    <v-data-table :headers="headers" :items="drafts" :loading="draftsLoading">
+    <v-menu>
+      <template v-slot:activator="{ on }">
+        <v-btn
+          v-on="on"
+          color="info"
+          class="test-actions"
+          :disabled="selectedDrafts.length < 1"
+          >Actions</v-btn
+        >
+      </template>
+      <v-list>
+        <v-list-item @click="confirmDeleteDialog = true">
+          <v-list-item-title class="test-delete-draft"
+            >Delete draft(s)</v-list-item-title
+          >
+        </v-list-item>
+      </v-list>
+    </v-menu>
+    <v-data-table
+      :headers="headers"
+      :items="drafts"
+      :loading="draftsLoading"
+      show-select
+      item-key="uuid"
+      v-model="selectedDrafts"
+    >
       <template #[`item.textName`]="{ item }">
         <router-link
           :to="{
@@ -14,11 +39,28 @@
         {{ dateFormat(item.updatedAt) }}
       </template>
     </v-data-table>
+
+    <OareDialog
+      v-model="confirmDeleteDialog"
+      title="Confirm Delete Drafts"
+      cancelText="No, don't delete"
+      submitText="Yes, delete"
+      @submit="deleteDrafts"
+      :submitLoading="deleteDraftsLoading"
+    >
+      Are you sure you want to delete your draft(s) on the following text(s)?
+      All edits you have made will be discarded. This action is not reversible.
+      <ul>
+        <li v-for="draft in selectedDrafts" :key="draft.uuid">
+          {{ draft.textName }}
+        </li>
+      </ul>
+    </OareDialog>
   </OareContentView>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import { TextDraft } from '@oare/types';
 import moment from 'moment';
 import sl from '@/serviceLocator';
@@ -27,8 +69,12 @@ export default defineComponent({
   name: 'DashboardDrafts',
 
   setup() {
-    const draftsLoading: Ref<boolean> = ref(false);
-    const drafts: Ref<TextDraft[]> = ref([]);
+    const draftsLoading = ref(false);
+    const drafts = ref<TextDraft[]>([]);
+    const selectedDrafts = ref<TextDraft[]>([]);
+    const confirmDeleteDialog = ref(false);
+    const deleteDraftsLoading = ref(false);
+
     const actions = sl.get('globalActions');
     const server = sl.get('serverProxy');
     const store = sl.get('store');
@@ -65,11 +111,38 @@ export default defineComponent({
       }
     });
 
+    const deleteDrafts = async () => {
+      try {
+        deleteDraftsLoading.value = true;
+        await Promise.all(
+          selectedDrafts.value.map(({ uuid }) => server.deleteDraft(uuid))
+        );
+
+        drafts.value = [
+          ...drafts.value.filter(
+            ({ uuid }) =>
+              !selectedDrafts.value.map(({ uuid }) => uuid).includes(uuid)
+          ),
+        ];
+        selectedDrafts.value = [];
+        actions.showSnackbar('Drafts successfully deleted');
+      } catch {
+        actions.showErrorSnackbar('Failed to delete drafts');
+      } finally {
+        deleteDraftsLoading.value = false;
+        confirmDeleteDialog.value = false;
+      }
+    };
+
     return {
       draftsLoading,
       drafts,
       dateFormat,
       headers,
+      selectedDrafts,
+      confirmDeleteDialog,
+      deleteDrafts,
+      deleteDraftsLoading,
     };
   },
 });
