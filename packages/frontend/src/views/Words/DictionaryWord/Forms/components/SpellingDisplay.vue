@@ -22,9 +22,9 @@
     </template>
 
     &nbsp;
-    <span v-if="spelling.totalOccurrences > 0">
+    <span>
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
-        spelling.totalOccurrences
+        totalOccurrences > 0 ? totalOccurrences : 'Loading...'
       }}</a
       >)</span
     >
@@ -77,17 +77,15 @@ import {
   PropType,
   watch,
   inject,
-  InjectionKey,
+  onMounted,
 } from '@vue/composition-api';
 import {
   FormSpelling,
   DictionaryForm,
   SearchDiscourseSpellingRow,
-  UtilListDisplay,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
-import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
 import { SendUtilList } from '../../index.vue';
 import SpellingDialog from './SpellingDialog.vue';
@@ -171,7 +169,7 @@ export default defineComponent({
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        const { totalResults, rows } = await server.getSpellingTextOccurrences(
+        spellingOccurrences.value = await server.getSpellingTextOccurrences(
           props.spelling.uuid,
           {
             page: tableOptions.value.page - 1,
@@ -179,14 +177,24 @@ export default defineComponent({
             ...(search.value ? { filter: search.value } : null),
           }
         );
-        spellingOccurrences.value = rows;
-        totalOccurrences.value = totalResults;
       } catch {
         actions.showErrorSnackbar('Failed to load spelling occurrences');
       } finally {
         referencesLoading.value = false;
       }
     };
+
+    onMounted(async () => {
+      try {
+        totalOccurrences.value = await server.getSpellingTotalOccurrences(
+          props.spelling.uuid
+        );
+      } catch {
+        actions.showErrorSnackbar(
+          'Error loading spelling occurrences. Please try again.'
+        );
+      }
+    });
 
     const openUtilList = () => {
       utilList &&

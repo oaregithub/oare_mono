@@ -1,9 +1,12 @@
 import { TextDraft, UuidRow, DraftQueryOptions } from '@oare/types';
 import { v4 } from 'uuid';
 import knex from '@/connection';
+import { createTabletRenderer } from '@oare/oare';
 import CollectionTextUtils from '../CollectionTextUtils';
+import TextEpigraphyDao from '../TextEpigraphyDao';
 
-export interface TextDraftRow extends Omit<TextDraft, 'content'> {
+export interface TextDraftRow
+  extends Omit<TextDraft, 'content' | 'originalText'> {
   content: string;
 }
 
@@ -69,9 +72,17 @@ class TextDraftsDao {
       .where('text_drafts.uuid', draftUuid)
       .first();
 
+    const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(
+      row.textUuid
+    );
+    const originalText = createTabletRenderer(epigraphicUnits, {
+      lineNumbers: true,
+    }).tabletReading();
+
     return {
       ...row,
       content: JSON.parse(row.content),
+      originalText,
     };
   }
 
@@ -83,13 +94,23 @@ class TextDraftsDao {
       .first()
       .andWhere('text_uuid', textUuid);
 
-    return draft
-      ? {
-          ...draft,
-          textName: draft.textName.trim(),
-          content: JSON.parse(draft.content),
-        }
-      : null;
+    if (!draft) {
+      return null;
+    }
+
+    const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(
+      draft.textUuid
+    );
+    const originalText = createTabletRenderer(epigraphicUnits, {
+      lineNumbers: true,
+    }).tabletReading();
+
+    return {
+      ...draft,
+      originalText,
+      textName: draft.textName.trim(),
+      content: JSON.parse(draft.content),
+    };
   }
 
   async createDraft(

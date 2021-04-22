@@ -2,8 +2,7 @@ export default {
   us: {
     searchTexts: 'Search Texts',
     collectionDescription: 'Comma separated list of collection names to search',
-    characterSequenceDescription:
-      'Brute character sequence search (ignores word boundaries & character type)',
+    characterSequenceDescription: 'Transliteration Search',
     collectionNames: 'Collection Names',
     characterSequences: 'Character Sequences',
     searchBtnText: 'Search',
