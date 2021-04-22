@@ -17,7 +17,7 @@ router.route('/people/:letter').get(async (req, res, next) => {
     const spellingUuids = await Promise.all(
       people.map(person =>
         PersonDao.getSpellingUuidsByPerson(
-          'b43af306-157d-492f-bdac-60e37bcac5dd'
+          person.uuid //personNameUuid
         )
       )
     );
