@@ -25,7 +25,7 @@ router.route('/login').post(async (req, res, next) => {
       next(new HttpBadRequest('Invalid credentials'));
       return;
     }
-    const cookieRes = await security.sendJwtCookie(req.ip, res, user);
+    const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
     cookieRes.json(user);
   } catch (err) {
     next(new HttpInternalError(err));

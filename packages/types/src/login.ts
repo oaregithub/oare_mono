@@ -24,3 +24,8 @@ export interface ResetPasswordPayload {
   resetUuid: string;
   newPassword: string;
 }
+
+export interface RegisterResponse {
+  user: User;
+  firebaseToken: string;
+}

@@ -1,6 +1,6 @@
 import express from 'express';
 import { v4 } from 'uuid';
-import { RegisterPayload } from '@oare/types';
+import { RegisterPayload, RegisterResponse } from '@oare/types';
 import * as security from '@/security';
 import firebase from '@/firebase';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
@@ -47,9 +47,15 @@ router.route('/register').post(async (req, res, next) => {
     }
     req.user = user;
 
-    const cookieRes = await security.sendJwtCookie(req.ip, res, user);
+    const firebaseToken = await security.getFirebaseToken(user.uuid);
+    const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
 
-    cookieRes.status(201).json(user);
+    const response: RegisterResponse = {
+      user,
+      firebaseToken,
+    };
+
+    cookieRes.status(201).json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

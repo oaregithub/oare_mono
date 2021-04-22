@@ -16,6 +16,7 @@ import vuetify from './plugins/vuetify';
 import loadBases from './loadBases';
 import i18n from './i18n';
 import 'flag-icon-css/css/flag-icon.css';
+import firebase from './firebase';
 
 sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);
@@ -82,9 +83,16 @@ const authFirstGuard: NavigationGuard = (to, _from, next) => {
 router.beforeEach(authFirstGuard);
 router.beforeEach(adminGuard);
 
-new Vue({
-  router,
-  vuetify,
-  i18n,
-  render: h => h(App),
-}).$mount('#app');
+let app: Vue;
+
+firebase.auth().onAuthStateChanged(user => {
+  console.log('user is', user);
+  if (!app) {
+    app = new Vue({
+      router,
+      vuetify,
+      i18n,
+      render: h => h(App),
+    }).$mount('#app');
+  }
+});
