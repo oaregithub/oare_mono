@@ -41,7 +41,7 @@ router.route('/refresh_token').get(async (req, res, next) => {
       return;
     }
 
-    (await sendJwtCookie(token.ipAddress, res, user)).json(user).end();
+    (await sendJwtCookie(token.ipAddress, res, user.email)).json(user).end();
   } catch (err) {
     next(new HttpInternalError(err));
   }

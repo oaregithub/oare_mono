@@ -40,23 +40,17 @@ export function createJwt(email: string, expiresIn: number) {
   return token;
 }
 
-export async function sendJwtCookie(
-  ip: string,
-  res: Response,
-  user: Pick<User, 'email' | 'uuid'>
-) {
+export async function getFirebaseToken(userUuid: string): Promise<string> {
+  return firebase.auth().createCustomToken(userUuid);
+}
+
+export async function sendJwtCookie(ip: string, res: Response, email: string) {
   const expirationSeconds = 15 * 60;
-  const token = createJwt(user.email, expirationSeconds);
+  const token = createJwt(email, expirationSeconds);
   const refreshToken = v4();
   const refreshExpire = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-  await RefreshTokenDao.insertToken(
-    refreshToken,
-    refreshExpire,
-    user.email,
-    ip
-  );
-  const customToken = await firebase.auth().createCustomToken(user.uuid);
+  await RefreshTokenDao.insertToken(refreshToken, refreshExpire, email, ip);
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV !== 'development',
@@ -70,9 +64,5 @@ export async function sendJwtCookie(
     .cookie('jwt', token, {
       ...cookieOptions,
       expires: new Date(Date.now() + expirationSeconds * 1000),
-    })
-    .cookie('fbJwt', customToken, {
-      ...cookieOptions,
-      expires: new Date(Date.now() + 3600 * 1000),
     });
 }
