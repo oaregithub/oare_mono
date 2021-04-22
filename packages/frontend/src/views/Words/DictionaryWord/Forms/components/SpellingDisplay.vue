@@ -22,9 +22,9 @@
     </template>
 
     &nbsp;
-    <span>
+    <span v-if="totalOccurrences > 0 || totalOccurrencesLoading">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
-        totalOccurrences > 0 ? totalOccurrences : 'Loading...'
+        totalOccurrencesLoading ? 'Loading...' : totalOccurrences
       }}</a
       >)</span
     >
@@ -155,6 +155,7 @@ export default defineComponent({
       Pick<SearchDiscourseSpellingRow, 'textName' | 'textUuid'>[]
     >([]);
     const totalOccurrences = ref(0);
+    const totalOccurrencesLoading = ref(false);
 
     const canEdit = computed(() =>
       store.getters.permissions
@@ -186,6 +187,7 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
+        totalOccurrencesLoading.value = true;
         totalOccurrences.value = await server.getSpellingTotalOccurrences(
           props.spelling.uuid
         );
@@ -193,6 +195,8 @@ export default defineComponent({
         actions.showErrorSnackbar(
           'Error loading spelling occurrences. Please try again.'
         );
+      } finally {
+        totalOccurrencesLoading.value = false;
       }
     });
 
@@ -231,6 +235,7 @@ export default defineComponent({
       spellingOccurrences,
       tableOptions,
       totalOccurrences,
+      totalOccurrencesLoading,
     };
   },
 });
