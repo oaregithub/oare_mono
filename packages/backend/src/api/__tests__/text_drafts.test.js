@@ -350,7 +350,6 @@ describe('Text drafts test', () => {
         drafts: [
           {
             ...draft,
-            originalText: '',
             user,
           },
         ],

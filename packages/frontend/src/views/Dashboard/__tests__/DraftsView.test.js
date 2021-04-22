@@ -50,7 +50,7 @@ describe('DashboardDraftsView', () => {
     mount(DashboardDrafts, {
       vuetify,
       localVue,
-      stubs: ['router-link'],
+      stubs: ['router-link', 'code-diff'],
     });
 
   it('retrieves drafts on load', async () => {
@@ -77,6 +77,14 @@ describe('DashboardDraftsView', () => {
     createWrapper();
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('opens diff dialog when clicking on View Content', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await wrapper.get('.test-view-content').trigger('click');
+    expect(wrapper.find('.test-content-dialog').exists()).toBe(true);
   });
 
   it('successfully deletes drafts', async () => {

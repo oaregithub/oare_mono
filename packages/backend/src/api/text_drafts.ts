@@ -8,7 +8,6 @@ import {
   TextDraftsResponse,
   CreateDraftResponse,
 } from '@oare/types';
-import { createTabletRenderer } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -102,6 +101,7 @@ router
       const draftUuids = await TextDraftsDao.getAllDraftUuidsByUser(
         userUuidParam
       );
+
       const drafts: TextDraft[] = await Promise.all(
         draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
       );
@@ -147,21 +147,9 @@ router
         drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
       );
 
-      const epigraphicUnitsPerText = await Promise.all(
-        drafts.map(({ textUuid }) =>
-          TextEpigraphyDao.getEpigraphicUnits(textUuid)
-        )
-      );
-
-      const originalTexts = epigraphicUnitsPerText.map(units => {
-        const renderer = createTabletRenderer(units, { lineNumbers: true });
-        return renderer.tabletReading();
-      });
-
       const draftsWithUser: TextDraftWithUser[] = drafts.map(
         (draft, index) => ({
           ...draft,
-          originalText: originalTexts[index],
           user: {
             firstName: users[index].firstName,
             lastName: users[index].lastName,

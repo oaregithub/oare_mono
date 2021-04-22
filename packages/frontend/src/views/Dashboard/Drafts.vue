@@ -38,7 +38,24 @@
       <template #[`item.updatedAt`]="{ item }">
         {{ dateFormat(item.updatedAt) }}
       </template>
+      <template #[`item.content`]="{ item }">
+        <v-btn
+          plain
+          text
+          class="font-weight-bold ml-n3 test-view-content"
+          color="primary"
+          @click="openDiffDialog(item)"
+          >View content</v-btn
+        >
+      </template>
     </v-data-table>
+
+    <draft-diff-popup
+      class="test-content-dialog"
+      v-if="viewingDraft"
+      :viewingDraft="viewingDraft"
+      v-model="diffDialog"
+    />
 
     <OareDialog
       v-model="confirmDeleteDialog"
@@ -64,16 +81,21 @@ import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import { TextDraft } from '@oare/types';
 import moment from 'moment';
 import sl from '@/serviceLocator';
+import DraftDiffPopup from '@/views/Admin/Drafts/DraftDiffPopup.vue';
 
 export default defineComponent({
   name: 'DashboardDrafts',
-
+  components: {
+    DraftDiffPopup,
+  },
   setup() {
     const draftsLoading = ref(false);
     const drafts = ref<TextDraft[]>([]);
     const selectedDrafts = ref<TextDraft[]>([]);
     const confirmDeleteDialog = ref(false);
     const deleteDraftsLoading = ref(false);
+    const viewingDraft = ref<TextDraft | null>(null);
+    const diffDialog = ref(false);
 
     const actions = sl.get('globalActions');
     const server = sl.get('serverProxy');
@@ -91,6 +113,10 @@ export default defineComponent({
       {
         text: 'Last Updated',
         value: 'updatedAt',
+      },
+      {
+        text: 'Content',
+        value: 'content',
       },
     ];
 
@@ -110,6 +136,11 @@ export default defineComponent({
         draftsLoading.value = false;
       }
     });
+
+    const openDiffDialog = (draft: TextDraft) => {
+      viewingDraft.value = { ...draft };
+      diffDialog.value = true;
+    };
 
     const deleteDrafts = async () => {
       try {
@@ -139,6 +170,9 @@ export default defineComponent({
       drafts,
       dateFormat,
       headers,
+      viewingDraft,
+      diffDialog,
+      openDiffDialog,
       selectedDrafts,
       confirmDeleteDialog,
       deleteDrafts,
