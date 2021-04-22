@@ -65,8 +65,31 @@ class PersonDao {
   }
 
   // Stub for now
-  async getPersonReferences(personUuid: string): Promise<string[]> {
+  async getPersonReferences(personNameUuid: string): Promise<string[]> {
     return [];
+  }
+
+  async getSpellingUuidsByPerson(
+    personNameUuid: string | null
+  ): Promise<string[]> {
+    if (personNameUuid === null) {
+      return [];
+    }
+
+    const personSpellings = await knex('person')
+      .select('dictionary_spelling.uuid')
+      .leftJoin(
+        'dictionary_form',
+        'dictionary_form.reference_uuid',
+        'person.name_uuid'
+      )
+      .leftJoin(
+        'dictionary_spelling',
+        'dictionary_spelling.reference_uuid',
+        'dictionary_form.uuid'
+      );
+
+    return personSpellings.map(spelling => spelling.uuid);
   }
 }
 
