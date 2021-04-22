@@ -11,11 +11,24 @@ localVue.use(VueCompositionApi);
 
 describe('DashboardDraftsView', () => {
   const mockServer = {
-    getDrafts: jest.fn().mockResolvedValue([]),
+    getDrafts: jest.fn().mockResolvedValue([
+      {
+        createdAt: new Date(),
+        textName: 'Some Text',
+        textUuid: 'text-uuid',
+        updatedAt: new Date(),
+        uuid: 'draft-uuid',
+        content: [],
+        notes: 'draft notes',
+        userUuid: 'user-uuid',
+      },
+    ]),
+    deleteDraft: jest.fn().mockResolvedValue(),
   };
 
   const mockActions = {
     showErrorSnackbar: jest.fn(),
+    showSnackbar: jest.fn(),
   };
 
   const userUuid = 'user-uuid';
@@ -37,6 +50,7 @@ describe('DashboardDraftsView', () => {
     mount(DashboardDrafts, {
       vuetify,
       localVue,
+      stubs: ['router-link', 'code-diff'],
     });
 
   it('retrieves drafts on load', async () => {
@@ -62,6 +76,45 @@ describe('DashboardDraftsView', () => {
     });
     createWrapper();
     await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('opens diff dialog when clicking on View Content', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await wrapper.get('.test-view-content').trigger('click');
+    expect(wrapper.find('.test-content-dialog').exists()).toBe(true);
+  });
+
+  it('successfully deletes drafts', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
+    await wrapper.get('.test-actions').trigger('click');
+    await wrapper.get('.test-delete-draft').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+
+    expect(mockServer.deleteDraft).toHaveBeenCalledWith('draft-uuid');
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
+  });
+
+  it('shows error snackbar if deleting drafts fails', async () => {
+    sl.set('serverProxy', {
+      ...mockServer,
+      deleteDraft: jest.fn().mockRejectedValue('failed to delete draft'),
+    });
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
+    await wrapper.get('.test-actions').trigger('click');
+    await wrapper.get('.test-delete-draft').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });

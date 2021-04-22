@@ -203,14 +203,7 @@ class TextDiscourseDao {
       .offset(page * limit);
 
     const rows: SpellingOccurrenceRow[] = await query;
-    const totalResults = await this.getTotalSpellingTexts(spellingUuid, {
-      filter,
-    });
-
-    return {
-      totalResults,
-      rows,
-    };
+    return rows;
   }
 
   async uuidsBySpellingUuid(
