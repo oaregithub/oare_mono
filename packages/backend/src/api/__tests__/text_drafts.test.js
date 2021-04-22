@@ -441,6 +441,12 @@ describe('Text drafts test', () => {
     const draftUuid = 'draft-uuid';
     const PATH = `${API_PATH}/text_drafts/${draftUuid}`;
 
+    const UserDao = {
+      getUserByEmail: jest.fn().mockResolvedValue({
+        isAdmin: false,
+      }),
+    };
+
     const TextDraftsDao = {
       draftExists: jest.fn().mockResolvedValue(true),
       userOwnsDraft: jest.fn().mockResolvedValue(true),
@@ -448,6 +454,7 @@ describe('Text drafts test', () => {
     };
 
     beforeEach(() => {
+      sl.set('UserDao', UserDao);
       sl.set('TextDraftsDao', TextDraftsDao);
     });
 
@@ -473,6 +480,23 @@ describe('Text drafts test', () => {
       const response = await sendRequest(false);
       expect(response.status).toBe(401);
       expect(TextDraftsDao.deleteDraft).not.toHaveBeenCalled();
+    });
+
+    it('allows admins to delete drafts they do not own', async () => {
+      sl.set('UserDao', {
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: true,
+        }),
+      });
+
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        userOwnsDraft: jest.fn().mockResolvedValue(false),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(204);
+      expect(TextDraftsDao.deleteDraft).toHaveBeenCalled();
     });
 
     it("returns 400 if draft doesn't exist", async () => {
