@@ -83,11 +83,12 @@ class PersonDao {
         'dictionary_form.reference_uuid',
         'person.name_uuid'
       )
-      .leftJoin(
+      .innerJoin(
         'dictionary_spelling',
         'dictionary_spelling.reference_uuid',
         'dictionary_form.uuid'
-      );
+      )
+      .where('person.name_uuid', personNameUuid);
 
     return personSpellings.map(spelling => spelling.uuid);
   }
