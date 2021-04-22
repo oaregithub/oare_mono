@@ -91,6 +91,7 @@ describe('SpellingDisplay test', () => {
 
   it('shows dialog when clicking on number of texts', async () => {
     const wrapper = createWrapper();
+    await flushPromises();
     await wrapper.get('.test-num-texts').trigger('click');
     expect(wrapper.get('.test-dialog-title').text()).toBe(
       `Texts for ${spelling.spelling}`
