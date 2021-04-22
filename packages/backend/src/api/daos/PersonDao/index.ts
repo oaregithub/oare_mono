@@ -4,6 +4,7 @@ import utils from '../utils';
 
 class PersonDao {
   public readonly PERSON_TYPE = 'person';
+
   public readonly CURRENT_PERSON_TYPE = 'current person';
 
   async getAllPeople(letter: string): Promise<PersonDisplay[]> {

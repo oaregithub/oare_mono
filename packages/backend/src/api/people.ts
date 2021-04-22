@@ -18,7 +18,7 @@ router
       const spellingUuids = await Promise.all(
         people.map(person =>
           PersonDao.getSpellingUuidsByPerson(
-            person.uuid //personNameUuid
+            person.uuid // personNameUuid
           )
         )
       );
@@ -26,9 +26,9 @@ router
       const resultPeople = await Promise.all(
         people.map(async (person, index) => {
           const totalOccurrences = await Promise.all(
-            spellingUuids[index].map(spellingUuid => {
-              return TextDiscourseDao.getTotalSpellingTexts(spellingUuid);
-            })
+            spellingUuids[index].map(spellingUuid =>
+              TextDiscourseDao.getTotalSpellingTexts(spellingUuid)
+            )
           );
 
           return {
