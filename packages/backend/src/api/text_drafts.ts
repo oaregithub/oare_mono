@@ -8,7 +8,6 @@ import {
   TextDraftsResponse,
   CreateDraftResponse,
 } from '@oare/types';
-import { createTabletRenderer } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
