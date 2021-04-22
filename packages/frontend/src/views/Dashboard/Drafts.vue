@@ -13,7 +13,7 @@
       <v-list>
         <v-list-item @click="confirmDeleteDialog = true">
           <v-list-item-title class="test-delete-draft"
-            >Delete drafts</v-list-item-title
+            >Delete draft(s)</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -48,8 +48,8 @@
       @submit="deleteDrafts"
       :submitLoading="deleteDraftsLoading"
     >
-      Are you sure you want to delete your drafts on the following texts? All
-      edits you have made will be discarded. This action is not reversible.
+      Are you sure you want to delete your draft(s) on the following text(s)?
+      All edits you have made will be discarded. This action is not reversible.
       <ul>
         <li v-for="draft in selectedDrafts" :key="draft.uuid">
           {{ draft.textName }}
