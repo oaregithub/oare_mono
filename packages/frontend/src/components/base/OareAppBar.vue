@@ -108,7 +108,6 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import VueI18n from 'vue-i18n';
-import { Store } from 'vuex';
 import Router from 'vue-router';
 import defaultI18n from '../../i18n/index';
 import EventBus, { ACTIONS } from '@/EventBus';
