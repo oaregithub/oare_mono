@@ -4,7 +4,7 @@ import Vuetify from 'vuetify';
 import serverProxy from '@/serverProxy';
 import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
-import tsStore from '@/ts-store';
+import store from '@/ts-store';
 import _ from 'lodash';
 import { NavigationGuard, Route, NavigationGuardNext } from 'vue-router';
 import EventBus, { ACTIONS } from '@/EventBus';
@@ -20,7 +20,7 @@ import firebase from './firebase';
 
 sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);
-sl.set('store', tsStore);
+sl.set('store', store);
 sl.set('lodash', _);
 sl.set('router', router);
 
@@ -36,7 +36,7 @@ const guardRoute = (
   next: NavigationGuardNext
 ) => {
   if (to.name && routes.includes(to.name)) {
-    if (!tsStore.getters.authComplete) {
+    if (!store.getters.authComplete) {
       EventBus.$on(ACTIONS.REFRESH, callback);
     } else {
       callback();
@@ -55,7 +55,7 @@ const adminRoutes = [
 ];
 const adminGuard: NavigationGuard = (to, _from, next) => {
   const navigate = () => {
-    if (!tsStore.getters.isAdmin) {
+    if (!store.getters.isAdmin) {
       next('/');
     } else {
       next();
@@ -85,8 +85,7 @@ router.beforeEach(adminGuard);
 
 let app: Vue;
 
-firebase.auth().onAuthStateChanged(user => {
-  console.log('user is', user);
+firebase.auth().onAuthStateChanged(() => {
   if (!app) {
     app = new Vue({
       router,
