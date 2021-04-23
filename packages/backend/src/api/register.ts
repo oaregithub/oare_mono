@@ -30,6 +30,7 @@ router.route('/register').post(async (req, res, next) => {
       password,
       displayName: `${firstName} ${lastName}`,
     });
+    await firebase.auth().setCustomUserClaims(uuid, { isAdmin: false });
 
     await UserDao.createUser({
       uuid,
