@@ -1,8 +1,9 @@
 import { EpigraphicTextWithReadings } from './epigraphies';
 
 export interface PersonDisplay {
-  uuid: string | null;
+  uuid: string;
   word: string;
+  personNameUuid: string | null;
   person: string | null;
   relation: string | null;
   relationPerson: string | null;

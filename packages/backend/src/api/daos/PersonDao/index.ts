@@ -17,12 +17,13 @@ class PersonDao {
 
     const people = await knex('person')
       .select(
-        'dictionary_word_person.uuid AS uuid',
+        'person.uuid',
+        'person.name_uuid AS personNameUuid',
         knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
         'dictionary_word_person.word AS person',
         'person.relation',
         'dictionary_word_relation_person.word AS relationPerson',
-        'dictionary_word_relation_person.uuid AS relationPersonUuid',
+        'person.relation_name_uuid AS relationPersonUuid',
         'person.label',
         'item_properties.level',
         'value.name AS topValueRole',

@@ -17,9 +17,7 @@ router
 
       const spellingUuids = await Promise.all(
         people.map(person =>
-          PersonDao.getSpellingUuidsByPerson(
-            person.uuid // personNameUuid
-          )
+          PersonDao.getSpellingUuidsByPerson(person.personNameUuid)
         )
       );
 
