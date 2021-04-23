@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { PersonDisplay } from '@oare/types';
+import { Pagination, PersonDisplay } from '@oare/types';
 import utils from '../utils';
 
 class PersonDao {
@@ -9,8 +9,7 @@ class PersonDao {
 
   async getAllPeople(
     letter: string,
-    limit: number,
-    offset: number
+    pagination: Pagination | null
   ): Promise<PersonDisplay[]> {
     const letters = letter.split('/');
 
@@ -66,8 +65,13 @@ class PersonDao {
       )
       .where('person.type', this.PERSON_TYPE)
       .andWhereRaw(orWhereRawLetters)
-      .limit(limit)
-      .offset(offset);
+      .orderByRaw('IFNULL(dictionary_word_person.word, person.label)')
+      .modify(qb => {
+        if (pagination) {
+          qb.limit(pagination.limit);
+          qb.offset(pagination.page);
+        }
+      });
 
     return people;
   }

@@ -1,4 +1,5 @@
 import { EpigraphicTextWithReadings } from './epigraphies';
+import { Pagination } from './dictionary';
 
 export interface PersonDisplay {
   uuid: string;
@@ -16,10 +17,8 @@ export interface PersonDisplay {
   totalReferenceCount: number;
 }
 
-export interface GetAllPeopleRequest {
+export interface GetAllPeopleRequest extends Pagination {
   letter: string;
-  limit: number;
-  offset: number;
 }
 
 export interface PersonReferences {

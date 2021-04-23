@@ -4,14 +4,26 @@ import axios from '../axiosInstance';
 async function getPeople(
   request: GetAllPeopleRequest
 ): Promise<PersonDisplay[]> {
-  const { data } = await axios.get('/people', {
-    params: {
-      request,
-    },
-  });
+  const { data } = await axios.get(
+    `/people/${encodeURIComponent(request.letter)}`,
+    {
+      params: {
+        limit: request.limit,
+        page: request.page,
+      },
+    }
+  );
+  return data;
+}
+
+async function getPeopleCount(letter: string): Promise<number> {
+  const { data } = await axios.get(
+    `/people/${encodeURIComponent(letter)}/count`
+  );
   return data;
 }
 
 export default {
+  getPeopleCount,
   getPeople,
 };

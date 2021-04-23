@@ -87,14 +87,15 @@ describe('people api test', () => {
 
   beforeEach(setup);
 
-  describe('GET /people', () => {
+  describe('GET /people/:letter', () => {
     const mockRequest = {
-      letter: 'A',
       limit: 30,
       offset: 0,
     };
 
-    const PATH = `${API_PATH}/people?request=${JSON.stringify(mockRequest)}`;
+    const PATH = `${API_PATH}/people/${encodeURIComponent(
+      'A'
+    )}?request=${JSON.stringify(mockRequest)}`;
 
     const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);
@@ -147,6 +148,68 @@ describe('people api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(500);
       expect(mockCache.insert).not.toHaveBeenCalled();
+    });
+
+    it('fails to return people when does not have permission', async () => {
+      sl.set('store', {
+        getters: {
+          user: {
+            uuid: 'testUuid',
+          },
+          permissions: [],
+          isAdmin: false,
+        },
+      });
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+      expect(mockPersonDao.getAllPeople).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /people/:letter/count', () => {
+    const PATH = `${API_PATH}/people/${encodeURIComponent('A')}/count`;
+    const sendRequest = async (cookie = true) => {
+      const req = request(app).get(PATH);
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
+    };
+
+    it('returns successful people count.', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(
+        allPeopleExpectedResponse.length
+      );
+    });
+
+    it('fails to return people count when unexpected error', async () => {
+      sl.set('PersonDao', {
+        getAllPeople: jest
+          .fn()
+          .mockRejectedValue('Error, people count unable to be retrieved.'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('fails to return people count when does not have permission', async () => {
+      sl.set('store', {
+        getters: {
+          user: {
+            uuid: 'testUuid',
+          },
+          permissions: [],
+          isAdmin: false,
+        },
+      });
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+      expect(mockPersonDao.getAllPeople).not.toHaveBeenCalled();
     });
   });
 });

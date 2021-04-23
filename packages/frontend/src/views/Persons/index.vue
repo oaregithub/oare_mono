@@ -62,6 +62,7 @@ export default defineComponent({
 
     const loading = ref(false);
     const personList = ref<PersonDisplay[]>([]);
+    const totalPersonCount = ref(0);
     const filteredPersonList = ref<PersonDisplay[]>([]);
 
     const searchFilter = (search: string, personDisplay: PersonDisplay) => {
@@ -83,7 +84,7 @@ export default defineComponent({
         const request = {
           letter: props.letter,
           limit: 30,
-          offset: personList.value.length,
+          page: personList.value.length,
         } as GetAllPeopleRequest;
         const people = await server.getPeople(request);
         personList.value.push(...people);
@@ -154,21 +155,38 @@ export default defineComponent({
       );
     };
 
+    const hasCollectedAllPeople = (): boolean => {
+      return totalPersonCount.value == personList.value.length;
+    };
+
     const onIntersect = async (
-      entries: any,
-      observer: any,
-      isIntersecting: any
+      _entries: any,
+      _observer: any,
+      isIntersecting: boolean
     ) => {
-      if (isIntersecting) {
+      if (isIntersecting && !hasCollectedAllPeople()) {
         try {
           await getPeople();
         } catch (ex) {
           actions.showErrorSnackbar('Failed to retrieve more people');
         }
       }
+
+      if (isIntersecting && hasCollectedAllPeople()) {
+        actions.showSnackbar('All people have been retrieved');
+      }
     };
 
-    onMounted(getPeople);
+    onMounted(async () => {
+      try {
+        await getPeople();
+        totalPersonCount.value = await server.getPeopleCount(props.letter);
+        console.log('Total People');
+        console.log(totalPersonCount.value);
+      } catch (ex) {
+        actions.showErrorSnackbar('Failed to retrieve person count');
+      }
+    });
 
     return {
       getFilteredPeople,

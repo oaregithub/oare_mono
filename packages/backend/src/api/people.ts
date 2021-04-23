@@ -2,25 +2,22 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
-import { GetAllPeopleRequest } from '@oare/types';
+import { GetAllPeopleRequest, Pagination } from '@oare/types';
+import { extractPagination } from '@/utils';
 
 const router = express.Router();
 
 router
-  .route('/people')
+  .route('/people/:letter')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
     try {
-      const requestString = (req.query.request as unknown) as string;
-      const request: GetAllPeopleRequest = JSON.parse(requestString);
+      const pagination: Pagination = extractPagination(req.query);
+      const { letter } = req.params;
       const cache = sl.get('cache');
       const PersonDao = sl.get('PersonDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-      const people = await PersonDao.getAllPeople(
-        request.letter,
-        request.limit,
-        request.offset
-      );
+      const people = await PersonDao.getAllPeople(letter, pagination);
 
       const spellingUuids = await Promise.all(
         people.map(person =>
@@ -48,6 +45,21 @@ router
 
       cache.insert({ req }, resultPeople);
       res.json(resultPeople);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
+  .route('/people/:letter/count')
+  .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
+    try {
+      const { letter } = req.params;
+      const PersonDao = sl.get('PersonDao');
+
+      const people = await PersonDao.getAllPeople(letter, null);
+
+      res.json(people.length);
     } catch (err) {
       next(new HttpInternalError(err));
     }
