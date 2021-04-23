@@ -16,6 +16,12 @@ export interface PersonDisplay {
   totalReferenceCount: number;
 }
 
+export interface GetAllPeopleRequest {
+  letter: string;
+  limit: number;
+  offset: number;
+}
+
 export interface PersonReferences {
   total: number;
   references: EpigraphicTextWithReadings[];

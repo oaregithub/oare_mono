@@ -87,9 +87,14 @@ describe('people api test', () => {
 
   beforeEach(setup);
 
-  describe('GET /people/:letter', () => {
-    const letter = 'a';
-    const PATH = `${API_PATH}/people/${encodeURIComponent(letter)}`;
+  describe('GET /people', () => {
+    const mockRequest = {
+      letter: 'A',
+      limit: 30,
+      offset: 0,
+    };
+
+    const PATH = `${API_PATH}/people?request=${JSON.stringify(mockRequest)}`;
 
     const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);

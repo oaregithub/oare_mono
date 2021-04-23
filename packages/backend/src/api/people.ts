@@ -2,18 +2,25 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import { GetAllPeopleRequest } from '@oare/types';
 
 const router = express.Router();
 
 router
-  .route('/people/:letter')
+  .route('/people')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
     try {
-      const { letter } = req.params;
+      const requestString = (req.query.request as unknown) as string;
+      const request: GetAllPeopleRequest = JSON.parse(requestString);
       const cache = sl.get('cache');
       const PersonDao = sl.get('PersonDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const people = await PersonDao.getAllPeople(letter);
+
+      const people = await PersonDao.getAllPeople(
+        request.letter,
+        request.limit,
+        request.offset
+      );
 
       const spellingUuids = await Promise.all(
         people.map(person =>

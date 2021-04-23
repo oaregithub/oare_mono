@@ -7,7 +7,11 @@ class PersonDao {
 
   public readonly CURRENT_PERSON_TYPE = 'current person';
 
-  async getAllPeople(letter: string): Promise<PersonDisplay[]> {
+  async getAllPeople(
+    letter: string,
+    limit: number,
+    offset: number
+  ): Promise<PersonDisplay[]> {
     const letters = letter.split('/');
 
     const orWhereRawLetters = utils.getOrWhereForLetters(
@@ -61,7 +65,9 @@ class PersonDao {
         'obj_person.name_uuid'
       )
       .where('person.type', this.PERSON_TYPE)
-      .andWhereRaw(orWhereRawLetters);
+      .andWhereRaw(orWhereRawLetters)
+      .limit(limit)
+      .offset(offset);
 
     return people;
   }

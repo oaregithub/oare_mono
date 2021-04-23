@@ -30,13 +30,18 @@
         </v-col>
       </v-row>
     </div>
+    <div v-intersect="onIntersect"></div>
   </OareContentView>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import { PersonDisplay, EpigraphicTextWithReadings } from '@oare/types';
+import {
+  PersonDisplay,
+  EpigraphicTextWithReadings,
+  GetAllPeopleRequest,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -74,7 +79,14 @@ export default defineComponent({
     const getPeople = async () => {
       try {
         loading.value = true;
-        personList.value = await server.getPeople(props.letter);
+
+        const request = {
+          letter: props.letter,
+          limit: 30,
+          offset: personList.value.length,
+        } as GetAllPeopleRequest;
+        const people = await server.getPeople(request);
+        personList.value.push(...people);
 
         // Individual Person page
         // --Contains same info from phone book page (person, relation, personRelation, clickable references amount)
@@ -142,6 +154,20 @@ export default defineComponent({
       );
     };
 
+    const onIntersect = async (
+      entries: any,
+      observer: any,
+      isIntersecting: any
+    ) => {
+      if (isIntersecting) {
+        try {
+          await getPeople();
+        } catch (ex) {
+          actions.showErrorSnackbar('Failed to retrieve more people');
+        }
+      }
+    };
+
     onMounted(getPeople);
 
     return {
@@ -149,6 +175,7 @@ export default defineComponent({
       searchFilter,
       displayCommentWord,
       displayPersonTexts,
+      onIntersect,
       loading,
       personList,
       filteredPersonList,
