@@ -1,43 +1,67 @@
 import * as Knex from 'knex';
 import knex from '@/connection';
-import { EpigraphicUnit, EpigraphicUnitSide, MarkupUnit } from '@oare/types';
+import {
+  EpigraphicUnit,
+  EpigraphicUnitSide,
+  MarkupUnit,
+  SearchCooccurrence,
+} from '@oare/types';
 import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
 import { EpigraphicQueryRow } from './index';
 import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
-  characterUuids: string[][],
+  cooccurrences: SearchCooccurrence[],
   baseQuery?: Knex.QueryBuilder
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
   let query = baseQuery || knex('text_epigraphy');
-  characterUuids.forEach((char, index) => {
-    if (index < 1) {
-      return;
-    }
+  cooccurrences.forEach((occurrence, coocIndex) => {
+    const charSet = occurrence.uuids;
+    charSet.forEach((char, charIndex) => {
+      if (coocIndex < 1 && charIndex < 1) {
+        return;
+      }
 
-    query = query.join(`text_epigraphy AS t${index}`, function () {
-      this.on(`t${index}.text_uuid`, 'text_epigraphy.text_uuid')
-        .andOnIn(`t${index}.reading_uuid`, char)
-        .andOn(
-          knex.raw(
-            `t${index}.char_on_tablet=text_epigraphy.char_on_tablet + ${index}`
+      query = query.join(
+        `text_epigraphy AS t${coocIndex}${charIndex}`,
+        function () {
+          this.on(
+            `t${coocIndex}${charIndex}.text_uuid`,
+            'text_epigraphy.text_uuid'
           )
-        )
-        .andOn(knex.raw(`t${index}.line=text_epigraphy.line`));
+            .andOnIn(`t${coocIndex}${charIndex}.reading_uuid`, char)
+            .andOn(
+              knex.raw(
+                `t${coocIndex}${charIndex}.char_on_tablet=${
+                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}0`
+                }.char_on_tablet + ${charIndex}`
+              )
+            )
+            .andOn(
+              knex.raw(
+                `t${coocIndex}${charIndex}.line=${
+                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}0`
+                }.line`
+              )
+            );
+        }
+      );
     });
+    if (coocIndex < 1 && cooccurrences[0].uuids.length > 0) {
+      query = query.whereIn(
+        'text_epigraphy.reading_uuid',
+        cooccurrences[0].uuids[0]
+      );
+    }
   });
-
-  if (characterUuids.length > 0) {
-    query = query.whereIn('text_epigraphy.reading_uuid', characterUuids[0]);
-  }
 
   return query;
 }
 
 export function getSearchQuery(
-  characters: string[][],
+  characters: SearchCooccurrence[],
   textTitle: string,
   textBlacklist: string[],
   textWhitelist: string[],
@@ -48,7 +72,8 @@ export function getSearchQuery(
     .join('text', 'text.uuid', 'text_epigraphy.text_uuid')
     .join('hierarchy', 'hierarchy.uuid', 'text_epigraphy.text_uuid');
 
-  query = getSequentialCharacterQuery(characters, query);
+  const andCooccurrences = characters.filter(char => char.type === 'AND');
+  query = getSequentialCharacterQuery(andCooccurrences, query);
 
   if (textTitle) {
     query = query.andWhere('text.name', 'like', `%${textTitle}%`);
@@ -120,3 +145,16 @@ export const stringToCharsArray = (search: string): string[] => {
   }
   return chars;
 };
+
+export async function getNotOccurrenceTexts(
+  characters: SearchCooccurrence[]
+): Promise<string[]> {
+  const notCharacters = characters.filter(char => char.type === 'NOT');
+  const notTexts =
+    notCharacters.length > 0
+      ? await getSequentialCharacterQuery(notCharacters).pluck(
+          'text_epigraphy.text_uuid'
+        )
+      : [];
+  return notTexts;
+}

@@ -8,7 +8,6 @@ import {
   TextDraftsResponse,
   CreateDraftResponse,
 } from '@oare/types';
-import { createTabletRenderer } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -49,6 +48,38 @@ router
     } catch (err) {
       next(new HttpInternalError(err));
     }
+  })
+  .delete(authenticatedRoute, async (req, res, next) => {
+    try {
+      const TextDraftsDao = sl.get('TextDraftsDao');
+      const { draftUuid } = req.params;
+      const userUuid = req.user!.uuid;
+      const { isAdmin } = req.user!;
+
+      const draftExists = await TextDraftsDao.draftExists(draftUuid);
+      if (!draftExists) {
+        next(new HttpBadRequest(`There is no draft with UUID ${draftUuid}`));
+        return;
+      }
+
+      const userOwnsDraft = await TextDraftsDao.userOwnsDraft(
+        userUuid,
+        draftUuid
+      );
+      if (!isAdmin && !userOwnsDraft) {
+        next(
+          new HttpBadRequest(
+            `The logged-in user does not own draft with UUID ${draftUuid}`
+          )
+        );
+        return;
+      }
+
+      await TextDraftsDao.deleteDraft(draftUuid);
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
   });
 
 router
@@ -70,6 +101,7 @@ router
       const draftUuids = await TextDraftsDao.getAllDraftUuidsByUser(
         userUuidParam
       );
+
       const drafts: TextDraft[] = await Promise.all(
         draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
       );
@@ -115,21 +147,9 @@ router
         drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
       );
 
-      const epigraphicUnitsPerText = await Promise.all(
-        drafts.map(({ textUuid }) =>
-          TextEpigraphyDao.getEpigraphicUnits(textUuid)
-        )
-      );
-
-      const originalTexts = epigraphicUnitsPerText.map(units => {
-        const renderer = createTabletRenderer(units, { lineNumbers: true });
-        return renderer.tabletReading();
-      });
-
       const draftsWithUser: TextDraftWithUser[] = drafts.map(
         (draft, index) => ({
           ...draft,
-          originalText: originalTexts[index],
           user: {
             firstName: users[index].firstName,
             lastName: users[index].lastName,

@@ -22,9 +22,9 @@
     </template>
 
     &nbsp;
-    <span v-if="spelling.totalOccurrences > 0">
+    <span v-if="totalOccurrences > 0 || totalOccurrencesLoading">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
-        spelling.totalOccurrences
+        totalOccurrencesLoading ? 'Loading...' : totalOccurrences
       }}</a
       >)</span
     >
@@ -77,17 +77,15 @@ import {
   PropType,
   watch,
   inject,
-  InjectionKey,
+  onMounted,
 } from '@vue/composition-api';
 import {
   FormSpelling,
   DictionaryForm,
   SearchDiscourseSpellingRow,
-  UtilListDisplay,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
-import { AxiosError } from 'axios';
 import { spellingHtmlReading } from '@oare/oare';
 import { SendUtilList } from '../../index.vue';
 import SpellingDialog from './SpellingDialog.vue';
@@ -157,6 +155,7 @@ export default defineComponent({
       Pick<SearchDiscourseSpellingRow, 'textName' | 'textUuid'>[]
     >([]);
     const totalOccurrences = ref(0);
+    const totalOccurrencesLoading = ref(false);
 
     const canEdit = computed(() =>
       store.getters.permissions
@@ -171,7 +170,7 @@ export default defineComponent({
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        const { totalResults, rows } = await server.getSpellingTextOccurrences(
+        spellingOccurrences.value = await server.getSpellingTextOccurrences(
           props.spelling.uuid,
           {
             page: tableOptions.value.page - 1,
@@ -179,14 +178,27 @@ export default defineComponent({
             ...(search.value ? { filter: search.value } : null),
           }
         );
-        spellingOccurrences.value = rows;
-        totalOccurrences.value = totalResults;
       } catch {
         actions.showErrorSnackbar('Failed to load spelling occurrences');
       } finally {
         referencesLoading.value = false;
       }
     };
+
+    onMounted(async () => {
+      try {
+        totalOccurrencesLoading.value = true;
+        totalOccurrences.value = await server.getSpellingTotalOccurrences(
+          props.spelling.uuid
+        );
+      } catch {
+        actions.showErrorSnackbar(
+          'Error loading spelling occurrences. Please try again.'
+        );
+      } finally {
+        totalOccurrencesLoading.value = false;
+      }
+    });
 
     const openUtilList = () => {
       utilList &&
@@ -223,6 +235,7 @@ export default defineComponent({
       spellingOccurrences,
       tableOptions,
       totalOccurrences,
+      totalOccurrencesLoading,
     };
   },
 });

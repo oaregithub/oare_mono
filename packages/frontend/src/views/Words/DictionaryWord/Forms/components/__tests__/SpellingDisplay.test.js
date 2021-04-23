@@ -14,7 +14,6 @@ describe('SpellingDisplay test', () => {
   const spelling = {
     uuid: 'spelling-uuid',
     spelling: 'spelling',
-    totalOccurrences: 12,
   };
 
   const form = {
@@ -44,15 +43,13 @@ describe('SpellingDisplay test', () => {
   const mockServer = {
     updateSpelling: jest.fn().mockResolvedValue(null),
     removeSpelling: jest.fn().mockResolvedValue(null),
-    getSpellingTextOccurrences: jest.fn().mockResolvedValue({
-      totalResults: 1,
-      rows: [
-        {
-          textName: 'text-name',
-          textUuid: 'text-uuid',
-        },
-      ],
-    }),
+    getSpellingTextOccurrences: jest.fn().mockResolvedValue([
+      {
+        textName: 'text-name',
+        textUuid: 'text-uuid',
+      },
+    ]),
+    getSpellingTotalOccurrences: jest.fn().mockResolvedValue(12),
   };
 
   const mockActions = {
@@ -86,15 +83,15 @@ describe('SpellingDisplay test', () => {
     });
   };
 
-  it('shows number of texts next to spelling', () => {
+  it('shows number of texts next to spelling', async () => {
     const wrapper = createWrapper();
-    expect(wrapper.get('.test-num-texts').text()).toBe(
-      `${spelling.totalOccurrences}`
-    );
+    await flushPromises();
+    expect(wrapper.get('.test-num-texts').text()).toBe('12');
   });
 
   it('shows dialog when clicking on number of texts', async () => {
     const wrapper = createWrapper();
+    await flushPromises();
     await wrapper.get('.test-num-texts').trigger('click');
     expect(wrapper.get('.test-dialog-title').text()).toBe(
       `Texts for ${spelling.spelling}`
@@ -103,6 +100,7 @@ describe('SpellingDisplay test', () => {
 
   it('shows texts associated with spelling', async () => {
     const wrapper = createWrapper();
+    await flushPromises();
     await wrapper.get('.test-num-texts').trigger('click');
     await flushPromises();
     expect(wrapper.get('.test-text').text()).toBe(
@@ -129,5 +127,23 @@ describe('SpellingDisplay test', () => {
 
     expect(wrapper.find('.test-pencil').exists()).toBe(false);
     expect(wrapper.find('.test-close').exists()).toBe(false);
+  });
+
+  it('retrieves total spelling occurrences on load', async () => {
+    createWrapper();
+    expect(mockServer.getSpellingTotalOccurrences).toHaveBeenCalled();
+  });
+
+  it('displays error on failed total occurrences retreival', async () => {
+    createWrapper({
+      server: {
+        ...mockServer,
+        getSpellingTotalOccurrences: jest
+          .fn()
+          .mockRejectedValue('failed to load total occurrences'),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });
