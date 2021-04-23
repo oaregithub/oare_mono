@@ -25,7 +25,6 @@
         <v-col class="d-flex flex-row">
           <div class="d-flex">
             {{ personInfo.topValueRole }}
-            <!---TODO: Temporary value (will change in next PR due to response type changes on backend)--->
           </div>
         </v-col>
       </v-row>
@@ -36,7 +35,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import { PersonDisplay, EpigraphicTextWithReadings } from '@oare/types';
+import { PersonDisplay } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -63,8 +62,6 @@ export default defineComponent({
       const lowerSearch = search ? search.toLowerCase() : '';
 
       return true; // TODO: Update in next PR (according to updates made to response type)
-      // personDisplay.person.toLowerCase().includes(lowerSearch) ||
-      // personDisplay.relationPerson.toLowerCase().includes(lowerSearch)
     };
 
     const displayCommentWord = (word: string): string => {
@@ -79,52 +76,6 @@ export default defineComponent({
         // Individual Person page
         // --Contains same info from phone book page (person, relation, personRelation, clickable references amount)
         // --Also contains expandable lists for each role (and then for future items such as siblings)
-
-        // TODO: Remove once backend is set up.
-        // personList.value = [
-        //   {
-        //     uuid: 'f9598484-f4cf-4969-a479-904a564d868c',
-        //     word: 'Ali-abum',
-        //     person: 'Ali-abum',
-        //     relation: 's.',
-        //     relationPerson: 'Aššur-mālik',
-        //     roles: [
-        //       'The Borrower',
-        //       'The Receiver of Emails',
-        //       'The Great',
-        //       'The Man that makes Bread',
-        //     ], // on line below, separated by commas
-        //     totalReferenceCount: 1,
-        //     references: [
-        //       {
-        //         textUuid: 'textUuidTest',
-        //         textName: 'textNameTest',
-        //         readings: ['reading1', 'reading2', 'reading3'],
-        //       },
-        //     ] as EpigraphicTextWithReadings[],
-        //   } as PersonDisplay,
-        //   {
-        //     uuid: 'hey',
-        //     word: 'SECOND',
-        //     person: 'SECOND',
-        //     relation: 's.',
-        //     relationPerson: 'ANOTHER SECOND',
-        //     roles: [
-        //       'The Borrower',
-        //       'The Receiver of Emails',
-        //       'The Great',
-        //       'The Man that makes Bread',
-        //     ], // on line below, separated by commas
-        //     totalReferenceCount: 1,
-        //     references: [
-        //       {
-        //         textUuid: 'textUuidTest',
-        //         textName: 'textNameTest',
-        //         readings: ['reading1', 'reading2', 'reading3'],
-        //       },
-        //     ] as EpigraphicTextWithReadings[],
-        //   } as PersonDisplay,
-        // ] as PersonDisplay[];
       } catch (e) {
         actions.showErrorSnackbar('Failed to retrieve people');
       } finally {

@@ -100,10 +100,8 @@ describe('people api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(allPeopleExpectedResponse);
-      expect(mockPersonDao.getSpellingUuidsByPerson).toHaveBeenCalledTimes(2);
-      expect(mockTextDiscourseDao.getTotalSpellingTexts).toHaveBeenCalledTimes(
-        5
-      );
+      expect(mockPersonDao.getSpellingUuidsByPerson).toHaveBeenCalled();
+      expect(mockTextDiscourseDao.getTotalSpellingTexts).toHaveBeenCalled();
       expect(mockCache.insert).toHaveBeenCalled();
     });
 

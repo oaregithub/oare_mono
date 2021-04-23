@@ -5,6 +5,11 @@ function getQueryString(fileName: string) {
   return fs.readFileSync(path.join(__dirname, '../sql/', fileName)).toString();
 }
 
+interface AndWhereWithBindings {
+  andWhere: string;
+  bindings: string[];
+}
+
 /**
  *
  * @param {string[]} letters - Example: [a,b,c]
@@ -14,16 +19,26 @@ function getQueryString(fileName: string) {
 function getOrWhereForLetters(
   letters: string[],
   tableAndColumn: string
-): string {
+): AndWhereWithBindings {
   let andWhere = '';
+  let bindings: string[] = [];
   letters.forEach((l: string, index: number) => {
-    andWhere += `${tableAndColumn} REGEXP '^[(]${l.toUpperCase()}|^[${l.toUpperCase()}]|^[(]${l.toLowerCase()}|^[${l.toLowerCase()}]]'`;
+    andWhere += `${tableAndColumn} REGEXP "^[(]?|^[?]|^[(]?|^[?]]"`;
     if (index !== letters.length - 1) {
       andWhere += ' OR ';
     }
+    bindings.push(
+      l.toUpperCase(),
+      l.toUpperCase(),
+      l.toLowerCase(),
+      l.toLowerCase()
+    );
   });
 
-  return andWhere;
+  return {
+    andWhere,
+    bindings,
+  } as AndWhereWithBindings;
 }
 
 export default {
