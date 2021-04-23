@@ -1,4 +1,4 @@
-import { Token } from '@oare/types';
+import { RawToken, NormalizedRawToken, Token } from '@oare/types';
 import bnf from './spellingGrammar';
 import { normalizeSign, normalizeFraction } from './signNormalizer';
 
@@ -6,12 +6,112 @@ const Jison = require('jison');
 
 const parser = new Jison.Parser(bnf);
 
-export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
-  const tokens: Token[] = [];
-  Jison.lexDebugger = tokens;
+export const separateTokenPhrases = (tokens: Token[]): Token[][] => {
+  const phrases: Token[][] = [];
+  let curPhrase: Token[] = [];
+  tokens.forEach(token => {
+    if (token.tokenType === 'SPACE') {
+      phrases.push([...curPhrase]);
+      curPhrase = [];
+    } else {
+      curPhrase.push(token);
+    }
+  });
+  phrases.push([...curPhrase]);
+  return phrases;
+};
 
+const normalizeRawTokens = (rawTokens: RawToken[]): NormalizedRawToken[] =>
+  rawTokens.map(({ tokenName: [tokenType], tokenText }) => ({
+    tokenType,
+    tokenText,
+  }));
+
+export const isNumberSign = (tokenText: string): boolean => {
+  const fullNumbers = [
+    '1/2',
+    '1/3',
+    '1/4',
+    '1/5',
+    '1/6',
+    '2/3',
+    '3/4',
+    '5/6',
+    '½',
+    '⅓',
+    '¼',
+    '⅕',
+    '⅙',
+    '⅔',
+    '¾',
+    '⅚',
+    'LÁ',
+  ];
+  const decimalRegex = /^\d+(\.\d+)?$/;
+  return fullNumbers.includes(tokenText) || !!tokenText.match(decimalRegex);
+};
+
+export const isNumberPhrase = (tokens: Token[]): boolean => {
+  const separators = tokens.filter(({ tokenType }) => tokenType === '+');
+  const signs = tokens.filter(({ tokenType }) => tokenType === 'NUMBER');
+
+  return (
+    separators.length + signs.length ===
+    tokens.filter(({ tokenType }) => tokenType !== '$end').length
+  );
+};
+
+export const isSignPhraseWithNumber = (tokens: Token[]): boolean => {
+  if (tokens.length > 0 && tokens[0].tokenType === 'NUMBER') {
+    const separators = tokens.filter(
+      ({ tokenType }) => tokenType === '-' || tokenType === '.'
+    );
+    const signs = tokens.filter(({ tokenType }) => tokenType === 'SIGN');
+
+    return (
+      separators.every(
+        ({ tokenType }) => tokenType === separators[0].tokenType
+      ) &&
+      separators.length + signs.length ===
+        tokens.filter(({ tokenType }) => tokenType !== '$end').length - 1
+    ); // -1 for first token
+  }
+  return false;
+};
+
+export const isComplementPhrase = (tokens: Token[]): boolean =>
+  tokens.some(({ tokenType }) => tokenType === '{');
+
+const isValidGrammar = (tokens: Token[]) => {
+  // If there are numbers, they must be separated by a + or appear
+  // only at the beginning of a sign
+  if (
+    tokens.some(({ tokenText }) => isNumberSign(tokenText)) &&
+    !isComplementPhrase(tokens)
+  ) {
+    return isNumberPhrase(tokens) || isSignPhraseWithNumber(tokens);
+  }
+
+  return true;
+};
+
+export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
+  const rawTokens: RawToken[] = [];
+  Jison.lexDebugger = rawTokens;
   parser.parse(spelling.trim());
-  return tokens;
+
+  const normalizedRawTokens: Token[] = normalizeRawTokens(rawTokens).map(
+    ({ tokenType, tokenText }) => ({
+      tokenType: isNumberSign(tokenText) ? 'NUMBER' : tokenType,
+      tokenText,
+    })
+  );
+  const phrases = separateTokenPhrases(normalizedRawTokens);
+  if (!phrases.every(isValidGrammar)) {
+    throw new Error('Invalid grammar');
+  }
+
+  return phrases.flat();
 };
 
 export const spellingHtmlReading = (spelling: string): string => {
@@ -22,8 +122,8 @@ export const spellingHtmlReading = (spelling: string): string => {
   try {
     const tokens = tokenizeExplicitSpelling(spelling);
     return tokens
-      .filter(({ tokenName: [tokenType] }) => tokenType !== '$end')
-      .map(({ tokenName: [tokenType], tokenText }, index) => {
+      .filter(({ tokenType }) => tokenType !== '$end')
+      .map(({ tokenType, tokenText }, index) => {
         if (tokenType === 'SIGN') {
           const sign = normalizeSign(tokenText);
           if (index > 0) {

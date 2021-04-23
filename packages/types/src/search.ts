@@ -19,3 +19,8 @@ export interface SearchTextsCountPayload {
 export interface SearchTextsResponse {
   results: SearchTextsResultRow[];
 }
+
+export interface SearchCooccurrence {
+  uuids: string[][];
+  type: 'AND' | 'NOT';
+}

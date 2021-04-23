@@ -17,11 +17,11 @@ export interface TextDraft {
   content: TextDraftSideContent[];
   notes: string;
   userUuid: string;
+  originalText: string;
 }
 
 export interface TextDraftWithUser extends Omit<TextDraft, 'userUuid'> {
   user: Pick<User, 'firstName' | 'lastName' | 'uuid'>;
-  originalText: string;
 }
 
 export interface TextDraftsResponse {
@@ -29,9 +29,12 @@ export interface TextDraftsResponse {
   drafts: TextDraftWithUser[];
 }
 
-export interface AddTextDraftPayload {
+export interface DraftPayload extends Pick<TextDraft, 'notes' | 'textUuid'> {
   content: string;
-  notes: string;
+}
+
+export interface CreateDraftResponse {
+  draftUuid: string;
 }
 
 export type GetDraftsSortType = 'text' | 'author' | 'updatedAt';

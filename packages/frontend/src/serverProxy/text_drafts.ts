@@ -1,13 +1,21 @@
 import {
   TextDraft,
-  AddTextDraftPayload,
   TextDraftsResponse,
   DraftQueryOptions,
+  DraftPayload,
+  CreateDraftResponse,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function createDraft(textUuid: string, payload: AddTextDraftPayload) {
-  await axios.post(`/text_drafts/${textUuid}`, payload);
+async function createDraft(
+  payload: DraftPayload
+): Promise<CreateDraftResponse> {
+  const { data } = await axios.post('/text_drafts', payload);
+  return data;
+}
+
+async function updateDraft(draftUuid: string, payload: DraftPayload) {
+  await axios.patch(`/text_drafts/${draftUuid}`, payload);
 }
 
 async function getDrafts(userUuid: string): Promise<TextDraft[]> {
@@ -24,8 +32,14 @@ async function getAllDrafts(
   return data;
 }
 
+async function deleteDraft(draftUuid: string): Promise<void> {
+  await axios.delete(`/text_drafts/${draftUuid}`);
+}
+
 export default {
   createDraft,
   getDrafts,
   getAllDrafts,
+  updateDraft,
+  deleteDraft,
 };

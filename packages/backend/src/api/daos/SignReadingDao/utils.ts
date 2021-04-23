@@ -1,9 +1,10 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 import sl from '@/serviceLocator';
+import { SearchCooccurrence } from '@oare/types';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
-export async function prepareCharactersForSearch(
-  charsPayload: string | undefined
+export async function prepareIndividualSearchCharacters(
+  charsPayload?: string
 ): Promise<string[][]> {
   const SignReadingDao = sl.get('SignReadingDao');
 
@@ -16,6 +17,31 @@ export async function prepareCharactersForSearch(
   return characterUuids;
 }
 
+export async function prepareCharactersForSearch(
+  charsPayload?: string
+): Promise<SearchCooccurrence[]> {
+  const cooccurrences = charsPayload
+    ? charsPayload.split(';').map(phrase => phrase.trim())
+    : [];
+  const cooccurrenceTypes = cooccurrences.map(phrase =>
+    phrase[0] === '!' ? 'NOT' : 'AND'
+  );
+  const preppedCharUuids = await Promise.all(
+    cooccurrences.map(char => {
+      const searchCharacter = char[0] === '!' ? char.substr(1) : char;
+      return prepareIndividualSearchCharacters(searchCharacter);
+    })
+  );
+
+  const characterUuids: SearchCooccurrence[] = preppedCharUuids.map(
+    (uuids, index) => ({
+      uuids,
+      type: cooccurrenceTypes[index],
+    })
+  );
+  return characterUuids;
+}
+
 export const applyIntellisearch = async (
   signs: string[]
 ): Promise<string[][]> => {
@@ -24,8 +50,8 @@ export const applyIntellisearch = async (
   // Apply Brackets ([])
   signArray = signArray.map(applyBrackets);
 
-  // Apply Asterisk Wildcard (*)
-  signArray = signArray.map(applyAsteriskWildcard);
+  // Apply Consonant Wildcard (C)
+  signArray = signArray.map(applyConsonantWildcard);
 
   // Apply Ampersand Wildcard (&)
   signArray = signArray.map(applyAmpersandWildcard);
@@ -36,14 +62,14 @@ export const applyIntellisearch = async (
   return signArray;
 };
 
-export const applyAsteriskWildcard = (signs: string[]): string[] => {
+export const applyConsonantWildcard = (signs: string[]): string[] => {
   const wildcardConsonants = 'bdgklmnpqrstwyzBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ'.split('');
-  const numberOfWildcards = (signs[0].match(/\*/g) || []).length;
+  const numberOfWildcards = (signs[0].match(/C/g) || []).length;
 
   let wildcardSigns: string[] = signs;
   for (let i = 0; i < numberOfWildcards; i += 1) {
     wildcardSigns = wildcardSigns.flatMap(sign =>
-      wildcardConsonants.map(consonant => sign.replace('*', consonant))
+      wildcardConsonants.map(consonant => sign.replace('C', consonant))
     );
   }
 
