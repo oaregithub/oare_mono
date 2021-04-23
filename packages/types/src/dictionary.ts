@@ -14,7 +14,6 @@ export interface DisplayableWord {
 export interface FormSpelling {
   uuid: string;
   spelling: string;
-  totalOccurrences: number;
 }
 
 export interface CheckSpellingResponse {
@@ -145,9 +144,4 @@ export interface SpellingOccurrenceRow {
 
 export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
   readings: string[];
-}
-
-export interface SpellingOccurrencesResponse {
-  totalResults: number;
-  rows: SpellingOccurrenceResponseRow[];
 }

@@ -1,5 +1,4 @@
-export type TokenType =
-  | 'NUMBER'
+export type RawTokenType =
   | 'SIGN'
   | 'SPACE'
   | '+'
@@ -13,7 +12,20 @@ export type TokenType =
   | '}'
   | '$end';
 
-export interface Token {
-  tokenName: TokenType[];
+export type TokenType = RawTokenType | 'NUMBER';
+
+interface BaseToken {
   tokenText: string;
+}
+
+export interface RawToken extends BaseToken {
+  tokenName: RawTokenType[];
+}
+
+export interface NormalizedRawToken extends BaseToken {
+  tokenType: RawTokenType;
+}
+
+export interface Token extends BaseToken {
+  tokenType: TokenType;
 }

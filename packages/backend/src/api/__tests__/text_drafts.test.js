@@ -350,7 +350,6 @@ describe('Text drafts test', () => {
         drafts: [
           {
             ...draft,
-            originalText: '',
             user,
           },
         ],
@@ -430,6 +429,127 @@ describe('Text drafts test', () => {
       sl.set('UserDao', {
         ...UserDao,
         getUserByUuid: jest.fn().mockRejectedValue("couldn't get user by uuid"),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('DELETE /text_drafts/:draftUuid', () => {
+    const draftUuid = 'draft-uuid';
+    const PATH = `${API_PATH}/text_drafts/${draftUuid}`;
+
+    const UserDao = {
+      getUserByEmail: jest.fn().mockResolvedValue({
+        isAdmin: false,
+      }),
+    };
+
+    const TextDraftsDao = {
+      draftExists: jest.fn().mockResolvedValue(true),
+      userOwnsDraft: jest.fn().mockResolvedValue(true),
+      deleteDraft: jest.fn().mockResolvedValue(),
+    };
+
+    beforeEach(() => {
+      sl.set('UserDao', UserDao);
+      sl.set('TextDraftsDao', TextDraftsDao);
+    });
+
+    const sendRequest = (cookie = true) => {
+      const req = request(app).delete(PATH);
+
+      if (cookie) {
+        return req.set('Cookie', 'jwt=token');
+      }
+      return req;
+    };
+
+    it('successfully deletes draft', async () => {
+      const response = await sendRequest();
+
+      expect(TextDraftsDao.draftExists).toHaveBeenCalledWith(draftUuid);
+      expect(TextDraftsDao.userOwnsDraft).toHaveBeenCalled();
+      expect(TextDraftsDao.deleteDraft).toHaveBeenCalledWith(draftUuid);
+      expect(response.status).toBe(204);
+    });
+
+    it("doesn't allow non-logged-in users to delete drafts", async () => {
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+      expect(TextDraftsDao.deleteDraft).not.toHaveBeenCalled();
+    });
+
+    it('allows admins to delete drafts they do not own', async () => {
+      sl.set('UserDao', {
+        getUserByEmail: jest.fn().mockResolvedValue({
+          isAdmin: true,
+        }),
+      });
+
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        userOwnsDraft: jest.fn().mockResolvedValue(false),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(204);
+      expect(TextDraftsDao.deleteDraft).toHaveBeenCalled();
+    });
+
+    it("returns 400 if draft doesn't exist", async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        draftExists: jest.fn().mockResolvedValue(false),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(400);
+      expect(TextDraftsDao.deleteDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 400 if user does not own draft', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        userOwnsDraft: jest.fn().mockResolvedValue(false),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(400);
+      expect(TextDraftsDao.deleteDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if checking draft existence fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        draftExists: jest
+          .fn()
+          .mockRejectedValue('failed to check if draft exists'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(TextDraftsDao.deleteDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if checking if user owns draft fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        userOwnsDraft: jest
+          .fn()
+          .mockRejectedValue('failed to check if user owns draft'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+      expect(TextDraftsDao.deleteDraft).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 if deleting draft fails', async () => {
+      sl.set('TextDraftsDao', {
+        ...TextDraftsDao,
+        deleteDraft: jest.fn().mockRejectedValue('failed to delete draft'),
       });
 
       const response = await sendRequest();

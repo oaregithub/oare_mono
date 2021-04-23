@@ -10,8 +10,7 @@ import {
   AddFormSpellingResponse,
   CheckSpellingResponse,
   Pagination,
-  SearchDiscourseSpellingRow,
-  SpellingOccurrencesResponse,
+  SpellingOccurrenceResponseRow,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -85,12 +84,21 @@ async function checkSpelling(spelling: string): Promise<CheckSpellingResponse> {
 async function getSpellingTextOccurrences(
   spellingUuid: string,
   pagination: Pagination
-): Promise<SpellingOccurrencesResponse> {
+): Promise<SpellingOccurrenceResponseRow[]> {
   const { data } = await axios.get(
     `/dictionary/spellings/${spellingUuid}/texts`,
     {
       params: pagination,
     }
+  );
+  return data;
+}
+
+async function getSpellingTotalOccurrences(
+  spellingUuid: string
+): Promise<number> {
+  const { data } = await axios.get(
+    `/dictionary/spellings/${spellingUuid}/occurrences`
   );
   return data;
 }
@@ -115,4 +123,5 @@ export default {
   checkSpelling,
   getSpellingTextOccurrences,
   getDictionaryInfoByDiscourseUuid,
+  getSpellingTotalOccurrences,
 };

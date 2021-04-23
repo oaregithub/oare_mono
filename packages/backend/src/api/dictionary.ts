@@ -9,7 +9,6 @@ import {
   AddFormSpellingPayload,
   AddFormSpellingResponse,
   CheckSpellingResponse,
-  SpellingOccurrencesResponse,
   Token,
 } from '@oare/types';
 import {
@@ -90,27 +89,32 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
     try {
       tokens = tokenizeExplicitSpelling(spelling);
     } catch (e) {
-      const {
-        hash: {
-          loc: { last_column: errorIndex },
-        },
-      } = e;
+      let response: CheckSpellingResponse;
+      if (e.hash) {
+        const {
+          hash: {
+            loc: { last_column: errorIndex },
+          },
+        } = e;
 
-      let errorChar = spelling[errorIndex];
-      if (errorIndex === spelling.length) {
-        errorChar = 'EOF';
+        let errorChar = spelling[errorIndex];
+        if (errorIndex === spelling.length) {
+          errorChar = 'EOF';
+        }
+        response = {
+          errors: [`Unexpected token: ${errorChar}`],
+        };
+      } else {
+        response = {
+          errors: ['Invalid grammar'],
+        };
       }
-      const response: CheckSpellingResponse = {
-        errors: [`Unexpected token: ${errorChar}`],
-      };
       res.json(response);
       return;
     }
 
     const SignReadingDao = sl.get('SignReadingDao');
-    const signs = tokens.filter(
-      ({ tokenName: [tokenType] }) => tokenType === 'SIGN'
-    );
+    const signs = tokens.filter(({ tokenType }) => tokenType === 'SIGN');
     const signExistences = await Promise.all(
       signs.map(token => SignReadingDao.hasSign(normalizeSign(token.tokenText)))
     );
@@ -265,6 +269,22 @@ router
   });
 
 router
+  .route('/dictionary/spellings/:uuid/occurrences')
+  .get(async (req, res, next) => {
+    try {
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const { uuid } = req.params;
+      const totalOccurrences = await TextDiscourseDao.getTotalSpellingTexts(
+        uuid
+      );
+
+      res.json(totalOccurrences);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
   .route('/dictionary/spellings/:uuid/texts')
   .get(async (req, res, next) => {
     try {
@@ -275,10 +295,10 @@ router
       const { uuid } = req.params;
       const pagination = utils.extractPagination(req.query);
 
-      const {
-        rows,
-        totalResults,
-      } = await TextDiscourseDao.getSpellingTextOccurrences(uuid, pagination);
+      const rows = await TextDiscourseDao.getSpellingTextOccurrences(
+        uuid,
+        pagination
+      );
 
       const epigraphicUnits = await Promise.all(
         rows.map(({ textUuid }) =>
@@ -306,13 +326,10 @@ router
         );
       });
 
-      const response: SpellingOccurrencesResponse = {
-        totalResults,
-        rows: rows.map((r, index) => ({
-          ...r,
-          readings: readings[index],
-        })),
-      };
+      const response = rows.map((r, index) => ({
+        ...r,
+        readings: readings[index],
+      }));
 
       res.json(response);
     } catch (err) {

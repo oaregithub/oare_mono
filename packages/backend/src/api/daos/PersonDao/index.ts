@@ -64,7 +64,7 @@ class PersonDao {
         'obj_person.name_uuid'
       )
       .where('person.type', this.PERSON_TYPE)
-      .andWhereRaw(orWhereRawLetters)
+      .andWhereRaw(orWhereRawLetters.andWhere, orWhereRawLetters.bindings)
       .orderByRaw('IFNULL(dictionary_word_person.word, person.label)')
       .modify(qb => {
         if (pagination) {
@@ -76,20 +76,15 @@ class PersonDao {
     return people;
   }
 
-  // Stub for now
-  async getPersonReferences(personNameUuid: string): Promise<string[]> {
-    return [];
-  }
-
   async getSpellingUuidsByPerson(
     personNameUuid: string | null
   ): Promise<string[]> {
-    if (personNameUuid === null) {
+    if (!personNameUuid) {
       return [];
     }
 
     const personSpellings = await knex('person')
-      .select('dictionary_spelling.uuid')
+      .pluck('dictionary_spelling.uuid')
       .leftJoin(
         'dictionary_form',
         'dictionary_form.reference_uuid',
@@ -102,23 +97,8 @@ class PersonDao {
       )
       .where('person.name_uuid', personNameUuid);
 
-    return personSpellings.map(spelling => spelling.uuid);
+    return personSpellings;
   }
 }
-
-// async getpersonRoles(personUuid: string): Promise<string[]> {
-//     const personRoles = await knex({ ip1: 'item_properties' })
-//         .join({ td: 'text_discourse'}, 'td.uuid', 'ip1.reference_uuid')
-//         .rightJoin({ ps: 'person' }, 'ip1.object_uuid', 'ps.uuid')
-//         .leftjoin({ ip2: 'item_properties' }, 'ip2.reference_uuid', 'td.uuid')
-//         .select('value_uuid');
-//     return personRoles;
-// }
-//
-// async getRefCount(personUuid: string): Promise < number > {
-//     const refCount = await knex('text_discourse')
-//         .whereIn('uuid', knex('item_properties').select('reference_uuid').where('object_uuid', personUuid));
-//     return refCount;
-//     }
 
 export default new PersonDao();

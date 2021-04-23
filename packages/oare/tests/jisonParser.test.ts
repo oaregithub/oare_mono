@@ -1,15 +1,18 @@
+import { Token } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
   spellingHtmlReading,
+  separateTokenPhrases,
+  isNumberSign,
 } from '../src/spellingTokenizer';
 
 describe('spelling grammar test', () => {
-  it('parses number phrase', () => {
-    tokenizeExplicitSpelling('3');
-    tokenizeExplicitSpelling('1+4');
-    tokenizeExplicitSpelling('0.333+4+0.5');
-    tokenizeExplicitSpelling('1+LÁ+0.3');
-  });
+  it.each(['3', '1+4', '0.333+4+0.5', '1+LÁ+0.3'])(
+    'parses number phrase %s',
+    (numPhrase: string) => {
+      tokenizeExplicitSpelling(numPhrase);
+    }
+  );
 
   it('errors on incorrect decimals', () => {
     expect(() => tokenizeExplicitSpelling('0.0.3')).toThrow();
@@ -69,11 +72,13 @@ describe('spelling grammar test', () => {
     expect(() => tokenizeExplicitSpelling('(m)(d)')).toThrow();
   });
 
-  it('parses complement phrases', () => {
-    tokenizeExplicitSpelling('É{bé}{-}{et}');
-    tokenizeExplicitSpelling('10{eš₁₅}{-}{ra}{-}{at}');
-    tokenizeExplicitSpelling('É{be}{-}{ta}-tí-ni');
-    tokenizeExplicitSpelling('1{iš}{-}{té}-tù-ma');
+  it.each([
+    'É{bé}{-}{et}',
+    '10{eš₁₅}{-}{ra}{-}{at}',
+    'É{be}{-}{ta}-tí-ni',
+    '1{iš}{-}{té}-tù-ma',
+  ])('parses complement phrases (%s)', phrase => {
+    tokenizeExplicitSpelling(phrase);
   });
 
   it('errors on dangling complement separator', () => {
@@ -114,6 +119,19 @@ describe('spelling grammar test', () => {
     expect(spellingHtmlReading('5+2/3')).toBe('5+⅔');
   });
 
+  it.each(['9-tí-iš-e-šu-šu', '1.PÚZUR.IŠTAR', '10-ri-šu'])(
+    'parses numbers at beginning of alphabetic phrase (%s)',
+    phrase => {
+      tokenizeExplicitSpelling(phrase);
+    }
+  );
+
+  it.each(['9-tí.ITI', '10.ITI-tí'])(
+    'catches invalid number phrase (%s)',
+    phrase => {
+      expect(() => tokenizeExplicitSpelling(phrase)).toThrow();
+    }
+  );
   it('normalizes vowels 1-3', () => {
     expect(spellingHtmlReading('tam1')).toBe('<em>tam</em>');
     expect(spellingHtmlReading('tam2')).toBe('<em>tám</em>');
@@ -132,5 +150,101 @@ describe('spelling grammar test', () => {
     expect(spellingHtmlReading('S,U')).toBe('ṢU');
     expect(spellingHtmlReading('T,UM')).toBe('ṬUM');
     expect(spellingHtmlReading('HU')).toBe('ḪU');
+  });
+
+  it('catches number phrase mixed with sign phrase', () => {
+    expect(() => tokenizeExplicitSpelling('2+0.3-a-na')).toThrow();
+  });
+});
+
+describe('utility tests', () => {
+  describe('separateRawTokenPhrases', () => {
+    it('separates raw tokens by spaces', () => {
+      const rawTokens: Token[] = [
+        {
+          tokenType: 'SIGN',
+          tokenText: 'ab',
+        },
+        {
+          tokenType: '-',
+          tokenText: '-',
+        },
+        {
+          tokenType: 'SIGN',
+          tokenText: 'na',
+        },
+        {
+          tokenType: 'SPACE',
+          tokenText: ' ',
+        },
+        {
+          tokenType: 'SIGN',
+          tokenText: 'na',
+        },
+        {
+          tokenType: '$end',
+          tokenText: '',
+        },
+      ];
+
+      expect(separateTokenPhrases(rawTokens)).toStrictEqual([
+        [
+          {
+            tokenType: 'SIGN',
+            tokenText: 'ab',
+          },
+          {
+            tokenType: '-',
+            tokenText: '-',
+          },
+          {
+            tokenType: 'SIGN',
+            tokenText: 'na',
+          },
+        ],
+        [
+          {
+            tokenType: 'SIGN',
+            tokenText: 'na',
+          },
+          {
+            tokenType: '$end',
+            tokenText: '',
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('isNumberSign', () => {
+    it.each([
+      '1/2',
+      '1/3',
+      '1/4',
+      '1/5',
+      '1/6',
+      '2/3',
+      '3/4',
+      '5/6',
+      '½',
+      '⅓',
+      '¼',
+      '⅕',
+      '⅙',
+      '⅔',
+      '¾',
+      '⅚',
+      'LÁ',
+    ])('recognizes %s as a number', (num: string) => {
+      expect(isNumberSign(num)).toBe(true);
+    });
+
+    it.each(['0.3', '15', '12.4', '2'])('recognizes %s as a number', num => {
+      expect(isNumberSign(num)).toBe(true);
+    });
+
+    it.each(['abc', '03a', '0.0.3'])('knows %s is not a number', num => {
+      expect(isNumberSign(num)).toBe(false);
+    });
   });
 });

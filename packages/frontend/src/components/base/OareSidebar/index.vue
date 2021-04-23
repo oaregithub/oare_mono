@@ -17,6 +17,7 @@
       v-model="translit"
       @keyup.enter.native="performSearch"
       :disabled="textSearchDisabled"
+      :displayHelp="true"
     />
     <search-field
       class="mt-n3 test-words-input"
