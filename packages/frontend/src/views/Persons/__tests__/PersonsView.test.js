@@ -64,6 +64,7 @@ const testPeople = [
 
 const mockServer = {
   getPeople: jest.fn().mockResolvedValue(testPeople),
+  getPeopleCount: jest.fn().mockResolvedValue(testPeople.length),
 };
 
 const mockStore = {
@@ -72,11 +73,27 @@ const mockStore = {
   },
 };
 
+const observe = jest.fn();
+const unobserve = jest.fn();
+
 const mockLetter = 'T';
+const mockLimit = 30;
+const mockOffset = 0;
+const mockRequest = {
+  letter: mockLetter,
+  limit: mockLimit,
+  page: mockOffset,
+};
 const setup = () => {
   sl.set('serverProxy', mockServer);
   sl.set('globalActions', mockActions);
   sl.set('store', mockStore);
+
+  // v-intersect observer
+  window.IntersectionObserver = jest.fn(() => ({
+    observe,
+    unobserve,
+  }));
 };
 
 beforeEach(setup);
@@ -90,12 +107,14 @@ describe('PersonsView test', () => {
         letter: mockLetter,
       },
       stubs: ['router-link'],
+      listeners: () => null,
     });
 
-  it('gets people on load', async () => {
+  it('gets people and count on load', async () => {
     createWrapper();
     await flushPromises();
-    expect(mockServer.getPeople).toHaveBeenCalledWith(mockLetter);
+    expect(mockServer.getPeople).toHaveBeenCalledWith(mockRequest);
+    expect(mockServer.getPeopleCount).toHaveBeenCalledWith(mockRequest.letter);
   });
 
   it('shows snackbar when people retrieval fails', async () => {
