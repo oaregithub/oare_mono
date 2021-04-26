@@ -26,6 +26,7 @@ import comments from './api/comments';
 import errors from './api/errors';
 import threads from './api/threads';
 import cacheStatus from './api/cache_status';
+import textDiscourse from './api/text_discourse';
 
 export const API_PATH = '/api/v2';
 
@@ -57,4 +58,5 @@ export default (app: Express) => {
   app.use(API_PATH, errors);
   app.use(API_PATH, threads);
   app.use(API_PATH, cacheStatus);
+  app.use(API_PATH, textDiscourse);
 };

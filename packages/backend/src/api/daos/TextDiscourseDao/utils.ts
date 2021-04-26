@@ -1,4 +1,5 @@
 import { DiscourseUnit } from '@oare/types';
+import knex from '@/connection';
 import { DiscourseRow } from './index';
 
 export function discourseUnitOrder(discourse: DiscourseUnit): number {
@@ -65,4 +66,48 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
       return u.spelling || '';
     })
     .join(' ');
+}
+
+export async function incrementChildNum(
+  textUuid: string,
+  parentUuid: string,
+  childNum: number | null
+): Promise<void> {
+  if (childNum) {
+    await knex('text_discourse')
+      .where({
+        text_uuid: textUuid,
+        parent_uuid: parentUuid,
+      })
+      .andWhere('child_num', '>=', childNum)
+      .increment('child_num', 1);
+  }
+}
+
+export async function incrementWordOnTablet(
+  textUuid: string,
+  wordOnTablet: number | null
+): Promise<void> {
+  if (wordOnTablet) {
+    await knex('text_discourse')
+      .where({
+        text_uuid: textUuid,
+      })
+      .andWhere('word_on_tablet', '>=', wordOnTablet)
+      .increment('word_on_tablet', 1);
+  }
+}
+
+export async function incrementObjInText(
+  textUuid: string,
+  objInText: number | null
+): Promise<void> {
+  if (objInText) {
+    await knex('text_discourse')
+      .where({
+        text_uuid: textUuid,
+      })
+      .andWhere('obj_in_text', '>=', objInText)
+      .increment('obj_in_text', 1);
+  }
 }

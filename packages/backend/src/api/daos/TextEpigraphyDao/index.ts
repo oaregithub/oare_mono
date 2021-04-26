@@ -34,6 +34,13 @@ export interface SearchTextArgs {
   pagination: Pagination;
 }
 
+export interface AnchorInfo {
+  wordOnTablet: number | null;
+  objInText: number | null;
+  childNum: number | null;
+  treeUuid: string;
+}
+
 class TextEpigraphyDao {
   async getEpigraphicUnits(
     textUuid: string,
@@ -189,6 +196,64 @@ class TextEpigraphyDao {
       .first('uuid')
       .where('text_uuid', uuid);
     return !!response;
+  }
+
+  async getAnchorInfo(
+    epigraphyUuids: string[],
+    textUuid: string
+  ): Promise<AnchorInfo> {
+    const newWordCharOnTablet: number = (
+      await knex('text_epigraphy')
+        .whereIn('uuid', epigraphyUuids)
+        .pluck('char_on_tablet')
+        .orderBy('char_on_tablet', 'asc')
+    )[0];
+    const isFirstWord = newWordCharOnTablet === 1;
+    const direction = !isFirstWord ? '<' : '>';
+    const orderBy = !isFirstWord ? 'desc' : 'asc';
+    const anchorDiscourseUuid: string = (
+      await knex('text_epigraphy')
+        .where('text_uuid', textUuid)
+        .whereNotNull('discourse_uuid')
+        .andWhere(function () {
+          this.where('char_on_tablet', direction, newWordCharOnTablet);
+        })
+        .pluck('discourse_uuid')
+        .orderBy('char_on_tablet', orderBy)
+    )[0];
+    const anchorInfo: AnchorInfo = await knex('text_discourse')
+      .where('uuid', anchorDiscourseUuid)
+      .select(
+        'word_on_tablet AS wordOnTablet',
+        'obj_in_text AS objInText',
+        'child_num AS childNum',
+        'tree_uuid AS treeUuid'
+      )
+      .first();
+
+    if (!isFirstWord && anchorInfo.childNum) {
+      anchorInfo.childNum += 1;
+    }
+    if (!isFirstWord && anchorInfo.objInText) {
+      anchorInfo.objInText += 1;
+    }
+    if (!isFirstWord && anchorInfo.wordOnTablet) {
+      anchorInfo.wordOnTablet += 1;
+    }
+    return anchorInfo;
+  }
+
+  async addDiscourseUuid(
+    epigraphyUuids: string[],
+    discourseUuid: string
+  ): Promise<void> {
+    await Promise.all(
+      epigraphyUuids.map(epigUuid =>
+        knex('text_epigraphy')
+          .update('discourse_uuid', discourseUuid)
+          .where('uuid', epigUuid)
+      )
+    );
   }
 }
 

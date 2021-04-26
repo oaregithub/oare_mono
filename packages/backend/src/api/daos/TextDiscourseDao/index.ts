@@ -8,8 +8,15 @@ import {
   DiscourseUnitType,
 } from '@oare/types';
 import Knex from 'knex';
-
-import { createdNestedDiscourses, setDiscourseReading } from './utils';
+import { v4 } from 'uuid';
+import sl from '@/serviceLocator';
+import {
+  incrementChildNum,
+  incrementObjInText,
+  incrementWordOnTablet,
+  createdNestedDiscourses,
+  setDiscourseReading,
+} from './utils';
 
 export interface DiscourseRow {
   uuid: string;
@@ -248,6 +255,63 @@ class TextDiscourseDao {
       .where('uuid', discourseUuid)
       .first();
     return !!row;
+  }
+
+  async getParentUuidByTextUuid(textUuid: string): Promise<string> {
+    const row: { uuid: string } = await knex('text_discourse')
+      .where({
+        text_uuid: textUuid,
+        type: 'discourseUnit',
+      })
+      .select('uuid')
+      .first();
+    return row.uuid;
+  }
+
+  async insertNewDiscourseRow(
+    spelling: string,
+    epigraphyUuids: string[],
+    textUuid: string
+  ): Promise<void> {
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+    const DictionaryFormDao = sl.get('DictionaryFormDao');
+
+    const discourseUuid = v4();
+    const anchorInfo = await TextEpigraphyDao.getAnchorInfo(
+      epigraphyUuids,
+      textUuid
+    );
+    const parentUuid = await this.getParentUuidByTextUuid(textUuid);
+    const spellingUuid = await DictionarySpellingDao.getUuidBySpelling(
+      spelling
+    );
+    const spellingReferenceUuids = await DictionarySpellingDao.getReferenceUuidsBySpellingUuid(
+      spellingUuid
+    );
+    const transcription = await DictionaryFormDao.getTranscriptionBySpellingUuids(
+      spellingReferenceUuids
+    );
+
+    await incrementChildNum(textUuid, parentUuid, anchorInfo.childNum);
+    await incrementObjInText(textUuid, anchorInfo.objInText);
+    await incrementWordOnTablet(textUuid, anchorInfo.wordOnTablet);
+
+    await knex('text_discourse').insert({
+      uuid: discourseUuid,
+      type: 'word',
+      child_num: anchorInfo.childNum,
+      word_on_tablet: anchorInfo.wordOnTablet,
+      text_uuid: textUuid,
+      tree_uuid: anchorInfo.treeUuid,
+      parent_uuid: parentUuid,
+      spelling_uuid: spellingUuid,
+      spelling,
+      explicit_spelling: spelling,
+      transcription,
+      obj_in_text: anchorInfo.objInText,
+    });
+    await TextEpigraphyDao.addDiscourseUuid(epigraphyUuids, discourseUuid);
   }
 }
 

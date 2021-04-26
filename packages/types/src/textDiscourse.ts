@@ -22,3 +22,9 @@ export interface DiscourseUnit {
   paragraphLabel?: string;
   translation?: string;
 }
+
+export interface NewDiscourseRowPayload {
+  spelling: string;
+  epigraphyUuids: string[];
+  textUuid: string;
+}
