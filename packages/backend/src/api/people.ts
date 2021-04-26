@@ -2,7 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
-import { GetAllPeopleRequest, Pagination } from '@oare/types';
+import { Pagination } from '@oare/types';
 import { extractPagination } from '@/utils';
 
 const router = express.Router();
@@ -17,7 +17,10 @@ router
       const PersonDao = sl.get('PersonDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-      const people = await PersonDao.getAllPeople(letter, pagination);
+      const people = await PersonDao.getAllPeople(letter, {
+        limit: Number(pagination.limit),
+        page: Number(pagination.page),
+      });
 
       const spellingUuids = await Promise.all(
         people.map(person =>
@@ -57,9 +60,9 @@ router
       const { letter } = req.params;
       const PersonDao = sl.get('PersonDao');
 
-      const people = await PersonDao.getAllPeople(letter, null);
+      const count = await PersonDao.getAllPeopleCount(letter);
 
-      res.json(people.length);
+      res.json(count);
     } catch (err) {
       next(new HttpInternalError(err));
     }

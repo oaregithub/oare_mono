@@ -4,20 +4,6 @@ import request from 'supertest';
 import sl from '@/serviceLocator';
 
 describe('people api test', () => {
-  const mockStore = {
-    getters: {
-      user: {
-        uuid: 'testUuid',
-      },
-      permissions: [
-        {
-          name: 'PERSON',
-        },
-      ],
-      isAdmin: true,
-    },
-  };
-
   const mockCache = {
     insert: jest.fn(),
   };
@@ -51,6 +37,7 @@ describe('people api test', () => {
 
   const mockPersonDao = {
     getAllPeople: jest.fn().mockResolvedValue(allPeople),
+    getAllPeopleCount: jest.fn().mockResolvedValue(allPeople.length),
     getSpellingUuidsByPerson: jest
       .fn()
       .mockResolvedValueOnce(uuidsByPersonFirstCall)
@@ -81,7 +68,6 @@ describe('people api test', () => {
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
-    sl.set('store', mockStore);
     sl.set('cache', mockCache);
   };
 
@@ -92,12 +78,13 @@ describe('people api test', () => {
       limit: 30,
       offset: 0,
     };
+    const letter = 'A';
 
-    const PATH = `${API_PATH}/people/${encodeURIComponent(
-      'A'
-    )}?request=${JSON.stringify(mockRequest)}`;
+    const PATH = `${API_PATH}/people/${encodeURIComponent(letter)}?limit=${
+      mockRequest.limit
+    }&page=${mockRequest.offset}`;
 
-    const sendRequest = async (cookie = true) => {
+    const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
       return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
@@ -106,6 +93,10 @@ describe('people api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(allPeopleExpectedResponse);
+      expect(mockPersonDao.getAllPeople).toHaveBeenCalledWith(letter, {
+        limit: mockRequest.limit,
+        page: mockRequest.offset,
+      });
       expect(mockPersonDao.getSpellingUuidsByPerson).toHaveBeenCalled();
       expect(mockTextDiscourseDao.getTotalSpellingTexts).toHaveBeenCalled();
       expect(mockCache.insert).toHaveBeenCalled();
@@ -149,15 +140,6 @@ describe('people api test', () => {
     });
 
     it('fails to return people when does not have permission', async () => {
-      sl.set('store', {
-        getters: {
-          user: {
-            uuid: 'testUuid',
-          },
-          permissions: [],
-          isAdmin: false,
-        },
-      });
       sl.set('PermissionsDao', {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
@@ -169,7 +151,7 @@ describe('people api test', () => {
 
   describe('GET /people/:letter/count', () => {
     const PATH = `${API_PATH}/people/${encodeURIComponent('A')}/count`;
-    const sendRequest = async (cookie = true) => {
+    const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
       return cookie ? req.set('Cookie', 'jwt=token') : req;
     };

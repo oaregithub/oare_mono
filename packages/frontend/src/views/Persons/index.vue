@@ -36,10 +36,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import {
-  PersonDisplay,
-  GetAllPeopleRequest,
-} from '@oare/types';
+import { PersonDisplay, GetAllPeopleRequest } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -131,8 +128,6 @@ export default defineComponent({
       try {
         await getPeople();
         totalPersonCount.value = await server.getPeopleCount(props.letter);
-        console.log('Total People');
-        console.log(totalPersonCount.value);
       } catch (ex) {
         actions.showErrorSnackbar('Failed to retrieve person count');
       }
