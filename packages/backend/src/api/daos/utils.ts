@@ -21,7 +21,7 @@ function getOrWhereForLetters(
   tableAndColumn: string
 ): AndWhereWithBindings {
   let andWhere = '';
-  let bindings: string[] = [];
+  const bindings: string[] = [];
   letters.forEach((l: string, index: number) => {
     andWhere += `${tableAndColumn} REGEXP "^[(]?|^[?]|^[(]?|^[?]]"`;
     if (index !== letters.length - 1) {
