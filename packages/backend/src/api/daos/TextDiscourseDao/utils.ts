@@ -12,7 +12,7 @@ export function discourseUnitOrder(discourse: DiscourseUnit): number {
   return discourseUnitOrder(discourse.units[0]);
 }
 
-export function createdNestedDiscourses(
+export function createNestedDiscourses(
   discourseRows: DiscourseRow[],
   parentUuid: string | null
 ): DiscourseUnit[] {
@@ -30,7 +30,7 @@ export function createdNestedDiscourses(
       paragraphLabel,
       translation,
     }) => {
-      const unitChildren = createdNestedDiscourses(discourseRows, uuid);
+      const unitChildren = createNestedDiscourses(discourseRows, uuid);
       unitChildren.sort(
         (a, b) => discourseUnitOrder(a) - discourseUnitOrder(b)
       );

@@ -14,7 +14,7 @@ import {
   incrementChildNum,
   incrementObjInText,
   incrementWordOnTablet,
-  createdNestedDiscourses,
+  createNestedDiscourses,
   setDiscourseReading,
 } from './utils';
 
@@ -152,7 +152,7 @@ class TextDiscourseDao {
       .orderBy('text_discourse.word_on_tablet');
     const discourseRows: DiscourseRow[] = await discourseQuery;
 
-    const nestedDiscourses = createdNestedDiscourses(discourseRows, null);
+    const nestedDiscourses = createNestedDiscourses(discourseRows, null);
     nestedDiscourses.forEach(nestedDiscourse =>
       setDiscourseReading(nestedDiscourse)
     );
