@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { PersonDisplay } from '@oare/types';
+import { Pagination, PersonDisplay } from '@oare/types';
 import utils from '../utils';
 
 class PersonDao {
@@ -7,7 +7,7 @@ class PersonDao {
 
   public readonly CURRENT_PERSON_TYPE = 'current person';
 
-  async getAllPeople(letter: string): Promise<PersonDisplay[]> {
+  private getAllPeopleBaseQuery(letter: string) {
     const letters = letter.split('/');
 
     const orWhereRawLetters = utils.getOrWhereForLetters(
@@ -15,22 +15,7 @@ class PersonDao {
       'dictionary_word_person.word'
     );
 
-    const people = await knex('person')
-      .select(
-        'person.uuid',
-        'person.name_uuid AS personNameUuid',
-        knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
-        'dictionary_word_person.word AS person',
-        'person.relation',
-        'dictionary_word_relation_person.word AS relationPerson',
-        'person.relation_name_uuid AS relationPersonUuid',
-        'person.label',
-        'item_properties.level',
-        'value.name AS topValueRole',
-        'variable.name AS topVariableRole',
-        'item_properties.object_uuid AS roleObjUuid',
-        'obj_dictionary_word.word AS roleObjPerson'
-      )
+    return knex('person')
       .leftJoin(
         'dictionary_word AS dictionary_word_person',
         'dictionary_word_person.uuid',
@@ -61,9 +46,42 @@ class PersonDao {
         'obj_person.name_uuid'
       )
       .where('person.type', this.PERSON_TYPE)
-      .andWhereRaw(orWhereRawLetters.andWhere, orWhereRawLetters.bindings);
+      .andWhereRaw(orWhereRawLetters.andWhere, orWhereRawLetters.bindings)
+      .orderByRaw('IFNULL(dictionary_word_person.word, person.label)');
+  }
 
+  async getAllPeople(
+    letter: string,
+    pagination: Pagination
+  ): Promise<PersonDisplay[]> {
+    const people = await this.getAllPeopleBaseQuery(letter)
+      .select(
+        'person.uuid',
+        'person.name_uuid AS personNameUuid',
+        knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
+        'dictionary_word_person.word AS person',
+        'person.relation',
+        'dictionary_word_relation_person.word AS relationPerson',
+        'person.relation_name_uuid AS relationPersonUuid',
+        'person.label',
+        'item_properties.level',
+        'value.name AS topValueRole',
+        'variable.name AS topVariableRole',
+        'item_properties.object_uuid AS roleObjUuid',
+        'obj_dictionary_word.word AS roleObjPerson'
+      )
+      .modify(qb => {
+        qb.limit(pagination.limit);
+        qb.offset(pagination.page);
+      });
     return people;
+  }
+
+  async getAllPeopleCount(letter: string): Promise<number> {
+    const peopleCount = await this.getAllPeopleBaseQuery(letter)
+      .count({ count: 'person.uuid' })
+      .first();
+    return peopleCount ? Number(peopleCount.count) : 0;
   }
 
   async getSpellingUuidsByPerson(

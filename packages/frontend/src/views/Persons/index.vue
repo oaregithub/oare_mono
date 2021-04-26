@@ -56,6 +56,7 @@
         </v-col>
       </v-row>
     </div>
+    <div v-intersect="onIntersect"></div>
   </OareContentView>
 </template>
 
@@ -67,7 +68,7 @@ import {
   ref,
 } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import { PersonDisplay } from '@oare/types';
+import { PersonDisplay, GetAllPeopleRequest } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -89,6 +90,7 @@ export default defineComponent({
 
     const loading = ref(false);
     const personList = ref<PersonDisplay[]>([]);
+    const totalPersonCount = ref(0);
     const filteredPersonList = ref<PersonDisplay[]>([]);
 
     const searchFilter = (search: string, personDisplay: PersonDisplay) => {
@@ -125,7 +127,15 @@ export default defineComponent({
     const getPeople = async () => {
       try {
         loading.value = true;
-        personList.value = await server.getPeople(props.letter);
+
+        const request = {
+          letter: props.letter,
+          limit: 30,
+          page: personList.value.length,
+        } as GetAllPeopleRequest;
+        const people = await server.getPeople(request);
+        personList.value.push(...people);
+
         // Individual Person page
         // --Contains same info from phone book page (person, relation, personRelation, clickable references amount)
         // --Also contains expandable lists for each role (and then for future items such as siblings)
@@ -177,7 +187,36 @@ export default defineComponent({
 
     const isAdmin = computed(() => store.getters.isAdmin);
 
-    onMounted(getPeople);
+    const hasCollectedAllPeople = (): boolean => {
+      return totalPersonCount.value == personList.value.length;
+    };
+
+    const onIntersect = async (
+      _entries: any,
+      _observer: any,
+      isIntersecting: boolean
+    ) => {
+      if (isIntersecting && !hasCollectedAllPeople()) {
+        try {
+          await getPeople();
+        } catch (ex) {
+          actions.showErrorSnackbar('Failed to retrieve more people');
+        }
+      }
+
+      if (isIntersecting && hasCollectedAllPeople()) {
+        actions.showSnackbar('All people have been retrieved');
+      }
+    };
+
+    onMounted(async () => {
+      try {
+        await getPeople();
+        totalPersonCount.value = await server.getPeopleCount(props.letter);
+      } catch (ex) {
+        actions.showErrorSnackbar('Failed to retrieve person count');
+      }
+    });
 
     return {
       getFilteredPeople,
@@ -191,6 +230,7 @@ export default defineComponent({
       hasObjUuid,
       displayVariableRole,
       personNotFound,
+      onIntersect,
       loading,
       personList,
       filteredPersonList,
