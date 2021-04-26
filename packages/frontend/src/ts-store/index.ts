@@ -9,6 +9,7 @@ export interface State {
   user: null | User;
   authComplete: boolean;
   permissions: PermissionItem[];
+  idToken: string | null;
 }
 
 const state: State = reactive({
@@ -16,6 +17,7 @@ const state: State = reactive({
   user: null,
   authComplete: false,
   permissions: [],
+  idToken: null,
 });
 
 export default {
@@ -25,9 +27,13 @@ export default {
   setLanded: (landed: boolean) => {
     state.landed = landed;
   },
+  setIdToken: (idToken: string) => {
+    state.idToken = idToken;
+  },
   logout: () => {
     state.user = null;
     state.permissions = [];
+    state.idToken = null;
   },
   setAuthComplete: () => {
     state.authComplete = true;
@@ -53,6 +59,9 @@ export default {
     },
     get permissions() {
       return state.permissions;
+    },
+    get idToken() {
+      return state.idToken;
     },
   },
 };

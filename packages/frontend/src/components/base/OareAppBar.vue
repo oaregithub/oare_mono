@@ -32,8 +32,7 @@
 
     <v-spacer />
     <div>
-      <v-progress-circular v-if="loading" indeterminate />
-      <div class="d-flex align-center" v-else>
+      <div class="d-flex align-center">
         <v-btn
           v-if="isAdmin"
           class="mr-2 test-admin-btn"
@@ -130,7 +129,6 @@ export default defineComponent({
     const serverProxy = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const loading = ref(false);
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
         return 'OARE';
@@ -154,10 +152,7 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      loading.value = true;
       try {
-        const user = await serverProxy.refreshToken();
-        store.setUser(user);
         const permissions = await serverProxy.getUserPermissions();
         store.setPermissions(permissions);
       } catch (error) {
@@ -165,7 +160,6 @@ export default defineComponent({
           actions.showErrorSnackbar('There was an error initializing the site');
         }
       } finally {
-        loading.value = false;
         EventBus.$emit(ACTIONS.REFRESH);
         store.setAuthComplete();
       }
@@ -174,7 +168,6 @@ export default defineComponent({
     return {
       title,
       logout,
-      loading,
       isAdmin,
       isAuthenticated,
       firstName,

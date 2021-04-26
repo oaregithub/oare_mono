@@ -100,6 +100,8 @@ firebase.auth().onAuthStateChanged(async user => {
       uuid,
       isAdmin,
     });
+
+    store.setIdToken(idTokenResult.token);
   }
   if (!app) {
     app = new Vue({
