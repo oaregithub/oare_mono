@@ -1,11 +1,27 @@
-import { DisplayableWord } from './dictionary';
 import { EpigraphicTextWithReadings } from './epigraphies';
+import { Pagination } from './dictionary';
 
-export interface PersonDisplay extends DisplayableWord {
-  person: string;
-  relation: string;
-  relationPerson: string;
-  roles: string[];
+export interface PersonDisplay {
+  uuid: string;
+  word: string;
+  personNameUuid: string | null;
+  person: string | null;
+  relation: string | null;
+  relationPerson: string | null;
+  relationPersonUuid: string | null;
+  label: string;
+  topValueRole: string | null;
+  topVariableRole: string | null;
+  roleObjUuid: string | null;
+  roleObjPerson: string | null;
   totalReferenceCount: number;
+}
+
+export interface GetAllPeopleRequest extends Pagination {
+  letter: string;
+}
+
+export interface PersonReferences {
+  total: number;
   references: EpigraphicTextWithReadings[];
 }
