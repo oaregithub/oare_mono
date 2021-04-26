@@ -39,6 +39,7 @@ import ErrorLog from '../views/Admin/ErrorLog/ErrorLog.vue';
 import AdminCommentView from '../views/Admin/Comments/AdminCommentView.vue';
 import UserCommentView from '../views/Dashboard/UserCommentView.vue';
 import AdminSettings from '../views/Admin/Settings/AdminSettings.vue';
+import PersonsView from '../views/Persons/index.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -247,6 +248,12 @@ const routes: RouteConfig[] = [
     path: '/places/:letter',
     name: 'places',
     component: PlacesView,
+    props: true,
+  },
+  {
+    path: '/people/:letter',
+    name: 'people',
+    component: PersonsView,
     props: true,
   },
   {

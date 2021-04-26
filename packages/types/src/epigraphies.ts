@@ -146,3 +146,9 @@ export interface EpigraphicWord
   extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
   signs: EpigraphicSign[];
 }
+
+export interface EpigraphicTextWithReadings {
+  textUuid: string;
+  textName: string;
+  readings: string[];
+}
