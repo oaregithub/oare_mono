@@ -97,8 +97,12 @@ describe('people api test', () => {
         limit: mockRequest.limit,
         page: mockRequest.offset,
       });
-      expect(mockPersonDao.getSpellingUuidsByPerson).toHaveBeenCalled();
-      expect(mockTextDiscourseDao.getTotalSpellingTexts).toHaveBeenCalled();
+      expect(mockPersonDao.getSpellingUuidsByPerson).toHaveBeenCalledTimes(
+        allPeople.length
+      );
+      expect(mockTextDiscourseDao.getTotalSpellingTexts).toHaveBeenCalledTimes(
+        uuidsByPersonFirstCall.length + uuidsByPersonSecondCall.length
+      );
       expect(mockCache.insert).toHaveBeenCalled();
     });
 
