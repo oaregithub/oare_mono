@@ -15,6 +15,8 @@ export interface AliasWithName {
 class AliasDao {
   public readonly ABBREVIATION_TYPE = 'abbreviation';
 
+  public readonly LABEL_TYPE = 'label';
+
   public readonly CASE_NAME = 'Case';
 
   async getName(uuid: string): Promise<string> {
