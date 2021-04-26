@@ -10,7 +10,11 @@
     >
     </letter-filter>
 
-    <div v-for="(personInfo, idx) in filteredPersonList" :key="idx">
+    <div
+      v-for="(personInfo, idx) in filteredPersonList"
+      :key="idx"
+      class="test-person-row"
+    >
       <v-row dense>
         <v-col class="font-weight-bold">
           <span v-if="hasPerson(personInfo) && hasRelationPerson(personInfo)">
@@ -26,21 +30,26 @@
           <span v-else>
             <span @click="personNotFound">{{ personInfo.label }}</span>
           </span>
-          <a @click="displayPersonTexts(personInfo.personNameUuid)"
+          <a
+            @click="displayPersonTexts(personInfo.personNameUuid)"
+            class="test-person-texts"
             >({{ personInfo.totalReferenceCount }})</a
           >
         </v-col>
       </v-row>
       <v-row dense class="ml-4">
         <v-col class="d-flex flex-row">
-          <div v-if="hasValueRole(personInfo)" class="d-flex">
+          <div v-if="hasValueRole(personInfo)" class="d-flex test-role-value">
             {{ personInfo.topValueRole }}
           </div>
-          <div v-else-if="hasObjUuid(personInfo)" class="d-flex">
+          <div
+            v-else-if="hasObjUuid(personInfo)"
+            class="d-flex test-role-variable"
+          >
             {{ displayVariableRole(personInfo) }}
           </div>
           <div v-else class="d-flex">
-            <span v-if="isAdmin" class="error--text">{{
+            <span v-if="isAdmin" class="error--text test-role-variable-error">{{
               personInfo.topVariableRole
             }}</span>
           </div>
@@ -100,8 +109,8 @@ export default defineComponent({
       }
 
       if (
-        personDisplay.person !== null &&
-        personDisplay.relationPerson !== null
+        personDisplay.person === null &&
+        personDisplay.relationPerson === null
       ) {
         foundLabel = personDisplay.label.includes(lowerSearch);
       }
