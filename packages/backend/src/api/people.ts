@@ -15,33 +15,21 @@ router
       const { letter } = req.params;
       const cache = sl.get('cache');
       const PersonDao = sl.get('PersonDao');
-      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
       const people = await PersonDao.getAllPeople(letter, {
         limit: Number(pagination.limit),
         page: Number(pagination.page),
       });
 
-      const spellingUuids = await Promise.all(
-        people.map(person =>
-          PersonDao.getSpellingUuidsByPerson(person.personNameUuid)
-        )
-      );
-
       const resultPeople = await Promise.all(
-        people.map(async (person, index) => {
-          const totalOccurrences = await Promise.all(
-            spellingUuids[index].map(spellingUuid =>
-              TextDiscourseDao.getTotalSpellingTexts(spellingUuid)
-            )
+        people.map(async person => {
+          const count = await ItemPropertiesDao.getTextsOfPersonCount(
+            person.uuid
           );
-
           return {
             ...person,
-            totalReferenceCount: totalOccurrences.reduce(
-              (sum, nextValue) => sum + nextValue,
-              0
-            ),
+            totalReferenceCount: count,
           };
         })
       );
