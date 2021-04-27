@@ -6,6 +6,10 @@ import {
   SearchSpellingPayload,
   SearchDiscourseSpellingRow,
   SearchDiscourseSpellingResponse,
+  SearchNullDiscoursePayload,
+  SearchNullDiscourseResultRow,
+  SearchNullDiscourseLine,
+  SearchNullDiscourseCountPayload,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -146,6 +150,83 @@ router.route('/search').get(async (req, res, next) => {
       })),
     };
 
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/search/discourse/null/count').get(async (req, res, next) => {
+  try {
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
+    const {
+      characters,
+    } = (req.query as unknown) as SearchNullDiscourseCountPayload;
+
+    const characterUuids = await prepareCharactersForSearch(characters);
+    const userUuid = req.user ? req.user.uuid : null;
+
+    const count: number = await TextEpigraphyDao.searchNullDiscourseCount(
+      characterUuids,
+      userUuid
+    );
+
+    res.json(count);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/search/discourse/null').get(async (req, res, next) => {
+  try {
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const TextDao = sl.get('TextDao');
+
+    const {
+      page,
+      limit,
+      characters,
+    } = (req.query as unknown) as SearchNullDiscoursePayload;
+
+    const characterUuids = await prepareCharactersForSearch(characters);
+    const userUuid = req.user ? req.user.uuid : null;
+
+    const matchingLines: SearchNullDiscourseLine[] = await TextEpigraphyDao.searchNullDiscourse(
+      characterUuids,
+      page,
+      limit,
+      userUuid
+    );
+
+    const textNames = (
+      await Promise.all(
+        matchingLines.map(row => TextDao.getTextByUuid(row.textUuid))
+      )
+    ).map(text => (text ? text.name : ''));
+
+    const lineReadings = await Promise.all(
+      matchingLines.map(async ({ textUuid, line }) => {
+        const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(
+          textUuid
+        );
+
+        const renderer = createTabletRenderer(epigraphicUnits, {
+          textFormat: 'html',
+          lineNumbers: true,
+        });
+
+        return renderer.lineReading(line);
+      })
+    );
+
+    const response: SearchNullDiscourseResultRow[] = matchingLines.map(
+      (occ, idx) => ({
+        ...occ,
+        textName: textNames[idx],
+        reading: lineReadings[idx],
+      })
+    );
     res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));

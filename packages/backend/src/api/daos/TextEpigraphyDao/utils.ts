@@ -62,10 +62,10 @@ export function getSequentialCharacterQuery(
 
 export function getSearchQuery(
   characters: SearchCooccurrence[],
-  textTitle: string,
   textBlacklist: string[],
   textWhitelist: string[],
-  collectionBlacklist: string[]
+  collectionBlacklist: string[],
+  textTitle?: string
 ) {
   // Join text table so text names can be returned
   let query = knex('text_epigraphy')
