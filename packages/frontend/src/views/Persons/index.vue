@@ -247,6 +247,7 @@ export default defineComponent({
     const mount = async () => {
       try {
         initialLoading.value = true;
+        personList.value = [];
         await getPeople();
         totalPersonCount.value = await server.getPeopleCount(props.letter);
       } catch (ex) {
