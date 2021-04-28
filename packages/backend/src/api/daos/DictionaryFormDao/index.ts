@@ -207,6 +207,17 @@ class DictionaryFormDao {
 
     return row.referenceUuid;
   }
+
+  async getTranscriptionBySpellingUuids(
+    spellingUuids: string[]
+  ): Promise<string> {
+    const row: { form: string } = await knex('dictionary_form')
+      .where('uuid', spellingUuids)
+      .select('form')
+      .first();
+
+    return row.form;
+  }
 }
 
 export default new DictionaryFormDao();
