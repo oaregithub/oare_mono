@@ -1,5 +1,8 @@
 <template>
-  <OareContentView title="People (Prosopographical Index)" :loading="loading">
+  <OareContentView
+    title="People (Prosopographical Index)"
+    :loading="initialLoading"
+  >
     <letter-filter
       :wordList="personList"
       :letter="letter"
@@ -28,7 +31,9 @@
             </router-link>
           </span>
           <span v-else>
-            <span @click="personNotFound">{{ personInfo.label }}</span>
+            <span @click="personNotFound" class="mr-1">{{
+              personInfo.label
+            }}</span>
           </span>
           <a
             @click="displayPersonTexts(personInfo.personNameUuid)"
@@ -56,6 +61,31 @@
         </v-col>
       </v-row>
     </div>
+    <div
+      v-if="loading"
+      class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container"
+    >
+      <span class="mr-2"
+        >Loading more people... ({{ filteredPersonList.length }} /
+        {{ totalPersonCount }})</span
+      >
+      <v-progress-circular
+        indeterminate
+        :size="20"
+        color="primary"
+      ></v-progress-circular>
+    </div>
+
+    <div
+      v-if="intersecting && hasCollectedAllPeople()"
+      class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container"
+    >
+      <span
+        >All people have been retrieved ({{ personList.length }} /
+        {{ totalPersonCount }})</span
+      >
+    </div>
+
     <div v-intersect="onIntersect"></div>
   </OareContentView>
 </template>
@@ -66,6 +96,7 @@ import {
   defineComponent,
   onMounted,
   ref,
+  watch,
 } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
 import { PersonDisplay, GetAllPeopleRequest } from '@oare/types';
@@ -88,10 +119,13 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const store = sl.get('store');
 
+    const initialLoading = ref(false);
     const loading = ref(false);
+    const intersecting = ref(false);
     const personList = ref<PersonDisplay[]>([]);
     const totalPersonCount = ref(0);
     const filteredPersonList = ref<PersonDisplay[]>([]);
+    const peoplePerScroll = ref(50);
 
     const searchFilter = (search: string, personDisplay: PersonDisplay) => {
       const lowerSearch = search ? search.toLowerCase() : '';
@@ -101,20 +135,20 @@ export default defineComponent({
       let foundLabel = false;
 
       if (personDisplay.person !== null) {
-        foundPerson = personDisplay.person.includes(lowerSearch);
+        foundPerson = personDisplay.person.toLowerCase().includes(lowerSearch);
       }
 
       if (personDisplay.relationPerson !== null) {
-        foundRelationPerson = personDisplay.relationPerson.includes(
-          lowerSearch
-        );
+        foundRelationPerson = personDisplay.relationPerson
+          .toLowerCase()
+          .includes(lowerSearch);
       }
 
       if (
         personDisplay.person === null &&
         personDisplay.relationPerson === null
       ) {
-        foundLabel = personDisplay.label.includes(lowerSearch);
+        foundLabel = personDisplay.label.toLowerCase().includes(lowerSearch);
       }
 
       return foundPerson || foundRelationPerson || foundLabel;
@@ -130,7 +164,7 @@ export default defineComponent({
 
         const request = {
           letter: props.letter,
-          limit: 30,
+          limit: peoplePerScroll.value,
           page: personList.value.length,
         } as GetAllPeopleRequest;
         const people = await server.getPeople(request);
@@ -191,32 +225,45 @@ export default defineComponent({
       return totalPersonCount.value == personList.value.length;
     };
 
+    const isLoading = (): boolean => {
+      return loading.value || initialLoading.value;
+    };
+
     const onIntersect = async (
       _entries: any,
       _observer: any,
       isIntersecting: boolean
     ) => {
-      if (isIntersecting && !hasCollectedAllPeople()) {
+      intersecting.value = isIntersecting;
+      if (isIntersecting && !isLoading() && !hasCollectedAllPeople()) {
         try {
           await getPeople();
         } catch (ex) {
           actions.showErrorSnackbar('Failed to retrieve more people');
         }
       }
-
-      if (isIntersecting && hasCollectedAllPeople()) {
-        actions.showSnackbar('All people have been retrieved');
-      }
     };
 
-    onMounted(async () => {
+    const mount = async () => {
       try {
+        initialLoading.value = true;
         await getPeople();
         totalPersonCount.value = await server.getPeopleCount(props.letter);
       } catch (ex) {
         actions.showErrorSnackbar('Failed to retrieve person count');
+      } finally {
+        initialLoading.value = false;
       }
-    });
+    };
+
+    watch(
+      () => props.letter,
+      async () => {
+        await mount();
+      }
+    );
+
+    onMounted(mount);
 
     return {
       getFilteredPeople,
@@ -231,11 +278,21 @@ export default defineComponent({
       displayVariableRole,
       personNotFound,
       onIntersect,
+      hasCollectedAllPeople,
+      intersecting,
+      initialLoading,
       loading,
       personList,
       filteredPersonList,
+      totalPersonCount,
       isAdmin,
     };
   },
 });
 </script>
+
+<style scoped>
+.loading-container {
+  background-color: lightgray;
+}
+</style>

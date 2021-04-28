@@ -1,5 +1,10 @@
 import _ from 'lodash';
-import { EpigraphicUnit, Pagination, SearchCooccurrence } from '@oare/types';
+import {
+  EpigraphicUnit,
+  Pagination,
+  SearchCooccurrence,
+  SearchNullDiscourseLine,
+} from '@oare/types';
 import knex from '@/connection';
 import {
   getSearchQuery,
@@ -107,10 +112,10 @@ class TextEpigraphyDao {
 
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
-      title,
       textBlacklist,
       textWhitelist,
-      collectionBlacklist
+      collectionBlacklist,
+      title
     )
       .select('text_epigraphy.text_uuid AS uuid')
       .whereNotIn('text_epigraphy.text_uuid', notUuids)
@@ -178,10 +183,10 @@ class TextEpigraphyDao {
     const totalRows: number = (
       await getSearchQuery(
         characters,
-        title,
         textBlacklist,
         textWhitelist,
-        collectionBlacklist
+        collectionBlacklist,
+        title
       )
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
@@ -189,6 +194,84 @@ class TextEpigraphyDao {
     ).count;
 
     return totalRows;
+  }
+
+  async searchNullDiscourseCount(
+    characterUuids: SearchCooccurrence[],
+    userUuid: string | null
+  ): Promise<number> {
+    const {
+      blacklist: textBlacklist,
+      whitelist: textWhitelist,
+    } = await TextGroupDao.getUserBlacklist(userUuid);
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
+    const count = await getSearchQuery(
+      characterUuids,
+      textBlacklist,
+      textWhitelist,
+      collectionBlacklist
+    )
+      .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
+      .whereNull('text_epigraphy.discourse_uuid')
+      .first();
+
+    return count.count;
+  }
+
+  async searchNullDiscourse(
+    characterUuids: SearchCooccurrence[],
+    page: number,
+    limit: number,
+    userUuid: string | null
+  ): Promise<SearchNullDiscourseLine[]> {
+    const {
+      blacklist: textBlacklist,
+      whitelist: textWhitelist,
+    } = await TextGroupDao.getUserBlacklist(userUuid);
+    const {
+      blacklist: collectionBlacklist,
+    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+
+    const epigraphyUuidColumns: string[] = ['text_epigraphy.uuid'];
+    characterUuids[0].uuids.forEach((_char, idx) => {
+      if (idx > 0) {
+        epigraphyUuidColumns.push(`t0${idx}.uuid AS uuid${idx}`);
+      }
+    });
+
+    const occurrences = await getSearchQuery(
+      characterUuids,
+      textBlacklist,
+      textWhitelist,
+      collectionBlacklist
+    )
+      .distinct(epigraphyUuidColumns)
+      .whereNull('text_epigraphy.discourse_uuid')
+      .orderBy('text.name')
+      .orderBy('text_epigraphy.line')
+      .offset((page - 1) * limit)
+      .limit(limit);
+
+    const epigraphyOccurrencesUuids: string[][] = occurrences.map(row =>
+      Object.values(row)
+    );
+    const lineInfo = await Promise.all(
+      epigraphyOccurrencesUuids.map(uuids =>
+        knex('text_epigraphy')
+          .select('text_uuid AS textUuid', 'line')
+          .whereIn('uuid', uuids)
+          .first()
+      )
+    );
+
+    return epigraphyOccurrencesUuids.map((epigraphyUuids, idx) => ({
+      textUuid: lineInfo[idx].textUuid,
+      epigraphyUuids,
+      line: lineInfo[idx].line,
+    }));
   }
 
   async hasEpigraphy(uuid: string): Promise<boolean> {
