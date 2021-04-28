@@ -4,7 +4,7 @@ import sl from '@/serviceLocator';
 import firebase from '@/firebase';
 
 // Attach user object to each request
-async function attachUser(req: Request, res: Response, next: NextFunction) {
+async function attachUser(req: Request, _res: Response, next: NextFunction) {
   try {
     const UserDao = sl.get('UserDao');
     const idToken = req.headers.authorization;

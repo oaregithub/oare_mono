@@ -67,7 +67,6 @@ describe('LoginView test', () => {
       email: 'myemail@test.com',
       password: 'password',
     });
-    expect(mockStore.setUser).toHaveBeenCalled();
     expect(mockServer.getUserPermissions).toHaveBeenCalled();
     expect(mockStore.setPermissions).toHaveBeenCalled();
   });

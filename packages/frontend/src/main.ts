@@ -102,6 +102,9 @@ firebase.auth().onAuthStateChanged(async user => {
     });
 
     store.setIdToken(idTokenResult.token);
+
+    const permissions = await serverProxy.getUserPermissions();
+    store.setPermissions(permissions);
   }
   if (!app) {
     app = new Vue({

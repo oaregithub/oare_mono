@@ -106,17 +106,10 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  computed,
-  ref,
-  PropType,
-  onMounted,
-} from '@vue/composition-api';
+import { defineComponent, computed, PropType } from '@vue/composition-api';
 import VueI18n from 'vue-i18n';
 import Router from 'vue-router';
 import defaultI18n from '../../i18n/index';
-import EventBus, { ACTIONS } from '@/EventBus';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -134,7 +127,6 @@ export default defineComponent({
   setup({ router, i18n }, context) {
     const store = sl.get('store');
     const serverProxy = sl.get('serverProxy');
-    const actions = sl.get('globalActions');
 
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
@@ -157,20 +149,6 @@ export default defineComponent({
       router.push('/login');
       serverProxy.logout();
     };
-
-    onMounted(async () => {
-      try {
-        const permissions = await serverProxy.getUserPermissions();
-        store.setPermissions(permissions);
-      } catch (error) {
-        if (!(error.response && error.response.status === 400)) {
-          actions.showErrorSnackbar('There was an error initializing the site');
-        }
-      } finally {
-        EventBus.$emit(ACTIONS.REFRESH);
-        store.setAuthComplete();
-      }
-    });
 
     return {
       title,
