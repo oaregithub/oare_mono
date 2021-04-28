@@ -308,6 +308,128 @@ describe('search test', () => {
     });
   });
 
+  describe('GET /search/discourse/null', () => {
+    const PATH = `${API_PATH}/search/discourse/null`;
+    const query = {
+      page: 1,
+      limit: 50,
+      characters: 'a-na',
+    };
+
+    const mockTextEpigraphyDao = {
+      searchNullDiscourse: jest.fn().mockResolvedValue([
+        {
+          textUuid: 'testUuid',
+          epigraphyUuids: ['epigUuid1', 'epigUuid2'],
+          line: 1,
+        },
+      ]),
+      getEpigraphicUnits: jest.fn().mockResolvedValue([]),
+    };
+    const mockTextDao = {
+      getTextByUuid: jest.fn().mockResolvedValue({
+        name: 'testName',
+      }),
+    };
+    const mockSignReadingDao = {
+      getIntellisearchSignUuids: jest
+        .fn()
+        .mockResolvedValue(['mockSignReadingUuid']),
+    };
+
+    beforeEach(() => {
+      sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
+      sl.set('TextDao', mockTextDao);
+      sl.set('SignReadingDao', mockSignReadingDao);
+    });
+
+    const sendRequest = () => request(app).get(PATH).query(query);
+
+    it('successfully returns results with no discourse', async () => {
+      const response = await sendRequest();
+      expect(mockTextEpigraphyDao.searchNullDiscourse).toHaveBeenCalled();
+      expect(JSON.parse(response.text)).toEqual([
+        {
+          textUuid: 'testUuid',
+          epigraphyUuids: ['epigUuid1', 'epigUuid2'],
+          line: 1,
+          textName: 'testName',
+          reading: '',
+        },
+      ]);
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 500 on failed search', async () => {
+      sl.set('TextEpigraphyDao', {
+        ...mockTextEpigraphyDao,
+        searchNullDiscourse: jest
+          .fn()
+          .mockRejectedValue('failed to search null discourse'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 on failed text name retrieval', async () => {
+      sl.set('TextDao', {
+        ...mockTextDao,
+        getTextByUuid: jest.fn().mockRejectedValue('failed to get text info'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 on failed line rendering', async () => {
+      sl.set('TextEpigraphyDao', {
+        ...mockTextEpigraphyDao,
+        getEpigraphicUnits: jest
+          .fn()
+          .mockRejectedValue('failed to get epigraphic units'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /search/discourse/null/count', () => {
+    const PATH = `${API_PATH}/search/discourse/null/count`;
+    const query = { characters: 'a-na' };
+
+    const mockTextEpigraphyDao = {
+      searchNullDiscourseCount: jest.fn().mockResolvedValue(1),
+    };
+    const mockSignReadingDao = {
+      getIntellisearchSignUuids: jest
+        .fn()
+        .mockResolvedValue(['mockSignReadingUuid']),
+    };
+
+    beforeEach(() => {
+      sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
+      sl.set('SignReadingDao', mockSignReadingDao);
+    });
+
+    const sendRequest = () => request(app).get(PATH).query(query);
+
+    it('successfully gets null discourse search count', async () => {
+      const response = await sendRequest();
+      expect(JSON.parse(response.text)).toEqual(1);
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 500 on failed null discourse search count', async () => {
+      sl.set('TextEpigraphyDao', {
+        ...mockTextEpigraphyDao,
+        searchNullDiscourseCount: jest
+          .fn()
+          .mockRejectedValue('failed to get null discourse count'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
   describe('GET /search/spellings', () => {
     const PATH = `${API_PATH}/search/spellings?spelling=fakeSpelling`;
     const searchResults = [
