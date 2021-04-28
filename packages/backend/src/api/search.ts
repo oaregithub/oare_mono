@@ -6,7 +6,6 @@ import {
   SearchSpellingPayload,
   SearchDiscourseSpellingRow,
   SearchDiscourseSpellingResponse,
-  SearchNullDiscoursePayload,
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
   SearchNullDiscourseCountPayload,
@@ -15,6 +14,7 @@ import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
+import { parsedQuery, extractPagination } from '@/utils';
 
 const router = express.Router();
 
@@ -183,11 +183,9 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDao = sl.get('TextDao');
 
-    const {
-      page,
-      limit,
-      characters,
-    } = (req.query as unknown) as SearchNullDiscoursePayload;
+    const query = parsedQuery(req.originalUrl);
+    const characters = query.get('characters') || '';
+    const { page, limit } = extractPagination(req.query);
 
     const characterUuids = await prepareCharactersForSearch(characters);
     const userUuid = req.user ? req.user.uuid : null;
