@@ -25,13 +25,13 @@ describe('dictionary api test', () => {
     logEdit: jest.fn().mockResolvedValue(null),
   };
   const MockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue(null),
+    getUserByUuid: jest.fn().mockResolvedValue(null),
   };
   const mockCache = {
     clear: jest.fn(),
   };
   const AdminUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       uuid: 'user-uuid',
       isAdmin: true,
     }),
@@ -140,16 +140,24 @@ describe('dictionary api test', () => {
       });
     });
 
+    const sendRequest = (auth = true) => {
+      const req = request(app).post(PATH).send({ word: 'newWord' });
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
     it('prevents non-logged in users from posting', async () => {
       setup();
-      const response = await request(app).post(PATH).send({ word: 'newWord' });
+      const response = await sendRequest(false);
       expect(response.status).toBe(401);
     });
 
     it('prevents users without permission from posting', async () => {
       setup({
         UserDao: {
-          getUserByEmail: jest.fn().mockResolvedValue({
+          getUserByUuid: jest.fn().mockResolvedValue({
             isAdmin: false,
           }),
         },
@@ -157,18 +165,12 @@ describe('dictionary api test', () => {
       sl.set('PermissionsDao', {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
-      const response = await request(app)
-        .post(PATH)
-        .send({ word: 'newWord' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(403);
     });
 
     it('returns 200', async () => {
-      const response = await request(app)
-        .post(PATH)
-        .send({ word: 'newWord' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
         word: 'newWord',
@@ -176,10 +178,7 @@ describe('dictionary api test', () => {
     });
 
     it('logs edits', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ word: 'newWord' })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
       expect(MockLoggingEditsDao.logEdit).toHaveBeenCalledWith(
         'UPDATE',
         'user-uuid',
@@ -189,10 +188,7 @@ describe('dictionary api test', () => {
     });
 
     it('updates word spelling', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ word: 'newWord' })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
       expect(MockDictionaryWordDao.updateWordSpelling).toHaveBeenCalledWith(
         testUuid,
         'newWord'
@@ -200,10 +196,7 @@ describe('dictionary api test', () => {
     });
 
     it('clears cache', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ word: 'newWord' })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
       expect(mockCache.clear).toHaveBeenCalled();
     });
 
@@ -214,10 +207,7 @@ describe('dictionary api test', () => {
           logEdit: jest.fn().mockRejectedValue('Logging dao failure'),
         },
       });
-      const response = await request(app)
-        .post(PATH)
-        .send({ word: 'newWord' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
@@ -230,10 +220,7 @@ describe('dictionary api test', () => {
             .mockRejectedValue('Dictionary word dao failure'),
         },
       });
-      const response = await request(app)
-        .post(PATH)
-        .send({ word: 'newWord' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
   });
@@ -258,16 +245,24 @@ describe('dictionary api test', () => {
       });
     });
 
-    it('prevents users without permission from posting', async () => {
-      setup();
-      let response = await request(app)
+    const sendRequest = (auth = true) => {
+      const req = request(app)
         .post(PATH)
         .send({ translations: updatedTranslations });
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('prevents users without permission from posting', async () => {
+      setup();
+      let response = await sendRequest(false);
       expect(response.status).toBe(401);
 
       setup({
         UserDao: {
-          getUserByEmail: jest.fn().mockResolvedValue({
+          getUserByUuid: jest.fn().mockResolvedValue({
             isAdmin: false,
           }),
         },
@@ -275,19 +270,13 @@ describe('dictionary api test', () => {
       sl.set('PermissionsDao', {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
-      response = await request(app)
-        .post(PATH)
-        .send({ translations: updatedTranslations })
-        .set('Cookie', 'jwt=token');
+      response = await sendRequest();
 
       expect(response.status).toBe(403);
     });
 
     it('returns 200', async () => {
-      const response = await request(app)
-        .post(PATH)
-        .send({ translations: updatedTranslations })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
 
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
@@ -296,10 +285,7 @@ describe('dictionary api test', () => {
     });
 
     it('correctly updates translations', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ translations: updatedTranslations })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
 
       expect(TranslationWordDao.updateTranslations).toHaveBeenCalledWith(
         'user-uuid',
@@ -309,10 +295,7 @@ describe('dictionary api test', () => {
     });
 
     it('clears cache', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ translations: updatedTranslations })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
       expect(mockCache.clear).toHaveBeenCalled();
     });
 
@@ -324,10 +307,7 @@ describe('dictionary api test', () => {
         },
       });
 
-      const response = await request(app)
-        .post(PATH)
-        .send({ translations: updatedTranslations })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
   });
@@ -352,16 +332,24 @@ describe('dictionary api test', () => {
       });
     });
 
-    it('prevents users without permission from posting', async () => {
-      setup();
-      let response = await request(app)
+    const sendRequest = (auth = true) => {
+      const req = request(app)
         .post(PATH)
         .send({ uuid: 'test-uuid', form: 'newForm' });
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('prevents users without permission from posting', async () => {
+      setup();
+      let response = await sendRequest(false);
       expect(response.status).toBe(401);
 
       setup({
         UserDao: {
-          getUserByEmail: jest.fn().mockResolvedValue({
+          getUserByUuid: jest.fn().mockResolvedValue({
             isAdmin: false,
           }),
         },
@@ -369,33 +357,24 @@ describe('dictionary api test', () => {
       sl.set('PermissionsDao', {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
-      response = await request(app)
-        .post(PATH)
-        .send({ uuid: 'form-uuid', form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      response = await sendRequest();
       expect(response.status).toBe(403);
     });
 
     it('returns 200', async () => {
-      const response = await request(app)
-        .post(PATH)
-        .send({ uuid: 'form-uuid', form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
         uuid: testUuid,
         form: {
-          uuid: 'form-uuid',
+          uuid: 'test-uuid',
           form: 'newForm',
         },
       });
     });
 
     it('logs edits to form', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ uuid: testUuid, form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
       expect(MockLoggingEditsDao.logEdit).toHaveBeenCalledWith(
         'UPDATE',
         'user-uuid',
@@ -414,18 +393,12 @@ describe('dictionary api test', () => {
     });
 
     it('updates form', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ uuid: testUuid, form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
       expect(FormDao.updateForm).toHaveBeenCalledWith(testUuid, 'newForm');
     });
 
     it('updates discourse transcriptions', async () => {
-      await request(app)
-        .post(PATH)
-        .send({ uuid: testUuid, form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      await sendRequest();
 
       discourseUuids.forEach(uuid => {
         expect(DiscourseDao.updateDiscourseTranscription).toHaveBeenCalledWith(
@@ -443,10 +416,7 @@ describe('dictionary api test', () => {
         },
       });
 
-      const response = await request(app)
-        .post(PATH)
-        .send({ uuid: testUuid, form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
@@ -458,10 +428,7 @@ describe('dictionary api test', () => {
         },
       });
 
-      const response = await request(app)
-        .post(PATH)
-        .send({ uuid: testUuid, form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
@@ -476,10 +443,7 @@ describe('dictionary api test', () => {
         },
       });
 
-      const response = await request(app)
-        .post(PATH)
-        .send({ uuid: testUuid, form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
@@ -495,10 +459,7 @@ describe('dictionary api test', () => {
         },
       });
 
-      const response = await request(app)
-        .post(PATH)
-        .send({ uuid: testUuid, form: 'newForm' })
-        .set('Cookie', 'jwt=token');
+      const response = await sendRequest();
       expect(response.status).toBe(500);
     });
   });
@@ -540,11 +501,16 @@ describe('dictionary api test', () => {
       sl.set('PermissionsDao', MockPermissionsDao);
     };
 
-    const sendRequest = () =>
-      request(app).put(PATH).send(mockPayload).set('Cookie', 'jwt=token');
+    const sendRequest = (auth = true) => {
+      const req = request(app).put(PATH).send(mockPayload);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
 
     it("doesn't allow non-logged-in users to post", async () => {
-      const response = await request(app).put(PATH).send(mockPayload);
+      const response = await sendRequest(false);
       expect(response.status).toBe(401);
     });
 
@@ -692,11 +658,15 @@ describe('dictionary api test', () => {
       sl.set('PermissionsDao', MockPermissionsDao);
     };
 
-    const sendRequest = () =>
-      request(app).post(PATH).send(payload).set('Cookie', 'jwt=token');
-
+    const sendRequest = (auth = true) => {
+      const req = request(app).post(PATH).send(payload);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
     it("doesn't allow non-logged-in users to post", async () => {
-      const response = await request(app).post(PATH).send(payload);
+      const response = await sendRequest(false);
       expect(response.status).toBe(401);
     });
 
@@ -865,7 +835,7 @@ describe('dictionary api test', () => {
     };
 
     const sendRequest = () =>
-      request(app).delete(PATH).set('Cookie', 'jwt=token');
+      request(app).delete(PATH).set('Authorization', 'token');
 
     it("doesn't allow non-logged-in users to delete", async () => {
       const response = await request(app).delete(PATH);

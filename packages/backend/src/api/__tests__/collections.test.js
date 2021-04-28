@@ -50,7 +50,7 @@ describe('GET /collections', () => {
   const setup = () => {
     sl.set('CollectionDao', mockCollectionDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -58,7 +58,8 @@ describe('GET /collections', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful collections retrieval', async () => {
     const response = await sendRequest();
@@ -115,7 +116,8 @@ describe('GET /collections/:uuid', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful collection text retrieval', async () => {
     const response = await sendRequest();

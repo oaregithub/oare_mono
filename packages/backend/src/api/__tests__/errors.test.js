@@ -14,7 +14,7 @@ describe('POST /errors', () => {
     logError: jest.fn().mockResolvedValue(),
   };
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       uuid: 'testUuid',
     }),
   };
@@ -27,7 +27,10 @@ describe('POST /errors', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockErrorsPayload).set('Cookie', 'jwt=token');
+    request(app)
+      .post(PATH)
+      .send(mockErrorsPayload)
+      .set('Authorization', 'token');
 
   it('returns 201 on successful error log', async () => {
     const response = await sendRequest();
@@ -82,7 +85,7 @@ describe('GET /errors', () => {
     getErrorLog: jest.fn().mockResolvedValue(mockErrorsRow),
   };
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       uuid: 'testUuid',
       isAdmin: true,
     }),
@@ -95,7 +98,8 @@ describe('GET /errors', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful error log retrieval', async () => {
     const response = await sendRequest();
@@ -114,7 +118,7 @@ describe('GET /errors', () => {
 
   it('does not allow non-admins to retrieve error log', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -140,7 +144,7 @@ describe('PATCH /errors', () => {
     updateErrorStatus: jest.fn().mockResolvedValue(),
   };
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
@@ -156,7 +160,7 @@ describe('PATCH /errors', () => {
     request(app)
       .patch(PATH)
       .send(mockUpdateErrorStatusPayload)
-      .set('Cookie', 'jwt=token');
+      .set('Authorization', 'token');
 
   it('returns 204 on successful status update', async () => {
     const response = await sendRequest();
@@ -174,7 +178,7 @@ describe('PATCH /errors', () => {
 
   it('does not allow non-admins to update error status', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });

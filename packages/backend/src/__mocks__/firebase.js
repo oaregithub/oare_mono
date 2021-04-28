@@ -1,8 +1,8 @@
-jest.mock('./src/firebase', () => ({
+export default {
   auth: () => ({
     verifyIdToken: () =>
       Promise.resolve({
         uid: 'userUid',
       }),
   }),
-}));
+};

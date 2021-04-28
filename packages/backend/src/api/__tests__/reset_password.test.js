@@ -74,9 +74,7 @@ describe('POST /reset_password', () => {
 
   it('returns 500 if user dao fails', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest
-        .fn()
-        .mockRejectedValue('Failed to get user by email'),
+      getUserByUuid: jest.fn().mockRejectedValue('Failed to get user by email'),
     });
 
     const response = await sendRequest();
