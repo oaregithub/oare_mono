@@ -23,7 +23,17 @@ async function getPeopleCount(letter: string): Promise<number> {
   return data;
 }
 
+async function getPeopleTextOccurrenceCount(
+  personUuid: string
+): Promise<number> {
+  const { data } = await axios.get(
+    `people/${encodeURIComponent(personUuid)}/occurrences/count`
+  );
+  return data;
+}
+
 export default {
   getPeopleCount,
   getPeople,
+  getPeopleTextOccurrenceCount,
 };

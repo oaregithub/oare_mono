@@ -35,11 +35,14 @@
               personInfo.label
             }}</span>
           </span>
-          <a
-            @click="displayPersonTexts(personInfo.personNameUuid)"
-            class="test-person-texts"
-            >({{ personInfo.totalReferenceCount }})</a
-          >
+          <persons-text-occurrences
+            :person-uuid="personInfo.uuid"
+          ></persons-text-occurrences>
+          <!--          <a-->
+          <!--            @click="displayPersonTexts(personInfo.personNameUuid)"-->
+          <!--            class="test-person-texts"-->
+          <!--            >({{ personInfo.totalReferenceCount }})</a-->
+          <!--          >-->
         </v-col>
       </v-row>
       <v-row dense class="ml-4">
@@ -99,6 +102,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
+import PersonsTextOccurrences from '@/views/Persons/components/PersonsTextOccurrences.vue';
 import { PersonDisplay, GetAllPeopleRequest } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -106,6 +110,7 @@ export default defineComponent({
   name: 'PersonsView',
   components: {
     LetterFilter,
+    PersonsTextOccurrences,
   },
   props: {
     letter: {
