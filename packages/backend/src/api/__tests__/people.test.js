@@ -28,24 +28,16 @@ describe('people api test', () => {
     },
   ];
 
-  const uuidsByPersonFirstCall = ['person1uuid1', 'person1uuid2'];
-  const uuidsByPersonSecondCall = [
-    'person2uuid1',
-    'person2uuid2',
-    'person2uuid3',
-  ];
-
   const mockPersonDao = {
     getAllPeople: jest.fn().mockResolvedValue(allPeople),
     getAllPeopleCount: jest.fn().mockResolvedValue(allPeople.length),
-    getSpellingUuidsByPerson: jest
-      .fn()
-      .mockResolvedValueOnce(uuidsByPersonFirstCall)
-      .mockResolvedValueOnce(uuidsByPersonSecondCall),
   };
 
-  const mockTextDiscourseDao = {
-    getTotalSpellingTexts: jest.fn().mockResolvedValue(1),
+  const mockItemPropertiesDao = {
+    getTextsOfPersonCount: jest
+      .fn()
+      .mockResolvedValueOnce(allPeopleExpectedResponse[0].totalReferenceCount)
+      .mockResolvedValueOnce(allPeopleExpectedResponse[1].totalReferenceCount),
   };
 
   const mockUserDao = {
@@ -67,7 +59,7 @@ describe('people api test', () => {
     sl.set('PersonDao', mockPersonDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
-    sl.set('TextDiscourseDao', mockTextDiscourseDao);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
     sl.set('cache', mockCache);
   };
 
@@ -97,11 +89,8 @@ describe('people api test', () => {
         limit: mockRequest.limit,
         page: mockRequest.offset,
       });
-      expect(mockPersonDao.getSpellingUuidsByPerson).toHaveBeenCalledTimes(
+      expect(mockItemPropertiesDao.getTextsOfPersonCount).toHaveBeenCalledTimes(
         allPeople.length
-      );
-      expect(mockTextDiscourseDao.getTotalSpellingTexts).toHaveBeenCalledTimes(
-        uuidsByPersonFirstCall.length + uuidsByPersonSecondCall.length
       );
       expect(mockCache.insert).toHaveBeenCalled();
     });
@@ -131,8 +120,8 @@ describe('people api test', () => {
     });
 
     it('fails to return people when getting total text occurrences of people fails.', async () => {
-      sl.set('TextDiscourseDao', {
-        getTotalSpellingTexts: jest
+      sl.set('ItemPropertiesDao', {
+        getTextsOfPersonCount: jest
           .fn()
           .mockRejectedValue(
             'Error, total text occurrences unable to be retrieved.'
