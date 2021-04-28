@@ -97,6 +97,24 @@ class DictionarySpellingDao {
 
     return row.referenceUuid;
   }
+
+  async getUuidBySpelling(spelling: string): Promise<string> {
+    const row: { uuid: string } = await knex('dictionary_spelling')
+      .where('spelling', spelling)
+      .select('uuid')
+      .first();
+    return row.uuid;
+  }
+
+  async getReferenceUuidsBySpellingUuid(
+    spellingUuid: string
+  ): Promise<string[]> {
+    const row = await knex('dictionary_spelling')
+      .where('uuid', spellingUuid)
+      .pluck('reference_uuid');
+
+    return row;
+  }
 }
 
 export default new DictionarySpellingDao();

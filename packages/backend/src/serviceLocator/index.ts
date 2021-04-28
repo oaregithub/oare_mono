@@ -27,6 +27,7 @@ import ErrorsDao from '@/api/daos/ErrorsDao';
 import CollectionDao from '@/api/daos/CollectionDao';
 import CacheStatusDao from '@/api/daos/CacheStatusDao';
 import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
+import PersonDao from '@/api/daos/PersonDao';
 import * as utils from '@/utils';
 import mailer from '@/mailer';
 
@@ -62,6 +63,7 @@ export type ServiceTypes = {
   ErrorsDao: typeof ErrorsDao;
   CacheStatusDao: typeof CacheStatusDao;
   CollectionTextUtils: typeof CollectionTextUtils;
+  PersonDao: typeof PersonDao;
   utils: typeof utils;
   mailer: typeof mailer;
 };

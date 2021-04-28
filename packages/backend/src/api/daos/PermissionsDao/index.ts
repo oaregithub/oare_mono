@@ -24,6 +24,12 @@ class PermissionsDao {
         'Allow group users to view "Places" tab and access associated pages',
     },
     {
+      name: 'PEOPLE',
+      type: 'pages',
+      description:
+        'Allow group users to view "People" tab and access associated pages',
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',

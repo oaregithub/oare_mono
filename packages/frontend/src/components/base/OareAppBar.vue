@@ -92,6 +92,13 @@
           v-if="permissions.includes('PLACES')"
           >Places</v-btn
         >
+        <v-btn
+          class="test-places"
+          text
+          to="/people/A"
+          v-if="permissions.includes('PEOPLE')"
+          >People</v-btn
+        >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
         <v-btn class="test-search" text to="/search/texts">Search</v-btn>
       </v-row>

@@ -15,3 +15,4 @@ export * from './src/words';
 export * from './src/tokens';
 export * from './src/textDiscourse';
 export * from './src/errors';
+export * from './src/people';
