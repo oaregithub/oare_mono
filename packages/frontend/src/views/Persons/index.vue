@@ -13,60 +13,65 @@
     >
     </letter-filter>
 
-    <div
-      v-for="(personInfo, idx) in filteredPersonList"
-      :key="idx"
-      class="test-person-row"
-    >
-      <v-row dense>
-        <v-col class="font-weight-bold">
-          <span v-if="hasPerson(personInfo) && hasRelationPerson(personInfo)">
-            <router-link
-              :to="`person/${personInfo.uuid}`"
-              class="text-decoration-none"
+    <div class="min-height-container">
+      <div
+        v-for="(personInfo, idx) in filteredPersonList"
+        :key="idx"
+        class="test-person-row"
+      >
+        <v-row dense>
+          <v-col class="font-weight-bold">
+            <span v-if="hasPerson(personInfo) && hasRelationPerson(personInfo)">
+              <router-link
+                :to="`person/${personInfo.uuid}`"
+                class="text-decoration-none"
+              >
+                <span class="mr-1">{{ personInfo.person }}</span>
+                <span>{{ personInfo.relation }}</span>
+                <span class="ml-1 mr-1">{{ personInfo.relationPerson }}</span>
+              </router-link>
+            </span>
+            <span v-else>
+              <span @click="personNotFound" class="mr-1">{{
+                personInfo.label
+              }}</span>
+            </span>
+            <a
+              @click="displayPersonTexts(personInfo.personNameUuid)"
+              class="test-person-texts"
+              >({{ personInfo.totalReferenceCount }})</a
             >
-              <span class="mr-1">{{ personInfo.person }}</span>
-              <span>{{ personInfo.relation }}</span>
-              <span class="ml-1 mr-1">{{ personInfo.relationPerson }}</span>
-            </router-link>
-          </span>
-          <span v-else>
-            <span @click="personNotFound" class="mr-1">{{
-              personInfo.label
-            }}</span>
-          </span>
-          <a
-            @click="displayPersonTexts(personInfo.personNameUuid)"
-            class="test-person-texts"
-            >({{ personInfo.totalReferenceCount }})</a
-          >
-        </v-col>
-      </v-row>
-      <v-row dense class="ml-4">
-        <v-col class="d-flex flex-row">
-          <div v-if="hasValueRole(personInfo)" class="d-flex test-role-value">
-            {{ personInfo.topValueRole }}
-          </div>
-          <div
-            v-else-if="hasObjUuid(personInfo)"
-            class="d-flex test-role-variable"
-          >
-            {{ displayVariableRole(personInfo) }}
-          </div>
-          <div v-else class="d-flex">
-            <span v-if="isAdmin" class="error--text test-role-variable-error">{{
-              personInfo.topVariableRole
-            }}</span>
-          </div>
-        </v-col>
-      </v-row>
+          </v-col>
+        </v-row>
+        <v-row dense class="ml-4">
+          <v-col class="d-flex flex-row">
+            <div v-if="hasValueRole(personInfo)" class="d-flex test-role-value">
+              {{ personInfo.topValueRole }}
+            </div>
+            <div
+              v-else-if="hasObjUuid(personInfo)"
+              class="d-flex test-role-variable"
+            >
+              {{ displayVariableRole(personInfo) }}
+            </div>
+            <div v-else class="d-flex">
+              <span
+                v-if="isAdmin"
+                class="error--text test-role-variable-error"
+                >{{ personInfo.topVariableRole }}</span
+              >
+            </div>
+          </v-col>
+        </v-row>
+      </div>
     </div>
+
     <div
       v-if="loading"
       class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container"
     >
       <span class="mr-2"
-        >Loading more people... ({{ filteredPersonList.length }} /
+        >Loading more people... ({{ personList.length }} /
         {{ totalPersonCount }})</span
       >
       <v-progress-circular
@@ -77,16 +82,18 @@
     </div>
 
     <div
-      v-if="intersecting && hasCollectedAllPeople()"
+      v-if="!isLoading()"
       class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container"
     >
       <span
-        >All people have been retrieved ({{ personList.length }} /
-        {{ totalPersonCount }})</span
+        >{{ filteredPersonList.length }} / {{ personList.length }} results found
+      </span>
+      <span class="ml-2" v-if="hasCollectedAllPeople()">
+        (All people have been retrieved)</span
       >
     </div>
 
-    <div v-intersect="onIntersect"></div>
+    <div class="mt-5" v-intersect="onIntersect"></div>
   </OareContentView>
 </template>
 
@@ -280,6 +287,7 @@ export default defineComponent({
       personNotFound,
       onIntersect,
       hasCollectedAllPeople,
+      isLoading,
       intersecting,
       initialLoading,
       loading,
@@ -295,5 +303,8 @@ export default defineComponent({
 <style scoped>
 .loading-container {
   background-color: lightgray;
+}
+.min-height-container {
+  min-height: 540px;
 }
 </style>
