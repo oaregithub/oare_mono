@@ -77,7 +77,7 @@ const observe = jest.fn();
 const unobserve = jest.fn();
 
 const mockLetter = 'T';
-const mockLimit = 30;
+const mockLimit = 50;
 const mockOffset = 0;
 const mockRequest = {
   letter: mockLetter,
