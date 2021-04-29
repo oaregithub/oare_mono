@@ -16,10 +16,6 @@ export interface PersonDisplay {
   roleObjPerson: string | null;
 }
 
-export interface GetAllPeopleRequest extends Pagination {
-  letter: string;
-}
-
 export interface PersonReferences {
   total: number;
   references: EpigraphicTextWithReadings[];

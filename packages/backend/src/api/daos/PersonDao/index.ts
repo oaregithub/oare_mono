@@ -50,30 +50,22 @@ class PersonDao {
       .orderByRaw('IFNULL(dictionary_word_person.word, person.label)');
   }
 
-  async getAllPeople(
-    letter: string,
-    pagination: Pagination
-  ): Promise<PersonDisplay[]> {
-    const people = await this.getAllPeopleBaseQuery(letter)
-      .select(
-        'person.uuid',
-        'person.name_uuid AS personNameUuid',
-        knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
-        'dictionary_word_person.word AS person',
-        'person.relation',
-        'dictionary_word_relation_person.word AS relationPerson',
-        'person.relation_name_uuid AS relationPersonUuid',
-        'person.label',
-        'item_properties.level',
-        'value.name AS topValueRole',
-        'variable.name AS topVariableRole',
-        'item_properties.object_uuid AS roleObjUuid',
-        'obj_dictionary_word.word AS roleObjPerson'
-      )
-      .modify(qb => {
-        qb.limit(pagination.limit);
-        qb.offset(pagination.page);
-      });
+  async getAllPeople(letter: string): Promise<PersonDisplay[]> {
+    const people = await this.getAllPeopleBaseQuery(letter).select(
+      'person.uuid',
+      'person.name_uuid AS personNameUuid',
+      knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
+      'dictionary_word_person.word AS person',
+      'person.relation',
+      'dictionary_word_relation_person.word AS relationPerson',
+      'person.relation_name_uuid AS relationPersonUuid',
+      'person.label',
+      'item_properties.level',
+      'value.name AS topValueRole',
+      'variable.name AS topVariableRole',
+      'item_properties.object_uuid AS roleObjUuid',
+      'obj_dictionary_word.word AS roleObjPerson'
+    );
     return people;
   }
 

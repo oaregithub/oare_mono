@@ -1,18 +1,8 @@
-import { GetAllPeopleRequest, PersonDisplay } from '@oare/types';
+import { PersonDisplay } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function getPeople(
-  request: GetAllPeopleRequest
-): Promise<PersonDisplay[]> {
-  const { data } = await axios.get(
-    `/people/${encodeURIComponent(request.letter)}`,
-    {
-      params: {
-        limit: request.limit,
-        page: request.page,
-      },
-    }
-  );
+async function getPeople(letter: string): Promise<PersonDisplay[]> {
+  const { data } = await axios.get(`/people/${encodeURIComponent(letter)}`);
   return data;
 }
 
