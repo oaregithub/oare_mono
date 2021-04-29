@@ -20,11 +20,9 @@ describe('people api test', () => {
   const allPeopleExpectedResponse = [
     {
       uuid: 'test1',
-      totalReferenceCount: 2,
     },
     {
       uuid: 'test2',
-      totalReferenceCount: 3,
     },
   ];
 
@@ -34,10 +32,7 @@ describe('people api test', () => {
   };
 
   const mockItemPropertiesDao = {
-    getTextsOfPersonCount: jest
-      .fn()
-      .mockResolvedValueOnce(allPeopleExpectedResponse[0].totalReferenceCount)
-      .mockResolvedValueOnce(allPeopleExpectedResponse[1].totalReferenceCount),
+    getTextsOfPersonCount: jest.fn().mockResolvedValue(1),
   };
 
   const mockUserDao = {
@@ -89,9 +84,6 @@ describe('people api test', () => {
         limit: mockRequest.limit,
         page: mockRequest.offset,
       });
-      expect(mockItemPropertiesDao.getTextsOfPersonCount).toHaveBeenCalledTimes(
-        allPeople.length
-      );
       expect(mockCache.insert).toHaveBeenCalled();
     });
 
@@ -112,19 +104,6 @@ describe('people api test', () => {
           .fn()
           .mockRejectedValue(
             'Error, spellings of people unable to be retrieved.'
-          ),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(mockCache.insert).not.toHaveBeenCalled();
-    });
-
-    it('fails to return people when getting total text occurrences of people fails.', async () => {
-      sl.set('ItemPropertiesDao', {
-        getTextsOfPersonCount: jest
-          .fn()
-          .mockRejectedValue(
-            'Error, total text occurrences unable to be retrieved.'
           ),
       });
       const response = await sendRequest();
@@ -183,6 +162,40 @@ describe('people api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(403);
       expect(mockPersonDao.getAllPeople).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /people/:uuid/occurrences/count', () => {
+    const uuid = 'testUuid';
+
+    const PATH = `${API_PATH}/people/${encodeURIComponent(
+      uuid
+    )}/occurrences/count`;
+
+    const sendRequest = (cookie = true) => {
+      const req = request(app).get(PATH);
+      return cookie ? req.set('Cookie', 'jwt=token') : req;
+    };
+
+    it('returns successful people text occurrences.', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(1);
+      expect(mockItemPropertiesDao.getTextsOfPersonCount).toHaveBeenCalledWith(
+        uuid
+      );
+    });
+
+    it('fails to text occurrences of person.', async () => {
+      sl.set('ItemPropertiesDao', {
+        getTextsOfPersonCount: jest
+          .fn()
+          .mockRejectedValue(
+            'Error, total text occurrences unable to be retrieved.'
+          ),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
     });
   });
 });
