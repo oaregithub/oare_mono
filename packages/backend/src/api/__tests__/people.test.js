@@ -61,15 +61,9 @@ describe('people api test', () => {
   beforeEach(setup);
 
   describe('GET /people/:letter', () => {
-    const mockRequest = {
-      limit: 30,
-      offset: 0,
-    };
     const letter = 'A';
 
-    const PATH = `${API_PATH}/people/${encodeURIComponent(letter)}?limit=${
-      mockRequest.limit
-    }&page=${mockRequest.offset}`;
+    const PATH = `${API_PATH}/people/${encodeURIComponent(letter)}`;
 
     const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
@@ -80,10 +74,7 @@ describe('people api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(allPeopleExpectedResponse);
-      expect(mockPersonDao.getAllPeople).toHaveBeenCalledWith(letter, {
-        limit: mockRequest.limit,
-        page: mockRequest.offset,
-      });
+      expect(mockPersonDao.getAllPeople).toHaveBeenCalledWith(letter);
       expect(mockCache.insert).toHaveBeenCalled();
     });
 
