@@ -28,9 +28,12 @@
             </router-link>
           </span>
           <span v-else>
-            <span @click="personNotFound" class="mr-1">{{
-              personInfo.label
-            }}</span>
+            <router-link
+              :to="`person/${personInfo.uuid}`"
+              class="text-decoration-none mr-1"
+            >
+              {{ personInfo.label }}
+            </router-link>
           </span>
           <persons-text-occurrences
             :person-uuid="personInfo.uuid"
@@ -173,10 +176,6 @@ export default defineComponent({
       );
     };
 
-    const personNotFound = () => {
-      actions.showSnackbar('No person available.');
-    };
-
     const isAdmin = computed(() => store.getters.isAdmin);
 
     watch(
@@ -198,7 +197,6 @@ export default defineComponent({
       hasVariableRole,
       hasObjUuid,
       displayVariableRole,
-      personNotFound,
       loading,
       personList,
       filteredPersonList,

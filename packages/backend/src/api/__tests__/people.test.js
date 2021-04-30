@@ -168,7 +168,7 @@ describe('people api test', () => {
       return cookie ? req.set('Cookie', 'jwt=token') : req;
     };
 
-    it('returns successful people text occurrences.', async () => {
+    it('returns successful people text occurrences count.', async () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(1);
@@ -177,7 +177,7 @@ describe('people api test', () => {
       );
     });
 
-    it('fails to text occurrences of person.', async () => {
+    it('fails to get text occurrence count of a person.', async () => {
       sl.set('ItemPropertiesDao', {
         getTextsOfPersonCount: jest
           .fn()

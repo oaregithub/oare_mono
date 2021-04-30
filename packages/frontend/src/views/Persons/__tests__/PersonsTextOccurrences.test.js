@@ -47,7 +47,7 @@ describe('PersonsTextOccurrences test', () => {
     expect(wrapper.html()).not.toContain('Retry');
   });
 
-  it('shows snackbar when people text occurrence count retrieval fails', async () => {
+  it('shows retry message when people text occurrence count retrieval fails', async () => {
     sl.set('serverProxy', {
       ...mockServer,
       getPeopleTextOccurrenceCount: jest
