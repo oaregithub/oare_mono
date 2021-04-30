@@ -7,7 +7,6 @@ Vue.use(VueCompositionAPI);
 export interface State {
   landed: boolean;
   user: null | User;
-  authComplete: boolean;
   permissions: PermissionItem[];
   idToken: string | null;
 }
@@ -15,7 +14,6 @@ export interface State {
 const state: State = reactive({
   landed: false,
   user: null,
-  authComplete: false,
   permissions: [],
   idToken: null,
 });
@@ -35,9 +33,6 @@ export default {
     state.permissions = [];
     state.idToken = null;
   },
-  setAuthComplete: () => {
-    state.authComplete = true;
-  },
   setPermissions: (permissions: PermissionItem[]) => {
     state.permissions = permissions;
   },
@@ -53,9 +48,6 @@ export default {
     },
     get user() {
       return state.user;
-    },
-    get authComplete() {
-      return state.authComplete;
     },
     get permissions() {
       return state.permissions;

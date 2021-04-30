@@ -10,7 +10,9 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(config => {
-  config.headers.Authorization = store.getters.idToken;
+  if (store.getters.idToken) {
+    config.headers.Authorization = store.getters.idToken;
+  }
   return config;
 });
 

@@ -12,14 +12,13 @@ async function attachUser(req: Request, _res: Response, next: NextFunction) {
     if (!idToken) {
       req.user = null;
       next();
-      return;
+    } else {
+      const decodedToken = await firebase.auth().verifyIdToken(idToken);
+      const user = await UserDao.getUserByUuid(decodedToken.uid);
+
+      req.user = user;
+      next();
     }
-
-    const decodedToken = await firebase.auth().verifyIdToken(idToken);
-    const user = await UserDao.getUserByUuid(decodedToken.uid);
-
-    req.user = user;
-    next();
   } catch (err) {
     next(new HttpInternalError(err));
   }
