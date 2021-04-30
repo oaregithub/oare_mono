@@ -6,8 +6,6 @@ import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
 import store from '@/ts-store';
 import _ from 'lodash';
-import { NavigationGuard, Route, NavigationGuardNext } from 'vue-router';
-import EventBus, { ACTIONS } from '@/EventBus';
 import App from './App.vue';
 import router from './router';
 import 'vuetify/dist/vuetify.min.css';
@@ -29,64 +27,23 @@ loadBases();
 Vue.use(Vuetify);
 Vue.config.productionTip = false;
 
-const guardRoute = (
-  routes: string[],
-  to: Route,
-  callback: Function,
-  next: NavigationGuardNext
-) => {
-  if (to.name && routes.includes(to.name)) {
-    if (!store.getters.authComplete) {
-      EventBus.$on(ACTIONS.REFRESH, callback);
-    } else {
-      callback();
-    }
+router.beforeEach((to, _from, next) => {
+  if (to.meta && to.meta.admin && !store.getters.isAdmin) {
+    next('/');
+  } else if (
+    to.meta &&
+    to.meta.requiresAuth &&
+    !store.getters.isAuthenticated
+  ) {
+    next('/login');
   } else {
     next();
   }
-};
-
-// Guard admin routes
-const adminRoutes = [
-  'adminGroups',
-  'adminTexts',
-  'groups',
-  'editDictionaryWord',
-];
-const adminGuard: NavigationGuard = (to, _from, next) => {
-  const navigate = () => {
-    if (!store.getters.isAdmin) {
-      next('/');
-    } else {
-      next();
-    }
-  };
-
-  guardRoute(adminRoutes, to, navigate, next);
-};
-
-// Non-admin routes where we must first determine auth status before
-// navigating to the route
-const authFirstRoutes = [
-  'epigraphies',
-  'dashboardDrafts',
-  'words',
-  'dashboardProfile',
-  'login',
-  'collections',
-  'collectionTexts',
-];
-const authFirstGuard: NavigationGuard = (to, _from, next) => {
-  guardRoute(authFirstRoutes, to, next, next);
-};
-
-router.beforeEach(authFirstGuard);
-router.beforeEach(adminGuard);
+});
 
 let app: Vue;
 
 firebase.auth().onAuthStateChanged(async user => {
-  console.log(user);
   const { currentUser } = firebase.auth();
   if (currentUser && user && user.email && user.displayName) {
     const idTokenResult = await currentUser.getIdTokenResult();
