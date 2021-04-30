@@ -86,6 +86,7 @@ router.beforeEach(adminGuard);
 let app: Vue;
 
 firebase.auth().onAuthStateChanged(async user => {
+  console.log(user);
   const { currentUser } = firebase.auth();
   if (currentUser && user && user.email && user.displayName) {
     const idTokenResult = await currentUser.getIdTokenResult();

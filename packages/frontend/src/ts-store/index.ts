@@ -15,7 +15,7 @@ export interface State {
 const state: State = reactive({
   landed: false,
   user: null,
-  authComplete: false,
+  authComplete: true,
   permissions: [],
   idToken: null,
 });
