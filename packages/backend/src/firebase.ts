@@ -59,7 +59,6 @@ export async function portUsersToFirebase() {
               uid: uuid,
               email,
               displayName: `${firstName} ${lastName}`,
-              passwordSalt: Buffer.from(salt),
               passwordHash: Buffer.from(hash, 'hex'),
               customClaims: {
                 isAdmin,

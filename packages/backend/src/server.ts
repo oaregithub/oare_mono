@@ -17,7 +17,7 @@ import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import * as utils from '@/utils';
-import { initializeFirebase, portUsersToFirebase } from '@/firebase';
+import { initializeFirebase } from '@/firebase';
 import app from './app';
 import mailer from './mailer';
 import UserDao from './api/daos/UserDao';
@@ -80,7 +80,6 @@ initializeFirebase(async err => {
   if (err) {
     console.error(err); // eslint-disable-line no-console
   } else {
-    await portUsersToFirebase();
     app.listen(8081, () => {
       console.log('Listening on port 8081'); // eslint-disable-line no-console
     });
