@@ -1,10 +1,5 @@
 <template>
-  <oare-dialog
-    :value="value"
-    @input="$emit('input', $event)"
-    :width="2000"
-    :persistent="false"
-  >
+  <OareContentView>
     <template #title>
       {{ title }}
       <v-menu offset-y open-on-hover>
@@ -50,6 +45,7 @@
           ša mdUTU-dA-šur
         </v-card>
       </v-menu>
+      <v-spacer />
     </template>
     <v-row align="center">
       <v-col cols="6">
@@ -117,7 +113,8 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <template #submit-button>
+    <v-row>
+      <v-spacer />
       <v-tooltip bottom :disabled="!submitDisabledMessage">
         <template v-slot:activator="{ on, attrs }">
           <span v-on="on">
@@ -135,12 +132,11 @@
         </template>
         <span>{{ submitDisabledMessage }}</span>
       </v-tooltip>
-    </template>
-  </oare-dialog>
+    </v-row>
+  </OareContentView>
 </template>
 
 <script lang="ts">
-import OareDialog from '@/components/base/OareDialog.vue';
 import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
@@ -177,9 +173,6 @@ export default defineComponent({
       type: Object as PropType<FormSpelling | null>,
       default: null,
     },
-  },
-  components: {
-    OareDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
