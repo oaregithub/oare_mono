@@ -12,6 +12,11 @@
       item-key="epigraphyUuids[0]"
       show-select
     >
+      <template #[`item.textName`]="{ item }">
+        <router-link :to="`/epigraphies/${item.textUuid}`">{{
+          item.textName
+        }}</router-link>
+      </template>
       <template #[`item.reading`]="{ item }">
         <span v-html="item.reading"></span>
       </template>
