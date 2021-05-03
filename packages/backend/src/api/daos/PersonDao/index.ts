@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { Pagination, PersonDisplay } from '@oare/types';
+import { PersonDisplay } from '@oare/types';
 import utils from '../utils';
 
 class PersonDao {

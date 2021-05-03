@@ -35,9 +35,22 @@
               {{ personInfo.label }}
             </router-link>
           </span>
-          <persons-text-occurrences
-            :person-uuid="personInfo.uuid"
-          ></persons-text-occurrences>
+
+          <span
+            v-if="personInfo.textOccurrenceCount === null && isAdmin"
+            class="error--text"
+          >
+            (No count found, please update the database)
+          </span>
+          <span>
+            (<a @click="displayPersonOccurrencesDialog"
+              >{{
+                personInfo.textOccurrenceCount !== null
+                  ? personInfo.textOccurrenceCount
+                  : 0
+              }})</a
+            >
+          </span>
         </v-col>
       </v-row>
       <v-row dense class="ml-4">
@@ -78,7 +91,6 @@ import {
   watch,
 } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import PersonsTextOccurrences from '@/views/Persons/components/PersonsTextOccurrences.vue';
 import { PersonDisplay } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -86,7 +98,6 @@ export default defineComponent({
   name: 'PersonsView',
   components: {
     LetterFilter,
-    PersonsTextOccurrences,
   },
   props: {
     letter: {
@@ -170,10 +181,8 @@ export default defineComponent({
       return `${personDisplay.topVariableRole} of ${personDisplay.roleObjPerson}`;
     };
 
-    const displayPersonTexts = (wordUuid: string) => {
-      actions.showSnackbar(
-        `Will get texts associated with this person in the future`
-      );
+    const displayPersonOccurrencesDialog = () => {
+      actions.showSnackbar('This will display occurrences at a later date.');
     };
 
     const isAdmin = computed(() => store.getters.isAdmin);
@@ -190,7 +199,7 @@ export default defineComponent({
     return {
       getFilteredPeople,
       searchFilter,
-      displayPersonTexts,
+      displayPersonOccurrencesDialog,
       hasPerson,
       hasRelationPerson,
       hasValueRole,

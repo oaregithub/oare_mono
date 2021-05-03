@@ -14,6 +14,7 @@ export interface PersonDisplay {
   topVariableRole: string | null;
   roleObjUuid: string | null;
   roleObjPerson: string | null;
+  textOccurrenceCount: number | null;
 }
 
 export interface PersonReferences {

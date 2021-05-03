@@ -12,8 +12,20 @@ router
       const { letter } = req.params;
       const cache = sl.get('cache');
       const PersonDao = sl.get('PersonDao');
+      const PersonTextOccurrencesDao = sl.get('PersonTextOccurrencesDao');
 
-      const resultPeople = await PersonDao.getAllPeople(letter);
+      const textCountByPersonUuid = await PersonTextOccurrencesDao.getAll();
+      const people = await PersonDao.getAllPeople(letter);
+
+      const resultPeople = people.map(person => {
+        return {
+          ...person,
+          textOccurrenceCount:
+            textCountByPersonUuid[person.uuid] !== undefined
+              ? textCountByPersonUuid[person.uuid]
+              : null,
+        };
+      });
       cache.insert({ req }, resultPeople);
       res.json(resultPeople);
     } catch (err) {
@@ -29,21 +41,6 @@ router
       const PersonDao = sl.get('PersonDao');
 
       const count = await PersonDao.getAllPeopleCount(letter);
-
-      res.json(count);
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  });
-
-router
-  .route('/people/:uuid/occurrences/count')
-  .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
-    try {
-      const { uuid } = req.params;
-      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-
-      const count = await ItemPropertiesDao.getTextsOfPersonCount(uuid);
 
       res.json(count);
     } catch (err) {
