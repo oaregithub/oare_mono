@@ -91,7 +91,7 @@ describe('LoginView test', () => {
       server: {
         ...mockServer,
         login: jest.fn().mockRejectedValue({
-          response: { data: { message: 'Invalid login' } },
+          code: 'auth/wrong-password',
         }),
       },
     });
@@ -106,6 +106,6 @@ describe('LoginView test', () => {
     await flushPromises();
 
     const errorText = wrapper.find('.test-error-text');
-    expect(errorText.text()).toBe('Invalid login');
+    expect(errorText.text()).toBe('Invalid credentials');
   });
 });
