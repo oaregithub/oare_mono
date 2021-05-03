@@ -239,7 +239,7 @@ describe('GET /text_epigraphies/:uuid', () => {
       ...mockCollectionTextUtils,
       canEditText: jest.fn().mockRejectedValue(null),
     });
-    const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
+    const response = await request(app).get(PATH).set('Authorization', 'token');
     expect(response.status).toBe(500);
   });
 
@@ -249,7 +249,7 @@ describe('GET /text_epigraphies/:uuid', () => {
       getDraft: jest.fn().mockRejectedValue("Couldn't get draft"),
     });
 
-    const response = await request(app).get(PATH).set('Cookie', 'jwt=token');
+    const response = await request(app).get(PATH).set('Authorization', 'token');
     expect(response.status).toBe(500);
   });
 });

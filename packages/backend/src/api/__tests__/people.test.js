@@ -41,7 +41,7 @@ describe('people api test', () => {
   };
 
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       uuid: 'testUuid',
     }),
   };
@@ -78,7 +78,7 @@ describe('people api test', () => {
 
     const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns successful people.', async () => {
@@ -146,7 +146,7 @@ describe('people api test', () => {
     const PATH = `${API_PATH}/people/${encodeURIComponent('A')}/count`;
     const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns successful people count.', async () => {

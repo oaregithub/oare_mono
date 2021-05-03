@@ -18,7 +18,7 @@ describe('Text drafts test', () => {
     };
 
     const UserDao = {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         uuid: userUuid,
       }),
     };
@@ -34,7 +34,7 @@ describe('Text drafts test', () => {
     };
 
     const sendRequest = () =>
-      request(app).post(PATH).send(payload).set('Cookie', 'jwt=token');
+      request(app).post(PATH).send(payload).set('Authorization', 'token');
 
     it('returns 400 if user does not have permission to edit the text', async () => {
       setup();
@@ -127,7 +127,7 @@ describe('Text drafts test', () => {
     const sendRequest = (cookie = true) => {
       const req = request(app).patch(PATH).send(draft);
       if (cookie) {
-        return req.set('Cookie', 'jwt=token');
+        return req.set('Authorization', 'token');
       }
       return req;
     };
@@ -220,7 +220,7 @@ describe('Text drafts test', () => {
     };
 
     const mockUserDao = {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         uuid: userUuid,
         isAdmin: false,
       }),
@@ -231,7 +231,8 @@ describe('Text drafts test', () => {
       sl.set('UserDao', mockUserDao);
     });
 
-    const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+    const sendRequest = () =>
+      request(app).get(PATH).set('Authorization', 'token');
 
     it('returns list of drafts', async () => {
       const response = await sendRequest();
@@ -272,7 +273,7 @@ describe('Text drafts test', () => {
     it("returns 403 if user is not admin and tries to access another user's drafts", async () => {
       sl.set('UserDao', {
         ...mockUserDao,
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           uuid: 'other-user',
           isAdmin: false,
         }),
@@ -285,7 +286,7 @@ describe('Text drafts test', () => {
     it("allows admins to access any user's drafts", async () => {
       sl.set('UserDao', {
         ...mockUserDao,
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           uuid: 'other-user',
           isAdmin: true,
         }),
@@ -321,10 +322,10 @@ describe('Text drafts test', () => {
     };
 
     const UserDao = {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
+        ...user,
         isAdmin: true,
       }),
-      getUserByUuid: jest.fn().mockResolvedValue(user),
     };
 
     beforeEach(() => {
@@ -337,7 +338,7 @@ describe('Text drafts test', () => {
       const req = request(app).get(PATH);
 
       if (cookie) {
-        return req.set('Cookie', 'jwt=token');
+        return req.set('Authorization', 'token');
       }
       return req;
     };
@@ -387,7 +388,7 @@ describe('Text drafts test', () => {
     it("doesn't allow non-admins to access route", async () => {
       sl.set('UserDao', {
         ...UserDao,
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
@@ -441,7 +442,7 @@ describe('Text drafts test', () => {
     const PATH = `${API_PATH}/text_drafts/${draftUuid}`;
 
     const UserDao = {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     };
@@ -461,7 +462,7 @@ describe('Text drafts test', () => {
       const req = request(app).delete(PATH);
 
       if (cookie) {
-        return req.set('Cookie', 'jwt=token');
+        return req.set('Authorization', 'token');
       }
       return req;
     };
@@ -483,7 +484,7 @@ describe('Text drafts test', () => {
 
     it('allows admins to delete drafts they do not own', async () => {
       sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: true,
         }),
       });

@@ -54,6 +54,9 @@ const routes: RouteConfig[] = [
     path: '/admin/groups',
     name: 'adminGroups',
     component: AdminGroupView,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/admin/blacklist',
@@ -71,36 +74,57 @@ const routes: RouteConfig[] = [
         component: BlacklistCollections,
       },
     ],
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/admin/errors',
     name: 'adminErrors',
     component: ErrorLog,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/admin/comments',
     name: 'adminComments',
     component: AdminCommentView,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/admin/drafts',
     name: 'adminDrafts',
     component: AdminDraftsView,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/admin/settings',
     name: 'adminSettings',
     component: AdminSettings,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/addblacklist/texts',
     name: 'blacklistAddTexts',
     component: AddBlacklistTexts,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/addblacklist/collections',
     name: 'blacklistAddCollections',
     component: AddBlacklistCollections,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/collections/name/:collectionUuid',
@@ -164,24 +188,36 @@ const routes: RouteConfig[] = [
         component: ManagePermissions,
       },
     ],
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/addgrouptexts/:groupId',
     name: 'manageGroupTexts',
     component: AddGroupTexts,
     props: true,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/addgroupcollections/:groupId',
     name: 'manageGroupCollections',
     component: AddGroupCollections,
     props: true,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/addusers/:groupId',
     name: 'manageGroupUsers',
     component: AddGroupUsers,
     props: true,
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/login',
@@ -221,16 +257,25 @@ const routes: RouteConfig[] = [
     path: '/dashboard/drafts',
     name: 'dashboardDrafts',
     component: Drafts,
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
     path: '/dashboard/profile',
     name: 'dashboardProfile',
     component: Profile,
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
     path: '/dashboard/comments',
     name: 'dashboardComments',
     component: UserCommentView,
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
     path: '/words/:letter',

@@ -5,7 +5,7 @@ import sl from '@/serviceLocator';
 
 describe('groups api test', () => {
   const AdminUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
@@ -34,7 +34,8 @@ describe('groups api test', () => {
       sl.set('OareGroupDao', OareGroupDao);
     };
 
-    const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+    const sendRequest = () =>
+      request(app).get(PATH).set('Authorization', 'token');
 
     it("doesn't allow non-logged-in users to get group info", async () => {
       const response = await request(app).get(PATH);
@@ -44,7 +45,7 @@ describe('groups api test', () => {
     it("doesn't allow non-admins to get group info", async () => {
       setup();
       sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
@@ -105,7 +106,8 @@ describe('groups api test', () => {
       sl.set('OareGroupDao', OareGroupDao);
     };
 
-    const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+    const sendRequest = () =>
+      request(app).get(PATH).set('Authorization', 'token');
 
     it("doesn't allow non-logged-in users to get groups", async () => {
       const response = await request(app).get(PATH);
@@ -114,7 +116,7 @@ describe('groups api test', () => {
 
     it("doesn't allow non-admins to get groups", async () => {
       sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
@@ -163,7 +165,7 @@ describe('groups api test', () => {
     };
 
     const sendRequest = () =>
-      request(app).post(PATH).set('Cookie', 'jwt=token');
+      request(app).post(PATH).set('Authorization', 'token');
 
     it("doesn't allow non-logged-in users to post", async () => {
       const response = await request(app).post(PATH);
@@ -172,7 +174,7 @@ describe('groups api test', () => {
 
     it("doesn't allow non-admins to post", async () => {
       sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
@@ -233,7 +235,8 @@ describe('groups api test', () => {
       sl.set('OareGroupDao', OareGroupDao);
     };
 
-    const sendRequest = () => request(app).del(PATH).set('Cookie', 'jwt=token');
+    const sendRequest = () =>
+      request(app).del(PATH).set('Authorization', 'token');
 
     it("doesn't let non-logged-in users delete", async () => {
       const response = await request(app).del(PATH);
@@ -242,7 +245,7 @@ describe('groups api test', () => {
 
     it("doesn't let non-admins delete", async () => {
       sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
@@ -288,7 +291,7 @@ describe('groups api test', () => {
     const setup = () => {
       sl.set('OareGroupDao', mockOareGroupDao);
       sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: true,
         }),
       });
@@ -297,7 +300,7 @@ describe('groups api test', () => {
     beforeEach(setup);
 
     const sendRequest = () =>
-      request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
+      request(app).patch(PATH).send(mockPATCH).set('Authorization', 'token');
 
     it('returns 204 on successful description update', async () => {
       const response = await sendRequest();
@@ -328,7 +331,7 @@ describe('groups api test', () => {
 
     it('does not allow non-admins to update description', async () => {
       sl.set('UserDao', {
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
@@ -347,7 +350,7 @@ describe('groups api test', () => {
       const response = await request(app)
         .patch(PATH)
         .send(tooLongPATCH)
-        .set('Cookie', 'jwt=token');
+        .set('Authorization', 'token');
       expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
       expect(response.status).toBe(400);
     });

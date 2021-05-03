@@ -11,7 +11,7 @@ describe('POST /text_discourse', () => {
   };
 
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
@@ -30,7 +30,7 @@ describe('POST /text_discourse', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPayload).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
 
   it('returns 201 on successful discourse row insertion', async () => {
     const response = await sendRequest();
@@ -57,7 +57,7 @@ describe('POST /text_discourse', () => {
 
   it('does not allow non-admins to insert new discourse rows', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
