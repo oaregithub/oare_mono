@@ -53,6 +53,23 @@ class ItemProperties {
       .where('a.name', aliasName);
     return itemProperties;
   }
+
+  private getTextsOfPersonBaseQuery(personUuid: string) {
+    return knex('item_properties')
+      .leftJoin(
+        'text_discourse',
+        'text_discourse.uuid',
+        'item_properties.reference_uuid'
+      )
+      .where('item_properties.object_uuid', personUuid);
+  }
+
+  async getTextsOfPersonCount(personUuid: string): Promise<number> {
+    const textsOfPeopleCount = await this.getTextsOfPersonBaseQuery(personUuid)
+      .count({ count: 'text_discourse.text_uuid' })
+      .first();
+    return textsOfPeopleCount ? Number(textsOfPeopleCount.count) : 0;
+  }
 }
 
 export default new ItemProperties();
