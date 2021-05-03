@@ -16,15 +16,14 @@ export async function up(knex: Knex): Promise<void> {
         .onDelete('CASCADE');
     });
 
-    const getTextReferencesBaseQuery = (personUuid: string) => {
-      return knex('item_properties')
+    const getTextReferencesBaseQuery = (personUuid: string) =>
+      knex('item_properties')
         .leftJoin(
           'text_discourse',
           'text_discourse.uuid',
           'item_properties.reference_uuid'
         )
         .where('item_properties.object_uuid', personUuid);
-    };
 
     const personUuids = await knex('person').pluck('uuid');
 
