@@ -76,7 +76,7 @@ sl.set('PersonDao', PersonDao);
 sl.set('utils', utils);
 sl.set('mailer', mailer);
 
-initializeFirebase(async err => {
+initializeFirebase(err => {
   if (err) {
     console.error(err); // eslint-disable-line no-console
   } else {
