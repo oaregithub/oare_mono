@@ -1,18 +1,6 @@
 <template>
-  <OareContentView title="Insert Discourse Rows">
-    <v-row align="center">
-      <v-col cols="6">
-        <v-text-field
-          v-model="spellingInput"
-          autofocus
-          class="test-spelling-field"
-        />
-      </v-col>
-      <v-col cols="6" class="black--text">
-        Preview:
-        <span v-html="spellingHtmlReading(spellingInput)" />
-      </v-col>
-    </v-row>
+  <div>
+    The following spelling occurrences are missing discourse information:
     <v-data-table
       v-model="selectedOccurrences"
       :headers="listHeaders"
@@ -43,11 +31,12 @@
         color="primary"
         @click="insertDiscourseRows"
         class="test-submit-btn mt-4"
+        :disabled="selectedOccurrences.length === 0"
       >
         Submit
       </OareLoaderButton>
     </v-row>
-  </OareContentView>
+  </div>
 </template>
 
 <script lang="ts">
@@ -85,6 +74,10 @@ export default defineComponent({
       type: Object as PropType<FormSpelling>,
       required: true,
     },
+    spellingInput: {
+      type: String,
+      required: true,
+    },
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -92,7 +85,6 @@ export default defineComponent({
     const _ = sl.get('lodash');
     const reload = inject(ReloadKey);
 
-    const spellingInput = ref(props.spelling.spelling);
     const searchNullDiscourseLoading = ref(false);
     const searchNullCountLoading = ref(false);
     const [page, setPage] = useQueryParam('page', '1');
@@ -124,7 +116,7 @@ export default defineComponent({
       try {
         searchNullDiscourseLoading.value = true;
         nullDiscourseOccurrences.value = await server.searchNullDiscourse(
-          spellingInput.value,
+          props.spellingInput,
           Number(page.value),
           Number(limit.value)
         );
@@ -141,7 +133,7 @@ export default defineComponent({
       try {
         searchNullCountLoading.value = true;
         nullDiscourseCount.value = await server.searchNullDiscourseCount(
-          spellingInput.value
+          props.spellingInput
         );
       } catch {
         actions.showErrorSnackbar(
@@ -155,7 +147,7 @@ export default defineComponent({
     const insertDiscourseRows = async () => {
       try {
         await server.insertDiscourseRow(
-          spellingInput.value,
+          props.spellingInput,
           selectedOccurrences.value
         );
         reload && reload();
@@ -167,7 +159,7 @@ export default defineComponent({
     };
 
     watch(
-      spellingInput,
+      () => props.spellingInput,
       _.debounce(async (newSpelling: string) => {
         searchOptions.value.page = 1;
         if (newSpelling) {
@@ -197,7 +189,7 @@ export default defineComponent({
       () => props.value,
       open => {
         if (!open) {
-          spellingInput.value = props.spelling.spelling;
+          props.spellingInput = props.spelling.spelling;
           nullDiscourseOccurrences.value = [];
           selectedOccurrences.value = [];
           searchOptions.value.page = 1;
@@ -211,7 +203,6 @@ export default defineComponent({
 
     return {
       spellingHtmlReading,
-      spellingInput,
       nullDiscourseOccurrences,
       nullDiscourseCount,
       searchNullDiscourse,
