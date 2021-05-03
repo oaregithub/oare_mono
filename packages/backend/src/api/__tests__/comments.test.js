@@ -17,7 +17,7 @@ describe('comments api test', () => {
   };
 
   const MockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
@@ -70,7 +70,7 @@ describe('comments api test', () => {
       const req = request(app)
         .post(PATH)
         .send(getPayload({ overrideComment, overrideThread }));
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns successful 200, comment and thread info', async () => {
@@ -123,7 +123,7 @@ describe('comments api test', () => {
 
     const sendRequest = async ({ cookie = true } = {}) => {
       const req = request(app).delete(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns 200 upon successfully deleted comment', async () => {

@@ -90,7 +90,7 @@ describe('GET /userpermissions', () => {
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -98,7 +98,8 @@ describe('GET /userpermissions', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('retrieves user permissions', async () => {
     const response = await sendRequest();
@@ -122,7 +123,7 @@ describe('GET /allpermissions', () => {
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -130,7 +131,8 @@ describe('GET /allpermissions', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('retrives all permissions', async () => {
     const response = await sendRequest();
@@ -156,7 +158,7 @@ describe('GET /allpermissions', () => {
 
   it('returns 403 for non-admins', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -172,7 +174,7 @@ describe('GET /permissions/:groupId', () => {
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -180,7 +182,8 @@ describe('GET /permissions/:groupId', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful user permission retreival', async () => {
     const response = await sendRequest();
@@ -201,7 +204,7 @@ describe('GET /permissions/:groupId', () => {
 
   it('returns 403 for non-admins', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -223,7 +226,7 @@ describe('POST /permissions/:groupId', () => {
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -232,7 +235,7 @@ describe('POST /permissions/:groupId', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPayload).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -262,7 +265,7 @@ describe('POST /permissions/:groupId', () => {
 
   it('returns 403 for non-admins', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -279,7 +282,7 @@ describe('DELETE /permissions/:groupId/:permission', () => {
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -288,7 +291,7 @@ describe('DELETE /permissions/:groupId/:permission', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).delete(PATH).set('Cookie', 'jwt=token');
+    request(app).delete(PATH).set('Authorization', 'token');
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
@@ -315,7 +318,7 @@ describe('DELETE /permissions/:groupId/:permission', () => {
 
   it('returns 403 for non-admins', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });

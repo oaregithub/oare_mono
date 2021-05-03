@@ -18,7 +18,6 @@ import permissions from './permissions';
 import login from './login';
 import register from './register';
 import logout from './logout';
-import refreshToken from './refresh_token';
 import publicBlacklist from './public_blacklist';
 import searchNames from './search_names';
 import collectionGroups from './collection_groups';
@@ -44,7 +43,6 @@ const serverProxy = {
   ...login,
   ...register,
   ...logout,
-  ...refreshToken,
   ...publicBlacklist,
   ...searchNames,
   ...collectionGroups,
