@@ -57,7 +57,6 @@
 
 <script lang="ts">
 import {
-  SearchSpellingResultRow,
   SearchDiscourseSpellingRow,
   DictionaryForm,
   FormSpelling,
@@ -168,7 +167,6 @@ export default defineComponent({
           spelling: props.spellingInput,
           discourseUuids: selectedDiscourses.value.map(row => row.uuid),
         });
-        emit('input', false);
         actions.showSnackbar('Successfully added spelling');
         reload && reload();
       } catch {
@@ -291,11 +289,6 @@ export default defineComponent({
       () => props.value,
       open => {
         if (!open) {
-          if (props.spelling) {
-            props.spellingInput = props.spelling.spelling;
-          } else {
-            props.spellingInput = '';
-          }
           discourseSearchResults.value = [];
           selectedDiscourses.value = [];
           discourseOptions.value.page = 1;

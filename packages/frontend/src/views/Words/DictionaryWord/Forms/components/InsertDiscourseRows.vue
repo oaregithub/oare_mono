@@ -189,7 +189,6 @@ export default defineComponent({
       () => props.value,
       open => {
         if (!open) {
-          props.spellingInput = props.spelling.spelling;
           nullDiscourseOccurrences.value = [];
           selectedOccurrences.value = [];
           searchOptions.value.page = 1;

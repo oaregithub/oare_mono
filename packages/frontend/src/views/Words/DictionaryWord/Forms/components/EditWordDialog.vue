@@ -9,7 +9,11 @@
     :showCancel="false"
   >
     <template #action-options v-if="allowDiscourseMode">
-      <v-switch v-model="inDiscourseMode" label="Discourse Mode" class="mr-6" />
+      <v-switch
+        v-model="inDiscourseMode"
+        label="Discourse Mode"
+        class="mr-6 test-discourse-mode"
+      />
     </template>
 
     <OareContentView>
