@@ -50,7 +50,8 @@ export default defineComponent({
         loading.value = true;
         await server.sendResetPasswordEmail(email.value);
         emailSent.value = true;
-      } catch {
+      } catch (err) {
+        console.log(err);
         actions.showErrorSnackbar(
           'Failed to send reset email. Please try again.'
         );
