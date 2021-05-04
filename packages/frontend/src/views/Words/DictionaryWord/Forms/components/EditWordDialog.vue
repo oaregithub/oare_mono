@@ -8,7 +8,10 @@
     :showSubmit="false"
     :showCancel="false"
   >
-    <template #action-options v-if="allowDiscourseMode">
+    <template
+      #action-options
+      v-if="allowDiscourseMode && canInsertDiscourseRows"
+    >
       <v-switch
         v-model="inDiscourseMode"
         label="Discourse Mode"
@@ -102,7 +105,7 @@
         </v-col>
         <v-col cols="12" md="6">
           <insert-discourse-rows
-            v-if="inDiscourseMode"
+            v-if="inDiscourseMode && canInsertDiscourseRows"
             v-model="value"
             :form="form"
             :spelling="spelling"
@@ -172,6 +175,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
+    const store = sl.get('store');
 
     const spellingInput = ref(props.spelling ? props.spelling.spelling : '');
 
@@ -180,6 +184,12 @@ export default defineComponent({
     const [discourseQueryParam, setDiscourse] = useQueryParam(
       'discourse',
       'false'
+    );
+
+    const canInsertDiscourseRows = computed(() =>
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('INSERT_DISCOURSE_ROWS')
     );
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
@@ -264,6 +274,7 @@ export default defineComponent({
       spellingResultHeaders,
       searchSpellingLoading,
       spellingSearchResults,
+      canInsertDiscourseRows,
     };
   },
 });
