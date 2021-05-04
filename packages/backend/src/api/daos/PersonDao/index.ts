@@ -69,13 +69,6 @@ class PersonDao {
     return people;
   }
 
-  async getAllPeopleCount(letter: string): Promise<number> {
-    const peopleCount = await this.getAllPeopleBaseQuery(letter)
-      .count({ count: 'person.uuid' })
-      .first();
-    return peopleCount ? Number(peopleCount.count) : 0;
-  }
-
   async getSpellingUuidsByPerson(
     personNameUuid: string | null
   ): Promise<string[]> {

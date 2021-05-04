@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { ItemProperty } from '@oare/types';
+import { ItemProperty, Pagination, SpellingOccurrenceRow } from '@oare/types';
 
 export interface ItemPropertyRow extends ItemProperty {
   referenceUuid: string;
@@ -64,11 +64,36 @@ class ItemProperties {
       .where('item_properties.object_uuid', personUuid);
   }
 
-  async getTextsOfPersonCount(personUuid: string): Promise<number> {
-    const textsOfPeopleCount = await this.getTextsOfPersonBaseQuery(personUuid)
-      .count({ count: 'text_discourse.text_uuid' })
-      .first();
-    return textsOfPeopleCount ? Number(textsOfPeopleCount.count) : 0;
+  async getTextsOfPerson(
+    personUuid: string,
+    { limit, page, filter }: Pagination
+  ): Promise<SpellingOccurrenceRow[]> {
+    const rows: SpellingOccurrenceRow[] = await this.getTextsOfPersonBaseQuery(
+      personUuid
+    )
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .distinct(
+        'text_discourse.uuid AS discourseUuid',
+        'name AS textName',
+        'text_epigraphy.line',
+        'text_discourse.word_on_tablet AS wordOnTablet',
+        'text_discourse.text_uuid AS textUuid'
+      )
+      .innerJoin(
+        'text_epigraphy',
+        'text_epigraphy.discourse_uuid',
+        'text_discourse.uuid'
+      )
+      .orderBy('text.name')
+      .limit(limit)
+      .offset(page * limit)
+      .modify(qb => {
+        if (filter) {
+          qb.andWhere('text.name', 'like', `%${filter}%`);
+        }
+      });
+
+    return rows;
   }
 }
 
