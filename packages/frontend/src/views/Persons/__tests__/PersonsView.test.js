@@ -64,7 +64,6 @@ const testPeople = [
 
 const mockServer = {
   getPeople: jest.fn().mockResolvedValue(testPeople),
-  getPeopleCount: jest.fn().mockResolvedValue(testPeople.length),
 };
 
 const mockStore = {

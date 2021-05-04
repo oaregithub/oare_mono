@@ -32,15 +32,19 @@ router
   });
 
 router
-  .route('/people/:letter/count')
+  .route('/people/person/:uuid/texts')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
     try {
-      const { letter } = req.params;
-      const PersonDao = sl.get('PersonDao');
+      const utils = sl.get('utils');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const { uuid } = req.params;
+      const pagination = utils.extractPagination(req.query);
 
-      const count = await PersonDao.getAllPeopleCount(letter);
+      const rows = await ItemPropertiesDao.getTextsOfPerson(uuid, pagination);
 
-      res.json(count);
+      const response = await utils.getTextOccurrences(rows);
+
+      res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
     }
