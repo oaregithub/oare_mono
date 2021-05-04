@@ -25,8 +25,21 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
+  const nameRows: any[] = (
+    await knex.raw('SHOW INDEX FROM person WHERE Key_name=?', indexName)
+  )[0];
+
+  const relationNameRows: any[] = (
+    await knex.raw('SHOW INDEX FROM person WHERE Key_name=?', indexRelationName)
+  )[0];
+
   return knex.schema.table('person', table => {
-    table.dropIndex('name_uuid', indexName);
-    table.dropIndex('relation_name_uuid', indexRelationName);
+    if (nameRows.length > 0) {
+      table.dropIndex('name_uuid', indexName);
+    }
+
+    if (relationNameRows.length > 0) {
+      table.dropIndex('relation_name_uuid', indexRelationName);
+    }
   });
 }
