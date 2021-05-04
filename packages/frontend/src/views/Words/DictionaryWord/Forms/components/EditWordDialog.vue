@@ -1,7 +1,7 @@
 <template>
   <oare-dialog
-    :value="value"
-    @input="$emit('input', $event)"
+    v-bind="$attrs"
+    v-on="$listeners"
     :width="2000"
     :persistent="false"
     :closeButton="true"
@@ -106,14 +106,14 @@
         <v-col cols="12" md="6">
           <insert-discourse-rows
             v-if="inDiscourseMode && canInsertDiscourseRows"
-            v-model="value"
+            v-model="$attrs.value"
             :form="form"
             :spelling="spelling"
             :spellingInput="spellingInput"
           />
           <spelling-dialog
             v-if="!inDiscourseMode"
-            v-model="value"
+            v-model="$attrs.value"
             :form="form"
             :spelling="spelling"
             :spellingInput="spellingInput"
@@ -154,10 +154,6 @@ export default defineComponent({
     InsertDiscourseRows,
   },
   props: {
-    value: {
-      type: Boolean,
-      default: false,
-    },
     form: {
       type: Object as PropType<DictionaryForm>,
       required: true,
@@ -171,7 +167,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props) {
+  setup(props, context) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
@@ -235,7 +231,7 @@ export default defineComponent({
     });
 
     watch(
-      () => props.value,
+      () => context.attrs.value,
       open => {
         if (!open) {
           if (props.spelling) {
