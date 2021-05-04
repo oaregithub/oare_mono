@@ -5,7 +5,6 @@ import { Response } from 'express';
 import { v4 } from 'uuid';
 import RefreshTokenDao from '@/api/daos/RefreshTokenDao';
 import firebase from '@/firebase';
-import { User } from '@oare/types';
 
 export function hashPassword(password: string, salt?: string): string {
   const pSalt = salt || cryptoRandomString({ length: 8 });
