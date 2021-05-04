@@ -11,12 +11,13 @@
         v-model="email"
         outlined
         label="Email"
+        @keypress.enter="sendEmail"
       />
     </div>
     <div v-else class="d-flex flex-column">
-      If there is an account associated with that email, a message has been sent
-      to your inbox with a link to reset your password. The link will expire in
-      30 minutes.
+      Please check your inbox. A link has been sent to you that will help you
+      reset your password.
+      <router-link to="/login">Go back to login</router-link>
     </div>
     <template #actions>
       <OareLoaderButton
@@ -51,10 +52,23 @@ export default defineComponent({
         await server.sendResetPasswordEmail(email.value);
         emailSent.value = true;
       } catch (err) {
-        console.log(err);
-        actions.showErrorSnackbar(
-          'Failed to send reset email. Please try again.'
-        );
+        const { code, message } = err;
+        if (code === 'auth/invalid-email') {
+          actions.showErrorSnackbar(
+            'The email you have provided is invalid. Please try again.'
+          );
+        } else if (code === 'auth/user-not-found') {
+          actions.showErrorSnackbar(
+            'There is no user associated with the given email address.'
+          );
+        } else {
+          actions.showErrorSnackbar(message);
+          await server.logError({
+            description: message,
+            stacktrace: null,
+            status: 'New',
+          });
+        }
       } finally {
         loading.value = false;
       }
