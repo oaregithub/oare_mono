@@ -19,7 +19,6 @@
         label="Confirm new password"
         type="password"
         class="test-confirm-new-password"
-        @keypress.enter="sendEmail"
       />
       <span class="subtitle error--text" v-if="formError">
         {{ formError }}
