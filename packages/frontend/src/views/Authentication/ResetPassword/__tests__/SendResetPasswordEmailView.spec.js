@@ -12,7 +12,6 @@ localVue.use(VueCompositionApi);
 describe('SendResetPasswordEmailView test', () => {
   const mockServer = {
     sendResetPasswordEmail: jest.fn().mockResolvedValue(null),
-    logError: jest.fn().mockResolvedValue(),
   };
 
   const mockActions = {
