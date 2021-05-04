@@ -2,8 +2,6 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
-import { Pagination } from '@oare/types';
-import { extractPagination } from '@/utils';
 
 const router = express.Router();
 
@@ -11,29 +9,21 @@ router
   .route('/people/:letter')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
     try {
-      const pagination: Pagination = extractPagination(req.query);
       const { letter } = req.params;
       const cache = sl.get('cache');
       const PersonDao = sl.get('PersonDao');
-      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const PersonTextOccurrencesDao = sl.get('PersonTextOccurrencesDao');
 
-      const people = await PersonDao.getAllPeople(letter, {
-        limit: Number(pagination.limit),
-        page: Number(pagination.page),
-      });
+      const textCountByPersonUuid = await PersonTextOccurrencesDao.getAll();
+      const people = await PersonDao.getAllPeople(letter);
 
-      const resultPeople = await Promise.all(
-        people.map(async person => {
-          const count = await ItemPropertiesDao.getTextsOfPersonCount(
-            person.uuid
-          );
-          return {
-            ...person,
-            totalReferenceCount: count,
-          };
-        })
-      );
-
+      const resultPeople = people.map(person => ({
+        ...person,
+        textOccurrenceCount:
+          textCountByPersonUuid[person.uuid] !== undefined
+            ? textCountByPersonUuid[person.uuid]
+            : null,
+      }));
       cache.insert({ req }, resultPeople);
       res.json(resultPeople);
     } catch (err) {

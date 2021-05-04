@@ -16,6 +16,12 @@ describe('POST /text_discourse', () => {
     }),
   };
 
+  const mockPermissionsDao = {
+    getUserPermissions: jest
+      .fn()
+      .mockResolvedValue([{ name: 'INSERT_DISCOURSE_ROWS' }]),
+  };
+
   const mockPayload = {
     spelling: 'a-na',
     epigraphyUuids: ['uuid1', 'uuid2'],
@@ -25,6 +31,7 @@ describe('POST /text_discourse', () => {
   const setup = () => {
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
   };
 
   beforeEach(setup);
@@ -55,11 +62,9 @@ describe('POST /text_discourse', () => {
     expect(response.status).toBe(401);
   });
 
-  it('does not allow non-admins to insert new discourse rows', async () => {
-    sl.set('UserDao', {
-      getUserByUuid: jest.fn().mockResolvedValue({
-        isAdmin: false,
-      }),
+  it('does not allow users without permission to insert new discourse rows', async () => {
+    sl.set('PermissionsDao', {
+      getUserPermissions: jest.fn().mockResolvedValue([]),
     });
     const response = await sendRequest();
     expect(mockTextDiscourseDao.insertNewDiscourseRow).not.toHaveBeenCalled();

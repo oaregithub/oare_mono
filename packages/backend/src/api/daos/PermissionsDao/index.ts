@@ -66,6 +66,13 @@ class PermissionsDao {
       description:
         'Allow group users to view text discourses associated with text epigraphies',
     },
+    {
+      name: 'INSERT_DISCOURSE_ROWS',
+      type: 'dictionary',
+      description:
+        'Allow group users to insert new text discourse rows where missing',
+      dependency: 'UPDATE_FORM',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {

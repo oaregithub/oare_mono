@@ -1,8 +1,5 @@
 <template>
-  <OareContentView
-    title="People (Prosopographical Index)"
-    :loading="initialLoading"
-  >
+  <OareContentView title="People (Prosopographical Index)" :loading="loading">
     <letter-filter
       :wordList="personList"
       :letter="letter"
@@ -31,15 +28,29 @@
             </router-link>
           </span>
           <span v-else>
-            <span @click="personNotFound" class="mr-1">{{
-              personInfo.label
-            }}</span>
+            <router-link
+              :to="`person/${personInfo.uuid}`"
+              class="text-decoration-none mr-1"
+            >
+              {{ personInfo.label }}
+            </router-link>
           </span>
-          <a
-            @click="displayPersonTexts(personInfo.personNameUuid)"
-            class="test-person-texts"
-            >({{ personInfo.totalReferenceCount }})</a
+
+          <span
+            v-if="personInfo.textOccurrenceCount === null && isAdmin"
+            class="error--text"
           >
+            (No count found, please update the database)
+          </span>
+          <span>
+            (<a @click="displayPersonOccurrencesDialog"
+              >{{
+                personInfo.textOccurrenceCount !== null
+                  ? personInfo.textOccurrenceCount
+                  : 0
+              }})</a
+            >
+          </span>
         </v-col>
       </v-row>
       <v-row dense class="ml-4">
@@ -61,32 +72,13 @@
         </v-col>
       </v-row>
     </div>
-    <div
-      v-if="loading"
-      class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container"
-    >
-      <span class="mr-2"
-        >Loading more people... ({{ filteredPersonList.length }} /
-        {{ totalPersonCount }})</span
-      >
-      <v-progress-circular
-        indeterminate
-        :size="20"
-        color="primary"
-      ></v-progress-circular>
-    </div>
 
     <div
-      v-if="intersecting && hasCollectedAllPeople()"
-      class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container"
+      v-if="personList.length === 0 && !loading"
+      class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container primary"
     >
-      <span
-        >All people have been retrieved ({{ personList.length }} /
-        {{ totalPersonCount }})</span
-      >
+      <span class="white--text">No results found </span>
     </div>
-
-    <div v-intersect="onIntersect"></div>
   </OareContentView>
 </template>
 
@@ -99,7 +91,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import { PersonDisplay, GetAllPeopleRequest } from '@oare/types';
+import { PersonDisplay } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -118,14 +110,9 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-
-    const initialLoading = ref(false);
     const loading = ref(false);
-    const intersecting = ref(false);
     const personList = ref<PersonDisplay[]>([]);
-    const totalPersonCount = ref(0);
     const filteredPersonList = ref<PersonDisplay[]>([]);
-    const peoplePerScroll = ref(50);
 
     const searchFilter = (search: string, personDisplay: PersonDisplay) => {
       const lowerSearch = search ? search.toLowerCase() : '';
@@ -154,25 +141,10 @@ export default defineComponent({
       return foundPerson || foundRelationPerson || foundLabel;
     };
 
-    const displayCommentWord = (word: string): string => {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    };
-
     const getPeople = async () => {
       try {
         loading.value = true;
-
-        const request = {
-          letter: props.letter,
-          limit: peoplePerScroll.value,
-          page: personList.value.length,
-        } as GetAllPeopleRequest;
-        const people = await server.getPeople(request);
-        personList.value.push(...people);
-
-        // Individual Person page
-        // --Contains same info from phone book page (person, relation, personRelation, clickable references amount)
-        // --Also contains expandable lists for each role (and then for future items such as siblings)
+        personList.value = await server.getPeople(props.letter);
       } catch (e) {
         actions.showErrorSnackbar('Failed to retrieve people');
       } finally {
@@ -209,90 +181,36 @@ export default defineComponent({
       return `${personDisplay.topVariableRole} of ${personDisplay.roleObjPerson}`;
     };
 
-    const displayPersonTexts = (wordUuid: string) => {
-      actions.showSnackbar(
-        `Will get texts associated with this person in the future`
-      );
-    };
-
-    const personNotFound = () => {
-      actions.showSnackbar('No person available.');
+    const displayPersonOccurrencesDialog = () => {
+      actions.showSnackbar('This will display occurrences at a later date.');
     };
 
     const isAdmin = computed(() => store.getters.isAdmin);
 
-    const hasCollectedAllPeople = (): boolean => {
-      return totalPersonCount.value == personList.value.length;
-    };
-
-    const isLoading = (): boolean => {
-      return loading.value || initialLoading.value;
-    };
-
-    const onIntersect = async (
-      _entries: any,
-      _observer: any,
-      isIntersecting: boolean
-    ) => {
-      intersecting.value = isIntersecting;
-      if (isIntersecting && !isLoading() && !hasCollectedAllPeople()) {
-        try {
-          await getPeople();
-        } catch (ex) {
-          actions.showErrorSnackbar('Failed to retrieve more people');
-        }
-      }
-    };
-
-    const mount = async () => {
-      try {
-        initialLoading.value = true;
-        await getPeople();
-        totalPersonCount.value = await server.getPeopleCount(props.letter);
-      } catch (ex) {
-        actions.showErrorSnackbar('Failed to retrieve person count');
-      } finally {
-        initialLoading.value = false;
-      }
-    };
-
     watch(
       () => props.letter,
       async () => {
-        await mount();
+        await getPeople();
       }
     );
 
-    onMounted(mount);
+    onMounted(getPeople);
 
     return {
       getFilteredPeople,
       searchFilter,
-      displayCommentWord,
-      displayPersonTexts,
+      displayPersonOccurrencesDialog,
       hasPerson,
       hasRelationPerson,
       hasValueRole,
       hasVariableRole,
       hasObjUuid,
       displayVariableRole,
-      personNotFound,
-      onIntersect,
-      hasCollectedAllPeople,
-      intersecting,
-      initialLoading,
       loading,
       personList,
       filteredPersonList,
-      totalPersonCount,
       isAdmin,
     };
   },
 });
 </script>
-
-<style scoped>
-.loading-container {
-  background-color: lightgray;
-}
-</style>
