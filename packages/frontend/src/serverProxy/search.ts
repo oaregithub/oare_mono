@@ -6,6 +6,7 @@ import {
   SearchSpellingResultRow,
   SearchDiscourseSpellingResponse,
   Pagination,
+  SearchNullDiscourseResultRow,
 } from '@oare/types';
 
 async function searchTexts(
@@ -49,9 +50,35 @@ async function searchSpellingDiscourse(
   return data;
 }
 
+async function searchNullDiscourse(
+  characters: string,
+  page: number,
+  limit: number
+): Promise<SearchNullDiscourseResultRow[]> {
+  const { data } = await axios.get('/search/discourse/null', {
+    params: {
+      characters,
+      page,
+      limit,
+    },
+  });
+  return data;
+}
+
+async function searchNullDiscourseCount(characters: string): Promise<number> {
+  const { data } = await axios.get('/search/discourse/null/count', {
+    params: {
+      characters,
+    },
+  });
+  return data;
+}
+
 export default {
   searchSpellings,
   searchSpellingDiscourse,
   searchTexts,
   searchTextsTotal,
+  searchNullDiscourse,
+  searchNullDiscourseCount,
 };
