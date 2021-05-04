@@ -23,6 +23,9 @@ describe('FormsDisplay test', () => {
       permissions: [{ name: 'UPDATE_FORM' }],
     },
   };
+  const mockLodash = {
+    debounce: cb => cb,
+  };
   const mockForm = {
     uuid: 'testUuid',
     form: 'test form',
@@ -46,6 +49,7 @@ describe('FormsDisplay test', () => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
     sl.set('store', mockStore);
+    sl.set('lodash', mockLodash);
 
     return mount(FormDisplay, {
       vuetify,

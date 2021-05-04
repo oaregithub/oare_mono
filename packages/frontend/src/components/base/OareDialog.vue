@@ -12,8 +12,9 @@
     <v-card>
       <div v-if="closeButton">
         <v-card-actions>
-          <h2 class='ml-3' v-if='actionTitle'>{{actionTitle}}</h2>
+          <h2 class="ml-3" v-if="actionTitle">{{ actionTitle }}</h2>
           <v-spacer />
+          <slot name="action-options" />
           <v-btn @click="$emit('input', false)" text color="error">Close</v-btn>
         </v-card-actions>
         <v-divider />

@@ -6,12 +6,7 @@
           v-if="canUpdateWordSpelling && !isEditing && allowEditing"
           icon
           class="mt-n2 mr-1"
-          @click="
-            () => {
-              isEditing = true;
-              utilList.type = 'WORD';
-            }
-          "
+          @click="changeUtilListType(true, 'WORD')"
         >
           <v-icon class="test-pencil">mdi-pencil</v-icon>
         </v-btn>
@@ -30,12 +25,7 @@
         v-else-if="wordInfo && utilList.type === 'WORD' && allowEditing"
         :word.sync="wordInfo.word"
         :wordUuid="uuid"
-        @close-edit="
-          () => {
-            isEditing = false;
-            utilList.type = 'NONE';
-          }
-        "
+        @close-edit="changeUtilListType(false, 'NONE')"
       />
     </template>
     <template #header>
@@ -52,10 +42,10 @@
     />
 
     <template v-if="isEditing && utilList.type === 'SPELLING' && allowEditing">
-      <spelling-dialog
+      <edit-word-dialog
+        v-model="isEditing"
         :form="utilList.form"
         :spelling="utilList.formSpelling"
-        v-model="isEditing"
       />
     </template>
 
@@ -101,17 +91,14 @@
 import {
   defineComponent,
   ref,
-  Ref,
   computed,
   PropType,
   watch,
   provide,
   InjectionKey,
-  inject,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import {
-  DictionaryForm,
   DictionaryWordResponse,
   UtilListDisplay,
   UtilListType,
@@ -119,10 +106,9 @@ import {
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
-import router from '@/router';
 import sl from '@/serviceLocator';
 import UtilList from '@/components/UtilList/index.vue';
-import SpellingDialog from './Forms/components/SpellingDialog.vue';
+import EditWordDialog from './Forms/components/EditWordDialog.vue';
 
 export const SendUtilList: InjectionKey<
   (utilDisplay: UtilListDisplay) => Promise<void>
@@ -135,7 +121,7 @@ export default defineComponent({
     WordInfo,
     WordNameEdit,
     UtilList,
-    SpellingDialog,
+    EditWordDialog,
   },
   props: {
     uuid: {
@@ -167,7 +153,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props, context) {
+  setup(props) {
     const store = sl.get('store');
     const serverProxy = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -304,6 +290,14 @@ export default defineComponent({
       }
     };
 
+    const changeUtilListType = (
+      editing: boolean,
+      utilListType: UtilListType
+    ) => {
+      isEditing.value = editing;
+      utilList.value.type = utilListType;
+    };
+
     // To avoid circular dependencies
     const commentComponent = computed(() =>
       props.allowCommenting
@@ -331,6 +325,7 @@ export default defineComponent({
       isEditing,
       canUpdateWordSpelling,
       updateWordInfo,
+      changeUtilListType,
     };
   },
 });

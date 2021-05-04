@@ -4,13 +4,13 @@ import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
 import { ReloadKey } from '../../../index.vue';
-import SpellingDialog from '../SpellingDialog.vue';
+import EditWordDialog from '../EditWordDialog.vue';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe('SpellingDialog test', () => {
+describe('EditWordDialog test', () => {
   const mockActions = {
     showErrorSnackbar: jest.fn(),
     showSnackbar: jest.fn(),
@@ -70,6 +70,17 @@ describe('SpellingDialog test', () => {
     checkSpelling: jest.fn().mockResolvedValue({
       errors: [],
     }),
+    searchNullDiscourse: jest.fn().mockResolvedValue([
+      {
+        textUuid: 'testUuid',
+        epigraphyUuids: ['1'],
+        line: 1,
+        textName: 'test name',
+        reading: 'test reading',
+      },
+    ]),
+    searchNullDiscourseCount: jest.fn().mockResolvedValue(1),
+    insertDiscourseRow: jest.fn().mockResolvedValue(),
   };
 
   const reload = jest.fn();
@@ -79,7 +90,7 @@ describe('SpellingDialog test', () => {
     sl.set('serverProxy', server || mockServer);
     sl.set('lodash', mockLodash);
 
-    return mount(SpellingDialog, {
+    return mount(EditWordDialog, {
       vuetify,
       localVue,
       stubs: ['router-link'],
@@ -111,6 +122,7 @@ describe('SpellingDialog test', () => {
             },
           ],
         },
+        spellingInput: 'spelling-input',
       },
     });
   };
@@ -124,7 +136,6 @@ describe('SpellingDialog test', () => {
     createWrapper({
       spelling: mockSpelling,
     });
-
     await flushPromises();
     expect(mockServer.searchSpellings).toHaveBeenCalled();
     expect(mockServer.searchSpellingDiscourse).toHaveBeenCalled();
@@ -134,7 +145,6 @@ describe('SpellingDialog test', () => {
     createWrapper({
       spelling: mockSpelling,
     });
-
     await flushPromises();
     expect(mockServer.checkSpelling).toHaveBeenCalled();
   });
@@ -147,7 +157,6 @@ describe('SpellingDialog test', () => {
         checkSpelling: jest.fn().mockRejectedValue('Failed to check spelling'),
       },
     });
-
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
@@ -162,11 +171,9 @@ describe('SpellingDialog test', () => {
         }),
       },
     });
-
     await flushPromises();
     await wrapper.get('.test-spelling-field input').setValue('bad spelling');
     await flushPromises();
-
     expect(wrapper.get('.test-submit-btn').element).toBeDisabled();
   });
 
@@ -174,7 +181,6 @@ describe('SpellingDialog test', () => {
     const wrapper = createWrapper({
       spelling: mockSpelling,
     });
-
     await flushPromises();
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await flushPromises();
@@ -272,6 +278,76 @@ describe('SpellingDialog test', () => {
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await flushPromises();
 
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('gets null discourses on discourse switch', async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+    });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
+    await flushPromises();
+    expect(mockServer.searchNullDiscourse).toHaveBeenCalled();
+    expect(mockServer.searchNullDiscourseCount).toHaveBeenCalled();
+  });
+
+  it('shows error on failed null discourse search', async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+      server: {
+        ...mockServer,
+        searchNullDiscourse: jest
+          .fn()
+          .mockRejectedValue('failed search null discourse'),
+      },
+    });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('shows error on failed null discourse count', async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+      server: {
+        ...mockServer,
+        searchNullDiscourseCount: jest
+          .fn()
+          .mockRejectedValue('failed search null discourse count'),
+      },
+    });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('successfully inserts new discourse row', async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+    });
+    await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await flushPromises();
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockServer.insertDiscourseRow).toHaveBeenCalled();
+  });
+
+  it('displays error on failed discourse row insert', async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+      server: {
+        ...mockServer,
+        insertDiscourseRow: jest
+          .fn()
+          .mockRejectedValue('failed to insert new discourse row'),
+      },
+    });
+    await wrapper.get('.test-spelling-field input').setValue('new spelling');
+    await flushPromises();
+    await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });
