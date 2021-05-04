@@ -64,6 +64,13 @@ class ItemProperties {
       .where('item_properties.object_uuid', personUuid);
   }
 
+  async getTextsOfPersonCount(personUuid: string): Promise<number> {
+    const textsOfPeopleCount = await this.getTextsOfPersonBaseQuery(personUuid)
+      .count({ count: 'text_discourse.text_uuid' })
+      .first();
+    return textsOfPeopleCount ? Number(textsOfPeopleCount.count) : 0;
+  }
+
   async getTextsOfPerson(
     personUuid: string,
     { limit, page, filter }: Pagination
@@ -86,7 +93,7 @@ class ItemProperties {
       )
       .orderBy('text.name')
       .limit(limit)
-      .offset(page * limit)
+      .offset((page - 1) * limit)
       .modify(qb => {
         if (filter) {
           qb.andWhere('text.name', 'like', `%${filter}%`);
