@@ -307,10 +307,9 @@ const routes: RouteConfig[] = [
     component: SendResetPasswordEmailView,
   },
   {
-    path: '/reset_password/:uuid',
+    path: '/reset_password',
     name: 'resetpassword',
     component: ResetPasswordView,
-    props: true,
   },
   {
     path: '/403',
