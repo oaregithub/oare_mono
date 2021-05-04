@@ -53,7 +53,6 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import serverProxy from '@/serverProxy';
 
 export default defineComponent({
   props: {

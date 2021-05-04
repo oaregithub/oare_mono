@@ -1,8 +1,9 @@
 import axios from '@/axiosInstance';
 import { ResetPasswordPayload } from '@oare/types';
+import firebase from '@/firebase';
 
 async function sendResetPasswordEmail(email: string) {
-  await axios.post('/reset_password', { email });
+  await firebase.auth().sendPasswordResetEmail(email);
 }
 
 async function resetPassword(payload: ResetPasswordPayload) {

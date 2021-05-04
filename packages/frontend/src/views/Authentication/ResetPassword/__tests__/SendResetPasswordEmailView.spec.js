@@ -25,6 +25,7 @@ describe('SendResetPasswordEmailView test', () => {
     return mount(SendResetPasswordEmailView, {
       localVue,
       vuetify,
+      stubs: ['router-link'],
     });
   };
 
