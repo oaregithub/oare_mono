@@ -63,11 +63,6 @@ export default defineComponent({
           );
         } else {
           actions.showErrorSnackbar(message);
-          await server.logError({
-            description: message,
-            stacktrace: null,
-            status: 'New',
-          });
         }
       } finally {
         loading.value = false;
