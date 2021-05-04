@@ -24,6 +24,7 @@ import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
 import cacheStatus from './cache_status';
 import people from './people';
+import textDiscourse from './text_discourse';
 
 const serverProxy = {
   ...textGroups,
@@ -52,6 +53,7 @@ const serverProxy = {
   ...threads,
   ...cacheStatus,
   ...people,
+  ...textDiscourse,
 };
 
 export type ServerProxyType = typeof serverProxy;

@@ -93,7 +93,11 @@
       </v-row>
     </div>
 
-    <spelling-dialog v-model="spellingDialogOpen" :form="form" />
+    <edit-word-dialog
+      v-model="spellingDialogOpen"
+      :form="form"
+      :allowDiscourseMode="false"
+    />
   </div>
 </template>
 
@@ -105,24 +109,19 @@ import {
   computed,
   inject,
 } from '@vue/composition-api';
-import {
-  DictionaryForm,
-  FormSpelling,
-  SpellingText,
-  UtilListDisplay,
-} from '@oare/types';
+import { DictionaryForm, FormSpelling } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
-import SpellingDialog from './components/SpellingDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import { SendUtilList } from '../index.vue';
+import EditWordDialog from './components/EditWordDialog.vue';
 
 export default defineComponent({
   components: {
     GrammarDisplay,
     SpellingDisplay,
-    SpellingDialog,
+    EditWordDialog,
     UtilList,
   },
   props: {
