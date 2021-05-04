@@ -291,19 +291,31 @@ class TextEpigraphyDao {
         .pluck('char_on_tablet')
         .orderBy('char_on_tablet', 'asc')
     )[0];
-    const isFirstWord = newWordCharOnTablet === 1;
-    const direction = !isFirstWord ? '<' : '>';
-    const orderBy = !isFirstWord ? 'desc' : 'asc';
-    const anchorDiscourseUuid: string = (
-      await knex('text_epigraphy')
+    let isFirstWord = false;
+    let anchorDiscourseRow: { discourseUuid: string } = await knex(
+      'text_epigraphy'
+    )
+      .where('text_uuid', textUuid)
+      .whereNotNull('discourse_uuid')
+      .andWhere(function () {
+        this.where('char_on_tablet', '<', newWordCharOnTablet);
+      })
+      .select('discourse_uuid AS discourseUuid')
+      .orderBy('char_on_tablet', 'desc')
+      .first();
+    if (!anchorDiscourseRow) {
+      isFirstWord = true;
+      anchorDiscourseRow = await knex('text_epigraphy')
         .where('text_uuid', textUuid)
         .whereNotNull('discourse_uuid')
         .andWhere(function () {
-          this.where('char_on_tablet', direction, newWordCharOnTablet);
+          this.where('char_on_tablet', '>', newWordCharOnTablet);
         })
-        .pluck('discourse_uuid')
-        .orderBy('char_on_tablet', orderBy)
-    )[0];
+        .select('discourse_uuid AS discourseUuid')
+        .orderBy('char_on_tablet', 'asc')
+        .first();
+    }
+    const anchorDiscourseUuid = anchorDiscourseRow.discourseUuid;
     const anchorInfo: AnchorInfo = await knex('text_discourse')
       .where('uuid', anchorDiscourseUuid)
       .select(
