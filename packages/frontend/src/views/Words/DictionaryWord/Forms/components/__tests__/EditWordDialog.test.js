@@ -20,6 +20,12 @@ describe('EditWordDialog test', () => {
     debounce: cb => cb,
   };
 
+  const mockStore = {
+    getters: {
+      permissions: [{ name: 'INSERT_DISCOURSE_ROWS' }],
+    },
+  };
+
   const mockSpelling = {
     uuid: 'spelling-uuid',
     spelling: 'spelling',
@@ -85,10 +91,11 @@ describe('EditWordDialog test', () => {
 
   const reload = jest.fn();
 
-  const createWrapper = ({ spelling, server, actions } = {}) => {
-    sl.set('globalActions', actions || mockActions);
+  const createWrapper = ({ spelling, server, store } = {}) => {
+    sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
     sl.set('lodash', mockLodash);
+    sl.set('store', store || mockStore);
 
     return mount(EditWordDialog, {
       vuetify,
@@ -289,6 +296,17 @@ describe('EditWordDialog test', () => {
     await flushPromises();
     expect(mockServer.searchNullDiscourse).toHaveBeenCalled();
     expect(mockServer.searchNullDiscourseCount).toHaveBeenCalled();
+  });
+
+  it('hides discourse switch if user does not have permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        getters: {
+          permissions: [],
+        },
+      },
+    });
+    expect(wrapper.find('.test-discourse-mode input').exists()).toBe(false);
   });
 
   it('shows error on failed null discourse search', async () => {
