@@ -61,26 +61,45 @@ describe('people api test', () => {
   const textsOfPerson = [
     {
       textName: 'Text1',
+      discourseUuid: 'uuid1',
     },
     {
       textName: 'Text2',
+      discourseUuid: 'uuid2',
     },
   ];
 
   const mockItemPropertiesDao = {
     getTextsOfPerson: jest.fn().mockResolvedValue(textsOfPerson),
+    getUniqueTextsOfPerson: jest.fn().mockResolvedValue(textsOfPerson),
   };
 
   const renderedTextsOfPerson = [
     {
       textName: textsOfPerson[0].textName,
+      discourseUuid: 'uuid1',
       readings: ['8. IGI <em>e</em>', '9. DUMU <em>e</em>'],
     },
     {
       textName: textsOfPerson[1].textName,
+      discourseUuid: 'uuid2',
       readings: ['11. GHI <em>i</em>', '12. DUMU <em>e</em>'],
     },
   ];
+
+  const renderedTextsOfPersonWithInvalidDiscourseUuid = [
+    {
+      textName: textsOfPerson[0].textName,
+      discourseUuid: 'uuid1',
+      readings: ['8. IGI <em>e</em>', '9. DUMU <em>e</em>'],
+    },
+    {
+      textName: textsOfPerson[1].textName,
+      discourseUuid: 'invalid',
+      readings: ['11. GHI <em>i</em>', '12. DUMU <em>e</em>'],
+    },
+  ];
+
   const mockUtils = {
     extractPagination: jest.fn(),
     getTextOccurrences: jest.fn().mockResolvedValue(renderedTextsOfPerson),
@@ -186,6 +205,29 @@ describe('people api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(403);
       expect(mockItemPropertiesDao.getTextsOfPerson).not.toHaveBeenCalled();
+    });
+
+    it('returns both found and not found texts.', async () => {
+      const notFoundText = '<stong style="color: red">Not found</stong>';
+      sl.set('utils', {
+        ...mockUtils,
+        getTextOccurrences: jest
+          .fn()
+          .mockResolvedValue(renderedTextsOfPersonWithInvalidDiscourseUuid),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual([
+        renderedTextsOfPersonWithInvalidDiscourseUuid[0],
+        {
+          discourseUuid: textsOfPerson[1].discourseUuid,
+          textName: textsOfPerson[1].textName,
+          textUuid: textsOfPerson[1].textUuid,
+          line: -1,
+          wordOnTablet: -1,
+          readings: [notFoundText],
+        },
+      ]);
     });
   });
 });

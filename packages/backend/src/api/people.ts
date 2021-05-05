@@ -6,12 +6,6 @@ import { SpellingOccurrenceResponseRow } from '@oare/types';
 
 const router = express.Router();
 
-interface TextOccurrenceEssentialsRow {
-  discourseUuid: string;
-  textName: string;
-  textUuid: string;
-}
-
 router
   .route('/people/:letter')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
@@ -51,13 +45,9 @@ router
 
       const textOccurrences = await utils.getTextOccurrences(rows);
 
-      const initialTextsOfPeople: TextOccurrenceEssentialsRow[] = await ItemPropertiesDao.getTextsOfPersonBaseQuery(
+      const initialTextsOfPeople = await ItemPropertiesDao.getUniqueTextsOfPerson(
         uuid,
         pagination
-      ).distinct(
-        'text_discourse.uuid AS discourseUuid',
-        'text.name AS textName',
-        'text.uuid AS textUuid'
       );
 
       // Label occurrences who's discourseUuid is not found in the text_epigraphy table (but should be)

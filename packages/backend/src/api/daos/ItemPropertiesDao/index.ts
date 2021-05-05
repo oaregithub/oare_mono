@@ -16,6 +16,12 @@ export interface ItemPropertyShortRow {
   valueUuid: string | null;
 }
 
+interface TextOccurrenceEssentialsRow {
+  discourseUuid: string;
+  textName: string;
+  textUuid: string;
+}
+
 class ItemProperties {
   async getProperties(
     referenceType: string,
@@ -54,7 +60,10 @@ class ItemProperties {
     return itemProperties;
   }
 
-  getTextsOfPersonBaseQuery(personUuid: string, pagination?: Pagination) {
+  private getTextsOfPersonBaseQuery(
+    personUuid: string,
+    pagination?: Pagination
+  ) {
     return knex('item_properties')
       .leftJoin(
         'text_discourse',
@@ -72,6 +81,19 @@ class ItemProperties {
           }
         }
       });
+  }
+
+  async getUniqueTextsOfPerson(personUuid: string, pagination: Pagination) {
+    const texts: TextOccurrenceEssentialsRow[] = await this.getTextsOfPersonBaseQuery(
+      personUuid,
+      pagination
+    ).distinct(
+      'text_discourse.uuid AS discourseUuid',
+      'text.name AS textName',
+      'text.uuid AS textUuid'
+    );
+
+    return texts;
   }
 
   async getTextsOfPersonCount(personUuid: string): Promise<number> {
