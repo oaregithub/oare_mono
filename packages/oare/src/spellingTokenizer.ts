@@ -82,6 +82,34 @@ export const isSignPhraseWithNumber = (tokens: Token[]): boolean => {
 export const isComplementPhrase = (tokens: Token[]): boolean =>
   tokens.some(({ tokenType }) => tokenType === '{');
 
+/**
+ * Checks that damage brackets match, and other markup that has
+ * two characters matches
+ */
+export const hasValidMarkup = (tokens: Token[]): boolean => {
+  const dualCharacterMap = {
+    '*': '*',
+    ':': ':',
+    '‹': '›',
+    '«': '»',
+    '[': ']',
+    '⸢': '⸣',
+  };
+
+  const reading = tokens.map(({ tokenText }) => tokenText).join('');
+
+  const markupValid = Object.entries(dualCharacterMap).reduce(
+    (charsMatch, [startChar, endChar]) => {
+      if (!charsMatch) {
+        return false;
+      }
+
+      return true;
+    },
+    true
+  );
+};
+
 const isValidGrammar = (tokens: Token[]) => {
   // If there are numbers, they must be separated by a + or appear
   // only at the beginning of a sign
