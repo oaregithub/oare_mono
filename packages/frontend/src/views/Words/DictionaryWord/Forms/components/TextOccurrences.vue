@@ -69,9 +69,9 @@ export default defineComponent({
       >,
       required: true,
     },
-    initializePage: {
-      type: Number,
-      default: 1,
+    defaultPageSize: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props) {
@@ -93,7 +93,7 @@ export default defineComponent({
 
     const referencesLoading = ref(false);
     const tableOptions = ref({
-      page: props.initializePage,
+      page: 1,
       itemsPerPage: 10,
     });
 
@@ -101,7 +101,9 @@ export default defineComponent({
       try {
         referencesLoading.value = true;
         textOccurrences.value = await props.getTexts(props.uuid, {
-          page: tableOptions.value.page,
+          page: props.defaultPageSize
+            ? tableOptions.value.page
+            : tableOptions.value.page - 1,
           limit: tableOptions.value.itemsPerPage,
           ...(search.value ? { filter: search.value } : null),
         });

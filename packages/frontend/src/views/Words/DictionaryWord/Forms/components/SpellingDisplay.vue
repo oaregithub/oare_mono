@@ -34,7 +34,7 @@
       :uuid="spelling.uuid"
       :totalTextOccurrences="totalOccurrences"
       :getTexts="server.getSpellingTextOccurrences"
-      :initializePage="0"
+      :default-page-size="false"
       @input="addSpellingDialog = false"
     >
     </text-occurrences>
