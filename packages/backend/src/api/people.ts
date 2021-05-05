@@ -63,22 +63,22 @@ router
       // Label occurrences who's discourseUuid is not found in the text_epigraphy table (but should be)
       // (See last `innerJoin` of ItemPropertiesDao.getTextsOfPerson())
       const response = initialTextsOfPeople.map(textOfPerson => {
-        const occurrences = textOccurrences.filter(textOccurrence => {
-          return textOccurrence.discourseUuid === textOfPerson.discourseUuid;
-        });
+        const occurrences = textOccurrences.filter(
+          textOccurrence =>
+            textOccurrence.discourseUuid === textOfPerson.discourseUuid
+        );
 
         if (occurrences.length > 0) {
           return occurrences[0];
-        } else {
-          return {
-            discourseUuid: textOfPerson.discourseUuid,
-            textName: textOfPerson.textName,
-            textUuid: textOfPerson.textUuid,
-            line: -1,
-            wordOnTablet: -1,
-            readings: ['<stong style="color: red">Not found</stong>'],
-          } as SpellingOccurrenceResponseRow;
         }
+        return {
+          discourseUuid: textOfPerson.discourseUuid,
+          textName: textOfPerson.textName,
+          textUuid: textOfPerson.textUuid,
+          line: -1,
+          wordOnTablet: -1,
+          readings: ['<stong style="color: red">Not found</stong>'],
+        } as SpellingOccurrenceResponseRow;
       });
 
       res.json(response);
