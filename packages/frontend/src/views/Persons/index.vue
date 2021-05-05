@@ -43,7 +43,9 @@
             (No count found, please update the database)
           </span>
           <span>
-            (<a @click="displaysTextOccurrenceDialog(personInfo)"
+            (<a
+              @click="displaysTextOccurrenceDialog(personInfo)"
+              class="test-text-occurrences"
               >{{
                 personInfo.textOccurrenceCount !== null
                   ? personInfo.textOccurrenceCount
@@ -82,6 +84,7 @@
 
     <text-occurrences
       v-if="displayTextOccurrences"
+      class="test-text-occurrences-display"
       :title="selectedPersonTitle()"
       :uuid="selectedPerson.uuid"
       :totalTextOccurrences="selectedPersonTextOccurrenceCount()"

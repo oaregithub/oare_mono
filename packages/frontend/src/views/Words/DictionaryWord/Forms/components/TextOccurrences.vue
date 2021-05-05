@@ -28,6 +28,7 @@
       <template #[`item.context`]="{ item }">
         <div
           v-for="(reading, index) in item.readings"
+          class="test-reading"
           :key="index"
           v-html="reading"
         />
@@ -99,9 +100,6 @@ export default defineComponent({
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        console.log('uuid', props.uuid);
-        console.log('page', tableOptions.value.page);
-        console.log('limit', tableOptions.value.itemsPerPage);
         textOccurrences.value = await props.getTexts(props.uuid, {
           page: tableOptions.value.page,
           limit: tableOptions.value.itemsPerPage,
