@@ -54,14 +54,24 @@ class ItemProperties {
     return itemProperties;
   }
 
-  private getTextsOfPersonBaseQuery(personUuid: string) {
+  getTextsOfPersonBaseQuery(personUuid: string, pagination?: Pagination) {
     return knex('item_properties')
       .leftJoin(
         'text_discourse',
         'text_discourse.uuid',
         'item_properties.reference_uuid'
       )
-      .where('item_properties.object_uuid', personUuid);
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .where('item_properties.object_uuid', personUuid)
+      .modify(qb => {
+        if (pagination) {
+          qb.limit(pagination.limit);
+          qb.offset((pagination.page - 1) * pagination.limit);
+          if (pagination.filter) {
+            qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
+          }
+        }
+      });
   }
 
   async getTextsOfPersonCount(personUuid: string): Promise<number> {
@@ -78,7 +88,6 @@ class ItemProperties {
     const rows: SpellingOccurrenceRow[] = await this.getTextsOfPersonBaseQuery(
       personUuid
     )
-      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
       .distinct(
         'text_discourse.uuid AS discourseUuid',
         'name AS textName',

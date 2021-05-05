@@ -2,8 +2,15 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import { SpellingOccurrenceResponseRow } from '@oare/types';
 
 const router = express.Router();
+
+interface TextOccurrenceEssentialsRow {
+  discourseUuid: string;
+  textName: string;
+  textUuid: string;
+}
 
 router
   .route('/people/:letter')
@@ -42,7 +49,37 @@ router
 
       const rows = await ItemPropertiesDao.getTextsOfPerson(uuid, pagination);
 
-      const response = await utils.getTextOccurrences(rows);
+      const textOccurrences = await utils.getTextOccurrences(rows);
+
+      const initialTextsOfPeople: TextOccurrenceEssentialsRow[] = await ItemPropertiesDao.getTextsOfPersonBaseQuery(
+        uuid,
+        pagination
+      ).distinct(
+        'text_discourse.uuid AS discourseUuid',
+        'text.name AS textName',
+        'text.uuid AS textUuid'
+      );
+
+      // Label occurrences who's discourseUuid is not found in the text_epigraphy table (but should be)
+      // (See last `innerJoin` of ItemPropertiesDao.getTextsOfPerson())
+      const response = initialTextsOfPeople.map(textOfPerson => {
+        const occurrences = textOccurrences.filter(textOccurrence => {
+          return textOccurrence.discourseUuid === textOfPerson.discourseUuid;
+        });
+
+        if (occurrences.length > 0) {
+          return occurrences[0];
+        } else {
+          return {
+            discourseUuid: textOfPerson.discourseUuid,
+            textName: textOfPerson.textName,
+            textUuid: textOfPerson.textUuid,
+            line: -1,
+            wordOnTablet: -1,
+            readings: ['<stong style="color: red">Not found</stong>'],
+          } as SpellingOccurrenceResponseRow;
+        }
+      });
 
       res.json(response);
     } catch (err) {
