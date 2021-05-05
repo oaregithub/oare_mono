@@ -15,6 +15,11 @@ class UserDao {
     return user;
   }
 
+  async uuidExists(uuid: string): Promise<boolean> {
+    const user = await knex('user').first().where({ uuid });
+    return !!user;
+  }
+
   async getUserByUuid(uuid: string): Promise<User> {
     const row = await this.getUserByColumn('uuid', uuid);
     if (!row) {

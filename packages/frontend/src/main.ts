@@ -47,22 +47,14 @@ firebase.auth().onAuthStateChanged(async user => {
   const { currentUser } = firebase.auth();
   if (currentUser && user && user.email && user.displayName) {
     const idTokenResult = await currentUser.getIdTokenResult();
-    const { isAdmin } = idTokenResult.claims;
-    const [firstName, lastName] = user.displayName.split(' ');
-    const { email, uid: uuid } = user;
-
-    store.setUser({
-      firstName,
-      lastName,
-      email,
-      uuid,
-      isAdmin,
-    });
-
     store.setIdToken(idTokenResult.token);
 
-    const permissions = await serverProxy.getUserPermissions();
+    const [oareUser, permissions] = await Promise.all([
+      serverProxy.getUser(currentUser.uid),
+      serverProxy.getUserPermissions(),
+    ]);
     store.setPermissions(permissions);
+    store.setUser(oareUser);
   }
   if (!app) {
     app = new Vue({

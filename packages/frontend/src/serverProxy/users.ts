@@ -1,4 +1,4 @@
-import { GetUserResponse } from '@oare/types';
+import { GetUserResponse, User } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getAllUsers(): Promise<GetUserResponse[]> {
@@ -6,6 +6,12 @@ async function getAllUsers(): Promise<GetUserResponse[]> {
   return data;
 }
 
+async function getUser(uuid: string): Promise<User> {
+  const { data } = await axios.get(`/users/${uuid}`);
+  return data;
+}
+
 export default {
   getAllUsers,
+  getUser,
 };
