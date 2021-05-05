@@ -6,14 +6,6 @@ async function getPeople(letter: string): Promise<PersonDisplay[]> {
   return data;
 }
 
-async function getPeopleCount(letter: string): Promise<number> {
-  const { data } = await axios.get(
-    `/people/${encodeURIComponent(letter)}/count`
-  );
-  return data;
-}
-
 export default {
-  getPeopleCount,
   getPeople,
 };

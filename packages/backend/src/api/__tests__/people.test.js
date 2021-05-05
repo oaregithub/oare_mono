@@ -58,11 +58,41 @@ describe('people api test', () => {
     }),
   };
 
+  const textsOfPerson = [
+    {
+      textName: 'Text1',
+    },
+    {
+      textName: 'Text2',
+    },
+  ];
+
+  const mockItemPropertiesDao = {
+    getTextsOfPerson: jest.fn().mockResolvedValue(textsOfPerson),
+  };
+
+  const renderedTextsOfPerson = [
+    {
+      textName: textsOfPerson[0].textName,
+      readings: ['8. IGI <em>e</em>', '9. DUMU <em>e</em>'],
+    },
+    {
+      textName: textsOfPerson[1].textName,
+      readings: ['11. GHI <em>i</em>', '12. DUMU <em>e</em>'],
+    },
+  ];
+  const mockUtils = {
+    extractPagination: jest.fn(),
+    getTextOccurrences: jest.fn().mockResolvedValue(renderedTextsOfPerson),
+  };
+
   const setup = () => {
     sl.set('PersonDao', mockPersonDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
     sl.set('PersonTextOccurrencesDao', mockPersonTextOccurrencesDao);
+    sl.set('utils', mockUtils);
     sl.set('cache', mockCache);
   };
 
@@ -121,47 +151,41 @@ describe('people api test', () => {
     });
   });
 
-  describe('GET /people/:letter/count', () => {
-    const PATH = `${API_PATH}/people/${encodeURIComponent('A')}/count`;
+  describe('GET /people/person/:uuid/texts', () => {
+    const PATH = `${API_PATH}/people/person/${encodeURIComponent(
+      'uuid'
+    )}/texts`;
     const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
       return cookie ? req.set('Authorization', 'token') : req;
     };
 
-    it('returns successful people count.', async () => {
+    it('returns successful person texts.', async () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual(
-        allPeopleExpectedResponse.length
-      );
+      expect(JSON.parse(response.text)).toEqual(renderedTextsOfPerson);
+      expect(mockUtils.extractPagination).toHaveBeenCalled();
+      expect(mockUtils.getTextOccurrences).toHaveBeenCalled();
+      expect(mockItemPropertiesDao.getTextsOfPerson).toHaveBeenCalled();
     });
 
-    it('fails to return people count when unexpected error', async () => {
-      sl.set('PersonDao', {
+    it('fails to return person texts when invalid person.', async () => {
+      sl.set('ItemPropertiesDao', {
         getAllPeople: jest
           .fn()
-          .mockRejectedValue('Error, people count unable to be retrieved.'),
+          .mockRejectedValue('Error, person texts unable to be retrieved.'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
-    it('fails to return people count when does not have permission', async () => {
-      sl.set('store', {
-        getters: {
-          user: {
-            uuid: 'testUuid',
-          },
-          permissions: [],
-          isAdmin: false,
-        },
-      });
+    it('fails to return person texts when does not have permission.', async () => {
       sl.set('PermissionsDao', {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       const response = await sendRequest();
       expect(response.status).toBe(403);
-      expect(mockPersonDao.getAllPeople).not.toHaveBeenCalled();
+      expect(mockItemPropertiesDao.getTextsOfPerson).not.toHaveBeenCalled();
     });
   });
 });

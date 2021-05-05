@@ -24,8 +24,15 @@ describe('POST /text_discourse', () => {
 
   const mockPayload = {
     spelling: 'a-na',
-    epigraphyUuids: ['uuid1', 'uuid2'],
-    textUuid: 'textUuid',
+    occurrences: [
+      {
+        textUuid: 'textUuid',
+        epigraphyUuids: ['uuid1', 'uuid2'],
+        line: 1,
+        textName: 'textName',
+        reading: 'reading',
+      },
+    ],
   };
 
   const setup = () => {

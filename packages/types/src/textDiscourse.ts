@@ -1,3 +1,5 @@
+import { SearchNullDiscourseResultRow } from './search';
+
 export type DiscourseUnitType =
   | 'discourseUnit'
   | 'sentence'
@@ -25,6 +27,5 @@ export interface DiscourseUnit {
 
 export interface NewDiscourseRowPayload {
   spelling: string;
-  epigraphyUuids: string[];
-  textUuid: string;
+  occurrences: SearchNullDiscourseResultRow[];
 }
