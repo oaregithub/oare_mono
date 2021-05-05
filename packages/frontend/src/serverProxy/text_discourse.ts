@@ -5,15 +5,10 @@ async function insertDiscourseRow(
   spelling: string,
   occurrences: SearchNullDiscourseResultRow[]
 ): Promise<void> {
-  await Promise.all(
-    occurrences.map(occurrence =>
-      axios.post('/text_discourse', {
-        spelling,
-        epigraphyUuids: occurrence.epigraphyUuids,
-        textUuid: occurrence.textUuid,
-      })
-    )
-  );
+  await axios.post('/text_discourse', {
+    spelling,
+    occurrences,
+  });
 }
 
 export default {

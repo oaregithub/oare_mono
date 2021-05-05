@@ -10,17 +10,17 @@ router
   .route('/text_discourse')
   .post(permissionRoute('INSERT_DISCOURSE_ROWS'), async (req, res, next) => {
     const TextDiscourseDao = sl.get('TextDiscourseDao');
-    const {
-      spelling,
-      epigraphyUuids,
-      textUuid,
-    }: NewDiscourseRowPayload = req.body;
+    const { spelling, occurrences }: NewDiscourseRowPayload = req.body;
 
     try {
-      await TextDiscourseDao.insertNewDiscourseRow(
-        spelling,
-        epigraphyUuids,
-        textUuid
+      await Promise.all(
+        occurrences.map(occurrence =>
+          TextDiscourseDao.insertNewDiscourseRow(
+            spelling,
+            occurrence.epigraphyUuids,
+            occurrence.textUuid
+          )
+        )
       );
       res.status(201).end();
     } catch (err) {
