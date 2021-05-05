@@ -290,7 +290,6 @@ router
     try {
       const utils = sl.get('utils');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
       const { uuid } = req.params;
       const pagination = utils.extractPagination(req.query);
@@ -300,36 +299,7 @@ router
         pagination
       );
 
-      const epigraphicUnits = await Promise.all(
-        rows.map(({ textUuid }) =>
-          TextEpigraphyDao.getEpigraphicUnits(textUuid)
-        )
-      );
-
-      const readings = rows.map((row, index) => {
-        const units = epigraphicUnits[index];
-
-        const renderer = createTabletRenderer(units, {
-          lineNumbers: true,
-          textFormat: 'html',
-          highlightDiscourses: [row.discourseUuid],
-        });
-        const linesList = renderer.lines;
-        const lineIdx = linesList.indexOf(row.line);
-
-        const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
-        const endIdx =
-          lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
-
-        return _.range(startIdx, endIdx + 1).map(idx =>
-          renderer.lineReading(linesList[idx])
-        );
-      });
-
-      const response = rows.map((r, index) => ({
-        ...r,
-        readings: readings[index],
-      }));
+      const response = await utils.getTextOccurrences(rows);
 
       res.json(response);
     } catch (err) {
