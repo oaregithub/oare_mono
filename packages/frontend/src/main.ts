@@ -27,20 +27,6 @@ loadBases();
 Vue.use(Vuetify);
 Vue.config.productionTip = false;
 
-router.beforeEach((to, _from, next) => {
-  if (to.meta && to.meta.admin && !store.getters.isAdmin) {
-    next('/');
-  } else if (
-    to.meta &&
-    to.meta.requiresAuth &&
-    !store.getters.isAuthenticated
-  ) {
-    next('/login');
-  } else {
-    next();
-  }
-});
-
 let app: Vue;
 
 firebase.auth().onAuthStateChanged(async user => {
