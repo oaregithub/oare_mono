@@ -99,15 +99,39 @@ export const hasValidMarkup = (tokens: Token[]): boolean => {
   const reading = tokens.map(({ tokenText }) => tokenText).join('');
 
   const markupValid = Object.entries(dualCharacterMap).reduce(
-    (charsMatch, [startChar, endChar]) => {
-      if (!charsMatch) {
+    (valid, [startChar, endChar]) => {
+      if (!valid) {
         return false;
       }
 
-      return true;
+      let seenStart = false;
+      let bracketsValid = true;
+      reading.split('').forEach(char => {
+        if (!bracketsValid) {
+          return;
+        }
+
+        if (!seenStart) {
+          if (char === startChar) {
+            seenStart = true;
+          } else if (char === endChar) {
+            bracketsValid = false;
+          }
+        } else {
+          if (char === startChar) {
+            bracketsValid = false;
+          } else if (char === endChar) {
+            seenStart = false;
+          }
+        }
+      });
+
+      return seenStart ? false : bracketsValid;
     },
     true
   );
+
+  return markupValid;
 };
 
 const isValidGrammar = (tokens: Token[]) => {

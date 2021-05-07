@@ -4,6 +4,7 @@ import {
   spellingHtmlReading,
   separateTokenPhrases,
   isNumberSign,
+  hasValidMarkup,
 } from '../src/spellingTokenizer';
 
 describe('spelling grammar test', () => {
@@ -245,6 +246,63 @@ describe('utility tests', () => {
 
     it.each(['abc', '03a', '0.0.3'])('knows %s is not a number', num => {
       expect(isNumberSign(num)).toBe(false);
+    });
+  });
+
+  describe.only('valid markup tests', () => {
+    it('returns true for tokens with valid markup', () => {
+      const tokens: Token[] = [
+        { tokenType: 'SIGN', tokenText: '⸢a' },
+        { tokenType: '-', tokenText: '-' },
+        { tokenType: 'SIGN', tokenText: 'na⸣' },
+        { tokenType: '$end', tokenText: '' },
+      ];
+
+      expect(hasValidMarkup(tokens)).toBe(true);
+    });
+
+    it('returns false for mismatched opening bracket', () => {
+      const tokens: Token[] = [
+        { tokenType: 'SIGN', tokenText: '⸢a' },
+        { tokenType: '-', tokenText: '-' },
+        { tokenType: 'SIGN', tokenText: 'na' },
+        { tokenType: '$end', tokenText: '' },
+      ];
+
+      expect(hasValidMarkup(tokens)).toBe(false);
+    });
+
+    it('returns false for mismatched closing bracket', () => {
+      const tokens: Token[] = [
+        { tokenType: 'SIGN', tokenText: 'a' },
+        { tokenType: '-', tokenText: '-' },
+        { tokenType: 'SIGN', tokenText: 'na⸣' },
+        { tokenType: '$end', tokenText: '' },
+      ];
+
+      expect(hasValidMarkup(tokens)).toBe(false);
+    });
+
+    it('returns false for duplicate open bracket', () => {
+      const tokens: Token[] = [
+        { tokenType: 'SIGN', tokenText: '⸢a⸢' },
+        { tokenType: '-', tokenText: '-' },
+        { tokenType: 'SIGN', tokenText: 'na⸣' },
+        { tokenType: '$end', tokenText: '' },
+      ];
+
+      expect(hasValidMarkup(tokens)).toBe(false);
+    });
+
+    it('returns true for readings without markup', () => {
+      const tokens: Token[] = [
+        { tokenType: 'SIGN', tokenText: 'a' },
+        { tokenType: '-', tokenText: '-' },
+        { tokenType: 'SIGN', tokenText: 'na' },
+        { tokenType: '$end', tokenText: '' },
+      ];
+
+      expect(hasValidMarkup(tokens)).toBe(true);
     });
   });
 });
