@@ -8,6 +8,7 @@ const mockUser = {
   firstName: 'first1',
   lastName: 'last1',
   email: 'email1',
+  isAdmin: true,
 };
 
 const mockPOSTDELETE = {
@@ -25,9 +26,6 @@ describe('GET /user_groups/:groupId', () => {
   };
 
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
-      isAdmin: true,
-    }),
     getUserByUuid: jest.fn().mockResolvedValue(mockUser),
   };
 
@@ -39,7 +37,8 @@ describe('GET /user_groups/:groupId', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful group retrieval', async () => {
     const response = await sendRequest();
@@ -59,7 +58,7 @@ describe('GET /user_groups/:groupId', () => {
 
   it('does not allow non-admins to get groups', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -93,7 +92,7 @@ describe('POST /user_groups/:groupId', () => {
     getGroupById: jest.fn().mockResolvedValue(true),
   };
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
@@ -111,7 +110,7 @@ describe('POST /user_groups/:groupId', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPOSTDELETE).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPOSTDELETE).set('Authorization', 'token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -132,7 +131,7 @@ describe('POST /user_groups/:groupId', () => {
   it('does not allow non-admins to post groups', async () => {
     sl.set('UserDao', {
       ...mockUserDao,
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });

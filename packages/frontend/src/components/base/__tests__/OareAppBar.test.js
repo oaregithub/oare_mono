@@ -92,23 +92,6 @@ describe('OareAppBar.vue', () => {
     return wrapper;
   };
 
-  it('sets the user on load', async () => {
-    await createWrapper();
-    expect(mockServer.refreshToken).toHaveBeenCalled();
-    expect(mockStore.setUser).toHaveBeenCalled();
-  });
-
-  it('sets permissions on load', async () => {
-    await createWrapper();
-    expect(mockServer.getUserPermissions).toHaveBeenCalled();
-    expect(mockStore.setPermissions).toHaveBeenCalled();
-  });
-
-  it('sets auth complete when finished loading', async () => {
-    await createWrapper();
-    expect(mockStore.setAuthComplete).toHaveBeenCalled();
-  });
-
   it("doesn't show Admin button when user is not admin", async () => {
     const wrapper = await createWrapper({ isAdmin: false });
     expect(wrapper.find('.test-admin-btn').exists()).toBe(false);
@@ -144,25 +127,6 @@ describe('OareAppBar.vue', () => {
     ['words', 'names', 'places'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(false);
     });
-  });
-
-  it('checks indicator status on mount', async () => {
-    await createWrapper();
-    await flushPromises();
-    expect(mockServer.newErrorsExist).toHaveBeenCalled();
-    expect(mockServer.newThreadsExist).toHaveBeenCalled();
-  });
-
-  it('checks indicator status every 5 minutes', async () => {
-    jest.useFakeTimers();
-    await createWrapper();
-    await flushPromises();
-    expect(mockServer.newErrorsExist).toHaveBeenCalledTimes(1);
-    expect(mockServer.newThreadsExist).toHaveBeenCalledTimes(1);
-    jest.advanceTimersByTime(1000 * 60 * 5); // 5 minutes
-    await flushPromises();
-    expect(mockServer.newErrorsExist).toHaveBeenCalledTimes(2);
-    expect(mockServer.newThreadsExist).toHaveBeenCalledTimes(2);
   });
 
   it('shows indicator for admins when new errors exist', async () => {

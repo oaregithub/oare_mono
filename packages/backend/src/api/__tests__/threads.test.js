@@ -70,8 +70,8 @@ describe('threads api test', () => {
     lastName: 'last',
   };
   const MockUserDao = {
-    getUserByUuid: jest.fn().mockResolvedValue(userGetUserByUuid),
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
+      ...userGetUserByUuid,
       isAdmin: true,
     }),
   };
@@ -118,7 +118,7 @@ describe('threads api test', () => {
 
     const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns successful thread, comment and user info.', async () => {
@@ -143,12 +143,15 @@ describe('threads api test', () => {
         ...MockCommentsDao,
         getAllByThreadUuid: jest
           .fn()
+          .mockResolvedValueOnce({
+            ...userGetUserByUuid,
+            isAdmin: true,
+          })
           .mockRejectedValue('Error getting an invalid comment.'),
       });
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
-      expect(MockUserDao.getUserByUuid).not.toHaveBeenCalled();
     });
 
     it('returns 500, invalid thread.', async () => {
@@ -169,6 +172,10 @@ describe('threads api test', () => {
         ...MockUserDao,
         getUserByUuid: jest
           .fn()
+          .mockResolvedValueOnce({
+            ...userGetUserByUuid,
+            isAdmin: true,
+          })
           .mockRejectedValue('Error getting an invalid user.'),
       });
 
@@ -194,7 +201,6 @@ describe('threads api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(200);
-      expect(MockUserDao.getUserByUuid).not.toHaveBeenCalled();
       expect(JSON.parse(response.text)).toEqual([
         {
           thread: threadFoundInfo,
@@ -206,7 +212,13 @@ describe('threads api test', () => {
     it('returns 200, even when no user is found.', async () => {
       sl.set('UserDao', {
         ...MockUserDao,
-        getUserByUuid: jest.fn().mockResolvedValue(null),
+        getUserByUuid: jest
+          .fn()
+          .mockResolvedValueOnce({
+            ...userGetUserByUuid,
+            isAdmin: true,
+          })
+          .mockResolvedValue(null),
       });
 
       const response = await sendRequest();
@@ -236,7 +248,7 @@ describe('threads api test', () => {
 
     const sendRequest = async ({ overrideThread, cookie = true } = {}) => {
       const req = request(app).put(PATH).send(getPayload(overrideThread));
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns successful thread, comment and user info.', async () => {
@@ -255,7 +267,7 @@ describe('threads api test', () => {
     it('returns 403 for non-admin users.', async () => {
       sl.set('UserDao', {
         ...MockUserDao,
-        getUserByEmail: jest.fn().mockResolvedValue({
+        getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
@@ -318,7 +330,7 @@ describe('threads api test', () => {
 
     const sendRequest = async ({ overrideThread, cookie = true } = {}) => {
       const req = request(app).put(PATH).send(getPayload(overrideThread));
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns 200 when thread name is successfully updated.', async () => {
@@ -371,7 +383,7 @@ describe('threads api test', () => {
 
     const sendRequest = async (cookie = true) => {
       const req = request(app).get(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns 200, successful thread display all info.', async () => {

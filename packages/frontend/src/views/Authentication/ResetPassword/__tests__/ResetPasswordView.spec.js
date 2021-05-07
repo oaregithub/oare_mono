@@ -15,11 +15,18 @@ describe('ResetPasswordView test', () => {
   };
   const mockServer = {
     resetPassword: jest.fn().mockResolvedValue(null),
+    verifyPasswordResetCode: jest.fn().mockResolvedValue('test@email.com'),
+  };
+  const mockRouter = {
+    currentRoute: {
+      query: {
+        oobCode: 'code',
+      },
+    },
   };
 
-  const createWrapper = ({ server } = {}) => {
-    sl.set('serverProxy', server || mockServer);
-    return mount(ResetPasswordView, {
+  const createWrapper = () =>
+    mount(ResetPasswordView, {
       localVue,
       vuetify,
       propsData: {
@@ -27,7 +34,11 @@ describe('ResetPasswordView test', () => {
       },
       stubs: ['router-link'],
     });
-  };
+
+  beforeEach(() => {
+    sl.set('serverProxy', mockServer);
+    sl.set('router', mockRouter);
+  });
 
   it('submit button is disabled when there is no input', () => {
     const wrapper = createWrapper();
@@ -49,18 +60,18 @@ describe('ResetPasswordView test', () => {
     await wrapper.get('.test-confirm-new-password input').setValue('password');
     await wrapper.get('.test-submit').trigger('click');
     await flushPromises();
-    expect(mockServer.resetPassword).toHaveBeenCalledWith({
-      resetUuid: mockProps.uuid,
-      newPassword: 'password',
-    });
+    expect(mockServer.resetPassword).toHaveBeenCalledWith('code', 'password');
   });
 
   it('shows try again button if there is an error', async () => {
-    const wrapper = createWrapper({
-      server: {
-        resetPassword: jest.fn().mockRejectedValue('Failed to reset password'),
-      },
+    sl.set('serverProxy', {
+      ...mockServer,
+      resetPassword: jest.fn().mockRejectedValue({
+        code: 'auth/invalid-action-code',
+        message: 'Code was invalid',
+      }),
     });
+    const wrapper = createWrapper();
 
     await wrapper.get('.test-new-password input').setValue('password');
     await wrapper.get('.test-confirm-new-password input').setValue('password');
@@ -69,25 +80,28 @@ describe('ResetPasswordView test', () => {
     expect(wrapper.get('.test-action').text()).toBe('Try again');
   });
 
-  it('displays server error message on 400 error', async () => {
-    const wrapper = createWrapper({
-      server: {
-        resetPassword: jest.fn().mockRejectedValue({
-          response: {
-            status: 400,
-            data: {
-              message: 'Test error',
-            },
-          },
-        }),
-      },
+  it('verifies code on mount', async () => {
+    createWrapper();
+    await flushPromises();
+    expect(mockServer.verifyPasswordResetCode).toHaveBeenCalledWith('code');
+  });
+
+  it.each([
+    ['auth/expired-action-code', 'The code you have provided is expired.'],
+    ['auth/invalid-action-code', 'The code you have provided is invalid.'],
+    ['auth/user-not-found', 'No user was found for the given code.'],
+    ['other-error', 'There was an unknown error.'],
+  ])('shows error with %s code ', async (code, message) => {
+    sl.set('serverProxy', {
+      ...mockServer,
+      verifyPasswordResetCode: jest.fn().mockRejectedValue({
+        code,
+      }),
     });
 
-    await wrapper.get('.test-new-password input').setValue('password');
-    await wrapper.get('.test-confirm-new-password input').setValue('password');
-    await wrapper.get('.test-submit').trigger('click');
+    const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.get('.test-error-msg').text()).toBe('Test error');
+    expect(wrapper.get('.test-error-msg').text()).toBe(message);
   });
 
   it("doesn't allow submitting a password less than 8 characters", async () => {

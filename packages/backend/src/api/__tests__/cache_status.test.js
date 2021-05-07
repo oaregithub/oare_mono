@@ -44,7 +44,7 @@ describe('PATCH /cache/enable', () => {
   const setup = () => {
     sl.set('CacheStatusDao', mockCacheStatusDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -52,7 +52,8 @@ describe('PATCH /cache/enable', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).patch(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).patch(PATH).set('Authorization', 'token');
 
   it('successfully enables cache', async () => {
     const response = await sendRequest();
@@ -77,7 +78,7 @@ describe('PATCH /cache/enable', () => {
 
   it('does not allow non-admins to enable cache', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -93,7 +94,7 @@ describe('PATCH /cache/disable', () => {
   const setup = () => {
     sl.set('CacheStatusDao', mockCacheStatusDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -101,7 +102,8 @@ describe('PATCH /cache/disable', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).patch(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).patch(PATH).set('Authorization', 'token');
 
   it('successfully disables cache', async () => {
     const response = await sendRequest();
@@ -126,7 +128,7 @@ describe('PATCH /cache/disable', () => {
 
   it('does not allow non-admins to disable cache', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });

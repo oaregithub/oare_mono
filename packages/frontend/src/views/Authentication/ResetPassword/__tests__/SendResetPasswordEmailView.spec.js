@@ -12,6 +12,7 @@ localVue.use(VueCompositionApi);
 describe('SendResetPasswordEmailView test', () => {
   const mockServer = {
     sendResetPasswordEmail: jest.fn().mockResolvedValue(null),
+    logError: jest.fn().mockResolvedValue(),
   };
 
   const mockActions = {
@@ -25,6 +26,7 @@ describe('SendResetPasswordEmailView test', () => {
     return mount(SendResetPasswordEmailView, {
       localVue,
       vuetify,
+      stubs: ['router-link'],
     });
   };
 

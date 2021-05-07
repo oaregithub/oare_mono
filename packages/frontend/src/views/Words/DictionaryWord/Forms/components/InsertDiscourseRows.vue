@@ -188,7 +188,9 @@ export default defineComponent({
       try {
         setPage(String(searchOptions.value.page));
         setRows(String(searchOptions.value.itemsPerPage));
-        await searchNullDiscourse();
+        if (props.spellingInput) {
+          await searchNullDiscourse();
+        }
       } catch {
         actions.showErrorSnackbar(
           `Error retrieving more occurrences. Please try again.`
@@ -204,8 +206,10 @@ export default defineComponent({
           selectedOccurrences.value = [];
           searchOptions.value.page = 1;
         } else {
-          searchNullDiscourse();
-          searchNullDiscourseCount();
+          if (props.spellingInput) {
+            searchNullDiscourse();
+            searchNullDiscourseCount();
+          }
         }
       },
       { immediate: true }

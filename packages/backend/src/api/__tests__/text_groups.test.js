@@ -69,7 +69,7 @@ describe('GET /text_groups/:groupId', () => {
     sl.set('TextGroupDao', mockTextGroupDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -77,7 +77,8 @@ describe('GET /text_groups/:groupId', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful text group retrieval', async () => {
     const response = await sendRequest();
@@ -106,7 +107,7 @@ describe('GET /text_groups/:groupId', () => {
 
   it('does not allow non-admin users to get text groups', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -144,7 +145,7 @@ describe('POST /text_groups/:groupId', () => {
     sl.set('TextDao', mockTextDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -153,7 +154,7 @@ describe('POST /text_groups/:groupId', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPOST).set('Authorization', 'token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -163,7 +164,7 @@ describe('POST /text_groups/:groupId', () => {
 
   it('does not allow non-admins to add texts to groups', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -206,7 +207,7 @@ describe('PATCH /text_groups/:groupId', () => {
     sl.set('OareGroupDao', mockOareGroupDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -215,7 +216,7 @@ describe('PATCH /text_groups/:groupId', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
+    request(app).patch(PATH).send(mockPATCH).set('Authorization', 'token');
 
   it('returns 204 on successful texts permission change', async () => {
     const response = await sendRequest();
@@ -226,7 +227,7 @@ describe('PATCH /text_groups/:groupId', () => {
 
   it('does not allow non-admins to update text group permissions', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -283,7 +284,7 @@ describe('DELETE /text_groups/:groupId/:textUuid', () => {
     sl.set('OareGroupDao', mockOareGroupDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -292,7 +293,7 @@ describe('DELETE /text_groups/:groupId/:textUuid', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).delete(PATH).set('Cookie', 'jwt=token');
+    request(app).delete(PATH).set('Authorization', 'token');
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
@@ -303,7 +304,7 @@ describe('DELETE /text_groups/:groupId/:textUuid', () => {
 
   it('does not allow non-admins to delete from text groups', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });

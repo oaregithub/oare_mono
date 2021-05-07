@@ -76,6 +76,9 @@ const routes: RouteConfig[] = [
         component: BlacklistCollections,
       },
     ],
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/admin/errors',
@@ -176,6 +179,9 @@ const routes: RouteConfig[] = [
         component: ManagePermissions,
       },
     ],
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/addgrouptexts/:groupId',
@@ -284,10 +290,9 @@ const routes: RouteConfig[] = [
     component: SendResetPasswordEmailView,
   },
   {
-    path: '/reset_password/:uuid',
+    path: '/reset_password',
     name: 'resetpassword',
     component: ResetPasswordView,
-    props: true,
   },
   {
     path: '/403',

@@ -7,20 +7,20 @@ Vue.use(VueCompositionAPI);
 export interface State {
   landed: boolean;
   user: null | User;
-  authComplete: boolean;
   permissions: PermissionItem[];
   displayAdminBadge: AdminBadgeOptions;
+  idToken: string | null;
 }
 
 const state: State = reactive({
   landed: false,
   user: null,
-  authComplete: false,
   permissions: [],
   displayAdminBadge: {
     error: false,
     comments: false,
   },
+  idToken: null,
 });
 
 export default {
@@ -30,12 +30,13 @@ export default {
   setLanded: (landed: boolean) => {
     state.landed = landed;
   },
+  setIdToken: (idToken: string) => {
+    state.idToken = idToken;
+  },
   logout: () => {
     state.user = null;
     state.permissions = [];
-  },
-  setAuthComplete: () => {
-    state.authComplete = true;
+    state.idToken = null;
   },
   setPermissions: (permissions: PermissionItem[]) => {
     state.permissions = permissions;
@@ -56,14 +57,14 @@ export default {
     get user() {
       return state.user;
     },
-    get authComplete() {
-      return state.authComplete;
-    },
     get permissions() {
       return state.permissions;
     },
     get displayAdminBadge() {
       return state.displayAdminBadge;
+    },
+    get idToken() {
+      return state.idToken;
     },
   },
 };

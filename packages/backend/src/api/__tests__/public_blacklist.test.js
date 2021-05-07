@@ -46,7 +46,7 @@ describe('GET /public_blacklist', () => {
     sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -54,7 +54,8 @@ describe('GET /public_blacklist', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful blacklist retrieval', async () => {
     const response = await sendRequest();
@@ -65,7 +66,7 @@ describe('GET /public_blacklist', () => {
 
   it('does not allow non-admin user to see blacklist', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -106,7 +107,7 @@ describe('POST /public_blacklist', () => {
     sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -115,7 +116,7 @@ describe('POST /public_blacklist', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPOST).set('Authorization', 'token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -125,7 +126,7 @@ describe('POST /public_blacklist', () => {
 
   it('does not allow non-admins to update blacklist', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -165,7 +166,7 @@ describe('POST /public_blacklist', () => {
     const response = await request(app)
       .post(PATH)
       .send(mockExistingPOST)
-      .set('Cookie', 'jwt=token');
+      .set('Authorization', 'token');
     expect(mockPublicBlacklistDao.addPublicTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
@@ -187,7 +188,7 @@ describe('DELETE /public_blacklist', () => {
     sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -196,7 +197,7 @@ describe('DELETE /public_blacklist', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).delete(PATH).set('Cookie', 'jwt=token');
+    request(app).delete(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful deletion', async () => {
     const response = await sendRequest();
@@ -206,7 +207,7 @@ describe('DELETE /public_blacklist', () => {
 
   it('does not allow non-admins to delete from blacklist', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -233,7 +234,7 @@ describe('DELETE /public_blacklist', () => {
   it('returns 400 when texts to be deleted are not blacklisted', async () => {
     const response = await request(app)
       .delete(`${API_PATH}/public_blacklist/uuid3`)
-      .set('Cookie', 'jwt=token');
+      .set('Authorization', 'token');
     expect(mockPublicBlacklistDao.removePublicTexts).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });

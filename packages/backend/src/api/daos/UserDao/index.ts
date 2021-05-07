@@ -1,4 +1,3 @@
-import { v4 } from 'uuid';
 import { GetUserResponse, User } from '@oare/types';
 import knex from '@/connection';
 import { Transaction } from 'knex';
@@ -14,6 +13,11 @@ class UserDao {
   async getUserByEmail(email: string): Promise<User | null> {
     const user = await this.getUserByColumn('email', email);
     return user;
+  }
+
+  async uuidExists(uuid: string): Promise<boolean> {
+    const user = await knex('user').first().where({ uuid });
+    return !!user;
   }
 
   async getUserByUuid(uuid: string): Promise<User> {
@@ -60,12 +64,14 @@ class UserDao {
   }
 
   async createUser({
+    uuid,
     firstName,
     lastName,
     email,
     passwordHash,
     isAdmin,
   }: {
+    uuid: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -73,7 +79,7 @@ class UserDao {
     isAdmin: boolean;
   }): Promise<void> {
     await knex('user').insert({
-      uuid: v4(),
+      uuid,
       first_name: firstName,
       last_name: lastName,
       full_name: `${firstName} ${lastName}`,
