@@ -38,9 +38,15 @@ async function getAllThreads(
   return data;
 }
 
+async function newThreadsExist(): Promise<boolean> {
+  const { data } = await axios.get('/newthreads');
+  return data;
+}
+
 export default {
   getThreadsWithCommentsByReferenceUuid,
   updateThread,
   getAllThreads,
   updateThreadName,
+  newThreadsExist,
 };

@@ -6,6 +6,7 @@ import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
 import store from '@/ts-store';
 import _ from 'lodash';
+import { resetAdminBadge } from '@/utils';
 import App from './App.vue';
 import router from './router';
 import 'vuetify/dist/vuetify.min.css';
@@ -29,6 +30,14 @@ Vue.config.productionTip = false;
 
 let app: Vue;
 
+const setupAdminBadge = async () => {
+  await resetAdminBadge();
+
+  setInterval(async () => {
+    await resetAdminBadge();
+  }, 1000 * 60 * 5);
+};
+
 firebase.auth().onAuthStateChanged(async user => {
   const { currentUser } = firebase.auth();
   if (currentUser && user && user.email && user.displayName) {
@@ -41,6 +50,9 @@ firebase.auth().onAuthStateChanged(async user => {
     ]);
     store.setPermissions(permissions);
     store.setUser(oareUser);
+    if (store.getters.isAdmin) {
+      await setupAdminBadge();
+    }
   }
   if (!app) {
     app = new Vue({

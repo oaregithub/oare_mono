@@ -18,11 +18,16 @@ describe('OareAppBar.vue', () => {
         firstName: 'Test',
       },
       permissions: [],
+      displayAdminBadge: {
+        error: false,
+        comments: false,
+      },
     },
     logout: jest.fn(),
     setUser: jest.fn(),
     setPermissions: jest.fn(),
     setAuthComplete: jest.fn(),
+    setAdminBadge: jest.fn(),
   };
 
   const mockServer = {
@@ -34,6 +39,8 @@ describe('OareAppBar.vue', () => {
       isAdmin: false,
     }),
     getUserPermissions: jest.fn().mockResolvedValue([]),
+    newErrorsExist: jest.fn().mockResolvedValue(false),
+    newThreadsExist: jest.fn().mockResolvedValue(false),
   };
 
   const mockProps = {
@@ -47,7 +54,11 @@ describe('OareAppBar.vue', () => {
   };
 
   const createWrapper = async (
-    { isAdmin, isAuthenticated } = { isAdmin: false, isAuthenticated: true }
+    { isAdmin, isAuthenticated, server } = {
+      isAdmin: false,
+      isAuthenticated: true,
+      server: mockServer,
+    }
   ) => {
     sl.set('store', {
       ...mockStore,
@@ -70,7 +81,7 @@ describe('OareAppBar.vue', () => {
           : [],
       },
     });
-    sl.set('serverProxy', mockServer);
+    sl.set('serverProxy', server);
     const wrapper = mount(OareAppBar, {
       localVue,
       vuetify,
@@ -116,5 +127,34 @@ describe('OareAppBar.vue', () => {
     ['words', 'names', 'places'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(false);
     });
+  });
+
+  it('shows indicator for admins when new errors exist', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: true,
+      server: {
+        ...mockServer,
+        newErrorsExist: jest.fn().mockResolvedValue(true),
+      },
+    });
+    expect(wrapper.find('.test-admin-badge').exists()).toBe(true);
+  });
+
+  it('shows indicator for admins when new comments exist', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: true,
+      server: {
+        ...mockServer,
+        newThreadsExist: jest.fn().mockResolvedValue(true),
+      },
+    });
+    expect(wrapper.find('.test-admin-badge').exists()).toBe(true);
+  });
+
+  it('hides indicator for non-admins', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: false,
+    });
+    expect(wrapper.find('.test-admin-badge').exists()).toBe(false);
   });
 });

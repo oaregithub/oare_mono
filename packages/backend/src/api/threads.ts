@@ -155,4 +155,15 @@ router.route('/threads').get(authenticatedRoute, async (req, res, next) => {
   }
 });
 
+router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
+  try {
+    const ThreadsDao = sl.get('ThreadsDao');
+
+    const response = await ThreadsDao.newThreadsExist();
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 export default router;

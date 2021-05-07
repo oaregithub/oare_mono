@@ -237,6 +237,11 @@ class ThreadsDao {
       count,
     };
   }
+
+  async newThreadsExist(): Promise<boolean> {
+    const exists = await knex('threads').first().where('status', 'New');
+    return !!exists;
+  }
 }
 
 export default new ThreadsDao();

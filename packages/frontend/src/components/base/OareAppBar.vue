@@ -33,13 +33,23 @@
     <v-spacer />
     <div>
       <div class="d-flex align-center">
-        <v-btn
+        <v-badge
           v-if="isAdmin"
-          class="mr-2 test-admin-btn"
-          text
-          to="/admin/groups"
-          >Admin</v-btn
+          :value="displayAdminBadge"
+          color="error"
+          overlap
+          dot
+          left
+          class="test-admin-badge"
         >
+          <v-btn
+            v-if="isAdmin"
+            class="mr-2 test-admin-btn"
+            text
+            to="/admin/groups"
+            >Admin</v-btn
+          >
+        </v-badge>
         <v-btn
           v-if="!isAuthenticated"
           class="test-login-btn"
@@ -135,6 +145,10 @@ export default defineComponent({
       return i18n.t('appBar.oare');
     });
 
+    const displayAdminBadge = computed(() =>
+      Object.values(store.getters.displayAdminBadge).includes(true)
+    );
+
     const isAdmin = computed(() => store.getters.isAdmin);
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
     const firstName = computed(() =>
@@ -157,6 +171,7 @@ export default defineComponent({
       isAuthenticated,
       firstName,
       permissions,
+      displayAdminBadge,
     };
   },
 });
