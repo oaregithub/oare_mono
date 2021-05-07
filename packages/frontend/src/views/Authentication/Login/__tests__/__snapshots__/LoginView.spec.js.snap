@@ -12,7 +12,7 @@ exports[`LoginView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-5" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-4" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -27,7 +27,7 @@ exports[`LoginView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-8" type="password"></div>
+          <div class="v-text-field__slot"><input id="input-7" type="password"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
