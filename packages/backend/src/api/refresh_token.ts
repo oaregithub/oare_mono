@@ -32,7 +32,16 @@ router.route('/refresh_token').get(async (req, res, next) => {
 
     const user = await UserDao.getUserByEmail(token.email);
 
-    (await sendJwtCookie(token.ipAddress, res, token.email)).json(user).end();
+    if (!user) {
+      next(
+        new HttpBadRequest(
+          `Refresh token contains invalid email: ${token.email}`
+        )
+      );
+      return;
+    }
+
+    (await sendJwtCookie(token.ipAddress, res, user.email)).json(user).end();
   } catch (err) {
     next(new HttpInternalError(err));
   }

@@ -81,23 +81,6 @@ describe('OareAppBar.vue', () => {
     return wrapper;
   };
 
-  it('sets the user on load', async () => {
-    await createWrapper();
-    expect(mockServer.refreshToken).toHaveBeenCalled();
-    expect(mockStore.setUser).toHaveBeenCalled();
-  });
-
-  it('sets permissions on load', async () => {
-    await createWrapper();
-    expect(mockServer.getUserPermissions).toHaveBeenCalled();
-    expect(mockStore.setPermissions).toHaveBeenCalled();
-  });
-
-  it('sets auth complete when finished loading', async () => {
-    await createWrapper();
-    expect(mockStore.setAuthComplete).toHaveBeenCalled();
-  });
-
   it("doesn't show Admin button when user is not admin", async () => {
     const wrapper = await createWrapper({ isAdmin: false });
     expect(wrapper.find('.test-admin-btn').exists()).toBe(false);

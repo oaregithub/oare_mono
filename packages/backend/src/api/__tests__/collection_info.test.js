@@ -21,13 +21,14 @@ describe('GET /collection_info/:uuid', () => {
     sl.set('CollectionDao', mockCollectionDao);
     sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue(),
+      getUserByUuid: jest.fn().mockResolvedValue(),
     });
   };
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful collection info retrieval', async () => {
     const response = await sendRequest();

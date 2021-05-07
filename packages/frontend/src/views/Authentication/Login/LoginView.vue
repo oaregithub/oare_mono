@@ -84,13 +84,22 @@ export default defineComponent({
       };
 
       try {
-        const response = await server.login(userData);
-        store.setUser(response);
+        await server.login(userData);
         const permissions = await server.getUserPermissions();
         store.setPermissions(permissions);
         router.push('/');
       } catch (err) {
-        errorMsg.value = err.response.data.message;
+        const errorCode = err.code;
+        if (
+          errorCode === 'auth/wrong-password' ||
+          errorCode === 'auth/user-not-found'
+        ) {
+          errorMsg.value = 'Invalid credentials';
+        } else if (err.message) {
+          errorMsg.value = err.message;
+        } else {
+          errorMsg.value = 'There was an unknown error';
+        }
       } finally {
         loadings.value.signInButton = false;
       }

@@ -32,8 +32,7 @@
 
     <v-spacer />
     <div>
-      <v-progress-circular v-if="loading" indeterminate />
-      <div class="d-flex align-center" v-else>
+      <div class="d-flex align-center">
         <v-btn
           v-if="isAdmin"
           class="mr-2 test-admin-btn"
@@ -107,18 +106,10 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  computed,
-  ref,
-  PropType,
-  onMounted,
-} from '@vue/composition-api';
+import { defineComponent, computed, PropType } from '@vue/composition-api';
 import VueI18n from 'vue-i18n';
-import { Store } from 'vuex';
 import Router from 'vue-router';
 import defaultI18n from '../../i18n/index';
-import EventBus, { ACTIONS } from '@/EventBus';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -136,9 +127,7 @@ export default defineComponent({
   setup({ router, i18n }, context) {
     const store = sl.get('store');
     const serverProxy = sl.get('serverProxy');
-    const actions = sl.get('globalActions');
 
-    const loading = ref(false);
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
         return 'OARE';
@@ -161,28 +150,9 @@ export default defineComponent({
       serverProxy.logout();
     };
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        const user = await serverProxy.refreshToken();
-        store.setUser(user);
-        const permissions = await serverProxy.getUserPermissions();
-        store.setPermissions(permissions);
-      } catch (error) {
-        if (!(error.response && error.response.status === 400)) {
-          actions.showErrorSnackbar('There was an error initializing the site');
-        }
-      } finally {
-        loading.value = false;
-        EventBus.$emit(ACTIONS.REFRESH);
-        store.setAuthComplete();
-      }
-    });
-
     return {
       title,
       logout,
-      loading,
       isAdmin,
       isAuthenticated,
       firstName,
