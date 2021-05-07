@@ -54,7 +54,11 @@ describe('OareAppBar.vue', () => {
   };
 
   const createWrapper = async (
-    { isAdmin, isAuthenticated } = { isAdmin: false, isAuthenticated: true }
+    { isAdmin, isAuthenticated, server } = {
+      isAdmin: false,
+      isAuthenticated: true,
+      server: mockServer,
+    }
   ) => {
     sl.set('store', {
       ...mockStore,
@@ -77,7 +81,7 @@ describe('OareAppBar.vue', () => {
           : [],
       },
     });
-    sl.set('serverProxy', mockServer);
+    sl.set('serverProxy', server);
     const wrapper = mount(OareAppBar, {
       localVue,
       vuetify,
@@ -140,5 +144,53 @@ describe('OareAppBar.vue', () => {
     ['words', 'names', 'places'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(false);
     });
+  });
+
+  it('checks indicator status on mount', async () => {
+    await createWrapper();
+    await flushPromises();
+    expect(mockServer.newErrorsExist).toHaveBeenCalled();
+    expect(mockServer.newThreadsExist).toHaveBeenCalled();
+  });
+
+  it('checks indicator status every 5 minutes', async () => {
+    jest.useFakeTimers();
+    await createWrapper();
+    await flushPromises();
+    expect(mockServer.newErrorsExist).toHaveBeenCalledTimes(1);
+    expect(mockServer.newThreadsExist).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(1000 * 60 * 5); // 5 minutes
+    await flushPromises();
+    expect(mockServer.newErrorsExist).toHaveBeenCalledTimes(2);
+    expect(mockServer.newThreadsExist).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows indicator for admins when new errors exist', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: true,
+      server: {
+        ...mockServer,
+        newErrorsExist: jest.fn().mockResolvedValue(true),
+      },
+    });
+    expect(wrapper.find('.test-admin-badge').exists()).toBe(true);
+  });
+
+  it('shows indicator for admins when new comments exist', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: true,
+      server: {
+        ...mockServer,
+        newThreadsExist: jest.fn().mockResolvedValue(true),
+      },
+    });
+    expect(wrapper.find('.test-admin-badge').exists()).toBe(true);
+  });
+
+  it('hides indicator for non-admins', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: false,
+    });
+    expect(wrapper.find('.test-admin-badge').exists()).toBe(false);
   });
 });

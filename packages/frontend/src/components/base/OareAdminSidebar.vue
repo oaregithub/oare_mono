@@ -14,6 +14,7 @@
             dot
             offset-x="10"
             inline
+            class="test-admin-badge"
           >
             <v-list-item-title>{{ route.label }}</v-list-item-title>
           </v-badge>

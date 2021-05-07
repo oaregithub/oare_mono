@@ -41,6 +41,7 @@
           overlap
           dot
           left
+          class="test-admin-badge"
         >
           <v-btn
             v-if="isAdmin"
