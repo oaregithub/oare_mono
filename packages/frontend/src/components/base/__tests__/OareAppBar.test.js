@@ -18,11 +18,16 @@ describe('OareAppBar.vue', () => {
         firstName: 'Test',
       },
       permissions: [],
+      displayAdminBadge: {
+        error: false,
+        comments: false,
+      },
     },
     logout: jest.fn(),
     setUser: jest.fn(),
     setPermissions: jest.fn(),
     setAuthComplete: jest.fn(),
+    setAdminBadge: jest.fn(),
   };
 
   const mockServer = {
@@ -34,6 +39,8 @@ describe('OareAppBar.vue', () => {
       isAdmin: false,
     }),
     getUserPermissions: jest.fn().mockResolvedValue([]),
+    newErrorsExist: jest.fn().mockResolvedValue(false),
+    newThreadsExist: jest.fn().mockResolvedValue(false),
   };
 
   const mockProps = {

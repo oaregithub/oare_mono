@@ -34,13 +34,22 @@
     <div>
       <v-progress-circular v-if="loading" indeterminate />
       <div class="d-flex align-center" v-else>
-        <v-btn
+        <v-badge
           v-if="isAdmin"
-          class="mr-2 test-admin-btn"
-          text
-          to="/admin/groups"
-          >Admin</v-btn
+          :value="displayAdminBadge"
+          color="error"
+          overlap
+          dot
+          left
         >
+          <v-btn
+            v-if="isAdmin"
+            class="mr-2 test-admin-btn"
+            text
+            to="/admin/groups"
+            >Admin</v-btn
+          >
+        </v-badge>
         <v-btn
           v-if="!isAuthenticated"
           class="test-login-btn"
@@ -115,10 +124,10 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import VueI18n from 'vue-i18n';
-import { Store } from 'vuex';
 import Router from 'vue-router';
 import defaultI18n from '../../i18n/index';
 import EventBus, { ACTIONS } from '@/EventBus';
+import { resetAdminBadge } from '@/utils';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -146,6 +155,10 @@ export default defineComponent({
       return i18n.t('appBar.oare');
     });
 
+    const displayAdminBadge = computed(() =>
+      Object.values(store.getters.displayAdminBadge).includes(true)
+    );
+
     const isAdmin = computed(() => store.getters.isAdmin);
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
     const firstName = computed(() =>
@@ -161,6 +174,14 @@ export default defineComponent({
       serverProxy.logout();
     };
 
+    const setupAdminBadge = async () => {
+      await resetAdminBadge();
+
+      setInterval(async () => {
+        await resetAdminBadge();
+      }, 1000 * 60 * 5);
+    };
+
     onMounted(async () => {
       loading.value = true;
       try {
@@ -168,6 +189,7 @@ export default defineComponent({
         store.setUser(user);
         const permissions = await serverProxy.getUserPermissions();
         store.setPermissions(permissions);
+        setupAdminBadge();
       } catch (error) {
         if (!(error.response && error.response.status === 400)) {
           actions.showErrorSnackbar('There was an error initializing the site');
@@ -187,6 +209,7 @@ export default defineComponent({
       isAuthenticated,
       firstName,
       permissions,
+      displayAdminBadge,
     };
   },
 });

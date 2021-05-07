@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueCompositionAPI, { reactive } from '@vue/composition-api';
-import { User, PermissionItem } from '@oare/types';
+import { User, PermissionItem, AdminBadgeOptions } from '@oare/types';
 
 Vue.use(VueCompositionAPI);
 
@@ -9,6 +9,7 @@ export interface State {
   user: null | User;
   authComplete: boolean;
   permissions: PermissionItem[];
+  displayAdminBadge: AdminBadgeOptions;
 }
 
 const state: State = reactive({
@@ -16,6 +17,10 @@ const state: State = reactive({
   user: null,
   authComplete: false,
   permissions: [],
+  displayAdminBadge: {
+    error: false,
+    comments: false,
+  },
 });
 
 export default {
@@ -35,6 +40,9 @@ export default {
   setPermissions: (permissions: PermissionItem[]) => {
     state.permissions = permissions;
   },
+  setAdminBadge: (status: AdminBadgeOptions) => {
+    state.displayAdminBadge = status;
+  },
   getters: {
     get isAdmin() {
       return state.user ? state.user.isAdmin : false;
@@ -53,6 +61,9 @@ export default {
     },
     get permissions() {
       return state.permissions;
+    },
+    get displayAdminBadge() {
+      return state.displayAdminBadge;
     },
   },
 };
