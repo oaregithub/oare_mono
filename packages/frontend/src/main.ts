@@ -50,7 +50,9 @@ firebase.auth().onAuthStateChanged(async user => {
     ]);
     store.setPermissions(permissions);
     store.setUser(oareUser);
-    await setupAdminBadge();
+    if (store.getters.isAdmin) {
+      await setupAdminBadge();
+    }
   }
   if (!app) {
     app = new Vue({
