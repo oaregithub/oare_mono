@@ -1,6 +1,11 @@
 <template>
   <v-list-item-group dark active-class="white--text">
-    <router-link v-for="(route, idx) in routes" :key="idx" :to="route.path">
+    <router-link
+      v-for="(route, idx) in routes"
+      :key="idx"
+      :to="route.path"
+      class="text-decoration-none"
+    >
       <v-list-item :data-testid="route.label">
         <v-list-item-content>
           <v-badge
