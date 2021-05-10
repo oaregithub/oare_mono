@@ -20,7 +20,7 @@ async function attachUser(req: Request, _res: Response, next: NextFunction) {
       next();
     }
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err, true));
   }
 }
 
