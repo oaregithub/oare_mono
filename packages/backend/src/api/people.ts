@@ -59,17 +59,17 @@ router
         morePhraseTexts: PersonOccurrenceRow[]
       ) => {
         await Promise.all(
-          morePhraseTexts.map(async text => {
+          morePhraseTexts.map(async currText => {
             const wordTexts = await TextDiscourseDao.getWordsByPhraseUuid(
-              text.discourseUuid,
+              currText.discourseUuid,
               pagination
             );
 
             const foundPhraseTexts = wordTexts.filter(
-              text => text.type === 'phrase'
+              wordText => wordText.type === 'phrase'
             );
             const foundOtherTexts = wordTexts.filter(
-              text => text.type !== 'phrase'
+              wordText => wordText.type !== 'phrase'
             );
 
             if (foundPhraseTexts.length > 0) {
