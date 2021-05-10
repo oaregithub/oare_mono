@@ -1,5 +1,3 @@
-import axios from '@/axiosInstance';
-import { ResetPasswordPayload } from '@oare/types';
 import firebase from '@/firebase';
 
 async function sendResetPasswordEmail(email: string) {
