@@ -342,7 +342,7 @@ class TextDiscourseDao {
     phraseUuid: string,
     { filter }: Partial<Pagination> = {}
   ): Promise<PersonOccurrenceRow[]> {
-    const wordTexts = knex('text_discourse')
+    const wordTexts = await knex('text_discourse')
       .select(
         'text_discourse.uuid AS discourseUuid',
         'text_discourse.type',

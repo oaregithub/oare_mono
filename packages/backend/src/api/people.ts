@@ -54,15 +54,36 @@ router
       const otherTexts = texts.filter(text => text.type !== 'phrase');
 
       const allTexts: PersonOccurrenceRow[] = [...otherTexts];
-      await Promise.all(
-        phraseTexts.map(async text => {
-          const wordTexts = await TextDiscourseDao.getWordsByPhraseUuid(
-            text.discourseUuid,
-            pagination
-          );
-          allTexts.push(...wordTexts);
-        })
-      );
+
+      const getRemainingPhraseTexts = async (
+        morePhraseTexts: PersonOccurrenceRow[]
+      ) => {
+        await Promise.all(
+          morePhraseTexts.map(async text => {
+            const wordTexts = await TextDiscourseDao.getWordsByPhraseUuid(
+              text.discourseUuid,
+              pagination
+            );
+
+            const foundPhraseTexts = wordTexts.filter(
+              text => text.type === 'phrase'
+            );
+            const foundOtherTexts = wordTexts.filter(
+              text => text.type !== 'phrase'
+            );
+
+            if (foundPhraseTexts.length > 0) {
+              await getRemainingPhraseTexts(foundPhraseTexts);
+            }
+
+            allTexts.push(...foundOtherTexts);
+          })
+        );
+
+        return [];
+      };
+
+      await getRemainingPhraseTexts(phraseTexts);
 
       const textsWithEpigraphicUnits = await Promise.all(
         allTexts.map(async text => {

@@ -3,6 +3,7 @@ import {
   SpellingOccurrenceResponseRow,
   SpellingOccurrenceRow,
 } from './dictionary';
+import { DiscourseUnitType } from './textDiscourse';
 
 export interface PersonDisplay {
   uuid: string;
@@ -21,5 +22,5 @@ export interface PersonDisplay {
 }
 
 export interface PersonOccurrenceRow extends SpellingOccurrenceRow {
-  type: string;
+  type: DiscourseUnitType;
 }
