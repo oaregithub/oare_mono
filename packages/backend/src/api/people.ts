@@ -50,40 +50,38 @@ router
         pagination
       );
 
-      const phraseTexts = texts.filter(text => text.type === 'phrase');
-      const otherTexts = texts.filter(text => text.type !== 'phrase');
+      const nonWordTexts = texts.filter(text => text.type !== 'word');
+      const wordTexts = texts.filter(text => text.type === 'word');
 
-      const allTexts: PersonOccurrenceRow[] = [...otherTexts];
+      const allTexts: PersonOccurrenceRow[] = [...wordTexts];
 
       const getRemainingPhraseTexts = async (
         morePhraseTexts: PersonOccurrenceRow[]
       ) => {
         await Promise.all(
           morePhraseTexts.map(async currText => {
-            const wordTexts = await TextDiscourseDao.getWordsByPhraseUuid(
+            const wordTexts = await TextDiscourseDao.getChildrenByParentUuid(
               currText.discourseUuid,
               pagination
             );
 
-            const foundPhraseTexts = wordTexts.filter(
-              wordText => wordText.type === 'phrase'
+            const foundWordTexts = wordTexts.filter(
+              wordText => wordText.type === 'word'
             );
-            const foundOtherTexts = wordTexts.filter(
-              wordText => wordText.type !== 'phrase'
+            const foundNonWordTexts = wordTexts.filter(
+              wordText => wordText.type !== 'word'
             );
 
-            if (foundPhraseTexts.length > 0) {
-              await getRemainingPhraseTexts(foundPhraseTexts);
+            if (foundNonWordTexts.length > 0) {
+              await getRemainingPhraseTexts(foundNonWordTexts);
             }
 
-            allTexts.push(...foundOtherTexts);
+            allTexts.push(...foundWordTexts);
           })
         );
-
-        return [];
       };
 
-      await getRemainingPhraseTexts(phraseTexts);
+      await getRemainingPhraseTexts(nonWordTexts);
 
       const textsWithEpigraphicUnits = await Promise.all(
         allTexts.map(async text => {

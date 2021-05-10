@@ -338,7 +338,7 @@ class TextDiscourseDao {
     return texts;
   }
 
-  async getWordsByPhraseUuid(
+  async getChildrenByParentUuid(
     phraseUuid: string,
     { filter }: Partial<Pagination> = {}
   ): Promise<PersonOccurrenceRow[]> {

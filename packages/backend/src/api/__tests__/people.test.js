@@ -102,7 +102,7 @@ describe('people api test', () => {
     getPersonTextsByItemPropertyReferenceUuids: jest
       .fn()
       .mockResolvedValue(textsOfPerson),
-    getWordsByPhraseUuid: jest.fn([]),
+    getChildrenByParentUuid: jest.fn().mockResolvedValue([]),
     getEpigraphicLineOfWord: jest
       .fn()
       .mockResolvedValueOnce(line1)
