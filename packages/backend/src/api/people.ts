@@ -2,7 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
-import { SpellingOccurrenceResponseRow } from '@oare/types';
+import { PersonOccurrenceRow } from '@oare/types';
 
 const router = express.Router();
 
@@ -38,40 +38,68 @@ router
     try {
       const utils = sl.get('utils');
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
       const { uuid } = req.params;
       const pagination = utils.extractPagination(req.query);
 
-      const rows = await ItemPropertiesDao.getTextsOfPerson(uuid, pagination);
-
-      const textOccurrences = await utils.getTextOccurrences(rows);
-
-      const initialTextsOfPeople = await ItemPropertiesDao.getUniqueTextsOfPerson(
-        uuid,
+      const uniqueReferenceUuids = await ItemPropertiesDao.getUniqueReferenceUuidOfPerson(
+        uuid
+      );
+      const texts = await TextDiscourseDao.getPersonTextsByItemPropertyReferenceUuids(
+        uniqueReferenceUuids,
         pagination
       );
 
-      // Label occurrences who's discourseUuid is not found in the text_epigraphy table (but should be)
-      // (See last `innerJoin` of ItemPropertiesDao.getTextsOfPerson())
-      const response = initialTextsOfPeople.map(textOfPerson => {
-        const occurrences = textOccurrences.filter(
-          textOccurrence =>
-            textOccurrence.discourseUuid === textOfPerson.discourseUuid
-        );
+      const phraseTexts = texts.filter(text => text.type === 'phrase');
+      const otherTexts = texts.filter(text => text.type !== 'phrase');
 
-        if (occurrences.length > 0) {
-          return occurrences[0];
+      let allTexts: PersonOccurrenceRow[] = [...otherTexts];
+      await Promise.all(
+        phraseTexts.map(async text => {
+          const wordTexts = await TextDiscourseDao.getWordsByPhraseUuid(
+            text.discourseUuid,
+            pagination
+          );
+          allTexts.push(...wordTexts);
+        })
+      );
+
+      const textsWithEpigraphicUnits = await Promise.all(
+        allTexts.map(async text => {
+          const line = await TextDiscourseDao.getEpigraphicLineOfWord(
+            text.discourseUuid
+          );
+          return {
+            ...text,
+            line,
+          };
+        })
+      );
+
+      // Sort alphabetic by textName.
+      textsWithEpigraphicUnits.sort((a, b) => {
+        if (a.textName.toLowerCase() < b.textName.toLowerCase()) {
+          return -1;
         }
-        return {
-          discourseUuid: textOfPerson.discourseUuid,
-          textName: textOfPerson.textName,
-          textUuid: textOfPerson.textUuid,
-          line: -1,
-          wordOnTablet: -1,
-          readings: ['<stong style="color: red">Not found</stong>'],
-        } as SpellingOccurrenceResponseRow;
+        if (a.textName.toLowerCase() > b.textName.toLowerCase()) {
+          return 1;
+        }
+        return 0;
       });
 
-      res.json(response);
+      const paginatedTexts = utils.manualPagination(
+        textsWithEpigraphicUnits,
+        pagination
+      );
+
+      const textOccurrencesResponse = await utils.getTextOccurrences(
+        paginatedTexts
+      );
+
+      // TODO: 2a - Make sure person_text_occurrences.count is correct (either DISTINCT texts or non-distinct) (update if necessary)
+      // TODO: 2b - Make another column in person_text_occurrences (person_text_occurrences.distinct_count (if other column isn't distinct))
+
+      res.json(textOccurrencesResponse);
     } catch (err) {
       next(new HttpInternalError(err));
     }

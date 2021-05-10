@@ -2,6 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
+import * as utils from '@/utils';
 
 describe('people api test', () => {
   const mockCache = {
@@ -69,9 +70,13 @@ describe('people api test', () => {
     },
   ];
 
+  const line1 = 1;
+  const line2 = 2;
+
+  const referenceUuids = ['uuid1', 'uuid2'];
+
   const mockItemPropertiesDao = {
-    getTextsOfPerson: jest.fn().mockResolvedValue(textsOfPerson),
-    getUniqueTextsOfPerson: jest.fn().mockResolvedValue(textsOfPerson),
+    getUniqueReferenceUuidOfPerson: jest.fn().mockResolvedValue(referenceUuids),
   };
 
   const renderedTextsOfPerson = [
@@ -87,22 +92,21 @@ describe('people api test', () => {
     },
   ];
 
-  const renderedTextsOfPersonWithInvalidDiscourseUuid = [
-    {
-      textName: textsOfPerson[0].textName,
-      discourseUuid: 'uuid1',
-      readings: ['8. IGI <em>e</em>', '9. DUMU <em>e</em>'],
-    },
-    {
-      textName: textsOfPerson[1].textName,
-      discourseUuid: 'invalid',
-      readings: ['11. GHI <em>i</em>', '12. DUMU <em>e</em>'],
-    },
-  ];
-
   const mockUtils = {
-    extractPagination: jest.fn(),
+    extractPagination: utils.extractPagination,
     getTextOccurrences: jest.fn().mockResolvedValue(renderedTextsOfPerson),
+    manualPagination: utils.manualPagination,
+  };
+
+  const mockTextDiscourseDao = {
+    getPersonTextsByItemPropertyReferenceUuids: jest
+      .fn()
+      .mockResolvedValue(textsOfPerson),
+    getWordsByPhraseUuid: jest.fn([]),
+    getEpigraphicLineOfWord: jest
+      .fn()
+      .mockResolvedValueOnce(line1)
+      .mockResolvedValueOnce(line2),
   };
 
   const setup = () => {
@@ -110,6 +114,7 @@ describe('people api test', () => {
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('PersonTextOccurrencesDao', mockPersonTextOccurrencesDao);
     sl.set('utils', mockUtils);
     sl.set('cache', mockCache);
@@ -173,7 +178,7 @@ describe('people api test', () => {
   describe('GET /people/person/:uuid/texts', () => {
     const PATH = `${API_PATH}/people/person/${encodeURIComponent(
       'uuid'
-    )}/texts`;
+    )}/texts?limit=10&page=1`;
     const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
       return cookie ? req.set('Cookie', 'jwt=token') : req;
@@ -183,9 +188,7 @@ describe('people api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(renderedTextsOfPerson);
-      expect(mockUtils.extractPagination).toHaveBeenCalled();
       expect(mockUtils.getTextOccurrences).toHaveBeenCalled();
-      expect(mockItemPropertiesDao.getTextsOfPerson).toHaveBeenCalled();
     });
 
     it('fails to return person texts when invalid person.', async () => {
@@ -204,30 +207,9 @@ describe('people api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(403);
-      expect(mockItemPropertiesDao.getTextsOfPerson).not.toHaveBeenCalled();
-    });
-
-    it('returns both found and not found texts.', async () => {
-      const notFoundText = '<stong style="color: red">Not found</stong>';
-      sl.set('utils', {
-        ...mockUtils,
-        getTextOccurrences: jest
-          .fn()
-          .mockResolvedValue(renderedTextsOfPersonWithInvalidDiscourseUuid),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([
-        renderedTextsOfPersonWithInvalidDiscourseUuid[0],
-        {
-          discourseUuid: textsOfPerson[1].discourseUuid,
-          textName: textsOfPerson[1].textName,
-          textUuid: textsOfPerson[1].textUuid,
-          line: -1,
-          wordOnTablet: -1,
-          readings: [notFoundText],
-        },
-      ]);
+      expect(
+        mockItemPropertiesDao.getUniqueReferenceUuidOfPerson
+      ).not.toHaveBeenCalled();
     });
   });
 });

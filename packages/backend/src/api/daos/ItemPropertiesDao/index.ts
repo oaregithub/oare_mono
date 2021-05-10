@@ -83,24 +83,19 @@ class ItemProperties {
       });
   }
 
-  async getUniqueTextsOfPerson(personUuid: string, pagination: Pagination) {
-    const texts: TextOccurrenceEssentialsRow[] = await this.getTextsOfPersonBaseQuery(
-      personUuid,
-      pagination
-    ).distinct(
-      'text_discourse.uuid AS discourseUuid',
-      'text.name AS textName',
-      'text.uuid AS textUuid'
-    );
-
-    return texts;
-  }
-
   async getTextsOfPersonCount(personUuid: string): Promise<number> {
     const textsOfPeopleCount = await this.getTextsOfPersonBaseQuery(personUuid)
       .count({ count: 'text_discourse.text_uuid' })
       .first();
     return textsOfPeopleCount ? Number(textsOfPeopleCount.count) : 0;
+  }
+
+  async getUniqueReferenceUuidOfPerson(personUuid: string): Promise<string[]> {
+    const referenceUuids = await knex('item_properties')
+      .distinct('item_properties.reference_uuid AS referenceUuid')
+      .where('item_properties.object_uuid', personUuid);
+
+    return referenceUuids.map(item => item.referenceUuid);
   }
 
   async getTextsOfPerson(
@@ -110,7 +105,7 @@ class ItemProperties {
     const rows: SpellingOccurrenceRow[] = await this.getTextsOfPersonBaseQuery(
       personUuid
     )
-      .distinct(
+      .select(
         'text_discourse.uuid AS discourseUuid',
         'name AS textName',
         'text_epigraphy.line',
