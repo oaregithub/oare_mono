@@ -54,12 +54,11 @@ export const manualPagination = (
   values: any[],
   pagination: Pagination,
   defaultPage = 1
-): any[] => {
-  return values.slice(
+): any[] =>
+  values.slice(
     (pagination.page - defaultPage) * pagination.limit,
     pagination.page * pagination.limit
   );
-};
 
 export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
   rows: Type

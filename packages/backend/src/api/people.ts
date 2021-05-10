@@ -53,7 +53,7 @@ router
       const phraseTexts = texts.filter(text => text.type === 'phrase');
       const otherTexts = texts.filter(text => text.type !== 'phrase');
 
-      let allTexts: PersonOccurrenceRow[] = [...otherTexts];
+      const allTexts: PersonOccurrenceRow[] = [...otherTexts];
       await Promise.all(
         phraseTexts.map(async text => {
           const wordTexts = await TextDiscourseDao.getWordsByPhraseUuid(
