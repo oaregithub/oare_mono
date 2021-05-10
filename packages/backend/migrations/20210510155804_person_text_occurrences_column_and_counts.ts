@@ -1,5 +1,6 @@
 import * as Knex from 'knex';
 import { v4 } from 'uuid';
+import knex from '@/connection';
 
 const distinctCountColumn = 'distinct_count';
 export async function up(knex: Knex): Promise<void> {
@@ -17,57 +18,39 @@ export async function up(knex: Knex): Promise<void> {
       'person_text_occurrences'
     ).select();
 
-    await Promise.all(
-      personTextOccurrences.map(async person => {
-        const referenceUuids = await knex('item_properties')
-          .distinct('item_properties.reference_uuid AS referenceUuid')
-          .where('item_properties.object_uuid', person.uuid);
+    const updateCounts = async (distinct = false) => {
+      await Promise.all(
+        personTextOccurrences.map(async person => {
+          const referenceUuids = await knex('item_properties')
+            .distinct('item_properties.reference_uuid AS referenceUuid')
+            .where('item_properties.object_uuid', person.person_uuid);
 
-        const textDiscourseUuids = referenceUuids.map(
-          item => item.referenceUuid
-        );
+          const textDiscourseUuids = referenceUuids.map(
+            item => item.referenceUuid
+          );
 
-        const totalTextCount = await knex('text_discourse')
-          .select('text_discourse.text_uuid')
-          .whereIn('text_discourse.uuid', textDiscourseUuids)
-          .count({ count: 'text_discourse.text_uuid' })
-          .first();
+          const distinctString = distinct ? 'distinct' : '';
+          const totalTextCount = await knex('text_discourse')
+            .select('text_discourse.text_uuid')
+            .whereIn('text_discourse.uuid', textDiscourseUuids)
+            .count({
+              count: knex.raw(`${distinctString} text_discourse.text_uuid`),
+            })
+            .first();
 
-        const totalTextCountNumber = totalTextCount
-          ? Number(totalTextCount.count)
-          : 0;
+          const totalTextCountNumber = totalTextCount
+            ? Number(totalTextCount.count)
+            : 0;
 
-        await knex('person_text_occurrences')
-          .update({ count: totalTextCountNumber })
-          .where({ uuid: person.uuid });
-      })
-    );
-
-    await Promise.all(
-      personTextOccurrences.map(async person => {
-        const referenceUuids = await knex('item_properties')
-          .distinct('item_properties.reference_uuid AS referenceUuid')
-          .where('item_properties.object_uuid', person.uuid);
-
-        const textDiscourseUuids = referenceUuids.map(
-          item => item.referenceUuid
-        );
-
-        const distinctTextCount = await knex('text_discourse')
-          .distinct('text_discourse.text_uuid')
-          .whereIn('text_discourse.uuid', textDiscourseUuids)
-          .count({ count: 'text_discourse.text_uuid' })
-          .first();
-
-        const totalTextCountNumber = distinctTextCount
-          ? Number(distinctTextCount.count)
-          : 0;
-
-        await knex('person_text_occurrences')
-          .update({ distinct_count: totalTextCountNumber })
-          .where({ uuid: person.uuid });
-      })
-    );
+          const column = distinct ? 'distinct_count' : 'count';
+          await knex('person_text_occurrences')
+            .update({ [column]: totalTextCountNumber })
+            .where({ person_uuid: person.person_uuid });
+        })
+      );
+    };
+    await updateCounts();
+    await updateCounts(true);
   }
 }
 
@@ -106,7 +89,7 @@ export async function down(knex: Knex): Promise<void> {
 
         await knex('person_text_occurrences')
           .update({ count: totalCount })
-          .where({ uuid: personUuid });
+          .where({ person_uuid: personUuid });
       })
     );
   }
