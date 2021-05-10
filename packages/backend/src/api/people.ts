@@ -25,13 +25,12 @@ router
             textOccurrenceDistinctCount:
               textCountByPersonUuid[person.uuid].distinctCount,
           };
-        } else {
-          return {
-            ...person,
-            textOccurrenceCount: null,
-            textOccurrenceDistinctCount: null,
-          };
         }
+        return {
+          ...person,
+          textOccurrenceCount: null,
+          textOccurrenceDistinctCount: null,
+        };
       });
       cache.insert({ req }, resultPeople);
       res.json(resultPeople);
