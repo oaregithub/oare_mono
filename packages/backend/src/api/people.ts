@@ -51,9 +51,9 @@ router
       );
 
       const nonWordTexts = texts.filter(text => text.type !== 'word');
-      const wordTexts = texts.filter(text => text.type === 'word');
+      const textsWithWords = texts.filter(text => text.type === 'word');
 
-      const allTexts: PersonOccurrenceRow[] = [...wordTexts];
+      const allTexts: PersonOccurrenceRow[] = [...textsWithWords];
 
       const getRemainingPhraseTexts = async (
         morePhraseTexts: PersonOccurrenceRow[]
