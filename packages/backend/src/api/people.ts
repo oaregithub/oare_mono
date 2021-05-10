@@ -17,13 +17,22 @@ router
       const textCountByPersonUuid = await PersonTextOccurrencesDao.getAll();
       const people = await PersonDao.getAllPeople(letter);
 
-      const resultPeople = people.map(person => ({
-        ...person,
-        textOccurrenceCount:
-          textCountByPersonUuid[person.uuid] !== undefined
-            ? textCountByPersonUuid[person.uuid]
-            : null,
-      }));
+      const resultPeople = people.map(person => {
+        if (textCountByPersonUuid[person.uuid] !== undefined) {
+          return {
+            ...person,
+            textOccurrenceCount: textCountByPersonUuid[person.uuid].count,
+            textOccurrenceDistinctCount:
+              textCountByPersonUuid[person.uuid].distinctCount,
+          };
+        } else {
+          return {
+            ...person,
+            textOccurrenceCount: null,
+            textOccurrenceDistinctCount: null,
+          };
+        }
+      });
       cache.insert({ req }, resultPeople);
       res.json(resultPeople);
     } catch (err) {

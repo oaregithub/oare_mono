@@ -15,6 +15,7 @@ export interface PersonDisplay {
   roleObjUuid: string | null;
   roleObjPerson: string | null;
   textOccurrenceCount: number | null;
+  textOccurrenceDistinctCount: number | null;
 }
 
 export interface PersonReferences {
