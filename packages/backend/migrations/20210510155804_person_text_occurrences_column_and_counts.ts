@@ -1,6 +1,4 @@
 import * as Knex from 'knex';
-import { v4 } from 'uuid';
-import knex from '@/connection';
 
 const distinctCountColumn = 'distinct_count';
 export async function up(knex: Knex): Promise<void> {
