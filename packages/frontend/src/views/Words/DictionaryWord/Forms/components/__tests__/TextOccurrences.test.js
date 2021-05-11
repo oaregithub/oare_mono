@@ -68,7 +68,7 @@ describe('TextOccurrences test', () => {
     expect(reading.html()).toContain(mockTextOccurrences[0].readings);
   });
 
-  it('fails to get person text occurrences', async () => {
+  it('shows error when fails to get person text occurrences', async () => {
     const props = {
       ...mockProps,
       getTexts: jest

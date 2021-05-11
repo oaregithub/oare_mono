@@ -1,6 +1,6 @@
 <template>
   <OareDialog
-    v-model="displayDialog"
+    :value="value"
     :title="`Texts for ${title}`"
     :showSubmit="false"
     cancelText="Close"
@@ -44,6 +44,7 @@ import {
   reactive,
   ref,
   watch,
+  computed,
 } from '@vue/composition-api';
 import { Pagination, SpellingOccurrenceResponseRow } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
@@ -69,9 +70,17 @@ export default defineComponent({
       >,
       required: true,
     },
+    value: {
+      type: Boolean,
+      default: false,
+    },
     defaultPageSize: {
       type: Boolean,
       default: true,
+    },
+    manualPagination: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {
@@ -79,7 +88,6 @@ export default defineComponent({
     const _ = sl.get('lodash');
     const search = ref('');
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
-    const displayDialog = ref(true);
     const headers: DataTableHeader[] = reactive([
       {
         text: 'Text Name',
@@ -97,22 +105,46 @@ export default defineComponent({
       itemsPerPage: 10,
     });
 
+    const pageSize = computed(() => {
+      return props.defaultPageSize
+        ? tableOptions.value.page
+        : tableOptions.value.page - 1;
+    });
+
+    const canRetrievedAllData = (): boolean => {
+      return (
+        !props.manualPagination ||
+        (props.manualPagination && textOccurrences.value.length === 0)
+      );
+    };
+
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        textOccurrences.value = await props.getTexts(props.uuid, {
-          page: props.defaultPageSize
-            ? tableOptions.value.page
-            : tableOptions.value.page - 1,
-          limit: tableOptions.value.itemsPerPage,
-          ...(search.value ? { filter: search.value } : null),
-        });
+        if (canRetrievedAllData()) {
+          textOccurrences.value = await props.getTexts(props.uuid, {
+            page: pageSize.value,
+            limit: tableOptions.value.itemsPerPage,
+            ...(search.value ? { filter: search.value } : null),
+          });
+        }
+
+        if (props.manualPagination) {
+          textOccurrences.value = manuallyPaginate(textOccurrences.value);
+        }
       } catch {
         actions.showErrorSnackbar('Failed to load text occurrences');
       } finally {
         referencesLoading.value = false;
       }
     };
+
+    const manuallyPaginate = (values: any[]): any[] =>
+      values.slice(
+        (tableOptions.value.page - pageSize.value) *
+          tableOptions.value.itemsPerPage,
+        tableOptions.value.page * tableOptions.value.itemsPerPage
+      );
 
     watch(tableOptions, getReferences);
 
@@ -122,7 +154,6 @@ export default defineComponent({
       search,
       textOccurrences,
       headers,
-      displayDialog,
       referencesLoading,
       tableOptions,
     };

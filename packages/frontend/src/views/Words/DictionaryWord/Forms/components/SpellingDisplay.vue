@@ -20,7 +20,7 @@
       ></span>
       <span v-else v-html="htmlSpelling" class="test-spelling"></span>
     </template>
-
+    &nbsp;
     <span v-if="totalOccurrences > 0 || totalOccurrencesLoading">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
         totalOccurrencesLoading ? 'Loading...' : totalOccurrences
@@ -29,13 +29,12 @@
     >
 
     <text-occurrences
-      v-if="addSpellingDialog"
+      v-model="addSpellingDialog"
       :title="spelling.spelling"
       :uuid="spelling.uuid"
       :totalTextOccurrences="totalOccurrences"
       :getTexts="server.getSpellingTextOccurrences"
       :default-page-size="false"
-      @input="addSpellingDialog = false"
     >
     </text-occurrences>
   </span>

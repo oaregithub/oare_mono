@@ -106,17 +106,9 @@ router
         return 0;
       });
 
-      const paginatedTexts = utils.manualPagination(
-        textsWithEpigraphicUnits,
-        pagination
-      );
-
       const textOccurrencesResponse = await utils.getTextOccurrences(
-        paginatedTexts
+        textsWithEpigraphicUnits
       );
-
-      // TODO: 2a - Make sure person_text_occurrences.count is correct (either DISTINCT texts or non-distinct) (update if necessary)
-      // TODO: 2b - Make another column in person_text_occurrences (person_text_occurrences.distinct_count (if other column isn't distinct))
 
       res.json(textOccurrencesResponse);
     } catch (err) {

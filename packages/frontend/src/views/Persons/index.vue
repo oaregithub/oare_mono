@@ -83,13 +83,13 @@
     </div>
 
     <text-occurrences
-      v-if="displayTextOccurrences"
+      v-model="displayTextOccurrences"
       class="test-text-occurrences-display"
       :title="selectedPersonTitle()"
       :uuid="selectedPerson.uuid"
       :totalTextOccurrences="selectedPersonTextOccurrenceCount()"
       :getTexts="server.getPersonTextOccurrences"
-      @input="displayTextOccurrences = false"
+      :manualPagination="true"
     ></text-occurrences>
   </OareContentView>
 </template>
@@ -103,7 +103,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import { PersonDisplay } from '@oare/types';
+import { Pagination, PersonDisplay } from '@oare/types';
 import sl from '@/serviceLocator';
 import TextOccurrences from '@/views/Words/DictionaryWord/Forms/components/TextOccurrences.vue';
 
