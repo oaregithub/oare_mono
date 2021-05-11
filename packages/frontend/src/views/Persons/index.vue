@@ -46,11 +46,7 @@
             (<a
               @click="displaysTextOccurrenceDialog(personInfo)"
               class="test-text-occurrences"
-              >{{
-                personInfo.textOccurrenceCount !== null
-                  ? personInfo.textOccurrenceCount
-                  : 0
-              }})</a
+              >{{ displayTextOccurrenceCount(personInfo) }})</a
             >
           </span>
         </v-col>
@@ -141,6 +137,7 @@ export default defineComponent({
       roleObjUuid: null,
       roleObjPerson: null,
       textOccurrenceCount: null,
+      textOccurrenceDistinctCount: null,
     });
     const displayTextOccurrences = ref(false);
 
@@ -216,6 +213,23 @@ export default defineComponent({
       displayTextOccurrences.value = true;
     };
 
+    const displayTextOccurrenceCount = (personDisplay: PersonDisplay) => {
+      let count = '';
+      count +=
+        personDisplay.textOccurrenceCount !== null
+          ? personDisplay.textOccurrenceCount
+          : 0;
+
+      count += '/';
+
+      count +=
+        personDisplay.textOccurrenceDistinctCount !== null
+          ? personDisplay.textOccurrenceDistinctCount
+          : 0;
+
+      return count;
+    };
+
     const selectedPersonTitle = (): string => {
       let title = '';
       if (
@@ -226,6 +240,8 @@ export default defineComponent({
       } else {
         title = selectedPerson.value.label;
       }
+
+      title += ' (' + displayTextOccurrenceCount(selectedPerson.value) + ')';
 
       return title;
     };
@@ -259,6 +275,7 @@ export default defineComponent({
       displaysTextOccurrenceDialog,
       selectedPersonTitle,
       selectedPersonTextOccurrenceCount,
+      displayTextOccurrenceCount,
       loading,
       personList,
       filteredPersonList,
