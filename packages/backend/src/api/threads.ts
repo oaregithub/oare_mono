@@ -36,7 +36,9 @@ router
       ): Promise<CommentDisplay[]> =>
         Promise.all(
           comments.map(async (comment: Comment) => {
-            const user = await userDao.getUserByUuid(comment.userUuid);
+            const user = comment.userUuid
+              ? await userDao.getUserByUuid(comment.userUuid)
+              : null;
 
             return {
               uuid: comment.uuid,
@@ -148,6 +150,17 @@ router.route('/threads').get(authenticatedRoute, async (req, res, next) => {
       threads: results,
       count: threadRows.count,
     } as AllCommentsResponse);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
+  try {
+    const ThreadsDao = sl.get('ThreadsDao');
+
+    const response = await ThreadsDao.newThreadsExist();
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

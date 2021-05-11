@@ -1,6 +1,5 @@
 import { Route, NavigationGuardNext } from 'vue-router';
 import { PermissionName } from '@oare/types';
-import guardRoute from '@/navigationGuards/guardRoute';
 import sl from '@/serviceLocator';
 
 const permissionGuard = (permission: PermissionName) => (
@@ -10,16 +9,12 @@ const permissionGuard = (permission: PermissionName) => (
 ) => {
   const store = sl.get('store');
 
-  const navigate = () => {
-    const userPermissions = store.getters.permissions.map(perm => perm.name);
-    if (userPermissions.includes(permission)) {
-      next();
-    } else {
-      next('/');
-    }
-  };
-
-  guardRoute(navigate);
+  const userPermissions = store.getters.permissions.map(perm => perm.name);
+  if (userPermissions.includes(permission)) {
+    next();
+  } else {
+    next('/');
+  }
 };
 
 export default permissionGuard;

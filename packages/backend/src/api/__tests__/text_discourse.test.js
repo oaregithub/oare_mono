@@ -11,7 +11,7 @@ describe('POST /text_discourse', () => {
   };
 
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
@@ -44,7 +44,7 @@ describe('POST /text_discourse', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPayload).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
 
   it('returns 201 on successful discourse row insertion', async () => {
     const response = await sendRequest();

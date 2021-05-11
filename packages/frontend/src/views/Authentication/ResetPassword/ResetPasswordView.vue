@@ -1,6 +1,10 @@
 <template>
-  <OareCard :title="title">
-    <v-col v-if="!submitted">
+  <v-progress-linear v-if="verifyingCode" indeterminate />
+  <OareCard v-else :title="title">
+    <v-col v-if="serverError" class="test-error-msg">
+      {{ serverError }}
+    </v-col>
+    <v-col v-else-if="!submitted">
       <v-text-field
         outlined
         v-model="newPassword"
@@ -20,14 +24,18 @@
         {{ formError }}
       </span>
     </v-col>
-    <v-col v-else>
-      <span v-if="serverError" v-html="serverError" class="test-error-msg" />
-      <span v-else>Your password has successfully been reset.</span>
-    </v-col>
+    <v-col v-else> Your password has successfully been reset. </v-col>
 
     <template #actions>
+      <v-btn
+        color="primary"
+        v-if="serverError"
+        to="/send_reset_password_email"
+        class="test-action"
+        >Try again</v-btn
+      >
       <OareLoaderButton
-        v-if="!submitted"
+        v-else-if="!submitted"
         class="test-submit"
         color="primary"
         :loading="loading"
@@ -36,13 +44,6 @@
         >Submit</OareLoaderButton
       >
 
-      <v-btn
-        color="primary"
-        v-else-if="serverError"
-        to="/send_reset_password_email"
-        class="test-action"
-        >Try again</v-btn
-      >
       <v-btn class="test-action" color="primary" v-else to="/login"
         >Login</v-btn
       >
@@ -51,26 +52,58 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  computed,
+  onMounted,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import serverProxy from '@/serverProxy';
 
 export default defineComponent({
-  props: {
-    uuid: {
-      type: String,
-      required: true,
-    },
-  },
-  setup(props) {
+  setup() {
     const newPassword = ref('');
     const confirmNewPassword = ref('');
     const serverError = ref('');
     const loading = ref(false);
     const submitted = ref(false);
-    const title = ref('Create new password');
+    const verifyingCode = ref(true);
+    const resettingEmail = ref('');
 
     const server = sl.get('serverProxy');
+    const router = sl.get('router');
+
+    const oobCode = router.currentRoute.query.oobCode as string;
+
+    const title = computed(() =>
+      serverError.value
+        ? 'Cannot reset password'
+        : `Resetting password for ${resettingEmail.value}`
+    );
+
+    const handleAuthError = (err: { code: string; message: string }) => {
+      const { code } = err;
+      if (code === 'auth/expired-action-code') {
+        serverError.value = 'The code you have provided is expired.';
+      } else if (code === 'auth/invalid-action-code') {
+        serverError.value = 'The code you have provided is invalid.';
+      } else if (code === 'auth/user-not-found') {
+        serverError.value = 'No user was found for the given code.';
+      } else {
+        serverError.value = 'There was an unknown error.';
+      }
+    };
+
+    onMounted(async () => {
+      try {
+        const email = await server.verifyPasswordResetCode(oobCode);
+        resettingEmail.value = email;
+      } catch (err) {
+        handleAuthError(err);
+      } finally {
+        verifyingCode.value = false;
+      }
+    });
 
     const formError = computed(() => {
       if (newPassword.value !== confirmNewPassword.value) {
@@ -87,18 +120,10 @@ export default defineComponent({
     const resetPassword = async () => {
       try {
         loading.value = true;
-        await server.resetPassword({
-          resetUuid: props.uuid,
-          newPassword: newPassword.value,
-        });
+
+        await server.resetPassword(oobCode, newPassword.value);
       } catch (err) {
-        title.value = 'Failed to reset password';
-        if (err && err.response && err.response.status === 400) {
-          serverError.value = err.response.data.message;
-        } else {
-          serverError.value =
-            'There was a server-side error. Please try again, and if the problem persists, contact us at <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>.';
-        }
+        handleAuthError(err);
       } finally {
         loading.value = false;
         submitted.value = true;
@@ -114,6 +139,7 @@ export default defineComponent({
       formError,
       title,
       serverError,
+      resettingEmail,
     };
   },
 });

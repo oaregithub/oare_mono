@@ -5,3 +5,8 @@ export interface UuidRow {
 }
 
 export type SortOrder = 'asc' | 'desc';
+
+export interface AdminBadgeOptions {
+  error: boolean;
+  comments: boolean;
+}

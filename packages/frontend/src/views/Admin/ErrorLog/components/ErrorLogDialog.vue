@@ -60,7 +60,7 @@ import { defineComponent, PropType } from '@vue/composition-api';
 import OareDialog from '@/components/base/OareDialog.vue';
 import { ErrorsRowWithUser, ErrorStatus } from '@oare/types';
 import sl from '@/serviceLocator';
-import { formatTimestamp } from '@/utils';
+import { formatTimestamp, resetAdminBadge } from '@/utils';
 
 export default defineComponent({
   name: 'ErrorLogDialog',
@@ -90,6 +90,7 @@ export default defineComponent({
           uuid: error.uuid,
           status: error.status,
         });
+        await resetAdminBadge();
       } catch {
         actions.showErrorSnackbar(
           'Error updating error status. Please try again.',

@@ -25,8 +25,14 @@ async function updateErrorStatus(
   await axios.patch('/errors', payload);
 }
 
+async function newErrorsExist(): Promise<boolean> {
+  const { data } = await axios.get('/newerrors');
+  return data;
+}
+
 export default {
   logError,
   getErrorLog,
   updateErrorStatus,
+  newErrorsExist,
 };

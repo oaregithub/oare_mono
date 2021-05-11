@@ -60,4 +60,15 @@ router
     }
   });
 
+router.route('/newerrors').get(adminRoute, async (_req, res, next) => {
+  try {
+    const ErrorsDao = sl.get('ErrorsDao');
+
+    const response = await ErrorsDao.newErrorsExist();
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 export default router;

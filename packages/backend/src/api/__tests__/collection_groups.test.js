@@ -53,7 +53,7 @@ describe('GET /collection_groups', () => {
   const setup = () => {
     sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -61,7 +61,8 @@ describe('GET /collection_groups', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH).set('Cookie', 'jwt=token');
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful collection group retrieval', async () => {
     const response = await sendRequest();
@@ -72,7 +73,7 @@ describe('GET /collection_groups', () => {
 
   it('does not allow non-admin user to get collection group', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -117,7 +118,7 @@ describe('POST /collection_groups', () => {
     sl.set('OareGroupDao', mockOareGroupDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -126,7 +127,7 @@ describe('POST /collection_groups', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPOST).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPOST).set('Authorization', 'token');
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
@@ -136,7 +137,7 @@ describe('POST /collection_groups', () => {
 
   it('does not allow non-admins to update collection group', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -186,7 +187,7 @@ describe('POST /collection_groups', () => {
     const response = await request(app)
       .post(PATH)
       .send(mockExistingPOST)
-      .set('Cookie', 'jwt=token');
+      .set('Authorization', 'token');
     expect(mockCollectionGroupDao.addCollections).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
@@ -211,7 +212,7 @@ describe('PATCH /collection_groups', () => {
     sl.set('OareGroupDao', mockOareGroupDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -220,7 +221,7 @@ describe('PATCH /collection_groups', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).patch(PATH).send(mockPATCH).set('Cookie', 'jwt=token');
+    request(app).patch(PATH).send(mockPATCH).set('Authorization', 'token');
 
   it('return 204 on successful collections permission change', async () => {
     const response = await sendRequest();
@@ -231,7 +232,7 @@ describe('PATCH /collection_groups', () => {
 
   it('does not allow non-admins to change group collection permissions', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -295,7 +296,7 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
     sl.set('OareGroupDao', mockOareGroupDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
       }),
     });
@@ -304,7 +305,7 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).delete(PATH).set('Cookie', 'jwt=token');
+    request(app).delete(PATH).set('Authorization', 'token');
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
@@ -314,7 +315,7 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
 
   it('does not allow non-admins to delete from collection groups', async () => {
     sl.set('UserDao', {
-      getUserByEmail: jest.fn().mockResolvedValue({
+      getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
@@ -351,7 +352,7 @@ describe('DELETE /collection_groups/:groupId/:uuid', () => {
   it('returns 400 when texts to be deleted are not in the collection group permissions', async () => {
     const response = await request(app)
       .delete(`${API_PATH}/collection_groups/1/uuid3`)
-      .set('Cookie', 'jwt=token');
+      .set('Authorization', 'token');
     expect(mockCollectionGroupDao.removeCollection).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
