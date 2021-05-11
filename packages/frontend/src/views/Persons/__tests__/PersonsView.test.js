@@ -185,15 +185,13 @@ describe('PersonsView test', () => {
   it('display person text occurrences', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    let isDisplayed = wrapper
-      .findAll('.test-text-occurrences-display')
-      .exists();
-    expect(isDisplayed).toBe(false);
     const personDiv = wrapper.findAll('.test-person-row').at(1);
     await personDiv.get('.test-text-occurrences').trigger('click');
     await flushPromises();
     expect(mockServer.getPersonTextOccurrences).toHaveBeenCalled();
-    isDisplayed = wrapper.findAll('.test-text-occurrences-display').exists();
+    const isDisplayed = wrapper
+      .findAll('.test-text-occurrences-display')
+      .exists();
     expect(isDisplayed).toBe(true);
   });
 });
