@@ -215,7 +215,15 @@ class TextEpigraphyDao {
       collectionBlacklist
     )
       .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
-      .whereNull('text_epigraphy.discourse_uuid')
+      .modify(qb => {
+        characterUuids[0].uuids.forEach((_uuid, idx) => {
+          if (idx === 0) {
+            qb.whereNull('text_epigraphy.discourse_uuid');
+          } else {
+            qb.whereNull(`t0${idx}.discourse_uuid`);
+          }
+        });
+      })
       .first();
 
     return count.count;
@@ -242,14 +250,22 @@ class TextEpigraphyDao {
       }
     });
 
-    const occurrences = await getSearchQuery(
+    const occurrences: any[] = await getSearchQuery(
       characterUuids,
       textBlacklist,
       textWhitelist,
       collectionBlacklist
     )
       .distinct(epigraphyUuidColumns)
-      .whereNull('text_epigraphy.discourse_uuid')
+      .modify(qb => {
+        characterUuids[0].uuids.forEach((_uuid, idx) => {
+          if (idx === 0) {
+            qb.whereNull('text_epigraphy.discourse_uuid');
+          } else {
+            qb.whereNull(`t0${idx}.discourse_uuid`);
+          }
+        });
+      })
       .orderBy('text.name')
       .orderBy('text_epigraphy.line')
       .offset((page - 1) * limit)
@@ -342,13 +358,9 @@ class TextEpigraphyDao {
     epigraphyUuids: string[],
     discourseUuid: string
   ): Promise<void> {
-    await Promise.all(
-      epigraphyUuids.map(epigUuid =>
-        knex('text_epigraphy')
-          .update('discourse_uuid', discourseUuid)
-          .where('uuid', epigUuid)
-      )
-    );
+    await knex('text_epigraphy')
+      .update('discourse_uuid', discourseUuid)
+      .whereIn('uuid', epigraphyUuids);
   }
 }
 
