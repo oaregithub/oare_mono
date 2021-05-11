@@ -252,12 +252,12 @@ describe('utility tests', () => {
   describe.only('valid markup tests', () => {
     it('returns true for tokens with valid markup', () => {
       const tokens: Token[] = [
-        { tokenType: 'SIGN', tokenText: '⸢a' },
+        { tokenType: 'SIGN', tokenText: '[a' },
         { tokenType: '-', tokenText: '-' },
-        { tokenType: 'SIGN', tokenText: 'na⸣' },
+        { tokenType: 'SIGN', tokenText: 'na]' },
         { tokenType: '$end', tokenText: '' },
       ];
-
+      tokenizeExplicitSpelling('[a-na]');
       expect(hasValidMarkup(tokens)).toBe(true);
     });
 
