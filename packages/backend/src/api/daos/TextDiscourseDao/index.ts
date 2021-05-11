@@ -6,6 +6,7 @@ import {
   SpellingOccurrenceRow,
   DiscourseUnit,
   DiscourseUnitType,
+  PersonOccurrenceRow,
 } from '@oare/types';
 import Knex from 'knex';
 import { v4 } from 'uuid';
@@ -312,6 +313,67 @@ class TextDiscourseDao {
       obj_in_text: anchorInfo.objInText,
     });
     await TextEpigraphyDao.addDiscourseUuid(epigraphyUuids, discourseUuid);
+  }
+
+  async getPersonTextsByItemPropertyReferenceUuids(
+    textDiscourseUuids: string[],
+    { filter }: Partial<Pagination> = {}
+  ): Promise<PersonOccurrenceRow[]> {
+    const texts = await knex('text_discourse')
+      .select(
+        'text_discourse.uuid AS discourseUuid',
+        'text_discourse.type',
+        'text.name AS textName',
+        'text_discourse.word_on_tablet AS wordOnTablet',
+        'text_discourse.text_uuid AS textUuid'
+      )
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .whereIn('text_discourse.uuid', textDiscourseUuids)
+      .modify(qb => {
+        if (filter) {
+          qb.andWhere('text.name', 'like', `%${filter}%`);
+        }
+      });
+
+    return texts;
+  }
+
+  async getChildrenByParentUuid(
+    phraseUuid: string,
+    { filter }: Partial<Pagination> = {}
+  ): Promise<PersonOccurrenceRow[]> {
+    const wordTexts = await knex('text_discourse')
+      .select(
+        'text_discourse.uuid AS discourseUuid',
+        'text_discourse.type',
+        'text.name AS textName',
+        'text_discourse.word_on_tablet AS wordOnTablet',
+        'text_discourse.text_uuid AS textUuid'
+      )
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .where('text_discourse.parent_uuid', phraseUuid)
+      .modify(qb => {
+        if (filter) {
+          qb.andWhere('text.name', 'like', `%${filter}%`);
+        }
+      });
+
+    return wordTexts;
+  }
+
+  async getEpigraphicLineOfWord(discourseUuid: string): Promise<number> {
+    const line = (
+      await knex('text_discourse')
+        .pluck('text_epigraphy.line')
+        .innerJoin(
+          'text_epigraphy',
+          'text_epigraphy.discourse_uuid',
+          'text_discourse.uuid'
+        )
+        .where('text_discourse.uuid', discourseUuid)
+    )[0];
+
+    return line;
   }
 }
 

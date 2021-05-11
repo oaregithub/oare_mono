@@ -16,14 +16,19 @@ const mockActions = {
 
 const testPeople = [
   {
+    uuid: 'uuid',
     word: 'Test0',
     personUuid: 'test0',
     person: 'Test0',
     relation: 's.',
+    relationPersonUuid: 'relationPersonTest0Uuid',
     relationPerson: 'relationPersonTest0',
     topValueRole: null,
+    label: 'Test0Label',
+    textOccurrenceCount: 2,
   },
   {
+    uuid: 'uuid',
     word: 'Test1',
     personUuid: 'test1',
     person: 'Test1',
@@ -31,8 +36,10 @@ const testPeople = [
     label: null,
     relationPerson: 'Test1RelationPerson',
     topValueRole: 'Blacksmith',
+    textOccurrenceCount: 2,
   },
   {
+    uuid: 'uuid',
     word: 'Test2',
     person: 'Test2',
     personUuid: 'test2',
@@ -41,8 +48,10 @@ const testPeople = [
     topVariableRole: 'Father',
     roleObjUuid: 'objUuidTest2',
     roleObjPerson: 'Test2OtherPerson',
+    textOccurrenceCount: 2,
   },
   {
+    uuid: 'uuid',
     word: 'Test3',
     person: 'Test3',
     personUuid: 'test3',
@@ -50,8 +59,10 @@ const testPeople = [
     topValueRole: null,
     topVariableRole: 'This appears in red (only the admins)',
     roleObjUuid: null,
+    textOccurrenceCount: 2,
   },
   {
+    uuid: 'uuid',
     word: 'Test4Label',
     personUuid: 'test4',
     person: null,
@@ -59,11 +70,24 @@ const testPeople = [
     label: 'Test4Label',
     relationPerson: null,
     topValueRole: null,
+    textOccurrenceCount: 2,
+  },
+];
+
+const testTextOccurrences = [
+  {
+    textName: 'Text1',
+    readings: ['<strong>1. This is text 1</strong>'],
+  },
+  {
+    textName: 'Text2',
+    readings: ['<strong>2. This is text 2</strong>'],
   },
 ];
 
 const mockServer = {
   getPeople: jest.fn().mockResolvedValue(testPeople),
+  getPersonTextOccurrences: jest.fn().mockResolvedValue(testTextOccurrences),
 };
 
 const mockStore = {
@@ -72,11 +96,16 @@ const mockStore = {
   },
 };
 
+const mockLodash = {
+  debounce: cb => cb,
+};
+
 const mockLetter = 'T';
 const setup = () => {
   sl.set('serverProxy', mockServer);
   sl.set('globalActions', mockActions);
   sl.set('store', mockStore);
+  sl.set('lodash', mockLodash);
 };
 
 beforeEach(setup);
@@ -151,5 +180,20 @@ describe('PersonsView test', () => {
     const personDiv = wrapper.findAll('.test-person-row').at(4);
     expect(personDiv.html()).toContain(testPeople[4].label);
     expect(personDiv.html()).not.toContain(testPeople[0].person);
+  });
+
+  it('display person text occurrences', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    let isDisplayed = wrapper
+      .findAll('.test-text-occurrences-display')
+      .exists();
+    expect(isDisplayed).toBe(false);
+    const personDiv = wrapper.findAll('.test-person-row').at(1);
+    await personDiv.get('.test-text-occurrences').trigger('click');
+    await flushPromises();
+    expect(mockServer.getPersonTextOccurrences).toHaveBeenCalled();
+    isDisplayed = wrapper.findAll('.test-text-occurrences-display').exists();
+    expect(isDisplayed).toBe(true);
   });
 });

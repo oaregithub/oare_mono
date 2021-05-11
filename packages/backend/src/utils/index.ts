@@ -50,8 +50,8 @@ export const parsedQuery = (url: string): URLSearchParams => {
   return new URLSearchParams(queryString);
 };
 
-export const getTextOccurrences = async (
-  rows: SpellingOccurrenceRow[]
+export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
+  rows: Type
 ): Promise<SpellingOccurrenceResponseRow[]> => {
   const TextEpigraphyDao = sl.get('TextEpigraphyDao');
   const epigraphicUnits = await Promise.all(

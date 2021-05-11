@@ -2,6 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import { PersonOccurrenceRow } from '@oare/types';
 
 const router = express.Router();
 
@@ -39,20 +40,89 @@ router
     }
   });
 
+// TODO: Highlight root-parent and grab the line before and the line after.
 router
   .route('/people/person/:uuid/texts')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
     try {
       const utils = sl.get('utils');
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
       const { uuid } = req.params;
       const pagination = utils.extractPagination(req.query);
 
-      const rows = await ItemPropertiesDao.getTextsOfPerson(uuid, pagination);
+      const uniqueReferenceUuids = await ItemPropertiesDao.getUniqueReferenceUuidOfPerson(
+        uuid
+      );
+      const texts = await TextDiscourseDao.getPersonTextsByItemPropertyReferenceUuids(
+        uniqueReferenceUuids,
+        pagination
+      );
 
-      const response = await utils.getTextOccurrences(rows);
+      const nonWordTexts = texts.filter(text => text.type !== 'word');
+      const textsWithWords = texts.filter(text => text.type === 'word');
 
-      res.json(response);
+      const allTexts: PersonOccurrenceRow[] = [
+        ...textsWithWords,
+        ...nonWordTexts,
+      ];
+
+      // const getRemainingPhraseTexts = async (
+      //   morePhraseTexts: PersonOccurrenceRow[]
+      // ) => {
+      //   await Promise.all(
+      //     morePhraseTexts.map(async currText => {
+      //       const wordTexts = await TextDiscourseDao.getChildrenByParentUuid(
+      //         currText.discourseUuid,
+      //         pagination
+      //       );
+      //
+      //       const foundWordTexts = wordTexts.filter(
+      //         wordText => wordText.type === 'word'
+      //       );
+      //       const foundNonWordTexts = wordTexts.filter(
+      //         wordText => wordText.type !== 'word'
+      //       );
+      //
+      //       if (foundNonWordTexts.length > 0) {
+      //         await getRemainingPhraseTexts(foundNonWordTexts);
+      //       }
+      //
+      //       allTexts.push(...foundWordTexts);
+      //     })
+      //   );
+      // };
+      //
+      // await getRemainingPhraseTexts(nonWordTexts);
+
+      const textsWithEpigraphicUnits = await Promise.all(
+        allTexts.map(async text => {
+          const line = await TextDiscourseDao.getEpigraphicLineOfWord(
+            text.discourseUuid
+          );
+          return {
+            ...text,
+            line,
+          };
+        })
+      );
+
+      // Sort alphabetic by textName.
+      textsWithEpigraphicUnits.sort((a, b) => {
+        if (a.textName.toLowerCase() < b.textName.toLowerCase()) {
+          return -1;
+        }
+        if (a.textName.toLowerCase() > b.textName.toLowerCase()) {
+          return 1;
+        }
+        return 0;
+      });
+
+      const textOccurrencesResponse = await utils.getTextOccurrences(
+        textsWithEpigraphicUnits
+      );
+
+      res.json(textOccurrencesResponse);
     } catch (err) {
       next(new HttpInternalError(err));
     }
