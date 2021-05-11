@@ -38,7 +38,7 @@ const setupAdminBadge = async () => {
   }, 1000 * 60 * 5);
 };
 
-firebase.auth().onAuthStateChanged(async user => {
+firebase.auth().onIdTokenChanged(async user => {
   const { currentUser } = firebase.auth();
   if (currentUser && user && user.email && user.displayName) {
     const idTokenResult = await currentUser.getIdTokenResult();
