@@ -99,6 +99,11 @@ class ErrorsDao {
   }: UpdateErrorStatusPayload): Promise<void> {
     await knex('errors').update({ status }).where({ uuid });
   }
+
+  async newErrorsExist(): Promise<boolean> {
+    const exists = await knex('errors').first().where('status', 'New');
+    return !!exists;
+  }
 }
 
 export default new ErrorsDao();

@@ -271,6 +271,7 @@ import {
   CommentDisplay,
   UpdateThreadNameRequest,
 } from '@oare/types';
+import { resetAdminBadge } from '@/utils';
 
 export default defineComponent({
   name: 'CommentWordDisplay',
@@ -436,6 +437,7 @@ export default defineComponent({
 
           actions.showSnackbar('Successfully updated the thread');
           await getThreadsWithComments();
+          await resetAdminBadge();
         } catch {
           actions.showErrorSnackbar('Failed to update the thread');
         } finally {

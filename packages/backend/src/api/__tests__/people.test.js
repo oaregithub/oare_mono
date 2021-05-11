@@ -38,7 +38,7 @@ describe('people api test', () => {
   };
 
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       uuid: 'testUuid',
     }),
   };
@@ -129,7 +129,7 @@ describe('people api test', () => {
 
     const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns successful people.', async () => {
@@ -181,7 +181,7 @@ describe('people api test', () => {
     )}/texts?limit=10&page=1`;
     const sendRequest = (cookie = true) => {
       const req = request(app).get(PATH);
-      return cookie ? req.set('Cookie', 'jwt=token') : req;
+      return cookie ? req.set('Authorization', 'token') : req;
     };
 
     it('returns successful person texts.', async () => {

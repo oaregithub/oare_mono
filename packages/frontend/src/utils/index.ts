@@ -1,5 +1,6 @@
 import { DictionaryForm } from '@oare/types';
 import { DateTime } from 'luxon';
+import sl from '@/serviceLocator';
 
 const formGrammarString = (form: DictionaryForm): string => {
   let suffix = '';
@@ -38,6 +39,19 @@ export const formatTimestamp = (timestamp: Date) =>
   DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
     DateTime.DATETIME_MED
   );
+
+export const resetAdminBadge = async () => {
+  const server = sl.get('serverProxy');
+  const store = sl.get('store');
+
+  const errorBadge = await server.newErrorsExist();
+  const commentsBadge = await server.newThreadsExist();
+
+  store.setAdminBadge({
+    error: errorBadge,
+    comments: commentsBadge,
+  });
+};
 
 export default {
   formGrammarString,

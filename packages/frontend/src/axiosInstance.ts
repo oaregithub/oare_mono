@@ -1,4 +1,5 @@
 import axios from 'axios';
+import store from '@/ts-store';
 
 const host =
   process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
@@ -8,15 +9,11 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-axiosInstance.interceptors.response.use(
-  res => res,
-  async error => {
-    if (error.config && error.response && error.response.status === 401) {
-      await axiosInstance.get('/refresh_token');
-      return axiosInstance(error.config);
-    }
-    throw error;
+axiosInstance.interceptors.request.use(config => {
+  if (store.getters.idToken) {
+    config.headers.Authorization = store.getters.idToken;
   }
-);
+  return config;
+});
 
 export default axiosInstance;

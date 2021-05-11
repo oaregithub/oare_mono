@@ -1,4 +1,7 @@
 import { RouteConfig } from 'vue-router';
+import adminGuard from '@/navigationGuards/adminGuard';
+import authenticatedGuard from '@/navigationGuards/authenticatedGuard';
+import permissionGuard from '@/navigationGuards/permissionGuard';
 import ManageMembers from '@/views/Admin/Groups/Users/ManageMembers.vue';
 import ManageTexts from '@/views/Admin/Groups/Texts/ManageTexts.vue';
 import ManageCollections from '@/views/Admin/Groups/Collections/ManageCollections.vue';
@@ -54,11 +57,13 @@ const routes: RouteConfig[] = [
     path: '/admin/groups',
     name: 'adminGroups',
     component: AdminGroupView,
+    beforeEnter: adminGuard,
   },
   {
     path: '/admin/blacklist',
     name: 'adminBlacklist',
     component: AdminTextView,
+    beforeEnter: adminGuard,
     children: [
       {
         path: 'texts',
@@ -71,36 +76,45 @@ const routes: RouteConfig[] = [
         component: BlacklistCollections,
       },
     ],
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/admin/errors',
     name: 'adminErrors',
     component: ErrorLog,
+    beforeEnter: adminGuard,
   },
   {
     path: '/admin/comments',
     name: 'adminComments',
     component: AdminCommentView,
+    beforeEnter: adminGuard,
   },
   {
     path: '/admin/drafts',
     name: 'adminDrafts',
     component: AdminDraftsView,
+    beforeEnter: adminGuard,
   },
   {
     path: '/admin/settings',
     name: 'adminSettings',
     component: AdminSettings,
+    beforeEnter: adminGuard,
   },
   {
     path: '/addblacklist/texts',
     name: 'blacklistAddTexts',
     component: AddBlacklistTexts,
+    beforeEnter: adminGuard,
   },
   {
     path: '/addblacklist/collections',
     name: 'blacklistAddCollections',
     component: AddBlacklistCollections,
+    beforeEnter: adminGuard,
   },
   {
     path: '/collections/name/:collectionUuid',
@@ -138,6 +152,7 @@ const routes: RouteConfig[] = [
     name: 'groups',
     component: GroupView,
     props: true,
+    beforeEnter: adminGuard,
     children: [
       {
         path: 'members',
@@ -164,24 +179,30 @@ const routes: RouteConfig[] = [
         component: ManagePermissions,
       },
     ],
+    meta: {
+      admin: true,
+    },
   },
   {
     path: '/addgrouptexts/:groupId',
     name: 'manageGroupTexts',
     component: AddGroupTexts,
     props: true,
+    beforeEnter: adminGuard,
   },
   {
     path: '/addgroupcollections/:groupId',
     name: 'manageGroupCollections',
     component: AddGroupCollections,
     props: true,
+    beforeEnter: adminGuard,
   },
   {
     path: '/addusers/:groupId',
     name: 'manageGroupUsers',
     component: AddGroupUsers,
     props: true,
+    beforeEnter: adminGuard,
   },
   {
     path: '/login',
@@ -221,40 +242,47 @@ const routes: RouteConfig[] = [
     path: '/dashboard/drafts',
     name: 'dashboardDrafts',
     component: Drafts,
+    beforeEnter: authenticatedGuard,
   },
   {
     path: '/dashboard/profile',
     name: 'dashboardProfile',
     component: Profile,
+    beforeEnter: authenticatedGuard,
   },
   {
     path: '/dashboard/comments',
     name: 'dashboardComments',
     component: UserCommentView,
+    beforeEnter: authenticatedGuard,
   },
   {
     path: '/words/:letter',
     name: 'words',
     component: WordsView,
     props: true,
+    beforeEnter: permissionGuard('WORDS'),
   },
   {
     path: '/names/:letter',
     name: 'names',
     component: NamesView,
     props: true,
+    beforeEnter: permissionGuard('NAMES'),
   },
   {
     path: '/places/:letter',
     name: 'places',
     component: PlacesView,
     props: true,
+    beforeEnter: permissionGuard('PLACES'),
   },
   {
     path: '/people/:letter',
     name: 'people',
     component: PersonsView,
     props: true,
+    beforeEnter: permissionGuard('PEOPLE'),
   },
   {
     path: '/send_reset_password_email',
@@ -262,10 +290,9 @@ const routes: RouteConfig[] = [
     component: SendResetPasswordEmailView,
   },
   {
-    path: '/reset_password/:uuid',
+    path: '/reset_password',
     name: 'resetpassword',
     component: ResetPasswordView,
-    props: true,
   },
   {
     path: '/403',

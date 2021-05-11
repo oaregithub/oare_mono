@@ -11,7 +11,7 @@ describe('POST /text_discourse', () => {
   };
 
   const mockUserDao = {
-    getUserByEmail: jest.fn().mockResolvedValue({
+    getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
@@ -24,8 +24,15 @@ describe('POST /text_discourse', () => {
 
   const mockPayload = {
     spelling: 'a-na',
-    epigraphyUuids: ['uuid1', 'uuid2'],
-    textUuid: 'textUuid',
+    occurrences: [
+      {
+        textUuid: 'textUuid',
+        epigraphyUuids: ['uuid1', 'uuid2'],
+        line: 1,
+        textName: 'textName',
+        reading: 'reading',
+      },
+    ],
   };
 
   const setup = () => {
@@ -37,7 +44,7 @@ describe('POST /text_discourse', () => {
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPayload).set('Cookie', 'jwt=token');
+    request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
 
   it('returns 201 on successful discourse row insertion', async () => {
     const response = await sendRequest();

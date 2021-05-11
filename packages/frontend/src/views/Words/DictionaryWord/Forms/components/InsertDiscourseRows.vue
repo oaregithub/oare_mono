@@ -37,6 +37,7 @@
         @click="insertDiscourseRows"
         class="test-submit-btn mt-4"
         :disabled="selectedOccurrences.length === 0"
+        :loading="insertDiscourseRowsLoading"
       >
         Submit
       </OareLoaderButton>
@@ -92,6 +93,7 @@ export default defineComponent({
 
     const searchNullDiscourseLoading = ref(false);
     const searchNullCountLoading = ref(false);
+    const insertDiscourseRowsLoading = ref(false);
     const [page, setPage] = useQueryParam('page', '1');
     const [limit, setRows] = useQueryParam('limit', '50');
 
@@ -151,15 +153,19 @@ export default defineComponent({
 
     const insertDiscourseRows = async () => {
       try {
+        insertDiscourseRowsLoading.value = true;
         await server.insertDiscourseRow(
           props.spellingInput,
           selectedOccurrences.value
         );
+        searchOptions.value.page = 1;
         reload && reload();
       } catch {
         actions.showErrorSnackbar(
           'Error inserting selected occurrence to the text discourse table. Please try again.'
         );
+      } finally {
+        insertDiscourseRowsLoading.value = false;
       }
     };
 
@@ -182,7 +188,9 @@ export default defineComponent({
       try {
         setPage(String(searchOptions.value.page));
         setRows(String(searchOptions.value.itemsPerPage));
-        await searchNullDiscourse();
+        if (props.spellingInput) {
+          await searchNullDiscourse();
+        }
       } catch {
         actions.showErrorSnackbar(
           `Error retrieving more occurrences. Please try again.`
@@ -198,8 +206,10 @@ export default defineComponent({
           selectedOccurrences.value = [];
           searchOptions.value.page = 1;
         } else {
-          searchNullDiscourse();
-          searchNullDiscourseCount();
+          if (props.spellingInput) {
+            searchNullDiscourse();
+            searchNullDiscourseCount();
+          }
         }
       },
       { immediate: true }
@@ -217,6 +227,7 @@ export default defineComponent({
       searchOptions,
       insertDiscourseRows,
       searchNullCountLoading,
+      insertDiscourseRowsLoading,
     };
   },
 });

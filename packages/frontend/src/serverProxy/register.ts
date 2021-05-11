@@ -1,9 +1,14 @@
 import axios from '@/axiosInstance';
-import { RegisterPayload } from '@oare/types';
+import { RegisterPayload, RegisterResponse, User } from '@oare/types';
+import firebase from '@/firebase';
 
-async function register(payload: RegisterPayload) {
-  const { data } = await axios.post('/register', payload);
-  return data;
+async function register(payload: RegisterPayload): Promise<User> {
+  const { data }: { data: RegisterResponse } = await axios.post(
+    '/register',
+    payload
+  );
+  await firebase.auth().signInWithCustomToken(data.firebaseToken);
+  return data.user;
 }
 
 export default { register };
