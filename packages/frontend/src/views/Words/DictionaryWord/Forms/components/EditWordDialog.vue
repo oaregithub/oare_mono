@@ -115,6 +115,7 @@
             :form="form"
             :spelling="spelling"
             :spellingInput="spellingInput"
+            :numFormOccurrences="spellingSearchResults.length"
           />
           <spelling-dialog
             v-if="!inDiscourseMode"
