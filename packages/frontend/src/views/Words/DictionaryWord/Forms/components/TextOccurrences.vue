@@ -44,7 +44,6 @@ import {
   reactive,
   ref,
   watch,
-  computed,
 } from '@vue/composition-api';
 import { Pagination, SpellingOccurrenceResponseRow } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
@@ -87,6 +86,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const search = ref('');
+    const allTextOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
     const headers: DataTableHeader[] = reactive([
       {
@@ -105,11 +105,9 @@ export default defineComponent({
       itemsPerPage: 10,
     });
 
-    const pageSize = computed(() => {
-      return props.defaultPageSize
-        ? tableOptions.value.page
-        : tableOptions.value.page - 1;
-    });
+    const pageSize = props.defaultPageSize
+      ? tableOptions.value.page
+      : tableOptions.value.page - 1;
 
     const canRetrievedAllData = (): boolean => {
       return (
@@ -122,15 +120,16 @@ export default defineComponent({
       try {
         referencesLoading.value = true;
         if (canRetrievedAllData()) {
-          textOccurrences.value = await props.getTexts(props.uuid, {
-            page: pageSize.value,
+          allTextOccurrences.value = await props.getTexts(props.uuid, {
+            page: pageSize,
             limit: tableOptions.value.itemsPerPage,
             ...(search.value ? { filter: search.value } : null),
           });
+          textOccurrences.value = allTextOccurrences.value;
         }
 
         if (props.manualPagination) {
-          textOccurrences.value = manuallyPaginate(textOccurrences.value);
+          textOccurrences.value = manuallyPaginate(allTextOccurrences.value);
         }
       } catch {
         actions.showErrorSnackbar('Failed to load text occurrences');
@@ -139,12 +138,12 @@ export default defineComponent({
       }
     };
 
-    const manuallyPaginate = (values: any[]): any[] =>
-      values.slice(
-        (tableOptions.value.page - pageSize.value) *
-          tableOptions.value.itemsPerPage,
+    const manuallyPaginate = (values: any[]): any[] => {
+      return values.slice(
+        (tableOptions.value.page - pageSize) * tableOptions.value.itemsPerPage,
         tableOptions.value.page * tableOptions.value.itemsPerPage
       );
+    };
 
     watch(tableOptions, getReferences);
 

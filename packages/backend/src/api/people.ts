@@ -32,6 +32,7 @@ router
     }
   });
 
+// TODO: Highlight root-parent and grab the line before and the line after.
 router
   .route('/people/person/:uuid/texts')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
@@ -53,35 +54,38 @@ router
       const nonWordTexts = texts.filter(text => text.type !== 'word');
       const textsWithWords = texts.filter(text => text.type === 'word');
 
-      const allTexts: PersonOccurrenceRow[] = [...textsWithWords];
+      const allTexts: PersonOccurrenceRow[] = [
+        ...textsWithWords,
+        ...nonWordTexts,
+      ];
 
-      const getRemainingPhraseTexts = async (
-        morePhraseTexts: PersonOccurrenceRow[]
-      ) => {
-        await Promise.all(
-          morePhraseTexts.map(async currText => {
-            const wordTexts = await TextDiscourseDao.getChildrenByParentUuid(
-              currText.discourseUuid,
-              pagination
-            );
-
-            const foundWordTexts = wordTexts.filter(
-              wordText => wordText.type === 'word'
-            );
-            const foundNonWordTexts = wordTexts.filter(
-              wordText => wordText.type !== 'word'
-            );
-
-            if (foundNonWordTexts.length > 0) {
-              await getRemainingPhraseTexts(foundNonWordTexts);
-            }
-
-            allTexts.push(...foundWordTexts);
-          })
-        );
-      };
-
-      await getRemainingPhraseTexts(nonWordTexts);
+      // const getRemainingPhraseTexts = async (
+      //   morePhraseTexts: PersonOccurrenceRow[]
+      // ) => {
+      //   await Promise.all(
+      //     morePhraseTexts.map(async currText => {
+      //       const wordTexts = await TextDiscourseDao.getChildrenByParentUuid(
+      //         currText.discourseUuid,
+      //         pagination
+      //       );
+      //
+      //       const foundWordTexts = wordTexts.filter(
+      //         wordText => wordText.type === 'word'
+      //       );
+      //       const foundNonWordTexts = wordTexts.filter(
+      //         wordText => wordText.type !== 'word'
+      //       );
+      //
+      //       if (foundNonWordTexts.length > 0) {
+      //         await getRemainingPhraseTexts(foundNonWordTexts);
+      //       }
+      //
+      //       allTexts.push(...foundWordTexts);
+      //     })
+      //   );
+      // };
+      //
+      // await getRemainingPhraseTexts(nonWordTexts);
 
       const textsWithEpigraphicUnits = await Promise.all(
         allTexts.map(async text => {
