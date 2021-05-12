@@ -1,10 +1,10 @@
+import fs from 'fs';
+import path from 'path';
 import { RawToken, NormalizedRawToken, Token } from '@oare/types';
 import bnf from './spellingGrammar';
 import { normalizeSign, normalizeFraction } from './signNormalizer';
 
 const Jison = require('jison');
-
-const parser = new Jison.Parser(bnf);
 
 export const separateTokenPhrases = (tokens: Token[]): Token[][] => {
   const phrases: Token[][] = [];
@@ -148,6 +148,13 @@ const isValidGrammar = (tokens: Token[]) => {
 };
 
 export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
+  const grammar = fs.readFileSync(
+    path.join(__dirname, './spellingGrammar.jison'),
+    {
+      encoding: 'utf8',
+    }
+  );
+  const parser = new Jison.Parser(grammar);
   const rawTokens: RawToken[] = [];
   Jison.lexDebugger = rawTokens;
   parser.parse(spelling.trim());
