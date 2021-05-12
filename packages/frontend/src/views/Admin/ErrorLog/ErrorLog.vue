@@ -232,14 +232,10 @@ export default defineComponent({
 
     const updateMultipleStatus = async (status: ErrorStatus) => {
       try {
-        await Promise.all(
-          selectedErrors.value.map(error =>
-            server.updateErrorStatus({
-              uuid: error.uuid,
-              status: status,
-            })
-          )
+        const selectedErrorUuids = selectedErrors.value.map(
+          error => error.uuid
         );
+        await server.updateErrorStatus(selectedErrorUuids, status);
         errorList.value = errorList.value.map(error => {
           if (selectedErrors.value.includes(error)) {
             return {
