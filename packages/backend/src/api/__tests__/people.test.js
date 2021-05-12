@@ -20,15 +20,19 @@ describe('people api test', () => {
 
   const person1TextOccurrenceCount = 1;
   const person2TextOccurrenceCount = 2;
+  const person1TextOccurrenceDistinctCount = 1;
+  const person2TextOccurrenceDistinctCount = 1;
 
   const allPeopleExpectedResponse = [
     {
       uuid: 'test1',
       textOccurrenceCount: person1TextOccurrenceCount,
+      textOccurrenceDistinctCount: person1TextOccurrenceDistinctCount,
     },
     {
       uuid: 'test2',
       textOccurrenceCount: person2TextOccurrenceCount,
+      textOccurrenceDistinctCount: person2TextOccurrenceDistinctCount,
     },
   ];
 
@@ -54,8 +58,14 @@ describe('people api test', () => {
 
   const mockPersonTextOccurrencesDao = {
     getAll: jest.fn().mockResolvedValue({
-      [allPeople[0].uuid]: person1TextOccurrenceCount,
-      [allPeople[1].uuid]: person2TextOccurrenceCount,
+      [allPeople[0].uuid]: {
+        count: person1TextOccurrenceCount,
+        distinctCount: person1TextOccurrenceDistinctCount,
+      },
+      [allPeople[1].uuid]: {
+        count: person2TextOccurrenceCount,
+        distinctCount: person2TextOccurrenceDistinctCount,
+      },
     }),
   };
 
