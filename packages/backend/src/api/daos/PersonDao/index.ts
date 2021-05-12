@@ -46,26 +46,28 @@ class PersonDao {
         'obj_person.name_uuid'
       )
       .where('person.type', this.PERSON_TYPE)
-      .andWhereRaw(orWhereRawLetters.andWhere, orWhereRawLetters.bindings)
-      .orderByRaw('IFNULL(dictionary_word_person.word, person.label)');
+      .andWhereRaw(orWhereRawLetters.andWhere, orWhereRawLetters.bindings);
   }
 
   async getAllPeople(letter: string): Promise<PersonDisplay[]> {
-    const people = await this.getAllPeopleBaseQuery(letter).select(
-      'person.uuid',
-      'person.name_uuid AS personNameUuid',
-      knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
-      'dictionary_word_person.word AS person',
-      'person.relation',
-      'dictionary_word_relation_person.word AS relationPerson',
-      'person.relation_name_uuid AS relationPersonUuid',
-      'person.label',
-      'item_properties.level',
-      'value.name AS topValueRole',
-      'variable.name AS topVariableRole',
-      'item_properties.object_uuid AS roleObjUuid',
-      'obj_dictionary_word.word AS roleObjPerson'
-    );
+    const people = await this.getAllPeopleBaseQuery(letter)
+      .select(
+        'person.uuid',
+        'person.name_uuid AS personNameUuid',
+        knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
+        'dictionary_word_person.word AS person',
+        'person.relation',
+        'dictionary_word_relation_person.word AS relationPerson',
+        'person.relation_name_uuid AS relationPersonUuid',
+        'person.label',
+        'item_properties.level',
+        'value.name AS topValueRole',
+        'variable.name AS topVariableRole',
+        'item_properties.object_uuid AS roleObjUuid',
+        'obj_dictionary_word.word AS roleObjPerson'
+      )
+      .orderBy('word');
+
     return people;
   }
 

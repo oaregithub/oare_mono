@@ -40,6 +40,7 @@
 <script lang="ts">
 import {
   defineComponent,
+  onMounted,
   PropType,
   reactive,
   ref,
@@ -86,6 +87,8 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const search = ref('');
+    const prevSearch = ref('');
+    const override = ref(false);
     const allTextOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
     const headers: DataTableHeader[] = reactive([
@@ -119,9 +122,11 @@ export default defineComponent({
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        if (canRetrievedAllData()) {
+        if (canRetrievedAllData() || override.value) {
           allTextOccurrences.value = await props.getTexts(props.uuid, {
-            page: pageSize,
+            page: props.defaultPageSize
+              ? tableOptions.value.page
+              : tableOptions.value.page - 1,
             limit: tableOptions.value.itemsPerPage,
             ...(search.value ? { filter: search.value } : null),
           });
@@ -138,6 +143,12 @@ export default defineComponent({
       }
     };
 
+    const getReferencesOverride = async () => {
+      override.value = true;
+      await getReferences();
+      override.value = false;
+    };
+
     const manuallyPaginate = (values: any[]): any[] => {
       return values.slice(
         (tableOptions.value.page - pageSize) * tableOptions.value.itemsPerPage,
@@ -145,9 +156,21 @@ export default defineComponent({
       );
     };
 
+    watch(() => props.uuid, getReferencesOverride, { immediate: false });
+
     watch(tableOptions, getReferences);
 
-    watch(search, _.debounce(getReferences, 500));
+    watch(
+      search,
+      _.debounce(async () => {
+        if (prevSearch.value !== search.value) {
+          prevSearch.value = search.value;
+          override.value = true;
+        }
+        await getReferences();
+        override.value = false;
+      }, 500)
+    );
 
     return {
       search,

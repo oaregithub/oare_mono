@@ -33,6 +33,7 @@
               class="text-decoration-none mr-1"
             >
               {{ personInfo.label }}
+              - (label)
             </router-link>
           </span>
 

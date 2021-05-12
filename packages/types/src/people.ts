@@ -24,4 +24,5 @@ export interface PersonDisplay {
 
 export interface PersonOccurrenceRow extends SpellingOccurrenceRow {
   type: DiscourseUnitType;
+  discoursesToHighlight: string[];
 }

@@ -40,7 +40,6 @@ router
     }
   });
 
-// TODO: Highlight root-parent and grab the line before and the line after.
 router
   .route('/people/person/:uuid/texts')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
@@ -62,43 +61,84 @@ router
       const nonWordTexts = texts.filter(text => text.type !== 'word');
       const textsWithWords = texts.filter(text => text.type === 'word');
 
-      const allTexts: PersonOccurrenceRow[] = [
-        ...textsWithWords,
-        ...nonWordTexts,
-      ];
+      let allTexts: Record<string, PersonOccurrenceRow> = {};
 
-      // const getRemainingPhraseTexts = async (
-      //   morePhraseTexts: PersonOccurrenceRow[]
-      // ) => {
-      //   await Promise.all(
-      //     morePhraseTexts.map(async currText => {
-      //       const wordTexts = await TextDiscourseDao.getChildrenByParentUuid(
-      //         currText.discourseUuid,
-      //         pagination
-      //       );
-      //
-      //       const foundWordTexts = wordTexts.filter(
-      //         wordText => wordText.type === 'word'
-      //       );
-      //       const foundNonWordTexts = wordTexts.filter(
-      //         wordText => wordText.type !== 'word'
-      //       );
-      //
-      //       if (foundNonWordTexts.length > 0) {
-      //         await getRemainingPhraseTexts(foundNonWordTexts);
-      //       }
-      //
-      //       allTexts.push(...foundWordTexts);
-      //     })
-      //   );
-      // };
-      //
-      // await getRemainingPhraseTexts(nonWordTexts);
+      textsWithWords.map((personText: PersonOccurrenceRow) => {
+        if (allTexts[personText.discourseUuid] === undefined) {
+          allTexts[personText.discourseUuid] = {
+            ...personText,
+            discoursesToHighlight: [personText.discourseUuid],
+          };
+        } else {
+          allTexts[personText.discourseUuid].discoursesToHighlight.push(
+            personText.discourseUuid
+          );
+        }
+      });
+
+      const reduceTexts = (
+        rows: PersonOccurrenceRow[],
+        rootDiscourseUuid: string
+      ) => {
+        rows.map((personText: PersonOccurrenceRow) => {
+          if (allTexts[rootDiscourseUuid] === undefined) {
+            allTexts[rootDiscourseUuid] = {
+              ...personText,
+              discourseUuid: rootDiscourseUuid,
+              discoursesToHighlight: [personText.discourseUuid],
+            };
+          } else {
+            allTexts[rootDiscourseUuid].discoursesToHighlight.push(
+              personText.discourseUuid
+            );
+          }
+        });
+      };
+
+      const getRemainingPhraseTexts = async (
+        morePhraseText: PersonOccurrenceRow,
+        rootDiscourseUuid: string
+      ) => {
+        const wordTexts = await TextDiscourseDao.getChildrenByParentUuid(
+          morePhraseText.discourseUuid
+        );
+
+        const foundWordTexts = wordTexts.filter(
+          wordText => wordText.type === 'word'
+        );
+        const foundNonWordTexts = wordTexts.filter(
+          wordText => wordText.type !== 'word'
+        );
+
+        reduceTexts(foundWordTexts, rootDiscourseUuid);
+
+        if (foundNonWordTexts.length > 0) {
+          for (let i = 0; i < foundNonWordTexts.length; i++) {
+            await getRemainingPhraseTexts(
+              foundNonWordTexts[i],
+              rootDiscourseUuid
+            );
+          }
+        }
+      };
+
+      await Promise.all(
+        nonWordTexts.map(async nonWordText => {
+          await getRemainingPhraseTexts(nonWordText, nonWordText.discourseUuid);
+        })
+      );
+
+      const reducedTexts: PersonOccurrenceRow[] = [...Object.values(allTexts)];
+
+      const childToGetLineFrom = (row: PersonOccurrenceRow): string => {
+        // Arbitrarily pick the first disourseUuid to retrieve the line number from.
+        return row.discoursesToHighlight[0];
+      };
 
       const textsWithEpigraphicUnits = await Promise.all(
-        allTexts.map(async text => {
+        reducedTexts.map(async text => {
           const line = await TextDiscourseDao.getEpigraphicLineOfWord(
-            text.discourseUuid
+            childToGetLineFrom(text)
           );
           return {
             ...text,
@@ -119,7 +159,8 @@ router
       });
 
       const textOccurrencesResponse = await utils.getTextOccurrences(
-        textsWithEpigraphicUnits
+        textsWithEpigraphicUnits,
+        true
       );
 
       res.json(textOccurrencesResponse);
