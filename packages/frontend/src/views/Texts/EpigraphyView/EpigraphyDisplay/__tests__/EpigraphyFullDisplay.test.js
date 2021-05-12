@@ -60,22 +60,25 @@ describe('EpigraphyFullDisplay View', () => {
     closeSnackbar: jest.fn(),
   };
 
-  const renderOptions = {
+  const renderOptions = epigraphicUnits => ({
     localVue,
     vuetify,
     propsData: {
-      epigraphicUnits: mostEpigraphicUnits,
+      epigraphicUnits,
       markupUnits: [],
       discourseUnits: [],
     },
-  };
+  });
 
-  const createWrapper = ({ store, server, actions } = {}) => {
+  const createWrapper = ({ store, server, actions, epigraphicUnits } = {}) => {
     sl.set('store', store || mockStore);
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
 
-    return mount(EpigraphyFullDisplay, renderOptions);
+    return mount(
+      EpigraphyFullDisplay,
+      renderOptions(epigraphicUnits || mostEpigraphicUnits)
+    );
   };
 
   it('displays discourses when user has permission', async () => {
@@ -143,5 +146,25 @@ describe('EpigraphyFullDisplay View', () => {
     await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('displays snackbar when discourse uuid is missing', async () => {
+    const wrapper = createWrapper({
+      epigraphicUnits: [
+        {
+          ...mostEpigraphicUnits[0],
+          discourseUuid: null,
+        },
+      ],
+    });
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    expect(mockActions.showSnackbar).toHaveBeenCalledTimes(2);
+
+    const dialogExists = await wrapper
+      .find('.test-rendering-word-dialog')
+      .exists();
+    expect(dialogExists).toBe(false);
   });
 });

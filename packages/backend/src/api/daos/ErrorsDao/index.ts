@@ -2,7 +2,6 @@ import knex from '@/connection';
 import {
   ErrorsRow,
   ErrorStatus,
-  UpdateErrorStatusPayload,
   ErrorsResponse,
   ErrorsRowWithUser,
   GetErrorsPayload,
@@ -93,10 +92,7 @@ class ErrorsDao {
     };
   }
 
-  async updateErrorStatus({
-    uuid,
-    status,
-  }: UpdateErrorStatusPayload): Promise<void> {
+  async updateErrorStatus(uuid: string, status: ErrorStatus): Promise<void> {
     await knex('errors').update({ status }).where({ uuid });
   }
 

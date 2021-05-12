@@ -1,6 +1,7 @@
 import {
   ErrorsPayload,
   ErrorsResponse,
+  ErrorStatus,
   UpdateErrorStatusPayload,
   GetErrorsPayload,
 } from '@oare/types';
@@ -20,8 +21,13 @@ async function getErrorLog(payload: GetErrorsPayload): Promise<ErrorsResponse> {
 }
 
 async function updateErrorStatus(
-  payload: UpdateErrorStatusPayload
+  uuids: string[],
+  status: ErrorStatus
 ): Promise<void> {
+  const payload: UpdateErrorStatusPayload = {
+    uuids,
+    status,
+  };
   await axios.patch('/errors', payload);
 }
 

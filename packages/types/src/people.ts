@@ -1,6 +1,4 @@
-import { EpigraphicTextWithReadings } from './epigraphies';
 import {
-  SpellingOccurrenceResponseRow,
   SpellingOccurrenceRow,
 } from './dictionary';
 import { DiscourseUnitType } from './textDiscourse';
