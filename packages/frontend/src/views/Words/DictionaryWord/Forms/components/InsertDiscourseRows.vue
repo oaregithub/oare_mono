@@ -1,5 +1,11 @@
 <template>
   <div>
+    <div class="red--text text--darken-2 font-weight-bold">
+      <span v-if="numFormOccurrences === 0"
+        >The input spelling does not exist on any forms. Please add the spelling
+        first.</span
+      >
+    </div>
     The following spelling occurrences are missing discourse information:
     <v-data-table
       v-model="selectedOccurrences"
@@ -36,7 +42,7 @@
         color="primary"
         @click="insertDiscourseRows"
         class="test-submit-btn mt-4"
-        :disabled="selectedOccurrences.length === 0"
+        :disabled="selectedOccurrences.length === 0 || numFormOccurrences === 0"
         :loading="insertDiscourseRowsLoading"
       >
         Submit
@@ -82,6 +88,10 @@ export default defineComponent({
     },
     spellingInput: {
       type: String,
+      required: true,
+    },
+    numFormOccurrences: {
+      type: Number,
       required: true,
     },
   },
