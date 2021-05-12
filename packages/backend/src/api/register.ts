@@ -21,8 +21,6 @@ router.route('/register').post(async (req, res, next) => {
       return;
     }
 
-    const passwordHash = security.hashPassword(password);
-
     const uuid = v4();
     await firebase.auth().createUser({
       uid: uuid,
@@ -36,7 +34,6 @@ router.route('/register').post(async (req, res, next) => {
       firstName,
       lastName,
       email,
-      passwordHash,
       isAdmin: false,
     });
     const user = await UserDao.getUserByEmail(email);
@@ -48,14 +45,13 @@ router.route('/register').post(async (req, res, next) => {
     req.user = user;
 
     const firebaseToken = await security.getFirebaseToken(user.uuid);
-    const cookieRes = await security.sendJwtCookie(req.ip, res, user.email);
 
     const response: RegisterResponse = {
       user,
       firebaseToken,
     };
 
-    cookieRes.status(201).json(response);
+    res.status(201).json(response);
   } catch (err) {
     next(new HttpInternalError(err));
   }

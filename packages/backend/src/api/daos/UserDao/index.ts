@@ -1,7 +1,5 @@
 import { GetUserResponse, User } from '@oare/types';
 import knex from '@/connection';
-import { Transaction } from 'knex';
-import { hashPassword } from '@/security';
 import UserGroupDao from '../UserGroupDao';
 
 class UserDao {
@@ -27,16 +25,6 @@ class UserDao {
     }
 
     return row;
-  }
-
-  async getUserPasswordHash(uuid: string): Promise<string> {
-    await this.getUserByUuid(uuid); // throw an error if the uuid does not exist
-    const { passwordHash }: { passwordHash: string } = await knex('user')
-      .select('password_hash AS passwordHash')
-      .where({ uuid })
-      .first();
-
-    return passwordHash;
   }
 
   private async getUserByColumn(
@@ -68,14 +56,12 @@ class UserDao {
     firstName,
     lastName,
     email,
-    passwordHash,
     isAdmin,
   }: {
     uuid: string;
     firstName: string;
     lastName: string;
     email: string;
-    passwordHash: string;
     isAdmin: boolean;
   }): Promise<void> {
     await knex('user').insert({
@@ -84,7 +70,6 @@ class UserDao {
       last_name: lastName,
       full_name: `${firstName} ${lastName}`,
       email,
-      password_hash: passwordHash,
       is_admin: isAdmin,
     });
   }
@@ -120,17 +105,6 @@ class UserDao {
       groups: groupObjects[index],
       isAdmin: adminStatus[index],
     }));
-  }
-
-  async updatePassword(
-    userUuid: string,
-    newPassword: string,
-    trx?: Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-    await k('user')
-      .update('password_hash', hashPassword(newPassword))
-      .where('uuid', userUuid);
   }
 }
 
