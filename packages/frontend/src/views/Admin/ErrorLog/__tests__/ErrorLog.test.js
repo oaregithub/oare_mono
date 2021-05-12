@@ -25,6 +25,7 @@ describe('ErrorLog test', () => {
       ],
       count: 1,
     }),
+    updateErrorStatus: jest.fn().mockResolvedValue(),
   };
 
   const mockGetPayload = {
@@ -229,5 +230,14 @@ describe('ErrorLog test', () => {
         desc: false,
       },
     });
+  });
+
+  it('allows status update on multiple errors', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.get('.v-data-table__checkbox').trigger('click');
+    await wrapper.get('.test-mark-as').trigger('click');
+    await wrapper.findAll('.test-status-option').at(0).trigger('click');
+    expect(mockServer.updateErrorStatus).toHaveBeenCalled();
   });
 });
