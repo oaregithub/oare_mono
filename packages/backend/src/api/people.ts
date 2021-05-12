@@ -61,9 +61,9 @@ router
       const nonWordTexts = texts.filter(text => text.type !== 'word');
       const textsWithWords = texts.filter(text => text.type === 'word');
 
-      let allTexts: Record<string, PersonOccurrenceRow> = {};
+      const allTexts: Record<string, PersonOccurrenceRow> = {};
 
-      textsWithWords.map((personText: PersonOccurrenceRow) => {
+      textsWithWords.forEach((personText: PersonOccurrenceRow) => {
         if (allTexts[personText.discourseUuid] === undefined) {
           allTexts[personText.discourseUuid] = {
             ...personText,
@@ -80,7 +80,7 @@ router
         rows: PersonOccurrenceRow[],
         rootDiscourseUuid: string
       ) => {
-        rows.map((personText: PersonOccurrenceRow) => {
+        rows.forEach((personText: PersonOccurrenceRow) => {
           if (allTexts[rootDiscourseUuid] === undefined) {
             allTexts[rootDiscourseUuid] = {
               ...personText,
@@ -113,12 +113,9 @@ router
         reduceTexts(foundWordTexts, rootDiscourseUuid);
 
         if (foundNonWordTexts.length > 0) {
-          for (let i = 0; i < foundNonWordTexts.length; i++) {
-            await getRemainingPhraseTexts(
-              foundNonWordTexts[i],
-              rootDiscourseUuid
-            );
-          }
+          foundNonWordTexts.map(async foundNonWordText => {
+            await getRemainingPhraseTexts(foundNonWordText, rootDiscourseUuid);
+          });
         }
       };
 
@@ -130,11 +127,9 @@ router
 
       const reducedTexts: PersonOccurrenceRow[] = [...Object.values(allTexts)];
 
-      const childToGetLineFrom = (row: PersonOccurrenceRow): string => {
+      const childToGetLineFrom = (row: PersonOccurrenceRow): string =>
         // Arbitrarily pick the first disourseUuid to retrieve the line number from.
-        return row.discoursesToHighlight[0];
-      };
-
+        row.discoursesToHighlight[0];
       const textsWithEpigraphicUnits = await Promise.all(
         reducedTexts.map(async text => {
           const line = await TextDiscourseDao.getEpigraphicLineOfWord(

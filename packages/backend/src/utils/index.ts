@@ -82,10 +82,8 @@ export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
     );
   });
 
-  return rows.map((r, index) => {
-    return {
-      ...r,
-      readings: readings[index],
-    };
-  });
+  return rows.map((r, index) => ({
+    ...r,
+    readings: readings[index],
+  }));
 };
