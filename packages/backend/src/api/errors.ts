@@ -51,9 +51,11 @@ router
   .patch(adminRoute, async (req, res, next) => {
     try {
       const ErrorsDao = sl.get('ErrorsDao');
-      const { uuid, status }: UpdateErrorStatusPayload = req.body;
+      const { uuids, status }: UpdateErrorStatusPayload = req.body;
 
-      await ErrorsDao.updateErrorStatus({ uuid, status });
+      await Promise.all(
+        uuids.map(uuid => ErrorsDao.updateErrorStatus(uuid, status))
+      );
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));

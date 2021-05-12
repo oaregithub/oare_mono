@@ -137,7 +137,7 @@ describe('GET /errors', () => {
 describe('PATCH /errors', () => {
   const PATH = `${API_PATH}/errors`;
   const mockUpdateErrorStatusPayload = {
-    uuid: 'testUuid',
+    uuids: ['testUuid1', 'testUuid2'],
     status: 'In Progress',
   };
   const mockErrorsDao = {
@@ -164,7 +164,7 @@ describe('PATCH /errors', () => {
 
   it('returns 204 on successful status update', async () => {
     const response = await sendRequest();
-    expect(mockErrorsDao.updateErrorStatus).toHaveBeenCalled();
+    expect(mockErrorsDao.updateErrorStatus).toHaveBeenCalledTimes(2);
     expect(response.status).toBe(204);
   });
 

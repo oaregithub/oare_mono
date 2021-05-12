@@ -47,7 +47,29 @@
             </div>
           </v-col>
           <v-col cols="10" class="pl-8">
+            <v-menu>
+              <template v-slot:activator="{ on }">
+                <v-btn
+                  v-on="on"
+                  color="info"
+                  class="ml-3 test-mark-as"
+                  :disabled="selectedErrors.length < 1"
+                  >Mark As</v-btn
+                >
+              </template>
+              <v-list>
+                <v-list-item
+                  v-for="option in statusOptions"
+                  :key="option"
+                  @click="updateMultipleStatus(option)"
+                  class="test-status-option"
+                >
+                  <v-list-item-title>{{ option }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
             <v-data-table
+              v-model="selectedErrors"
               :loading="searchLoading"
               :headers="listHeaders"
               class="mt-3 table-cursor"
@@ -59,12 +81,19 @@
                 'items-per-page-options': [10, 25, 50, 100],
               }"
               @click:row="setupDialog"
+              show-select
             >
               <template #[`item.userName`]="{ item }">
                 <span>{{ item.userName || 'No User' }}</span>
               </template>
               <template #[`item.timestamp`]="{ item }">
                 <span>{{ formatTimestamp(item.timestamp) }}</span>
+              </template>
+              <template #[`item.description`]="{ item }">
+                <span v-if="item.description.length > 80"
+                  >{{ item.description.slice(0, 80) }}... <a>See more</a></span
+                >
+                <span v-else>{{ item.description }}</span>
               </template>
               <template #[`item.stacktrace`]="{ item }">
                 <a v-if="item.stacktrace">View stacktrace</a>
@@ -92,6 +121,7 @@ import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import ErrorLogDialog from '@/views/Admin/ErrorLog/components/ErrorLogDialog.vue';
 import { DateTime } from 'luxon';
+import { resetAdminBadge } from '@/utils';
 
 export default defineComponent({
   components: {
@@ -119,6 +149,7 @@ export default defineComponent({
     ]);
 
     const errorList: Ref<ErrorsRowWithUser[]> = ref([]);
+    const selectedErrors: Ref<ErrorsRowWithUser[]> = ref([]);
     const dialogError: Ref<Partial<ErrorsRowWithUser>> = ref({});
     const serverCount = ref(0);
 
@@ -199,6 +230,31 @@ export default defineComponent({
       dialogError.value.status = status;
     };
 
+    const updateMultipleStatus = async (status: ErrorStatus) => {
+      try {
+        const selectedErrorUuids = selectedErrors.value.map(
+          error => error.uuid
+        );
+        await server.updateErrorStatus(selectedErrorUuids, status);
+        errorList.value = errorList.value.map(error => {
+          if (selectedErrors.value.includes(error)) {
+            return {
+              ...error,
+              status,
+            };
+          } else {
+            return error;
+          }
+        });
+        selectedErrors.value = [];
+        await resetAdminBadge();
+      } catch {
+        actions.showErrorSnackbar(
+          'Error updating error status. Please try again.'
+        );
+      }
+    };
+
     watch(searchOptions, async () => {
       try {
         setPage(String(searchOptions.value.page));
@@ -257,6 +313,8 @@ export default defineComponent({
       setupDialog,
       updateStatus,
       statusOptions,
+      selectedErrors,
+      updateMultipleStatus,
     };
   },
 });
