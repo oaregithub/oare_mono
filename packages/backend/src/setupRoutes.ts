@@ -14,7 +14,6 @@ import textGroups from './api/text_groups';
 import textDrafts from './api/text_drafts';
 import collections from './api/collections';
 import collectionInfo from './api/collection_info';
-import logout from './api/logout';
 import permissions from './api/permissions';
 import publicBlacklist from './api/public_blacklist';
 import searchNames from './api/search_names';
@@ -44,7 +43,6 @@ export default (app: Express) => {
   app.use(API_PATH, textDrafts);
   app.use(API_PATH, collections);
   app.use(API_PATH, collectionInfo);
-  app.use(API_PATH, logout);
   app.use(API_PATH, permissions);
   app.use(API_PATH, publicBlacklist);
   app.use(API_PATH, searchNames);
