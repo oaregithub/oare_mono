@@ -146,6 +146,23 @@ class DictionaryWordDao {
     const letters = letter.split('/');
     let query = knex('dictionary_word').select('uuid', 'word');
 
+    letters.forEach(possibleVowel => {
+      switch (possibleVowel) {
+        case 'a':
+          return letters.push('ā');
+        case 'e':
+          return letters.push('ē');
+        case 'i':
+          return letters.push('ī');
+        case 'o':
+          return letters.push('ō');
+        case 'u':
+          return letters.push('ū');
+        default:
+          return letters;
+      }
+    });
+
     letters.forEach(l => {
       query = query.orWhere('word', 'like', `${l}%`);
     });
