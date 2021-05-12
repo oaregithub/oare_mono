@@ -1,6 +1,4 @@
-import {
-  SpellingOccurrenceRow,
-} from './dictionary';
+import { SpellingOccurrenceRow } from './dictionary';
 import { DiscourseUnitType } from './textDiscourse';
 
 export interface PersonDisplay {
