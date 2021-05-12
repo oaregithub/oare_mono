@@ -238,6 +238,23 @@ class DictionaryWordDao {
     // REGEX = Starts with open parenthesis followed by upperCase 'letter' OR just starts with upperCase 'letter'
     const letters = letter.split('/');
 
+    letters.forEach(possibleVowel => {
+      switch (possibleVowel) {
+        case 'a':
+          return letters.push('ā');
+        case 'e':
+          return letters.push('ē');
+        case 'i':
+          return letters.push('ī');
+        case 'o':
+          return letters.push('ō');
+        case 'u':
+          return letters.push('ū');
+        default:
+          return letters;
+      }
+    });
+
     let andWhere = '';
     letters.forEach((l: string, index: number) => {
       andWhere += `dw.word REGEXP '^[(]${l.toUpperCase()}|^[${l.toUpperCase()}]|^[(]${l.toLowerCase()}|^[${l.toLowerCase()}]]'`;
