@@ -86,10 +86,7 @@ export default defineComponent({
     const updateStatus = async (status: ErrorStatus) => {
       try {
         emit('update-status', status);
-        await server.updateErrorStatus({
-          uuid: error.uuid,
-          status: error.status,
-        });
+        await server.updateErrorStatus([error.uuid], error.status);
         await resetAdminBadge();
       } catch {
         actions.showErrorSnackbar(

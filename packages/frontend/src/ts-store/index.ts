@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueCompositionAPI, { reactive } from '@vue/composition-api';
 import { User, PermissionItem, AdminBadgeOptions } from '@oare/types';
+import firebase from '@/firebase';
 
 Vue.use(VueCompositionAPI);
 
@@ -10,6 +11,7 @@ export interface State {
   permissions: PermissionItem[];
   displayAdminBadge: AdminBadgeOptions;
   idToken: string | null;
+  tokenExpiration: number | null;
 }
 
 const state: State = reactive({
@@ -21,6 +23,7 @@ const state: State = reactive({
     comments: false,
   },
   idToken: null,
+  tokenExpiration: null,
 });
 
 export default {
@@ -30,13 +33,17 @@ export default {
   setLanded: (landed: boolean) => {
     state.landed = landed;
   },
-  setIdToken: (idToken: string) => {
-    state.idToken = idToken;
+  setToken: (
+    token: Pick<firebase.auth.IdTokenResult, 'token' | 'expirationTime'>
+  ) => {
+    state.idToken = token.token;
+    state.tokenExpiration = new Date(token.expirationTime).getTime();
   },
   logout: () => {
     state.user = null;
     state.permissions = [];
     state.idToken = null;
+    state.tokenExpiration = null;
   },
   setPermissions: (permissions: PermissionItem[]) => {
     state.permissions = permissions;
@@ -65,6 +72,14 @@ export default {
     },
     get idToken() {
       return state.idToken;
+    },
+    get isTokenValid() {
+      if (!state.idToken || !state.tokenExpiration) {
+        return false;
+      }
+
+      // Will cause refresh within 5 minutes of token expiring
+      return state.tokenExpiration - 5 * 60 * 1000 >= new Date().getTime();
     },
   },
 };

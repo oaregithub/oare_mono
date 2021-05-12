@@ -89,13 +89,15 @@ export default defineComponent({
     const lineNumber = (line: number): string =>
       renderer.value.isRegion(line) ? '' : `${line}.`;
 
-    const openDialog = async (discourseUuid: string) => {
+    const openDialog = async (discourseUuid: string | null) => {
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
-        discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-          discourseUuid
-        );
+        if (discourseUuid) {
+          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+            discourseUuid
+          );
+        }
         actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;

@@ -99,7 +99,12 @@
               }}</router-link>
             </template>
             <template #[`item.form`]="{ item }">
-              {{ `${item.form.form} (${formGrammarString(item.form)})` }}
+              <mark v-if="item.form.uuid === form.uuid">{{
+                `${item.form.form} (${formGrammarString(item.form)})`
+              }}</mark>
+              <span v-else>{{
+                `${item.form.form} (${formGrammarString(item.form)})`
+              }}</span>
             </template>
           </v-data-table>
         </v-col>
@@ -110,6 +115,7 @@
             :form="form"
             :spelling="spelling"
             :spellingInput="spellingInput"
+            :numFormOccurrences="spellingSearchResults.length"
           />
           <spelling-dialog
             v-if="!inDiscourseMode"
