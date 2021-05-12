@@ -18,7 +18,7 @@ export interface ErrorsRow {
 export type ErrorStatus = 'New' | 'In Progress' | 'Resolved';
 
 export interface UpdateErrorStatusPayload {
-  uuid: string;
+  uuids: string[];
   status: ErrorStatus;
 }
 
