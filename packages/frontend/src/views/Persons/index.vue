@@ -43,7 +43,9 @@
             (No count found, please update the database)
           </span>
           <span>
-            (<a @click="displayPersonOccurrencesDialog"
+            (<a
+              @click="displaysTextOccurrenceDialog(personInfo)"
+              class="test-text-occurrences"
               >{{
                 personInfo.textOccurrenceCount !== null
                   ? personInfo.textOccurrenceCount
@@ -79,6 +81,16 @@
     >
       <span class="white--text">No results found </span>
     </div>
+
+    <text-occurrences
+      v-model="displayTextOccurrences"
+      class="test-text-occurrences-display"
+      :title="selectedPersonTitle()"
+      :uuid="selectedPerson.uuid"
+      :totalTextOccurrences="selectedPersonTextOccurrenceCount()"
+      :getTexts="server.getPersonTextOccurrences"
+      :manualPagination="true"
+    ></text-occurrences>
   </OareContentView>
 </template>
 
@@ -91,13 +103,15 @@ import {
   watch,
 } from '@vue/composition-api';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
-import { PersonDisplay } from '@oare/types';
+import { Pagination, PersonDisplay } from '@oare/types';
 import sl from '@/serviceLocator';
+import TextOccurrences from '@/views/Words/DictionaryWord/Forms/components/TextOccurrences.vue';
 
 export default defineComponent({
   name: 'PersonsView',
   components: {
     LetterFilter,
+    TextOccurrences,
   },
   props: {
     letter: {
@@ -113,6 +127,22 @@ export default defineComponent({
     const loading = ref(false);
     const personList = ref<PersonDisplay[]>([]);
     const filteredPersonList = ref<PersonDisplay[]>([]);
+    const selectedPerson = ref<PersonDisplay>({
+      uuid: '',
+      word: '',
+      personNameUuid: null,
+      person: null,
+      relation: null,
+      relationPerson: null,
+      relationPersonUuid: null,
+      label: '',
+      topValueRole: null,
+      topVariableRole: null,
+      roleObjUuid: null,
+      roleObjPerson: null,
+      textOccurrenceCount: null,
+    });
+    const displayTextOccurrences = ref(false);
 
     const searchFilter = (search: string, personDisplay: PersonDisplay) => {
       const lowerSearch = search ? search.toLowerCase() : '';
@@ -181,8 +211,29 @@ export default defineComponent({
       return `${personDisplay.topVariableRole} of ${personDisplay.roleObjPerson}`;
     };
 
-    const displayPersonOccurrencesDialog = () => {
-      actions.showSnackbar('This will display occurrences at a later date.');
+    const displaysTextOccurrenceDialog = (personDisplay: PersonDisplay) => {
+      selectedPerson.value = personDisplay;
+      displayTextOccurrences.value = true;
+    };
+
+    const selectedPersonTitle = (): string => {
+      let title = '';
+      if (
+        hasPerson(selectedPerson.value) &&
+        hasRelationPerson(selectedPerson.value)
+      ) {
+        title = `${selectedPerson.value.person} ${selectedPerson.value.relation} ${selectedPerson.value.relationPerson}`;
+      } else {
+        title = selectedPerson.value.label;
+      }
+
+      return title;
+    };
+
+    const selectedPersonTextOccurrenceCount = (): number => {
+      return selectedPerson.value.textOccurrenceCount !== null
+        ? selectedPerson.value.textOccurrenceCount
+        : 0;
     };
 
     const isAdmin = computed(() => store.getters.isAdmin);
@@ -199,17 +250,22 @@ export default defineComponent({
     return {
       getFilteredPeople,
       searchFilter,
-      displayPersonOccurrencesDialog,
       hasPerson,
       hasRelationPerson,
       hasValueRole,
       hasVariableRole,
       hasObjUuid,
       displayVariableRole,
+      displaysTextOccurrenceDialog,
+      selectedPersonTitle,
+      selectedPersonTextOccurrenceCount,
       loading,
       personList,
       filteredPersonList,
       isAdmin,
+      server,
+      displayTextOccurrences,
+      selectedPerson,
     };
   },
 });

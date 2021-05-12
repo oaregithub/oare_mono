@@ -1,4 +1,4 @@
-import { PersonDisplay } from '@oare/types';
+import { Pagination, PersonDisplay } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getPeople(letter: string): Promise<PersonDisplay[]> {
@@ -6,6 +6,20 @@ async function getPeople(letter: string): Promise<PersonDisplay[]> {
   return data;
 }
 
+async function getPersonTextOccurrences(
+  uuid: string,
+  pagination: Pagination
+): Promise<PersonDisplay[]> {
+  const { data } = await axios.get(
+    `/people/person/${encodeURIComponent(uuid)}/texts`,
+    {
+      params: pagination,
+    }
+  );
+  return data;
+}
+
 export default {
   getPeople,
+  getPersonTextOccurrences,
 };
