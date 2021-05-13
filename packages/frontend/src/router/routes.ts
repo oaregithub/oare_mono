@@ -76,9 +76,6 @@ const routes: RouteConfig[] = [
         component: BlacklistCollections,
       },
     ],
-    meta: {
-      admin: true,
-    },
   },
   {
     path: '/admin/errors',
@@ -179,9 +176,6 @@ const routes: RouteConfig[] = [
         component: ManagePermissions,
       },
     ],
-    meta: {
-      admin: true,
-    },
   },
   {
     path: '/addgrouptexts/:groupId',
@@ -220,6 +214,7 @@ const routes: RouteConfig[] = [
     name: 'dictionaryWord',
     component: DictionaryWord,
     props: true,
+    beforeEnter: permissionGuard('WORDS'),
   },
   {
     path: '/search',
