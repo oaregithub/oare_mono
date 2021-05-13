@@ -174,3 +174,19 @@ export function convertMarkedUpUnitsToEpigraphicWords(
     })),
   }));
 }
+
+export function formatLineNumber(lineNum: number): string {
+  let lineNumber = '';
+  if (Number.isInteger(lineNum)) {
+    lineNumber = `${lineNum}.`;
+  } else {
+    const numAsString = String(lineNum);
+    lineNumber = numAsString.slice(0, numAsString.indexOf('.'));
+    const decimalPlaces = numAsString.slice(numAsString.indexOf('.'));
+    const numHyphens = Number(decimalPlaces) * 100;
+    for (let i = 0; i < numHyphens; i += 1) {
+      lineNumber += "'";
+    }
+  }
+  return lineNumber;
+}
