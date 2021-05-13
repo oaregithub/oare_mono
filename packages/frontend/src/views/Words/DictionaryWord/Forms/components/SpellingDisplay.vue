@@ -30,6 +30,7 @@
 
     <text-occurrences
       v-model="addSpellingDialog"
+      class="test-text-occurrences-display"
       :title="spelling.spelling"
       :uuid="spelling.uuid"
       :totalTextOccurrences="totalOccurrences"
