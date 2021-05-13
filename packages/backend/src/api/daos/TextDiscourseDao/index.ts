@@ -339,8 +339,7 @@ class TextDiscourseDao {
   }
 
   async getChildrenByParentUuid(
-    phraseUuid: string,
-    { filter }: Partial<Pagination> = {}
+    phraseUuid: string
   ): Promise<PersonOccurrenceRow[]> {
     const wordTexts = await knex('text_discourse')
       .select(
@@ -351,12 +350,7 @@ class TextDiscourseDao {
         'text_discourse.text_uuid AS textUuid'
       )
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
-      .where('text_discourse.parent_uuid', phraseUuid)
-      .modify(qb => {
-        if (filter) {
-          qb.andWhere('text.name', 'like', `%${filter}%`);
-        }
-      });
+      .where('text_discourse.parent_uuid', phraseUuid);
 
     return wordTexts;
   }

@@ -1,8 +1,4 @@
-import { EpigraphicTextWithReadings } from './epigraphies';
-import {
-  SpellingOccurrenceResponseRow,
-  SpellingOccurrenceRow,
-} from './dictionary';
+import { SpellingOccurrenceRow } from './dictionary';
 import { DiscourseUnitType } from './textDiscourse';
 
 export interface PersonDisplay {
@@ -24,4 +20,5 @@ export interface PersonDisplay {
 
 export interface PersonOccurrenceRow extends SpellingOccurrenceRow {
   type: DiscourseUnitType;
+  discoursesToHighlight: string[];
 }
