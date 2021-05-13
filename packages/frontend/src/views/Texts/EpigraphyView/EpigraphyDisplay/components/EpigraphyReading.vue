@@ -10,7 +10,7 @@
           :key="lineNum"
           class="oare-title d-flex"
         >
-          <sup class="line-num pt-3">{{ lineNumber(lineNum) }}&nbsp;</sup>
+          <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
           <span
             v-if="renderer.isRegion(lineNum)"
             v-html="renderer.lineReading(lineNum)"
@@ -59,6 +59,7 @@ import { createTabletRenderer } from '@oare/oare';
 import { DictionaryWordResponse, EpigraphicUnit } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/views/Words/DictionaryWord/index.vue';
+import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
   name: 'EpigraphyReading',
@@ -86,8 +87,14 @@ export default defineComponent({
       });
     });
 
-    const lineNumber = (line: number): string =>
-      renderer.value.isRegion(line) ? '' : `${line}.`;
+    const lineNumber = (line: number): string => {
+      if (renderer.value.isRegion(line)) {
+        return '';
+      }
+
+      const lineNumber = formatLineNumber(line);
+      return lineNumber;
+    };
 
     const openDialog = async (discourseUuid: string | null) => {
       try {
