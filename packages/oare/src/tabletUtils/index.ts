@@ -185,7 +185,7 @@ export function formatLineNumber(lineNum: number): string {
     const decimalPlaces = numAsString.slice(numAsString.indexOf('.'));
     const numHyphens = Number(decimalPlaces) * 100;
     for (let i = 0; i < numHyphens; i += 1) {
-      lineNumber += '-';
+      lineNumber += "'";
     }
   }
   return lineNumber;

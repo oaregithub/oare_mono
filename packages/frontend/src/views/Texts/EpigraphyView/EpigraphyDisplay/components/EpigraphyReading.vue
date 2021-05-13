@@ -10,7 +10,7 @@
           :key="lineNum"
           class="oare-title d-flex"
         >
-          <sup class="line-num pt-3">{{ lineNumber(lineNum) }}&nbsp;</sup>
+          <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
           <span
             v-if="renderer.isRegion(lineNum)"
             v-html="renderer.lineReading(lineNum)"
