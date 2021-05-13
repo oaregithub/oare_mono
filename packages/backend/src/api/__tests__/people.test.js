@@ -105,7 +105,6 @@ describe('people api test', () => {
   const mockUtils = {
     extractPagination: utils.extractPagination,
     getTextOccurrences: jest.fn().mockResolvedValue(renderedTextsOfPerson),
-    manualPagination: utils.manualPagination,
   };
 
   const mockTextDiscourseDao = {

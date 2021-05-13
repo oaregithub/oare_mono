@@ -986,6 +986,7 @@ describe('dictionary api test', () => {
 
     const textOccurrencesSetup = () => {
       sl.set('TextDiscourseDao', TextDiscourseDao);
+      sl.set('utils', utils);
     };
 
     beforeEach(textOccurrencesSetup);

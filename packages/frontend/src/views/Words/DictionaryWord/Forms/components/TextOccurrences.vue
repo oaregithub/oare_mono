@@ -5,7 +5,7 @@
     :showSubmit="false"
     cancelText="Close"
     :persistent="false"
-    @input="$emit('input', $event)"
+    @input="clearValues"
   >
     <v-row>
       <v-col cols="12" sm="6" class="py-0">
@@ -17,7 +17,7 @@
       :items="textOccurrences"
       :search="search"
       :loading="referencesLoading"
-      :server-items-length="totalTextOccurrences"
+      :server-items-length="allTextOccurrencesLength"
       :options.sync="tableOptions"
       :footer-props="{
         'items-per-page-options': [10, 25, 50, 100],
@@ -63,14 +63,21 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    totalTextOccurrences: {
-      type: Number,
-      required: true,
-    },
     getTexts: {
       type: Function as PropType<
         (uuid: string, request: Pagination) => SpellingOccurrenceResponseRow[]
       >,
+      required: true,
+    },
+    // Only needed when paginating on the backend
+    getTextsCount: {
+      type: Function as PropType<
+        (uuid: string, filter: Partial<Pagination>) => number
+      >,
+      required: false,
+    },
+    totalTextOccurrences: {
+      type: Number,
       required: true,
     },
     value: {
@@ -86,13 +93,13 @@ export default defineComponent({
       default: false,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const search = ref('');
-    const prevSearch = ref('');
     const override = ref(false);
     const allTextOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
+    const allTextOccurrencesLength = ref(props.totalTextOccurrences);
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
     const headers: DataTableHeader[] = reactive([
       {
@@ -134,6 +141,9 @@ export default defineComponent({
             ...(search.value ? { filter: search.value } : null),
           });
           textOccurrences.value = allTextOccurrences.value;
+          if (props.manualPagination) {
+            setTextOccurrenceManualPaginationLength();
+          }
         }
 
         if (props.manualPagination) {
@@ -152,35 +162,58 @@ export default defineComponent({
       override.value = false;
     };
 
+    const setTextOccurrenceManualPaginationLength = () => {
+      allTextOccurrencesLength.value =
+        search.value === ''
+          ? props.totalTextOccurrences
+          : allTextOccurrences.value.length;
+    };
+
     const manuallyPaginate = (values: any[]): any[] => {
-      return values.slice(
+      const updatedValues = values.slice(
         (tableOptions.value.page - pageSize) * tableOptions.value.itemsPerPage,
         tableOptions.value.page * tableOptions.value.itemsPerPage
       );
+
+      tableOptions.value.page = 1;
+      return updatedValues;
     };
 
-    watch(() => props.uuid, getReferencesOverride, { immediate: false });
+    const clearValues = () => {
+      search.value = '';
+      tableOptions.value.page = 1;
+      tableOptions.value.itemsPerPage = 10;
+      emit('input');
+    };
+
+    watch(() => props.uuid, getReferencesOverride);
 
     watch(tableOptions, getReferences);
 
     watch(
       search,
       _.debounce(async () => {
-        if (prevSearch.value !== search.value) {
-          prevSearch.value = search.value;
-          override.value = true;
+        if (!props.manualPagination && props.getTextsCount) {
+          allTextOccurrencesLength.value = await props.getTextsCount(
+            props.uuid,
+            {
+              filter: search.value,
+            }
+          );
         }
-        await getReferences();
-        override.value = false;
+        await getReferencesOverride();
       }, 500)
     );
 
     return {
       search,
       textOccurrences,
+      allTextOccurrencesLength,
+      allTextOccurrences,
       headers,
       referencesLoading,
       tableOptions,
+      clearValues,
     };
   },
 });

@@ -183,6 +183,11 @@ class TextDiscourseDao {
       spellingUuid,
       pagination
     )
+      .modify(qb => {
+        if (pagination.filter) {
+          qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
+        }
+      })
       .count({ count: 'text_discourse.uuid' })
       .first();
 

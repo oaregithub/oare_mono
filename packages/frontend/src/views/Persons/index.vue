@@ -37,16 +37,20 @@
           </span>
 
           <span
-            v-if="personInfo.textOccurrenceCount === null && isAdmin"
+            v-if="
+              (personInfo.textOccurrenceCount === null ||
+                personInfo.textOccurrenceDistinctCount === null) &&
+              isAdmin
+            "
             class="error--text"
           >
             (No count found, please update the database)
           </span>
           <span>
-            (<a
+            <a
               @click="displaysTextOccurrenceDialog(personInfo)"
               class="test-text-occurrences"
-              >{{ displayTextOccurrenceCount(personInfo) }})</a
+              >{{ displayTextOccurrenceCount(personInfo) }}</a
             >
           </span>
         </v-col>
@@ -214,19 +218,11 @@ export default defineComponent({
     };
 
     const displayTextOccurrenceCount = (personDisplay: PersonDisplay) => {
-      let count = '';
-      count +=
-        personDisplay.textOccurrenceCount !== null
-          ? personDisplay.textOccurrenceCount
-          : 0;
-
+      let count = '(';
+      count += personDisplay.textOccurrenceCount || 0;
       count += '/';
-
-      count +=
-        personDisplay.textOccurrenceDistinctCount !== null
-          ? personDisplay.textOccurrenceDistinctCount
-          : 0;
-
+      count += personDisplay.textOccurrenceDistinctCount || 0;
+      count += ')';
       return count;
     };
 
@@ -241,7 +237,7 @@ export default defineComponent({
         title = selectedPerson.value.label;
       }
 
-      title += ' (' + displayTextOccurrenceCount(selectedPerson.value) + ')';
+      title += displayTextOccurrenceCount(selectedPerson.value);
 
       return title;
     };
@@ -274,8 +270,8 @@ export default defineComponent({
       displayVariableRole,
       displaysTextOccurrenceDialog,
       selectedPersonTitle,
-      selectedPersonTextOccurrenceCount,
       displayTextOccurrenceCount,
+      selectedPersonTextOccurrenceCount,
       loading,
       personList,
       filteredPersonList,
