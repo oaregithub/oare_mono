@@ -175,10 +175,13 @@ export function convertMarkedUpUnitsToEpigraphicWords(
   }));
 }
 
-export function formatLineNumber(lineNum: number): string {
+export function formatLineNumber(
+  lineNum: number,
+  includePeriod = true
+): string {
   let lineNumber = '';
   if (Number.isInteger(lineNum)) {
-    lineNumber = `${lineNum}.`;
+    lineNumber = `${lineNum}${includePeriod ? '.' : ''}`;
   } else {
     const numAsString = String(lineNum);
     lineNumber = numAsString.slice(0, numAsString.indexOf('.'));
