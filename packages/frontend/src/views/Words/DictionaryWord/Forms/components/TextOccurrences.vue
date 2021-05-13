@@ -19,6 +19,9 @@
       :loading="referencesLoading"
       :server-items-length="totalTextOccurrences"
       :options.sync="tableOptions"
+      :footer-props="{
+        'items-per-page-options': [10, 25, 50, 100],
+      }"
     >
       <template #[`item.text`]="{ item }">
         <router-link :to="`/epigraphies/${item.textUuid}`" class="test-text">{{
