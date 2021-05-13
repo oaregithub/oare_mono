@@ -2,7 +2,7 @@
   <div>
     <p class="mt-5 oare-title font-weight-regular">
       <span v-for="line in discourseRenderer.lines" :key="line" class="mr-1">
-        <sup>{{ line }})</sup
+        <sup>{{ formatLineNumber(line, false) }})</sup
         ><span v-html="discourseRenderer.lineReading(line)" />
       </span>
     </p>
@@ -29,6 +29,7 @@
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { DiscourseUnit } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
+import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
   props: {
@@ -91,6 +92,7 @@ export default defineComponent({
       discourseRenderer,
       discourseColor,
       discourseReading,
+      formatLineNumber,
     };
   },
 });

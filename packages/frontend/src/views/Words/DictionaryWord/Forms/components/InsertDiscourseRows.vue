@@ -23,6 +23,9 @@
           item.textName
         }}</router-link>
       </template>
+      <template #[`item.line`]="{ item }">
+        <span>{{ formatLineNumber(item.line, false) }}</span>
+      </template>
       <template #[`item.reading`]="{ item }">
         <span v-html="item.reading"></span>
       </template>
@@ -70,6 +73,7 @@ import useQueryParam from '@/hooks/useQueryParam';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import { ReloadKey } from '../../index.vue';
 import sl from '@/serviceLocator';
+import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
   name: 'InsertDiscourseRows',
@@ -238,6 +242,7 @@ export default defineComponent({
       insertDiscourseRows,
       searchNullCountLoading,
       insertDiscourseRowsLoading,
+      formatLineNumber,
     };
   },
 });

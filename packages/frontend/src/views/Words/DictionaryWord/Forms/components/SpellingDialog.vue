@@ -28,6 +28,9 @@
           item.textName
         }}</router-link>
       </template>
+      <template #[`item.line`]="{ item }">
+        <span>{{ formatLineNumber(item.line, false) }}</span>
+      </template>
       <template #[`item.readings`]="{ item }">
         <span v-html="renderedReading(item)" />
       </template>
@@ -75,6 +78,7 @@ import { DataTableHeader } from 'vuetify';
 import utils from '@/utils';
 import { ReloadKey } from '../../index.vue';
 import { spellingHtmlReading } from '@oare/oare';
+import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
   name: 'SpellingDialog',
@@ -320,6 +324,7 @@ export default defineComponent({
       spellingErrors,
       hasError,
       spellingHtmlReading,
+      formatLineNumber,
     };
   },
 });
