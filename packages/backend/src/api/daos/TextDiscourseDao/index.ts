@@ -213,7 +213,7 @@ class TextDiscourseDao {
       )
       .orderBy('text.name')
       .limit(limit)
-      .offset(page * limit);
+      .offset((page - 1) * limit);
 
     const rows: SpellingOccurrenceRow[] = await query;
     return rows;
@@ -320,27 +320,68 @@ class TextDiscourseDao {
     await TextEpigraphyDao.addDiscourseUuid(epigraphyUuids, discourseUuid);
   }
 
-  async getPersonTextsByItemPropertyReferenceUuids(
+  private getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
     textDiscourseUuids: string[],
-    { filter }: Partial<Pagination> = {}
-  ): Promise<PersonOccurrenceRow[]> {
-    const texts = await knex('text_discourse')
-      .select(
-        'text_discourse.uuid AS discourseUuid',
-        'text_discourse.type',
-        'text.name AS textName',
-        'text_discourse.word_on_tablet AS wordOnTablet',
-        'text_discourse.text_uuid AS textUuid'
-      )
+    { page, limit, filter }: Pagination
+  ) {
+    return knex('text_discourse')
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
       .whereIn('text_discourse.uuid', textDiscourseUuids)
       .modify(qb => {
         if (filter) {
           qb.andWhere('text.name', 'like', `%${filter}%`);
         }
+
+        if (page && limit) {
+          qb.limit(limit).offset((page - 1) * limit);
+        }
       });
+  }
+
+  async getPersonTextsByItemPropertyReferenceUuids(
+    textDiscourseUuids: string[],
+    pagination: Pagination
+  ): Promise<PersonOccurrenceRow[]> {
+    const texts = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
+      textDiscourseUuids,
+      pagination
+    ).select(
+      'text_discourse.uuid AS discourseUuid',
+      'text_discourse.type',
+      'text.name AS textName',
+      'text_discourse.word_on_tablet AS wordOnTablet',
+      'text_discourse.text_uuid AS textUuid'
+    );
 
     return texts;
+  }
+
+  async getPersonTextsByItemPropertyReferenceUuidsCount(
+    textDiscourseUuids: string[],
+    pagination: Pagination
+  ): Promise<number> {
+    const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
+      textDiscourseUuids,
+      pagination
+    )
+      .count({ count: 'text_discourse.uuid' })
+      .first();
+
+    return total ? Number(total.count) : 0;
+  }
+
+  async getPersonTextsByItemPropertyReferenceUuidsDistinctCount(
+    textDiscourseUuids: string[],
+    pagination: Pagination
+  ): Promise<number> {
+    const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
+      textDiscourseUuids,
+      pagination
+    )
+      .count({ count: 'text_discourse.text_uuid' })
+      .first();
+
+    return total ? Number(total.count) : 0;
   }
 
   async getChildrenByParentUuid(

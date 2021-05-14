@@ -41,6 +41,30 @@ router
   });
 
 router
+  .route('/people/person/:uuid/occurrences')
+  .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
+    try {
+      const utils = sl.get('utils');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const { uuid } = req.params;
+      const pagination = utils.extractPagination(req.query);
+
+      const uniqueReferenceUuids = await ItemPropertiesDao.getUniqueReferenceUuidOfPerson(
+        uuid
+      );
+      const count = await TextDiscourseDao.getPersonTextsByItemPropertyReferenceUuidsCount(
+        uniqueReferenceUuids,
+        pagination
+      );
+
+      res.json(count);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
   .route('/people/person/:uuid/texts')
   .get(permissionsRoute('PEOPLE'), async (req, res, next) => {
     try {

@@ -36,7 +36,6 @@
       :totalTextOccurrences="totalOccurrences"
       :getTexts="server.getSpellingTextOccurrences"
       :get-texts-count="server.getSpellingTotalOccurrences"
-      :default-page-size="false"
     >
     </text-occurrences>
   </span>

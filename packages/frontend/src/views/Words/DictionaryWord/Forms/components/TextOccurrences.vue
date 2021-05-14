@@ -17,7 +17,7 @@
       :items="textOccurrences"
       :search="search"
       :loading="referencesLoading"
-      :server-items-length="allTextOccurrencesLength"
+      :server-items-length="textOccurrencesLength"
       :options.sync="tableOptions"
       :footer-props="{
         'items-per-page-options': [10, 25, 50, 100],
@@ -42,6 +42,7 @@
 
 <script lang="ts">
 import {
+  computed,
   defineComponent,
   onMounted,
   PropType,
@@ -69,12 +70,11 @@ export default defineComponent({
       >,
       required: true,
     },
-    // Only needed when paginating on the backend
     getTextsCount: {
       type: Function as PropType<
         (uuid: string, filter: Partial<Pagination>) => number
       >,
-      required: false,
+      required: true,
     },
     totalTextOccurrences: {
       type: Number,
@@ -84,22 +84,12 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    defaultPageSize: {
-      type: Boolean,
-      default: true,
-    },
-    manualPagination: {
-      type: Boolean,
-      default: false,
-    },
   },
   setup(props, { emit }) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const search = ref('');
-    const override = ref(false);
-    const allTextOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
-    const allTextOccurrencesLength = ref(props.totalTextOccurrences);
+    const textOccurrencesLength = ref(0);
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
     const headers: DataTableHeader[] = reactive([
       {
@@ -118,37 +108,15 @@ export default defineComponent({
       itemsPerPage: 10,
     });
 
-    const pageSize = props.defaultPageSize
-      ? tableOptions.value.page
-      : tableOptions.value.page - 1;
-
-    const canRetrievedAllData = (): boolean => {
-      return (
-        !props.manualPagination ||
-        (props.manualPagination && textOccurrences.value.length === 0)
-      );
-    };
-
+    // TODO: Something isn't updating correctly here, sometimes it works, most of the time it doesn't. Weird.
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        if (canRetrievedAllData() || override.value) {
-          allTextOccurrences.value = await props.getTexts(props.uuid, {
-            page: props.defaultPageSize
-              ? tableOptions.value.page
-              : tableOptions.value.page - 1,
-            limit: tableOptions.value.itemsPerPage,
-            ...(search.value ? { filter: search.value } : null),
-          });
-          textOccurrences.value = allTextOccurrences.value;
-          if (props.manualPagination) {
-            setTextOccurrenceManualPaginationLength();
-          }
-        }
-
-        if (props.manualPagination) {
-          textOccurrences.value = manuallyPaginate(allTextOccurrences.value);
-        }
+        textOccurrences.value = await props.getTexts(props.uuid, {
+          page: tableOptions.value.page,
+          limit: tableOptions.value.itemsPerPage,
+          ...(search.value ? { filter: search.value } : null),
+        });
       } catch {
         actions.showErrorSnackbar('Failed to load text occurrences');
       } finally {
@@ -156,60 +124,46 @@ export default defineComponent({
       }
     };
 
-    const getReferencesOverride = async () => {
-      override.value = true;
-      await getReferences();
-      override.value = false;
-    };
-
-    const setTextOccurrenceManualPaginationLength = () => {
-      allTextOccurrencesLength.value =
-        search.value === ''
-          ? props.totalTextOccurrences
-          : allTextOccurrences.value.length;
-    };
-
-    const manuallyPaginate = (values: any[]): any[] => {
-      const updatedValues = values.slice(
-        (tableOptions.value.page - pageSize) * tableOptions.value.itemsPerPage,
-        tableOptions.value.page * tableOptions.value.itemsPerPage
-      );
-
-      tableOptions.value.page = 1;
-      return updatedValues;
-    };
-
     const clearValues = () => {
       search.value = '';
       tableOptions.value.page = 1;
       tableOptions.value.itemsPerPage = 10;
+      textOccurrences.value = [];
+      textOccurrencesLength.value = 0;
       emit('input');
     };
 
-    watch(() => props.uuid, getReferencesOverride);
+    watch(
+      () => props.uuid,
+      async () => {
+        await getReferences();
+      }
+    );
 
     watch(tableOptions, getReferences);
 
     watch(
       search,
       _.debounce(async () => {
-        if (!props.manualPagination && props.getTextsCount) {
-          allTextOccurrencesLength.value = await props.getTextsCount(
-            props.uuid,
-            {
-              filter: search.value,
-            }
-          );
-        }
-        await getReferencesOverride();
+        textOccurrencesLength.value = await props.getTextsCount(props.uuid, {
+          filter: search.value,
+        });
+        tableOptions.value.page = 1;
+        await getReferences();
       }, 500)
+    );
+
+    watch(
+      () => props.totalTextOccurrences,
+      () => {
+        textOccurrencesLength.value = props.totalTextOccurrences;
+      }
     );
 
     return {
       search,
       textOccurrences,
-      allTextOccurrencesLength,
-      allTextOccurrences,
+      textOccurrencesLength,
       headers,
       referencesLoading,
       tableOptions,

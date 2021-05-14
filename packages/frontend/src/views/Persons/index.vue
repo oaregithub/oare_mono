@@ -89,7 +89,7 @@
       :uuid="selectedPerson.uuid"
       :totalTextOccurrences="selectedPersonTextOccurrenceCount()"
       :getTexts="server.getPersonTextOccurrences"
-      :manualPagination="true"
+      :get-texts-count="server.getPersonTextOccurrencesCount"
     ></text-occurrences>
   </OareContentView>
 </template>

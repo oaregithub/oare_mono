@@ -19,7 +19,21 @@ async function getPersonTextOccurrences(
   return data;
 }
 
+async function getPersonTextOccurrencesCount(
+  uuid: string,
+  pagination: Pagination
+): Promise<number> {
+  const { data } = await axios.get(
+    `/people/person/${encodeURIComponent(uuid)}/occurrences`,
+    {
+      params: pagination,
+    }
+  );
+  return data;
+}
+
 export default {
   getPeople,
   getPersonTextOccurrences,
+  getPersonTextOccurrencesCount,
 };
