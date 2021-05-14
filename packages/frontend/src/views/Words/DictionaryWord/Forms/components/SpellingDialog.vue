@@ -100,7 +100,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');

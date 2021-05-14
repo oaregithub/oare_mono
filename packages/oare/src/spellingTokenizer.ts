@@ -1,10 +1,8 @@
 import { RawToken, NormalizedRawToken, Token } from '@oare/types';
-import bnf from './spellingGrammar';
+import grammar from './spellingGrammar';
 import { normalizeSign, normalizeFraction } from './signNormalizer';
 
 const Jison = require('jison');
-
-const parser = new Jison.Parser(bnf);
 
 export const separateTokenPhrases = (tokens: Token[]): Token[][] => {
   const phrases: Token[][] = [];
@@ -82,7 +80,59 @@ export const isSignPhraseWithNumber = (tokens: Token[]): boolean => {
 export const isComplementPhrase = (tokens: Token[]): boolean =>
   tokens.some(({ tokenType }) => tokenType === '{');
 
-const isValidGrammar = (tokens: Token[]) => {
+/**
+ * Checks that damage brackets match, and other markup that has
+ * two characters matches
+ */
+export const hasValidMarkup = (tokens: Token[]): boolean => {
+  const dualCharacterMap = {
+    '*': '*',
+    ':': ':',
+    '‹': '›',
+    '«': '»',
+    '[': ']',
+    '⸢': '⸣',
+  };
+
+  const reading = tokens.map(({ tokenText }) => tokenText).join('');
+
+  const markupValid = Object.entries(dualCharacterMap).reduce(
+    (valid, [startChar, endChar]) => {
+      if (!valid) {
+        return false;
+      }
+
+      let seenStart = false;
+      let bracketsValid = true;
+      reading.split('').forEach(char => {
+        if (!bracketsValid) {
+          return;
+        }
+
+        if (!seenStart) {
+          if (char === startChar) {
+            seenStart = true;
+          } else if (char === endChar) {
+            bracketsValid = false;
+          }
+        } else {
+          if (char === startChar) {
+            bracketsValid = false;
+          } else if (char === endChar) {
+            seenStart = false;
+          }
+        }
+      });
+
+      return seenStart ? false : bracketsValid;
+    },
+    true
+  );
+
+  return markupValid;
+};
+
+const isValidGrammar = (tokens: Token[], acceptMarkup = false) => {
   // If there are numbers, they must be separated by a + or appear
   // only at the beginning of a sign
   if (
@@ -92,10 +142,35 @@ const isValidGrammar = (tokens: Token[]) => {
     return isNumberPhrase(tokens) || isSignPhraseWithNumber(tokens);
   }
 
+  const markupCharacters = '*:×‹«+#⸢⸣[]!›»?'.split('');
+
+  if (
+    !acceptMarkup &&
+    tokens
+      .map(({ tokenText }) => tokenText)
+      .join('')
+      .split('')
+      .some(char => markupCharacters.includes(char))
+  ) {
+    return false;
+  }
+
+  if (acceptMarkup && !hasValidMarkup(tokens)) {
+    return false;
+  }
+
   return true;
 };
 
-export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
+export interface TokenizeSpellingOptions {
+  acceptMarkup: boolean;
+}
+
+export const tokenizeExplicitSpelling = (
+  spelling: string,
+  options: TokenizeSpellingOptions = { acceptMarkup: false }
+): Token[] => {
+  const parser = new Jison.Parser(grammar);
   const rawTokens: RawToken[] = [];
   Jison.lexDebugger = rawTokens;
   parser.parse(spelling.trim());
@@ -107,20 +182,23 @@ export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
     })
   );
   const phrases = separateTokenPhrases(normalizedRawTokens);
-  if (!phrases.every(isValidGrammar)) {
+  if (!phrases.every(tokens => isValidGrammar(tokens, options.acceptMarkup))) {
     throw new Error('Invalid grammar');
   }
 
   return phrases.flat();
 };
 
-export const spellingHtmlReading = (spelling: string): string => {
+export const spellingHtmlReading = (
+  spelling: string,
+  options: TokenizeSpellingOptions = { acceptMarkup: false }
+): string => {
   if (!spelling) {
     return '';
   }
 
   try {
-    const tokens = tokenizeExplicitSpelling(spelling);
+    const tokens = tokenizeExplicitSpelling(spelling, options);
     return tokens
       .filter(({ tokenType }) => tokenType !== '$end')
       .map(({ tokenType, tokenText }, index) => {
