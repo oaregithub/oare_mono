@@ -1,4 +1,5 @@
 import TabletRenderer from './TabletRenderer';
+import { formatLineNumber } from './tabletUtils';
 
 /**
  * Renders epigraphic readings with line numbers
@@ -14,7 +15,9 @@ export default class TabletLineNumRenderer extends TabletRenderer {
   lineReading(lineNum: number) {
     if (this.renderer) {
       const reading = this.renderer.lineReading(lineNum);
-      return reading ? `${lineNum}. ${reading}` : '';
+
+      const lineNumber = formatLineNumber(lineNum);
+      return reading ? `${lineNumber} ${reading}` : '';
     }
     throw new Error('Undefined renderer passed to render decorator');
   }

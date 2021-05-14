@@ -31,13 +31,6 @@ describe('OareAppBar.vue', () => {
   };
 
   const mockServer = {
-    refreshToken: jest.fn().mockResolvedValue({
-      id: 1,
-      firstName: 'Test',
-      lastName: 'User',
-      email: 'test@gmail.com',
-      isAdmin: false,
-    }),
     getUserPermissions: jest.fn().mockResolvedValue([]),
     newErrorsExist: jest.fn().mockResolvedValue(false),
     newThreadsExist: jest.fn().mockResolvedValue(false),

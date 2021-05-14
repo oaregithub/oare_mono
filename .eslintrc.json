@@ -54,7 +54,8 @@
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-namespace": "off",
-    "no-lonely-if": "off"
+    "no-lonely-if": "off",
+    "import/prefer-default-export": "off"
   },
   "settings": {
     "import/resolver": {
