@@ -3,6 +3,7 @@
     <EpigraphyReading
       class="test-epigraphies"
       :epigraphicUnits="epigraphicUnits"
+      :discourseToHighlight="discourseToHighlight"
     />
     <DiscourseReading
       v-if="canViewDiscourses"
@@ -28,6 +29,10 @@ export default defineComponent({
     discourseUnits: {
       type: Array as PropType<DiscourseUnit[]>,
       required: true,
+    },
+    discourseToHighlight: {
+      type: Array as PropType<string[]>,
+      required: false,
     },
   },
   components: {

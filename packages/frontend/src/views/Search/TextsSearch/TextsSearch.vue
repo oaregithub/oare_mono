@@ -12,7 +12,7 @@
           outlined
         />
         {{ $t('search.characterSequenceDescription') }}
-        <search-information-card/>
+        <search-information-card />
         <v-text-field
           class="test-character-search"
           :value="translitSearch"
@@ -42,7 +42,7 @@
       :headers="headers"
     >
       <template #[`item.name`]="{ item }">
-        <router-link :to="'/epigraphies/' + item.uuid">
+        <router-link :to="`/epigraphies/${item.uuid}/${item.discourseUuids}`">
           {{ item.name }}
         </router-link>
       </template>
@@ -105,9 +105,7 @@ export default defineComponent({
       if (canPerformSearch.value) {
         searchLoading.value = true;
         try {
-          let {
-            results,
-          }: SearchTextsResponse = await server.searchTexts({
+          let { results }: SearchTextsResponse = await server.searchTexts({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
             page: Number(page.value),
@@ -131,7 +129,9 @@ export default defineComponent({
             textTitle: textTitleSearch.value,
           });
         } catch {
-          actions.showErrorSnackbar('Error getting texts total. Please try again.');
+          actions.showErrorSnackbar(
+            'Error getting texts total. Please try again.'
+          );
         } finally {
           searchTotalLoading.value = false;
         }

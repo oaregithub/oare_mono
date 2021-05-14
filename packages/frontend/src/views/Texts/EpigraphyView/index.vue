@@ -47,6 +47,7 @@ import {
   ref,
   onMounted,
   computed,
+  PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { EpigraphyResponse } from '@oare/types';
@@ -74,9 +75,13 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    discourseToHighlight: {
+      type: Array as PropType<string[]>,
+      required: false,
+    },
   },
 
-  setup({ textUuid }) {
+  setup({ textUuid, discourseToHighlight }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -134,6 +139,7 @@ export default defineComponent({
       return {
         epigraphicUnits: textInfo.value.units,
         discourseUnits: textInfo.value.discourseUnits,
+        discourseToHighlight,
       };
     });
 

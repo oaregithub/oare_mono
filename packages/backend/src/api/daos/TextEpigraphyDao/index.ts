@@ -30,6 +30,7 @@ export interface GetEpigraphicUnitsOptions {
 export interface TextUuidWithLines {
   uuid: string;
   lines: number[];
+  discourseUuids: string[];
 }
 
 export interface SearchTextArgs {
@@ -148,6 +149,26 @@ class TextEpigraphyDao {
     return [...new Set(lines)];
   }
 
+  private async getDiscourseUuids(
+    textUuid: string,
+    rawCharacters: SearchCooccurrence[]
+  ): Promise<string[]> {
+    const characters = rawCharacters.filter(char => char.type === 'AND');
+    const rows: Array<{ discourseUuid: string }> = (
+      await Promise.all(
+        characters.map((_char, index) => {
+          const query = getSequentialCharacterQuery(characters);
+          return query
+            .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
+            .where('text_epigraphy.text_uuid', textUuid);
+        })
+      )
+    ).flat();
+
+    const uuids = rows.map(row => row.discourseUuid);
+    return [...new Set(uuids)];
+  }
+
   async searchTexts(args: SearchTextArgs): Promise<TextUuidWithLines[]> {
     // List of text UUIDs matching the search
     const textUuids = await this.getMatchingTexts(args);
@@ -157,9 +178,15 @@ class TextEpigraphyDao {
       textUuids.map(uuid => this.getMatchingLines(uuid, args.characters))
     );
 
+    // Get discourse uuids that match the search
+    const discourseUuids = await Promise.all(
+      textUuids.map(uuid => this.getDiscourseUuids(uuid, args.characters))
+    );
+
     return textUuids.map((uuid, index) => ({
       uuid,
       lines: textLines[index],
+      discourseUuids: discourseUuids[index],
     }));
   }
 

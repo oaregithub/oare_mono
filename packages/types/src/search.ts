@@ -4,6 +4,7 @@ export interface SearchTextsResultRow {
   uuid: string;
   name: string;
   matches: string[];
+  discourseUuids: string[];
 }
 
 export interface SearchTextsPayload {
