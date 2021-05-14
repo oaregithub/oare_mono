@@ -249,7 +249,7 @@ describe('utility tests', () => {
     });
   });
 
-  describe.only('valid markup tests', () => {
+  describe('valid markup tests', () => {
     it('returns true for tokens with valid markup', () => {
       const tokens: Token[] = [
         { tokenType: 'SIGN', tokenText: '[a' },
