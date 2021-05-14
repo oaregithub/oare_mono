@@ -89,7 +89,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const search = ref('');
-    const textOccurrencesLength = ref(0);
+    const textOccurrencesLength = ref(props.totalTextOccurrences);
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
     const headers: DataTableHeader[] = reactive([
       {
@@ -108,7 +108,6 @@ export default defineComponent({
       itemsPerPage: 10,
     });
 
-    // TODO: Something isn't updating correctly here, sometimes it works, most of the time it doesn't. Weird.
     const getReferences = async () => {
       try {
         referencesLoading.value = true;

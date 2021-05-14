@@ -45,6 +45,7 @@ describe('TextOccurrences test', () => {
     value: true,
     totalTextOccurrences: mockTotalTextOccurrences,
     getTexts: jest.fn().mockResolvedValue(mockTextOccurrences),
+    getTextsCount: jest.fn().mockResolvedValue(mockTextOccurrences.length),
   };
 
   const createWrapper = ({ props } = {}) =>
