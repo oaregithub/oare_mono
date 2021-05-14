@@ -24,9 +24,12 @@
       }"
     >
       <template #[`item.text`]="{ item }">
-        <router-link :to="`/epigraphies/${item.textUuid}`" class="test-text">{{
-          item.textName
-        }}</router-link>
+        <router-link
+          :to="`/epigraphies/${item.textUuid}`"
+          class="test-text"
+          target="_blank"
+          >{{ item.textName }}</router-link
+        >
       </template>
       <template #[`item.context`]="{ item }">
         <div
