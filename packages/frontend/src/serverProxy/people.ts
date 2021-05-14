@@ -21,7 +21,7 @@ async function getPersonTextOccurrences(
 
 async function getPersonTextOccurrencesCount(
   uuid: string,
-  pagination: Pagination
+  pagination?: Partial<Pagination>
 ): Promise<number> {
   const { data } = await axios.get(
     `/people/person/${encodeURIComponent(uuid)}/occurrences`,

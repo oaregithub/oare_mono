@@ -48,14 +48,14 @@ router
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const { uuid } = req.params;
-      const pagination = utils.extractPagination(req.query);
+      const { filter } = utils.extractPagination(req.query);
 
       const uniqueReferenceUuids = await ItemPropertiesDao.getUniqueReferenceUuidOfPerson(
         uuid
       );
       const count = await TextDiscourseDao.getPersonTextsByItemPropertyReferenceUuidsCount(
         uniqueReferenceUuids,
-        pagination
+        { filter }
       );
 
       res.json(count);

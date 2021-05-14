@@ -5,7 +5,7 @@
     :showSubmit="false"
     cancelText="Close"
     :persistent="false"
-    @input="clearValues"
+    @input="$emit('input', false)"
   >
     <v-row>
       <v-col cols="12" sm="6" class="py-0">
@@ -85,7 +85,7 @@ export default defineComponent({
       default: false,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const search = ref('');
@@ -123,15 +123,6 @@ export default defineComponent({
       }
     };
 
-    const clearValues = () => {
-      search.value = '';
-      tableOptions.value.page = 1;
-      tableOptions.value.itemsPerPage = 10;
-      textOccurrences.value = [];
-      textOccurrencesLength.value = 0;
-      emit('input');
-    };
-
     watch(
       () => props.uuid,
       async () => {
@@ -166,7 +157,6 @@ export default defineComponent({
       headers,
       referencesLoading,
       tableOptions,
-      clearValues,
     };
   },
 });

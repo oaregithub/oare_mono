@@ -322,18 +322,22 @@ class TextDiscourseDao {
 
   private getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
     textDiscourseUuids: string[],
-    { page, limit, filter }: Pagination
+    pagination?: Partial<Pagination>
   ) {
     return knex('text_discourse')
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
       .whereIn('text_discourse.uuid', textDiscourseUuids)
       .modify(qb => {
-        if (filter) {
-          qb.andWhere('text.name', 'like', `%${filter}%`);
-        }
+        if (pagination) {
+          if (pagination.filter) {
+            qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
+          }
 
-        if (page && limit) {
-          qb.limit(limit).offset((page - 1) * limit);
+          if (pagination.page && pagination.limit) {
+            qb.limit(pagination.limit).offset(
+              (pagination.page - 1) * pagination.limit
+            );
+          }
         }
       });
   }
@@ -358,11 +362,11 @@ class TextDiscourseDao {
 
   async getPersonTextsByItemPropertyReferenceUuidsCount(
     textDiscourseUuids: string[],
-    pagination: Pagination
+    { filter }: Partial<Pagination> = {}
   ): Promise<number> {
     const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
       textDiscourseUuids,
-      pagination
+      { filter }
     )
       .count({ count: 'text_discourse.uuid' })
       .first();

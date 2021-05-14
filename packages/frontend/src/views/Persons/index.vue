@@ -90,6 +90,7 @@
       :totalTextOccurrences="selectedPersonTextOccurrenceCount()"
       :getTexts="server.getPersonTextOccurrences"
       :get-texts-count="server.getPersonTextOccurrencesCount"
+      :key="selectedPerson.uuid"
     ></text-occurrences>
   </OareContentView>
 </template>
