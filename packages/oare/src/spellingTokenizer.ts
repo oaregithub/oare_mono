@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { RawToken, NormalizedRawToken, Token } from '@oare/types';
-import bnf from './spellingGrammar';
 import { normalizeSign, normalizeFraction } from './signNormalizer';
 
 const Jison = require('jison');
@@ -134,7 +133,7 @@ export const hasValidMarkup = (tokens: Token[]): boolean => {
   return markupValid;
 };
 
-const isValidGrammar = (tokens: Token[]) => {
+const isValidGrammar = (tokens: Token[], acceptMarkup = false) => {
   // If there are numbers, they must be separated by a + or appear
   // only at the beginning of a sign
   if (
@@ -144,10 +143,34 @@ const isValidGrammar = (tokens: Token[]) => {
     return isNumberPhrase(tokens) || isSignPhraseWithNumber(tokens);
   }
 
+  const markupCharacters = '*:×‹«+#⸢⸣[]!›»?'.split('');
+
+  if (
+    !acceptMarkup &&
+    tokens
+      .map(({ tokenText }) => tokenText)
+      .join('')
+      .split('')
+      .some(char => markupCharacters.includes(char))
+  ) {
+    return false;
+  }
+
+  if (acceptMarkup && !hasValidMarkup(tokens)) {
+    return false;
+  }
+
   return true;
 };
 
-export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
+export interface TokenizeSpellingOptions {
+  acceptMarkup: boolean;
+}
+
+export const tokenizeExplicitSpelling = (
+  spelling: string,
+  options: TokenizeSpellingOptions = { acceptMarkup: false }
+): Token[] => {
   const grammar = fs.readFileSync(
     path.join(__dirname, './spellingGrammar.jison'),
     {
@@ -166,20 +189,23 @@ export const tokenizeExplicitSpelling = (spelling: string): Token[] => {
     })
   );
   const phrases = separateTokenPhrases(normalizedRawTokens);
-  if (!phrases.every(isValidGrammar)) {
+  if (!phrases.every(tokens => isValidGrammar(tokens, options.acceptMarkup))) {
     throw new Error('Invalid grammar');
   }
 
   return phrases.flat();
 };
 
-export const spellingHtmlReading = (spelling: string): string => {
+export const spellingHtmlReading = (
+  spelling: string,
+  options: TokenizeSpellingOptions = { acceptMarkup: false }
+): string => {
   if (!spelling) {
     return '';
   }
 
   try {
-    const tokens = tokenizeExplicitSpelling(spelling);
+    const tokens = tokenizeExplicitSpelling(spelling, options);
     return tokens
       .filter(({ tokenType }) => tokenType !== '$end')
       .map(({ tokenType, tokenText }, index) => {

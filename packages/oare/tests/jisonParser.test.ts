@@ -257,7 +257,6 @@ describe('utility tests', () => {
         { tokenType: 'SIGN', tokenText: 'na]' },
         { tokenType: '$end', tokenText: '' },
       ];
-      tokenizeExplicitSpelling('[a-na]');
       expect(hasValidMarkup(tokens)).toBe(true);
     });
 
