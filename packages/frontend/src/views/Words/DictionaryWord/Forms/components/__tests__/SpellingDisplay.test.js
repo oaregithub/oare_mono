@@ -103,9 +103,7 @@ describe('SpellingDisplay test', () => {
     await flushPromises();
     await wrapper.get('.test-num-texts').trigger('click');
     await flushPromises();
-    expect(wrapper.get('.test-text').text()).toBe(
-      mockOccurrences.rows[0].textName
-    );
+    expect(wrapper.get('.test-text-occurrences-display').exists()).toBe(true);
   });
 
   it('sends spelling deletion request', async () => {

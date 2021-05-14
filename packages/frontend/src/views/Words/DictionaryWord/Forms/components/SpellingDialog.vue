@@ -24,7 +24,7 @@
       show-select
     >
       <template #[`item.textName`]="{ item }">
-        <router-link :to="`/epigraphies/${item.textUuid}`">{{
+        <router-link :to="`/epigraphies/${item.textUuid}`" target="_blank">{{
           item.textName
         }}</router-link>
       </template>

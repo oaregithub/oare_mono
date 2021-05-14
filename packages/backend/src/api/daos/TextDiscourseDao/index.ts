@@ -6,6 +6,7 @@ import {
   SpellingOccurrenceRow,
   DiscourseUnit,
   DiscourseUnitType,
+  PersonOccurrenceRow,
 } from '@oare/types';
 import Knex from 'knex';
 import { v4 } from 'uuid';
@@ -182,6 +183,11 @@ class TextDiscourseDao {
       spellingUuid,
       pagination
     )
+      .modify(qb => {
+        if (pagination.filter) {
+          qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
+        }
+      })
       .count({ count: 'text_discourse.uuid' })
       .first();
 
@@ -207,7 +213,7 @@ class TextDiscourseDao {
       )
       .orderBy('text.name')
       .limit(limit)
-      .offset(page * limit);
+      .offset((page - 1) * limit);
 
     const rows: SpellingOccurrenceRow[] = await query;
     return rows;
@@ -312,6 +318,106 @@ class TextDiscourseDao {
       obj_in_text: anchorInfo.objInText,
     });
     await TextEpigraphyDao.addDiscourseUuid(epigraphyUuids, discourseUuid);
+  }
+
+  private getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
+    textDiscourseUuids: string[],
+    pagination?: Partial<Pagination>
+  ) {
+    return knex('text_discourse')
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .whereIn('text_discourse.uuid', textDiscourseUuids)
+      .modify(qb => {
+        if (pagination) {
+          if (pagination.filter) {
+            qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
+          }
+
+          if (pagination.page && pagination.limit) {
+            qb.limit(pagination.limit).offset(
+              (pagination.page - 1) * pagination.limit
+            );
+          }
+        }
+      });
+  }
+
+  async getPersonTextsByItemPropertyReferenceUuids(
+    textDiscourseUuids: string[],
+    pagination: Pagination
+  ): Promise<PersonOccurrenceRow[]> {
+    const texts = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
+      textDiscourseUuids,
+      pagination
+    ).select(
+      'text_discourse.uuid AS discourseUuid',
+      'text_discourse.type',
+      'text.name AS textName',
+      'text_discourse.word_on_tablet AS wordOnTablet',
+      'text_discourse.text_uuid AS textUuid'
+    );
+
+    return texts;
+  }
+
+  async getPersonTextsByItemPropertyReferenceUuidsCount(
+    textDiscourseUuids: string[],
+    { filter }: Partial<Pagination> = {}
+  ): Promise<number> {
+    const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
+      textDiscourseUuids,
+      { filter }
+    )
+      .count({ count: 'text_discourse.uuid' })
+      .first();
+
+    return total ? Number(total.count) : 0;
+  }
+
+  async getPersonTextsByItemPropertyReferenceUuidsDistinctCount(
+    textDiscourseUuids: string[],
+    pagination: Pagination
+  ): Promise<number> {
+    const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
+      textDiscourseUuids,
+      pagination
+    )
+      .count({ count: 'text_discourse.text_uuid' })
+      .first();
+
+    return total ? Number(total.count) : 0;
+  }
+
+  async getChildrenByParentUuid(
+    phraseUuid: string
+  ): Promise<PersonOccurrenceRow[]> {
+    const wordTexts = await knex('text_discourse')
+      .select(
+        'text_discourse.uuid AS discourseUuid',
+        'text_discourse.type',
+        'text.name AS textName',
+        'text_discourse.word_on_tablet AS wordOnTablet',
+        'text_discourse.text_uuid AS textUuid'
+      )
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .where('text_discourse.parent_uuid', phraseUuid);
+
+    return wordTexts;
+  }
+
+  async getEpigraphicLineOfWord(discourseUuid: string): Promise<number> {
+    const line = (
+      await knex('text_discourse')
+        .pluck('text_epigraphy.line')
+        .innerJoin(
+          'text_epigraphy',
+          'text_epigraphy.discourse_uuid',
+          'text_discourse.uuid'
+        )
+        .where('text_discourse.uuid', discourseUuid)
+    )[0];
+
+    return line;
   }
 }
 
