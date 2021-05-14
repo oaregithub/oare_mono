@@ -116,6 +116,9 @@ describe('people api test', () => {
       .fn()
       .mockResolvedValueOnce(line1)
       .mockResolvedValueOnce(line2),
+    getPersonTextsByItemPropertyReferenceUuidsCount: jest
+      .fn()
+      .mockResolvedValue(referenceUuids.length),
   };
 
   const setup = () => {
@@ -219,6 +222,36 @@ describe('people api test', () => {
       expect(
         mockItemPropertiesDao.getUniqueReferenceUuidOfPerson
       ).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /people/person/:uuid/occurrences', () => {
+    const PATH = `${API_PATH}/people/person/${encodeURIComponent(
+      'uuid'
+    )}/occurrences?limit=10&page=1`;
+    const sendRequest = (cookie = true) => {
+      const req = request(app).get(PATH);
+      return cookie ? req.set('Authorization', 'token') : req;
+    };
+
+    it('returns successful person texts count.', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toEqual(referenceUuids.length);
+      expect(
+        mockTextDiscourseDao.getPersonTextsByItemPropertyReferenceUuidsCount
+      ).toHaveBeenCalled();
+    });
+
+    it('unable to return person texts count when count fails.', async () => {
+      sl.set('TextDiscourseDao', {
+        ...mockTextDiscourseDao,
+        getPersonTextsByItemPropertyReferenceUuidsCount: jest
+          .fn()
+          .mockRejectedValue('Error, unable to return person text count.'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
     });
   });
 });
