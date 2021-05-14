@@ -123,7 +123,7 @@ export interface TextFormatOptions {
 }
 
 export interface TabletHtmlOptions {
-  admin?: boolean;
+  showNullDiscourse?: boolean;
   highlightDiscourses?: string[];
 }
 
