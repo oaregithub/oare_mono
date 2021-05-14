@@ -76,7 +76,7 @@ export default defineComponent({
       required: true,
     },
     discourseToHighlight: {
-      type: Array as PropType<string[]>,
+      type: String,
       required: false,
     },
   },

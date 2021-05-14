@@ -25,7 +25,9 @@
     >
       <template #[`item.text`]="{ item }">
         <router-link
-          :to="`/epigraphies/${item.textUuid}/${item.discourseUuid}`"
+          :to="`/epigraphies/${item.textUuid}/${
+            item.discoursesToHighlight || item.discourseUuid
+          }`"
           class="test-text"
           target="_blank"
           >{{ item.textName }}</router-link

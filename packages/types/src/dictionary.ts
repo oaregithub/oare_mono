@@ -118,7 +118,8 @@ export interface Pagination {
   filter?: string;
 }
 
-export interface DictionarySearchRow extends SearchTextsResultRow {
+export interface DictionarySearchRow
+  extends Omit<SearchTextsResultRow, 'discourseUuids'> {
   type: 'word' | 'PN' | 'GN';
   translations: string[];
 }
