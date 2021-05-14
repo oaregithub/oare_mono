@@ -87,6 +87,7 @@ const testTextOccurrences = [
 
 const mockServer = {
   getPeople: jest.fn().mockResolvedValue(testPeople),
+  getPersonTextOccurrencesCount: jest.fn(),
   getPersonTextOccurrences: jest.fn().mockResolvedValue(testTextOccurrences),
 };
 
