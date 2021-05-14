@@ -94,9 +94,11 @@
             :loading="searchSpellingLoading"
           >
             <template #[`item.word`]="{ item }">
-              <router-link :to="`/dictionaryWord/${item.wordUuid}`">{{
-                item.word
-              }}</router-link>
+              <router-link
+                :to="`/dictionaryWord/${item.wordUuid}`"
+                target="_blank"
+                >{{ item.word }}</router-link
+              >
             </template>
             <template #[`item.form`]="{ item }">
               <mark v-if="item.form.uuid === form.uuid">{{
