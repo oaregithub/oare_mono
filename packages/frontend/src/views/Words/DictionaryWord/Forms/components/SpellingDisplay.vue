@@ -20,7 +20,6 @@
       ></span>
       <span v-else v-html="htmlSpelling" class="test-spelling"></span>
     </template>
-
     &nbsp;
     <span v-if="totalOccurrences > 0 || totalOccurrencesLoading">
       (<a @click="addSpellingDialog = true" class="test-num-texts">{{
@@ -29,42 +28,16 @@
       >)</span
     >
 
-    <OareDialog
+    <text-occurrences
       v-model="addSpellingDialog"
-      :title="`Texts for ${spelling.spelling}`"
-      :showSubmit="false"
-      cancelText="Close"
-      :persistent="false"
+      class="test-text-occurrences-display"
+      :title="spelling.spelling"
+      :uuid="spelling.uuid"
+      :totalTextOccurrences="totalOccurrences"
+      :getTexts="server.getSpellingTextOccurrences"
+      :get-texts-count="server.getSpellingTotalOccurrences"
     >
-      <v-row>
-        <v-col cols="12" sm="6" class="py-0">
-          <v-text-field v-model="search" clearable label="Filter" autofocus />
-        </v-col>
-      </v-row>
-      <v-data-table
-        :headers="headers"
-        :items="spellingOccurrences"
-        :search="search"
-        :loading="referencesLoading"
-        :server-items-length="totalOccurrences"
-        :options.sync="tableOptions"
-      >
-        <template #[`item.text`]="{ item }">
-          <router-link
-            :to="`/epigraphies/${item.textUuid}`"
-            class="test-text"
-            >{{ item.textName }}</router-link
-          >
-        </template>
-        <template #[`item.context`]="{ item }">
-          <div
-            v-for="(reading, index) in item.readings"
-            :key="index"
-            v-html="reading"
-          />
-        </template>
-      </v-data-table>
-    </OareDialog>
+    </text-occurrences>
   </span>
 </template>
 
@@ -72,29 +45,24 @@
 import {
   defineComponent,
   ref,
-  reactive,
   computed,
   PropType,
-  watch,
   inject,
   onMounted,
 } from '@vue/composition-api';
-import {
-  FormSpelling,
-  DictionaryForm,
-  SearchDiscourseSpellingRow,
-} from '@oare/types';
-import { DataTableHeader } from 'vuetify';
+import { FormSpelling, DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import { spellingHtmlReading } from '@oare/oare';
 import { SendUtilList } from '../../index.vue';
 import SpellingDialog from './SpellingDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
+import TextOccurrences from './TextOccurrences.vue';
 
 export default defineComponent({
   components: {
     SpellingDialog,
     UtilList,
+    TextOccurrences,
   },
   props: {
     spelling: {
@@ -129,31 +97,12 @@ export default defineComponent({
     const store = sl.get('store');
     const utilList = inject(SendUtilList);
 
-    const search = ref('');
     const addSpellingDialog = ref(false);
     const showUtilList = ref(false);
     const deleteLoading = ref(false);
     const isEditing = ref(false);
     const isCommenting = ref(false);
     const editLoading = ref(false);
-    const headers: DataTableHeader[] = reactive([
-      {
-        text: 'Text Name',
-        value: 'text',
-      },
-      {
-        text: 'Context',
-        value: 'context',
-      },
-    ]);
-    const referencesLoading = ref(false);
-    const tableOptions = ref({
-      page: 1,
-      itemsPerPage: 10,
-    });
-    const spellingOccurrences = ref<
-      Pick<SearchDiscourseSpellingRow, 'textName' | 'textUuid'>[]
-    >([]);
     const totalOccurrences = ref(0);
     const totalOccurrencesLoading = ref(false);
 
@@ -166,24 +115,6 @@ export default defineComponent({
     const htmlSpelling = computed(() =>
       spellingHtmlReading(props.spelling.spelling)
     );
-
-    const getReferences = async () => {
-      try {
-        referencesLoading.value = true;
-        spellingOccurrences.value = await server.getSpellingTextOccurrences(
-          props.spelling.uuid,
-          {
-            page: tableOptions.value.page - 1,
-            limit: tableOptions.value.itemsPerPage,
-            ...(search.value ? { filter: search.value } : null),
-          }
-        );
-      } catch {
-        actions.showErrorSnackbar('Failed to load spelling occurrences');
-      } finally {
-        referencesLoading.value = false;
-      }
-    };
 
     onMounted(async () => {
       try {
@@ -215,25 +146,17 @@ export default defineComponent({
         });
     };
 
-    watch(tableOptions, getReferences);
-
-    watch(search, _.debounce(getReferences, 500));
-
     return {
+      server,
       openUtilList,
       showUtilList,
       addSpellingDialog,
       deleteLoading,
-      headers,
-      search,
       canEdit,
       isEditing,
       isCommenting,
       editLoading,
       htmlSpelling,
-      referencesLoading,
-      spellingOccurrences,
-      tableOptions,
       totalOccurrences,
       totalOccurrencesLoading,
     };

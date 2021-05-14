@@ -273,9 +273,12 @@ router
   .get(async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const utils = sl.get('utils');
+      const { filter } = utils.extractPagination(req.query);
       const { uuid } = req.params;
       const totalOccurrences = await TextDiscourseDao.getTotalSpellingTexts(
-        uuid
+        uuid,
+        { filter }
       );
 
       res.json(totalOccurrences);

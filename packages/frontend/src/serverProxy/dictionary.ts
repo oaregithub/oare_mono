@@ -95,10 +95,14 @@ async function getSpellingTextOccurrences(
 }
 
 async function getSpellingTotalOccurrences(
-  spellingUuid: string
+  spellingUuid: string,
+  pagination?: Partial<Pagination>
 ): Promise<number> {
   const { data } = await axios.get(
-    `/dictionary/spellings/${spellingUuid}/occurrences`
+    `/dictionary/spellings/${spellingUuid}/occurrences`,
+    {
+      params: pagination,
+    }
   );
   return data;
 }

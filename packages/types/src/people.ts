@@ -1,5 +1,5 @@
-import { EpigraphicTextWithReadings } from './epigraphies';
-import { Pagination } from './dictionary';
+import { SpellingOccurrenceRow } from './dictionary';
+import { DiscourseUnitType } from './textDiscourse';
 
 export interface PersonDisplay {
   uuid: string;
@@ -15,9 +15,10 @@ export interface PersonDisplay {
   roleObjUuid: string | null;
   roleObjPerson: string | null;
   textOccurrenceCount: number | null;
+  textOccurrenceDistinctCount: number | null;
 }
 
-export interface PersonReferences {
-  total: number;
-  references: EpigraphicTextWithReadings[];
+export interface PersonOccurrenceRow extends SpellingOccurrenceRow {
+  type: DiscourseUnitType;
+  discoursesToHighlight: string[];
 }
