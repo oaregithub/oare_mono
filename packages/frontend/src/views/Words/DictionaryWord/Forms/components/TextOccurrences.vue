@@ -6,6 +6,7 @@
     cancelText="Close"
     :persistent="false"
     @input="$emit('input', false)"
+    :width="1000"
   >
     <v-row>
       <v-col cols="12" sm="6" class="py-0">
