@@ -2,7 +2,7 @@
   "name": "oare",
   "private": true,
   "scripts": {
-    "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"NODE_ENV=development OARE_JWT_TOKEN=secret yarn server\" \"yarn client\"",
+    "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"NODE_ENV=development yarn server\" \"yarn client\"",
     "lint": "yarn run eslint \"./packages/**/*.{js,ts}\"",
     "lint:fix": "yarn lint --fix",
     "build": "./build.sh",
