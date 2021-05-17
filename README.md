@@ -1,14 +1,12 @@
 # OARE Web
 
-This is a monorepository containing all code necessary to run oare.byu.edu. This guide will explain how to setup the project locally and other information you will need to know as a developer on the project.
+This is a monorepository containing all code necessary to run oare.byu.edu. This guide will explain how to setup the project locally and other information you will need to know as a developer on the project. These instructions are written for Mac users. If you are using Windows, then first of all, I offer my sincere condolences. Your life will be more difficult. Follow these instructions as well as you can and hopefully, by some miracle, you will get things to work on Windows. You might need to use [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 
 ## Install Docker
 
-This project uses Docker for local development. If you are not familiar with Docker, it essentially provides the same environment for the app regardless of your operating system. Docker will run the frontend, backend, and database pieces of the web app in Linux containers. At the moment it is only used for local development.
+This project uses Docker to locally run a MySQL server. If you are not familiar with Docker, it lets you run apps inside of "containers", which are kind of like very lightweight virtual machines.
 
 First, download Docker at this link: https://www.docker.com/products/docker-desktop. After downloading Docker, you will need to start the Docker Daemon. See the following instructions depending on your operating system.
-
-### Mac
 
 Search for Docker in the finder and click on the first result.
 
@@ -18,34 +16,49 @@ You should see a little whale icon at the top of your screen. Once it stops movi
 
 ![](./readme-imgs/nav-docker-mac.png)
 
-### Windows
+## Get Access to the Github Repository
 
-## Run the project
+If you do not have a Github account, create one. Then, add an SSH key to your account so you have command line access by following [these instructions](https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account).
 
-You will need to be added as a collaborator to the Github project before you can download the code. If you have not already been added as a collaborator, please ask Brett to do so.
+You will need to be added as a collaborator to the Github project before you can download the code. The team lead will need to invite you and you will need to accept the invitation in your email.
 
-You will
+### For the Team Lead
 
-First clone the repository (if you are on Windows, you will need to download Git first):
+To add someone as a collaborator to the project, you will need to sign into the oaregithub account on Github. Navigate to the oare-mono project, and then click on Settings.
 
-```
-$ git clone https://github.com/oaregithub/oare_mono.git
-```
+![](./readme-imgs/github-settings.png)
 
-If you would prefer to use SSH to push your code, talk to Brett and he can add your SSH key to the repository.
+Now click on "Invite a collaborator" and type the email or Github username of the new collaborator.
 
-Next, use Docker to start up the project:
+![](./readme-imgs/invite-collab.png)
 
-```
-$ docker-compose build
-$ docker-compose up -d
-```
+The new collaborator will need to accept the invitation sent to their email, and then they will have read/write access to the repository.
 
-It might take a few minutes to build the first time because Docker needs to install the required images. Running `docker-compose up -d` runs the app in detached mode, so you won't have to run these commands again unless the Docker daemon stops. Hot reloading is also enabled, so when you make changes to your local copy of the project, they will be synced to the Docker containers and hot reloaded in your browser.
+## Setup AWS
 
-## Create a local copy of the database
+Authentication for the website is done with Firebase. A private key for Firebase is stored in an S3 bucket, and so you will need to be given permission to access it by the team lead. You will also need to configure the `aws` command line utility.
 
-Now you should have three Docker containers running - one for the frontend, one for the backend, and one with a MySQL server. The MySQL server won't contain anything, so we need to import a copy of the database to that container.
+First, install the `aws` CLI by following [these instructions](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-mac.html).
+
+Next, make sure you have your AWS access key ID and secret access key. The team lead will give these to you when you are added as a user in AWS.
+
+The easiest way to configure your account is to run `aws configure` from the command line, and then input your keys. For more information, see [this documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
+
+### For the team lead
+
+You will need to create an IAM account in AWS for the new developer. In the IAM dashboard, click "Users" and then "Add user".
+
+![](./readme-imgs/iam-users.png)
+
+![](./readme-imgs/add-user.png)
+
+Create a user name (can just be the developer's first and last name), then check both the "Programmatic access" and "AWS Management Console access" boxes. Leave the "Autogenerated password" radio button selected, and leave the "User must create a new password at next sign-in" box checked. Click "Next: Permissions".
+
+Add the user to the "OareCoderAdmin" group then click "Next: Tags". Click "Next: Review". Finally, click "Create user". Make sure to send the new developer the access key ID, secret access key, and password. Make sure they can log in to the AWS console with the password.
+
+## Create database connections
+
+You should now have a MySQL server running in a Docker container. However, it will be empty, so we need to populate it with real data.
 
 You will need a client that can connect to the MySQL container. We recommend [MySQL Workbench](https://dev.mysql.com/downloads/workbench/), but if you prefer some other client then that's fine too. Just note that these instructions are written for MySQL Workbench and we might have a hard time helping you if you're having problems with some other client.
 
@@ -55,9 +68,25 @@ First, create a new connection in MySQL Workbench.
 
 Give your connection a name. For example, you could put "Docker OARE". For "Hostname", put localhost. Click "Test Connection". You will be asked for a password. The password is "example" (without the quotes). Note that we do not use Docker in production, so it's ok that the password is hardcoded in the Docker Compose file.
 
-Click "Ok", then click on your connection name.
+Click "Ok".
 
-Now you will need to ask Jon or Brett for a SQL dump of the database. Click on the blue folder near the top of the screen and select the file you were given.
+You will want to create two more connections - a connection to the production database, and a readonly connection to the production database.
+
+For the production connection, the hostname is "oare-0-3.c4t2up2es1cx.us-west-2.rds.amazonaws.com" (without the quotes). The username is "oare". Ask another team member for the password.
+
+For the readonly connection, the hostname is the same as the production connection and the username is "oare_readonly". Again, ask another team member for the password. We recommend clicking the box that says "Store in keychain" so you don't have to type the password in every time you want to connect.
+
+### Create a local copy of the database
+
+Now, you will need to export a copy of the production database so you can use it locally. In MySQL Workbench, open your production connection. Then go to Server > Data Export
+
+![](./readme-imgs/data-export.png)
+
+Select the oarebyue_0.3 schema and make sure all the tables are selected. Make sure all the checkboxes are checked under the "Objects to Export" section. Also make sure the "Create Dump in a Single Transaction" and "Include create schema" boxes are checked. Choose a location to save the dump, and then click "Start Export".
+
+![](./readme-imgs/start-export.png)
+
+This could take a little while. Once the export is complete, you will need to import the exported database into your local database. Click on the blue folder near the top of the screen and select the file containing the dump.
 
 ![](./readme-imgs/upload-dump.png)
 
@@ -65,17 +94,46 @@ You will get a warning about the file being large. Just click the "Run SQL Scrip
 
 This will take a while (there are over 15 million rows!). It might take a couple of hours, so be patient.
 
-Once the database import finishes, everything should work as expected. In your browser, navigate to http://localhost:8080 and you should see the site. Spend some time getting familiar with the site itself. Everything is running locally, so don't be afraid of messing anything up.
+Once it's done, run the SQL server with Docker:
 
-If you're just trying to get the project running locally, then that's all you need to know from this guide. The following sections are developer-specific items.
+```
+$ docker-compose build
+$ docker-compose up -d
+```
 
-## AWS
+It might take a few minutes to build the first time because Docker needs to install the required images. Running `docker-compose up -d` runs the app in detached mode, so you won't have to run these commands again unless the Docker daemon stops.
 
-The oare.byu.edu site itself runs on an EC2 instance on AWS. Ask Brett to give you AWS access.
+## Run the project
 
-If you will be a tech lead on this project, you don't really need to know too much about AWS, but some working knowledge will be helpful. Most of the time, the only AWS dashboards you'll need to use will be Elastic Beanstalk and RDS.
+First, clone the repository.
 
-### Elastic Beanstalk
+```
+$ git clone https://github.com/oaregithub/oare_mono.git
+```
+
+Now change directories into the project.
+
+```
+$ cd oare_mono
+```
+
+Install dependencies and build the project:
+
+```
+$ yarn install
+$ yarn workspace @oare/types build
+$ yarn workspace @oare/oare build
+```
+
+Start the local server:
+
+```
+$ yarn start
+```
+
+In your browser, navigate to http://localhost:8080 and you should see the site. Spend some time getting familiar with the site itself. Everything is running locally, so don't be afraid of messing anything up.
+
+## Appendix: Elastic Beanstalk
 
 Elastic Beanstalk basically automates the process of providing an EC2 instance and load balancer for the site. Most of the time you won't have to do anything here since the site automatically gets deployed to Elastic Beanstalk when your code is merged into the master branch of the Git repository.
 
