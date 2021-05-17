@@ -16,6 +16,7 @@ import loadBases from './loadBases';
 import i18n from './i18n';
 import 'flag-icon-css/css/flag-icon.css';
 import firebase from './firebase';
+import server from './serverProxy';
 
 sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);
@@ -44,14 +45,22 @@ firebase.auth().onIdTokenChanged(async user => {
     const idTokenResult = await currentUser.getIdTokenResult();
     store.setToken(idTokenResult);
 
-    const [oareUser, permissions] = await Promise.all([
-      serverProxy.getUser(currentUser.uid),
-      serverProxy.getUserPermissions(),
-    ]);
-    store.setPermissions(permissions);
-    store.setUser(oareUser);
-    if (store.getters.isAdmin) {
-      await setupAdminBadge();
+    try {
+      const [oareUser, permissions] = await Promise.all([
+        serverProxy.getUser(currentUser.uid),
+        serverProxy.getUserPermissions(),
+      ]);
+      store.setPermissions(permissions);
+      store.setUser(oareUser);
+      if (store.getters.isAdmin) {
+        await setupAdminBadge();
+      }
+    } catch (err) {
+      server.logError({
+        description: 'Error initializing site',
+        stacktrace: err,
+        status: 'New',
+      });
     }
   }
   if (!app) {

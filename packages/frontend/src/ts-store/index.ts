@@ -11,7 +11,6 @@ export interface State {
   permissions: PermissionItem[];
   displayAdminBadge: AdminBadgeOptions;
   idToken: string | null;
-  tokenExpiration: number | null;
 }
 
 const state: State = reactive({
@@ -23,7 +22,6 @@ const state: State = reactive({
     comments: false,
   },
   idToken: null,
-  tokenExpiration: null,
 });
 
 export default {
@@ -33,17 +31,13 @@ export default {
   setLanded: (landed: boolean) => {
     state.landed = landed;
   },
-  setToken: (
-    token: Pick<firebase.auth.IdTokenResult, 'token' | 'expirationTime'>
-  ) => {
+  setToken: (token: Pick<firebase.auth.IdTokenResult, 'token'>) => {
     state.idToken = token.token;
-    state.tokenExpiration = new Date(token.expirationTime).getTime();
   },
   logout: () => {
     state.user = null;
     state.permissions = [];
     state.idToken = null;
-    state.tokenExpiration = null;
   },
   setPermissions: (permissions: PermissionItem[]) => {
     state.permissions = permissions;
@@ -72,14 +66,6 @@ export default {
     },
     get idToken() {
       return state.idToken;
-    },
-    get isTokenValid() {
-      if (!state.idToken || !state.tokenExpiration) {
-        return false;
-      }
-
-      // Will cause refresh within 5 minutes of token expiring
-      return state.tokenExpiration - 5 * 60 * 1000 >= new Date().getTime();
     },
   },
 };

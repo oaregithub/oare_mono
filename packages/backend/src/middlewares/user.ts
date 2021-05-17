@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpInternalError, HttpUnauthorized } from '@/exceptions';
 import sl from '@/serviceLocator';
 import firebase from '@/firebase';
 
@@ -13,7 +13,14 @@ async function attachUser(req: Request, _res: Response, next: NextFunction) {
       req.user = null;
       next();
     } else {
-      const decodedToken = await firebase.auth().verifyIdToken(idToken);
+      let decodedToken: firebase.auth.DecodedIdToken;
+
+      try {
+        decodedToken = await firebase.auth().verifyIdToken(idToken);
+      } catch (err) {
+        next(new HttpUnauthorized('Invalid firebase token'));
+        return;
+      }
       const user = await UserDao.getUserByUuid(decodedToken.uid);
 
       req.user = user;
