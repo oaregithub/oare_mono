@@ -10,17 +10,32 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-axiosInstance.interceptors.request.use(async config => {
-  // If expiration is less than 5 minutes away, refresh
-  if (!store.getters.isTokenValid) {
-    const { currentUser } = firebase.auth();
+axiosInstance.interceptors.response.use(
+  res => res,
+  async error => {
+    if (
+      error.config &&
+      error.response &&
+      error.response.status === 401 &&
+      !error.config.isRefreshing
+    ) {
+      error.config.isRefreshing = true;
+      const { currentUser } = firebase.auth();
 
-    if (currentUser) {
-      const idTokenResult = await currentUser.getIdTokenResult(true);
-      store.setToken(idTokenResult);
-      config.headers.Authorization = idTokenResult.token;
+      if (currentUser) {
+        const idTokenResult = await currentUser.getIdTokenResult(true);
+        store.setToken(idTokenResult);
+      }
+
+      return axiosInstance(error.config);
     }
-  } else {
+
+    throw error;
+  }
+);
+
+axiosInstance.interceptors.request.use(config => {
+  if (store.getters.idToken) {
     config.headers.Authorization = store.getters.idToken;
   }
   return config;
