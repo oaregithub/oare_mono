@@ -19,7 +19,7 @@
             <span
               v-for="(word, index) in renderer.getLineWords(lineNum)"
               :key="index"
-              v-html="word.reading"
+              v-html="highlightWord(word)"
               class="mr-1 cursor-display test-rendered-word"
               @click="openDialog(word.discourseUuid)"
             />
@@ -56,7 +56,11 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { createTabletRenderer } from '@oare/oare';
-import { DictionaryWordResponse, EpigraphicUnit } from '@oare/types';
+import {
+  DictionaryWordResponse,
+  EpigraphicUnit,
+  EpigraphicWord,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/views/Words/DictionaryWord/index.vue';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
@@ -70,6 +74,10 @@ export default defineComponent({
     epigraphicUnits: {
       type: Array as PropType<EpigraphicUnit[]>,
       required: true,
+    },
+    discourseToHighlight: {
+      type: String,
+      required: false,
     },
   },
   setup(props) {
@@ -122,6 +130,14 @@ export default defineComponent({
       }
     };
 
+    const highlightWord = (word: EpigraphicWord) => {
+      const isWordToHighlight =
+        props.discourseToHighlight && word.discourseUuid
+          ? props.discourseToHighlight.includes(word.discourseUuid)
+          : false;
+      return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
+    };
+
     return {
       renderer,
       lineNumber,
@@ -129,6 +145,7 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
+      highlightWord,
     };
   },
 });

@@ -138,7 +138,7 @@ const routes: RouteConfig[] = [
       },
       {
         name: 'epigraphies',
-        path: '',
+        path: ':discourseToHighlight?',
         component: EpigraphyFullDisplay,
         props: true,
       },
