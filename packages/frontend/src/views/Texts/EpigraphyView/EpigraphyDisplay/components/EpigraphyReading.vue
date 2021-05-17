@@ -82,7 +82,7 @@ export default defineComponent({
 
     const renderer = computed(() => {
       return createTabletRenderer(props.epigraphicUnits, {
-        admin: store.getters.isAdmin,
+        showNullDiscourse: store.getters.isAdmin,
         textFormat: 'html',
       });
     });

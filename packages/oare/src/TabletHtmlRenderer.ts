@@ -53,17 +53,17 @@ export function wordWithoutSuperscript(word: string): string {
 export default class TabletHtmlRenderer extends TabletRenderer {
   private renderer: TabletRenderer | null = null;
 
-  private admin: boolean;
+  private showNullDiscourse: boolean;
 
   private highlightDiscourses: string[];
 
   constructor(
     renderer: TabletRenderer,
-    { admin, highlightDiscourses }: TabletHtmlOptions = {}
+    { showNullDiscourse, highlightDiscourses }: TabletHtmlOptions = {}
   ) {
     super(renderer.getEpigraphicUnits());
     this.renderer = renderer;
-    this.admin = admin || false;
+    this.showNullDiscourse = showNullDiscourse || false;
     this.highlightDiscourses = highlightDiscourses || [];
   }
 
@@ -81,7 +81,11 @@ export default class TabletHtmlRenderer extends TabletRenderer {
       }
     }
 
-    if (this.admin && unit.discourseUuid === null && unit.reading !== '|') {
+    if (
+      this.showNullDiscourse &&
+      unit.discourseUuid === null &&
+      unit.reading !== '|'
+    ) {
       baseReading = `<mark style="background-color: #ffb3b3">${baseReading}</mark>`;
     } else if (this.highlightDiscourses.includes(unit.discourseUuid || '')) {
       baseReading = `<mark>${baseReading}</mark>`;

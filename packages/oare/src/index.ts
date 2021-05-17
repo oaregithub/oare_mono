@@ -61,13 +61,16 @@ const createTabletRenderer = (
   {
     textFormat = 'regular',
     lineNumbers = false,
-    admin = false,
+    showNullDiscourse = false,
     highlightDiscourses = [],
   }: CreateTabletRendererOptions = {}
 ): TabletRenderer => {
   let renderer = new TabletRenderer(epigraphicUnits);
   if (textFormat === 'html') {
-    renderer = new TabletHtmlRenderer(renderer, { admin, highlightDiscourses });
+    renderer = new TabletHtmlRenderer(renderer, {
+      showNullDiscourse,
+      highlightDiscourses,
+    });
   }
   if (lineNumbers) {
     renderer = new TabletLineNumRenderer(renderer);

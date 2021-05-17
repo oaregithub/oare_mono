@@ -212,6 +212,7 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
         const renderer = createTabletRenderer(epigraphicUnits, {
           textFormat: 'html',
           lineNumbers: true,
+          showNullDiscourse: true,
         });
 
         return renderer.lineReading(line);
