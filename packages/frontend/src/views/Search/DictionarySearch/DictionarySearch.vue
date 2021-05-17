@@ -93,7 +93,7 @@ export default defineComponent({
       ''
     );
     const [page, setPage] = useQueryParam('page', '1');
-    const [rows, setRows] = useQueryParam('rows', '10');
+    const [rows, setRows] = useQueryParam('rows', '25');
     const lastSearch = ref('');
     const canSearch = computed(() => {
       return dictionarySearch.value.trim() !== '';
