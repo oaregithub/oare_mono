@@ -5,10 +5,19 @@ async function insertDiscourseRow(
   spelling: string,
   occurrences: SearchNullDiscourseResultRow[]
 ): Promise<void> {
-  await axios.post('/text_discourse', {
-    spelling,
-    occurrences,
-  });
+  const uniqueTextUuids = [...new Set(occurrences.map(occ => occ.textUuid))];
+  const occurrencesByText: SearchNullDiscourseResultRow[][] = uniqueTextUuids.map(
+    textUuid => occurrences.filter(occ => occ.textUuid === textUuid)
+  );
+
+  await Promise.all(
+    occurrencesByText.map(occurrenceBatch =>
+      axios.post('/text_discourse', {
+        spelling,
+        occurrences: occurrenceBatch,
+      })
+    )
+  );
 }
 
 export default {
