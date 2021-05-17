@@ -153,6 +153,7 @@ export default defineComponent({
     const searchNullDiscourseCount = async () => {
       try {
         searchNullCountLoading.value = true;
+        nullDiscourseCount.value = -1;
         nullDiscourseCount.value = await server.searchNullDiscourseCount(
           props.spellingInput
         );
