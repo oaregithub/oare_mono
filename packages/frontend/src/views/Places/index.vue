@@ -9,7 +9,7 @@
 <script lang="ts">
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
-import { NameOrPlace } from '@oare/types';
+import { Word } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -24,7 +24,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const places: Ref<NameOrPlace[]> = ref([]);
+    const places: Ref<Word[]> = ref([]);
     const loading = ref(false);
 
     const server = sl.get('serverProxy');

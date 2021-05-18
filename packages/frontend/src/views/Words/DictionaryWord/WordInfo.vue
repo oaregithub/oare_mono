@@ -63,7 +63,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import {
-  DictionaryWordResponse,
+  Word,
   DictionaryForm,
   DictionaryWordTranslation,
   UtilListDisplay,
@@ -75,7 +75,7 @@ import sl from '@/serviceLocator';
 export default defineComponent({
   props: {
     updateWordInfo: {
-      type: Function as PropType<(newWord: DictionaryWordResponse) => void>,
+      type: Function as PropType<(newWord: Word) => void>,
       required: true,
     },
     wordUuid: {
@@ -83,7 +83,7 @@ export default defineComponent({
       required: true,
     },
     wordInfo: {
-      type: Object as PropType<DictionaryWordResponse>,
+      type: Object as PropType<Word>,
       required: true,
     },
     uuidToHighlight: {

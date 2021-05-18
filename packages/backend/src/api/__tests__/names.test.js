@@ -8,19 +8,24 @@ describe('names api test', () => {
     {
       uuid: 'word1',
       word: 'coolBeans',
-      translation: 'This is a cool word',
+      translation: [
+        {
+          uuid: 'translationUuid',
+          translation: 'testTranslation',
+        },
+      ],
       forms: [
         {
           uuid: 'form1',
           form: 'Form1',
           spellings: ['Spelling1', 'Spelling2', 'Spelling3'],
-          cases: 'John/John2',
+          cases: ['nom.', 'gen.', 'acc.'],
         },
         {
           uuid: 'form2',
           form: 'Form2',
           spellings: ['SpellingOfOther'],
-          cases: 'Jane',
+          cases: ['nom.', 'gen.', 'acc.'],
         },
       ],
     },
@@ -28,7 +33,7 @@ describe('names api test', () => {
 
   describe('names api test', () => {
     const MockDictionaryWordDao = {
-      getNames: jest.fn().mockResolvedValue(resolveValue),
+      getWords: jest.fn().mockResolvedValue(resolveValue),
     };
 
     const mockCache = {
@@ -46,6 +51,7 @@ describe('names api test', () => {
         const PATH = `${API_PATH}/names/${letter}`;
         setup();
         const response = await request(app).get(PATH);
+        expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith('PN', 'a');
         expect(response.status).toBe(200);
         expect(JSON.parse(response.text)).toEqual(resolveValue);
       });
@@ -55,16 +61,20 @@ describe('names api test', () => {
         const PATH = `${API_PATH}/names/${encodeURIComponent(letter)}`;
         setup();
         const response = await request(app).get(PATH);
+        expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
+          'PN',
+          'u/a'
+        );
         expect(response.status).toBe(200);
       });
     });
 
-    it('fails return names', async () => {
+    it('returns 500 on failed names retreival', async () => {
       const letter = 'A';
       const PATH = `${API_PATH}/names/${letter}`;
       setup({
         WordDao: {
-          getNames: jest.fn().mockRejectedValue('Not a valid letter'),
+          getWords: jest.fn().mockRejectedValue('Not a valid letter'),
         },
         ...mockCache,
       });

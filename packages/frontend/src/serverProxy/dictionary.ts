@@ -1,5 +1,5 @@
 import {
-  DictionaryWordResponse,
+  Word,
   UpdateDictionaryWordPayload,
   UpdateDictionaryTranslationPayload,
   UpdateDictionaryResponse,
@@ -18,9 +18,7 @@ import axios from '../axiosInstance';
  * Return forms and spellings of a dictionary word
  * @param {string} uuid The UUID of the word whose info to get
  */
-async function getDictionaryInfo(
-  uuid: string
-): Promise<DictionaryWordResponse> {
+async function getDictionaryInfo(uuid: string): Promise<Word> {
   const { data } = await axios.get(`/dictionary/${uuid}`);
   return data;
 }
@@ -109,7 +107,7 @@ async function getSpellingTotalOccurrences(
 
 async function getDictionaryInfoByDiscourseUuid(
   discourseUuid: string
-): Promise<DictionaryWordResponse | null> {
+): Promise<Word | null> {
   const { data } = await axios.get(
     `/dictionary/textDiscourse/${discourseUuid}`
   );

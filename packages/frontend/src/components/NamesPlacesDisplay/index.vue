@@ -9,7 +9,11 @@
     >
       <template #translation="{ word }" v-if="route === 'names'">
         <div>
-          {{ word.translation || '(no trans.)' }}
+          {{
+            word.translations[0]
+              ? word.translations[0].translation
+              : '(no trans.)'
+          }}
         </div>
       </template>
 
@@ -37,7 +41,7 @@
             {{ formInfo.form }}
           </em>
 
-          <div class="mr-1">({{ formInfo.cases }})</div>
+          <div class="mr-1">({{ formInfo.cases.join('/') }})</div>
           <div
             v-for="(spelling, idx) in formInfo.spellings"
             :key="idx"
@@ -51,13 +55,13 @@
                   comment: true,
                   edit: true,
                   delete: true,
-                  word: spelling.explicitSpelling,
+                  word: spelling.spelling,
                   uuid: spelling.uuid,
                   route: `/dictionaryWord/${word.uuid}`,
                   type: 'SPELLING',
                 })
               "
-              v-html="correctedHtmlSpelling(spelling.explicitSpelling)"
+              v-html="correctedHtmlSpelling(spelling.spelling)"
             ></span>
           </div>
         </div>
@@ -84,8 +88,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import { NameOrPlace, UtilListDisplay } from '@oare/types';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { UtilListDisplay, Word } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
 import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
@@ -100,7 +104,7 @@ export default defineComponent({
   },
   props: {
     wordList: {
-      type: Array as PropType<NameOrPlace[]>,
+      type: Array as PropType<Word[]>,
     },
     letter: {
       type: String,
@@ -112,7 +116,7 @@ export default defineComponent({
     },
   },
 
-  setup(props, { emit }) {
+  setup() {
     const isCommenting = ref(false);
     const utilListOpen = ref(false);
     const utilList = ref<UtilListDisplay>({
@@ -146,13 +150,15 @@ export default defineComponent({
       utilList.value = inputUtilList;
     };
 
-    const searchFilter = (search: string, word: NameOrPlace) => {
+    const searchFilter = (search: string, word: Word) => {
       const lowerSearch = search ? search.toLowerCase() : '';
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        (word.translation &&
-          word.translation.toLowerCase().includes(lowerSearch)) ||
+        (word.translations &&
+          word.translations[0].translation
+            .toLowerCase()
+            .includes(lowerSearch)) ||
         word.forms.some(form => {
           return (
             form.form &&
@@ -160,7 +166,7 @@ export default defineComponent({
               form.spellings.some(spelling => {
                 return (
                   spelling &&
-                  spelling.explicitSpelling.toLowerCase().includes(lowerSearch)
+                  spelling.spelling.toLowerCase().includes(lowerSearch)
                 );
               }))
           );

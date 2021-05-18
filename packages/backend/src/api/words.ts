@@ -9,7 +9,10 @@ const router = express.Router();
 router.route('/words/:letter').get(async (req, res, next) => {
   try {
     const { letter } = req.params;
-    const words = await dictionaryWordDao.getWords(letter.toLowerCase());
+    const words = await dictionaryWordDao.getWords(
+      'word',
+      letter.toLowerCase()
+    );
     const response: WordsResponse = {
       words,
     };
