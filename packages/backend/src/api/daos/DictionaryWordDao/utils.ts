@@ -1,69 +1,11 @@
-import { NameOrPlace, DictionarySearchRow } from '@oare/types';
+import { DictionarySearchRow } from '@oare/types';
 import {
   WordQueryRow,
   WordQueryResultRow,
-  NamePlaceQueryRow,
   SearchWordsQueryRow,
   GrammarInfoRow,
   GrammarInfoResult,
 } from './index';
-
-export function nestedFormsAndSpellings(
-  flatNames: NamePlaceQueryRow[]
-): NameOrPlace[] {
-  const wordList = getWordList(flatNames);
-  const allNames: NameOrPlace[] = [];
-
-  // Insert forms into list with each word
-  wordList.forEach(word => {
-    const names = flatNames.filter(nameInfo => nameInfo.word === word);
-    allNames.push(getNestedNameInfo(names));
-  });
-
-  allNames.sort((a, b) => {
-    if (a.word.toLowerCase() < b.word.toLowerCase()) {
-      return -1;
-    }
-    if (a.word.toLowerCase() > b.word.toLowerCase()) {
-      return 1;
-    }
-    return 0;
-  });
-  return allNames;
-}
-
-function getWordList(flatNames: NamePlaceQueryRow[]): string[] {
-  const wordList = new Set<string>();
-  flatNames.forEach(nameInfo => {
-    wordList.add(nameInfo.word);
-  });
-
-  return Array.from(wordList);
-}
-
-function getNestedNameInfo(flatNames: NamePlaceQueryRow[]): NameOrPlace {
-  const info: NameOrPlace = {
-    uuid: flatNames[0].uuid,
-    word: flatNames[0].word,
-    translation: flatNames[0].translation || '',
-    forms: [],
-  };
-
-  flatNames.forEach(({ formUuid, form, spellings, cases }) => {
-    if (form && formUuid) {
-      const spellingList = spellings || [];
-
-      info.forms.push({
-        uuid: formUuid,
-        form: form.trim(),
-        spellings: spellingList,
-        cases,
-      });
-    }
-  });
-
-  return info;
-}
 
 export function prepareWords(words: WordQueryRow[]): WordQueryResultRow[] {
   const wordsWithLists = words.map(wordInfo => ({

@@ -6,7 +6,6 @@ export * from './src/drafts';
 export * from './src/epigraphies';
 export * from './src/groups';
 export * from './src/login';
-export * from './src/namesAndPlaces';
 export * from './src/permissions';
 export * from './src/search';
 export * from './src/searchNames';

@@ -146,3 +146,5 @@ export interface SpellingOccurrenceRow {
 export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
   readings: string[];
 }
+
+export type DictionaryWordTypes = 'word' | 'GN' | 'PN';
