@@ -3,7 +3,7 @@ import {
   DictionaryWord,
   SearchSpellingResultRow,
   DictionaryWordTypes,
-  DictionaryWordResponse,
+  Word,
   DisplayableWord,
 } from '@oare/types';
 import knex from '@/connection';
@@ -104,10 +104,7 @@ class DictionaryWordDao {
     }));
   }
 
-  async getWords(
-    type: DictionaryWordTypes,
-    letter: string
-  ): Promise<DictionaryWordResponse[]> {
+  async getWords(type: DictionaryWordTypes, letter: string): Promise<Word[]> {
     const letters = letter.split('/');
     let query = knex('dictionary_word').select('uuid', 'word');
 

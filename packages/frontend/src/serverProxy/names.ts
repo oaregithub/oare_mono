@@ -1,7 +1,7 @@
-import { DictionaryWordResponse } from '@oare/types';
+import { Word } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function getNames(letter: string): Promise<DictionaryWordResponse[]> {
+async function getNames(letter: string): Promise<Word[]> {
   const { data } = await axios.get(`/names/${encodeURIComponent(letter)}`);
   return data;
 }

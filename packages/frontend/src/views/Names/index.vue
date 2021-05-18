@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
-import { DictionaryWordResponse } from '@oare/types';
+import { Word } from '@oare/types';
 import NamesPlacesDisplay from '@/components/NamesPlacesDisplay/index.vue';
 import sl from '@/serviceLocator';
 
@@ -22,7 +22,7 @@ export default defineComponent({
     NamesPlacesDisplay,
   },
   setup(props) {
-    const names: Ref<DictionaryWordResponse[]> = ref([]);
+    const names: Ref<Word[]> = ref([]);
     const loading = ref(false);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');

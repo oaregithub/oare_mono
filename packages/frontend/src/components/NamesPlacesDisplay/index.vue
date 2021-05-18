@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
-import { UtilListDisplay, DictionaryWordResponse } from '@oare/types';
+import { UtilListDisplay, Word } from '@oare/types';
 import DictionaryDisplay from '../DictionaryDisplay/index.vue';
 import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import UtilList from '../../components/UtilList/index.vue';
@@ -104,7 +104,7 @@ export default defineComponent({
   },
   props: {
     wordList: {
-      type: Array as PropType<DictionaryWordResponse[]>,
+      type: Array as PropType<Word[]>,
     },
     letter: {
       type: String,
@@ -150,7 +150,7 @@ export default defineComponent({
       utilList.value = inputUtilList;
     };
 
-    const searchFilter = (search: string, word: DictionaryWordResponse) => {
+    const searchFilter = (search: string, word: Word) => {
       const lowerSearch = search ? search.toLowerCase() : '';
 
       return (

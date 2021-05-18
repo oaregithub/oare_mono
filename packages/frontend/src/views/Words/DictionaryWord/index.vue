@@ -98,11 +98,7 @@ import {
   InjectionKey,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import {
-  DictionaryWordResponse,
-  UtilListDisplay,
-  UtilListType,
-} from '@oare/types';
+import { Word, UtilListDisplay, UtilListType } from '@oare/types';
 import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
 import WordInfo from './WordInfo.vue';
 import WordNameEdit from './WordNameEdit.vue';
@@ -129,7 +125,7 @@ export default defineComponent({
       required: true,
     },
     selectedWordInfo: {
-      type: Object as PropType<DictionaryWordResponse>,
+      type: Object as PropType<Word>,
       default: null,
     },
     uuidToHighlight: {
@@ -172,7 +168,7 @@ export default defineComponent({
     const isCommenting = ref(false);
     const isEditing = ref(false);
     const isDeleting = ref(false);
-    const wordInfo = ref<DictionaryWordResponse | null>(null);
+    const wordInfo = ref<Word | null>(null);
     const deleteSpellingLoading = ref(false);
 
     const canUpdateWordSpelling = computed(() =>
@@ -181,7 +177,7 @@ export default defineComponent({
         .includes('UPDATE_WORD_SPELLING')
     );
 
-    const updateWordInfo = (newWordInfo: DictionaryWordResponse) => {
+    const updateWordInfo = (newWordInfo: Word) => {
       wordInfo.value = newWordInfo;
     };
 

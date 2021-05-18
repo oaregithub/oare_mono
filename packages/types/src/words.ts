@@ -17,7 +17,7 @@ export interface DictionaryWordParseInfo {
   verbalThematicVowelTypes: ItemProperty[];
 }
 
-export interface DictionaryWordResponse extends DictionaryWordParseInfo {
+export interface Word extends DictionaryWordParseInfo {
   uuid: string;
   word: string;
   forms: DictionaryForm[];

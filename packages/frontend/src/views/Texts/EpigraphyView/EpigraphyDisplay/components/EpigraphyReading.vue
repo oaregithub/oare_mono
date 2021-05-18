@@ -56,11 +56,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { createTabletRenderer } from '@oare/oare';
-import {
-  DictionaryWordResponse,
-  EpigraphicUnit,
-  EpigraphicWord,
-} from '@oare/types';
+import { Word, EpigraphicUnit, EpigraphicWord } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/views/Words/DictionaryWord/index.vue';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
@@ -86,7 +82,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const viewingDialog = ref(false);
-    const discourseWordInfo = ref<DictionaryWordResponse | null>(null);
+    const discourseWordInfo = ref<Word | null>(null);
 
     const renderer = computed(() => {
       return createTabletRenderer(props.epigraphicUnits, {
