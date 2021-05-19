@@ -10,25 +10,7 @@
     </letter-filter>
     <div v-for="wordInfo in filteredWords" :key="wordInfo.uuid" class="mb-3">
       <div class="d-flex">
-        <slot name="word" :word="wordInfo">
-          <div
-            class="font-weight-bold mr-1"
-            style="cursor: pointer"
-            @click="
-              $emit('clicked-util-list', {
-                comment: true,
-                edit: false,
-                delete: false,
-                word: wordInfo.word,
-                uuid: wordInfo.uuid,
-                route: `/dictionaryWord/${wordInfo.uuid}`,
-                type: 'WORD',
-              })
-            "
-          >
-            {{ wordInfo.word }}
-          </div>
-        </slot>
+        <slot name="word" :word="wordInfo"> </slot>
         <slot name="translation" :word="wordInfo"></slot>
       </div>
       <div>
@@ -43,14 +25,12 @@
 
 <script lang="ts">
 import { defineComponent, ref, PropType } from '@vue/composition-api';
-import UtilList from '../../components/UtilList/index.vue';
 import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
 import { DisplayableWord } from '@oare/types';
 
 export default defineComponent({
   name: 'DictionaryDisplay',
   components: {
-    UtilList,
     LetterFilter,
   },
   props: {

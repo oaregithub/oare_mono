@@ -4,7 +4,6 @@
       :wordList="words"
       :letter="letter"
       route="words"
-      :showForms="false"
       :searchFilter="searchFilter"
     >
       <template #word="{ word }">
@@ -27,7 +26,7 @@
           <span
             v-if="
               word.translations.length > 0 &&
-                word.specialClassifications.length > 0
+              word.specialClassifications.length > 0
             "
             >;</span
           >
