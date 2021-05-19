@@ -220,8 +220,31 @@ const routes: RouteConfig[] = [
     path: '/dictionaryWord/:uuid',
     name: 'dictionaryWord',
     component: DictionaryWord,
-    props: true,
+    props: route => ({
+      uuid: route.params.uuid,
+      route: 'words',
+    }),
     beforeEnter: permissionGuard('WORDS'),
+  },
+  {
+    path: '/namesWord/:uuid',
+    name: 'namesWord',
+    component: DictionaryWord,
+    props: route => ({
+      uuid: route.params.uuid,
+      route: 'names',
+    }),
+    beforeEnter: permissionGuard('NAMES'),
+  },
+  {
+    path: '/placesWord/:uuid',
+    name: 'placesWord',
+    component: DictionaryWord,
+    props: route => ({
+      uuid: route.params.uuid,
+      route: 'places',
+    }),
+    beforeEnter: permissionGuard('PLACES'),
   },
   {
     path: '/search',

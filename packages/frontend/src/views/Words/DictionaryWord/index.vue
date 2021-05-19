@@ -148,6 +148,10 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
+    route: {
+      type: String as PropType<'words' | 'names' | 'places'>,
+      default: 'words',
+    },
   },
   setup(props) {
     const store = sl.get('store');
@@ -239,8 +243,10 @@ export default defineComponent({
     const breadcrumbItems = computed(() => {
       const items: BreadcrumbItem[] = [
         {
-          link: '/words/A',
-          text: 'Dictionary Words',
+          link: `/${props.route}/A`,
+          text: `Dictionary ${props.route[0].toUpperCase()}${props.route.slice(
+            1
+          )}`,
         },
       ];
 
@@ -250,7 +256,7 @@ export default defineComponent({
         )) {
           if (letters.includes(wordInfo.value.word[0].toUpperCase())) {
             items.push({
-              link: `/words/${encodeURIComponent(letterGroup)}`,
+              link: `/${props.route}/${encodeURIComponent(letterGroup)}`,
               text: letterGroup,
             });
             break;

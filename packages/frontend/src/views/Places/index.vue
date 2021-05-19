@@ -29,7 +29,7 @@
           <div class="mr-1">({{ formInfo.cases.join('/') }})</div>
           <router-link
             v-if="formInfo.spellings.length > 0"
-            :to="`/namesWord/${word.uuid}`"
+            :to="`/placesWord/${word.uuid}`"
             class="mr-1 text-decoration-none"
             >({{ formInfo.spellings.length }})</router-link
           >
