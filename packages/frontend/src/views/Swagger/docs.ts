@@ -1,4 +1,5 @@
 import cacheStatus from './endpoints/cache_status';
+import collectionInfo from './endpoints/collection_info';
 import users from './endpoints/users';
 
 const server =
@@ -19,6 +20,7 @@ export default {
   ],
   paths: {
     ...cacheStatus,
+    ...collectionInfo,
     ...users,
   },
 };
