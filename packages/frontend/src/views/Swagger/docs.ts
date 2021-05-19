@@ -1,5 +1,5 @@
-import users from './endpoints/users';
 import cacheStatus from './endpoints/cache_status';
+import users from './endpoints/users';
 
 const server =
   process.env.NODE_ENV === 'development'
@@ -18,7 +18,7 @@ export default {
     },
   ],
   paths: {
-    ...users,
     ...cacheStatus,
+    ...users,
   },
 };

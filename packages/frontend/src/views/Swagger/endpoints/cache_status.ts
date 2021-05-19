@@ -1,5 +1,5 @@
 export default {
-  '/cache_status': {
+  '/cache': {
     get: {
       summary: 'Get the status of the backend cache',
       responses: {
@@ -12,6 +12,28 @@ export default {
               },
             },
           },
+        },
+      },
+    },
+  },
+  '/cache/enable': {
+    patch: {
+      summary: 'Enable the backend cache',
+      responses: {
+        204: {
+          description: 'The cache was successfully enabled',
+        },
+      },
+    },
+  },
+  '/cache/disable': {
+    patch: {
+      summary: 'Disable the backend cache',
+      description:
+        'After disabling the cache, it will automatically be re-enabled after 10 minutes.',
+      responses: {
+        204: {
+          description: 'The cache was successfully disabled',
         },
       },
     },
