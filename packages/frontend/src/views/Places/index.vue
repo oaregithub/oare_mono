@@ -26,7 +26,9 @@
             {{ formInfo.form }}
           </em>
 
-          <div class="mr-1">({{ formInfo.cases.join('/') }})</div>
+          <div class="mr-1" v-if="formInfo.cases.length > 0">
+            ({{ formInfo.cases.join('/') }})
+          </div>
           <router-link
             v-if="formInfo.spellings.length > 0"
             :to="`/placesWord/${word.uuid}`"
