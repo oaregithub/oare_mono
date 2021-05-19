@@ -16,12 +16,6 @@ sl.set('globalActions', {
   showErrorSnackbar: () => {},
 });
 
-// sl.set('store', {
-//   getters: {
-//     idToken: 'token',
-//   },
-// });
-
 Vue.use(Vuetify);
 Vue.component('OareLoaderButton', OareLoaderButton);
 Vue.component('OareCard', OareCard);
