@@ -17,6 +17,7 @@ import i18n from './i18n';
 import 'flag-icon-css/css/flag-icon.css';
 import firebase from './firebase';
 import server from './serverProxy';
+import 'swagger-ui/dist/swagger-ui.css';
 
 sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);

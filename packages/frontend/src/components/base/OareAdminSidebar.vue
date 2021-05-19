@@ -65,6 +65,10 @@ export default defineComponent({
           label: 'Admin Settings',
           path: '/admin/settings',
         },
+        {
+          label: 'Backend Documentation',
+          path: '/admin/swagger',
+        },
       ]),
     });
 
