@@ -126,7 +126,10 @@ export default defineComponent({
       }
     };
 
-    watch(queryParams, performFetch);
+    watch(queryParams, () => {
+      sortOptions.value.page = 1;
+      performFetch();
+    });
 
     watch(sortOptions, newOptions => {
       setSortBy(newOptions.sortBy[0]);
