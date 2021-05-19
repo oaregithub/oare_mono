@@ -6,10 +6,11 @@
 import SwaggerUI from 'swagger-ui';
 import docs from './docs';
 import { defineComponent, onMounted } from '@vue/composition-api';
-import store from '@/ts-store';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   setup() {
+    const store = sl.get('store');
     onMounted(() => {
       SwaggerUI({
         dom_id: '#swagger',
