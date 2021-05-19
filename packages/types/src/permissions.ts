@@ -7,7 +7,7 @@ export type PermissionName = PermissionItem['name'];
 
 export interface PermissionTemplate {
   description: string;
-  dependency?: PermissionName;
+  dependencies?: PermissionName[];
 }
 
 export interface DictionaryPermission extends PermissionTemplate {

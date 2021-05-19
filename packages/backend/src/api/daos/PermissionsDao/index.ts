@@ -33,26 +33,26 @@ class PermissionsDao {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',
-      dependency: 'WORDS',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
       name: 'UPDATE_TRANSLATION',
       type: 'dictionary',
       description:
         'Allow group users to make changes to translations of existing words',
-      dependency: 'WORDS',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
       name: 'UPDATE_WORD_SPELLING',
       type: 'dictionary',
       description: 'Allow group users to change the spelling of existing words',
-      dependency: 'WORDS',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
       name: 'ADD_SPELLING',
       type: 'dictionary',
       description: 'Allow group users to add new spellings to existing words',
-      dependency: 'WORDS',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
       name: 'VIEW_EPIGRAPHY_IMAGES',
@@ -71,7 +71,7 @@ class PermissionsDao {
       type: 'dictionary',
       description:
         'Allow group users to insert new text discourse rows where missing',
-      dependency: 'UPDATE_FORM',
+      dependencies: ['UPDATE_FORM'],
     },
   ];
 
