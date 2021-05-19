@@ -67,7 +67,7 @@ describe('ManagePermissions View test', () => {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',
-      dependency: 'WORDS',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
   ];
 
@@ -207,7 +207,7 @@ describe('ManagePermissions View test', () => {
             name: 'Dependent Permission',
             type: 'dependent',
             description: 'disabled',
-            dependency: 'Main Permission',
+            dependencies: ['Main Permission'],
           },
         ]),
         getGroupPermissions: jest.fn().mockResolvedValue([]),

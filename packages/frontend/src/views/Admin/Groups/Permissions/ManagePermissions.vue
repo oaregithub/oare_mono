@@ -29,8 +29,10 @@
                 <v-tooltip
                   left
                   :disabled="
-                    !permission.dependency ||
-                      groupPermissionNames.includes(permission.dependency)
+                    !permission.dependencies ||
+                    permission.dependencies.some(dep =>
+                      groupPermissionNames.includes(dep)
+                    )
                   "
                 >
                   <template v-slot:activator="{ on, attrs }">
@@ -41,20 +43,20 @@
                         "
                         @change="updatePermission(permission, $event)"
                         :disabled="
-                          permission.dependency &&
-                            !groupPermissionNames.includes(
-                              permission.dependency
-                            )
+                          permission.dependencies &&
+                          !permission.dependencies.some(dep =>
+                            groupPermissionNames.includes(dep)
+                          )
                         "
                         class="test-switch"
                       >
                       </v-switch>
                     </div>
                   </template>
-                  <span v-if="permission.dependency"
-                    >To enable, the
-                    {{ formatName(permission.dependency) }} permission must be
-                    enabled</span
+                  <span v-if="permission.dependencies"
+                    >To enable, one or more of the following permission(s) must
+                    be enabled:
+                    {{ formatDependencies(permission.dependencies) }}</span
                   >
                 </v-tooltip>
               </v-list-item-action>
@@ -114,6 +116,17 @@ export default defineComponent({
       return lowerCase.charAt(0).toUpperCase() + lowerCase.slice(1);
     };
 
+    const formatDependencies = (permissions: PermissionName[]) => {
+      let list = '';
+      permissions.forEach((perm, idx) => {
+        list += formatName(perm);
+        if (idx < permissions.length - 1) {
+          list += ', ';
+        }
+      });
+      return list;
+    };
+
     const updatePermission = async (
       permission: PermissionItem,
       isAllowed: boolean
@@ -162,6 +175,7 @@ export default defineComponent({
       groupPermissionNames,
       formatName,
       updatePermission,
+      formatDependencies,
     };
   },
 });
