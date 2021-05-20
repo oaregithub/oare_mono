@@ -1,5 +1,5 @@
 <template>
-  <v-menu offset-y>
+  <v-menu offset-y v-if="!hideMenu">
     <template v-slot:activator="{ on }">
       <slot name="activator" :on="on"></slot>
     </template>
@@ -36,6 +36,9 @@
       </v-list-item>
     </v-list>
   </v-menu>
+  <span v-else>
+    <slot name="activator" />
+  </span>
 </template>
 
 <script lang="ts">
@@ -59,6 +62,10 @@ export default defineComponent({
     hasDelete: {
       type: Boolean,
       default: true,
+    },
+    hideMenu: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {

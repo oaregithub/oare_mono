@@ -14,10 +14,12 @@
           @comment-clicked="isCommenting = true"
           :hasEdit="false"
           :hasDelete="false"
+          :hideMenu="!allowCommenting && !allowEditing"
         >
           <template #activator="{ on, attrs }">
             <strong
-              class="test-word-util-list cursor-display"
+              class="test-word-util-list"
+              :class="{ 'cursor-display': allowCommenting || allowEditing }"
               v-on="on"
               v-bind="attrs"
             >

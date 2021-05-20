@@ -6,6 +6,7 @@
       @delete-clicked="deleteSpellingDialog = true"
       :hasEdit="canEdit"
       :hasDelete="canEdit"
+      :hideMenu="!allowEditing"
     >
       <template #activator="{ on, attrs }">
         <mark v-if="spelling.uuid === uuidToHighlight">
@@ -13,7 +14,8 @@
             v-html="htmlSpelling"
             v-bind="attrs"
             v-on="on"
-            class="cursor-display test-spelling"
+            class="test-spelling"
+            :class="{ 'cursor-display': allowEditing }"
           ></span
         ></mark>
         <span
@@ -21,7 +23,8 @@
           v-html="htmlSpelling"
           v-bind="attrs"
           v-on="on"
-          class="cursor-display test-spelling"
+          class="test-spelling"
+          :class="{ 'cursor-display': allowEditing }"
         ></span>
       </template>
     </UtilList>

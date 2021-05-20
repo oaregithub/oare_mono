@@ -217,6 +217,7 @@
         :uuid="dictionaryWordUuid"
         :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
         :allow-commenting="false"
+        :allow-editing="false"
         :allow-breadcrumbs="false"
       >
       </component>

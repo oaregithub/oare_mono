@@ -23,10 +23,12 @@
         @comment-clicked="isCommenting = true"
         :hasEdit="false"
         :hasDelete="false"
+        :hideMenu="!allowEditing"
       >
         <template #activator="{ on, attrs }">
           <strong
-            class="mr-1 test-form-util-list cursor-display"
+            class="mr-1 test-form-util-list"
+            :class="{ 'cursor-display': allowEditing }"
             v-on="on"
             v-bind="attrs"
           >
