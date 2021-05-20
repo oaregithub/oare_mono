@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, PropType } from '@vue/composition-api';
-import LetterFilter from '@/views/Words/DictionaryWord/LetterFilter.vue';
+import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
 import { DisplayableWord } from '@oare/types';
 
 export default defineComponent({

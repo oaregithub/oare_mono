@@ -58,7 +58,7 @@ import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { createTabletRenderer } from '@oare/oare';
 import { Word, EpigraphicUnit, EpigraphicWord } from '@oare/types';
 import sl from '@/serviceLocator';
-import DictionaryWord from '@/views/Words/DictionaryWord/index.vue';
+import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
