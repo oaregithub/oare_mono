@@ -316,6 +316,60 @@ describe('threads api test', () => {
     });
   });
 
+  describe('POST /threads', () => {
+    const PATH = `${API_PATH}/threads`;
+    const newThreadUuid = 'new-thread-uuid';
+
+    const ThreadsDao = {
+      insert: jest.fn().mockResolvedValue(newThreadUuid),
+    };
+
+    const UserDao = {
+      getUserByUuid: jest.fn().mockResolvedValue({}),
+    };
+
+    const newThread = {
+      referenceUuid: 'ref-uuid',
+      route: '/words',
+    };
+
+    beforeEach(() => {
+      sl.set('ThreadsDao', ThreadsDao);
+      sl.set('UserDao', UserDao);
+    });
+
+    const sendRequest = (auth = true) => {
+      const req = request(app).post(PATH).send(newThread);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('successfully inserts thread', async () => {
+      const response = await sendRequest();
+      expect(ThreadsDao.insert).toHaveBeenCalledWith(newThread);
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 401 if user is not signed in', async () => {
+      const response = await sendRequest(false);
+      expect(ThreadsDao.insert).not.toHaveBeenCalled();
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 500 if inserting fails', async () => {
+      sl.set('ThreadsDao', {
+        ...ThreadsDao,
+        insert: jest.fn().mockRejectedValue('failed to insert thread'),
+      });
+
+      const response = await sendRequest();
+      expect(ThreadsDao.insert).not.toHaveBeenCalled();
+      expect(response.status).toBe(500);
+    });
+  });
+
   describe('PUT /threads/name', () => {
     const PATH = `${API_PATH}/threads/name`;
 

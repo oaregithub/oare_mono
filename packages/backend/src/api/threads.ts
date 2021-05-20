@@ -6,11 +6,11 @@ import {
   Thread,
   ThreadWithComments,
   Comment,
-  ThreadStatus,
   ThreadDisplay,
   UpdateThreadNameRequest,
   AllCommentsRequest,
   AllCommentsResponse,
+  CreateThreadPayload,
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -113,47 +113,60 @@ router
     }
   });
 
-router.route('/threads').get(authenticatedRoute, async (req, res, next) => {
-  try {
-    const requestString = (req.query.request as unknown) as string;
-    const request: AllCommentsRequest = JSON.parse(requestString);
+router
+  .route('/threads')
+  .get(authenticatedRoute, async (req, res, next) => {
+    try {
+      const requestString = (req.query.request as unknown) as string;
+      const request: AllCommentsRequest = JSON.parse(requestString);
 
-    const threadsDao = sl.get('ThreadsDao');
-    const commentsDao = sl.get('CommentsDao');
+      const threadsDao = sl.get('ThreadsDao');
+      const commentsDao = sl.get('CommentsDao');
 
-    const userUuid = req.user ? req.user.uuid : null;
+      const userUuid = req.user ? req.user.uuid : null;
 
-    const threadRows = await threadsDao.getAll(request, userUuid);
+      const threadRows = await threadsDao.getAll(request, userUuid);
 
-    const results: ThreadDisplay[] = await Promise.all(
-      threadRows.threads.map(async threadRow => {
-        const comments = await commentsDao.getAllByThreadUuid(
-          threadRow.uuid,
-          true
-        );
-        return {
-          thread: {
-            uuid: threadRow.uuid,
-            name: threadRow.name,
-            referenceUuid: threadRow.referenceUuid,
-            status: threadRow.status,
-            route: threadRow.route,
-          },
-          word: threadRow.item,
-          latestCommentDate: new Date(threadRow.timestamp),
-          comments,
-        } as ThreadDisplay;
-      })
-    );
+      const results: ThreadDisplay[] = await Promise.all(
+        threadRows.threads.map(async threadRow => {
+          const comments = await commentsDao.getAllByThreadUuid(
+            threadRow.uuid,
+            true
+          );
+          return {
+            thread: {
+              uuid: threadRow.uuid,
+              name: threadRow.name,
+              referenceUuid: threadRow.referenceUuid,
+              status: threadRow.status,
+              route: threadRow.route,
+            },
+            word: threadRow.item,
+            latestCommentDate: new Date(threadRow.timestamp),
+            comments,
+          } as ThreadDisplay;
+        })
+      );
 
-    res.json({
-      threads: results,
-      count: threadRows.count,
-    } as AllCommentsResponse);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      res.json({
+        threads: results,
+        count: threadRows.count,
+      } as AllCommentsResponse);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  })
+  .post(authenticatedRoute, async (req, res, next) => {
+    try {
+      const ThreadsDao = sl.get('ThreadsDao');
+      const newThread: CreateThreadPayload = req.body;
+
+      const newThreadUuid = await ThreadsDao.insert(newThread);
+      res.json(newThreadUuid);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
   try {

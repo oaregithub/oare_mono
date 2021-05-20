@@ -1,4 +1,9 @@
-import { AllCommentsRequest, Thread } from '@oare/types';
+import {
+  AllCommentsRequest,
+  Thread,
+  ThreadStatus,
+  CreateThreadPayload,
+} from '@oare/types';
 import knex from '@/connection';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
@@ -32,8 +37,9 @@ const isNullThreadName = (name: string): boolean =>
   NULL_THREAD_NAME.toLowerCase().includes(name);
 
 class ThreadsDao {
-  async insert({ referenceUuid, status, route }: Thread): Promise<string> {
+  async insert({ referenceUuid, route }: CreateThreadPayload): Promise<string> {
     const newUuid: string = v4();
+    const status: ThreadStatus = 'New';
     await knex('threads').insert({
       uuid: newUuid,
       reference_uuid: referenceUuid,

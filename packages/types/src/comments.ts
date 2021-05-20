@@ -1,5 +1,4 @@
 import { DictionaryForm, FormSpelling, Pagination } from './dictionary';
-import { ErrorStatus, SortType } from './errors';
 
 export interface CommentRequest {
   comment: CommentInsert;
@@ -43,6 +42,8 @@ export interface Thread {
   status: ThreadStatus;
   route: string;
 }
+
+export type CreateThreadPayload = Pick<Thread, 'referenceUuid' | 'route'>;
 
 export interface UpdateThreadNameRequest {
   threadUuid: string;
