@@ -1,6 +1,7 @@
 import cacheStatus from './endpoints/cache_status';
 import collectionGroups from './endpoints/collection_groups';
 import collectionInfo from './endpoints/collection_info';
+import collections from './endpoints/collections';
 import users from './endpoints/users';
 
 const server =
@@ -23,6 +24,7 @@ export default {
     ...cacheStatus,
     ...collectionGroups,
     ...collectionInfo,
+    ...collections,
     ...users,
   },
 };

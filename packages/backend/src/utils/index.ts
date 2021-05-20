@@ -31,7 +31,7 @@ export const extractPagination = (
 ): Required<Pagination> => {
   const page = query.page
     ? ((query.page as unknown) as number)
-    : defaultPage || 0;
+    : defaultPage || 1;
   const limit = query.limit
     ? ((query.limit as unknown) as number)
     : defaultLimit || 10;
