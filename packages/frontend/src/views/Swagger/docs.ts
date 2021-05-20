@@ -1,4 +1,5 @@
 import cacheStatus from './endpoints/cache_status';
+import collectionGroups from './endpoints/collection_groups';
 import collectionInfo from './endpoints/collection_info';
 import users from './endpoints/users';
 
@@ -20,6 +21,7 @@ export default {
   ],
   paths: {
     ...cacheStatus,
+    ...collectionGroups,
     ...collectionInfo,
     ...users,
   },
