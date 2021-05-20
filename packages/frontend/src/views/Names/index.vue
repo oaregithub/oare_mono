@@ -33,12 +33,6 @@
           <div class="mr-1" v-if="formInfo.cases.length > 0">
             ({{ formInfo.cases.join('/') }})
           </div>
-          <router-link
-            v-if="formInfo.spellings.length > 0"
-            :to="`/namesWord/${word.uuid}`"
-            class="mr-1 text-decoration-none"
-            >({{ formInfo.spellings.length }})</router-link
-          >
         </div>
       </template>
     </DictionaryDisplay>
