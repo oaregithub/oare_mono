@@ -378,7 +378,7 @@ describe('Text drafts test', () => {
       expect(TextDraftsDao.getAllDraftUuids).toHaveBeenCalledWith({
         sortBy: 'updatedAt',
         sortOrder: 'desc',
-        page: 0,
+        page: 1,
         limit: 10,
         authorFilter: '',
         textFilter: '',
