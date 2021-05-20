@@ -1,17 +1,12 @@
 <template>
-  <oare-dialog
-    :value="value"
-    @input="$emit('input', $event)"
-    :width="500"
-    :show-submit="false"
-    :show-cancel="false"
-    :closeButton="true"
-    :persistent="false"
-  >
+  <v-menu offset-y>
+    <template v-slot:activator="{ on }">
+      <slot name="activator" :on="on"></slot>
+    </template>
     <v-list>
       <v-list-item
         v-if="hasComment"
-        @click="$emit('clicked-commenting')"
+        @click="$emit('comment-clicked')"
         class="test-comment"
       >
         <v-list-item-title>
@@ -21,7 +16,7 @@
       </v-list-item>
       <v-list-item
         v-if="hasEdit"
-        @click="$emit('clicked-editing')"
+        @click="$emit('edit-clicked')"
         class="test-pencil"
       >
         <v-list-item-title>
@@ -31,7 +26,7 @@
       </v-list-item>
       <v-list-item
         v-if="hasDelete"
-        @click="$emit('clicked-deleting')"
+        @click="$emit('delete-clicked')"
         class="test-close"
       >
         <v-list-item-title>
@@ -40,7 +35,7 @@
         </v-list-item-title>
       </v-list-item>
     </v-list>
-  </oare-dialog>
+  </v-menu>
 </template>
 
 <script lang="ts">

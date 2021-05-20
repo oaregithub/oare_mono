@@ -26,6 +26,11 @@ describe('FormsDisplay test', () => {
   const mockLodash = {
     debounce: cb => cb,
   };
+  const mockRouter = {
+    currentRoute: {
+      name: 'testName',
+    },
+  };
   const mockForm = {
     uuid: 'testUuid',
     form: 'test form',
@@ -50,6 +55,7 @@ describe('FormsDisplay test', () => {
     sl.set('globalActions', actions || mockActions);
     sl.set('store', mockStore);
     sl.set('lodash', mockLodash);
+    sl.set('router', mockRouter);
 
     return mount(FormDisplay, {
       vuetify,
@@ -107,11 +113,5 @@ describe('FormsDisplay test', () => {
     await flushPromises();
 
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
-  it('check that utils list was sent', async () => {
-    const wrapper = createWrapper();
-    await wrapper.get('.test-form-util-list').trigger('click');
-    expect(toUtilList).toHaveBeenCalled();
   });
 });
