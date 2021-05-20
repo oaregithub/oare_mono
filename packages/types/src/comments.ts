@@ -1,24 +1,5 @@
 import { DictionaryForm, FormSpelling, Pagination } from './dictionary';
 
-export interface CommentRequest {
-  comment: CommentInsert;
-  thread: Thread;
-}
-
-export interface CommentResponse {
-  commentUuid: string;
-  threadUuid: string;
-}
-
-export interface CommentInsert {
-  uuid: string | null;
-  threadUuid: string | null;
-  userUuid: string | null;
-  createdAt: Date | null;
-  deleted: boolean;
-  text: string;
-}
-
 export interface Comment {
   uuid: string;
   threadUuid: string;
@@ -27,6 +8,8 @@ export interface Comment {
   deleted: boolean;
   text: string;
 }
+
+export type CreateCommentPayload = Pick<Comment, 'threadUuid' | 'text'>;
 
 export interface CommentDisplay extends Comment {
   userFirstName: string;

@@ -2,11 +2,16 @@ import {
   AllCommentsRequest,
   AllCommentsResponse,
   Thread,
-  ThreadDisplay,
   ThreadWithComments,
   UpdateThreadNameRequest,
+  CreateThreadPayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
+
+async function createThread(payload: CreateThreadPayload): Promise<string> {
+  const { data } = await axios.post('/threads', payload);
+  return data;
+}
 
 async function getThreadsWithCommentsByReferenceUuid(
   referenceUuid: string
@@ -49,4 +54,5 @@ export default {
   getAllThreads,
   updateThreadName,
   newThreadsExist,
+  createThread,
 };

@@ -1,6 +1,6 @@
 <template>
   <oare-dialog
-    :actionTitle="'Add Comment'"
+    actionTitle="Add Comment"
     :closeButton="true"
     :persistent="false"
     :show-cancel="false"
@@ -258,20 +258,16 @@ import {
   Ref,
   watch,
   computed,
-  PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import {
-  CommentResponse,
-  Thread,
-  CommentRequest,
   ThreadWithComments,
-  CommentInsert,
   ThreadStatus,
   CommentDisplay,
   UpdateThreadNameRequest,
 } from '@oare/types';
 import { resetAdminBadge } from '@/utils';
+import serverProxy from '@/serverProxy';
 
 export default defineComponent({
   name: 'CommentWordDisplay',
@@ -481,44 +477,50 @@ export default defineComponent({
 
       loading.value = true;
       try {
-        const comment: CommentInsert = {
-          uuid: null,
-          threadUuid: selectedThreadWithComments.value.thread.uuid
-            ? selectedThreadWithComments.value.thread.uuid
-            : '',
-          userUuid: loggedInUser.value ? loggedInUser.value.uuid : null,
-          createdAt: null,
-          deleted: false,
-          text: userComment.value,
-        };
-
         // If creating new thread
+        let threadUuid: string;
         if (!selectedThreadWithComments.value.thread.uuid) {
-          selectedThreadWithComments.value.thread = {
-            uuid: '',
-            name: null,
+          const createThreadPayload = {
             referenceUuid: props.uuid,
-            status: 'New',
             route: props.route,
           };
-        }
 
-        const request: CommentRequest = {
-          comment,
-          thread: selectedThreadWithComments.value.thread,
-        };
+          threadUuid = await serverProxy.createThread(createThreadPayload);
 
-        const response: CommentResponse = await server.insertComment(request);
-        if (response) {
-          actions.showSnackbar(
-            `Successfully added the comment for ${props.word}`
-          );
-          userComment.value = '';
-          selectedThreadWithComments.value.thread.uuid = response.threadUuid;
-          await getThreadsWithComments();
+          selectedThreadWithComments.value.thread = {
+            uuid: threadUuid,
+            name: null,
+            status: 'New',
+            ...createThreadPayload,
+          };
         } else {
-          actions.showErrorSnackbar('Failed to insert the comment');
+          threadUuid = selectedThreadWithComments.value.thread.uuid;
         }
+
+        const newCommentUuid = await server.insertComment({
+          threadUuid,
+          text: userComment.value,
+        });
+
+        selectedThreadWithComments.value.comments = [
+          ...selectedThreadWithComments.value.comments,
+          {
+            userFirstName: store.getters.user.firstName,
+            userLastName: store.getters.user.lastName,
+            uuid: newCommentUuid,
+            threadUuid,
+            userUuid: store.getters.user.uuid,
+            createdAt: new Date(),
+            deleted: false,
+            text: userComment.value,
+          },
+        ];
+
+        actions.showSnackbar(
+          `Successfully added the comment for ${props.word}`
+        );
+        userComment.value = '';
+        await getThreadsWithComments();
       } catch {
         actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
