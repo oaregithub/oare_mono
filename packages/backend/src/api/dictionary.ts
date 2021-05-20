@@ -1,7 +1,7 @@
 import express from 'express';
 import _ from 'lodash';
 import {
-  DictionaryWordResponse,
+  Word,
   UpdateDictionaryWordPayload,
   UpdateDictionaryTranslationPayload,
   DictionaryForm,
@@ -149,7 +149,7 @@ router
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
       const forms = await DictionaryFormDao.getWordForms(uuid);
 
-      const result: DictionaryWordResponse = {
+      const result: Word = {
         ...grammarInfo,
         forms,
       };
@@ -439,7 +439,7 @@ router
         discourseUuid
       );
 
-      let result: DictionaryWordResponse | null = null;
+      let result: Word | null = null;
 
       if (spellingUuids.length > 0) {
         // Should only ever be one spelling associated with a "word" type in the text discourse table.

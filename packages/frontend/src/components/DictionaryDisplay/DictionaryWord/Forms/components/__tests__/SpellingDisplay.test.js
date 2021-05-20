@@ -3,7 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
-import { SendUtilList } from '../../../index.vue';
+import { ReloadKey } from '../../../index.vue';
 import SpellingDisplay from '../SpellingDisplay.vue';
 
 const vuetify = new Vuetify();
@@ -60,14 +60,19 @@ describe('SpellingDisplay test', () => {
   const lodash = {
     debounce: cb => cb,
   };
-
-  const toUtilList = jest.fn();
+  const mockRouter = {
+    currentRoute: {
+      name: 'testName',
+    },
+  };
+  const reload = jest.fn();
 
   const createWrapper = ({ server, store } = {}) => {
     sl.set('store', store || mockStore);
     sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
     sl.set('lodash', lodash);
+    sl.set('router', mockRouter);
     return mount(SpellingDisplay, {
       vuetify,
       localVue,
@@ -78,7 +83,7 @@ describe('SpellingDisplay test', () => {
       },
       stubs: ['router-link'],
       provide: {
-        [SendUtilList]: toUtilList,
+        [ReloadKey]: reload,
       },
     });
   };
@@ -104,12 +109,6 @@ describe('SpellingDisplay test', () => {
     await wrapper.get('.test-num-texts').trigger('click');
     await flushPromises();
     expect(wrapper.get('.test-text-occurrences-display').exists()).toBe(true);
-  });
-
-  it('sends spelling deletion request', async () => {
-    const wrapper = createWrapper();
-    await wrapper.get('.testing-spelling').trigger('click');
-    expect(toUtilList).toHaveBeenCalled();
   });
 
   it("doesn't allow editing without permissions", async () => {

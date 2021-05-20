@@ -10,12 +10,6 @@ export interface FormGrammarRow {
   valueAbbrev: string | null;
 }
 
-export interface FormRow {
-  uuid: string;
-  referenceUuid: string;
-  form: string;
-}
-
 function getCliticSuffixUuid(grammarRows: FormGrammarRow[]): string | null {
   const cliticRow = grammarRows.find(
     row => row.variable === 'Clitic' && row.valueName === 'Suffix pronoun'
@@ -184,15 +178,6 @@ class DictionaryFormDao {
         spellings: formSpellings[i],
       }))
       .sort((a, b) => a.form.localeCompare(b.form));
-  }
-
-  async getDictionaryFormRows(): Promise<FormRow[]> {
-    const forms: FormRow[] = await knex('dictionary_form AS df').select(
-      'df.uuid',
-      'df.reference_uuid AS referenceUuid',
-      'df.form'
-    );
-    return forms;
   }
 
   async getDictionaryWordUuidByFormUuid(formUuid: string): Promise<string> {

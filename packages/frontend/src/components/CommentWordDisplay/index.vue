@@ -211,12 +211,16 @@
       class="test-comment-footer"
     >
       <v-divider class="mt-3 mb-3" />
-      <DictionaryWord
+      <component
+        v-if="showDictionary"
+        :is="dictionaryWordComponent"
         :uuid="dictionaryWordUuid"
         :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
         :allow-commenting="false"
+        :allow-editing="false"
+        :allow-breadcrumbs="false"
       >
-      </DictionaryWord>
+      </component>
     </div>
 
     <OareDialog
@@ -275,9 +279,6 @@ import { resetAdminBadge } from '@/utils';
 
 export default defineComponent({
   name: 'CommentWordDisplay',
-  components: {
-    DictionaryWord: () => import('@/views/Words/DictionaryWord/index.vue'),
-  },
   props: {
     word: {
       type: String,
@@ -298,6 +299,10 @@ export default defineComponent({
     initialThreadUuid: {
       type: String,
       default: null,
+    },
+    showDictionary: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {
@@ -321,7 +326,12 @@ export default defineComponent({
     const selectedItem = ref<number | undefined>(undefined);
     const selectedCommentUuidToDelete = ref<string>('');
     const userComment = ref('');
-    const statuses = ref(['New', 'Pending', 'In Progress', 'Completed']);
+    const statuses = ref<ThreadStatus[]>([
+      'New',
+      'Pending',
+      'In Progress',
+      'Completed',
+    ]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
@@ -330,7 +340,7 @@ export default defineComponent({
       return threadName ? threadName : `Untitled ${idx}`;
     };
 
-    const formatCommentDateTime = (datetime: string): string => {
+    const formatCommentDateTime = (datetime: Date): string => {
       return new Date(datetime)
         .toDateString()
         .substr(new Date(datetime).toDateString().indexOf(' '));
@@ -586,6 +596,13 @@ export default defineComponent({
       );
     };
 
+    const dictionaryWordComponent = computed(() =>
+      props.showDictionary
+        ? () =>
+            import('@/components/DictionaryDisplay/DictionaryWord/index.vue')
+        : null
+    );
+
     return {
       dictionaryWordUuid,
       displayThreadName,
@@ -611,6 +628,7 @@ export default defineComponent({
       deleteComment,
       insertComment,
       userComment,
+      dictionaryWordComponent,
     };
   },
 });

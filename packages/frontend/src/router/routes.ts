@@ -19,6 +19,7 @@ import ResetPasswordView from '@/views/Authentication/ResetPassword/ResetPasswor
 import ManagePermissions from '@/views/Admin/Groups/Permissions/ManagePermissions.vue';
 import EpigraphyEditor from '@/views/Texts/EpigraphyView/Editor/EpigraphyEditor.vue';
 import EpigraphyFullDisplay from '@/views/Texts/EpigraphyView/EpigraphyDisplay/EpigraphyFullDisplay.vue';
+import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import KnownIssues from '../views/Home/KnownIssues.vue';
 import LoginView from '../views/Authentication/Login/LoginView.vue';
 import RegisterView from '../views/Authentication/Register/RegisterView.vue';
@@ -30,7 +31,6 @@ import CollectionTexts from '../views/Texts/CollectionTexts/index.vue';
 import CollectionsView from '../views/Texts/CollectionsView/index.vue';
 import SearchView from '../views/Search/index.vue';
 import ForbiddenView from '../views/Authentication/Forbidden/ForbiddenView.vue';
-import DictionaryWord from '../views/Words/DictionaryWord/index.vue';
 import EpigraphyView from '../views/Texts/EpigraphyView/index.vue';
 import Drafts from '../views/Dashboard/Drafts.vue';
 import Profile from '../views/Dashboard/Profile.vue';
@@ -220,8 +220,31 @@ const routes: RouteConfig[] = [
     path: '/dictionaryWord/:uuid',
     name: 'dictionaryWord',
     component: DictionaryWord,
-    props: true,
+    props: route => ({
+      uuid: route.params.uuid,
+      route: 'words',
+    }),
     beforeEnter: permissionGuard('WORDS'),
+  },
+  {
+    path: '/namesWord/:uuid',
+    name: 'namesWord',
+    component: DictionaryWord,
+    props: route => ({
+      uuid: route.params.uuid,
+      route: 'names',
+    }),
+    beforeEnter: permissionGuard('NAMES'),
+  },
+  {
+    path: '/placesWord/:uuid',
+    name: 'placesWord',
+    component: DictionaryWord,
+    props: route => ({
+      uuid: route.params.uuid,
+      route: 'places',
+    }),
+    beforeEnter: permissionGuard('PLACES'),
   },
   {
     path: '/search',

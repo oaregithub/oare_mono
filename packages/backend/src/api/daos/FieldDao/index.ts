@@ -11,12 +11,6 @@ interface FieldRow {
   field: string | null;
 }
 
-export interface FieldShortRow {
-  uuid: string;
-  referenceUuid: string;
-  field: string | null;
-}
-
 interface FieldOptions {
   primacy?: number;
 }
@@ -55,15 +49,6 @@ class FieldDao {
 
   async deleteField(uuid: string) {
     await knex('field').del().where({ uuid });
-  }
-
-  async getFieldRows(): Promise<FieldShortRow[]> {
-    const fields: FieldShortRow[] = await knex('field AS f').select(
-      'f.uuid',
-      'f.reference_uuid AS referenceUuid',
-      'f.field'
-    );
-    return fields;
   }
 }
 

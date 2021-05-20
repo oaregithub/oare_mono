@@ -9,7 +9,8 @@ router.route('/places/:letter').get(async (req, res, next) => {
     const { letter } = req.params;
     const cache = sl.get('cache');
     const DictionaryWordDao = sl.get('DictionaryWordDao');
-    const dictionaryPlaces = await DictionaryWordDao.getPlaces(
+    const dictionaryPlaces = await DictionaryWordDao.getWords(
+      'GN',
       letter.toLowerCase()
     );
 
