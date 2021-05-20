@@ -129,6 +129,43 @@ export default {
           },
         },
       },
+      responses: {
+        204: {
+          description: 'Collection permissions successfully updated',
+        },
+        400: {
+          description:
+            "Either the group ID doesn't exist or the collection doesn't belong in the group",
+        },
+      },
+    },
+  },
+  '/collection_groups/{groupId}/{collectionUuid}': {
+    delete: {
+      summary: 'Removes a collection from a group',
+      parameters: [
+        {
+          ...groupIdDescription,
+          description: 'The ID of the group to remove a collection from',
+        },
+        {
+          in: 'path',
+          name: 'collectionUuid',
+          schema: {
+            type: 'string',
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        204: {
+          description: 'The collection was successfully removed from the group',
+        },
+        400: {
+          description:
+            "Either the group ID doesn't exist or the collecction doesn't belong to the group",
+        },
+      },
     },
   },
 };
