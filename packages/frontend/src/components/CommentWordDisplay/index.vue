@@ -215,6 +215,7 @@
         :uuid="dictionaryWordUuid"
         :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
         :allow-commenting="false"
+        :allow-breadcrumbs="false"
       >
       </DictionaryWord>
     </div>
@@ -321,7 +322,12 @@ export default defineComponent({
     const selectedItem = ref<number | undefined>(undefined);
     const selectedCommentUuidToDelete = ref<string>('');
     const userComment = ref('');
-    const statuses = ref(['New', 'Pending', 'In Progress', 'Completed']);
+    const statuses = ref<ThreadStatus[]>([
+      'New',
+      'Pending',
+      'In Progress',
+      'Completed',
+    ]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
@@ -330,7 +336,7 @@ export default defineComponent({
       return threadName ? threadName : `Untitled ${idx}`;
     };
 
-    const formatCommentDateTime = (datetime: string): string => {
+    const formatCommentDateTime = (datetime: Date): string => {
       return new Date(datetime)
         .toDateString()
         .substr(new Date(datetime).toDateString().indexOf(' '));
