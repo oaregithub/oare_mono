@@ -597,7 +597,8 @@ export default defineComponent({
 
     const dictionaryWordComponent = computed(() =>
       props.showDictionary
-        ? () => import('@/views/Words/DictionaryWord/index.vue')
+        ? () =>
+            import('@/components/DictionaryDisplay/DictionaryWord/index.vue')
         : null
     );
 
