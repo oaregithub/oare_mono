@@ -211,13 +211,15 @@
       class="test-comment-footer"
     >
       <v-divider class="mt-3 mb-3" />
-      <DictionaryWord
+      <component
+        v-if="showDictionary"
+        :is="dictionaryWordComponent"
         :uuid="dictionaryWordUuid"
         :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
         :allow-commenting="false"
         :allow-breadcrumbs="false"
       >
-      </DictionaryWord>
+      </component>
     </div>
 
     <OareDialog
@@ -276,9 +278,6 @@ import { resetAdminBadge } from '@/utils';
 
 export default defineComponent({
   name: 'CommentWordDisplay',
-  components: {
-    DictionaryWord: () => import('@/views/Words/DictionaryWord/index.vue'),
-  },
   props: {
     word: {
       type: String,
@@ -299,6 +298,10 @@ export default defineComponent({
     initialThreadUuid: {
       type: String,
       default: null,
+    },
+    showDictionary: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {
@@ -592,6 +595,12 @@ export default defineComponent({
       );
     };
 
+    const dictionaryWordComponent = computed(() =>
+      props.showDictionary
+        ? () => import('@/views/Words/DictionaryWord/index.vue')
+        : null
+    );
+
     return {
       dictionaryWordUuid,
       displayThreadName,
@@ -617,6 +626,7 @@ export default defineComponent({
       deleteComment,
       insertComment,
       userComment,
+      dictionaryWordComponent,
     };
   },
 });

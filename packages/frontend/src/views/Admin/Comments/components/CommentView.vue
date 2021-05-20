@@ -128,6 +128,7 @@
       :uuid="selectedThreadDisplay.thread.referenceUuid"
       :word="selectedThreadDisplay.word"
       :initial-thread-uuid="selectedThreadDisplay.thread.uuid"
+      :showDictionary="true"
       @submit="isViewingThread = false"
       @input="isViewingThread = false"
       class="test-comment-word-display"

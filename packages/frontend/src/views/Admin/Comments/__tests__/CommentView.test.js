@@ -1,5 +1,5 @@
 import Vuetify from 'vuetify';
-import VueCompositionApi, { PropType } from '@vue/composition-api';
+import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
@@ -135,11 +135,18 @@ const mockLodash = {
   debounce: cb => cb,
 };
 
+const mockRouter = {
+  currentRoute: {
+    name: 'testName',
+  },
+};
+
 const setup = () => {
   sl.set('serverProxy', mockServer);
   sl.set('globalActions', mockActions);
   sl.set('lodash', mockLodash);
   sl.set('store', mockStore);
+  sl.set('router', mockRouter);
 };
 
 beforeEach(setup);
