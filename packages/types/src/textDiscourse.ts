@@ -27,5 +27,6 @@ export interface DiscourseUnit {
 
 export interface NewDiscourseRowPayload {
   spelling: string;
+  formUuid: string;
   occurrences: SearchNullDiscourseResultRow[];
 }
