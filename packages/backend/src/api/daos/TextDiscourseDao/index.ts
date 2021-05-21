@@ -276,6 +276,7 @@ class TextDiscourseDao {
 
   async insertNewDiscourseRow(
     spelling: string,
+    formUuid: string,
     epigraphyUuids: string[],
     textUuid: string
   ): Promise<void> {
@@ -290,7 +291,8 @@ class TextDiscourseDao {
     );
     const parentUuid = await this.getParentUuidByTextUuid(textUuid);
     const spellingUuid = await DictionarySpellingDao.getUuidBySpelling(
-      spelling
+      spelling,
+      formUuid
     );
     const spellingReferenceUuids = await DictionarySpellingDao.getReferenceUuidsBySpellingUuid(
       spellingUuid

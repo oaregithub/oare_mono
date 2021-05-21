@@ -3,6 +3,7 @@ import { SearchNullDiscourseResultRow } from '@oare/types';
 
 async function insertDiscourseRow(
   spelling: string,
+  formUuid: string,
   occurrences: SearchNullDiscourseResultRow[]
 ): Promise<void> {
   const uniqueTextUuids = [...new Set(occurrences.map(occ => occ.textUuid))];
@@ -14,6 +15,7 @@ async function insertDiscourseRow(
     occurrencesByText.map(occurrenceBatch =>
       axios.post('/text_discourse', {
         spelling,
+        formUuid,
         occurrences: occurrenceBatch,
       })
     )

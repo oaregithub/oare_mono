@@ -171,6 +171,7 @@ export default defineComponent({
         insertDiscourseRowsLoading.value = true;
         await server.insertDiscourseRow(
           props.spellingInput,
+          props.form.uuid,
           selectedOccurrences.value
         );
         searchOptions.value.page = 1;

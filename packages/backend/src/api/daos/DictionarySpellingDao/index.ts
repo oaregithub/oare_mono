@@ -98,9 +98,10 @@ class DictionarySpellingDao {
     return row.referenceUuid;
   }
 
-  async getUuidBySpelling(spelling: string): Promise<string> {
+  async getUuidBySpelling(spelling: string, formUuid: string): Promise<string> {
     const row: { uuid: string } = await knex('dictionary_spelling')
-      .where('explicit_spelling', spelling)
+      .where('reference_uuid', formUuid)
+      .andWhere('explicit_spelling', spelling)
       .select('uuid')
       .first();
     return row.uuid;
