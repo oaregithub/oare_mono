@@ -41,17 +41,9 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  reactive,
-  toRefs,
-  computed,
-  ref,
-  PropType,
-} from '@vue/composition-api';
+import { defineComponent, computed, ref } from '@vue/composition-api';
 import SearchField from './SearchField.vue';
 import sl from '@/serviceLocator';
-import router from '@/router';
 
 export default defineComponent({
   name: 'OareSidebar',
@@ -67,19 +59,6 @@ export default defineComponent({
     const textSearchDisabled = computed(() => word.value.trim() !== '');
     const dictionaryDisabled = computed(() => {
       return text.value.trim() !== '' || translit.value.trim() !== '';
-    });
-
-    const searchQuery = computed(() => {
-      if (dictionaryDisabled.value) {
-        return {
-          ...(text && { title: text.value }),
-          ...(translit && { translit: translit.value }),
-        };
-      } else {
-        return {
-          ...(word && { dictionary: word.value }),
-        };
-      }
     });
 
     const performSearch = async () => {

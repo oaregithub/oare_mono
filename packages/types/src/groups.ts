@@ -17,10 +17,6 @@ export interface UpdateGroupDescriptionPayload {
   description: string;
 }
 
-export interface DeleteGroupPayload {
-  groupIds: number[];
-}
-
 export interface AddUsersToGroupPayload {
   userUuids: string[];
 }

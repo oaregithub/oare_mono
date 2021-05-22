@@ -81,7 +81,7 @@ export default defineComponent({
   components: {
     ResultTable,
   },
-  setup(props, context) {
+  setup() {
     const totalResults = ref(0);
     const searchResults: Ref<DictionarySearchRow[]> = ref([]);
     const searchLoading = ref(false);

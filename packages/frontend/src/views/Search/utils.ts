@@ -1,21 +1,3 @@
-import router from '../../router';
-
-export interface SearchOptions {
-  title?: string;
-  query?: string;
-  dictionary?: string;
-  page?: string;
-  rows?: string;
-}
-export const updateUrl = (searchOptions: Readonly<SearchOptions>) => {
-  router.replace({
-    name: router.currentRoute.name || '/',
-    query: {
-      ...searchOptions,
-    },
-  });
-};
-
 export const highlightedItem = (item: string, search: string) => {
   const components: string[] = [];
   for (let i = 0; i < item.length; i += 1) {

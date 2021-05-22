@@ -1,10 +1,7 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import {
-  NewDiscourseRowPayload,
-  SearchNullDiscourseResultRow,
-} from '@oare/types';
+import { NewDiscourseRowPayload } from '@oare/types';
 import permissionRoute from '@/middlewares/permissionsRoute';
 
 const router = express.Router();

@@ -1,6 +1,5 @@
 import sl from '@/serviceLocator';
 import { User } from '@oare/types';
-import AliasDao from '@/api/daos/AliasDao';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
 import FieldDao from '@/api/daos/FieldDao';
@@ -19,12 +18,10 @@ import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import * as utils from '@/utils';
 import { initializeFirebase } from '@/firebase';
 import app from './app';
-import mailer from './mailer';
 import UserDao from './api/daos/UserDao';
 import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
 import SignReadingDao from './api/daos/SignReadingDao';
 import CollectionGroupDao from './api/daos/CollectionGroupDao';
-import ResetPasswordLinksDao from './api/daos/ResetPasswordLinksDao';
 import PermissionsDao from './api/daos/PermissionsDao';
 import UserGroupDao from './api/daos/UserGroupDao';
 import CommentsDao from './api/daos/CommentsDao';
@@ -54,7 +51,6 @@ sl.set('LoggingEditsDao', LoggingEditsDao);
 sl.set('TextDiscourseDao', TextDiscourseDao);
 sl.set('TextDraftsDao', TextDraftsDao);
 sl.set('OareGroupDao', OareGroupDao);
-sl.set('AliasDao', AliasDao);
 sl.set('TextEpigraphyDao', TextEpigraphyDao);
 sl.set('HierarchyDao', HierarchyDao);
 sl.set('TextGroupDao', TextGroupDao);
@@ -64,7 +60,6 @@ sl.set('cache', cache);
 sl.set('PublicBlacklistDao', PublicBlacklistDao);
 sl.set('SignReadingDao', SignReadingDao);
 sl.set('CollectionGroupDao', CollectionGroupDao);
-sl.set('ResetPasswordLinksDao', ResetPasswordLinksDao);
 sl.set('PermissionsDao', PermissionsDao);
 sl.set('UserGroupDao', UserGroupDao);
 sl.set('CommentsDao', CommentsDao);
@@ -76,7 +71,6 @@ sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('PersonDao', PersonDao);
 sl.set('PersonTextOccurrencesDao', PersonTextOccurrencesDao);
 sl.set('utils', utils);
-sl.set('mailer', mailer);
 
 initializeFirebase(err => {
   if (err) {

@@ -55,19 +55,13 @@
       :uuid-to-highlight="uuidToHighlight"
       :cursor="cursor"
       :allow-editing="allowEditing"
-      @clicked-util-list="emitUtilList"
     />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import {
-  Word,
-  DictionaryForm,
-  DictionaryWordTranslation,
-  UtilListDisplay,
-} from '@oare/types';
+import { Word, DictionaryForm, DictionaryWordTranslation } from '@oare/types';
 import FormDisplay from './Forms/FormDisplay.vue';
 import EditTranslations from './EditTranslations/EditTranslations.vue';
 import sl from '@/serviceLocator';
@@ -103,7 +97,7 @@ export default defineComponent({
     FormDisplay,
     EditTranslations,
   },
-  setup({ wordInfo, updateWordInfo }, { emit }) {
+  setup({ wordInfo, updateWordInfo }) {
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
@@ -144,12 +138,7 @@ export default defineComponent({
       });
     };
 
-    const emitUtilList = (utilDisplay: UtilListDisplay) => {
-      emit('clicked-util-list', utilDisplay);
-    };
-
     return {
-      emitUtilList,
       canEditTranslations,
       isEditingTranslations,
       updateTranslations,

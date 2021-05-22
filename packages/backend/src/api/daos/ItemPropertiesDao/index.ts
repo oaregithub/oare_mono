@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { ItemProperty, Pagination, SpellingOccurrenceRow } from '@oare/types';
+import { ItemProperty, Pagination } from '@oare/types';
 
 export interface ItemPropertyRow extends ItemProperty {
   referenceUuid: string;
@@ -68,37 +68,6 @@ class ItemProperties {
       .where('item_properties.object_uuid', personUuid);
 
     return referenceUuids.map(item => item.referenceUuid);
-  }
-
-  async getTextsOfPerson(
-    personUuid: string,
-    { limit, page, filter }: Pagination
-  ): Promise<SpellingOccurrenceRow[]> {
-    const rows: SpellingOccurrenceRow[] = await this.getTextsOfPersonBaseQuery(
-      personUuid
-    )
-      .select(
-        'text_discourse.uuid AS discourseUuid',
-        'name AS textName',
-        'text_epigraphy.line',
-        'text_discourse.word_on_tablet AS wordOnTablet',
-        'text_discourse.text_uuid AS textUuid'
-      )
-      .innerJoin(
-        'text_epigraphy',
-        'text_epigraphy.discourse_uuid',
-        'text_discourse.uuid'
-      )
-      .orderBy('text.name')
-      .limit(limit)
-      .offset((page - 1) * limit)
-      .modify(qb => {
-        if (filter) {
-          qb.andWhere('text.name', 'like', `%${filter}%`);
-        }
-      });
-
-    return rows;
   }
 }
 

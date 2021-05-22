@@ -61,14 +61,10 @@
 
 <script lang="ts">
 import { RegisterPayload } from '@oare/types';
-import { defineComponent, ref, Ref, PropType } from '@vue/composition-api';
+import { defineComponent, ref, PropType } from '@vue/composition-api';
 import Router from 'vue-router';
 import sl from '@/serviceLocator';
 import defaultRouter from '../../../router';
-
-export interface FormRef {
-  validate: () => void;
-}
 
 export default defineComponent({
   name: 'RegisterView',

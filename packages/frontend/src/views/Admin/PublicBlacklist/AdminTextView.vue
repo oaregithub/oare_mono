@@ -11,16 +11,11 @@
 </template>
 
 <script>
-import {
-  computed,
-  defineComponent,
-  onMounted,
-  ref,
-} from '@vue/composition-api';
+import { computed, defineComponent, ref } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'AdminTextView',
-  setup({ groupId }) {
+  setup() {
     const tab = ref(null);
 
     const title = computed(() => {

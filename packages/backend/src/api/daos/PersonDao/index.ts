@@ -5,8 +5,6 @@ import utils from '../utils';
 class PersonDao {
   public readonly PERSON_TYPE = 'person';
 
-  public readonly CURRENT_PERSON_TYPE = 'current person';
-
   private getAllPeopleBaseQuery(letter: string) {
     const letters = letter.split('/');
 
@@ -69,30 +67,6 @@ class PersonDao {
       .orderBy('word');
 
     return people;
-  }
-
-  async getSpellingUuidsByPerson(
-    personNameUuid: string | null
-  ): Promise<string[]> {
-    if (!personNameUuid) {
-      return [];
-    }
-
-    const personSpellings = await knex('person')
-      .pluck('dictionary_spelling.uuid')
-      .leftJoin(
-        'dictionary_form',
-        'dictionary_form.reference_uuid',
-        'person.name_uuid'
-      )
-      .innerJoin(
-        'dictionary_spelling',
-        'dictionary_spelling.reference_uuid',
-        'dictionary_form.uuid'
-      )
-      .where('person.name_uuid', personNameUuid);
-
-    return personSpellings;
   }
 }
 

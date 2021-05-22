@@ -2,7 +2,6 @@ import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
 import Knex from 'knex';
-import TextDiscourseDao from '../TextDiscourseDao';
 
 export interface DictionarySpellingRows {
   uuid: string;
@@ -72,17 +71,6 @@ class DictionarySpellingDao {
       .first();
 
     return row.explicit_spelling;
-  }
-
-  async getDictionarySpellingRows(): Promise<DictionarySpellingRows[]> {
-    const spellings: DictionarySpellingRows[] = await knex(
-      'dictionary_spelling AS ds'
-    ).select(
-      'ds.uuid',
-      'ds.reference_uuid AS referenceUuid',
-      'ds.explicit_spelling AS explicitSpelling'
-    );
-    return spellings;
   }
 
   async getFormUuidBySpellingUuid(spellingUuid: string): Promise<string> {
