@@ -376,20 +376,6 @@ class TextDiscourseDao {
     return total ? Number(total.count) : 0;
   }
 
-  async getPersonTextsByItemPropertyReferenceUuidsDistinctCount(
-    textDiscourseUuids: string[],
-    pagination: Pagination
-  ): Promise<number> {
-    const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
-      textDiscourseUuids,
-      pagination
-    )
-      .count({ count: 'text_discourse.text_uuid' })
-      .first();
-
-    return total ? Number(total.count) : 0;
-  }
-
   async getChildrenByParentUuid(
     phraseUuid: string
   ): Promise<PersonOccurrenceRow[]> {

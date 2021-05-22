@@ -19,14 +19,8 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  computed,
-  watch,
-  PropType,
-} from '@vue/composition-api';
-import { CollectionResponse, CollectionText } from '@oare/types';
+import { defineComponent, ref, watch, PropType } from '@vue/composition-api';
+import { CollectionText } from '@oare/types';
 export default defineComponent({
   props: {
     loading: {

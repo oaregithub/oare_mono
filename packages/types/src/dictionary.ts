@@ -1,11 +1,6 @@
 import { DictionaryWordTranslation } from './words';
 import { SearchTextsResultRow } from './search';
 
-export interface SpellingText {
-  uuid: string;
-  text: string;
-}
-
 export interface DisplayableWord {
   uuid: string;
   word: string;

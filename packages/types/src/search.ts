@@ -28,10 +28,6 @@ export interface SearchCooccurrence {
   type: 'AND' | 'NOT';
 }
 
-export interface SearchNullDiscoursePayload extends Pagination {
-  characters: string;
-}
-
 export interface SearchNullDiscourseCountPayload {
   characters: string;
 }

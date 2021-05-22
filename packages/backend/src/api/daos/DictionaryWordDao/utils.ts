@@ -1,39 +1,5 @@
 import { DictionarySearchRow } from '@oare/types';
-import {
-  WordQueryRow,
-  WordQueryResultRow,
-  SearchWordsQueryRow,
-  GrammarInfoRow,
-  GrammarInfoResult,
-} from './index';
-
-export function prepareWords(words: WordQueryRow[]): WordQueryResultRow[] {
-  const wordsWithLists = words.map(wordInfo => ({
-    ...wordInfo,
-    partsOfSpeech: wordInfo.partsOfSpeech
-      ? wordInfo.partsOfSpeech.split(',')
-      : [],
-    verbalThematicVowelTypes: wordInfo.verbalThematicVowelTypes
-      ? wordInfo.verbalThematicVowelTypes
-          .split(',')
-          .map(vowelType => vowelType.replace('-Class', ''))
-      : [],
-    specialClassifications: wordInfo.specialClassifications
-      ? wordInfo.specialClassifications.split(',')
-      : [],
-  }));
-  wordsWithLists.sort((a, b) => {
-    if (a.word.toLowerCase() < b.word.toLowerCase()) {
-      return -1;
-    }
-    if (a.word > b.word) {
-      return 1;
-    }
-    return 0;
-  });
-
-  return wordsWithLists;
-}
+import { SearchWordsQueryRow } from './index';
 
 function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   const wordMap: { [key: string]: SearchWordsQueryRow[] } = {};
@@ -94,49 +60,4 @@ export function assembleSearchResult(
     return 0;
   });
   return searchResults;
-}
-
-function getVariables(
-  value: string,
-  grammarRows: GrammarInfoRow[],
-  abbreviation = true
-): string[] {
-  const valueRow = grammarRows.find(row => row.value === value);
-  if (!valueRow) {
-    return [];
-  }
-
-  if (abbreviation) {
-    return valueRow.variableAbbrevs ? valueRow.variableAbbrevs.split(';') : [];
-  }
-  return valueRow.variableNames ? valueRow.variableNames.split(';') : [];
-}
-
-export function assembleGrammarInfoResult(
-  grammarRows: GrammarInfoRow[]
-): GrammarInfoResult {
-  const translations = grammarRows[0].translations
-    ? grammarRows[0].translations.split('#!')
-    : [];
-
-  return {
-    uuid: grammarRows[0].uuid,
-    word: grammarRows[0].word,
-    cases: getVariables('Case', grammarRows),
-    genders: getVariables('Gender', grammarRows),
-    grammaticalNumbers: getVariables('Grammatical Number', grammarRows),
-    morphologicalForms: getVariables('Morphological Form', grammarRows),
-    partsOfSpeech: getVariables('Part of Speech', grammarRows),
-    persons: getVariables('Person', grammarRows),
-    specialClassifications: getVariables(
-      'Special Classifications',
-      grammarRows,
-      false
-    ),
-    translations,
-    verbalThematicVowelTypes: getVariables(
-      'Verbal Thematic Vowel Type',
-      grammarRows
-    ),
-  };
 }

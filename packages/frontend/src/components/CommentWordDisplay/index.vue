@@ -262,12 +262,10 @@ import {
   Ref,
   watch,
   computed,
-  PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import {
   CommentResponse,
-  Thread,
   CommentRequest,
   ThreadWithComments,
   CommentInsert,

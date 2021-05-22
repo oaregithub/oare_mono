@@ -43,13 +43,11 @@ import {
   PropType,
 } from '@vue/composition-api';
 import Router from 'vue-router';
-import { CollectionResponse, CollectionText } from '@oare/types';
-import { BreadcrumbItem } from '@/components/base/OareBreadcrumbs.vue';
+import { CollectionText } from '@oare/types';
 import TextsTable from './TextsTable.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import _ from 'underscore';
 import defaultRouter from '@/router';
-import defaultServerProxy from '@/serverProxy';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
 
@@ -73,7 +71,7 @@ export default defineComponent({
     },
   },
 
-  setup({ router, collectionUuid }, context) {
+  setup({ router, collectionUuid }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
@@ -151,7 +149,7 @@ export default defineComponent({
 
     watch(
       search,
-      _.debounce(function() {
+      _.debounce(function () {
         setPage('1');
         getCollectionTexts();
       }, 500),

@@ -40,18 +40,9 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  Ref,
-  onMounted,
-  computed,
-  watch,
-} from '@vue/composition-api';
+import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
-import defaultServer from '@/serverProxy';
 import { DictionaryWord, ItemProperty } from '@oare/types';
-import defaultActions from '@/globalActions';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -123,5 +114,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style></style>

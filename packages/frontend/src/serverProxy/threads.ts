@@ -2,7 +2,6 @@ import {
   AllCommentsRequest,
   AllCommentsResponse,
   Thread,
-  ThreadDisplay,
   ThreadWithComments,
   UpdateThreadNameRequest,
 } from '@oare/types';

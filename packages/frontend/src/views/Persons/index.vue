@@ -104,7 +104,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
-import { Pagination, PersonDisplay } from '@oare/types';
+import { PersonDisplay } from '@oare/types';
 import sl from '@/serviceLocator';
 import TextOccurrences from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/TextOccurrences.vue';
 

@@ -3,16 +3,8 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  PropType,
-  computed,
-  ref,
-  Ref,
-  reactive,
-} from '@vue/composition-api';
-import { DictionaryForm, SpellingText } from '@oare/types';
-import { DataTableHeader } from 'vuetify';
+import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
+import { DictionaryForm } from '@oare/types';
 import utils from '@/utils';
 
 export default defineComponent({

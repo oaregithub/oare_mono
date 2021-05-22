@@ -1,8 +1,4 @@
-import {
-  EpigraphicUnit,
-  MarkupUnit,
-  CreateTabletRendererOptions,
-} from '@oare/types';
+import { EpigraphicUnit, CreateTabletRendererOptions } from '@oare/types';
 import TabletRenderer from './TabletRenderer';
 import TabletHtmlRenderer from './TabletHtmlRenderer';
 import TabletLineNumRenderer from './TabletLineNumRenderer';

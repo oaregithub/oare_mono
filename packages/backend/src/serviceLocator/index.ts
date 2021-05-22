@@ -12,11 +12,9 @@ import TextDao from '@/api/daos/TextDao';
 import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextGroupDao from '@/api/daos/TextGroupDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
-import AliasDao from '@/api/daos/AliasDao';
 import PublicBlacklistDao from '@/api/daos/PublicBlacklistDao';
 import SignReadingDao from '@/api/daos/SignReadingDao';
 import CollectionGroupDao from '@/api/daos/CollectionGroupDao';
-import ResetPasswordLinksDao from '@/api/daos/ResetPasswordLinksDao';
 import FieldDao from '@/api/daos/FieldDao';
 import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
 import UserGroupDao from '@/api/daos/UserGroupDao';
@@ -30,12 +28,10 @@ import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
 import PersonDao from '@/api/daos/PersonDao';
 import PersonTextOccurrencesDao from '@/api/daos/PersonTextOccurrences';
 import * as utils from '@/utils';
-import mailer from '@/mailer';
 
 const instances: { [key: string]: any } = {};
 
 export type ServiceTypes = {
-  AliasDao: typeof AliasDao;
   CollectionDao: typeof CollectionDao;
   DictionaryFormDao: typeof DictionaryFormDao;
   DictionaryWordDao: typeof DictionaryWordDao;
@@ -56,7 +52,6 @@ export type ServiceTypes = {
   PublicBlacklistDao: typeof PublicBlacklistDao;
   SignReadingDao: typeof SignReadingDao;
   CollectionGroupDao: typeof CollectionGroupDao;
-  ResetPasswordLinksDao: typeof ResetPasswordLinksDao;
   UserGroupDao: typeof UserGroupDao;
   PermissionsDao: typeof PermissionsDao;
   CommentsDao: typeof CommentsDao;
@@ -67,7 +62,6 @@ export type ServiceTypes = {
   PersonDao: typeof PersonDao;
   PersonTextOccurrencesDao: typeof PersonTextOccurrencesDao;
   utils: typeof utils;
-  mailer: typeof mailer;
 };
 
 export default {

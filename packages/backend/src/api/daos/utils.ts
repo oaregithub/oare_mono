@@ -1,10 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
-function getQueryString(fileName: string) {
-  return fs.readFileSync(path.join(__dirname, '../sql/', fileName)).toString();
-}
-
 interface AndWhereWithBindings {
   andWhere: string;
   bindings: string[];
@@ -42,6 +35,5 @@ function getOrWhereForLetters(
 }
 
 export default {
-  getQueryString,
   getOrWhereForLetters,
 };
