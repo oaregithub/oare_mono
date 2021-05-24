@@ -7,11 +7,13 @@ const router = express.Router();
 router.route('/names/:letter').get(async (req, res, next) => {
   try {
     const { letter } = req.params;
+    const isAdmin = req.user ? req.user.isAdmin : false;
     const cache = sl.get('cache');
     const DictionaryWordDao = sl.get('DictionaryWordDao');
     const dictionaryNames = await DictionaryWordDao.getWords(
       'PN',
-      letter.toLowerCase()
+      letter.toLowerCase(),
+      isAdmin
     );
 
     cache.insert({ req }, dictionaryNames);

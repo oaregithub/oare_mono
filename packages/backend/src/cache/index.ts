@@ -2,6 +2,7 @@ export interface CacheKey {
   req: {
     method: string;
     originalUrl: string;
+    user?: { isAdmin: boolean } | null;
   };
 }
 
@@ -13,6 +14,7 @@ const keyString = (key: CacheKey): string =>
   JSON.stringify({
     method: key.req.method,
     url: key.req.originalUrl,
+    isAdmin: key.req.user?.isAdmin || false,
   });
 class Cache {
   private responses: { [key: string]: any } = {};

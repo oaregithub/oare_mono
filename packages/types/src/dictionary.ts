@@ -9,6 +9,7 @@ export interface DisplayableWord {
 export interface FormSpelling {
   uuid: string;
   spelling: string;
+  hasOccurrence: boolean;
 }
 
 export interface CheckSpellingResponse {

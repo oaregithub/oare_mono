@@ -7,9 +7,12 @@
       :searchFilter="searchFilter"
     >
       <template #word="{ word }">
-        <router-link :to="`/namesWord/${word.uuid}`" class="mr-1">{{
-          word.word
-        }}</router-link>
+        <router-link :to="`/namesWord/${word.uuid}`" class="mr-1">
+          <mark v-if="word.forms.length <= 0" class="error">{{
+            word.word
+          }}</mark>
+          <span v-else>{{ word.word }}</span>
+        </router-link>
       </template>
       <template #translation="{ word }">
         <div>
@@ -26,7 +29,12 @@
           :key="idx"
           class="d-flex flex-wrap pl-4"
         >
-          <em class="font-weight-bold mr-1">
+          <mark v-if="formInfo.spellings.length <= 0" class="error"
+            ><em class="font-weight-bold mr-1">
+              {{ formInfo.form }}
+            </em></mark
+          >
+          <em v-else class="font-weight-bold mr-1">
             {{ formInfo.form }}
           </em>
 

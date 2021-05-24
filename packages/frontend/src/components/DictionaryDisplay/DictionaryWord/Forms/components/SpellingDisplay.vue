@@ -19,6 +19,14 @@
           ></span
         ></mark>
         <span
+          v-else-if="!spelling.hasOccurrence"
+          v-html="`<mark class=&quot;error&quot;>${htmlSpelling}</mark>`"
+          v-bind="attrs"
+          v-on="on"
+          class="test-spelling"
+          :class="{ 'cursor-display': allowEditing }"
+        ></span>
+        <span
           v-else
           v-html="htmlSpelling"
           v-bind="attrs"
@@ -29,7 +37,7 @@
       </template>
     </UtilList>
     &nbsp;
-    <span v-if="totalOccurrences > 0 || totalOccurrencesLoading">
+    <span v-if="spelling.hasOccurrence">
       (<a @click="textOccurrenceDialog = true" class="test-num-texts">{{
         totalOccurrencesLoading ? 'Loading...' : totalOccurrences
       }}</a

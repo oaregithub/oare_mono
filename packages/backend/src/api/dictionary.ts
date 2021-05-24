@@ -141,9 +141,10 @@ router
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
       const { uuid } = req.params;
+      const isAdmin = req.user ? req.user.isAdmin : false;
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
-      const forms = await DictionaryFormDao.getWordForms(uuid);
+      const forms = await DictionaryFormDao.getWordForms(uuid, isAdmin);
 
       const result: Word = {
         ...grammarInfo,
@@ -414,6 +415,7 @@ router
   .get(async (req, res, next) => {
     try {
       const { discourseUuid } = req.params;
+      const isAdmin = req.user ? req.user.isAdmin : false;
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const DictionaryFormDao = sl.get('DictionaryFormDao');
@@ -450,7 +452,7 @@ router
         const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(
           wordUuid
         );
-        const forms = await DictionaryFormDao.getWordForms(wordUuid);
+        const forms = await DictionaryFormDao.getWordForms(wordUuid, isAdmin);
 
         // Only get the one form from the formUuid (keep all spellings of the form)
         const selectedForms = forms.filter(form => form.uuid === formUuid);
