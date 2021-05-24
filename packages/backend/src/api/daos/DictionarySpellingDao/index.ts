@@ -34,10 +34,15 @@ class DictionarySpellingDao {
       rows.map(row => TextDiscourseDao.hasSpellingOccurrence(row.uuid))
     );
 
+    const resultRows = rows.map((row, idx) => ({
+      ...row,
+      hasOccurrence: hasOccurrences[idx],
+    }));
+
     if (isAdmin) {
-      return rows;
+      return resultRows;
     }
-    return rows.filter((_row, idx) => hasOccurrences[idx]);
+    return resultRows.filter(row => row.hasOccurrence);
   }
 
   async spellingExistsOnForm(

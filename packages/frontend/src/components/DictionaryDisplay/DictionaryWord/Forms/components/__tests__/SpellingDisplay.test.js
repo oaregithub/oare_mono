@@ -14,6 +14,7 @@ describe('SpellingDisplay test', () => {
   const spelling = {
     uuid: 'spelling-uuid',
     spelling: 'spelling',
+    hasOccurrence: true,
   };
 
   const form = {

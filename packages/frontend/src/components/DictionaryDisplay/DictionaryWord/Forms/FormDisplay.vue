@@ -33,6 +33,9 @@
             v-bind="attrs"
           >
             <mark v-if="form.uuid === uuidToHighlight">{{ form.form }}</mark>
+            <mark v-else-if="form.spellings.length <= 0" class="error">{{
+              form.form
+            }}</mark>
             <template v-else>{{ form.form }}</template>
           </strong>
         </template>

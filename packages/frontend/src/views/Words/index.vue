@@ -7,9 +7,12 @@
       :searchFilter="searchFilter"
     >
       <template #word="{ word }">
-        <router-link :to="`/dictionaryWord/${word.uuid}`" class="mr-1">{{
-          word.word
-        }}</router-link>
+        <router-link :to="`/dictionaryWord/${word.uuid}`" class="mr-1">
+          <mark v-if="word.forms.length <= 0" class="error">{{
+            word.word
+          }}</mark>
+          <span v-else>{{ word.word }}</span>
+        </router-link>
       </template>
       <template #translation="{ word }">
         <div v-if="word.partsOfSpeech.length > 0" class="mr-1">
