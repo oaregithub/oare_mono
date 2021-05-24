@@ -407,6 +407,13 @@ class TextDiscourseDao {
 
     return line;
   }
+
+  async hasSpellingOccurrence(spellingUuid: string): Promise<boolean> {
+    const row = await knex('text_discourse')
+      .where('spelling_uuid', spellingUuid)
+      .first();
+    return !!row;
+  }
 }
 
 export default new TextDiscourseDao();

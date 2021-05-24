@@ -2,6 +2,7 @@ import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
 import Knex from 'knex';
+import TextDiscourseDao from '../TextDiscourseDao';
 
 export interface DictionarySpellingRows {
   uuid: string;
@@ -21,12 +22,22 @@ class DictionarySpellingDao {
       .where({ uuid });
   }
 
-  async getFormSpellings(formUuid: string): Promise<FormSpelling[]> {
+  async getFormSpellings(
+    formUuid: string,
+    isAdmin: boolean
+  ): Promise<FormSpelling[]> {
     const rows: FormSpelling[] = await knex('dictionary_spelling')
       .select('uuid', 'explicit_spelling AS spelling')
       .where('reference_uuid', formUuid);
 
-    return rows;
+    const hasOccurrences = await Promise.all(
+      rows.map(row => TextDiscourseDao.hasSpellingOccurrence(row.uuid))
+    );
+
+    if (isAdmin) {
+      return rows;
+    }
+    return rows.filter((_row, idx) => hasOccurrences[idx]);
   }
 
   async spellingExistsOnForm(

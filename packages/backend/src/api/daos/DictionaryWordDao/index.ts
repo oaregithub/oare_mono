@@ -104,7 +104,11 @@ class DictionaryWordDao {
     }));
   }
 
-  async getWords(type: DictionaryWordTypes, letter: string): Promise<Word[]> {
+  async getWords(
+    type: DictionaryWordTypes,
+    letter: string,
+    isAdmin: boolean
+  ): Promise<Word[]> {
     const letters = letter.split('/');
     let query = knex('dictionary_word').select('uuid', 'word');
 
@@ -143,7 +147,7 @@ class DictionaryWordDao {
     const verbalThematicVowelTypes = await this.getVerbalThematicVowelTypes();
     const allTranslations = await this.getAllTranslations();
     const forms = await Promise.all(
-      words.map(word => DictionaryFormDao.getWordForms(word.uuid))
+      words.map(word => DictionaryFormDao.getWordForms(word.uuid, isAdmin))
     );
 
     return words
@@ -181,6 +185,7 @@ class DictionaryWordDao {
           forms: forms[idx],
         };
       })
+      .filter(word => (isAdmin ? word : word.forms.length > 0))
       .sort((a, b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
   }
 

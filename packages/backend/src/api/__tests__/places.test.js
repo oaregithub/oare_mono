@@ -50,7 +50,11 @@ describe('places api test', () => {
       const PATH = `${API_PATH}/places/${letter}`;
       setup();
       const response = await request(app).get(PATH);
-      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith('GN', 'a');
+      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
+        'GN',
+        'a',
+        false
+      );
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(resolveValue);
     });
@@ -60,7 +64,11 @@ describe('places api test', () => {
       const PATH = `${API_PATH}/places/${encodeURIComponent(letter)}`;
       setup();
       const response = await request(app).get(PATH);
-      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith('GN', 'u/a');
+      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
+        'GN',
+        'u/a',
+        false
+      );
       expect(response.status).toBe(200);
     });
 

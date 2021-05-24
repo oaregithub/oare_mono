@@ -132,7 +132,10 @@ class DictionaryFormDao {
     };
   }
 
-  async getWordForms(wordUuid: string): Promise<DictionaryForm[]> {
+  async getWordForms(
+    wordUuid: string,
+    isAdmin: boolean
+  ): Promise<DictionaryForm[]> {
     const forms: { uuid: string; form: string }[] = await knex(
       'dictionary_form'
     )
@@ -140,7 +143,7 @@ class DictionaryFormDao {
       .where('reference_uuid', wordUuid);
 
     const formSpellings = await Promise.all(
-      forms.map(f => DictionarySpellingDao.getFormSpellings(f.uuid))
+      forms.map(f => DictionarySpellingDao.getFormSpellings(f.uuid, isAdmin))
     );
 
     const formGrammars = await Promise.all(
@@ -153,6 +156,7 @@ class DictionaryFormDao {
         ...formGrammars[i],
         spellings: formSpellings[i],
       }))
+      .filter(form => (isAdmin ? form : form.spellings.length > 0))
       .sort((a, b) => a.form.localeCompare(b.form));
   }
 
