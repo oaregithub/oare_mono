@@ -10,6 +10,7 @@ export interface FormSpelling {
   uuid: string;
   spelling: string;
   hasOccurrence: boolean;
+  htmlSpelling?: string;
 }
 
 export interface CheckSpellingResponse {

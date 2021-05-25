@@ -134,7 +134,8 @@ class DictionaryFormDao {
 
   async getWordForms(
     wordUuid: string,
-    isAdmin: boolean
+    isAdmin: boolean,
+    htmlSpelling = false
   ): Promise<DictionaryForm[]> {
     const forms: { uuid: string; form: string }[] = await knex(
       'dictionary_form'
@@ -143,7 +144,9 @@ class DictionaryFormDao {
       .where('reference_uuid', wordUuid);
 
     const formSpellings = await Promise.all(
-      forms.map(f => DictionarySpellingDao.getFormSpellings(f.uuid, isAdmin))
+      forms.map(f =>
+        DictionarySpellingDao.getFormSpellings(f.uuid, isAdmin, htmlSpelling)
+      )
     );
 
     const formGrammars = await Promise.all(

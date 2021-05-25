@@ -12,7 +12,7 @@ exports[`RegisterView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><label for="input-4" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input outline="" id="input-4" type="text"></div>
+          <div class="v-text-field__slot"><label for="input-5" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input outline="" id="input-5" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -27,7 +27,7 @@ exports[`RegisterView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><label for="input-7" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-7" type="text"></div>
+          <div class="v-text-field__slot"><label for="input-8" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-8" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -42,7 +42,7 @@ exports[`RegisterView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><label for="input-10" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-10" type="text"></div>
+          <div class="v-text-field__slot"><label for="input-11" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-11" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -57,7 +57,7 @@ exports[`RegisterView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><label for="input-13" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-13" type="password"></div>
+          <div class="v-text-field__slot"><label for="input-14" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input id="input-14" type="password"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -72,7 +72,7 @@ exports[`RegisterView test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend style="width: 0px;"><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><label for="input-16" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input name="repeatpassword" id="input-16" type="password"></div>
+          <div class="v-text-field__slot"><label for="input-17" class="v-label theme--light" style="left: 0px; position: absolute;">string</label><input name="repeatpassword" id="input-17" type="password"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">

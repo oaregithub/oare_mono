@@ -5,7 +5,7 @@
         v-if="canAddSpelling && !editing && allowEditing"
         icon
         class="mt-n2 mr-1"
-        @click="spellingDialogOpen = true"
+        @click="openEditDialog(form)"
       >
         <v-icon>mdi-plus</v-icon>
       </v-btn>
@@ -20,7 +20,7 @@
 
       <UtilList
         v-if="!editing"
-        @comment-clicked="isCommenting = true"
+        @comment-clicked="openComment(form.uuid, form.form)"
         :hasEdit="false"
         :hasDelete="false"
         :hideMenu="!allowEditing"
@@ -81,19 +81,6 @@
         </span></span
       >
     </div>
-
-    <edit-word-dialog
-      v-model="spellingDialogOpen"
-      :form="form"
-      :allowDiscourseMode="false"
-    />
-    <comment-word-display
-      v-model="isCommenting"
-      :word="form.form"
-      :uuid="form.uuid"
-      :route="`/${routeName}/${wordUuid}`"
-      >{{ form.form }}</comment-word-display
-    >
   </div>
 </template>
 
@@ -103,17 +90,14 @@ import { DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
-import EditWordDialog from './components/EditWordDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import EventBus, { ACTIONS } from '@/EventBus';
 
 export default defineComponent({
   components: {
     GrammarDisplay,
     SpellingDisplay,
-    EditWordDialog,
     UtilList,
-    CommentWordDisplay,
   },
   props: {
     form: {
@@ -177,6 +161,20 @@ export default defineComponent({
       }
     };
 
+    const openComment = (uuid: string, word: string) => {
+      EventBus.$emit(ACTIONS.COMMENT_DIALOG, {
+        uuid,
+        word,
+      });
+    };
+
+    const openEditDialog = (form: DictionaryForm) => {
+      EventBus.$emit(ACTIONS.EDIT_WORD_DIALOG, {
+        form,
+        allowDiscourseMode: false,
+      });
+    };
+
     return {
       isCommenting,
       editing,
@@ -187,6 +185,8 @@ export default defineComponent({
       saveFormEdit,
       spellingDialogOpen,
       routeName,
+      openComment,
+      openEditDialog,
     };
   },
 });

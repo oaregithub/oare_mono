@@ -56,14 +56,35 @@
       :cursor="cursor"
       :allow-editing="allowEditing"
     />
+    <edit-word-dialog
+      v-if="editDialogForm"
+      v-model="showSpellingDialog"
+      :key="editDialogForm ? editDialogForm.uuid : ''"
+      :form="editDialogForm"
+      :spelling="editDialogSpelling"
+      :allowDiscourseMode="editDialogDiscourse"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import { Word, DictionaryForm, DictionaryWordTranslation } from '@oare/types';
+import {
+  defineComponent,
+  PropType,
+  computed,
+  ref,
+  onMounted,
+} from '@vue/composition-api';
+import {
+  Word,
+  DictionaryForm,
+  DictionaryWordTranslation,
+  FormSpelling,
+} from '@oare/types';
 import FormDisplay from './Forms/FormDisplay.vue';
 import EditTranslations from './EditTranslations/EditTranslations.vue';
+import EventBus, { ACTIONS } from '@/EventBus';
+import EditWordDialog from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/EditWordDialog.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -96,11 +117,17 @@ export default defineComponent({
   components: {
     FormDisplay,
     EditTranslations,
+    EditWordDialog,
   },
   setup({ wordInfo, updateWordInfo }) {
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
+
+    const editDialogForm = ref<DictionaryForm>();
+    const editDialogSpelling = ref<FormSpelling>();
+    const editDialogDiscourse = ref(false);
+    const showSpellingDialog = ref(false);
 
     const canEditTranslations = computed(() =>
       permissions.value
@@ -138,6 +165,22 @@ export default defineComponent({
       });
     };
 
+    onMounted(() => {
+      EventBus.$on(
+        ACTIONS.EDIT_WORD_DIALOG,
+        (options: {
+          form: DictionaryForm;
+          spelling?: FormSpelling;
+          allowDiscourseMode: boolean;
+        }) => {
+          editDialogForm.value = options.form;
+          editDialogSpelling.value = options.spelling || undefined;
+          editDialogDiscourse.value = options.allowDiscourseMode;
+          showSpellingDialog.value = true;
+        }
+      );
+    });
+
     return {
       canEditTranslations,
       isEditingTranslations,
@@ -146,6 +189,10 @@ export default defineComponent({
       partsOfSpeech,
       verbalThematicVowelTypes,
       specialClassifications,
+      editDialogForm,
+      editDialogSpelling,
+      editDialogDiscourse,
+      showSpellingDialog,
     };
   },
 });
