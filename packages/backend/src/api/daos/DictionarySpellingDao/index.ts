@@ -2,6 +2,7 @@ import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
 import Knex from 'knex';
+import { spellingHtmlReading } from '@oare/oare';
 import TextDiscourseDao from '../TextDiscourseDao';
 
 export interface DictionarySpellingRows {
@@ -24,7 +25,8 @@ class DictionarySpellingDao {
 
   async getFormSpellings(
     formUuid: string,
-    isAdmin: boolean
+    isAdmin: boolean,
+    htmlSpelling: boolean
   ): Promise<FormSpelling[]> {
     const rows: FormSpelling[] = await knex('dictionary_spelling')
       .select('uuid', 'explicit_spelling AS spelling')
@@ -34,10 +36,21 @@ class DictionarySpellingDao {
       rows.map(row => TextDiscourseDao.hasSpellingOccurrence(row.uuid))
     );
 
-    const resultRows = rows.map((row, idx) => ({
-      ...row,
-      hasOccurrence: hasOccurrences[idx],
-    }));
+    let resultRows: FormSpelling[];
+
+    if (htmlSpelling) {
+      const htmlSpellings = rows.map(row => spellingHtmlReading(row.spelling));
+      resultRows = rows.map((row, idx) => ({
+        ...row,
+        hasOccurrence: hasOccurrences[idx],
+        htmlSpelling: htmlSpellings[idx],
+      }));
+    } else {
+      resultRows = rows.map((row, idx) => ({
+        ...row,
+        hasOccurrence: hasOccurrences[idx],
+      }));
+    }
 
     if (isAdmin) {
       return resultRows;

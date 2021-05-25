@@ -144,7 +144,7 @@ router
       const isAdmin = req.user ? req.user.isAdmin : false;
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
-      const forms = await DictionaryFormDao.getWordForms(uuid, isAdmin);
+      const forms = await DictionaryFormDao.getWordForms(uuid, isAdmin, true);
 
       const result: Word = {
         ...grammarInfo,

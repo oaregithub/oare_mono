@@ -11,7 +11,7 @@
           <v-icon class="test-pencil">mdi-pencil</v-icon>
         </v-btn>
         <UtilList
-          @comment-clicked="isCommenting = true"
+          @comment-clicked="openComment(uuid, wordInfo ? wordInfo.word : '')"
           :hasEdit="false"
           :hasDelete="false"
           :hideMenu="!allowCommenting && !allowEditing"
@@ -52,10 +52,11 @@
       v-if="allowCommenting"
       :is="commentComponent"
       v-model="isCommenting"
-      :word="wordInfo ? wordInfo.word : ''"
-      :uuid="uuid"
+      :word="commentDialogWord"
+      :uuid="commentDialogUuid"
+      :key="commentDialogUuid"
       :route="`/${routeName}/${uuid}`"
-      >{{ wordInfo ? wordInfo.word : '' }}</component
+      >{{ commentDialogWord }}</component
     >
   </OareContentView>
 </template>
@@ -69,6 +70,7 @@ import {
   watch,
   provide,
   InjectionKey,
+  onMounted,
 } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { Word } from '@oare/types';
@@ -79,6 +81,7 @@ import sl from '@/serviceLocator';
 import EditWordDialog from './Forms/components/EditWordDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import EventBus, { ACTIONS } from '@/EventBus';
 
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
@@ -127,6 +130,8 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
 
+    const commentDialogUuid = ref('');
+    const commentDialogWord = ref('');
     const routeName = router.currentRoute.name;
     const loading = ref(true);
     const isCommenting = ref(false);
@@ -206,6 +211,23 @@ export default defineComponent({
         : null
     );
 
+    const openComment = (uuid: string, word: string) => {
+      commentDialogUuid.value = uuid;
+      commentDialogWord.value = word;
+      isCommenting.value = true;
+    };
+
+    onMounted(() => {
+      EventBus.$on(
+        ACTIONS.COMMENT_DIALOG,
+        (options: { uuid: string; word: string }) => {
+          commentDialogUuid.value = options.uuid;
+          commentDialogWord.value = options.word;
+          isCommenting.value = true;
+        }
+      );
+    });
+
     return {
       commentComponent,
       loading,
@@ -217,6 +239,9 @@ export default defineComponent({
       canUpdateWordSpelling,
       updateWordInfo,
       routeName,
+      commentDialogUuid,
+      commentDialogWord,
+      openComment,
     };
   },
 });
