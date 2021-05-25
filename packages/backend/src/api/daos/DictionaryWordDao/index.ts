@@ -288,7 +288,9 @@ class DictionaryWordDao {
       .where(knex.raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
       .orWhere(knex.raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`]))
       .orWhere(knex.raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(knex.raw('LOWER(ds.spelling) LIKE ?', [`%${lowerSearch}%`]))
+      .orWhere(
+        knex.raw('LOWER(ds.explicit_spelling) LIKE ?', [`%${lowerSearch}%`])
+      )
       .select(
         'dw.uuid',
         'dw.type',
