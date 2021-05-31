@@ -2,6 +2,7 @@ import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
 import Knex from 'knex';
+import { spellingHtmlReading } from '@oare/oare';
 import TextDiscourseDao from '../TextDiscourseDao';
 
 export interface DictionarySpellingRows {
@@ -22,12 +23,39 @@ class DictionarySpellingDao {
       .where({ uuid });
   }
 
-  async getFormSpellings(formUuid: string): Promise<FormSpelling[]> {
+  async getFormSpellings(
+    formUuid: string,
+    isAdmin: boolean,
+    htmlSpelling: boolean
+  ): Promise<FormSpelling[]> {
     const rows: FormSpelling[] = await knex('dictionary_spelling')
       .select('uuid', 'explicit_spelling AS spelling')
       .where('reference_uuid', formUuid);
 
-    return rows;
+    const hasOccurrences = await Promise.all(
+      rows.map(row => TextDiscourseDao.hasSpellingOccurrence(row.uuid))
+    );
+
+    let resultRows: FormSpelling[];
+
+    if (htmlSpelling) {
+      const htmlSpellings = rows.map(row => spellingHtmlReading(row.spelling));
+      resultRows = rows.map((row, idx) => ({
+        ...row,
+        hasOccurrence: hasOccurrences[idx],
+        htmlSpelling: htmlSpellings[idx],
+      }));
+    } else {
+      resultRows = rows.map((row, idx) => ({
+        ...row,
+        hasOccurrence: hasOccurrences[idx],
+      }));
+    }
+
+    if (isAdmin) {
+      return resultRows;
+    }
+    return resultRows.filter(row => row.hasOccurrence);
   }
 
   async spellingExistsOnForm(
@@ -74,17 +102,6 @@ class DictionarySpellingDao {
     return row.explicit_spelling;
   }
 
-  async getDictionarySpellingRows(): Promise<DictionarySpellingRows[]> {
-    const spellings: DictionarySpellingRows[] = await knex(
-      'dictionary_spelling AS ds'
-    ).select(
-      'ds.uuid',
-      'ds.reference_uuid AS referenceUuid',
-      'ds.explicit_spelling AS explicitSpelling'
-    );
-    return spellings;
-  }
-
   async getFormUuidBySpellingUuid(spellingUuid: string): Promise<string> {
     const row: { referenceUuid: string } = await knex('dictionary_spelling')
       .where('uuid', spellingUuid)
@@ -98,9 +115,10 @@ class DictionarySpellingDao {
     return row.referenceUuid;
   }
 
-  async getUuidBySpelling(spelling: string): Promise<string> {
+  async getUuidBySpelling(spelling: string, formUuid: string): Promise<string> {
     const row: { uuid: string } = await knex('dictionary_spelling')
-      .where('explicit_spelling', spelling)
+      .where('reference_uuid', formUuid)
+      .andWhere('explicit_spelling', spelling)
       .select('uuid')
       .first();
     return row.uuid;

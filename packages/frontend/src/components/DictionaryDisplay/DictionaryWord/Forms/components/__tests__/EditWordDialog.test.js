@@ -130,6 +130,7 @@ describe('EditWordDialog test', () => {
           ],
         },
         spellingInput: 'spelling-input',
+        allowDiscourseMode: true,
       },
     });
   };
@@ -343,6 +344,7 @@ describe('EditWordDialog test', () => {
     const wrapper = createWrapper({
       spelling: mockSpelling,
     });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await flushPromises();
     await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
@@ -361,6 +363,7 @@ describe('EditWordDialog test', () => {
           .mockRejectedValue('failed to insert new discourse row'),
       },
     });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await flushPromises();
     await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');

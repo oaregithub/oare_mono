@@ -60,9 +60,7 @@ describe('threads api test', () => {
     update: jest.fn().mockResolvedValue({}),
     getByUuid: jest.fn().mockResolvedValue(threadsGetByUuid),
     updateThreadName: jest.fn().mockResolvedValue({}),
-    getThreadWord: jest.fn().mockResolvedValue(threadWord),
     getAll: jest.fn().mockResolvedValue(getAllThreads),
-    getAllThreadUuidsByUserUuid: jest.fn().mockResolvedValue(threadUuids),
   };
 
   const userGetUserByUuid = {

@@ -27,7 +27,6 @@
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import {
   EpigraphicUnit,
-  MarkupUnit,
   DiscourseUnit,
   PermissionsListType,
 } from '@oare/types';

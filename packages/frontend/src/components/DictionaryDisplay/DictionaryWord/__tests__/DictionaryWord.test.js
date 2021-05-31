@@ -30,10 +30,16 @@ describe('DictionaryWord test', () => {
   const mockActions = {
     showErrorSnackbar: jest.fn(),
   };
+  const mockRouter = {
+    currentRoute: {
+      name: 'testName',
+    },
+  };
   const createWrapper = ({ store, server } = {}) => {
     sl.set('store', store || mockStore);
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('router', mockRouter);
 
     return mount(DictionaryWord, {
       localVue,
@@ -82,13 +88,5 @@ describe('DictionaryWord test', () => {
     const wrapper = createWrapper();
     await flushPromises();
     expect(wrapper.find('.test-pencil').exists()).toBe(false);
-  });
-
-  it('check util list displays', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    expect(wrapper.find('.test-util-list-displayed').exists()).toBe(false);
-    await wrapper.get('.test-word-util-list').trigger('click');
-    expect(wrapper.find('.test-util-list-displayed').exists()).toBe(true);
   });
 });

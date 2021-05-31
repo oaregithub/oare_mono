@@ -55,27 +55,42 @@
       :uuid-to-highlight="uuidToHighlight"
       :cursor="cursor"
       :allow-editing="allowEditing"
-      @clicked-util-list="emitUtilList"
+    />
+    <edit-word-dialog
+      v-if="editDialogForm"
+      v-model="showSpellingDialog"
+      :key="editDialogForm ? editDialogForm.uuid : ''"
+      :form="editDialogForm"
+      :spelling="editDialogSpelling"
+      :allowDiscourseMode="editDialogDiscourse"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import {
-  DictionaryWordResponse,
+  defineComponent,
+  PropType,
+  computed,
+  ref,
+  onMounted,
+} from '@vue/composition-api';
+import {
+  Word,
   DictionaryForm,
   DictionaryWordTranslation,
-  UtilListDisplay,
+  FormSpelling,
 } from '@oare/types';
 import FormDisplay from './Forms/FormDisplay.vue';
 import EditTranslations from './EditTranslations/EditTranslations.vue';
+import EventBus, { ACTIONS } from '@/EventBus';
+import EditWordDialog from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/EditWordDialog.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
     updateWordInfo: {
-      type: Function as PropType<(newWord: DictionaryWordResponse) => void>,
+      type: Function as PropType<(newWord: Word) => void>,
       required: true,
     },
     wordUuid: {
@@ -83,7 +98,7 @@ export default defineComponent({
       required: true,
     },
     wordInfo: {
-      type: Object as PropType<DictionaryWordResponse>,
+      type: Object as PropType<Word>,
       required: true,
     },
     uuidToHighlight: {
@@ -102,11 +117,17 @@ export default defineComponent({
   components: {
     FormDisplay,
     EditTranslations,
+    EditWordDialog,
   },
-  setup({ wordInfo, updateWordInfo }, { emit }) {
+  setup({ wordInfo, updateWordInfo }) {
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
+
+    const editDialogForm = ref<DictionaryForm>();
+    const editDialogSpelling = ref<FormSpelling>();
+    const editDialogDiscourse = ref(false);
+    const showSpellingDialog = ref(false);
 
     const canEditTranslations = computed(() =>
       permissions.value
@@ -144,12 +165,23 @@ export default defineComponent({
       });
     };
 
-    const emitUtilList = (utilDisplay: UtilListDisplay) => {
-      emit('clicked-util-list', utilDisplay);
-    };
+    onMounted(() => {
+      EventBus.$on(
+        ACTIONS.EDIT_WORD_DIALOG,
+        (options: {
+          form: DictionaryForm;
+          spelling?: FormSpelling;
+          allowDiscourseMode: boolean;
+        }) => {
+          editDialogForm.value = options.form;
+          editDialogSpelling.value = options.spelling || undefined;
+          editDialogDiscourse.value = options.allowDiscourseMode;
+          showSpellingDialog.value = true;
+        }
+      );
+    });
 
     return {
-      emitUtilList,
       canEditTranslations,
       isEditingTranslations,
       updateTranslations,
@@ -157,6 +189,10 @@ export default defineComponent({
       partsOfSpeech,
       verbalThematicVowelTypes,
       specialClassifications,
+      editDialogForm,
+      editDialogSpelling,
+      editDialogDiscourse,
+      showSpellingDialog,
     };
   },
 });

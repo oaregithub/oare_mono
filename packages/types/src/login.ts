@@ -20,11 +20,6 @@ export interface GetUserResponse extends User {
   groups: number[];
 }
 
-export interface ResetPasswordPayload {
-  resetUuid: string;
-  newPassword: string;
-}
-
 export interface RegisterResponse {
   user: User;
   firebaseToken: string;

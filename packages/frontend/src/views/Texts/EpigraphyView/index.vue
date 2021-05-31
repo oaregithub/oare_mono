@@ -47,7 +47,6 @@ import {
   ref,
   onMounted,
   computed,
-  PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { EpigraphyResponse } from '@oare/types';

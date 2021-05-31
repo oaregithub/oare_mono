@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { ItemProperty, Pagination, SpellingOccurrenceRow } from '@oare/types';
+import { ItemProperty, Pagination } from '@oare/types';
 
 export interface ItemPropertyRow extends ItemProperty {
   referenceUuid: string;
@@ -8,18 +8,6 @@ export interface ItemPropertyRow extends ItemProperty {
 export interface GetItemPropertiesOptions {
   abbreviation?: boolean;
   referenceUuid?: string;
-}
-
-export interface ItemPropertyShortRow {
-  uuid: string;
-  referenceUuid: string;
-  valueUuid: string | null;
-}
-
-interface TextOccurrenceEssentialsRow {
-  discourseUuid: string;
-  textName: string;
-  textUuid: string;
 }
 
 class ItemProperties {
@@ -42,22 +30,6 @@ class ItemProperties {
     }
 
     return query;
-  }
-
-  async getItemPropertyRowsByAliasName(
-    aliasName: string
-  ): Promise<ItemPropertyShortRow[]> {
-    const itemProperties: ItemPropertyShortRow[] = await knex(
-      'item_properties AS ip'
-    )
-      .select(
-        'ip.uuid',
-        'ip.reference_uuid AS referenceUuid',
-        'ip.value_uuid AS valueUuid'
-      )
-      .innerJoin('alias AS a', 'a.reference_uuid', 'ip.variable_uuid')
-      .where('a.name', aliasName);
-    return itemProperties;
   }
 
   private getTextsOfPersonBaseQuery(
@@ -96,37 +68,6 @@ class ItemProperties {
       .where('item_properties.object_uuid', personUuid);
 
     return referenceUuids.map(item => item.referenceUuid);
-  }
-
-  async getTextsOfPerson(
-    personUuid: string,
-    { limit, page, filter }: Pagination
-  ): Promise<SpellingOccurrenceRow[]> {
-    const rows: SpellingOccurrenceRow[] = await this.getTextsOfPersonBaseQuery(
-      personUuid
-    )
-      .select(
-        'text_discourse.uuid AS discourseUuid',
-        'name AS textName',
-        'text_epigraphy.line',
-        'text_discourse.word_on_tablet AS wordOnTablet',
-        'text_discourse.text_uuid AS textUuid'
-      )
-      .innerJoin(
-        'text_epigraphy',
-        'text_epigraphy.discourse_uuid',
-        'text_discourse.uuid'
-      )
-      .orderBy('text.name')
-      .limit(limit)
-      .offset((page - 1) * limit)
-      .modify(qb => {
-        if (filter) {
-          qb.andWhere('text.name', 'like', `%${filter}%`);
-        }
-      });
-
-    return rows;
   }
 }
 

@@ -10,12 +10,6 @@ export interface FormGrammarRow {
   valueAbbrev: string | null;
 }
 
-export interface FormRow {
-  uuid: string;
-  referenceUuid: string;
-  form: string;
-}
-
 function getCliticSuffixUuid(grammarRows: FormGrammarRow[]): string | null {
   const cliticRow = grammarRows.find(
     row => row.variable === 'Clitic' && row.valueName === 'Suffix pronoun'
@@ -138,31 +132,11 @@ class DictionaryFormDao {
     };
   }
 
-  async getForm(formUuid: string): Promise<DictionaryForm> {
-    const { form }: { form: string } = await knex('dictionary_form')
-      .select('form')
-      .where('uuid', formUuid)
-      .first();
-    const spellings = await DictionarySpellingDao.getFormSpellings(formUuid);
-    const grammar = await this.getFormGrammar(formUuid);
-
-    return {
-      uuid: formUuid,
-      form,
-      ...grammar,
-      spellings,
-    };
-  }
-
-  async formExists(formUuid: string): Promise<boolean> {
-    const row = await knex('dictionary_form')
-      .select()
-      .where('uuid', formUuid)
-      .first();
-    return !!row;
-  }
-
-  async getWordForms(wordUuid: string): Promise<DictionaryForm[]> {
+  async getWordForms(
+    wordUuid: string,
+    isAdmin: boolean,
+    htmlSpelling = false
+  ): Promise<DictionaryForm[]> {
     const forms: { uuid: string; form: string }[] = await knex(
       'dictionary_form'
     )
@@ -170,7 +144,9 @@ class DictionaryFormDao {
       .where('reference_uuid', wordUuid);
 
     const formSpellings = await Promise.all(
-      forms.map(f => DictionarySpellingDao.getFormSpellings(f.uuid))
+      forms.map(f =>
+        DictionarySpellingDao.getFormSpellings(f.uuid, isAdmin, htmlSpelling)
+      )
     );
 
     const formGrammars = await Promise.all(
@@ -183,16 +159,8 @@ class DictionaryFormDao {
         ...formGrammars[i],
         spellings: formSpellings[i],
       }))
+      .filter(form => (isAdmin ? form : form.spellings.length > 0))
       .sort((a, b) => a.form.localeCompare(b.form));
-  }
-
-  async getDictionaryFormRows(): Promise<FormRow[]> {
-    const forms: FormRow[] = await knex('dictionary_form AS df').select(
-      'df.uuid',
-      'df.reference_uuid AS referenceUuid',
-      'df.form'
-    );
-    return forms;
   }
 
   async getDictionaryWordUuidByFormUuid(formUuid: string): Promise<string> {

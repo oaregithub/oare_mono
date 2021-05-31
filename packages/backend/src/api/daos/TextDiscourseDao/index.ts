@@ -276,6 +276,7 @@ class TextDiscourseDao {
 
   async insertNewDiscourseRow(
     spelling: string,
+    formUuid: string,
     epigraphyUuids: string[],
     textUuid: string
   ): Promise<void> {
@@ -290,7 +291,8 @@ class TextDiscourseDao {
     );
     const parentUuid = await this.getParentUuidByTextUuid(textUuid);
     const spellingUuid = await DictionarySpellingDao.getUuidBySpelling(
-      spelling
+      spelling,
+      formUuid
     );
     const spellingReferenceUuids = await DictionarySpellingDao.getReferenceUuidsBySpellingUuid(
       spellingUuid
@@ -374,20 +376,6 @@ class TextDiscourseDao {
     return total ? Number(total.count) : 0;
   }
 
-  async getPersonTextsByItemPropertyReferenceUuidsDistinctCount(
-    textDiscourseUuids: string[],
-    pagination: Pagination
-  ): Promise<number> {
-    const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
-      textDiscourseUuids,
-      pagination
-    )
-      .count({ count: 'text_discourse.text_uuid' })
-      .first();
-
-    return total ? Number(total.count) : 0;
-  }
-
   async getChildrenByParentUuid(
     phraseUuid: string
   ): Promise<PersonOccurrenceRow[]> {
@@ -418,6 +406,13 @@ class TextDiscourseDao {
     )[0];
 
     return line;
+  }
+
+  async hasSpellingOccurrence(spellingUuid: string): Promise<boolean> {
+    const row = await knex('text_discourse')
+      .where('spelling_uuid', spellingUuid)
+      .first();
+    return !!row;
   }
 }
 

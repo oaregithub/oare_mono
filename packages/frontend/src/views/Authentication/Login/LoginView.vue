@@ -44,10 +44,6 @@ import sl from '@/serviceLocator';
 import defaultRouter from '../../../router';
 import Router from 'vue-router';
 
-export interface FormRef {
-  validate: () => void;
-}
-
 const beforeRouteEnter: NavigationGuard = (to, from, next) => {
   next(() => {
     const store = sl.get('store');

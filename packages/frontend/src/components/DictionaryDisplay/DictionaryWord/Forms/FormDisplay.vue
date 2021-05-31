@@ -1,16 +1,16 @@
 <template>
   <div>
-    <div v-if="!editing" class="d-flex">
+    <div class="d-flex">
       <v-btn
         v-if="canAddSpelling && !editing && allowEditing"
         icon
         class="mt-n2 mr-1"
-        @click="spellingDialogOpen = true"
+        @click="openEditDialog(form)"
       >
         <v-icon>mdi-plus</v-icon>
       </v-btn>
       <v-btn
-        v-if="canEdit && allowEditing"
+        v-if="canEdit && !editing && allowEditing"
         icon
         class="test-pencil mt-n2"
         @click="editing = true"
@@ -18,46 +18,36 @@
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
-      <strong
-        @click="openUtilList"
-        class="mr-1 test-form-util-list"
-        :class="{ 'cursor-display': cursor }"
+      <UtilList
+        v-if="!editing"
+        @comment-clicked="openComment(form.uuid, form.form)"
+        :hasEdit="false"
+        :hasDelete="false"
+        :hideMenu="!allowEditing"
       >
-        <mark v-if="form.uuid === uuidToHighlight">{{ form.form }}</mark>
-        <template v-else>{{ form.form }}</template>
-      </strong>
+        <template #activator="{ on, attrs }">
+          <strong
+            class="mr-1 test-form-util-list"
+            :class="{ 'cursor-display': allowEditing }"
+            v-on="on"
+            v-bind="attrs"
+          >
+            <mark v-if="form.uuid === uuidToHighlight">{{ form.form }}</mark>
+            <mark v-else-if="form.spellings.length <= 0" class="error">{{
+              form.form
+            }}</mark>
+            <template v-else>{{ form.form }}</template>
+          </strong>
+        </template>
+      </UtilList>
 
-      <grammar-display :form="form" />
-      <span class="d-flex flex-row flex-wrap mb-0">
-        <span
-          class="d-flex flex-row mb-0"
-          v-for="(s, index) in form.spellings"
-          :key="index"
-        >
-          <spelling-display
-            :spelling="s"
-            :updateSpelling="newSpelling => updateSpelling(index, newSpelling)"
-            :form="form"
-            :word-uuid="wordUuid"
-            :uuid-to-highlight="uuidToHighlight"
-            :cursor="cursor"
-            :allow-editing="allowEditing"
-          />
-          <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
-        </span></span
-      >
-    </div>
-
-    <div v-else>
-      <v-row class="pa-0 ml-2">
-        <v-col cols="4" class="pa-0">
-          <v-text-field
-            v-model="editForm.form"
-            autofocus
-            class="test-edit pa-0"
-            :disabled="loading"
-          />
-        </v-col>
+      <div v-else class="d-flex flex-row pa-0 ml-2">
+        <v-text-field
+          v-model="editForm.form"
+          autofocus
+          class="test-edit pa-0"
+          :disabled="loading"
+        />
         <v-progress-circular
           size="20"
           v-if="loading"
@@ -71,57 +61,42 @@
         <v-btn v-if="!loading" icon @click="editing = false" class="test-close">
           <v-icon>mdi-close</v-icon>
         </v-btn>
-        <grammar-display :form="form" class="mt-2" />
-        <span class="mt-2">
-          <span v-for="(s, index) in form.spellings" :key="index">
-            <spelling-display
-              :spelling="s"
-              :updateSpelling="
-                newSpelling => updateSpelling(index, newSpelling)
-              "
-              :form="form"
-              :word-uuid="wordUuid"
-              :uuid-to-highlight="uuidToHighlight"
-              :cursor="cursor"
-              :allow-editing="allowEditing"
-            />
-            <span v-if="index !== form.spellings.length - 1" class="mr-1"
-              >,</span
-            >
-          </span></span
-        >
-      </v-row>
-    </div>
+      </div>
 
-    <edit-word-dialog
-      v-model="spellingDialogOpen"
-      :form="form"
-      :allowDiscourseMode="false"
-    />
+      <grammar-display :form="form" />
+      <span class="d-flex flex-row flex-wrap mb-0">
+        <span
+          class="d-flex flex-row mb-0"
+          v-for="(s, index) in form.spellings"
+          :key="index"
+        >
+          <spelling-display
+            :spelling="s"
+            :form="form"
+            :word-uuid="wordUuid"
+            :uuid-to-highlight="uuidToHighlight"
+            :allow-editing="allowEditing"
+          />
+          <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
+        </span></span
+      >
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  PropType,
-  ref,
-  computed,
-  inject,
-} from '@vue/composition-api';
-import { DictionaryForm, FormSpelling } from '@oare/types';
+import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
+import { DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
 import UtilList from '@/components/UtilList/index.vue';
-import { SendUtilList } from '../index.vue';
-import EditWordDialog from './components/EditWordDialog.vue';
+import EventBus, { ACTIONS } from '@/EventBus';
 
 export default defineComponent({
   components: {
     GrammarDisplay,
     SpellingDisplay,
-    EditWordDialog,
     UtilList,
   },
   props: {
@@ -141,10 +116,6 @@ export default defineComponent({
       type: String,
       default: null,
     },
-    cursor: {
-      type: Boolean,
-      default: true,
-    },
     allowEditing: {
       type: Boolean,
       default: true,
@@ -154,8 +125,9 @@ export default defineComponent({
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const utilList = inject(SendUtilList);
+    const router = sl.get('router');
 
+    const routeName = router.currentRoute.name;
     const spellingDialogOpen = ref(false);
     const editing = ref(false);
     const loading = ref(false);
@@ -189,30 +161,21 @@ export default defineComponent({
       }
     };
 
-    const updateSpelling = (index: number, newSpelling: FormSpelling) => {
-      const spellings = [...props.form.spellings];
-      spellings[index] = newSpelling;
-      props.updateForm({
-        ...props.form,
-        spellings,
+    const openComment = (uuid: string, word: string) => {
+      EventBus.$emit(ACTIONS.COMMENT_DIALOG, {
+        uuid,
+        word,
       });
     };
 
-    const openUtilList = () => {
-      utilList &&
-        utilList({
-          comment: true,
-          edit: false,
-          delete: false,
-          word: props.form.form,
-          uuid: props.form.uuid,
-          route: `/dictionaryWord/${props.wordUuid}`,
-          type: 'FORM',
-        });
+    const openEditDialog = (form: DictionaryForm) => {
+      EventBus.$emit(ACTIONS.EDIT_WORD_DIALOG, {
+        form,
+        allowDiscourseMode: false,
+      });
     };
 
     return {
-      openUtilList,
       isCommenting,
       editing,
       canEdit,
@@ -220,8 +183,10 @@ export default defineComponent({
       editForm,
       loading,
       saveFormEdit,
-      updateSpelling,
       spellingDialogOpen,
+      routeName,
+      openComment,
+      openEditDialog,
     };
   },
 });

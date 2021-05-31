@@ -4,13 +4,15 @@
       :wordList="words"
       :letter="letter"
       route="words"
-      :showForms="false"
       :searchFilter="searchFilter"
     >
       <template #word="{ word }">
-        <router-link :to="`/dictionaryWord/${word.uuid}`" class="mr-1">{{
-          word.word
-        }}</router-link>
+        <router-link :to="`/dictionaryWord/${word.uuid}`" class="mr-1">
+          <mark v-if="word.forms.length <= 0" class="error">{{
+            word.word
+          }}</mark>
+          <span v-else>{{ word.word }}</span>
+        </router-link>
       </template>
       <template #translation="{ word }">
         <div v-if="word.partsOfSpeech.length > 0" class="mr-1">
@@ -27,7 +29,7 @@
           <span
             v-if="
               word.translations.length > 0 &&
-                word.specialClassifications.length > 0
+              word.specialClassifications.length > 0
             "
             >;</span
           >
@@ -41,18 +43,9 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  Ref,
-  onMounted,
-  computed,
-  watch,
-} from '@vue/composition-api';
+import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
-import defaultServer from '@/serverProxy';
 import { DictionaryWord, ItemProperty } from '@oare/types';
-import defaultActions from '@/globalActions';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -124,5 +117,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style></style>

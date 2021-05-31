@@ -7,19 +7,24 @@ const resolveValue = [
   {
     uuid: 'word1',
     word: 'coolBeans',
-    translation: 'This is a cool word',
+    translation: [
+      {
+        uuid: 'translationUuid',
+        translation: 'testTranslation',
+      },
+    ],
     forms: [
       {
         uuid: 'form1',
         form: 'Form1',
         spellings: ['Spelling1', 'Spelling2', 'Spelling3'],
-        cases: 'John/John2',
+        cases: ['nom.', 'gen.', 'acc.'],
       },
       {
         uuid: 'form2',
         form: 'Form2',
         spellings: ['SpellingOfOther'],
-        cases: 'Jane',
+        cases: ['nom.', 'gen.', 'acc.'],
       },
     ],
   },
@@ -27,7 +32,7 @@ const resolveValue = [
 
 describe('places api test', () => {
   const MockDictionaryWordDao = {
-    getPlaces: jest.fn().mockResolvedValue(resolveValue),
+    getWords: jest.fn().mockResolvedValue(resolveValue),
   };
 
   const mockCache = {
@@ -45,6 +50,11 @@ describe('places api test', () => {
       const PATH = `${API_PATH}/places/${letter}`;
       setup();
       const response = await request(app).get(PATH);
+      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
+        'GN',
+        'a',
+        false
+      );
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(resolveValue);
     });
@@ -54,15 +64,20 @@ describe('places api test', () => {
       const PATH = `${API_PATH}/places/${encodeURIComponent(letter)}`;
       setup();
       const response = await request(app).get(PATH);
+      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
+        'GN',
+        'u/a',
+        false
+      );
       expect(response.status).toBe(200);
     });
 
-    it('fails return places', async () => {
+    it('returns 500 on failed places retrieval', async () => {
       const letter = 'A';
       const PATH = `${API_PATH}/places/${letter}`;
       setup({
         WordDao: {
-          getPlaces: jest.fn().mockRejectedValue('Not a valid letter'),
+          getWords: jest.fn().mockRejectedValue('Not a valid letter'),
         },
         ...mockCache,
       });

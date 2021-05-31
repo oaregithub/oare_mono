@@ -9,17 +9,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import {
-  defineComponent,
-  ref,
-  Ref,
-  watch,
-  computed,
-} from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 import TextsSearch from './TextsSearch/TextsSearch.vue';
 import DictionarySearch from './DictionarySearch/DictionarySearch.vue';
-import { updateUrl } from './utils';
 
 export default defineComponent({
   name: 'SearchView',
@@ -29,5 +21,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style></style>

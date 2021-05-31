@@ -2,10 +2,6 @@ import { DiscourseUnit } from './textDiscourse';
 import { TextDraft } from './drafts';
 import { Collection } from './collection';
 
-export interface TextInfoResponse {
-  name: string;
-}
-
 export interface EpigraphyResponse {
   canWrite: boolean;
   textName: string;
@@ -116,11 +112,6 @@ export interface MarkupUnit {
 }
 
 export type TextFormatType = 'regular' | 'html';
-export interface TextFormatOptions {
-  format?: TextFormatType;
-  markup?: boolean;
-  lineNums?: boolean;
-}
 
 export interface TabletHtmlOptions {
   showNullDiscourse?: boolean;
@@ -145,10 +136,4 @@ export interface EpigraphicSign
 export interface EpigraphicWord
   extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
   signs: EpigraphicSign[];
-}
-
-export interface EpigraphicTextWithReadings {
-  textUuid: string;
-  textName: string;
-  readings: string[];
 }

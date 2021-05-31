@@ -7,26 +7,6 @@ import {
   EpigraphicWord,
 } from '@oare/types';
 
-export function markupsMatchDamage(
-  markupUnits: MarkupUnit[],
-  markupType: MarkupType
-): boolean {
-  return markupUnits.some(markup => {
-    if (markup.type === markupType) {
-      return true;
-    }
-
-    const damageTypes = ['damage', 'partialDamage'];
-    if (damageTypes.includes(markup.type)) {
-      return true;
-    }
-    if (damageTypes.includes(markupType)) {
-      return true;
-    }
-    return false;
-  });
-}
-
 export function getMarkupByDamageType(
   markupUnits: MarkupUnit[],
   damageType: MarkupType

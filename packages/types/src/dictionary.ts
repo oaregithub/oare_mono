@@ -1,11 +1,6 @@
 import { DictionaryWordTranslation } from './words';
 import { SearchTextsResultRow } from './search';
 
-export interface SpellingText {
-  uuid: string;
-  text: string;
-}
-
 export interface DisplayableWord {
   uuid: string;
   word: string;
@@ -14,6 +9,8 @@ export interface DisplayableWord {
 export interface FormSpelling {
   uuid: string;
   spelling: string;
+  hasOccurrence: boolean;
+  htmlSpelling?: string;
 }
 
 export interface CheckSpellingResponse {
@@ -146,3 +143,5 @@ export interface SpellingOccurrenceRow {
 export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
   readings: string[];
 }
+
+export type DictionaryWordTypes = 'word' | 'GN' | 'PN';

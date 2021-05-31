@@ -1,7 +1,7 @@
 import express from 'express';
 import _ from 'lodash';
 import {
-  DictionaryWordResponse,
+  Word,
   UpdateDictionaryWordPayload,
   UpdateDictionaryTranslationPayload,
   DictionaryForm,
@@ -11,11 +11,7 @@ import {
   CheckSpellingResponse,
   Token,
 } from '@oare/types';
-import {
-  tokenizeExplicitSpelling,
-  createTabletRenderer,
-  normalizeSign,
-} from '@oare/oare';
+import { tokenizeExplicitSpelling, normalizeSign } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
@@ -145,11 +141,12 @@ router
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
       const { uuid } = req.params;
+      const isAdmin = req.user ? req.user.isAdmin : false;
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
-      const forms = await DictionaryFormDao.getWordForms(uuid);
+      const forms = await DictionaryFormDao.getWordForms(uuid, isAdmin, true);
 
-      const result: DictionaryWordResponse = {
+      const result: Word = {
         ...grammarInfo,
         forms,
       };
@@ -418,6 +415,7 @@ router
   .get(async (req, res, next) => {
     try {
       const { discourseUuid } = req.params;
+      const isAdmin = req.user ? req.user.isAdmin : false;
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const DictionaryFormDao = sl.get('DictionaryFormDao');
@@ -439,7 +437,7 @@ router
         discourseUuid
       );
 
-      let result: DictionaryWordResponse | null = null;
+      let result: Word | null = null;
 
       if (spellingUuids.length > 0) {
         // Should only ever be one spelling associated with a "word" type in the text discourse table.
@@ -454,7 +452,7 @@ router
         const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(
           wordUuid
         );
-        const forms = await DictionaryFormDao.getWordForms(wordUuid);
+        const forms = await DictionaryFormDao.getWordForms(wordUuid, isAdmin);
 
         // Only get the one form from the formUuid (keep all spellings of the form)
         const selectedForms = forms.filter(form => form.uuid === formUuid);
