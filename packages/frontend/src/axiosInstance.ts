@@ -1,6 +1,7 @@
 import axios from 'axios';
 import store from '@/ts-store';
 import firebase from '@/firebase';
+import actions from '@/globalActions';
 
 const host =
   process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
@@ -23,8 +24,17 @@ axiosInstance.interceptors.response.use(
       const { currentUser } = firebase.auth();
 
       if (currentUser) {
-        const idTokenResult = await currentUser.getIdTokenResult(true);
-        store.setToken(idTokenResult);
+        try {
+          const idTokenResult = await currentUser.getIdTokenResult(true);
+          store.setToken(idTokenResult);
+        } catch (err) {
+          if (err.code === 'auth/quota-exceeded') {
+            error.config.isRefreshing = false;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } else {
+            actions.logError(err.code, err);
+          }
+        }
       }
 
       return axiosInstance(error.config);
