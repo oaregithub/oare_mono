@@ -10,7 +10,7 @@
     <v-switch
       v-model="includeSuperfluous"
       label="Include superfluous results"
-      class="ma-0"
+      class="ma-0 test-superfluous-toggle"
     />
     <v-data-table
       v-model="selectedOccurrences"
