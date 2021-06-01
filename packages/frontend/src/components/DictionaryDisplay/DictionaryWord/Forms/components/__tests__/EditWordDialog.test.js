@@ -295,8 +295,36 @@ describe('EditWordDialog test', () => {
     });
     await wrapper.get('.test-discourse-mode input').trigger('click');
     await flushPromises();
-    expect(mockServer.searchNullDiscourse).toHaveBeenCalled();
-    expect(mockServer.searchNullDiscourseCount).toHaveBeenCalled();
+    expect(mockServer.searchNullDiscourse).toHaveBeenCalledWith(
+      'spelling',
+      1,
+      50,
+      false
+    );
+    expect(mockServer.searchNullDiscourseCount).toHaveBeenCalledWith(
+      'spelling',
+      false
+    );
+  });
+
+  it('shows superfluous results on toggle', async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+    });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-superfluous-toggle input').trigger('click');
+    await flushPromises();
+    expect(mockServer.searchNullDiscourse).toHaveBeenCalledWith(
+      'spelling',
+      1,
+      50,
+      true
+    );
+    expect(mockServer.searchNullDiscourseCount).toHaveBeenCalledWith(
+      'spelling',
+      true
+    );
   });
 
   it('hides discourse switch if user does not have permission', async () => {

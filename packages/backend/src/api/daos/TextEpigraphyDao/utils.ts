@@ -12,11 +12,17 @@ import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
   cooccurrences: SearchCooccurrence[],
+  includeSuperfluous: boolean,
   baseQuery?: Knex.QueryBuilder
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
   let query = baseQuery || knex('text_epigraphy');
+  query = query.leftJoin(
+    'text_markup',
+    'text_epigraphy.uuid',
+    'text_markup.reference_uuid'
+  );
   cooccurrences.forEach((occurrence, coocIndex) => {
     const charSet = occurrence.uuids;
     charSet.forEach((char, charIndex) => {
@@ -56,6 +62,15 @@ export function getSequentialCharacterQuery(
       );
     }
   });
+  query = query.modify(qb => {
+    if (!includeSuperfluous) {
+      qb.andWhere(innerQuery => {
+        innerQuery
+          .whereNot('text_markup.type', 'superfluous')
+          .orWhereNull('text_markup.type');
+      });
+    }
+  });
 
   return query;
 }
@@ -65,6 +80,7 @@ export function getSearchQuery(
   textBlacklist: string[],
   textWhitelist: string[],
   collectionBlacklist: string[],
+  includeSuperfluous: boolean,
   textTitle?: string
 ) {
   // Join text table so text names can be returned
@@ -73,7 +89,11 @@ export function getSearchQuery(
     .join('hierarchy', 'hierarchy.uuid', 'text_epigraphy.text_uuid');
 
   const andCooccurrences = characters.filter(char => char.type === 'AND');
-  query = getSequentialCharacterQuery(andCooccurrences, query);
+  query = getSequentialCharacterQuery(
+    andCooccurrences,
+    includeSuperfluous,
+    query
+  );
 
   if (textTitle) {
     query = query.andWhere('text.name', 'like', `%${textTitle}%`);
@@ -152,7 +172,7 @@ export async function getNotOccurrenceTexts(
   const notCharacters = characters.filter(char => char.type === 'NOT');
   const notTexts =
     notCharacters.length > 0
-      ? await getSequentialCharacterQuery(notCharacters).pluck(
+      ? await getSequentialCharacterQuery(notCharacters, true).pluck(
           'text_epigraphy.text_uuid'
         )
       : [];
