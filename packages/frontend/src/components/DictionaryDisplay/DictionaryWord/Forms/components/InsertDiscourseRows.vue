@@ -7,6 +7,11 @@
       >
     </div>
     The following spelling occurrences are missing discourse information:
+    <v-switch
+      v-model="includeSuperfluous"
+      label="Include superfluous results"
+      class="ma-0"
+    />
     <v-data-table
       v-model="selectedOccurrences"
       :headers="listHeaders"
@@ -116,6 +121,7 @@ export default defineComponent({
     );
     const nullDiscourseCount = ref(0);
     const selectedOccurrences: Ref<SearchNullDiscourseResultRow[]> = ref([]);
+    const includeSuperfluous = ref(false);
 
     const listHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Text', value: 'textName', width: '40%' },
@@ -139,7 +145,8 @@ export default defineComponent({
         nullDiscourseOccurrences.value = await server.searchNullDiscourse(
           props.spellingInput,
           Number(page.value),
-          Number(limit.value)
+          Number(limit.value),
+          includeSuperfluous.value
         );
       } catch {
         actions.showErrorSnackbar(
@@ -155,7 +162,8 @@ export default defineComponent({
         searchNullCountLoading.value = true;
         nullDiscourseCount.value = -1;
         nullDiscourseCount.value = await server.searchNullDiscourseCount(
-          props.spellingInput
+          props.spellingInput,
+          includeSuperfluous.value
         );
       } catch {
         actions.showErrorSnackbar(
@@ -231,6 +239,12 @@ export default defineComponent({
       { immediate: true }
     );
 
+    watch(includeSuperfluous, async () => {
+      searchOptions.value.page = 1;
+      await searchNullDiscourse();
+      await searchNullDiscourseCount();
+    });
+
     return {
       spellingHtmlReading,
       nullDiscourseOccurrences,
@@ -245,6 +259,7 @@ export default defineComponent({
       searchNullCountLoading,
       insertDiscourseRowsLoading,
       formatLineNumber,
+      includeSuperfluous,
     };
   },
 });
