@@ -130,6 +130,7 @@ describe('EditWordDialog test', () => {
           ],
         },
         spellingInput: 'spelling-input',
+        allowDiscourseMode: true,
       },
     });
   };
@@ -294,8 +295,36 @@ describe('EditWordDialog test', () => {
     });
     await wrapper.get('.test-discourse-mode input').trigger('click');
     await flushPromises();
-    expect(mockServer.searchNullDiscourse).toHaveBeenCalled();
-    expect(mockServer.searchNullDiscourseCount).toHaveBeenCalled();
+    expect(mockServer.searchNullDiscourse).toHaveBeenCalledWith(
+      'spelling',
+      1,
+      50,
+      false
+    );
+    expect(mockServer.searchNullDiscourseCount).toHaveBeenCalledWith(
+      'spelling',
+      false
+    );
+  });
+
+  it('shows superfluous results on toggle', async () => {
+    const wrapper = createWrapper({
+      spelling: mockSpelling,
+    });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-superfluous-toggle input').trigger('click');
+    await flushPromises();
+    expect(mockServer.searchNullDiscourse).toHaveBeenCalledWith(
+      'spelling',
+      1,
+      50,
+      true
+    );
+    expect(mockServer.searchNullDiscourseCount).toHaveBeenCalledWith(
+      'spelling',
+      true
+    );
   });
 
   it('hides discourse switch if user does not have permission', async () => {
@@ -343,6 +372,7 @@ describe('EditWordDialog test', () => {
     const wrapper = createWrapper({
       spelling: mockSpelling,
     });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await flushPromises();
     await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
@@ -361,6 +391,7 @@ describe('EditWordDialog test', () => {
           .mockRejectedValue('failed to insert new discourse row'),
       },
     });
+    await wrapper.get('.test-discourse-mode input').trigger('click');
     await wrapper.get('.test-spelling-field input').setValue('new spelling');
     await flushPromises();
     await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');

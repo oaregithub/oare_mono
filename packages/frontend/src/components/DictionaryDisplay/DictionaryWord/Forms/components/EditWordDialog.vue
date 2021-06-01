@@ -135,7 +135,6 @@
 <script lang="ts">
 import {
   defineComponent,
-  onMounted,
   PropType,
   ref,
   watch,
@@ -149,7 +148,6 @@ import {
 } from '@oare/types';
 import SpellingDialog from './SpellingDialog.vue';
 import InsertDiscourseRows from './InsertDiscourseRows.vue';
-import useQueryParam from '@/hooks/useQueryParam';
 import { spellingHtmlReading } from '@oare/oare';
 import { DataTableHeader } from 'vuetify';
 import utils from '@/utils';
@@ -185,10 +183,6 @@ export default defineComponent({
 
     const inDiscourseMode = ref(false);
     const searchSpellingLoading = ref(false);
-    const [discourseQueryParam, setDiscourse] = useQueryParam(
-      'discourse',
-      'false'
-    );
 
     const canInsertDiscourseRows = computed(() =>
       store.getters.permissions
@@ -230,14 +224,6 @@ export default defineComponent({
       );
     });
 
-    onMounted(async () => {
-      inDiscourseMode.value = discourseQueryParam.value === 'true';
-    });
-
-    watch(inDiscourseMode, () => {
-      setDiscourse(inDiscourseMode.value ? 'true' : 'false');
-    });
-
     watch(
       () => context.attrs.value,
       open => {
@@ -266,6 +252,15 @@ export default defineComponent({
           spellingSearchResults.value = [];
         }
       }, 500)
+    );
+
+    watch(
+      () => props.allowDiscourseMode,
+      () => {
+        if (!props.allowDiscourseMode) {
+          inDiscourseMode.value = false;
+        }
+      }
     );
 
     return {

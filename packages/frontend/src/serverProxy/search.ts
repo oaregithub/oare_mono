@@ -53,22 +53,28 @@ async function searchSpellingDiscourse(
 async function searchNullDiscourse(
   characters: string,
   page: number,
-  limit: number
+  limit: number,
+  includeSuperfluous: boolean
 ): Promise<SearchNullDiscourseResultRow[]> {
   const { data } = await axios.get('/search/discourse/null', {
     params: {
       characters,
       page,
       limit,
+      includeSuperfluous,
     },
   });
   return data;
 }
 
-async function searchNullDiscourseCount(characters: string): Promise<number> {
+async function searchNullDiscourseCount(
+  characters: string,
+  includeSuperfluous: boolean
+): Promise<number> {
   const { data } = await axios.get('/search/discourse/null/count', {
     params: {
       characters,
+      includeSuperfluous,
     },
   });
   return data;

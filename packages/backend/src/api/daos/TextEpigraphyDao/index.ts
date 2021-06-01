@@ -116,6 +116,7 @@ class TextEpigraphyDao {
       textBlacklist,
       textWhitelist,
       collectionBlacklist,
+      true,
       title
     )
       .select('text_epigraphy.text_uuid AS uuid')
@@ -136,7 +137,7 @@ class TextEpigraphyDao {
     const rows: Array<{ line: number }> = (
       await Promise.all(
         characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(characters);
+          const query = getSequentialCharacterQuery(characters, true);
           return query
             .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
             .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
@@ -156,8 +157,8 @@ class TextEpigraphyDao {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ discourseUuid: string }> = (
       await Promise.all(
-        characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(characters);
+        characters.map(_char => {
+          const query = getSequentialCharacterQuery(characters, true);
           return query
             .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
             .where('text_epigraphy.text_uuid', textUuid);
@@ -213,6 +214,7 @@ class TextEpigraphyDao {
         textBlacklist,
         textWhitelist,
         collectionBlacklist,
+        true,
         title
       )
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
@@ -225,7 +227,8 @@ class TextEpigraphyDao {
 
   async searchNullDiscourseCount(
     characterUuids: SearchCooccurrence[],
-    userUuid: string | null
+    userUuid: string | null,
+    includeSuperfluous: boolean
   ): Promise<number> {
     const {
       blacklist: textBlacklist,
@@ -239,7 +242,8 @@ class TextEpigraphyDao {
       characterUuids,
       textBlacklist,
       textWhitelist,
-      collectionBlacklist
+      collectionBlacklist,
+      includeSuperfluous
     )
       .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
       .modify(qb => {
@@ -260,7 +264,8 @@ class TextEpigraphyDao {
     characterUuids: SearchCooccurrence[],
     page: number,
     limit: number,
-    userUuid: string | null
+    userUuid: string | null,
+    includeSuperfluous: boolean
   ): Promise<SearchNullDiscourseLine[]> {
     const {
       blacklist: textBlacklist,
@@ -281,7 +286,8 @@ class TextEpigraphyDao {
       characterUuids,
       textBlacklist,
       textWhitelist,
-      collectionBlacklist
+      collectionBlacklist,
+      includeSuperfluous
     )
       .distinct(epigraphyUuidColumns)
       .modify(qb => {

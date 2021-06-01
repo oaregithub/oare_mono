@@ -9,7 +9,7 @@ export default `
 "-"                   return '-'
 "(.)"                 return 'DETSEPARATOR'
 "{-}"                 return 'COMPSEPARATOR'
-"1/2"|"1/3"|"1/4"|"1/5"|"1/6"|"2/3"|"3/4"|"5/6"|([½⅓¼⅕⅙⅔¾⅚])|([0-9]+("."[0-9]+)?\b)|[\\*:×‹«\\+#]?[\u00C0-\u017FĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz,⸢⸣\\[\\]]+([₀₁₂₃₄₅₆₇₈₉]|[0-9]){0,2}[\\*!:›»\\?]?    return 'SIGN'
+"1/2"|"1/3"|"1/4"|"1/5"|"1/6"|"2/3"|"3/4"|"5/6"|([½⅓¼⅕⅙⅔¾⅚])|([0-9]+("."[0-9]+)?\b)|[\\*:×‹«\\+#]?[\u00C0-\u017FĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz,⸢⸣\\[\\]]+([₀₁₂₃₄₅₆₇₈₉ₓ]|[0-9]){0,2}[\\*!:›»\\?]?    return 'SIGN'
 "("                 return "("
 ")"                 return ")"
 "{"                 return "{"

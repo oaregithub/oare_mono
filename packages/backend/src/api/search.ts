@@ -8,7 +8,6 @@ import {
   SearchDiscourseSpellingResponse,
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
-  SearchNullDiscourseCountPayload,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -160,16 +159,17 @@ router.route('/search/discourse/null/count').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-    const {
-      characters,
-    } = (req.query as unknown) as SearchNullDiscourseCountPayload;
+    const query = parsedQuery(req.originalUrl);
+    const characters = query.get('characters') || '';
+    const includeSuperfluous = query.get('includeSuperfluous') === 'true';
 
     const characterUuids = await prepareCharactersForSearch(characters);
     const userUuid = req.user ? req.user.uuid : null;
 
     const count: number = await TextEpigraphyDao.searchNullDiscourseCount(
       characterUuids,
-      userUuid
+      userUuid,
+      includeSuperfluous
     );
 
     res.json(count);
@@ -185,6 +185,7 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
 
     const query = parsedQuery(req.originalUrl);
     const characters = query.get('characters') || '';
+    const includeSuperfluous = query.get('includeSuperfluous') === 'true';
     const { page, limit } = extractPagination(req.query);
 
     const characterUuids = await prepareCharactersForSearch(characters);
@@ -194,7 +195,8 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
       characterUuids,
       page,
       limit,
-      userUuid
+      userUuid,
+      includeSuperfluous
     );
 
     const textNames = (
