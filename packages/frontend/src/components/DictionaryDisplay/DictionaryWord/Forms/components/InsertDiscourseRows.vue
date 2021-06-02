@@ -9,7 +9,7 @@
     The following spelling occurrences are missing discourse information:
     <v-switch
       v-model="includeSuperfluous"
-      label="Include superfluous results"
+      label="Include results with signs marked as 'superfluous'"
       class="ma-0 test-superfluous-toggle"
     />
     <v-data-table
