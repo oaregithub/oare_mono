@@ -59,7 +59,7 @@ firebase.auth().onIdTokenChanged(async user => {
     } catch (err) {
       server.logError({
         description: 'Error initializing site',
-        stacktrace: err,
+        stacktrace: err.stack,
         status: 'New',
       });
     }
