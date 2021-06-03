@@ -28,10 +28,6 @@ export interface SearchCooccurrence {
   type: 'AND' | 'NOT';
 }
 
-export interface SearchNullDiscourseCountPayload {
-  characters: string;
-}
-
 export interface SearchNullDiscourseLine {
   textUuid: string;
   epigraphyUuids: string[];

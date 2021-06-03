@@ -20,7 +20,9 @@ router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
     const text = await TextDao.getTextByUuid(textUuid);
 
     if (!text) {
-      next(new HttpBadRequest(`Text with UUID ${textUuid} does not exist`));
+      next(
+        new HttpBadRequest(`Text with UUID ${textUuid} does not exist`, true)
+      );
       return;
     }
 
