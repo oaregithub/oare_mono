@@ -89,14 +89,14 @@ export default defineComponent({
       default: false,
     },
   },
-  setup({ thread }, { emit }) {
+  setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
 
     const editThreadNameDialog = ref(false);
     const loading = ref(false);
-    const newThreadName = ref(thread.name || '');
+    const newThreadName = ref(props.thread.name || '');
     const editErrorMessage = ref('');
 
     const statuses = ref<ThreadStatus[]>([
@@ -107,11 +107,11 @@ export default defineComponent({
     ]);
 
     const displayThreadName = computed(() => {
-      return thread.name || 'Untitled';
+      return props.thread.name || 'Untitled';
     });
 
     const selectThread = () => {
-      emit('selected', thread.uuid);
+      emit('selected', props.thread.uuid);
     };
 
     const validThreadName = computed(() => {
@@ -130,7 +130,7 @@ export default defineComponent({
       loading.value = true;
       try {
         await server.updateThreadName({
-          threadUuid: thread.uuid,
+          threadUuid: props.thread.uuid,
           newName: newThreadName.value,
         });
         actions.showSnackbar(`Successfully edited the thread name.`);
@@ -146,11 +146,11 @@ export default defineComponent({
 
     const updateThreadStatus = async (status: ThreadStatus) => {
       // Only update if status changes from the original value.
-      if (status !== thread.status) {
+      if (status !== props.thread.status) {
         try {
           loading.value = true;
-          thread.status = status;
-          await server.updateThread(thread);
+          props.thread.status = status;
+          await server.updateThread(props.thread);
 
           actions.showSnackbar('Successfully updated the thread');
           emit('statusUpdated');
