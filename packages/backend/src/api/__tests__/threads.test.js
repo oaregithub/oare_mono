@@ -124,7 +124,7 @@ describe('threads api test', () => {
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([
         {
-          thread: threadFoundInfo,
+          ...threadFoundInfo,
           comments: [commentWithFoundUserInfo],
         },
       ]);
@@ -201,7 +201,7 @@ describe('threads api test', () => {
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([
         {
-          thread: threadFoundInfo,
+          ...threadFoundInfo,
           comments: [],
         },
       ]);
@@ -223,7 +223,7 @@ describe('threads api test', () => {
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([
         {
-          thread: threadFoundInfo,
+          ...threadFoundInfo,
           comments: [commentWithoutFoundUserInfo],
         },
       ]);
