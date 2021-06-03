@@ -19,8 +19,6 @@ describe('threads api test', () => {
     insert: jest.fn().mockResolvedValue(''),
   };
 
-  const threadUuids = ['uuid1'];
-
   const threadsGetByReferenceUuid = [
     {
       uuid: 'string',
@@ -203,28 +201,6 @@ describe('threads api test', () => {
         {
           ...threadFoundInfo,
           comments: [],
-        },
-      ]);
-    });
-
-    it('returns 200, even when no user is found.', async () => {
-      sl.set('UserDao', {
-        ...MockUserDao,
-        getUserByUuid: jest
-          .fn()
-          .mockResolvedValueOnce({
-            ...userGetUserByUuid,
-            isAdmin: true,
-          })
-          .mockResolvedValue(null),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([
-        {
-          ...threadFoundInfo,
-          comments: [commentWithoutFoundUserInfo],
         },
       ]);
     });
