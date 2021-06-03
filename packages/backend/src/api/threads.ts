@@ -58,7 +58,7 @@ router
           const comments = await commentsDao.getAllByThreadUuid(thread.uuid);
           const commentDisplays = await getUsersByComments(comments);
           return {
-            thread,
+            ...thread,
             comments: commentDisplays,
           };
         })

@@ -3,7 +3,7 @@ import { Pagination } from './dictionary';
 export interface Comment {
   uuid: string;
   threadUuid: string;
-  userUuid: string;
+  userUuid: string | null;
   createdAt: Date;
   deleted: boolean;
   text: string;
@@ -33,8 +33,7 @@ export interface UpdateThreadNameRequest {
   newName: string;
 }
 
-export interface ThreadWithComments {
-  thread: Thread;
+export interface ThreadWithComments extends Thread {
   comments: CommentDisplay[];
 }
 

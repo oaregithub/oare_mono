@@ -31,7 +31,7 @@ const mockThreadDisplays = [
       name: 'testName',
       status: 'testStatus',
       referenceUuid: 'testReferenceUuid',
-      route: 'testRoute',
+      route: '/dictionaryWord/uuid',
     },
     word: 'testItem',
     latestCommentDate: date,
@@ -99,7 +99,7 @@ const testComment = {
 
 const mockThreadDisplaysResponse = [
   {
-    thread: testThread,
+    ...testThread,
     comments: [testComment],
   },
 ];

@@ -19,76 +19,21 @@
       <v-col class="overflow-y-auto comment-display-height" cols="3">
         <h2 class="mb-3 text--primary">Threads</h2>
         <v-divider />
-        <v-card
-          :color="
-            threadWithComment.thread.uuid ===
-            selectedThreadWithComments.thread.uuid
-              ? '#fafafa'
-              : '#ffffff'
-          "
-          :key="idx"
-          elevation="0"
-          v-for="(threadWithComment, idx) in threadsWithComments"
-        >
-          <div class="pl-2 pr-2 pt-2 pb-2">
-            <v-row
-              class="test-select-thread"
-              @click="setSelectedThreadWithComment(threadWithComment)"
-            >
-              <v-col cols="9">
-                <h2>
-                  {{ displayThreadName(threadWithComment.thread.name, idx) }}
-                </h2>
-              </v-col>
-              <v-col cols="1">
-                <v-icon
-                  @click="
-                    openEditThreadDialog(
-                      displayThreadName(threadWithComment.thread.name, idx)
-                    )
-                  "
-                  class="mb-n2 test-edit-thread-name-dialog"
-                  color="primary"
-                  >mdi-pencil</v-icon
-                >
-              </v-col>
-            </v-row>
-            <v-menu offset-y class="test-thread-menu">
-              <template v-slot:activator="{ on, attrs }">
-                <div class="mt-n3">
-                  <span class="text-subtitle-2">{{
-                    threadWithComment.thread.status
-                  }}</span>
-                  <v-icon
-                    @click="setSelectedThreadWithComment(threadWithComment)"
-                    class="mt-n1 test-status-dropdown"
-                    v-bind="attrs"
-                    v-if="loggedInUser && loggedInUser.isAdmin"
-                    v-on="on"
-                    >mdi-chevron-down</v-icon
-                  >
-                </div>
-              </template>
-              <v-list>
-                <v-list-item
-                  :key="index"
-                  @click="updateThreadStatus(status)"
-                  v-for="(status, index) in statuses"
-                  class="test-status-dropdown-item"
-                >
-                  <v-list-item-title>{{ status }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </div>
-          <v-divider />
-        </v-card>
+        <ThreadListItem
+          v-for="(thread, index) in threadsWithComments"
+          :key="index"
+          :thread="thread"
+          :isSelected="selectedThread && selectedThread.uuid === thread.uuid"
+          @selected="setSelectedThread(index)"
+          @statusUpdated="getThreadsWithComments"
+          @nameUpdated="updateThreadName(index, $event)"
+        />
         <div
           class="flex justify-center align-content-center mt-5"
-          v-if="selectedThreadWithComments.thread.uuid"
+          v-if="selectedThread && selectedThread.uuid"
         >
           <v-btn
-            @click="selectedThreadWithComments.thread.uuid = ''"
+            @click="selectedThreadIndex = -1"
             color="#ffffff"
             elevation="0"
           >
@@ -100,68 +45,14 @@
       <v-divider class="mr-5 ml-5" vertical />
       <v-col class="overflow-y-auto comment-display-height" cols="8">
         <h2 class="mb-3 text--primary">Comments</h2>
-        <template
-          v-if="
-            selectedThreadWithComments.thread &&
-            selectedThreadWithComments.thread.uuid
-          "
-        >
-          <v-row
-            :key="idx"
+        <template v-if="selectedThread">
+          <CommentItem
+            :key="comment.uuid"
             class="mb-3"
-            v-for="(comment, idx) in selectedThreadWithComments.comments"
-          >
-            <v-col
-              align="center"
-              cols="3"
-              justify="center"
-              v-if="loggedInUser && loggedInUser.uuid !== comment.userUuid"
-            >
-              <span class="text--primary" v-if="comment.userUuid"
-                >{{ comment.userFirstName }} {{ comment.userLastName }}</span
-              >
-              <span class="text--primary" v-else>Administrator</span>
-              <hr class="primary" />
-              <span class="text--primary">{{
-                formatCommentDateTime(comment.createdAt)
-              }}</span>
-            </v-col>
-            <v-col cols="8">
-              <v-card class="rounded-lg" color="#fafafa" elevation="1" outlined>
-                <v-card-text v-if="!comment.deleted">{{
-                  comment.text
-                }}</v-card-text>
-                <v-card-text class="font-weight-bold" v-else>
-                  <v-icon>mdi-comment-remove</v-icon> This comment has been
-                  deleted.</v-card-text
-                >
-              </v-card>
-            </v-col>
-            <v-col
-              align="center"
-              cols="3"
-              justify="center"
-              v-if="loggedInUser && loggedInUser.uuid === comment.userUuid"
-            >
-              <span class="text--primary" v-if="comment.userUuid"
-                >{{ comment.userFirstName }} {{ comment.userLastName }}</span
-              >
-              <span class="text--primary" v-else>Administrator</span>
-              <hr class="primary" />
-              <span class="text--primary">{{
-                formatCommentDateTime(comment.createdAt)
-              }}</span>
-            </v-col>
-            <v-col class="pr-2" cols="1" v-if="canDeleteComment(comment)">
-              <v-btn
-                class="test-delete-comment"
-                @click="setDeleteValues(comment.uuid)"
-                icon
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </v-col>
-          </v-row>
+            v-for="(comment, idx) in selectedThread.comments"
+            :comment="comment"
+            @deleted="deleteComment(idx)"
+          />
         </template>
         <div
           class="flex-column d-flex justify-center align-center no-thread-selected-display"
@@ -215,42 +106,13 @@
         v-if="showDictionary"
         :is="dictionaryWordComponent"
         :uuid="dictionaryWordUuid"
-        :uuid-to-highlight="selectedThreadWithComments.thread.referenceUuid"
+        :uuid-to-highlight="selectedThread.referenceUuid"
         :allow-commenting="false"
         :allow-editing="false"
         :allow-breadcrumbs="false"
       >
       </component>
     </div>
-
-    <OareDialog
-      class="test-delete-dialog"
-      @submit="deleteComment()"
-      cancelText="No, don't delete"
-      submitText="Yes, delete"
-      title="Confirm Delete"
-      v-model="confirmDeleteDialog"
-    >
-      Are you sure you want to delete the comment?
-    </OareDialog>
-    <OareDialog
-      class="test-edit-dialog"
-      @input="editedThreadValue = ''"
-      @submit="editThreadName()"
-      cancelText="Cancel"
-      submitText="Submit"
-      title="Edit"
-      v-model="confirmEditThreadNameDialog"
-    >
-      <v-text-field
-        label="New Thread Name"
-        v-model="editedThreadValue"
-        class="test-edit-thread-name"
-      ></v-text-field>
-      <span class="error--text" v-if="!validateThreadName()">{{
-        editErrorMessage
-      }}</span>
-    </OareDialog>
   </oare-dialog>
 </template>
 
@@ -264,17 +126,17 @@ import {
   computed,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import {
-  ThreadWithComments,
-  ThreadStatus,
-  CommentDisplay,
-  UpdateThreadNameRequest,
-} from '@oare/types';
-import { resetAdminBadge } from '@/utils';
-import serverProxy from '@/serverProxy';
+import { ThreadWithComments, ThreadStatus } from '@oare/types';
+
+import CommentItem from './CommentItem.vue';
+import ThreadListItem from './ThreadListItem.vue';
 
 export default defineComponent({
   name: 'CommentWordDisplay',
+  components: {
+    CommentItem,
+    ThreadListItem,
+  },
   props: {
     word: {
       type: String,
@@ -304,115 +166,40 @@ export default defineComponent({
   setup(props) {
     const dictionaryWordUuid = ref('');
     const loading = ref(false);
-    const confirmDeleteDialog = ref(false);
-    const confirmEditThreadNameDialog = ref(false);
-    const editedThreadValue = ref('');
-    const editErrorMessage = ref('');
     const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
-    const selectedThreadWithComments = ref<ThreadWithComments>({
-      thread: {
-        uuid: '',
-        name: null,
-        referenceUuid: '',
-        status: 'New',
-        route: '',
-      },
-      comments: [],
-    });
-    const selectedItem = ref<number | undefined>(undefined);
-    const selectedCommentUuidToDelete = ref<string>('');
+    const selectedThreadIndex = ref(-1);
+
+    const selectedThread = computed(() =>
+      selectedThreadIndex.value >= 0
+        ? threadsWithComments.value[selectedThreadIndex.value]
+        : null
+    );
+
     const userComment = ref('');
-    const statuses = ref<ThreadStatus[]>([
-      'New',
-      'Pending',
-      'In Progress',
-      'Completed',
-    ]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
 
-    const displayThreadName = (threadName: string | null, idx: number) => {
-      return threadName ? threadName : `Untitled ${idx}`;
+    const setSelectedThread = (index: number) => {
+      selectedThreadIndex.value = index;
     };
 
-    const formatCommentDateTime = (datetime: Date): string => {
-      return new Date(datetime)
-        .toDateString()
-        .substr(new Date(datetime).toDateString().indexOf(' '));
-    };
-
-    const canDeleteComment = (comment: CommentDisplay) => {
-      return (
-        loggedInUser.value &&
-        (comment.userUuid === loggedInUser.value.uuid ||
-          loggedInUser.value.isAdmin) &&
-        comment.userUuid !== null &&
-        !comment.deleted
-      );
-    };
-
-    const findAndSetSelectedThread = (
-      newThreadsWithComments: ThreadWithComments[]
-    ) => {
-      if (selectedThreadWithComments.value) {
-        newThreadsWithComments.forEach(threadWithComments => {
-          if (
-            threadWithComments.thread.uuid ===
-            selectedThreadWithComments.value.thread.uuid
-          ) {
-            setSelectedThreadWithComment(threadWithComments);
-          }
-        });
-      }
-    };
-
-    const openEditThreadDialog = (displayedThreadName: string) => {
-      confirmEditThreadNameDialog.value = true;
-      editedThreadValue.value = displayedThreadName;
-    };
-
-    const validateThreadName = () => {
-      let valid = true;
-      if (editedThreadValue.value === '') {
-        editErrorMessage.value = 'Cannot be empty.';
-        valid = false;
-      } else if (
-        editedThreadValue.value === selectedThreadWithComments.value.thread.name
-      ) {
-        editErrorMessage.value = 'Cannot have the same name.';
-        valid = false;
-      } else {
-        threadsWithComments.value.forEach(threadWithComment => {
-          if (threadWithComment.thread.name === editedThreadValue.value) {
-            editErrorMessage.value =
-              'Cannot have the same name as another thread.';
-            valid = false;
-          }
-        });
-      }
-
-      return valid;
+    const updateThreadName = (index: number, newThreadName: string) => {
+      threadsWithComments.value[index].name = newThreadName;
     };
 
     const getThreadsWithComments = async () => {
       try {
         if (props.uuid) {
           loading.value = true;
-          threadsWithComments.value = await server.getThreadsWithCommentsByReferenceUuid(
+          const threads = await server.getThreadsWithCommentsByReferenceUuid(
             props.uuid
           );
 
-          // Auto select first thread if another thread is not explicitly stated.
-          if (
-            threadsWithComments.value.length > 0 &&
-            props.initialThreadUuid === null
-          ) {
-            selectedThreadWithComments.value.thread.uuid =
-              threadsWithComments.value[0].thread.uuid;
+          threadsWithComments.value = threads;
+          if (selectedThreadIndex.value === -1 && threads.length > 0) {
+            selectedThreadIndex.value = 0;
           }
-
-          findAndSetSelectedThread(threadsWithComments.value);
         }
       } catch (e) {
         actions.showErrorSnackbar('Failed to get threads');
@@ -421,67 +208,33 @@ export default defineComponent({
       }
     };
 
-    const setDeleteValues = (commentUuid: string) => {
-      selectedCommentUuidToDelete.value = commentUuid;
-      confirmDeleteDialog.value = true;
+    const deleteComment = (index: number) => {
+      threadsWithComments.value[selectedThreadIndex.value].comments[
+        index
+      ].deleted = true;
     };
 
-    const setSelectedThreadWithComment = (
-      threadWithComment: ThreadWithComments
-    ) => {
-      selectedThreadWithComments.value = threadWithComment;
-    };
-
-    const updateThreadStatus = async (status: ThreadStatus) => {
-      // Only update if status changes from the original value.
-
-      if (status !== selectedThreadWithComments.value.thread.status) {
-        try {
-          loading.value = true;
-          selectedThreadWithComments.value.thread.status = status;
-          await server.updateThread(selectedThreadWithComments.value.thread);
-
-          actions.showSnackbar('Successfully updated the thread');
-          await getThreadsWithComments();
-          await resetAdminBadge();
-        } catch {
-          actions.showErrorSnackbar('Failed to update the thread');
-        } finally {
-          loading.value = false;
-        }
+    const validateComment = () => {
+      if (!store.getters.user) {
+        actions.showErrorSnackbar('Please log in before making a comment.');
+        return false;
       }
-    };
-
-    const deleteComment = async () => {
-      confirmDeleteDialog.value = false;
-      try {
-        loading.value = true;
-        await server.deleteComment(selectedCommentUuidToDelete.value);
-
-        actions.showSnackbar('Successfully deleted the comment');
-        await getThreadsWithComments();
-      } catch {
-        actions.showErrorSnackbar('Failed to delete the comment');
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    const insertComment = async () => {
-      if (store.getters.user === null) {
-        actions.showErrorSnackbar('Please login before making a comment.');
-        return;
-      }
-
       if (userComment.value.length > 1000) {
         actions.showErrorSnackbar(
           'Character count exceeded, please shorten the comment.'
         );
-        return;
+        return false;
       }
 
       if (userComment.value === '') {
-        actions.showErrorSnackbar('Please enter a comment before submitting.');
+        return false;
+      }
+
+      return true;
+    };
+
+    const insertComment = async () => {
+      if (!validateComment()) {
         return;
       }
 
@@ -489,48 +242,33 @@ export default defineComponent({
       try {
         // If creating new thread
         let threadUuid: string;
-        if (!selectedThreadWithComments.value.thread.uuid) {
-          const createThreadPayload = {
-            referenceUuid: props.uuid,
-            route: props.route,
-          };
-
-          threadUuid = await serverProxy.createThread(createThreadPayload);
-
-          selectedThreadWithComments.value.thread = {
-            uuid: threadUuid,
-            name: null,
-            status: 'New',
-            ...createThreadPayload,
-          };
+        let isNewThread = false;
+        const createThreadPayload = {
+          referenceUuid: props.uuid,
+          route: props.route,
+        };
+        if (!selectedThread.value) {
+          threadUuid = await server.createThread(createThreadPayload);
+          isNewThread = true;
         } else {
-          threadUuid = selectedThreadWithComments.value.thread.uuid;
+          threadUuid = selectedThread.value.uuid;
         }
 
-        const newCommentUuid = await server.insertComment({
+        await server.insertComment({
           threadUuid,
           text: userComment.value,
         });
 
-        selectedThreadWithComments.value.comments = [
-          ...selectedThreadWithComments.value.comments,
-          {
-            userFirstName: store.getters.user.firstName,
-            userLastName: store.getters.user.lastName,
-            uuid: newCommentUuid,
-            threadUuid,
-            userUuid: store.getters.user.uuid,
-            createdAt: new Date(),
-            deleted: false,
-            text: userComment.value,
-          },
-        ];
+        await getThreadsWithComments();
 
         actions.showSnackbar(
           `Successfully added the comment for ${props.word}`
         );
         userComment.value = '';
-        await getThreadsWithComments();
+
+        if (isNewThread) {
+          selectedThreadIndex.value = threadsWithComments.value.length - 1;
+        }
       } catch {
         actions.showErrorSnackbar('Failed to insert the comment');
       } finally {
@@ -539,44 +277,15 @@ export default defineComponent({
       }
     };
 
-    const editThreadName = async () => {
-      if (!validateThreadName()) {
-        actions.showErrorSnackbar('Invalid Thread Name');
-        return;
-      }
-
-      if (!selectedThreadWithComments.value.thread.uuid) {
-        actions.showErrorSnackbar('Thread has not been selected');
-        return;
-      }
-
-      confirmEditThreadNameDialog.value = false;
-
-      const request: UpdateThreadNameRequest = {
-        threadUuid: selectedThreadWithComments.value.thread.uuid,
-        newName: editedThreadValue.value,
-      };
-
-      loading.value = true;
-      try {
-        await server.updateThreadName(request);
-        actions.showSnackbar(`Successfully edited the thread name.`);
-        await getThreadsWithComments();
-      } catch {
-        actions.showErrorSnackbar('Failed to edit thread name');
-      } finally {
-        loading.value = false;
-        editedThreadValue.value = '';
-      }
-    };
-
     onMounted(async () => {
-      if (props.initialThreadUuid !== null) {
-        selectedThreadWithComments.value.thread.uuid = props.initialThreadUuid;
-      }
-
       try {
         await getThreadsWithComments();
+
+        if (props.initialThreadUuid) {
+          selectedThreadIndex.value = threadsWithComments.value.findIndex(
+            thread => thread.uuid === props.initialThreadUuid
+          );
+        }
       } catch (e) {
         actions.showErrorSnackbar('Failed to get threads');
       }
@@ -587,16 +296,19 @@ export default defineComponent({
     );
 
     watch(
-      () => selectedThreadWithComments.value.thread.route,
-      () => setWordUuidFromThreadRoute(),
-      { immediate: false }
+      selectedThread,
+      () => {
+        if (selectedThread.value) {
+          dictionaryWordUuid.value = selectedThread.value.route.substr(
+            selectedThread.value.route.indexOf('/', 2) + 1
+          );
+        }
+      },
+      {
+        immediate: false,
+        deep: true,
+      }
     );
-
-    const setWordUuidFromThreadRoute = () => {
-      dictionaryWordUuid.value = selectedThreadWithComments.value.thread.route.substr(
-        selectedThreadWithComments.value.thread.route.indexOf('/', 2) + 1
-      );
-    };
 
     const dictionaryWordComponent = computed(() =>
       props.showDictionary
@@ -607,30 +319,19 @@ export default defineComponent({
 
     return {
       dictionaryWordUuid,
-      displayThreadName,
-      formatCommentDateTime,
-      canDeleteComment,
-      updateThreadStatus,
-      openEditThreadDialog,
-      validateThreadName,
-      editErrorMessage,
-      editedThreadValue,
-      editThreadName,
-      confirmEditThreadNameDialog,
-      setSelectedThreadWithComment,
-      selectedThreadWithComments,
+      selectedThread,
       loading,
-      selectedCommentUuidToDelete,
-      confirmDeleteDialog,
-      statuses,
       loggedInUser,
       threadsWithComments,
-      selectedItem,
-      setDeleteValues,
-      deleteComment,
       insertComment,
       userComment,
       dictionaryWordComponent,
+      selectedThreadIndex,
+      console,
+      setSelectedThread,
+      getThreadsWithComments,
+      deleteComment,
+      updateThreadName,
     };
   },
 });
