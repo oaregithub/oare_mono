@@ -58,7 +58,7 @@ router
           const comments = await commentsDao.getAllByThreadUuid(thread.uuid);
           const commentDisplays = await getUsersByComments(comments);
           return {
-            thread,
+            ...thread,
             comments: commentDisplays,
           };
         })
@@ -83,12 +83,8 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
 
     await threadsDao.update(thread);
 
-    await commentsDao.insert({
-      uuid: null,
+    await commentsDao.insert(req.user!.uuid, {
       threadUuid: thread.uuid,
-      userUuid: null,
-      createdAt: new Date(),
-      deleted: false,
       text: `The status was changed from ${prevThread?.status} to ${thread.status}`,
     });
 

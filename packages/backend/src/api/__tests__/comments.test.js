@@ -78,10 +78,7 @@ describe('comments api test', () => {
         overrideThread: doesNotExistThread,
       });
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual({
-        commentUuid: commentsUuid,
-        threadUuid: threadsUuid,
-      });
+      expect(JSON.parse(response.text)).toEqual(commentsUuid);
     });
 
     it('returns 200 successful, thread already exists', async () => {
@@ -96,17 +93,6 @@ describe('comments api test', () => {
         cookie: false,
       });
       expect(response.status).toBe(401);
-    });
-
-    it('returns 500 on failed thread insertion', async () => {
-      sl.set('ThreadsDao', {
-        ...MockThreadsDao,
-        insert: jest.fn().mockRejectedValue('Error inserting a thread'),
-      });
-      const response = await sendRequest({
-        overrideThread: doesNotExistThread,
-      });
-      expect(response.status).toBe(500);
     });
 
     it('returns 500 on failed inserting comment', async () => {

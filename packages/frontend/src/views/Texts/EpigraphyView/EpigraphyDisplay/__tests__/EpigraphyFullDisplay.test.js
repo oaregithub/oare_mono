@@ -21,6 +21,12 @@ describe('EpigraphyFullDisplay View', () => {
     },
   };
 
+  const mockRouter = {
+    currentRoute: {
+      name: 'fullDisplay',
+    },
+  };
+
   const mockServer = {
     getDictionaryInfoByDiscourseUuid: jest.fn().mockResolvedValue({
       uuid: 'test-word-uuid',
@@ -74,6 +80,7 @@ describe('EpigraphyFullDisplay View', () => {
     sl.set('store', store || mockStore);
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
+    sl.set('router', mockRouter);
 
     return mount(
       EpigraphyFullDisplay,

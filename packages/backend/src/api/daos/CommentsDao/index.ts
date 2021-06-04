@@ -1,22 +1,19 @@
-import { Comment, CommentInsert } from '@oare/types';
+import { Comment, CreateCommentPayload } from '@oare/types';
 import knex from '@/connection';
 import { v4 } from 'uuid';
 
 class CommentsDao {
-  async insert({
-    threadUuid,
-    userUuid,
-    createdAt,
-    deleted,
-    text,
-  }: CommentInsert): Promise<string> {
+  async insert(
+    userUuid: string,
+    { threadUuid, text }: CreateCommentPayload
+  ): Promise<string> {
     const newUuid: string = v4();
     await knex('comments').insert({
       uuid: newUuid,
       thread_uuid: threadUuid,
       user_uuid: userUuid,
-      created_at: createdAt,
-      deleted,
+      created_at: new Date(),
+      deleted: false,
       comment: text,
     });
 

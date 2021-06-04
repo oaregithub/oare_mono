@@ -1,10 +1,8 @@
-import { CommentRequest, CommentResponse } from '@oare/types';
+import { CreateCommentPayload } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function insertComment(
-  request: CommentRequest
-): Promise<CommentResponse> {
-  const { data } = await axios.post('/comments', request);
+async function insertComment(payload: CreateCommentPayload): Promise<string> {
+  const { data } = await axios.post('/comments', payload);
   return data;
 }
 

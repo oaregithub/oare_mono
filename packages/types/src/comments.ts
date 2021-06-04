@@ -1,32 +1,15 @@
 import { Pagination } from './dictionary';
 
-export interface CommentRequest {
-  comment: CommentInsert;
-  thread: Thread;
-}
-
-export interface CommentResponse {
-  commentUuid: string;
-  threadUuid: string;
-}
-
-export interface CommentInsert {
-  uuid: string | null;
-  threadUuid: string | null;
-  userUuid: string | null;
-  createdAt: Date | null;
-  deleted: boolean;
-  text: string;
-}
-
 export interface Comment {
   uuid: string;
   threadUuid: string;
-  userUuid: string;
+  userUuid: string | null;
   createdAt: Date;
   deleted: boolean;
   text: string;
 }
+
+export type CreateCommentPayload = Pick<Comment, 'threadUuid' | 'text'>;
 
 export interface CommentDisplay extends Comment {
   userFirstName: string;
@@ -50,8 +33,7 @@ export interface UpdateThreadNameRequest {
   newName: string;
 }
 
-export interface ThreadWithComments {
-  thread: Thread;
+export interface ThreadWithComments extends Thread {
   comments: CommentDisplay[];
 }
 
