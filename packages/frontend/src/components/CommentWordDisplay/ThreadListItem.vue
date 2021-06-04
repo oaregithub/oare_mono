@@ -6,7 +6,7 @@
       @click="selectThread"
     >
       <div class="pl-2 pr-2 pt-2 pb-2">
-        <v-row class="test-select-thread" @click="selectThread">
+        <v-row class="test-select-thread">
           <v-col cols="9">
             <h2>
               {{ displayThreadName }}
@@ -23,13 +23,13 @@
         </v-row>
         <v-menu offset-y class="test-thread-menu">
           <template #activator="{ on, attrs }">
-            <div class="mt-n3">
+            <div
+              class="mt-n3"
+              v-bind="isAdmin ? attrs : {}"
+              v-on="isAdmin ? on : {}"
+            >
               <span class="text-subtitle-2">{{ thread.status }}</span>
-              <v-icon
-                class="mt-n1 test-status-dropdown"
-                v-bind="attrs"
-                v-if="user && user.isAdmin"
-                v-on="on"
+              <v-icon class="mt-n1 test-status-dropdown" v-if="isAdmin"
                 >mdi-chevron-down</v-icon
               >
             </div>
@@ -126,6 +126,8 @@ export default defineComponent({
 
     const user = computed(() => store.getters.user);
 
+    const isAdmin = computed(() => user.value && user.value.isAdmin);
+
     const updateThreadName = async () => {
       loading.value = true;
       try {
@@ -173,7 +175,7 @@ export default defineComponent({
       updateThreadName,
       editErrorMessage,
       validThreadName,
-      user,
+      isAdmin,
       updateThreadStatus,
     };
   },
