@@ -2,10 +2,9 @@
   <div>
     <v-row>
       <v-col align="center" cols="3" justify="center">
-        <span class="text--primary test-comment-author" v-if="comment.userUuid"
+        <span class="text--primary test-comment-author"
           >{{ comment.userFirstName }} {{ comment.userLastName }}</span
         >
-        <span class="text--primary" v-else>Administrator</span>
         <hr class="primary" />
         <span class="text--primary">{{
           formatTimestamp(comment.createdAt)
@@ -78,8 +77,7 @@ export default defineComponent({
         return false;
       }
 
-      // TODO we will eventually remove the possibility of the user UUID being null
-      if (comment.userUuid === null || comment.deleted) {
+      if (comment.deleted) {
         return false;
       }
 

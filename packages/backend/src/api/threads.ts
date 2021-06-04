@@ -36,16 +36,14 @@ router
       ): Promise<CommentDisplay[]> =>
         Promise.all(
           comments.map(async (comment: Comment) => {
-            const user = comment.userUuid
-              ? await userDao.getUserByUuid(comment.userUuid)
-              : null;
+            const user = await userDao.getUserByUuid(comment.userUuid);
 
             return {
               uuid: comment.uuid,
               threadUuid: comment.threadUuid,
-              userUuid: comment.userUuid ? comment.userUuid : null,
-              userFirstName: user ? user.firstName : '',
-              userLastName: user ? user.lastName : '',
+              userUuid: comment.userUuid,
+              userFirstName: user.firstName,
+              userLastName: user.lastName,
               createdAt: new Date(comment.createdAt),
               deleted: comment.deleted,
               text: comment.text,
