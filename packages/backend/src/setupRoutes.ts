@@ -24,6 +24,7 @@ import threads from './api/threads';
 import people from './api/people';
 import cacheStatus from './api/cache_status';
 import textDiscourse from './api/text_discourse';
+import profile from './api/profile';
 
 export const API_PATH = '/api/v2';
 
@@ -53,4 +54,5 @@ export default (app: Express) => {
   app.use(API_PATH, people);
   app.use(API_PATH, cacheStatus);
   app.use(API_PATH, textDiscourse);
+  app.use(API_PATH, profile);
 };
