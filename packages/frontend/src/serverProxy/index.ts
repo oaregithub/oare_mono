@@ -25,6 +25,7 @@ import resetPassword from './reset_password';
 import cacheStatus from './cache_status';
 import people from './people';
 import textDiscourse from './text_discourse';
+import profile from './profile';
 
 const serverProxy = {
   ...textGroups,
@@ -54,6 +55,7 @@ const serverProxy = {
   ...cacheStatus,
   ...people,
   ...textDiscourse,
+  ...profile,
 };
 
 export type ServerProxyType = typeof serverProxy;
