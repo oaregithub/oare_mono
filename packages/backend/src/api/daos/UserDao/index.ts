@@ -1,5 +1,6 @@
-import { GetUserResponse, User } from '@oare/types';
+import { GetUserResponse, User, UpdateProfilePayload } from '@oare/types';
 import knex from '@/connection';
+import firebase from '@/firebase';
 import UserGroupDao from '../UserGroupDao';
 
 class UserDao {
@@ -105,6 +106,25 @@ class UserDao {
       groups: groupObjects[index],
       isAdmin: adminStatus[index],
     }));
+  }
+
+  async updateProfile(
+    userUuid: string,
+    { email, firstName, lastName }: Required<UpdateProfilePayload>
+  ): Promise<void> {
+    const displayName = `${firstName} ${lastName}`;
+    await knex('user')
+      .update({
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        full_name: displayName,
+      })
+      .where('uuid', userUuid);
+    await firebase.auth().updateUser(userUuid, {
+      email,
+      displayName,
+    });
   }
 }
 
