@@ -14,7 +14,7 @@ router.route('/comments').post(authenticatedRoute, async (req, res, next) => {
     // Insert comment.
     const newCommentUuid = await commentsDao.insert(req.user!.uuid, comment);
 
-    res.json(newCommentUuid);
+    res.status(201).json(newCommentUuid);
   } catch (err) {
     next(new HttpInternalError(err));
   }
@@ -28,7 +28,7 @@ router
       const commentsDao = sl.get('CommentsDao');
       await commentsDao.updateDelete(uuid);
 
-      res.status(200).end();
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }

@@ -2,6 +2,7 @@ import cacheStatus from './endpoints/cache_status';
 import collectionGroups from './endpoints/collection_groups';
 import collectionInfo from './endpoints/collection_info';
 import collections from './endpoints/collections';
+import comments from './endpoints/comments';
 import profile from './endpoints/profile';
 import threads from './endpoints/threads';
 import users from './endpoints/users';
@@ -27,6 +28,7 @@ export default {
     ...collectionGroups,
     ...collectionInfo,
     ...collections,
+    ...comments,
     ...profile,
     ...threads,
     ...users,
