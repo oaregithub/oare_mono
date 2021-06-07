@@ -1,6 +1,5 @@
 import { GetUserResponse, User, UpdateProfilePayload } from '@oare/types';
 import knex from '@/connection';
-import firebase from '@/firebase';
 import UserGroupDao from '../UserGroupDao';
 
 class UserDao {
@@ -121,10 +120,6 @@ class UserDao {
         full_name: displayName,
       })
       .where('uuid', userUuid);
-    await firebase.auth().updateUser(userUuid, {
-      email,
-      displayName,
-    });
   }
 }
 
