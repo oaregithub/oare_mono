@@ -73,17 +73,17 @@ describe('comments api test', () => {
       return cookie ? req.set('Authorization', 'token') : req;
     };
 
-    it('returns successful 200, comment and thread info', async () => {
+    it('returns successful 201, comment and thread info', async () => {
       const response = await sendRequest({
         overrideThread: doesNotExistThread,
       });
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(JSON.parse(response.text)).toEqual(commentsUuid);
     });
 
-    it('returns 200 successful, thread already exists', async () => {
+    it('returns 201 successful, thread already exists', async () => {
       const response = await sendRequest();
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(MockThreadsDao.insert).not.toHaveBeenCalled();
       expect(MockCommentsDao.insert).toHaveBeenCalled();
     });
@@ -114,7 +114,7 @@ describe('comments api test', () => {
 
     it('returns 200 upon successfully deleted comment', async () => {
       const response = await sendRequest();
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(204);
     });
 
     it('returns 500 when unable to delete a comment', async () => {
