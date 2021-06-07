@@ -38,13 +38,10 @@ export default defineComponent({
     const lastName = ref(user ? user.lastName : '');
     const email = ref(user ? user.email : '');
 
-    const isEditing = ref(false);
-
     return {
       firstName,
       lastName,
       email,
-      isEditing,
     };
   },
 });

@@ -35,7 +35,7 @@
       v-model="verifyPasswordDialog"
       title="Verify Password"
       @submit="verifyPassword"
-      @submitDisabled="!confirmedPassword"
+      :submitDisabled="!confirmedPassword"
       :submitLoading="confirmPasswordLoading"
       :persistent="false"
     >
@@ -46,6 +46,7 @@
         autofocus
         type="password"
         class="test-confirm-password"
+        @keypress.enter="confirmedPassword && verifyPassword()"
       />
     </OareDialog>
   </div>
