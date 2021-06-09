@@ -12,6 +12,7 @@ import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
 import TextGroupDao from '../TextGroupDao';
 import CollectionDao from '../CollectionDao';
+import { getTreeNodeQuery } from './utils';
 
 class HierarchyDao {
   async getBySearchTerm({
@@ -206,21 +207,14 @@ class HierarchyDao {
     const hasChild = await this.hasChild(hierarchyUuid);
 
     if (hasChild) {
-      const rows = await knex('hierarchy')
-        .select(
-          'hierarchy.*',
-          'variable.name as variableName',
-          'value.name as valueName',
-          'variable.abbreviation as varAbbreviation',
-          'value.abbreviation as valAbbreviation'
-        )
-        .leftJoin('variable', 'variable.uuid', 'hierarchy.uuid')
-        .leftJoin('value', 'value.uuid', 'hierarchy.uuid')
-        .where('hierarchy_parent_uuid', hierarchyUuid);
+      const rows = await getTreeNodeQuery().where(
+        'hierarchy_parent_uuid',
+        hierarchyUuid
+      );
       const results = await Promise.all(
         rows.map(async row => ({
           ...row,
-          children: await this.getChildren(row.hierarchy_uuid),
+          children: await this.getChildren(row.hierarchyUuid),
         }))
       );
       return results;
@@ -229,22 +223,13 @@ class HierarchyDao {
   }
 
   async createParseTree(): Promise<ParseTree> {
-    const rootRow = await knex('hierarchy')
-      .select(
-        'hierarchy.*',
-        'variable.name AS variableName',
-        'value.name AS valueName',
-        'variable.abbreviation AS varAbbreviation',
-        'value.abbreviation AS valAbbreviation'
-      )
-      .leftJoin('variable', 'variable.uuid', 'hierarchy.uuid')
-      .leftJoin('value', 'value.uuid', 'hierarchy.uuid')
+    const rootRow = await getTreeNodeQuery()
       .where('value.name', 'Parse')
       .first();
 
     const tree = {
       ...rootRow,
-      children: await this.getChildren(rootRow.hierarchy_uuid),
+      children: await this.getChildren(rootRow.hierarchyUuid),
     };
     return tree;
   }
