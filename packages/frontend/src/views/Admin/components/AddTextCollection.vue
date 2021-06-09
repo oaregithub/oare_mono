@@ -51,8 +51,7 @@
         <v-spacer />
         <v-col cols="4">
           <v-text-field
-            :value="search"
-            @input="setSearch"
+            v-model="search"
             label="Search"
             single-line
             hide-details
@@ -220,9 +219,9 @@ export default defineComponent({
     const dialogName = ref('');
     const selectedListPage = ref(1);
 
-    const [page, setPage] = useQueryParam('page', '1');
-    const [rows, setRows] = useQueryParam('rows', '10');
-    const [search, setSearch] = useQueryParam('query', '');
+    const page = useQueryParam('page', '1');
+    const rows = useQueryParam('rows', '10');
+    const search = useQueryParam('query', '');
     const savedQueries: Ref<Required<Pagination>> = ref({
       page: 1,
       limit: 10,
@@ -406,8 +405,8 @@ export default defineComponent({
     watch(searchOptions, async () => {
       try {
         await getItems();
-        setPage(String(searchOptions.value.page));
-        setRows(String(searchOptions.value.itemsPerPage));
+        page.value = String(searchOptions.value.page);
+        rows.value = String(searchOptions.value.itemsPerPage);
         selectAllMessage.value = false;
       } catch {
         actions.showErrorSnackbar(
@@ -438,13 +437,13 @@ export default defineComponent({
           limit: Number(rows.value),
           filter: search.value,
         };
-        setPage('1');
-        setRows('10');
-        setSearch('');
+        page.value = '1';
+        rows.value = '10';
+        search.value = '';
       } else {
-        setPage(String(savedQueries.value.page));
-        setRows(String(savedQueries.value.limit));
-        setSearch(savedQueries.value.filter);
+        page.value = String(savedQueries.value.page);
+        rows.value = String(savedQueries.value.limit);
+        search.value = savedQueries.value.filter;
       }
     });
 
@@ -477,7 +476,6 @@ export default defineComponent({
       unaddedItems,
       itemsHeaders,
       search,
-      setSearch,
       getItemsLoading,
       searchOptions,
       serverCount,

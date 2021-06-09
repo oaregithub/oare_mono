@@ -147,7 +147,7 @@ import {
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
-import { useQueryParamNew } from '@/hooks/useQueryParam';
+import useQueryParam from '@/hooks/useQueryParam';
 import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import { formatTimestamp } from '@/utils';
 import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
@@ -181,10 +181,10 @@ export default defineComponent({
       latestCommentDate: new Date(),
       comments: [],
     });
-    const status = useQueryParamNew('status', '');
-    const name = useQueryParamNew('name', '');
-    const item = useQueryParamNew('item', '');
-    const comment = useQueryParamNew('comment', '');
+    const status = useQueryParam('status', '');
+    const name = useQueryParam('name', '');
+    const item = useQueryParam('item', '');
+    const comment = useQueryParam('comment', '');
     const statusOptions: ThreadStatus[] = [
       'New',
       'In Progress',

@@ -10,46 +10,43 @@ const getUrlParams = () => {
 const getQueryStringVal = (key: string): string | null =>
   getUrlParams().get(key);
 
-const useQueryParam = (
-  key: string,
-  defaultVal: string
-): [Ref<string>, (val: string) => void] => {
-  const param = ref(getQueryStringVal(key) || defaultVal);
+// const useQueryParam = (
+//   key: string,
+//   defaultVal: string
+// ): [Ref<string>, (val: string) => void] => {
+//   const param = ref(getQueryStringVal(key) || defaultVal);
 
-  window.addEventListener(`update:${key}`, e => {
-    const { newVal } = (e as CustomEvent).detail;
-    param.value = newVal;
+//   window.addEventListener(`update:${key}`, e => {
+//     const { newVal } = (e as CustomEvent).detail;
+//     param.value = newVal;
 
-    const urlParams = getUrlParams();
+//     const urlParams = getUrlParams();
 
-    if (newVal && newVal.trim() !== '') {
-      urlParams.set(key, newVal);
-    } else {
-      urlParams.delete(key);
-    }
+//     if (newVal && newVal.trim() !== '') {
+//       urlParams.set(key, newVal);
+//     } else {
+//       urlParams.delete(key);
+//     }
 
-    if (typeof window !== 'undefined') {
-      const { protocol, pathname, host } = window.location;
-      const newUrl = `${protocol}//${host}${pathname}?${urlParams.toString()}`;
-      window.history.pushState({}, '', newUrl);
-    }
-  });
+//     if (typeof window !== 'undefined') {
+//       const { protocol, pathname, host } = window.location;
+//       const newUrl = `${protocol}//${host}${pathname}?${urlParams.toString()}`;
+//       window.history.pushState({}, '', newUrl);
+//     }
+//   });
 
-  const updateParam = (newVal: string) => {
-    window.dispatchEvent(
-      new CustomEvent(`update:${key}`, {
-        detail: { newVal },
-      })
-    );
-  };
+//   const updateParam = (newVal: string) => {
+//     window.dispatchEvent(
+//       new CustomEvent(`update:${key}`, {
+//         detail: { newVal },
+//       })
+//     );
+//   };
 
-  return [param, updateParam];
-};
+//   return [param, updateParam];
+// };
 
-export const useQueryParamNew = (
-  key: string,
-  defaultVal: string
-): Ref<string> => {
+const useQueryParam = (key: string, defaultVal: string): Ref<string> => {
   const param = ref(getQueryStringVal(key) || defaultVal);
 
   window.addEventListener(`update:${key}`, e => {

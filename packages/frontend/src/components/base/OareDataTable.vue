@@ -32,7 +32,6 @@ import {
 import useQueryParam from '@/hooks/useQueryParam';
 import { DataOptions } from 'vuetify';
 import sl from '@/serviceLocator';
-import { debounce } from 'lodash';
 
 export interface OareDataTableOptions {
   page: number;
@@ -90,13 +89,10 @@ export default defineComponent({
   }) {
     const _ = sl.get('lodash');
     const actions = sl.get('globalActions');
-    const [sortBy, setSortBy] = useQueryParam('sortBy', defaultSort);
-    const [sortDesc, setSortDesc] = useQueryParam(
-      'sortDesc',
-      String(defaultDesc)
-    );
-    const [page, setPage] = useQueryParam('page', String(defaultPage));
-    const [rows, setRows] = useQueryParam('rows', String(defaultRows));
+    const sortBy = useQueryParam('sortBy', defaultSort);
+    const sortDesc = useQueryParam('sortDesc', String(defaultDesc));
+    const page = useQueryParam('page', String(defaultPage));
+    const rows = useQueryParam('rows', String(defaultRows));
 
     const loading = ref(false);
 
@@ -118,8 +114,8 @@ export default defineComponent({
       sortDesc: sortDesc.value === 'true',
     }));
 
-    const queryParams = watchedParams.map(
-      paramName => useQueryParam(paramName, '')[0]
+    const queryParams = watchedParams.map(paramName =>
+      useQueryParam(paramName, '')
     );
 
     const performFetch = async () => {
@@ -144,10 +140,10 @@ export default defineComponent({
     );
 
     watch(sortOptions, newOptions => {
-      setSortBy(newOptions.sortBy[0]);
-      setSortDesc(String(newOptions.sortDesc[0]));
-      setPage(String(newOptions.page));
-      setRows(String(newOptions.itemsPerPage));
+      sortBy.value = newOptions.sortBy[0];
+      sortDesc.value = String(newOptions.sortDesc[0]);
+      page.value = String(newOptions.page);
+      rows.value = String(newOptions.itemsPerPage);
 
       performFetch();
     });

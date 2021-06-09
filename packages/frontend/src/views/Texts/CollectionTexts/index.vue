@@ -21,9 +21,9 @@
       </v-row>
       <TextsTable
         :page="Number(page)"
-        @update:page="p => setPage(String(p))"
+        @update:page="p => (page = p)"
         :rows="Number(rows)"
-        @update:rows="r => setRows(String(r))"
+        @update:rows="r => (rows = r)"
         :totalTexts="totalTexts"
         :texts="texts"
         :loading="textsLoading"
@@ -94,9 +94,9 @@ export default defineComponent({
     const textsLoading = ref(false);
     const totalTexts = ref(0);
 
-    const [page, setPage] = useQueryParam('page', '1');
-    const [rows, setRows] = useQueryParam('rows', '10');
-    const [search, setSearch] = useQueryParam('query', '');
+    const page = useQueryParam('page', '1');
+    const rows = useQueryParam('rows', '10');
+    const search = useQueryParam('query', '');
 
     const getCollectionTexts = async () => {
       if (textsLoading.value) {
@@ -150,7 +150,7 @@ export default defineComponent({
     watch(
       search,
       _.debounce(function () {
-        setPage('1');
+        page.value = '1';
         getCollectionTexts();
       }, 500),
       {
@@ -165,12 +165,9 @@ export default defineComponent({
       textsLoading,
       totalTexts,
       search,
-      setSearch,
       breadcrumbItems,
       page,
-      setPage,
       rows,
-      setRows,
     };
   },
 });

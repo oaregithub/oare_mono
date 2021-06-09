@@ -5,8 +5,7 @@
         {{ $t('search.textTitle') }}
         <v-text-field
           class="test-title-search"
-          :value="textTitleSearch"
-          @input="setTextTitleSearch"
+          v-model="textTitleSearch"
           placeholder="Text title"
           @keyup.enter="resetSearch"
           outlined
@@ -15,8 +14,7 @@
         <search-information-card />
         <v-text-field
           class="test-character-search"
-          :value="translitSearch"
-          @input="setTranslitSearch"
+          v-model="translitSearch"
           :placeholder="$t('search.characterSequences')"
           @keyup.enter="resetSearch"
           outlined
@@ -36,9 +34,9 @@
       :totalSearchResults="totalSearchResults"
       :searchTotalLoading="searchTotalLoading"
       :page="Number(page)"
-      @update:page="p => setPage(String(p))"
+      @update:page="p => (page = p)"
       :rows="Number(rows)"
-      @update:rows="r => setRows(String(r))"
+      @update:rows="r => (rows = r)"
       :headers="headers"
     >
       <template #[`item.name`]="{ item }">
@@ -81,10 +79,10 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const [translitSearch, setTranslitSearch] = useQueryParam('translit', '');
-    const [textTitleSearch, setTextTitleSearch] = useQueryParam('title', '');
-    const [rows, setRows] = useQueryParam('rows', '100');
-    const [page, setPage] = useQueryParam('page', '1');
+    const translitSearch = useQueryParam('translit', '');
+    const textTitleSearch = useQueryParam('title', '');
+    const rows = useQueryParam('rows', '100');
+    const page = useQueryParam('page', '1');
 
     const headers = ref([
       {
@@ -139,7 +137,7 @@ export default defineComponent({
     };
 
     const resetSearch = async () => {
-      setPage('1');
+      page.value = '1';
       totalSearchResults.value = -1;
       searchTexts();
       searchTextsTotal();
@@ -156,16 +154,12 @@ export default defineComponent({
     return {
       searchResults,
       textTitleSearch,
-      setTextTitleSearch,
       translitSearch,
-      setTranslitSearch,
       searchLoading,
       totalSearchResults,
       canPerformSearch,
       page,
-      setPage,
       rows,
-      setRows,
       headers,
       highlightedItem,
       searchTexts,
