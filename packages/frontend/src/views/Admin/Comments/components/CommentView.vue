@@ -1,5 +1,5 @@
 <template>
-  <OareContentView :loading="loading" title="Comments">
+  <OareContentView title="Comments">
     <v-container class="pa-0">
       <v-row>
         <v-col cols="2">
@@ -10,7 +10,6 @@
               label="Status"
               :items="statusOptions"
               v-model="status"
-              multiple
               clearable
               class="pt-2 test-status-filter"
             />
@@ -41,17 +40,16 @@
           </div>
         </v-col>
         <v-col cols="10" class="pl-8">
-          <v-data-table
-            :loading="searchLoading"
+          <oare-data-table
             :headers="tableHeaders"
             class="mt-3 table-cursor"
             item-key="uuid"
+            defaultSort="timestamp"
             :items="threadDisplays"
-            :options.sync="searchOptions"
             :server-items-length="serverCount"
-            :footer-props="{
-              'items-per-page-options': [10, 25, 50, 100],
-            }"
+            :fetchItems="getAllThreadsWithComments"
+            :watched-params="['name', 'item', 'comment', 'status']"
+            debounce
           >
             <template #[`item.status`]="{ item }">
               {{ item.thread.status }}
@@ -97,7 +95,7 @@
             <template #[`item.timestamp`]="{ item }">
               {{ formatTimestamp(item.latestCommentDate) }}
             </template>
-          </v-data-table>
+          </oare-data-table>
         </v-col>
       </v-row>
     </v-container>
@@ -139,13 +137,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  onMounted,
-  Ref,
-  ref,
-  watch,
-} from '@vue/composition-api';
+import { defineComponent, Ref, ref, watch } from '@vue/composition-api';
 import {
   ThreadDisplay,
   Comment,
@@ -154,10 +146,11 @@ import {
   ThreadStatus,
 } from '@oare/types';
 import sl from '@/serviceLocator';
-import { DataOptions, DataTableHeader } from 'vuetify';
+import { DataTableHeader } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
 import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
 import { formatTimestamp } from '@/utils';
+import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 
 export default defineComponent({
   name: 'CommentView',
@@ -170,13 +163,10 @@ export default defineComponent({
   },
 
   setup({ isUserComments }) {
-    const loading = ref(false);
     const isViewingThread = ref(false);
-    const searchLoading = ref(false);
     const threadDisplays: Ref<ThreadDisplay[]> = ref([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const _ = sl.get('lodash');
     const serverCount = ref(0);
     const selectedComments: Ref<Comment[]> = ref([]);
     const selectedThreadDisplay = ref<ThreadDisplay>({
@@ -191,14 +181,10 @@ export default defineComponent({
       latestCommentDate: new Date(),
       comments: [],
     });
-    const [desc, setDesc] = useQueryParam('desc', 'true');
-    const [sort, setSort] = useQueryParam('sort', 'timestamp');
-    const [page, setPage] = useQueryParam('page', '1');
-    const [limit, setRows] = useQueryParam('rows', '10');
-    const status = ref<ThreadStatus[]>([]);
-    const [name, setName] = useQueryParam('name', '');
-    const [item, setItem] = useQueryParam('item', '');
-    const [comment, setComment] = useQueryParam('comment', '');
+    const status = useQueryParam('status', '');
+    const name = useQueryParam('name', '');
+    const item = useQueryParam('item', '');
+    const comment = useQueryParam('comment', '');
     const statusOptions: ThreadStatus[] = [
       'New',
       'In Progress',
@@ -213,35 +199,27 @@ export default defineComponent({
       { text: 'Timestamp', value: 'timestamp', width: '15%' },
     ]);
 
-    const searchOptions: Ref<DataOptions> = ref({
-      page: Number(page.value),
-      itemsPerPage: Number(limit.value),
-      sortBy: [sort.value],
-      sortDesc: [Boolean(desc.value)],
-      groupBy: [],
-      groupDesc: [],
-      multiSort: false,
-      mustSort: true,
-    });
-
-    const getAllThreadsWithComments = async () => {
+    const getAllThreadsWithComments = async ({
+      page,
+      rows,
+      sortBy,
+      sortDesc,
+    }: OareDataTableOptions) => {
       try {
-        searchLoading.value = true;
-
         const request: AllCommentsRequest = {
           filters: {
-            status: (status.value as unknown) as ThreadStatus[],
+            status: status.value ? [status.value as ThreadStatus] : [],
             thread: name.value,
             item: item.value,
             comment: comment.value,
           },
           sort: {
-            type: sort.value as CommentSortType,
-            desc: desc.value === 'true',
+            type: sortBy as CommentSortType,
+            desc: sortDesc,
           },
           pagination: {
-            page: Number(page.value),
-            limit: Number(limit.value),
+            page,
+            limit: rows,
           },
           isUserComments,
         };
@@ -251,8 +229,6 @@ export default defineComponent({
         serverCount.value = response.count;
       } catch (e) {
         actions.showErrorSnackbar('Failed to get threads');
-      } finally {
-        searchLoading.value = false;
       }
     };
 
@@ -273,45 +249,6 @@ export default defineComponent({
       selectedComments.value = comments;
     };
 
-    onMounted(async () => {
-      try {
-        loading.value = true;
-        await getAllThreadsWithComments();
-      } catch (e) {
-        actions.showErrorSnackbar('Failed to get threads');
-      } finally {
-        loading.value = false;
-      }
-    });
-
-    watch(searchOptions, async () => {
-      setPage(String(searchOptions.value.page));
-      setRows(String(searchOptions.value.itemsPerPage));
-      setSort(searchOptions.value.sortBy[0]);
-      setDesc(String(searchOptions.value.sortDesc[0]));
-      await getAllThreadsWithComments();
-    });
-
-    watch(
-      [status, name, item, comment],
-      _.debounce(async () => {
-        try {
-          searchOptions.value.page = 1;
-          setName(name.value || '');
-          setItem(item.value || '');
-          setComment(comment.value || '');
-          await getAllThreadsWithComments();
-        } catch {
-          actions.showErrorSnackbar(
-            'Error filtering or sorting comments. Please try again.'
-          );
-        }
-      }, 200),
-      {
-        immediate: false,
-      }
-    );
-
     const setupThreadDialog = (threadDisplay: ThreadDisplay) => {
       isViewingThread.value = true;
       selectedThreadDisplay.value = threadDisplay;
@@ -321,25 +258,19 @@ export default defineComponent({
       setupThreadDialog,
       selectedThreadDisplay,
       isViewingThread,
-      desc,
-      sort,
-      page,
-      limit,
       status,
       name,
       item,
       comment,
       statusOptions,
-      loading,
-      searchLoading,
       threadDisplays,
       serverCount,
       tableHeaders,
-      searchOptions,
       formatTimestamp,
       formatCommentText,
       selectedComments,
       setSelectedComments,
+      getAllThreadsWithComments,
     };
   },
 });

@@ -3,6 +3,7 @@ import collectionGroups from './endpoints/collection_groups';
 import collectionInfo from './endpoints/collection_info';
 import collections from './endpoints/collections';
 import comments from './endpoints/comments';
+import dictionary from './endpoints/dictionary';
 import profile from './endpoints/profile';
 import threads from './endpoints/threads';
 import users from './endpoints/users';
@@ -29,6 +30,7 @@ export default {
     ...collectionInfo,
     ...collections,
     ...comments,
+    ...dictionary,
     ...profile,
     ...threads,
     ...users,

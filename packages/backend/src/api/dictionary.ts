@@ -70,7 +70,7 @@ router
       );
 
       const response: AddFormSpellingResponse = { uuid: spellingUuid };
-      res.json(response);
+      res.status(201).json(response);
     } catch (err) {
       next(new HttpInternalError(err));
     }

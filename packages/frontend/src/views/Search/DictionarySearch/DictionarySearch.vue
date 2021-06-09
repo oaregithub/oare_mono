@@ -5,8 +5,7 @@
         Search lemma, forms, and translations
         <v-text-field
           class="test-dictionary-search"
-          :value="dictionarySearch"
-          @input="setDictionarySearch"
+          v-model="dictionarySearch"
           placeholder="Dictionary"
           outlined
           @keyup.enter.native="resetSearch"
@@ -26,9 +25,9 @@
       :searchResults="searchResults"
       :loading="searchLoading"
       :page="Number(page)"
-      @update:page="p => setPage(String(p))"
+      @update:page="p => (page = p)"
       :rows="Number(rows)"
-      @update:rows="r => setRows(String(r))"
+      @update:rows="r => (rows = r)"
       :headers="headers"
     >
       <template #[`item.name`]="{ item }">
@@ -88,12 +87,9 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const [dictionarySearch, setDictionarySearch] = useQueryParam(
-      'dictionary',
-      ''
-    );
-    const [page, setPage] = useQueryParam('page', '1');
-    const [rows, setRows] = useQueryParam('rows', '25');
+    const dictionarySearch = useQueryParam('dictionary', '');
+    const page = useQueryParam('page', '1');
+    const rows = useQueryParam('rows', '25');
     const lastSearch = ref('');
     const canSearch = computed(() => {
       return dictionarySearch.value.trim() !== '';
@@ -170,7 +166,6 @@ export default defineComponent({
 
     return {
       dictionarySearch,
-      setDictionarySearch,
       canSearch,
       totalResults,
       searchResults,
@@ -178,9 +173,7 @@ export default defineComponent({
       highlightedItem,
       searchLoading,
       page,
-      setPage,
       rows,
-      setRows,
       headers,
       lastSearch,
       wordLink,
@@ -189,5 +182,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style></style>
