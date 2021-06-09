@@ -27,6 +27,7 @@
           defaultSort="updatedAt"
           :server-items-length="totalDrafts"
           :watched-params="['authorFilter', 'textFilter']"
+          debounce
         >
           <template #[`item.text`]="{ item }">
             <router-link :to="`/epigraphies/${item.textUuid}`">{{
@@ -89,8 +90,8 @@ export default defineComponent({
     const dialogOpen = ref(false);
     const totalDrafts = ref(0);
 
-    const [authorFilter, setAuthorFilter] = useQueryParam('authorFilter', '');
-    const [textFilter, setTextFilter] = useQueryParam('textFilter', '');
+    const authorFilter = useQueryParam('authorFilter', '');
+    const textFilter = useQueryParam('textFilter', '');
 
     const headers = ref<DataTableHeader[]>([
       { text: 'Text', value: 'text' },
@@ -123,14 +124,6 @@ export default defineComponent({
       viewingDraft.value = { ...draft };
       dialogOpen.value = true;
     };
-
-    watch(
-      [authorFilter, textFilter],
-      _.debounce(([newAuthor, newText]) => {
-        setAuthorFilter(newAuthor);
-        setTextFilter(newText);
-      }, 500)
-    );
 
     return {
       loading,

@@ -12,8 +12,7 @@
     >
     <v-col cols="12" sm="6" md="4">
       <v-text-field
-        :value="wordSearch"
-        @input="setWordSearch"
+        v-model="wordSearch"
         :placeholder="'Filter ' + filterTitle"
         clearable
       />
@@ -63,7 +62,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const letters = ref(Object.keys(AkkadianLetterGroupsUpper));
-    const [wordSearch, setWordSearch] = useQueryParam('filter', '');
+    const wordSearch = useQueryParam('filter', '');
     const encodedLetter = (letter: string) => encodeURIComponent(letter);
 
     const wordsByLetter = computed(() => {
@@ -81,7 +80,7 @@ export default defineComponent({
 
     watch(
       () => props.letter,
-      () => setWordSearch(''),
+      () => (wordSearch.value = ''),
       { immediate: false }
     );
 
@@ -94,7 +93,6 @@ export default defineComponent({
     return {
       letters,
       wordSearch,
-      setWordSearch,
       encodedLetter,
     };
   },

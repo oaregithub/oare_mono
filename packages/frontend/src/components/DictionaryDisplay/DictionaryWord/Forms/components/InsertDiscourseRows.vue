@@ -113,8 +113,8 @@ export default defineComponent({
     const searchNullDiscourseLoading = ref(false);
     const searchNullCountLoading = ref(false);
     const insertDiscourseRowsLoading = ref(false);
-    const [page, setPage] = useQueryParam('page', '1');
-    const [limit, setRows] = useQueryParam('limit', '50');
+    const page = useQueryParam('page', '1');
+    const limit = useQueryParam('limit', '50');
 
     const nullDiscourseOccurrences: Ref<SearchNullDiscourseResultRow[]> = ref(
       []
@@ -210,8 +210,8 @@ export default defineComponent({
 
     watch(searchOptions, async () => {
       try {
-        setPage(String(searchOptions.value.page));
-        setRows(String(searchOptions.value.itemsPerPage));
+        page.value = String(searchOptions.value.page);
+        limit.value = String(searchOptions.value.itemsPerPage);
         if (props.spellingInput) {
           await searchNullDiscourse();
         }
