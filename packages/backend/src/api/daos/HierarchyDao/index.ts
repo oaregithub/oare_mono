@@ -4,6 +4,7 @@ import {
   SearchNamesResponse,
   SearchNamesResultRow,
   SearchNamesPayload,
+  ParseTree,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -188,6 +189,64 @@ class HierarchyDao {
       .first('published')
       .where('uuid', hierarchyUuid);
     return row.published;
+  }
+
+  async hasChild(hierarchyUuid: string) {
+    const rows = await knex('hierarchy').where(
+      'hierarchy_parent_uuid',
+      hierarchyUuid
+    );
+    if (rows && rows.length > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  async getChildren(hierarchyUuid: string): Promise<ParseTree[] | null> {
+    const hasChild = await this.hasChild(hierarchyUuid);
+
+    if (hasChild) {
+      const rows = await knex('hierarchy')
+        .select(
+          'hierarchy.*',
+          'variable.name as variableName',
+          'value.name as valueName',
+          'variable.abbreviation as varAbbreviation',
+          'value.abbreviation as valAbbreviation'
+        )
+        .leftJoin('variable', 'variable.uuid', 'hierarchy.uuid')
+        .leftJoin('value', 'value.uuid', 'hierarchy.uuid')
+        .where('hierarchy_parent_uuid', hierarchyUuid);
+      const results = await Promise.all(
+        rows.map(async row => ({
+          ...row,
+          children: await this.getChildren(row.hierarchy_uuid),
+        }))
+      );
+      return results;
+    }
+    return null;
+  }
+
+  async createParseTree(): Promise<ParseTree> {
+    const rootRow = await knex('hierarchy')
+      .select(
+        'hierarchy.*',
+        'variable.name AS variableName',
+        'value.name AS valueName',
+        'variable.abbreviation AS varAbbreviation',
+        'value.abbreviation AS valAbbreviation'
+      )
+      .leftJoin('variable', 'variable.uuid', 'hierarchy.uuid')
+      .leftJoin('value', 'value.uuid', 'hierarchy.uuid')
+      .where('value.name', 'Parse')
+      .first();
+
+    const tree = {
+      ...rootRow,
+      children: await this.getChildren(rootRow.hierarchy_uuid),
+    };
+    return tree;
   }
 }
 
