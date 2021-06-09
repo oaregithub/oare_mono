@@ -32,6 +32,7 @@ import {
 import useQueryParam from '@/hooks/useQueryParam';
 import { DataOptions } from 'vuetify';
 import sl from '@/serviceLocator';
+import { debounce } from 'lodash';
 
 export interface OareDataTableOptions {
   page: number;
@@ -42,6 +43,10 @@ export interface OareDataTableOptions {
 
 export default defineComponent({
   props: {
+    debounce: {
+      type: Boolean,
+      default: false,
+    },
     defaultSort: {
       type: String,
       required: true,
@@ -74,6 +79,7 @@ export default defineComponent({
     },
   },
   setup({
+    debounce,
     defaultSort,
     defaultDesc,
     defaultPage,
@@ -82,6 +88,7 @@ export default defineComponent({
     errorMessage,
     watchedParams,
   }) {
+    const _ = sl.get('lodash');
     const actions = sl.get('globalActions');
     const [sortBy, setSortBy] = useQueryParam('sortBy', defaultSort);
     const [sortDesc, setSortDesc] = useQueryParam(
@@ -126,10 +133,15 @@ export default defineComponent({
       }
     };
 
-    watch(queryParams, () => {
+    const queryParamsOnChange = () => {
       sortOptions.value.page = 1;
       performFetch();
-    });
+    };
+
+    watch(
+      queryParams,
+      debounce ? _.debounce(queryParamsOnChange, 500) : queryParamsOnChange
+    );
 
     watch(sortOptions, newOptions => {
       setSortBy(newOptions.sortBy[0]);
