@@ -681,7 +681,7 @@ describe('dictionary api test', () => {
     it('returns 200 on success', async () => {
       setupAddSpelling();
       const response = await sendRequest();
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(JSON.parse(response.text)).toEqual({
         uuid: newUuid,
       });
