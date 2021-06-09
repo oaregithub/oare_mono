@@ -5,8 +5,7 @@
         Search lemma, forms, and translations
         <v-text-field
           class="test-dictionary-search"
-          :value="dictionarySearch"
-          @input="setDictionarySearch"
+          v-model="dictionarySearch"
           placeholder="Dictionary"
           outlined
           @keyup.enter.native="resetSearch"
