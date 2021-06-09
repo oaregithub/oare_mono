@@ -44,7 +44,7 @@ import UserCommentView from '../views/Dashboard/UserCommentView.vue';
 import AdminSettings from '../views/Admin/Settings/AdminSettings.vue';
 import PersonsView from '../views/Persons/index.vue';
 import SwaggerView from '../views/Swagger/index.vue';
-import ParseTree from '../views/Admin/Parse Tree/index.vue';
+import ParseTree from '../views/Admin/ParseTree/index.vue';
 
 const routes: RouteConfig[] = [
   {
