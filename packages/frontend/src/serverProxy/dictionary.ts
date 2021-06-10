@@ -2,7 +2,6 @@ import {
   Word,
   UpdateDictionaryWordPayload,
   UpdateDictionaryTranslationPayload,
-  UpdateDictionaryTranslationsResponse,
   UpdateFormSpellingPayload,
   DictionaryForm,
   AddFormSpellingPayload,
@@ -33,12 +32,8 @@ async function editWord(
 async function editTranslations(
   uuid: string,
   payload: UpdateDictionaryTranslationPayload
-): Promise<UpdateDictionaryTranslationsResponse> {
-  const { data } = await axios.post(
-    `/dictionary/translations/${uuid}`,
-    payload
-  );
-  return data;
+): Promise<void> {
+  await axios.patch(`/dictionary/translations/${uuid}`, payload);
 }
 
 async function updateForm(form: DictionaryForm): Promise<void> {
