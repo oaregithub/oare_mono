@@ -155,7 +155,7 @@ router
       next(new HttpInternalError(err));
     }
   })
-  .post(permissionsRoute('UPDATE_WORD_SPELLING'), async (req, res, next) => {
+  .patch(permissionsRoute('UPDATE_WORD_SPELLING'), async (req, res, next) => {
     try {
       const DictionaryWordDao = sl.get('DictionaryWordDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
@@ -183,7 +183,7 @@ router
         },
         { exact: false }
       );
-      res.json({ word });
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }

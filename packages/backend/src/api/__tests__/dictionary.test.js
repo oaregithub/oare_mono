@@ -130,7 +130,7 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('POST /dictionary/:uuid', () => {
+  describe('PATCH /dictionary/:uuid', () => {
     const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/dictionary/${testUuid}`;
 
@@ -141,7 +141,7 @@ describe('dictionary api test', () => {
     });
 
     const sendRequest = (auth = true) => {
-      const req = request(app).post(PATH).send({ word: 'newWord' });
+      const req = request(app).patch(PATH).send({ word: 'newWord' });
       if (auth) {
         return req.set('Authorization', 'token');
       }
@@ -169,12 +169,9 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 200', async () => {
+    it('returns 201', async () => {
       const response = await sendRequest();
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual({
-        word: 'newWord',
-      });
+      expect(response.status).toBe(201);
     });
 
     it('logs edits', async () => {
