@@ -4,6 +4,7 @@ import {
   SearchNamesResponse,
   SearchNamesResultRow,
   SearchNamesPayload,
+  ParseTree,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -11,6 +12,7 @@ import TextEpigraphyDao from '../TextEpigraphyDao';
 import CollectionGroupDao from '../CollectionGroupDao';
 import TextGroupDao from '../TextGroupDao';
 import CollectionDao from '../CollectionDao';
+import { getTreeNodeQuery } from './utils';
 
 class HierarchyDao {
   async getBySearchTerm({
@@ -188,6 +190,48 @@ class HierarchyDao {
       .first('published')
       .where('uuid', hierarchyUuid);
     return row.published;
+  }
+
+  async hasChild(hierarchyUuid: string) {
+    const rows = await knex('hierarchy').where(
+      'hierarchy_parent_uuid',
+      hierarchyUuid
+    );
+    if (rows && rows.length > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  async getChildren(hierarchyUuid: string): Promise<ParseTree[] | null> {
+    const hasChild = await this.hasChild(hierarchyUuid);
+
+    if (hasChild) {
+      const rows = await getTreeNodeQuery().where(
+        'hierarchy_parent_uuid',
+        hierarchyUuid
+      );
+      const results = await Promise.all(
+        rows.map(async row => ({
+          ...row,
+          children: await this.getChildren(row.hierarchyUuid),
+        }))
+      );
+      return results;
+    }
+    return null;
+  }
+
+  async createParseTree(): Promise<ParseTree> {
+    const rootRow = await getTreeNodeQuery()
+      .where('value.name', 'Parse')
+      .first();
+
+    const tree = {
+      ...rootRow,
+      children: await this.getChildren(rootRow.hierarchyUuid),
+    };
+    return tree;
   }
 }
 
