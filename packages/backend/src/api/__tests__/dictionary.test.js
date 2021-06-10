@@ -29,12 +29,16 @@ describe('dictionary api test', () => {
   };
   const mockCache = {
     clear: jest.fn(),
+    insert: jest.fn(),
   };
   const AdminUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
       uuid: 'user-uuid',
       isAdmin: true,
     }),
+  };
+  const MockHierarchyDao = {
+    createParseTree: jest.fn().mockResolvedValue(),
   };
   const MockPermissionsDao = {
     getUserPermissions: jest.fn().mockResolvedValue([
@@ -74,6 +78,7 @@ describe('dictionary api test', () => {
     UserDao,
     DiscourseDao,
     cache,
+    HierarchyDao,
   } = {}) => {
     sl.set('DictionaryFormDao', FormDao || MockDictionaryFormDao);
     sl.set('DictionaryWordDao', WordDao || MockDictionaryWordDao);
@@ -82,6 +87,7 @@ describe('dictionary api test', () => {
     sl.set('UserDao', UserDao || MockUserDao);
     sl.set('cache', cache || mockCache);
     sl.set('PermissionsDao', MockPermissionsDao);
+    sl.set('HierarchyDao', HierarchyDao || MockHierarchyDao);
   };
 
   describe('GET /dictionary/:uuid', () => {
@@ -1216,6 +1222,31 @@ describe('dictionary api test', () => {
         getGrammaticalInfo: jest
           .fn()
           .mockRejectedValue('Failed to get grammatical info by word uuid'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /dictionary/tree/parse', () => {
+    const PATH = `${API_PATH}/dictionary/tree/parse`;
+
+    beforeEach(setup);
+
+    const sendRequest = () => request(app).get(PATH);
+
+    it('returns 200 on successful parse tree retreival', async () => {
+      const response = await sendRequest();
+      expect(MockHierarchyDao.createParseTree).toHaveBeenCalled();
+      expect(mockCache.insert).toHaveBeenCalled();
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 500 on failed parse tree retreival', async () => {
+      sl.set('HierarchyDao', {
+        createParseTree: jest
+          .fn()
+          .mockRejectedValue('failed to retreive parse tree'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);

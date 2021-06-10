@@ -10,6 +10,7 @@ import {
   CheckSpellingResponse,
   Pagination,
   SpellingOccurrenceResponseRow,
+  ParseTree,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -112,6 +113,11 @@ async function getDictionaryInfoByDiscourseUuid(
   return data;
 }
 
+async function getParseTree(): Promise<ParseTree> {
+  const { data } = await axios.get('/dictionary/tree/parse');
+  return data;
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -124,4 +130,5 @@ export default {
   getSpellingTextOccurrences,
   getDictionaryInfoByDiscourseUuid,
   getSpellingTotalOccurrences,
+  getParseTree,
 };

@@ -69,6 +69,10 @@ export default defineComponent({
           label: 'Backend Documentation',
           path: '/admin/swagger',
         },
+        {
+          label: 'Parse Tree',
+          path: '/admin/parseTree',
+        },
       ]),
     });
 

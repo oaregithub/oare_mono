@@ -141,3 +141,16 @@ export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
 }
 
 export type DictionaryWordTypes = 'word' | 'GN' | 'PN';
+
+export interface ParseTree {
+  uuid: string;
+  type: string;
+  parentUuid: string;
+  hierarchyUuid: string;
+  hierarchyParentUuid: string;
+  variableName: string | null;
+  valueName: string | null;
+  varAbbreviation: string | null;
+  valAbbreviation: string | null;
+  children: ParseTree[] | null;
+}

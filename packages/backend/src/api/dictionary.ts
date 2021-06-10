@@ -469,4 +469,17 @@ router
     }
   });
 
+router.route('/dictionary/tree/parse').get(async (req, res, next) => {
+  try {
+    const HierarchyDao = sl.get('HierarchyDao');
+    const cache = sl.get('cache');
+
+    const tree = await HierarchyDao.createParseTree();
+    cache.insert({ req }, tree);
+    res.json(tree);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 export default router;

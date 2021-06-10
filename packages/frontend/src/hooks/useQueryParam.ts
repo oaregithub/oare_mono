@@ -10,10 +10,7 @@ const getUrlParams = () => {
 const getQueryStringVal = (key: string): string | null =>
   getUrlParams().get(key);
 
-const useQueryParam = (
-  key: string,
-  defaultVal: string
-): [Ref<string>, (val: string) => void] => {
+const useQueryParam = (key: string, defaultVal: string): Ref<string> => {
   const param = ref(getQueryStringVal(key) || defaultVal);
 
   window.addEventListener(`update:${key}`, e => {
@@ -35,15 +32,15 @@ const useQueryParam = (
     }
   });
 
-  const updateParam = (newVal: string) => {
+  watch(param, (newVal: string) => {
     window.dispatchEvent(
       new CustomEvent(`update:${key}`, {
-        detail: { newVal },
+        detail: { newVal: newVal || '' },
       })
     );
-  };
+  });
 
-  return [param, updateParam];
+  return param;
 };
 
 export const useQueryParamNew = (
