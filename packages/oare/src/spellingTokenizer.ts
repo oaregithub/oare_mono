@@ -80,6 +80,23 @@ export const isSignPhraseWithNumber = (tokens: Token[]): boolean => {
 export const isComplementPhrase = (tokens: Token[]): boolean =>
   tokens.some(({ tokenType }) => tokenType === '{');
 
+export const isLogogramNumberPhrase = (tokens: Token[]): boolean => {
+  const separators = tokens.filter(({ tokenType }) => tokenType === '.');
+  const signs = tokens.filter(
+    ({ tokenType }) => tokenType === 'SIGN' || tokenType === 'NUMBER'
+  );
+
+  return (
+    separators.every(
+      ({ tokenType }) => tokenType === separators[0].tokenType
+    ) &&
+    signs.some(({ tokenType }) => tokenType === 'SIGN') &&
+    signs.some(({ tokenType }) => tokenType === 'NUMBER') &&
+    separators.length + signs.length ===
+      tokens.filter(({ tokenType }) => tokenType !== '$end').length
+  );
+};
+
 /**
  * Checks that damage brackets match, and other markup that has
  * two characters matches
@@ -139,7 +156,11 @@ const isValidGrammar = (tokens: Token[], acceptMarkup = false) => {
     tokens.some(({ tokenText }) => isNumberSign(tokenText)) &&
     !isComplementPhrase(tokens)
   ) {
-    return isNumberPhrase(tokens) || isSignPhraseWithNumber(tokens);
+    return (
+      isNumberPhrase(tokens) ||
+      isSignPhraseWithNumber(tokens) ||
+      isLogogramNumberPhrase(tokens)
+    );
   }
 
   const markupCharacters = '*:×‹«+#⸢⸣[]!›»?'.split('');
