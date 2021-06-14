@@ -9,7 +9,6 @@ const host =
 
 const axiosInstance = axios.create({
   baseURL: `${host}/api/v2`,
-  withCredentials: true,
 });
 
 axiosInstance.interceptors.response.use(
