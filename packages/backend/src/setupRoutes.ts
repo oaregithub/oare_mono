@@ -29,30 +29,34 @@ import profile from './api/profile';
 export const API_PATH = '/api/v2';
 
 export default (app: Express) => {
-  app.use(API_PATH, words);
-  app.use(API_PATH, names);
-  app.use(API_PATH, places);
-  app.use(API_PATH, dictionary);
-  app.use(API_PATH, searchDictionary);
-  app.use(API_PATH, search);
-  app.use(API_PATH, textEpigraphies);
-  app.use(API_PATH, register);
-  app.use(API_PATH, groups);
-  app.use(API_PATH, users);
-  app.use(API_PATH, userGroups);
-  app.use(API_PATH, textGroups);
-  app.use(API_PATH, textDrafts);
-  app.use(API_PATH, collections);
-  app.use(API_PATH, collectionInfo);
-  app.use(API_PATH, permissions);
-  app.use(API_PATH, publicBlacklist);
-  app.use(API_PATH, searchNames);
-  app.use(API_PATH, collectionGroups);
-  app.use(API_PATH, comments);
-  app.use(API_PATH, errors);
-  app.use(API_PATH, threads);
-  app.use(API_PATH, people);
-  app.use(API_PATH, cacheStatus);
-  app.use(API_PATH, textDiscourse);
-  app.use(API_PATH, profile);
+  [
+    words,
+    names,
+    places,
+    dictionary,
+    searchDictionary,
+    search,
+    textEpigraphies,
+    register,
+    groups,
+    users,
+    userGroups,
+    textGroups,
+    textDrafts,
+    collections,
+    collectionInfo,
+    permissions,
+    publicBlacklist,
+    searchNames,
+    collectionGroups,
+    comments,
+    errors,
+    threads,
+    people,
+    cacheStatus,
+    textDiscourse,
+    profile,
+  ].forEach(route => {
+    app.use('/.netlify/functions', route);
+  });
 };
