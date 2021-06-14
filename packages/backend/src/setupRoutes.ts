@@ -57,6 +57,6 @@ export default (app: Express) => {
     textDiscourse,
     profile,
   ].forEach(route => {
-    app.use('/.netlify/functions', route);
+    app.use(API_PATH, route);
   });
 };
