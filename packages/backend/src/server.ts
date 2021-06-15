@@ -87,12 +87,14 @@ initializeFirebase(err => {
 
 const router = express.Router();
 
+const app2 = express();
+
 router.get('/hello', (req, res) => {
   res.json({
     response: 'hi',
   });
 });
 
-app.use('./netlify/functions/server', router);
+app2.use('./netlify/functions/server', router);
 
-export const handler = serverless(app);
+export const handler = serverless(app2);
