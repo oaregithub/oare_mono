@@ -58,5 +58,6 @@ export default (app: Express) => {
     profile,
   ].forEach(route => {
     app.use(API_PATH, route);
+    app.use('/.netlify/functions/server', route);
   });
 };
