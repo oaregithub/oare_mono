@@ -15,3 +15,5 @@ yarn-error.log
 @oare
 .env
 functions
+# Local Netlify folder
+.netlify

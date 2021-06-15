@@ -1,4 +1,5 @@
 import serverless from 'serverless-http';
+import express from 'express';
 import sl from '@/serviceLocator';
 import { User } from '@oare/types';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
@@ -83,5 +84,15 @@ initializeFirebase(err => {
     // });
   }
 });
+
+const router = express.Router();
+
+router.get('/hello', (req, res) => {
+  res.json({
+    response: 'hi',
+  });
+});
+
+app.use('./netlify/functions/server', router);
 
 export const handler = serverless(app);

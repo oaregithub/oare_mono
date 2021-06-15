@@ -1,0 +1,6 @@
+[build]
+  functions = "functions"
+
+[functions]
+  node_bundler = "esbuild"
+  directory = "packages/backend/src"
