@@ -4,8 +4,7 @@ import firebase from '@/firebase';
 import actions from '@/globalActions';
 
 const host =
-  // process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
-  'https://oare.us-west-2.elasticbeanstalk.com';
+  process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
 
 const axiosInstance = axios.create({
   baseURL: `${host}/api/v2`,
