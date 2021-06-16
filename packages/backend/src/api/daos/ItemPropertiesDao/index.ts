@@ -1,5 +1,9 @@
 import knex from '@/connection';
-import { ItemPropertyRow, Pagination } from '@oare/types';
+import {
+  ItemPropertyRow,
+  Pagination,
+  InsertItemPropertyRow,
+} from '@oare/types';
 
 export interface GetItemPropertiesOptions {
   abbreviation?: boolean;
@@ -69,6 +73,19 @@ class ItemProperties {
       .where('item_properties.object_uuid', personUuid);
 
     return referenceUuids.map(item => item.referenceUuid);
+  }
+
+  async addProperty(property: InsertItemPropertyRow): Promise<void> {
+    await knex('item_properties').insert({
+      uuid: property.uuid,
+      reference_uuid: property.referenceUuid,
+      parent_uuid: property.parentUuid,
+      level: property.level,
+      variable_uuid: property.variableUuid,
+      value_uuid: property.valueUuid,
+      object_uuid: property.objectUuid,
+      value: property.value,
+    });
   }
 }
 
