@@ -162,3 +162,25 @@ export interface ParseTreeProperty {
   variable: ParseTree;
   value: ParseTree;
 }
+
+export interface ParseTreePropertyRow extends ParseTreeProperty {
+  uuid: string;
+  parentUuid: string;
+}
+
+export interface AddFormPayload {
+  wordUuid: string;
+  formSpelling: string;
+  properties: ParseTreeProperty[];
+}
+
+export interface InsertItemPropertyRow {
+  uuid: string;
+  referenceUuid: string;
+  parentUuid: string | null;
+  level: number | null;
+  variableUuid: string | null;
+  valueUuid: string | null;
+  objectUuid: string | null;
+  value: string | null;
+}

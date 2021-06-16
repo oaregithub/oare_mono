@@ -6,6 +6,8 @@
     :width="1150"
     :persistent="false"
     :submitDisabled="!formComplete || !newFormSpelling || formAlreadyExists"
+    :submitLoading="addFormLoading"
+    @submit="addForm"
   >
     <OareContentView :loading="loading">
       <template #title>
@@ -73,12 +75,14 @@ import {
   onMounted,
   computed,
   ComputedRef,
+  inject,
 } from '@vue/composition-api';
 import { Word, ParseTree, ParseTreeProperty } from '@oare/types';
 import WordGrammar from './WordGrammar.vue';
 import ParseTreeNode, {
   ParseTreePropertyEvent,
 } from '@/views/Admin/ParseTree/components/ParseTreeNode.vue';
+import { ReloadKey } from '../index.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -100,8 +104,10 @@ export default defineComponent({
   setup({ word }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const reload = inject(ReloadKey);
 
     const loading = ref(false);
+    const addFormLoading = ref(false);
     const panel = ref(0);
     const formComplete = ref(false);
     const filteredTree = ref<ParseTree | null>(null);
@@ -158,7 +164,22 @@ export default defineComponent({
     };
 
     const propertyList: ComputedRef<ParseTreeProperty[]> = computed(() => {
-      return properties.value.flatMap(prop => prop.properties);
+      const combinedProperties = properties.value.flatMap(
+        prop => prop.properties
+      );
+      const combinedPropertiesWithoutChildren = combinedProperties.map(
+        prop => ({
+          variable: {
+            ...prop.variable,
+            children: null,
+          },
+          value: {
+            ...prop.value,
+            children: null,
+          },
+        })
+      );
+      return combinedPropertiesWithoutChildren;
     });
 
     const propertyText = (property: ParseTreeProperty) => {
@@ -169,6 +190,25 @@ export default defineComponent({
       const existingForms = word.forms.map(form => form.form);
       return existingForms.includes(newFormSpelling.value);
     });
+
+    const addForm = async () => {
+      try {
+        addFormLoading.value = true;
+        await server.addForm({
+          wordUuid: word.uuid,
+          formSpelling: newFormSpelling.value,
+          properties: propertyList.value,
+        });
+        actions.showSnackbar(
+          `Successfully added ${newFormSpelling.value} to ${word.word}`
+        );
+        reload && reload();
+      } catch {
+        actions.showErrorSnackbar('Error adding new form. Please try again.');
+      } finally {
+        addFormLoading.value = false;
+      }
+    };
 
     return {
       loading,
@@ -181,6 +221,8 @@ export default defineComponent({
       propertyList,
       propertyText,
       formAlreadyExists,
+      addForm,
+      addFormLoading,
     };
   },
 });

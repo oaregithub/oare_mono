@@ -11,6 +11,7 @@ import {
   Pagination,
   SpellingOccurrenceResponseRow,
   ParseTree,
+  AddFormPayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -118,6 +119,10 @@ async function getParseTree(): Promise<ParseTree> {
   return data;
 }
 
+async function addForm(payload: AddFormPayload): Promise<void> {
+  await axios.post('/dictionary/addform', payload);
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -131,4 +136,5 @@ export default {
   getDictionaryInfoByDiscourseUuid,
   getSpellingTotalOccurrences,
   getParseTree,
+  addForm,
 };
