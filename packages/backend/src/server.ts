@@ -1,5 +1,4 @@
 import serverless from 'serverless-http';
-import express from 'express';
 import sl from '@/serviceLocator';
 import { User } from '@oare/types';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
@@ -77,24 +76,7 @@ sl.set('utils', utils);
 initializeFirebase(err => {
   if (err) {
     console.error(err); // eslint-disable-line no-console
-  } else {
-    console.log('success');
-    // app.listen(8081, () => {
-    //   console.log('Listening on port 8081'); // eslint-disable-line no-console
-    // });
   }
 });
 
-const router = express.Router();
-
-const app2 = express();
-
-router.get('/hello', (req, res) => {
-  res.json({
-    response: 'hi',
-  });
-});
-
-app2.use('./netlify/functions/server', router);
-
-export const handler = serverless(app2);
+export const handler = serverless(app);

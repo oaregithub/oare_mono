@@ -3,4 +3,4 @@
 
 [functions]
   node_bundler = "esbuild"
-  directory = "packages/backend/src/functions"
+  directory = "packages/backend/src"
