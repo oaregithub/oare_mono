@@ -60,10 +60,6 @@ export interface UpdateDictionaryWordPayload {
   word: string;
 }
 
-export interface UpdateDictionaryResponse {
-  word: string;
-}
-
 export interface UpdateDictionaryTranslationsResponse {
   translations: DictionaryWordTranslation[];
 }
