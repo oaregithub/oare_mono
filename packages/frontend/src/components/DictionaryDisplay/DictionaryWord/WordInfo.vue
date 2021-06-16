@@ -33,7 +33,7 @@
       :allow-editing="allowEditing"
     />
     <v-btn
-      v-if="allowEditing"
+      v-if="allowEditing && canAddForms"
       @click="addFormDialog = true"
       color="#ffffff"
       elevation="0"
@@ -51,7 +51,7 @@
       :allowDiscourseMode="editDialogDiscourse"
     />
     <add-form-dialog
-      v-if="allowEditing"
+      v-if="allowEditing && canAddForms"
       v-model="addFormDialog"
       :word="wordInfo"
     />
@@ -131,6 +131,10 @@ export default defineComponent({
         .includes('UPDATE_TRANSLATION')
     );
 
+    const canAddForms = computed(() =>
+      permissions.value.map(permission => permission.name).includes('ADD_FORM')
+    );
+
     const updateTranslations = (
       newTranslations: DictionaryWordTranslation[]
     ) => {
@@ -175,6 +179,7 @@ export default defineComponent({
       editDialogDiscourse,
       showSpellingDialog,
       addFormDialog,
+      canAddForms,
     };
   },
 });

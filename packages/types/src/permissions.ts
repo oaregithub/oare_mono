@@ -16,7 +16,8 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'UPDATE_TRANSLATION'
     | 'UPDATE_FORM'
     | 'ADD_SPELLING'
-    | 'INSERT_DISCOURSE_ROWS';
+    | 'INSERT_DISCOURSE_ROWS'
+    | 'ADD_FORM';
   type: 'dictionary';
 }
 
