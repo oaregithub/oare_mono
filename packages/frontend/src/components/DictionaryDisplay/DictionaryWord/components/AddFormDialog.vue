@@ -3,9 +3,9 @@
     :value="value"
     @input="$emit('input', $event)"
     title="Add Form"
-    :width="1000"
+    :width="1150"
     :persistent="false"
-    :submitDisabled="!formComplete || !newFormSpelling"
+    :submitDisabled="!formComplete || !newFormSpelling || formAlreadyExists"
   >
     <OareContentView :loading="loading">
       <template #title>
@@ -15,19 +15,32 @@
       </template>
       <word-grammar :word="word" />
       <v-text-field v-model="newFormSpelling" placeholder="New form spelling" />
+      <span
+        v-if="formAlreadyExists"
+        class="red--text text--darken-2 font-weight-bold"
+        >A form with this spelling already exists on this word</span
+      >
       <v-container>
         <v-row>
+          <v-col cols="2">
+            <h3 class="primary--text mb-5">Existing Forms</h3>
+            <h4 v-for="(form, index) in word.forms" :key="index">
+              {{ form.form }}
+            </h4>
+          </v-col>
           <v-col cols="3">
             <h3 class="primary--text mb-5">Properties</h3>
             <v-chip
-              v-for="(prop, index) in formattedProps"
+              v-for="(property, index) in propertyList"
               :key="index"
               class="my-1 mr-1"
-              >{{ prop.variable.variableName }} -
-              {{ prop.value.valueName }}</v-chip
+              color="info"
+              outlined
+              :title="propertyText(property)"
+              >{{ propertyText(property) }}</v-chip
             >
           </v-col>
-          <v-col cols="9">
+          <v-col cols="7">
             <h3 class="primary--text">Add Properties</h3>
             <v-expansion-panels flat v-model="panel">
               <v-expansion-panel>
@@ -59,10 +72,13 @@ import {
   ref,
   onMounted,
   computed,
+  ComputedRef,
 } from '@vue/composition-api';
-import { Word, ParseTree } from '@oare/types';
+import { Word, ParseTree, ParseTreeProperty } from '@oare/types';
 import WordGrammar from './WordGrammar.vue';
-import ParseTreeNode from '@/views/Admin/ParseTree/components/ParseTreeNode.vue';
+import ParseTreeNode, {
+  ParseTreePropertyEvent,
+} from '@/views/Admin/ParseTree/components/ParseTreeNode.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -90,6 +106,7 @@ export default defineComponent({
     const formComplete = ref(false);
     const filteredTree = ref<ParseTree | null>(null);
     const newFormSpelling = ref('');
+    const properties = ref<ParseTreePropertyEvent[]>([]);
 
     onMounted(async () => {
       try {
@@ -133,25 +150,24 @@ export default defineComponent({
       return null;
     };
 
-    const properties = ref<
-      {
-        properties: { variable: ParseTree; value: ParseTree }[];
-        source: ParseTree;
-      }[]
-    >([]);
-
-    const updateProperties = (args: {
-      properties: { variable: ParseTree; value: ParseTree }[];
-      source: ParseTree;
-    }) => {
+    const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
         prop => prop.source !== args.source
       );
       properties.value.push(args);
     };
 
-    const formattedProps = computed(() => {
+    const propertyList: ComputedRef<ParseTreeProperty[]> = computed(() => {
       return properties.value.flatMap(prop => prop.properties);
+    });
+
+    const propertyText = (property: ParseTreeProperty) => {
+      return `${property.variable.variableName} - ${property.value.valueName}`;
+    };
+
+    const formAlreadyExists = computed(() => {
+      const existingForms = word.forms.map(form => form.form);
+      return existingForms.includes(newFormSpelling.value);
     });
 
     return {
@@ -162,7 +178,9 @@ export default defineComponent({
       newFormSpelling,
       updateProperties,
       properties,
-      formattedProps,
+      propertyList,
+      propertyText,
+      formAlreadyExists,
     };
   },
 });

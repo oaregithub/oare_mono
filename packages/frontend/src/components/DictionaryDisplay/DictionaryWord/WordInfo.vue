@@ -33,6 +33,7 @@
       :allow-editing="allowEditing"
     />
     <v-btn
+      v-if="allowEditing"
       @click="addFormDialog = true"
       color="#ffffff"
       elevation="0"
@@ -49,7 +50,11 @@
       :spelling="editDialogSpelling"
       :allowDiscourseMode="editDialogDiscourse"
     />
-    <add-form-dialog v-model="addFormDialog" :word="wordInfo" />
+    <add-form-dialog
+      v-if="allowEditing"
+      v-model="addFormDialog"
+      :word="wordInfo"
+    />
   </div>
 </template>
 

@@ -95,7 +95,12 @@ import {
   watch,
   computed,
 } from '@vue/composition-api';
-import { ParseTree } from '@oare/types';
+import { ParseTree, ParseTreeProperty } from '@oare/types';
+
+export interface ParseTreePropertyEvent {
+  properties: ParseTreeProperty[];
+  source: ParseTree;
+}
 
 export default defineComponent({
   name: 'ParseTreeNode',
@@ -153,12 +158,7 @@ export default defineComponent({
     const showCheck = (node: ParseTree) =>
       completedSubtrees.value.includes(node);
 
-    const properties = ref<
-      {
-        properties: { variable: ParseTree; value: ParseTree }[];
-        source: ParseTree;
-      }[]
-    >([]);
+    const properties = ref<ParseTreePropertyEvent[]>([]);
 
     watch([selected, properties], () => {
       emit('update:properties', {
@@ -173,17 +173,14 @@ export default defineComponent({
       });
     });
 
-    const updateProperties = (args: {
-      properties: { variable: ParseTree; value: ParseTree }[];
-      source: ParseTree;
-    }) => {
+    const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
         prop => prop.source !== args.source && prop.source !== props.node
       );
       properties.value.push(args);
       const subProperties = properties.value.flatMap(prop => prop.properties);
       if (props.node.variableUuid && subProperties.length > 0) {
-        properties.value.push({
+        properties.value.unshift({
           properties: [
             {
               variable: props.node,

@@ -157,3 +157,8 @@ export interface ParseTree {
   level: number | null;
   children: ParseTree[] | null;
 }
+
+export interface ParseTreeProperty {
+  variable: ParseTree;
+  value: ParseTree;
+}
