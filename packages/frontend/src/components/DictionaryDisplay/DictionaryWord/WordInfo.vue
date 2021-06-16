@@ -17,31 +17,7 @@
         @update:translations="updateTranslations"
         :wordUuid="wordUuid"
       />
-      <div v-else class="d-flex">
-        <div v-if="wordInfo.partsOfSpeech.length > 0" class="mr-1">
-          {{ partsOfSpeech }}
-        </div>
-        <div v-if="wordInfo.verbalThematicVowelTypes.length > 0" class="mr-1">
-          ({{ verbalThematicVowelTypes }})
-        </div>
-        <p>
-          <span v-for="(tr, idx) in wordInfo.translations" :key="tr.uuid">
-            <b>{{ idx + 1 }}</b
-            >. {{ tr.translation }}
-          </span>
-
-          <span
-            v-if="
-              wordInfo.translations.length > 0 &&
-              wordInfo.specialClassifications.length > 0
-            "
-            >;</span
-          >
-          <span v-if="wordInfo.specialClassifications.length > 0">
-            {{ specialClassifications }}
-          </span>
-        </p>
-      </div>
+      <word-grammar v-else :word="wordInfo" />
     </div>
     <div v-if="wordInfo.forms.length < 1">
       No forms found for {{ wordInfo.word }}
@@ -56,6 +32,16 @@
       :cursor="cursor"
       :allow-editing="allowEditing"
     />
+    <v-btn
+      v-if="allowEditing"
+      @click="addFormDialog = true"
+      color="#ffffff"
+      elevation="0"
+      class="mt-4 px-2"
+    >
+      <v-icon color="primary">mdi-plus</v-icon>
+      <h3 class="text--primary">Add Form</h3>
+    </v-btn>
     <edit-word-dialog
       v-if="editDialogForm"
       v-model="showSpellingDialog"
@@ -63,6 +49,11 @@
       :form="editDialogForm"
       :spelling="editDialogSpelling"
       :allowDiscourseMode="editDialogDiscourse"
+    />
+    <add-form-dialog
+      v-if="allowEditing"
+      v-model="addFormDialog"
+      :word="wordInfo"
     />
   </div>
 </template>
@@ -85,6 +76,8 @@ import FormDisplay from './Forms/FormDisplay.vue';
 import EditTranslations from './EditTranslations/EditTranslations.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 import EditWordDialog from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/EditWordDialog.vue';
+import AddFormDialog from './components/AddFormDialog.vue';
+import WordGrammar from './components/WordGrammar.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -118,6 +111,8 @@ export default defineComponent({
     FormDisplay,
     EditTranslations,
     EditWordDialog,
+    AddFormDialog,
+    WordGrammar,
   },
   setup({ wordInfo, updateWordInfo }) {
     const store = sl.get('store');
@@ -128,23 +123,12 @@ export default defineComponent({
     const editDialogSpelling = ref<FormSpelling>();
     const editDialogDiscourse = ref(false);
     const showSpellingDialog = ref(false);
+    const addFormDialog = ref(false);
 
     const canEditTranslations = computed(() =>
       permissions.value
         .map(permission => permission.name)
         .includes('UPDATE_TRANSLATION')
-    );
-
-    const partsOfSpeech = computed(() =>
-      wordInfo.partsOfSpeech.map(pos => pos.name).join(', ')
-    );
-
-    const verbalThematicVowelTypes = computed(() =>
-      wordInfo.verbalThematicVowelTypes.map(pos => pos.name).join(', ')
-    );
-
-    const specialClassifications = computed(() =>
-      wordInfo.specialClassifications.map(pos => pos.name).join(', ')
     );
 
     const updateTranslations = (
@@ -186,13 +170,11 @@ export default defineComponent({
       isEditingTranslations,
       updateTranslations,
       updateForm,
-      partsOfSpeech,
-      verbalThematicVowelTypes,
-      specialClassifications,
       editDialogForm,
       editDialogSpelling,
       editDialogDiscourse,
       showSpellingDialog,
+      addFormDialog,
     };
   },
 });
