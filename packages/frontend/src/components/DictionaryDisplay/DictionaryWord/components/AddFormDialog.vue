@@ -122,7 +122,7 @@ export default defineComponent({
         for (let i = 0; result === null && i < node.children.length; i++) {
           result = searchTree(node.children[i], valueUuid);
           if (result && node.children[i].valueUuid) {
-            properties.value.push({
+            properties.value.unshift({
               properties: [{ variable: node, value: node.children[i] }],
               source: node,
             });
