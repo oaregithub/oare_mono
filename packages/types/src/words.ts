@@ -5,16 +5,21 @@ export interface ItemProperty {
   name: string;
 }
 
+export interface ItemPropertyRow extends ItemProperty {
+  referenceUuid: string;
+  valueUuid: string;
+}
+
 export interface DictionaryWordTranslation {
   uuid: string;
   translation: string;
 }
 
 export interface DictionaryWordParseInfo {
-  partsOfSpeech: ItemProperty[];
-  specialClassifications: ItemProperty[];
+  partsOfSpeech: ItemPropertyRow[];
+  specialClassifications: ItemPropertyRow[];
   translations: DictionaryWordTranslation[];
-  verbalThematicVowelTypes: ItemProperty[];
+  verbalThematicVowelTypes: ItemPropertyRow[];
 }
 
 export interface Word extends DictionaryWordParseInfo {

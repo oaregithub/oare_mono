@@ -156,5 +156,8 @@ export interface ParseTree {
   valueName: string | null;
   varAbbreviation: string | null;
   valAbbreviation: string | null;
+  variableUuid: string | null;
+  valueUuid: string | null;
+  level: number | null;
   children: ParseTree[] | null;
 }
