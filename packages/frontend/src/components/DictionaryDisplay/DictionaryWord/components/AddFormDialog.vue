@@ -51,7 +51,9 @@
             <v-expansion-panels flat v-model="panel">
               <v-expansion-panel>
                 <v-expansion-panel-header class="font-weight-bold">{{
-                  filteredTree ? filteredTree.valueName : ''
+                  filteredTree
+                    ? filteredTree.valueName || filteredTree.variableName
+                    : ''
                 }}</v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <parse-tree-node
@@ -123,10 +125,10 @@ export default defineComponent({
       try {
         loading.value = true;
         const parseTree = await server.getParseTree();
-        filteredTree.value = searchTree(
-          parseTree,
-          word.partsOfSpeech[0].valueUuid
-        );
+        filteredTree.value =
+          word.partsOfSpeech.length > 0
+            ? searchTree(parseTree, word.partsOfSpeech[0].valueUuid)
+            : parseTree;
         if (filteredTree.value && !filteredTree.value.children) {
           formComplete.value = true;
         }
