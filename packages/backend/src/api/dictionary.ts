@@ -547,7 +547,7 @@ router
         );
       }
 
-      res.status(204).end();
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
