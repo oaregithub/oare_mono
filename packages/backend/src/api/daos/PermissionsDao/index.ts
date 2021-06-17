@@ -73,6 +73,12 @@ class PermissionsDao {
         'Allow group users to insert new text discourse rows where missing',
       dependencies: ['UPDATE_FORM'],
     },
+    {
+      name: 'ADD_FORM',
+      type: 'dictionary',
+      description: 'Allow group users to add new forms to words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
