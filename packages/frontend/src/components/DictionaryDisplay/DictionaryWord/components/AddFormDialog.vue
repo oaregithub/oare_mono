@@ -16,10 +16,14 @@
         </v-row>
       </template>
       <word-grammar :word="word" />
-      <v-text-field v-model="newFormSpelling" placeholder="New form spelling" />
+      <v-text-field
+        v-model="newFormSpelling"
+        placeholder="New form spelling"
+        class="test-form-spelling"
+      />
       <span
         v-if="formAlreadyExists"
-        class="red--text text--darken-2 font-weight-bold"
+        class="red--text text--darken-2 font-weight-bold test-error"
         >A form with this spelling already exists on this word</span
       >
       <v-container>
@@ -56,6 +60,7 @@
                     allowSelections
                     @update:node="formComplete = $event.status"
                     @update:properties="updateProperties"
+                    class="test-tree"
                   />
                 </v-expansion-panel-content>
               </v-expansion-panel>

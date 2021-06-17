@@ -52,7 +52,7 @@
             <v-checkbox
               label="Ignore"
               hide-details
-              class="mt-0 pt-0 mr-3"
+              class="mt-0 pt-0 mr-3 test-ignore"
               dense
               @click.native="$event.cancelBubble = true"
               v-model="ignoredSubtrees"

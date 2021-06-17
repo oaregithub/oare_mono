@@ -30,7 +30,7 @@ import { defineComponent, PropType, computed } from '@vue/composition-api';
 import { Word } from '@oare/types';
 
 export default defineComponent({
-  name: 'WordDetails',
+  name: 'WordGrammar',
   props: {
     word: {
       type: Object as PropType<Word>,
