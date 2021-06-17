@@ -486,65 +486,71 @@ router.route('/dictionary/tree/parse').get(async (req, res, next) => {
   }
 });
 
-router.route('/dictionary/addform').post(async (req, res, next) => {
-  try {
-    const DictionaryFormDao = sl.get('DictionaryFormDao');
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+router
+  .route('/dictionary/addform')
+  .post(permissionsRoute('ADD_FORM'), async (req, res, next) => {
+    try {
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
-    const { wordUuid, formSpelling, properties }: AddFormPayload = req.body;
+      const { wordUuid, formSpelling, properties }: AddFormPayload = req.body;
 
-    const newFormUuid = await DictionaryFormDao.addForm(wordUuid, formSpelling);
-
-    const propertiesWithUuids = properties.map(prop => ({
-      ...prop,
-      uuid: v4(),
-    }));
-    const propertiesWithParentUuid: ParseTreePropertyRow[] = propertiesWithUuids.map(
-      prop => {
-        const parentUuid = propertiesWithUuids
-          .filter(
-            baseProp =>
-              baseProp.value.hierarchyUuid === prop.variable.hierarchyParentUuid
-          )
-          .map(baseProp => baseProp.uuid)[0];
-        return {
-          ...prop,
-          parentUuid,
-        };
-      }
-    );
-
-    const itemPropertyRows: InsertItemPropertyRow[] = propertiesWithParentUuid.map(
-      prop => ({
-        uuid: prop.uuid,
-        referenceUuid: newFormUuid,
-        parentUuid: prop.parentUuid,
-        level: prop.variable.level,
-        variableUuid: prop.variable.variableUuid,
-        valueUuid: prop.value.valueUuid,
-        objectUuid: null,
-        value: null,
-      })
-    );
-
-    const itemPropertyRowLevels = [
-      ...new Set(itemPropertyRows.map(row => row.level)),
-    ];
-    const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-      level => itemPropertyRows.filter(row => row.level === level)
-    );
-
-    for (let i = 0; i < rowsByLevel.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await Promise.all(
-        rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+      const newFormUuid = await DictionaryFormDao.addForm(
+        wordUuid,
+        formSpelling
       );
-    }
 
-    res.status(204).end();
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      const propertiesWithUuids = properties.map(prop => ({
+        ...prop,
+        uuid: v4(),
+      }));
+      const propertiesWithParentUuid: ParseTreePropertyRow[] = propertiesWithUuids.map(
+        prop => {
+          const parentUuid = propertiesWithUuids
+            .filter(
+              baseProp =>
+                baseProp.value.hierarchyUuid ===
+                prop.variable.hierarchyParentUuid
+            )
+            .map(baseProp => baseProp.uuid)[0];
+          return {
+            ...prop,
+            parentUuid,
+          };
+        }
+      );
+
+      const itemPropertyRows: InsertItemPropertyRow[] = propertiesWithParentUuid.map(
+        prop => ({
+          uuid: prop.uuid,
+          referenceUuid: newFormUuid,
+          parentUuid: prop.parentUuid,
+          level: prop.variable.level,
+          variableUuid: prop.variable.variableUuid,
+          valueUuid: prop.value.valueUuid,
+          objectUuid: null,
+          value: null,
+        })
+      );
+
+      const itemPropertyRowLevels = [
+        ...new Set(itemPropertyRows.map(row => row.level)),
+      ];
+      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+        level => itemPropertyRows.filter(row => row.level === level)
+      );
+
+      for (let i = 0; i < rowsByLevel.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all(
+          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+        );
+      }
+
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 export default router;
