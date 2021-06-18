@@ -128,11 +128,14 @@ export default defineComponent({
         props.node.children.filter(child => !child.children).length > 0
           ? selected.value.length > 0
           : true;
-      return (
-        itemSelected &&
-        numSubtrees ===
+      if (numSubtrees === 0) {
+        return itemSelected;
+      } else {
+        return (
+          numSubtrees ===
           completedSubtrees.value.length + ignoredSubtrees.value.length
-      );
+        );
+      }
     });
 
     watch(nodeComplete, () => {
