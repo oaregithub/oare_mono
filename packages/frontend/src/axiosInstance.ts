@@ -7,7 +7,7 @@ const host =
   process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
 
 const axiosInstance = axios.create({
-  baseURL: `${host}/api/v2`,
+  baseURL: '/.netlify/functions/server',
 });
 
 axiosInstance.interceptors.response.use(
