@@ -240,7 +240,7 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('POST /dictionary/translations/:uuid', () => {
+  describe('PATCH /dictionary/translations/:uuid', () => {
     const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/dictionary/translations/${testUuid}`;
     const updatedTranslations = [
@@ -262,7 +262,7 @@ describe('dictionary api test', () => {
 
     const sendRequest = (auth = true) => {
       const req = request(app)
-        .post(PATH)
+        .patch(PATH)
         .send({ translations: updatedTranslations });
       if (auth) {
         return req.set('Authorization', 'token');
@@ -290,13 +290,10 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 200', async () => {
+    it('returns 201', async () => {
       const response = await sendRequest();
 
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual({
-        translations: updatedTranslations,
-      });
+      expect(response.status).toBe(201);
     });
 
     it('correctly updates translations', async () => {

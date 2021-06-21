@@ -258,4 +258,54 @@ export default {
       },
     },
   },
+  '/dictionary/translations/{uuid}': {
+    patch: {
+      summary: 'Update the translations on a dictionary word',
+      parameters: [
+        {
+          in: 'path',
+          name: 'uuid',
+          schema: {
+            type: 'string',
+          },
+          required: true,
+          description:
+            'The UUID of the word whose translations should be updated',
+        },
+      ],
+      requestBody: {
+        description:
+          'An object with a "translations" key which is an array of translations of the word',
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                translations: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      uuid: {
+                        type: 'string',
+                      },
+                      translation: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: 'The translations were successfully updated',
+        },
+      },
+    },
+  },
 };

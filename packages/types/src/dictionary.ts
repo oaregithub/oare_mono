@@ -60,10 +60,6 @@ export interface UpdateDictionaryWordPayload {
   word: string;
 }
 
-export interface UpdateDictionaryTranslationsResponse {
-  translations: DictionaryWordTranslation[];
-}
-
 export interface AddFormSpellingPayload {
   formUuid: string;
   spelling: string;
