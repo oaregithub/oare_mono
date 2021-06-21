@@ -4,6 +4,7 @@
 [functions]
   node_bundler = "esbuild"
   directory = "packages/backend/src"
+  external_node_modules = ["knex", "express"]
 
 # The following redirect is intended for use with most SPAs that handle
 # routing internally.
