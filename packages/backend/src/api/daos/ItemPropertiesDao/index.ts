@@ -1,9 +1,9 @@
 import knex from '@/connection';
-import { ItemProperty, Pagination } from '@oare/types';
-
-export interface ItemPropertyRow extends ItemProperty {
-  referenceUuid: string;
-}
+import {
+  ItemPropertyRow,
+  Pagination,
+  InsertItemPropertyRow,
+} from '@oare/types';
 
 export interface GetItemPropertiesOptions {
   abbreviation?: boolean;
@@ -16,7 +16,12 @@ class ItemProperties {
     { abbreviation, referenceUuid }: GetItemPropertiesOptions = {}
   ): Promise<ItemPropertyRow[]> {
     let query = knex('item_properties AS ip')
-      .select('ip.uuid', 'ip.reference_uuid AS referenceUuid', 'a2.name')
+      .select(
+        'ip.uuid',
+        'ip.reference_uuid AS referenceUuid',
+        'a2.name',
+        'ip.value_uuid as valueUuid'
+      )
       .innerJoin('alias AS a1', 'a1.reference_uuid', 'ip.variable_uuid')
       .innerJoin('alias AS a2', 'a2.reference_uuid', 'ip.value_uuid')
       .where('a1.name', referenceType);
@@ -68,6 +73,19 @@ class ItemProperties {
       .where('item_properties.object_uuid', personUuid);
 
     return referenceUuids.map(item => item.referenceUuid);
+  }
+
+  async addProperty(property: InsertItemPropertyRow): Promise<void> {
+    await knex('item_properties').insert({
+      uuid: property.uuid,
+      reference_uuid: property.referenceUuid,
+      parent_uuid: property.parentUuid,
+      level: property.level,
+      variable_uuid: property.variableUuid,
+      value_uuid: property.valueUuid,
+      object_uuid: property.objectUuid,
+      value: property.value,
+    });
   }
 }
 

@@ -2,9 +2,9 @@
   <OareContentView :loading="loading" title="Parse Tree">
     <v-expansion-panels v-model="panel">
       <v-expansion-panel>
-        <v-expansion-panel-header class="font-weight-bold"
-          >Primary Classification - Parse</v-expansion-panel-header
-        >
+        <v-expansion-panel-header class="font-weight-bold">{{
+          parseTree ? parseTree.variableName : ''
+        }}</v-expansion-panel-header>
         <v-expansion-panel-content>
           <parse-tree-node v-if="parseTree" :node="parseTree" />
         </v-expansion-panel-content>

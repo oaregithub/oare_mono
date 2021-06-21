@@ -2,7 +2,6 @@ import {
   Word,
   UpdateDictionaryWordPayload,
   UpdateDictionaryTranslationPayload,
-  UpdateDictionaryTranslationsResponse,
   UpdateFormSpellingPayload,
   DictionaryForm,
   AddFormSpellingPayload,
@@ -11,6 +10,7 @@ import {
   Pagination,
   SpellingOccurrenceResponseRow,
   ParseTree,
+  AddFormPayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -33,12 +33,8 @@ async function editWord(
 async function editTranslations(
   uuid: string,
   payload: UpdateDictionaryTranslationPayload
-): Promise<UpdateDictionaryTranslationsResponse> {
-  const { data } = await axios.post(
-    `/dictionary/translations/${uuid}`,
-    payload
-  );
-  return data;
+): Promise<void> {
+  await axios.patch(`/dictionary/translations/${uuid}`, payload);
 }
 
 async function updateForm(form: DictionaryForm): Promise<void> {
@@ -118,6 +114,10 @@ async function getParseTree(): Promise<ParseTree> {
   return data;
 }
 
+async function addForm(payload: AddFormPayload): Promise<void> {
+  await axios.post('/dictionary/addform', payload);
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -131,4 +131,5 @@ export default {
   getDictionaryInfoByDiscourseUuid,
   getSpellingTotalOccurrences,
   getParseTree,
+  addForm,
 };

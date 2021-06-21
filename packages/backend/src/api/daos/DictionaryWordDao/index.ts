@@ -5,13 +5,14 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
+  ItemPropertyRow,
 } from '@oare/types';
 import knex from '@/connection';
 import { assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
-import ItemPropertiesDao, { ItemPropertyRow } from '../ItemPropertiesDao';
+import ItemPropertiesDao from '../ItemPropertiesDao';
 
 export interface WordQueryRow {
   uuid: string;
@@ -323,7 +324,7 @@ class DictionaryWordDao {
     userUuid: string,
     wordUuid: string,
     translations: DictionaryWordTranslation[]
-  ): Promise<DictionaryWordTranslation[]> {
+  ): Promise<void> {
     const currentTranslations = await this.getWordTranslations(wordUuid);
     const translationsWithPrimacy = translations.map((tr, index) => ({
       ...tr,
@@ -374,17 +375,6 @@ class DictionaryWordDao {
     await Promise.all(
       deletedTranslationUuids.map(uuid => FieldDao.deleteField(uuid))
     );
-
-    return combinedTranslations
-      .sort((a, b) => {
-        if (a.primacy > b.primacy) return 1;
-        if (a.primacy < b.primacy) return -1;
-        return 0;
-      })
-      .map(tr => ({
-        translation: tr.translation,
-        uuid: tr.uuid,
-      }));
   }
 }
 

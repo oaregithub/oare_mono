@@ -60,10 +60,6 @@ export interface UpdateDictionaryWordPayload {
   word: string;
 }
 
-export interface UpdateDictionaryTranslationsResponse {
-  translations: DictionaryWordTranslation[];
-}
-
 export interface AddFormSpellingPayload {
   formUuid: string;
   spelling: string;
@@ -152,5 +148,35 @@ export interface ParseTree {
   valueName: string | null;
   varAbbreviation: string | null;
   valAbbreviation: string | null;
+  variableUuid: string | null;
+  valueUuid: string | null;
+  level: number | null;
   children: ParseTree[] | null;
+}
+
+export interface ParseTreeProperty {
+  variable: ParseTree;
+  value: ParseTree;
+}
+
+export interface ParseTreePropertyRow extends ParseTreeProperty {
+  uuid: string;
+  parentUuid: string;
+}
+
+export interface AddFormPayload {
+  wordUuid: string;
+  formSpelling: string;
+  properties: ParseTreeProperty[];
+}
+
+export interface InsertItemPropertyRow {
+  uuid: string;
+  referenceUuid: string;
+  parentUuid: string | null;
+  level: number | null;
+  variableUuid: string | null;
+  valueUuid: string | null;
+  objectUuid: string | null;
+  value: string | null;
 }

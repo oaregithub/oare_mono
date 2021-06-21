@@ -1,4 +1,5 @@
 import knex from '@/connection';
+import { v4 } from 'uuid';
 import { DictionaryForm, DictionaryFormGrammar } from '@oare/types';
 import DictionarySpellingDao from '../DictionarySpellingDao';
 
@@ -185,6 +186,16 @@ class DictionaryFormDao {
       .first();
 
     return row.form;
+  }
+
+  async addForm(wordUuid: string, formSpelling: string): Promise<string> {
+    const newFormUuid = v4();
+    await knex('dictionary_form').insert({
+      uuid: newFormUuid,
+      reference_uuid: wordUuid,
+      form: formSpelling,
+    });
+    return newFormUuid;
   }
 }
 

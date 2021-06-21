@@ -16,6 +16,7 @@ describe('dictionary api test', () => {
   };
   const MockDictionaryFormDao = {
     getWordForms: jest.fn().mockResolvedValue(mockForms),
+    addForm: jest.fn().mockResolvedValue('new-form-uuid'),
   };
   const MockDictionaryWordDao = {
     getGrammaticalInfo: jest.fn().mockResolvedValue(mockGrammar),
@@ -39,6 +40,9 @@ describe('dictionary api test', () => {
   };
   const MockHierarchyDao = {
     createParseTree: jest.fn().mockResolvedValue(),
+  };
+  const mockItemPropertiesDao = {
+    addProperty: jest.fn().mockResolvedValue(),
   };
   const MockPermissionsDao = {
     getUserPermissions: jest.fn().mockResolvedValue([
@@ -68,6 +72,12 @@ describe('dictionary api test', () => {
         description: 'Allow group users to add new spellings to existing words',
         dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
+      {
+        name: 'ADD_FORM',
+        type: 'dictionary',
+        description: 'Allow group users to add new forms to words',
+        dependencies: ['WORDS', 'NAMES', 'PLACES'],
+      },
     ]),
   };
 
@@ -79,6 +89,7 @@ describe('dictionary api test', () => {
     DiscourseDao,
     cache,
     HierarchyDao,
+    ItemPropertiesDao,
   } = {}) => {
     sl.set('DictionaryFormDao', FormDao || MockDictionaryFormDao);
     sl.set('DictionaryWordDao', WordDao || MockDictionaryWordDao);
@@ -88,6 +99,7 @@ describe('dictionary api test', () => {
     sl.set('cache', cache || mockCache);
     sl.set('PermissionsDao', MockPermissionsDao);
     sl.set('HierarchyDao', HierarchyDao || MockHierarchyDao);
+    sl.set('ItemPropertiesDao', ItemPropertiesDao || mockItemPropertiesDao);
   };
 
   describe('GET /dictionary/:uuid', () => {
@@ -228,7 +240,7 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('POST /dictionary/translations/:uuid', () => {
+  describe('PATCH /dictionary/translations/:uuid', () => {
     const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/dictionary/translations/${testUuid}`;
     const updatedTranslations = [
@@ -250,7 +262,7 @@ describe('dictionary api test', () => {
 
     const sendRequest = (auth = true) => {
       const req = request(app)
-        .post(PATH)
+        .patch(PATH)
         .send({ translations: updatedTranslations });
       if (auth) {
         return req.set('Authorization', 'token');
@@ -278,13 +290,10 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 200', async () => {
+    it('returns 201', async () => {
       const response = await sendRequest();
 
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual({
-        translations: updatedTranslations,
-      });
+      expect(response.status).toBe(201);
     });
 
     it('correctly updates translations', async () => {
@@ -1247,6 +1256,105 @@ describe('dictionary api test', () => {
         createParseTree: jest
           .fn()
           .mockRejectedValue('failed to retreive parse tree'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('POST /dictionary/addform', () => {
+    const PATH = `${API_PATH}/dictionary/addform`;
+    const mockPayload = {
+      wordUuid: 'word-uuid',
+      formSpelling: 'form-spelling',
+      properties: [
+        {
+          variable: {
+            uuid: 'test-uuid',
+            type: 'taxonomy',
+            parentUuid: 'test-parent-uuid',
+            hierarchyParentUuid: 'test-hierarchy-1',
+            hierarchyUuid: 'test-hierarchy-2',
+            variableName: 'test-variable-name',
+            valueName: null,
+            varAbbreviation: 'test-var-abb',
+            valAbbreviation: null,
+            variableUuid: 'test-variable-uuid',
+            valueUuid: null,
+            level: null,
+            children: null,
+          },
+          value: {
+            uuid: 'test-uuid-2',
+            type: 'taxonomy',
+            parentUuid: 'test-parent-uuid',
+            hierarchyParentUuid: 'test-hierarchy-2',
+            hierarchyUuid: 'test-hierarchy-3',
+            variableName: null,
+            valueName: 'test-value-name',
+            varAbbreviation: null,
+            valAbbreviation: 'test-val-abb',
+            variableUuid: null,
+            valueUuid: 'test-value-uuid',
+            level: 1,
+            children: null,
+          },
+        },
+      ],
+    };
+
+    const addFormSetup = () => {
+      sl.set('UserDao', AdminUserDao);
+      sl.set('PermissionsDao', MockPermissionsDao);
+      sl.set('DictionaryFormDao', MockDictionaryFormDao);
+      sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    };
+
+    beforeEach(addFormSetup);
+
+    const sendRequest = (auth = true) => {
+      const req = request(app).post(PATH).send(mockPayload);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('returns 201 on successfull form addition', async () => {
+      const response = await sendRequest();
+      expect(MockDictionaryFormDao.addForm).toHaveBeenCalled();
+      expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+      expect(response.status).toBe(201);
+    });
+
+    it('returns 401 when user not logged in', async () => {
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 403 if user does not have permission to add forms', async () => {
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it('returns 500 on failed form insertion', async () => {
+      sl.set('DictionaryFormDao', {
+        ...MockDictionaryFormDao,
+        addForm: jest.fn().mockRejectedValue('failed to add form'),
+      });
+      const response = await sendRequest();
+      expect(mockItemPropertiesDao.addProperty).not.toHaveBeenCalled();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 on failed form properties insertion', async () => {
+      sl.set('ItemPropertiesDao', {
+        addProperty: jest
+          .fn()
+          .mockRejectedValue('failed to insert form properties'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
