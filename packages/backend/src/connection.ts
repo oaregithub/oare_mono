@@ -3,7 +3,7 @@ import knex from 'knex';
 export const knexConfig: knex.Config = {
   client: 'mysql',
   connection:
-    process.env.NODE_ENV === 'production'
+    process.env.ENVIRON === 'production'
       ? process.env.OARE_DB_URL
       : {
           host: 'localhost',

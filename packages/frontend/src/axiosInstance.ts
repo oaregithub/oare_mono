@@ -3,9 +3,6 @@ import store from '@/ts-store';
 import firebase from '@/firebase';
 import actions from '@/globalActions';
 
-const host =
-  process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
-
 const axiosInstance = axios.create({
   baseURL: '/.netlify/functions/server',
 });
