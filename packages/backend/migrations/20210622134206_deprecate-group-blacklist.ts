@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 export async function up(knex: Knex): Promise<void> {
   // Get existing text allowlist
   const textAllowlist = await knex('text_group')
-    .select('text_uuid AS uuid', 'group_id ')
+    .select('text_uuid AS uuid', 'group_id')
     .where('can_read', 1);
 
   // Get existing collection allowlist
