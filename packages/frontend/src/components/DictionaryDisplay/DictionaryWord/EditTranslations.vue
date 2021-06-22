@@ -11,7 +11,7 @@
       <v-btn
         v-if="!isLoading && canUpdateTranslations"
         icon
-        class="mt-n2"
+        class="mt-n2 test-save-translations"
         @click="saveEdits"
       >
         <v-icon>mdi-check</v-icon>
@@ -37,6 +37,7 @@
             v-model="localTranslations[idx].translation"
             outlined
             :disabled="isLoading || !canUpdateTranslations"
+            class="test-translation"
           />
         </v-col>
         <div v-if="!isLoading" class="d-flex mt-5">
@@ -44,6 +45,7 @@
             v-if="idx !== 0 && canUpdateTranslations"
             icon
             @click="moveTranslation(idx, idx - 1)"
+            class="test-move-up"
           >
             <v-icon>mdi-chevron-up</v-icon>
           </v-btn>
@@ -51,6 +53,7 @@
             v-if="idx !== localTranslations.length - 1 && canUpdateTranslations"
             icon
             @click="moveTranslation(idx, idx + 1)"
+            class="test-move-down"
           >
             <v-icon>mdi-chevron-down</v-icon>
           </v-btn>
@@ -58,20 +61,11 @@
             v-if="canUpdateTranslations"
             icon
             @click="removeTranslation(idx)"
+            class="test-remove-translation"
           >
             <v-icon>mdi-trash-can-outline</v-icon>
           </v-btn>
         </div>
-      </div>
-      <div
-        v-for="(translation, index) in newTranslations"
-        :key="index"
-        class="d-flex align-start"
-      >
-        <span class="mt-6">{{ localTranslations.length + index + 1 }}</span>
-        <v-col cols="11" sm="7" lg="5" class="mb-n4">
-          <v-text-field v-model="newTranslations[index].translation" outlined />
-        </v-col>
       </div>
       <v-btn
         v-if="canUpdateTranslations"
@@ -79,6 +73,7 @@
         @click="addTranslation"
         text
         :disabled="isLoading"
+        class="test-new-translation"
       >
         <v-icon>mdi-plus</v-icon>
         Add translation
@@ -89,13 +84,7 @@
 
 <script lang="ts">
 import { DictionaryWordTranslation } from '@oare/types';
-import {
-  defineComponent,
-  PropType,
-  ref,
-  Ref,
-  computed,
-} from '@vue/composition-api';
+import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import _ from 'lodash';
 
@@ -117,7 +106,6 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const localTranslations = ref(_.cloneDeep(props.translations));
-    const newTranslations: Ref<DictionaryWordTranslation[]> = ref([]);
 
     const actions = sl.get('globalActions');
     const server = sl.get('serverProxy');
@@ -127,19 +115,24 @@ export default defineComponent({
     const isEditing = ref(false);
     const isLoading = ref(false);
 
-    const deletedTranslation: Ref<DeletedTranslation | null> = ref(null);
+    const deletedTranslation = ref<DeletedTranslation | null>(null);
 
     const closeEditor = () => emit('close-editor');
 
     const saveEdits = async () => {
-      isLoading.value = true;
+      if (
+        localTranslations.value.some(
+          ({ translation }) => translation.trim() === ''
+        )
+      ) {
+        actions.showErrorSnackbar(
+          'One or more translations are blank. Either provide a translation or remove the blank fields.'
+        );
+        return;
+      }
 
       try {
-        newTranslations.value.forEach(newTranslation => {
-          if (newTranslation.translation !== '') {
-            localTranslations.value.push(newTranslation);
-          }
-        });
+        isLoading.value = true;
         await server.editTranslations(props.wordUuid, {
           translations: localTranslations.value,
         });
@@ -167,13 +160,13 @@ export default defineComponent({
 
     const addTranslation = () => {
       const updatedTranslations: DictionaryWordTranslation[] = [
-        ...newTranslations.value,
+        ...localTranslations.value,
         {
           uuid: '',
           translation: '',
         },
       ];
-      newTranslations.value = updatedTranslations;
+      localTranslations.value = updatedTranslations;
     };
 
     const removeTranslation = (index: number) => {
@@ -218,7 +211,6 @@ export default defineComponent({
       saveEdits,
       isLoading,
       canUpdateTranslations,
-      newTranslations,
     };
   },
 });
