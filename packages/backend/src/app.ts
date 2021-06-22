@@ -3,6 +3,7 @@ import history from 'connect-history-api-fallback';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import errorMiddleware from '@/middlewares/error';
+import knex from '@/connection';
 import '../envConfig';
 import setupRoutes from './setupRoutes';
 import cacheMiddleware from './middlewares/cache';
@@ -41,5 +42,10 @@ app.use(errorMiddleware);
 
 app.use(history());
 app.use(express.static(path.join(__dirname, '../../dist')));
+
+app.use(async (_req, _res, next) => {
+  await knex.destroy();
+  next();
+});
 
 export default app;
