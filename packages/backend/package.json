@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "serve": "netlify-lambda serve build/src",
     "build": "tsc && cp -r src/api/sql build/src/api",
     "postbuild": "ef-tspm",
     "start": "rm -rf build/@oare && cp -r @oare build && cp -r @oare node_modules && NODE_ENV=production node ./build/src/server.js",
@@ -66,6 +67,8 @@
     "luxon": "^1.25.0",
     "mailgun-js": "^0.22.0",
     "mysql": "^2.18.1",
+    "netlify-lambda": "^2.0.9",
+    "serverless-http": "^2.7.0",
     "uuid": "^8.1.0"
   },
   "husky": {

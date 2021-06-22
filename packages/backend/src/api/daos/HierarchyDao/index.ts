@@ -203,18 +203,25 @@ class HierarchyDao {
     return false;
   }
 
-  async getChildren(hierarchyUuid: string): Promise<ParseTree[] | null> {
+  async getChildren(
+    hierarchyUuid: string,
+    level: number
+  ): Promise<ParseTree[] | null> {
     const hasChild = await this.hasChild(hierarchyUuid);
 
     if (hasChild) {
-      const rows = await getTreeNodeQuery().where(
+      const rows: ParseTree[] = await getTreeNodeQuery().where(
         'hierarchy_parent_uuid',
         hierarchyUuid
       );
+      if (rows.every(row => row.variableUuid)) {
+        level += 1;
+      }
       const results = await Promise.all(
         rows.map(async row => ({
           ...row,
-          children: await this.getChildren(row.hierarchyUuid),
+          level,
+          children: await this.getChildren(row.hierarchyUuid, level),
         }))
       );
       return results;
@@ -223,13 +230,16 @@ class HierarchyDao {
   }
 
   async createParseTree(): Promise<ParseTree> {
-    const rootRow = await getTreeNodeQuery()
+    const parseRow: ParseTree = await getTreeNodeQuery()
       .where('value.name', 'Parse')
+      .first();
+    const rootRow: ParseTree = await getTreeNodeQuery()
+      .where('hierarchy.hierarchy_uuid', parseRow.hierarchyParentUuid)
       .first();
 
     const tree = {
       ...rootRow,
-      children: await this.getChildren(rootRow.hierarchyUuid),
+      children: await this.getChildren(rootRow.hierarchyUuid, 0),
     };
     return tree;
   }

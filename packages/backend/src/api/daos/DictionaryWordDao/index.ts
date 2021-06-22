@@ -5,13 +5,14 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
+  ItemPropertyRow,
 } from '@oare/types';
 import knex from '@/connection';
 import { assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
-import ItemPropertiesDao, { ItemPropertyRow } from '../ItemPropertiesDao';
+import ItemPropertiesDao from '../ItemPropertiesDao';
 
 export interface WordQueryRow {
   uuid: string;
