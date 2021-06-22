@@ -508,9 +508,7 @@ router
         prop => {
           const parentUuid = propertiesWithUuids
             .filter(
-              baseProp =>
-                baseProp.value.hierarchyUuid ===
-                prop.variable.hierarchyParentUuid
+              baseProp => baseProp.value.uuid === prop.variable.parentUuid
             )
             .map(baseProp => baseProp.uuid)[0];
           return {

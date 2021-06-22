@@ -61,7 +61,7 @@ class TextGroupDao {
         'text_group.can_write AS canWrite',
         'alias.name'
       )
-      .innerJoin('hierarchy', 'hierarchy.uuid', 'text_group.text_uuid')
+      .innerJoin('hierarchy', 'hierarchy.object_uuid', 'text_group.text_uuid')
       .innerJoin('alias', 'text_group.text_uuid', 'alias.reference_uuid')
       .where('group_id', groupId)
       .groupBy('text_group.text_uuid');
