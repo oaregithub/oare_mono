@@ -73,7 +73,7 @@ import {
   FormSpelling,
 } from '@oare/types';
 import FormDisplay from './Forms/FormDisplay.vue';
-import EditTranslations from './EditTranslations/EditTranslations.vue';
+import EditTranslations from './EditTranslations.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 import EditWordDialog from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/EditWordDialog.vue';
 import AddFormDialog from './components/AddFormDialog.vue';
