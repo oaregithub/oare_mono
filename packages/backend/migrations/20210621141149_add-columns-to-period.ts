@@ -49,12 +49,12 @@ export async function up(knex: Knex): Promise<void> {
   }
   if (!hasOfficialPN1Column) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN official1_uuid CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER official2_uuid; '
+      'ALTER TABLE period ADD COLUMN officialPN1_uuid CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER official2_uuid; '
     );
   }
   if (!hasOfficialPN2Column) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN official2_uuid CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER officialPN1_uuid; '
+      'ALTER TABLE period ADD COLUMN officialPN2_uuid CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER officialPN1_uuid; '
     );
   }
   if (!hasPeriodTypeColumn) {
