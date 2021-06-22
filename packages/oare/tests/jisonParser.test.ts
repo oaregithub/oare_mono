@@ -5,6 +5,7 @@ import {
   separateTokenPhrases,
   isNumberSign,
   hasValidMarkup,
+  isLogogramNumberPhrase,
 } from '../src/spellingTokenizer';
 
 describe('spelling grammar test', () => {
@@ -156,6 +157,10 @@ describe('spelling grammar test', () => {
   it('catches number phrase mixed with sign phrase', () => {
     expect(() => tokenizeExplicitSpelling('2+0.3-a-na')).toThrow();
   });
+
+  it('parses numbers inside logogram expressions', () => {
+    tokenizeExplicitSpelling('ITU.3.KAM');
+  });
 });
 
 describe('utility tests', () => {
@@ -302,6 +307,40 @@ describe('utility tests', () => {
       ];
 
       expect(hasValidMarkup(tokens)).toBe(true);
+    });
+  });
+
+  describe('isLogogramNumberPhrase', () => {
+    it('returns true for logogram number phrases', () => {
+      const tokens: Token[] = [
+        { tokenType: 'SIGN', tokenText: 'ITU' },
+        { tokenType: '.', tokenText: '.' },
+        { tokenType: 'NUMBER', tokenText: '2' },
+        { tokenType: '.', tokenText: '.' },
+        { tokenType: 'SIGN', tokenText: 'KAM' },
+      ];
+
+      expect(isLogogramNumberPhrase(tokens)).toBe(true);
+    });
+
+    it('returns false if the phrase does not have a sign', () => {
+      const tokens: Token[] = [
+        { tokenType: 'NUMBER', tokenText: '0' },
+        { tokenType: '.', tokenText: '.' },
+        { tokenType: 'NUMBER', tokenText: '0' },
+        { tokenType: '.', tokenText: '.' },
+        { tokenType: 'NUMBER', tokenText: '2' },
+      ];
+      expect(isLogogramNumberPhrase(tokens)).toBe(false);
+    });
+
+    it('returns false if the phrase does not have a number', () => {
+      const tokens: Token[] = [
+        { tokenType: 'SIGN', tokenText: 'ITI' },
+        { tokenType: '.', tokenText: '.' },
+        { tokenType: 'SIGN', tokenText: 'KAM' },
+      ];
+      expect(isLogogramNumberPhrase(tokens)).toBe(false);
     });
   });
 });
