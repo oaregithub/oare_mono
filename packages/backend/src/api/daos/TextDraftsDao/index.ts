@@ -21,7 +21,7 @@ function getBaseDraftQuery(userUuid: string) {
       'text.name AS textName',
       'notes'
     )
-    .innerJoin('hierarchy', 'hierarchy.uuid', 'text_drafts.text_uuid')
+    .innerJoin('hierarchy', 'hierarchy.object_uuid', 'text_drafts.text_uuid')
     .innerJoin('text', 'text_drafts.text_uuid', 'text.uuid')
     .orderBy('text.name')
     .where('user_uuid', userUuid)

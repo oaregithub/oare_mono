@@ -1270,11 +1270,11 @@ describe('dictionary api test', () => {
       properties: [
         {
           variable: {
-            uuid: 'test-uuid',
+            objectUuid: 'test-uuid',
             type: 'taxonomy',
-            parentUuid: 'test-parent-uuid',
-            hierarchyParentUuid: 'test-hierarchy-1',
-            hierarchyUuid: 'test-hierarchy-2',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-1',
+            uuid: 'test-hierarchy-2',
             variableName: 'test-variable-name',
             valueName: null,
             varAbbreviation: 'test-var-abb',
@@ -1285,11 +1285,11 @@ describe('dictionary api test', () => {
             children: null,
           },
           value: {
-            uuid: 'test-uuid-2',
+            objectUuid: 'test-uuid-2',
             type: 'taxonomy',
-            parentUuid: 'test-parent-uuid',
-            hierarchyParentUuid: 'test-hierarchy-2',
-            hierarchyUuid: 'test-hierarchy-3',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-2',
+            uuid: 'test-hierarchy-3',
             variableName: null,
             valueName: 'test-value-name',
             varAbbreviation: null,

@@ -121,7 +121,7 @@ class CollectionGroupDao {
     const groupIds = await UserGroupDao.getGroupsOfUser(userUuid);
 
     const collectionUuid = await knex('hierarchy')
-      .select('parent_uuid AS uuid')
+      .select('obj_parent_uuid AS uuid')
       .where('uuid', uuid)
       .andWhere('type', 'text')
       .first();
