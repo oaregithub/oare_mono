@@ -17,8 +17,8 @@ class CollectionDao {
   async getTextCollectionUuid(textUuid: string): Promise<string | null> {
     const collection: { uuid: string } | null = await knex('collection')
       .select('collection.uuid')
-      .innerJoin('hierarchy', 'hierarchy.parent_uuid', 'collection.uuid')
-      .where('hierarchy.uuid', textUuid)
+      .innerJoin('hierarchy', 'hierarchy.obj_parent_uuid', 'collection.uuid')
+      .where('hierarchy.object_uuid', textUuid)
       .first();
     return collection ? collection.uuid : null;
   }
@@ -39,7 +39,7 @@ class CollectionDao {
         if (!isAdmin) {
           qb.innerJoin(
             'hierarchy',
-            'hierarchy.uuid',
+            'hierarchy.object_uuid',
             'collection.uuid'
           ).andWhere('hierarchy.published', true);
         }

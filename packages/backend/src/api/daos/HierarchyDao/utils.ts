@@ -4,10 +4,10 @@ export const getTreeNodeQuery = () =>
   knex('hierarchy')
     .select(
       'hierarchy.uuid',
-      'hierarchy.type',
       'hierarchy.parent_uuid as parentUuid',
-      'hierarchy.hierarchy_uuid as hierarchyUuid',
-      'hierarchy.hierarchy_parent_uuid as hierarchyParentUuid',
+      'hierarchy.type',
+      'hierarchy.object_uuid as objectUuid',
+      'hierarchy.obj_parent_uuid as objParentUuid',
       'variable.name as variableName',
       'value.name as valueName',
       'variable.abbreviation as varAbbreviation',
@@ -15,5 +15,5 @@ export const getTreeNodeQuery = () =>
       'variable.uuid as variableUuid',
       'value.uuid as valueUuid'
     )
-    .leftJoin('variable', 'variable.uuid', 'hierarchy.uuid')
-    .leftJoin('value', 'value.uuid', 'hierarchy.uuid');
+    .leftJoin('variable', 'variable.uuid', 'hierarchy.object_uuid')
+    .leftJoin('value', 'value.uuid', 'hierarchy.object_uuid');

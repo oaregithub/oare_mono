@@ -20,7 +20,7 @@ class TextDao {
   async getUnpublishedTextUuids(): Promise<string[]> {
     const texts: TextUuid[] = await knex('text')
       .select('text.uuid')
-      .innerJoin('hierarchy', 'hierarchy.uuid', 'text.uuid')
+      .innerJoin('hierarchy', 'hierarchy.object_uuid', 'text.uuid')
       .where('hierarchy.published', false);
 
     return texts.map(text => text.uuid);

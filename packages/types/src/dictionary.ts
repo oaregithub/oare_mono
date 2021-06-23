@@ -142,8 +142,8 @@ export interface ParseTree {
   uuid: string;
   type: string;
   parentUuid: string;
-  hierarchyUuid: string;
-  hierarchyParentUuid: string;
+  objectUuid: string;
+  objParentUuid: string;
   variableName: string | null;
   valueName: string | null;
   varAbbreviation: string | null;

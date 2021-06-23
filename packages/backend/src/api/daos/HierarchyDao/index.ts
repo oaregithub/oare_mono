@@ -24,20 +24,20 @@ class HierarchyDao {
   }: SearchNamesPayload): Promise<SearchNamesResponse> {
     function createBaseQuery() {
       const query = knex('hierarchy')
-        .distinct('hierarchy.uuid')
-        .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.uuid')
+        .distinct('hierarchy.object_uuid as uuid')
+        .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
         .where('hierarchy.type', type.toLowerCase())
         .andWhere('alias.name', 'like', `%${filter}%`);
       if (groupId) {
         if (type === 'Text') {
           return query.whereNotIn(
-            'hierarchy.uuid',
+            'hierarchy.object_uuid',
             knex('text_group').select('text_uuid').where('group_id', groupId)
           );
         }
         if (type === 'Collection') {
           return query.whereNotIn(
-            'hierarchy.uuid',
+            'hierarchy.object_uuid',
             knex('collection_group')
               .select('collection_uuid')
               .where('group_id', groupId)
@@ -45,7 +45,11 @@ class HierarchyDao {
         }
       }
       return query
-        .leftJoin('public_blacklist', 'public_blacklist.uuid', 'hierarchy.uuid')
+        .leftJoin(
+          'public_blacklist',
+          'public_blacklist.uuid',
+          'hierarchy.object_uuid'
+        )
         .whereNull('public_blacklist.uuid');
     }
 
@@ -88,7 +92,7 @@ class HierarchyDao {
 
     const count = await createBaseQuery()
       .count({
-        count: knex.raw('distinct hierarchy.uuid'),
+        count: knex.raw('distinct hierarchy.object_uuid'),
       })
       .first();
     let totalItems = 0;
@@ -115,18 +119,18 @@ class HierarchyDao {
       whitelist: string[]
     ) => {
       const query = knex('hierarchy')
-        .leftJoin('text', 'text.uuid', 'hierarchy.uuid')
-        .where('hierarchy.parent_uuid', collectionUuid)
+        .leftJoin('text', 'text.uuid', 'hierarchy.object_uuid')
+        .where('hierarchy.obj_parent_uuid', collectionUuid)
         .andWhere('text.name', 'like', `%${textSearch}%`);
 
       if (collectionIsBlacklisted) {
         return query.andWhere(function () {
-          this.whereIn('hierarchy.uuid', whitelist);
+          this.whereIn('hierarchy.object_uuid', whitelist);
         });
       }
 
       return query.andWhere(function () {
-        this.whereNotIn('hierarchy.uuid', blacklist);
+        this.whereNotIn('hierarchy.object_uuid', blacklist);
       });
     };
 
@@ -166,8 +170,13 @@ class HierarchyDao {
       blacklist,
       whitelist
     )
-      .distinct('hierarchy.id', 'hierarchy.uuid', 'hierarchy.type', 'text.name')
-      .groupBy('hierarchy.uuid')
+      .distinct(
+        'hierarchy.id',
+        'hierarchy.object_uuid as uuid',
+        'hierarchy.type',
+        'text.name'
+      )
+      .groupBy('hierarchy.object_uuid')
       .orderBy('text.name')
       .limit(rows)
       .offset((page - 1) * rows);
@@ -188,15 +197,12 @@ class HierarchyDao {
   async isPublished(hierarchyUuid: string): Promise<boolean> {
     const row: { published: boolean } = await knex('hierarchy')
       .first('published')
-      .where('uuid', hierarchyUuid);
+      .where('object_uuid', hierarchyUuid);
     return row.published;
   }
 
   async hasChild(hierarchyUuid: string) {
-    const rows = await knex('hierarchy').where(
-      'hierarchy_parent_uuid',
-      hierarchyUuid
-    );
+    const rows = await knex('hierarchy').where('parent_uuid', hierarchyUuid);
     if (rows && rows.length > 0) {
       return true;
     }
@@ -211,7 +217,7 @@ class HierarchyDao {
 
     if (hasChild) {
       const rows: ParseTree[] = await getTreeNodeQuery().where(
-        'hierarchy_parent_uuid',
+        'parent_uuid',
         hierarchyUuid
       );
       if (rows.every(row => row.variableUuid)) {
@@ -221,7 +227,7 @@ class HierarchyDao {
         rows.map(async row => ({
           ...row,
           level,
-          children: await this.getChildren(row.hierarchyUuid, level),
+          children: await this.getChildren(row.uuid, level),
         }))
       );
       return results;
@@ -234,12 +240,12 @@ class HierarchyDao {
       .where('value.name', 'Parse')
       .first();
     const rootRow: ParseTree = await getTreeNodeQuery()
-      .where('hierarchy.hierarchy_uuid', parseRow.hierarchyParentUuid)
+      .where('hierarchy.uuid', parseRow.parentUuid)
       .first();
 
     const tree = {
       ...rootRow,
-      children: await this.getChildren(rootRow.hierarchyUuid, 0),
+      children: await this.getChildren(rootRow.uuid, 0),
     };
     return tree;
   }
