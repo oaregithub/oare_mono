@@ -195,7 +195,7 @@ router
 
 router
   .route('/dictionary/translations/:uuid')
-  .post(permissionsRoute('UPDATE_TRANSLATION'), async (req, res, next) => {
+  .patch(permissionsRoute('UPDATE_TRANSLATION'), async (req, res, next) => {
     try {
       const cache = sl.get('cache');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
@@ -203,7 +203,7 @@ router
       const { uuid } = req.params;
       const { translations }: UpdateDictionaryTranslationPayload = req.body;
 
-      const updatedTranslations = await DictionaryWordDao.updateTranslations(
+      await DictionaryWordDao.updateTranslations(
         req.user!.uuid,
         uuid,
         translations
@@ -219,9 +219,7 @@ router
         },
         { exact: false }
       );
-      res.json({
-        translations: updatedTranslations,
-      });
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
