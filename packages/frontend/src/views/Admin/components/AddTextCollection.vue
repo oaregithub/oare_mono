@@ -159,7 +159,6 @@ import {
   PermissionsListType,
   CollectionPermissionsItem,
   AddTextCollectionPayload,
-  AddPublicBlacklistPayload,
   Pagination,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
@@ -183,10 +182,7 @@ export default defineComponent({
     },
     addItems: {
       type: Function as PropType<
-        (
-          payload: AddTextCollectionPayload | AddPublicBlacklistPayload,
-          groupId?: Number
-        ) => void
+        (payload: AddTextCollectionPayload, groupId?: Number) => void
       >,
       required: true,
     },

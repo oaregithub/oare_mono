@@ -10,11 +10,9 @@ import cache from '@/cache';
 import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import TextDao from '@/api/daos/TextDao';
 import HierarchyDao from '@/api/daos/HierarchyDao';
-import TextGroupDao from '@/api/daos/TextGroupDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
 import PublicBlacklistDao from '@/api/daos/PublicBlacklistDao';
 import SignReadingDao from '@/api/daos/SignReadingDao';
-import CollectionGroupDao from '@/api/daos/CollectionGroupDao';
 import FieldDao from '@/api/daos/FieldDao';
 import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
 import UserGroupDao from '@/api/daos/UserGroupDao';
@@ -27,6 +25,8 @@ import CacheStatusDao from '@/api/daos/CacheStatusDao';
 import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
 import PersonDao from '@/api/daos/PersonDao';
 import PersonTextOccurrencesDao from '@/api/daos/PersonTextOccurrences';
+import GroupAllowlistDao from '@/api/daos/GroupAllowlistDao';
+import GroupEditPermissionsDao from '@/api/daos/GroupEditPermissionsDao';
 import * as utils from '@/utils';
 
 const instances: { [key: string]: any } = {};
@@ -47,11 +47,9 @@ export type ServiceTypes = {
   TextMarkupDao: typeof TextMarkupDao;
   TextDao: typeof TextDao;
   HierarchyDao: typeof HierarchyDao;
-  TextGroupDao: typeof TextGroupDao;
   TextEpigraphyDao: typeof TextEpigraphyDao;
   PublicBlacklistDao: typeof PublicBlacklistDao;
   SignReadingDao: typeof SignReadingDao;
-  CollectionGroupDao: typeof CollectionGroupDao;
   UserGroupDao: typeof UserGroupDao;
   PermissionsDao: typeof PermissionsDao;
   CommentsDao: typeof CommentsDao;
@@ -61,6 +59,8 @@ export type ServiceTypes = {
   CollectionTextUtils: typeof CollectionTextUtils;
   PersonDao: typeof PersonDao;
   PersonTextOccurrencesDao: typeof PersonTextOccurrencesDao;
+  GroupAllowlistDao: typeof GroupAllowlistDao;
+  GroupEditPermissionsDao: typeof GroupEditPermissionsDao;
   utils: typeof utils;
 };
 

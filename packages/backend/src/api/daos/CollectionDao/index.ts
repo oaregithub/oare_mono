@@ -1,7 +1,7 @@
 import knex from '@/connection';
 import { Collection } from '@oare/types';
+import sl from '@/serviceLocator';
 import UserDao from '../UserDao';
-import CollectionGroupDao from '../CollectionGroupDao';
 
 class CollectionDao {
   async getCollectionByUuid(
@@ -29,6 +29,7 @@ class CollectionDao {
   }
 
   async getAllCollections(userUuid: string | null): Promise<string[]> {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
     const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
     const isAdmin = user ? user.isAdmin : false;
 
@@ -49,7 +50,7 @@ class CollectionDao {
 
     const collectionsViewable = await Promise.all(
       collectionUuids.map(uuid =>
-        CollectionGroupDao.canViewCollection(uuid, userUuid)
+        CollectionTextUtils.canViewCollection(uuid, userUuid)
       )
     );
 
