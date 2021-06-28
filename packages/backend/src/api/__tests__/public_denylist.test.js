@@ -18,9 +18,9 @@ const mockPOST = {
   type: 'text',
 };
 
-describe('GET /public_blacklist', () => {
-  const PATH = `${API_PATH}/public_blacklist`;
-  const mockPublicBlacklistDao = {
+describe('GET /public_denylist', () => {
+  const PATH = `${API_PATH}/public_denylist`;
+  const mockPublicDenylistDao = {
     getDenylistTextUuids: jest.fn().mockResolvedValue(['uuid1', 'uuid2']),
   };
   const mockTextEpigraphyDao = {
@@ -28,7 +28,7 @@ describe('GET /public_blacklist', () => {
   };
 
   const setup = () => {
-    sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
+    sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
@@ -42,44 +42,44 @@ describe('GET /public_blacklist', () => {
   const sendRequest = () =>
     request(app).get(PATH).set('Authorization', 'token');
 
-  it('returns 200 on successful blacklist retrieval', async () => {
+  it('returns 200 on successful denylist retrieval', async () => {
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.getDenylistTextUuids).toHaveBeenCalled();
+    expect(mockPublicDenylistDao.getDenylistTextUuids).toHaveBeenCalled();
     expect(response.status).toBe(200);
     expect(JSON.parse(response.text)).toEqual(mockGET);
   });
 
-  it('does not allow non-admin user to see blacklist', async () => {
+  it('does not allow non-admin user to see denylist', async () => {
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.getDenylistTextUuids).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.getDenylistTextUuids).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
 
-  it('does not allow non-logged-in user to see blacklist', async () => {
+  it('does not allow non-logged-in user to see denylist', async () => {
     const response = await request(app).get(PATH);
-    expect(mockPublicBlacklistDao.getDenylistTextUuids).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.getDenylistTextUuids).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 
-  it('returns 500 on failed blacklist retrieval', async () => {
-    sl.set('PublicBlacklistDao', {
+  it('returns 500 on failed denylist retrieval', async () => {
+    sl.set('PublicDenylistDao', {
       getDenylistTextUuids: jest
         .fn()
-        .mockRejectedValue('Remove blacklist text failed'),
+        .mockRejectedValue('Remove denylist text failed'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
   });
 });
 
-describe('POST /public_blacklist', () => {
-  const PATH = `${API_PATH}/public_blacklist`;
-  const mockPublicBlacklistDao = {
+describe('POST /public_denylist', () => {
+  const PATH = `${API_PATH}/public_denylist`;
+  const mockPublicDenylistDao = {
     getDenylistTextUuids: jest.fn().mockResolvedValue(['uuid1', 'uuid2']),
     getDenylistCollectionUuids: jest.fn().mockResolvedValue([]),
     addItemsToDenylist: jest.fn().mockResolvedValue(),
@@ -89,7 +89,7 @@ describe('POST /public_blacklist', () => {
   };
 
   const setup = () => {
-    sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
+    sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
@@ -105,37 +105,37 @@ describe('POST /public_blacklist', () => {
 
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.addItemsToDenylist).toHaveBeenCalled();
+    expect(mockPublicDenylistDao.addItemsToDenylist).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 
-  it('does not allow non-admins to update blacklist', async () => {
+  it('does not allow non-admins to update denylist', async () => {
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.addItemsToDenylist).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.addItemsToDenylist).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
 
-  it('does not allow non-logged-in users to update blacklist', async () => {
+  it('does not allow non-logged-in users to update denylist', async () => {
     const response = await request(app).get(PATH).send(mockPOST);
-    expect(mockPublicBlacklistDao.addItemsToDenylist).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.addItemsToDenylist).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 
   it('returns 500 on failed add', async () => {
-    sl.set('PublicBlacklistDao', {
-      ...mockPublicBlacklistDao,
+    sl.set('PublicDenylistDao', {
+      ...mockPublicDenylistDao,
       addItemsToDenylist: jest.fn().mockRejectedValue(null),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
   });
 
-  it('returns 400 when texts are already blacklisted', async () => {
+  it('returns 400 when texts are already denylisted', async () => {
     const mockExistingPOST = {
       uuids: ['uuid1', 'uuid2'],
       type: 'text',
@@ -144,15 +144,15 @@ describe('POST /public_blacklist', () => {
       .post(PATH)
       .send(mockExistingPOST)
       .set('Authorization', 'token');
-    expect(mockPublicBlacklistDao.addItemsToDenylist).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.addItemsToDenylist).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
 });
 
-describe('DELETE /public_blacklist', () => {
+describe('DELETE /public_denylist', () => {
   const uuid = 'uuid1';
-  const PATH = `${API_PATH}/public_blacklist/${uuid}`;
-  const mockPublicBlacklistDao = {
+  const PATH = `${API_PATH}/public_denylist/${uuid}`;
+  const mockPublicDenylistDao = {
     getDenylistTextUuids: jest.fn().mockResolvedValue(['uuid1', 'uuid2']),
     getDenylistCollectionUuids: jest.fn().mockResolvedValue([]),
     removeItemFromDenylist: jest.fn().mockResolvedValue(),
@@ -162,7 +162,7 @@ describe('DELETE /public_blacklist', () => {
   };
 
   const setup = () => {
-    sl.set('PublicBlacklistDao', mockPublicBlacklistDao);
+    sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
@@ -178,47 +178,41 @@ describe('DELETE /public_blacklist', () => {
 
   it('returns 200 on successful deletion', async () => {
     const response = await sendRequest();
-    expect(mockPublicBlacklistDao.removeItemFromDenylist).toHaveBeenCalled();
+    expect(mockPublicDenylistDao.removeItemFromDenylist).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
-  it('does not allow non-admins to delete from blacklist', async () => {
+  it('does not allow non-admins to delete from denylist', async () => {
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: false,
       }),
     });
     const response = await sendRequest();
-    expect(
-      mockPublicBlacklistDao.removeItemFromDenylist
-    ).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.removeItemFromDenylist).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
 
-  it('does not allow non-logged-in users to delete from blacklist', async () => {
+  it('does not allow non-logged-in users to delete from denylist', async () => {
     const response = await request(app).delete(PATH);
-    expect(
-      mockPublicBlacklistDao.removeItemFromDenylist
-    ).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.removeItemFromDenylist).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 
   it('returns 500 on failed delete', async () => {
-    sl.set('PublicBlacklistDao', {
-      ...mockPublicBlacklistDao,
+    sl.set('PublicDenylistDao', {
+      ...mockPublicDenylistDao,
       removeItemFromDenylist: jest.fn().mockRejectedValue(null),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
   });
 
-  it('returns 400 when texts to be deleted are not blacklisted', async () => {
+  it('returns 400 when texts to be deleted are not denylisted', async () => {
     const response = await request(app)
-      .delete(`${API_PATH}/public_blacklist/uuid3`)
+      .delete(`${API_PATH}/public_denylist/uuid3`)
       .set('Authorization', 'token');
-    expect(
-      mockPublicBlacklistDao.removeItemFromDenylist
-    ).not.toHaveBeenCalled();
+    expect(mockPublicDenylistDao.removeItemFromDenylist).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
 });

@@ -6,7 +6,7 @@ class CollectionTextUtils {
     userUuid: string | null
   ): Promise<boolean> {
     const UserDao = sl.get('UserDao');
-    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const PublicDenylistDao = sl.get('PublicDenylistDao');
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
 
     const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
@@ -14,7 +14,7 @@ class CollectionTextUtils {
       return true;
     }
 
-    const isPubliclyViewable = await PublicBlacklistDao.textIsPubliclyViewable(
+    const isPubliclyViewable = await PublicDenylistDao.textIsPubliclyViewable(
       textUuid
     );
     if (isPubliclyViewable) {
@@ -37,7 +37,7 @@ class CollectionTextUtils {
     userUuid: string | null
   ): Promise<boolean> {
     const UserDao = sl.get('UserDao');
-    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const PublicDenylistDao = sl.get('PublicDenylistDao');
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
     const HierarchyDao = sl.get('HierarchyDao');
 
@@ -46,7 +46,7 @@ class CollectionTextUtils {
       return true;
     }
 
-    const isPubliclyViewable = await PublicBlacklistDao.collectionIsPubliclyViewable(
+    const isPubliclyViewable = await PublicDenylistDao.collectionIsPubliclyViewable(
       collectionUuid
     );
     if (isPubliclyViewable) {
@@ -76,7 +76,7 @@ class CollectionTextUtils {
 
   async textsToHide(userUuid: string | null): Promise<string[]> {
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
-    const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+    const PublicDenylistDao = sl.get('PublicDenylistDao');
     const UserGroupDao = sl.get('UserGroupDao');
     const HierarchyDao = sl.get('HierarchyDao');
     const UserDao = sl.get('UserDao');
@@ -86,8 +86,8 @@ class CollectionTextUtils {
       return [];
     }
 
-    const publicDenylist = await PublicBlacklistDao.getDenylistTextUuids();
-    const publicDenylistCollections = await PublicBlacklistDao.getDenylistCollectionUuids();
+    const publicDenylist = await PublicDenylistDao.getDenylistTextUuids();
+    const publicDenylistCollections = await PublicDenylistDao.getDenylistCollectionUuids();
     const textsInDenylistCollections = (
       await Promise.all(
         publicDenylistCollections.map(collection =>

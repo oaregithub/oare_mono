@@ -24,7 +24,7 @@ describe('AddBlacklistCollections test', () => {
       ],
       count: 2,
     }),
-    addTextsToPublicBlacklist: jest.fn().mockResolvedValue(null),
+    addTextsToPublicDenylist: jest.fn().mockResolvedValue(null),
   };
 
   const mockActions = {
@@ -80,7 +80,7 @@ describe('AddBlacklistCollections test', () => {
     await wrapper.findAll('.v-data-table__checkbox').at(1).trigger('click');
     await wrapper.get('.test-add').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
-    expect(mockServer.addTextsToPublicBlacklist).toHaveBeenCalled();
+    expect(mockServer.addTextsToPublicDenylist).toHaveBeenCalled();
     await flushPromises();
     expect(mockActions.showSnackbar).toHaveBeenCalled();
     expect(mockRouter.push).toHaveBeenCalled();
@@ -90,7 +90,7 @@ describe('AddBlacklistCollections test', () => {
     const wrapper = createWrapper({
       server: {
         ...mockServer,
-        addTextsToPublicBlacklist: jest
+        addTextsToPublicDenylist: jest
           .fn()
           .mockRejectedValue('failed collection add'),
       },

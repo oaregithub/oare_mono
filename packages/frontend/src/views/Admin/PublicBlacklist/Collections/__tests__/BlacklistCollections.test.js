@@ -21,11 +21,11 @@ describe('BlacklistCollections test', () => {
     },
   ];
   const mockServer = {
-    getBlacklistCollections: jest
+    getDenylistCollections: jest
       .fn()
       .mockResolvedValue(mockBlacklistedCollections),
-    addTextsToPublicBlacklist: jest.fn().mockResolvedValue(),
-    removeTextsFromPublicBlacklist: jest.fn().mockResolvedValue(),
+    addTextsToPublicDenylist: jest.fn().mockResolvedValue(),
+    removeTextsFromPublicDenylist: jest.fn().mockResolvedValue(),
   };
   const mockActions = {
     showErrorSnackbar: jest.fn(),
@@ -52,7 +52,7 @@ describe('BlacklistCollections test', () => {
   it('retrieves public blacklist collections', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockServer.getBlacklistCollections).toHaveBeenCalled();
+    expect(mockServer.getDenylistCollections).toHaveBeenCalled();
     expect(wrapper.html()).toContain('test1');
   });
 
@@ -60,7 +60,7 @@ describe('BlacklistCollections test', () => {
     createWrapper({
       server: {
         ...mockServer,
-        getBlacklistCollections: jest.fn().mockRejectedValue(null),
+        getDenylistCollections: jest.fn().mockRejectedValue(null),
       },
     });
     await flushPromises();
@@ -75,7 +75,7 @@ describe('BlacklistCollections test', () => {
     await wrapper.get('.test-remove-items').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
-    expect(mockServer.removeTextsFromPublicBlacklist).toHaveBeenCalled();
+    expect(mockServer.removeTextsFromPublicDenylist).toHaveBeenCalled();
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
@@ -83,7 +83,7 @@ describe('BlacklistCollections test', () => {
     const wrapper = createWrapper({
       server: {
         ...mockServer,
-        removeTextsFromPublicBlacklist: jest.fn().mockRejectedValue(null),
+        removeTextsFromPublicDenylist: jest.fn().mockRejectedValue(null),
       },
     });
     await flushPromises();

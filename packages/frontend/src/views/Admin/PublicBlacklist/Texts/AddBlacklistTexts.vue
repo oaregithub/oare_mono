@@ -1,7 +1,7 @@
 <template>
   <add-text-collection
     itemType="Text"
-    :addItems="server.addTextsToPublicBlacklist"
+    :addItems="server.addTextsToPublicDenylist"
   />
 </template>
 

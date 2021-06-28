@@ -1,7 +1,7 @@
 import sl from '@/serviceLocator';
-import PublicBlacklistDao from '../PublicBlacklistDao';
+import PDDao from '../PublicDenylistDao';
 
-describe('PublicBlacklistDao', () => {
+describe('PublicDenylistDao', () => {
   describe('textIsPubliclyViewable', () => {
     const PublicDenylistDao = {
       getDenylistTextUuids: jest.fn().mockResolvedValue([]),
@@ -14,17 +14,16 @@ describe('PublicBlacklistDao', () => {
     };
 
     beforeEach(() => {
-      sl.set('PublicBlacklistDao', PublicDenylistDao);
+      sl.set('PublicDenylistDao', PublicDenylistDao);
       sl.set('CollectionDao', CollectionDao);
     });
 
     const textUuid = 'text-uuid';
 
-    const isViewable = () =>
-      PublicBlacklistDao.textIsPubliclyViewable(textUuid);
+    const isViewable = () => PDDao.textIsPubliclyViewable(textUuid);
 
     it('returns false if the denylisted text uuid list contains the text', async () => {
-      sl.set('PublicBlacklistDao', {
+      sl.set('PublicDenylistDao', {
         ...PublicDenylistDao,
         getDenylistTextUuids: jest.fn().mockResolvedValue([textUuid]),
       });
@@ -34,7 +33,7 @@ describe('PublicBlacklistDao', () => {
     });
 
     it('returns false if denylisted collection list contains text collection', async () => {
-      sl.set('PublicBlacklistDao', {
+      sl.set('PublicDenylistDao', {
         ...PublicDenylistDao,
         getDenylistCollectionUuids: jest
           .fn()

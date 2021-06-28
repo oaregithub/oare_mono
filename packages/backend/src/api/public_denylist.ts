@@ -6,9 +6,9 @@ import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
 async function canInsert(uuids: string[]) {
-  const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const denylistTextUuids = await PublicBlacklistDao.getDenylistTextUuids();
-  const denylistCollectionUuids = await PublicBlacklistDao.getDenylistCollectionUuids();
+  const PublicDenylistDao = sl.get('PublicDenylistDao');
+  const denylistTextUuids = await PublicDenylistDao.getDenylistTextUuids();
+  const denylistCollectionUuids = await PublicDenylistDao.getDenylistCollectionUuids();
   const existingDenylist = new Set(
     denylistTextUuids.concat(denylistCollectionUuids)
   );
@@ -21,9 +21,9 @@ async function canInsert(uuids: string[]) {
 }
 
 async function canRemove(uuid: string) {
-  const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const denylistTextUuids = await PublicBlacklistDao.getDenylistTextUuids();
-  const denylistCollectionUuids = await PublicBlacklistDao.getDenylistCollectionUuids();
+  const PublicDenylistDao = sl.get('PublicDenylistDao');
+  const denylistTextUuids = await PublicDenylistDao.getDenylistTextUuids();
+  const denylistCollectionUuids = await PublicDenylistDao.getDenylistCollectionUuids();
   const existingDenylist = denylistTextUuids.concat(denylistCollectionUuids);
   if (!existingDenylist.includes(uuid)) {
     return false;
@@ -47,12 +47,12 @@ function clearCache() {
 const router = express.Router();
 
 router
-  .route('/public_blacklist')
-  .get(adminRoute, async (req, res, next) => {
+  .route('/public_denylist')
+  .get(adminRoute, async (_req, res, next) => {
     try {
-      const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+      const PublicDenylistDao = sl.get('PublicDenylistDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const publicBlacklist = await PublicBlacklistDao.getDenylistTextUuids();
+      const publicBlacklist = await PublicDenylistDao.getDenylistTextUuids();
       const epigraphyStatus = await Promise.all(
         publicBlacklist.map(text => TextEpigraphyDao.hasEpigraphy(text))
       );
@@ -67,7 +67,7 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+      const PublicDenylistDao = sl.get('PublicDenylistDao');
       const { uuids, type }: DenylistAllowlistPayload = req.body;
 
       if (!(await canInsert(uuids))) {
@@ -79,10 +79,7 @@ router
         return;
       }
 
-      const insertIds = await PublicBlacklistDao.addItemsToDenylist(
-        uuids,
-        type
-      );
+      const insertIds = await PublicDenylistDao.addItemsToDenylist(uuids, type);
       clearCache();
       res.status(201).json(insertIds);
     } catch (err) {
@@ -91,22 +88,22 @@ router
   });
 
 router
-  .route('/public_blacklist/:uuid')
+  .route('/public_denylist/:uuid')
   .delete(adminRoute, async (req, res, next) => {
     try {
-      const PublicBlacklistDao = sl.get('PublicBlacklistDao');
+      const PublicDenylistDao = sl.get('PublicDenylistDao');
       const { uuid } = req.params;
 
       if (!(await canRemove(uuid))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts does not exist in the blacklist'
+            'One or more of the selected texts does not exist in the denylist'
           )
         );
         return;
       }
 
-      await PublicBlacklistDao.removeItemFromDenylist(uuid);
+      await PublicDenylistDao.removeItemFromDenylist(uuid);
       clearCache();
       res.end();
     } catch (err) {
@@ -115,11 +112,11 @@ router
   });
 
 router
-  .route('/public_blacklist/collections')
+  .route('/public_denylist/collections')
   .get(adminRoute, async (_req, res, next) => {
     try {
-      const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-      const denylistCollections = await PublicBlacklistDao.getDenylistCollectionUuids();
+      const PublicDenylistDao = sl.get('PublicDenylistDao');
+      const denylistCollections = await PublicDenylistDao.getDenylistCollectionUuids();
       res.json(denylistCollections);
     } catch (err) {
       next(new HttpInternalError(err));

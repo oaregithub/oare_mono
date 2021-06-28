@@ -7,7 +7,7 @@ describe('CollectionTextUtils test', () => {
       getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
     };
 
-    const PublicBlacklistDao = {
+    const PublicDenylistDao = {
       textIsPubliclyViewable: jest.fn().mockResolvedValue(false),
     };
 
@@ -28,7 +28,7 @@ describe('CollectionTextUtils test', () => {
 
     beforeEach(() => {
       sl.set('UserDao', UserDao);
-      sl.set('PublicBlacklistDao', PublicBlacklistDao);
+      sl.set('PublicDenylistDao', PublicDenylistDao);
       sl.set('CollectionDao', CollectionDao);
       sl.set('GroupAllowlistDao', GroupAllowlistDao);
     });
@@ -38,16 +38,16 @@ describe('CollectionTextUtils test', () => {
         ...UserDao,
         getUserByUuid: jest.fn().mockResolvedValue(null),
       });
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
         textIsPubliclyViewable: jest.fn().mockResolvedValue(true),
       });
 
       let canView = await canViewText();
       expect(canView).toBe(true);
 
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
         isTextPubliclyViewable: jest.fn().mockResolvedValue(false),
       });
 
@@ -56,8 +56,8 @@ describe('CollectionTextUtils test', () => {
     });
 
     it('returns true if text is publicly viewable', async () => {
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
         textIsPubliclyViewable: jest.fn().mockResolvedValue(true),
       });
 
@@ -70,8 +70,8 @@ describe('CollectionTextUtils test', () => {
         ...UserDao,
         getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
       });
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
         textIsPubliclyViewable: jest.fn().mockResolvedValue(false),
       });
 
