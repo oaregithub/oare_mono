@@ -51,3 +51,9 @@ export interface DeleteDenylistAllowlistParameters {
   groupId: number;
   uuid: string;
 }
+
+export interface DenylistAllowlistItem {
+  uuid: string;
+  name?: string;
+  hasEpigraphy?: boolean;
+}

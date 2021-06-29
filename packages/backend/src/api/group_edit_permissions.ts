@@ -7,6 +7,7 @@ import {
   DenylistAllowlistPayload,
   GetDenylistAllowlistParameters,
   DeleteDenylistAllowlistParameters,
+  DenylistAllowlistItem,
 } from '@oare/types';
 
 function clearCache() {
@@ -48,10 +49,12 @@ router
             : CollectionDao.getCollectionByUuid(uuid)
         )
       );
-      const response = groupEditPermissions.map((uuid, index) => ({
-        uuid,
-        name: names[index]?.name,
-      }));
+      const response: DenylistAllowlistItem[] = groupEditPermissions.map(
+        (uuid, index) => ({
+          uuid,
+          name: names[index]?.name,
+        })
+      );
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));

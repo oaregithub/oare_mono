@@ -1,5 +1,5 @@
 import express from 'express';
-import { DenylistAllowlistPayload } from '@oare/types';
+import { DenylistAllowlistPayload, DenylistAllowlistItem } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
@@ -52,14 +52,22 @@ router
     try {
       const PublicDenylistDao = sl.get('PublicDenylistDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const publicBlacklist = await PublicDenylistDao.getDenylistTextUuids();
+      const TextDao = sl.get('TextDao');
+
+      const publicDenylist = await PublicDenylistDao.getDenylistTextUuids();
       const epigraphyStatus = await Promise.all(
-        publicBlacklist.map(text => TextEpigraphyDao.hasEpigraphy(text))
+        publicDenylist.map(text => TextEpigraphyDao.hasEpigraphy(text))
       );
-      const response = publicBlacklist.map((uuid, index) => ({
-        uuid,
-        hasEpigraphy: epigraphyStatus[index],
-      }));
+      const names = await Promise.all(
+        publicDenylist.map(uuid => TextDao.getTextByUuid(uuid))
+      );
+      const response: DenylistAllowlistItem[] = publicDenylist.map(
+        (uuid, index) => ({
+          uuid,
+          name: names[index]?.name,
+          hasEpigraphy: epigraphyStatus[index],
+        })
+      );
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
@@ -73,7 +81,7 @@ router
       if (!(await canInsert(uuids))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts is already denylisted'
+            'One or more of the selected texts or collections is already denylisted'
           )
         );
         return;
@@ -97,7 +105,7 @@ router
       if (!(await canRemove(uuid))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts does not exist in the denylist'
+            'One or more of the selected texts or collections does not exist in the denylist'
           )
         );
         return;
@@ -105,7 +113,7 @@ router
 
       await PublicDenylistDao.removeItemFromDenylist(uuid);
       clearCache();
-      res.end();
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
@@ -116,8 +124,19 @@ router
   .get(adminRoute, async (_req, res, next) => {
     try {
       const PublicDenylistDao = sl.get('PublicDenylistDao');
+      const CollectionDao = sl.get('CollectionDao');
+
       const denylistCollections = await PublicDenylistDao.getDenylistCollectionUuids();
-      res.json(denylistCollections);
+      const names = await Promise.all(
+        denylistCollections.map(uuid => CollectionDao.getCollectionByUuid(uuid))
+      );
+      const response: DenylistAllowlistItem[] = denylistCollections.map(
+        (collectionUuid, index) => ({
+          uuid: collectionUuid,
+          name: names[index]?.name,
+        })
+      );
+      res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
     }

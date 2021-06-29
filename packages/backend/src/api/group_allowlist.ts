@@ -7,6 +7,7 @@ import {
   DenylistAllowlistPayload,
   GetDenylistAllowlistParameters,
   DeleteDenylistAllowlistParameters,
+  DenylistAllowlistItem,
 } from '@oare/types';
 
 function clearCache() {
@@ -52,11 +53,13 @@ router
       const epigraphyStatus = await Promise.all(
         groupAllowlist.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
       );
-      const response = groupAllowlist.map((uuid, index) => ({
-        uuid,
-        name: names[index]?.name,
-        hasEpigraphy: epigraphyStatus[index],
-      }));
+      const response: DenylistAllowlistItem[] = groupAllowlist.map(
+        (uuid, index) => ({
+          uuid,
+          name: names[index]?.name,
+          hasEpigraphy: epigraphyStatus[index],
+        })
+      );
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
