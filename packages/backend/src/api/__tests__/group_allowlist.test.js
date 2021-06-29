@@ -3,7 +3,7 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-describe('GET /group_allowlist/:groupId:type', () => {
+describe('GET /group_allowlist/:groupId/:type', () => {
   const groupId = 1;
   const type = 'text';
   const PATH = `${API_PATH}/group_allowlist/${groupId}/${type}`;
