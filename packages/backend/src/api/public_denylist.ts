@@ -73,7 +73,7 @@ router
       if (!(await canInsert(uuids))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts is already denylisted'
+            'One or more of the selected texts or collections is already denylisted'
           )
         );
         return;
@@ -97,7 +97,7 @@ router
       if (!(await canRemove(uuid))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts does not exist in the denylist'
+            'One or more of the selected texts or collections does not exist in the denylist'
           )
         );
         return;
@@ -105,7 +105,7 @@ router
 
       await PublicDenylistDao.removeItemFromDenylist(uuid);
       clearCache();
-      res.end();
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
@@ -117,7 +117,10 @@ router
     try {
       const PublicDenylistDao = sl.get('PublicDenylistDao');
       const denylistCollections = await PublicDenylistDao.getDenylistCollectionUuids();
-      res.json(denylistCollections);
+      const response = denylistCollections.map(collectionUuid => ({
+        uuid: collectionUuid,
+      }));
+      res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
     }

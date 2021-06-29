@@ -176,10 +176,10 @@ describe('DELETE /public_denylist', () => {
   const sendRequest = () =>
     request(app).delete(PATH).set('Authorization', 'token');
 
-  it('returns 200 on successful deletion', async () => {
+  it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
     expect(mockPublicDenylistDao.removeItemFromDenylist).toHaveBeenCalled();
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(204);
   });
 
   it('does not allow non-admins to delete from denylist', async () => {
