@@ -14,7 +14,7 @@ import textDrafts from './api/text_drafts';
 import collections from './api/collections';
 import collectionInfo from './api/collection_info';
 import permissions from './api/permissions';
-import publicBlacklist from './api/public_blacklist';
+import publicDenylist from './api/public_denylist';
 import searchNames from './api/search_names';
 import comments from './api/comments';
 import errors from './api/errors';
@@ -45,7 +45,7 @@ export default (app: Express) => {
     collections,
     collectionInfo,
     permissions,
-    publicBlacklist,
+    publicDenylist,
     searchNames,
     comments,
     errors,

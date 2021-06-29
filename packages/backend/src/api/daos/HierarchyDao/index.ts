@@ -44,11 +44,11 @@ class HierarchyDao {
       }
       return query
         .leftJoin(
-          'public_blacklist',
-          'public_blacklist.uuid',
+          'public_denylist',
+          'public_denylist.uuid',
           'hierarchy.object_uuid'
         )
-        .whereNull('public_blacklist.uuid');
+        .whereNull('public_denylist.uuid');
     }
 
     const searchResponse: Array<{ uuid: string }> = await createBaseQuery()

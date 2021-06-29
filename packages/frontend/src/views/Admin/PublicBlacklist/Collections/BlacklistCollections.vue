@@ -1,8 +1,8 @@
 <template>
   <text-collection-list
     itemType="Collection"
-    :getItems="server.getBlacklistCollections"
-    :removeItems="server.removeTextsFromPublicBlacklist"
+    :getItems="server.getDenylistCollections"
+    :removeItems="server.removeTextsFromPublicDenylist"
   />
 </template>
 

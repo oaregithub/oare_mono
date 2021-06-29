@@ -11,7 +11,7 @@ import TextMarkupDao from '@/api/daos/TextMarkupDao';
 import TextDao from '@/api/daos/TextDao';
 import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
-import PublicBlacklistDao from '@/api/daos/PublicBlacklistDao';
+import PublicDenylistDao from '@/api/daos/PublicDenylistDao';
 import SignReadingDao from '@/api/daos/SignReadingDao';
 import FieldDao from '@/api/daos/FieldDao';
 import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
@@ -48,7 +48,7 @@ export type ServiceTypes = {
   TextDao: typeof TextDao;
   HierarchyDao: typeof HierarchyDao;
   TextEpigraphyDao: typeof TextEpigraphyDao;
-  PublicBlacklistDao: typeof PublicBlacklistDao;
+  PublicDenylistDao: typeof PublicDenylistDao;
   SignReadingDao: typeof SignReadingDao;
   UserGroupDao: typeof UserGroupDao;
   PermissionsDao: typeof PermissionsDao;

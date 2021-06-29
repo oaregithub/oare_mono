@@ -18,7 +18,7 @@ import permissions from './permissions';
 import login from './login';
 import register from './register';
 import logout from './logout';
-import publicBlacklist from './public_blacklist';
+import publicDenylist from './public_denylist';
 import searchNames from './search_names';
 import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
@@ -45,7 +45,7 @@ const serverProxy = {
   ...login,
   ...register,
   ...logout,
-  ...publicBlacklist,
+  ...publicDenylist,
   ...searchNames,
   ...collectionGroups,
   ...resetPassword,

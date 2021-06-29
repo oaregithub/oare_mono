@@ -1,9 +1,9 @@
 import knex from '@/connection';
 import sl from '@/serviceLocator';
 
-class PublicBlacklistDao {
+class PublicDenylistDao {
   async getDenylistTextUuids(): Promise<string[]> {
-    const rows: Array<{ uuid: string }> = await knex('public_blacklist')
+    const rows: Array<{ uuid: string }> = await knex('public_denylist')
       .select('uuid')
       .where('type', 'text');
 
@@ -11,7 +11,7 @@ class PublicBlacklistDao {
   }
 
   async getDenylistCollectionUuids(): Promise<string[]> {
-    const rows: Array<{ uuid: string }> = await knex('public_blacklist')
+    const rows: Array<{ uuid: string }> = await knex('public_denylist')
       .select('uuid')
       .where('type', 'collection');
 
@@ -26,19 +26,19 @@ class PublicBlacklistDao {
       uuid,
       type,
     }));
-    await knex('public_blacklist').insert(insertRows);
+    await knex('public_denylist').insert(insertRows);
   }
 
   async removeItemFromDenylist(uuid: string): Promise<void> {
-    await knex('public_blacklist').where({ uuid }).del();
+    await knex('public_denylist').where({ uuid }).del();
   }
 
   async textIsPubliclyViewable(textUuid: string): Promise<boolean> {
     const CollectionDao = sl.get('CollectionDao');
-    const PBDao = sl.get('PublicBlacklistDao');
+    const PDDao = sl.get('PublicDenylistDao');
 
-    const textDenylist = await PBDao.getDenylistTextUuids();
-    const collectionDenylist = await PBDao.getDenylistCollectionUuids();
+    const textDenylist = await PDDao.getDenylistTextUuids();
+    const collectionDenylist = await PDDao.getDenylistCollectionUuids();
 
     const collectionUuidOfText = await CollectionDao.getTextCollectionUuid(
       textUuid
@@ -66,4 +66,4 @@ class PublicBlacklistDao {
   }
 }
 
-export default new PublicBlacklistDao();
+export default new PublicDenylistDao();
