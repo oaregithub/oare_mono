@@ -6,14 +6,13 @@ import {
   SearchNullDiscourseLine,
 } from '@oare/types';
 import knex from '@/connection';
+import sl from '@/serviceLocator';
 import {
   getSearchQuery,
   convertEpigraphicUnitRows,
   getSequentialCharacterQuery,
   getNotOccurrenceTexts,
 } from './utils';
-import TextGroupDao from '../TextGroupDao';
-import CollectionGroupDao from '../CollectionGroupDao';
 import TextMarkupDao from '../TextMarkupDao';
 
 export interface EpigraphicQueryRow
@@ -102,20 +101,14 @@ class TextEpigraphyDao {
     pagination,
     userUuid,
   }: SearchTextArgs): Promise<string[]> {
-    const {
-      blacklist: textBlacklist,
-      whitelist: textWhitelist,
-    } = await TextGroupDao.getUserBlacklist(userUuid);
-    const {
-      blacklist: collectionBlacklist,
-    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
     const notUuids = await getNotOccurrenceTexts(characters);
 
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
-      textBlacklist,
-      textWhitelist,
-      collectionBlacklist,
+      textsToHide,
       true,
       title
     )
@@ -199,24 +192,13 @@ class TextEpigraphyDao {
     SearchTextArgs,
     'characters' | 'title' | 'userUuid'
   >): Promise<number> {
-    const {
-      blacklist: textBlacklist,
-      whitelist: textWhitelist,
-    } = await TextGroupDao.getUserBlacklist(userUuid);
-    const {
-      blacklist: collectionBlacklist,
-    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
     const notUuids = await getNotOccurrenceTexts(characters);
 
     const totalRows: number = (
-      await getSearchQuery(
-        characters,
-        textBlacklist,
-        textWhitelist,
-        collectionBlacklist,
-        true,
-        title
-      )
+      await getSearchQuery(characters, textsToHide, true, title)
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
@@ -230,19 +212,13 @@ class TextEpigraphyDao {
     userUuid: string | null,
     includeSuperfluous: boolean
   ): Promise<number> {
-    const {
-      blacklist: textBlacklist,
-      whitelist: textWhitelist,
-    } = await TextGroupDao.getUserBlacklist(userUuid);
-    const {
-      blacklist: collectionBlacklist,
-    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const count = await getSearchQuery(
       characterUuids,
-      textBlacklist,
-      textWhitelist,
-      collectionBlacklist,
+      textsToHide,
       includeSuperfluous
     )
       .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
@@ -267,13 +243,9 @@ class TextEpigraphyDao {
     userUuid: string | null,
     includeSuperfluous: boolean
   ): Promise<SearchNullDiscourseLine[]> {
-    const {
-      blacklist: textBlacklist,
-      whitelist: textWhitelist,
-    } = await TextGroupDao.getUserBlacklist(userUuid);
-    const {
-      blacklist: collectionBlacklist,
-    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const epigraphyUuidColumns: string[] = ['text_epigraphy.uuid'];
     characterUuids[0].uuids.forEach((_char, idx) => {
@@ -284,9 +256,7 @@ class TextEpigraphyDao {
 
     const occurrences: any[] = await getSearchQuery(
       characterUuids,
-      textBlacklist,
-      textWhitelist,
-      collectionBlacklist,
+      textsToHide,
       includeSuperfluous
     )
       .distinct(epigraphyUuidColumns)

@@ -1,4 +1,4 @@
-import { AddPublicBlacklistPayload } from '@oare/types';
+import { DenylistAllowlistPayload } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getPublicBlacklist() {
@@ -12,9 +12,9 @@ async function getBlacklistCollections() {
 }
 
 async function addTextsToPublicBlacklist(
-  items: AddPublicBlacklistPayload
+  payload: DenylistAllowlistPayload
 ): Promise<number[]> {
-  return axios.post('/public_blacklist', items);
+  return axios.post('/public_blacklist', payload);
 }
 
 async function removeTextsFromPublicBlacklist(uuids: string[]) {

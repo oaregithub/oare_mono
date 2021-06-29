@@ -1,26 +1,19 @@
 import express from 'express';
-import {
-  AddPublicBlacklistPayload,
-  PublicBlacklistPayloadItem,
-} from '@oare/types';
+import { DenylistAllowlistPayload } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
-async function canInsert(texts: PublicBlacklistPayloadItem[]) {
+async function canInsert(uuids: string[]) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map(
-    text => text.uuid
+  const denylistTextUuids = await PublicBlacklistDao.getDenylistTextUuids();
+  const denylistCollectionUuids = await PublicBlacklistDao.getDenylistCollectionUuids();
+  const existingDenylist = new Set(
+    denylistTextUuids.concat(denylistCollectionUuids)
   );
-  const blacklistCollections = (
-    await PublicBlacklistDao.getBlacklistedCollections()
-  ).map(collection => collection.uuid);
-  const existingBlacklist = new Set(
-    blacklistTexts.concat(blacklistCollections)
-  );
-  for (let i = 0; i < texts.length; i += 1) {
-    if (existingBlacklist.has(texts[i].uuid)) {
+  for (let i = 0; i < uuids.length; i += 1) {
+    if (existingDenylist.has(uuids[i])) {
       return false;
     }
   }
@@ -29,14 +22,10 @@ async function canInsert(texts: PublicBlacklistPayloadItem[]) {
 
 async function canRemove(uuid: string) {
   const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-  const blacklistTexts = (await PublicBlacklistDao.getBlacklistedTexts()).map(
-    text => text.uuid
-  );
-  const blacklistCollections = (
-    await PublicBlacklistDao.getBlacklistedCollections()
-  ).map(collection => collection.uuid);
-  const existingBlacklist = blacklistTexts.concat(blacklistCollections);
-  if (!existingBlacklist.includes(uuid)) {
+  const denylistTextUuids = await PublicBlacklistDao.getDenylistTextUuids();
+  const denylistCollectionUuids = await PublicBlacklistDao.getDenylistCollectionUuids();
+  const existingDenylist = denylistTextUuids.concat(denylistCollectionUuids);
+  if (!existingDenylist.includes(uuid)) {
     return false;
   }
   return true;
@@ -63,12 +52,12 @@ router
     try {
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const publicBlacklist = await PublicBlacklistDao.getBlacklistedTexts();
+      const publicBlacklist = await PublicBlacklistDao.getDenylistTextUuids();
       const epigraphyStatus = await Promise.all(
-        publicBlacklist.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid))
+        publicBlacklist.map(text => TextEpigraphyDao.hasEpigraphy(text))
       );
-      const response = publicBlacklist.map((text, index) => ({
-        ...text,
+      const response = publicBlacklist.map((uuid, index) => ({
+        uuid,
         hasEpigraphy: epigraphyStatus[index],
       }));
       res.json(response);
@@ -78,39 +67,21 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-      const { items }: AddPublicBlacklistPayload = req.body;
+      const { uuids, type }: DenylistAllowlistPayload = req.body;
 
-      if (!(await canInsert(items))) {
+      if (!(await canInsert(uuids))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts is already blacklisted'
+            'One or more of the selected texts is already denylisted'
           )
         );
         return;
       }
 
-      const insertRows = items.map(item => ({
-        uuid: item.uuid,
-        type: item.type,
-      }));
-
-      const insertIds = await PublicBlacklistDao.addPublicTexts(
-        insertRows,
-        async trx => {
-          await Promise.all(
-            items.map(item =>
-              LoggingEditsDao.logEdit(
-                'INSERT',
-                req.user!.uuid,
-                'public_blacklist',
-                item.uuid,
-                trx
-              )
-            )
-          );
-        }
+      const insertIds = await PublicBlacklistDao.addItemsToDenylist(
+        uuids,
+        type
       );
       clearCache();
       res.status(201).json(insertIds);
@@ -123,7 +94,6 @@ router
   .route('/public_blacklist/:uuid')
   .delete(adminRoute, async (req, res, next) => {
     try {
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
       const { uuid } = req.params;
 
@@ -136,15 +106,7 @@ router
         return;
       }
 
-      await PublicBlacklistDao.removePublicTexts(uuid, async trx => {
-        await LoggingEditsDao.logEdit(
-          'DELETE',
-          req.user!.uuid,
-          'public_blacklist',
-          uuid,
-          trx
-        );
-      });
+      await PublicBlacklistDao.removeItemFromDenylist(uuid);
       clearCache();
       res.end();
     } catch (err) {
@@ -157,8 +119,8 @@ router
   .get(adminRoute, async (_req, res, next) => {
     try {
       const PublicBlacklistDao = sl.get('PublicBlacklistDao');
-      const publicBlacklist = await PublicBlacklistDao.getBlacklistedCollections();
-      res.json(publicBlacklist);
+      const denylistCollections = await PublicBlacklistDao.getDenylistCollectionUuids();
+      res.json(denylistCollections);
     } catch (err) {
       next(new HttpInternalError(err));
     }

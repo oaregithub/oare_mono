@@ -2,10 +2,10 @@ import sl from '@/serviceLocator';
 import PublicBlacklistDao from '../PublicBlacklistDao';
 
 describe('PublicBlacklistDao', () => {
-  describe('isTextPubliclyViewable', () => {
-    const PBDao = {
-      getBlacklistedTextUuids: jest.fn().mockResolvedValue([]),
-      getBlacklistedCollectionUuids: jest.fn().mockResolvedValue([]),
+  describe('textIsPubliclyViewable', () => {
+    const PublicDenylistDao = {
+      getDenylistTextUuids: jest.fn().mockResolvedValue([]),
+      getDenylistCollectionUuids: jest.fn().mockResolvedValue([]),
     };
 
     const collectionUuid = 'coll-uuid';
@@ -14,29 +14,29 @@ describe('PublicBlacklistDao', () => {
     };
 
     beforeEach(() => {
-      sl.set('PublicBlacklistDao', PBDao);
+      sl.set('PublicBlacklistDao', PublicDenylistDao);
       sl.set('CollectionDao', CollectionDao);
     });
 
     const textUuid = 'text-uuid';
 
     const isViewable = () =>
-      PublicBlacklistDao.isTextPubliclyViewable(textUuid);
+      PublicBlacklistDao.textIsPubliclyViewable(textUuid);
 
-    it('returns false if the blacklisted text uuid list contains the text', async () => {
+    it('returns false if the denylisted text uuid list contains the text', async () => {
       sl.set('PublicBlacklistDao', {
-        ...PBDao,
-        getBlacklistedTextUuids: jest.fn().mockResolvedValue([textUuid]),
+        ...PublicDenylistDao,
+        getDenylistTextUuids: jest.fn().mockResolvedValue([textUuid]),
       });
 
       const canView = await isViewable();
       expect(canView).toBe(false);
     });
 
-    it('returns false if blacklisted collection list contains text collection', async () => {
+    it('returns false if denylisted collection list contains text collection', async () => {
       sl.set('PublicBlacklistDao', {
-        ...PBDao,
-        getBlacklistedCollectionUuids: jest
+        ...PublicDenylistDao,
+        getDenylistCollectionUuids: jest
           .fn()
           .mockResolvedValue([collectionUuid]),
       });
@@ -45,7 +45,7 @@ describe('PublicBlacklistDao', () => {
       expect(canView).toBe(false);
     });
 
-    it('returns true if text is not blacklisted', async () => {
+    it('returns true if text is not denylisted', async () => {
       const canView = await isViewable();
       expect(canView).toBe(true);
     });
