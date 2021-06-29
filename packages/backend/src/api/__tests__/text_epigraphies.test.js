@@ -149,7 +149,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(response.status).toBe(400);
   });
 
-  it('does not allow blacklisted texts to be seen', async () => {
+  it('does not allow denylisted texts to be seen', async () => {
     sl.set('CollectionTextUtils', {
       ...mockCollectionTextUtils,
       canViewText: jest.fn().mockResolvedValue(false),
