@@ -15,6 +15,9 @@ export default {
                     uuid: {
                       type: 'string',
                     },
+                    name: {
+                      type: 'string',
+                    },
                     hasEpigraphy: {
                       type: 'boolean',
                     },
@@ -103,6 +106,9 @@ export default {
                   type: 'object',
                   properties: {
                     uuid: {
+                      type: 'string',
+                    },
+                    name: {
                       type: 'string',
                     },
                   },

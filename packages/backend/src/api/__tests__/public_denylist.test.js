@@ -6,10 +6,12 @@ import sl from '@/serviceLocator';
 const mockGET = [
   {
     uuid: 'uuid1',
+    name: 'test-name',
     hasEpigraphy: true,
   },
   {
     uuid: 'uuid2',
+    name: 'test-name',
     hasEpigraphy: true,
   },
 ];
@@ -26,10 +28,16 @@ describe('GET /public_denylist', () => {
   const mockTextEpigraphyDao = {
     hasEpigraphy: jest.fn().mockResolvedValue(true),
   };
+  const mockTextDao = {
+    getTextByUuid: jest.fn().mockResolvedValue({
+      name: 'test-name',
+    }),
+  };
 
   const setup = () => {
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
+    sl.set('TextDao', mockTextDao);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
