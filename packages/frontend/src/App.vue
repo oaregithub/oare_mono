@@ -44,7 +44,7 @@ export default defineComponent({
         routeName &&
         (routeName.includes('admin') ||
           routeName.includes('manage') ||
-          routeName.includes('blacklist'))
+          routeName.includes('denylist'))
       ) {
         return 'OareAdminSidebar';
       }

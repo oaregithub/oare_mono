@@ -12,6 +12,7 @@ export interface SearchNamesPayload {
   filter: string;
   groupId?: string;
   type: PermissionsListType;
+  showExcluded: boolean;
 }
 
 export interface SearchNamesResponse {

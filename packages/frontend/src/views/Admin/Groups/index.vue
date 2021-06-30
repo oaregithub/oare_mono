@@ -43,8 +43,8 @@
 
     <v-tabs class="my-3" v-model="tab">
       <v-tab to="members">Members</v-tab>
-      <v-tab to="texts">Texts</v-tab>
-      <v-tab to="collections">Collections</v-tab>
+      <v-tab to="allowlist">Allowlist</v-tab>
+      <v-tab to="edit">Edit</v-tab>
       <v-tab to="permissions">Permissions</v-tab>
     </v-tabs>
     <keep-alive>

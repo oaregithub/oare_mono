@@ -11,13 +11,13 @@ async function getDenylistCollections() {
   return data;
 }
 
-async function addTextsToPublicDenylist(
+async function addItemsToPublicDenylist(
   payload: DenylistAllowlistPayload
 ): Promise<number[]> {
   return axios.post('/public_denylist', payload);
 }
 
-async function removeTextsFromPublicDenylist(uuids: string[]) {
+async function removeItemsFromPublicDenylist(uuids: string[]) {
   await Promise.all(
     uuids.map(uuid => axios.delete(`/public_denylist/${uuid}`))
   );
@@ -26,6 +26,6 @@ async function removeTextsFromPublicDenylist(uuids: string[]) {
 export default {
   getPublicDenylist,
   getDenylistCollections,
-  addTextsToPublicDenylist,
-  removeTextsFromPublicDenylist,
+  addItemsToPublicDenylist,
+  removeItemsFromPublicDenylist,
 };

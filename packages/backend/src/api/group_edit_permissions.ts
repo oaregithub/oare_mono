@@ -32,6 +32,7 @@ router
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
       const TextDao = sl.get('TextDao');
       const CollectionDao = sl.get('CollectionDao');
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
       const {
         groupId,
@@ -49,10 +50,14 @@ router
             : CollectionDao.getCollectionByUuid(uuid)
         )
       );
+      const epigraphyStatus = await Promise.all(
+        groupEditPermissions.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
+      );
       const response: DenylistAllowlistItem[] = groupEditPermissions.map(
         (uuid, index) => ({
           uuid,
           name: names[index]?.name,
+          hasEpigraphy: epigraphyStatus[index],
         })
       );
       res.json(response);

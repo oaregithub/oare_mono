@@ -16,6 +16,7 @@ class HierarchyDao {
     filter,
     type,
     groupId,
+    showExcluded,
   }: SearchNamesPayload): Promise<SearchNamesResponse> {
     const CollectionDao = sl.get('CollectionDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
@@ -26,21 +27,24 @@ class HierarchyDao {
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
         .where('hierarchy.type', type.toLowerCase())
         .andWhere('alias.name', 'like', `%${filter}%`);
+      if (groupId && showExcluded) {
+        return query.whereNotIn(
+          'hierarchy.object_uuid',
+          knex('group_edit_permissions')
+            .select('uuid')
+            .where('group_id', groupId)
+        );
+      }
       if (groupId) {
-        if (type === 'Text') {
-          return query.whereNotIn(
+        return query
+          .whereIn(
             'hierarchy.object_uuid',
-            knex('text_group').select('text_uuid').where('group_id', groupId)
-          );
-        }
-        if (type === 'Collection') {
-          return query.whereNotIn(
+            knex('public_denylist').select('uuid').where({ type })
+          )
+          .whereNotIn(
             'hierarchy.object_uuid',
-            knex('collection_group')
-              .select('collection_uuid')
-              .where('group_id', groupId)
+            knex('group_allowlist').select('uuid').where('group_id', groupId)
           );
-        }
       }
       return query
         .leftJoin(
