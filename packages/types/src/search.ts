@@ -1,5 +1,3 @@
-import { Pagination } from './dictionary';
-
 export interface SearchTextsResultRow {
   uuid: string;
   name: string;
@@ -24,7 +22,7 @@ export interface SearchTextsResponse {
 }
 
 export interface SearchCooccurrence {
-  uuids: string[][];
+  uuids: string[];
   type: 'AND' | 'NOT';
 }
 

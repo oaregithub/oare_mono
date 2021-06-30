@@ -17,6 +17,28 @@ export async function prepareIndividualSearchCharacters(
   return characterUuids;
 }
 
+function twoArrayCombos(list1: string[], list2: string[]): string[] {
+  const combinations: string[] = [];
+  for (let i = 0; i < list1.length; i += 1) {
+    for (let j = 0; j < list2.length; j += 1) {
+      combinations.push(`${list1[i]} ${list2[j]}`);
+    }
+  }
+  return combinations;
+}
+
+function uuidCombinations(uuidLists: string[][]): string[] {
+  if (uuidLists.length === 0) {
+    return [];
+  }
+
+  if (uuidLists.length === 1) {
+    return uuidLists[0];
+  }
+
+  return twoArrayCombos(uuidLists[0], uuidCombinations(uuidLists.slice(1)));
+}
+
 export async function prepareCharactersForSearch(
   charsPayload?: string
 ): Promise<SearchCooccurrence[]> {
@@ -35,7 +57,7 @@ export async function prepareCharactersForSearch(
 
   const characterUuids: SearchCooccurrence[] = preppedCharUuids.map(
     (uuids, index) => ({
-      uuids,
+      uuids: uuidCombinations(uuids),
       type: cooccurrenceTypes[index],
     })
   );

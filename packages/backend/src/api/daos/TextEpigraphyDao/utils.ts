@@ -37,7 +37,7 @@ export function getSequentialCharacterQuery(
             `t${coocIndex}${charIndex}.text_uuid`,
             'text_epigraphy.text_uuid'
           )
-            .andOnIn(`t${coocIndex}${charIndex}.reading_uuid`, char)
+            .andOn(`t${coocIndex}${charIndex}.reading_uuid`, char)
             .andOn(
               knex.raw(
                 `t${coocIndex}${charIndex}.char_on_tablet=${
@@ -58,7 +58,7 @@ export function getSequentialCharacterQuery(
     if (coocIndex < 1 && cooccurrences[0].uuids.length > 0) {
       query = query.whereIn(
         'text_epigraphy.reading_uuid',
-        cooccurrences[0].uuids[0]
+        cooccurrences[0].uuids
       );
     }
   });

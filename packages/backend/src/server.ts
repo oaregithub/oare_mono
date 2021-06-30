@@ -33,6 +33,7 @@ import CollectionTextUtils from './api/daos/CollectionTextUtils';
 import CacheStatusDao from './api/daos/CacheStatusDao';
 import PersonDao from './api/daos/PersonDao';
 import PersonTextOccurrencesDao from './api/daos/PersonTextOccurrences';
+import SearchIndexDao from './api/daos/SearchIndexDao';
 
 declare global {
   namespace Express {
@@ -71,6 +72,7 @@ sl.set('CacheStatusDao', CacheStatusDao);
 sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('PersonDao', PersonDao);
 sl.set('PersonTextOccurrencesDao', PersonTextOccurrencesDao);
+sl.set('SearchIndexDao', SearchIndexDao);
 sl.set('utils', utils);
 
 initializeFirebase(err => {

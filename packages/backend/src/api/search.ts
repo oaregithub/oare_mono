@@ -8,12 +8,14 @@ import {
   SearchDiscourseSpellingResponse,
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
+  SearchTextsResultRow,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
 import { parsedQuery, extractPagination } from '@/utils';
+import { TextUuidWithLines } from '@/api/daos/TextEpigraphyDao';
 
 const router = express.Router();
 
@@ -79,20 +81,30 @@ router.route('/search/spellings').get(async (req, res, next) => {
 router.route('/search/count').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const SearchIndexDao = sl.get('SearchIndexDao');
 
     const {
       textTitle: title,
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
-    const characterUuids = await prepareCharactersForSearch(charsPayload);
+    const characterOccurrences = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
 
-    const totalRows = await TextEpigraphyDao.searchTextsTotal({
-      characters: characterUuids,
-      title,
-      userUuid: user ? user.uuid : null,
-    });
+    let totalRows: number;
+    if (
+      characterOccurrences.map(({ type }) => type).every(type => type === 'AND')
+    ) {
+      totalRows = await SearchIndexDao.getMatchingTextCount(
+        characterOccurrences
+      );
+    } else {
+      totalRows = await TextEpigraphyDao.searchTextsTotal({
+        characters: characterOccurrences,
+        title,
+        userUuid: user ? user.uuid : null,
+      });
+    }
 
     res.json(totalRows);
   } catch (err) {
@@ -104,6 +116,7 @@ router.route('/search').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDao = sl.get('TextDao');
+    const SearchIndexDao = sl.get('SearchIndexDao');
 
     const {
       page,
@@ -112,11 +125,40 @@ router.route('/search').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
 
-    const characterUuids = await prepareCharactersForSearch(charsPayload);
-    const user = req.user || null;
+    const characterOccurrences = await prepareCharactersForSearch(charsPayload);
+    const { user } = req;
 
+    // Just a regular character search
+    if (
+      characterOccurrences.map(({ type }) => type).every(type => type === 'AND')
+    ) {
+      const textUuids = await SearchIndexDao.getMatchingTextUuids(
+        characterOccurrences,
+        { limit: rows, page }
+      );
+
+      const searchRows: SearchTextsResultRow[] = await Promise.all(
+        textUuids.map(async ({ textUuid, textName }) => {
+          const matches = await SearchIndexDao.getMatchingTextLines(
+            characterOccurrences,
+            textUuid
+          );
+          return {
+            uuid: textUuid,
+            name: textName,
+            matches,
+            discourseUuids: [],
+          };
+        })
+      );
+
+      res.json({
+        results: searchRows,
+      });
+      return;
+    }
     const textMatches = await TextEpigraphyDao.searchTexts({
-      characters: characterUuids,
+      characters: characterOccurrences,
       pagination: { limit: rows, page },
       title,
       userUuid: user ? user.uuid : null,
