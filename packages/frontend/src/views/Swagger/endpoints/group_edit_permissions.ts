@@ -41,6 +41,9 @@ export default {
                     name: {
                       type: 'string',
                     },
+                    hasEpigraphy: {
+                      type: 'boolean',
+                    },
                   },
                 },
               },

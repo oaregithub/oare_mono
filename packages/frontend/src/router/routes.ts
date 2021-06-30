@@ -3,17 +3,13 @@ import adminGuard from '@/navigationGuards/adminGuard';
 import authenticatedGuard from '@/navigationGuards/authenticatedGuard';
 import permissionGuard from '@/navigationGuards/permissionGuard';
 import ManageMembers from '@/views/Admin/Groups/Users/ManageMembers.vue';
-import ManageTexts from '@/views/Admin/Groups/Texts/ManageTexts.vue';
-import ManageCollections from '@/views/Admin/Groups/Collections/ManageCollections.vue';
 import DictionarySearch from '@/views/Search/DictionarySearch/DictionarySearch.vue';
 import TextsSearch from '@/views/Search/TextsSearch/TextsSearch.vue';
 import AddGroupUsers from '@/views/Admin/Groups/Users/AddGroupUsers.vue';
-import BlacklistTexts from '@/views/Admin/PublicBlacklist/Texts/BlacklistTexts.vue';
-import BlacklistCollections from '@/views/Admin/PublicBlacklist/Collections/BlacklistCollections.vue';
-import AddBlacklistTexts from '@/views/Admin/PublicBlacklist/Texts/AddBlacklistTexts.vue';
-import AddGroupTexts from '@/views/Admin/Groups/Texts/AddGroupTexts.vue';
-import AddBlacklistCollections from '@/views/Admin/PublicBlacklist/Collections/AddBlacklistCollections.vue';
-import AddGroupCollections from '@/views/Admin/Groups/Collections/AddGroupCollections.vue';
+import DenylistTexts from '@/views/Admin/PublicDenylist/Texts/DenylistTexts.vue';
+import DenylistCollections from '@/views/Admin/PublicDenylist/Collections/DenylistCollections.vue';
+import AddDenylistTexts from '@/views/Admin/PublicDenylist/Texts/AddDenylistTexts.vue';
+import AddDenylistCollections from '@/views/Admin/PublicDenylist/Collections/AddDenylistCollections.vue';
 import SendResetPasswordEmailView from '@/views/Authentication/ResetPassword/SendResetPasswordEmailView.vue';
 import ResetPasswordView from '@/views/Authentication/ResetPassword/ResetPasswordView.vue';
 import ManagePermissions from '@/views/Admin/Groups/Permissions/ManagePermissions.vue';
@@ -24,7 +20,7 @@ import KnownIssues from '../views/Home/KnownIssues.vue';
 import LoginView from '../views/Authentication/Login/LoginView.vue';
 import RegisterView from '../views/Authentication/Register/RegisterView.vue';
 import AdminGroupView from '../views/Admin/Groups/AdminGroupView.vue';
-import AdminTextView from '../views/Admin/PublicBlacklist/AdminTextView.vue';
+import AdminTextView from '../views/Admin/PublicDenylist/AdminTextView.vue';
 import AdminDraftsView from '../views/Admin/Drafts/AdminDraftsView.vue';
 import GroupView from '../views/Admin/Groups/index.vue';
 import CollectionTexts from '../views/Texts/CollectionTexts/index.vue';
@@ -45,6 +41,12 @@ import AdminSettings from '../views/Admin/Settings/AdminSettings.vue';
 import PersonsView from '../views/Persons/index.vue';
 import SwaggerView from '../views/Swagger/index.vue';
 import ParseTree from '../views/Admin/ParseTree/index.vue';
+import ManageAllowlist from '../views/Admin/Groups/Allowlist/ManageAllowlist.vue';
+import AddAllowlistTexts from '../views/Admin/Groups/Allowlist/Texts/AddAllowlistTexts.vue';
+import AddAllowlistCollections from '../views/Admin/Groups/Allowlist/Collections/AddAllowlistCollections.vue';
+import ManageEdits from '../views/Admin/Groups/Edits/ManageEdits.vue';
+import AddEditTexts from '../views/Admin/Groups/Edits/Texts/AddEditTexts.vue';
+import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditCollections.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -68,20 +70,20 @@ const routes: RouteConfig[] = [
     beforeEnter: adminGuard,
   },
   {
-    path: '/admin/blacklist',
-    name: 'adminBlacklist',
+    path: '/admin/denylist',
+    name: 'adminDenylist',
     component: AdminTextView,
     beforeEnter: adminGuard,
     children: [
       {
         path: 'texts',
-        name: 'blacklistTexts',
-        component: BlacklistTexts,
+        name: 'denylistTexts',
+        component: DenylistTexts,
       },
       {
         path: 'collections',
-        name: 'blacklistCollections',
-        component: BlacklistCollections,
+        name: 'denylistCollections',
+        component: DenylistCollections,
       },
     ],
   },
@@ -116,15 +118,15 @@ const routes: RouteConfig[] = [
     beforeEnter: adminGuard,
   },
   {
-    path: '/addblacklist/texts',
-    name: 'blacklistAddTexts',
-    component: AddBlacklistTexts,
+    path: '/admin/add_denylist/texts',
+    name: 'denylistAddTexts',
+    component: AddDenylistTexts,
     beforeEnter: adminGuard,
   },
   {
-    path: '/addblacklist/collections',
-    name: 'blacklistAddCollections',
-    component: AddBlacklistCollections,
+    path: '/admin/add_denylist/collections',
+    name: 'denylistAddCollections',
+    component: AddDenylistCollections,
     beforeEnter: adminGuard,
   },
   {
@@ -172,16 +174,16 @@ const routes: RouteConfig[] = [
         component: ManageMembers,
       },
       {
-        path: 'texts',
-        name: 'manageTexts',
+        path: 'allowlist',
+        name: 'manageAllowlist',
         props: true,
-        component: ManageTexts,
+        component: ManageAllowlist,
       },
       {
-        path: 'collections',
-        name: 'manageCollections',
+        path: 'edit',
+        name: 'manageEdits',
         props: true,
-        component: ManageCollections,
+        component: ManageEdits,
       },
       {
         path: 'permissions',
@@ -192,16 +194,30 @@ const routes: RouteConfig[] = [
     ],
   },
   {
-    path: '/addgrouptexts/:groupId',
-    name: 'manageGroupTexts',
-    component: AddGroupTexts,
+    path: '/admin/add_allowlist/texts/:groupId',
+    name: 'manageAllowlistTexts',
+    component: AddAllowlistTexts,
     props: true,
     beforeEnter: adminGuard,
   },
   {
-    path: '/addgroupcollections/:groupId',
-    name: 'manageGroupCollections',
-    component: AddGroupCollections,
+    path: '/admin/add_allowlist/collections/:groupId',
+    name: 'manageAllowlistCollections',
+    component: AddAllowlistCollections,
+    props: true,
+    beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/add_edit/texts/:groupId',
+    name: 'manageEditTexts',
+    component: AddEditTexts,
+    props: true,
+    beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/add_edit/collections/:groupId',
+    name: 'manageEditCollections',
+    component: AddEditCollections,
     props: true,
     beforeEnter: adminGuard,
   },

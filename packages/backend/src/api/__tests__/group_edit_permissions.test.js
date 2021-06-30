@@ -16,6 +16,9 @@ describe('GET /group_edit_permissions/:groupId/:type', () => {
       name: 'test-name',
     }),
   };
+  const mockTextEpigraphyDao = {
+    hasEpigraphy: jest.fn().mockResolvedValue(true),
+  };
   const mockCache = {
     clear: jest.fn(),
   };
@@ -23,6 +26,7 @@ describe('GET /group_edit_permissions/:groupId/:type', () => {
   const setup = () => {
     sl.set('GroupEditPermissionsDao', mockGroupEditPermissionsDao);
     sl.set('TextDao', mockTextDao);
+    sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({

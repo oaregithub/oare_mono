@@ -1,6 +1,8 @@
 <template>
   <OareContentView
-    :title="`Add ${itemType}s to ${groupName}`"
+    :title="`Add ${itemType}s to ${groupName} ${
+      addingEditPermissions ? 'Edit Permissions' : 'Allowlist'
+    }`"
     :loading="loading"
   >
     <template #header>
@@ -36,16 +38,7 @@
           </template>
           Are you sure you want to add the following
           {{ itemType.toLowerCase() }}(s) to {{ groupName }}?
-          <v-data-table :headers="selectedItemsHeaders" :items="selectedItems">
-            <template v-if="groupId" #[`item.canRead`]="{ item }">
-              <v-checkbox
-                :input-value="item.canRead"
-                @change="updateItemToAddRead(item.uuid, $event)"
-              />
-            </template>
-            <template v-if="groupId" #[`item.canWrite`]="{ item }">
-              <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
-            </template>
+          <v-data-table :headers="itemsHeaders" :items="selectedItems">
           </v-data-table>
         </OareDialog>
         <v-spacer />
@@ -66,7 +59,7 @@
         <v-col cols="4">
           <h3>Selected {{ itemType }}s</h3>
           <v-data-table
-            :headers="selectedItemsHeaders"
+            :headers="itemsHeaders"
             :items="selectedItems"
             item-key="uuid"
             class="mt-3"
@@ -84,15 +77,6 @@
                 >{{ item.name }}</a
               >
               <span v-else>{{ item.name }}</span>
-            </template>
-            <template v-if="groupId" #[`item.canRead`]="{ item }">
-              <v-checkbox
-                :input-value="item.canRead"
-                @change="updateItemToAddRead(item.uuid, $event)"
-              />
-            </template>
-            <template v-if="groupId" #[`item.canWrite`]="{ item }">
-              <v-checkbox v-model="item.canWrite" :disabled="!item.canRead" />
             </template>
             <template slot="no-data">
               No {{ itemType.toLowerCase() }}s selected
@@ -155,11 +139,10 @@ import {
 import sl from '@/serviceLocator';
 import TextAndCollectionsDialog from './TextAndCollectionsDialog.vue';
 import {
-  Text,
   PermissionsListType,
-  CollectionPermissionsItem,
-  AddTextCollectionPayload,
   Pagination,
+  DenylistAllowlistItem,
+  DenylistAllowlistPayload,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
@@ -182,24 +165,21 @@ export default defineComponent({
     },
     addItems: {
       type: Function as PropType<
-        (payload: AddTextCollectionPayload, groupId?: Number) => void
+        (payload: DenylistAllowlistPayload, groupId?: Number) => void
       >,
       required: true,
     },
+    addingEditPermissions: {
+      type: Boolean,
+      default: false,
+    },
   },
-  setup({ groupId, itemType, addItems }) {
+  setup({ groupId, itemType, addItems, addingEditPermissions }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
     const _ = sl.get('lodash');
 
-    const selectedItemsHeaders: Ref<DataTableHeader[]> = groupId
-      ? ref([
-          { text: 'Name', value: 'name' },
-          { text: 'Can view?', value: 'canRead' },
-          { text: 'Can edit?', value: 'canWrite' },
-        ])
-      : ref([{ text: 'Name', value: 'name' }]);
     const itemsHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Name', value: 'name' },
     ]);
@@ -236,15 +216,19 @@ export default defineComponent({
     });
     const serverCount: Ref<number> = ref(0);
 
-    const selectedItems: Ref<Text[] | CollectionPermissionsItem[]> = ref([]);
-    const unaddedItems: Ref<Text[] | CollectionPermissionsItem[]> = ref([]);
+    const selectedItems: Ref<DenylistAllowlistItem[]> = ref([]);
+    const unaddedItems: Ref<DenylistAllowlistItem[]> = ref([]);
 
     const groupName = ref('');
-    const backLink = computed(() =>
-      groupId
-        ? `/groups/${groupId}/${itemType.toLowerCase()}s`
-        : `/admin/blacklist/${itemType.toLowerCase()}s`
-    );
+
+    const backLink = computed(() => {
+      if (groupId) {
+        return addingEditPermissions
+          ? `/groups/${groupId}/edit?type=${itemType.toLowerCase()}`
+          : `/groups/${groupId}/allowlist?type=${itemType.toLowerCase()}`;
+      }
+      return `/admin/denylist/${itemType.toLowerCase()}s`;
+    });
 
     const getItems = async () => {
       try {
@@ -255,14 +239,9 @@ export default defineComponent({
           filter: search.value,
           groupId,
           type: itemType,
+          showExcluded: addingEditPermissions,
         });
-        unaddedItems.value = response.items.map(item => ({
-          name: item.name,
-          uuid: item.uuid,
-          canRead: true,
-          canWrite: false,
-          hasEpigraphy: item.hasEpigraphy,
-        }));
+        unaddedItems.value = response.items;
         serverCount.value = response.count;
       } catch {
         actions.showErrorSnackbar(
@@ -274,15 +253,14 @@ export default defineComponent({
     };
 
     const addListItems = async () => {
-      const items = selectedItems.value.map(item => ({
-        canRead: item.canRead,
-        canWrite: item.canWrite,
-        uuid: item.uuid,
-        type: itemType.toLowerCase(),
-      }));
+      const uuids = selectedItems.value.map(item => item.uuid);
+      const payload: DenylistAllowlistPayload = {
+        uuids,
+        type: itemType === 'Text' ? 'text' : 'collection',
+      };
       addItemsLoading.value = true;
       try {
-        await addItems({ items }, Number(groupId));
+        await addItems(payload, Number(groupId));
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );
@@ -301,21 +279,12 @@ export default defineComponent({
       }
     };
 
-    const updateItemToAddRead = (uuid: string, canRead: boolean) => {
-      const index = selectedItems.value.map(item => item.uuid).indexOf(uuid);
-      selectedItems.value[index].canRead = canRead;
-
-      if (!canRead) {
-        selectedItems.value[index].canWrite = false;
-      }
-    };
-
     onMounted(async () => {
       try {
         await getItems();
         groupName.value = groupId
           ? (await server.getGroupInfo(Number(groupId))).name
-          : 'Public Blacklist';
+          : 'Public Denylist';
       } catch {
         actions.showErrorSnackbar(
           `Error loading ${itemType.toLowerCase()}s. Please try again.`
@@ -327,7 +296,7 @@ export default defineComponent({
 
     function selectItem(event: {
       value: boolean;
-      item: Text | CollectionPermissionsItem;
+      item: DenylistAllowlistItem;
     }) {
       if (event.value) {
         selectedItems.value.unshift(event.item);
@@ -337,10 +306,7 @@ export default defineComponent({
       }
     }
 
-    function selectAll(event: {
-      value: boolean;
-      item: Text | CollectionPermissionsItem;
-    }) {
+    function selectAll(event: { value: boolean; item: DenylistAllowlistItem }) {
       if (event.value) {
         if (Number(serverCount.value) > Number(rows.value)) {
           selectAllMessage.value = true;
@@ -373,6 +339,7 @@ export default defineComponent({
         filter: search.value,
         groupId,
         type: itemType,
+        showExcluded: addingEditPermissions,
       });
       const selectedItemsUuids = selectedItems.value.map(item => item.uuid);
       const itemsToAdd = response.items
@@ -475,8 +442,6 @@ export default defineComponent({
       getItemsLoading,
       searchOptions,
       serverCount,
-      selectedItemsHeaders,
-      updateItemToAddRead,
       selectItem,
       selectAll,
       unselectAll,
