@@ -7,8 +7,8 @@ describe('CollectionTextUtils test', () => {
       getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
     };
 
-    const PublicBlacklistDao = {
-      isTextPubliclyViewable: jest.fn().mockResolvedValue(false),
+    const PublicDenylistDao = {
+      textIsPubliclyViewable: jest.fn().mockResolvedValue(false),
     };
 
     const collectionUuid = 'coll-uuid';
@@ -17,17 +17,8 @@ describe('CollectionTextUtils test', () => {
       getTextCollectionUuid: jest.fn().mockResolvedValue(collectionUuid),
     };
 
-    const TextGroupDao = {
-      getUserBlacklist: jest.fn().mockResolvedValue({
-        blacklist: [],
-        whitelist: [],
-      }),
-    };
-
-    const CollectionGroupDao = {
-      getUserCollectionBlacklist: jest.fn().mockResolvedValue({
-        blacklist: [],
-      }),
+    const GroupAllowlistDao = {
+      textIsInAllowlist: jest.fn().mockResolvedValue(false),
     };
 
     const textUuid = 'text-uuid';
@@ -37,10 +28,9 @@ describe('CollectionTextUtils test', () => {
 
     beforeEach(() => {
       sl.set('UserDao', UserDao);
-      sl.set('PublicBlacklistDao', PublicBlacklistDao);
+      sl.set('PublicDenylistDao', PublicDenylistDao);
       sl.set('CollectionDao', CollectionDao);
-      sl.set('TextGroupDao', TextGroupDao);
-      sl.set('CollectionGroupDao', CollectionGroupDao);
+      sl.set('GroupAllowlistDao', GroupAllowlistDao);
     });
 
     it('returns public status if user is not logged in', async () => {
@@ -48,16 +38,16 @@ describe('CollectionTextUtils test', () => {
         ...UserDao,
         getUserByUuid: jest.fn().mockResolvedValue(null),
       });
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
-        isTextPubliclyViewable: jest.fn().mockResolvedValue(true),
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
+        textIsPubliclyViewable: jest.fn().mockResolvedValue(true),
       });
 
       let canView = await canViewText();
       expect(canView).toBe(true);
 
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
         isTextPubliclyViewable: jest.fn().mockResolvedValue(false),
       });
 
@@ -66,9 +56,9 @@ describe('CollectionTextUtils test', () => {
     });
 
     it('returns true if text is publicly viewable', async () => {
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
-        isTextPubliclyViewable: jest.fn().mockResolvedValue(true),
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
+        textIsPubliclyViewable: jest.fn().mockResolvedValue(true),
       });
 
       const canView = await canViewText();
@@ -80,46 +70,29 @@ describe('CollectionTextUtils test', () => {
         ...UserDao,
         getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
       });
-      sl.set('PublicBlacklistDao', {
-        ...PublicBlacklistDao,
-        isTextPubliclyViewable: jest.fn().mockResolvedValue(false),
+      sl.set('PublicDenylistDao', {
+        ...PublicDenylistDao,
+        textIsPubliclyViewable: jest.fn().mockResolvedValue(false),
       });
 
       const canView = await canViewText();
       expect(canView).toBe(true);
     });
 
-    it('returns false if the text is blacklisted', async () => {
-      sl.set('TextGroupDao', {
-        ...TextGroupDao,
-        getUserBlacklist: jest.fn().mockResolvedValue({
-          blacklist: [textUuid],
-          whitelist: [],
-        }),
+    it('returns false if the text is not in allowlist', async () => {
+      sl.set('GroupAllowlistDao', {
+        ...GroupAllowlistDao,
+        getGroupAllowlist: jest.fn().mockResolvedValue(),
       });
 
       const canView = await canViewText();
       expect(canView).toBe(false);
     });
 
-    it('returns false if collection blacklist contains text collection', async () => {
-      sl.set('CollectionGroupDao', {
-        ...CollectionGroupDao,
-        getUserCollectionBlacklist: jest.fn().mockResolvedValue({
-          blacklist: [collectionUuid],
-        }),
-      });
-
-      const canView = await canViewText();
-      expect(canView).toBe(false);
-    });
-
-    it('returns true if text is whitelisted', async () => {
-      sl.set('TextGroupDao', {
-        ...TextGroupDao,
-        getUserBlacklist: jest.fn().mockResolvedValue({
-          whitelist: [textUuid],
-        }),
+    it('returns true if text is in allowlist', async () => {
+      sl.set('GroupAllowlistDao', {
+        ...GroupAllowlistDao,
+        textIsInAllowlist: jest.fn().mockResolvedValue(true),
       });
 
       const canView = await canViewText();
@@ -132,26 +105,28 @@ describe('CollectionTextUtils test', () => {
       getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
     };
 
-    const TextGroupDao = {
-      userHasWritePermission: jest.fn().mockResolvedValue(false),
-    };
-
-    const CollectionGroupDao = {
-      userHasWritePermission: jest.fn().mockResolvedValue(false),
+    const UserGroupDao = {
+      getGroupsOfUser: jest.fn().mockResolvedValue([]),
     };
 
     const CTUtils = {
       canViewText: jest.fn().mockResolvedValue(true),
     };
 
+    const GroupEditPermissionsDao = {
+      getGroupEditPermissions: jest.fn().mockResolvedValue([]),
+    };
+
+    const textUuid = 'text-uuid';
+
     const canEditText = () =>
       CollectionTextUtils.canEditText('text-uuid', 'user-uuid');
 
     beforeEach(() => {
       sl.set('UserDao', UserDao);
-      sl.set('TextGroupDao', TextGroupDao);
-      sl.set('CollectionGroupDao', CollectionGroupDao);
       sl.set('CollectionTextUtils', CTUtils);
+      sl.set('UserGroupDao', UserGroupDao);
+      sl.set('GroupEditPermissionsDao', GroupEditPermissionsDao);
     });
 
     it('returns false if cannot view text', async () => {
@@ -187,21 +162,13 @@ describe('CollectionTextUtils test', () => {
     });
 
     it('returns true if user can edit text', async () => {
-      sl.set('TextGroupDao', {
-        ...TextGroupDao,
-        userHasWritePermission: jest.fn().mockResolvedValue(true),
+      sl.set('UserGroupDao', {
+        getGroupsOfUser: jest.fn().mockResolvedValue([1]),
       });
-
-      const canEdit = await canEditText();
-      expect(canEdit).toBe(true);
-    });
-
-    it("returns true if user can edit text's collection", async () => {
-      sl.set('CollectionGroupDao', {
-        ...CollectionGroupDao,
-        userHasWritePermission: jest.fn().mockResolvedValue(true),
+      sl.set('GroupEditPermissionsDao', {
+        ...GroupEditPermissionsDao,
+        getGroupEditPermissions: jest.fn().mockResolvedValue([textUuid]),
       });
-
       const canEdit = await canEditText();
       expect(canEdit).toBe(true);
     });

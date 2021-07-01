@@ -11,7 +11,6 @@ import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
 import OareGroupDao from '@/api/daos/OareGroupDao';
 import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
-import TextGroupDao from '@/api/daos/TextGroupDao';
 import cache from '@/cache';
 import HierarchyDao from '@/api/daos/HierarchyDao';
 import TextDao from '@/api/daos/TextDao';
@@ -20,9 +19,8 @@ import * as utils from '@/utils';
 import { initializeFirebase } from '@/firebase';
 import app from './app';
 import UserDao from './api/daos/UserDao';
-import PublicBlacklistDao from './api/daos/PublicBlacklistDao';
+import PublicDenylistDao from './api/daos/PublicDenylistDao';
 import SignReadingDao from './api/daos/SignReadingDao';
-import CollectionGroupDao from './api/daos/CollectionGroupDao';
 import PermissionsDao from './api/daos/PermissionsDao';
 import UserGroupDao from './api/daos/UserGroupDao';
 import CommentsDao from './api/daos/CommentsDao';
@@ -34,6 +32,8 @@ import CacheStatusDao from './api/daos/CacheStatusDao';
 import PersonDao from './api/daos/PersonDao';
 import PersonTextOccurrencesDao from './api/daos/PersonTextOccurrences';
 import SearchIndexDao from './api/daos/SearchIndexDao';
+import GroupAllowlistDao from './api/daos/GroupAllowlistDao';
+import GroupEditPermissionsDao from './api/daos/GroupEditPermissionsDao';
 
 declare global {
   namespace Express {
@@ -55,13 +55,11 @@ sl.set('TextDraftsDao', TextDraftsDao);
 sl.set('OareGroupDao', OareGroupDao);
 sl.set('TextEpigraphyDao', TextEpigraphyDao);
 sl.set('HierarchyDao', HierarchyDao);
-sl.set('TextGroupDao', TextGroupDao);
 sl.set('TextDao', TextDao);
 sl.set('TextMarkupDao', TextMarkupDao);
 sl.set('cache', cache);
-sl.set('PublicBlacklistDao', PublicBlacklistDao);
+sl.set('PublicDenylistDao', PublicDenylistDao);
 sl.set('SignReadingDao', SignReadingDao);
-sl.set('CollectionGroupDao', CollectionGroupDao);
 sl.set('PermissionsDao', PermissionsDao);
 sl.set('UserGroupDao', UserGroupDao);
 sl.set('CommentsDao', CommentsDao);
@@ -73,6 +71,8 @@ sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('PersonDao', PersonDao);
 sl.set('PersonTextOccurrencesDao', PersonTextOccurrencesDao);
 sl.set('SearchIndexDao', SearchIndexDao);
+sl.set('GroupAllowlistDao', GroupAllowlistDao);
+sl.set('GroupEditPermissionsDao', GroupEditPermissionsDao);
 sl.set('utils', utils);
 
 initializeFirebase(err => {

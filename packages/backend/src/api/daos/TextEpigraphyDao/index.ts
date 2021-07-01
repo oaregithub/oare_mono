@@ -6,9 +6,8 @@ import {
   SearchNullDiscourseLine,
 } from '@oare/types';
 import knex from '@/connection';
+import sl from '@/serviceLocator';
 import { getSearchQuery, convertEpigraphicUnitRows } from './utils';
-import TextGroupDao from '../TextGroupDao';
-import CollectionGroupDao from '../CollectionGroupDao';
 import TextMarkupDao from '../TextMarkupDao';
 
 export interface EpigraphicQueryRow
@@ -96,19 +95,13 @@ class TextEpigraphyDao {
     userUuid: string | null,
     includeSuperfluous: boolean
   ): Promise<number> {
-    const {
-      blacklist: textBlacklist,
-      whitelist: textWhitelist,
-    } = await TextGroupDao.getUserBlacklist(userUuid);
-    const {
-      blacklist: collectionBlacklist,
-    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const count = await getSearchQuery(
       characterUuids,
-      textBlacklist,
-      textWhitelist,
-      collectionBlacklist,
+      textsToHide,
       includeSuperfluous
     )
       .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
@@ -133,13 +126,9 @@ class TextEpigraphyDao {
     userUuid: string | null,
     includeSuperfluous: boolean
   ): Promise<SearchNullDiscourseLine[]> {
-    const {
-      blacklist: textBlacklist,
-      whitelist: textWhitelist,
-    } = await TextGroupDao.getUserBlacklist(userUuid);
-    const {
-      blacklist: collectionBlacklist,
-    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const epigraphyUuidColumns: string[] = ['text_epigraphy.uuid'];
     characterUuids[0].uuids.forEach((_char, idx) => {
@@ -150,9 +139,7 @@ class TextEpigraphyDao {
 
     const occurrences: any[] = await getSearchQuery(
       characterUuids,
-      textBlacklist,
-      textWhitelist,
-      collectionBlacklist,
+      textsToHide,
       includeSuperfluous
     )
       .distinct(epigraphyUuidColumns)

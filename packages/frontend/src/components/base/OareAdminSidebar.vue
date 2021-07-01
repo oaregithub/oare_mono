@@ -44,8 +44,8 @@ export default defineComponent({
           path: '/admin/groups',
         },
         {
-          label: 'Public Blacklist',
-          path: '/admin/blacklist/texts',
+          label: 'Public Denylist',
+          path: '/admin/denylist/texts',
         },
         {
           label: 'Error Log',

@@ -76,13 +76,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     ]),
   };
 
-  const mockCollectionGroupDao = {
-    getUserCollectionBlacklist: jest.fn().mockResolvedValue({
-      blacklist: [],
-      whitelist: [],
-    }),
-  };
-
   const mockTextDao = {
     getCdliNum: jest.fn().mockResolvedValue('TestCdliNum'),
     getTranslitStatus: jest.fn().mockResolvedValue({
@@ -123,7 +116,6 @@ describe('GET /text_epigraphies/:uuid', () => {
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('TextDao', mockTextDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
-    sl.set('CollectionGroupDao', mockCollectionGroupDao);
     sl.set('TextDraftsDao', mockTextDraftsDao);
     sl.set('CollectionDao', mockCollectionDao);
     sl.set('CollectionTextUtils', mockCollectionTextUtils);
@@ -157,7 +149,7 @@ describe('GET /text_epigraphies/:uuid', () => {
     expect(response.status).toBe(400);
   });
 
-  it('does not allow blacklisted texts to be seen', async () => {
+  it('does not allow denylisted texts to be seen', async () => {
     sl.set('CollectionTextUtils', {
       ...mockCollectionTextUtils,
       canViewText: jest.fn().mockResolvedValue(false),

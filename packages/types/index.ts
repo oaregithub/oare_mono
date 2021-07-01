@@ -1,4 +1,3 @@
-export * from './src/blacklist';
 export * from './src/collection';
 export * from './src/comments';
 export * from './src/dictionary';

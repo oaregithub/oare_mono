@@ -26,12 +26,12 @@ router
   .route('/collections/:uuid')
   .get(collectionsMiddleware, async (req, res, next) => {
     try {
-      const CollectionGroupDao = sl.get('CollectionGroupDao');
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
       const uuid = req.params.uuid as string;
       const userUuid = req.user ? req.user.uuid : null;
       const utils = sl.get('utils');
 
-      const canViewCollection = await CollectionGroupDao.canViewCollection(
+      const canViewCollection = await CollectionTextUtils.canViewCollection(
         uuid,
         userUuid
       );

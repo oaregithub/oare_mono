@@ -77,9 +77,7 @@ export function getSequentialCharacterQuery(
 
 export function getSearchQuery(
   characters: SearchCooccurrence[],
-  textBlacklist: string[],
-  textWhitelist: string[],
-  collectionBlacklist: string[],
+  textsToHide: string[],
   includeSuperfluous: boolean,
   textTitle?: string
 ) {
@@ -99,14 +97,7 @@ export function getSearchQuery(
     query = query.andWhere('text.name', 'like', `%${textTitle}%`);
   }
 
-  // Prevents blacklisted texts from appearing in search results (including texts in blacklisted collections)
-  query = query.whereNotIn('text_epigraphy.text_uuid', textBlacklist);
-  query = query.andWhere(q => {
-    q.whereNotIn('hierarchy.obj_parent_uuid', collectionBlacklist).or.whereIn(
-      'text_epigraphy.text_uuid',
-      textWhitelist
-    );
-  });
+  query = query.whereNotIn('text_epigraphy.text_uuid', textsToHide);
 
   return query;
 }
