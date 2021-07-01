@@ -41,17 +41,21 @@ class HierarchyDao {
             'hierarchy.object_uuid',
             knex('public_denylist').select('uuid').where({ type })
           )
-          .orWhereIn(
-            'hierarchy.object_uuid',
-            knex('hierarchy')
-              .select('object_uuid')
-              .whereIn(
-                'obj_parent_uuid',
-                knex('public_denylist')
-                  .select('uuid')
-                  .where('type', 'collection')
-              )
-          )
+          .modify(qb => {
+            if (type === 'Text') {
+              qb.orWhereIn(
+                'hierarchy.object_uuid',
+                knex('hierarchy')
+                  .select('object_uuid')
+                  .whereIn(
+                    'obj_parent_uuid',
+                    knex('public_denylist')
+                      .select('uuid')
+                      .where('type', 'collection')
+                  )
+              );
+            }
+          })
           .whereNotIn(
             'hierarchy.object_uuid',
             knex('group_allowlist').select('uuid').where('group_id', groupId)
