@@ -79,7 +79,6 @@ router.route('/search/spellings').get(async (req, res, next) => {
 
 router.route('/search/count').get(async (req, res, next) => {
   try {
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const SearchIndexDao = sl.get('SearchIndexDao');
 
     const {
@@ -88,11 +87,12 @@ router.route('/search/count').get(async (req, res, next) => {
     } = (req.query as unknown) as SearchTextsCountPayload;
 
     const characterOccurrences = await prepareCharactersForSearch(charsPayload);
-    const user = req.user || null;
+    const { user } = req;
 
     const totalRows = await SearchIndexDao.getMatchingTextCount(
       characterOccurrences,
-      title
+      title,
+      user ? user.uuid : null
     );
 
     res.json(totalRows);
@@ -118,6 +118,7 @@ router.route('/search').get(async (req, res, next) => {
     const textUuids = await SearchIndexDao.getMatchingTexts(
       characterOccurrences,
       title,
+      user ? user.uuid : null,
       { limit: rows, page }
     );
 

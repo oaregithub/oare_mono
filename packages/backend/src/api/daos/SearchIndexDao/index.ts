@@ -1,6 +1,7 @@
 import knex from '@/connection';
 import { QueryBuilder } from 'knex';
 import { SearchIndexRow, Pagination, SearchCooccurrence } from '@oare/types';
+import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
 
 interface Text {
   textName: string;
@@ -44,13 +45,20 @@ class SearchIndexDao {
   async getMatchingTexts(
     characterOccurrences: SearchCooccurrence[],
     title: string,
+    userUuid: string | null,
     { limit, page }: Pagination
   ): Promise<Text[]> {
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
     const query = knex('search_index')
       .distinct('text_uuid AS textUuid', 'text_name AS textName')
       .limit(limit)
       .offset((page - 1) * limit)
       .orderBy('text_name');
+
+    if (textsToHide.length > 0) {
+      query.modify(qb => qb.whereNotIn('text_uuid', textsToHide));
+    }
 
     if (title) {
       query.modify(qb => qb.where('text_name', 'like', `${title}%`));
@@ -104,11 +112,18 @@ class SearchIndexDao {
 
   async getMatchingTextCount(
     characterOccurrences: SearchCooccurrence[],
-    title: string
+    title: string,
+    userUuid: string | null
   ): Promise<number> {
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
     const query = knex('search_index')
       .countDistinct({ count: 'text_uuid' })
       .first();
+
+    if (textsToHide.length > 0) {
+      query.modify(qb => qb.whereNotIn('text_uuid', textsToHide));
+    }
 
     if (title) {
       query.modify(qb => qb.where('text_name', 'like', `${title}%`));
