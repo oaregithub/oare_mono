@@ -36,3 +36,24 @@ export interface UpdatePermissionPayload {
 }
 
 export type PermissionsListType = 'Text' | 'Collection';
+
+export interface DenylistAllowlistPayload {
+  uuids: string[];
+  type: 'text' | 'collection';
+}
+
+export interface GetDenylistAllowlistParameters {
+  groupId: number;
+  type: 'text' | 'collection';
+}
+
+export interface DeleteDenylistAllowlistParameters {
+  groupId: number;
+  uuid: string;
+}
+
+export interface DenylistAllowlistItem {
+  uuid: string;
+  name?: string;
+  hasEpigraphy?: boolean;
+}

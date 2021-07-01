@@ -1,6 +1,5 @@
 import {
   CollectionResponse,
-  CollectionText,
   SearchNamesResponse,
   SearchNamesResultRow,
   SearchNamesPayload,
@@ -8,10 +7,6 @@ import {
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
-import TextEpigraphyDao from '../TextEpigraphyDao';
-import CollectionGroupDao from '../CollectionGroupDao';
-import TextGroupDao from '../TextGroupDao';
-import CollectionDao from '../CollectionDao';
 import { getTreeNodeQuery } from './utils';
 
 class HierarchyDao {
@@ -21,36 +16,58 @@ class HierarchyDao {
     filter,
     type,
     groupId,
+    showExcluded,
   }: SearchNamesPayload): Promise<SearchNamesResponse> {
+    const CollectionDao = sl.get('CollectionDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
     function createBaseQuery() {
       const query = knex('hierarchy')
         .distinct('hierarchy.object_uuid as uuid')
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
         .where('hierarchy.type', type.toLowerCase())
         .andWhere('alias.name', 'like', `%${filter}%`);
+      if (groupId && showExcluded) {
+        return query.whereNotIn(
+          'hierarchy.object_uuid',
+          knex('group_edit_permissions')
+            .select('uuid')
+            .where('group_id', groupId)
+        );
+      }
       if (groupId) {
-        if (type === 'Text') {
-          return query.whereNotIn(
+        return query
+          .whereIn(
             'hierarchy.object_uuid',
-            knex('text_group').select('text_uuid').where('group_id', groupId)
-          );
-        }
-        if (type === 'Collection') {
-          return query.whereNotIn(
+            knex('public_denylist').select('uuid').where({ type })
+          )
+          .modify(qb => {
+            if (type === 'Text') {
+              qb.orWhereIn(
+                'hierarchy.object_uuid',
+                knex('hierarchy')
+                  .select('object_uuid')
+                  .whereIn(
+                    'obj_parent_uuid',
+                    knex('public_denylist')
+                      .select('uuid')
+                      .where('type', 'collection')
+                  )
+              );
+            }
+          })
+          .whereNotIn(
             'hierarchy.object_uuid',
-            knex('collection_group')
-              .select('collection_uuid')
-              .where('group_id', groupId)
+            knex('group_allowlist').select('uuid').where('group_id', groupId)
           );
-        }
       }
       return query
         .leftJoin(
-          'public_blacklist',
-          'public_blacklist.uuid',
+          'public_denylist',
+          'public_denylist.uuid',
           'hierarchy.object_uuid'
         )
-        .whereNull('public_blacklist.uuid');
+        .whereNull('public_denylist.uuid');
     }
 
     const searchResponse: Array<{ uuid: string }> = await createBaseQuery()
@@ -108,48 +125,25 @@ class HierarchyDao {
 
   async getCollectionTexts(
     userUuid: string | null,
-    uuid: string,
+    collectionUuid: string,
     { page = 1, rows = 10, search = '' }
   ): Promise<CollectionResponse> {
-    const collectionTextQuery = (
-      collectionUuid: string,
-      textSearch: string,
-      collectionIsBlacklisted: boolean,
-      blacklist: string[],
-      whitelist: string[]
-    ) => {
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
+    const collectionTextQuery = () => {
       const query = knex('hierarchy')
         .leftJoin('text', 'text.uuid', 'hierarchy.object_uuid')
         .where('hierarchy.obj_parent_uuid', collectionUuid)
-        .andWhere('text.name', 'like', `%${textSearch}%`);
+        .andWhere('text.name', 'like', `%${search}%`)
+        .whereNotIn('hierarchy.object_uuid', textsToHide);
 
-      if (collectionIsBlacklisted) {
-        return query.andWhere(function () {
-          this.whereIn('hierarchy.object_uuid', whitelist);
-        });
-      }
-
-      return query.andWhere(function () {
-        this.whereNotIn('hierarchy.object_uuid', blacklist);
-      });
+      return query;
     };
 
-    const {
-      blacklist: collectionBlacklist,
-    } = await CollectionGroupDao.getUserCollectionBlacklist(userUuid);
-    const collectionIsBlacklisted = collectionBlacklist.includes(uuid);
-
-    const { blacklist, whitelist } = await TextGroupDao.getUserBlacklist(
-      userUuid
-    );
-
-    const countRow = await collectionTextQuery(
-      uuid,
-      search,
-      collectionIsBlacklisted,
-      blacklist,
-      whitelist
-    )
+    const countRow = await collectionTextQuery()
       .count({
         count: knex.raw('distinct hierarchy.id'),
       })
@@ -160,16 +154,7 @@ class HierarchyDao {
       totalTexts = countRow.count as number;
     }
 
-    const texts: Omit<
-      CollectionText,
-      'hasEpigraphy'
-    >[] = await collectionTextQuery(
-      uuid,
-      search,
-      collectionIsBlacklisted,
-      blacklist,
-      whitelist
-    )
+    const texts = await collectionTextQuery()
       .distinct(
         'hierarchy.id',
         'hierarchy.object_uuid as uuid',
@@ -248,6 +233,14 @@ class HierarchyDao {
       children: await this.getChildren(rootRow.uuid, 0),
     };
     return tree;
+  }
+
+  async getTextsInCollection(collectionUuid: string): Promise<string[]> {
+    const rows = await knex('hierarchy')
+      .pluck('object_uuid')
+      .where('obj_parent_uuid', collectionUuid);
+
+    return rows;
   }
 }
 

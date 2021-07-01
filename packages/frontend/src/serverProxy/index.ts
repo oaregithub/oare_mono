@@ -1,7 +1,6 @@
 import comments from '@/serverProxy/comments';
 import errors from '@/serverProxy/errors';
 import threads from '@/serverProxy/threads';
-import textGroups from './text_groups';
 import groups from './groups';
 import users from './users';
 import userGroups from './user_groups';
@@ -18,17 +17,17 @@ import permissions from './permissions';
 import login from './login';
 import register from './register';
 import logout from './logout';
-import publicBlacklist from './public_blacklist';
+import publicDenylist from './public_denylist';
 import searchNames from './search_names';
-import collectionGroups from './collection_groups';
 import resetPassword from './reset_password';
 import cacheStatus from './cache_status';
 import people from './people';
 import textDiscourse from './text_discourse';
 import profile from './profile';
+import groupAllowlist from './group_allowlist';
+import groupEditPermissions from './group_edit_permissions';
 
 const serverProxy = {
-  ...textGroups,
   ...groups,
   ...users,
   ...userGroups,
@@ -45,9 +44,8 @@ const serverProxy = {
   ...login,
   ...register,
   ...logout,
-  ...publicBlacklist,
+  ...publicDenylist,
   ...searchNames,
-  ...collectionGroups,
   ...resetPassword,
   ...comments,
   ...errors,
@@ -56,6 +54,8 @@ const serverProxy = {
   ...people,
   ...textDiscourse,
   ...profile,
+  ...groupAllowlist,
+  ...groupEditPermissions,
 };
 
 export type ServerProxyType = typeof serverProxy;

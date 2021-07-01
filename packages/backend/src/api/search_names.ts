@@ -16,6 +16,7 @@ router.route('/search_names').get(async (req, res, next) => {
       filter,
       groupId: req.query.groupId as string,
       type: req.query.type as PermissionsListType,
+      showExcluded: (req.query.showExcluded as string) === 'true',
     };
 
     res.json(await HierarchyDao.getBySearchTerm(searchParams));

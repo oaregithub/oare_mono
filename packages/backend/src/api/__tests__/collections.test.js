@@ -3,17 +3,6 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const mockGETCollections = [
-  {
-    name: 'name1',
-    uuid: 'uuid1',
-  },
-  {
-    name: 'name2',
-    uuid: 'uuid2',
-  },
-];
-
 const mockGETCollectionTexts = {
   totalTexts: 2,
   texts: [
@@ -94,7 +83,7 @@ describe('GET /collections/:uuid', () => {
   const uuid = 'mockUuid';
   const PATH = `${API_PATH}/collections/${uuid}`;
 
-  const mockCollectionGroupDao = {
+  const mockCollectionTextUtils = {
     canViewCollection: jest.fn().mockResolvedValue(true),
   };
 
@@ -109,7 +98,7 @@ describe('GET /collections/:uuid', () => {
   };
 
   const setup = () => {
-    sl.set('CollectionGroupDao', mockCollectionGroupDao);
+    sl.set('CollectionTextUtils', mockCollectionTextUtils);
     sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('utils', mockUtils);
   };
@@ -136,8 +125,8 @@ describe('GET /collections/:uuid', () => {
   });
 
   it('returns 500 if canViewCollection fails', async () => {
-    sl.set('CollectionGroupDao', {
-      ...mockCollectionGroupDao,
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
       canViewCollection: jest
         .fn()
         .mockRejectedValue('failed to check if can view collection'),
@@ -148,8 +137,8 @@ describe('GET /collections/:uuid', () => {
   });
 
   it('returns 403 if collection is forbidden', async () => {
-    sl.set('CollectionGroupDao', {
-      ...mockCollectionGroupDao,
+    sl.set('CollectionTextUtils', {
+      ...mockCollectionTextUtils,
       canViewCollection: jest.fn().mockResolvedValue(false),
     });
     const response = await sendRequest();
