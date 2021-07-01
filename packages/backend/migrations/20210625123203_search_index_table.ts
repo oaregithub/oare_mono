@@ -70,36 +70,6 @@ async function indexText(knex: Knex, { textUuid, textName }: TextRow) {
 }
 
 export async function up(knex: Knex): Promise<void> {
-  // const hasTable = await knex.schema.hasTable('search_index');
-  // if (hasTable) {
-  //   return;
-  // }
-
-  // await knex.schema.createTable('search_index', table => {
-  //   table.increments('id');
-  //   table.string('sign_uuid_sequence', 1332);
-  //   table.uuid('text_uuid');
-  //   table.string('text_name');
-  //   table.decimal('line');
-  //   table.text('line_reading');
-
-  //   table.index('sign_uuid_sequence');
-  //   table.index(['sign_uuid_sequence', 'text_uuid']);
-  //   table.index('text_uuid');
-  //   table.index(['sign_uuid_sequence', 'text_name']);
-  //   table.index('text_name', 'idx_search_index_text_name');
-  //   table.index(
-  //     ['text_uuid', 'text_name'],
-  //     'idx_search_index_text_uuid_text_name'
-  //   );
-  //   table.index(
-  //     ['sign_uuid_sequence', 'text_uuid', 'text_name'],
-  //     'idx_search_index_sign_uuid_sequence_text_uuid_text_name'
-  //   );
-
-  //   table.foreign('text_uuid').references('text.uuid');
-  // });
-
   const texts: TextRow[] = await knex('text').select(
     'uuid AS textUuid',
     'name AS textName'
@@ -107,6 +77,7 @@ export async function up(knex: Knex): Promise<void> {
 
   progressBar.start(texts.length, 0);
 
+  // We have to update in batches since there can't be too many connections in the pool
   const batchStep = 10;
   for (let i = 0; i < texts.length; i += batchStep) {
     // eslint-disable-next-line
