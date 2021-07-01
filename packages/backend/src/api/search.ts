@@ -15,7 +15,6 @@ import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
 import { parsedQuery, extractPagination } from '@/utils';
-import { TextUuidWithLines } from '@/api/daos/TextEpigraphyDao';
 
 const router = express.Router();
 
@@ -91,20 +90,10 @@ router.route('/search/count').get(async (req, res, next) => {
     const characterOccurrences = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
 
-    let totalRows: number;
-    if (
-      characterOccurrences.map(({ type }) => type).every(type => type === 'AND')
-    ) {
-      totalRows = await SearchIndexDao.getMatchingTextCount(
-        characterOccurrences
-      );
-    } else {
-      totalRows = await TextEpigraphyDao.searchTextsTotal({
-        characters: characterOccurrences,
-        title,
-        userUuid: user ? user.uuid : null,
-      });
-    }
+    const totalRows = await SearchIndexDao.getMatchingTextCount(
+      characterOccurrences,
+      title
+    );
 
     res.json(totalRows);
   } catch (err) {
@@ -114,8 +103,6 @@ router.route('/search/count').get(async (req, res, next) => {
 
 router.route('/search').get(async (req, res, next) => {
   try {
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const TextDao = sl.get('TextDao');
     const SearchIndexDao = sl.get('SearchIndexDao');
 
     const {
@@ -128,70 +115,30 @@ router.route('/search').get(async (req, res, next) => {
     const characterOccurrences = await prepareCharactersForSearch(charsPayload);
     const { user } = req;
 
-    // Just a regular character search
-    if (
-      characterOccurrences.map(({ type }) => type).every(type => type === 'AND')
-    ) {
-      const textUuids = await SearchIndexDao.getMatchingTextUuids(
-        characterOccurrences,
-        { limit: rows, page }
-      );
-
-      const searchRows: SearchTextsResultRow[] = await Promise.all(
-        textUuids.map(async ({ textUuid, textName }) => {
-          const matches = await SearchIndexDao.getMatchingTextLines(
-            characterOccurrences,
-            textUuid
-          );
-          return {
-            uuid: textUuid,
-            name: textName,
-            matches,
-            discourseUuids: [],
-          };
-        })
-      );
-
-      res.json({
-        results: searchRows,
-      });
-      return;
-    }
-    const textMatches = await TextEpigraphyDao.searchTexts({
-      characters: characterOccurrences,
-      pagination: { limit: rows, page },
+    const textUuids = await SearchIndexDao.getMatchingTexts(
+      characterOccurrences,
       title,
-      userUuid: user ? user.uuid : null,
-    });
+      { limit: rows, page }
+    );
 
-    const textNames = (
-      await Promise.all(
-        textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
-      )
-    ).map(text => (text ? text.name : ''));
-
-    const lineReadings = await Promise.all(
-      textMatches.map(async ({ uuid, lines }) => {
-        const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(uuid);
-
-        const renderer = createTabletRenderer(epigraphicUnits, {
-          textFormat: 'html',
-          lineNumbers: true,
-        });
-
-        return lines.map(line => renderer.lineReading(line));
+    const searchRows: SearchTextsResultRow[] = await Promise.all(
+      textUuids.map(async ({ textUuid, textName }) => {
+        const matches = await SearchIndexDao.getMatchingTextLines(
+          characterOccurrences,
+          textUuid
+        );
+        return {
+          uuid: textUuid,
+          name: textName,
+          matches,
+          discourseUuids: [],
+        };
       })
     );
 
-    const response: SearchTextsResponse = {
-      results: textMatches.map((match, index) => ({
-        ...match,
-        name: textNames[index],
-        matches: lineReadings[index],
-      })),
-    };
-
-    res.json(response);
+    res.json({
+      results: searchRows,
+    });
   } catch (err) {
     next(new HttpInternalError(err));
   }

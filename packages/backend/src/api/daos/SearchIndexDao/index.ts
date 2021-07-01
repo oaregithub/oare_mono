@@ -9,15 +9,13 @@ interface Text {
 
 function buildSearchQuery(
   query: QueryBuilder,
-  characterOccurrences: SearchCooccurrence[]
+  characterOccurrences: string[][]
 ): void {
   if (characterOccurrences.length === 0) {
     return;
   }
 
-  query.modify(qb =>
-    qb.whereIn('sign_uuid_sequence', characterOccurrences[0].uuids)
-  );
+  query.modify(qb => qb.whereIn('sign_uuid_sequence', characterOccurrences[0]));
 
   if (characterOccurrences.length > 1) {
     const subQuery = knex('search_index').select('text_uuid');
@@ -35,21 +33,46 @@ class SearchIndexDao {
     });
   }
 
-  async getMatchingTextUuids(
+  async getNegativeTextUuids(negativeOccurrences: string[]): Promise<string[]> {
+    const textUuids = await knex('search_index')
+      .distinct('text_uuid')
+      .pluck('text_uuid')
+      .whereIn('sign_uuid_sequence', negativeOccurrences);
+    return textUuids;
+  }
+
+  async getMatchingTexts(
     characterOccurrences: SearchCooccurrence[],
+    title: string,
     { limit, page }: Pagination
   ): Promise<Text[]> {
-    if (characterOccurrences.length < 1) {
-      return [];
-    }
-
     const query = knex('search_index')
       .distinct('text_uuid AS textUuid', 'text_name AS textName')
       .limit(limit)
       .offset((page - 1) * limit)
       .orderBy('text_name');
 
-    buildSearchQuery(query, characterOccurrences);
+    if (title) {
+      query.modify(qb => qb.where('text_name', 'like', `${title}%`));
+    }
+
+    const occurrences = characterOccurrences
+      .filter(({ type }) => type === 'AND')
+      .map(({ uuids }) => uuids);
+
+    const negativeOccurrences = characterOccurrences
+      .filter(({ type }) => type === 'NOT')
+      .map(({ uuids }) => uuids)
+      .flat();
+
+    if (negativeOccurrences.length > 0) {
+      const negativeTextUuids = await this.getNegativeTextUuids(
+        negativeOccurrences
+      );
+      query.modify(qb => qb.whereNotIn('text_uuid', negativeTextUuids));
+    }
+
+    buildSearchQuery(query, occurrences);
 
     return query;
   }
@@ -80,12 +103,34 @@ class SearchIndexDao {
   }
 
   async getMatchingTextCount(
-    characterOccurrences: SearchCooccurrence[]
+    characterOccurrences: SearchCooccurrence[],
+    title: string
   ): Promise<number> {
     const query = knex('search_index')
       .countDistinct({ count: 'text_uuid' })
       .first();
-    buildSearchQuery(query, characterOccurrences);
+
+    if (title) {
+      query.modify(qb => qb.where('text_name', 'like', `${title}%`));
+    }
+
+    const occurrences = characterOccurrences
+      .filter(({ type }) => type === 'AND')
+      .map(({ uuids }) => uuids);
+
+    const negativeOccurrences = characterOccurrences
+      .filter(({ type }) => type === 'NOT')
+      .map(({ uuids }) => uuids)
+      .flat();
+
+    if (negativeOccurrences.length > 0) {
+      const negativeTextUuids = await this.getNegativeTextUuids(
+        negativeOccurrences
+      );
+      query.modify(qb => qb.whereNotIn('text_uuid', negativeTextUuids));
+    }
+
+    buildSearchQuery(query, occurrences);
 
     const row = await query;
 
