@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "netlify-lambda serve build/src",
-    "build": "tsc && cp -r src/api/sql build/src/api",
+    "build": "rm -rf build && tsc && cp -r src/api/sql build/src/api",
     "postbuild": "ef-tspm",
     "start": "rm -rf build/@oare && cp -r @oare build && cp -r @oare node_modules && NODE_ENV=production node ./build/src/server.js",
     "lint": "eslint src/*.ts src/**/*.ts",
