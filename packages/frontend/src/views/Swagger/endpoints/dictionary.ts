@@ -308,4 +308,42 @@ export default {
       },
     },
   },
+  '/dictionary/forms/{uuid}': {
+    patch: {
+      summary: "Edit a form's spelling",
+      parameters: [
+        {
+          in: 'path',
+          name: 'uuid',
+          schema: {
+            type: 'string',
+          },
+          required: true,
+          description: 'The UUID of the form whose spelling should be updated',
+        },
+      ],
+      requestBody: {
+        description:
+          'An object with a "newForm" property indicating the new spelling of the form',
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                newForm: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: 'The form spelling was successfully updated',
+        },
+      },
+    },
+  },
 };

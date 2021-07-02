@@ -324,7 +324,7 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('POST /dictionary/forms/:uuid', () => {
+  describe('PATCH /dictionary/forms/:uuid', () => {
     const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/dictionary/forms/${testUuid}`;
     const discourseUuids = ['uuid1', 'uuid2'];
@@ -345,9 +345,7 @@ describe('dictionary api test', () => {
     });
 
     const sendRequest = (auth = true) => {
-      const req = request(app)
-        .post(PATH)
-        .send({ uuid: 'test-uuid', form: 'newForm' });
+      const req = request(app).patch(PATH).send({ newForm: 'newForm' });
       if (auth) {
         return req.set('Authorization', 'token');
       }
@@ -373,16 +371,9 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 200', async () => {
+    it('returns 202', async () => {
       const response = await sendRequest();
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual({
-        uuid: testUuid,
-        form: {
-          uuid: 'test-uuid',
-          form: 'newForm',
-        },
-      });
+      expect(response.status).toBe(201);
     });
 
     it('logs edits to form', async () => {

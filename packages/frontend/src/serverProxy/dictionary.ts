@@ -3,7 +3,7 @@ import {
   UpdateDictionaryWordPayload,
   UpdateDictionaryTranslationPayload,
   UpdateFormSpellingPayload,
-  DictionaryForm,
+  UpdateFormPayload,
   AddFormSpellingPayload,
   AddFormSpellingResponse,
   CheckSpellingResponse,
@@ -37,8 +37,11 @@ async function editTranslations(
   await axios.patch(`/dictionary/translations/${uuid}`, payload);
 }
 
-async function updateForm(form: DictionaryForm): Promise<void> {
-  await axios.post(`/dictionary/forms/${form.uuid}`, form);
+async function updateForm(
+  formUuid: string,
+  payload: UpdateFormPayload
+): Promise<void> {
+  await axios.post(`/dictionary/forms/${formUuid}`, payload);
 }
 
 async function updateSpelling(
