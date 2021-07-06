@@ -362,7 +362,7 @@ export default {
             'The UUID of the spelling to count. Should be a UUID from the unique_spellings table',
         },
         {
-          in: 'path',
+          in: 'query',
           name: 'filter',
           schema: {
             type: 'string',
