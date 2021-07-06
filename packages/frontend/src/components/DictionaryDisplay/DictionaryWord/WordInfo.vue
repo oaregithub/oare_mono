@@ -114,7 +114,7 @@ export default defineComponent({
     AddFormDialog,
     WordGrammar,
   },
-  setup({ wordInfo, updateWordInfo }) {
+  setup(props) {
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
@@ -138,17 +138,17 @@ export default defineComponent({
     const updateTranslations = (
       newTranslations: DictionaryWordTranslation[]
     ) => {
-      updateWordInfo({
-        ...wordInfo,
+      props.updateWordInfo({
+        ...props.wordInfo,
         translations: newTranslations,
       });
     };
 
     const updateForm = (index: number, form: DictionaryForm) => {
-      const updatedForms = [...wordInfo.forms];
+      const updatedForms = [...props.wordInfo.forms];
       updatedForms[index] = form;
-      updateWordInfo({
-        ...wordInfo,
+      props.updateWordInfo({
+        ...props.wordInfo,
         forms: updatedForms,
       });
     };
