@@ -371,7 +371,7 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 202', async () => {
+    it('returns 201', async () => {
       const response = await sendRequest();
       expect(response.status).toBe(201);
     });

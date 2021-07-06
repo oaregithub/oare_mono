@@ -41,7 +41,7 @@ async function updateForm(
   formUuid: string,
   payload: UpdateFormPayload
 ): Promise<void> {
-  await axios.post(`/dictionary/forms/${formUuid}`, payload);
+  await axios.patch(`/dictionary/forms/${formUuid}`, payload);
 }
 
 async function updateSpelling(
