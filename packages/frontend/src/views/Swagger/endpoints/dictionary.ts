@@ -382,7 +382,51 @@ export default {
   '/dictionary/spellings/{uuid}/texts': {
     get: {
       summary: 'Get a list of texts that a spelling appears in',
-      parameters: [{}],
+      parameters: [
+        {
+          in: 'path',
+          name: 'uuid',
+          schema: {
+            type: 'string',
+          },
+          required: true,
+          description:
+            'The UUID of the spelling whose texts should be retrieved',
+        },
+      ],
+      responses: {
+        200: {
+          description:
+            'A list of the texts and lines where the spelling occurs',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    discourseUuid: {
+                      type: 'string',
+                    },
+                    textName: {
+                      type: 'string',
+                    },
+                    textUuid: {
+                      type: 'string',
+                    },
+                    line: {
+                      type: 'number',
+                    },
+                    wordOnTablet: {
+                      type: 'number',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   },
 };
