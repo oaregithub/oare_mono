@@ -83,9 +83,8 @@ jobs:
 
       - name: Deploy Serverless to Lambda
         run: |
-          cd packages/serverless
-          serverless config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          serverless deploy -v -r us-west-2
+          yarn workspace @oare/serverless serverless config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          yarn workspace @oare/serverless serverless deploy -v -r us-west-2
         # if: github.ref == 'refs/heads/master'
 
       - name: Deploy to EB
