@@ -379,4 +379,10 @@ export default {
       },
     },
   },
+  '/dictionary/spellings/{uuid}/texts': {
+    get: {
+      summary: 'Get a list of texts that a spelling appears in',
+      parameters: [{}],
+    },
+  },
 };
