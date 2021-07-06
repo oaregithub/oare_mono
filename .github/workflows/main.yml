@@ -74,7 +74,6 @@ jobs:
         if: github.ref == 'refs/heads/master'
 
       - name: Deploy Serverless to Lambda
-        run: cd packages/serverless
         uses: serverless/github-action@master
         with:
           args: deploy -r us-west-2
