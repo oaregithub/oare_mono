@@ -346,4 +346,37 @@ export default {
       },
     },
   },
+  '/dictionary/spellings/{uuid}/occurrences': {
+    get: {
+      summary:
+        'Get the number of times a spelling occurs throughout all the texts',
+      parameters: [
+        {
+          in: 'path',
+          name: 'uuid',
+          schema: {
+            type: 'string',
+          },
+          required: true,
+          description:
+            'The UUID of the spelling to count. Should be a UUID from the unique_spellings table',
+        },
+        {
+          in: 'path',
+          name: 'filter',
+          schema: {
+            type: 'string',
+          },
+          required: false,
+          description: 'A filter on the text names to search for occurrences',
+        },
+      ],
+      responses: {
+        200: {
+          description:
+            'A number describing the total number of times the spelling occurs',
+        },
+      },
+    },
+  },
 };
