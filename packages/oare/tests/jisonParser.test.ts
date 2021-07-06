@@ -161,6 +161,22 @@ describe('spelling grammar test', () => {
   it('parses numbers inside logogram expressions', () => {
     tokenizeExplicitSpelling('ITU.3.KAM');
   });
+
+  it('parses personal names', () => {
+    tokenizeExplicitSpelling('i-dí=(d)UTU-ši');
+  });
+
+  it("rejects determinatives in middles of spellings that aren't names", () => {
+    expect(() => tokenizeExplicitSpelling('i-dí=(m)UTU-ši')).toThrow();
+  });
+
+  it('rejects personal names without an equals sign before determinative', () => {
+    expect(() => tokenizeExplicitSpelling('i-dí-(d)UTU-ši')).toThrow();
+  });
+
+  it('rejects misplaced equals sign', () => {
+    expect(() => tokenizeExplicitSpelling('i-dí=')).toThrow();
+  });
 });
 
 describe('utility tests', () => {
