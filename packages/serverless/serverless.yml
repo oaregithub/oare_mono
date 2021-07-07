@@ -17,7 +17,3 @@ functions:
     events:
       # Invoke Lambda function every minute
       - schedule: rate(1 minute)
-  secondFunction:
-    handler: handlers/scheduled.run
-    events:
-      - schedule: rate(1 minute)
