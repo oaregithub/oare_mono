@@ -150,7 +150,9 @@ export default defineComponent({
     const saveFormEdit = async (): Promise<void> => {
       loading.value = true;
       try {
-        await server.updateForm(editForm.value);
+        await server.updateForm(editForm.value.uuid, {
+          newForm: editForm.value.form,
+        });
         props.updateForm(editForm.value);
         actions.showSnackbar('Form successfully updated');
         editing.value = false;

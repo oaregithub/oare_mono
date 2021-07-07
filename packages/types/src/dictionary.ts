@@ -47,6 +47,10 @@ export interface DictionaryForm
   spellings: FormSpelling[];
 }
 
+export interface UpdateFormPayload {
+  newForm: string;
+}
+
 export interface UpdateDictionaryTranslationPayload {
   translations: DictionaryWordTranslation[];
 }
