@@ -149,6 +149,19 @@ export const hasValidMarkup = (tokens: Token[]): boolean => {
   return markupValid;
 };
 
+const validName = (tokens: Token[]): boolean => {
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i];
+
+    // This won't go out of bounds since the grammar itself
+    // would catch it before this function would even be called
+    if (token.tokenType === '=' && tokens[i + 2].tokenText !== 'd') {
+      return false;
+    }
+  }
+  return true;
+};
+
 const isValidGrammar = (tokens: Token[], acceptMarkup = false) => {
   // If there are numbers, they must be separated by a + or appear
   // only at the beginning of a sign
@@ -177,6 +190,11 @@ const isValidGrammar = (tokens: Token[], acceptMarkup = false) => {
   }
 
   if (acceptMarkup && !hasValidMarkup(tokens)) {
+    return false;
+  }
+
+  // Make sure = sign are always followed by (d)
+  if (tokens.some(({ tokenType }) => tokenType === '=') && !validName(tokens)) {
     return false;
   }
 
