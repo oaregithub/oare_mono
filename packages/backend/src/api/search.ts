@@ -1,6 +1,5 @@
 import express from 'express';
 import {
-  SearchTextsResponse,
   SearchTextsCountPayload,
   SearchTextsPayload,
   SearchSpellingPayload,
@@ -13,7 +12,10 @@ import {
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
+import {
+  prepareCharactersForSearch,
+  prepareCharactersForSearchIndex,
+} from '@/api/daos/SignReadingDao/utils';
 import { parsedQuery, extractPagination } from '@/utils';
 
 const router = express.Router();
@@ -86,7 +88,9 @@ router.route('/search/count').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
-    const characterOccurrences = await prepareCharactersForSearch(charsPayload);
+    const characterOccurrences = await prepareCharactersForSearchIndex(
+      charsPayload
+    );
     const { user } = req;
 
     const totalRows = await SearchIndexDao.getMatchingTextCount(
@@ -112,7 +116,9 @@ router.route('/search').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
 
-    const characterOccurrences = await prepareCharactersForSearch(charsPayload);
+    const characterOccurrences = await prepareCharactersForSearchIndex(
+      charsPayload
+    );
     const { user } = req;
 
     const textUuids = await SearchIndexDao.getMatchingTexts(

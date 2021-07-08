@@ -1,6 +1,10 @@
 import knex from '@/connection';
 import { QueryBuilder } from 'knex';
-import { SearchIndexRow, Pagination, SearchCooccurrence } from '@oare/types';
+import {
+  SearchIndexRow,
+  Pagination,
+  SearchIndexCooccurrence,
+} from '@oare/types';
 import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
 
 interface Text {
@@ -43,7 +47,7 @@ class SearchIndexDao {
   }
 
   async getMatchingTexts(
-    characterOccurrences: SearchCooccurrence[],
+    characterOccurrences: SearchIndexCooccurrence[],
     title: string,
     userUuid: string | null,
     { limit, page }: Pagination
@@ -86,7 +90,7 @@ class SearchIndexDao {
   }
 
   async getMatchingTextLines(
-    characterOccurrences: SearchCooccurrence[],
+    characterOccurrences: SearchIndexCooccurrence[],
     textUuid: string
   ): Promise<string[]> {
     interface TextLine {
@@ -111,7 +115,7 @@ class SearchIndexDao {
   }
 
   async getMatchingTextCount(
-    characterOccurrences: SearchCooccurrence[],
+    characterOccurrences: SearchIndexCooccurrence[],
     title: string,
     userUuid: string | null
   ): Promise<number> {

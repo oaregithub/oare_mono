@@ -1,6 +1,6 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 import sl from '@/serviceLocator';
-import { SearchCooccurrence } from '@oare/types';
+import { SearchCooccurrence, SearchIndexCooccurrence } from '@oare/types';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
 export async function prepareIndividualSearchCharacters(
@@ -57,11 +57,22 @@ export async function prepareCharactersForSearch(
 
   const characterUuids: SearchCooccurrence[] = preppedCharUuids.map(
     (uuids, index) => ({
-      uuids: uuidCombinations(uuids),
+      uuids,
       type: cooccurrenceTypes[index],
     })
   );
+
   return characterUuids;
+}
+
+export async function prepareCharactersForSearchIndex(
+  charsPayload?: string
+): Promise<SearchIndexCooccurrence[]> {
+  const occurrences = await prepareCharactersForSearch(charsPayload);
+  return occurrences.map(({ uuids, type }) => ({
+    uuids: uuidCombinations(uuids),
+    type,
+  }));
 }
 
 export const applyIntellisearch = async (
