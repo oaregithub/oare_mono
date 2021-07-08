@@ -13,7 +13,6 @@ plugins:
 
 functions:
   rateHandler:
-    handler: handlers/scheduled.run
+    handler: handlers/scheduled.exportSnapshotToS3
     events:
-      # Invoke Lambda function every minute
-      - schedule: rate(1 minute)
+      - schedule: rate(10 minutes)

@@ -1,6 +1,44 @@
 import { ScheduledHandler } from 'aws-lambda';
+import { RDS } from 'aws-sdk';
 
-export const run: ScheduledHandler = async (event, context) => {
-  const time = new Date();
-  console.log(`The new func named "${context.functionName}" ran at ${time}`); // eslint-disable-line no-console
+const rdsConfig: RDS.ClientConfiguration = {
+  accessKeyId: process.env.ACCESS_KEY,
+  secretAccessKey: process.env.SECRET_KEY,
+  region: 'us-west-2',
+};
+
+const rds = new RDS(rdsConfig);
+
+export const exportSnapshotToS3: ScheduledHandler = async (
+  _event,
+  _context
+) => {
+  const currentDate = new Date();
+  const snapshotName = `oarebyue_0.3-snapshot-${currentDate
+    .toDateString()
+    .replace(/\s+/g, '-')
+    .toLowerCase()}`;
+
+  const createSnapshotParams: RDS.CreateDBSnapshotMessage = {
+    DBInstanceIdentifier: 'oarebyue_0.3' /* DB instance name */,
+    DBSnapshotIdentifier: snapshotName,
+  };
+  let sourceArn;
+
+  rds.createDBSnapshot(createSnapshotParams, (_err, data) => {
+    sourceArn = data.DBSnapshot?.DBSnapshotArn;
+  });
+  console.log('Snapshot created');
+
+  const startExportTaskeParams: RDS.StartExportTaskMessage = {
+    ExportTaskIdentifier: `${snapshotName}-export`,
+    SourceArn: sourceArn || '',
+    S3BucketName: process.env.S3_BUCKET || '',
+    IamRoleArn: process.env.IAM_ROLE_ARN || '',
+    KmsKeyId: process.env.KMS_KEY_ID || '',
+    ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
+  };
+
+  rds.startExportTask(startExportTaskeParams);
+  console.log('Export completed');
 };
