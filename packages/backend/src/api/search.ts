@@ -1,6 +1,5 @@
 import express from 'express';
 import {
-  SearchTextsResponse,
   SearchTextsCountPayload,
   SearchTextsPayload,
   SearchSpellingPayload,
@@ -8,11 +7,15 @@ import {
   SearchDiscourseSpellingResponse,
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
+  SearchTextsResultRow,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
+import {
+  prepareCharactersForSearch,
+  prepareCharactersForSearchIndex,
+} from '@/api/daos/SignReadingDao/utils';
 import { parsedQuery, extractPagination } from '@/utils';
 
 const router = express.Router();
@@ -78,21 +81,23 @@ router.route('/search/spellings').get(async (req, res, next) => {
 
 router.route('/search/count').get(async (req, res, next) => {
   try {
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const SearchIndexDao = sl.get('SearchIndexDao');
 
     const {
       textTitle: title,
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
-    const characterUuids = await prepareCharactersForSearch(charsPayload);
-    const user = req.user || null;
+    const characterOccurrences = await prepareCharactersForSearchIndex(
+      charsPayload
+    );
+    const { user } = req;
 
-    const totalRows = await TextEpigraphyDao.searchTextsTotal({
-      characters: characterUuids,
+    const totalRows = await SearchIndexDao.getMatchingTextCount(
+      characterOccurrences,
       title,
-      userUuid: user ? user.uuid : null,
-    });
+      user ? user.uuid : null
+    );
 
     res.json(totalRows);
   } catch (err) {
@@ -102,8 +107,7 @@ router.route('/search/count').get(async (req, res, next) => {
 
 router.route('/search').get(async (req, res, next) => {
   try {
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const TextDao = sl.get('TextDao');
+    const SearchIndexDao = sl.get('SearchIndexDao');
 
     const {
       page,
@@ -112,44 +116,36 @@ router.route('/search').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
 
-    const characterUuids = await prepareCharactersForSearch(charsPayload);
-    const user = req.user || null;
+    const characterOccurrences = await prepareCharactersForSearchIndex(
+      charsPayload
+    );
+    const { user } = req;
 
-    const textMatches = await TextEpigraphyDao.searchTexts({
-      characters: characterUuids,
-      pagination: { limit: rows, page },
+    const textUuids = await SearchIndexDao.getMatchingTexts(
+      characterOccurrences,
       title,
-      userUuid: user ? user.uuid : null,
-    });
+      user ? user.uuid : null,
+      { limit: rows, page }
+    );
 
-    const textNames = (
-      await Promise.all(
-        textMatches.map(({ uuid }) => TextDao.getTextByUuid(uuid))
-      )
-    ).map(text => (text ? text.name : ''));
-
-    const lineReadings = await Promise.all(
-      textMatches.map(async ({ uuid, lines }) => {
-        const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(uuid);
-
-        const renderer = createTabletRenderer(epigraphicUnits, {
-          textFormat: 'html',
-          lineNumbers: true,
-        });
-
-        return lines.map(line => renderer.lineReading(line));
+    const searchRows: SearchTextsResultRow[] = await Promise.all(
+      textUuids.map(async ({ textUuid, textName }) => {
+        const matches = await SearchIndexDao.getMatchingTextLines(
+          characterOccurrences,
+          textUuid
+        );
+        return {
+          uuid: textUuid,
+          name: textName,
+          matches,
+          discourseUuids: [],
+        };
       })
     );
 
-    const response: SearchTextsResponse = {
-      results: textMatches.map((match, index) => ({
-        ...match,
-        name: textNames[index],
-        matches: lineReadings[index],
-      })),
-    };
-
-    res.json(response);
+    res.json({
+      results: searchRows,
+    });
   } catch (err) {
     next(new HttpInternalError(err));
   }

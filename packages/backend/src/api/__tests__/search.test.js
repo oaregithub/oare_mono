@@ -7,25 +7,20 @@ import { getSubscriptVowelOptions } from '../daos/SignReadingDao/utils';
 describe('search test', () => {
   describe('GET /search', () => {
     const PATH = `${API_PATH}/search`;
-    const matchingTexts = [
-      {
-        uuid: 'textUuid',
-        lines: [1],
-      },
-    ];
-    const TextEpigraphyDao = {
-      searchTexts: jest.fn().mockResolvedValue(matchingTexts),
-      // Rendering a proper line reading is out of the scope of this test
-      getEpigraphicUnits: jest.fn().mockResolvedValue([]),
+
+    const SearchIndexDao = {
+      getMatchingTexts: jest.fn().mockResolvedValue([
+        {
+          textName: 'Text 1',
+          textUuid: 'textUuid',
+        },
+      ]),
+      getMatchingTextLines: jest
+        .fn()
+        .mockResolvedValue(['1. text line reading']),
     };
 
-    const TextDao = {
-      getTextByUuid: jest.fn().mockResolvedValue({
-        name: 'Test Text',
-      }),
-    };
-
-    const mockSignReadingDao = {
+    const SignReadingDao = {
       getIntellisearchSignUuids: jest
         .fn()
         .mockResolvedValue(['mockSignReadingUuid']),
@@ -34,9 +29,8 @@ describe('search test', () => {
     };
 
     beforeEach(() => {
-      sl.set('TextEpigraphyDao', TextEpigraphyDao);
-      sl.set('TextDao', TextDao);
-      sl.set('SignReadingDao', mockSignReadingDao);
+      sl.set('SearchIndexDao', SearchIndexDao);
+      sl.set('SignReadingDao', SignReadingDao);
     });
 
     const query = {
@@ -52,11 +46,14 @@ describe('search test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
-        results: matchingTexts.map(text => ({
-          ...text,
-          name: 'Test Text',
-          matches: [''],
-        })),
+        results: [
+          {
+            name: 'Text 1',
+            uuid: 'textUuid',
+            matches: ['1. text line reading'],
+            discourseUuids: [],
+          },
+        ],
       });
     });
 
@@ -67,27 +64,27 @@ describe('search test', () => {
           ...query,
           characters: 'asz2-hu3-SZU-t,um-s,e2-HU-tam3',
         });
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['áš']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['ḫù']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['ŠU']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['ṭum']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['ṣé']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['ḪU']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['tàm']);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        'áš',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        'ḫù',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        'ŠU',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        'ṭum',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        'ṣé',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        'ḪU',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        'tàm',
+      ]);
       expect(response.status).toBe(200);
     });
 
@@ -98,36 +95,36 @@ describe('search test', () => {
           ...query,
           characters: '2AŠ-3-4DIŠ-12AŠ-23DIŠ-34-1/2',
         });
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['2AŠ']); // 2AŠ
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['3DIŠ']); // 3
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['4DIŠ']); // 4DIŠ
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['1U']); // 12AŠ
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['2AŠ']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['2U']); // 23DIŠ;
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['3DIŠ']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['3U']); // 34
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['4DIŠ']);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledWith(['½']); // 1/2
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '2AŠ',
+      ]); // 2AŠ
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '3DIŠ',
+      ]); // 3
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '4DIŠ',
+      ]); // 4DIŠ
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '1U',
+      ]); // 12AŠ
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '2AŠ',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '2U',
+      ]); // 23DIŠ;
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '3DIŠ',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '3U',
+      ]); // 34
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '4DIŠ',
+      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
+        '½',
+      ]); // 1/2
       expect(response.status).toBe(200);
     });
 
@@ -141,13 +138,13 @@ describe('search test', () => {
       const consonants = 'bdgklmnpqrstwyzBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ'.split('');
       // Cum
       const firstSearchArray = consonants.map(consonant => `${consonant}um`);
-      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         firstSearchArray
       );
 
       // IŠCAR
       const secondSearchArray = consonants.map(consonant => `IŠ${consonant}AR`);
-      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         secondSearchArray
       );
       expect(response.status).toBe(200);
@@ -171,7 +168,7 @@ describe('search test', () => {
         ...firstSignAccentedVowels,
         ...firstSignSubscriptVowels,
       ];
-      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         firstSignPossibleVowels
       );
 
@@ -184,7 +181,7 @@ describe('search test', () => {
         ...secondSignAccentedVowels,
         ...secondSignSubscriptVowels,
       ];
-      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         secondSignPossibleVowels
       );
 
@@ -201,13 +198,13 @@ describe('search test', () => {
 
       // [tm]u[rm]
       const firstSignArray = ['tur', 'tum', 'mur', 'mum'];
-      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         firstSignArray
       );
 
       // [bdn]a
       const secondSignArray = ['ba', 'da', 'na'];
-      expect(mockSignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
         secondSignArray
       );
 
@@ -222,40 +219,26 @@ describe('search test', () => {
           characters: '$lì-$lam₅-tam',
         });
 
-      expect(mockSignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(2);
-      expect(
-        mockSignReadingDao.getIntellisearchSignUuids
-      ).toHaveBeenCalledTimes(3);
+      expect(SignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(2);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledTimes(3);
 
       expect(response.status).toBe(200);
     });
 
     it('returns 500 if searching texts fails', async () => {
-      sl.set('TextEpigraphyDao', {
-        ...TextEpigraphyDao,
-        searchTexts: jest.fn().mockRejectedValue('Failed to search texts'),
+      sl.set('SearchIndexDao', {
+        ...SearchIndexDao,
+        getMatchingTexts: jest.fn().mockRejectedValue('Failed to search texts'),
       });
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
     });
 
-    it('returns 500 if getting text by uuid fails', async () => {
-      sl.set('TextDao', {
-        ...TextDao,
-        getTextByUuid: jest.fn().mockRejectedValue('Failed to get text'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if getting epigraphic units fails', async () => {
-      sl.set('TextEpigraphyDao', {
-        ...TextEpigraphyDao,
-        getEpigraphicUnits: jest
-          .fn()
-          .mockRejectedValue('Failed to get epig units'),
+    it('returns 500 if getting matching lines', async () => {
+      sl.set('SearchIndexDao', {
+        ...SearchIndexDao,
+        getMatchingTextLines: jest.fn().mockRejectedValue('Failed to get text'),
       });
 
       const response = await sendRequest();
@@ -266,11 +249,11 @@ describe('search test', () => {
   describe('GET /search/count', () => {
     const PATH = `${API_PATH}/search/count`;
 
-    const mockTextEpigraphyDao = {
-      searchTextsTotal: jest.fn().mockResolvedValue(10),
+    const SearchIndexDao = {
+      getMatchingTextCount: jest.fn().mockResolvedValue(10),
     };
 
-    const mockSignReadingDao = {
+    const SignReadingDao = {
       getIntellisearchSignUuids: jest
         .fn()
         .mockResolvedValue(['mockSignReadingUuid']),
@@ -278,8 +261,8 @@ describe('search test', () => {
     };
 
     beforeEach(() => {
-      sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
-      sl.set('SignReadingDao', mockSignReadingDao);
+      sl.set('SearchIndexDao', SearchIndexDao);
+      sl.set('SignReadingDao', SignReadingDao);
     });
 
     const query = {
@@ -291,15 +274,15 @@ describe('search test', () => {
 
     it('returns search count', async () => {
       const response = await sendRequest();
-      expect(mockTextEpigraphyDao.searchTextsTotal).toHaveBeenCalled();
+      expect(SearchIndexDao.getMatchingTextCount).toHaveBeenCalled();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(10);
     });
 
     it('returns 500 on failed search count', async () => {
-      sl.set('TextEpigraphyDao', {
-        ...mockTextEpigraphyDao,
-        searchTextsTotal: jest
+      sl.set('SearchIndexDao', {
+        ...SearchIndexDao,
+        getMatchingTextCount: jest
           .fn()
           .mockRejectedValue('failed to retrieve search total'),
       });

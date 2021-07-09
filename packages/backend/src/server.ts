@@ -31,6 +31,7 @@ import CollectionTextUtils from './api/daos/CollectionTextUtils';
 import CacheStatusDao from './api/daos/CacheStatusDao';
 import PersonDao from './api/daos/PersonDao';
 import PersonTextOccurrencesDao from './api/daos/PersonTextOccurrences';
+import SearchIndexDao from './api/daos/SearchIndexDao';
 import GroupAllowlistDao from './api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from './api/daos/GroupEditPermissionsDao';
 
@@ -69,6 +70,7 @@ sl.set('CacheStatusDao', CacheStatusDao);
 sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('PersonDao', PersonDao);
 sl.set('PersonTextOccurrencesDao', PersonTextOccurrencesDao);
+sl.set('SearchIndexDao', SearchIndexDao);
 sl.set('GroupAllowlistDao', GroupAllowlistDao);
 sl.set('GroupEditPermissionsDao', GroupEditPermissionsDao);
 sl.set('utils', utils);
