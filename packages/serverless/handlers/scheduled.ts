@@ -14,6 +14,7 @@ export const exportSnapshotToS3: ScheduledHandler = async (
   _event,
   _context
 ) => {
+  console.log(rds);
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
