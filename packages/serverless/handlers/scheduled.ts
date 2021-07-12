@@ -39,6 +39,8 @@ export const exportSnapshotToS3: ScheduledHandler = async (
     // sourceArn = data.DBSnapshot?.DBSnapshotArn;
   });
 
+  console.log('Post-call');
+
   /* const startExportTaskeParams: RDS.StartExportTaskMessage = {
     ExportTaskIdentifier: `${snapshotName}-export`,
     SourceArn: sourceArn || '',
