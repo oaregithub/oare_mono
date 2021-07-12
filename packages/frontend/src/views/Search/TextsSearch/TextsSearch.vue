@@ -28,23 +28,28 @@
         >
       </v-col>
     </v-row>
-    <result-table
-      :searchResults="searchResults"
-      :loading="searchLoading"
-      :totalSearchResults="totalSearchResults"
-      :searchTotalLoading="searchTotalLoading"
-      :page="Number(page)"
-      @update:page="p => (page = p)"
-      :rows="Number(rows)"
-      @update:rows="r => (rows = r)"
+    <oare-data-table
+      :server-items-length="totalSearchResults"
       :headers="headers"
+      :items="searchResults"
+      item-key="uuid"
+      :fetch-items="searchTexts"
+      :watched-params="['translit', 'title']"
+      :default-rows="100"
     >
       <template #[`item.name`]="{ item }">
         <router-link :to="`/epigraphies/${item.uuid}/${item.discourseUuids}`">
           {{ item.name }}
         </router-link>
       </template>
-    </result-table>
+      <template #[`item.matches`]="{ item }">
+        <div
+          v-for="(match, index) in item.matches"
+          :key="index"
+          v-html="match"
+        ></div>
+      </template>
+    </oare-data-table>
   </div>
 </template>
 
@@ -54,7 +59,6 @@ import {
   ref,
   Ref,
   computed,
-  watch,
   onMounted,
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
@@ -63,6 +67,7 @@ import SearchInformationCard from './components/SearchInformationCard.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
+import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 
 export default defineComponent({
   name: 'TextsSearch',
@@ -79,35 +84,38 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const translitSearch = useQueryParam('translit', '');
-    const textTitleSearch = useQueryParam('title', '');
-    const rows = useQueryParam('rows', '100');
-    const page = useQueryParam('page', '1');
+    const translitQuery = useQueryParam('translit', '');
+    const textTitleQuery = useQueryParam('title', '');
+
+    const translitSearch = ref(translitQuery.value);
+    const textTitleSearch = ref(textTitleQuery.value);
 
     const headers = ref([
       {
         text: 'Text Name',
         value: 'name',
+        sortable: false,
       },
       {
         text: 'Matching Lines',
         value: 'matches',
+        sortable: false,
       },
     ]);
 
     const canPerformSearch = computed(() => {
-      return translitSearch.value.trim() || textTitleSearch.value.trim();
+      return !!(translitSearch.value.trim() || textTitleSearch.value.trim());
     });
 
-    const searchTexts = async () => {
+    const searchTexts = async ({ page, rows }: OareDataTableOptions) => {
       if (canPerformSearch.value) {
         searchLoading.value = true;
         try {
           let { results }: SearchTextsResponse = await server.searchTexts({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
-            page: Number(page.value),
-            rows: Number(rows.value),
+            page,
+            rows,
           });
           searchResults.value = results;
         } catch {
@@ -137,17 +145,13 @@ export default defineComponent({
     };
 
     const resetSearch = async () => {
-      page.value = '1';
       totalSearchResults.value = -1;
-      searchTexts();
+      translitQuery.value = translitSearch.value;
+      textTitleQuery.value = textTitleSearch.value;
       searchTextsTotal();
     };
 
-    watch([page, rows], searchTexts, { immediate: false });
-
     onMounted(() => {
-      totalSearchResults.value = Number(rows.value) * Number(page.value);
-      searchTexts();
       searchTextsTotal();
     });
 
@@ -158,8 +162,6 @@ export default defineComponent({
       searchLoading,
       totalSearchResults,
       canPerformSearch,
-      page,
-      rows,
       headers,
       highlightedItem,
       searchTexts,
