@@ -23,14 +23,19 @@ export const exportSnapshotToS3: ScheduledHandler = async (
     DBInstanceIdentifier: 'oarebyue_0.3' /* DB instance name */,
     DBSnapshotIdentifier: snapshotName,
   };
-  let sourceArn;
+  // let sourceArn;
 
-  rds.createDBSnapshot(createSnapshotParams, (_err, data) => {
-    sourceArn = data.DBSnapshot?.DBSnapshotArn;
+  rds.createDBSnapshot(createSnapshotParams, (err, data) => {
+    if (err) {
+      console.log(err, err.stack);
+    } else {
+      console.log('successfully created snapshot');
+    }
+    // sourceArn = data.DBSnapshot?.DBSnapshotArn;
   });
   console.log('Snapshot created');
 
-  const startExportTaskeParams: RDS.StartExportTaskMessage = {
+  /* const startExportTaskeParams: RDS.StartExportTaskMessage = {
     ExportTaskIdentifier: `${snapshotName}-export`,
     SourceArn: sourceArn || '',
     S3BucketName: process.env.S3_BUCKET || '',
@@ -40,5 +45,5 @@ export const exportSnapshotToS3: ScheduledHandler = async (
   };
 
   rds.startExportTask(startExportTaskeParams);
-  console.log('Export completed');
+  console.log('Export completed'); */
 };
