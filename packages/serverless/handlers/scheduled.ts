@@ -2,6 +2,7 @@ import { ScheduledHandler } from 'aws-lambda';
 import { RDS } from 'aws-sdk';
 
 const rdsConfig: RDS.ClientConfiguration = {
+  apiVersion: 'latest',
   accessKeyId: process.env.ACCESS_KEY,
   secretAccessKey: process.env.SECRET_KEY,
   region: 'us-west-2',
