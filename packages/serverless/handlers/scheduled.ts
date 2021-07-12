@@ -30,10 +30,10 @@ export const exportSnapshotToS3: ScheduledHandler = async (
       console.log(err, err.stack);
     } else {
       console.log('successfully created snapshot');
+      console.log(data);
     }
     // sourceArn = data.DBSnapshot?.DBSnapshotArn;
   });
-  console.log('Snapshot created');
 
   /* const startExportTaskeParams: RDS.StartExportTaskMessage = {
     ExportTaskIdentifier: `${snapshotName}-export`,
