@@ -20,7 +20,7 @@ export const exportSnapshotToS3: ScheduledHandler = async (
     .toLowerCase()}`;
 
   const createSnapshotParams: RDS.CreateDBSnapshotMessage = {
-    DBInstanceIdentifier: 'oarebyue_0.3' /* DB instance name */,
+    DBInstanceIdentifier: 'oare-0-3' /* DB instance name */,
     DBSnapshotIdentifier: snapshotName,
   };
   // let sourceArn;
