@@ -14,7 +14,7 @@ export const exportSnapshotToS3: ScheduledHandler = async (
   _context
 ) => {
   const currentDate = new Date();
-  const snapshotName = `oarebyue_0.3-snapshot-${currentDate
+  const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
     .replace(/\s+/g, '-')
     .toLowerCase()}`;
