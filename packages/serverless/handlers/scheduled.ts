@@ -29,8 +29,7 @@ export const exportSnapshotToS3: ScheduledHandler = (
 
   console.log('Pre-call');
 
-  // eslint-disable-next-line prefer-arrow-callback
-  rds.createDBSnapshot(createSnapshotParams, function (err, data) {
+  rds.createDBSnapshot(createSnapshotParams, (err, data) => {
     console.log('createDBSnapshot called');
     if (err) {
       console.log(err, err.stack);
