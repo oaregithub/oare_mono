@@ -10,7 +10,7 @@ const rdsConfig: RDS.ClientConfiguration = {
 
 const rds = new RDS(rdsConfig);
 
-export const exportSnapshotToS3: ScheduledHandler = async (
+export const exportSnapshotToS3: ScheduledHandler = (
   _event,
   _context,
   callback
