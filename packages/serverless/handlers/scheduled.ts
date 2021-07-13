@@ -15,7 +15,6 @@ export const exportSnapshotToS3: ScheduledHandler = async (
   _context,
   callback
 ) => {
-  console.log(rds);
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
@@ -23,7 +22,7 @@ export const exportSnapshotToS3: ScheduledHandler = async (
     .toLowerCase()}`;
 
   const createSnapshotParams: RDS.CreateDBSnapshotMessage = {
-    DBInstanceIdentifier: 'oare-0-3' /* DB instance name */,
+    DBInstanceIdentifier: 'oare-0-3',
     DBSnapshotIdentifier: snapshotName,
   };
   // let sourceArn;
@@ -38,7 +37,7 @@ export const exportSnapshotToS3: ScheduledHandler = async (
     } else {
       console.log('successfully created snapshot');
       console.log(data);
-      callback();
+      callback(null);
     }
     // sourceArn = data.DBSnapshot?.DBSnapshotArn;
   });
