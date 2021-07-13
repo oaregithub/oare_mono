@@ -15,6 +15,9 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
     .replace(/\s+/g, '-')
+    .toLowerCase()}-${currentDate
+    .toTimeString()
+    .replace(/\s+/g, '-')
     .toLowerCase()}`;
 
   const createSnapshotParams: RDS.CreateDBSnapshotMessage = {
