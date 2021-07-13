@@ -29,7 +29,7 @@ export const exportSnapshotToS3: ScheduledHandler = async (
 
   console.log('Pre-call');
 
-  rds.createDBSnapshot(createSnapshotParams, (err, data) => {
+  rds.createDBSnapshot(createSnapshotParams, function (err, data) {
     console.log('createDBSnapshot called');
     if (err) {
       console.log(err, err.stack);
