@@ -12,7 +12,8 @@ const rds = new RDS(rdsConfig);
 
 export const exportSnapshotToS3: ScheduledHandler = async (
   _event,
-  _context
+  _context,
+  callback
 ) => {
   console.log(rds);
   const currentDate = new Date();
@@ -33,9 +34,11 @@ export const exportSnapshotToS3: ScheduledHandler = async (
     console.log('createDBSnapshot called');
     if (err) {
       console.log(err, err.stack);
+      callback(err);
     } else {
       console.log('successfully created snapshot');
       console.log(data);
+      callback();
     }
     // sourceArn = data.DBSnapshot?.DBSnapshotArn;
   });
