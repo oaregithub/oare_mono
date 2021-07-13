@@ -11,6 +11,8 @@ const rdsConfig: RDS.ClientConfiguration = {
 const rds = new RDS(rdsConfig);
 
 export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
+  console.log(process.env.ACCESS_KEY);
+  console.log(process.env.SECRET_KEY);
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
@@ -21,19 +23,18 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
     DBInstanceIdentifier: 'oare-0-3',
     DBSnapshotIdentifier: snapshotName,
   };
-  // let sourceArn;
+  let sourceArn;
 
   rds.createDBSnapshot(createSnapshotParams, (err, data) => {
     if (err) {
       console.log(err, err.stack);
+      return;
     } else {
-      console.log('successfully created snapshot');
-      console.log(data);
+      sourceArn = data.DBSnapshot?.DBSnapshotArn;
     }
-    // sourceArn = data.DBSnapshot?.DBSnapshotArn;
   });
 
-  /* const startExportTaskeParams: RDS.StartExportTaskMessage = {
+  /* const startExportTaskParams: RDS.StartExportTaskMessage = {
     ExportTaskIdentifier: `${snapshotName}-export`,
     SourceArn: sourceArn || '',
     S3BucketName: process.env.S3_BUCKET || '',
@@ -42,6 +43,6 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
     ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
   };
 
-  rds.startExportTask(startExportTaskeParams);
+  rds.startExportTask(startExportTaskParams);
   console.log('Export completed'); */
 };
