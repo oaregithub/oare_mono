@@ -10,11 +10,7 @@ const rdsConfig: RDS.ClientConfiguration = {
 
 const rds = new RDS(rdsConfig);
 
-export const exportSnapshotToS3: ScheduledHandler = (
-  _event,
-  _context,
-  callback
-) => {
+export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
@@ -27,22 +23,15 @@ export const exportSnapshotToS3: ScheduledHandler = (
   };
   // let sourceArn;
 
-  console.log('Pre-call');
-
   rds.createDBSnapshot(createSnapshotParams, (err, data) => {
-    console.log('createDBSnapshot called');
     if (err) {
       console.log(err, err.stack);
-      callback(err);
     } else {
       console.log('successfully created snapshot');
       console.log(data);
-      callback(null);
     }
     // sourceArn = data.DBSnapshot?.DBSnapshotArn;
   });
-
-  console.log('Post-call');
 
   /* const startExportTaskeParams: RDS.StartExportTaskMessage = {
     ExportTaskIdentifier: `${snapshotName}-export`,
