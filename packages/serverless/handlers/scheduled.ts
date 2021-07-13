@@ -28,7 +28,6 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
   rds.createDBSnapshot(createSnapshotParams, (err, data) => {
     if (err) {
       console.log(err, err.stack);
-      return;
     } else {
       sourceArn = data.DBSnapshot?.DBSnapshotArn;
     }
