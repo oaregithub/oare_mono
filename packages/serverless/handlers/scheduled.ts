@@ -46,6 +46,7 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
           console.log(error, error.stack);
         } else {
           console.log('Export completed');
+          console.log(datas);
         }
       });
     }
