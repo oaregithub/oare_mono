@@ -32,7 +32,6 @@ import {
 import useQueryParam from '@/hooks/useQueryParam';
 import { DataOptions } from 'vuetify';
 import sl from '@/serviceLocator';
-import { debounce } from 'lodash';
 
 export interface OareDataTableOptions {
   page: number;
@@ -49,7 +48,7 @@ export default defineComponent({
     },
     defaultSort: {
       type: String,
-      required: true,
+      default: '',
     },
     defaultDesc: {
       type: Boolean,
