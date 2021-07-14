@@ -51,7 +51,7 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
           }
         });
 
-      setTimeout(exportTaskFunction, 3000);
+      setTimeout(exportTaskFunction, 6000);
       /* rds.startExportTask(startExportTaskParams, (error, datas) => {
         if (error) {
           console.log(error, error.stack);
