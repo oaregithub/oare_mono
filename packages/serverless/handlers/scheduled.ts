@@ -3,8 +3,6 @@ import { RDS } from 'aws-sdk';
 
 const rdsConfig: RDS.ClientConfiguration = {
   apiVersion: 'latest',
-  // accessKeyId: process.env.ACCESS_KEY,
-  // secretAccessKey: process.env.SECRET_KEY,
   region: 'us-west-2',
 };
 
@@ -28,7 +26,6 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
       console.log(err, err.stack);
     } else {
       sourceArn = data.DBSnapshot?.DBSnapshotArn;
-      console.log(`Source arn: ${sourceArn}`);
 
       const startExportTaskParams: RDS.StartExportTaskMessage = {
         ExportTaskIdentifier: `${snapshotName}-export`,
@@ -39,27 +36,14 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
         ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
       };
 
-      console.log(startExportTaskParams);
-
-      const exportTaskFunction = () =>
-        rds.startExportTask(startExportTaskParams, (error, datas) => {
-          if (error) {
-            console.log(error, error.stack);
-          } else {
-            console.log('Export completed');
-            console.log(datas);
-          }
-        });
-
-      setTimeout(exportTaskFunction, 6000);
-      /* rds.startExportTask(startExportTaskParams, (error, datas) => {
+      rds.startExportTask(startExportTaskParams, (error, datas) => {
         if (error) {
           console.log(error, error.stack);
         } else {
           console.log('Export completed');
           console.log(datas);
         }
-      }); */
+      });
     }
   });
 };
