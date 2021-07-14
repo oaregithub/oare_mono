@@ -3,16 +3,14 @@ import { RDS } from 'aws-sdk';
 
 const rdsConfig: RDS.ClientConfiguration = {
   apiVersion: 'latest',
-  accessKeyId: process.env.ACCESS_KEY,
-  secretAccessKey: process.env.SECRET_KEY,
+  // accessKeyId: process.env.ACCESS_KEY,
+  // secretAccessKey: process.env.SECRET_KEY,
   region: 'us-west-2',
 };
 
 const rds = new RDS(rdsConfig);
 
 export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
-  console.log(process.env.ACCESS_KEY);
-  console.log(process.env.SECRET_KEY);
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
