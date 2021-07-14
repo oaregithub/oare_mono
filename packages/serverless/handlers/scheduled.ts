@@ -31,7 +31,7 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
     }
   });
 
-  /* const startExportTaskParams: RDS.StartExportTaskMessage = {
+  const startExportTaskParams: RDS.StartExportTaskMessage = {
     ExportTaskIdentifier: `${snapshotName}-export`,
     SourceArn: sourceArn || '',
     S3BucketName: process.env.S3_BUCKET || '',
@@ -40,6 +40,11 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
     ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
   };
 
-  rds.startExportTask(startExportTaskParams);
-  console.log('Export completed'); */
+  rds.startExportTask(startExportTaskParams, (err, data) => {
+    if (err) {
+      console.log(err, err.stack);
+    } else {
+      console.log('Export completed');
+    }
+  });
 };
