@@ -28,6 +28,7 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
       console.log(err, err.stack);
     } else {
       sourceArn = data.DBSnapshot?.DBSnapshotArn;
+      console.log(`Source arn: ${sourceArn}`);
     }
   });
 
