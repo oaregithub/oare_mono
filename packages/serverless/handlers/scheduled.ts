@@ -42,7 +42,7 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
       console.log(startExportTaskParams);
 
       rds.startExportTask(startExportTaskParams, (error, datas) => {
-        if (err) {
+        if (error) {
           console.log(error, error.stack);
         } else {
           console.log('Export completed');
