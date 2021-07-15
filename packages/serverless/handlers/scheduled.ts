@@ -27,7 +27,19 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
     } else {
       sourceArn = data.DBSnapshot?.DBSnapshotArn;
 
-      const startExportTaskParams: RDS.StartExportTaskMessage = {
+      rds.describeDBSnapshots(
+        { DBSnapshotIdentifier: snapshotName },
+        (error, datas) => {
+          if (error) {
+            console.log(error, error.stack);
+          } else {
+            console.log('Snapshot retreived');
+            console.log(datas);
+          }
+        }
+      );
+
+      /* const startExportTaskParams: RDS.StartExportTaskMessage = {
         ExportTaskIdentifier: `${snapshotName}-export`,
         SourceArn: sourceArn || '',
         S3BucketName: process.env.S3_BUCKET || '',
@@ -43,7 +55,7 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
           console.log('Export completed');
           console.log(datas);
         }
-      });
+      }); */
     }
   });
 };
