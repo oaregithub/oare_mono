@@ -7,7 +7,11 @@ import {
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
-import { getSearchQuery, convertEpigraphicUnitRows } from './utils';
+import {
+  getSearchQuery,
+  convertEpigraphicUnitRows,
+  getSequentialCharacterQuery,
+} from './utils';
 import TextMarkupDao from '../TextMarkupDao';
 
 export interface EpigraphicQueryRow
@@ -88,6 +92,47 @@ class TextEpigraphyDao {
     const markupUnits = await TextMarkupDao.getMarkups(textUuid);
 
     return convertEpigraphicUnitRows(units, markupUnits);
+  }
+
+  private getJoinedTableNames(characters: SearchCooccurrence[]) {
+    return characters.reduce<string[]>(
+      (tableNames, char, coocIndex) => {
+        char.uuids.forEach((_char, charIndex) => {
+          if (coocIndex < 1 && charIndex < 1) {
+            return;
+          }
+          tableNames.push(`t${coocIndex}${charIndex}`);
+        });
+        return tableNames;
+      },
+      ['text_epigraphy']
+    );
+  }
+
+  async getDiscourseUuids(
+    textUuid: string,
+    rawCharacters: SearchCooccurrence[]
+  ): Promise<string[]> {
+    const characters = rawCharacters.filter(char => char.type === 'AND');
+
+    const tableNames = this.getJoinedTableNames(characters);
+    const rows: Record<string, string>[] = await getSequentialCharacterQuery(
+      characters,
+      true
+    )
+      .select(
+        ...tableNames.map(
+          (tableName, index) => `${tableName}.discourse_uuid AS d${index}`
+        )
+      )
+      .where('text_epigraphy.text_uuid', textUuid);
+
+    return rows.reduce<string[]>((discourses, row) => {
+      tableNames.forEach((_tName, index) => {
+        discourses.push(row[`d${index}`]);
+      });
+      return discourses;
+    }, []);
   }
 
   async searchNullDiscourseCount(

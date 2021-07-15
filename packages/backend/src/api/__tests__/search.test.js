@@ -28,9 +28,14 @@ describe('search test', () => {
       getMatchingSigns: jest.fn().mockResolvedValue(['lì']),
     };
 
+    const TextEpigraphyDao = {
+      getDiscourseUuids: jest.fn().mockResolvedValue(['discourseUuid']),
+    };
+
     beforeEach(() => {
       sl.set('SearchIndexDao', SearchIndexDao);
       sl.set('SignReadingDao', SignReadingDao);
+      sl.set('TextEpigraphyDao', TextEpigraphyDao);
     });
 
     const query = {
@@ -51,7 +56,7 @@ describe('search test', () => {
             name: 'Text 1',
             uuid: 'textUuid',
             matches: ['1. text line reading'],
-            discourseUuids: [],
+            discourseUuids: ['discourseUuid'],
           },
         ],
       });
@@ -219,8 +224,8 @@ describe('search test', () => {
           characters: '$lì-$lam₅-tam',
         });
 
-      expect(SignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(2);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledTimes(3);
+      expect(SignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(4);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledTimes(6);
 
       expect(response.status).toBe(200);
     });
