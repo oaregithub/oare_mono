@@ -36,26 +36,14 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
         ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
       };
 
-      const exportTaskFunction = () =>
-        rds.startExportTask(startExportTaskParams, (error, datas) => {
-          if (error) {
-            console.log(error, error.stack);
-          } else {
-            console.log('Export completed');
-            console.log(datas);
-          }
-        });
-
-      const result = setTimeout(() => exportTaskFunction, 1000 * 60 * 5);
-
-      /* rds.startExportTask(startExportTaskParams, (error, datas) => {
+      rds.startExportTask(startExportTaskParams, (error, datas) => {
         if (error) {
           console.log(error, error.stack);
         } else {
           console.log('Export completed');
           console.log(datas);
         }
-      }); */
+      });
     }
   });
 };
