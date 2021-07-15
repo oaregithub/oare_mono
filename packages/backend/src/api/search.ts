@@ -108,6 +108,7 @@ router.route('/search/count').get(async (req, res, next) => {
 router.route('/search').get(async (req, res, next) => {
   try {
     const SearchIndexDao = sl.get('SearchIndexDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     const {
       page,
@@ -116,6 +117,9 @@ router.route('/search').get(async (req, res, next) => {
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
 
+    const occurrencesForDiscourses = await prepareCharactersForSearch(
+      charsPayload
+    );
     const characterOccurrences = await prepareCharactersForSearchIndex(
       charsPayload
     );
@@ -134,11 +138,16 @@ router.route('/search').get(async (req, res, next) => {
           characterOccurrences,
           textUuid
         );
+        const discourseUuids = await TextEpigraphyDao.getDiscourseUuids(
+          textUuid,
+          occurrencesForDiscourses
+        );
+
         return {
           uuid: textUuid,
           name: textName,
           matches,
-          discourseUuids: [],
+          discourseUuids,
         };
       })
     );
