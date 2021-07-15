@@ -12,7 +12,7 @@ plugins:
   - serverless-offline
 
 functions:
-  rateHandler:
+  exportSnapshotToS3:
     handler: handlers/scheduled.exportSnapshotToS3
     events:
-      - schedule: rate(10 minutes)
+      - schedule: rate(20 minutes)
