@@ -21,7 +21,7 @@ export const exportSnapshot: ScheduledHandler = (_event, _context) => {
       if (err) {
         console.log(err, err.stack);
       } else {
-        let sourceArn = data.DBSnapshots
+        const sourceArn = data.DBSnapshots
           ? data.DBSnapshots[0].DBSnapshotArn
           : '';
 
