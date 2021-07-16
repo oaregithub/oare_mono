@@ -15,8 +15,8 @@ functions:
   createSnapshot:
     handler: handlers/scheduled.createSnapshot
     events:
-      - schedule: cron(30 18 * * ? *)
+      - schedule: cron(0 19 * * ? *)
   exportSnapshot:
     handler: handlers/scheduled.exportSnapshot
     events:
-      - schedule: cron(40 18 * * ? *)
+      - schedule: cron(10 19 * * ? *)

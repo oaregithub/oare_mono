@@ -31,7 +31,6 @@ export const exportSnapshot: ScheduledHandler = (_event, _context) => {
           S3BucketName: process.env.S3_BUCKET || '',
           IamRoleArn: process.env.IAM_ROLE_ARN || '',
           KmsKeyId: process.env.KMS_KEY_ID || '',
-          ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
         };
 
         rds.startExportTask(startExportTaskParams, (error, datas) => {
