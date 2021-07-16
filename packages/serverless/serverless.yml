@@ -9,14 +9,19 @@ provider:
 
 plugins:
   - serverless-plugin-typescript
+  - serverless-offline-scheduler
   - serverless-offline
 
 functions:
   createSnapshot:
-    handler: handlers/scheduled.createSnapshot
+    handler: handlers/exportLogging.createSnapshot
     events:
-      - schedule: cron(27 19 * * ? *)
+      - schedule: cron(0 6 1/15 * ? *)
   exportSnapshot:
-    handler: handlers/scheduled.exportSnapshot
+    handler: handlers/exportLogging.exportSnapshot
     events:
-      - schedule: cron(37 19 * * ? *)
+      - schedule: cron(10 6 1/15 * ? *)
+  clearLogging:
+    handler: handlers/exportLogging.clearLoggingTables
+    events:
+      - schedule: cron(20 6 1/15 * ? *)

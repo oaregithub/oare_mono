@@ -1,5 +1,6 @@
 import { ScheduledHandler } from 'aws-lambda';
 import { RDS } from 'aws-sdk';
+import knex from '../utils/connection';
 
 const rdsConfig: RDS.ClientConfiguration = {
   apiVersion: 'latest',
@@ -7,6 +8,14 @@ const rdsConfig: RDS.ClientConfiguration = {
 };
 
 const rds = new RDS(rdsConfig);
+
+export const clearLoggingTables: ScheduledHandler = async (
+  _event,
+  _context
+) => {
+  await knex('logging').del();
+  await knex('logging_edits').del();
+};
 
 export const exportSnapshot: ScheduledHandler = (_event, _context) => {
   const currentDate = new Date();
@@ -57,44 +66,12 @@ export const createSnapshot: ScheduledHandler = (_event, _context) => {
     DBInstanceIdentifier: 'oare-0-3',
     DBSnapshotIdentifier: snapshotName,
   };
-  // let sourceArn;
 
   rds.createDBSnapshot(createSnapshotParams, (err, _data) => {
     if (err) {
       console.log(err, err.stack);
     } else {
-      // sourceArn = data.DBSnapshot?.DBSnapshotArn;
       console.log('Snapshot successfully created');
-
-      /* rds.describeDBSnapshots(
-        { DBSnapshotIdentifier: snapshotName },
-        (error, datas) => {
-          if (error) {
-            console.log(error, error.stack);
-          } else {
-            console.log('Snapshot retreived');
-            console.log(datas);
-          }
-        }
-      ); */
-
-      /* const startExportTaskParams: RDS.StartExportTaskMessage = {
-        ExportTaskIdentifier: `${snapshotName}-export`,
-        SourceArn: sourceArn || '',
-        S3BucketName: process.env.S3_BUCKET || '',
-        IamRoleArn: process.env.IAM_ROLE_ARN || '',
-        KmsKeyId: process.env.KMS_KEY_ID || '',
-        ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
-      };
-
-      rds.startExportTask(startExportTaskParams, (error, datas) => {
-        if (error) {
-          console.log(error, error.stack);
-        } else {
-          console.log('Export completed');
-          console.log(datas);
-        }
-      }); */
     }
   });
 };
