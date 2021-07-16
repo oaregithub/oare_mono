@@ -8,26 +8,66 @@ const rdsConfig: RDS.ClientConfiguration = {
 
 const rds = new RDS(rdsConfig);
 
-export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
+export const exportSnapshot: ScheduledHandler = (_event, _context) => {
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
     .replace(/\s+/g, '-')
-    .toLowerCase()}-${currentDate.getHours()}-${currentDate.getMinutes()}`;
+    .toLowerCase()}`;
+
+  rds.describeDBSnapshots(
+    { DBSnapshotIdentifier: snapshotName },
+    (err, data) => {
+      if (err) {
+        console.log(err, err.stack);
+      } else {
+        let sourceArn = data.DBSnapshots
+          ? data.DBSnapshots[0].DBSnapshotArn
+          : '';
+
+        const startExportTaskParams: RDS.StartExportTaskMessage = {
+          ExportTaskIdentifier: `${snapshotName}-export`,
+          SourceArn: sourceArn || '',
+          S3BucketName: process.env.S3_BUCKET || '',
+          IamRoleArn: process.env.IAM_ROLE_ARN || '',
+          KmsKeyId: process.env.KMS_KEY_ID || '',
+          ExportOnly: ['oarebyue_0.3.logging', 'oarebyue_0.3.logging_edits'],
+        };
+
+        rds.startExportTask(startExportTaskParams, (error, datas) => {
+          if (error) {
+            console.log(error, error.stack);
+          } else {
+            console.log('Export completed');
+            console.log(datas);
+          }
+        });
+      }
+    }
+  );
+};
+
+export const createSnapshot: ScheduledHandler = (_event, _context) => {
+  const currentDate = new Date();
+  const snapshotName = `oare-0-3-snapshot-${currentDate
+    .toDateString()
+    .replace(/\s+/g, '-')
+    .toLowerCase()}`;
 
   const createSnapshotParams: RDS.CreateDBSnapshotMessage = {
     DBInstanceIdentifier: 'oare-0-3',
     DBSnapshotIdentifier: snapshotName,
   };
-  let sourceArn;
+  // let sourceArn;
 
-  rds.createDBSnapshot(createSnapshotParams, (err, data) => {
+  rds.createDBSnapshot(createSnapshotParams, (err, _data) => {
     if (err) {
       console.log(err, err.stack);
     } else {
-      sourceArn = data.DBSnapshot?.DBSnapshotArn;
+      // sourceArn = data.DBSnapshot?.DBSnapshotArn;
+      console.log('Snapshot successfully created');
 
-      rds.describeDBSnapshots(
+      /* rds.describeDBSnapshots(
         { DBSnapshotIdentifier: snapshotName },
         (error, datas) => {
           if (error) {
@@ -37,7 +77,7 @@ export const exportSnapshotToS3: ScheduledHandler = (_event, _context) => {
             console.log(datas);
           }
         }
-      );
+      ); */
 
       /* const startExportTaskParams: RDS.StartExportTaskMessage = {
         ExportTaskIdentifier: `${snapshotName}-export`,

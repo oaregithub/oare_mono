@@ -12,7 +12,11 @@ plugins:
   - serverless-offline
 
 functions:
-  exportSnapshotToS3:
-    handler: handlers/scheduled.exportSnapshotToS3
+  createSnapshot:
+    handler: handlers/scheduled.createSnapshot
     events:
-      - schedule: rate(20 minutes)
+      - schedule: cron(47 17 * * ? *)
+  exportSnapshot:
+    handler: handlers/scheduled.exportSnapshot
+    events:
+      - schedule: cron(57 17 * * ? *)
