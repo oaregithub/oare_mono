@@ -220,12 +220,13 @@ export const tokenizeExplicitSpelling = (
       tokenText,
     })
   );
+
   const phrases = separateTokenPhrases(normalizedRawTokens);
   if (!phrases.every(tokens => isValidGrammar(tokens, options.acceptMarkup))) {
     throw new Error('Invalid grammar');
   }
 
-  return phrases.flat();
+  return normalizedRawTokens;
 };
 
 export const spellingHtmlReading = (
@@ -258,7 +259,10 @@ export const spellingHtmlReading = (
           return '<sup>-</sup>';
         }
         if (tokenType === 'SPACE') {
-          return ' ';
+          return '&nbsp;';
+        }
+        if (tokenType === '=') {
+          return '-';
         }
 
         if (tokenType === 'NUMBER') {
