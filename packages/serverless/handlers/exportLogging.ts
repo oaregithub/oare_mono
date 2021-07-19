@@ -28,7 +28,7 @@ export const exportSnapshot: ScheduledHandler = (_event, _context) => {
     { DBSnapshotIdentifier: snapshotName },
     (err, data) => {
       if (err) {
-        console.log(err, err.stack);
+        console.log(err, err.stack); // eslint-disable-line no-console
       } else {
         const sourceArn = data.DBSnapshots
           ? data.DBSnapshots[0].DBSnapshotArn
@@ -42,12 +42,11 @@ export const exportSnapshot: ScheduledHandler = (_event, _context) => {
           KmsKeyId: process.env.KMS_KEY_ID || '',
         };
 
-        rds.startExportTask(startExportTaskParams, (error, datas) => {
+        rds.startExportTask(startExportTaskParams, (error, _datas) => {
           if (error) {
-            console.log(error, error.stack);
+            console.log(error, error.stack); // eslint-disable-line no-console
           } else {
-            console.log('Export completed');
-            console.log(datas);
+            console.log('Export completed'); // eslint-disable-line no-console
           }
         });
       }
@@ -69,9 +68,9 @@ export const createSnapshot: ScheduledHandler = (_event, _context) => {
 
   rds.createDBSnapshot(createSnapshotParams, (err, _data) => {
     if (err) {
-      console.log(err, err.stack);
+      console.log(err, err.stack); // eslint-disable-line no-console
     } else {
-      console.log('Snapshot successfully created');
+      console.log('Snapshot successfully created'); // eslint-disable-line no-console
     }
   });
 };
