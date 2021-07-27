@@ -16,15 +16,15 @@ functions:
   createSnapshot:
     handler: handlers/exportLogging.createSnapshot
     events:
-      - schedule: cron(50 20 * * ? *)
+      - schedule: cron(12 21 * * ? *)
       #- schedule: cron(5 6 1 * ? *) #12:05 AM MST on 1st day of each month
   exportSnapshot:
     handler: handlers/exportLogging.exportSnapshot
     events:
-      - schedule: cron(0 21 * * ? *)
+      - schedule: cron(22 21 * * ? *)
       #- schedule: cron(15 6 1 * ? *) #12:15 AM MST on 1st day of each month
-  clearLogging:
-    handler: handlers/exportLogging.clearLoggingTables
-    events:
-      - schedule: cron(10 21 * * ? *)
-      #- schedule: cron(25 6 1 * ? *) #12:25 AM MST on 1st day of each month
+  #clearLogging:
+  #handler: handlers/exportLogging.clearLoggingTables
+  #events:
+  #- schedule: cron(10 21 * * ? *)
+  #- schedule: cron(25 6 1 * ? *) #12:25 AM MST on 1st day of each month
