@@ -1,23 +1,31 @@
 import { ScheduledHandler } from 'aws-lambda';
-import { RDS } from 'aws-sdk';
+import { restoreAWS, setupAWS } from '../utils/aws';
 import knex from '../utils/connection';
-
-const rdsConfig: RDS.ClientConfiguration = {
-  apiVersion: 'latest',
-  region: 'us-west-2',
-};
-
-const rds = new RDS(rdsConfig);
 
 export const clearLoggingTables: ScheduledHandler = async (
   _event,
-  _context
+  _context,
+  callback
 ) => {
   await knex('logging').del();
   await knex('logging_edits').del();
+  callback();
 };
 
-export const exportSnapshot: ScheduledHandler = (_event, _context) => {
+export const exportSnapshot: ScheduledHandler = (
+  _event,
+  _context,
+  callback
+) => {
+  const AWS = setupAWS();
+
+  const rdsConfig: AWS.RDS.ClientConfiguration = {
+    apiVersion: 'latest',
+    region: 'us-west-2',
+  };
+
+  const rds = new AWS.RDS(rdsConfig);
+
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
@@ -30,11 +38,10 @@ export const exportSnapshot: ScheduledHandler = (_event, _context) => {
       if (err) {
         console.log(err, err.stack); // eslint-disable-line no-console
       } else {
-        const sourceArn = data.DBSnapshots
-          ? data.DBSnapshots[0].DBSnapshotArn
-          : '';
+        const sourceArn =
+          data && data.DBSnapshots ? data.DBSnapshots[0].DBSnapshotArn : '';
 
-        const startExportTaskParams: RDS.StartExportTaskMessage = {
+        const startExportTaskParams: AWS.RDS.StartExportTaskMessage = {
           ExportTaskIdentifier: `${snapshotName}-export`,
           SourceArn: sourceArn || '',
           S3BucketName: process.env.S3_BUCKET || '',
@@ -52,16 +59,31 @@ export const exportSnapshot: ScheduledHandler = (_event, _context) => {
       }
     }
   );
+  restoreAWS();
+  callback();
 };
 
-export const createSnapshot: ScheduledHandler = (_event, _context) => {
+export const createSnapshot: ScheduledHandler = (
+  _event,
+  _context,
+  callback
+) => {
+  const AWS = setupAWS();
+
+  const rdsConfig: AWS.RDS.ClientConfiguration = {
+    apiVersion: 'latest',
+    region: 'us-west-2',
+  };
+
+  const rds = new AWS.RDS(rdsConfig);
+
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
     .replace(/\s+/g, '-')
     .toLowerCase()}`;
 
-  const createSnapshotParams: RDS.CreateDBSnapshotMessage = {
+  const createSnapshotParams: AWS.RDS.CreateDBSnapshotMessage = {
     DBInstanceIdentifier: 'oare-0-3',
     DBSnapshotIdentifier: snapshotName,
   };
@@ -73,4 +95,6 @@ export const createSnapshot: ScheduledHandler = (_event, _context) => {
       console.log('Snapshot successfully created'); // eslint-disable-line no-console
     }
   });
+  restoreAWS();
+  callback();
 };
