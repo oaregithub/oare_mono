@@ -12,12 +12,12 @@ export const clearLoggingTables: ScheduledHandler = async (
   callback();
 };
 
-export const exportSnapshot: ScheduledHandler = (
+export const exportSnapshot: ScheduledHandler = async (
   _event,
   _context,
   callback
 ) => {
-  const AWS = setupAWS();
+  const AWS = await setupAWS();
 
   const rdsConfig: AWS.RDS.ClientConfiguration = {
     apiVersion: 'latest',
@@ -63,12 +63,12 @@ export const exportSnapshot: ScheduledHandler = (
   callback();
 };
 
-export const createSnapshot: ScheduledHandler = (
+export const createSnapshot: ScheduledHandler = async (
   _event,
   _context,
   callback
 ) => {
-  const AWS = setupAWS();
+  const AWS = await setupAWS();
 
   const rdsConfig: AWS.RDS.ClientConfiguration = {
     apiVersion: 'latest',
