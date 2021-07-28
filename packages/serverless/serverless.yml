@@ -7,9 +7,6 @@ provider:
   runtime: nodejs12.x
   lambdaHashingVersion: 20201221
 
-package:
-  excludeDevDependencies: false
-
 plugins:
   - serverless-plugin-typescript
   - serverless-offline-scheduler
@@ -19,12 +16,12 @@ functions:
   createSnapshot:
     handler: handlers/exportLogging.createSnapshot
     events:
-      - schedule: cron(21 1 * * ? *)
+      - schedule: cron(35 16 * * ? *)
       #- schedule: cron(5 6 1 * ? *) #12:05 AM MST on 1st day of each month
   exportSnapshot:
     handler: handlers/exportLogging.exportSnapshot
     events:
-      - schedule: cron(28 1 * * ? *)
+      - schedule: cron(45 16 * * ? *)
       #- schedule: cron(15 6 1 * ? *) #12:15 AM MST on 1st day of each month
   #clearLogging:
   #handler: handlers/exportLogging.clearLoggingTables
