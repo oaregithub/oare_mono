@@ -12,6 +12,9 @@ plugins:
   - serverless-offline-scheduler
   - serverless-offline
 
+package:
+  excludeDevDependencies: false
+
 functions:
   createSnapshot:
     handler: handlers/exportLogging.createSnapshot
