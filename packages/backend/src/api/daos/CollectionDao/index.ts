@@ -1,7 +1,7 @@
 import knex from '@/connection';
 import { Collection } from '@oare/types';
+import sl from '@/serviceLocator';
 import UserDao from '../UserDao';
-import CollectionGroupDao from '../CollectionGroupDao';
 
 class CollectionDao {
   async getCollectionByUuid(
@@ -17,8 +17,8 @@ class CollectionDao {
   async getTextCollectionUuid(textUuid: string): Promise<string | null> {
     const collection: { uuid: string } | null = await knex('collection')
       .select('collection.uuid')
-      .innerJoin('hierarchy', 'hierarchy.parent_uuid', 'collection.uuid')
-      .where('hierarchy.uuid', textUuid)
+      .innerJoin('hierarchy', 'hierarchy.obj_parent_uuid', 'collection.uuid')
+      .where('hierarchy.object_uuid', textUuid)
       .first();
     return collection ? collection.uuid : null;
   }
@@ -29,6 +29,7 @@ class CollectionDao {
   }
 
   async getAllCollections(userUuid: string | null): Promise<string[]> {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
     const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
     const isAdmin = user ? user.isAdmin : false;
 
@@ -39,7 +40,7 @@ class CollectionDao {
         if (!isAdmin) {
           qb.innerJoin(
             'hierarchy',
-            'hierarchy.uuid',
+            'hierarchy.object_uuid',
             'collection.uuid'
           ).andWhere('hierarchy.published', true);
         }
@@ -49,7 +50,7 @@ class CollectionDao {
 
     const collectionsViewable = await Promise.all(
       collectionUuids.map(uuid =>
-        CollectionGroupDao.canViewCollection(uuid, userUuid)
+        CollectionTextUtils.canViewCollection(uuid, userUuid)
       )
     );
 

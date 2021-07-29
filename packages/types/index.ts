@@ -1,4 +1,3 @@
-export * from './src/blacklist';
 export * from './src/collection';
 export * from './src/comments';
 export * from './src/dictionary';
@@ -16,3 +15,4 @@ export * from './src/textDiscourse';
 export * from './src/errors';
 export * from './src/people';
 export * from './src/profile';
+export * from './src/searchIndex';

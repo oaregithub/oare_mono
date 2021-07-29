@@ -324,7 +324,7 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('POST /dictionary/forms/:uuid', () => {
+  describe('PATCH /dictionary/forms/:uuid', () => {
     const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/dictionary/forms/${testUuid}`;
     const discourseUuids = ['uuid1', 'uuid2'];
@@ -345,9 +345,7 @@ describe('dictionary api test', () => {
     });
 
     const sendRequest = (auth = true) => {
-      const req = request(app)
-        .post(PATH)
-        .send({ uuid: 'test-uuid', form: 'newForm' });
+      const req = request(app).patch(PATH).send({ newForm: 'newForm' });
       if (auth) {
         return req.set('Authorization', 'token');
       }
@@ -373,16 +371,9 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 200', async () => {
+    it('returns 201', async () => {
       const response = await sendRequest();
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual({
-        uuid: testUuid,
-        form: {
-          uuid: 'test-uuid',
-          form: 'newForm',
-        },
-      });
+      expect(response.status).toBe(201);
     });
 
     it('logs edits to form', async () => {
@@ -1270,11 +1261,11 @@ describe('dictionary api test', () => {
       properties: [
         {
           variable: {
-            uuid: 'test-uuid',
+            objectUuid: 'test-uuid',
             type: 'taxonomy',
-            parentUuid: 'test-parent-uuid',
-            hierarchyParentUuid: 'test-hierarchy-1',
-            hierarchyUuid: 'test-hierarchy-2',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-1',
+            uuid: 'test-hierarchy-2',
             variableName: 'test-variable-name',
             valueName: null,
             varAbbreviation: 'test-var-abb',
@@ -1285,11 +1276,11 @@ describe('dictionary api test', () => {
             children: null,
           },
           value: {
-            uuid: 'test-uuid-2',
+            objectUuid: 'test-uuid-2',
             type: 'taxonomy',
-            parentUuid: 'test-parent-uuid',
-            hierarchyParentUuid: 'test-hierarchy-2',
-            hierarchyUuid: 'test-hierarchy-3',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-2',
+            uuid: 'test-hierarchy-3',
             variableName: null,
             valueName: 'test-value-name',
             varAbbreviation: null,

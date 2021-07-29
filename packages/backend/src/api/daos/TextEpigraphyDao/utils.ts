@@ -77,16 +77,14 @@ export function getSequentialCharacterQuery(
 
 export function getSearchQuery(
   characters: SearchCooccurrence[],
-  textBlacklist: string[],
-  textWhitelist: string[],
-  collectionBlacklist: string[],
+  textsToHide: string[],
   includeSuperfluous: boolean,
   textTitle?: string
 ) {
   // Join text table so text names can be returned
   let query = knex('text_epigraphy')
     .join('text', 'text.uuid', 'text_epigraphy.text_uuid')
-    .join('hierarchy', 'hierarchy.uuid', 'text_epigraphy.text_uuid');
+    .join('hierarchy', 'hierarchy.object_uuid', 'text_epigraphy.text_uuid');
 
   const andCooccurrences = characters.filter(char => char.type === 'AND');
   query = getSequentialCharacterQuery(
@@ -99,14 +97,7 @@ export function getSearchQuery(
     query = query.andWhere('text.name', 'like', `%${textTitle}%`);
   }
 
-  // Prevents blacklisted texts from appearing in search results (including texts in blacklisted collections)
-  query = query.whereNotIn('text_epigraphy.text_uuid', textBlacklist);
-  query = query.andWhere(q => {
-    q.whereNotIn('hierarchy.parent_uuid', collectionBlacklist).or.whereIn(
-      'text_epigraphy.text_uuid',
-      textWhitelist
-    );
-  });
+  query = query.whereNotIn('text_epigraphy.text_uuid', textsToHide);
 
   return query;
 }

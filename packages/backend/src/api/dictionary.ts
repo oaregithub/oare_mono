@@ -13,6 +13,7 @@ import {
   AddFormPayload,
   ParseTreePropertyRow,
   InsertItemPropertyRow,
+  UpdateFormPayload,
 } from '@oare/types';
 import { tokenizeExplicitSpelling, normalizeSign } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
@@ -227,14 +228,14 @@ router
 
 router
   .route('/dictionary/forms/:uuid')
-  .post(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
+  .patch(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
 
       const { uuid: formUuid } = req.params;
-      const formData: DictionaryForm = req.body;
+      const { newForm }: UpdateFormPayload = req.body;
       const userUuid = req.user!.uuid;
 
       await LoggingEditsDao.logEdit(
@@ -243,7 +244,7 @@ router
         'dictionary_form',
         formUuid
       );
-      await DictionaryFormDao.updateForm(formUuid, formData.form);
+      await DictionaryFormDao.updateForm(formUuid, newForm);
 
       const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(
         formUuid
@@ -255,13 +256,10 @@ router
       );
       await Promise.all(
         discourseUuids.map(uuid =>
-          TextDiscourseDao.updateDiscourseTranscription(uuid, formData.form)
+          TextDiscourseDao.updateDiscourseTranscription(uuid, newForm)
         )
       );
-      res.json({
-        uuid: formUuid,
-        form: formData,
-      });
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
@@ -506,9 +504,7 @@ router
         prop => {
           const parentUuid = propertiesWithUuids
             .filter(
-              baseProp =>
-                baseProp.value.hierarchyUuid ===
-                prop.variable.hierarchyParentUuid
+              baseProp => baseProp.value.uuid === prop.variable.parentUuid
             )
             .map(baseProp => baseProp.uuid)[0];
           return {

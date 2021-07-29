@@ -97,7 +97,9 @@ describe('FormsDisplay test', () => {
       ...mockForm,
       form: 'new form',
     };
-    expect(mockServer.updateForm).toHaveBeenCalledWith(updatedForm);
+    expect(mockServer.updateForm).toHaveBeenCalledWith('testUuid', {
+      newForm: 'new form',
+    });
     expect(updateForm).toHaveBeenCalledWith(updatedForm);
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
