@@ -1,4 +1,4 @@
-service: oare-serverless
+service: oareserverless
 
 frameworkVersion: '2'
 
@@ -9,10 +9,26 @@ provider:
 
 plugins:
   - serverless-plugin-typescript
+  - serverless-plugin-optimize
+  - serverless-offline-scheduler
   - serverless-offline
+
+package:
+  individually: true
 
 functions:
   createSnapshot:
     handler: src/handlers/exportLogging.createSnapshot
     events:
-      - schedule: rate(5 minutes)
+      #- schedule: cron(5 6 1 * ? *) #12:05 AM MST on 1st day of each month
+      - schedule: cron(55 21 * * ? *)
+  exportSnapshot:
+    handler: src/handlers/exportLogging.exportSnapshot
+    events:
+      #- schedule: cron(15 6 1 * ? *) #12:15 AM MST on 1st day of each month
+      - schedule: cron(5 22 * * ? *)
+  #clearLogging:
+  #handler: src/handlers/exportLogging.clearLoggingTables
+  #events:
+  #- schedule: cron(19 15 * * ? *)
+  #- schedule: cron(25 6 1 * ? *) #12:25 AM MST on 1st day of each month
