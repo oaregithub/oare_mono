@@ -1,4 +1,4 @@
-service: oareserverless
+service: oare-serverless
 
 frameworkVersion: '2'
 
