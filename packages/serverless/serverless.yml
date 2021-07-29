@@ -15,4 +15,4 @@ functions:
   createSnapshot:
     handler: src/handlers/exportLogging.createSnapshot
     events:
-      - schedule: rate(5 mins)
+      - schedule: rate(5 minutes)
