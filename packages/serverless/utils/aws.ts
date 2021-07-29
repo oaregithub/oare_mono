@@ -1,9 +1,8 @@
 import AWS from 'aws-sdk';
-// import AWSOffline from 'aws-sdk-mock';
+import AWSOffline from 'aws-sdk-mock';
 
-export const setupAWS = async () => {
+export const setupAWS = () => {
   if (process.env.NODE_ENV !== 'production') {
-    const AWSOffline = await import('aws-sdk-mock');
     AWSOffline.setSDKInstance(AWS);
 
     AWSOffline.mock(
@@ -31,7 +30,6 @@ export const setupAWS = async () => {
 
 export const restoreAWS = async () => {
   if (process.env.NODE_ENV !== 'production') {
-    const AWSOffline = await import('aws-sdk-mock');
     AWSOffline.restore();
   }
 };
