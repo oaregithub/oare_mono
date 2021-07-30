@@ -2,6 +2,45 @@ import { ScheduledHandler } from 'aws-lambda';
 import { restoreAWS, setupAWS } from '../utils/aws';
 import knex from '../utils/connection';
 
+export const createSnapshot: ScheduledHandler = (
+  _event,
+  _context,
+  callback
+) => {
+  const AWS = setupAWS();
+
+  const rdsConfig: AWS.RDS.ClientConfiguration = {
+    apiVersion: 'latest',
+    region: 'us-west-2',
+  };
+
+  const rds = new AWS.RDS(rdsConfig);
+
+  const currentDate = new Date();
+  const snapshotName = `oare-0-3-snapshot-${currentDate
+    .toDateString()
+    .replace(/\s+/g, '-')
+    .toLowerCase()}-${currentDate
+    .toTimeString()
+    .replace(/\s+/g, '-')
+    .toLowerCase()}`;
+
+  const createSnapshotParams: AWS.RDS.CreateDBSnapshotMessage = {
+    DBInstanceIdentifier: 'oare-0-3',
+    DBSnapshotIdentifier: snapshotName,
+  };
+
+  rds.createDBSnapshot(createSnapshotParams, (err, _data) => {
+    if (err) {
+      console.log(err, err.stack); // eslint-disable-line no-console
+    } else {
+      console.log('Snapshot successfully created'); // eslint-disable-line no-console
+    }
+  });
+  restoreAWS();
+  callback();
+};
+
 export const exportSnapshot: ScheduledHandler = (
   _event,
   _context,
@@ -19,6 +58,9 @@ export const exportSnapshot: ScheduledHandler = (
   const currentDate = new Date();
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
+    .replace(/\s+/g, '-')
+    .toLowerCase()}-${currentDate
+    .toTimeString()
     .replace(/\s+/g, '-')
     .toLowerCase()}`;
 
@@ -52,43 +94,6 @@ export const exportSnapshot: ScheduledHandler = (
       }
     }
   );
-  restoreAWS();
-  callback();
-};
-
-export const createSnapshot: ScheduledHandler = (
-  _event,
-  _context,
-  callback
-) => {
-  const AWS = setupAWS();
-
-  const rdsConfig: AWS.RDS.ClientConfiguration = {
-    apiVersion: 'latest',
-    region: 'us-west-2',
-  };
-
-  const rds = new AWS.RDS(rdsConfig);
-
-  const currentDate = new Date();
-  const snapshotName = `oare-0-3-snapshot-${currentDate
-    .toDateString()
-    .replace(/\s+/g, '-')
-    .toLowerCase()}`;
-
-  const createSnapshotParams: AWS.RDS.CreateDBSnapshotMessage = {
-    DBInstanceIdentifier: 'oare-0-3',
-    DBSnapshotIdentifier: snapshotName,
-  };
-
-  rds.createDBSnapshot(createSnapshotParams, (err, _data) => {
-    if (err) {
-      console.log(err, err.stack); // eslint-disable-line no-console
-    } else {
-      console.log('Snapshot successfully created'); // eslint-disable-line no-console
-    }
-  });
-  console.log(process.env.NODE_ENV);
   restoreAWS();
   callback();
 };
