@@ -44,8 +44,8 @@ export const exportSnapshot: ScheduledHandler = (
             console.log(error, error.stack); // eslint-disable-line no-console
           } else {
             console.log('Export completed'); // eslint-disable-line no-console
-            await knex('logging').del();
-            await knex('logging_edits').del();
+            // await knex('logging').del();
+            // await knex('logging_edits').del();
             console.log('Cleared logging tables'); // eslint-disable-line no-console
           }
         });
