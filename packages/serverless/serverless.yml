@@ -17,8 +17,8 @@ functions:
   createSnapshot:
     handler: src/handlers/exportLogging.createSnapshot
     events:
-      - schedule: cron(5 6 1,15 * ? *) #12:05 AM MST on 1st day of each month
+      - schedule: cron(5 6 1,15 * ? *) #12:05 AM MST on 1st and 15th days of each month
   exportSnapshot:
     handler: src/handlers/exportLogging.exportSnapshot
     events:
-      - schedule: cron(15 6 1,15 * ? *) #12:15 AM MST on 1st day of each month
+      - schedule: cron(15 6 1,15 * ? *) #12:15 AM MST on 1st and 15th days of each month
