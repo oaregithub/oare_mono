@@ -16,10 +16,10 @@ functions:
   createSnapshot:
     handler: src/handlers/exportLogging.createSnapshot
     events:
-      -schedule: cron(52 0 * * ? *)
+      -schedule: cron(59 0 * * ? *)
       #- schedule: cron(5 6 1 * ? *) #12:05 AM MST on 1st day of each month
   exportSnapshot:
     handler: src/handlers/exportLogging.exportSnapshot
     events:
       #- schedule: cron(15 6 1 * ? *) #12:15 AM MST on 1st day of each month
-      - schedule: cron(2 1 * * ? *)
+      - schedule: cron(9 1 * * ? *)
