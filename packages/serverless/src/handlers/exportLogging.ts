@@ -20,9 +20,6 @@ export const createSnapshot: ScheduledHandler = (
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
     .replace(/\s+/g, '-')
-    .toLowerCase()}-${currentDate
-    .toTimeString()
-    .replace(/\s+/g, '-')
     .toLowerCase()}`;
 
   const createSnapshotParams: AWS.RDS.CreateDBSnapshotMessage = {
@@ -33,8 +30,6 @@ export const createSnapshot: ScheduledHandler = (
   rds.createDBSnapshot(createSnapshotParams, (err, _data) => {
     if (err) {
       console.log(err, err.stack); // eslint-disable-line no-console
-    } else {
-      console.log('Snapshot successfully created'); // eslint-disable-line no-console
     }
   });
   restoreAWS();
@@ -59,9 +54,6 @@ export const exportSnapshot: ScheduledHandler = (
   const snapshotName = `oare-0-3-snapshot-${currentDate
     .toDateString()
     .replace(/\s+/g, '-')
-    .toLowerCase()}-${currentDate
-    .toTimeString()
-    .replace(/\s+/g, '-')
     .toLowerCase()}`;
 
   rds.describeDBSnapshots(
@@ -85,10 +77,8 @@ export const exportSnapshot: ScheduledHandler = (
           if (error) {
             console.log(error, error.stack); // eslint-disable-line no-console
           } else {
-            console.log('Export completed'); // eslint-disable-line no-console
-            // await knex('logging').del();
-            // await knex('logging_edits').del();
-            console.log('Cleared logging tables'); // eslint-disable-line no-console
+            await knex('logging').del();
+            await knex('logging_edits').del();
           }
         });
       }
