@@ -1,6 +1,8 @@
 node_modules
 dist
 build
+.build
+.serverless
 .vscode
 *.zip
 .DS_Store
