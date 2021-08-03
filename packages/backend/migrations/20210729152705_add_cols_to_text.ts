@@ -32,52 +32,52 @@ export async function up(knex: Knex): Promise<void> {
 
   if (!hasExcavationPrefColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN excavation_prfx VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER name; '
+      'ALTER TABLE text ADD COLUMN excavation_prfx VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER name; '
     );
   }
   if (!hasExcavationNoColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN excavation_no VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER excavation_prfx;'
+      'ALTER TABLE text ADD COLUMN excavation_no VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER excavation_prfx;'
     );
   }
   if (!hasMuseumPrfxColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN museum_prfx VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER excavation_no; '
+      'ALTER TABLE text ADD COLUMN museum_prfx VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER excavation_no; '
     );
   }
   if (!hasMuseumNoColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN museum_no VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER museum_prfx; '
+      'ALTER TABLE text ADD COLUMN museum_no VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER museum_prfx; '
     );
   }
   if (!hasPublicationPrfxColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN publication_prfx VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER museum_prfx; '
+      'ALTER TABLE text ADD COLUMN publication_prfx VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER museum_prfx; '
     );
   }
   if (!hasPublicationNoColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN publication_no VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER publication_prfx; '
+      'ALTER TABLE text ADD COLUMN publication_no VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER publication_prfx; '
     );
   }
   if (!hasObjectTypeColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN object_type VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER publication_no; '
+      'ALTER TABLE text ADD COLUMN object_type VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER publication_no; '
     );
   }
   if (!hasSourceColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN source VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER object_type; '
+      'ALTER TABLE text ADD COLUMN source VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER object_type; '
     );
   }
   if (!hasGenreColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN genre VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER source; '
+      'ALTER TABLE text ADD COLUMN genre VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER source; '
     );
   }
   if (!hasSubgenreColumn) {
     await knex.raw(
-      'ALTER TABLE period ADD COLUMN subgenre VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER genre; '
+      'ALTER TABLE text ADD COLUMN subgenre VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER genre; '
     );
   }
 }
