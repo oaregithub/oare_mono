@@ -70,7 +70,7 @@ export default defineComponent({
 
     const updateSelected = (selection: number[]) => {
       selectedImages.value = selection;
-      while (selectedImages.value.length > 2) {
+      if (selectedImages.value.length > 2) {
         selectedImages.value.shift();
       }
     };

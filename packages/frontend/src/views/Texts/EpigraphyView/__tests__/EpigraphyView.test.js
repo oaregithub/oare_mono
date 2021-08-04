@@ -26,6 +26,9 @@ describe('Epigraphy View', () => {
       markups: [],
     }),
     getSingleDraft: jest.fn().mockResolvedValue({}),
+    getImageLinks: jest
+      .fn()
+      .mockResolvedValue(['test-cdli-link', 'test-s3-link']),
   };
 
   const mockActions = {
@@ -72,6 +75,25 @@ describe('Epigraphy View', () => {
       server: {
         ...mockServer,
         getEpigraphicInfo: jest.fn().mockRejectedValue({}),
+      },
+    });
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('retreives image urls on load', async () => {
+    createWrapper();
+    await flushPromises();
+    expect(mockServer.getImageLinks).toHaveBeenCalled();
+  });
+
+  it('displays error snackbar on failed image url retrieval', async () => {
+    createWrapper({
+      server: {
+        ...mockServer,
+        getImageLinks: jest
+          .fn()
+          .mockRejectedValue('failed image url retrieval'),
       },
     });
     await flushPromises();
