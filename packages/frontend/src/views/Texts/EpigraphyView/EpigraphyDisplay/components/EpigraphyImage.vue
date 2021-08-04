@@ -8,7 +8,6 @@
         show-arrows
         center-active
         multiple
-        mandatory
       >
         <v-slide-item
           v-for="(image, index) in imageLinks"
