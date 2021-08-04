@@ -1,21 +1,33 @@
 import knex from '@/connection';
 import fetch from 'node-fetch';
+import AWS from 'aws-sdk';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
     textUuid: string,
     cdliNum: string
   ): Promise<string[]> {
-    const resourceLinks = await knex('resource')
+    const s3 = new AWS.S3();
+
+    const resourceLinks: string[] = await knex('resource')
       .pluck('link')
       .whereIn(
         'uuid',
         knex('link').select('obj_uuid').where('reference_uuid', textUuid)
       )
       .whereNot('link', 'like', '%cdli%');
+
+    const signedUrls = resourceLinks.map(link => {
+      const key = link.slice(link.lastIndexOf('/') + 1);
+      const params = {
+        Bucket: 'oare-image-bucket',
+        Key: key,
+      };
+      return s3.getSignedUrl('getObject', params);
+    });
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
-    const response = cdliLinks.concat(resourceLinks);
+    const response = cdliLinks.concat(signedUrls);
 
     return response;
   }
