@@ -17,14 +17,16 @@ class ResourceDao {
       )
       .whereNot('link', 'like', '%cdli%');
 
-    const signedUrls = resourceLinks.map(link => {
-      const key = link.slice(link.lastIndexOf('/') + 1);
-      const params = {
-        Bucket: 'oare-image-bucket',
-        Key: key,
-      };
-      return s3.getSignedUrl('getObject', params);
-    });
+    const signedUrls = await Promise.all(
+      resourceLinks.map(link => {
+        const key = link.slice(link.lastIndexOf('/') + 1);
+        const params = {
+          Bucket: 'oare-image-bucket',
+          Key: key,
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
     const response = cdliLinks.concat(signedUrls);
