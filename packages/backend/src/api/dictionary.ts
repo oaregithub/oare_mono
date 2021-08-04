@@ -452,7 +452,11 @@ router
         const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(
           wordUuid
         );
-        const forms = await DictionaryFormDao.getWordForms(wordUuid, isAdmin);
+        const forms = await DictionaryFormDao.getWordForms(
+          wordUuid,
+          isAdmin,
+          true
+        );
 
         // Only get the one form from the formUuid (keep all spellings of the form)
         const selectedForms = forms.filter(form => form.uuid === formUuid);
