@@ -175,7 +175,7 @@ export default defineComponent({
 
     const canViewEpigraphyImages = computed(
       () =>
-        hasPicture &&
+        hasPicture.value &&
         store.getters.permissions
           .map(permission => permission.name)
           .includes('VIEW_EPIGRAPHY_IMAGES')
