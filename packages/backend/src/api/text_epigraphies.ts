@@ -5,6 +5,23 @@ import { EpigraphyResponse } from '@oare/types';
 
 const router = express.Router();
 
+router
+  .route('/text_epigraphies/images/:uuid/:cdliNum')
+  .get(async (req, res, next) => {
+    try {
+      const { uuid: textUuid, cdliNum } = req.params;
+      const ResourceDao = sl.get('ResourceDao');
+
+      const response = await ResourceDao.getImageLinksByTextUuid(
+        textUuid,
+        cdliNum
+      );
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
 router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
   try {
     const { uuid: textUuid } = req.params;
