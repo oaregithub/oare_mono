@@ -28,6 +28,7 @@ import PersonTextOccurrencesDao from '@/api/daos/PersonTextOccurrences';
 import SearchIndexDao from '@/api/daos/SearchIndexDao';
 import GroupAllowlistDao from '@/api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from '@/api/daos/GroupEditPermissionsDao';
+import ResourceDao from '@/api/daos/ResourceDao';
 import * as utils from '@/utils';
 
 const instances: { [key: string]: any } = {};
@@ -63,6 +64,7 @@ export type ServiceTypes = {
   SearchIndexDao: typeof SearchIndexDao;
   GroupAllowlistDao: typeof GroupAllowlistDao;
   GroupEditPermissionsDao: typeof GroupEditPermissionsDao;
+  ResourceDao: typeof ResourceDao;
   utils: typeof utils;
 };
 
