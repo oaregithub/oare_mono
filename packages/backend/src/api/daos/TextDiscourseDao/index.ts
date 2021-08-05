@@ -177,8 +177,12 @@ class TextDiscourseDao {
 
   async getTotalSpellingTexts(
     spellingUuid: string,
+    userUuid: string | null,
     pagination: Partial<Pagination> = {}
   ): Promise<number> {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
     const countRow = await this.createSpellingTextsQuery(
       spellingUuid,
       pagination
@@ -188,6 +192,7 @@ class TextDiscourseDao {
           qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
         }
       })
+      .modify(qb => qb.whereNotIn('text.uuid', textsToHide))
       .count({ count: 'text_discourse.uuid' })
       .first();
 
@@ -196,8 +201,12 @@ class TextDiscourseDao {
 
   async getSpellingTextOccurrences(
     spellingUuid: string,
+    userUuid: string | null,
     { limit, page, filter }: Pagination
   ) {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
     const query = this.createSpellingTextsQuery(spellingUuid, { filter })
       .distinct(
         'text_discourse.uuid AS discourseUuid',
@@ -211,6 +220,7 @@ class TextDiscourseDao {
         'te.discourse_uuid',
         'text_discourse.uuid'
       )
+      .modify(qb => qb.whereNotIn('text.uuid', textsToHide))
       .orderBy('text.name')
       .limit(limit)
       .offset((page - 1) * limit);
