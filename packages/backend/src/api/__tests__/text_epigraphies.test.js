@@ -3,6 +3,42 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
+describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
+  const uuid = 'test-uuid';
+  const cdliNum = 'test-cdli';
+  const PATH = `${API_PATH}/text_epigraphies/images/${uuid}/${cdliNum}`;
+
+  const mockResourceDao = {
+    getImageLinksByTextUuid: jest
+      .fn()
+      .mockResolvedValue(['test-cdli-link', 'test-s3-link']),
+  };
+
+  const setup = () => {
+    sl.set('ResourceDao', mockResourceDao);
+  };
+
+  const sendRequest = () => request(app).get(PATH);
+
+  beforeEach(setup);
+
+  it('returns 200 on successfuly link retrieval', async () => {
+    const response = await sendRequest();
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 500 on failed link retrieval', async () => {
+    sl.set('ResourceDao', {
+      ...mockResourceDao,
+      getImageLinksByTextUuid: jest
+        .fn()
+        .mockRejectedValue('failed image link retrieval'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
 describe('GET /text_epigraphies/:uuid', () => {
   const textUuid = 12345;
   const PATH = `${API_PATH}/text_epigraphies/${textUuid}`;

@@ -4,6 +4,7 @@ export type RawTokenType =
   | '+'
   | '.'
   | '-'
+  | '='
   | 'DETSEPARATOR'
   | 'COMPSEPARATOR'
   | '('

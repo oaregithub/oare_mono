@@ -38,6 +38,18 @@ describe('spelling grammar test', () => {
     expect(spellingHtmlReading('0.5+LÁ')).toBe('0.5+LÁ');
   });
 
+  it('returns correct html reading for names', () => {
+    expect(spellingHtmlReading('a-mur=(d)IM')).toBe(
+      '<em>a</em>-<em>mur</em>-<sup>d</sup>IM'
+    );
+  });
+
+  it('returns correct html reading for spellings with spaces', () => {
+    expect(spellingHtmlReading('áb ša-ra-nim')).toBe(
+      '<em>áb</em>&nbsp;<em>ša</em>-<em>ra</em>-<em>nim</em>'
+    );
+  });
+
   it('parses signs with spaces', () => {
     tokenizeExplicitSpelling('áb ša-ra-nim');
   });
@@ -160,6 +172,22 @@ describe('spelling grammar test', () => {
 
   it('parses numbers inside logogram expressions', () => {
     tokenizeExplicitSpelling('ITU.3.KAM');
+  });
+
+  it('parses personal names', () => {
+    tokenizeExplicitSpelling('i-dí=(d)UTU-ši');
+  });
+
+  it("rejects determinatives in middles of spellings that aren't names", () => {
+    expect(() => tokenizeExplicitSpelling('i-dí=(m)UTU-ši')).toThrow();
+  });
+
+  it('rejects personal names without an equals sign before determinative', () => {
+    expect(() => tokenizeExplicitSpelling('i-dí-(d)UTU-ši')).toThrow();
+  });
+
+  it('rejects misplaced equals sign', () => {
+    expect(() => tokenizeExplicitSpelling('i-dí=')).toThrow();
   });
 });
 

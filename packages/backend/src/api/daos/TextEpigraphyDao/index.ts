@@ -11,7 +11,6 @@ import {
   getSearchQuery,
   convertEpigraphicUnitRows,
   getSequentialCharacterQuery,
-  getNotOccurrenceTexts,
 } from './utils';
 import TextMarkupDao from '../TextMarkupDao';
 
@@ -95,116 +94,45 @@ class TextEpigraphyDao {
     return convertEpigraphicUnitRows(units, markupUnits);
   }
 
-  private async getMatchingTexts({
-    characters,
-    title,
-    pagination,
-    userUuid,
-  }: SearchTextArgs): Promise<string[]> {
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters);
-
-    const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
-      characters,
-      textsToHide,
-      true,
-      title
-    )
-      .select('text_epigraphy.text_uuid AS uuid')
-      .whereNotIn('text_epigraphy.text_uuid', notUuids)
-      .orderBy('text.name')
-      .groupBy('text.name')
-      .limit(pagination.limit)
-      .offset((pagination.page - 1) * pagination.limit);
-
-    return matchingTexts.map(({ uuid }) => uuid);
+  private getJoinedTableNames(characters: SearchCooccurrence[]) {
+    return characters.reduce<string[]>(
+      (tableNames, char, coocIndex) => {
+        char.uuids.forEach((_char, charIndex) => {
+          if (coocIndex < 1 && charIndex < 1) {
+            return;
+          }
+          tableNames.push(`t${coocIndex}${charIndex}`);
+        });
+        return tableNames;
+      },
+      ['text_epigraphy']
+    );
   }
 
-  private async getMatchingLines(
-    textUuid: string,
-    rawCharacters: SearchCooccurrence[]
-  ): Promise<number[]> {
-    const characters = rawCharacters.filter(char => char.type === 'AND');
-    const rows: Array<{ line: number }> = (
-      await Promise.all(
-        characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(characters, true);
-          return query
-            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
-            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
-            .where('text_epigraphy.text_uuid', textUuid);
-        })
-      )
-    ).flat();
-
-    const lines = rows.map(({ line }) => line).sort((a, b) => a - b);
-    return [...new Set(lines)];
-  }
-
-  private async getDiscourseUuids(
+  async getDiscourseUuids(
     textUuid: string,
     rawCharacters: SearchCooccurrence[]
   ): Promise<string[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
-    const rows: Array<{ discourseUuid: string }> = (
-      await Promise.all(
-        characters.map(_char => {
-          const query = getSequentialCharacterQuery(characters, true);
-          return query
-            .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
-            .where('text_epigraphy.text_uuid', textUuid);
-        })
+
+    const tableNames = this.getJoinedTableNames(characters);
+    const rows: Record<string, string>[] = await getSequentialCharacterQuery(
+      characters,
+      true
+    )
+      .select(
+        ...tableNames.map(
+          (tableName, index) => `${tableName}.discourse_uuid AS d${index}`
+        )
       )
-    ).flat();
+      .where('text_epigraphy.text_uuid', textUuid);
 
-    const uuids = rows.map(row => row.discourseUuid);
-    return [...new Set(uuids)];
-  }
-
-  async searchTexts(args: SearchTextArgs): Promise<TextUuidWithLines[]> {
-    // List of text UUIDs matching the search
-    const textUuids = await this.getMatchingTexts(args);
-
-    // For each text UUID, get a list of lines that match the search
-    const textLines = await Promise.all(
-      textUuids.map(uuid => this.getMatchingLines(uuid, args.characters))
-    );
-
-    // Get discourse uuids that match the search
-    const discourseUuids = await Promise.all(
-      textUuids.map(uuid => this.getDiscourseUuids(uuid, args.characters))
-    );
-
-    return textUuids.map((uuid, index) => ({
-      uuid,
-      lines: textLines[index],
-      discourseUuids: discourseUuids[index],
-    }));
-  }
-
-  async searchTextsTotal({
-    characters,
-    title,
-    userUuid,
-  }: Pick<
-    SearchTextArgs,
-    'characters' | 'title' | 'userUuid'
-  >): Promise<number> {
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters);
-
-    const totalRows: number = (
-      await getSearchQuery(characters, textsToHide, true, title)
-        .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
-        .whereNotIn('text_epigraphy.text_uuid', notUuids)
-        .first()
-    ).count;
-
-    return totalRows;
+    return rows.reduce<string[]>((discourses, row) => {
+      tableNames.forEach((_tName, index) => {
+        discourses.push(row[`d${index}`]);
+      });
+      return discourses;
+    }, []);
   }
 
   async searchNullDiscourseCount(

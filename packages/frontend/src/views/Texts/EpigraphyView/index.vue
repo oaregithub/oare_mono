@@ -18,7 +18,11 @@
       >
     </template>
     <v-row>
-      <v-col cols="12" :sm="hasPicture ? 7 : 12" :md="hasPicture ? 5 : 12">
+      <v-col
+        cols="12"
+        :sm="canViewEpigraphyImages ? 7 : 12"
+        :md="canViewEpigraphyImages ? 5 : 12"
+      >
         <router-view v-bind="routeProps" v-on="routeActions"></router-view>
       </v-col>
       <v-col
@@ -28,11 +32,7 @@
         v-if="canViewEpigraphyImages"
         class="relative test-cdli-image"
       >
-        <EpigraphyImage
-          :cdli="textInfo.cdliNum"
-          @image-loaded="hasPicture = true"
-          @image-error="textInfo.cdliNum = null"
-        />
+        <EpigraphyImage :imageLinks="imageUrls" />
       </v-col>
     </v-row>
   </OareContentView>
@@ -88,7 +88,7 @@ export default defineComponent({
 
     const loading = ref(false);
     const draft = ref<DraftContent | null>(null);
-    const hasPicture = ref(false);
+    const hasPicture = computed(() => imageUrls.value.length > 0);
     const textInfo = ref<EpigraphyResponse>({
       canWrite: false,
       textName: '',
@@ -102,6 +102,7 @@ export default defineComponent({
       colorMeaning: '',
       discourseUnits: [],
     });
+    const imageUrls = ref<string[]>([]);
 
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
@@ -174,7 +175,7 @@ export default defineComponent({
 
     const canViewEpigraphyImages = computed(
       () =>
-        textInfo.value.cdliNum &&
+        hasPicture.value &&
         store.getters.permissions
           .map(permission => permission.name)
           .includes('VIEW_EPIGRAPHY_IMAGES')
@@ -185,6 +186,10 @@ export default defineComponent({
         loading.value = true;
         textInfo.value = await server.getEpigraphicInfo(textUuid);
         draft.value = textInfo.value.draft || null;
+        imageUrls.value = await server.getImageLinks(
+          textUuid,
+          textInfo.value.cdliNum
+        );
       } catch (err) {
         if (err.response) {
           if (err.response.status === 403) {
@@ -209,6 +214,7 @@ export default defineComponent({
       routeActions,
       loading,
       canViewEpigraphyImages,
+      imageUrls,
     };
   },
 });

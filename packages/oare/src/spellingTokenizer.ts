@@ -149,6 +149,19 @@ export const hasValidMarkup = (tokens: Token[]): boolean => {
   return markupValid;
 };
 
+const validName = (tokens: Token[]): boolean => {
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i];
+
+    // This won't go out of bounds since the grammar itself
+    // would catch it before this function would even be called
+    if (token.tokenType === '=' && tokens[i + 2].tokenText !== 'd') {
+      return false;
+    }
+  }
+  return true;
+};
+
 const isValidGrammar = (tokens: Token[], acceptMarkup = false) => {
   // If there are numbers, they must be separated by a + or appear
   // only at the beginning of a sign
@@ -180,6 +193,11 @@ const isValidGrammar = (tokens: Token[], acceptMarkup = false) => {
     return false;
   }
 
+  // Make sure = sign are always followed by (d)
+  if (tokens.some(({ tokenType }) => tokenType === '=') && !validName(tokens)) {
+    return false;
+  }
+
   return true;
 };
 
@@ -202,12 +220,13 @@ export const tokenizeExplicitSpelling = (
       tokenText,
     })
   );
+
   const phrases = separateTokenPhrases(normalizedRawTokens);
   if (!phrases.every(tokens => isValidGrammar(tokens, options.acceptMarkup))) {
     throw new Error('Invalid grammar');
   }
 
-  return phrases.flat();
+  return normalizedRawTokens;
 };
 
 export const spellingHtmlReading = (
@@ -240,7 +259,10 @@ export const spellingHtmlReading = (
           return '<sup>-</sup>';
         }
         if (tokenType === 'SPACE') {
-          return ' ';
+          return '&nbsp;';
+        }
+        if (tokenType === '=') {
+          return '-';
         }
 
         if (tokenType === 'NUMBER') {

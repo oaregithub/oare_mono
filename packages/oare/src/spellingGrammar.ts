@@ -58,6 +58,7 @@ signsuffix
 
 signphrase 
   : signphrase separator SIGN
+  | signphrase '=' detsign SIGN
   | SIGN
 ;
 
@@ -70,6 +71,11 @@ detphrase
   : detsign
   | detphrase detsign
   | detphrase DETSEPARATOR detsign
+;
+
+opt_detsign
+  : detsign
+  | /* empty */
 ;
 
 detsign

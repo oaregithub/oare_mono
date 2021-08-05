@@ -1,6 +1,6 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 import sl from '@/serviceLocator';
-import { SearchCooccurrence } from '@oare/types';
+import { SearchCooccurrence, SearchIndexCooccurrence } from '@oare/types';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
 export async function prepareIndividualSearchCharacters(
@@ -15,6 +15,28 @@ export async function prepareIndividualSearchCharacters(
     signsArray.map(signs => SignReadingDao.getIntellisearchSignUuids(signs))
   );
   return characterUuids;
+}
+
+function twoArrayCombos(list1: string[], list2: string[]): string[] {
+  const combinations: string[] = [];
+  for (let i = 0; i < list1.length; i += 1) {
+    for (let j = 0; j < list2.length; j += 1) {
+      combinations.push(`${list1[i]} ${list2[j]}`);
+    }
+  }
+  return combinations;
+}
+
+function uuidCombinations(uuidLists: string[][]): string[] {
+  if (uuidLists.length === 0) {
+    return [];
+  }
+
+  if (uuidLists.length === 1) {
+    return uuidLists[0];
+  }
+
+  return twoArrayCombos(uuidLists[0], uuidCombinations(uuidLists.slice(1)));
 }
 
 export async function prepareCharactersForSearch(
@@ -39,7 +61,18 @@ export async function prepareCharactersForSearch(
       type: cooccurrenceTypes[index],
     })
   );
+
   return characterUuids;
+}
+
+export async function prepareCharactersForSearchIndex(
+  charsPayload?: string
+): Promise<SearchIndexCooccurrence[]> {
+  const occurrences = await prepareCharactersForSearch(charsPayload);
+  return occurrences.map(({ uuids, type }) => ({
+    uuids: uuidCombinations(uuids),
+    type,
+  }));
 }
 
 export const applyIntellisearch = async (
