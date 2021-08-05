@@ -273,8 +273,10 @@ router
       const utils = sl.get('utils');
       const { filter } = utils.extractPagination(req.query);
       const { uuid } = req.params;
+      const userUuid = req.user ? req.user.uuid : null;
       const totalOccurrences = await TextDiscourseDao.getTotalSpellingTexts(
         uuid,
+        userUuid,
         { filter }
       );
 
@@ -292,10 +294,12 @@ router
       const TextDiscourseDao = sl.get('TextDiscourseDao');
 
       const { uuid } = req.params;
+      const userUuid = req.user ? req.user.uuid : null;
       const pagination = utils.extractPagination(req.query);
 
       const rows = await TextDiscourseDao.getSpellingTextOccurrences(
         uuid,
+        userUuid,
         pagination
       );
 
