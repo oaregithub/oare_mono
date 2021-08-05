@@ -83,7 +83,11 @@ class TextDiscourseDao {
 
   async getTextSpellings(textUuid: string): Promise<DiscourseLineSpelling[]> {
     const rows = await knex('text_discourse')
-      .select('word_on_tablet AS wordOnTablet', 'explicit_spelling AS spelling')
+      .select(
+        'word_on_tablet AS wordOnTablet',
+        'explicit_spelling AS spelling',
+        'transcription'
+      )
       .from('text_discourse')
       .where('text_uuid', textUuid)
       .andWhere(function () {
