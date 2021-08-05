@@ -49,6 +49,15 @@
           v-html="match"
         ></div>
       </template>
+      <template #[`footer.page-text`]="items">
+        <div v-if="!items.itemsLength || !items.pageStart || !items.pageStop">
+          –
+        </div>
+        <div v-else>
+          {{ items.pageStart }} - {{ items.pageStop }} of
+          {{ searchTotalLoading ? 'Loading...' : items.itemsLength }}
+        </div>
+      </template>
     </oare-data-table>
   </div>
 </template>
@@ -152,7 +161,7 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      searchTextsTotal();
+      resetSearch();
     });
 
     return {
