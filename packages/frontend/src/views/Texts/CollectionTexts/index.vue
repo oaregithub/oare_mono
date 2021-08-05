@@ -9,8 +9,7 @@
       <v-row>
         <v-col cols="4" offset="8">
           <v-text-field
-            :value="search"
-            @input="s => setSearch(s || '')"
+            v-model="search"
             label="Search"
             single-line
             hide-details
