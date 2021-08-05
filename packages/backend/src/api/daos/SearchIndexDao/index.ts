@@ -54,6 +54,16 @@ class SearchIndexDao {
   ): Promise<Text[]> {
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
+    if (characterOccurrences.length === 0) {
+      return knex('text')
+        .select('uuid AS textUuid', 'name AS textName')
+        .where('name', 'like', `%${title}%`)
+        .whereNotIn('uuid', textsToHide)
+        .limit(limit)
+        .offset((page - 1) * limit)
+        .orderBy('name');
+    }
+
     const query = knex('search_index')
       .distinct('text_uuid AS textUuid', 'text_name AS textName')
       .limit(limit)
@@ -65,7 +75,7 @@ class SearchIndexDao {
     }
 
     if (title) {
-      query.modify(qb => qb.where('text_name', 'like', `${title}%`));
+      query.modify(qb => qb.where('text_name', 'like', `%${title}%`));
     }
 
     const occurrences = characterOccurrences
@@ -120,17 +130,24 @@ class SearchIndexDao {
     userUuid: string | null
   ): Promise<number> {
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+    let query;
 
-    const query = knex('search_index')
-      .countDistinct({ count: 'text_uuid' })
-      .first();
+    if (characterOccurrences.length === 0) {
+      query = knex('text')
+        .countDistinct({ count: 'uuid' })
+        .where('name', 'like', `%${title}%`)
+        .whereNotIn('uuid', textsToHide)
+        .first();
+    }
+
+    query = knex('search_index').countDistinct({ count: 'text_uuid' }).first();
 
     if (textsToHide.length > 0) {
       query.modify(qb => qb.whereNotIn('text_uuid', textsToHide));
     }
 
     if (title) {
-      query.modify(qb => qb.where('text_name', 'like', `${title}%`));
+      query.modify(qb => qb.where('text_name', 'like', `%${title}%`));
     }
 
     const occurrences = characterOccurrences
