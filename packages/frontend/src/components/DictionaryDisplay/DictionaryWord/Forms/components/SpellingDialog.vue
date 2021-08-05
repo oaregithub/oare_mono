@@ -220,15 +220,15 @@ export default defineComponent({
 
     const renderedReading = (row: SearchDiscourseSpellingRow) => {
       return row.readings
-        .map(reading => ({
-          ...reading,
-          spelling: spellingHtmlReading(reading.spelling),
-        }))
-        .map(reading =>
-          reading.wordOnTablet === row.wordOnTablet
-            ? `<mark>${reading.spelling}</mark>`
-            : reading.spelling
-        )
+        .map(reading => {
+          if (reading.wordOnTablet === row.wordOnTablet) {
+            return `<mark>${spellingHtmlReading(reading.spelling)}</mark>`;
+          } else if (reading.transcription) {
+            return reading.transcription;
+          } else {
+            return spellingHtmlReading(reading.spelling);
+          }
+        })
         .join(' ');
     };
 

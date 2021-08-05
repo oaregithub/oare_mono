@@ -77,6 +77,7 @@ export interface AddFormSpellingResponse {
 export interface DiscourseLineSpelling {
   wordOnTablet: number;
   spelling: string;
+  transcription: string | null;
 }
 
 export interface SearchDiscourseSpellingRow {
