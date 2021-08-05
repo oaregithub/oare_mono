@@ -1,10 +1,5 @@
 <template>
-  <OareContentView
-    :title="`Add ${itemType}s to ${groupName} ${
-      addingEditPermissions ? 'Edit Permissions' : 'Allowlist'
-    }`"
-    :loading="loading"
-  >
+  <OareContentView :title="title" :loading="loading">
     <template #header>
       <router-link :to="backLink"
         >&larr; Back to {{ itemType.toLowerCase() }} view
@@ -228,6 +223,16 @@ export default defineComponent({
           : `/groups/${groupId}/allowlist?type=${itemType.toLowerCase()}`;
       }
       return `/admin/denylist/${itemType.toLowerCase()}s`;
+    });
+
+    const title = computed(() => {
+      if (groupId) {
+        return `Add ${itemType}s to ${groupName.value} ${
+          addingEditPermissions ? 'Edit Permissions' : 'Allowlist'
+        }`;
+      } else {
+        return `Add ${itemType}s to ${groupName.value}`;
+      }
     });
 
     const getItems = async () => {
@@ -455,6 +460,7 @@ export default defineComponent({
       setupDialog,
       selectedListPage,
       backLink,
+      title,
     };
   },
 });
