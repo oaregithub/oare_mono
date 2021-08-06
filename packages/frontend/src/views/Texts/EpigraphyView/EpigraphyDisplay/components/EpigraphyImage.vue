@@ -4,7 +4,7 @@
       <v-slide-group
         :value="selectedImages"
         @change="updateSelected"
-        class="pa-4"
+        class="pa-2"
         show-arrows
         center-active
         multiple
@@ -18,18 +18,18 @@
             :color="active ? 'yellow' : 'grey lighten-3'"
             elevation="0"
             class="ma-2"
-            height="100"
-            width="100"
+            height="70"
+            width="70"
             @click="toggle"
           >
             <v-card-text class="justify-center pa-2">
               <v-img :src="image" :aspect-ratio="1 / 1" class="rounded">
-                <v-row class="pa-7" align="center" justify="center">
+                <v-row class="pt-5" align="center" justify="center">
                   <v-scale-transition>
                     <v-icon
                       v-if="active"
                       color="white"
-                      size="48"
+                      size="35"
                       v-text="'mdi-close-circle-outline'"
                     ></v-icon>
                   </v-scale-transition>
@@ -45,7 +45,7 @@
         v-for="(selection, idx) in selectedImages"
         :key="idx"
         :src="imageLinks[selection]"
-        max-height="50vh"
+        max-height="70vh"
         :max-width="selectedImages.length > 1 ? '18vw' : '36vw'"
         contain
         class="pa-4"
@@ -85,6 +85,6 @@ export default defineComponent({
 <style scoped>
 .sticky {
   position: sticky;
-  top: 1.5in;
+  top: 1.1in;
 }
 </style>

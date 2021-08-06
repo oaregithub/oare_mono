@@ -4,7 +4,13 @@
     <slot name="header"></slot>
 
     <v-card-title
-      class="oare-header d-flex justify-space-between align-center test-content-title"
+      class="
+        oare-header
+        d-flex
+        justify-space-between
+        align-center
+        test-content-title
+      "
     >
       <slot name="title">
         <div class="d-flex align-center">
@@ -14,8 +20,8 @@
             v-if="title !== null && title !== undefined"
             >{{ title }}</span
           >
+          <slot name="title:post"></slot>
         </div>
-        <slot name="title:post"> </slot>
       </slot>
     </v-card-title>
     <v-card-text class="black--text">
