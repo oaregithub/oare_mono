@@ -1,41 +1,42 @@
 <template>
-  <OareContentView :title="textInfo.textName" :loading="loading">
-    <template #header>
-      <OareBreadcrumbs :items="breadcrumbItems" />
-    </template>
-    <template #title:pre v-if="textInfo.color && textInfo.colorMeaning">
-      <Stoplight
-        :color="textInfo.color"
-        :colorMeaning="textInfo.colorMeaning"
-      />
-    </template>
-    <template #title:post v-if="textInfo.canWrite">
-      <v-btn
-        v-if="!isEditing"
-        color="primary"
-        :to="`/epigraphies/${textUuid}/edit`"
-        >Edit</v-btn
-      >
-    </template>
-    <v-row>
-      <v-col
-        cols="12"
-        :sm="canViewEpigraphyImages ? 7 : 12"
-        :md="canViewEpigraphyImages ? 5 : 12"
-      >
+  <v-row>
+    <v-col
+      cols="12"
+      :sm="canViewEpigraphyImages ? 7 : 12"
+      :md="canViewEpigraphyImages ? 5 : 12"
+    >
+      <OareContentView :title="textInfo.textName" :loading="loading">
+        <template #header>
+          <OareBreadcrumbs :items="breadcrumbItems" />
+        </template>
+        <template #title:pre v-if="textInfo.color && textInfo.colorMeaning">
+          <Stoplight
+            :color="textInfo.color"
+            :colorMeaning="textInfo.colorMeaning"
+          />
+        </template>
+        <template #title:post v-if="textInfo.canWrite">
+          <v-btn
+            v-if="!isEditing"
+            color="primary"
+            :to="`/epigraphies/${textUuid}/edit`"
+            class="mx-4"
+            >Edit</v-btn
+          >
+        </template>
         <router-view v-bind="routeProps" v-on="routeActions"></router-view>
-      </v-col>
-      <v-col
-        cols="12"
-        sm="5"
-        md="7"
-        v-if="canViewEpigraphyImages"
-        class="relative test-cdli-image"
-      >
-        <EpigraphyImage :imageLinks="imageUrls" />
-      </v-col>
-    </v-row>
-  </OareContentView>
+      </OareContentView>
+    </v-col>
+    <v-col
+      cols="12"
+      sm="5"
+      md="7"
+      v-if="canViewEpigraphyImages"
+      class="relative test-cdli-image"
+    >
+      <EpigraphyImage :imageLinks="imageUrls" />
+    </v-col>
+  </v-row>
 </template>
 
 <script lang="ts">
