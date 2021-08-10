@@ -428,6 +428,14 @@ class TextDiscourseDao {
       .first();
     return !!row;
   }
+
+  async disconnectSpellings(discourseUuids: string[]): Promise<void> {
+    await Promise.all(
+      discourseUuids.map(uuid =>
+        knex('text_discourse').update('spelling_uuid', null).where('uuid', uuid)
+      )
+    );
+  }
 }
 
 export default new TextDiscourseDao();

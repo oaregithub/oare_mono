@@ -78,6 +78,13 @@ describe('dictionary api test', () => {
         description: 'Allow group users to add new forms to words',
         dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
+      {
+        name: 'DISCONNECT_SPELLING',
+        type: 'dictionary',
+        description:
+          'Allow group users to disconnect spelling occurrences from words',
+        dependencies: ['WORDS', 'NAMES', 'PLACES'],
+      },
     ]),
   };
 
@@ -1074,6 +1081,59 @@ describe('dictionary api test', () => {
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
+    });
+  });
+
+  describe('PATCH /disconnect/spellings', () => {
+    const PATH = `${API_PATH}/disconnect/spellings`;
+
+    const mockPayload = {
+      discourseUuids: ['test-uuid-1', 'test-uuid-2'],
+    };
+
+    const mockTextDiscourseDao = {
+      disconnectSpellings: jest.fn().mockResolvedValue(),
+    };
+
+    const disconnectSetup = () => {
+      sl.set('TextDiscourseDao', mockTextDiscourseDao);
+    };
+
+    beforeEach(disconnectSetup);
+
+    const sendRequest = () =>
+      request(app).patch(PATH).send(mockPayload).set('Authorization', 'token');
+
+    it('returns 204 on successful spelling disconnect', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(204);
+    });
+
+    it('returns 500 on failed spelling disconnect', async () => {
+      sl.set('TextDiscourseDao', {
+        ...mockTextDiscourseDao,
+        disconnectSpellings: jest
+          .fn()
+          .mockRejectedValue('failed to disconnect spellings'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 401 if user is not logged in', async () => {
+      const response = await request(app).patch(PATH).send(mockPayload);
+      expect(mockTextDiscourseDao.disconnectSpellings).not.toHaveBeenCalled();
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 403 if user does not have permission to disconnect spellings', async () => {
+      sl.set('PermissionsDao', {
+        ...MockPermissionsDao,
+        getUserPermissions: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(mockTextDiscourseDao.disconnectSpellings).not.toHaveBeenCalled();
+      expect(response.status).toBe(403);
     });
   });
 

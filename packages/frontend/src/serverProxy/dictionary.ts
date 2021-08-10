@@ -103,6 +103,13 @@ async function getSpellingTotalOccurrences(
   return data;
 }
 
+async function disconnectSpellings(discourseUuids: string[]): Promise<void> {
+  const payload = {
+    discourseUuids,
+  };
+  await axios.patch('/disconnect/spellings', payload);
+}
+
 async function getDictionaryInfoByDiscourseUuid(
   discourseUuid: string
 ): Promise<Word | null> {
@@ -135,4 +142,5 @@ export default {
   getSpellingTotalOccurrences,
   getParseTree,
   addForm,
+  disconnectSpellings,
 };
