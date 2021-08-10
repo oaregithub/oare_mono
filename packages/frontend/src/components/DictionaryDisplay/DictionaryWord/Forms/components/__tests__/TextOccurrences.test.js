@@ -3,6 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
+import { ReloadKey } from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import TextOccurrences from '../TextOccurrences.vue';
 
 const vuetify = new Vuetify();
@@ -18,9 +19,25 @@ describe('TextOccurrences test', () => {
     debounce: cb => cb,
   };
 
+  const mockStore = {
+    getters: {
+      permissions: [
+        {
+          name: 'DISCONNECT_SPELLING',
+        },
+      ],
+    },
+  };
+
+  const mockServer = {
+    disconnectSpellings: jest.fn().mockResolvedValue(),
+  };
+
   const setup = () => {
     sl.set('globalActions', mockActions);
     sl.set('lodash', mockLodash);
+    sl.set('store', mockStore);
+    sl.set('serverProxy', mockServer);
   };
 
   beforeEach(setup);
@@ -48,10 +65,15 @@ describe('TextOccurrences test', () => {
     getTextsCount: jest.fn().mockResolvedValue(mockTextOccurrences.length),
   };
 
+  const reload = jest.fn();
+
   const createWrapper = ({ props } = {}) =>
     mount(TextOccurrences, {
       vuetify,
       localVue,
+      provide: {
+        [ReloadKey]: reload,
+      },
       propsData: props || mockProps,
       stubs: ['router-link'],
     });
@@ -80,5 +102,42 @@ describe('TextOccurrences test', () => {
     createWrapper({ props });
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('disconnects spellings', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.get('.test-disconnect input').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockServer.disconnectSpellings).toHaveBeenCalled();
+  });
+
+  it('displays error on failed spelling disconnect', async () => {
+    sl.set('serverProxy', {
+      ...mockServer,
+      disconnectSpellings: jest
+        .fn()
+        .mockRejectedValue('failed to disconnect spelling'),
+    });
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.get('.test-disconnect input').trigger('click');
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('does not show disconnect buttons if user does not have permission', async () => {
+    sl.set('store', {
+      ...mockStore,
+      getters: {
+        permissions: [],
+      },
+    });
+    const wrapper = createWrapper();
+    await flushPromises();
+    const disconnectBox = wrapper.find('.test-disconnect input');
+    expect(disconnectBox.exists()).toBe(false);
   });
 });

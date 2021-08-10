@@ -79,6 +79,13 @@ class PermissionsDao {
       description: 'Allow group users to add new forms to words',
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
+    {
+      name: 'DISCONNECT_SPELLING',
+      type: 'dictionary',
+      description:
+        'Allow group users to disconnect spelling occurrences from words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {

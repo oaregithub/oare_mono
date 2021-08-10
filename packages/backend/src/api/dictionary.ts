@@ -312,6 +312,20 @@ router
   });
 
 router
+  .route('/disconnect/spellings')
+  .patch(permissionsRoute('DISCONNECT_SPELLING'), async (req, res, next) => {
+    try {
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const { discourseUuids } = req.body;
+
+      await TextDiscourseDao.disconnectSpellings(discourseUuids);
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
   .route('/dictionary/spellings/:uuid')
   .put(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {

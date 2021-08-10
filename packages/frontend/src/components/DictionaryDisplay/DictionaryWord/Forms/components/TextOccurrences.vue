@@ -2,7 +2,11 @@
   <OareDialog
     :value="value"
     :title="`Texts for ${title}`"
-    :showSubmit="false"
+    submitText="Disconnect"
+    :closeOnSubmit="true"
+    @submit="disconnectSpellings"
+    :showSubmit="canDisconnectSpellings"
+    :submitDisabled="disconnectSelections.length < 1"
     cancelText="Close"
     :persistent="false"
     @input="$emit('input', false)"
@@ -42,6 +46,15 @@
           v-html="reading"
         />
       </template>
+      <template #[`item.disconnect`]="{ item }">
+        <div class="d-flex justify-center">
+          <v-checkbox
+            :value="item.discourseUuid"
+            v-model="disconnectSelections"
+            class="test-disconnect"
+          />
+        </div>
+      </template>
     </v-data-table>
   </OareDialog>
 </template>
@@ -50,12 +63,15 @@
 import {
   defineComponent,
   PropType,
-  reactive,
+  Ref,
   ref,
   watch,
+  inject,
+  computed,
 } from '@vue/composition-api';
 import { Pagination, SpellingOccurrenceResponseRow } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
+import { ReloadKey } from '../../index.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -92,19 +108,59 @@ export default defineComponent({
   setup(props) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
+    const server = sl.get('serverProxy');
+    const store = sl.get('store');
+    const reload = inject(ReloadKey);
+
     const search = ref('');
     const textOccurrencesLength = ref(props.totalTextOccurrences);
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
-    const headers: DataTableHeader[] = reactive([
-      {
-        text: 'Text Name',
-        value: 'text',
-      },
-      {
-        text: 'Context',
-        value: 'context',
-      },
-    ]);
+
+    const canDisconnectSpellings = computed(() =>
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('DISCONNECT_SPELLING')
+    );
+
+    const headers: Ref<DataTableHeader[]> = canDisconnectSpellings.value
+      ? ref([
+          {
+            text: 'Text Name',
+            value: 'text',
+          },
+          {
+            text: 'Context',
+            value: 'context',
+          },
+          {
+            text: 'Disconnect',
+            value: 'disconnect',
+            align: 'center',
+            sortable: false,
+          },
+        ])
+      : ref([
+          {
+            text: 'Text Name',
+            value: 'text',
+          },
+          {
+            text: 'Context',
+            value: 'context',
+          },
+        ]);
+    const disconnectSelections = ref<string[]>([]);
+
+    const disconnectSpellings = async () => {
+      try {
+        await server.disconnectSpellings(disconnectSelections.value);
+        reload && reload();
+      } catch {
+        actions.showErrorSnackbar(
+          'Error disconnecting spelling(s). Please try again.'
+        );
+      }
+    };
 
     const referencesLoading = ref(false);
     const tableOptions = ref({
@@ -161,6 +217,9 @@ export default defineComponent({
       headers,
       referencesLoading,
       tableOptions,
+      disconnectSelections,
+      disconnectSpellings,
+      canDisconnectSpellings,
     };
   },
 });
