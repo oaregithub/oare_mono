@@ -61,7 +61,7 @@ class TextDao {
       .innerJoin('field', 'hierarchy.object_uuid', 'field.reference_uuid')
       .where('a2.name', 'transliteration status');
 
-    return stoplightOptions;
+    return stoplightOptions.reverse();
   }
 
   async updateTranslitStatus(textUuid: string, color: string) {

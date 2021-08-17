@@ -7,7 +7,7 @@
       :transliteration="transliteration"
       :textUuid="textUuid"
     ></component>
-    <v-tooltip bottom>
+    <v-tooltip bottom :disabled="!showEditDialog">
       <template #activator="{ on, attrs }">
         <div
           class="
@@ -17,9 +17,9 @@
             align-center
             justify-space-between
             mr-2
-            cursor-display
             test-stoplight
           "
+          :class="{ 'cursor-display': showEditDialog }"
           v-on="on"
           v-bind="attrs"
           @click="openDialog"
