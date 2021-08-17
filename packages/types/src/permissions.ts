@@ -18,7 +18,8 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'ADD_SPELLING'
     | 'INSERT_DISCOURSE_ROWS'
     | 'ADD_FORM'
-    | 'DISCONNECT_SPELLING';
+    | 'DISCONNECT_SPELLING'
+    | 'EDIT_TRANSLITERATION_STATUS';
   type: 'dictionary';
 }
 

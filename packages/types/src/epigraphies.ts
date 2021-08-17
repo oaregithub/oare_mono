@@ -137,3 +137,13 @@ export interface EpigraphicWord
   extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
   signs: EpigraphicSign[];
 }
+
+export interface TranslitOption {
+  color: string;
+  colorMeaning: string;
+}
+
+export interface UpdateTranslitStatusPayload {
+  textUuid: string;
+  color: string;
+}

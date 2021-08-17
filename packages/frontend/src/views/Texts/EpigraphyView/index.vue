@@ -11,8 +11,11 @@
         </template>
         <template #title:pre v-if="textInfo.color && textInfo.colorMeaning">
           <Stoplight
-            :color="textInfo.color"
-            :colorMeaning="textInfo.colorMeaning"
+            :transliteration="transliteration"
+            :showEditDialog="true"
+            :textUuid="textUuid"
+            :key="textInfo.color"
+            class="mr-2"
           />
         </template>
         <template #title:post v-if="textInfo.canWrite">
@@ -48,9 +51,12 @@ import {
   ref,
   onMounted,
   computed,
+  InjectionKey,
+  provide,
+  ComputedRef,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { EpigraphyResponse } from '@oare/types';
+import { EpigraphyResponse, TranslitOption } from '@oare/types';
 
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
@@ -61,6 +67,8 @@ import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
 export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
 }
+
+export const EpigraphyReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
   name: 'EpigraphyView',
@@ -182,10 +190,14 @@ export default defineComponent({
           .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
+    const getTextInfo = async () => {
+      textInfo.value = await server.getEpigraphicInfo(textUuid);
+    };
+
     onMounted(async () => {
       try {
         loading.value = true;
-        textInfo.value = await server.getEpigraphicInfo(textUuid);
+        await getTextInfo();
         draft.value = textInfo.value.draft || null;
         imageUrls.value = await server.getImageLinks(
           textUuid,
@@ -204,6 +216,13 @@ export default defineComponent({
       }
     });
 
+    const transliteration: ComputedRef<TranslitOption> = computed(() => ({
+      color: textInfo.value.color,
+      colorMeaning: textInfo.value.colorMeaning,
+    }));
+
+    provide(EpigraphyReloadKey, getTextInfo);
+
     return {
       textInfo,
       isEditing,
@@ -216,6 +235,8 @@ export default defineComponent({
       loading,
       canViewEpigraphyImages,
       imageUrls,
+      getTextInfo,
+      transliteration,
     };
   },
 });

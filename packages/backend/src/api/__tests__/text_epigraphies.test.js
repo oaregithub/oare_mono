@@ -3,6 +3,147 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
+describe('GET /text_epigraphies/transliteration', () => {
+  const PATH = `${API_PATH}/text_epigraphies/transliteration`;
+
+  const mockTextDao = {
+    getTranslitOptions: jest.fn().mockResolvedValue([
+      {
+        color: 'Green',
+        colorMeaning: 'Green color meaning',
+      },
+    ]),
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'EDIT_TRANSLITERATION_STATUS',
+      },
+    ]),
+  };
+
+  const setup = () => {
+    sl.set('TextDao', mockTextDao);
+    sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+  };
+
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
+
+  beforeEach(setup);
+
+  it('returns 200 on successful transliteration options retreival', async () => {
+    const response = await sendRequest();
+    expect(mockTextDao.getTranslitOptions).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 500 on failed translit options retreival', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      getTranslitOptions: jest
+        .fn()
+        .mockRejectedValue('failed to retreive translit options'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 401 if user is not logged in', async () => {
+    const response = await request(app).get(PATH);
+    expect(mockTextDao.getTranslitOptions).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 if user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(mockTextDao.getTranslitOptions).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
+  });
+});
+
+describe('PATCH /text_epigraphies/transliteration', () => {
+  const PATH = `${API_PATH}/text_epigraphies/transliteration`;
+  const mockPayload = {
+    textUuid: 'test-uuid',
+    color: 'test-color',
+  };
+
+  const mockTextDao = {
+    updateTranslitStatus: jest.fn().mockResolvedValue(),
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'EDIT_TRANSLITERATION_STATUS',
+      },
+    ]),
+  };
+
+  const setup = () => {
+    sl.set('TextDao', mockTextDao);
+    sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+  };
+
+  const sendRequest = () =>
+    request(app).patch(PATH).send(mockPayload).set('Authorization', 'token');
+
+  beforeEach(setup);
+
+  it('returns 204 on successful transliteration status update', async () => {
+    const response = await sendRequest();
+    expect(mockTextDao.updateTranslitStatus).toHaveBeenCalled();
+    expect(response.status).toBe(204);
+  });
+
+  it('returns 500 on failed translit status update', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      updateTranslitStatus: jest
+        .fn()
+        .mockRejectedValue('failed to update translit status'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 401 if user is not logged in', async () => {
+    const response = await request(app).get(PATH);
+    expect(mockTextDao.updateTranslitStatus).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 if user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(mockTextDao.updateTranslitStatus).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
+  });
+});
+
 describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
   const uuid = 'test-uuid';
   const cdliNum = 'test-cdli';
@@ -22,7 +163,7 @@ describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
 
   beforeEach(setup);
 
-  it('returns 200 on successfuly link retrieval', async () => {
+  it('returns 200 on successful link retrieval', async () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
   });
@@ -39,9 +180,9 @@ describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
   });
 });
 
-describe('GET /text_epigraphies/:uuid', () => {
+describe('GET /text_epigraphies/text/:uuid', () => {
   const textUuid = 12345;
-  const PATH = `${API_PATH}/text_epigraphies/${textUuid}`;
+  const PATH = `${API_PATH}/text_epigraphies/text/${textUuid}`;
 
   const mockResponse = {
     textName: 'Text Name',
