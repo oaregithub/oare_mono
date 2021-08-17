@@ -4,7 +4,7 @@
       v-if="showEditDialog"
       :is="dialogComponent"
       v-model="editTranslitDialog"
-      :color="color"
+      :transliteration="transliteration"
       :textUuid="textUuid"
     ></component>
     <v-tooltip bottom>
@@ -29,7 +29,7 @@
           <div :class="`sl-light sl-${green ? 'light' : 'dark'}-green`"></div>
         </div>
       </template>
-      <span>{{ color.colorMeaning }}</span>
+      <span>{{ transliteration.colorMeaning }}</span>
     </v-tooltip>
   </div>
 </template>
@@ -41,7 +41,7 @@ import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
-    color: {
+    transliteration: {
       type: Object as PropType<TranslitOption>,
       required: true,
     },
@@ -54,23 +54,23 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ color, showEditDialog }) {
+  setup({ transliteration, showEditDialog }) {
     const store = sl.get('store');
 
     const red = ref(false);
     const yellow = ref(false);
     const green = ref(false);
 
-    if (color.color === 'Red') {
+    if (transliteration.color === 'Red') {
       red.value = true;
-    } else if (color.color === 'Yellow') {
+    } else if (transliteration.color === 'Yellow') {
       yellow.value = true;
-    } else if (color.color === 'Green') {
+    } else if (transliteration.color === 'Green') {
       green.value = true;
-    } else if (color.color === 'Yellow/Green') {
+    } else if (transliteration.color === 'Yellow/Green') {
       yellow.value = true;
       green.value = true;
-    } else if (color.color === 'Yellow/Red') {
+    } else if (transliteration.color === 'Yellow/Red') {
       yellow.value = true;
       red.value = true;
     }

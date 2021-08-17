@@ -6,12 +6,12 @@ import {
 import axios from '../axiosInstance';
 
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
-  const { data } = await axios.get(`/text_epigraphies/${textUuid}`);
+  const { data } = await axios.get(`/text_epigraphies/text/${textUuid}`);
   return data;
 }
 
 async function getTranslitOptions(): Promise<TranslitOption[]> {
-  const { data } = await axios.get('/text_epigraphies/transliteration/options');
+  const { data } = await axios.get('/text_epigraphies/transliteration');
   return data;
 }
 
@@ -23,7 +23,7 @@ async function updateTranslitStatus(
     textUuid,
     color,
   };
-  await axios.patch('/text_epigraphies/transliteration/options', payload);
+  await axios.patch('/text_epigraphies/transliteration', payload);
 }
 
 async function getImageLinks(

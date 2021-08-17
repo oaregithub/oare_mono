@@ -3,8 +3,8 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-describe('GET /text_epigraphies/transliteration/options', () => {
-  const PATH = `${API_PATH}/text_epigraphies/transliteration/options`;
+describe('GET /text_epigraphies/transliteration', () => {
+  const PATH = `${API_PATH}/text_epigraphies/transliteration`;
 
   const mockTextDao = {
     getTranslitOptions: jest.fn().mockResolvedValue([
@@ -74,8 +74,8 @@ describe('GET /text_epigraphies/transliteration/options', () => {
   });
 });
 
-describe('PATCH /text_epigraphies/transliteration/options', () => {
-  const PATH = `${API_PATH}/text_epigraphies/transliteration/options`;
+describe('PATCH /text_epigraphies/transliteration', () => {
+  const PATH = `${API_PATH}/text_epigraphies/transliteration`;
   const mockPayload = {
     textUuid: 'test-uuid',
     color: 'test-color',
@@ -180,9 +180,9 @@ describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
   });
 });
 
-describe('GET /text_epigraphies/:uuid', () => {
+describe('GET /text_epigraphies/text/:uuid', () => {
   const textUuid = 12345;
-  const PATH = `${API_PATH}/text_epigraphies/${textUuid}`;
+  const PATH = `${API_PATH}/text_epigraphies/text/${textUuid}`;
 
   const mockResponse = {
     textName: 'Text Name',

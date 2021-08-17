@@ -10,7 +10,7 @@
     <v-row align="center">
       <v-col cols="2">
         <stoplight
-          :color="selectedStatus"
+          :transliteration="selectedStatus"
           :key="selectedColor"
           :textUuid="textUuid"
         />
@@ -53,7 +53,7 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-    color: {
+    transliteration: {
       type: Object as PropType<TranslitOption>,
       required: true,
     },
@@ -66,7 +66,7 @@ export default defineComponent({
     const translitOptions = ref<TranslitOption[]>([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const selectedColor = ref(props.color.color);
+    const selectedColor = ref(props.transliteration.color);
     const reload = inject(EpigraphyReloadKey);
 
     onMounted(async () => {

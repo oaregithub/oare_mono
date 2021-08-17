@@ -60,7 +60,7 @@ describe('Stoplight', () => {
       propsData: {
         showEditDialog: true,
         textUuid: 'test-uuid',
-        color: {
+        transliteration: {
           color,
           colorMeaning: 'test-color-meaning',
         },

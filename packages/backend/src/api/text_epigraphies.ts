@@ -28,7 +28,7 @@ router
   });
 
 router
-  .route('/text_epigraphies/transliteration/options')
+  .route('/text_epigraphies/transliteration')
   .get(
     permissionsRoute('EDIT_TRANSLITERATION_STATUS'),
     async (_req, res, next) => {
@@ -58,7 +58,7 @@ router
     }
   );
 
-router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
+router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
   try {
     const { uuid: textUuid } = req.params;
     const { user } = req;

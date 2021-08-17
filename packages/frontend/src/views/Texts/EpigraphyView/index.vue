@@ -11,10 +11,7 @@
         </template>
         <template #title:pre v-if="textInfo.color && textInfo.colorMeaning">
           <Stoplight
-            :color="{
-              color: textInfo.color,
-              colorMeaning: textInfo.colorMeaning,
-            }"
+            :transliteration="transliteration"
             :showEditDialog="true"
             :textUuid="textUuid"
             :key="textInfo.color"
@@ -55,9 +52,10 @@ import {
   computed,
   InjectionKey,
   provide,
+  ComputedRef,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { EpigraphyResponse } from '@oare/types';
+import { EpigraphyResponse, TranslitOption } from '@oare/types';
 
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
@@ -217,6 +215,11 @@ export default defineComponent({
       }
     });
 
+    const transliteration: ComputedRef<TranslitOption> = computed(() => ({
+      color: textInfo.value.color,
+      colorMeaning: textInfo.value.colorMeaning,
+    }));
+
     provide(EpigraphyReloadKey, getTextInfo);
 
     return {
@@ -232,6 +235,7 @@ export default defineComponent({
       canViewEpigraphyImages,
       imageUrls,
       getTextInfo,
+      transliteration,
     };
   },
 });
