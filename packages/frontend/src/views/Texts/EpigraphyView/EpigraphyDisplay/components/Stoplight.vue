@@ -19,7 +19,7 @@
             test-stoplight
           "
           :class="{
-            'cursor-display': showEditDialog,
+            'cursor-display': showEditDialog && canEditTransliteration,
             'sl-background-lg': large,
             'sl-background-sm': !large,
           }"
