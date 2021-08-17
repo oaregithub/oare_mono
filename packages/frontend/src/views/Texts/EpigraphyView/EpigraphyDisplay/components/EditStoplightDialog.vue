@@ -6,6 +6,7 @@
     @submit="updateTranslitStatus"
     :closeOnSubmit="true"
     class="test-stoplight-dialog"
+    :width="750"
   >
     <v-row align="center">
       <v-col cols="2">
@@ -13,6 +14,8 @@
           :transliteration="selectedStatus"
           :key="selectedColor"
           :textUuid="textUuid"
+          :large="true"
+          class="ml-2"
         />
       </v-col>
       <v-col cols="10">

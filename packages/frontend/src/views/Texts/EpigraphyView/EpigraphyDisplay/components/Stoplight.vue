@@ -16,17 +16,32 @@
             flex-column
             align-center
             justify-space-between
-            mr-2
             test-stoplight
           "
-          :class="{ 'cursor-display': showEditDialog }"
+          :class="{
+            'cursor-display': showEditDialog,
+            'sl-background-lg': large,
+            'sl-background-sm': !large,
+          }"
           v-on="on"
           v-bind="attrs"
           @click="openDialog"
         >
-          <div :class="`sl-light sl-${red ? 'light' : 'dark'}-red`"></div>
-          <div :class="`sl-light sl-${yellow ? 'light' : 'dark'}-yellow`"></div>
-          <div :class="`sl-light sl-${green ? 'light' : 'dark'}-green`"></div>
+          <div
+            :class="`sl-light 
+            sl-light-${large ? 'lg' : 'sm'} 
+            sl-${red ? 'light' : 'dark'}-red`"
+          ></div>
+          <div
+            :class="`sl-light 
+            sl-light-${large ? 'lg' : 'sm'} 
+            sl-${yellow ? 'light' : 'dark'}-yellow`"
+          ></div>
+          <div
+            :class="`sl-light 
+            sl-light-${large ? 'lg' : 'sm'} 
+            sl-${green ? 'light' : 'dark'}-green`"
+          ></div>
         </div>
       </template>
       <span>{{ transliteration.colorMeaning }}</span>
@@ -52,6 +67,10 @@ export default defineComponent({
     textUuid: {
       type: String,
       required: true,
+    },
+    large: {
+      type: Boolean,
+      default: false,
     },
   },
   setup({ transliteration, showEditDialog }) {
@@ -110,17 +129,34 @@ export default defineComponent({
 
 <style scoped>
 .sl-background {
+  background-color: black;
+  border-radius: 10%;
+}
+
+.sl-background-sm {
   height: 40px;
   width: 25px;
-  background-color: black;
   padding: 5px;
-  border-radius: 10%;
+}
+
+.sl-background-lg {
+  height: 120px;
+  width: 75px;
+  padding: 15px;
 }
 
 .sl-light {
   border-radius: 50%;
+}
+
+.sl-light-sm {
   height: 8px;
   width: 8px;
+}
+
+.sl-light-lg {
+  height: 24px;
+  width: 24px;
 }
 
 .sl-dark-red {

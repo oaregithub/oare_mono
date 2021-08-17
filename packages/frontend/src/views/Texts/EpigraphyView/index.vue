@@ -15,6 +15,7 @@
             :showEditDialog="true"
             :textUuid="textUuid"
             :key="textInfo.color"
+            class="mr-2"
           />
         </template>
         <template #title:post v-if="textInfo.canWrite">
