@@ -1,4 +1,5 @@
 import knex from '@/connection';
+import { TranslitOption } from '@oare/types';
 
 interface Text {
   id: number;
@@ -46,6 +47,32 @@ class TextDao {
       color,
       colorMeaning,
     };
+  }
+
+  async getTranslitOptions() {
+    const stoplightOptions: TranslitOption[] = await knex('hierarchy')
+      .select('a1.name as color', 'field.field as colorMeaning')
+      .innerJoin('alias as a1', 'a1.reference_uuid', 'hierarchy.object_uuid')
+      .innerJoin(
+        'alias as a2',
+        'a2.reference_uuid',
+        'hierarchy.obj_parent_uuid'
+      )
+      .innerJoin('field', 'hierarchy.object_uuid', 'field.reference_uuid')
+      .where('a2.name', 'transliteration status');
+
+    return stoplightOptions;
+  }
+
+  async updateTranslitStatus(textUuid: string, color: string) {
+    const statusRow = await knex('hierarchy')
+      .select('hierarchy.object_uuid as translitUuid')
+      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
+      .where('name', color)
+      .first();
+    await knex('text')
+      .update('translit_status', statusRow.translitUuid)
+      .where('uuid', textUuid);
   }
 }
 

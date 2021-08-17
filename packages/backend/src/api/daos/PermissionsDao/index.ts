@@ -86,6 +86,12 @@ class PermissionsDao {
         'Allow group users to disconnect spelling occurrences from words',
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
+    {
+      name: 'EDIT_TRANSLITERATION_STATUS',
+      type: 'dictionary',
+      description:
+        "Allow group users to edit a text's transliteration status (visible in stoplight)",
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {

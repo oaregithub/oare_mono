@@ -1,7 +1,12 @@
 import express from 'express';
 import { HttpInternalError, HttpForbidden, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { EpigraphyResponse } from '@oare/types';
+import {
+  EpigraphyResponse,
+  TranslitOption,
+  UpdateTranslitStatusPayload,
+} from '@oare/types';
+import permissionsRoute from '@/middlewares/permissionsRoute';
 
 const router = express.Router();
 
@@ -21,6 +26,37 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+router
+  .route('/text_epigraphies/transliteration/options')
+  .get(
+    permissionsRoute('EDIT_TRANSLITERATION_STATUS'),
+    async (_req, res, next) => {
+      try {
+        const TextDao = sl.get('TextDao');
+        const stoplightOptions: TranslitOption[] = await TextDao.getTranslitOptions();
+
+        res.json(stoplightOptions);
+      } catch (err) {
+        next(new HttpInternalError(err));
+      }
+    }
+  )
+  .patch(
+    permissionsRoute('EDIT_TRANSLITERATION_STATUS'),
+    async (req, res, next) => {
+      try {
+        const TextDao = sl.get('TextDao');
+        const { textUuid, color }: UpdateTranslitStatusPayload = req.body;
+
+        await TextDao.updateTranslitStatus(textUuid, color);
+
+        res.status(204).end();
+      } catch (err) {
+        next(new HttpInternalError(err));
+      }
+    }
+  );
 
 router.route('/text_epigraphies/:uuid').get(async (req, res, next) => {
   try {

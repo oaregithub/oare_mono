@@ -11,8 +11,13 @@
         </template>
         <template #title:pre v-if="textInfo.color && textInfo.colorMeaning">
           <Stoplight
-            :color="textInfo.color"
-            :colorMeaning="textInfo.colorMeaning"
+            :color="{
+              color: textInfo.color,
+              colorMeaning: textInfo.colorMeaning,
+            }"
+            :showEditDialog="true"
+            :textUuid="textUuid"
+            :key="textInfo.color"
           />
         </template>
         <template #title:post v-if="textInfo.canWrite">
@@ -48,6 +53,8 @@ import {
   ref,
   onMounted,
   computed,
+  InjectionKey,
+  provide,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { EpigraphyResponse } from '@oare/types';
@@ -61,6 +68,8 @@ import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
 export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
 }
+
+export const EpigraphyReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
   name: 'EpigraphyView',
@@ -182,10 +191,14 @@ export default defineComponent({
           .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
+    const getTextInfo = async () => {
+      textInfo.value = await server.getEpigraphicInfo(textUuid);
+    };
+
     onMounted(async () => {
       try {
         loading.value = true;
-        textInfo.value = await server.getEpigraphicInfo(textUuid);
+        await getTextInfo();
         draft.value = textInfo.value.draft || null;
         imageUrls.value = await server.getImageLinks(
           textUuid,
@@ -204,6 +217,8 @@ export default defineComponent({
       }
     });
 
+    provide(EpigraphyReloadKey, getTextInfo);
+
     return {
       textInfo,
       isEditing,
@@ -216,6 +231,7 @@ export default defineComponent({
       loading,
       canViewEpigraphyImages,
       imageUrls,
+      getTextInfo,
     };
   },
 });
