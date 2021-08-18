@@ -185,7 +185,7 @@ export default {
       },
       responses: {
         204: {
-          description: 'The error log status were successfully updated',
+          description: 'The error log statuses were successfully updated',
         },
         401: {
           description: 'Not logged in',
