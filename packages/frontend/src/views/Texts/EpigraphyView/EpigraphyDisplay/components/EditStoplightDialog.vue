@@ -25,8 +25,19 @@
             :key="idx"
             :label="`${option.color} - ${option.colorMeaning}`"
             :value="option.color"
-            class="test-translit-option"
-          ></v-radio>
+            class="test-translit-option my-2"
+          >
+            <template #label>
+              <v-container>
+                <v-row>
+                  <b>{{ option.color }}</b>
+                </v-row>
+                <v-row>
+                  <span>{{ option.colorMeaning }}</span>
+                </v-row>
+              </v-container>
+            </template>
+          </v-radio>
         </v-radio-group>
       </v-col>
     </v-row>
