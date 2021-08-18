@@ -138,10 +138,12 @@ router.route('/search').get(async (req, res, next) => {
           characterOccurrences,
           textUuid
         );
-        const discourseUuids = await TextEpigraphyDao.getDiscourseUuids(
-          textUuid,
-          occurrencesForDiscourses
-        );
+        const discourseUuids = charsPayload
+          ? await TextEpigraphyDao.getDiscourseUuids(
+              textUuid,
+              occurrencesForDiscourses
+            )
+          : [];
 
         return {
           uuid: textUuid,
