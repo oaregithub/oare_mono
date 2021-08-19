@@ -112,10 +112,10 @@ export default class TabletHtmlRenderer extends TabletRenderer {
     switch (markup.type) {
       case 'alternateSign':
       case 'isEmendedReading':
-        formattedReading += '<sup>!</sup>';
+        formattedReading += '<sup>!<\/sup>';
         break;
       case 'uncertain':
-        formattedReading += '<sup>?</sup>';
+        formattedReading += '<sup>?<\/sup>';
         break;
       default:
         return super.applySingleMarkup(markup, reading);
