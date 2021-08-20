@@ -10,8 +10,8 @@ import users from './endpoints/users';
 import publicDenylist from './endpoints/public_denylist';
 import groupAllowlist from './endpoints/group_allowlist';
 import groupEditPermissions from './endpoints/group_edit_permissions';
-import textEpigraphies from './endpoints/text_epigraphies';
 import groups from './endpoints/groups';
+import textEpigraphies from './endpoints/text_epigraphies';
 
 const server =
   process.env.NODE_ENV === 'development'
