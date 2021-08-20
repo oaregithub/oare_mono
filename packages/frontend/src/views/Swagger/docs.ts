@@ -11,6 +11,7 @@ import publicDenylist from './endpoints/public_denylist';
 import groupAllowlist from './endpoints/group_allowlist';
 import groupEditPermissions from './endpoints/group_edit_permissions';
 import names from './endpoints/names';
+import people from './endpoints/people';
 import places from './endpoints/places';
 import textEpigraphies from './endpoints/text_epigraphies';
 
@@ -44,6 +45,7 @@ export default {
     ...groupAllowlist,
     ...groupEditPermissions,
     ...names,
+    ...people,
     ...places,
     ...textEpigraphies,
   },

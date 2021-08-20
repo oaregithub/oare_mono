@@ -87,6 +87,50 @@ const itemPropertyRow = {
   },
 };
 
+const word = {
+  uuid: {
+    type: 'string',
+  },
+  word: {
+    type: 'string',
+  },
+  partsOfSpeech: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: itemPropertyRow,
+    },
+  },
+  specialClassifications: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: itemPropertyRow,
+    },
+  },
+  translations: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: dictionaryWordTranslation,
+    },
+  },
+  verbalThematicVowelTypes: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: itemPropertyRow,
+    },
+  },
+  forms: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: dictionaryForm,
+    },
+  },
+};
+
 export default {
   '/names/{letter}': {
     get: {
@@ -109,49 +153,7 @@ export default {
             'application/json': {
               schema: {
                 type: 'object',
-                properties: {
-                  uuid: {
-                    type: 'string',
-                  },
-                  word: {
-                    type: 'string',
-                  },
-                  partsOfSpeech: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: itemPropertyRow,
-                    },
-                  },
-                  specialClassifications: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: itemPropertyRow,
-                    },
-                  },
-                  translations: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: dictionaryWordTranslation,
-                    },
-                  },
-                  verbalThematicVowelTypes: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: itemPropertyRow,
-                    },
-                  },
-                  forms: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: dictionaryForm,
-                    },
-                  },
-                },
+                properties: word,
               },
             },
           },

@@ -87,6 +87,50 @@ const itemPropertyRow = {
   },
 };
 
+const word = {
+  uuid: {
+    type: 'string',
+  },
+  word: {
+    type: 'string',
+  },
+  partsOfSpeech: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: itemPropertyRow,
+    },
+  },
+  specialClassifications: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: itemPropertyRow,
+    },
+  },
+  translations: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: dictionaryWordTranslation,
+    },
+  },
+  verbalThematicVowelTypes: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: itemPropertyRow,
+    },
+  },
+  forms: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: dictionaryForm,
+    },
+  },
+};
+
 export default {
   '/places/{letter}': {
     get: {
@@ -99,7 +143,7 @@ export default {
             type: 'string',
           },
           required: true,
-          description: 'The letter to filter names by',
+          description: 'The letter to filter places by',
         },
       ],
       responses: {
@@ -109,49 +153,7 @@ export default {
             'application/json': {
               schema: {
                 type: 'object',
-                properties: {
-                  uuid: {
-                    type: 'string',
-                  },
-                  word: {
-                    type: 'string',
-                  },
-                  partsOfSpeech: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: itemPropertyRow,
-                    },
-                  },
-                  specialClassifications: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: itemPropertyRow,
-                    },
-                  },
-                  translations: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: dictionaryWordTranslation,
-                    },
-                  },
-                  verbalThematicVowelTypes: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: itemPropertyRow,
-                    },
-                  },
-                  forms: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: dictionaryForm,
-                    },
-                  },
-                },
+                properties: word,
               },
             },
           },
