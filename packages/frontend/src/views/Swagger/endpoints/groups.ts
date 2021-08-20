@@ -43,7 +43,7 @@ export default {
           },
         },
         400: {
-          description: 'User did not send a value group id',
+          description: 'User did not send a valid group id',
         },
         401: {
           description: 'User is not logged in',
@@ -79,7 +79,7 @@ export default {
       },
     },
     patch: {
-      summary: 'Updates a group by id.',
+      summary: 'Updates the description of a group.',
       parameters: [
         {
           in: 'path',
@@ -119,7 +119,7 @@ export default {
           description: 'User is not logged in',
         },
         403: {
-          description: 'User is not allowed to delete group info',
+          description: 'User is not allowed to update group info',
         },
       },
     },
