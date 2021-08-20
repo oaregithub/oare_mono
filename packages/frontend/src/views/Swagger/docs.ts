@@ -11,6 +11,7 @@ import publicDenylist from './endpoints/public_denylist';
 import groupAllowlist from './endpoints/group_allowlist';
 import groupEditPermissions from './endpoints/group_edit_permissions';
 import textEpigraphies from './endpoints/text_epigraphies';
+import groups from '@/views/Swagger/endpoints/groups';
 
 const server =
   process.env.NODE_ENV === 'development'
@@ -39,6 +40,7 @@ export default {
     ...threads,
     ...users,
     ...publicDenylist,
+    ...groups,
     ...groupAllowlist,
     ...groupEditPermissions,
     ...textEpigraphies,
