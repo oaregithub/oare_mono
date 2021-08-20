@@ -10,6 +10,7 @@ import users from './endpoints/users';
 import publicDenylist from './endpoints/public_denylist';
 import groupAllowlist from './endpoints/group_allowlist';
 import groupEditPermissions from './endpoints/group_edit_permissions';
+import groups from './endpoints/groups';
 import textEpigraphies from './endpoints/text_epigraphies';
 
 const server =
@@ -39,6 +40,7 @@ export default {
     ...threads,
     ...users,
     ...publicDenylist,
+    ...groups,
     ...groupAllowlist,
     ...groupEditPermissions,
     ...textEpigraphies,

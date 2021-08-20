@@ -6,7 +6,7 @@ export default {
     post: {
       summary: 'Create a new error log',
       requestBody: {
-        description: '',
+        description: 'Creates a new error log',
         required: true,
         content: {
           'application/json': {
