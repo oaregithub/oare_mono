@@ -1,5 +1,4 @@
-const errorStatuses = ['New', 'In Progress', 'Resolved'];
-const sortTypes = ['status', 'timestamp', 'description', 'userName'];
+import { errorStatuses, errorSortTypes } from './types/errors';
 
 export default {
   '/errors': {
@@ -70,7 +69,7 @@ export default {
             properties: {
               type: {
                 type: 'string',
-                enum: sortTypes,
+                enum: errorSortTypes,
               },
               desc: {
                 type: 'boolean',
