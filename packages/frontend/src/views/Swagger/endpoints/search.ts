@@ -143,8 +143,7 @@ export default {
   },
   '/search': {
     get: {
-      summary:
-        'Gets paginated character matches in text, comparing all other visible texts.',
+      summary: 'Gets an array of search results.',
       parameters: [
         {
           in: 'query',
@@ -185,7 +184,7 @@ export default {
       ],
       responses: {
         200: {
-          description: 'The count of matching character occurrences in a text.',
+          description: 'Returns an array of search results.',
           content: {
             'application/json': {
               schema: {
@@ -224,7 +223,7 @@ export default {
       ],
       responses: {
         200: {
-          description: 'The count of matching character occurrences in a text.',
+          description: 'The count of all null instances, regardless of text.',
           content: {
             'application/json': {
               schema: {
