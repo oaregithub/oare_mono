@@ -15,6 +15,8 @@ import names from './endpoints/names';
 import people from './endpoints/people';
 import permissions from './endpoints/permissions';
 import places from './endpoints/places';
+import register from './endpoints/register';
+import search from './endpoints/search';
 import textEpigraphies from './endpoints/text_epigraphies';
 
 const server =
@@ -51,6 +53,8 @@ export default {
     ...people,
     ...permissions,
     ...places,
+    ...register,
+    ...search,
     ...textEpigraphies,
   },
 };
