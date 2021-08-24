@@ -18,6 +18,7 @@ import places from './endpoints/places';
 import register from './endpoints/register';
 import search from './endpoints/search';
 import searchDictionary from './endpoints/search_dictionary';
+import searchNames from './endpoints/search_names';
 import textEpigraphies from './endpoints/text_epigraphies';
 
 const server =
@@ -57,6 +58,7 @@ export default {
     ...register,
     ...search,
     ...searchDictionary,
+    ...searchNames,
     ...textEpigraphies,
   },
 };

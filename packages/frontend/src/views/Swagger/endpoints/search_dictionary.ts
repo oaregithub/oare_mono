@@ -36,18 +36,20 @@ export default {
       responses: {
         200: {
           description: 'Returns words associated with the search.',
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                totalRows: {
-                  type: 'string',
-                },
-                rows: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: searchWordsQueryRow,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  totalRows: {
+                    type: 'string',
+                  },
+                  rows: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: searchWordsQueryRow,
+                    },
                   },
                 },
               },
