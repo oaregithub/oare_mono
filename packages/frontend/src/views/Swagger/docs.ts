@@ -19,6 +19,7 @@ import register from './endpoints/register';
 import search from './endpoints/search';
 import searchDictionary from './endpoints/search_dictionary';
 import searchNames from './endpoints/search_names';
+import textDiscourse from './endpoints/text_discourse';
 import textEpigraphies from './endpoints/text_epigraphies';
 
 const server =
@@ -59,6 +60,7 @@ export default {
     ...search,
     ...searchDictionary,
     ...searchNames,
+    ...textDiscourse,
     ...textEpigraphies,
   },
 };
