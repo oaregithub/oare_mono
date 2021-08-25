@@ -1,5 +1,3 @@
-import { errorStatuses } from '@/views/Swagger/endpoints/types/errors';
-import { TextDraftSideContent } from '@oare/types/build/src/drafts';
 import { user } from './types/user';
 
 const epigraphicUnitSide = [
@@ -100,7 +98,7 @@ const textDraftsResponse = {
     type: 'array',
     items: {
       type: 'object',
-      properties: {},
+      properties: textDraftWithUser,
     },
   },
 };
@@ -302,11 +300,8 @@ export default {
           content: {
             'application/json': {
               schema: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: textDraftWithUser,
-                },
+                type: 'object',
+                properties: textDraftsResponse,
               },
             },
           },
