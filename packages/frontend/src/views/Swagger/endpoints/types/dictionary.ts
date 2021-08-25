@@ -134,25 +134,25 @@ export const word = {
 export const searchWordsQueryRowType = ['word', 'PN', 'GN'];
 export const searchWordsQueryRow = {
   uuid: {
-    type: 'string'
+    type: 'string',
   },
   type: {
     type: 'string',
-    enum: searchWordsQueryRowType
+    enum: searchWordsQueryRowType,
   },
   name: {
-    type: 'string'
+    type: 'string',
   },
   translations: {
     nullable: true,
-    type: 'string'
+    type: 'string',
   },
   form: {
     nullable: true,
-    type: 'string'
+    type: 'string',
   },
   spellings: {
     nullable: true,
-    type: 'string'
+    type: 'string',
   },
 };
