@@ -20,6 +20,7 @@ import search from './endpoints/search';
 import searchDictionary from './endpoints/search_dictionary';
 import searchNames from './endpoints/search_names';
 import textDiscourse from './endpoints/text_discourse';
+import textDrafts from './endpoints/text_drafts';
 import textEpigraphies from './endpoints/text_epigraphies';
 
 const server =
@@ -61,6 +62,7 @@ export default {
     ...searchDictionary,
     ...searchNames,
     ...textDiscourse,
+    ...textDrafts,
     ...textEpigraphies,
   },
 };
