@@ -35,6 +35,10 @@ export default {
         201: {
           description: 'Successfully inserted the text discourse rows.',
         },
+        403: {
+          description:
+            'User does not have permission to insert discourse rows.',
+        },
       },
     },
   },
