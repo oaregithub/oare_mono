@@ -18,6 +18,8 @@ import places from './endpoints/places';
 import register from './endpoints/register';
 import search from './endpoints/search';
 import textEpigraphies from './endpoints/text_epigraphies';
+import userGroups from './endpoints/user_groups';
+import words from './endpoints/words';
 
 const server =
   process.env.NODE_ENV === 'development'
@@ -56,5 +58,7 @@ export default {
     ...register,
     ...search,
     ...textEpigraphies,
+    ...userGroups,
+    ...words,
   },
 };
