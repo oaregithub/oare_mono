@@ -92,7 +92,7 @@ const textDraftWithUser = {
 
 const textDraftsResponse = {
   totalDrafts: {
-    type: 'string',
+    type: 'number',
   },
   drafts: {
     type: 'array',

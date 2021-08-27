@@ -15,7 +15,8 @@ const permissionsListType = ['Text', 'Collection'];
 export default {
   '/search_names': {
     get: {
-      summary: 'Gets hierarchical names',
+      summary:
+        'Returns an array of texts/collections that match the searched name.',
       parameters: [
         {
           in: 'query',
@@ -51,7 +52,8 @@ export default {
             type: 'string',
           },
           required: false,
-          description: 'The group which the user is a part of.',
+          description:
+            'The group whose allowlist the texts/collections are being added to.',
         },
         {
           in: 'query',
@@ -61,8 +63,7 @@ export default {
             enum: permissionsListType,
           },
           required: true,
-          description:
-            'The list of entities that permissions need to be accounted for.',
+          description: 'Tells the search what to return, Texts or Collections.',
         },
         {
           in: 'query',
@@ -71,12 +72,13 @@ export default {
             type: 'boolean',
           },
           required: true,
-          description: 'Gets potentially excluded names.',
+          description:
+            'Toggles visibility of texts/collections that would otherwise be excluded from this list as a result of being in the group allowlist.',
         },
       ],
       responses: {
         200: {
-          description: 'Returns the names.',
+          description: 'Returns the texts/collections.',
           content: {
             'application/json': {
               schema: {

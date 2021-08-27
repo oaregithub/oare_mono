@@ -3,7 +3,8 @@ import { searchNullDiscourseResultRow } from '@/views/Swagger/endpoints/types/se
 export default {
   '/text_discourse': {
     post: {
-      summary: 'Inserts text discourse rows.',
+      summary:
+        'Allows users to add text discourse information to spellings that are missing discourse information.',
       requestBody: {
         description:
           'Spelling, associated form, associated epigraphies and associated texts.',
