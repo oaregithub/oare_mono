@@ -103,7 +103,7 @@ export default {
       ],
       requestBody: {
         description:
-          'Contains an array of userUuids to remove to the specified group.',
+          'Contains an array of userUuids to remove from the specified group.',
         required: true,
         content: {
           'application/json': {
@@ -119,7 +119,7 @@ export default {
       responses: {
         200: {
           description:
-            'Returns if all users were successfully added to the group.',
+            'Returns if all users were successfully removed from the group.',
         },
         400: {
           description: 'Returns if the group does not exist.',
