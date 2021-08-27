@@ -22,6 +22,8 @@ import searchNames from './endpoints/search_names';
 import textDiscourse from './endpoints/text_discourse';
 import textDrafts from './endpoints/text_drafts';
 import textEpigraphies from './endpoints/text_epigraphies';
+import userGroups from './endpoints/user_groups';
+import words from './endpoints/words';
 
 const server =
   process.env.NODE_ENV === 'development'
@@ -64,5 +66,7 @@ export default {
     ...textDiscourse,
     ...textDrafts,
     ...textEpigraphies,
+    ...userGroups,
+    ...words,
   },
 };
