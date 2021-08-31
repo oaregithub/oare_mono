@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
 
   if (!hasSourceColumn) {
     await knex.raw(
-      'ALTER TABLE sign ADD COLUMN source_uuid CHAR(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER name; '
+      'ALTER TABLE sign ADD COLUMN source_uuid CHAR(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER name; '
     );
   }
 }
