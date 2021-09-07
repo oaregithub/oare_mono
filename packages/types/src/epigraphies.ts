@@ -147,3 +147,5 @@ export interface UpdateTranslitStatusPayload {
   textUuid: string;
   color: string;
 }
+
+export type SideOption = 'obv.' | 'lo.e.' | 'rev.' | 'u.e.' | 'le.e.' | 'r.e.';

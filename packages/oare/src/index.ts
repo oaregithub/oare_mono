@@ -22,6 +22,8 @@ export {
   subscriptNumber,
 } from './signNormalizer';
 
+export { formatLineNumber } from './tabletUtils';
+
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';
 export const AkkadianAlphabetUpper = 'ĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZ';
 export const AkkadianLetterGroupsUpper: { [key: string]: string } = {
