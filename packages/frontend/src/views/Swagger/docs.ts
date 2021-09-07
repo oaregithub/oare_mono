@@ -10,7 +10,20 @@ import users from './endpoints/users';
 import publicDenylist from './endpoints/public_denylist';
 import groupAllowlist from './endpoints/group_allowlist';
 import groupEditPermissions from './endpoints/group_edit_permissions';
+import groups from './endpoints/groups';
+import names from './endpoints/names';
+import people from './endpoints/people';
+import permissions from './endpoints/permissions';
+import places from './endpoints/places';
+import register from './endpoints/register';
+import search from './endpoints/search';
+import searchDictionary from './endpoints/search_dictionary';
+import searchNames from './endpoints/search_names';
+import textDiscourse from './endpoints/text_discourse';
+import textDrafts from './endpoints/text_drafts';
 import textEpigraphies from './endpoints/text_epigraphies';
+import userGroups from './endpoints/user_groups';
+import words from './endpoints/words';
 
 const server =
   process.env.NODE_ENV === 'development'
@@ -39,8 +52,21 @@ export default {
     ...threads,
     ...users,
     ...publicDenylist,
+    ...groups,
     ...groupAllowlist,
     ...groupEditPermissions,
+    ...names,
+    ...people,
+    ...permissions,
+    ...places,
+    ...register,
+    ...search,
+    ...searchDictionary,
+    ...searchNames,
+    ...textDiscourse,
+    ...textDrafts,
     ...textEpigraphies,
+    ...userGroups,
+    ...words,
   },
 };

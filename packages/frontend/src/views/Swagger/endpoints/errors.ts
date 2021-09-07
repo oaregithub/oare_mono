@@ -1,12 +1,11 @@
-const errorStatuses = ['New', 'In Progress', 'Resolved'];
-const sortTypes = ['status', 'timestamp', 'description', 'userName'];
+import { errorStatuses, errorSortTypes } from './types/errors';
 
 export default {
   '/errors': {
     post: {
       summary: 'Create a new error log',
       requestBody: {
-        description: '',
+        description: 'Creates a new error log',
         required: true,
         content: {
           'application/json': {
@@ -70,7 +69,7 @@ export default {
             properties: {
               type: {
                 type: 'string',
-                enum: sortTypes,
+                enum: errorSortTypes,
               },
               desc: {
                 type: 'boolean',
