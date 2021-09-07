@@ -45,3 +45,11 @@ export interface DraftQueryOptions extends Pagination {
   textFilter?: string;
   authorFilter?: string;
 }
+
+export type RowTypes =
+  | 'Line'
+  | 'Broken Line(s)'
+  | 'Ruling(s)'
+  | 'Seal Impression'
+  | 'Broken Area'
+  | 'Uninscribed Line(s)';
