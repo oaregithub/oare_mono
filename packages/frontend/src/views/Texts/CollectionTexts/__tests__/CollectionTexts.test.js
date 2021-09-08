@@ -28,9 +28,15 @@ describe('CollectionTexts test', () => {
   const mockActions = {
     showErrorSnackbar: jest.fn(),
   };
+  const mockStore = {
+    getters: {
+      permissions: [{ name: 'ADD_NEW_TEXTS' }],
+    },
+  };
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
+    sl.set('store', mockStore);
 
     return mount(CollectionTexts, {
       vuetify,

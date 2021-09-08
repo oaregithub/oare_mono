@@ -29,7 +29,7 @@ export interface PagePermission extends PermissionTemplate {
 }
 
 export interface TextPermission extends PermissionTemplate {
-  name: 'VIEW_EPIGRAPHY_IMAGES' | 'VIEW_TEXT_DISCOURSE';
+  name: 'VIEW_EPIGRAPHY_IMAGES' | 'VIEW_TEXT_DISCOURSE' | 'ADD_NEW_TEXTS';
   type: 'text';
 }
 
