@@ -353,6 +353,7 @@ const routes: RouteConfig[] = [
     name: 'addCollectionText',
     component: AddNewTexts,
     props: true,
+    beforeEnter: permissionGuard('ADD_NEW_TEXTS'),
   },
 ];
 

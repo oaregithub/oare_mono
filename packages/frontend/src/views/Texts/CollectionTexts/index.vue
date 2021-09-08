@@ -18,7 +18,9 @@
           />
         </v-col>
       </v-row>
-      <v-btn @click="addText" color="primary">Add Text</v-btn>
+      <v-btn v-if="canAddNewTexts" @click="addText" color="primary"
+        >Add Text</v-btn
+      >
       <TextsTable
         :page="Number(page)"
         @update:page="p => (page = p)"
@@ -68,6 +70,8 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
+    const store = sl.get('store');
+    const permissions = computed(() => store.getters.permissions);
 
     const collectionName = ref('');
     const loading = ref(false);
@@ -95,6 +99,12 @@ export default defineComponent({
     const addText = () => {
       router.push(`/add_collection_text/${collectionUuid}`);
     };
+
+    const canAddNewTexts = computed(() =>
+      permissions.value
+        .map(permission => permission.name)
+        .includes('ADD_NEW_TEXTS')
+    );
 
     const getCollectionTexts = async () => {
       if (textsLoading.value) {
@@ -167,6 +177,7 @@ export default defineComponent({
       page,
       rows,
       addText,
+      canAddNewTexts,
     };
   },
 });
