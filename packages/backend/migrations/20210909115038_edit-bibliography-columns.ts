@@ -96,7 +96,7 @@ export async function up(knex: Knex): Promise<void> {
     
   if (!hasZotItemKeyColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN zot_item_key VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER type; '
+      'ALTER TABLE bibliography ADD COLUMN zot_item_key VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER uuid; '
     );
   }
 }
