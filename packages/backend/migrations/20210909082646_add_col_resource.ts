@@ -8,7 +8,7 @@ export async function up(knex: Knex): Promise<void> {
 
   if (!hasContainerColumn) {
     await knex.raw(
-      'ALTER TABLE resource ADD COLUMN container VARCHAR CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER type; '
+      'ALTER TABLE resource ADD COLUMN container VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER type; '
     );
   }
 }
