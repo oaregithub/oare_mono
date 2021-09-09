@@ -161,37 +161,37 @@ export async function down(knex: Knex): Promise<void> {
     
   if (!hasYearColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN year INT(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER citationFormat; '
+      'ALTER TABLE bibliography ADD COLUMN year INT(4) CHARACTER SET binary AFTER citationFormat; '
     );
   }
     
   if (!hasMonthColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN month INT(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER year; '
+      'ALTER TABLE bibliography ADD COLUMN month INT(2) CHARACTER SET binary AFTER year; '
     );
   }
     
   if (!hasDayColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN day INT(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER month; '
+      'ALTER TABLE bibliography ADD COLUMN day INT(2) CHARACTER SET binary AFTER month; '
     );
   }
     
   if (!hasEndYearColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN end_year INT(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER day; '
+      'ALTER TABLE bibliography ADD COLUMN end_year INT(4) CHARACTER SET binary AFTER day; '
     );
   }
 
   if (!hasEndMonthColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN end_month INT(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER end_year; '
+      'ALTER TABLE bibliography ADD COLUMN end_month INT(2) CHARACTER SET binary AFTER end_year; '
     );
   }
 
   if (!hasEndDayColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN end_day INT(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin AFTER end_month; '
+      'ALTER TABLE bibliography ADD COLUMN end_day INT(2) CHARACTER SET binary AFTER end_month; '
     );
   }
     
