@@ -156,3 +156,57 @@ export const searchWordsQueryRow = {
     type: 'string',
   },
 };
+
+export const parseTree = {
+  uuid: {
+    type: 'string',
+  },
+  type: {
+    type: 'string',
+  },
+  parentUuid: {
+    type: 'string',
+  },
+  objectUuid: {
+    type: 'string',
+  },
+  objParentUuid: {
+    type: 'string',
+  },
+  variableName: {
+    nullable: true,
+    type: 'string',
+  },
+  valueName: {
+    nullable: true,
+    type: 'string',
+  },
+  varAbbreviation: {
+    nullable: true,
+    type: 'string',
+  },
+  valAbbreviation: {
+    nullable: true,
+    type: 'string',
+  },
+  variableUuid: {
+    nullable: true,
+    type: 'string',
+  },
+  valueUuid: {
+    nullable: true,
+    type: 'string',
+  },
+  level: {
+    nullable: true,
+    type: 'number',
+  },
+  children: {
+    nullable: true,
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {}, // Unable to represent the recursive relationship.
+    },
+  },
+};
