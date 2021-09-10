@@ -161,7 +161,7 @@ export async function down(knex: Knex): Promise<void> {
     
   if (!hasYearColumn) {
     await knex.raw(
-      'ALTER TABLE bibliography ADD COLUMN year INT(4) CHARACTER SET binary AFTER citationFormat; '
+      'ALTER TABLE bibliography ADD COLUMN year INT(4) AFTER citationFormat; '
     );
   }
     
