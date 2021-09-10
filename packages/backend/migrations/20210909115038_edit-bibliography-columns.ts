@@ -6,17 +6,13 @@ export async function up(knex: Knex): Promise<void> {
     'citationFormat'
   );
 
-  const hasTypeColumn = await knex.schema.hasColumn('bibliography',
-    'type');
+  const hasTypeColumn = await knex.schema.hasColumn('bibliography','type');
 
-  const hasYearColumn = await knex.schema.hasColumn('bibliography',
-    'year');
+  const hasYearColumn = await knex.schema.hasColumn('bibliography','year');
 
-  const hasMonthColumn = await knex.schema.hasColumn('bibliography',
-    'month');
+  const hasMonthColumn = await knex.schema.hasColumn('bibliography','month');
 
-  const hasDayColumn = await knex.schema.hasColumn('bibliography',
-    'day');
+  const hasDayColumn = await knex.schema.hasColumn('bibliography','day');
 
   const hasEndYearColumn = await knex.schema.hasColumn(
     'bibliography',
@@ -99,17 +95,13 @@ export async function down(knex: Knex): Promise<void> {
     'short_cit'
   );
 
-  const hasTypeColumn = await knex.schema.hasColumn('bibliography',
-    'type');
+  const hasTypeColumn = await knex.schema.hasColumn('bibliography','type');
 
-  const hasYearColumn = await knex.schema.hasColumn('bibliography',
-    'year');
+  const hasYearColumn = await knex.schema.hasColumn('bibliography','year');
 
-  const hasMonthColumn = await knex.schema.hasColumn('bibliography',
-    'month');
+  const hasMonthColumn = await knex.schema.hasColumn('bibliography','month');
 
-  const hasDayColumn = await knex.schema.hasColumn('bibliography',
-    'day');
+  const hasDayColumn = await knex.schema.hasColumn('bibliography','day');
 
   const hasEndYearColumn = await knex.schema.hasColumn(
     'bibliography',
