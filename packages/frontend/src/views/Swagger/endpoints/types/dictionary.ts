@@ -66,6 +66,24 @@ export const formSpelling = {
   },
 };
 
+export const spellingOccurrenceRow = {
+  discourseUuid: {
+    type: 'string',
+  },
+  textName: {
+    type: 'string',
+  },
+  textUuid: {
+    type: 'string',
+  },
+  line: {
+    type: 'number',
+  },
+  wordOnTablet: {
+    type: 'number',
+  },
+};
+
 export const dictionaryForm = {
   ...dictionaryFormInfo,
   ...dictionaryFormGrammar,
