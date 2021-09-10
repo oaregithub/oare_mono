@@ -1,4 +1,51 @@
 export default {
+  '/users': {
+    get: {
+      summary: 'Gets all users.',
+      responses: {
+        200: {
+          description:
+            'An object users and the groups the users are associated with.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  uuid: {
+                    type: 'string',
+                  },
+                  firstName: {
+                    type: 'string',
+                  },
+                  lastName: {
+                    type: 'string',
+                  },
+                  email: {
+                    type: 'string',
+                  },
+                  isAdmin: {
+                    type: 'boolean',
+                  },
+                  groups: {
+                    type: 'array',
+                    items: {
+                      type: 'number',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'User is not logged in.',
+        },
+        403: {
+          description: 'User is not an admin.',
+        },
+      },
+    },
+  },
   '/users/{uuid}': {
     get: {
       summary: 'Returns information about a specific user.',
