@@ -177,7 +177,7 @@ export default {
     },
   },
   '/newthreads': {
-    put: {
+    get: {
       summary: 'Checks if new threads exist.',
       responses: {
         200: {
