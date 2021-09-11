@@ -42,7 +42,7 @@ export default {
       parameters: [
         {
           in: 'path',
-          name: 'letter',
+          name: 'uuid',
           schema: {
             type: 'string',
           },
@@ -80,7 +80,7 @@ export default {
       parameters: [
         {
           in: 'path',
-          name: 'letter',
+          name: 'uuid',
           schema: {
             type: 'string',
           },

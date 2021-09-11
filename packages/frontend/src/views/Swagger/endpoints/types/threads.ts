@@ -1,12 +1,3 @@
-import {
-  Comment,
-  CommentSortType,
-  Thread,
-  ThreadDisplay,
-  ThreadStatus,
-} from '@oare/types/build/src/comments';
-import { Pagination } from '@oare/types/build/src/dictionary';
-
 export const threadStatus = ['New', 'Pending', 'In Progress', 'Completed'];
 
 export const commentSortType = ['status', 'thread', 'item', 'timestamp'];

@@ -17,7 +17,8 @@ export default {
             type: 'string',
           },
           required: true,
-          description: 'The reference uuid of the thread.',
+          description:
+            'The reference uuid of the thread, reference uuid refers to whatever item the thread was created on (e.g. word, form, spelling and in the future it could support more such as texts).',
         },
       ],
       responses: {
@@ -43,9 +44,10 @@ export default {
   },
   '/threads': {
     put: {
-      summary: 'Updates a thread',
+      summary:
+        'Updates a thread status and writes a new comment saying what the status was changed from and to.',
       requestBody: {
-        description: 'The thread to update.',
+        description: 'The thread to update the status of.',
         required: true,
         content: {
           'application/json': {
@@ -58,7 +60,7 @@ export default {
       },
       responses: {
         200: {
-          description: 'The thread was successfully updated.',
+          description: 'The thread status was successfully updated.',
         },
         401: {
           description: 'User is not logged in.',

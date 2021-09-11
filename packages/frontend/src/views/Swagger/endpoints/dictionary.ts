@@ -465,7 +465,7 @@ export default {
   },
   '/dictionary/spellings/{uuid}': {
     put: {
-      summary: 'Set spellingUuids to null for the designated text discourses.',
+      summary: 'Updates the spelling.',
       parameters: [
         {
           in: 'path',
@@ -474,8 +474,7 @@ export default {
             type: 'string',
           },
           required: true,
-          description:
-            'The UUID of the spelling whose texts should be updated.',
+          description: 'The UUID of the spelling to be updated.',
         },
       ],
       requestBody: {
