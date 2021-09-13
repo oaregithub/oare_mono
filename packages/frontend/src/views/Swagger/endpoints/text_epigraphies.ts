@@ -1,3 +1,5 @@
+import { epigraphyResponse } from '@/views/Swagger/endpoints/types/textEpigraphy';
+
 export default {
   '/text_epigraphies/images/{uuid}/{cdliNum}': {
     get: {
@@ -94,6 +96,42 @@ export default {
       responses: {
         204: {
           description: 'The transliteration status was successfully updated',
+        },
+      },
+    },
+  },
+  '/text_epigraphies/text/{uuid}': {
+    get: {
+      summary: 'Retrieves the text by uuid.',
+      parameters: [
+        {
+          in: 'path',
+          name: 'uuid',
+          schema: {
+            type: 'string',
+          },
+          required: true,
+          description: 'The UUID of the text to retrieve.',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'The text',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: epigraphyResponse,
+              },
+            },
+          },
+        },
+        400: {
+          description:
+            'If the text does not exist or the text does not belong to a valid collection.',
+        },
+        403: {
+          description: 'User does not have permission to view the text.',
         },
       },
     },
