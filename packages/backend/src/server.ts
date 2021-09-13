@@ -35,6 +35,7 @@ import SearchIndexDao from './api/daos/SearchIndexDao';
 import GroupAllowlistDao from './api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from './api/daos/GroupEditPermissionsDao';
 import ResourceDao from './api/daos/ResourceDao';
+import AliasDao from './api/daos/AliasDao';
 
 declare global {
   namespace Express {
@@ -75,6 +76,7 @@ sl.set('SearchIndexDao', SearchIndexDao);
 sl.set('GroupAllowlistDao', GroupAllowlistDao);
 sl.set('GroupEditPermissionsDao', GroupEditPermissionsDao);
 sl.set('ResourceDao', ResourceDao);
+sl.set('AliasDao', AliasDao);
 sl.set('utils', utils);
 
 initializeFirebase(err => {

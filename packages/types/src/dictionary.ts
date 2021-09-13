@@ -143,7 +143,7 @@ export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
 
 export type DictionaryWordTypes = 'word' | 'GN' | 'PN';
 
-export interface ParseTree {
+export interface TaxonomyTree {
   uuid: string;
   type: string;
   parentUuid: string;
@@ -151,17 +151,18 @@ export interface ParseTree {
   objParentUuid: string;
   variableName: string | null;
   valueName: string | null;
+  aliasName: string | null;
   varAbbreviation: string | null;
   valAbbreviation: string | null;
   variableUuid: string | null;
   valueUuid: string | null;
   level: number | null;
-  children: ParseTree[] | null;
+  children: TaxonomyTree[] | null;
 }
 
 export interface ParseTreeProperty {
-  variable: ParseTree;
-  value: ParseTree;
+  variable: TaxonomyTree;
+  value: TaxonomyTree;
 }
 
 export interface ParseTreePropertyRow extends ParseTreeProperty {
