@@ -84,11 +84,11 @@ import {
   ComputedRef,
   inject,
 } from '@vue/composition-api';
-import { Word, ParseTree, ParseTreeProperty } from '@oare/types';
+import { Word, TaxonomyTree, ParseTreeProperty } from '@oare/types';
 import WordGrammar from './WordGrammar.vue';
 import ParseTreeNode, {
   ParseTreePropertyEvent,
-} from '@/views/Admin/ParseTree/components/ParseTreeNode.vue';
+} from '@/views/Admin/PropertiesTaxonomy/components/ParseTreeNode.vue';
 import { ReloadKey } from '../index.vue';
 import sl from '@/serviceLocator';
 
@@ -117,18 +117,18 @@ export default defineComponent({
     const addFormLoading = ref(false);
     const panel = ref(0);
     const formComplete = ref(false);
-    const filteredTree = ref<ParseTree | null>(null);
+    const filteredTree = ref<TaxonomyTree | null>(null);
     const newFormSpelling = ref('');
     const properties = ref<ParseTreePropertyEvent[]>([]);
 
     onMounted(async () => {
       try {
         loading.value = true;
-        const parseTree = await server.getParseTree();
+        const taxonomyTree = await server.getTaxonomyTree();
         filteredTree.value =
           word.partsOfSpeech.length > 0
-            ? searchTree(parseTree, word.partsOfSpeech[0].valueUuid)
-            : parseTree;
+            ? searchTree(taxonomyTree, word.partsOfSpeech[0].valueUuid)
+            : taxonomyTree;
         if (filteredTree.value && !filteredTree.value.children) {
           formComplete.value = true;
         }
@@ -142,9 +142,9 @@ export default defineComponent({
     });
 
     const searchTree = (
-      node: ParseTree,
+      node: TaxonomyTree,
       valueUuid: string
-    ): ParseTree | null => {
+    ): TaxonomyTree | null => {
       if (node.valueUuid === valueUuid) {
         return node;
       } else if (node.children !== null) {

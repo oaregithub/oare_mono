@@ -30,7 +30,13 @@
                 <v-icon v-if="open">mdi-chevron-up</v-icon>
                 <v-icon v-else>mdi-chevron-down</v-icon>
               </template>
-              {{ child.variableName || child.valueName }}
+              {{ child.variableName || child.valueName || child.aliasName }}
+              <i
+                v-if="
+                  !child.variableName && !child.valueName && !child.aliasName
+                "
+                >NO NAME</i
+              >
               <span class="text--disabled">
                 &nbsp;
                 <span v-if="child.varAbbreviation"
@@ -95,18 +101,18 @@ import {
   watch,
   computed,
 } from '@vue/composition-api';
-import { ParseTree, ParseTreeProperty } from '@oare/types';
+import { TaxonomyTree, ParseTreeProperty } from '@oare/types';
 
 export interface ParseTreePropertyEvent {
   properties: ParseTreeProperty[];
-  source: ParseTree;
+  source: TaxonomyTree;
 }
 
 export default defineComponent({
   name: 'ParseTreeNode',
   props: {
     node: {
-      type: Object as PropType<ParseTree>,
+      type: Object as PropType<TaxonomyTree>,
       required: true,
     },
     allowSelections: {
@@ -115,9 +121,9 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const selected = ref<ParseTree[]>([]);
-    const completedSubtrees = ref<ParseTree[]>([]);
-    const ignoredSubtrees = ref<ParseTree[]>([]);
+    const selected = ref<TaxonomyTree[]>([]);
+    const completedSubtrees = ref<TaxonomyTree[]>([]);
+    const ignoredSubtrees = ref<TaxonomyTree[]>([]);
 
     const nodeComplete = computed(() => {
       const numSubtrees = props.node.children
@@ -146,7 +152,7 @@ export default defineComponent({
     });
 
     const updateCompletedSubtrees = (args: {
-      node: ParseTree;
+      node: TaxonomyTree;
       status: boolean;
     }) => {
       if (args.status) {
@@ -158,7 +164,7 @@ export default defineComponent({
       }
     };
 
-    const showCheck = (node: ParseTree) =>
+    const showCheck = (node: TaxonomyTree) =>
       completedSubtrees.value.includes(node);
 
     const properties = ref<ParseTreePropertyEvent[]>([]);

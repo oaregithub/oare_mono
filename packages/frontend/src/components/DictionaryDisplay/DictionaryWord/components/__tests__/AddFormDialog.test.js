@@ -18,7 +18,7 @@ describe('EditWordDialog test', () => {
 
   const mockServer = {
     addForm: jest.fn().mockResolvedValue(),
-    getParseTree: jest.fn().mockResolvedValue({
+    getTaxonomyTree: jest.fn().mockResolvedValue({
       variableName: 'test-var-name',
       varAbbreviation: 'test-var-abb',
       variableUuid: 'test-variable-uuid',
@@ -98,7 +98,9 @@ describe('EditWordDialog test', () => {
     const wrapper = createWrapper({
       server: {
         ...mockServer,
-        getParseTree: jest.fn().mockRejectedValue('failed to load parse tree'),
+        getTaxonomyTree: jest
+          .fn()
+          .mockRejectedValue('failed to load parse tree'),
       },
     });
     await flushPromises();

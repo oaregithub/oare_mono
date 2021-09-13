@@ -3,7 +3,7 @@ import {
   SearchNamesResponse,
   SearchNamesResultRow,
   SearchNamesPayload,
-  ParseTree,
+  TaxonomyTree,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -197,11 +197,12 @@ class HierarchyDao {
   async getChildren(
     hierarchyUuid: string,
     level: number
-  ): Promise<ParseTree[] | null> {
+  ): Promise<TaxonomyTree[] | null> {
+    const AliasDao = sl.get('AliasDao');
     const hasChild = await this.hasChild(hierarchyUuid);
 
     if (hasChild) {
-      const rows: ParseTree[] = await getTreeNodeQuery().where(
+      const rows: TaxonomyTree[] = await getTreeNodeQuery().where(
         'parent_uuid',
         hierarchyUuid
       );
@@ -209,28 +210,36 @@ class HierarchyDao {
         level += 1;
       }
       const results = await Promise.all(
-        rows.map(async row => ({
-          ...row,
-          level,
-          children: await this.getChildren(row.uuid, level),
-        }))
+        rows.map(async row => {
+          const names = await AliasDao.getAliasNames(row.objectUuid);
+
+          return {
+            ...row,
+            aliasName: names[0] || null,
+            level,
+            children: await this.getChildren(row.uuid, level),
+          };
+        })
       );
       return results;
     }
     return null;
   }
 
-  async createParseTree(): Promise<ParseTree> {
-    const parseRow: ParseTree = await getTreeNodeQuery()
-      .where('value.name', 'Parse')
-      .first();
-    const rootRow: ParseTree = await getTreeNodeQuery()
-      .where('hierarchy.uuid', parseRow.parentUuid)
+  async createTaxonomyTree(): Promise<TaxonomyTree> {
+    const AliasDao = sl.get('AliasDao');
+
+    const topNode: TaxonomyTree = await getTreeNodeQuery()
+      .where('hierarchy.type', 'taxonomy')
+      .andWhere('hierarchy.role', 'tree')
       .first();
 
+    const names = await AliasDao.getAliasNames(topNode.objectUuid);
+
     const tree = {
-      ...rootRow,
-      children: await this.getChildren(rootRow.uuid, 0),
+      ...topNode,
+      aliasName: names[0] || null,
+      children: await this.getChildren(topNode.uuid, 0),
     };
     return tree;
   }
