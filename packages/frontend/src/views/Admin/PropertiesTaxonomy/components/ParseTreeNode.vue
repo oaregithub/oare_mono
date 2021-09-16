@@ -184,11 +184,22 @@ export default defineComponent({
 
     const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
-        prop => prop.source !== args.source && prop.source !== props.node
+        prop => prop.source !== args.source
       );
+      properties.value = properties.value.map(prop => {
+        if (prop.source === props.node) {
+          const filteredProps = prop.properties.filter(
+            subProp => subProp.value !== args.source
+          );
+          return {
+            ...prop,
+            properties: filteredProps,
+          };
+        }
+        return prop;
+      });
       properties.value.push(args);
-      const subProperties = properties.value.flatMap(prop => prop.properties);
-      if (props.node.variableUuid && subProperties.length > 0) {
+      if (props.node.variableUuid && args.properties.length > 0) {
         properties.value.unshift({
           properties: [
             {

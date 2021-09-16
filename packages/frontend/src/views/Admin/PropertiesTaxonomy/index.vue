@@ -38,7 +38,7 @@ export default defineComponent({
         taxonomyTree.value = await server.getTaxonomyTree();
       } catch {
         actions.showErrorSnackbar(
-          'Error loading parse tree. Please try again.'
+          'Error loading properties taxonomy. Please try again.'
         );
       } finally {
         loading.value = false;
