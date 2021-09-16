@@ -196,7 +196,7 @@ class HierarchyDao {
 
   async getChildren(
     hierarchyUuid: string,
-    level: number
+    level: number | null
   ): Promise<TaxonomyTree[] | null> {
     const AliasDao = sl.get('AliasDao');
     const hasChild = await this.hasChild(hierarchyUuid);
@@ -206,7 +206,7 @@ class HierarchyDao {
         'parent_uuid',
         hierarchyUuid
       );
-      if (rows.every(row => row.variableUuid)) {
+      if (rows.every(row => row.variableUuid) && level !== null) {
         level += 1;
       }
       const results = await Promise.all(
@@ -217,7 +217,7 @@ class HierarchyDao {
             ...row,
             aliasName: names[0] || null,
             level,
-            children: await this.getChildren(row.uuid, level),
+            children: await this.getChildren(row.uuid, level || 0),
           };
         })
       );
@@ -239,7 +239,7 @@ class HierarchyDao {
     const tree = {
       ...topNode,
       aliasName: names[0] || null,
-      children: await this.getChildren(topNode.uuid, 0),
+      children: await this.getChildren(topNode.uuid, null),
     };
     return tree;
   }

@@ -120,6 +120,7 @@ export default defineComponent({
     const filteredTree = ref<TaxonomyTree | null>(null);
     const newFormSpelling = ref('');
     const properties = ref<ParseTreePropertyEvent[]>([]);
+    const foundParse = ref(false);
 
     onMounted(async () => {
       try {
@@ -145,10 +146,15 @@ export default defineComponent({
       node: TaxonomyTree,
       valueUuid: string
     ): TaxonomyTree | null => {
-      if (node.valueUuid === valueUuid) {
+      if (node.valueUuid === valueUuid && foundParse.value) {
         return node;
       } else if (node.children !== null) {
         let result = null;
+
+        if (node.valueName === 'Parse') {
+          foundParse.value = true;
+        }
+
         for (let i = 0; result === null && i < node.children.length; i++) {
           result = searchTree(node.children[i], valueUuid);
           if (result && node.children[i].valueUuid) {
