@@ -1,7 +1,10 @@
 import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  const hasTableReferenceColumn = await knex.schema.hasColumn('variable', 'table_reference');
+  const hasTableReferenceColumn = await knex.schema.hasColumn(
+    'variable',
+    'table_reference'
+  );
 
   if (!hasTableReferenceColumn) {
     await knex.raw(
@@ -11,7 +14,10 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-  const hasTableReferenceColumn = await knex.schema.hasColumn('variable', 'table_reference');
+  const hasTableReferenceColumn = await knex.schema.hasColumn(
+    'variable',
+    'table_reference'
+  );
 
   if (hasTableReferenceColumn) {
     await knex.schema.table('variable', table => {
