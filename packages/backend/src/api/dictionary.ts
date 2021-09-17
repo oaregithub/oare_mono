@@ -491,12 +491,12 @@ router
     }
   });
 
-router.route('/dictionary/tree/parse').get(async (req, res, next) => {
+router.route('/dictionary/tree/taxonomy').get(async (req, res, next) => {
   try {
     const HierarchyDao = sl.get('HierarchyDao');
     const cache = sl.get('cache');
 
-    const tree = await HierarchyDao.createParseTree();
+    const tree = await HierarchyDao.createTaxonomyTree();
     cache.insert({ req }, tree);
     res.json(tree);
   } catch (err) {

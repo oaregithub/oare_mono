@@ -9,7 +9,7 @@ import {
   CheckSpellingResponse,
   Pagination,
   SpellingOccurrenceResponseRow,
-  ParseTree,
+  TaxonomyTree,
   AddFormPayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
@@ -119,8 +119,8 @@ async function getDictionaryInfoByDiscourseUuid(
   return data;
 }
 
-async function getParseTree(): Promise<ParseTree> {
-  const { data } = await axios.get('/dictionary/tree/parse');
+async function getTaxonomyTree(): Promise<TaxonomyTree> {
+  const { data } = await axios.get('/dictionary/tree/taxonomy');
   return data;
 }
 
@@ -140,7 +140,7 @@ export default {
   getSpellingTextOccurrences,
   getDictionaryInfoByDiscourseUuid,
   getSpellingTotalOccurrences,
-  getParseTree,
+  getTaxonomyTree,
   addForm,
   disconnectSpellings,
 };

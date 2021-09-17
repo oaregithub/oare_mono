@@ -39,7 +39,7 @@ describe('dictionary api test', () => {
     }),
   };
   const MockHierarchyDao = {
-    createParseTree: jest.fn().mockResolvedValue(),
+    createTaxonomyTree: jest.fn().mockResolvedValue(),
   };
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
@@ -1288,25 +1288,25 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/tree/parse', () => {
-    const PATH = `${API_PATH}/dictionary/tree/parse`;
+  describe('GET /dictionary/tree/taxonomy', () => {
+    const PATH = `${API_PATH}/dictionary/tree/taxonomy`;
 
     beforeEach(setup);
 
     const sendRequest = () => request(app).get(PATH);
 
-    it('returns 200 on successful parse tree retreival', async () => {
+    it('returns 200 on successful taxonomy tree retreival', async () => {
       const response = await sendRequest();
-      expect(MockHierarchyDao.createParseTree).toHaveBeenCalled();
+      expect(MockHierarchyDao.createTaxonomyTree).toHaveBeenCalled();
       expect(mockCache.insert).toHaveBeenCalled();
       expect(response.status).toBe(200);
     });
 
-    it('returns 500 on failed parse tree retreival', async () => {
+    it('returns 500 on failed taxonomy tree retreival', async () => {
       sl.set('HierarchyDao', {
-        createParseTree: jest
+        createTaxonomyTree: jest
           .fn()
-          .mockRejectedValue('failed to retreive parse tree'),
+          .mockRejectedValue('failed to retreive taxonomy tree'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);

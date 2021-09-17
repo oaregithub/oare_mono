@@ -10,7 +10,7 @@ const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe('EditWordDialog test', () => {
+describe('AddFormDialog test', () => {
   const mockActions = {
     showErrorSnackbar: jest.fn(),
     showSnackbar: jest.fn(),
@@ -18,13 +18,13 @@ describe('EditWordDialog test', () => {
 
   const mockServer = {
     addForm: jest.fn().mockResolvedValue(),
-    getParseTree: jest.fn().mockResolvedValue({
+    getTaxonomyTree: jest.fn().mockResolvedValue({
       variableName: 'test-var-name',
       varAbbreviation: 'test-var-abb',
       variableUuid: 'test-variable-uuid',
       children: [
         {
-          valueName: 'test-val-name',
+          valueName: 'Parse',
           valAbbreviation: 'test-var-abb',
           valueUuid: 'test-value-uuid',
           children: [
@@ -36,8 +36,22 @@ describe('EditWordDialog test', () => {
                 {
                   valueName: 'test-val-name-2',
                   valAbbreviation: 'test-var-abb-2',
-                  valueUuid: 'test-value-uuid-2',
-                  children: null,
+                  valueUuid: 'test-value-uuid',
+                  children: [
+                    {
+                      variableName: 'test-var-name-3',
+                      varAbbreviation: 'test-var-abb-3',
+                      variableUuid: 'test-variable-uuid-3',
+                      children: [
+                        {
+                          valueName: 'test-val-name-3',
+                          valAbbreviation: 'test-var-abb-3',
+                          valueUuid: 'test-value-uuid-3',
+                          children: null,
+                        },
+                      ],
+                    },
+                  ],
                 },
               ],
             },
@@ -98,7 +112,9 @@ describe('EditWordDialog test', () => {
     const wrapper = createWrapper({
       server: {
         ...mockServer,
-        getParseTree: jest.fn().mockRejectedValue('failed to load parse tree'),
+        getTaxonomyTree: jest
+          .fn()
+          .mockRejectedValue('failed to load parse tree'),
       },
     });
     await flushPromises();

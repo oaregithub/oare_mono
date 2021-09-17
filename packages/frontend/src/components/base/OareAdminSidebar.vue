@@ -70,8 +70,8 @@ export default defineComponent({
           path: '/admin/swagger',
         },
         {
-          label: 'Parse Tree',
-          path: '/admin/parseTree',
+          label: 'Properties Taxonomy',
+          path: '/admin/propertiesTaxonomy',
         },
       ]),
     });

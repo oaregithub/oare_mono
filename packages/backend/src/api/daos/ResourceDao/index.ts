@@ -18,8 +18,7 @@ class ResourceDao {
       .whereNot('link', 'like', '%cdli%');
 
     const signedUrls = await Promise.all(
-      resourceLinks.map(link => {
-        const key = link.slice(link.lastIndexOf('/') + 1);
+      resourceLinks.map(key => {
         const params = {
           Bucket: 'oare-image-bucket',
           Key: key,
