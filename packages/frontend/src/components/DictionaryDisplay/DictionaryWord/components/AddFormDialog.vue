@@ -9,7 +9,7 @@
     :submitLoading="addFormLoading"
     @submit="addForm"
   >
-    <OareContentView :loading="loading">
+    <OareContentView>
       <template #title>
         <v-row class="px-3">
           <strong>{{ word.word }}</strong>
@@ -34,39 +34,13 @@
               {{ form.form }}
             </h4>
           </v-col>
-          <v-col cols="3">
-            <h3 class="primary--text mb-5">Properties</h3>
-            <v-chip
-              v-for="(property, index) in propertyList"
-              :key="index"
-              class="my-1 mr-1"
-              color="info"
-              outlined
-              :title="propertyText(property)"
-              >{{ propertyText(property) }}</v-chip
-            >
-          </v-col>
-          <v-col cols="7">
-            <h3 class="primary--text">Add Properties</h3>
-            <v-expansion-panels flat v-model="panel">
-              <v-expansion-panel>
-                <v-expansion-panel-header class="font-weight-bold">{{
-                  filteredTree
-                    ? filteredTree.valueName || filteredTree.variableName
-                    : ''
-                }}</v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <parse-tree-node
-                    v-if="filteredTree"
-                    :node="filteredTree"
-                    allowSelections
-                    @update:node="formComplete = $event.status"
-                    @update:properties="updateProperties"
-                    class="test-tree"
-                  />
-                </v-expansion-panel-content>
-              </v-expansion-panel>
-            </v-expansion-panels>
+          <v-col cols="10">
+            <add-properties
+              :valueUuid="word.partsOfSpeech[0].valueUuid || undefined"
+              requiredNodeValueName="Parse"
+              @export-properties="setProperties($event)"
+              @form-complete="formComplete = $event"
+            />
           </v-col>
         </v-row>
       </v-container>
@@ -79,24 +53,20 @@ import {
   defineComponent,
   PropType,
   ref,
-  onMounted,
   computed,
-  ComputedRef,
   inject,
 } from '@vue/composition-api';
-import { Word, TaxonomyTree, ParseTreeProperty } from '@oare/types';
+import { Word, ParseTreeProperty } from '@oare/types';
 import WordGrammar from './WordGrammar.vue';
-import ParseTreeNode, {
-  ParseTreePropertyEvent,
-} from '@/views/Admin/PropertiesTaxonomy/components/ParseTreeNode.vue';
 import { ReloadKey } from '../index.vue';
 import sl from '@/serviceLocator';
+import AddProperties from '@/components/Properties/AddProperties.vue';
 
 export default defineComponent({
   name: 'AddFormDialog',
   components: {
     WordGrammar,
-    ParseTreeNode,
+    AddProperties,
   },
   props: {
     value: {
@@ -113,90 +83,13 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const reload = inject(ReloadKey);
 
-    const loading = ref(false);
     const addFormLoading = ref(false);
-    const panel = ref(0);
     const formComplete = ref(false);
-    const filteredTree = ref<TaxonomyTree | null>(null);
     const newFormSpelling = ref('');
-    const properties = ref<ParseTreePropertyEvent[]>([]);
-    const foundParse = ref(false);
+    const properties = ref<ParseTreeProperty[]>([]);
 
-    onMounted(async () => {
-      try {
-        loading.value = true;
-        const taxonomyTree = await server.getTaxonomyTree();
-        filteredTree.value =
-          word.partsOfSpeech.length > 0
-            ? searchTree(taxonomyTree, word.partsOfSpeech[0].valueUuid)
-            : taxonomyTree;
-        if (filteredTree.value && !filteredTree.value.children) {
-          formComplete.value = true;
-        }
-      } catch {
-        actions.showErrorSnackbar(
-          'Error loading parse tree. Please try again.'
-        );
-      } finally {
-        loading.value = false;
-      }
-    });
-
-    const searchTree = (
-      node: TaxonomyTree,
-      valueUuid: string
-    ): TaxonomyTree | null => {
-      if (node.valueUuid === valueUuid && foundParse.value) {
-        return node;
-      } else if (node.children !== null) {
-        let result = null;
-
-        if (node.valueName === 'Parse') {
-          foundParse.value = true;
-        }
-
-        for (let i = 0; result === null && i < node.children.length; i++) {
-          result = searchTree(node.children[i], valueUuid);
-          if (result && node.children[i].valueUuid) {
-            properties.value.unshift({
-              properties: [{ variable: node, value: node.children[i] }],
-              source: node,
-            });
-          }
-        }
-        return result;
-      }
-      return null;
-    };
-
-    const updateProperties = (args: ParseTreePropertyEvent) => {
-      properties.value = properties.value.filter(
-        prop => prop.source !== args.source
-      );
-      properties.value.push(args);
-    };
-
-    const propertyList: ComputedRef<ParseTreeProperty[]> = computed(() => {
-      const combinedProperties = properties.value.flatMap(
-        prop => prop.properties
-      );
-      const combinedPropertiesWithoutChildren = combinedProperties.map(
-        prop => ({
-          variable: {
-            ...prop.variable,
-            children: null,
-          },
-          value: {
-            ...prop.value,
-            children: null,
-          },
-        })
-      );
-      return combinedPropertiesWithoutChildren;
-    });
-
-    const propertyText = (property: ParseTreeProperty) => {
-      return `${property.variable.variableName} - ${property.value.valueName}`;
+    const setProperties = (propertyList: ParseTreeProperty[]) => {
+      properties.value = propertyList;
     };
 
     const formAlreadyExists = computed(() => {
@@ -210,7 +103,7 @@ export default defineComponent({
         await server.addForm({
           wordUuid: word.uuid,
           formSpelling: newFormSpelling.value,
-          properties: propertyList.value,
+          properties: properties.value,
         });
         actions.showSnackbar(
           `Successfully added ${newFormSpelling.value} to ${word.word}`
@@ -224,18 +117,12 @@ export default defineComponent({
     };
 
     return {
-      loading,
-      filteredTree,
-      panel,
       formComplete,
       newFormSpelling,
-      updateProperties,
-      properties,
-      propertyList,
-      propertyText,
       formAlreadyExists,
       addForm,
       addFormLoading,
+      setProperties,
     };
   },
 });
