@@ -36,7 +36,11 @@
           </v-col>
           <v-col cols="10">
             <add-properties
-              :valueUuid="word.partsOfSpeech[0].valueUuid || undefined"
+              :valueUuid="
+                word.partsOfSpeech.length > 0
+                  ? word.partsOfSpeech[0].valueUuid
+                  : undefined
+              "
               requiredNodeValueName="Parse"
               @export-properties="setProperties($event)"
               @form-complete="formComplete = $event"
