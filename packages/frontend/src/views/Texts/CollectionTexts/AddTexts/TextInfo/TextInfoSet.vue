@@ -160,46 +160,7 @@
       </v-col>
     </v-row>
     <v-row class="pl-3">
-      <h3 class="mt-1 mb-2 d-inline">Genre</h3>
-      <v-menu offset-y open-on-hover top>
-        <template #activator="{ on, attrs }">
-          <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
-            mdi-information-outline
-          </v-icon>
-        </template>
-        <v-card class="pa-3">
-          <span>
-            <ul>
-              <li>
-                <b>Genre:</b> Choose from the available options. If you feel
-                that an option should be added, please email
-                <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>
-              </li>
-              <li>
-                <b>Subgenre:</b> Choose from the available options. If you feel
-                that an option should be added, please email
-                <a href="mailto:oarefeadback@byu.edu">oarefeedback@byu.edu</a>
-              </li>
-            </ul>
-          </span>
-        </v-card>
-      </v-menu>
-    </v-row>
-    <v-row class="px-3">
-      <v-col cols="6" class="pa-0 pr-1">
-        <v-text-field v-model="genre" outlined label="Genre" placeholder="" />
-      </v-col>
-      <v-col cols="6" class="pa-0 pl-1">
-        <v-text-field
-          v-model="subgenre"
-          outlined
-          label="Subgenre"
-          placeholder=""
-        />
-      </v-col>
-    </v-row>
-    <v-row class="pl-3">
-      <h3 class="mt-2 mb-2 d-inline">Misc.</h3>
+      <h3 class="mt-2 mb-2 d-inline">CDLI Number</h3>
       <v-menu offset-y open-on-hover top>
         <template #activator="{ on, attrs }">
           <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
@@ -210,11 +171,6 @@
           <span>
             <ul>
               <li><b>CDLI Number:</b> Include P at beginning of number</li>
-              <li>
-                <b>Object Type:</b> Choose from the available options. If you
-                feel that an option should be added, please email
-                <a href="mailto:oarefeadback@byu.edu">oarefeedback@byu.edu</a>
-              </li>
             </ul>
           </span>
         </v-card>
@@ -229,22 +185,57 @@
           placeholder="e.g. P361444"
         />
       </v-col>
-      <v-col cols="6" class="pa-0 pl-1">
-        <v-text-field
-          v-model="objectType"
-          outlined
-          label="Object Type"
-          placeholder=""
-        />
-      </v-col>
     </v-row>
+    <v-row class="pl-3">
+      <h3 class="mt-1 mb-2 d-inline">Additional Properties</h3>
+    </v-row>
+    <v-row class="px-3 pb-4">
+      <span v-if="properties.length === 0"
+        >No additional properties selected</span
+      >
+      <v-chip
+        v-else
+        v-for="(property, idx) in properties"
+        :key="idx"
+        class="my-1 mr-2"
+        color="info"
+        outlined
+        :title="propertyText(property)"
+        >{{ propertyText(property) }}
+      </v-chip>
+    </v-row>
+    <v-row class="px-3 mb-6">
+      <v-btn @click="selectPropertiesDialog = true" color="primary">
+        Select Additional Properties
+      </v-btn>
+    </v-row>
+    <oare-dialog
+      v-model="selectPropertiesDialog"
+      title="Additional Text Properties"
+      :width="1000"
+      :submitDisabled="!formComplete"
+      submitText="OK"
+      closeOnSubmit
+      :showCancel="false"
+    >
+      <add-properties
+        valueUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"
+        @export-properties="setProperties($event)"
+        @form-complete="formComplete = $event"
+      />
+    </oare-dialog>
   </v-col>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import AddProperties from '@/components/Properties/AddProperties.vue';
+import { ParseTreeProperty } from '@oare/types';
 
 export default defineComponent({
+  components: {
+    AddProperties,
+  },
   setup() {
     const textName = ref('');
     const cdliNum = ref('');
@@ -254,9 +245,23 @@ export default defineComponent({
     const museumNumber = ref('');
     const publicationPrefix = ref('');
     const publicationNumber = ref('');
-    const genre = ref('');
-    const subgenre = ref('');
-    const objectType = ref('');
+
+    const selectPropertiesDialog = ref(false);
+    const formComplete = ref(false);
+
+    const properties = ref<ParseTreeProperty[]>([]);
+
+    const setProperties = (propertyList: ParseTreeProperty[]) => {
+      properties.value = propertyList;
+    };
+
+    const clearProperties = () => {
+      properties.value = [];
+    };
+
+    const propertyText = (property: ParseTreeProperty) => {
+      return `${property.variable.variableName} - ${property.value.valueName}`;
+    };
 
     return {
       textName,
@@ -267,9 +272,12 @@ export default defineComponent({
       museumNumber,
       publicationPrefix,
       publicationNumber,
-      genre,
-      subgenre,
-      objectType,
+      selectPropertiesDialog,
+      formComplete,
+      properties,
+      setProperties,
+      clearProperties,
+      propertyText,
     };
   },
 });

@@ -27,8 +27,25 @@
           <template v-else>
             <span>
               <template v-if="allowSelections">
-                <v-icon v-if="open">mdi-chevron-up</v-icon>
-                <v-icon v-else>mdi-chevron-down</v-icon>
+                <v-icon v-if="open && child.children">mdi-chevron-up</v-icon>
+                <v-icon v-else-if="!open && child.children"
+                  >mdi-chevron-down</v-icon
+                >
+                <v-menu v-else offset-y open-on-hover bottom>
+                  <template #activator="{ on, attrs }">
+                    <v-icon
+                      small
+                      v-bind="attrs"
+                      v-on="on"
+                      class="pa-1"
+                      color="red"
+                      >mdi-block-helper</v-icon
+                    >
+                  </template>
+                  <v-card class="pa-3">
+                    <span> Not available. Coming soon. </span>
+                  </v-card>
+                </v-menu>
               </template>
               {{ child.variableName || child.valueName || child.aliasName }}
               <i

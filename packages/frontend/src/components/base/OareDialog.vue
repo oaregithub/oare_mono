@@ -115,12 +115,12 @@ export default defineComponent({
     },
   },
   setup({ closeOnSubmit }, { emit }) {
-    function submit() {
+    const submit = () => {
       if (closeOnSubmit) {
         emit('input', false);
       }
       emit('submit');
-    }
+    };
 
     return {
       submit,

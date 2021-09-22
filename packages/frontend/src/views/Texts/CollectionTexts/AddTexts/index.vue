@@ -26,34 +26,42 @@
         <v-stepper-content step="1">
           <text-info-set />
 
-          <v-btn color="primary" @click="step = 2"> Continue </v-btn>
+          <v-btn color="primary" class="ml-3" @click="step = 2">
+            Continue
+          </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="2">
           <v-card class="mb-12" color="grey lighten-1" height="200px"></v-card>
 
-          <v-btn color="primary" @click="step = 3"> Continue </v-btn>
+          <v-btn color="primary" class="ml-3" @click="step = 3">
+            Continue
+          </v-btn>
           <v-btn text @click="step -= 1"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="3">
           <add-text-editor />
 
-          <v-btn color="primary" @click="step = 4"> Continue </v-btn>
+          <v-btn color="primary" class="ml-3" @click="step = 4">
+            Continue
+          </v-btn>
           <v-btn text @click="step -= 1"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="4">
           <v-card class="mb-12" color="grey lighten-1" height="200px"></v-card>
 
-          <v-btn color="primary" @click="step = 5"> Continue </v-btn>
+          <v-btn color="primary" class="ml-3" @click="step = 5">
+            Continue
+          </v-btn>
           <v-btn text @click="step -= 1"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="5">
           <v-card class="mb-12" color="grey lighten-1" height="200px"></v-card>
 
-          <v-btn text @click="step -= 1"> Back </v-btn>
+          <v-btn text class="ml-3" @click="step -= 1"> Back </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
