@@ -1,6 +1,7 @@
 import { DiscourseUnit } from './textDiscourse';
 import { TextDraft } from './drafts';
 import { Collection } from './collection';
+import { ParseTreeProperty } from './dictionary';
 
 export interface EpigraphyResponse {
   canWrite: boolean;
@@ -149,3 +150,15 @@ export interface UpdateTranslitStatusPayload {
 }
 
 export type SideOption = 'obv.' | 'lo.e.' | 'rev.' | 'u.e.' | 'le.e.' | 'r.e.';
+
+export interface AddTextInfo {
+  textName: string | null;
+  cdliNum: string | null;
+  excavationPrefix: string | null;
+  excavationNumber: string | null;
+  museumPrefix: string | null;
+  museumNumber: string | null;
+  publicationPrefix: string | null;
+  publicationNumber: string | null;
+  properties: ParseTreeProperty[];
+}
