@@ -1,5 +1,5 @@
 import { DiscourseUnit } from './textDiscourse';
-import { TextDraft } from './drafts';
+import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
 import { ParseTreeProperty } from './dictionary';
 
@@ -161,4 +161,27 @@ export interface AddTextInfo {
   publicationPrefix: string | null;
   publicationNumber: string | null;
   properties: ParseTreeProperty[];
+}
+
+export interface AddTextEditorContent {
+  sides: SideContent[];
+}
+
+export interface SideContent {
+  uuid: string;
+  type: SideOption;
+  columns: ColumnContent[];
+}
+
+export interface ColumnContent {
+  uuid: string;
+  rows: RowContent[];
+}
+
+export interface RowContent {
+  uuid: string;
+  type: RowTypes;
+  lines: number[];
+  value?: number;
+  text?: string;
 }

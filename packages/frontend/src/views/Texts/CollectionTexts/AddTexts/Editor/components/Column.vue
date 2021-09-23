@@ -82,6 +82,7 @@
                 :autofocus="true"
                 @keydown.enter.prevent
                 @keyup.enter="addRowAfter('Line', idx)"
+                @change="updateText(idx, $event)"
               />
               <v-row
                 class="pa-0 ma-0"
@@ -154,7 +155,7 @@ import {
 } from '@vue/composition-api';
 import InsertButton from './InsertButton.vue';
 import { v4 } from 'uuid';
-import { RowTypes } from '@oare/types';
+import { RowTypes, RowContent } from '@oare/types';
 import { formatLineNumber as defaultLineFormatter } from '@oare/oare';
 
 export interface Row {
@@ -162,6 +163,7 @@ export interface Row {
   uuid: string;
   lineValue?: number;
   isEditing: boolean;
+  text?: string;
 }
 
 export interface RowWithLine extends Row {
@@ -278,6 +280,38 @@ export default defineComponent({
     );
 
     watch(
+      rowsWithLineNumbers,
+      () => {
+        const rowContent: RowContent[] = rowsWithLineNumbers.value.map(row => {
+          const lines: number[] = [];
+          if (row.line && row.lineValue) {
+            for (let i = row.line - row.lineValue + 1; i <= row.line; i += 1) {
+              lines.push(i);
+            }
+          } else if (row.line) {
+            lines.push(row.line);
+          }
+          return {
+            uuid: row.uuid,
+            type: row.type,
+            value: row.lineValue || 1,
+            text: row.text,
+            lines,
+          };
+        });
+        emit('update-column-rows', rowContent);
+      },
+      { deep: true }
+    );
+
+    const updateText = (index: number, text: string) => {
+      rows.value.splice(index, 1, {
+        ...rows.value[index],
+        text,
+      });
+    };
+
+    watch(
       rows,
       () => {
         const lastRowType =
@@ -373,6 +407,7 @@ export default defineComponent({
       toggleRowEditing,
       getItems,
       formatRuling,
+      updateText,
     };
   },
 });

@@ -49,6 +49,7 @@
           @side-broken-area="setBrokenArea(idx, $event)"
           @side-ends-broken="setEndBreakStatus(idx, $event)"
           @side-dirty-status="setDirtyStatus(idx, $event)"
+          @update-side-columns="setSideColumns(idx, $event)"
         />
         <add-side
           v-if="addingSide"
@@ -74,9 +75,15 @@ import {
   ref,
   computed,
   ComputedRef,
+  watch,
 } from '@vue/composition-api';
 import { v4 } from 'uuid';
-import { SideOption } from '@oare/types';
+import {
+  SideOption,
+  ColumnContent,
+  SideContent,
+  AddTextEditorContent,
+} from '@oare/types';
 import Side from './components/Side.vue';
 import AddSide from './components/AddSide.vue';
 import SideCard from './components/SideCard.vue';
@@ -88,6 +95,7 @@ export interface Side {
   breaks: number;
   endsBroken: boolean;
   isDirty: boolean;
+  columns: ColumnContent[];
 }
 
 export default defineComponent({
@@ -96,7 +104,7 @@ export default defineComponent({
     AddSide,
     SideCard,
   },
-  setup() {
+  setup(_, { emit }) {
     const textName = ref('');
     const indexToChange = ref(0);
     const sides = ref<Side[]>([]);
@@ -172,6 +180,7 @@ export default defineComponent({
         breaks: 0,
         endsBroken: false,
         isDirty: false,
+        columns: [],
       });
       addingSide.value = false;
       selectedSide.value = side;
@@ -267,6 +276,29 @@ export default defineComponent({
       selectedSide.value = side;
     };
 
+    const setSideColumns = (index: number, columns: ColumnContent[]) => {
+      sides.value.splice(index, 1, {
+        ...sides.value[index],
+        columns,
+      });
+    };
+
+    watch(
+      sides,
+      () => {
+        const sideContent: SideContent[] = sides.value.map(side => ({
+          uuid: side.uuid,
+          type: side.side,
+          columns: side.columns,
+        }));
+        const editorContent: AddTextEditorContent = {
+          sides: sideContent,
+        };
+        emit('update-editor-content', editorContent);
+      },
+      { deep: true }
+    );
+
     return {
       textName,
       sides,
@@ -289,6 +321,7 @@ export default defineComponent({
       changingSide,
       setupChangeSide,
       changeSide,
+      setSideColumns,
     };
   },
 });
