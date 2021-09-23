@@ -228,15 +228,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  computed,
+  watch,
+  ComputedRef,
+} from '@vue/composition-api';
 import AddProperties from '@/components/Properties/AddProperties.vue';
-import { ParseTreeProperty } from '@oare/types';
+import { ParseTreeProperty, AddTextInfo } from '@oare/types';
 
 export default defineComponent({
   components: {
     AddProperties,
   },
-  setup() {
+  setup(_, { emit }) {
     const textName = ref('');
     const cdliNum = ref('');
     const excavationPrefix = ref('');
@@ -263,6 +269,22 @@ export default defineComponent({
       return `${property.variable.variableName} - ${property.value.valueName}`;
     };
 
+    const textInfo: ComputedRef<AddTextInfo> = computed(() => ({
+      textName: textName.value,
+      cdliNum: cdliNum.value,
+      excavationPrefix: excavationPrefix.value,
+      excavationNumber: excavationNumber.value,
+      museumPrefix: museumPrefix.value,
+      museumNumber: museumNumber.value,
+      publicationPrefix: publicationPrefix.value,
+      publicationNumber: publicationNumber.value,
+      properties: properties.value,
+    }));
+
+    watch(textInfo, () => emit('update-text-info', textInfo.value), {
+      deep: true,
+    });
+
     return {
       textName,
       cdliNum,
@@ -278,6 +300,7 @@ export default defineComponent({
       setProperties,
       clearProperties,
       propertyText,
+      textInfo,
     };
   },
 });

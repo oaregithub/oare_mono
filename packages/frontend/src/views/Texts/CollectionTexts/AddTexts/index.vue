@@ -24,7 +24,7 @@
 
       <v-stepper-items>
         <v-stepper-content step="1">
-          <text-info-set />
+          <text-info-set @update-text-info="setTextInfo" />
 
           <v-btn color="primary" class="ml-3" @click="step = 2">
             Continue
@@ -41,7 +41,7 @@
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <add-text-editor />
+          <add-text-editor @update-editor-content="setEditorContent" />
 
           <v-btn color="primary" class="ml-3" @click="step = 4">
             Continue
@@ -73,6 +73,7 @@ import { defineComponent, ref, onMounted } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import AddTextEditor from './Editor/AddTextEditor.vue';
 import TextInfoSet from './TextInfo/TextInfoSet.vue';
+import { AddTextEditorContent, AddTextInfo } from '@oare/types';
 
 export default defineComponent({
   props: {
@@ -93,6 +94,16 @@ export default defineComponent({
     const step = ref(1);
     const loading = ref(false);
 
+    const textInfo = ref<AddTextInfo>();
+    const setTextInfo = (updatedTextInfo: AddTextInfo) => {
+      textInfo.value = updatedTextInfo;
+    };
+
+    const editorContent = ref<AddTextEditorContent>();
+    const setEditorContent = (updatedEditorContent: AddTextEditorContent) => {
+      editorContent.value = updatedEditorContent;
+    };
+
     onMounted(async () => {
       loading.value = true;
       try {
@@ -112,6 +123,8 @@ export default defineComponent({
       collectionName,
       step,
       loading,
+      setTextInfo,
+      setEditorContent,
     };
   },
 });
