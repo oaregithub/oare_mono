@@ -13,7 +13,7 @@
           are working on presently:
         </p>
         <p>
-          — Seal Impressions, uninscribed areas, broken areas, and rulings do
+          — Some seal Impressions, uninscribed areas, broken areas, and rulings do
           not display at all, or in some places do not display correctly.
         </p>
         <p>
@@ -41,7 +41,7 @@
         </p>
         <p>
           — the display of sides (obv., lo.e., rev., u.e., le.e., r.e.) on the
-          left of a transliteration are not keyed in correctly yet.
+          left of a transliteration are not keyed in correctly somtimes.
         </p>
         <p>
           Thanks for your patience. Please feel free to report any issues
