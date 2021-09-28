@@ -62,10 +62,10 @@
         </p>
         <p>
           If you are interested in participating in the project, please consider
-          creating an account. Passwords chosen are not visible to us. Registering
-          allows up to share Beta features for those interested. 
-          Feedback mechanisms for also in development so that users can mark
-          texts that are misbehaving, or point out errors. In the meantime,
+          creating an account. Passwords chosen are not visible to us. We can share
+          Beta features with interested registered users and can make available 
+          further feedback mechanisms for development. Registered users can mark
+          texts that are misbehaving, or point out errors. Anyone is invited to 
           please send any feedback to
           <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>.
         </p>
