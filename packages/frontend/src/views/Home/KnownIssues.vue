@@ -41,7 +41,7 @@
         </p>
         <p>
           — the display of sides (obv., lo.e., rev., u.e., le.e., r.e.) on the
-          left of a transliteration are not keyed in correctly somtimes.
+          left of a transliteration are not keyed in correctly sometimes.
         </p>
         <p>
           Thanks for your patience. Please feel free to report any issues
