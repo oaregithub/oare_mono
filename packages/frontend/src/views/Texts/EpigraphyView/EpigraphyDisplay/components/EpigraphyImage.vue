@@ -1,5 +1,5 @@
 <template>
-  <v-container class="sticky">
+  <v-container :class="{ sticky: sticky }">
     <v-row align="center" justify="center">
       <v-slide-group
         :value="selectedImages"
@@ -41,21 +41,31 @@
       </v-slide-group>
     </v-row>
     <v-row align="center" justify="center">
-      <v-img
-        v-for="(selection, idx) in selectedImages"
-        :key="idx"
-        :src="imageLinks[selection]"
-        max-height="70vh"
-        :max-width="selectedImages.length > 1 ? '18vw' : '36vw'"
-        contain
-        class="pa-4"
-      />
+      <div v-for="(selection, idx) in selectedImages" :key="idx">
+        <v-row v-if="imageDetails && imageDetails.length > 0" class="mx-2 mb-1">
+          <span
+            ><b>Side: </b>{{ parseSide(imageDetails[selection].side) }}</span
+          >
+          <v-spacer />
+          <span
+            ><b>View: </b>{{ parseView(imageDetails[selection].view) }}</span
+          >
+        </v-row>
+        <v-img
+          :src="imageLinks[selection]"
+          max-height="70vh"
+          :max-width="selectedImages.length > 1 ? '18vw' : '36vw'"
+          contain
+          class="pa-4"
+        />
+      </div>
     </v-row>
   </v-container>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { TextPhoto } from '@oare/types';
 
 export default defineComponent({
   props: {
@@ -63,20 +73,96 @@ export default defineComponent({
       type: Array as PropType<String[]>,
       required: true,
     },
+    imageDetails: {
+      type: Array as PropType<TextPhoto[]>,
+      required: false,
+    },
+    maxSelect: {
+      type: Number,
+      default: 2,
+    },
+    sticky: {
+      type: Boolean,
+      default: true,
+    },
   },
-  setup() {
+  setup(props) {
     const selectedImages = ref([0]);
 
     const updateSelected = (selection: number[]) => {
       selectedImages.value = selection;
-      if (selectedImages.value.length > 2) {
+      if (selectedImages.value.length > props.maxSelect) {
         selectedImages.value.shift();
+      }
+    };
+
+    const parseSide = (sideCode: string | number | undefined) => {
+      switch (sideCode) {
+        case 1:
+          return 'obv.';
+        case 2:
+          return 'lo.e.';
+        case 3:
+          return 'rev.';
+        case 4:
+          return 'u.e.';
+        case 5:
+          return 'le.e.';
+        case 6:
+          return 'r.e.';
+        case 'a':
+          return 'Envelope Inner obv.';
+        case 'b':
+          return 'Envelope Inner lo.e.';
+        case 'c':
+          return 'Envelope Inner rev.';
+        case 'd':
+          return 'Envelope Inner u.e.';
+        case 'e':
+          return 'Envelope Inner le.e.';
+        case 'f':
+          return 'Envelope Inner r.e.';
+        case 'x':
+          return 'Fat Cross';
+        case 8:
+          return 'Unknown Side';
+        case 9:
+          return 'Unknown Edge';
+        default:
+          return 'No side information available';
+      }
+    };
+
+    const parseView = (viewCode: string | undefined) => {
+      switch (viewCode) {
+        case 'u':
+          return 'Upper (from above)';
+        case 'd':
+          return 'Direct';
+        case 'l':
+          return 'Lower';
+        case 'i':
+          return 'Inverted Direct';
+        case 'h':
+          return 'Inverted Upper';
+        case 'j':
+          return 'Inverted Lower';
+        case 'z':
+          return 'View for Scale';
+        case 'n':
+          return 'Emphasis on Name';
+        case 's':
+          return 'Seal Impression Focus';
+        default:
+          return 'No view information available';
       }
     };
 
     return {
       selectedImages,
       updateSelected,
+      parseSide,
+      parseView,
     };
   },
 });

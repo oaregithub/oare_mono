@@ -185,3 +185,10 @@ export interface RowContent {
   value?: number;
   text?: string;
 }
+
+export interface TextPhoto {
+  uuid: string;
+  url?: string;
+  side?: string | number;
+  view?: string;
+}

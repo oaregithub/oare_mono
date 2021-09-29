@@ -32,7 +32,7 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <v-card class="mb-12" color="grey lighten-1" height="200px"></v-card>
+          <add-photos @update-photos="setPhotos" />
 
           <v-btn color="primary" class="ml-3" @click="step = 3">
             Continue
@@ -73,7 +73,8 @@ import { defineComponent, ref, onMounted } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import AddTextEditor from './Editor/AddTextEditor.vue';
 import TextInfoSet from './TextInfo/TextInfoSet.vue';
-import { AddTextEditorContent, AddTextInfo } from '@oare/types';
+import AddPhotos from './Photos/AddPhotos.vue';
+import { AddTextEditorContent, AddTextInfo, TextPhoto } from '@oare/types';
 
 export default defineComponent({
   props: {
@@ -85,6 +86,7 @@ export default defineComponent({
   components: {
     AddTextEditor,
     TextInfoSet,
+    AddPhotos,
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -97,6 +99,11 @@ export default defineComponent({
     const textInfo = ref<AddTextInfo>();
     const setTextInfo = (updatedTextInfo: AddTextInfo) => {
       textInfo.value = updatedTextInfo;
+    };
+
+    const photos = ref<TextPhoto[]>([]);
+    const setPhotos = (updatedPhotos: TextPhoto[]) => {
+      photos.value = updatedPhotos;
     };
 
     const editorContent = ref<AddTextEditorContent>();
@@ -125,6 +132,7 @@ export default defineComponent({
       loading,
       setTextInfo,
       setEditorContent,
+      setPhotos,
     };
   },
 });
