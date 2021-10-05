@@ -70,20 +70,74 @@
               <span v-if="row.line">{{ formatLineNumber(row) }}</span>
             </v-col>
             <v-col cols="10" class="pa-0">
-              <v-textarea
-                v-if="row.type === 'Line'"
-                placeholder="Enter line text here"
-                auto-grow
-                dense
-                rows="1"
-                class="mx-1 mt-0 hide-line"
-                @update:error="lineError"
-                :class="{ 'mb-0': hasLineError, 'mb-n5': !hasLineError }"
-                :autofocus="true"
-                @keydown.enter.prevent
-                @keyup.enter="addRowAfter('Line', idx)"
-                @change="updateText(idx, $event)"
-              />
+              <v-container v-if="row.type === 'Line'" class="pa-0 ma-0">
+                <v-row
+                  v-if="row.signs && row.signs.length > 0"
+                  class="pa-0 ma-0 mb-1"
+                  align="center"
+                >
+                  <div
+                    v-for="(sign, index) in row.signs"
+                    :key="index"
+                    class="text-h5 pb-1"
+                    :class="{ 'selected-sign': index === row.selectedSign }"
+                  >
+                    <v-row class="pa-0 ma-0" align="center">
+                      <v-img
+                        v-if="sign.type === 'image'"
+                        :src="require(`@/assets/signVectors/${sign.code}.png`)"
+                        height="25px"
+                        :width="
+                          getWidth(
+                            require(`@/assets/signVectors/${sign.code}.png`)
+                          ) || 0
+                        "
+                        contain
+                        class="d-inline-block"
+                      />
+                      <span
+                        v-else-if="sign.type === 'utf8'"
+                        class="my-n1 mx-1 cuneiform"
+                        >{{ getHTML(sign.code || '') }}</span
+                      >
+                      <v-icon
+                        v-else-if="!sign.type"
+                        small
+                        color="red"
+                        class="ma-1"
+                        >mdi-block-helper</v-icon
+                      >
+                      <span
+                        v-if="sign.post"
+                        :class="{ 'pr-1': sign.post === ' ' }"
+                        class="my-n2"
+                      >
+                        {{ sign.post }}
+                      </span>
+                    </v-row>
+                  </div>
+                </v-row>
+                <v-row class="pa-0 ma-0">
+                  <v-textarea
+                    placeholder="Enter line text here"
+                    auto-grow
+                    dense
+                    rows="1"
+                    class="mx-1 mt-0 hide-line"
+                    @update:error="lineError"
+                    :class="{ 'mb-0': hasLineError, 'mb-n5': !hasLineError }"
+                    :autofocus="true"
+                    @keydown.enter.prevent
+                    @keyup.enter="addRowAfter('Line', idx)"
+                    @change="updateText(idx, $event)"
+                    @keyup="
+                      getSigns(idx, $event) && updateSignSelection(idx, $event)
+                    "
+                    @click="updateSignSelection(idx, $event)"
+                    @blur="resetSignSelection(idx)"
+                  />
+                </v-row>
+              </v-container>
               <v-row
                 class="pa-0 ma-0"
                 v-else-if="
@@ -155,8 +209,9 @@ import {
 } from '@vue/composition-api';
 import InsertButton from './InsertButton.vue';
 import { v4 } from 'uuid';
-import { RowTypes, RowContent } from '@oare/types';
+import { RowTypes, RowContent, SignCode } from '@oare/types';
 import { formatLineNumber as defaultLineFormatter } from '@oare/oare';
+import sl from '@/serviceLocator';
 
 export interface Row {
   type: RowTypes;
@@ -164,6 +219,8 @@ export interface Row {
   lineValue?: number;
   isEditing: boolean;
   text?: string;
+  signs?: SignCode[];
+  selectedSign?: number;
 }
 
 export interface RowWithLine extends Row {
@@ -193,6 +250,7 @@ export default defineComponent({
     InsertButton,
   },
   setup(props, { emit }) {
+    const server = sl.get('serverProxy');
     const columnEditMenu = ref(false);
 
     const hasAddedRow = ref(false);
@@ -393,6 +451,73 @@ export default defineComponent({
       }
     };
 
+    const getSigns = async (index: number, event: any) => {
+      const rowText: string = event.srcElement.value;
+      const signs = rowText.split(/[\s\-.]+/).filter(sign => sign !== '');
+      const dividers = rowText.split('').filter(sign => sign.match(/[\s\-.]+/));
+      const signCodes: SignCode[] = await Promise.all(
+        signs.map(sign => server.getSignCode(sign))
+      );
+      const signCodesWithDividers = signCodes.map((code, idx) => {
+        return {
+          ...code,
+          post: dividers[idx] || undefined,
+        };
+      });
+      rows.value.splice(index, 1, {
+        ...rows.value[index],
+        signs: signCodesWithDividers,
+      });
+    };
+
+    const getWidth = (src: string) => {
+      const image = new Image();
+      image.src = src;
+      const originalHeight = image.height;
+      const ratio = 25 / originalHeight;
+      const originalWidth = image.width;
+      const newWidth = ratio * originalWidth;
+      return newWidth;
+    };
+
+    const getHTML = (code: string) => {
+      let codePt = Number(`0x${code}`);
+      if (codePt > 0xffff) {
+        codePt -= 0x10000;
+        return String.fromCharCode(
+          0xd800 + (codePt >> 10),
+          0xdc00 + (codePt & 0x3ff)
+        );
+      } else {
+        return String.fromCharCode(codePt);
+      }
+    };
+
+    const updateSignSelection = (index: number, event: any) => {
+      const rowText: string = event.srcElement.value;
+      const cursorIndex: number = event.srcElement.selectionStart;
+      if (!cursorIndex) {
+        rows.value.splice(index, 1, {
+          ...rows.value[index],
+          selectedSign: 0,
+        });
+      } else {
+        const textBeforeCursor = rowText.slice(0, cursorIndex);
+        const signs = textBeforeCursor.split(/[\s\-.]+/);
+        rows.value.splice(index, 1, {
+          ...rows.value[index],
+          selectedSign: signs.length - 1,
+        });
+      }
+    };
+
+    const resetSignSelection = (index: number) => {
+      rows.value.splice(index, 1, {
+        ...rows.value[index],
+        selectedSign: undefined,
+      });
+    };
+
     return {
       columnEditMenu,
       addRowAfter,
@@ -408,6 +533,11 @@ export default defineComponent({
       getItems,
       formatRuling,
       updateText,
+      getSigns,
+      getWidth,
+      getHTML,
+      updateSignSelection,
+      resetSignSelection,
     };
   },
 });
@@ -416,5 +546,13 @@ export default defineComponent({
 <style scoped>
 .hide-line >>> .v-input__slot::before {
   border-style: none !important;
+}
+
+.cuneiform {
+  font-family: 'Santakku', 'CuneiformComposite';
+}
+
+.selected-sign {
+  box-shadow: 0px -2px 0px gold inset;
 }
 </style>

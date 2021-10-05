@@ -187,7 +187,6 @@ export default defineComponent({
     };
 
     const removeSide = (index: number) => {
-      console.log('remove side called');
       removingSide.value = true;
       sides.value.splice(index, 1);
       if (sortedSides.value.length > 0) {

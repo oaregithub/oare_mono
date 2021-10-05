@@ -25,6 +25,7 @@ import textDiscourse from './api/text_discourse';
 import profile from './api/profile';
 import groupAllowlist from './api/group_allowlist';
 import groupEditPermissions from './api/group_edit_permissions';
+import signReading from './api/sign_reading';
 
 export const API_PATH = '/api/v2';
 
@@ -56,6 +57,7 @@ export default (app: Express) => {
     profile,
     groupAllowlist,
     groupEditPermissions,
+    signReading,
   ].forEach(route => {
     app.use(API_PATH, route);
   });
