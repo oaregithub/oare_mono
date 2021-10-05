@@ -36,6 +36,7 @@
       :fetch-items="searchTexts"
       :watched-params="['translit', 'title']"
       :default-rows="100"
+      :dense="true"
     >
       <template #[`item.name`]="{ item }">
         <router-link :to="`/epigraphies/${item.uuid}/${item.discourseUuids}`">
