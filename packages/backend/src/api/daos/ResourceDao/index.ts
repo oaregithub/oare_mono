@@ -15,7 +15,7 @@ class ResourceDao {
         'uuid',
         knex('link').select('obj_uuid').where('reference_uuid', textUuid)
       )
-      .whereNot('link', 'like', '%cdli%');
+      .where('type', 'img');
 
     const signedUrls = await Promise.all(
       resourceLinks.map(key => {
