@@ -90,7 +90,7 @@
                         :width="
                           getWidth(
                             require(`@/assets/signVectors/${sign.code}.png`)
-                          ) || 0
+                          ) || 30
                         "
                         contain
                         class="d-inline-block"
@@ -98,7 +98,7 @@
                       <span
                         v-else-if="sign.type === 'utf8'"
                         class="my-n1 mx-1 cuneiform"
-                        >{{ getHTML(sign.code || '') }}</span
+                        >{{ getSignHTMLCode(sign.code || '') }}</span
                       >
                       <v-icon
                         v-else-if="!sign.type"
@@ -473,14 +473,11 @@ export default defineComponent({
     const getWidth = (src: string) => {
       const image = new Image();
       image.src = src;
-      const originalHeight = image.height;
-      const ratio = 25 / originalHeight;
-      const originalWidth = image.width;
-      const newWidth = ratio * originalWidth;
-      return newWidth;
+      const heightRatio = 25 / image.height;
+      return heightRatio * image.width;
     };
 
-    const getHTML = (code: string) => {
+    const getSignHTMLCode = (code: string) => {
       let codePt = Number(`0x${code}`);
       if (codePt > 0xffff) {
         codePt -= 0x10000;
@@ -535,7 +532,7 @@ export default defineComponent({
       updateText,
       getSigns,
       getWidth,
-      getHTML,
+      getSignHTMLCode,
       updateSignSelection,
       resetSignSelection,
     };
