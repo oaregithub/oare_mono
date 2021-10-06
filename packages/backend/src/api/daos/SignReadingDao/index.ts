@@ -48,9 +48,7 @@ class SignReadingDao {
 
     const imageExists = () => {
       try {
-        require.resolve(
-          `@oare/frontend/src/assets/signVectors/${imageCode}.png`
-        );
+        require.resolve(`@oare/oare/src/assets/signVectors/${imageCode}.png`);
         return true;
       } catch {
         return false;
@@ -77,12 +75,11 @@ class SignReadingDao {
         type: 'utf8',
         code: fontCode,
       };
-    } else {
-      return {
-        type: null,
-        code: null,
-      };
     }
+    return {
+      type: null,
+      code: null,
+    };
   }
 }
 

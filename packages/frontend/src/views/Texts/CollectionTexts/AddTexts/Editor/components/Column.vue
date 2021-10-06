@@ -85,11 +85,13 @@
                     <v-row class="pa-0 ma-0" align="center">
                       <v-img
                         v-if="sign.type === 'image'"
-                        :src="require(`@/assets/signVectors/${sign.code}.png`)"
+                        :src="
+                          require(`@oare/oare/src/assets/signVectors/${sign.code}.png`)
+                        "
                         height="25px"
                         :width="
                           getWidth(
-                            require(`@/assets/signVectors/${sign.code}.png`)
+                            require(`@oare/oare/src/assets/signVectors/${sign.code}.png`)
                           ) || 30
                         "
                         contain
