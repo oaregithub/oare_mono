@@ -79,10 +79,14 @@
                   <div
                     v-for="(sign, index) in row.signs"
                     :key="index"
-                    class="text-h5 pb-1"
-                    :class="{ 'selected-sign': index === row.selectedSign }"
+                    class="text-h5"
+                    :class="{ 'pr-2': sign.post === ' ' }"
                   >
-                    <v-row class="pa-0 ma-0" align="center">
+                    <v-row
+                      class="pa-0 ma-0"
+                      align="center"
+                      :class="{ 'selected-sign': index === row.selectedSign }"
+                    >
                       <v-img
                         v-if="sign.type === 'image'"
                         :src="
@@ -109,12 +113,17 @@
                         class="ma-1"
                         >mdi-block-helper</v-icon
                       >
-                      <span
-                        v-if="sign.post"
-                        :class="{ 'pr-1': sign.post === ' ' }"
-                        class="my-n2"
-                      >
-                        {{ sign.post }}
+                    </v-row>
+                    <v-row
+                      class="pa-0 text-body-2 ma-0 grey--text"
+                      justify="space-between"
+                    >
+                      <span>{{ ' ' }} </span>
+                      <span>
+                        {{ sign.sign || '' }}
+                      </span>
+                      <span>
+                        {{ sign.post || ' ' }}
                       </span>
                     </v-row>
                   </div>
@@ -128,7 +137,7 @@
                     class="mx-1 mt-0 hide-line"
                     @update:error="lineError"
                     :class="{ 'mb-0': hasLineError, 'mb-n5': !hasLineError }"
-                    :autofocus="true"
+                    :autofocus="newRow === idx"
                     @keydown.enter.prevent
                     @keyup.enter="addRowAfter('Line', idx)"
                     @change="updateText(idx, $event)"
@@ -290,7 +299,9 @@ export default defineComponent({
       });
     });
 
+    const newRow = ref<number>();
     const addRowAfter = (type: RowTypes, index: number) => {
+      newRow.value = index + 1;
       hasAddedRow.value = true;
       if (index === -1) {
         rows.value.unshift({
@@ -455,15 +466,35 @@ export default defineComponent({
 
     const getSigns = async (index: number, event: any) => {
       const rowText: string = event.srcElement.value;
-      const signs = rowText.split(/[\s\-.]+/).filter(sign => sign !== '');
-      const dividers = rowText.split('').filter(sign => sign.match(/[\s\-.]+/));
+      const originalSigns = rowText
+        .split(/[\s\-.]+/)
+        .filter(sign => sign !== '');
+      const formattedSigns = await Promise.all(
+        originalSigns.map(sign => server.getFormattedSign(sign))
+      );
+      const signs = formattedSigns.flat();
+
+      const originalDividers = rowText
+        .split('')
+        .filter(sign => sign.match(/[\s\-.]+/));
+      const visibleDividers: string[] = [];
+      formattedSigns.forEach((signPieces, idx) => {
+        if (signPieces.length > 1) {
+          for (let i = 1; i < signPieces.length; i += 1) {
+            visibleDividers.push('+');
+          }
+        }
+        visibleDividers.push(originalDividers[idx]);
+      });
+
       const signCodes: SignCode[] = await Promise.all(
         signs.map(sign => server.getSignCode(sign))
       );
       const signCodesWithDividers = signCodes.map((code, idx) => {
         return {
           ...code,
-          post: dividers[idx] || undefined,
+          post: visibleDividers[idx] || undefined,
+          sign: signs[idx],
         };
       });
       rows.value.splice(index, 1, {
@@ -492,25 +523,32 @@ export default defineComponent({
       }
     };
 
-    const updateSignSelection = (index: number, event: any) => {
-      const rowText: string = event.srcElement.value;
-      const cursorIndex: number = event.srcElement.selectionStart;
-      if (!cursorIndex) {
-        rows.value.splice(index, 1, {
-          ...rows.value[index],
-          selectedSign: 0,
-        });
-      } else {
-        const textBeforeCursor = rowText.slice(0, cursorIndex);
-        const signs = textBeforeCursor.split(/[\s\-.]+/);
-        rows.value.splice(index, 1, {
-          ...rows.value[index],
-          selectedSign: signs.length - 1,
-        });
+    const updateSignSelection = async (index: number, event: any) => {
+      if (event.key !== 'Enter') {
+        const rowText: string = event.srcElement.value;
+        const cursorIndex: number = event.srcElement.selectionStart;
+        if (!cursorIndex) {
+          rows.value.splice(index, 1, {
+            ...rows.value[index],
+            selectedSign: 0,
+          });
+        } else {
+          const textBeforeCursor = rowText.slice(0, cursorIndex);
+          const originalSigns = textBeforeCursor.split(/[\s\-.]+/);
+          const formattedSigns = await Promise.all(
+            originalSigns.map(sign => server.getFormattedSign(sign))
+          );
+          const signs = formattedSigns.flat();
+          rows.value.splice(index, 1, {
+            ...rows.value[index],
+            selectedSign: signs.length - 1,
+          });
+        }
       }
     };
 
     const resetSignSelection = (index: number) => {
+      newRow.value = undefined;
       rows.value.splice(index, 1, {
         ...rows.value[index],
         selectedSign: undefined,
@@ -537,6 +575,7 @@ export default defineComponent({
       getSignHTMLCode,
       updateSignSelection,
       resetSignSelection,
+      newRow,
     };
   },
 });

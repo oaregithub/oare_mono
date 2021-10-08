@@ -1,5 +1,6 @@
 import knex from '@/connection';
 import { UuidRow, SignCode } from '@oare/types';
+import { formattedSearchCharacter } from '@/api/daos/TextEpigraphyDao/utils';
 
 class SignReadingDao {
   async hasSign(sign: string): Promise<boolean> {
@@ -80,6 +81,11 @@ class SignReadingDao {
       type: null,
       code: null,
     };
+  }
+
+  async getFormattedSign(sign: string): Promise<string[]> {
+    const formattedSign = formattedSearchCharacter(sign);
+    return formattedSign;
   }
 }
 

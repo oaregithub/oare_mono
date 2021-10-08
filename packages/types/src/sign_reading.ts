@@ -4,4 +4,5 @@ export interface SignCode {
   type: SignCodeType | null;
   code: string | null;
   post?: string;
+  sign?: string;
 }
