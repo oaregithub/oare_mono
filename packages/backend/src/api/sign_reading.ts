@@ -16,4 +16,15 @@ router.route('/sign_reading/:sign').get(async (req, res, next) => {
   }
 });
 
+router.route('/sign_reading/format/:sign').get(async (req, res, next) => {
+  try {
+    const SignReadingDao = sl.get('SignReadingDao');
+    const { sign } = req.params;
+    const formattedSign = await SignReadingDao.getFormattedSign(sign);
+    res.json(formattedSign);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 export default router;
