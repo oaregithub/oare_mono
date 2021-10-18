@@ -2,6 +2,7 @@ import { DiscourseUnit } from './textDiscourse';
 import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
 import { ParseTreeProperty } from './dictionary';
+import { SignCode } from './sign_reading';
 
 export interface EpigraphyResponse {
   canWrite: boolean;
@@ -50,7 +51,7 @@ export type EpigraphicUnitSide =
   | "col. iv'"
   | 0;
 
-type EpigraphyType =
+export type EpigraphyType =
   | 'column'
   | 'epigraphicUnit'
   | 'line'
@@ -94,6 +95,7 @@ export type MarkupType =
   | 'uncertain'
   | 'isWrittenAsLigature'
   | 'undeterminedSigns'
+  | 'undeterminedLines'
   | 'damage'
   | 'partialDamage'
   | 'isWrittenOverErasure'
@@ -170,6 +172,7 @@ export interface AddTextEditorContent {
 export interface SideContent {
   uuid: string;
   type: SideOption;
+  number: number;
   columns: ColumnContent[];
 }
 
@@ -184,6 +187,7 @@ export interface RowContent {
   lines: number[];
   value?: number;
   text?: string;
+  signs?: SignCode[];
 }
 
 export interface TextPhoto {
@@ -191,4 +195,98 @@ export interface TextPhoto {
   url?: string;
   side?: string | number;
   view?: string;
+}
+
+export interface TextEpigraphyRowPartial {
+  uuid: string;
+  type: EpigraphyType;
+  textUuid: string;
+  treeUuid: string;
+  parentUuid?: string;
+  objectOnTablet: number;
+  side?: number;
+  column?: number;
+  line?: number;
+  charOnLine?: number;
+  charOnTablet?: number;
+  signUuid?: string;
+  sign?: string;
+  readingUuid?: string;
+  reading?: string;
+  discourseUuid?: string;
+}
+
+export interface TextEpigraphyRow {
+  uuid: string;
+  type: EpigraphyType;
+  textUuid: string;
+  treeUuid: string;
+  parentUuid: string | null;
+  objectOnTablet: number;
+  side: number | null;
+  column: number | null;
+  line: number | null;
+  charOnLine: number | null;
+  charOnTablet: number | null;
+  signUuid: string | null;
+  sign: string | null;
+  readingUuid: string | null;
+  reading: string | null;
+  discourseUuid: string | null;
+}
+
+export interface TextMarkupRowPartial {
+  uuid: string;
+  referenceUuid: string;
+  type: MarkupType;
+  numValue?: number;
+  altReadingUuid?: string;
+  altReading?: string;
+  startChar?: number;
+  endChar?: number;
+  objectUuid?: string;
+}
+
+export interface TextMarkupRow {
+  uuid: string;
+  referenceUuid: string;
+  type: MarkupType;
+  numValue: number | null;
+  altReadingUuid: string | null;
+  altReading: string | null;
+  startChar: number | null;
+  endChar: number | null;
+  objectUuid: string | null;
+}
+
+export interface TextRow {
+  uuid: string;
+  type: string;
+  language: string | null;
+  cdliNum: string | null;
+  translitStatus: string;
+  name: string | null;
+  excavationPrefix: string | null;
+  excavationNumber: string | null;
+  museumPrefix: string | null;
+  museumNumber: string | null;
+  publicationPrefic: string | null;
+  publicationNumber: string | null;
+  objectType: string | null;
+  source: string | null;
+  genre: string | null;
+  subgenre: string | null;
+}
+
+export interface SignInfo {
+  referenceUuid: string;
+  type: EpigraphicUnitType | null;
+  value: string | null;
+}
+
+export interface CreateTextTables {
+  epigraphies: TextEpigraphyRow[];
+  markups: TextMarkupRow[];
+  text: TextRow;
+  signInfo: SignInfo[];
 }

@@ -120,10 +120,10 @@
                     >
                       <span>{{ ' ' }} </span>
                       <span>
-                        {{ sign.sign || '' }}
+                        {{ sign.reading || '' }}
                       </span>
                       <span>
-                        {{ sign.post || ' ' }}
+                        {{ sign.post && sign.post !== '*' ? sign.post : ' ' }}
                       </span>
                     </v-row>
                   </div>
@@ -368,6 +368,7 @@ export default defineComponent({
             value: row.lineValue || 1,
             text: row.text,
             lines,
+            signs: row.signs,
           };
         });
         emit('update-column-rows', rowContent);
@@ -465,9 +466,21 @@ export default defineComponent({
     };
 
     const getSigns = async (index: number, event: any) => {
-      const rowText: string = event.srcElement.value;
+      let rowText: string = event.srcElement.value;
+
+      const matches = rowText.match(/\(([^)]+)\)/g);
+      let matchesText: string[] = [];
+      if (matches) {
+        matchesText = matches.map(text => {
+          return `${text.slice(1, text.length - 1)}*`;
+        });
+        matchesText.forEach(matchText => {
+          rowText = rowText.replace(/\(([^)]+)\)/, matchText);
+        });
+      }
+
       const originalSigns = rowText
-        .split(/[\s\-.]+/)
+        .split(/[\s\-.*]+/)
         .filter(sign => sign !== '');
       const formattedSigns = await Promise.all(
         originalSigns.map(sign => server.getFormattedSign(sign))
@@ -476,7 +489,7 @@ export default defineComponent({
 
       const originalDividers = rowText
         .split('')
-        .filter(sign => sign.match(/[\s\-.]+/));
+        .filter(sign => sign.match(/[\s\-.*]+/));
       const visibleDividers: string[] = [];
       formattedSigns.forEach((signPieces, idx) => {
         if (signPieces.length > 1) {
@@ -487,14 +500,21 @@ export default defineComponent({
         visibleDividers.push(originalDividers[idx]);
       });
 
+      const urlDividers = visibleDividers.map(div => {
+        if (div !== '*') {
+          return 'notAsterisk';
+        }
+        return div;
+      });
+
       const signCodes: SignCode[] = await Promise.all(
-        signs.map(sign => server.getSignCode(sign))
+        signs.map((sign, idx) => server.getSignCode(sign, urlDividers[idx]))
       );
-      const signCodesWithDividers = signCodes.map((code, idx) => {
+      const signCodesWithDividers: SignCode[] = signCodes.map((code, idx) => {
         return {
           ...code,
           post: visibleDividers[idx] || undefined,
-          sign: signs[idx],
+          reading: signs[idx],
         };
       });
       rows.value.splice(index, 1, {
