@@ -4,13 +4,14 @@ import sl from '@/serviceLocator';
 
 const router = express.Router();
 
-router.route('/sign_reading/:sign').get(async (req, res, next) => {
+router.route('/sign_reading/code/:sign/:post').get(async (req, res, next) => {
   try {
     const SignReadingDao = sl.get('SignReadingDao');
-    const { sign } = req.params;
+    const { sign, post } = req.params;
     const cache = sl.get('cache');
 
-    const signCode = await SignReadingDao.getSignCode(sign);
+    const isDeterminative = post === '*';
+    const signCode = await SignReadingDao.getSignCode(sign, isDeterminative);
     cache.insert({ req }, signCode);
     res.json(signCode);
   } catch (err) {

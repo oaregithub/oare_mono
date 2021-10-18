@@ -282,12 +282,32 @@ export default defineComponent({
       });
     };
 
+    const getSideNumber = (side: SideOption) => {
+      switch (side) {
+        case 'obv.':
+          return 1;
+        case 'lo.e.':
+          return 2;
+        case 'rev.':
+          return 3;
+        case 'u.e.':
+          return 4;
+        case 'le.e.':
+          return 5;
+        case 'r.e.':
+          return 6;
+        default:
+          return 0;
+      }
+    };
+
     watch(
       sides,
       () => {
         const sideContent: SideContent[] = sides.value.map(side => ({
           uuid: side.uuid,
           type: side.side,
+          number: getSideNumber(side.side),
           columns: side.columns,
         }));
         const editorContent: AddTextEditorContent = {

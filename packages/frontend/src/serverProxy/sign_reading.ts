@@ -1,8 +1,10 @@
 import axios from '@/axiosInstance';
 import { SignCode } from '@oare/types';
 
-async function getSignCode(sign: string): Promise<SignCode> {
-  const { data } = await axios.get(`/sign_reading/${encodeURIComponent(sign)}`);
+async function getSignCode(sign: string, post: string): Promise<SignCode> {
+  const { data } = await axios.get(
+    `/sign_reading/code/${encodeURIComponent(sign)}/${post}`
+  );
   return data;
 }
 

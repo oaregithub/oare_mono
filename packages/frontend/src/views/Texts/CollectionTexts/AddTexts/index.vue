@@ -26,7 +26,7 @@
         <v-stepper-content step="1">
           <text-info-set @update-text-info="setTextInfo" />
 
-          <v-btn color="primary" class="ml-3" @click="step = 2">
+          <v-btn color="primary" class="ml-3" @click="next(false)">
             Continue
           </v-btn>
         </v-stepper-content>
@@ -34,34 +34,39 @@
         <v-stepper-content step="2">
           <add-photos @update-photos="setPhotos" />
 
-          <v-btn color="primary" class="ml-3" @click="step = 3">
+          <v-btn color="primary" class="ml-3" @click="next(false)">
             Continue
           </v-btn>
-          <v-btn text @click="step -= 1"> Back </v-btn>
+          <v-btn text @click="previous(false)"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="3">
           <add-text-editor @update-editor-content="setEditorContent" />
 
-          <v-btn color="primary" class="ml-3" @click="step = 4">
+          <v-btn color="primary" class="ml-3" @click="next(false)">
             Continue
           </v-btn>
-          <v-btn text @click="step -= 1"> Back </v-btn>
+          <v-btn text @click="previous(false)"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="4">
-          <v-card class="mb-12" color="grey lighten-1" height="200px"></v-card>
+          <h1 class="ma-8">COMING SOON</h1>
 
-          <v-btn color="primary" class="ml-3" @click="step = 5">
+          <v-btn color="primary" class="ml-3" @click="next(true)">
             Continue
           </v-btn>
-          <v-btn text @click="step -= 1"> Back </v-btn>
+          <v-btn text @click="previous(false)"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="5">
-          <v-card class="mb-12" color="grey lighten-1" height="200px"></v-card>
+          <epigraphy-view
+            v-if="epigraphyReady"
+            disableEditing
+            :localEpigraphyUnits="epigraphyDetails"
+            :localImageUrls="photoUrls"
+          />
 
-          <v-btn text class="ml-3" @click="step -= 1"> Back </v-btn>
+          <v-btn text class="ml-3" @click="previous(true)"> Back </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -69,12 +74,26 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  computed,
+  ComputedRef,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import AddTextEditor from './Editor/AddTextEditor.vue';
 import TextInfoSet from './TextInfo/TextInfoSet.vue';
 import AddPhotos from './Photos/AddPhotos.vue';
-import { AddTextEditorContent, AddTextInfo, TextPhoto } from '@oare/types';
+import EpigraphyView from '@/views/Texts/EpigraphyView/index.vue';
+import {
+  AddTextEditorContent,
+  AddTextInfo,
+  TextPhoto,
+  EpigraphyResponse,
+  CreateTextTables,
+} from '@oare/types';
+import { convertTablesToUnits, createNewTextTables } from './utils';
 
 export default defineComponent({
   props: {
@@ -87,6 +106,7 @@ export default defineComponent({
     AddTextEditor,
     TextInfoSet,
     AddPhotos,
+    EpigraphyView,
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -105,11 +125,41 @@ export default defineComponent({
     const setPhotos = (updatedPhotos: TextPhoto[]) => {
       photos.value = updatedPhotos;
     };
+    const photoUrls = computed(() =>
+      photos.value.filter(photo => photo.url).map(photo => photo.url)
+    );
 
     const editorContent = ref<AddTextEditorContent>();
     const setEditorContent = (updatedEditorContent: AddTextEditorContent) => {
       editorContent.value = updatedEditorContent;
     };
+
+    const epigraphyReady = ref(false);
+    const epigraphyDetails: ComputedRef<EpigraphyResponse> = computed(() => {
+      return {
+        canWrite: false,
+        textName:
+          textInfo.value && textInfo.value.textName
+            ? textInfo.value.textName
+            : '',
+        collection: {
+          uuid: props.collectionUuid,
+          name: collectionName.value,
+        },
+        cdliNum:
+          textInfo.value && textInfo.value.cdliNum
+            ? textInfo.value.cdliNum
+            : '',
+        units: createTextTables.value
+          ? convertTablesToUnits(createTextTables.value)
+          : [],
+        color: '',
+        colorMeaning: '',
+        discourseUnits: [], // Will add later
+      };
+    });
+
+    const createTextTables = ref<CreateTextTables>();
 
     onMounted(async () => {
       loading.value = true;
@@ -126,6 +176,32 @@ export default defineComponent({
       }
     });
 
+    const next = async (completeEpigraphy = false) => {
+      if (completeEpigraphy) {
+        if (editorContent.value) {
+          try {
+            createTextTables.value = createNewTextTables(
+              textInfo.value!,
+              editorContent.value
+            );
+          } catch (err) {
+            actions.showErrorSnackbar(
+              'Error build new text preview. Please try again.'
+            );
+          }
+        }
+        epigraphyReady.value = true;
+      }
+      step.value += 1;
+    };
+
+    const previous = (destroyEpigraphy = false) => {
+      if (destroyEpigraphy) {
+        epigraphyReady.value = false;
+      }
+      step.value -= 1;
+    };
+
     return {
       collectionName,
       step,
@@ -133,6 +209,11 @@ export default defineComponent({
       setTextInfo,
       setEditorContent,
       setPhotos,
+      photoUrls,
+      epigraphyDetails,
+      epigraphyReady,
+      next,
+      previous,
     };
   },
 });
