@@ -90,12 +90,12 @@
                       <v-img
                         v-if="sign.type === 'image'"
                         :src="
-                          require(`@oare/oare/src/assets/signVectors/${sign.code}.png`)
+                          require(`@oare/frontend/src/assets/signVectors/${sign.code}.png`)
                         "
                         height="25px"
                         :width="
                           getWidth(
-                            require(`@oare/oare/src/assets/signVectors/${sign.code}.png`)
+                            require(`@oare/frontend/src/assets/signVectors/${sign.code}.png`)
                           ) || 30
                         "
                         contain
@@ -141,9 +141,7 @@
                     @keydown.enter.prevent
                     @keyup.enter="addRowAfter('Line', idx)"
                     @change="updateText(idx, $event)"
-                    @keyup="
-                      getSigns(idx, $event) && updateSignSelection(idx, $event)
-                    "
+                    @keyup="updateRow(idx, $event)"
                     @click="updateSignSelection(idx, $event)"
                     @blur="resetSignSelection(idx)"
                   />
@@ -575,6 +573,11 @@ export default defineComponent({
       });
     };
 
+    const updateRow = (index: number, event: any) => {
+      getSigns(index, event);
+      updateSignSelection(index, event);
+    };
+
     return {
       columnEditMenu,
       addRowAfter,
@@ -596,6 +599,7 @@ export default defineComponent({
       updateSignSelection,
       resetSignSelection,
       newRow,
+      updateRow,
     };
   },
 });
