@@ -141,9 +141,7 @@
                     @keydown.enter.prevent
                     @keyup.enter="addRowAfter('Line', idx)"
                     @change="updateText(idx, $event)"
-                    @keyup="
-                      getSigns(idx, $event) && updateSignSelection(idx, $event)
-                    "
+                    @keyup="updateRow(idx, $event)"
                     @click="updateSignSelection(idx, $event)"
                     @blur="resetSignSelection(idx)"
                   />
@@ -575,6 +573,11 @@ export default defineComponent({
       });
     };
 
+    const updateRow = (index: number, event: any) => {
+      getSigns(index, event);
+      updateSignSelection(index, event);
+    };
+
     return {
       columnEditMenu,
       addRowAfter,
@@ -596,6 +599,7 @@ export default defineComponent({
       updateSignSelection,
       resetSignSelection,
       newRow,
+      updateRow,
     };
   },
 });
