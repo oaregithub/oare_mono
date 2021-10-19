@@ -47,6 +47,7 @@ class SignReadingDao {
         'sign_reading.reference_uuid'
       )
       .where('sign_org.type', 'MZL')
+      .andWhere('sign_org.has_png', true)
       .andWhere('sign_reading.reading', sign)
       .andWhereNot('sign_reading.type', 'uninterpreted')
       .modify(qb => {
@@ -61,16 +62,7 @@ class SignReadingDao {
       ? imageCodeArray.signCode
       : null;
 
-    const imageExists = () => {
-      try {
-        require.resolve(`@oare/oare/src/assets/signVectors/${imageCode}.png`);
-        return true;
-      } catch {
-        return false;
-      }
-    };
-
-    if (imageCode && imageExists()) {
+    if (imageCode) {
       const newSign = await knex('sign')
         .select('name')
         .where('uuid', imageCodeArray.signUuid)

@@ -90,12 +90,12 @@
                       <v-img
                         v-if="sign.type === 'image'"
                         :src="
-                          require(`@oare/oare/src/assets/signVectors/${sign.code}.png`)
+                          require(`@oare/frontend/src/assets/signVectors/${sign.code}.png`)
                         "
                         height="25px"
                         :width="
                           getWidth(
-                            require(`@oare/oare/src/assets/signVectors/${sign.code}.png`)
+                            require(`@oare/frontend/src/assets/signVectors/${sign.code}.png`)
                           ) || 30
                         "
                         contain
