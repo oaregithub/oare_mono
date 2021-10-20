@@ -30,3 +30,33 @@ export interface NewDiscourseRowPayload {
   formUuid: string;
   occurrences: SearchNullDiscourseResultRow[];
 }
+
+export interface TextDiscourseRow {
+  uuid: string;
+  type: DiscourseUnitType;
+  objInText: number;
+  wordOnTablet: number | null;
+  childNum: number | null;
+  textUuid: string;
+  treeUuid: string;
+  parentUuid: string | null;
+  spellingUuid: string | null;
+  spelling: string | null;
+  explicitSpelling: string | null;
+  transcription: string | null;
+}
+
+export interface TextDiscourseRowPartial {
+  uuid: string;
+  type: DiscourseUnitType;
+  objInText: number;
+  wordOnTablet?: number;
+  childNum?: number;
+  textUuid: string;
+  treeUuid: string;
+  parentUuid?: string;
+  spellingUuid?: string;
+  spelling?: string;
+  explicitSpelling?: string;
+  transcription?: string;
+}

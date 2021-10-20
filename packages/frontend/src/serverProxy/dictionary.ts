@@ -110,11 +110,20 @@ async function disconnectSpellings(discourseUuids: string[]): Promise<void> {
   await axios.patch('/disconnect/spellings', payload);
 }
 
+async function getDictionaryInfoBySpellingUuid(
+  spellingUuid: string
+): Promise<Word | null> {
+  const { data } = await axios.get(
+    `/dictionary/textDiscourse/spelling/${spellingUuid}`
+  );
+  return data;
+}
+
 async function getDictionaryInfoByDiscourseUuid(
   discourseUuid: string
 ): Promise<Word | null> {
   const { data } = await axios.get(
-    `/dictionary/textDiscourse/${discourseUuid}`
+    `/dictionary/textDiscourse/discourse/${discourseUuid}`
   );
   return data;
 }
@@ -143,4 +152,5 @@ export default {
   getTaxonomyTree,
   addForm,
   disconnectSpellings,
+  getDictionaryInfoBySpellingUuid,
 };

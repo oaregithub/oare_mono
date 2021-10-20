@@ -11,6 +11,8 @@ import {
   TextEpigraphyRowPartial,
   TextMarkupRowPartial,
   MarkupType,
+  TextDiscourseRow,
+  TextDiscourseRowPartial,
 } from '@oare/types';
 import { v4 } from 'uuid';
 
@@ -179,15 +181,34 @@ const createMockTextTable = (textInfo: AddTextInfo): TextRow => ({
   subgenre: null,
 });
 
+const createTextDiscourseRow = (
+  row: TextDiscourseRowPartial
+): TextDiscourseRow => ({
+  uuid: row.uuid,
+  type: row.type,
+  objInText: row.objInText,
+  wordOnTablet: row.wordOnTablet || null,
+  childNum: row.childNum || null,
+  textUuid: row.textUuid,
+  treeUuid: row.treeUuid,
+  parentUuid: row.parentUuid || null,
+  spellingUuid: row.spellingUuid || null,
+  spelling: row.spelling || null,
+  explicitSpelling: row.explicitSpelling || null,
+  transcription: row.transcription || null,
+});
+
 export const createNewTextTables = (
   textInfo: AddTextInfo,
   content: AddTextEditorContent
 ): CreateTextTables => {
   const epigraphyRows: TextEpigraphyRow[] = [];
   const markupRows: TextMarkupRow[] = [];
+  const discourseRows: TextDiscourseRow[] = [];
   const signInformation: SignInfo[] = [];
   const textRow: TextRow = createMockTextTable(textInfo);
   const treeUuid = v4();
+  const discourseTreeUuid = v4();
 
   let charOnTablet = 1;
 
@@ -200,6 +221,15 @@ export const createNewTextTables = (
     column: 0,
   });
   epigraphyRows.push(epigraphicUnitRow);
+
+  const discourseUnitRow: TextDiscourseRow = createTextDiscourseRow({
+    uuid: v4(),
+    type: 'discourseUnit',
+    objInText: 1,
+    textUuid: textRow.uuid,
+    treeUuid: discourseTreeUuid,
+  });
+  discourseRows.push(discourseUnitRow);
 
   // Sides
   content.sides.forEach(side => {
@@ -248,6 +278,33 @@ export const createNewTextTables = (
           });
           epigraphyRows.push(lineRow);
 
+          // Words
+          const words = row.words || [];
+          words.forEach(word => {
+            const type =
+              row.signs &&
+              row.signs
+                .filter(sign => sign.discourseUuid === word.discourseUuid)
+                .every(sign => sign.readingType === 'number')
+                ? 'number'
+                : 'word';
+            const newDiscourseRow = createTextDiscourseRow({
+              uuid: word.discourseUuid,
+              type,
+              objInText: discourseRows.length + 1,
+              wordOnTablet: discourseRows.length,
+              childNum: discourseRows.length,
+              textUuid: textRow.uuid,
+              treeUuid: discourseTreeUuid,
+              parentUuid: discourseUnitRow.uuid,
+              spelling: word.spelling,
+              explicitSpelling: word.spelling,
+              // transcription to be inserted when submitted
+              // spellingUuid to be linked on 4th pane
+            });
+            discourseRows.push(newDiscourseRow);
+          });
+
           // Signs
           const signs = row.signs || [];
           signs.forEach((sign, signIndex) => {
@@ -267,6 +324,7 @@ export const createNewTextTables = (
               sign: sign.sign || undefined,
               readingUuid: sign.readingUuid || undefined,
               reading: sign.value || undefined,
+              discourseUuid: sign.discourseUuid,
             });
             charOnTablet += 1;
             epigraphyRows.push(signRow);
@@ -330,6 +388,7 @@ export const createNewTextTables = (
   const createTextTables: CreateTextTables = {
     epigraphies: epigraphyRows,
     markups: markupRows,
+    discourses: discourseRows,
     text: textRow,
     signInfo: signInformation,
   };

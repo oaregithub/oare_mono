@@ -218,7 +218,14 @@ import {
 } from '@vue/composition-api';
 import InsertButton from './InsertButton.vue';
 import { v4 } from 'uuid';
-import { RowTypes, RowContent, SignCode } from '@oare/types';
+import {
+  RowTypes,
+  RowContent,
+  SignCode,
+  EditorWord,
+  SignCodeWithUuid,
+  SignCodeWithDiscourseUuid,
+} from '@oare/types';
 import { formatLineNumber as defaultLineFormatter } from '@oare/oare';
 import sl from '@/serviceLocator';
 
@@ -228,8 +235,9 @@ export interface Row {
   lineValue?: number;
   isEditing: boolean;
   text?: string;
-  signs?: SignCode[];
+  signs?: SignCodeWithDiscourseUuid[];
   selectedSign?: number;
+  words?: EditorWord[];
 }
 
 export interface RowWithLine extends Row {
@@ -367,6 +375,7 @@ export default defineComponent({
             text: row.text,
             lines,
             signs: row.signs,
+            words: row.words,
           };
         });
         emit('update-column-rows', rowContent);
@@ -477,47 +486,87 @@ export default defineComponent({
         });
       }
 
-      const originalSigns = rowText
-        .split(/[\s\-.*]+/)
-        .filter(sign => sign !== '');
-      const formattedSigns = await Promise.all(
-        originalSigns.map(sign => server.getFormattedSign(sign))
-      );
-      const signs = formattedSigns.flat();
+      const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
+      const signsByWord = await Promise.all(
+        wordsText.map(async word => {
+          const originalSigns = word
+            .split(/[\-.*]+/)
+            .filter(sign => sign !== '');
+          const formattedSigns = await Promise.all(
+            originalSigns.map(sign => server.getFormattedSign(sign))
+          );
+          const signs = formattedSigns.flat();
 
-      const originalDividers = rowText
-        .split('')
-        .filter(sign => sign.match(/[\s\-.*]+/));
-      const visibleDividers: string[] = [];
-      formattedSigns.forEach((signPieces, idx) => {
-        if (signPieces.length > 1) {
-          for (let i = 1; i < signPieces.length; i += 1) {
-            visibleDividers.push('+');
+          const originalDividers = word
+            .split('')
+            .filter(sign => sign.match(/[\-.*]+/));
+          const visibleDividers: string[] = [];
+          formattedSigns.forEach((signPieces, idx) => {
+            if (signPieces.length > 1) {
+              for (let i = 1; i < signPieces.length; i += 1) {
+                visibleDividers.push('+');
+              }
+            }
+            visibleDividers.push(originalDividers[idx]);
+          });
+
+          const urlDividers = visibleDividers.map(div => {
+            if (div !== '*') {
+              return 'notAsterisk';
+            }
+            return div;
+          });
+
+          const signCodes: SignCode[] = await Promise.all(
+            signs.map((sign, idx) => server.getSignCode(sign, urlDividers[idx]))
+          );
+          const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
+            code => ({
+              ...code,
+              uuid: v4(),
+            })
+          );
+          const signCodesWithDividers: SignCodeWithUuid[] =
+            signCodesWithUuids.map((code, idx) => {
+              return {
+                ...code,
+                post: visibleDividers[idx] || undefined,
+                reading: signs[idx],
+              };
+            });
+          return signCodesWithDividers;
+        })
+      );
+
+      const words: EditorWord[] = signsByWord.map(word => {
+        let spelling = '';
+        word.forEach(sign => {
+          if (sign.post === '*') {
+            spelling += `(${sign.value || ''})`;
+          } else {
+            spelling += `${sign.value || ''}${sign.post || ''}`;
           }
-        }
-        visibleDividers.push(originalDividers[idx]);
-      });
-
-      const urlDividers = visibleDividers.map(div => {
-        if (div !== '*') {
-          return 'notAsterisk';
-        }
-        return div;
-      });
-
-      const signCodes: SignCode[] = await Promise.all(
-        signs.map((sign, idx) => server.getSignCode(sign, urlDividers[idx]))
-      );
-      const signCodesWithDividers: SignCode[] = signCodes.map((code, idx) => {
+        });
         return {
-          ...code,
-          post: visibleDividers[idx] || undefined,
-          reading: signs[idx],
+          discourseUuid: v4(),
+          spelling,
         };
       });
+
+      const signs: SignCodeWithDiscourseUuid[] = signsByWord.flatMap(
+        (word, idx) => {
+          const signs = word.map(sign => ({
+            ...sign,
+            discourseUuid: words[idx].discourseUuid,
+          }));
+          return signs;
+        }
+      );
+
       rows.value.splice(index, 1, {
         ...rows.value[index],
-        signs: signCodesWithDividers,
+        signs,
+        words,
       });
     };
 

@@ -43,19 +43,23 @@
         <v-stepper-content step="3">
           <add-text-editor @update-editor-content="setEditorContent" />
 
-          <v-btn color="primary" class="ml-3" @click="next(false)">
+          <v-btn color="primary" class="ml-3" @click="next(true)">
             Continue
           </v-btn>
           <v-btn text @click="previous(false)"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="4">
-          <h1 class="ma-8">COMING SOON</h1>
+          <connect-discourse
+            :epigraphicUnits="epigraphyDetails.units"
+            :discourseRows="createTextTables ? createTextTables.discourses : []"
+            @update-discourse-rows="updateDiscourseRows($event)"
+          />
 
-          <v-btn color="primary" class="ml-3" @click="next(true)">
+          <v-btn color="primary" class="ml-3" @click="next(false)">
             Continue
           </v-btn>
-          <v-btn text @click="previous(false)"> Back </v-btn>
+          <v-btn text @click="previous(true)"> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="5">
@@ -64,9 +68,12 @@
             disableEditing
             :localEpigraphyUnits="epigraphyDetails"
             :localImageUrls="photoUrls"
+            :localDiscourseInfo="
+              createTextTables ? createTextTables.discourses : []
+            "
           />
 
-          <v-btn text class="ml-3" @click="previous(true)"> Back </v-btn>
+          <v-btn text class="ml-3" @click="previous(false)"> Back </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -85,6 +92,7 @@ import sl from '@/serviceLocator';
 import AddTextEditor from './Editor/AddTextEditor.vue';
 import TextInfoSet from './TextInfo/TextInfoSet.vue';
 import AddPhotos from './Photos/AddPhotos.vue';
+import ConnectDiscourse from './Discourse/ConnectDiscourse.vue';
 import EpigraphyView from '@/views/Texts/EpigraphyView/index.vue';
 import {
   AddTextEditorContent,
@@ -92,6 +100,7 @@ import {
   TextPhoto,
   EpigraphyResponse,
   CreateTextTables,
+  TextDiscourseRow,
 } from '@oare/types';
 import { convertTablesToUnits, createNewTextTables } from './utils';
 
@@ -107,6 +116,7 @@ export default defineComponent({
     TextInfoSet,
     AddPhotos,
     EpigraphyView,
+    ConnectDiscourse,
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -202,6 +212,15 @@ export default defineComponent({
       step.value -= 1;
     };
 
+    const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
+      if (createTextTables.value) {
+        createTextTables.value = {
+          ...createTextTables.value,
+          discourses,
+        };
+      }
+    };
+
     return {
       collectionName,
       step,
@@ -214,6 +233,8 @@ export default defineComponent({
       epigraphyReady,
       next,
       previous,
+      createTextTables,
+      updateDiscourseRows,
     };
   },
 });

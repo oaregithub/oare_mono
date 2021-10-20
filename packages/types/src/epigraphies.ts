@@ -1,8 +1,8 @@
-import { DiscourseUnit } from './textDiscourse';
+import { DiscourseUnit, TextDiscourseRow } from './textDiscourse';
 import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
 import { ParseTreeProperty } from './dictionary';
-import { SignCode } from './sign_reading';
+import { SignCodeWithDiscourseUuid } from './sign_reading';
 
 export interface EpigraphyResponse {
   canWrite: boolean;
@@ -187,7 +187,8 @@ export interface RowContent {
   lines: number[];
   value?: number;
   text?: string;
-  signs?: SignCode[];
+  signs?: SignCodeWithDiscourseUuid[];
+  words?: EditorWord[];
 }
 
 export interface TextPhoto {
@@ -287,6 +288,12 @@ export interface SignInfo {
 export interface CreateTextTables {
   epigraphies: TextEpigraphyRow[];
   markups: TextMarkupRow[];
+  discourses: TextDiscourseRow[];
   text: TextRow;
   signInfo: SignInfo[];
+}
+
+export interface EditorWord {
+  spelling: string;
+  discourseUuid: string;
 }

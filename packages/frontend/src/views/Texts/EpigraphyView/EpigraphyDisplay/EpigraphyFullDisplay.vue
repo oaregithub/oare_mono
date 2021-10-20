@@ -4,6 +4,7 @@
       class="test-epigraphies"
       :epigraphicUnits="epigraphicUnits"
       :discourseToHighlight="discourseToHighlight"
+      :localDiscourseInfo="localDiscourseInfo"
     />
     <DiscourseReading
       v-if="canViewDiscourses"
@@ -15,7 +16,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from '@vue/composition-api';
-import { EpigraphicUnit, DiscourseUnit } from '@oare/types';
+import { EpigraphicUnit, DiscourseUnit, TextDiscourseRow } from '@oare/types';
 import EpigraphyReading from './components/EpigraphyReading.vue';
 import DiscourseReading from './components/DiscourseReading.vue';
 import sl from '@/serviceLocator';
@@ -32,6 +33,10 @@ export default defineComponent({
     },
     discourseToHighlight: {
       type: String,
+      required: false,
+    },
+    localDiscourseInfo: {
+      type: Array as PropType<TextDiscourseRow[]>,
       required: false,
     },
   },
