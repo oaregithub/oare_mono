@@ -30,7 +30,11 @@
             >Edit</v-btn
           >
         </template>
-        <epigraphy-full-display v-if="disableEditing" v-bind="routeProps" />
+        <epigraphy-full-display
+          v-if="disableEditing"
+          v-bind="routeProps"
+          :localDiscourseInfo="localDiscourseInfo"
+        />
         <router-view
           v-else
           v-bind="routeProps"
@@ -52,7 +56,7 @@
 
 <script lang="ts">
 import { createTabletRenderer } from '@oare/oare';
-import { TextDraft } from '@oare/types';
+import { TextDiscourseRow, TextDraft } from '@oare/types';
 import {
   defineComponent,
   reactive,
@@ -106,6 +110,10 @@ export default defineComponent({
     },
     localImageUrls: {
       type: Array as PropType<string[]>,
+      required: false,
+    },
+    localDiscourseInfo: {
+      type: Array as PropType<TextDiscourseRow[]>,
       required: false,
     },
   },

@@ -56,7 +56,12 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
 import { createTabletRenderer } from '@oare/oare';
-import { Word, EpigraphicUnit, EpigraphicWord } from '@oare/types';
+import {
+  Word,
+  EpigraphicUnit,
+  EpigraphicWord,
+  TextDiscourseRow,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
@@ -73,6 +78,10 @@ export default defineComponent({
     },
     discourseToHighlight: {
       type: String,
+      required: false,
+    },
+    localDiscourseInfo: {
+      type: Array as PropType<TextDiscourseRow[]>,
       required: false,
     },
   },
@@ -104,10 +113,19 @@ export default defineComponent({
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
-        if (discourseUuid) {
-          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-            discourseUuid
-          );
+
+        const spellingUuid = props.localDiscourseInfo
+          ? props.localDiscourseInfo.filter(
+              row => row.uuid === discourseUuid
+            )[0].spellingUuid
+          : null;
+
+        if (discourseUuid && !props.localDiscourseInfo) {
+          discourseWordInfo.value =
+            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
+        } else if (spellingUuid && props.localDiscourseInfo) {
+          discourseWordInfo.value =
+            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
         }
         actions.closeSnackbar();
         if (discourseWordInfo.value) {

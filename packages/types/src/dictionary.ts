@@ -98,6 +98,7 @@ export interface SearchSpellingResultRow {
   wordUuid: string;
   word: string;
   form: Omit<DictionaryForm, 'spellings'>;
+  spellingUuid: string;
 }
 
 export interface SearchSpellingPayload {

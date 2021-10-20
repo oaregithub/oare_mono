@@ -76,6 +76,7 @@ class DictionaryWordDao {
       word: string;
       formUuid: string;
       form: string;
+      spellingUuid: string;
     }
 
     const rows: SearchSpellingRow[] = await knex
@@ -83,7 +84,8 @@ class DictionaryWordDao {
         'dw.uuid AS wordUuid',
         'dw.word',
         'df.uuid AS formUuid',
-        'df.form'
+        'df.form',
+        'ds.uuid AS spellingUuid'
       )
       .from('dictionary_word AS dw')
       .innerJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
@@ -102,6 +104,7 @@ class DictionaryWordDao {
         uuid: row.formUuid,
         ...formGrammars[i],
       },
+      spellingUuid: row.spellingUuid,
     }));
   }
 

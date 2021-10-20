@@ -1139,7 +1139,7 @@ describe('dictionary api test', () => {
 
   describe('GET /dictionary/textDiscourse/:discourseUuid', () => {
     const discourseUuid = 'discourse-uuid';
-    const PATH = `${API_PATH}/dictionary/textDiscourse/${discourseUuid}`;
+    const PATH = `${API_PATH}/dictionary/textDiscourse/discourse/${discourseUuid}`;
 
     const mockTextDiscourseDao = {
       getSpellingUuidsByDiscourseUuid: jest
