@@ -1,37 +1,39 @@
 <template>
-  <v-row>
-    <v-col cols="6">
-      <v-row
-        v-if="photos.length === 0"
-        justify="center"
-        class="ma-4 d-inline-block"
-      >
-        To begin adding photos, click the "Add Photo" button below. Uploads
-        currently support PNG, JPEG, JPG, and TIFF file types. To inquire about
-        support for other file types, please
-        <a href="mailto:oarefeedback@byu.edu"> contact us</a>.
-      </v-row>
-      <photo-selector
-        v-for="photo in photos"
-        :key="photo.uuid"
-        :uuid="photo.uuid"
-        @export-photo="setPhoto"
-        @remove-photo="removePhoto"
-      />
-      <v-btn @click="addPhoto" class="ml-10 my-4" text>
-        <v-icon color="primary">mdi-plus</v-icon>
-        <h3 class="text--primary">Add Photo</h3>
-      </v-btn>
-    </v-col>
-    <v-col cols="6">
-      <epigraphy-image
-        :imageLinks="photoUrls"
-        :imageDetails="photosWithUrl"
-        :maxSelect="1"
-        :sticky="false"
-      />
-    </v-col>
-  </v-row>
+  <OareContentView title="Upload Photos">
+    <v-row>
+      <v-col cols="6">
+        <v-row
+          v-if="photos.length === 0"
+          justify="center"
+          class="ma-0 mb-4 d-inline-block"
+        >
+          To begin adding photos, click the "Add Photo" button below. Uploads
+          currently support PNG, JPEG, JPG, and TIFF file types. To inquire
+          about support for other file types, please
+          <a href="mailto:oarefeedback@byu.edu"> contact us</a>.
+        </v-row>
+        <photo-selector
+          v-for="photo in photos"
+          :key="photo.uuid"
+          :uuid="photo.uuid"
+          @export-photo="setPhoto"
+          @remove-photo="removePhoto"
+        />
+        <v-btn @click="addPhoto" class="ml-10 my-4" text>
+          <v-icon color="primary">mdi-plus</v-icon>
+          <h3 class="text--primary">Add Photo</h3>
+        </v-btn>
+      </v-col>
+      <v-col cols="6">
+        <epigraphy-image
+          :imageLinks="photoUrls"
+          :imageDetails="photosWithUrl"
+          :maxSelect="1"
+          :sticky="false"
+        />
+      </v-col>
+    </v-row>
+  </OareContentView>
 </template>
 
 <script lang="ts">

@@ -15,6 +15,7 @@ import {
   TextDiscourseRowPartial,
 } from '@oare/types';
 import { v4 } from 'uuid';
+import sl from '@/serviceLocator';
 
 export const getSideNumber = (number: number | null): EpigraphicUnitSide => {
   switch (number) {
@@ -198,10 +199,10 @@ const createTextDiscourseRow = (
   transcription: row.transcription || null,
 });
 
-export const createNewTextTables = (
+export const createNewTextTables = async (
   textInfo: AddTextInfo,
   content: AddTextEditorContent
-): CreateTextTables => {
+): Promise<CreateTextTables> => {
   const epigraphyRows: TextEpigraphyRow[] = [];
   const markupRows: TextMarkupRow[] = [];
   const discourseRows: TextDiscourseRow[] = [];
@@ -209,6 +210,7 @@ export const createNewTextTables = (
   const textRow: TextRow = createMockTextTable(textInfo);
   const treeUuid = v4();
   const discourseTreeUuid = v4();
+  const server = sl.get('serverProxy');
 
   let charOnTablet = 1;
 
@@ -280,7 +282,7 @@ export const createNewTextTables = (
 
           // Words
           const words = row.words || [];
-          words.forEach(word => {
+          words.forEach(async word => {
             const type =
               row.signs &&
               row.signs
@@ -288,6 +290,11 @@ export const createNewTextTables = (
                 .every(sign => sign.readingType === 'number')
                 ? 'number'
                 : 'word';
+            let spellingUuid: string | undefined;
+            const forms = await server.searchSpellings(word.spelling);
+            if (forms.length === 1) {
+              spellingUuid = forms[0].spellingUuid;
+            }
             const newDiscourseRow = createTextDiscourseRow({
               uuid: word.discourseUuid,
               type,
@@ -299,8 +306,8 @@ export const createNewTextTables = (
               parentUuid: discourseUnitRow.uuid,
               spelling: word.spelling,
               explicitSpelling: word.spelling,
+              spellingUuid,
               // transcription to be inserted when submitted
-              // spellingUuid to be linked on 4th pane
             });
             discourseRows.push(newDiscourseRow);
           });

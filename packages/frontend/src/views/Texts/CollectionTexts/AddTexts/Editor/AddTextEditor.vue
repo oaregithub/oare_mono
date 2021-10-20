@@ -1,72 +1,74 @@
 <template>
-  <v-card min-height="500px" flat class="ma-1">
-    <v-row>
-      <v-col cols="3" align="center">
-        <side-card
-          v-for="(side, idx) in sides"
-          :key="idx"
-          :side="side.side"
-          :selected="selectedSide === side.side"
-          @set-side="setSide(side.side)"
-          @remove-side="removeSide(idx)"
-          @change-side="setupChangeSide(idx)"
-        />
-        <v-divider v-if="sides.length > 0" />
-        <v-btn
-          v-if="usableSides.length > 0"
-          @click="openAddingSide"
-          class="ma-4"
-          text
-        >
-          <v-icon color="primary">mdi-plus</v-icon>
-          <h3 class="text--primary">Add Side</h3>
-        </v-btn>
-      </v-col>
-      <v-col cols="1" align="center" class="px-0">
-        <v-divider vertical class="ma-0" />
-      </v-col>
-      <v-col cols="8">
-        <v-card
-          v-if="!selectedSide && !addingSide && !changingSide"
-          flat
-          min-height="100px"
-          class="py-12"
-        >
-          <v-row justify="center" class="my-12">
-            To begin, use the "Add Side" button to select a side to start with.
-            Additional sides can be added afterwards.
-          </v-row>
-        </v-card>
-        <side
-          v-show="side.side === selectedSide && !changingSide"
-          v-for="(side, idx) in sortedSides"
-          :key="side.uuid"
-          :side="side.side"
-          :startingLine="getStartingLine(idx)"
-          :beginningBrokenAreas="getStartingBreak(idx)"
-          :beginsWithBreak="getBeginningBreakStatus(idx)"
-          @side-last-line="setLastLine(idx, $event)"
-          @side-broken-area="setBrokenArea(idx, $event)"
-          @side-ends-broken="setEndBreakStatus(idx, $event)"
-          @side-dirty-status="setDirtyStatus(idx, $event)"
-          @update-side-columns="setSideColumns(idx, $event)"
-        />
-        <add-side
-          v-if="addingSide"
-          :usableSides="usableSides"
-          @side-selected="addSide"
-          @cancel-add-side="addingSide = false"
-        />
-        <add-side
-          v-if="changingSide"
-          :usableSides="usableSides"
-          changing
-          @side-selected="changeSide"
-          @cancel-add-side="changingSide = false"
-        />
-      </v-col>
-    </v-row>
-  </v-card>
+  <OareContentView title="Edit Text Content">
+    <v-card min-height="500px" flat class="ma-0">
+      <v-row>
+        <v-col cols="3" align="center">
+          <side-card
+            v-for="(side, idx) in sides"
+            :key="idx"
+            :side="side.side"
+            :selected="selectedSide === side.side"
+            @set-side="setSide(side.side)"
+            @remove-side="removeSide(idx)"
+            @change-side="setupChangeSide(idx)"
+          />
+          <v-divider v-if="sides.length > 0" />
+          <v-btn
+            v-if="usableSides.length > 0"
+            @click="openAddingSide"
+            class="ma-4"
+            text
+          >
+            <v-icon color="primary">mdi-plus</v-icon>
+            <h3 class="text--primary">Add Side</h3>
+          </v-btn>
+        </v-col>
+        <v-col cols="1" align="center" class="px-0">
+          <v-divider vertical class="ma-0" />
+        </v-col>
+        <v-col cols="8">
+          <v-card
+            v-if="!selectedSide && !addingSide && !changingSide"
+            flat
+            min-height="100px"
+            class="py-12"
+          >
+            <v-row justify="center" class="my-12">
+              To begin, use the "Add Side" button to select a side to start
+              with. Additional sides can be added afterwards.
+            </v-row>
+          </v-card>
+          <side
+            v-show="side.side === selectedSide && !changingSide"
+            v-for="(side, idx) in sortedSides"
+            :key="side.uuid"
+            :side="side.side"
+            :startingLine="getStartingLine(idx)"
+            :beginningBrokenAreas="getStartingBreak(idx)"
+            :beginsWithBreak="getBeginningBreakStatus(idx)"
+            @side-last-line="setLastLine(idx, $event)"
+            @side-broken-area="setBrokenArea(idx, $event)"
+            @side-ends-broken="setEndBreakStatus(idx, $event)"
+            @side-dirty-status="setDirtyStatus(idx, $event)"
+            @update-side-columns="setSideColumns(idx, $event)"
+          />
+          <add-side
+            v-if="addingSide"
+            :usableSides="usableSides"
+            @side-selected="addSide"
+            @cancel-add-side="addingSide = false"
+          />
+          <add-side
+            v-if="changingSide"
+            :usableSides="usableSides"
+            changing
+            @side-selected="changeSide"
+            @cancel-add-side="changingSide = false"
+          />
+        </v-col>
+      </v-row>
+    </v-card>
+  </OareContentView>
 </template>
 
 <script lang="ts">
