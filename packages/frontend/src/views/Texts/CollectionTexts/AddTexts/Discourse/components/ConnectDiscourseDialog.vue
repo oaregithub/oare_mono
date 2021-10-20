@@ -7,9 +7,13 @@
   >
     <OareContentView title="Select Lexical Form">
       <b class="mr-1">{{ word.explicitSpelling }}</b>
-      <span
+      <span v-if="searchSpellingResults.length > 0"
         >appears in the following lexical forms. Select the appropriate form to
         link this occurrence to the dictionary.</span
+      >
+      <span v-else
+        >does not appear in any forms. It cannot be connect to the dictionary at
+        this time.</span
       >
       <v-radio-group v-model="selectedOption">
         <v-radio
@@ -51,12 +55,7 @@ export default defineComponent({
 
     const searchSpellingResults = ref<SearchSpellingResultRow[]>([]);
 
-    const selectedOption = ref('');
-
-    /* const setSpellingUuid = (spellingUuid: string) => {
-      selectedOption.value = spellingUuid;
-      //emit('set-spelling-uuid', spellingUuid);
-    }; */
+    const selectedOption = ref();
 
     const setSpellingUuid = () => {
       emit('set-spelling-uuid', selectedOption.value);

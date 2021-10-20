@@ -84,7 +84,10 @@ export default defineComponent({
       const matchingDiscourseRow = props.discourseRows.filter(
         row => row.uuid === word.discourseUuid
       )[0];
-      if (matchingDiscourseRow.spellingUuid) {
+      if (
+        matchingDiscourseRow.spellingUuid ||
+        matchingDiscourseRow.type === 'number'
+      ) {
         return word.reading;
       } else {
         return `<mark class="red">${word.reading}</mark>`;
@@ -103,7 +106,7 @@ export default defineComponent({
 
     const setSpellingUuid = (
       word: TextDiscourseRow | undefined,
-      spellingUuid: string
+      spellingUuid: string | undefined
     ) => {
       const newDiscourseRows = props.discourseRows.map(row => {
         if (row !== word) {
