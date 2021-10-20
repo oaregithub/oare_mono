@@ -63,11 +63,10 @@
         </v-stepper-content>
 
         <v-stepper-content step="5">
-          <epigraphy-view
+          <final-preview
             v-if="epigraphyReady"
-            disableEditing
-            :localEpigraphyUnits="epigraphyDetails"
-            :localImageUrls="photoUrls"
+            :epigraphyUnits="epigraphyDetails"
+            :photoUrls="photoUrls"
             :localDiscourseInfo="
               createTextTables ? createTextTables.discourses : []
             "
@@ -94,6 +93,7 @@ import TextInfoSet from './TextInfo/TextInfoSet.vue';
 import AddPhotos from './Photos/AddPhotos.vue';
 import ConnectDiscourse from './Discourse/ConnectDiscourse.vue';
 import EpigraphyView from '@/views/Texts/EpigraphyView/index.vue';
+import FinalPreview from '@/views/Texts/CollectionTexts/AddTexts/Preview/FinalPreview.vue';
 import {
   AddTextEditorContent,
   AddTextInfo,
@@ -117,6 +117,7 @@ export default defineComponent({
     AddPhotos,
     EpigraphyView,
     ConnectDiscourse,
+    FinalPreview,
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -190,7 +191,7 @@ export default defineComponent({
       if (completeEpigraphy) {
         if (editorContent.value) {
           try {
-            createTextTables.value = createNewTextTables(
+            createTextTables.value = await createNewTextTables(
               textInfo.value!,
               editorContent.value
             );

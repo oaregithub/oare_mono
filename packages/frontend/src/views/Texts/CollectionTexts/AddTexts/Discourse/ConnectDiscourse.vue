@@ -1,5 +1,14 @@
 <template>
-  <OareContentView>
+  <OareContentView title="Connect Lexical Information">
+    <v-row class="pa-0 ma-0">
+      <v-col cols="8" class="pa-0 ma-0 mb-6">
+        Select a word to connect it to the associated word form in the
+        dictionary. Words that have yet to be connected are highlighted in red.
+        In the case that a word only has one existing match in the dictionary,
+        it has been automatically connected for you. It can be manually
+        disconnected if desired.
+      </v-col>
+    </v-row>
     <div v-if="renderer" class="mr-10">
       <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
         <div class="side-name oare-title mr-4">
@@ -85,8 +94,9 @@ export default defineComponent({
         row => row.uuid === word.discourseUuid
       )[0];
       if (
-        matchingDiscourseRow.spellingUuid ||
-        matchingDiscourseRow.type === 'number'
+        matchingDiscourseRow &&
+        (matchingDiscourseRow.spellingUuid ||
+          matchingDiscourseRow.type === 'number')
       ) {
         return word.reading;
       } else {

@@ -66,6 +66,9 @@ export default defineComponent({
         searchSpellingResults.value = await server.searchSpellings(
           props.word.explicitSpelling || ''
         );
+        if (searchSpellingResults.value.length === 1) {
+          selectedOption.value = searchSpellingResults.value[0].spellingUuid;
+        }
       } catch {
         actions.showErrorSnackbar(
           'Error loading possible spellings. Please try again.'
