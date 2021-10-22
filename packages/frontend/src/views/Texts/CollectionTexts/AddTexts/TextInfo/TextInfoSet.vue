@@ -29,6 +29,8 @@
         outlined
         label="Text Name"
         placeholder="e.g. Kt 94/k 584b (AKT 6a 267), etc."
+        :rules="textNameRules"
+        autofocus
       />
       <v-row class="pl-3">
         <h3 class="mt-1 mb-2 d-inline">Excavation</h3>
@@ -289,6 +291,21 @@ export default defineComponent({
       deep: true,
     });
 
+    const stepComplete = computed(() => {
+      return textName.value !== '';
+    });
+
+    watch(stepComplete, () => emit('step-complete', stepComplete.value));
+
+    const textNameRules = [
+      (input: string) => {
+        if (input === '') {
+          return 'Required';
+        }
+        return true;
+      },
+    ];
+
     return {
       textName,
       cdliNum,
@@ -305,6 +322,7 @@ export default defineComponent({
       clearProperties,
       propertyText,
       textInfo,
+      textNameRules,
     };
   },
 });

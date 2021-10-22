@@ -4,16 +4,17 @@
     @input="$emit('input', $event)"
     closeOnSubmit
     @submit="setSpellingUuid"
+    :showSubmit="searchSpellingResults.length > 0"
   >
     <OareContentView title="Select Lexical Form">
       <b class="mr-1">{{ word.explicitSpelling }}</b>
       <span v-if="searchSpellingResults.length > 0"
-        >appears in the following lexical forms. Select the appropriate form to
-        link this occurrence to the dictionary.</span
+        >appears in the following lexical form(s). Select the appropriate form
+        to link this occurrence to the dictionary.</span
       >
       <span v-else
-        >does not appear in any forms. It cannot be connect to the dictionary at
-        this time.</span
+        >does not appear in any forms. It cannot be connected to the dictionary
+        at this time.</span
       >
       <v-radio-group v-model="selectedOption">
         <v-radio
@@ -24,6 +25,14 @@
         >
         </v-radio>
       </v-radio-group>
+      <v-btn
+        v-if="searchSpellingResults.length > 0"
+        @click="selectedOption = undefined"
+        color="primary"
+        :disabled="!selectedOption"
+      >
+        Disconnect
+      </v-btn>
     </OareContentView>
   </oare-dialog>
 </template>

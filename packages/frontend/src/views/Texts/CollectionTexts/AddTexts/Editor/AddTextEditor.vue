@@ -107,7 +107,6 @@ export default defineComponent({
     SideCard,
   },
   setup(_, { emit }) {
-    const textName = ref('');
     const indexToChange = ref(0);
     const sides = ref<Side[]>([]);
     const selectedSide = ref<SideOption>();
@@ -320,8 +319,24 @@ export default defineComponent({
       { deep: true }
     );
 
+    const stepComplete = computed(() => {
+      return (
+        sides.value.length > 0 &&
+        sides.value.every(
+          side =>
+            side.columns.length > 0 &&
+            side.columns.every(
+              column =>
+                column.rows.length > 0 &&
+                column.rows.every(row => row.signs && row.signs.length > 0)
+            )
+        )
+      );
+    });
+
+    watch(stepComplete, () => emit('step-complete', stepComplete.value));
+
     return {
-      textName,
       sides,
       addingSide,
       removingSide,
