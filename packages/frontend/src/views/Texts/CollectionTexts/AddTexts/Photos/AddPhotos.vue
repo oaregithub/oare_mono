@@ -7,6 +7,7 @@
           justify="center"
           class="ma-0 mb-4 d-inline-block"
         >
+          <b>Optional.</b>
           To begin adding photos, click the "Add Photo" button below. Uploads
           currently support PNG, JPEG, JPG, and TIFF file types. To inquire
           about support for other file types, please

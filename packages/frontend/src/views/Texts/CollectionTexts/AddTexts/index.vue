@@ -24,29 +24,50 @@
 
       <v-stepper-items>
         <v-stepper-content step="1">
-          <text-info-set @update-text-info="setTextInfo" />
+          <text-info-set
+            @update-text-info="setTextInfo"
+            @step-complete="stepOneComplete = $event"
+          />
 
-          <v-btn color="primary" class="ml-3" @click="next(false)">
+          <v-btn
+            color="primary"
+            class="ml-4"
+            @click="next(false)"
+            :disabled="!stepOneComplete"
+          >
             Continue
           </v-btn>
+          <span v-if="!stepOneComplete" class="red--text ml-4"
+            >To continue, please complete the required item(s)</span
+          >
         </v-stepper-content>
 
         <v-stepper-content step="2">
           <add-photos @update-photos="setPhotos" />
 
-          <v-btn color="primary" class="ml-3" @click="next(false)">
-            Continue
-          </v-btn>
-          <v-btn text @click="previous(false)"> Back </v-btn>
+          <v-btn text @click="previous(false)" class="mx-3"> Back </v-btn>
+          <v-btn color="primary" @click="next(false)"> Continue </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <add-text-editor @update-editor-content="setEditorContent" />
+          <add-text-editor
+            @update-editor-content="setEditorContent"
+            @step-complete="stepThreeComplete = $event"
+          />
 
-          <v-btn color="primary" class="ml-3" @click="next(true)">
+          <v-btn text @click="previous(false)" class="mx-3"> Back </v-btn>
+          <v-btn
+            color="primary"
+            @click="next(true)"
+            :disabled="!stepThreeComplete"
+          >
             Continue
           </v-btn>
-          <v-btn text @click="previous(false)"> Back </v-btn>
+
+          <span v-if="!stepThreeComplete" class="red--text ml-4"
+            >To continue, there must be at least one side. No empty sides,
+            columns, or rows are allowed.</span
+          >
         </v-stepper-content>
 
         <v-stepper-content step="4">
@@ -56,10 +77,8 @@
             @update-discourse-rows="updateDiscourseRows($event)"
           />
 
-          <v-btn color="primary" class="ml-3" @click="next(false)">
-            Continue
-          </v-btn>
-          <v-btn text @click="previous(true)"> Back </v-btn>
+          <v-btn text @click="previous(true)" class="mx-3"> Back </v-btn>
+          <v-btn color="primary" @click="next(false)"> Continue </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="5">
@@ -72,7 +91,9 @@
             "
           />
 
-          <v-btn text class="ml-3" @click="previous(false)"> Back </v-btn>
+          <v-btn text class="mx-3" @click="previous(false)"> Back </v-btn>
+          <v-btn color="primary" disabled> Submit </v-btn>
+          <span class="red--text ml-4">Coming Soon</span>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -126,6 +147,9 @@ export default defineComponent({
     const collectionName = ref('');
     const step = ref(1);
     const loading = ref(false);
+
+    const stepOneComplete = ref(false);
+    const stepThreeComplete = ref(false);
 
     const textInfo = ref<AddTextInfo>();
     const setTextInfo = (updatedTextInfo: AddTextInfo) => {
@@ -189,10 +213,10 @@ export default defineComponent({
 
     const next = async (completeEpigraphy = false) => {
       if (completeEpigraphy) {
-        if (editorContent.value) {
+        if (editorContent.value && textInfo.value) {
           try {
             createTextTables.value = await createNewTextTables(
-              textInfo.value!,
+              textInfo.value,
               editorContent.value
             );
           } catch (err) {
@@ -236,6 +260,8 @@ export default defineComponent({
       previous,
       createTextTables,
       updateDiscourseRows,
+      stepOneComplete,
+      stepThreeComplete,
     };
   },
 });
