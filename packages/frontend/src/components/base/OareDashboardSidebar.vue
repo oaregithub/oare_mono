@@ -29,6 +29,10 @@ export default defineComponent({
           label: 'Comments',
           path: 'comments',
         },
+        {
+          label: 'Preferences',
+          path: 'preferences',
+        },
       ],
     });
 

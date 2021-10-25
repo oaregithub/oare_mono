@@ -26,6 +26,7 @@ import textDiscourse from './text_discourse';
 import profile from './profile';
 import groupAllowlist from './group_allowlist';
 import groupEditPermissions from './group_edit_permissions';
+import betaAccess from './beta_access';
 
 const serverProxy = {
   ...groups,
@@ -56,6 +57,7 @@ const serverProxy = {
   ...profile,
   ...groupAllowlist,
   ...groupEditPermissions,
+  ...betaAccess,
 };
 
 export type ServerProxyType = typeof serverProxy;
