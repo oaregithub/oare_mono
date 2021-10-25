@@ -49,6 +49,7 @@ export default defineComponent({
         } else {
           await server.revokeBetaAccess();
         }
+        store.setBetaAccess(allowBetaAccess);
       } catch {
         actions.showErrorSnackbar(
           'Error updating beta access status. Please try again.'
