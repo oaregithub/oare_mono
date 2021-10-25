@@ -14,6 +14,7 @@ export interface User {
   lastName: string;
   email: string;
   isAdmin: boolean;
+  betaAccess: boolean;
 }
 
 export interface GetUserResponse extends User {

@@ -37,7 +37,8 @@ class UserDao {
         'first_name AS firstName',
         'last_name AS lastName',
         'email',
-        'is_admin AS isAdmin'
+        'is_admin AS isAdmin',
+        'beta_access AS betaAccess'
       )
       .where(column, value);
 
@@ -48,6 +49,7 @@ class UserDao {
     return {
       ...user,
       isAdmin: !!user.isAdmin,
+      betaAccess: !!user.betaAccess,
     };
   }
 
@@ -81,6 +83,21 @@ class UserDao {
     return isAdmin;
   }
 
+  async userHasBetaAccess(uuid: string): Promise<boolean> {
+    const { betaAccess } = await knex('user')
+      .first('beta_access AS betaAccess')
+      .where(uuid);
+    return betaAccess;
+  }
+
+  async setBetaAccess(uuid: string, status: boolean): Promise<void> {
+    await knex('user')
+      .update({
+        beta_access: status,
+      })
+      .where('uuid', uuid);
+  }
+
   async getAllUsers(): Promise<GetUserResponse[]> {
     const users: Pick<
       User,
@@ -97,6 +114,9 @@ class UserDao {
     const adminStatus = await Promise.all(
       users.map(user => this.userIsAdmin(user.uuid))
     );
+    const betaStatus = await Promise.all(
+      users.map(user => this.userHasBetaAccess(user.uuid))
+    );
     return users.map(({ uuid, firstName, lastName, email }, index) => ({
       uuid,
       firstName,
@@ -104,6 +124,7 @@ class UserDao {
       email,
       groups: groupObjects[index],
       isAdmin: adminStatus[index],
+      betaAccess: betaStatus[index],
     }));
   }
 
