@@ -48,6 +48,7 @@ import ManageEdits from '../views/Admin/Groups/Edits/ManageEdits.vue';
 import AddEditTexts from '../views/Admin/Groups/Edits/Texts/AddEditTexts.vue';
 import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditCollections.vue';
 import AddNewTexts from '../views/Texts/CollectionTexts/AddTexts/index.vue';
+import UserPreferences from '../views/Dashboard/UserPreferences.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -303,6 +304,12 @@ const routes: RouteConfig[] = [
     path: '/dashboard/comments',
     name: 'dashboardComments',
     component: UserCommentView,
+    beforeEnter: authenticatedGuard,
+  },
+  {
+    path: '/dashboard/preferences',
+    name: 'dashboardPreferences',
+    component: UserPreferences,
     beforeEnter: authenticatedGuard,
   },
   {

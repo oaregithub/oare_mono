@@ -45,6 +45,14 @@ export default {
   setAdminBadge: (status: AdminBadgeOptions) => {
     state.displayAdminBadge = status;
   },
+  setBetaAccess: (status: boolean) => {
+    if (state.user) {
+      state.user = {
+        ...state.user,
+        betaAccess: status,
+      };
+    }
+  },
   getters: {
     get isAdmin() {
       return state.user ? state.user.isAdmin : false;

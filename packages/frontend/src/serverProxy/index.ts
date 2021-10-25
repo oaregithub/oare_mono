@@ -27,6 +27,7 @@ import profile from './profile';
 import groupAllowlist from './group_allowlist';
 import groupEditPermissions from './group_edit_permissions';
 import signReading from './sign_reading';
+import betaAccess from './beta_access';
 
 const serverProxy = {
   ...groups,
@@ -58,6 +59,7 @@ const serverProxy = {
   ...groupAllowlist,
   ...groupEditPermissions,
   ...signReading,
+  ...betaAccess,
 };
 
 export type ServerProxyType = typeof serverProxy;
