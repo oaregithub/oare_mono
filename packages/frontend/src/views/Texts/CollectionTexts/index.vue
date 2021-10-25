@@ -72,6 +72,9 @@ export default defineComponent({
     const router = sl.get('router');
     const store = sl.get('store');
     const permissions = computed(() => store.getters.permissions);
+    const hasBetaAccess = computed(() =>
+      store.getters.user ? store.getters.user.betaAccess : false
+    );
 
     const collectionName = ref('');
     const loading = ref(false);
@@ -100,10 +103,11 @@ export default defineComponent({
       router.push(`/add_collection_text/${collectionUuid}`);
     };
 
-    const canAddNewTexts = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('ADD_NEW_TEXTS')
+    const canAddNewTexts = computed(
+      () =>
+        permissions.value
+          .map(permission => permission.name)
+          .includes('ADD_NEW_TEXTS') && hasBetaAccess.value
     );
 
     const getCollectionTexts = async () => {
