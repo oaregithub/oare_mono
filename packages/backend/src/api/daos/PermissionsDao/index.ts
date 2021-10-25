@@ -92,6 +92,12 @@ class PermissionsDao {
       description:
         "Allow group users to edit a text's transliteration status (visible in stoplight)",
     },
+    {
+      name: 'ADD_NEW_TEXTS',
+      type: 'text',
+      description:
+        'Allow group users to add new texts to a collection. Currently requires user to have beta access.',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {

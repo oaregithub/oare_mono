@@ -429,7 +429,48 @@ router
   });
 
 router
-  .route('/dictionary/textDiscourse/:discourseUuid')
+  .route('/dictionary/textDiscourse/spelling/:spellingUuid')
+  .get(async (req, res, next) => {
+    try {
+      const { spellingUuid } = req.params;
+      const isAdmin = req.user ? req.user.isAdmin : false;
+      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+
+      let result: Word | null = null;
+
+      const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+        spellingUuid
+      );
+
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+
+      const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(wordUuid);
+      const forms = await DictionaryFormDao.getWordForms(
+        wordUuid,
+        isAdmin,
+        true
+      );
+
+      // Only get the one form from the formUuid (keep all spellings of the form)
+      const selectedForms = forms.filter(form => form.uuid === formUuid);
+
+      result = {
+        ...grammarInfo,
+        forms: selectedForms,
+      };
+
+      res.json(result);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
+  .route('/dictionary/textDiscourse/discourse/:discourseUuid')
   .get(async (req, res, next) => {
     try {
       const { discourseUuid } = req.params;

@@ -165,7 +165,10 @@ export function formatLineNumber(
   } else {
     const numAsString = String(lineNum);
     lineNumber = numAsString.slice(0, numAsString.indexOf('.'));
-    const decimalPlaces = numAsString.slice(numAsString.indexOf('.'));
+    const decimalPlaces = numAsString.slice(
+      numAsString.indexOf('.'),
+      numAsString.indexOf('.') + 3
+    );
     const numHyphens = Number(decimalPlaces) * 100;
     for (let i = 0; i < numHyphens; i += 1) {
       lineNumber += "'";

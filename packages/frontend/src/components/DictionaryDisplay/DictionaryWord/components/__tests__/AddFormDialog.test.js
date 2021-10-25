@@ -130,6 +130,7 @@ describe('AddFormDialog test', () => {
     const wrapper = createWrapper();
     await flushPromises();
     await wrapper.get('.test-form-spelling input').setValue('test input');
+    await flushPromises();
     expect(wrapper.get('.test-submit-btn').element).toBeDisabled();
   });
 
@@ -137,6 +138,7 @@ describe('AddFormDialog test', () => {
     const wrapper = createWrapper();
     await flushPromises();
     await wrapper.get('.test-form-spelling input').setValue('test-form-1');
+    await flushPromises();
     expect(wrapper.find('.test-error').exists()).toBe(true);
     expect(wrapper.get('.test-submit-btn').element).toBeDisabled();
   });
@@ -146,6 +148,7 @@ describe('AddFormDialog test', () => {
     await flushPromises();
     await wrapper.get('.test-form-spelling input').setValue('test input');
     await wrapper.findAll('.test-ignore input').trigger('click');
+    await flushPromises();
     expect(wrapper.get('.test-submit-btn').element).toBeEnabled();
   });
 
@@ -154,6 +157,7 @@ describe('AddFormDialog test', () => {
     await flushPromises();
     await wrapper.get('.test-form-spelling input').setValue('test input');
     await wrapper.findAll('.test-ignore input').trigger('click');
+    await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockServer.addForm).toHaveBeenCalled();
@@ -170,6 +174,7 @@ describe('AddFormDialog test', () => {
     await flushPromises();
     await wrapper.get('.test-form-spelling input').setValue('test input');
     await wrapper.findAll('.test-ignore input').trigger('click');
+    await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();

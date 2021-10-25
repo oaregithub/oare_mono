@@ -6,10 +6,13 @@
       :md="canViewEpigraphyImages ? 5 : 12"
     >
       <OareContentView :title="textInfo.textName" :loading="loading">
-        <template #header>
+        <template #header v-if="!disableEditing">
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
-        <template #title:pre v-if="textInfo.color && textInfo.colorMeaning">
+        <template
+          #title:pre
+          v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
+        >
           <Stoplight
             :transliteration="transliteration"
             :showEditDialog="true"
@@ -18,7 +21,7 @@
             class="mr-2"
           />
         </template>
-        <template #title:post v-if="textInfo.canWrite">
+        <template #title:post v-if="textInfo.canWrite && !disableEditing">
           <v-btn
             v-if="!isEditing"
             color="primary"
@@ -27,7 +30,16 @@
             >Edit</v-btn
           >
         </template>
-        <router-view v-bind="routeProps" v-on="routeActions"></router-view>
+        <epigraphy-full-display
+          v-if="disableEditing"
+          v-bind="routeProps"
+          :localDiscourseInfo="localDiscourseInfo"
+        />
+        <router-view
+          v-else
+          v-bind="routeProps"
+          v-on="routeActions"
+        ></router-view>
       </OareContentView>
     </v-col>
     <v-col
@@ -37,14 +49,14 @@
       v-if="canViewEpigraphyImages"
       class="relative test-cdli-image"
     >
-      <EpigraphyImage :imageLinks="imageUrls" />
+      <EpigraphyImage :imageLinks="imageUrls" :sticky="!disableEditing" />
     </v-col>
   </v-row>
 </template>
 
 <script lang="ts">
 import { createTabletRenderer } from '@oare/oare';
-import { TextDraft } from '@oare/types';
+import { TextDiscourseRow, TextDraft } from '@oare/types';
 import {
   defineComponent,
   reactive,
@@ -54,6 +66,7 @@ import {
   InjectionKey,
   provide,
   ComputedRef,
+  PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { EpigraphyResponse, TranslitOption } from '@oare/types';
@@ -81,15 +94,36 @@ export default defineComponent({
   props: {
     textUuid: {
       type: String,
-      required: true,
+      required: false,
     },
     discourseToHighlight: {
       type: String,
       required: false,
     },
+    disableEditing: {
+      type: Boolean,
+      default: false,
+    },
+    localEpigraphyUnits: {
+      type: Object as PropType<EpigraphyResponse>,
+      required: false,
+    },
+    localImageUrls: {
+      type: Array as PropType<string[]>,
+      required: false,
+    },
+    localDiscourseInfo: {
+      type: Array as PropType<TextDiscourseRow[]>,
+      required: false,
+    },
   },
 
-  setup({ textUuid, discourseToHighlight }) {
+  setup({
+    textUuid,
+    discourseToHighlight,
+    localEpigraphyUnits,
+    localImageUrls,
+  }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -191,7 +225,11 @@ export default defineComponent({
     );
 
     const getTextInfo = async () => {
-      textInfo.value = await server.getEpigraphicInfo(textUuid);
+      if (localEpigraphyUnits) {
+        textInfo.value = localEpigraphyUnits;
+      } else if (textUuid) {
+        textInfo.value = await server.getEpigraphicInfo(textUuid);
+      }
     };
 
     onMounted(async () => {
@@ -199,10 +237,14 @@ export default defineComponent({
         loading.value = true;
         await getTextInfo();
         draft.value = textInfo.value.draft || null;
-        imageUrls.value = await server.getImageLinks(
-          textUuid,
-          textInfo.value.cdliNum
-        );
+        if (localImageUrls) {
+          imageUrls.value = localImageUrls;
+        } else if (textUuid) {
+          imageUrls.value = await server.getImageLinks(
+            textUuid,
+            textInfo.value.cdliNum
+          );
+        }
       } catch (err) {
         if (err.response) {
           if (err.response.status === 403) {

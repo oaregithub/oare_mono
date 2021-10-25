@@ -26,6 +26,7 @@ import textDiscourse from './text_discourse';
 import profile from './profile';
 import groupAllowlist from './group_allowlist';
 import groupEditPermissions from './group_edit_permissions';
+import signReading from './sign_reading';
 import betaAccess from './beta_access';
 
 const serverProxy = {
@@ -57,6 +58,7 @@ const serverProxy = {
   ...profile,
   ...groupAllowlist,
   ...groupEditPermissions,
+  ...signReading,
   ...betaAccess,
 };
 

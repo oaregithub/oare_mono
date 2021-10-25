@@ -18,6 +18,9 @@
           />
         </v-col>
       </v-row>
+      <v-btn v-if="canAddNewTexts" @click="addText" color="primary"
+        >Add Text</v-btn
+      >
       <TextsTable
         :page="Number(page)"
         @update:page="p => (page = p)"
@@ -39,14 +42,11 @@ import {
   Ref,
   computed,
   onMounted,
-  PropType,
 } from '@vue/composition-api';
-import Router from 'vue-router';
 import { CollectionText } from '@oare/types';
 import TextsTable from './TextsTable.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import _ from 'underscore';
-import defaultRouter from '@/router';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
 
@@ -60,19 +60,21 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    router: {
-      type: Object as PropType<Router>,
-      default: () => defaultRouter,
-    },
     hideDetails: {
       type: Boolean,
       default: false,
     },
   },
 
-  setup({ router, collectionUuid }) {
+  setup({ collectionUuid }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = sl.get('router');
+    const store = sl.get('store');
+    const permissions = computed(() => store.getters.permissions);
+    const hasBetaAccess = computed(() =>
+      store.getters.user ? store.getters.user.betaAccess : false
+    );
 
     const collectionName = ref('');
     const loading = ref(false);
@@ -96,6 +98,17 @@ export default defineComponent({
     const page = useQueryParam('page', '1');
     const rows = useQueryParam('rows', '10');
     const search = useQueryParam('query', '');
+
+    const addText = () => {
+      router.push(`/add_collection_text/${collectionUuid}`);
+    };
+
+    const canAddNewTexts = computed(
+      () =>
+        permissions.value
+          .map(permission => permission.name)
+          .includes('ADD_NEW_TEXTS') && hasBetaAccess.value
+    );
 
     const getCollectionTexts = async () => {
       if (textsLoading.value) {
@@ -167,6 +180,8 @@ export default defineComponent({
       breadcrumbItems,
       page,
       rows,
+      addText,
+      canAddNewTexts,
     };
   },
 });

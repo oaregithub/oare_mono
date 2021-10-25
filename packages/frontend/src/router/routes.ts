@@ -47,6 +47,7 @@ import AddAllowlistCollections from '../views/Admin/Groups/Allowlist/Collections
 import ManageEdits from '../views/Admin/Groups/Edits/ManageEdits.vue';
 import AddEditTexts from '../views/Admin/Groups/Edits/Texts/AddEditTexts.vue';
 import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditCollections.vue';
+import AddNewTexts from '../views/Texts/CollectionTexts/AddTexts/index.vue';
 import UserPreferences from '../views/Dashboard/UserPreferences.vue';
 
 const routes: RouteConfig[] = [
@@ -353,6 +354,13 @@ const routes: RouteConfig[] = [
     path: '/403',
     name: '403',
     component: ForbiddenView,
+  },
+  {
+    path: '/add_collection_text/:collectionUuid',
+    name: 'addCollectionText',
+    component: AddNewTexts,
+    props: true,
+    beforeEnter: permissionGuard('ADD_NEW_TEXTS'),
   },
 ];
 
