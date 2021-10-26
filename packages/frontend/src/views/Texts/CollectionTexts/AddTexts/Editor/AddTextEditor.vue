@@ -328,7 +328,12 @@ export default defineComponent({
             side.columns.every(
               column =>
                 column.rows.length > 0 &&
-                column.rows.every(row => row.signs && row.signs.length > 0)
+                column.rows.every(row => {
+                  if (row.type === 'Line') {
+                    return row.signs && row.signs.length > 0;
+                  }
+                  return true;
+                })
             )
         )
       );
