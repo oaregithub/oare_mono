@@ -603,7 +603,12 @@ export default defineComponent({
           const textBeforeCursor = rowText.slice(0, cursorIndex);
           const originalSigns = textBeforeCursor.split(/[\s\-.]+/);
           const formattedSigns = await Promise.all(
-            originalSigns.map(sign => server.getFormattedSign(sign))
+            originalSigns.map(sign => {
+              if (sign !== '') {
+                return server.getFormattedSign(sign);
+              }
+              return [''];
+            })
           );
           const signs = formattedSigns.flat();
           rows.value.splice(index, 1, {

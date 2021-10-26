@@ -19,7 +19,7 @@
         </v-col>
       </v-row>
       <v-btn v-if="canAddNewTexts" @click="addText" color="primary"
-        >Add Text</v-btn
+        >Add Text (BETA)</v-btn
       >
       <TextsTable
         :page="Number(page)"
