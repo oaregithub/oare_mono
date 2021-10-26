@@ -278,7 +278,7 @@ export default defineComponent({
       let currentLine: number | undefined;
       let brokenAreas = props.beginningBrokenAreas;
       let brokenAreasAdded = 0;
-      return rows.value.map(row => {
+      return rows.value.map((row, idx) => {
         if (
           row.type === 'Line' ||
           row.type === 'Broken Line(s)' ||
@@ -295,7 +295,12 @@ export default defineComponent({
           currentLine = undefined;
           if (row.type === 'Broken Area') {
             line = 0;
-            brokenAreas += 1;
+            if (
+              (!props.beginsWithBreak && idx <= 0) ||
+              (idx > 0 && rows.value[idx - 1].type !== 'Broken Area')
+            ) {
+              brokenAreas += 1;
+            }
           }
         }
         return {
@@ -404,7 +409,10 @@ export default defineComponent({
         }
 
         const numBrokenAreas = rows.value.filter(
-          row => row.type === 'Broken Area'
+          (row, idx) =>
+            row.type === 'Broken Area' &&
+            idx > 0 &&
+            rows.value[idx - 1].type !== 'Broken Area'
         ).length;
         emit('broken-area', numBrokenAreas);
 
