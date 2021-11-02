@@ -3,7 +3,7 @@
     <v-row justify="center" class="title font-weight-regular">
       <v-col cols="12" lg="10">
         <p>
-          Welcome to a pre-release of OARE (/’ôrə/) at
+          Welcome to a pre-release of OARE Jooyeon!!!!!! (/’ôrə/) at
           <a href="https://oare.byu.edu">oare.byu.edu</a>.
         </p>
         <p>
