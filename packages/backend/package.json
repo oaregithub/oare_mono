@@ -7,7 +7,7 @@
     "serve": "netlify-lambda serve build/src",
     "build": "rm -rf build && tsc && cp -r src/api/sql build/src/api",
     "postbuild": "ef-tspm",
-    "start": "rm -rf build/@oare && cp -r @oare build && cp -r @oare node_modules && cross-env NODE_ENV=production node ./build/src/server.js",
+    "start": "rm -rf build/@oare && cp -r @oare build && cp -r @oare node_modules && NODE_ENV=production node ./build/src/server.js",
     "lint": "eslint src/*.ts src/**/*.ts",
     "dev": "cross-env NODE_ENV=development ts-node-dev -r tsconfig-paths/register ./src/server.ts --respawn --transpileOnly ",
     "dev:3": "cross-env DB_VERSION=0.3 npm run dev",
