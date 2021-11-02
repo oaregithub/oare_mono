@@ -24,7 +24,6 @@
 import { SideOption, RowContent, ColumnContent } from '@oare/types';
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { v4 } from 'uuid';
-import ColumnOption from './ColumnOption.vue';
 import Column from './Column.vue';
 
 export interface Column {
@@ -56,7 +55,6 @@ export default defineComponent({
     },
   },
   components: {
-    ColumnOption,
     Column,
   },
   setup(props, { emit }) {
