@@ -2,7 +2,7 @@
   "name": "oare",
   "private": true,
   "scripts": {
-    "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"NODE_ENV=development yarn server\" \"yarn client\"",
+    "start": "yarn migrate:latest && concurrently --kill-others-on-fail \"cross-env NODE_ENV=development yarn server\" \"yarn client\"",
     "lint": "yarn run eslint \"./packages/**/*.{js,ts}\"",
     "lint:fix": "yarn lint --fix",
     "build": "./build.sh",
@@ -20,10 +20,10 @@
     "migrate:down": "yarn workspace @oare/backend migrate:down",
     "migrate:up": "yarn workspace @oare/backend migrate:up",
     "migrate:rollback": "yarn workspace @oare/backend migrate:rollback",
-    "migrate:up-prod": "NODE_ENV=production yarn migrate:up",
-    "migrate:latest-prod": "NODE_ENV=production yarn migrate:latest",
-    "migrate:rollback-prod": "NODE_ENV=production yarn migrate:rollback",
-    "migrate:down-prod": "NODE_ENV=production yarn migrate:down"
+    "migrate:up-prod": "cross-env NODE_ENV=production yarn migrate:up",
+    "migrate:latest-prod": "cross-env NODE_ENV=production yarn migrate:latest",
+    "migrate:rollback-prod": "cross-env NODE_ENV=production yarn migrate:rollback",
+    "migrate:down-prod": "cross-env NODE_ENV=production yarn migrate:down"
   },
   "workspaces": {
     "packages": [
