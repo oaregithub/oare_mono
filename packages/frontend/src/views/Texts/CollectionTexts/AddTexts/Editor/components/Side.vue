@@ -1,29 +1,6 @@
 <template>
   <div class="mb-10">
-    <v-card
-      v-if="columns.length === 0"
-      outlined
-      rounded
-      :min-height="100"
-      class="my-4"
-    >
-      <v-row justify="center" class="mt-12">
-        Select the number of columns in this portion of the text.
-      </v-row>
-      <v-row justify="center">
-        Columns can also be added or removed later
-      </v-row>
-      <v-row justify="center" class="mb-12">
-        <column-option
-          v-for="(option, idx) in columnOptions"
-          :key="idx"
-          :columns="option"
-          class="ma-2 cursor-display"
-          @set-column="setColumnNumber(option)"
-        />
-      </v-row>
-    </v-card>
-    <v-row justify="space-around" v-if="columns.length !== 0">
+    <v-row justify="space-around">
       <v-col v-for="(column, idx) in columns" :key="column.uuid">
         <column
           :columnNumber="idx + 1"
@@ -47,7 +24,6 @@
 import { SideOption, RowContent, ColumnContent } from '@oare/types';
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { v4 } from 'uuid';
-import ColumnOption from './ColumnOption.vue';
 import Column from './Column.vue';
 
 export interface Column {
@@ -79,27 +55,19 @@ export default defineComponent({
     },
   },
   components: {
-    ColumnOption,
     Column,
   },
   setup(props, { emit }) {
-    const columnOptions = ref([1, 2, 3, 4]);
-
-    const columns = ref<Column[]>([]);
-
-    const setColumnNumber = (number: number) => {
-      for (let i = 0; i < number; i += 1) {
-        const newColumnUuid = v4();
-        columns.value.push({
-          uuid: newColumnUuid,
-          lastLine: 0,
-          breaks: 0,
-          endsBroken: false,
-          isDirty: false,
-          rows: [],
-        });
-      }
-    };
+    const columns = ref<Column[]>([
+      {
+        uuid: v4(),
+        lastLine: 0,
+        breaks: 0,
+        endsBroken: false,
+        isDirty: false,
+        rows: [],
+      },
+    ]);
 
     const addColumnAfter = (index: number) => {
       const newColumnUuid = v4();
@@ -237,8 +205,6 @@ export default defineComponent({
     };
 
     return {
-      columnOptions,
-      setColumnNumber,
       addColumnAfter,
       removeColumn,
       columns,
@@ -254,9 +220,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.cursor-display {
-  cursor: pointer;
-}
-</style>
