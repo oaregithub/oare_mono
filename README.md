@@ -4,7 +4,7 @@ This is a monorepository containing all code necessary to run oare.byu.edu. This
 
 ## Create an OARE account
 
-In order to access all parts of the website, you will need to have an admin account on the project website. To do so, navigate to the [site] (https://oare.byu.edu) and click "Login" at the top right.
+In order to access all parts of the website, you will need to have an admin account on the project website. To do so, navigate to the [site](https://oare.byu.edu) and click "Login" at the top right.
 
 ![](./readme-imgs/oare-login.png)
 
@@ -12,7 +12,7 @@ Then select the "Register for free" option.
 
 ![](./readme-imgs/oare-register.png)
 
-Fill out the form to create a new user account and make note of the password chose. Once your account is created, ask the team lead to grant you administrator permissions. This will allow you to access all parts of the website.
+Fill out the form to create a new user account using the credentials of your choice. Once your account is created, ask the team lead to grant you administrator permissions. This will allow you to access all parts of the website.
 
 ## Install WSL 2 (Windows Only)
 
