@@ -93,6 +93,7 @@ export default defineComponent({
 
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = sl.get('router');
 
     const translitQuery = useQueryParam('translit', '');
     const textTitleQuery = useQueryParam('title', '');
@@ -127,7 +128,14 @@ export default defineComponent({
             page,
             rows,
           });
-          searchResults.value = results;
+
+          //load the content directly when there is only one result. (Jooyeon Park)
+          if(results.length == 1){ 
+            actions.showSnackbar('Only one result found');
+            router.push('/epigraphies/'+ results[0].uuid);
+          }else{
+            searchResults.value = results;
+          }
         } catch {
           actions.showErrorSnackbar('Error searching texts. Please try again.');
         } finally {
