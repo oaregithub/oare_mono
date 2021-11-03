@@ -77,6 +77,10 @@ export default defineComponent({
         );
         if (searchSpellingResults.value.length === 1) {
           selectedOption.value = searchSpellingResults.value[0].spellingUuid;
+        } else if (props.word.spellingUuid) {
+          selectedOption.value = searchSpellingResults.value.filter(
+            res => res.spellingUuid === props.word.spellingUuid
+          )[0].spellingUuid;
         }
       } catch {
         actions.showErrorSnackbar(
