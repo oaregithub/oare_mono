@@ -111,10 +111,7 @@ import {
   CreateTextTables,
   TextDiscourseRow,
 } from '@oare/types';
-import {
-  convertTablesToUnits,
-  createNewTextTables,
-} from './utils';
+import { convertTablesToUnits, createNewTextTables } from './utils';
 
 export default defineComponent({
   props: {
