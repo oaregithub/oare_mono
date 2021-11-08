@@ -34,7 +34,7 @@ export interface NewDiscourseRowPayload {
 export interface TextDiscourseRow {
   uuid: string;
   type: DiscourseUnitType;
-  objInText: number;
+  objInText: number | null;
   wordOnTablet: number | null;
   childNum: number | null;
   textUuid: string;
@@ -49,7 +49,7 @@ export interface TextDiscourseRow {
 export interface TextDiscourseRowPartial {
   uuid: string;
   type: DiscourseUnitType;
-  objInText: number;
+  objInText?: number;
   wordOnTablet?: number;
   childNum?: number;
   textUuid: string;
