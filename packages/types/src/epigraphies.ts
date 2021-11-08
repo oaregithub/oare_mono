@@ -204,7 +204,7 @@ export interface TextEpigraphyRowPartial {
   textUuid: string;
   treeUuid: string;
   parentUuid?: string;
-  objectOnTablet: number;
+  objectOnTablet?: number;
   side?: number;
   column?: number;
   line?: number;
@@ -223,7 +223,7 @@ export interface TextEpigraphyRow {
   textUuid: string;
   treeUuid: string;
   parentUuid: string | null;
-  objectOnTablet: number;
+  objectOnTablet: number | null;
   side: number | null;
   column: number | null;
   line: number | null;

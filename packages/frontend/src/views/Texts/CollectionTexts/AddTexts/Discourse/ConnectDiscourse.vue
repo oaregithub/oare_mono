@@ -49,7 +49,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  computed,
+  ref,
+  onMounted,
+} from '@vue/composition-api';
 import { createTabletRenderer } from '@oare/oare';
 import { EpigraphicUnit, TextDiscourseRow, EpigraphicWord } from '@oare/types';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
@@ -72,6 +78,11 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const store = sl.get('store');
+
+    onMounted(() => {
+      console.log(props.discourseRows);
+      console.log(props.discourseRows.length);
+    });
 
     const renderer = computed(() => {
       return createTabletRenderer(props.epigraphicUnits, {
