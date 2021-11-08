@@ -134,282 +134,7 @@ const regionMarkupType = (
   }
 };
 
-const createTextEpigraphyRow = (
-  row: TextEpigraphyRowPartial
-): TextEpigraphyRow => ({
-  uuid: row.uuid,
-  type: row.type,
-  textUuid: row.textUuid,
-  treeUuid: row.treeUuid,
-  parentUuid: row.parentUuid || null,
-  objectOnTablet: row.objectOnTablet || null,
-  side: row.side || null,
-  column: row.column || null,
-  line: row.line || null,
-  charOnLine: row.charOnLine || null,
-  charOnTablet: row.charOnTablet || null,
-  signUuid: row.signUuid || null,
-  sign: row.sign || null,
-  readingUuid: row.readingUuid || null,
-  reading: row.reading || null,
-  discourseUuid: row.discourseUuid || null,
-});
-
-const createTextMarkupRow = (row: TextMarkupRowPartial): TextMarkupRow => ({
-  uuid: row.uuid,
-  referenceUuid: row.referenceUuid,
-  type: row.type,
-  numValue: row.numValue || null,
-  altReadingUuid: row.altReadingUuid || null,
-  altReading: row.altReading || null,
-  startChar: row.startChar || null,
-  endChar: row.endChar || null,
-  objectUuid: row.objectUuid || null,
-});
-
-const createMockTextTable = (textInfo: AddTextInfo): TextRow => ({
-  uuid: v4(),
-  type: 'logosyllabic',
-  language: null,
-  cdliNum: textInfo.cdliNum,
-  translitStatus: '5536b5bd-e18e-11ea-8c9d-02b316ca7378',
-  name: textInfo.textName,
-  excavationPrefix: textInfo.excavationPrefix,
-  excavationNumber: textInfo.excavationNumber,
-  museumPrefix: textInfo.museumPrefix,
-  museumNumber: textInfo.museumNumber,
-  publicationPrefic: textInfo.publicationPrefix,
-  publicationNumber: textInfo.publicationNumber,
-  objectType: null,
-  source: null,
-  genre: null,
-  subgenre: null,
-});
-
-const createTextDiscourseRow = (
-  row: TextDiscourseRowPartial
-): TextDiscourseRow => ({
-  uuid: row.uuid,
-  type: row.type,
-  objInText: row.objInText || null,
-  wordOnTablet: row.wordOnTablet || null,
-  childNum: row.childNum || null,
-  textUuid: row.textUuid,
-  treeUuid: row.treeUuid,
-  parentUuid: row.parentUuid || null,
-  spellingUuid: row.spellingUuid || null,
-  spelling: row.spelling || null,
-  explicitSpelling: row.explicitSpelling || null,
-  transcription: row.transcription || null,
-});
-
-export const createNewTextTables = async (
-  textInfo: AddTextInfo,
-  content: AddTextEditorContent
-): Promise<CreateTextTables> => {
-  const epigraphyRows: TextEpigraphyRow[] = [];
-  const markupRows: TextMarkupRow[] = [];
-  const discourseRows: TextDiscourseRow[] = [];
-  const signInformation: SignInfo[] = [];
-  const textRow: TextRow = createMockTextTable(textInfo);
-  const treeUuid = v4();
-  const discourseTreeUuid = v4();
-  const server = sl.get('serverProxy');
-
-  let charOnTablet = 1;
-
-  const epigraphicUnitRow: TextEpigraphyRow = createTextEpigraphyRow({
-    uuid: v4(),
-    type: 'epigraphicUnit',
-    textUuid: textRow.uuid,
-    treeUuid,
-    objectOnTablet: 1,
-    column: 0,
-  });
-  epigraphyRows.push(epigraphicUnitRow);
-
-  const discourseUnitRow: TextDiscourseRow = createTextDiscourseRow({
-    uuid: v4(),
-    type: 'discourseUnit',
-    objInText: 1,
-    textUuid: textRow.uuid,
-    treeUuid: discourseTreeUuid,
-  });
-  discourseRows.push(discourseUnitRow);
-
-  // Sides
-  content.sides.forEach(side => {
-    const sideRow: TextEpigraphyRow = createTextEpigraphyRow({
-      uuid: side.uuid,
-      type: 'section',
-      textUuid: textRow.uuid,
-      treeUuid,
-      parentUuid: epigraphicUnitRow.uuid,
-      objectOnTablet: epigraphyRows.length + 1,
-      side: side.number,
-      column: 0,
-      reading: side.type,
-    });
-    epigraphyRows.push(sideRow);
-
-    // Columns
-    side.columns.forEach((column, columnIndex) => {
-      if (side.columns.length > 1) {
-        const columnRow: TextEpigraphyRow = createTextEpigraphyRow({
-          uuid: column.uuid,
-          type: 'column',
-          textUuid: textRow.uuid,
-          treeUuid,
-          parentUuid: side.uuid,
-          objectOnTablet: epigraphyRows.length + 1,
-          side: side.number,
-          column: columnIndex + 1,
-        });
-        epigraphyRows.push(columnRow);
-      }
-
-      // Rows
-      column.rows.forEach(row => {
-        if (row.type === 'Line') {
-          const lineRow: TextEpigraphyRow = createTextEpigraphyRow({
-            uuid: row.uuid,
-            type: 'line',
-            textUuid: textRow.uuid,
-            treeUuid,
-            parentUuid: side.columns.length > 1 ? column.uuid : side.uuid,
-            objectOnTablet: epigraphyRows.length + 1,
-            side: side.number,
-            column: side.columns.length > 1 ? columnIndex + 1 : 0,
-            line: row.lines[0],
-          });
-          epigraphyRows.push(lineRow);
-
-          // Words
-          const words = row.words || [];
-          words.forEach(async word => {
-            const type =
-              row.signs &&
-              row.signs
-                .filter(sign => sign.discourseUuid === word.discourseUuid)
-                .every(sign => sign.readingType === 'number')
-                ? 'number'
-                : 'word';
-            let spellingUuid: string | undefined;
-            const forms = await server.searchSpellings(word.spelling);
-            if (forms.length === 1) {
-              spellingUuid = forms[0].spellingUuid;
-            }
-            const newDiscourseRow = createTextDiscourseRow({
-              uuid: word.discourseUuid,
-              type,
-              objInText: discourseRows.length + 1,
-              wordOnTablet: discourseRows.length,
-              childNum: discourseRows.length,
-              textUuid: textRow.uuid,
-              treeUuid: discourseTreeUuid,
-              parentUuid: discourseUnitRow.uuid,
-              spelling: word.spelling,
-              explicitSpelling: word.spelling,
-              spellingUuid,
-              // transcription to be inserted when submitted
-            });
-            discourseRows.push(newDiscourseRow);
-          });
-
-          // Signs
-          const signs = row.signs || [];
-          signs.forEach((sign, signIndex) => {
-            const signRow: TextEpigraphyRow = createTextEpigraphyRow({
-              uuid: v4(),
-              type: sign.readingType === 'number' ? 'number' : 'sign',
-              textUuid: textRow.uuid,
-              treeUuid,
-              parentUuid: row.uuid,
-              objectOnTablet: epigraphyRows.length + 1,
-              side: side.number,
-              column: side.columns.length > 1 ? columnIndex + 1 : 0,
-              line: row.lines[0],
-              charOnLine: signIndex + 1,
-              charOnTablet,
-              signUuid: sign.signUuid || undefined,
-              sign: sign.sign || undefined,
-              readingUuid: sign.readingUuid || undefined,
-              reading: sign.value || undefined,
-              discourseUuid: sign.discourseUuid,
-            });
-            charOnTablet += 1;
-            epigraphyRows.push(signRow);
-
-            const signInfo: SignInfo = {
-              referenceUuid: signRow.uuid,
-              type: sign.readingType || null,
-              value: sign.value || null,
-            };
-            signInformation.push(signInfo);
-          });
-        } else if (
-          row.type === 'Broken Area' ||
-          row.type === 'Ruling(s)' ||
-          row.type === 'Seal Impression' ||
-          row.type === 'Uninscribed Line(s)'
-        ) {
-          const regionRow: TextEpigraphyRow = createTextEpigraphyRow({
-            uuid: row.uuid,
-            type: 'region',
-            textUuid: textRow.uuid,
-            treeUuid,
-            parentUuid: side.columns.length > 1 ? column.uuid : side.uuid,
-            objectOnTablet: epigraphyRows.length + 1,
-            side: side.number,
-            column: side.columns.length > 1 ? columnIndex + 1 : 0,
-          });
-          const regionMarkupRow: TextMarkupRow = createTextMarkupRow({
-            uuid: v4(),
-            referenceUuid: row.uuid,
-            type: regionMarkupType(row.type),
-            numValue: row.value || undefined,
-          });
-          markupRows.push(regionMarkupRow);
-          epigraphyRows.push(regionRow);
-        } else if (row.type === 'Broken Line(s)') {
-          const brokenLinesRow: TextEpigraphyRow = createTextEpigraphyRow({
-            uuid: row.uuid,
-            type: 'undeterminedLines',
-            textUuid: textRow.uuid,
-            treeUuid,
-            parentUuid: side.columns.length > 1 ? column.uuid : side.uuid,
-            objectOnTablet: epigraphyRows.length + 1,
-            side: side.number,
-            column: side.columns.length > 1 ? columnIndex + 1 : 0,
-            line: row.lines[0],
-          });
-          const brokenLinesMarkupRow: TextMarkupRow = createTextMarkupRow({
-            uuid: v4(),
-            referenceUuid: row.uuid,
-            type: 'undeterminedLines',
-            numValue: row.value || undefined,
-          });
-          markupRows.push(brokenLinesMarkupRow);
-          epigraphyRows.push(brokenLinesRow);
-        }
-      });
-    });
-  });
-
-  const createTextTables: CreateTextTables = {
-    epigraphies: epigraphyRows,
-    markups: markupRows,
-    discourses: discourseRows,
-    text: textRow,
-    signInfo: signInformation,
-  };
-  console.log(
-    `Final returned discourses length: ${createTextTables.discourses.length}`
-  );
-  return createTextTables;
-};
-
-const asyncCreateTextEpigraphyRow = async (
+const createTextEpigraphyRow = async (
   row: TextEpigraphyRowPartial
 ): Promise<TextEpigraphyRow> => ({
   uuid: row.uuid,
@@ -430,7 +155,7 @@ const asyncCreateTextEpigraphyRow = async (
   discourseUuid: row.discourseUuid || null,
 });
 
-const asyncCreateTextMarkupRow = async (
+const createTextMarkupRow = async (
   row: TextMarkupRowPartial
 ): Promise<TextMarkupRow> => ({
   uuid: row.uuid,
@@ -444,7 +169,7 @@ const asyncCreateTextMarkupRow = async (
   objectUuid: row.objectUuid || null,
 });
 
-const asyncCreateTextDiscourseRow = async (
+const createTextDiscourseRow = async (
   row: TextDiscourseRowPartial
 ): Promise<TextDiscourseRow> => ({
   uuid: row.uuid,
@@ -480,7 +205,7 @@ const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
   subgenre: null,
 });
 
-export const asynchronousCreateNewTextTables = async (
+export const createNewTextTables = async (
   textInfo: AddTextInfo,
   content: AddTextEditorContent
 ): Promise<CreateTextTables> => {
@@ -516,8 +241,7 @@ export const asynchronousCreateNewTextTables = async (
     wordOnTablet: row.type === 'discourseUnit' ? null : idx,
     childNum: row.type === 'discourseUnit' ? null : idx,
   }));
-  // const signInformation = await createSignInformation();
-  const signInformation: SignInfo[] = [];
+  const signInformation = await createSignInformation(content);
 
   const tables: CreateTextTables = {
     epigraphies: epigraphyRows,
@@ -536,16 +260,14 @@ const createEpigraphyRows = async (
 ): Promise<TextEpigraphyRow[]> => {
   const treeUuid = v4();
 
-  const epigraphicUnitRow: TextEpigraphyRow = await asyncCreateTextEpigraphyRow(
-    {
-      uuid: v4(),
-      type: 'epigraphicUnit',
-      textUuid: textUuid,
-      treeUuid,
-      objectOnTablet: 1,
-      column: 0,
-    }
-  );
+  const epigraphicUnitRow: TextEpigraphyRow = await createTextEpigraphyRow({
+    uuid: v4(),
+    type: 'epigraphicUnit',
+    textUuid,
+    treeUuid,
+    objectOnTablet: 1,
+    column: 0,
+  });
 
   const sideRows: TextEpigraphyRow[] = await createSideRows(
     textUuid,
@@ -566,7 +288,7 @@ const createSideRows = async (
   const sideRows: TextEpigraphyRow[] = (
     await Promise.all(
       sides.map(async side => {
-        const sideRow = await asyncCreateTextEpigraphyRow({
+        const sideRow = await createTextEpigraphyRow({
           uuid: side.uuid,
           type: 'section',
           textUuid,
@@ -603,7 +325,7 @@ const createColumnRows = async (
       columns.map(async (column, idx) => {
         let columnRow: TextEpigraphyRow | null = null;
         if (columns.length > 1) {
-          columnRow = await asyncCreateTextEpigraphyRow({
+          columnRow = await createTextEpigraphyRow({
             uuid: column.uuid,
             type: 'column',
             textUuid,
@@ -629,9 +351,8 @@ const createColumnRows = async (
 
         if (columnRow) {
           return [columnRow, ...editorRows];
-        } else {
-          return [...editorRows];
         }
+        return [...editorRows];
       })
     )
   ).flat();
@@ -650,7 +371,7 @@ const createEditorRows = async (
     await Promise.all(
       rows.map(async row => {
         if (row.type === 'Line') {
-          const lineRow: TextEpigraphyRow = await asyncCreateTextEpigraphyRow({
+          const lineRow: TextEpigraphyRow = await createTextEpigraphyRow({
             uuid: row.uuid,
             type: 'line',
             textUuid,
@@ -678,21 +399,19 @@ const createEditorRows = async (
           row.type === 'Seal Impression' ||
           row.type === 'Uninscribed Line(s)'
         ) {
-          const regionRow: TextEpigraphyRow = await asyncCreateTextEpigraphyRow(
-            {
-              uuid: row.uuid,
-              type: 'region',
-              textUuid,
-              treeUuid,
-              parentUuid,
-              side: sideNumber,
-              column: columnNumber,
-            }
-          );
+          const regionRow: TextEpigraphyRow = await createTextEpigraphyRow({
+            uuid: row.uuid,
+            type: 'region',
+            textUuid,
+            treeUuid,
+            parentUuid,
+            side: sideNumber,
+            column: columnNumber,
+          });
 
           return [regionRow];
         } else if (row.type === 'Broken Line(s)') {
-          const brokenLinesRow: TextEpigraphyRow = await asyncCreateTextEpigraphyRow(
+          const brokenLinesRow: TextEpigraphyRow = await createTextEpigraphyRow(
             {
               uuid: row.uuid,
               type: 'undeterminedLines',
@@ -705,6 +424,8 @@ const createEditorRows = async (
             }
           );
           return [brokenLinesRow];
+        } else {
+          return [];
         }
       })
     )
@@ -724,7 +445,7 @@ const createSignRows = async (
   const signRows: TextEpigraphyRow[] = (
     await Promise.all(
       signs.map(async (sign, idx) => {
-        const signRow: TextEpigraphyRow = await asyncCreateTextEpigraphyRow({
+        const signRow: TextEpigraphyRow = await createTextEpigraphyRow({
           uuid: sign.uuid,
           type: sign.readingType === 'number' ? 'number' : 'sign',
           textUuid,
@@ -766,7 +487,7 @@ const createMarkupRows = async (
                       row.type === 'Seal Impression' ||
                       row.type === 'Uninscribed Line(s)'
                     ) {
-                      const regionMarkupRow: TextMarkupRow = await asyncCreateTextMarkupRow(
+                      const regionMarkupRow: TextMarkupRow = await createTextMarkupRow(
                         {
                           uuid: v4(),
                           referenceUuid: row.uuid,
@@ -776,7 +497,7 @@ const createMarkupRows = async (
                       );
                       return regionMarkupRow;
                     } else if (row.type === 'Broken Line(s)') {
-                      const brokenLinesMarkupRow: TextMarkupRow = await asyncCreateTextMarkupRow(
+                      const brokenLinesMarkupRow: TextMarkupRow = await createTextMarkupRow(
                         {
                           uuid: v4(),
                           referenceUuid: row.uuid,
@@ -785,6 +506,8 @@ const createMarkupRows = async (
                         }
                       );
                       return brokenLinesMarkupRow;
+                    } else {
+                      return [];
                     }
                   })
                 )
@@ -807,7 +530,7 @@ const createDiscourseRows = async (
   const server = sl.get('serverProxy');
 
   const treeUuid = v4();
-  const discourseUnitRow: TextDiscourseRow = await asyncCreateTextDiscourseRow({
+  const discourseUnitRow: TextDiscourseRow = await createTextDiscourseRow({
     uuid: v4(),
     type: 'discourseUnit',
     objInText: 1,
@@ -845,18 +568,16 @@ const createDiscourseRows = async (
                           if (forms.length === 1) {
                             spellingUuid = forms[0].spellingUuid;
                           }
-                          const newDiscourseRow = await asyncCreateTextDiscourseRow(
-                            {
-                              uuid: word.discourseUuid,
-                              type,
-                              textUuid,
-                              treeUuid,
-                              parentUuid: discourseUnitRow.uuid,
-                              spelling: word.spelling,
-                              explicitSpelling: word.spelling,
-                              spellingUuid,
-                            }
-                          );
+                          const newDiscourseRow = await createTextDiscourseRow({
+                            uuid: word.discourseUuid,
+                            type,
+                            textUuid,
+                            treeUuid,
+                            parentUuid: discourseUnitRow.uuid,
+                            spelling: word.spelling,
+                            explicitSpelling: word.spelling,
+                            spellingUuid,
+                          });
                           return newDiscourseRow;
                         })
                       )
@@ -875,4 +596,46 @@ const createDiscourseRows = async (
   ).flat();
 
   return [discourseUnitRow, ...discourseRows];
+};
+
+const createSignInformation = async (
+  content: AddTextEditorContent
+): Promise<SignInfo[]> => {
+  const signRows: SignInfo[] = (
+    await Promise.all(
+      content.sides.map(async side => {
+        const sideRows = (
+          await Promise.all(
+            side.columns.map(async column => {
+              const columnRows = (
+                await Promise.all(
+                  column.rows.map(async row => {
+                    if (!row.signs) {
+                      return [];
+                    }
+                    const signs = (
+                      await Promise.all(
+                        row.signs.map(async sign => {
+                          const signInfo: SignInfo = {
+                            referenceUuid: sign.uuid,
+                            type: sign.readingType || null,
+                            value: sign.value || null,
+                          };
+                          return signInfo;
+                        })
+                      )
+                    ).flat();
+                    return signs;
+                  })
+                )
+              ).flat();
+              return columnRows;
+            })
+          )
+        ).flat();
+        return sideRows;
+      })
+    )
+  ).flat();
+  return signRows;
 };

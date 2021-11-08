@@ -114,7 +114,6 @@ import {
 import {
   convertTablesToUnits,
   createNewTextTables,
-  asynchronousCreateNewTextTables,
 } from './utils';
 
 export default defineComponent({
@@ -207,18 +206,10 @@ export default defineComponent({
     const createTextTables = ref<CreateTextTables>();
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
-        /* createTextTables.value = await createNewTextTables(
+        createTextTables.value = await createNewTextTables(
           textInfo.value,
           editorContent.value
         );
-        console.log(createTextTables.value); */
-        // TESTING asynchronous version
-        createTextTables.value = await asynchronousCreateNewTextTables(
-          textInfo.value,
-          editorContent.value
-        );
-        // console.log(newResult);
-        // END TEST
       }
     };
 
