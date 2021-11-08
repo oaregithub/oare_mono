@@ -393,7 +393,8 @@ const createEditorRows = async (
           );
 
           return [lineRow, ...signRows];
-        } else if (
+        }
+        if (
           row.type === 'Broken Area' ||
           row.type === 'Ruling(s)' ||
           row.type === 'Seal Impression' ||
@@ -410,7 +411,8 @@ const createEditorRows = async (
           });
 
           return [regionRow];
-        } else if (row.type === 'Broken Line(s)') {
+        }
+        if (row.type === 'Broken Line(s)') {
           const brokenLinesRow: TextEpigraphyRow = await createTextEpigraphyRow(
             {
               uuid: row.uuid,
@@ -424,9 +426,8 @@ const createEditorRows = async (
             }
           );
           return [brokenLinesRow];
-        } else {
-          return [];
         }
+        return [];
       })
     )
   ).flat();
@@ -496,7 +497,8 @@ const createMarkupRows = async (
                         }
                       );
                       return regionMarkupRow;
-                    } else if (row.type === 'Broken Line(s)') {
+                    }
+                    if (row.type === 'Broken Line(s)') {
                       const brokenLinesMarkupRow: TextMarkupRow = await createTextMarkupRow(
                         {
                           uuid: v4(),
@@ -506,9 +508,8 @@ const createMarkupRows = async (
                         }
                       );
                       return brokenLinesMarkupRow;
-                    } else {
-                      return [];
                     }
+                    return [];
                   })
                 )
               ).flat();
