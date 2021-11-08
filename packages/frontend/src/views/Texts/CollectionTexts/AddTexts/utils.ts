@@ -88,7 +88,7 @@ export const convertTablesToUnits = (
       line: epigraphy.line || 0,
       charOnLine: epigraphy.charOnLine || 0,
       charOnTablet: epigraphy.charOnTablet || 0,
-      objOnTablet: epigraphy.objectOnTablet || 0, // check this
+      objOnTablet: epigraphy.objectOnTablet || 0,
       discourseUuid: epigraphy.discourseUuid,
       reading: epigraphy.reading,
       epigType: epigraphy.type,
