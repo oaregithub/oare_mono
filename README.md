@@ -411,25 +411,31 @@ git push -u origin <branch-name>
 
 If you are unfamiliar with them, Github Pull Requests are a simple tool for team members to request a review of code changes.
 
-Whenever you push a new branch to Github, a message will appear at the top of the repository asking if you'd like to open a new Pull Request. Use this message to open a new PR for your branch.
+Whenever you push a new branch to Github, a message will appear at the top of the repository asking if you'd like to "Compare & pull request". Use this button to open a new PR for your branch.
 
-![](PLACEHOLDER - FIXME)
+![](./readme-imgs/compare-pull-request.png)
 
-On the page that appears, give the PR a name and a detailed description, if necessary. Next, link the PR to the associated issue that you are working on. By linking the PR and the issue, when the PR is merged into `master`, the issue will automatically close.
+On the page that appears, give the PR a name and a detailed description, if necessary. Then click "Create pull request".
 
-![](FIXME)
+![](./readme-imgs/create-pr.png)
+
+Next, use the right pane to link the PR to the associated issue that you are working on. By linking the PR and the issue, when the PR is merged into `master`, the issue will automatically close.
+
+![](./readme-imgs/link-issue.png)
 
 As stated earlier, several checks are run every time new changes are pushed to Github. Click on the "Checks" tab to view the `build` process. Make sure that it runs successfully without any errors. If it does error out, this means that there are some changes that you'll need to make before submitting for review. In most cases, you'll just need to make a few small formatting or test adjustments.
 
-![](FIXME)
+![](./readme-imgs/checks-navigation.png)
 
-Once the checks are complete, make any comments you'd like on the code changes. To do so, click the "Files Changed" tab to view the code diff. There, you can add any comments necessary to the code. For example, you might need to explain a function, ask a question, or explain styling.
+![](./readme-imgs/checks-pass.png)
 
-![](FIXME)
+Once the checks are complete, make any comments you'd like on the code changes. To do so, click the "Files Changed" tab to view the code diff. There, you can add any comments necessary to the code and click "Start Review". For example, you might need to explain a function, ask a question, or explain styling.
+
+![](./readme-imgs/add-comments.png)
 
 Once the PR is looking good and all the checks have passed, you are ready to have your code reviewed by the team lead. To do so, navigate to the "Conversation" tab of the PR, click the gear icon in the "Reviewers" section in the right pane, and select the name of the team lead. This will let the team lead know that the code is ready for review.
 
-![](FIXME)
+![](./readme-imgs/assign-reviewer.png)
 
 Just to be sure that the team lead sees the review request, send the Github link in the #developers Slack channel as well.
 
