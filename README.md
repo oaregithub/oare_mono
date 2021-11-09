@@ -22,9 +22,11 @@ In addition to asynchronous work, we also have weekly in-person team meetings an
 
 ## Style Guide
 
-Our project primarily follows the [Javascript style guide created by Airbnb](https://github.com/airbnb/javascript). However, you may find that there are a few things that we do slightly differently. To help us enforce this style guide, we use ESLint and Prettier formatting tools, but they are not perfect. Do your best to familiarize yourself with the style guide and follow it as best as you can. In any case, if you accidentally miss something, the team lead will be happy to help you out during code review.
+Our project primarily follows the [Javascript style guide created by Airbnb](https://github.com/airbnb/javascript). However, you may find that there are a few things that we do slightly differently. For example, because we use TypeScript, there will be some differences when it comes to adding strict typing.
 
-To check whether your code abides by the existing linting rules, simpy run `yarn lint` in the terminal. Doing so will give you a detailed view of any lines in the code that are not formatted correctly. Running `yarn lint:fix` will fix the majority of these errors automatically, but more complex errors may require manual edits. When pushed to Github, every branch undergoes several test actions, including linting. Code that does not pass the linting cannot be merged, so taking the time to check linting regularly beforehand can be beneficial.
+To help us enforce this style guide, we use ESLint and Prettier formatting tools, but they are not perfect. Do your best to familiarize yourself with the style guide and follow it as best as you can. In any case, if you accidentally miss something, the team lead will be happy to help you out during code review.
+
+To check whether your code abides by the existing linting rules, simpy run `yarn lint` in the terminal. Doing so will give you a detailed view of any lines in the code that are not formatted correctly. Running `yarn lint:fix` will fix the majority of these errors automatically, but more complex errors may require manual edits. When pushed to Github, every branch undergoes several test actions, including linting. Code that does not pass the linting cannot be merged, so taking the time to check linting regularly beforehand can make things easier.
 
 ## IDE Recommendation
 
@@ -298,7 +300,7 @@ This will merge the latest version of `master` into the branch you are currently
 
 Keeping the local copy of the database up-to-date is very similar to the first time that you imported the database onto your machine. We recommend you only do this every couple of months, unless some large changes have been made to the database, in which case you'll be told which tables to update.
 
-Unlike the first time you imported the database, you usually will not have to import every single table to keep your database up-to-date. Many tables won't change and therefore won't need to be updated. For example, the `search-index` table hardly changes and won't need to be updated. This table is also the largest in the database, so avoiding updating it will cut down on import times significantly.
+Unlike the first time you imported the database, you usually will not have to import every single table to keep your database up-to-date. Many tables won't change and therefore won't need to be updated. For example, the `search-index` table hardly changes so updates will be rare. This table is also the largest in the database, so avoiding updating it will cut down on import times significantly.
 
 To update your local copy, you'll first need to export current versions of the tables from production. To do so, open the production database connection in MySQL Workbench. Go to Server > Data Export, select "oarebyue_0.3" in the pane on the left, then select the tables you'd like to update on the right. Make sure to export as a Self-Contained File. You will not need to have "Include Create Schema" selected because the local schema has already been created. Then click "Start Export"
 
@@ -310,7 +312,7 @@ Once the export is complete, open the local database connection. Go to Server > 
 
 ### Receive Assignment from Team Lead
 
-Project assignments are all stored in the "Issues" tab on this Github repository. We create an issue for bugs, new features, small tweaks, and any other task that will require changes to the code. Most of the issues have yet to be assigned, but serve as storage for future assignments.
+Project assignments are all stored in the "Issues" tab on this Github repository. We create issues for bugs, new features, small tweaks, and any other task that will require changes to the code. Most of the issues have yet to be assigned, but serve as storage for future assignments.
 
 For each coding assignment that you receive, you will be assigned an issue on Github. You can easily filter the issues list by "Assignee" to see all the issues that have been assigned to you. The team lead will try to spec out the issue well so that it contains all the details that you need to know to complete the task. Of course, if you have any questions, let us know and we will be happy to help!
 
@@ -324,7 +326,7 @@ If you need to split an issue into multiple pieces, it's usually best to use a "
 
 When making changes to the code, we never want to make changes directly on the `master` branch, which is the source of truth for our production code. Instead, for each new task you will create a new branch off of `master` and make your changes there. Make sure to give the branch a name that is relevant to the task you are completing.
 
-First, create a new branch with the relevant name of your choice:
+First, from the `master` branch, create a new branch with the relevant name of your choice:
 
 ```
 git branch <branch-name>
@@ -360,7 +362,7 @@ Make sure to thoroughly test your code to make sure it behaves properly under a 
 
 ### Write and Update Relevant Unit Tests
 
-To make sure that everything works properly, we write thorough unit tests for both the frontend views and the backend API routes. These unit tests help us verify that the code is working correctly, but also allows us to catch unexpected "domino effects" that may result from any changes we make. Similar to how linting is performed in automatic Github Actions, all unit tests are run whenever new changes are pushed. This prevents us from merging changes with failing tests.
+To make sure that everything works properly, we write thorough unit tests for both the frontend views and the backend API routes. These unit tests help us verify that the code is working correctly, but also allow us to catch unexpected "domino effects" that may result from any changes we make. Similar to how linting is performed in automatic Github Actions, all unit tests are run whenever new changes are pushed. This prevents us from merging changes with failing tests.
 
 As such, the vast majority of the tasks you'll be assigned will require you to write relevant unit tests. For example, you might test that a button changes the view appropriately when clicked or that an API route calls the correct backend function when called. We'll want to make sure all relevant tests have been written before merging any changes into `master`.
 
@@ -411,7 +413,7 @@ git push -u origin <branch-name>
 
 If you are unfamiliar with them, Github Pull Requests are a simple tool for team members to request a review of code changes.
 
-Whenever you push a new branch to Github, a message will appear at the top of the repository asking if you'd like to "Compare & pull request". Use this button to open a new PR for your branch.
+Whenever you push a new branch to Github, a message will automatically appear at the top of the repository asking if you'd like to "Compare & pull request". Use this button to open a new PR for your branch.
 
 ![](./readme-imgs/compare-pull-request.png)
 
@@ -446,6 +448,8 @@ As soon as they can, the team lead will review the changes in your Pull Request.
 ### Merge Changes
 
 Once the changes have been approved, the code is ready to be merged into the `master` branch. To do so, in the "Conversation" tab of the PR, scroll down until you see the "Squash and merge" button. You may have to click the green arrow to see the exact option. Confirm the merge and delete the branch.
+
+![](./readme-imgs/squash-and-merge.png)
 
 Then, click the "Actions" tab at the top and select the merge action that is currently running. This action runs the same checks that run whenever changes are pushed. Additionally, it builds the code and deploys it to the Elastic Beanstalk instance on AWS. Make sure that the actions complete successfully. Once complete, the changes should be available on the live site at https://oare.byu.edu.
 
