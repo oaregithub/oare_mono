@@ -55,7 +55,7 @@
           class="test-login-btn"
           text
           to="/login"
-          >{{ i18n.t('appBar.login') }}</v-btn
+          >Login or Sign Up</v-btn
         >
         <v-menu v-else offset-y>
           <template v-slot:activator="{ on }">
