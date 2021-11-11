@@ -8,7 +8,7 @@ export default {
     passwordError: 'Please fill in the password field',
   },
   tr: {
-    signIn: 'Oturum aç',
+    signIn: 'Giriş yap',
     dontHaveAccount: 'Hesabınız yok mu? Ücretsiz kayıt olun',
     email: 'E-posta',
     emailError: 'Lütfen e-posta alanını doldurun',
