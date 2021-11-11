@@ -97,6 +97,7 @@ export default defineComponent({
 
     const translitQuery = useQueryParam('translit', '');
     const textTitleQuery = useQueryParam('title', '');
+    const isVisitedQuery = useQueryParam('isVisited', '');
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
@@ -118,6 +119,11 @@ export default defineComponent({
       return !!(translitSearch.value.trim() || textTitleSearch.value.trim());
     });
 
+    const setVisited = async () => {
+      isVisitedQuery.value = 'true';
+      await new Promise(resolve => setTimeout(resolve, 200));
+    };
+
     const searchTexts = async ({ page, rows }: OareDataTableOptions) => {
       if (canPerformSearch.value) {
         searchLoading.value = true;
@@ -129,11 +135,13 @@ export default defineComponent({
             rows,
           });
 
-          //load the content directly when there is only one result. (Jooyeon Park)
-          if(results.length == 1){ 
-            actions.showSnackbar('Only one result found');
-            router.push('/epigraphies/'+ results[0].uuid);
-          }else{
+          if (results.length === 1 && isVisitedQuery.value !== 'true') {
+            actions.showSnackbar(
+              'This page appears because the search resolved into only one text. If this is not the text intended, use the browser to return to the search page and simplify the search term.'
+            );
+            await setVisited();
+            router.push(`/epigraphies/${results[0].uuid}`);
+          } else {
             searchResults.value = results;
           }
         } catch {
@@ -162,15 +170,18 @@ export default defineComponent({
       }
     };
 
-    const resetSearch = async () => {
+    const resetSearch = async (resetVisited: boolean = true) => {
       totalSearchResults.value = -1;
       translitQuery.value = translitSearch.value;
       textTitleQuery.value = textTitleSearch.value;
+      if (resetVisited) {
+        isVisitedQuery.value = 'false';
+      }
       searchTextsTotal();
     };
 
     onMounted(() => {
-      resetSearch();
+      resetSearch(false);
     });
 
     return {
