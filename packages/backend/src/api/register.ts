@@ -35,6 +35,7 @@ router.route('/register').post(async (req, res, next) => {
       lastName,
       email,
       isAdmin: false,
+      betaAccess: false,
     });
     const user = await UserDao.getUserByEmail(email);
 

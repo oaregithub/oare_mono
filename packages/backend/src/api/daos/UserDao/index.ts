@@ -59,12 +59,14 @@ class UserDao {
     lastName,
     email,
     isAdmin,
+    betaAccess,
   }: {
     uuid: string;
     firstName: string;
     lastName: string;
     email: string;
     isAdmin: boolean;
+    betaAccess: boolean;
   }): Promise<void> {
     await knex('user').insert({
       uuid,
@@ -73,6 +75,7 @@ class UserDao {
       full_name: `${firstName} ${lastName}`,
       email,
       is_admin: isAdmin,
+      beta_access: betaAccess,
     });
   }
 
