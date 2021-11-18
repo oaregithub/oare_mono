@@ -4,11 +4,11 @@
     @input="$emit('input', $event)"
     closeOnSubmit
     @submit="setSpellingUuid"
-    :showSubmit="searchSpellingResults.length > 0"
+    :showSubmit="forms.length > 0"
   >
     <OareContentView title="Select Lexical Form">
       <b class="mr-1">{{ word.explicitSpelling }}</b>
-      <span v-if="searchSpellingResults.length > 0"
+      <span v-if="forms.length > 0"
         >appears in the following lexical form(s). Select the appropriate form
         to link this occurrence to the dictionary.</span
       >
@@ -18,15 +18,21 @@
       >
       <v-radio-group v-model="selectedOption">
         <v-radio
-          v-for="option in searchSpellingResults"
+          v-for="option in forms"
           :key="option.spellingUuid"
-          :label="option.form.form"
           :value="option.spellingUuid"
         >
+          <template #label>
+            <b class="mr-1">{{ option.word }} - </b>
+            <b class="mr-1">
+              <i>{{ option.form.form }}</i>
+            </b>
+            <grammar-display :form="option.form" />
+          </template>
         </v-radio>
       </v-radio-group>
       <v-btn
-        v-if="searchSpellingResults.length > 0"
+        v-if="forms.length > 0"
         @click="selectedOption = undefined"
         color="primary"
         :disabled="!selectedOption"
@@ -45,7 +51,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import { SearchSpellingResultRow, TextDiscourseRow } from '@oare/types';
-import sl from '@/serviceLocator';
+import GrammarDisplay from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/GrammarDisplay.vue';
 
 export default defineComponent({
   props: {
@@ -57,39 +63,31 @@ export default defineComponent({
       type: Object as PropType<TextDiscourseRow>,
       required: true,
     },
+    forms: {
+      type: Array as PropType<SearchSpellingResultRow[]>,
+      required: true,
+    },
+  },
+  components: {
+    GrammarDisplay,
   },
   setup(props, { emit }) {
-    const server = sl.get('serverProxy');
-    const actions = sl.get('globalActions');
-
-    const searchSpellingResults = ref<SearchSpellingResultRow[]>([]);
-
     const selectedOption = ref();
 
     const setSpellingUuid = () => {
       emit('set-spelling-uuid', selectedOption.value);
     };
 
-    onMounted(async () => {
-      try {
-        searchSpellingResults.value = await server.searchSpellings(
-          props.word.explicitSpelling || ''
-        );
-        if (searchSpellingResults.value.length === 1) {
-          selectedOption.value = searchSpellingResults.value[0].spellingUuid;
-        } else if (props.word.spellingUuid) {
-          selectedOption.value = searchSpellingResults.value.filter(
-            res => res.spellingUuid === props.word.spellingUuid
-          )[0].spellingUuid;
-        }
-      } catch {
-        actions.showErrorSnackbar(
-          'Error loading possible spellings. Please try again.'
-        );
+    onMounted(() => {
+      if (props.forms.length === 1) {
+        selectedOption.value = props.forms[0].spellingUuid;
+      } else if (props.word.spellingUuid) {
+        selectedOption.value = props.forms.filter(
+          form => form.spellingUuid === props.word.spellingUuid
+        )[0].spellingUuid;
       }
     });
     return {
-      searchSpellingResults,
       selectedOption,
       setSpellingUuid,
     };
