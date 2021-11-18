@@ -97,7 +97,7 @@ export default defineComponent({
 
     const translitQuery = useQueryParam('translit', '');
     const textTitleQuery = useQueryParam('title', '');
-    const isVisitedQuery = useQueryParam('isVisited', '');
+    const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
@@ -119,11 +119,6 @@ export default defineComponent({
       return !!(translitSearch.value.trim() || textTitleSearch.value.trim());
     });
 
-    const setVisited = async () => {
-      isVisitedQuery.value = 'true';
-      await new Promise(resolve => setTimeout(resolve, 200));
-    };
-
     const searchTexts = async ({ page, rows }: OareDataTableOptions) => {
       if (canPerformSearch.value) {
         searchLoading.value = true;
@@ -135,11 +130,11 @@ export default defineComponent({
             rows,
           });
 
-          if (results.length === 1 && isVisitedQuery.value !== 'true') {
+          if (results.length === 1 && getIsVisited() !== 'true') {
             actions.showSnackbar(
               'This page appears because the search resolved into only one text. If this is not the text intended, use the browser to return to the search page and simplify the search term.'
             );
-            await setVisited();
+            await setIsVisited('true');
             router.push(`/epigraphies/${results[0].uuid}`);
           } else {
             searchResults.value = results;
@@ -175,7 +170,7 @@ export default defineComponent({
       translitQuery.value = translitSearch.value;
       textTitleQuery.value = textTitleSearch.value;
       if (resetVisited) {
-        isVisitedQuery.value = 'false';
+        await setIsVisited('false');
       }
       searchTextsTotal();
     };

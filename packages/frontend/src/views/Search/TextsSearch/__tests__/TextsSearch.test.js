@@ -17,6 +17,11 @@ describe('TextsSearch', () => {
 
   const mockActions = {
     showErrorSnackbar: jest.fn(),
+    showSnackbar: jest.fn(),
+  };
+
+  const mockRouter = {
+    push: jest.fn(),
   };
 
   const $t = () => {};
@@ -30,6 +35,7 @@ describe('TextsSearch', () => {
   const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('router', mockRouter);
 
     return mount(TextsSearch, renderOptions);
   };
@@ -63,6 +69,24 @@ describe('TextsSearch', () => {
     await wrapper.find('.test-submit-button').trigger('click');
     await flushPromises();
     expect(mockServer.searchTexts).toHaveBeenCalled();
+  });
+
+  it('displays a result without showing the search page', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        searchTexts: jest.fn().mockResolvedValue({
+          totalRows: 1,
+          results: [{ name: 'testName', uuid: 'testUUID' }],
+        }),
+      },
+    });
+    const input = wrapper.find('.test-character-search input');
+    await input.setValue('a');
+    await wrapper.find('.test-submit-button').trigger('click');
+    await flushPromises();
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
+    expect(mockRouter.push).toHaveBeenCalled();
   });
 
   it('displays error on failed character sequence search', async () => {
