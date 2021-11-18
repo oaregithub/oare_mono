@@ -126,7 +126,10 @@ export default defineComponent({
         } else if (spellingUuid && props.localDiscourseInfo) {
           discourseWordInfo.value =
             await server.getDictionaryInfoBySpellingUuid(spellingUuid);
+        } else {
+          discourseWordInfo.value = null;
         }
+
         actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;
