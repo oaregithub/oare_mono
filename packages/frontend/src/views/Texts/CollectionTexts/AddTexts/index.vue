@@ -201,6 +201,9 @@ export default defineComponent({
     const previous = () => (step.value -= 1);
 
     const createTextTables = ref<CreateTextTables>();
+    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
+      {}
+    );
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
         createTextTables.value = await createNewTextTables(
@@ -216,10 +219,6 @@ export default defineComponent({
         });
       }
     };
-
-    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
-      {}
-    );
 
     const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
       if (createTextTables.value) {
