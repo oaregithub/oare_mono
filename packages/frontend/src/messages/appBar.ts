@@ -5,7 +5,7 @@ export default {
     oare: 'Old Assyrian Research Environment',
     search: 'Search',
     welcome: 'Welcome',
-    login: 'Login',
+    login: 'Login or Sign Up',
     logout: 'Logout',
   },
   tr: {
@@ -14,7 +14,7 @@ export default {
     oare: 'Eski Asur Araştırma Ortamı',
     search: 'Arama',
     welcome: 'Hoşgeldiniz',
-    login: 'Oturum aç',
+    login: 'Giriş yap veya Üye ol',
     logout: 'Çıkış Yap',
   },
 };

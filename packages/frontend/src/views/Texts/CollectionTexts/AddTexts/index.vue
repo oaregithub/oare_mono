@@ -28,25 +28,17 @@
             @update-text-info="setTextInfo"
             @step-complete="stepOneComplete = $event"
           />
-
-          <v-btn
-            color="primary"
-            class="ml-4"
-            @click="next(false)"
-            :disabled="!stepOneComplete"
-          >
-            Continue
-          </v-btn>
-          <span v-if="!stepOneComplete" class="red--text ml-4"
-            >To continue, please complete the required item(s)</span
-          >
+          <stepper-button
+            :showBackButton="false"
+            :blockContinue="!stepOneComplete"
+            blockContinueText="To continue, please complete the required item(s)"
+            @next="next"
+          />
         </v-stepper-content>
 
         <v-stepper-content step="2">
           <add-photos @update-photos="setPhotos" />
-
-          <v-btn text @click="previous(false)" class="mx-3"> Back </v-btn>
-          <v-btn color="primary" @click="next(false)"> Continue </v-btn>
+          <stepper-button @next="next" @previous="previous" />
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -54,46 +46,41 @@
             @update-editor-content="setEditorContent"
             @step-complete="stepThreeComplete = $event"
           />
-
-          <v-btn text @click="previous(false)" class="mx-3"> Back </v-btn>
-          <v-btn
-            color="primary"
-            @click="next(true)"
-            :disabled="!stepThreeComplete"
-          >
-            Continue
-          </v-btn>
-
-          <span v-if="!stepThreeComplete" class="red--text ml-4"
-            >To continue, there must be at least one side. No empty sides,
-            columns, or rows are allowed.</span
-          >
+          <stepper-button
+            :blockContinue="!stepThreeComplete"
+            blockContinueText="To continue, there must be at least one side. No empty sides,
+            columns, or rows are allowed."
+            :continueAction="buildTables"
+            @next="next"
+            @previous="previous"
+          />
         </v-stepper-content>
 
         <v-stepper-content step="4">
           <connect-discourse
+            v-if="step >= 4"
             :epigraphicUnits="epigraphyDetails.units"
             :discourseRows="createTextTables ? createTextTables.discourses : []"
             @update-discourse-rows="updateDiscourseRows($event)"
           />
-
-          <v-btn text @click="previous(true)" class="mx-3"> Back </v-btn>
-          <v-btn color="primary" @click="next(false)"> Continue </v-btn>
+          <stepper-button @next="next" @previous="previous" />
         </v-stepper-content>
 
         <v-stepper-content step="5">
           <final-preview
-            v-if="epigraphyReady"
+            v-if="step >= 5"
             :epigraphyUnits="epigraphyDetails"
             :photoUrls="photoUrls"
             :localDiscourseInfo="
               createTextTables ? createTextTables.discourses : []
             "
           />
-
-          <v-btn text class="mx-3" @click="previous(false)"> Back </v-btn>
-          <v-btn color="primary" disabled> Submit </v-btn>
-          <span class="red--text ml-4">Coming Soon</span>
+          <stepper-button
+            continueButtonText="Submit"
+            :blockContinue="true"
+            blockContinueText="Coming Soon"
+            @previous="previous"
+          />
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -115,6 +102,7 @@ import AddPhotos from './Photos/AddPhotos.vue';
 import ConnectDiscourse from './Discourse/ConnectDiscourse.vue';
 import EpigraphyView from '@/views/Texts/EpigraphyView/index.vue';
 import FinalPreview from '@/views/Texts/CollectionTexts/AddTexts/Preview/FinalPreview.vue';
+import StepperButton from './components/StepperButton.vue';
 import {
   AddTextEditorContent,
   AddTextInfo,
@@ -139,6 +127,7 @@ export default defineComponent({
     EpigraphyView,
     ConnectDiscourse,
     FinalPreview,
+    StepperButton,
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -169,7 +158,6 @@ export default defineComponent({
       editorContent.value = updatedEditorContent;
     };
 
-    const epigraphyReady = ref(false);
     const epigraphyDetails: ComputedRef<EpigraphyResponse> = computed(() => {
       return {
         canWrite: false,
@@ -190,11 +178,9 @@ export default defineComponent({
           : [],
         color: '',
         colorMeaning: '',
-        discourseUnits: [], // Will add later
+        discourseUnits: [],
       };
     });
-
-    const createTextTables = ref<CreateTextTables>();
 
     onMounted(async () => {
       loading.value = true;
@@ -211,30 +197,27 @@ export default defineComponent({
       }
     });
 
-    const next = async (completeEpigraphy = false) => {
-      if (completeEpigraphy) {
-        if (editorContent.value && textInfo.value) {
-          try {
-            createTextTables.value = await createNewTextTables(
-              textInfo.value,
-              editorContent.value
-            );
-          } catch (err) {
-            actions.showErrorSnackbar(
-              'Error build new text preview. Please try again.'
-            );
-          }
-        }
-        epigraphyReady.value = true;
-      }
-      step.value += 1;
-    };
+    const next = () => (step.value += 1);
+    const previous = () => (step.value -= 1);
 
-    const previous = (destroyEpigraphy = false) => {
-      if (destroyEpigraphy) {
-        epigraphyReady.value = false;
+    const createTextTables = ref<CreateTextTables>();
+    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
+      {}
+    );
+    const buildTables = async () => {
+      if (textInfo.value && editorContent.value) {
+        createTextTables.value = await createNewTextTables(
+          textInfo.value,
+          editorContent.value,
+          persistentDiscourseStorage.value
+        );
       }
-      step.value -= 1;
+      if (createTextTables.value) {
+        createTextTables.value.discourses.forEach(discourse => {
+          persistentDiscourseStorage.value[discourse.uuid] =
+            discourse.spellingUuid;
+        });
+      }
     };
 
     const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
@@ -243,6 +226,9 @@ export default defineComponent({
           ...createTextTables.value,
           discourses,
         };
+        createTextTables.value.discourses.forEach(row => {
+          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
+        });
       }
     };
 
@@ -255,13 +241,13 @@ export default defineComponent({
       setPhotos,
       photoUrls,
       epigraphyDetails,
-      epigraphyReady,
       next,
       previous,
       createTextTables,
       updateDiscourseRows,
       stepOneComplete,
       stepThreeComplete,
+      buildTables,
     };
   },
 });
