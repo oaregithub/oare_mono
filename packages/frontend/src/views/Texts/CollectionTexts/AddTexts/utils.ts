@@ -207,7 +207,8 @@ const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
 
 export const createNewTextTables = async (
   textInfo: AddTextInfo,
-  content: AddTextEditorContent
+  content: AddTextEditorContent,
+  persistentDiscourseStorage: { [uuid: string]: string | null }
 ): Promise<CreateTextTables> => {
   const textRow: TextRow = await createTextRow(textInfo);
   const textUuid = textRow.uuid;
@@ -233,7 +234,8 @@ export const createNewTextTables = async (
   const markupRows: TextMarkupRow[] = await createMarkupRows(content);
   const discourseRowsWithoutIterators: TextDiscourseRow[] = await createDiscourseRows(
     textUuid,
-    content
+    content,
+    persistentDiscourseStorage
   );
   const discourseRows = discourseRowsWithoutIterators.map((row, idx) => ({
     ...row,
@@ -526,7 +528,8 @@ const createMarkupRows = async (
 
 const createDiscourseRows = async (
   textUuid: string,
-  content: AddTextEditorContent
+  content: AddTextEditorContent,
+  persistentDiscourseStorage: { [uuid: string]: string | null }
 ): Promise<TextDiscourseRow[]> => {
   const server = sl.get('serverProxy');
 
@@ -566,7 +569,11 @@ const createDiscourseRows = async (
                           const forms = await server.searchSpellings(
                             word.spelling
                           );
-                          if (forms.length === 1) {
+                          if (persistentDiscourseStorage[word.discourseUuid]) {
+                            spellingUuid =
+                              persistentDiscourseStorage[word.discourseUuid] ||
+                              undefined;
+                          } else if (forms.length === 1) {
                             spellingUuid = forms[0].spellingUuid;
                           }
                           const newDiscourseRow = await createTextDiscourseRow({

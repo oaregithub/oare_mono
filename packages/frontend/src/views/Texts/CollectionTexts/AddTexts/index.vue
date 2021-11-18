@@ -201,12 +201,22 @@ export default defineComponent({
     const previous = () => (step.value -= 1);
 
     const createTextTables = ref<CreateTextTables>();
+    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
+      {}
+    );
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
         createTextTables.value = await createNewTextTables(
           textInfo.value,
-          editorContent.value
+          editorContent.value,
+          persistentDiscourseStorage.value
         );
+      }
+      if (createTextTables.value) {
+        createTextTables.value.discourses.forEach(discourse => {
+          persistentDiscourseStorage.value[discourse.uuid] =
+            discourse.spellingUuid;
+        });
       }
     };
 
@@ -216,6 +226,9 @@ export default defineComponent({
           ...createTextTables.value,
           discourses,
         };
+        createTextTables.value.discourses.forEach(row => {
+          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
+        });
       }
     };
 
