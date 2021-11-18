@@ -71,7 +71,7 @@ describe('TextsSearch', () => {
     expect(mockServer.searchTexts).toHaveBeenCalled();
   });
 
-  it('displays a result without showing the search page', async () => {
+  it('skips to epigraphy view if only one result', async () => {
     const wrapper = createWrapper({
       server: {
         ...mockServer,
