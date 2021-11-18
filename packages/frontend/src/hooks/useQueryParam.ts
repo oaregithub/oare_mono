@@ -49,7 +49,9 @@ function useQueryParam(
       })
     );
   };
-  watch(param, (newVal: string) => updateParam(newVal));
+  if (!asynchronous) {
+    watch(param, (newVal: string) => updateParam(newVal));
+  }
 
   if (asynchronous) {
     return [() => param.value, updateParam];
