@@ -51,7 +51,7 @@
             ><b>View: </b>{{ parseView(imageDetails[selection].view) }}</span
           >
         </v-row>
-        <image-zoom
+        <inner-image-zoom
           :src="imageLinks[selection]"
           moveType="drag"
         />
@@ -67,7 +67,7 @@ import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
   components: {
-    'image-zoom': InnerImageZoom
+    'inner-image-zoom': InnerImageZoom
   },
   props: {
     imageLinks: {
