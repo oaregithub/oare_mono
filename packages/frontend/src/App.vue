@@ -26,6 +26,7 @@
 import { defineComponent, ref, computed } from '@vue/composition-api';
 import OareSidebar from './components/base/OareSidebar/index.vue';
 import defaultRouter from './router';
+import 'vue-inner-image-zoom/lib/vue-inner-image-zoom.css'; 
 
 export default defineComponent({
   name: 'App',

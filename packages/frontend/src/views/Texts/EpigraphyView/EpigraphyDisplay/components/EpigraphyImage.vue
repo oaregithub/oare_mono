@@ -63,7 +63,7 @@
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { TextPhoto } from '@oare/types';
-import InnerImageZoom from './EpigraphyImageZoom.vue'
+import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
   components: {
@@ -174,4 +174,8 @@ export default defineComponent({
   position: sticky;
   top: 1.1in;
 }
+.zoom-container {
+  width: 36vw;
+}
+
 </style>

@@ -5,3 +5,4 @@ declare module '*.vue' {
 }
 
 declare module 'vue-code-diff';
+declare module 'vue-inner-image-zoom';
