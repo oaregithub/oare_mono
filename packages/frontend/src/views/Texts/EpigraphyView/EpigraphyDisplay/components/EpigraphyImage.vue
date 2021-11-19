@@ -67,7 +67,7 @@ import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
   components: {
-    'inner-image-zoom': InnerImageZoom
+    InnerImageZoom
   },
   props: {
     imageLinks: {
