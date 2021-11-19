@@ -79,14 +79,14 @@ class UserDao {
   async userIsAdmin(uuid: string): Promise<boolean> {
     const { isAdmin } = await knex('user')
       .first('is_admin AS isAdmin')
-      .where('uuid', uuid);
+      .where({ uuid });
     return isAdmin;
   }
 
   async userHasBetaAccess(uuid: string): Promise<boolean> {
     const { betaAccess } = await knex('user')
       .first('beta_access AS betaAccess')
-      .where(uuid);
+      .where({ uuid });
     return betaAccess;
   }
 
