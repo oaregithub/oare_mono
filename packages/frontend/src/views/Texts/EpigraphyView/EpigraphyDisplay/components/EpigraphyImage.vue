@@ -51,12 +51,9 @@
             ><b>View: </b>{{ parseView(imageDetails[selection].view) }}</span
           >
         </v-row>
-        <v-img
+        <inner-image-zoom
           :src="imageLinks[selection]"
-          max-height="70vh"
-          :max-width="selectedImages.length > 1 ? '18vw' : '36vw'"
-          contain
-          class="pa-4"
+          moveType="drag"
         />
       </div>
     </v-row>
@@ -66,8 +63,12 @@
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { TextPhoto } from '@oare/types';
+import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
+  components: {
+    InnerImageZoom
+  },
   props: {
     imageLinks: {
       type: Array as PropType<String[]>,
@@ -173,4 +174,8 @@ export default defineComponent({
   position: sticky;
   top: 1.1in;
 }
+.zoom-container {
+  width: 36vw;
+}
+
 </style>
