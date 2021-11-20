@@ -41,6 +41,9 @@
           v-on="routeActions"
         ></router-view>
       </OareContentView>
+      <p v-if="!textInfo.hasEpigraphy">
+      Apologies, we do not have a transliteration for this text at the moment.
+      </p>
     </v-col>
     <v-col
       cols="12"
@@ -238,6 +241,9 @@ export default defineComponent({
         loading.value = true;
         await getTextInfo();
         draft.value = textInfo.value.draft || null;
+        if (!textInfo.value.hasEpigraphy) {
+          
+        }
         if (localImageUrls) {
           imageUrls.value = localImageUrls;
         } else if (textUuid) {
