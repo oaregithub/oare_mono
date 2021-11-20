@@ -144,6 +144,7 @@ export default defineComponent({
       color: '',
       colorMeaning: '',
       discourseUnits: [],
+      hasEpigraphy: false,
     });
     const imageUrls = ref<string[]>([]);
 

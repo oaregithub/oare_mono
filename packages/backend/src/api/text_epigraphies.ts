@@ -7,6 +7,7 @@ import {
   UpdateTranslitStatusPayload,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import TextEpigraphyDao from './daos/TextEpigraphyDao';
 
 const router = express.Router();
 
@@ -111,6 +112,8 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid)
       : null;
 
+    const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
+
     const response: EpigraphyResponse = {
       textName: text.name,
       collection,
@@ -121,6 +124,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       colorMeaning,
       discourseUnits,
       ...(draft ? { draft } : {}),
+      hasEpigraphy: hasEpigraphies,
     };
 
     res.json(response);

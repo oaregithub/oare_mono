@@ -14,6 +14,7 @@ export interface EpigraphyResponse {
   colorMeaning: string;
   discourseUnits: DiscourseUnit[];
   draft?: TextDraft;
+  hasEpigraphy: boolean;
 }
 
 export type EpigraphicUnitType =
