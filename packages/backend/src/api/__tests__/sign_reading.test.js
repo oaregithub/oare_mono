@@ -4,7 +4,7 @@ import request from 'supertest';
 import sl from '@/serviceLocator';
 
 describe('GET /sign_reading/code/:sign/:post', () => {
-  const mockSign = 'a-na';
+  const mockSign = 'TÚG';
   const mockPost = '*';
   const PATH = `${API_PATH}/sign_reading/code/${mockSign}/${mockPost}`;
 
@@ -29,7 +29,7 @@ describe('GET /sign_reading/code/:sign/:post', () => {
 
   it('returns 200 on successful sign code retrieval', async () => {
     const response = await sendRequest();
-    expect(mockSignReadingDao.getSignCode).toHaveBeenCalledWith('a-na', true);
+    expect(mockSignReadingDao.getSignCode).toHaveBeenCalledWith('TÚG', true);
     expect(response.status).toBe(200);
   });
 
@@ -38,7 +38,7 @@ describe('GET /sign_reading/code/:sign/:post', () => {
     const falsePath = `${API_PATH}/sign_reading/code/${mockSign}/${mockFalsePost}}`;
 
     const response = await request(app).get(falsePath);
-    expect(mockSignReadingDao.getSignCode).toHaveBeenCalledWith('a-na', false);
+    expect(mockSignReadingDao.getSignCode).toHaveBeenCalledWith('TÚG', false);
     expect(response.status).toBe(200);
   });
 
