@@ -481,101 +481,105 @@ export default defineComponent({
     };
 
     const getSigns = async (index: number, event: any) => {
-      let rowText: string = event.srcElement.value;
+      if (event.key !== 'Enter') {
+        let rowText: string = event.srcElement.value;
 
-      const matches = rowText.match(/\(([^)]+)\)/g);
-      let matchesText: string[] = [];
-      if (matches) {
-        matchesText = matches.map(text => {
-          return `${text.slice(1, text.length - 1)}*`;
+        const matches = rowText.match(/\(([^)]+)\)/g);
+        let matchesText: string[] = [];
+        if (matches) {
+          matchesText = matches.map(text => {
+            return `${text.slice(1, text.length - 1)}*`;
+          });
+          matchesText.forEach(matchText => {
+            rowText = rowText.replace(/\(([^)]+)\)/, matchText);
+          });
+        }
+
+        const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
+        const signsByWord = await Promise.all(
+          wordsText.map(async word => {
+            const originalSigns = word
+              .split(/[\-.*]+/)
+              .filter(sign => sign !== '');
+            const formattedSigns = await Promise.all(
+              originalSigns.map(sign => server.getFormattedSign(sign))
+            );
+            const signs = formattedSigns.flat();
+
+            const originalDividers = word
+              .split('')
+              .filter(sign => sign.match(/[\-.*]+/));
+            const visibleDividers: string[] = [];
+            formattedSigns.forEach((signPieces, idx) => {
+              if (signPieces.length > 1) {
+                for (let i = 1; i < signPieces.length; i += 1) {
+                  visibleDividers.push('+');
+                }
+              }
+              visibleDividers.push(originalDividers[idx]);
+            });
+
+            const urlDividers = visibleDividers.map(div => {
+              if (div !== '*') {
+                return 'notAsterisk';
+              }
+              return div;
+            });
+
+            const signCodes: SignCode[] = await Promise.all(
+              signs.map((sign, idx) =>
+                server.getSignCode(sign, urlDividers[idx])
+              )
+            );
+            const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
+              code => ({
+                ...code,
+                uuid: v4(),
+              })
+            );
+            const signCodesWithDividers: SignCodeWithUuid[] =
+              signCodesWithUuids.map((code, idx) => {
+                return {
+                  ...code,
+                  post: visibleDividers[idx] || undefined,
+                  reading: signs[idx],
+                };
+              });
+            return signCodesWithDividers;
+          })
+        );
+
+        const words: EditorWord[] = signsByWord.map(word => {
+          let spelling = '';
+          word.forEach(sign => {
+            if (sign.post === '*') {
+              spelling += `(${sign.value || ''})`;
+            } else {
+              spelling += `${sign.value || ''}${sign.post || ''}`;
+            }
+          });
+          return {
+            discourseUuid: v4(),
+            spelling,
+          };
         });
-        matchesText.forEach(matchText => {
-          rowText = rowText.replace(/\(([^)]+)\)/, matchText);
+
+        const signs: SignCodeWithDiscourseUuid[] = signsByWord.flatMap(
+          (word, idx) => {
+            const signs = word.map(sign => ({
+              ...sign,
+              discourseUuid: words[idx].discourseUuid,
+            }));
+            return signs;
+          }
+        );
+
+        rows.value.splice(index, 1, {
+          ...rows.value[index],
+          signs,
+          words,
         });
       }
-
-      const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
-      const signsByWord = await Promise.all(
-        wordsText.map(async word => {
-          const originalSigns = word
-            .split(/[\-.*]+/)
-            .filter(sign => sign !== '');
-          const formattedSigns = await Promise.all(
-            originalSigns.map(sign => server.getFormattedSign(sign))
-          );
-          const signs = formattedSigns.flat();
-
-          const originalDividers = word
-            .split('')
-            .filter(sign => sign.match(/[\-.*]+/));
-          const visibleDividers: string[] = [];
-          formattedSigns.forEach((signPieces, idx) => {
-            if (signPieces.length > 1) {
-              for (let i = 1; i < signPieces.length; i += 1) {
-                visibleDividers.push('+');
-              }
-            }
-            visibleDividers.push(originalDividers[idx]);
-          });
-
-          const urlDividers = visibleDividers.map(div => {
-            if (div !== '*') {
-              return 'notAsterisk';
-            }
-            return div;
-          });
-
-          const signCodes: SignCode[] = await Promise.all(
-            signs.map((sign, idx) => server.getSignCode(sign, urlDividers[idx]))
-          );
-          const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
-            code => ({
-              ...code,
-              uuid: v4(),
-            })
-          );
-          const signCodesWithDividers: SignCodeWithUuid[] =
-            signCodesWithUuids.map((code, idx) => {
-              return {
-                ...code,
-                post: visibleDividers[idx] || undefined,
-                reading: signs[idx],
-              };
-            });
-          return signCodesWithDividers;
-        })
-      );
-
-      const words: EditorWord[] = signsByWord.map(word => {
-        let spelling = '';
-        word.forEach(sign => {
-          if (sign.post === '*') {
-            spelling += `(${sign.value || ''})`;
-          } else {
-            spelling += `${sign.value || ''}${sign.post || ''}`;
-          }
-        });
-        return {
-          discourseUuid: v4(),
-          spelling,
-        };
-      });
-
-      const signs: SignCodeWithDiscourseUuid[] = signsByWord.flatMap(
-        (word, idx) => {
-          const signs = word.map(sign => ({
-            ...sign,
-            discourseUuid: words[idx].discourseUuid,
-          }));
-          return signs;
-        }
-      );
-
-      rows.value.splice(index, 1, {
-        ...rows.value[index],
-        signs,
-        words,
-      });
     };
 
     const getWidth = (src: string) => {
