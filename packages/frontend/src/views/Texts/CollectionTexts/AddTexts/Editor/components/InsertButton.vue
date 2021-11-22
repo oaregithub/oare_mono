@@ -15,7 +15,7 @@
               :color="
                 hover || !hasAddedRow ? 'grey darken-3' : 'grey lighten-2'
               "
-              class="ml-n5 mt-n4"
+              class="ml-n5 mt-n4 test-insert-button"
               width="25px"
               height="25px"
               v-on="on"
@@ -28,6 +28,7 @@
           <v-list dense>
             <v-list-item
               v-for="(option, idx) in insertOptions"
+              class="test-insert-option"
               :key="idx"
               @click="$emit('add-row', option)"
             >

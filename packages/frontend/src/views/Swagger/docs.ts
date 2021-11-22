@@ -24,6 +24,7 @@ import textDrafts from './endpoints/text_drafts';
 import textEpigraphies from './endpoints/text_epigraphies';
 import userGroups from './endpoints/user_groups';
 import words from './endpoints/words';
+import signReading from './endpoints/sign_reading';
 
 const server =
   process.env.NODE_ENV === 'development'
@@ -68,5 +69,6 @@ export default {
     ...textEpigraphies,
     ...userGroups,
     ...words,
+    ...signReading,
   },
 };

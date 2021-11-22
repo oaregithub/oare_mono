@@ -31,6 +31,7 @@
         placeholder="e.g. Kt 94/k 584b (AKT 6a 267), etc."
         :rules="textNameRules"
         autofocus
+        class="test-text-name"
       />
       <v-row class="pl-3">
         <h3 class="mt-1 mb-2 d-inline">Excavation</h3>
