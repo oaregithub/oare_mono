@@ -241,9 +241,6 @@ export default defineComponent({
         loading.value = true;
         await getTextInfo();
         draft.value = textInfo.value.draft || null;
-        if (!textInfo.value.hasEpigraphy) {
-          
-        }
         if (localImageUrls) {
           imageUrls.value = localImageUrls;
         } else if (textUuid) {

@@ -7,7 +7,6 @@ import {
   UpdateTranslitStatusPayload,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
-import TextEpigraphyDao from './daos/TextEpigraphyDao';
 
 const router = express.Router();
 
