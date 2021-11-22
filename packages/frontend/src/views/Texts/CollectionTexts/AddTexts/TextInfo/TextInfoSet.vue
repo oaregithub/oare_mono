@@ -223,6 +223,7 @@
         submitText="OK"
         closeOnSubmit
         :showCancel="false"
+        eager
       >
         <add-properties
           valueUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"
