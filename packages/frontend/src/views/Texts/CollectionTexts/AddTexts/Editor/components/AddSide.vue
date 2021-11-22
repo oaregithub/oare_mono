@@ -24,7 +24,7 @@
         :key="idx"
         :side="side"
         @selected="$emit('side-selected', side)"
-        class="ma-2 cursor-display"
+        class="ma-2 cursor-display test-side-option"
       />
     </v-row>
   </v-card>

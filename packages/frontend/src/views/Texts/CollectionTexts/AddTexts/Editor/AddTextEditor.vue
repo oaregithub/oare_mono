@@ -16,7 +16,7 @@
           <v-btn
             v-if="usableSides.length > 0"
             @click="openAddingSide"
-            class="ma-4"
+            class="ma-4 test-add-side"
             text
           >
             <v-icon color="primary">mdi-plus</v-icon>

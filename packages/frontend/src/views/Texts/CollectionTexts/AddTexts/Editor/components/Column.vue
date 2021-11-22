@@ -65,7 +65,7 @@
       </v-row>
       <div v-for="(row, idx) in rowsWithLineNumbers" :key="row.uuid">
         <v-hover v-slot="{ hover }">
-          <v-row class="ma-1">
+          <v-row class="ma-1 test-row-content">
             <v-col cols="1" class="px-1 pb-1 pt-0" align="center">
               <span v-if="row.line">{{ formatLineNumber(row) }}</span>
             </v-col>
@@ -134,7 +134,7 @@
                     auto-grow
                     dense
                     rows="1"
-                    class="mx-1 mt-0 hide-line"
+                    class="mx-1 mt-0 hide-line test-line-text"
                     @update:error="lineError"
                     :class="{ 'mb-0': hasLineError, 'mb-n5': !hasLineError }"
                     :autofocus="newRow === idx"
@@ -268,6 +268,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
     const columnEditMenu = ref(false);
 
     const hasAddedRow = ref(false);
@@ -498,54 +499,61 @@ export default defineComponent({
         const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
         const signsByWord = await Promise.all(
           wordsText.map(async word => {
-            const originalSigns = word
-              .split(/[\-.*]+/)
-              .filter(sign => sign !== '');
-            const formattedSigns = await Promise.all(
-              originalSigns.map(sign => server.getFormattedSign(sign))
-            );
-            const signs = formattedSigns.flat();
+            try {
+              const originalSigns = word
+                .split(/[\-.*]+/)
+                .filter(sign => sign !== '');
+              const formattedSigns = await Promise.all(
+                originalSigns.map(sign => server.getFormattedSign(sign))
+              );
+              const signs = formattedSigns.flat();
 
-            const originalDividers = word
-              .split('')
-              .filter(sign => sign.match(/[\-.*]+/));
-            const visibleDividers: string[] = [];
-            formattedSigns.forEach((signPieces, idx) => {
-              if (signPieces.length > 1) {
-                for (let i = 1; i < signPieces.length; i += 1) {
-                  visibleDividers.push('+');
+              const originalDividers = word
+                .split('')
+                .filter(sign => sign.match(/[\-.*]+/));
+              const visibleDividers: string[] = [];
+              formattedSigns.forEach((signPieces, idx) => {
+                if (signPieces.length > 1) {
+                  for (let i = 1; i < signPieces.length; i += 1) {
+                    visibleDividers.push('+');
+                  }
                 }
-              }
-              visibleDividers.push(originalDividers[idx]);
-            });
-
-            const urlDividers = visibleDividers.map(div => {
-              if (div !== '*') {
-                return 'notAsterisk';
-              }
-              return div;
-            });
-
-            const signCodes: SignCode[] = await Promise.all(
-              signs.map((sign, idx) =>
-                server.getSignCode(sign, urlDividers[idx])
-              )
-            );
-            const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
-              code => ({
-                ...code,
-                uuid: v4(),
-              })
-            );
-            const signCodesWithDividers: SignCodeWithUuid[] =
-              signCodesWithUuids.map((code, idx) => {
-                return {
-                  ...code,
-                  post: visibleDividers[idx] || undefined,
-                  reading: signs[idx],
-                };
+                visibleDividers.push(originalDividers[idx]);
               });
-            return signCodesWithDividers;
+
+              const urlDividers = visibleDividers.map(div => {
+                if (div !== '*') {
+                  return 'notAsterisk';
+                }
+                return div;
+              });
+
+              const signCodes: SignCode[] = await Promise.all(
+                signs.map((sign, idx) =>
+                  server.getSignCode(sign, urlDividers[idx])
+                )
+              );
+              const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
+                code => ({
+                  ...code,
+                  uuid: v4(),
+                })
+              );
+              const signCodesWithDividers: SignCodeWithUuid[] =
+                signCodesWithUuids.map((code, idx) => {
+                  return {
+                    ...code,
+                    post: visibleDividers[idx] || undefined,
+                    reading: signs[idx],
+                  };
+                });
+              return signCodesWithDividers;
+            } catch {
+              actions.showErrorSnackbar(
+                'Error generating signs. Please try again.'
+              );
+              return [];
+            }
           })
         );
 
