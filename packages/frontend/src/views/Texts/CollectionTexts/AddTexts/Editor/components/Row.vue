@@ -1,11 +1,12 @@
 <template>
   <v-hover v-slot="{ hover }">
     <v-row class="ma-1 test-row-content">
-      <v-col cols="1" class="px-1 pb-1 pt-0" align="center">
+      <v-col cols="1" class="px-1 pb-1 pt-0" align="center" align-self="end">
         <span v-if="row.line">{{ formatLineNumber(row) }}</span>
       </v-col>
       <v-col cols="10" class="pa-0">
         <v-container v-if="row.type === 'Line'" class="pa-0 ma-0">
+          <special-chars @char-input="insertChar($event)" />
           <v-row
             v-if="row.signs && row.signs.length > 0"
             class="pa-0 ma-0 mb-1"
@@ -69,10 +70,12 @@
               :autofocus="autofocus"
               @keydown.enter.prevent
               @keyup.enter="$emit('add-row-after')"
-              @change="updateText($event)"
-              @keyup="updateRow($event)"
+              @input="updateText($event)"
+              @keyup="updateSignSelection($event)"
               @click="updateSignSelection($event)"
-              @blur="resetSignSelection()"
+              @blur="resetSignSelection"
+              :value="row.text"
+              ref="textareaRef"
             />
           </v-row>
         </v-container>
@@ -124,7 +127,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { defineComponent, PropType, ref, nextTick } from '@vue/composition-api';
 import { RowWithLine } from './Column.vue';
 import { formatLineNumber as defaultLineFormatter } from '@oare/oare';
 import sl from '@/serviceLocator';
@@ -136,6 +139,7 @@ import {
   EditorWord,
   RowTypes,
 } from '@oare/types';
+import SpecialChars from './SpecialChars.vue';
 
 export default defineComponent({
   props: {
@@ -148,9 +152,12 @@ export default defineComponent({
       default: false,
     },
   },
+  components: { SpecialChars },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+
+    const textareaRef = ref();
 
     const formatLineNumber = (row: RowWithLine) => {
       if ((!row.lineValue && row.line) || (row.line && row.lineValue === 1)) {
@@ -194,17 +201,18 @@ export default defineComponent({
       });
     };
 
+    const cursorIndex = ref(0);
     const updateSignSelection = async (event: any) => {
       if (event.key !== 'Enter') {
         const rowText: string = event.srcElement.value;
-        const cursorIndex: number = event.srcElement.selectionStart;
-        if (!cursorIndex) {
+        cursorIndex.value = event.srcElement.selectionStart;
+        if (!cursorIndex.value) {
           emit('update-row-content', {
             ...props.row,
             selectedSign: 0,
           });
         } else {
-          const textBeforeCursor = rowText.slice(0, cursorIndex);
+          const textBeforeCursor = rowText.slice(0, cursorIndex.value);
           const originalSigns = textBeforeCursor.split(/[\s\-.]+/);
           const formattedSigns = await Promise.all(
             originalSigns.map(sign => {
@@ -235,119 +243,111 @@ export default defineComponent({
         ...props.row,
         text,
       });
+      getSigns(text);
     };
 
-    const updateRow = (event: any) => {
-      getSigns(event);
-      updateSignSelection(event);
-    };
-
-    const getSigns = async (event: any) => {
-      if (event.key !== 'Enter') {
-        let rowText: string = event.srcElement.value;
-
-        const matches = rowText.match(/\(([^)]+)\)/g);
-        let matchesText: string[] = [];
-        if (matches) {
-          matchesText = matches.map(text => {
-            return `${text.slice(1, text.length - 1)}*`;
-          });
-          matchesText.forEach(matchText => {
-            rowText = rowText.replace(/\(([^)]+)\)/, matchText);
-          });
-        }
-
-        const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
-        const signsByWord = await Promise.all(
-          wordsText.map(async word => {
-            try {
-              const originalSigns = word
-                .split(/[\-.*]+/)
-                .filter(sign => sign !== '');
-              const formattedSigns = await Promise.all(
-                originalSigns.map(sign => server.getFormattedSign(sign))
-              );
-              const signs = formattedSigns.flat();
-
-              const originalDividers = word
-                .split('')
-                .filter(sign => sign.match(/[\-.*]+/));
-              const visibleDividers: string[] = [];
-              formattedSigns.forEach((signPieces, idx) => {
-                if (signPieces.length > 1) {
-                  for (let i = 1; i < signPieces.length; i += 1) {
-                    visibleDividers.push('+');
-                  }
-                }
-                visibleDividers.push(originalDividers[idx]);
-              });
-
-              const urlDividers = visibleDividers.map(div => {
-                if (div !== '*') {
-                  return 'notAsterisk';
-                }
-                return div;
-              });
-
-              const signCodes: SignCode[] = await Promise.all(
-                signs.map((sign, idx) =>
-                  server.getSignCode(sign, urlDividers[idx])
-                )
-              );
-              const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
-                code => ({
-                  ...code,
-                  uuid: v4(),
-                })
-              );
-              const signCodesWithDividers: SignCodeWithUuid[] =
-                signCodesWithUuids.map((code, idx) => {
-                  return {
-                    ...code,
-                    post: visibleDividers[idx] || undefined,
-                    reading: signs[idx],
-                  };
-                });
-              return signCodesWithDividers;
-            } catch {
-              actions.showErrorSnackbar(
-                'Error generating signs. Please try again.'
-              );
-              return [];
-            }
-          })
-        );
-
-        const words: EditorWord[] = signsByWord.map(word => {
-          let spelling = '';
-          word.forEach(sign => {
-            if (sign.post === '*') {
-              spelling += `(${sign.value || ''})`;
-            } else {
-              spelling += `${sign.value || ''}${sign.post || ''}`;
-            }
-          });
-          return {
-            discourseUuid: v4(),
-            spelling,
-          };
+    const getSigns = async (rowText: string) => {
+      const matches = rowText.match(/\(([^)]+)\)/g);
+      let matchesText: string[] = [];
+      if (matches) {
+        matchesText = matches.map(text => {
+          return `${text.slice(1, text.length - 1)}*`;
         });
-
-        const signs: SignCodeWithDiscourseUuid[] = signsByWord.flatMap(
-          (word, idx) => {
-            const signs = word.map(sign => ({
-              ...sign,
-              discourseUuid: words[idx].discourseUuid,
-            }));
-            return signs;
-          }
-        );
-        emit('update-row-content', {
-          ...props.row,
-          signs,
-          words,
+        matchesText.forEach(matchText => {
+          rowText = rowText.replace(/\(([^)]+)\)/, matchText);
         });
       }
+
+      const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
+      const signsByWord = await Promise.all(
+        wordsText.map(async word => {
+          try {
+            const originalSigns = word
+              .split(/[\-.*]+/)
+              .filter(sign => sign !== '');
+            const formattedSigns = await Promise.all(
+              originalSigns.map(sign => server.getFormattedSign(sign))
+            );
+            const signs = formattedSigns.flat();
+
+            const originalDividers = word
+              .split('')
+              .filter(sign => sign.match(/[\-.*]+/));
+            const visibleDividers: string[] = [];
+            formattedSigns.forEach((signPieces, idx) => {
+              if (signPieces.length > 1) {
+                for (let i = 1; i < signPieces.length; i += 1) {
+                  visibleDividers.push('+');
+                }
+              }
+              visibleDividers.push(originalDividers[idx]);
+            });
+
+            const urlDividers = visibleDividers.map(div => {
+              if (div !== '*') {
+                return 'notAsterisk';
+              }
+              return div;
+            });
+
+            const signCodes: SignCode[] = await Promise.all(
+              signs.map((sign, idx) =>
+                server.getSignCode(sign, urlDividers[idx])
+              )
+            );
+            const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
+              code => ({
+                ...code,
+                uuid: v4(),
+              })
+            );
+            const signCodesWithDividers: SignCodeWithUuid[] =
+              signCodesWithUuids.map((code, idx) => {
+                return {
+                  ...code,
+                  post: visibleDividers[idx] || undefined,
+                  reading: signs[idx],
+                };
+              });
+            return signCodesWithDividers;
+          } catch {
+            actions.showErrorSnackbar(
+              'Error generating signs. Please try again.'
+            );
+            return [];
+          }
+        })
+      );
+
+      const words: EditorWord[] = signsByWord.map(word => {
+        let spelling = '';
+        word.forEach(sign => {
+          if (sign.post === '*') {
+            spelling += `(${sign.value || ''})`;
+          } else {
+            spelling += `${sign.value || ''}${sign.post || ''}`;
+          }
+        });
+        return {
+          discourseUuid: v4(),
+          spelling,
+        };
+      });
+
+      const signs: SignCodeWithDiscourseUuid[] = signsByWord.flatMap(
+        (word, idx) => {
+          const signs = word.map(sign => ({
+            ...sign,
+            discourseUuid: words[idx].discourseUuid,
+          }));
+          return signs;
+        }
+      );
+      emit('update-row-content', {
+        ...props.row,
+        signs,
+        words,
+      });
     };
 
     const getRegionItems = (type: RowTypes) => {
@@ -385,6 +385,19 @@ export default defineComponent({
       });
     };
 
+    const insertChar = async (delineator: string) => {
+      const originalRowText = props.row.text || '';
+      const textBeforeCursor = originalRowText.slice(0, cursorIndex.value);
+      const textAfterCursor = originalRowText.slice(cursorIndex.value);
+      const newText = `${textBeforeCursor}${delineator}${textAfterCursor}`;
+      updateText(newText);
+      cursorIndex.value += 1;
+      textareaRef.value.focus();
+      const input = textareaRef.value.$el.querySelector('textarea');
+      await nextTick();
+      input.setSelectionRange(cursorIndex.value, cursorIndex.value);
+    };
+
     return {
       formatLineNumber,
       getWidth,
@@ -393,11 +406,12 @@ export default defineComponent({
       updateSignSelection,
       toggleRowEditing,
       updateText,
-      updateRow,
       getRegionItems,
       getSigns,
       formatRuling,
       setLineValue,
+      insertChar,
+      textareaRef,
     };
   },
 });
