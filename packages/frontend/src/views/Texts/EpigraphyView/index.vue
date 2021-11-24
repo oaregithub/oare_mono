@@ -40,10 +40,10 @@
           v-bind="routeProps"
           v-on="routeActions"
         ></router-view>
+        <span v-if="!textInfo.hasEpigraphy">
+          Apologies, we do not have a transliteration for this text at the moment.
+        </span>
       </OareContentView>
-      <p v-if="!textInfo.hasEpigraphy">
-      Apologies, we do not have a transliteration for this text at the moment.
-      </p>
     </v-col>
     <v-col
       cols="12"
