@@ -1,12 +1,14 @@
 <template>
   <div class="mb-10">
     <v-row justify="space-around">
+      <special-chars :disabled="!sideHasFocus" />
       <v-col v-for="(column, idx) in columns" :key="column.uuid">
         <column
           :columnNumber="idx + 1"
           :startingLine="getStartingLine(idx)"
           :beginningBrokenAreas="getStartingBreak(idx)"
           :beginsWithBreak="getBeginningBreakStatus(idx)"
+          :isCurrentColumn="currentColumn === column.uuid"
           @remove-column="removeColumn(idx)"
           @add-column-after="addColumnAfter(idx)"
           @last-line="setLastLine(idx, $event)"
@@ -14,6 +16,8 @@
           @ends-broken="setEndBreakStatus(idx, $event)"
           @dirty-status="setDirtyStatus(idx, $event)"
           @update-column-rows="setColumnRows(idx, $event)"
+          @set-current-column="setCurrentColumn(column.uuid)"
+          @set-column-focus="setColumnFocusStatus(column.uuid, $event)"
         />
       </v-col>
     </v-row>
@@ -25,6 +29,7 @@ import { SideOption, RowContent, ColumnContent } from '@oare/types';
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { v4 } from 'uuid';
 import Column from './Column.vue';
+import SpecialChars from './SpecialChars.vue';
 
 export interface Column {
   uuid: string;
@@ -56,6 +61,7 @@ export default defineComponent({
   },
   components: {
     Column,
+    SpecialChars,
   },
   setup(props, { emit }) {
     const columns = ref<Column[]>([
@@ -204,6 +210,24 @@ export default defineComponent({
       });
     };
 
+    const currentColumn = ref<string>();
+    const setCurrentColumn = (columnUuid?: string) => {
+      currentColumn.value = columnUuid;
+    };
+
+    const sideHasFocus = ref(false);
+    const columnFocusStatuses = ref<{ [columnUuid: string]: boolean }>({});
+    const setColumnFocusStatus = (uuid: string, value: boolean) => {
+      columnFocusStatuses.value[uuid] = value;
+      setTimeout(
+        () =>
+          (sideHasFocus.value = Object.values(
+            columnFocusStatuses.value
+          ).includes(true)),
+        100
+      );
+    };
+
     return {
       addColumnAfter,
       removeColumn,
@@ -216,6 +240,11 @@ export default defineComponent({
       getBeginningBreakStatus,
       setDirtyStatus,
       setColumnRows,
+      currentColumn,
+      setCurrentColumn,
+      columnFocusStatuses,
+      setColumnFocusStatus,
+      sideHasFocus,
     };
   },
 });

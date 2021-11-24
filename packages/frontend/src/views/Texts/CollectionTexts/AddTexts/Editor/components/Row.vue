@@ -6,7 +6,6 @@
       </v-col>
       <v-col cols="10" class="pa-0">
         <v-container v-if="row.type === 'Line'" class="pa-0 ma-0">
-          <special-chars @char-input="insertChar($event)" />
           <v-row
             v-if="row.signs && row.signs.length > 0"
             class="pa-0 ma-0 mb-1"
@@ -73,6 +72,7 @@
               @input="updateText($event)"
               @keyup="updateSignSelection($event)"
               @click="updateSignSelection($event)"
+              @focus="setFocused"
               @blur="resetSignSelection"
               :value="row.text"
               ref="textareaRef"
@@ -127,7 +127,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, nextTick } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  nextTick,
+  onMounted,
+  watch,
+} from '@vue/composition-api';
 import { RowWithLine } from './Column.vue';
 import { formatLineNumber as defaultLineFormatter } from '@oare/oare';
 import sl from '@/serviceLocator';
@@ -140,6 +147,7 @@ import {
   RowTypes,
 } from '@oare/types';
 import SpecialChars from './SpecialChars.vue';
+import EventBus, { ACTIONS } from '@/EventBus';
 
 export default defineComponent({
   props: {
@@ -148,6 +156,10 @@ export default defineComponent({
       required: true,
     },
     autofocus: {
+      type: Boolean,
+      default: false,
+    },
+    isCurrentRow: {
       type: Boolean,
       default: false,
     },
@@ -194,6 +206,7 @@ export default defineComponent({
     };
 
     const resetSignSelection = () => {
+      focused.value = false;
       emit('reset-new-row');
       emit('update-row-content', {
         ...props.row,
@@ -398,6 +411,24 @@ export default defineComponent({
       input.setSelectionRange(cursorIndex.value, cursorIndex.value);
     };
 
+    const focused = ref(false);
+    const setFocused = () => {
+      focused.value = true;
+      emit('set-current-row');
+    };
+    watch(focused, () => {
+      emit('set-focused', focused.value);
+    });
+
+    onMounted(() => {
+      emit('set-current-row');
+      EventBus.$on(ACTIONS.SPECIAL_CHAR_INPUT, (char: string) => {
+        if (props.isCurrentRow) {
+          insertChar(char);
+        }
+      });
+    });
+
     return {
       formatLineNumber,
       getWidth,
@@ -412,6 +443,8 @@ export default defineComponent({
       setLineValue,
       insertChar,
       textareaRef,
+      focused,
+      setFocused,
     };
   },
 });

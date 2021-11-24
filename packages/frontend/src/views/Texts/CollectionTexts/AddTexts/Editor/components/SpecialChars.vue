@@ -1,8 +1,8 @@
 <template>
-  <v-row class="mb-2 mx-1 mt-1">
+  <v-row class="mb-n4 mx-1 mt-1" justify="center">
     <v-tooltip
       top
-      open-delay="1500"
+      open-delay="1200"
       v-for="(char, idx) in specialCharacters"
       :key="idx"
     >
@@ -10,10 +10,13 @@
         <v-btn
           v-bind="attrs"
           v-on="on"
-          @click="$emit('char-input', char.character)"
-          color="info"
-          text
+          @click="inputSpecialChar(char.character)"
+          color="grey lighten-3"
+          rounded
           small
+          :disabled="disabled"
+          elevation="0"
+          class="mx-1"
           >{{ char.character }}</v-btn
         >
       </template>
@@ -24,6 +27,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import sl from '@/serviceLocator';
 
 export interface SpecialChar {
   character: string;
@@ -31,7 +35,15 @@ export interface SpecialChar {
 }
 
 export default defineComponent({
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+  },
   setup() {
+    const actions = sl.get('globalActions');
+
     const specialCharacters = ref<SpecialChar[]>([
       {
         character: '[',
@@ -74,8 +86,14 @@ export default defineComponent({
         label: 'Erasure',
       },
     ]);
+
+    const inputSpecialChar = (char: string) => {
+      actions.inputSpecialChar(char);
+    };
+
     return {
       specialCharacters,
+      inputSpecialChar,
     };
   },
 });
