@@ -112,7 +112,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       : null;
 
     const response: EpigraphyResponse = {
-      textName: text.name,
+      text,
       collection,
       units,
       canWrite,

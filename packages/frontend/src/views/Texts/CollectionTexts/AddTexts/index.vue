@@ -161,10 +161,25 @@ export default defineComponent({
     const epigraphyDetails: ComputedRef<EpigraphyResponse> = computed(() => {
       return {
         canWrite: false,
-        textName:
+        text: {
+          id: 0,
+          uuid: '',
+          type: '',
+          name:
+            textInfo.value && textInfo.value.textName
+              ? textInfo.value.textName
+              : '',
+          excavationPrefix: '',
+          excavationNumber: '',
+          museumPrefix: '',
+          museumNumber: '',
+          publicationPrefix: '',
+          publicationNumber: '',
+        },
+        /*textName:
           textInfo.value && textInfo.value.textName
             ? textInfo.value.textName
-            : '',
+            : '',*/
         collection: {
           uuid: props.collectionUuid,
           name: collectionName.value,
