@@ -7,7 +7,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
     Go to advanced queries <i aria-hidden="true" class="v-icon notranslate mdi mdi-icon-right theme--light"></i></router-link-stub>
   <div class="d-flex flex-column test-text-input">
     <div class="d-flex">
-      <h4>Text</h4>
+      <h4>Text Name</h4>
       <!---->
       <div role="dialog" class="v-dialog__container">
         <!---->
