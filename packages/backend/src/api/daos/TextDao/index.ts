@@ -1,6 +1,5 @@
 import knex from '@/connection';
-import { TranslitOption } from '@oare/types';
-import { Text } from '@oare/types/src/epigraphies';
+import { TranslitOption, Text } from '@oare/types';
 
 interface TextUuid {
   uuid: string;
@@ -10,7 +9,6 @@ class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
     const text: Text = await knex('text')
       .select(
-        'id',
         'uuid',
         'type',
         'name',

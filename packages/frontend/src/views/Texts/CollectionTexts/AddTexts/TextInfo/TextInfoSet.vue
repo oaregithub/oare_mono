@@ -278,7 +278,9 @@ export default defineComponent({
     };
 
     const textInfo: ComputedRef<AddTextInfo> = computed(() => ({
-      textName: textName.value,
+      name: textName.value,
+      type: '',
+      uuid: '',
       cdliNum: cdliNum.value,
       excavationPrefix: excavationPrefix.value,
       excavationNumber: excavationNumber.value,

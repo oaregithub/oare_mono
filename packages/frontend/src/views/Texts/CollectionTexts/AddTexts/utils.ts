@@ -192,7 +192,7 @@ const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
   language: null,
   cdliNum: textInfo.cdliNum,
   translitStatus: '5536b5bd-e18e-11ea-8c9d-02b316ca7378',
-  name: textInfo.textName,
+  name: textInfo.name,
   excavationPrefix: textInfo.excavationPrefix,
   excavationNumber: textInfo.excavationNumber,
   museumPrefix: textInfo.museumPrefix,

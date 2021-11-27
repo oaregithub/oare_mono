@@ -5,7 +5,6 @@ import { ParseTreeProperty } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 
 export interface Text {
-  id: number;
   uuid: string;
   type: string;
   name: string;
@@ -167,7 +166,9 @@ export interface UpdateTranslitStatusPayload {
 export type SideOption = 'obv.' | 'lo.e.' | 'rev.' | 'u.e.' | 'le.e.' | 'r.e.';
 
 export interface AddTextInfo {
-  textName: string | null;
+  name: string | null;
+  type: string | null;
+  uuid: string | null;
   cdliNum: string | null;
   excavationPrefix: string | null;
   excavationNumber: string | null;

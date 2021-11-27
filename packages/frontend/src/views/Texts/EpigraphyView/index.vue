@@ -10,30 +10,15 @@
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
         <div class="textInfo">
-          <div
-            v-if="
-              textInfo.text.excavationPrefix !== null &&
-              textInfo.text.excavationPrefix !== undefined
-            "
-          >
+          <div v-if="textInfo.text.excavationPrefix">
             Excavation Info: {{ textInfo.text.excavationPrefix }}
             {{ textInfo.text.excavationNumber }}
           </div>
-          <div
-            v-if="
-              textInfo.text.museumPrefix !== null &&
-              textInfo.text.museumPrefix !== undefined
-            "
-          >
+          <div v-if="textInfo.text.museumPrefix">
             Museum Info: {{ textInfo.text.museumPrefix }}
             {{ textInfo.text.museumNumber }}
           </div>
-          <div
-            v-if="
-              textInfo.text.publicationPrefix != null &&
-              textInfo.text.publicationPrefix !== undefined
-            "
-          >
+          <div v-if="textInfo.text.publicationPrefix">
             Primary Publication Info: {{ textInfo.text.publicationPrefix }}
             {{ textInfo.text.publicationNumber }}
           </div>
@@ -165,7 +150,6 @@ export default defineComponent({
     const textInfo = ref<EpigraphyResponse>({
       canWrite: false,
       text: {
-        id: 0,
         uuid: '',
         type: '',
         name: '',
@@ -175,7 +159,7 @@ export default defineComponent({
         museumNumber: '',
         publicationPrefix: '',
         publicationNumber: '',
-      }, //Q: Is this right?
+      },
       collection: {
         uuid: '',
         name: '',

@@ -4,7 +4,13 @@
     <slot name="header"></slot>
 
     <v-card-title
-      class="oare-header d-flex justify-space-between align-center test-content-title"
+      class="
+        oare-header
+        d-flex
+        justify-space-between
+        align-center
+        test-content-title
+      "
     >
       <slot name="title">
         <div class="d-flex align-center">
