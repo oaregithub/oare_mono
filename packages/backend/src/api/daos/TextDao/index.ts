@@ -14,7 +14,39 @@ interface TextUuid {
 
 class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
-    const text: Text = await knex('text').first().where({ uuid });
+    const row = await knex('text').first().where({ uuid });
+    let textName: string = '';
+    if (row.excavation_prfx?.slice(0, 2).toLowerCase() === 'kt') {
+      textName = `${row.excavation_prfx} ${row.excavation_no}`;
+      if (row.publication_prfx && row.publication_no) {
+        textName += ` (${row.publication_prfx} ${row.publication_no})`;
+      } else if (row.museum_prfx && row.museum_no) {
+        textName += ` (${row.museum_prfx} ${row.museum_no})`;
+      }
+    } else if (row.publication_prfx && row.publication_no) {
+      textName = `${row.publication_prfx} ${row.publication_no}`;
+      if (row.excavation_prfx && row.excavation_no) {
+        textName += ` (${row.excavation_prfx} ${row.excavation_no})`;
+      } else if (row.museum_prfx && row.museum_no) {
+        textName += ` (${row.museum_prfx} ${row.museum_no})`;
+      }
+    } else if (row.excavation_prfx && row.excavation_no) {
+      textName = `${row.excavation_prfx} ${row.excavation_no}`;
+      if (row.museum_prfx && row.museum_no) {
+        textName += ` (${row.museum_prfx} ${row.museum_no})`;
+      }
+    } else if (row.museum_prfx && row.museum_no) {
+      textName = `${row.museum_prfx} ${row.museum_no}`;
+    } else {
+      textName = row.name;
+    }
+
+    const text: Text = {
+      id: row.id,
+      uuid: row.uuid,
+      type: row.type,
+      name: textName,
+    };
     return text;
   }
 
