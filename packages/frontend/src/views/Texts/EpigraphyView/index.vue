@@ -40,6 +40,9 @@
           v-bind="routeProps"
           v-on="routeActions"
         ></router-view>
+        <span v-if="!textInfo.hasEpigraphy">
+          Apologies, we do not have a transliteration for this text at the moment.
+        </span>
       </OareContentView>
     </v-col>
     <v-col
@@ -144,6 +147,7 @@ export default defineComponent({
       color: '',
       colorMeaning: '',
       discourseUnits: [],
+      hasEpigraphy: false,
     });
     const imageUrls = ref<string[]>([]);
 
