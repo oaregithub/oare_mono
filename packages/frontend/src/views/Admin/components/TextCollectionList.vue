@@ -155,9 +155,10 @@ export default defineComponent({
         items.value = items.value.sort((a, b) =>
           a.name && b.name ? a.name.localeCompare(b.name) : -1
         );
-      } catch {
+      } catch(err: any) {
         actions.showErrorSnackbar(
-          `Error loading group ${itemType}(s). Please try again.`
+          `Error loading group ${itemType}(s). Please try again.`,  
+          err
         );
       } finally {
         loading.value = false;

@@ -167,8 +167,9 @@ export default defineComponent({
         emit('save-draft', localDraft.value);
         actions.showSnackbar('Successfully saved draft');
         isDirty.value = false;
-      } catch {
-        actions.showErrorSnackbar('Failed to save draft');
+      } catch(err) {
+        actions.showErrorSnackbar('Failed to save draft'),
+        err as Error
       } finally {
         saveLoading.value = false;
       }

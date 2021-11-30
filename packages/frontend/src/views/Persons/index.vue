@@ -177,8 +177,9 @@ export default defineComponent({
       try {
         loading.value = true;
         personList.value = await server.getPeople(props.letter);
-      } catch (e) {
-        actions.showErrorSnackbar('Failed to retrieve people');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to retrieve people'),
+        err as Error
       } finally {
         loading.value = false;
       }

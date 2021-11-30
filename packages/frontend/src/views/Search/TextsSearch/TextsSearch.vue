@@ -128,8 +128,9 @@ export default defineComponent({
             rows,
           });
           searchResults.value = results;
-        } catch {
-          actions.showErrorSnackbar('Error searching texts. Please try again.');
+        } catch(err) {
+          actions.showErrorSnackbar('Error searching texts. Please try again.'),
+          err as Error
         } finally {
           searchLoading.value = false;
         }

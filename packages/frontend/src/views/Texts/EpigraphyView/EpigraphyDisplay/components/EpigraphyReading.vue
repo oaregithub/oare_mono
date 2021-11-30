@@ -137,7 +137,8 @@ export default defineComponent({
         }
       } catch (err) {
         actions.showErrorSnackbar(
-          'Failed to retrieve text discourse word info'
+          'Failed to retrieve text discourse word info',
+          err as Error
         );
       } finally {
         loading.value = false;

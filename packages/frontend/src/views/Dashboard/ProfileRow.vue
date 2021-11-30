@@ -125,8 +125,9 @@ export default defineComponent({
         actions.showSnackbar('Profile successfully updated');
         isEditing.value = false;
         emit('updated', editedValue.value);
-      } catch {
-        actions.showErrorSnackbar('There was an error updating your profile.');
+      } catch(err) {
+        actions.showErrorSnackbar('There was an error updating your profile.'),
+        err as Error
       } finally {
         loading.value = false;
       }
