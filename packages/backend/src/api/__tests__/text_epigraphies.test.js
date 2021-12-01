@@ -270,7 +270,15 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       colorMeaning: 'Test Color Meaning',
     }),
     getTextByUuid: jest.fn().mockResolvedValue({
-      name: 'Text Name',
+      uuid: 'testUuid',
+      type: 'testType',
+      name: 'testName',
+      excavationPrefix: 'testExcavationPrefix',
+      excavationNumber: 'testExcavationNumber',
+      museumPrefix: 'testMuseumPrefix',
+      museumNumber: 'testMuseumNumber',
+      publicationPrefix: 'testPublicationPrefix',
+      publicationNumber: 'testPublicationNumber',
     }),
   };
 
