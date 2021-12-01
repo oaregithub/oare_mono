@@ -15,37 +15,19 @@ interface TextUuid {
 class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
     const row = await knex('text').first().where({ uuid });
-    let textName: string = '';
-    if (row.excavation_prfx?.slice(0, 2).toLowerCase() === 'kt') {
-      textName = `${row.excavation_prfx} ${row.excavation_no}`;
-      if (row.publication_prfx && row.publication_no) {
-        textName += ` (${row.publication_prfx} ${row.publication_no})`;
-      } else if (row.museum_prfx && row.museum_no) {
-        textName += ` (${row.museum_prfx} ${row.museum_no})`;
-      }
-    } else if (row.publication_prfx && row.publication_no) {
-      textName = `${row.publication_prfx} ${row.publication_no}`;
-      if (row.excavation_prfx && row.excavation_no) {
-        textName += ` (${row.excavation_prfx} ${row.excavation_no})`;
-      } else if (row.museum_prfx && row.museum_no) {
-        textName += ` (${row.museum_prfx} ${row.museum_no})`;
-      }
-    } else if (row.excavation_prfx && row.excavation_no) {
-      textName = `${row.excavation_prfx} ${row.excavation_no}`;
-      if (row.museum_prfx && row.museum_no) {
-        textName += ` (${row.museum_prfx} ${row.museum_no})`;
-      }
-    } else if (row.museum_prfx && row.museum_no) {
-      textName = `${row.museum_prfx} ${row.museum_no}`;
-    } else {
-      textName = row.name;
-    }
-
     const text: Text = {
       id: row.id,
       uuid: row.uuid,
       type: row.type,
-      name: textName,
+      name: this.generateTextName(
+        row.excavation_prfx,
+        row.excavation_no,
+        row.publication_prfx,
+        row.publication_no,
+        row.museum_prfx,
+        row.museum_no,
+        row.name
+      ),
     };
     return text;
   }
@@ -94,6 +76,45 @@ class TextDao {
       .where('a2.name', 'transliteration status');
 
     return stoplightOptions.reverse();
+  }
+
+  generateTextName(
+    excavation_prfx: string,
+    excavation_no: string,
+    publication_prfx: string,
+    publication_no: string,
+    museum_prfx: string,
+    museum_no: string,
+    name: string
+  ): string {
+    let textName: string = '';
+
+    if (excavation_prfx && excavation_prfx.slice(0, 2).toLowerCase() === 'kt') {
+      textName = `${excavation_prfx} ${excavation_no}`;
+      if (publication_prfx && publication_no) {
+        textName += ` (${publication_prfx} ${publication_no})`;
+      } else if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (publication_prfx && publication_no) {
+      textName = `${publication_prfx} ${publication_no}`;
+      if (excavation_prfx && excavation_no) {
+        textName += ` (${excavation_prfx} ${excavation_no})`;
+      } else if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (excavation_prfx && excavation_no) {
+      textName = `${excavation_prfx} ${excavation_no}`;
+      if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (museum_prfx && museum_no) {
+      textName = `${museum_prfx} ${museum_no}`;
+    } else {
+      textName = name;
+    }
+
+    return textName;
   }
 
   async updateTranslitStatus(textUuid: string, color: string) {
