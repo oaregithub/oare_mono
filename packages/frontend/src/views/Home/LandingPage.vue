@@ -14,11 +14,10 @@
           The intended purpose of the database is to facilitate work with the
           Old Assyrian texts from the period of Kültepe Level II and Kültepe
           Level Ib. OARE is organized to record textual and expert observations
-          arising from the interpretation, In this manner, it is intended
-          to facilitate collaborative research projects on the
-          historical and archaeological record of the Old Assyrian trade and
-          society through linguistic, lexical, economic, social, and other
-          lenses.
+          arising from the interpretation, In this manner, it is intended to
+          facilitate collaborative research projects on the historical and
+          archaeological record of the Old Assyrian trade and society through
+          linguistic, lexical, economic, social, and other lenses.
         </p>
         <p>
           The core OARE database is part of the Online Cultural and Historical
@@ -37,7 +36,7 @@
           The sidebar search on the left prefers abbreviations used within the
           Old Assyrian specialist community (thus TC 2 instead of TCL 14) and
           only uses commas with reference to page numbers (thus TC 2 1 instead
-          of TC 2, 1). Consult the (i) buttons there and in the Search page to 
+          of TC 2, 1). Consult the (i) buttons there and in the Search page to
           find further search features.
         </p>
         <p class="blue--text text--lighten-1">
@@ -45,12 +44,12 @@
             Please be advised, we are still working out
             <router-link to="/issues">issues</router-link>. Use transliterations
             at your own risk. Many texts display nicely, but some display errors
-            occasionally occur. In addition, we are still auditing the data. 
+            occasionally occur. In addition, we are still auditing the data.
             Original transliterations of text published before roughly 2008
             arise from the Old Assyrian Text Project and a few other sources.
-            Transliterations from more recent publications were checked within 
-            OARE/OCHRE, but some errors were introduced in converting to
-            the format used for this database.</em
+            Transliterations from more recent publications were checked within
+            OARE/OCHRE, but some errors were introduced in converting to the
+            format used for this database.</em
           >
         </p>
         <p>
@@ -62,11 +61,11 @@
         </p>
         <p>
           If you are interested in participating in the project, please consider
-          creating an account. Passwords chosen are not visible to us. We can share
-          Beta features with interested registered users and can make available 
-          further feedback mechanisms for development. Registered users can mark
-          texts that are misbehaving, or point out errors. Anyone is invited to 
-          please send any feedback to
+          creating an account. Passwords chosen are not visible to us. We can
+          share Beta features with interested registered users upon request and
+          can make available further feedback mechanisms for development.
+          Registered users can mark texts that are misbehaving, or point out
+          errors. Anyone is invited to please send any feedback to
           <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>.
         </p>
       </v-col>
