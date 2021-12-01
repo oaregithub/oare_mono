@@ -14,7 +14,21 @@ interface TextUuid {
 
 class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
-    const text: Text = await knex('text').first().where({ uuid });
+    const row = await knex('text').first().where({ uuid });
+    const text: Text = {
+      id: row.id,
+      uuid: row.uuid,
+      type: row.type,
+      name: this.generateTextName(
+        row.excavation_prfx,
+        row.excavation_no,
+        row.publication_prfx,
+        row.publication_no,
+        row.museum_prfx,
+        row.museum_no,
+        row.name
+      ),
+    };
     return text;
   }
 
@@ -62,6 +76,45 @@ class TextDao {
       .where('a2.name', 'transliteration status');
 
     return stoplightOptions.reverse();
+  }
+
+  generateTextName(
+    excavation_prfx: string,
+    excavation_no: string,
+    publication_prfx: string,
+    publication_no: string,
+    museum_prfx: string,
+    museum_no: string,
+    name: string
+  ): string {
+    let textName: string = '';
+
+    if (excavation_prfx && excavation_prfx.slice(0, 2).toLowerCase() === 'kt') {
+      textName = `${excavation_prfx} ${excavation_no}`;
+      if (publication_prfx && publication_no) {
+        textName += ` (${publication_prfx} ${publication_no})`;
+      } else if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (publication_prfx && publication_no) {
+      textName = `${publication_prfx} ${publication_no}`;
+      if (excavation_prfx && excavation_no) {
+        textName += ` (${excavation_prfx} ${excavation_no})`;
+      } else if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (excavation_prfx && excavation_no) {
+      textName = `${excavation_prfx} ${excavation_no}`;
+      if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (museum_prfx && museum_no) {
+      textName = `${museum_prfx} ${museum_no}`;
+    } else {
+      textName = name;
+    }
+
+    return textName;
   }
 
   async updateTranslitStatus(textUuid: string, color: string) {
