@@ -110,7 +110,7 @@
         >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
         <v-btn class="test-search" text to="/search/texts">Search</v-btn>
-        <v-btn class="test-about" text to="/about">About</v-btn>
+        <v-btn text to="/about">About</v-btn>
       </v-row>
     </template>
   </v-app-bar>
