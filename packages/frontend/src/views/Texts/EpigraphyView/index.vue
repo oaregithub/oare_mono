@@ -10,15 +10,23 @@
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
         <div class="textInfo">
-          <div v-if="textInfo.text.excavationPrefix">
+          <div
+            v-if="
+              textInfo.text.excavationPrefix || textInfo.text.excavationNumber
+            "
+          >
             Excavation Info: {{ textInfo.text.excavationPrefix }}
             {{ textInfo.text.excavationNumber }}
           </div>
-          <div v-if="textInfo.text.museumPrefix">
+          <div v-if="textInfo.text.museumPrefix || textInfo.text.museumNumber">
             Museum Info: {{ textInfo.text.museumPrefix }}
             {{ textInfo.text.museumNumber }}
           </div>
-          <div v-if="textInfo.text.publicationPrefix">
+          <div
+            v-if="
+              textInfo.text.publicationPrefix || textInfo.text.publicationNumber
+            "
+          >
             Primary Publication Info: {{ textInfo.text.publicationPrefix }}
             {{ textInfo.text.publicationNumber }}
           </div>

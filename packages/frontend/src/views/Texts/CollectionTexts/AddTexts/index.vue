@@ -162,12 +162,12 @@ export default defineComponent({
       return {
         canWrite: false,
         text: {
-          uuid:
-            textInfo.value && textInfo.value.uuid ? textInfo.value.uuid : '',
-          type:
-            textInfo.value && textInfo.value.type ? textInfo.value.type : '',
+          uuid: createTextTables.value ? createTextTables.value.text.uuid : '',
+          type: 'logosyllabic',
           name:
-            textInfo.value && textInfo.value.name ? textInfo.value.name : '',
+            textInfo.value && textInfo.value.textName
+              ? textInfo.value.textName
+              : '',
           excavationPrefix:
             textInfo.value && textInfo.value.excavationPrefix
               ? textInfo.value.excavationPrefix
