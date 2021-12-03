@@ -1,12 +1,5 @@
 import knex from '@/connection';
-import { TranslitOption } from '@oare/types';
-
-interface Text {
-  id: number;
-  uuid: string;
-  type: string;
-  name: string;
-}
+import { TranslitOption, Text } from '@oare/types';
 
 interface TextUuid {
   uuid: string;
@@ -14,18 +7,29 @@ interface TextUuid {
 
 class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
-    const row = await knex('text').first().where({ uuid });
+    const row: Text = await knex('text')
+      .select(
+        'uuid',
+        'type',
+        'name',
+        'excavation_prfx AS excavationPrefix',
+        'excavation_no AS excavationNumber',
+        'museum_prfx AS museumPrefix',
+        'museum_no AS museumNumber',
+        'publication_prfx AS publicationPrefix',
+        'publication_no AS publicationNumber'
+      )
+      .first()
+      .where({ uuid });
     const text: Text = {
-      id: row.id,
-      uuid: row.uuid,
-      type: row.type,
+      ...row,
       name: this.generateTextName(
-        row.excavation_prfx,
-        row.excavation_no,
-        row.publication_prfx,
-        row.publication_no,
-        row.museum_prfx,
-        row.museum_no,
+        row.excavationPrefix,
+        row.excavationNumber,
+        row.publicationPrefix,
+        row.publicationNumber,
+        row.museumPrefix,
+        row.museumNumber,
         row.name
       ),
     };
@@ -79,12 +83,12 @@ class TextDao {
   }
 
   generateTextName(
-    excavation_prfx: string,
-    excavation_no: string,
-    publication_prfx: string,
-    publication_no: string,
-    museum_prfx: string,
-    museum_no: string,
+    excavation_prfx: string | null,
+    excavation_no: string | null,
+    publication_prfx: string | null,
+    publication_no: string | null,
+    museum_prfx: string | null,
+    museum_no: string | null,
     name: string
   ): string {
     let textName: string = '';

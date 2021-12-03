@@ -114,7 +114,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
 
     const response: EpigraphyResponse = {
-      textName: text.name,
+      text,
       collection,
       units,
       canWrite,

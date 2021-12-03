@@ -5,10 +5,33 @@
       :sm="canViewEpigraphyImages ? 7 : 12"
       :md="canViewEpigraphyImages ? 5 : 12"
     >
-      <OareContentView :title="textInfo.textName" :loading="loading">
+      <OareContentView :title="textInfo.text.name" :loading="loading">
         <template #header v-if="!disableEditing">
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
+        <div class="textInfo">
+          <div
+            v-if="
+              textInfo.text.excavationPrefix || textInfo.text.excavationNumber
+            "
+          >
+            Excavation Info: {{ textInfo.text.excavationPrefix }}
+            {{ textInfo.text.excavationNumber }}
+          </div>
+          <div v-if="textInfo.text.museumPrefix || textInfo.text.museumNumber">
+            Museum Info: {{ textInfo.text.museumPrefix }}
+            {{ textInfo.text.museumNumber }}
+          </div>
+          <div
+            v-if="
+              textInfo.text.publicationPrefix || textInfo.text.publicationNumber
+            "
+          >
+            Primary Publication Info: {{ textInfo.text.publicationPrefix }}
+            {{ textInfo.text.publicationNumber }}
+          </div>
+          <br />
+        </div>
         <template
           #title:pre
           v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
@@ -137,7 +160,17 @@ export default defineComponent({
     const hasPicture = computed(() => imageUrls.value.length > 0);
     const textInfo = ref<EpigraphyResponse>({
       canWrite: false,
-      textName: '',
+      text: {
+        uuid: '',
+        type: '',
+        name: '',
+        excavationPrefix: '',
+        excavationNumber: '',
+        museumPrefix: '',
+        museumNumber: '',
+        publicationPrefix: '',
+        publicationNumber: '',
+      },
       collection: {
         uuid: '',
         name: '',

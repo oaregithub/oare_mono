@@ -185,7 +185,17 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   const PATH = `${API_PATH}/text_epigraphies/text/${textUuid}`;
 
   const mockResponse = {
-    textName: 'Text Name',
+    text: {
+      uuid: 'testUuid',
+      type: 'testType',
+      name: 'testName',
+      excavationPrefix: 'testExcavationPrefix',
+      excavationNumber: 'testExcavationNumber',
+      museumPrefix: 'testMuseumPrefix',
+      museumNumber: 'testMuseumNumber',
+      publicationPrefix: 'testPublicationPrefix',
+      publicationNumber: 'testPublicationNumber',
+    },
     collection: {
       uuid: '12345',
       name: 'Test Collection',
@@ -262,7 +272,15 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       colorMeaning: 'Test Color Meaning',
     }),
     getTextByUuid: jest.fn().mockResolvedValue({
-      name: 'Text Name',
+      uuid: 'testUuid',
+      type: 'testType',
+      name: 'testName',
+      excavationPrefix: 'testExcavationPrefix',
+      excavationNumber: 'testExcavationNumber',
+      museumPrefix: 'testMuseumPrefix',
+      museumNumber: 'testMuseumNumber',
+      publicationPrefix: 'testPublicationPrefix',
+      publicationNumber: 'testPublicationNumber',
     }),
   };
 

@@ -4,9 +4,21 @@ import { Collection } from './collection';
 import { ParseTreeProperty } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 
+export interface Text {
+  uuid: string;
+  type: string;
+  name: string;
+  excavationPrefix: string | null;
+  excavationNumber: string | null;
+  museumPrefix: string | null;
+  museumNumber: string | null;
+  publicationPrefix: string | null;
+  publicationNumber: string | null;
+}
+
 export interface EpigraphyResponse {
   canWrite: boolean;
-  textName: string;
+  text: Text | null;
   collection: Collection;
   cdliNum: string | null;
   units: EpigraphicUnit[];
