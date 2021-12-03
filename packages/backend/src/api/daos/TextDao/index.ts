@@ -7,7 +7,7 @@ interface TextUuid {
 
 class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
-    const text: Text = await knex('text')
+    const row: Text = await knex('text')
       .select(
         'uuid',
         'type',
@@ -21,6 +21,18 @@ class TextDao {
       )
       .first()
       .where({ uuid });
+    const text: Text = {
+      ...row,
+      name: this.generateTextName(
+        row.excavationPrefix,
+        row.excavationNumber,
+        row.publicationPrefix,
+        row.publicationNumber,
+        row.museumPrefix,
+        row.museumNumber,
+        row.name
+      ),
+    };
     return text;
   }
 
@@ -68,6 +80,45 @@ class TextDao {
       .where('a2.name', 'transliteration status');
 
     return stoplightOptions.reverse();
+  }
+
+  generateTextName(
+    excavation_prfx: string | null,
+    excavation_no: string | null,
+    publication_prfx: string | null,
+    publication_no: string | null,
+    museum_prfx: string | null,
+    museum_no: string | null,
+    name: string
+  ): string {
+    let textName: string = '';
+
+    if (excavation_prfx && excavation_prfx.slice(0, 2).toLowerCase() === 'kt') {
+      textName = `${excavation_prfx} ${excavation_no}`;
+      if (publication_prfx && publication_no) {
+        textName += ` (${publication_prfx} ${publication_no})`;
+      } else if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (publication_prfx && publication_no) {
+      textName = `${publication_prfx} ${publication_no}`;
+      if (excavation_prfx && excavation_no) {
+        textName += ` (${excavation_prfx} ${excavation_no})`;
+      } else if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (excavation_prfx && excavation_no) {
+      textName = `${excavation_prfx} ${excavation_no}`;
+      if (museum_prfx && museum_no) {
+        textName += ` (${museum_prfx} ${museum_no})`;
+      }
+    } else if (museum_prfx && museum_no) {
+      textName = `${museum_prfx} ${museum_no}`;
+    } else {
+      textName = name;
+    }
+
+    return textName;
   }
 
   async updateTranslitStatus(textUuid: string, color: string) {

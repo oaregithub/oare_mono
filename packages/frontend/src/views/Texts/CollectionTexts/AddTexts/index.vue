@@ -207,6 +207,7 @@ export default defineComponent({
         color: '',
         colorMeaning: '',
         discourseUnits: [],
+        hasEpigraphy: true,
       };
     });
 

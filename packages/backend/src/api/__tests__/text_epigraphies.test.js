@@ -235,6 +235,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
         units: [],
       },
     ],
+    hasEpigraphy: true,
   };
 
   const mockTextEpigraphyDao = {
@@ -261,6 +262,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
         ],
       },
     ]),
+    hasEpigraphy: jest.fn().mockResolvedValue(true),
   };
 
   const mockTextDao = {
