@@ -20,7 +20,8 @@ export type EpigraphicUnitType =
   | 'phonogram'
   | 'logogram'
   | 'number'
-  | 'determinative';
+  | 'determinative'
+  | 'punctuation';
 
 export type EpigraphicUnitSide =
   | 'obv.'
@@ -100,11 +101,13 @@ export type MarkupType =
   | 'partialDamage'
   | 'isWrittenOverErasure'
   | 'isWrittenBelowTheLine'
+  | 'isWrittenAboveTheLine'
   | 'broken'
   | 'isSealImpression'
   | 'uninscribed'
   | 'ruling'
-  | 'isStampSealImpression';
+  | 'isStampSealImpression'
+  | 'phoneticComplement';
 
 export interface MarkupUnit {
   referenceUuid: string;
@@ -296,4 +299,20 @@ export interface CreateTextTables {
 export interface EditorWord {
   spelling: string;
   discourseUuid: string;
+}
+
+export interface EditorMarkupPiece {
+  type: MarkupType;
+  startChar?: number;
+  endChar?: number;
+  altReading?: string;
+  isDeterminative?: boolean;
+  numValue?: number;
+}
+
+export interface EditorMarkup {
+  text: string;
+  markup: EditorMarkupPiece[];
+  post: string;
+  wordIndex: number;
 }

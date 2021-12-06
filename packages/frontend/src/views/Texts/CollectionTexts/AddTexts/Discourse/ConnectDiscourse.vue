@@ -45,7 +45,11 @@
                 >
                   <v-chip
                     v-if="
-                      word.discourseUuid ? !isNumber(word.discourseUuid) : false
+                      word.discourseUuid
+                        ? !isNumber(word.discourseUuid) &&
+                          !isUndetermined(word.reading || '') &&
+                          !isSeparator(word.reading || '')
+                        : false
                     "
                     :color="getColor(word.discourseUuid)"
                     small
@@ -229,6 +233,14 @@ export default defineComponent({
       return discourseRow.type === 'number';
     };
 
+    const isUndetermined = (reading: string) => {
+      return reading.includes('...') || reading.match(/x+/);
+    };
+
+    const isSeparator = (reading: string) => {
+      return reading === '|';
+    };
+
     return {
       renderer,
       lineNumber,
@@ -241,6 +253,8 @@ export default defineComponent({
       getSelectedForm,
       getColor,
       isNumber,
+      isUndetermined,
+      isSeparator,
     };
   },
 });
