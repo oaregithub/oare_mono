@@ -6,7 +6,7 @@
     </router-link>
     <search-field
       class="test-text-input"
-      label="Text"
+      label="Text Name"
       v-model="text"
       @keyup.enter.native="performSearch"
       :disabled="textSearchDisabled"
