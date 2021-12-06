@@ -265,7 +265,18 @@ export default defineComponent({
     };
 
     const printSummary = () => {
-      console.log(createTextTables.value);
+      console.log({
+        text_epigraphy: createTextTables.value
+          ? createTextTables.value.epigraphies
+          : null,
+        text_markup: createTextTables.value
+          ? createTextTables.value.markups
+          : null,
+        text_discourse: createTextTables.value
+          ? createTextTables.value.discourses
+          : null,
+        text: createTextTables.value ? createTextTables.value.text : null,
+      });
     };
 
     return {
