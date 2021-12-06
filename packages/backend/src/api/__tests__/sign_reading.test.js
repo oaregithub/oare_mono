@@ -5,7 +5,7 @@ import sl from '@/serviceLocator';
 
 describe('GET /sign_reading/code/:sign/:post', () => {
   const mockSign = 'TÚG';
-  const mockPost = '*';
+  const mockPost = 'isPercent';
   const PATH = `${API_PATH}/sign_reading/code/${mockSign}/${mockPost}`;
 
   const mockSignReadingDao = {
@@ -33,8 +33,8 @@ describe('GET /sign_reading/code/:sign/:post', () => {
     expect(response.status).toBe(200);
   });
 
-  it('calls with false if post is not *', async () => {
-    const mockFalsePost = 'notAsterisk';
+  it('calls with false if post is not %', async () => {
+    const mockFalsePost = 'notPercent';
     const falsePath = `${API_PATH}/sign_reading/code/${mockSign}/${mockFalsePost}}`;
 
     const response = await request(app).get(falsePath);
