@@ -9,7 +9,7 @@
           <v-row
             v-if="row.signs && row.signs.length > 0"
             class="pa-0 ma-0 mb-1"
-            align="center"
+            align="end"
           >
             <div
               v-for="(sign, index) in row.signs"
@@ -50,11 +50,12 @@
                 justify="space-between"
               >
                 <span>{{ ' ' }} </span>
-                <span>
+                <span v-if="sign.reading !== '@'">
                   {{ sign.reading || '' }}
                 </span>
+                <span v-else>...</span>
                 <span>
-                  {{ sign.post && sign.post !== '*' ? sign.post : ' ' }}
+                  {{ sign.post && sign.post !== '%' ? sign.post : ' ' }}
                 </span>
               </v-row>
             </div>
@@ -148,6 +149,7 @@ import {
 } from '@oare/types';
 import SpecialChars from './SpecialChars.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
+import { applyMarkup } from '../../utils';
 
 export default defineComponent({
   props: {
@@ -260,32 +262,53 @@ export default defineComponent({
     };
 
     const getSigns = async (rowText: string) => {
-      const matches = rowText.match(/\(([^)]+)\)/g);
-      let matchesText: string[] = [];
-      if (matches) {
-        matchesText = matches.map(text => {
-          return `${text.slice(1, text.length - 1)}*`;
+      const determinativeMatches = rowText.match(/\(([^)]+)\)/g);
+      if (determinativeMatches) {
+        let matchesText: string[] = [];
+        matchesText = determinativeMatches.map(text => {
+          return `${text.slice(1, text.length - 1)}%`;
         });
         matchesText.forEach(matchText => {
           rowText = rowText.replace(/\(([^)]+)\)/, matchText);
         });
       }
 
+      const unknownUndeterminedSignsMatches = rowText.match(/\.\.\./g) || [];
+      unknownUndeterminedSignsMatches.forEach(_ => {
+        rowText = rowText.replace('...', '@');
+      });
+
+      const fullMarkup = await applyMarkup(rowText);
+
       const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
       const signsByWord = await Promise.all(
-        wordsText.map(async word => {
+        wordsText.map(async (word, wordIndex) => {
           try {
             const originalSigns = word
-              .split(/[\-.*]+/)
+              .split(/[\-.%]+/)
+              .filter(sign => sign !== '');
+            const originalMarkup = fullMarkup.filter(
+              markup => markup.wordIndex === wordIndex
+            );
+            const cleanSigns = originalSigns
+              .map(sign =>
+                sign.replace(/([[\]{}⸢⸣«»‹›:;*?/\\!])|(".+")|('.+')+/g, '')
+              )
               .filter(sign => sign !== '');
             const formattedSigns = await Promise.all(
-              originalSigns.map(sign => server.getFormattedSign(sign))
+              cleanSigns.map(sign => server.getFormattedSign(sign))
             );
-            const signs = formattedSigns.flat();
+            const unflattenedSigns = formattedSigns.map((signs, markupIdx) => {
+              return signs.map(sign => ({
+                sign,
+                markup: originalMarkup[markupIdx],
+              }));
+            });
+            const signs = unflattenedSigns.flat();
 
             const originalDividers = word
               .split('')
-              .filter(sign => sign.match(/[\-.*]+/));
+              .filter(sign => sign.match(/[\-.%]+/));
             const visibleDividers: string[] = [];
             formattedSigns.forEach((signPieces, idx) => {
               if (signPieces.length > 1) {
@@ -297,15 +320,15 @@ export default defineComponent({
             });
 
             const urlDividers = visibleDividers.map(div => {
-              if (div !== '*') {
-                return 'notAsterisk';
+              if (div !== '%') {
+                return 'notPercent';
               }
-              return div;
+              return 'isPercent';
             });
 
             const signCodes: SignCode[] = await Promise.all(
               signs.map((sign, idx) =>
-                server.getSignCode(sign, urlDividers[idx])
+                server.getSignCode(sign.sign, urlDividers[idx])
               )
             );
             const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
@@ -319,7 +342,8 @@ export default defineComponent({
                 return {
                   ...code,
                   post: visibleDividers[idx] || undefined,
-                  reading: signs[idx],
+                  reading: signs[idx].sign,
+                  markup: signs[idx].markup,
                 };
               });
             return signCodesWithDividers;
@@ -335,7 +359,7 @@ export default defineComponent({
       const words: EditorWord[] = signsByWord.map(word => {
         let spelling = '';
         word.forEach(sign => {
-          if (sign.post === '*') {
+          if (sign.post === '%') {
             spelling += `(${sign.value || ''})`;
           } else {
             spelling += `${sign.value || ''}${sign.post || ''}`;
@@ -404,7 +428,7 @@ export default defineComponent({
       const textAfterCursor = originalRowText.slice(cursorIndex.value);
       const newText = `${textBeforeCursor}${delineator}${textAfterCursor}`;
       updateText(newText);
-      cursorIndex.value += 1;
+      cursorIndex.value += delineator.length;
       textareaRef.value.focus();
       const input = textareaRef.value.$el.querySelector('textarea');
       await nextTick();

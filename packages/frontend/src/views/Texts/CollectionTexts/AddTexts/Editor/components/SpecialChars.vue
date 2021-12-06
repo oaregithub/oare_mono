@@ -16,7 +16,7 @@
           small
           :disabled="disabled"
           elevation="0"
-          class="mx-1"
+          class="mx-1 mt-1"
           >{{ char.character }}</v-btn
         >
       </template>
@@ -84,6 +84,54 @@ export default defineComponent({
       {
         character: '}',
         label: 'Erasure',
+      },
+      {
+        character: ':',
+        label: 'Uninterpreted',
+      },
+      {
+        character: ';',
+        label: 'Phonetic Complement',
+      },
+      {
+        character: '*',
+        label: 'Written Over Erasure',
+      },
+      {
+        character: '?',
+        label: 'Uncertain',
+      },
+      {
+        character: '/',
+        label: 'Written Below the Line',
+      },
+      {
+        character: '\\',
+        label: 'Written Above the Line',
+      },
+      {
+        character: '!',
+        label: '! - Emended Reading, !! - Collated Reading',
+      },
+      {
+        character: '"',
+        label: 'Original Sign',
+      },
+      {
+        character: "'",
+        label: 'Alternate Sign',
+      },
+      {
+        character: 'x',
+        label: 'Undetermined Sign',
+      },
+      {
+        character: '...',
+        label: 'Undetermined Signs (Unknown number)',
+      },
+      {
+        character: '|',
+        label: 'Separator',
       },
     ]);
 
