@@ -161,10 +161,38 @@ export default defineComponent({
     const epigraphyDetails: ComputedRef<EpigraphyResponse> = computed(() => {
       return {
         canWrite: false,
-        textName:
-          textInfo.value && textInfo.value.textName
-            ? textInfo.value.textName
-            : '',
+        text: {
+          uuid: createTextTables.value ? createTextTables.value.text.uuid : '',
+          type: 'logosyllabic',
+          name:
+            textInfo.value && textInfo.value.textName
+              ? textInfo.value.textName
+              : '',
+          excavationPrefix:
+            textInfo.value && textInfo.value.excavationPrefix
+              ? textInfo.value.excavationPrefix
+              : '',
+          excavationNumber:
+            textInfo.value && textInfo.value.excavationNumber
+              ? textInfo.value.excavationNumber
+              : '',
+          museumPrefix:
+            textInfo.value && textInfo.value.museumPrefix
+              ? textInfo.value.museumPrefix
+              : '',
+          museumNumber:
+            textInfo.value && textInfo.value.museumNumber
+              ? textInfo.value.museumNumber
+              : '',
+          publicationPrefix:
+            textInfo.value && textInfo.value.publicationPrefix
+              ? textInfo.value.publicationPrefix
+              : '',
+          publicationNumber:
+            textInfo.value && textInfo.value.publicationNumber
+              ? textInfo.value.publicationNumber
+              : '',
+        },
         collection: {
           uuid: props.collectionUuid,
           name: collectionName.value,
@@ -179,6 +207,7 @@ export default defineComponent({
         color: '',
         colorMeaning: '',
         discourseUnits: [],
+        hasEpigraphy: true,
       };
     });
 
