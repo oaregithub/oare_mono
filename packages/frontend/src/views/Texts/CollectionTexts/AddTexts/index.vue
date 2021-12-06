@@ -81,6 +81,9 @@
             blockContinueText="Coming Soon"
             @previous="previous"
           />
+          <v-btn color="primary" text class="ml-4 mt-6" @click="printSummary">
+            Print Tables to Console
+          </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -261,6 +264,10 @@ export default defineComponent({
       }
     };
 
+    const printSummary = () => {
+      console.log(createTextTables.value);
+    };
+
     return {
       collectionName,
       step,
@@ -277,6 +284,7 @@ export default defineComponent({
       stepOneComplete,
       stepThreeComplete,
       buildTables,
+      printSummary,
     };
   },
 });
