@@ -253,12 +253,12 @@ export default defineComponent({
       });
     };
 
-    const updateText = (text: string) => {
+    const updateText = async (text: string) => {
       emit('update-row-content', {
         ...props.row,
         text,
       });
-      getSigns(text);
+      await getSigns(text);
     };
 
     const getSigns = async (rowText: string) => {
@@ -427,7 +427,7 @@ export default defineComponent({
       const textBeforeCursor = originalRowText.slice(0, cursorIndex.value);
       const textAfterCursor = originalRowText.slice(cursorIndex.value);
       const newText = `${textBeforeCursor}${delineator}${textAfterCursor}`;
-      updateText(newText);
+      await updateText(newText);
       cursorIndex.value += delineator.length;
       textareaRef.value.focus();
       const input = textareaRef.value.$el.querySelector('textarea');
@@ -444,11 +444,11 @@ export default defineComponent({
       emit('set-focused', focused.value);
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       emit('set-current-row');
-      EventBus.$on(ACTIONS.SPECIAL_CHAR_INPUT, (char: string) => {
+      EventBus.$on(ACTIONS.SPECIAL_CHAR_INPUT, async (char: string) => {
         if (props.isCurrentRow) {
-          insertChar(char);
+          await insertChar(char);
         }
       });
     });
