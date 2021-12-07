@@ -23,6 +23,7 @@ import {
 } from '@oare/types';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
+import { convertParsePropsToItemProps } from '@oare/oare';
 
 export const getSideNumber = (number: number | null): EpigraphicUnitSide => {
   switch (number) {
@@ -256,12 +257,18 @@ export const createNewTextTables = async (
   }));
   const signInformation = await createSignInformation(content);
 
+  const itemPropertiesRows = convertParsePropsToItemProps(
+    textInfo.properties,
+    textUuid
+  );
+
   const tables: CreateTextTables = {
     epigraphies: epigraphyRows,
     markups: markupRows,
     discourses: discourseRows,
     text: textRow,
     signInfo: signInformation,
+    itemProperties: itemPropertiesRows,
   };
 
   return tables;

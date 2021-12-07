@@ -15,12 +15,15 @@ import {
   InsertItemPropertyRow,
   UpdateFormPayload,
 } from '@oare/types';
-import { tokenizeExplicitSpelling, normalizeSign } from '@oare/oare';
+import {
+  tokenizeExplicitSpelling,
+  normalizeSign,
+  convertParsePropsToItemProps,
+} from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
-import { v4 } from 'uuid';
 
 const router = express.Router();
 
@@ -559,35 +562,9 @@ router
         formSpelling
       );
 
-      const propertiesWithUuids = properties.map(prop => ({
-        ...prop,
-        uuid: v4(),
-      }));
-      const propertiesWithParentUuid: ParseTreePropertyRow[] = propertiesWithUuids.map(
-        prop => {
-          const parentUuid = propertiesWithUuids
-            .filter(
-              baseProp => baseProp.value.uuid === prop.variable.parentUuid
-            )
-            .map(baseProp => baseProp.uuid)[0];
-          return {
-            ...prop,
-            parentUuid,
-          };
-        }
-      );
-
-      const itemPropertyRows: InsertItemPropertyRow[] = propertiesWithParentUuid.map(
-        prop => ({
-          uuid: prop.uuid,
-          referenceUuid: newFormUuid,
-          parentUuid: prop.parentUuid,
-          level: prop.variable.level,
-          variableUuid: prop.variable.variableUuid,
-          valueUuid: prop.value.valueUuid,
-          objectUuid: null,
-          value: null,
-        })
+      const itemPropertyRows = convertParsePropsToItemProps(
+        properties,
+        newFormUuid
       );
 
       const itemPropertyRowLevels = [

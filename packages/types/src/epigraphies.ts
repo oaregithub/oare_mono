@@ -1,7 +1,7 @@
 import { DiscourseUnit, TextDiscourseRow } from './textDiscourse';
 import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
-import { ParseTreeProperty } from './dictionary';
+import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 
 export interface Text {
@@ -306,6 +306,7 @@ export interface CreateTextTables {
   markups: TextMarkupRow[];
   discourses: TextDiscourseRow[];
   text: TextRow;
+  itemProperties: InsertItemPropertyRow[];
   signInfo: SignInfo[];
 }
 
