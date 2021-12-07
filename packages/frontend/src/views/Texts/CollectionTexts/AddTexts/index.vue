@@ -276,6 +276,9 @@ export default defineComponent({
           ? createTextTables.value.discourses
           : null,
         text: createTextTables.value ? createTextTables.value.text : null,
+        item_properties: createTextTables.value
+          ? createTextTables.value.itemProperties
+          : null,
       });
     };
 
