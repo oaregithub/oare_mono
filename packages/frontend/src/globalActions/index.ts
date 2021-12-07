@@ -29,8 +29,8 @@ const showErrorSnackbar = async (
   EventBus.$emit(ACTIONS.TOAST, { text, error: true });
 };
 
-const inputSpecialChar = (char: string) => {
-  EventBus.$emit(ACTIONS.SPECIAL_CHAR_INPUT, char);
+const inputSpecialChar = async (char: string) => {
+  await EventBus.$emit(ACTIONS.SPECIAL_CHAR_INPUT, char);
 };
 
 const logError = async (description: string, error?: Error): Promise<void> => {
