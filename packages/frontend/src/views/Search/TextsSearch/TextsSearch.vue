@@ -128,9 +128,9 @@ export default defineComponent({
             rows,
           });
           searchResults.value = results;
-        } catch(err) {
+        } catch (err) {
           actions.showErrorSnackbar('Error searching texts. Please try again.'),
-          err as Error
+            err as Error;
         } finally {
           searchLoading.value = false;
         }
@@ -145,9 +145,10 @@ export default defineComponent({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
           });
-        } catch {
+        } catch (err) {
           actions.showErrorSnackbar(
-            'Error getting texts total. Please try again.'
+            'Error getting texts total. Please try again.',
+            err as Error
           );
         } finally {
           searchTotalLoading.value = false;

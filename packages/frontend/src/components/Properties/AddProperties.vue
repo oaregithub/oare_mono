@@ -89,9 +89,10 @@ export default defineComponent({
         if (filteredTree.value && !filteredTree.value.children) {
           formComplete.value = true;
         }
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading parse tree. Please try again.'
+          'Error loading parse tree. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;

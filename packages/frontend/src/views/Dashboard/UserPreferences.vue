@@ -50,7 +50,7 @@ export default defineComponent({
           await server.revokeBetaAccess();
         }
         store.setBetaAccess(allowBetaAccess);
-      } catch(err) {
+      } catch (err) {
         actions.showErrorSnackbar(
           'Error updating beta access status. Please try again.',
           err as Error
@@ -63,7 +63,7 @@ export default defineComponent({
         hasBetaAccess.value = store.getters.user
           ? store.getters.user.betaAccess
           : false;
-      } catch(err) {
+      } catch (err) {
         actions.showErrorSnackbar(
           'Error getting current preferences. Please try again.',
           err as Error

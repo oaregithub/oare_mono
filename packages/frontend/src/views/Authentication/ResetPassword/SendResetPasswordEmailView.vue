@@ -55,14 +55,16 @@ export default defineComponent({
         const { code, message } = err;
         if (code === 'auth/invalid-email') {
           actions.showErrorSnackbar(
-            'The email you have provided is invalid. Please try again.'
+            'The email you have provided is invalid. Please try again.',
+            err as Error
           );
         } else if (code === 'auth/user-not-found') {
           actions.showErrorSnackbar(
-            'There is no user associated with the given email address.'
+            'There is no user associated with the given email address.',
+            err as Error
           );
         } else {
-          actions.showErrorSnackbar(message);
+          actions.showErrorSnackbar(message, err as Error);
         }
       } finally {
         loading.value = false;

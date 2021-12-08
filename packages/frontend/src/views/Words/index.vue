@@ -99,9 +99,9 @@ export default defineComponent({
             props.letter
           );
           words.value = wordsResp;
-        } catch(err) {
+        } catch (err) {
           actions.showErrorSnackbar('Failed to retrieve dictionary words'),
-          err as Error
+            err as Error;
         } finally {
           loading.value = false;
         }

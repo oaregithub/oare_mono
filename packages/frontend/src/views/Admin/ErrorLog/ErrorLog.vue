@@ -205,9 +205,10 @@ export default defineComponent({
         });
         errorList.value = response.errors;
         serverCount.value = response.count;
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
           'Error loading error log. Please try again',
+          err as Error,
           'server.getErrorLog failed'
         );
       } finally {
@@ -248,9 +249,10 @@ export default defineComponent({
         });
         selectedErrors.value = [];
         await resetAdminBadge();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error updating error status. Please try again.'
+          'Error updating error status. Please try again.',
+          err as Error
         );
       }
     };
@@ -262,9 +264,10 @@ export default defineComponent({
         sort.value = searchOptions.value.sortBy[0];
         desc.value = String(searchOptions.value.sortDesc[0]);
         await getErrorLog();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error updating error log. Please try again.`
+          `Error updating error log. Please try again.`,
+          err as Error
         );
       }
     });
@@ -275,9 +278,10 @@ export default defineComponent({
         try {
           searchOptions.value.page = 1;
           await getErrorLog();
-        } catch {
+        } catch (err) {
           actions.showErrorSnackbar(
-            'Error filtering or sorting error log. Please try again.'
+            'Error filtering or sorting error log. Please try again.',
+            err as Error
           );
         }
       }, 200),

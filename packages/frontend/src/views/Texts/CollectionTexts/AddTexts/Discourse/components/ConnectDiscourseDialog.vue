@@ -82,9 +82,10 @@ export default defineComponent({
             res => res.spellingUuid === props.word.spellingUuid
           )[0].spellingUuid;
         }
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading possible spellings. Please try again.'
+          'Error loading possible spellings. Please try again.',
+          err as Error
         );
       }
     });

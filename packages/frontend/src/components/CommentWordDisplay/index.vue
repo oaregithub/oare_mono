@@ -201,8 +201,8 @@ export default defineComponent({
             selectedThreadIndex.value = 0;
           }
         }
-      } catch (e) {
-        actions.showErrorSnackbar('Failed to get threads');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to get threads', err as Error);
       } finally {
         loading.value = false;
       }
@@ -269,8 +269,8 @@ export default defineComponent({
         if (isNewThread) {
           selectedThreadIndex.value = threadsWithComments.value.length - 1;
         }
-      } catch {
-        actions.showErrorSnackbar('Failed to insert the comment');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to insert the comment', err as Error);
       } finally {
         loading.value = false;
         userComment.value = '';
@@ -286,8 +286,8 @@ export default defineComponent({
             thread => thread.uuid === props.initialThreadUuid
           );
         }
-      } catch (e) {
-        actions.showErrorSnackbar('Failed to get threads');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to get threads', err as Error);
       }
     });
 

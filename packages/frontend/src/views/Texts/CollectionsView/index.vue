@@ -44,7 +44,7 @@ export default defineComponent({
       loading.value = true;
       try {
         collections.value = await server.getAllCollections();
-      } catch(err) {
+      } catch (err) {
         actions.showErrorSnackbar(
           'Error loading collections. Please try again.',
           err as Error

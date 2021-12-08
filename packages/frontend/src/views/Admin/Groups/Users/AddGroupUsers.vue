@@ -104,9 +104,10 @@ export default defineComponent({
         addUsersDialog.value = false;
         actions.showSnackbar('Successfully added users to group.');
         router.push(`/groups/${groupId}/members`);
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error adding users to group. Please try again.'
+          'Error adding users to group. Please try again.',
+          err as Error
         );
       } finally {
         addUsersLoading.value = false;
@@ -118,9 +119,10 @@ export default defineComponent({
         const groupInfo = await server.getGroupInfo(Number(groupId));
         groupName.value = groupInfo.name;
         allUsers.value = await server.getAllUsers();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading group users. Please try again.'
+          'Error loading group users. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;

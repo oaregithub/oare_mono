@@ -156,8 +156,8 @@ export default defineComponent({
         props.updateForm(editForm.value);
         actions.showSnackbar('Form successfully updated');
         editing.value = false;
-      } catch {
-        actions.showErrorSnackbar('Error updating form');
+      } catch (err) {
+        actions.showErrorSnackbar('Error updating form'), err as Error;
       } finally {
         loading.value = false;
       }

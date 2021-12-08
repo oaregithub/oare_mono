@@ -13,21 +13,20 @@ const closeSnackbar = (): void => {
   EventBus.$emit(ACTIONS.CLOSE_TOAST);
 };
 
-const showErrorSnackbar =  async (
+const showErrorSnackbar = async (
   text: string,
   error?: Error,
   devErrorText?: string
-  
 ): Promise<void> => {
-  const server = sl.get('serverProxy');  
+  const server = sl.get('serverProxy');
   const description = devErrorText || text;
-  
+
   await server.logError({
     description,
     stacktrace: error && error.stack ? error.stack : null,
     status: 'New',
   });
-  
+
   EventBus.$emit(ACTIONS.TOAST, { text, error: true });
 };
 

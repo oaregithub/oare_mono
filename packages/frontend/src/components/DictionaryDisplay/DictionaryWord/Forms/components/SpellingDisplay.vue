@@ -145,8 +145,8 @@ export default defineComponent({
         await server.removeSpelling(props.spelling.uuid);
         actions.showSnackbar('Successfully removed spelling');
         reload && reload();
-      } catch {
-        actions.showErrorSnackbar('Failed to delete spelling');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to delete spelling', err as Error);
       } finally {
         deleteSpellingDialog.value = false;
       }
@@ -165,9 +165,10 @@ export default defineComponent({
         totalOccurrences.value = await server.getSpellingTotalOccurrences(
           props.spelling.uuid
         );
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading spelling occurrences. Please try again.'
+          'Error loading spelling occurrences. Please try again.',
+          err as Error
         );
       } finally {
         totalOccurrencesLoading.value = false;

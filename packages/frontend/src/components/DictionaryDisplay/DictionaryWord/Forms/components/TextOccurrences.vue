@@ -155,9 +155,10 @@ export default defineComponent({
       try {
         await server.disconnectSpellings(disconnectSelections.value);
         reload && reload();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error disconnecting spelling(s). Please try again.'
+          'Error disconnecting spelling(s). Please try again.',
+          err as Error
         );
       }
     };
@@ -176,8 +177,11 @@ export default defineComponent({
           limit: tableOptions.value.itemsPerPage,
           ...(search.value ? { filter: search.value } : null),
         });
-      } catch {
-        actions.showErrorSnackbar('Failed to load text occurrences');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to load text occurrences',
+          err as Error
+        );
       } finally {
         referencesLoading.value = false;
       }

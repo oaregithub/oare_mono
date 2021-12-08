@@ -94,7 +94,8 @@ export default defineComponent({
         if (err && err.code) {
           if (err.code === 'auth/wrong-password') {
             actions.showErrorSnackbar(
-              'The password you have provided is invalid.'
+              'The password you have provided is invalid.',
+              err as Error
             );
           }
         }
@@ -125,9 +126,9 @@ export default defineComponent({
         actions.showSnackbar('Profile successfully updated');
         isEditing.value = false;
         emit('updated', editedValue.value);
-      } catch(err) {
+      } catch (err) {
         actions.showErrorSnackbar('There was an error updating your profile.'),
-        err as Error
+          err as Error;
       } finally {
         loading.value = false;
       }

@@ -130,9 +130,9 @@ export default defineComponent({
         } else {
           actions.showErrorSnackbar('You are not logged in');
         }
-      } catch(error) {
+      } catch (error) {
         actions.showErrorSnackbar('Error loading drafts. Please try again.'),
-        error as Error
+          error as Error;
       } finally {
         draftsLoading.value = false;
       }
@@ -158,9 +158,8 @@ export default defineComponent({
         ];
         selectedDrafts.value = [];
         actions.showSnackbar('Drafts successfully deleted');
-      } catch(err){
-        actions.showErrorSnackbar('Failed to delete drafts'),
-        err as Error
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to delete drafts'), err as Error;
       } finally {
         deleteDraftsLoading.value = false;
         confirmDeleteDialog.value = false;
