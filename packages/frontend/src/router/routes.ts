@@ -138,6 +138,12 @@ const routes: RouteConfig[] = [
     props: true,
   },
   {
+    path: '/collections/name/:collectionUuid/page/:page/',
+    name: 'collectionTextsPage',
+    component: CollectionTexts,
+    props: true,
+  },
+  {
     path: '/collections/:letter',
     name: 'collections',
     component: CollectionsView,
@@ -145,6 +151,25 @@ const routes: RouteConfig[] = [
   },
   {
     path: '/epigraphies/:textUuid',
+    component: EpigraphyView,
+    props: true,
+    children: [
+      {
+        name: 'epigraphyEditor',
+        path: 'edit',
+        component: EpigraphyEditor,
+        props: true,
+      },
+      {
+        name: 'epigraphies',
+        path: ':discourseToHighlight?',
+        component: EpigraphyFullDisplay,
+        props: true,
+      },
+    ],
+  },
+  {
+    path: '/epigraphies/:textUuid/page/:page',
     component: EpigraphyView,
     props: true,
     children: [

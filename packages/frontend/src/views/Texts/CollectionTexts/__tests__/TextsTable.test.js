@@ -29,6 +29,7 @@ describe('TextsTable test', () => {
     loading: false,
     texts,
     totalTexts: 2,
+    collectionUuid: 'd062eaff-a54d-9190-9723-85e66c02ceee',
   };
 
   const createWrapper = () =>

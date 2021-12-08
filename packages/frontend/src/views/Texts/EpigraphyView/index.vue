@@ -166,7 +166,7 @@ export default defineComponent({
           text: letterGroup,
         },
         {
-          link: `/collections/name/${textInfo.value.collection.uuid}`,
+          link: `/collections/name/${textInfo.value.collection.uuid}/page/${window.location.pathname.split('/')[4]}`,
           text: textInfo.value.collection.name,
         },
       ];

@@ -29,6 +29,9 @@
         :totalTexts="totalTexts"
         :texts="texts"
         :loading="textsLoading"
+        path=""
+        @update:path="pa => (path = pa)"
+        :collectionUuid="uuid"
       />
     </v-container>
   </OareContentView>
@@ -75,7 +78,7 @@ export default defineComponent({
     const hasBetaAccess = computed(() =>
       store.getters.user ? store.getters.user.betaAccess : false
     );
-
+    const uuid = collectionUuid;
     const collectionName = ref('');
     const loading = ref(false);
     const letterGroup = computed(() =>
@@ -94,8 +97,9 @@ export default defineComponent({
     const texts: Ref<CollectionText[]> = ref([]);
     const textsLoading = ref(false);
     const totalTexts = ref(0);
+    const pageNum = window.location.pathname.search('page') != -1 ? window.location.pathname.split('/')[5]: '1';
 
-    const page = useQueryParam('page', '1');
+    const page = useQueryParam('page', pageNum);
     const rows = useQueryParam('rows', '10');
     const search = useQueryParam('query', '');
 
@@ -171,6 +175,7 @@ export default defineComponent({
     );
 
     return {
+      uuid,
       collectionName,
       loading,
       texts,

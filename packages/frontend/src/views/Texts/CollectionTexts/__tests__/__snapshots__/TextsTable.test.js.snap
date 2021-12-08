@@ -49,7 +49,7 @@ Object {
                   class="text-start"
                 >
                   <router-link-stub
-                    to="/epigraphies/1"
+                    to="/epigraphies/1/page/1"
                   >
                     CCT 3 31
                   </router-link-stub>
@@ -62,7 +62,7 @@ Object {
                   class="text-start"
                 >
                   <router-link-stub
-                    to="/epigraphies/2"
+                    to="/epigraphies/2/page/1"
                   >
                     CCT 1 12b
                   </router-link-stub>
@@ -227,7 +227,7 @@ Object {
                 class="text-start"
               >
                 <router-link-stub
-                  to="/epigraphies/1"
+                  to="/epigraphies/1/page/1"
                 >
                   CCT 3 31
                 </router-link-stub>
@@ -240,7 +240,7 @@ Object {
                 class="text-start"
               >
                 <router-link-stub
-                  to="/epigraphies/2"
+                  to="/epigraphies/2/page/1"
                 >
                   CCT 1 12b
                 </router-link-stub>

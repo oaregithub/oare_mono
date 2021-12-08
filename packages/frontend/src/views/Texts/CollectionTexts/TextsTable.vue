@@ -10,8 +10,8 @@
     }"
   >
     <template v-slot:[`item.name`]="{ item }">
-      <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`">{{
-        item.name
+      <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}/page/${page}`">{{ 
+      item.name
       }}</router-link>
       <span v-else>{{ item.name }}</span>
     </template>
@@ -21,6 +21,7 @@
 <script lang="ts">
 import { defineComponent, ref, watch, PropType } from '@vue/composition-api';
 import { CollectionText } from '@oare/types';
+import sl from '@/serviceLocator';
 export default defineComponent({
   props: {
     loading: {
@@ -43,8 +44,16 @@ export default defineComponent({
       type: Number,
       default: 10,
     },
+    path: {
+      type: String,
+      default: ''
+    },
+    collectionUuid: {
+      type: String,
+    }
   },
   setup(props, { emit }) {
+    const router = sl.get('router');
     const headers = ref([
       {
         text: 'Text Name',
@@ -60,6 +69,18 @@ export default defineComponent({
     watch(
       () => props.page,
       () => (searchOptions.value.page = props.page)
+    );
+
+    watch(
+      () => props.page,
+      () => (props.path = `/collections/name/${props.collectionUuid}/page/${props.page}`)
+    );
+
+    watch(
+      () => props.path,
+      () => {
+        emit('update:path', router.push(`${props.path}`))
+      }
     );
 
     watch(
