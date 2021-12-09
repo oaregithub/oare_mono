@@ -96,9 +96,11 @@ export default defineComponent({
         loading.value = true;
         try {
           places.value = await server.getPlaces(props.letter);
-        } catch(err) {
-          actions.showErrorSnackbar('Failed to retrieve place words'),
-          err as Error
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Failed to retrieve place words',
+            err as Error
+          );
         } finally {
           loading.value = false;
         }

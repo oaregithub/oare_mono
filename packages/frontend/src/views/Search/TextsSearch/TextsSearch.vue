@@ -129,8 +129,10 @@ export default defineComponent({
           });
           searchResults.value = results;
         } catch (err) {
-          actions.showErrorSnackbar('Error searching texts. Please try again.'),
-            err as Error;
+          actions.showErrorSnackbar(
+            'Error searching texts. Please try again.',
+            err as Error
+          );
         } finally {
           searchLoading.value = false;
         }
