@@ -214,6 +214,10 @@ export interface TextPhoto {
   view?: string;
 }
 
+export interface TextPhotoWithName extends TextPhoto {
+  name: string;
+}
+
 export interface TextEpigraphyRowPartial {
   uuid: string;
   type: EpigraphyType;
@@ -301,6 +305,31 @@ export interface SignInfo {
   value: string | null;
 }
 
+export interface ResourceRow {
+  uuid: string;
+  sourceUuid: string | null;
+  type: string;
+  container: string;
+  format: string | null;
+  link: string;
+}
+
+export interface LinkRow {
+  uuid: string;
+  referenceUuid: string;
+  objUuid: string;
+}
+
+export interface HierarchyRow {
+  uuid: string;
+  parentUuid: string | null;
+  type: string;
+  role: string | null;
+  objectUuid: string;
+  objectParentUuid: string | null;
+  published: number;
+}
+
 export interface CreateTextTables {
   epigraphies: TextEpigraphyRow[];
   markups: TextMarkupRow[];
@@ -308,6 +337,9 @@ export interface CreateTextTables {
   text: TextRow;
   itemProperties: InsertItemPropertyRow[];
   signInfo: SignInfo[];
+  resources: ResourceRow[];
+  links: LinkRow[];
+  hierarchy: HierarchyRow;
 }
 
 export interface EditorWord {

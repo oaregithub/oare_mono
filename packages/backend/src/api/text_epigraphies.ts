@@ -132,4 +132,34 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
   }
 });
 
+router
+  .route('/text_epigraphies/designator/:preText')
+  .get(async (req, res, next) => {
+    try {
+      const { preText } = req.params;
+      const ResourceDao = sl.get('ResourceDao');
+
+      const currentMatches = await ResourceDao.getImageDesignatorMatches(
+        preText
+      );
+      const matchesWithoutPretext = currentMatches.map(match =>
+        match.replace(preText, '')
+      );
+      const matchesWithoutFileTypes = matchesWithoutPretext.map(match =>
+        match.slice(0, match.indexOf('.'))
+      );
+
+      const designatorsAsNumbers = matchesWithoutFileTypes.map(
+        match => Number(match) || 0
+      );
+
+      const max =
+        designatorsAsNumbers.length > 0 ? Math.max(...designatorsAsNumbers) : 0;
+
+      res.json(max + 1);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
 export default router;

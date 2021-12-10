@@ -251,6 +251,14 @@ class HierarchyDao {
 
     return rows;
   }
+
+  async getParentUuidByCollection(collectionUuid: string): Promise<string> {
+    const results = await knex('hierarchy')
+      .select('parent_uuid AS parentUuid')
+      .where('obj_parent_uuid', collectionUuid)
+      .first();
+    return results.parentUuid;
+  }
 }
 
 export default new HierarchyDao();

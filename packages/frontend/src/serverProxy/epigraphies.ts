@@ -36,9 +36,15 @@ async function getImageLinks(
   return data;
 }
 
+const getNextImageDesignator = async (preText: string): Promise<number> => {
+  const { data } = await axios.get(`/text_epigraphies/designator/${preText}`);
+  return data;
+};
+
 export default {
   getEpigraphicInfo,
   getImageLinks,
   getTranslitOptions,
   updateTranslitStatus,
+  getNextImageDesignator,
 };
