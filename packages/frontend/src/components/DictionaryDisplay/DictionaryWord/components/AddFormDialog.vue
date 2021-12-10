@@ -114,8 +114,10 @@ export default defineComponent({
         );
         reload && reload();
       } catch (err) {
-        actions.showErrorSnackbar('Error adding new form. Please try again.'),
-          err as Error;
+        actions.showErrorSnackbar(
+          'Error adding new form. Please try again.',
+          err as Error
+        );
       } finally {
         addFormLoading.value = false;
       }

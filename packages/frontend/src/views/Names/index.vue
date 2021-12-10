@@ -100,9 +100,11 @@ export default defineComponent({
         loading.value = true;
         try {
           names.value = await server.getNames(props.letter);
-        } catch(err) {
-          actions.showErrorSnackbar('Failed to retrieve name words'),
-          err as Error
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Failed to retrieve name words',
+            err as Error
+          );
         } finally {
           loading.value = false;
         }

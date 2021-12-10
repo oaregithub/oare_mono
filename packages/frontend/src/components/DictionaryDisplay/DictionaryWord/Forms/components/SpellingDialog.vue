@@ -176,8 +176,10 @@ export default defineComponent({
         actions.showSnackbar('Successfully added spelling');
         reload && reload();
       } catch (err) {
-        actions.showErrorSnackbar('Failed to add spelling to form'),
-          err as Error;
+        actions.showErrorSnackbar(
+          'Failed to add spelling to form',
+          err as Error
+        );
       } finally {
         submitLoading.value = false;
       }

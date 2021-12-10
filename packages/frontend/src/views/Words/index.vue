@@ -100,8 +100,10 @@ export default defineComponent({
           );
           words.value = wordsResp;
         } catch (err) {
-          actions.showErrorSnackbar('Failed to retrieve dictionary words'),
-            err as Error;
+          actions.showErrorSnackbar(
+            'Failed to retrieve dictionary words',
+            err as Error
+          );
         } finally {
           loading.value = false;
         }

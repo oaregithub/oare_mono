@@ -157,7 +157,7 @@ export default defineComponent({
         actions.showSnackbar('Form successfully updated');
         editing.value = false;
       } catch (err) {
-        actions.showErrorSnackbar('Error updating form'), err as Error;
+        actions.showErrorSnackbar('Error updating form', err as Error);
       } finally {
         loading.value = false;
       }

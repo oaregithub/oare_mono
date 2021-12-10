@@ -207,8 +207,10 @@ export default defineComponent({
         searchSpellingLoading.value = true;
         spellingSearchResults.value = await server.searchSpellings(newSpelling);
       } catch (err) {
-        actions.showErrorSnackbar('Failed to search for spellings'),
-          err as Error;
+        actions.showErrorSnackbar(
+          'Failed to search for spellings',
+          err as Error
+        );
       } finally {
         searchSpellingLoading.value = false;
       }
