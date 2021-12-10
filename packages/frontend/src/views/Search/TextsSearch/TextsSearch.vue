@@ -172,6 +172,7 @@ export default defineComponent({
     const resetSearch = async (resetVisited: boolean = true) => {
       totalSearchResults.value = -1;
       textTitleQuery.value = textTitleSearch.value;
+      translitQuery.value = translitSearch.value;
       if (resetVisited) {
         await setIsVisited('false');
       }
