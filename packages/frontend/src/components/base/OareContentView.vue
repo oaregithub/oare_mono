@@ -13,7 +13,7 @@
             class="font-weight-bold"
             v-if="title !== null && title !== undefined"
             >{{ title }}
-            <v-menu offset-y open-on-hover v-if="informationCard !== null">
+            <v-menu offset-y open-on-hover v-if="informationCard">
               <template #activator="{ on, attrs }">
                 <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
                   mdi-information-outline
@@ -49,7 +49,7 @@ export default defineComponent({
     },
     informationCard: {
       type: String,
-      default: null,
+      required: false,
     },
     loading: {
       type: Boolean,
