@@ -99,8 +99,11 @@ export default defineComponent({
             props.letter
           );
           words.value = wordsResp;
-        } catch {
-          actions.showErrorSnackbar('Failed to retrieve dictionary words');
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Failed to retrieve dictionary words',
+            err as Error
+          );
         } finally {
           loading.value = false;
         }

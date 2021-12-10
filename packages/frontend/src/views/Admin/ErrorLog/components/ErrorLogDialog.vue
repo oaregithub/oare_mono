@@ -88,9 +88,10 @@ export default defineComponent({
         emit('update-status', status);
         await server.updateErrorStatus([error.uuid], error.status);
         await resetAdminBadge();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
           'Error updating error status. Please try again.',
+          err as Error,
           'updateErrorStatus failed'
         );
       }

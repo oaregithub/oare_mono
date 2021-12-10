@@ -145,8 +145,8 @@ export default defineComponent({
       loading.value = true;
       try {
         groups.value = await server.getAllGroups();
-      } catch {
-        actions.showErrorSnackbar('Failed to fetch groups');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to fetch groups', err as Error);
       } finally {
         loading.value = false;
       }
@@ -174,7 +174,7 @@ export default defineComponent({
         actions.showSnackbar('Successfully created group');
         addDialog.value = false;
       } catch (err) {
-        actions.showErrorSnackbar('Failed to create group');
+        actions.showErrorSnackbar('Failed to create group', err as Error);
       } finally {
         addGroupLoading.value = false;
       }
@@ -193,7 +193,7 @@ export default defineComponent({
         actions.showSnackbar('Successfully deleted groups');
         selectedGroups.value = [];
       } catch (err) {
-        actions.showErrorSnackbar('Failed to delete group');
+        actions.showErrorSnackbar('Failed to delete group', err as Error);
       } finally {
         confirmDeleteDialog.value = false;
         deleteGroupLoading.value = false;

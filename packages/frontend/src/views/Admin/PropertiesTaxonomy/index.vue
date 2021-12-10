@@ -36,9 +36,10 @@ export default defineComponent({
       try {
         loading.value = true;
         taxonomyTree.value = await server.getTaxonomyTree();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading properties taxonomy. Please try again.'
+          'Error loading properties taxonomy. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;

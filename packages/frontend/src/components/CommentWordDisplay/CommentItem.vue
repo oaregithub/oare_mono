@@ -92,8 +92,8 @@ export default defineComponent({
         actions.showSnackbar('Successfully deleted the comment');
         confirmDeleteDialog.value = false;
         emit('deleted');
-      } catch {
-        actions.showErrorSnackbar('Failed to delete the comment');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to delete the comment', err as Error);
       } finally {
         loading.value = false;
       }

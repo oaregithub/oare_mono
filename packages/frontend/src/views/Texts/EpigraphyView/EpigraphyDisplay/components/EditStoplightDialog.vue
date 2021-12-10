@@ -105,9 +105,10 @@ export default defineComponent({
         await server.updateTranslitStatus(props.textUuid, selectedColor.value);
         actions.showSnackbar('Successfully updated transliteration status.');
         reload && reload();
-      } catch {
+      } catch(err) {
         actions.showErrorSnackbar(
-          'Error updating transliteration status. Please try again.'
+          'Error updating transliteration status. Please try again.',
+          err as Error
         );
       }
     };

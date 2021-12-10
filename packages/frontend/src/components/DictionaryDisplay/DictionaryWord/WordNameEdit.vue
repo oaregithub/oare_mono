@@ -59,8 +59,11 @@ export default defineComponent({
       try {
         await server.editWord(props.wordUuid, { word: props.word });
         actions.showSnackbar('Successfully updated word spelling');
-      } catch {
-        actions.showErrorSnackbar('Failed to update word spelling');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to update word spelling',
+          err as Error
+        );
       } finally {
         isSaving.value = false;
         closeEdit();

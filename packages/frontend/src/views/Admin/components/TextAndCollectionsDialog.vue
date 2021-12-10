@@ -80,8 +80,11 @@ export default defineComponent({
             } = await server.getEpigraphicInfo(props.uuid);
             epigraphicUnits.value = units;
             discourseUnits.value = dUnits;
-          } catch {
-            actions.showErrorSnackbar('Failed to load text info.');
+          } catch (err) {
+            actions.showErrorSnackbar(
+              'Failed to load text info.',
+              err as Error
+            );
           } finally {
             loading.value = false;
           }

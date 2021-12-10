@@ -148,9 +148,10 @@ export default defineComponent({
           Number(limit.value),
           includeSuperfluous.value
         );
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading null discourse occurrences. Please try again.'
+          'Error loading null discourse occurrences. Please try again.',
+          err as Error
         );
       } finally {
         searchNullDiscourseLoading.value = false;
@@ -165,9 +166,10 @@ export default defineComponent({
           props.spellingInput,
           includeSuperfluous.value
         );
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading null discourse occurrences total. Please try again.'
+          'Error loading null discourse occurrences total. Please try again.',
+          err as Error
         );
       } finally {
         searchNullCountLoading.value = false;
@@ -184,9 +186,10 @@ export default defineComponent({
         );
         searchOptions.value.page = 1;
         reload && reload();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error inserting selected occurrence to the text discourse table. Please try again.'
+          'Error inserting selected occurrence to the text discourse table. Please try again.',
+          err as Error
         );
       } finally {
         insertDiscourseRowsLoading.value = false;
@@ -215,9 +218,10 @@ export default defineComponent({
         if (props.spellingInput) {
           await searchNullDiscourse();
         }
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error retrieving more occurrences. Please try again.`
+          `Error retrieving more occurrences. Please try again.`,
+          err as Error
         );
       }
     });

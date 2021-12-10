@@ -15,6 +15,7 @@ const closeSnackbar = (): void => {
 
 const showErrorSnackbar = async (
   text: string,
+  error?: Error,
   devErrorText?: string
 ): Promise<void> => {
   const server = sl.get('serverProxy');
@@ -22,7 +23,7 @@ const showErrorSnackbar = async (
 
   await server.logError({
     description,
-    stacktrace: null,
+    stacktrace: error && error.stack ? error.stack : null,
     status: 'New',
   });
 

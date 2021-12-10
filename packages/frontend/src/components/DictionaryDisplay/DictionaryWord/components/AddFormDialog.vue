@@ -113,8 +113,11 @@ export default defineComponent({
           `Successfully added ${newFormSpelling.value} to ${word.word}`
         );
         reload && reload();
-      } catch {
-        actions.showErrorSnackbar('Error adding new form. Please try again.');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error adding new form. Please try again.',
+          err as Error
+        );
       } finally {
         addFormLoading.value = false;
       }

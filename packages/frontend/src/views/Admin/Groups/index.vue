@@ -81,9 +81,10 @@ export default defineComponent({
           description: editDescription.value,
         });
         groupDescription.value = editDescription.value;
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error updating group description. Please try again.'
+          'Error updating group description. Please try again.',
+          err as Error
         );
       } finally {
         editingDescription.value = false;
@@ -97,9 +98,10 @@ export default defineComponent({
         groupName.value = groupInfo.name;
         groupDescription.value =
           groupInfo.description || 'No group description';
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading group information. Please try again.'
+          'Error loading group information. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;
