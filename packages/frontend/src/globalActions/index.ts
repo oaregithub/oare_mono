@@ -30,6 +30,10 @@ const showErrorSnackbar = async (
   EventBus.$emit(ACTIONS.TOAST, { text, error: true });
 };
 
+const inputSpecialChar = async (char: string) => {
+  await EventBus.$emit(ACTIONS.SPECIAL_CHAR_INPUT, char);
+};
+
 const logError = async (description: string, error?: Error): Promise<void> => {
   const server = sl.get('serverProxy');
   const stacktrace = error && error.stack ? error.stack : null;
@@ -58,6 +62,7 @@ const globalActions = {
   logError,
   showUnsavedChangesWarning,
   closeSnackbar,
+  inputSpecialChar,
 };
 
 export type GlobalActionsType = typeof globalActions;

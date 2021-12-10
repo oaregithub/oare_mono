@@ -17,9 +17,13 @@ import {
   ColumnContent,
   RowContent,
   SignCodeWithDiscourseUuid,
+  EditorMarkup,
+  EpigraphyType,
+  EpigraphicUnitType,
 } from '@oare/types';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
+import { convertParsePropsToItemProps } from '@oare/oare';
 
 export const getSideNumber = (number: number | null): EpigraphicUnitSide => {
   switch (number) {
@@ -142,12 +146,12 @@ const createTextEpigraphyRow = async (
   textUuid: row.textUuid,
   treeUuid: row.treeUuid,
   parentUuid: row.parentUuid || null,
-  objectOnTablet: row.objectOnTablet || null,
-  side: row.side || null,
-  column: row.column || null,
-  line: row.line || null,
-  charOnLine: row.charOnLine || null,
-  charOnTablet: row.charOnTablet || null,
+  objectOnTablet: row.objectOnTablet !== undefined ? row.objectOnTablet : null,
+  side: row.side !== undefined ? row.side : null,
+  column: row.column !== undefined ? row.column : null,
+  line: row.line !== undefined ? row.line : null,
+  charOnLine: row.charOnLine !== undefined ? row.charOnLine : null,
+  charOnTablet: row.charOnTablet !== undefined ? row.charOnTablet : null,
   signUuid: row.signUuid || null,
   sign: row.sign || null,
   readingUuid: row.readingUuid || null,
@@ -161,11 +165,11 @@ const createTextMarkupRow = async (
   uuid: row.uuid,
   referenceUuid: row.referenceUuid,
   type: row.type,
-  numValue: row.numValue || null,
+  numValue: row.numValue !== undefined ? row.numValue : null,
   altReadingUuid: row.altReadingUuid || null,
   altReading: row.altReading || null,
-  startChar: row.startChar || null,
-  endChar: row.endChar || null,
+  startChar: row.startChar !== undefined ? row.startChar : null,
+  endChar: row.endChar !== undefined ? row.endChar : null,
   objectUuid: row.objectUuid || null,
 });
 
@@ -174,9 +178,9 @@ const createTextDiscourseRow = async (
 ): Promise<TextDiscourseRow> => ({
   uuid: row.uuid,
   type: row.type,
-  objInText: row.objInText || null,
-  wordOnTablet: row.wordOnTablet || null,
-  childNum: row.childNum || null,
+  objInText: row.objInText !== undefined ? row.objInText : null,
+  wordOnTablet: row.wordOnTablet !== undefined ? row.wordOnTablet : null,
+  childNum: row.childNum !== undefined ? row.childNum : null,
   textUuid: row.textUuid,
   treeUuid: row.treeUuid,
   parentUuid: row.parentUuid || null,
@@ -207,7 +211,8 @@ const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
 
 export const createNewTextTables = async (
   textInfo: AddTextInfo,
-  content: AddTextEditorContent
+  content: AddTextEditorContent,
+  persistentDiscourseStorage: { [uuid: string]: string | null }
 ): Promise<CreateTextTables> => {
   const textRow: TextRow = await createTextRow(textInfo);
   const textUuid = textRow.uuid;
@@ -218,14 +223,22 @@ export const createNewTextTables = async (
   );
   let charOnTablet = 0;
   const epigraphyRows = epigraphyRowsWithoutIterators.map((epigRow, idx) => {
-    if (epigRow.type === 'sign' || epigRow.type === 'number') {
+    if (
+      epigRow.type === 'sign' ||
+      epigRow.type === 'number' ||
+      epigRow.type === 'undeterminedSigns' ||
+      epigRow.type === 'separator'
+    ) {
       charOnTablet += 1;
     }
     return {
       ...epigRow,
       objectOnTablet: idx + 1,
       charOnTablet:
-        epigRow.type === 'sign' || epigRow.type === 'number'
+        epigRow.type === 'sign' ||
+        epigRow.type === 'number' ||
+        epigRow.type === 'undeterminedSigns' ||
+        epigRow.type === 'separator'
           ? charOnTablet
           : null,
     };
@@ -233,7 +246,8 @@ export const createNewTextTables = async (
   const markupRows: TextMarkupRow[] = await createMarkupRows(content);
   const discourseRowsWithoutIterators: TextDiscourseRow[] = await createDiscourseRows(
     textUuid,
-    content
+    content,
+    persistentDiscourseStorage
   );
   const discourseRows = discourseRowsWithoutIterators.map((row, idx) => ({
     ...row,
@@ -243,12 +257,18 @@ export const createNewTextTables = async (
   }));
   const signInformation = await createSignInformation(content);
 
+  const itemPropertiesRows = convertParsePropsToItemProps(
+    textInfo.properties,
+    textUuid
+  );
+
   const tables: CreateTextTables = {
     epigraphies: epigraphyRows,
     markups: markupRows,
     discourses: discourseRows,
     text: textRow,
     signInfo: signInformation,
+    itemProperties: itemPropertiesRows,
   };
 
   return tables;
@@ -434,6 +454,22 @@ const createEditorRows = async (
   return editorRows;
 };
 
+const getEpigraphyType = (
+  readingType: EpigraphicUnitType | undefined
+): EpigraphyType => {
+  if (readingType) {
+    switch (readingType) {
+      case 'number':
+        return 'number';
+      case 'punctuation':
+        return 'separator';
+      default:
+        return 'sign';
+    }
+  }
+  return 'undeterminedSigns';
+};
+
 const createSignRows = async (
   textUuid: string,
   treeUuid: string,
@@ -446,9 +482,10 @@ const createSignRows = async (
   const signRows: TextEpigraphyRow[] = (
     await Promise.all(
       signs.map(async (sign, idx) => {
+        const type = getEpigraphyType(sign.readingType);
         const signRow: TextEpigraphyRow = await createTextEpigraphyRow({
           uuid: sign.uuid,
-          type: sign.readingType === 'number' ? 'number' : 'sign',
+          type,
           textUuid,
           treeUuid,
           parentUuid,
@@ -482,6 +519,7 @@ const createMarkupRows = async (
               const columnRows = (
                 await Promise.all(
                   column.rows.map(async row => {
+                    const rowMarkup: TextMarkupRow[] = [];
                     if (
                       row.type === 'Broken Area' ||
                       row.type === 'Ruling(s)' ||
@@ -496,7 +534,7 @@ const createMarkupRows = async (
                           numValue: row.value || undefined,
                         }
                       );
-                      return regionMarkupRow;
+                      rowMarkup.push(regionMarkupRow);
                     }
                     if (row.type === 'Broken Line(s)') {
                       const brokenLinesMarkupRow: TextMarkupRow = await createTextMarkupRow(
@@ -507,9 +545,72 @@ const createMarkupRows = async (
                           numValue: row.value || undefined,
                         }
                       );
-                      return brokenLinesMarkupRow;
+                      rowMarkup.push(brokenLinesMarkupRow);
                     }
-                    return [];
+
+                    const rowSigns = row.signs
+                      ? (
+                          await Promise.all(
+                            row.signs.map(async sign => {
+                              const signMarkupRows = sign.markup
+                                ? (
+                                    await Promise.all(
+                                      sign.markup.markup.map(async markup => {
+                                        const server = sl.get('serverProxy');
+
+                                        const formattedAltReading = markup.altReading
+                                          ? (
+                                              await server.getFormattedSign(
+                                                markup.altReading
+                                              )
+                                            ).join('')
+                                          : undefined;
+
+                                        const determinativePost = markup.isDeterminative
+                                          ? 'isPercent'
+                                          : 'notPercent';
+                                        const altReadingUuid = markup.altReading
+                                          ? (
+                                              await server.getSignCode(
+                                                markup.altReading,
+                                                determinativePost
+                                              )
+                                            ).readingUuid || undefined
+                                          : undefined;
+
+                                        const markupRow: TextMarkupRow = await createTextMarkupRow(
+                                          {
+                                            uuid: v4(),
+                                            referenceUuid: sign.uuid,
+                                            type: markup.type,
+                                            startChar:
+                                              markup.startChar !== undefined
+                                                ? markup.startChar
+                                                : undefined,
+                                            endChar:
+                                              markup.endChar !== undefined
+                                                ? markup.endChar
+                                                : undefined,
+                                            altReading: formattedAltReading,
+                                            altReadingUuid,
+                                            numValue:
+                                              markup.numValue !== undefined
+                                                ? markup.numValue
+                                                : undefined,
+                                          }
+                                        );
+                                        return markupRow;
+                                      })
+                                    )
+                                  ).flat()
+                                : [];
+                              return signMarkupRows;
+                            })
+                          )
+                        ).flat()
+                      : [];
+
+                    return [rowMarkup, ...rowSigns];
                   })
                 )
               ).flat();
@@ -526,7 +627,8 @@ const createMarkupRows = async (
 
 const createDiscourseRows = async (
   textUuid: string,
-  content: AddTextEditorContent
+  content: AddTextEditorContent,
+  persistentDiscourseStorage: { [uuid: string]: string | null }
 ): Promise<TextDiscourseRow[]> => {
   const server = sl.get('serverProxy');
 
@@ -566,7 +668,11 @@ const createDiscourseRows = async (
                           const forms = await server.searchSpellings(
                             word.spelling
                           );
-                          if (forms.length === 1) {
+                          if (persistentDiscourseStorage[word.discourseUuid]) {
+                            spellingUuid =
+                              persistentDiscourseStorage[word.discourseUuid] ||
+                              undefined;
+                          } else if (forms.length === 1) {
                             spellingUuid = forms[0].spellingUuid;
                           }
                           const newDiscourseRow = await createTextDiscourseRow({
@@ -639,4 +745,437 @@ const createSignInformation = async (
     )
   ).flat();
   return signRows;
+};
+
+export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
+  const determinativeAltMatches = rowText.match(/%((!")|(!!")|(\?'))/g) || [];
+  determinativeAltMatches.forEach(match => {
+    const newText = match.replace('%', '$');
+    rowText = rowText.replace(match, newText);
+  });
+
+  const words = rowText.split(/[\s]+/).filter(word => word !== '');
+  const pieces = words.map((word, index) => ({
+    postMatches: word.match(/[\s\-.%]+/g) || [],
+    signs: word.split(/[-.%]+/),
+    wordIndex: index,
+  }));
+  const editorMarkup: EditorMarkup[] = pieces.flatMap(piece =>
+    piece.signs.map((sign, idx) => ({
+      text: sign,
+      markup: [],
+      post: piece.postMatches[idx] || '',
+      wordIndex: piece.wordIndex,
+    }))
+  );
+
+  let damageStatus = false;
+  let pieceWithStart: number;
+  let currentStartValue = 0;
+  editorMarkup.forEach((piece, idx) => {
+    let startChar: number | undefined;
+    let endChar: number | undefined;
+    const prefixMatches = piece.text.match(/\[/g);
+    if (prefixMatches) {
+      startChar = piece.text.indexOf('[');
+      currentStartValue = startChar;
+      damageStatus = true;
+      pieceWithStart = idx;
+    }
+
+    if (damageStatus) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'damage' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/\]/g);
+    if (postfixMatches) {
+      endChar = piece.text.replace('[', '').indexOf(']');
+      damageStatus = false;
+    }
+
+    if (startChar) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup.filter(mark => mark.type !== 'damage'),
+          {
+            type: 'damage',
+            startChar,
+          },
+        ],
+      };
+    }
+
+    if (
+      endChar &&
+      ((endChar !== piece.text.replace('[', '').replace(']', '').length &&
+        currentStartValue === 0) ||
+        currentStartValue > 0)
+    ) {
+      const originalStartDamageRow = editorMarkup[idx].markup.filter(
+        mark => mark.type === 'damage'
+      )[0];
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup.filter(mark => mark.type !== 'damage'),
+          {
+            ...originalStartDamageRow,
+            endChar,
+          },
+        ],
+      };
+      const originalEndDamageRow = editorMarkup[pieceWithStart].markup.filter(
+        mark => mark.type === 'damage'
+      )[0];
+      editorMarkup[pieceWithStart] = {
+        ...editorMarkup[pieceWithStart],
+        markup: [
+          ...editorMarkup[pieceWithStart].markup.filter(
+            mark => mark.type !== 'damage'
+          ),
+          {
+            ...originalEndDamageRow,
+            startChar: currentStartValue,
+          },
+        ],
+      };
+    }
+  });
+
+  let partialDamageStatus = false;
+  let partialPieceWithStart: number;
+  let currentPartialStartValue = 0;
+  editorMarkup.forEach((piece, idx) => {
+    let startChar: number | undefined;
+    let endChar: number | undefined;
+    const prefixMatches = piece.text.match(/⸢/g);
+    if (prefixMatches) {
+      startChar = piece.text.indexOf('⸢');
+      currentPartialStartValue = startChar;
+      partialDamageStatus = true;
+      partialPieceWithStart = idx;
+    }
+
+    if (partialDamageStatus) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'partialDamage' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/⸣/g);
+    if (postfixMatches) {
+      endChar = piece.text.replace('⸢', '').indexOf('⸣');
+      partialDamageStatus = false;
+    }
+
+    if (startChar) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup.filter(
+            mark => mark.type !== 'partialDamage'
+          ),
+          {
+            type: 'partialDamage',
+            startChar,
+          },
+        ],
+      };
+    }
+
+    if (
+      endChar &&
+      ((endChar !== piece.text.replace('⸢', '').replace('⸣', '').length &&
+        currentPartialStartValue === 0) ||
+        currentPartialStartValue > 0)
+    ) {
+      const originalStartDamageRow = editorMarkup[idx].markup.filter(
+        mark => mark.type === 'partialDamage'
+      )[0];
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup.filter(
+            mark => mark.type !== 'partialDamage'
+          ),
+          {
+            ...originalStartDamageRow,
+            endChar,
+          },
+        ],
+      };
+      const originalEndDamageRow = editorMarkup[
+        partialPieceWithStart
+      ].markup.filter(mark => mark.type === 'partialDamage')[0];
+      editorMarkup[partialPieceWithStart] = {
+        ...editorMarkup[partialPieceWithStart],
+        markup: [
+          ...editorMarkup[partialPieceWithStart].markup.filter(
+            mark => mark.type !== 'partialDamage'
+          ),
+          {
+            ...originalEndDamageRow,
+            startChar: currentPartialStartValue,
+          },
+        ],
+      };
+    }
+  });
+
+  editorMarkup.forEach((piece, idx) => {
+    const undeterminedSignsMatches = piece.text.match(/x+/g) || [];
+    if (undeterminedSignsMatches) {
+      undeterminedSignsMatches.forEach(match => {
+        editorMarkup[idx] = {
+          ...editorMarkup[idx],
+          markup: [
+            ...editorMarkup[idx].markup,
+            { type: 'undeterminedSigns', numValue: match.length },
+          ],
+        };
+      });
+    }
+
+    const unknownSignsMatches = piece.text.match(/@/g) || [];
+    if (unknownSignsMatches) {
+      unknownSignsMatches.forEach(_ => {
+        editorMarkup[idx] = {
+          ...editorMarkup[idx],
+          markup: [
+            ...editorMarkup[idx].markup,
+            { type: 'undeterminedSigns', numValue: -1 },
+          ],
+        };
+      });
+    }
+  });
+
+  let superfluousStatus = 0;
+  editorMarkup.forEach((piece, idx) => {
+    const prefixMatches = piece.text.match(/«/g);
+    if (prefixMatches) {
+      superfluousStatus += prefixMatches.length;
+    }
+
+    if (superfluousStatus > 0) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'superfluous' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/»/g);
+    if (postfixMatches) {
+      superfluousStatus -= postfixMatches.length;
+    }
+  });
+
+  let omittedStatus = 0;
+  editorMarkup.forEach((piece, idx) => {
+    const prefixMatches = piece.text.match(/‹/g);
+    if (prefixMatches) {
+      omittedStatus += prefixMatches.length;
+    }
+
+    if (omittedStatus > 0) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'omitted' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/›/g);
+    if (postfixMatches) {
+      omittedStatus -= postfixMatches.length;
+    }
+  });
+
+  let erasureStatus = 0;
+  editorMarkup.forEach((piece, idx) => {
+    const prefixMatches = piece.text.match(/\{/g);
+    if (prefixMatches) {
+      erasureStatus += prefixMatches.length;
+    }
+
+    if (erasureStatus > 0) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'erasure' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/\}/g);
+    if (postfixMatches) {
+      erasureStatus -= postfixMatches.length;
+    }
+  });
+
+  let isUninterpretedStatus = false;
+  editorMarkup.forEach((piece, idx) => {
+    const prefixMatches = piece.text.match(/:/);
+    if (prefixMatches) {
+      isUninterpretedStatus = true;
+    }
+
+    if (isUninterpretedStatus) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'isUninterpreted' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/:/);
+    if (postfixMatches) {
+      isUninterpretedStatus = false;
+    }
+  });
+
+  let isWrittenOverErasureStatus = false;
+  editorMarkup.forEach((piece, idx) => {
+    const prefixMatches = piece.text.match(/\*/);
+    if (prefixMatches) {
+      isWrittenOverErasureStatus = true;
+    }
+
+    if (isWrittenOverErasureStatus) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'isWrittenOverErasure' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/\*/);
+    if (postfixMatches) {
+      isWrittenOverErasureStatus = false;
+    }
+  });
+
+  let phoneticComplementStatus = false;
+  editorMarkup.forEach((piece, idx) => {
+    const prefixMatches = piece.text.match(/;/);
+    if (prefixMatches) {
+      phoneticComplementStatus = true;
+    }
+
+    if (phoneticComplementStatus) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'phoneticComplement' }],
+      };
+    }
+
+    const postfixMatches = piece.text.match(/;/);
+    if (postfixMatches) {
+      phoneticComplementStatus = false;
+    }
+  });
+
+  editorMarkup.forEach((piece, idx) => {
+    const match = piece.text.match(/".+"/);
+    if (match) {
+      const innerMatches = piece.text.match(/"/g) || [];
+      let altReading = match[0];
+      innerMatches.forEach(_ => {
+        altReading = altReading.replace('"', '');
+      });
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup,
+          {
+            type: 'originalSign',
+            altReading,
+            isDeterminative: piece.text.includes('$'),
+          },
+        ],
+      };
+    }
+  });
+
+  editorMarkup.forEach((piece, idx) => {
+    const match = piece.text.match(/'.+'/);
+    if (match) {
+      const innerMatches = piece.text.match(/'/g) || [];
+      let altReading = match[0];
+      innerMatches.forEach(_ => {
+        altReading = altReading.replace("'", '');
+      });
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup,
+          {
+            type: 'alternateSign',
+            altReading,
+            isDeterminative: piece.text.includes('$'),
+          },
+        ],
+      };
+    }
+  });
+
+  editorMarkup.forEach((piece, idx) => {
+    if (piece.text.endsWith('?') || piece.text.includes("?'")) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'uncertain' }],
+      };
+    }
+  });
+
+  let lineHasWrittenBelowLine = false;
+  editorMarkup.forEach((piece, idx) => {
+    if (piece.text.startsWith('/') || lineHasWrittenBelowLine) {
+      lineHasWrittenBelowLine = true;
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup,
+          { type: 'isWrittenBelowTheLine' },
+        ],
+      };
+    }
+  });
+
+  let lineHasWrittenAboveLine = false;
+  editorMarkup.forEach((piece, idx) => {
+    if (piece.text.startsWith('\\') || lineHasWrittenAboveLine) {
+      lineHasWrittenAboveLine = true;
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [
+          ...editorMarkup[idx].markup,
+          { type: 'isWrittenAboveTheLine' },
+        ],
+      };
+    }
+  });
+
+  editorMarkup.forEach((piece, idx) => {
+    if (piece.text.endsWith('!!') || piece.text.includes('!!"')) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'isCollatedReading' }],
+      };
+    }
+  });
+
+  editorMarkup.forEach((piece, idx) => {
+    if (
+      (piece.text.endsWith('!') && !piece.text.endsWith('!!')) ||
+      (piece.text.includes('!"') && !piece.text.includes('!!'))
+    ) {
+      editorMarkup[idx] = {
+        ...editorMarkup[idx],
+        markup: [...editorMarkup[idx].markup, { type: 'isEmendedReading' }],
+      };
+    }
+  });
+
+  return editorMarkup;
 };

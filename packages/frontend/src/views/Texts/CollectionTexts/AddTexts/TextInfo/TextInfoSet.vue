@@ -31,6 +31,7 @@
         placeholder="e.g. Kt 94/k 584b (AKT 6a 267), etc."
         :rules="textNameRules"
         autofocus
+        class="test-text-name"
       />
       <v-row class="pl-3">
         <h3 class="mt-1 mb-2 d-inline">Excavation</h3>
@@ -222,6 +223,7 @@
         submitText="OK"
         closeOnSubmit
         :showCancel="false"
+        eager
       >
         <add-properties
           valueUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"

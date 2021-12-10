@@ -93,9 +93,11 @@ export default defineComponent({
 
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = sl.get('router');
 
     const translitQuery = useQueryParam('translit', '');
     const textTitleQuery = useQueryParam('title', '');
+    const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
@@ -127,7 +129,16 @@ export default defineComponent({
             page,
             rows,
           });
-          searchResults.value = results;
+
+          if (results.length === 1 && getIsVisited() !== 'true') {
+            actions.showSnackbar(
+              'This page appears because the search resolved into only one text. If this is not the text intended, use the browser to return to the search page and simplify the search term.'
+            );
+            await setIsVisited('true');
+            router.push(`/epigraphies/${results[0].uuid}`);
+          } else {
+            searchResults.value = results;
+          }
         } catch (err) {
           actions.showErrorSnackbar(
             'Error searching texts. Please try again.',
@@ -158,15 +169,17 @@ export default defineComponent({
       }
     };
 
-    const resetSearch = async () => {
+    const resetSearch = async (resetVisited: boolean = true) => {
       totalSearchResults.value = -1;
       textTitleQuery.value = textTitleSearch.value;
-      translitQuery.value = translitSearch.value;
+      if (resetVisited) {
+        await setIsVisited('false');
+      }
       searchTextsTotal();
     };
 
     onMounted(() => {
-      resetSearch();
+      resetSearch(false);
     });
 
     return {

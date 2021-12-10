@@ -1,12 +1,16 @@
 <template>
-  <OareContentView title="Connect Lexical Information">
+  <OareContentView title="Connect Lexical Information" :loading="loading">
     <v-row class="pa-0 ma-0">
       <v-col cols="8" class="pa-0 ma-0 mb-6">
         Select a word to connect it to the associated word form in the
-        dictionary. Words that have yet to be connected are highlighted in red.
-        In the case that a word only has one existing match in the dictionary,
-        it has been automatically connected for you. It can be manually
-        disconnected if desired.
+        dictionary. Below each word appears a colored bubble to indicate the
+        status of the connected forms. The bubble appears green with the form
+        spelling inside if it has already been connected to the word. This is
+        done for you automatically if there is only one possible option in the
+        dictionary (though it can be disconnected if desired). The bubble
+        appears yellow if the word has yet to be connected, but there are a
+        number of options available. Finally, the bubble appears red if there
+        are no forms in the dictionary that match the provided spelling.
       </v-col>
     </v-row>
     <div v-if="renderer" class="mr-10">
@@ -18,22 +22,46 @@
           <div
             v-for="lineNum in renderer.linesOnSide(sideName)"
             :key="lineNum"
-            class="oare-title d-flex my-3"
+            class="oare-title d-flex my-3 mb-6"
           >
             <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
             <span
               v-if="renderer.isRegion(lineNum)"
               v-html="renderer.lineReading(lineNum)"
             />
-            <span v-else>
-              <span
+            <v-row v-else class="pa-0 ma-0" align="top">
+              <div
                 v-for="(word, index) in renderer.getLineWords(lineNum)"
                 :key="index"
-                v-html="displayDiscourseStatus(word)"
-                class="mr-3 cursor-display"
+                class="px-1 cursor-display d-inline-block"
                 @click="openDiscourseDialog(word)"
-              />
-            </span>
+              >
+                <v-row class="pa-0 ma-0" justify="center">
+                  <span v-html="word.reading" />
+                </v-row>
+                <v-row
+                  class="pa-0 text-body-2 ma-0 grey--text"
+                  justify="center"
+                >
+                  <v-chip
+                    v-if="
+                      word.discourseUuid
+                        ? !isNumber(word.discourseUuid) &&
+                          !isUndetermined(word.reading || '') &&
+                          !isSeparator(word.reading || '')
+                        : false
+                    "
+                    :color="getColor(word.discourseUuid)"
+                    small
+                    >{{
+                      word.discourseUuid
+                        ? getSelectedForm(word.discourseUuid)
+                        : '--'
+                    }}</v-chip
+                  >
+                </v-row>
+              </div>
+            </v-row>
           </div>
         </div>
       </div>
@@ -42,6 +70,7 @@
       v-if="selectedWord"
       v-model="discourseDialog"
       :word="selectedWord"
+      :forms="searchSpellingResults[selectedWord.uuid]"
       :key="selectedWord.uuid"
       @set-spelling-uuid="setSpellingUuid(selectedWord, $event)"
     />
@@ -49,9 +78,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  computed,
+  ref,
+  onMounted,
+} from '@vue/composition-api';
 import { createTabletRenderer } from '@oare/oare';
-import { EpigraphicUnit, TextDiscourseRow, EpigraphicWord } from '@oare/types';
+import {
+  EpigraphicUnit,
+  TextDiscourseRow,
+  EpigraphicWord,
+  SearchSpellingResultRow,
+} from '@oare/types';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import ConnectDiscourseDialog from './components/ConnectDiscourseDialog.vue';
 import sl from '@/serviceLocator';
@@ -72,6 +112,10 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const store = sl.get('store');
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+
+    const loading = ref(false);
 
     const renderer = computed(() => {
       return createTabletRenderer(props.epigraphicUnits, {
@@ -87,21 +131,6 @@ export default defineComponent({
 
       const lineNumber = formatLineNumber(line);
       return lineNumber;
-    };
-
-    const displayDiscourseStatus = (word: EpigraphicWord): string | null => {
-      const matchingDiscourseRow = props.discourseRows.filter(
-        row => row.uuid === word.discourseUuid
-      )[0];
-      if (
-        matchingDiscourseRow &&
-        (matchingDiscourseRow.spellingUuid ||
-          matchingDiscourseRow.type === 'number')
-      ) {
-        return word.reading;
-      } else {
-        return `<mark class="red">${word.reading}</mark>`;
-      }
     };
 
     const selectedWord = ref<TextDiscourseRow>();
@@ -130,14 +159,102 @@ export default defineComponent({
       emit('update-discourse-rows', newDiscourseRows);
     };
 
+    const searchSpellingResults = ref<{
+      [key: string]: SearchSpellingResultRow[];
+    }>({});
+
+    onMounted(async () => {
+      try {
+        loading.value = true;
+        const discourseRowsWithSpelling = props.discourseRows.filter(
+          row => row.explicitSpelling
+        );
+        const forms = await Promise.all(
+          discourseRowsWithSpelling.map(row =>
+            server.searchSpellings(row.explicitSpelling || '')
+          )
+        );
+
+        discourseRowsWithSpelling.map((row, idx) => {
+          const discourseUuid = row.uuid;
+          searchSpellingResults.value[discourseUuid] = forms[idx];
+        });
+      } catch {
+        actions.showErrorSnackbar(
+          'Error loading discourse forms. Please try again.'
+        );
+      } finally {
+        loading.value = false;
+      }
+    });
+
+    const getSelectedForm = (discourseUuid: string) => {
+      const spellingUuid = props.discourseRows.filter(
+        row => row.uuid === discourseUuid
+      )[0].spellingUuid;
+      if (!spellingUuid) {
+        return '--';
+      }
+
+      const discourseForms = searchSpellingResults.value[discourseUuid];
+      if (!discourseForms) {
+        return '--';
+      }
+
+      const relevantForm = discourseForms.filter(
+        form => form.spellingUuid === spellingUuid
+      )[0].form.form;
+      return relevantForm;
+    };
+
+    const getColor = (discourseUuid: string | null) => {
+      if (!discourseUuid) {
+        return 'red';
+      }
+      const spellingUuid = props.discourseRows.filter(
+        row => row.uuid === discourseUuid
+      )[0].spellingUuid;
+      if (spellingUuid) {
+        return 'green';
+      }
+
+      const discourseForms = searchSpellingResults.value[discourseUuid];
+      if (!discourseForms || discourseForms.length === 0) {
+        return 'red';
+      }
+
+      return 'yellow';
+    };
+
+    const isNumber = (discourseUuid: string) => {
+      const discourseRow = props.discourseRows.filter(
+        row => row.uuid === discourseUuid
+      )[0];
+      return discourseRow.type === 'number';
+    };
+
+    const isUndetermined = (reading: string) => {
+      return reading.includes('...') || reading.match(/x+/);
+    };
+
+    const isSeparator = (reading: string) => {
+      return reading === '|';
+    };
+
     return {
       renderer,
       lineNumber,
-      displayDiscourseStatus,
       openDiscourseDialog,
       discourseDialog,
       selectedWord,
       setSpellingUuid,
+      loading,
+      searchSpellingResults,
+      getSelectedForm,
+      getColor,
+      isNumber,
+      isUndetermined,
+      isSeparator,
     };
   },
 });

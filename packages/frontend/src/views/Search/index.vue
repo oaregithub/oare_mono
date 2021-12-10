@@ -1,6 +1,6 @@
 <template>
   <OareContentView title="Search">
-    <router-link to="/search/texts" class="oare-title mr-4">Texts</router-link>
+    <router-link to="/search/texts" class="oare-title mr-4">Text Name</router-link>
     <router-link to="/search/dictionary" class="oare-title"
       >Dictionary</router-link
     >

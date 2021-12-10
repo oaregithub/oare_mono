@@ -1,6 +1,7 @@
 import knex from '@/connection';
 import fetch from 'node-fetch';
 import AWS from 'aws-sdk';
+import sl from '@/serviceLocator';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -38,15 +39,36 @@ class ResourceDao {
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
 
     const response: string[] = [];
+    const ErrorsDao = sl.get('ErrorsDao');
 
-    const photoResponse = await fetch(photoUrl, { method: 'HEAD' });
-    const lineArtResponse = await fetch(lineArtUrl, { method: 'HEAD' });
+    try {
+      const photoResponse = await fetch(photoUrl, { method: 'HEAD' });
 
-    if (photoResponse.ok) {
-      response.push(photoUrl);
+      if (photoResponse.ok) {
+        response.push(photoUrl);
+      }
+    } catch (err) {
+      await ErrorsDao.logError({
+        userUuid: null,
+        description: 'Error retrieving CDLI photo',
+        stacktrace: err.stack,
+        status: 'In Progress',
+      });
     }
-    if (lineArtResponse.ok) {
-      response.push(lineArtUrl);
+
+    try {
+      const lineArtResponse = await fetch(lineArtUrl, { method: 'HEAD' });
+
+      if (lineArtResponse.ok) {
+        response.push(lineArtUrl);
+      }
+    } catch (err) {
+      await ErrorsDao.logError({
+        userUuid: null,
+        description: 'Error retrieving CDLI line art',
+        stacktrace: err.stack,
+        status: 'In Progress',
+      });
     }
 
     return response;

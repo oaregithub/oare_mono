@@ -27,6 +27,7 @@
       </v-col>
       <v-col cols="6">
         <epigraphy-image
+          v-if="photoUrls.length > 0"
           :imageLinks="photoUrls"
           :imageDetails="photosWithUrl"
           :maxSelect="1"

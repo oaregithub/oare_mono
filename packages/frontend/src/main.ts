@@ -18,6 +18,7 @@ import 'flag-icon-css/css/flag-icon.css';
 import firebase from './firebase';
 import server from './serverProxy';
 import 'swagger-ui/dist/swagger-ui.css';
+import 'vue-inner-image-zoom/lib/vue-inner-image-zoom.css';
 
 sl.set('serverProxy', serverProxy);
 sl.set('globalActions', globalActions);

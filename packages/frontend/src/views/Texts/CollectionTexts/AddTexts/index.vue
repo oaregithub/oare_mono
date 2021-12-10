@@ -81,6 +81,9 @@
             blockContinueText="Coming Soon"
             @previous="previous"
           />
+          <v-btn color="primary" text class="ml-4 mt-6" @click="printSummary">
+            Print Tables to Console
+          </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -161,10 +164,38 @@ export default defineComponent({
     const epigraphyDetails: ComputedRef<EpigraphyResponse> = computed(() => {
       return {
         canWrite: false,
-        textName:
-          textInfo.value && textInfo.value.textName
-            ? textInfo.value.textName
-            : '',
+        text: {
+          uuid: createTextTables.value ? createTextTables.value.text.uuid : '',
+          type: 'logosyllabic',
+          name:
+            textInfo.value && textInfo.value.textName
+              ? textInfo.value.textName
+              : '',
+          excavationPrefix:
+            textInfo.value && textInfo.value.excavationPrefix
+              ? textInfo.value.excavationPrefix
+              : '',
+          excavationNumber:
+            textInfo.value && textInfo.value.excavationNumber
+              ? textInfo.value.excavationNumber
+              : '',
+          museumPrefix:
+            textInfo.value && textInfo.value.museumPrefix
+              ? textInfo.value.museumPrefix
+              : '',
+          museumNumber:
+            textInfo.value && textInfo.value.museumNumber
+              ? textInfo.value.museumNumber
+              : '',
+          publicationPrefix:
+            textInfo.value && textInfo.value.publicationPrefix
+              ? textInfo.value.publicationPrefix
+              : '',
+          publicationNumber:
+            textInfo.value && textInfo.value.publicationNumber
+              ? textInfo.value.publicationNumber
+              : '',
+        },
         collection: {
           uuid: props.collectionUuid,
           name: collectionName.value,
@@ -179,6 +210,7 @@ export default defineComponent({
         color: '',
         colorMeaning: '',
         discourseUnits: [],
+        hasEpigraphy: true,
       };
     });
 
@@ -201,12 +233,22 @@ export default defineComponent({
     const previous = () => (step.value -= 1);
 
     const createTextTables = ref<CreateTextTables>();
+    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
+      {}
+    );
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
         createTextTables.value = await createNewTextTables(
           textInfo.value,
-          editorContent.value
+          editorContent.value,
+          persistentDiscourseStorage.value
         );
+      }
+      if (createTextTables.value) {
+        createTextTables.value.discourses.forEach(discourse => {
+          persistentDiscourseStorage.value[discourse.uuid] =
+            discourse.spellingUuid;
+        });
       }
     };
 
@@ -216,7 +258,28 @@ export default defineComponent({
           ...createTextTables.value,
           discourses,
         };
+        createTextTables.value.discourses.forEach(row => {
+          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
+        });
       }
+    };
+
+    const printSummary = () => {
+      console.log({
+        text_epigraphy: createTextTables.value
+          ? createTextTables.value.epigraphies
+          : null,
+        text_markup: createTextTables.value
+          ? createTextTables.value.markups
+          : null,
+        text_discourse: createTextTables.value
+          ? createTextTables.value.discourses
+          : null,
+        text: createTextTables.value ? createTextTables.value.text : null,
+        item_properties: createTextTables.value
+          ? createTextTables.value.itemProperties
+          : null,
+      });
     };
 
     return {
@@ -235,6 +298,7 @@ export default defineComponent({
       stepOneComplete,
       stepThreeComplete,
       buildTables,
+      printSummary,
     };
   },
 });

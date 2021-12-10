@@ -1,12 +1,24 @@
 import { DiscourseUnit, TextDiscourseRow } from './textDiscourse';
 import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
-import { ParseTreeProperty } from './dictionary';
+import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
+
+export interface Text {
+  uuid: string;
+  type: string;
+  name: string;
+  excavationPrefix: string | null;
+  excavationNumber: string | null;
+  museumPrefix: string | null;
+  museumNumber: string | null;
+  publicationPrefix: string | null;
+  publicationNumber: string | null;
+}
 
 export interface EpigraphyResponse {
   canWrite: boolean;
-  textName: string;
+  text: Text | null;
   collection: Collection;
   cdliNum: string | null;
   units: EpigraphicUnit[];
@@ -14,13 +26,15 @@ export interface EpigraphyResponse {
   colorMeaning: string;
   discourseUnits: DiscourseUnit[];
   draft?: TextDraft;
+  hasEpigraphy: boolean;
 }
 
 export type EpigraphicUnitType =
   | 'phonogram'
   | 'logogram'
   | 'number'
-  | 'determinative';
+  | 'determinative'
+  | 'punctuation';
 
 export type EpigraphicUnitSide =
   | 'obv.'
@@ -100,11 +114,13 @@ export type MarkupType =
   | 'partialDamage'
   | 'isWrittenOverErasure'
   | 'isWrittenBelowTheLine'
+  | 'isWrittenAboveTheLine'
   | 'broken'
   | 'isSealImpression'
   | 'uninscribed'
   | 'ruling'
-  | 'isStampSealImpression';
+  | 'isStampSealImpression'
+  | 'phoneticComplement';
 
 export interface MarkupUnit {
   referenceUuid: string;
@@ -290,10 +306,27 @@ export interface CreateTextTables {
   markups: TextMarkupRow[];
   discourses: TextDiscourseRow[];
   text: TextRow;
+  itemProperties: InsertItemPropertyRow[];
   signInfo: SignInfo[];
 }
 
 export interface EditorWord {
   spelling: string;
   discourseUuid: string;
+}
+
+export interface EditorMarkupPiece {
+  type: MarkupType;
+  startChar?: number;
+  endChar?: number;
+  altReading?: string;
+  isDeterminative?: boolean;
+  numValue?: number;
+}
+
+export interface EditorMarkup {
+  text: string;
+  markup: EditorMarkupPiece[];
+  post: string;
+  wordIndex: number;
 }

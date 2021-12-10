@@ -4,6 +4,7 @@
     @input="$emit('input', $event)"
     :width="width"
     :persistent="persistent"
+    :eager="eager"
   >
     <template v-slot:activator="{ on }">
       <slot name="activator" :on="on"></slot>
@@ -112,6 +113,10 @@ export default defineComponent({
     actionTitle: {
       type: String,
       required: false,
+    },
+    eager: {
+      type: Boolean,
+      default: false,
     },
   },
   setup({ closeOnSubmit }, { emit }) {

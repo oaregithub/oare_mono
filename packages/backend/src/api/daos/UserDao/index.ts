@@ -59,12 +59,14 @@ class UserDao {
     lastName,
     email,
     isAdmin,
+    betaAccess,
   }: {
     uuid: string;
     firstName: string;
     lastName: string;
     email: string;
     isAdmin: boolean;
+    betaAccess: boolean;
   }): Promise<void> {
     await knex('user').insert({
       uuid,
@@ -73,20 +75,21 @@ class UserDao {
       full_name: `${firstName} ${lastName}`,
       email,
       is_admin: isAdmin,
+      beta_access: betaAccess,
     });
   }
 
   async userIsAdmin(uuid: string): Promise<boolean> {
     const { isAdmin } = await knex('user')
       .first('is_admin AS isAdmin')
-      .where('uuid', uuid);
+      .where({ uuid });
     return isAdmin;
   }
 
   async userHasBetaAccess(uuid: string): Promise<boolean> {
     const { betaAccess } = await knex('user')
       .first('beta_access AS betaAccess')
-      .where(uuid);
+      .where({ uuid });
     return betaAccess;
   }
 
