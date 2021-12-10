@@ -2,7 +2,8 @@
   <div class="d-flex flex-column">
     <div class="d-flex">
       <h4>{{ label }}</h4>
-      <search-information-card v-if="displayHelp" />
+      <text-name-information-card v-if="displayHelp_textName" />
+      <transliteration-information-card v-if="displayHelp_transliteration" />
       <v-dialog v-model="helpOpen" width="500">
         <v-card>
           <v-card-title>Help</v-card-title>
@@ -27,7 +28,8 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
-import SearchInformationCard from '@/views/Search/TextsSearch/components/SearchInformationCard.vue';
+import transliterationInformationCard from '@/views/Search/TextsSearch/components/TransliterationInformationCard.vue';
+import textNameInformationCard from '@/views/Search/TextsSearch/components/TextNameInformationCard.vue';
 export default defineComponent({
   props: {
     label: {
@@ -42,13 +44,18 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    displayHelp: {
+    displayHelp_textName: {
+      type: Boolean,
+      default: false,
+    },
+    displayHelp_transliteration: {
       type: Boolean,
       default: false,
     },
   },
   components: {
-    SearchInformationCard,
+    transliterationInformationCard,
+    textNameInformationCard,
   },
   setup() {
     const helpOpen = ref(false);
