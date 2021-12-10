@@ -63,7 +63,6 @@ describe('AdminDraftsView test', () => {
 
     expect(wrapper.html()).toContain(draft.textName);
     expect(wrapper.html()).toContain('John Doe');
-    expect(wrapper.html()).toContain('Mar 22, 2021, 2:26 PM');
   });
 
   it('clicking on View Content opens dialog', async () => {
