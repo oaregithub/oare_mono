@@ -41,7 +41,13 @@
 <script lang="ts">
 import EpigraphyImage from '@/views/Texts/EpigraphyView/EpigraphyDisplay/components/EpigraphyImage.vue';
 import PhotoSelector from './components/PhotoSelector.vue';
-import { defineComponent, ref, computed, watch } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  computed,
+  watch,
+  onMounted,
+} from '@vue/composition-api';
 import { TextPhoto } from '@oare/types';
 import { v4 } from 'uuid';
 
@@ -88,6 +94,18 @@ export default defineComponent({
       },
       { deep: true }
     );
+
+    const stepComplete = computed(() =>
+      photos.value.every(photo => photo.url && photo.side && photo.view)
+    );
+
+    watch(stepComplete, () => {
+      emit('step-complete', stepComplete.value);
+    });
+
+    onMounted(() => {
+      emit('step-complete', true);
+    });
 
     return {
       photos,

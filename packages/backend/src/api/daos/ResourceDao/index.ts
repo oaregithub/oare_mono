@@ -73,6 +73,13 @@ class ResourceDao {
 
     return response;
   }
+
+  async getImageDesignatorMatches(preText: string): Promise<string[]> {
+    const results = await knex('resource')
+      .pluck('link')
+      .where('link', 'like', `${preText}%`);
+    return results;
+  }
 }
 
 export default new ResourceDao();

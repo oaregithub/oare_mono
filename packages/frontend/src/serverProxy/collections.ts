@@ -33,8 +33,16 @@ async function getCollectionInfo(uuid: string): Promise<CollectionInfo> {
   return data;
 }
 
+async function getHierarchyParentUuidByCollection(
+  collectionUuid: string
+): Promise<string> {
+  const { data } = await axios.get(`/collection_hierarchy/${collectionUuid}`);
+  return data;
+}
+
 export default {
   getAllCollections,
   getCollectionTexts,
   getCollectionInfo,
+  getHierarchyParentUuidByCollection,
 };

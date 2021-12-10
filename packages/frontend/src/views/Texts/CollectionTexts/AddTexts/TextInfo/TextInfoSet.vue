@@ -66,6 +66,7 @@
             outlined
             label="Excavation Prefix"
             placeholder="e.g. Kt 91/k, Ac.i., etc."
+            class="test-excavation-prefix"
           />
         </v-col>
         <v-col cols="6" class="pa-0 pl-1">
@@ -74,6 +75,7 @@
             outlined
             label="Excavation Number"
             placeholder="e.g. 435, 1023, 22b, etc."
+            class="test-excavation-number"
           />
         </v-col>
       </v-row>
@@ -294,7 +296,19 @@ export default defineComponent({
     });
 
     const stepComplete = computed(() => {
-      return textName.value !== '';
+      const hasTextName = textName.value !== '';
+
+      const hasExcavationInfo =
+        excavationPrefix.value !== '' && excavationNumber.value !== '';
+      const hasMuseumInfo =
+        museumPrefix.value !== '' && museumNumber.value !== '';
+      const hasPublicationInfo =
+        publicationPrefix.value !== '' && publicationNumber.value !== '';
+
+      const hasCollectionInfo =
+        hasExcavationInfo || hasMuseumInfo || hasPublicationInfo;
+
+      return hasTextName && hasCollectionInfo;
     });
 
     watch(stepComplete, () => emit('step-complete', stepComplete.value));
