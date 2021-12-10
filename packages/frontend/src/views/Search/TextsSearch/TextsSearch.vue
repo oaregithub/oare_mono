@@ -158,8 +158,8 @@ export default defineComponent({
 
     const resetSearch = async () => {
       totalSearchResults.value = -1;
-      translitQuery.value = translitSearch.value;
       textTitleQuery.value = textTitleSearch.value;
+      translitQuery.value = translitSearch.value;
       searchTextsTotal();
     };
 
