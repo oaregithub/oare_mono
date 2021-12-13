@@ -102,7 +102,7 @@ class TextDao {
     } else if (row.museumPrefix && row.museumNumber) {
       textName = `${row.museumPrefix} ${row.museumNumber}`;
     } else {
-      textName = name;
+      textName = row.name;
     }
 
     return textName;
