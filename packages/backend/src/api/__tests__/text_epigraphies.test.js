@@ -442,3 +442,167 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     expect(response.status).toBe(500);
   });
 });
+
+describe('GET /text_epigraphies/designator/:preText', () => {
+  const mockPreText = 'test-pretext-';
+  const PATH = `${API_PATH}/text_epigraphies/designator/${mockPreText}`;
+
+  const mockResourceDao = {
+    getImageDesignatorMatches: jest
+      .fn()
+      .mockResolvedValue(['test-pretext-1.jpg', 'test-pretext-2.jpg']),
+  };
+
+  const setup = () => {
+    sl.set('ResourceDao', mockResourceDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () => request(app).get(PATH);
+
+  it('returns 200 on successful designator generation', async () => {
+    const response = await sendRequest();
+    expect(mockResourceDao.getImageDesignatorMatches).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(response.text).toBe('3');
+  });
+
+  it('returns 500 on failed designator generation', async () => {
+    sl.set('ResourceDao', {
+      ...mockResourceDao,
+      getImageDesignatorMatches: jest
+        .fn()
+        .mockRejectedValue('failed to generate designator'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('POST /text_epigraphies/create', () => {
+  const PATH = `${API_PATH}/text_epigraphies/create`;
+  const mockPayload = {
+    tables: {
+      epigraphies: [
+        {
+          uuid: 'test-epigraphy-uuid',
+        },
+      ],
+      markups: [
+        {
+          uuid: 'test-markup-uuid',
+        },
+      ],
+      discourses: [
+        {
+          uuid: 'test-discourse-uuid',
+        },
+      ],
+      text: {
+        uuid: 'test-uuid',
+        name: 'test-name',
+      },
+      itemProperties: [
+        {
+          uuid: 'test-property-uuid',
+        },
+      ],
+      signInfo: [],
+      resources: [
+        {
+          uuid: 'test-resource-uuid',
+        },
+      ],
+      links: [
+        {
+          uuid: 'test-link-uuid',
+        },
+      ],
+      hierarchy: {
+        uuid: 'test-hierarchy-uuid',
+      },
+    },
+  };
+
+  const mockTextDao = {
+    insertTextRow: jest.fn().mockResolvedValue(),
+  };
+
+  const mockHierarchyDao = {
+    insertHierarchyRow: jest.fn().mockResolvedValue(),
+  };
+
+  const mockItemPropertiesDao = {
+    addProperty: jest.fn().mockResolvedValue(),
+  };
+
+  const mockResourceDao = {
+    insertResourceRow: jest.fn().mockResolvedValue(),
+    insertLinkRow: jest.fn().mockResolvedValue(),
+  };
+
+  const mockTextDiscourseDao = {
+    insertDiscourseRow: jest.fn().mockResolvedValue(),
+  };
+
+  const mockTextEpigraphyDao = {
+    insertEpigraphyRow: jest.fn().mockResolvedValue(),
+  };
+
+  const mockTextMarkupDao = {
+    insertMarkupRow: jest.fn().mockResolvedValue(),
+  };
+
+  const setup = () => {
+    sl.set('TextDao', mockTextDao);
+    sl.set('HierarchyDao', mockHierarchyDao);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('ResourceDao', mockResourceDao);
+    sl.set('TextDiscourseDao', mockTextDiscourseDao);
+    sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
+    sl.set('TextMarkupDao', mockTextMarkupDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () => request(app).post(PATH).send(mockPayload);
+
+  it('returns 201 on successful text creation', async () => {
+    const response = await sendRequest();
+    expect(mockTextDao.insertTextRow).toHaveBeenCalledWith(
+      mockPayload.tables.text
+    );
+    expect(mockHierarchyDao.insertHierarchyRow).toHaveBeenCalledWith(
+      mockPayload.tables.hierarchy
+    );
+    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalledWith(
+      mockPayload.tables.itemProperties[0]
+    );
+    expect(mockResourceDao.insertResourceRow).toHaveBeenCalledWith(
+      mockPayload.tables.resources[0]
+    );
+    expect(mockResourceDao.insertLinkRow).toHaveBeenCalledWith(
+      mockPayload.tables.links[0]
+    );
+    expect(mockTextDiscourseDao.insertDiscourseRow).toHaveBeenCalledWith(
+      mockPayload.tables.discourses[0]
+    );
+    expect(mockTextEpigraphyDao.insertEpigraphyRow).toHaveBeenCalledWith(
+      mockPayload.tables.epigraphies[0]
+    );
+    expect(mockTextMarkupDao.insertMarkupRow).toHaveBeenCalledWith(
+      mockPayload.tables.markups[0]
+    );
+    expect(response.status).toBe(201);
+  });
+
+  it('returns 500 if dao function fails', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      insertTextRow: jest.fn().mockRejectedValue('failed to insert text row'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
