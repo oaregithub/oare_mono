@@ -5,10 +5,12 @@ exports[`OareSidebar test matches snapshot 1`] = `
   <h2 class="mb-2">Quick Queries</h2>
   <router-link-stub to="/search/texts" class="white--text no-underline">
     Go to advanced queries <i aria-hidden="true" class="v-icon notranslate mdi mdi-icon-right theme--light"></i></router-link-stub>
-  <div class="d-flex flex-column test-text-input" displayhelp_textname="true">
+  <div class="d-flex flex-column test-text-input">
     <div class="d-flex">
       <h4>Text Name</h4>
-      <!---->
+      <div class="v-menu"><button type="button" role="button" aria-haspopup="true" aria-expanded="false" class="v-icon notranslate mb-1 ml-1 v-icon--link mdi mdi-information-outline theme--light"></button>
+        <!---->
+      </div>
       <!---->
       <div role="dialog" class="v-dialog__container">
         <!---->
@@ -20,7 +22,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-7" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-10" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -30,11 +32,13 @@ exports[`OareSidebar test matches snapshot 1`] = `
       </div>
     </div>
   </div>
-  <div class="d-flex flex-column mt-n3 test-transliteration-input" displayhelp_transliteration="true">
+  <div class="d-flex flex-column mt-n3 test-transliteration-input">
     <div class="d-flex">
       <h4>Transliteration</h4>
       <!---->
-      <!---->
+      <div class="v-menu"><button type="button" role="button" aria-haspopup="true" aria-expanded="false" class="v-icon notranslate mb-1 ml-1 v-icon--link mdi mdi-information-outline theme--light"></button>
+        <!---->
+      </div>
       <div role="dialog" class="v-dialog__container">
         <!---->
       </div>
@@ -45,7 +49,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-12" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-18" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
@@ -70,7 +74,7 @@ exports[`OareSidebar test matches snapshot 1`] = `
           <fieldset aria-hidden="true">
             <legend><span>​</span></legend>
           </fieldset>
-          <div class="v-text-field__slot"><input id="input-17" type="text"></div>
+          <div class="v-text-field__slot"><input id="input-23" type="text"></div>
         </div>
         <div class="v-text-field__details">
           <div class="v-messages theme--light">
