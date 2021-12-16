@@ -554,6 +554,10 @@ describe('POST /text_epigraphies/create', () => {
     insertMarkupRow: jest.fn().mockResolvedValue(),
   };
 
+  const mockPublicDenylistDao = {
+    addItemsToDenylist: jest.fn().mockResolvedValue(),
+  };
+
   const setup = () => {
     sl.set('TextDao', mockTextDao);
     sl.set('HierarchyDao', mockHierarchyDao);
@@ -562,6 +566,7 @@ describe('POST /text_epigraphies/create', () => {
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('TextMarkupDao', mockTextMarkupDao);
+    sl.set('PublicDenylistDao', mockPublicDenylistDao);
   };
 
   beforeEach(setup);
@@ -593,6 +598,10 @@ describe('POST /text_epigraphies/create', () => {
     );
     expect(mockTextMarkupDao.insertMarkupRow).toHaveBeenCalledWith(
       mockPayload.tables.markups[0]
+    );
+    expect(mockPublicDenylistDao.addItemsToDenylist).toHaveBeenCalledWith(
+      [mockPayload.tables.text.uuid],
+      'text'
     );
     expect(response.status).toBe(201);
   });
