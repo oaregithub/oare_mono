@@ -206,7 +206,7 @@ const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
   excavationNumber: textInfo.excavationNumber,
   museumPrefix: textInfo.museumPrefix,
   museumNumber: textInfo.museumNumber,
-  publicationPrefic: textInfo.publicationPrefix,
+  publicationPrefix: textInfo.publicationPrefix,
   publicationNumber: textInfo.publicationNumber,
   objectType: null,
   source: null,
@@ -354,7 +354,6 @@ const createSideRows = async (
           parentUuid,
           side: side.number,
           column: 0,
-          reading: side.type,
         });
 
         const columnRows: TextEpigraphyRow[] = await createColumnRows(
@@ -1278,7 +1277,11 @@ export const generatePhotoName = async (
 
   const designator = await server.getNextImageDesignator(preDesignatorText);
 
-  return `${preDesignatorText}${designator}`;
+  const fileType = photo.upload
+    ? photo.upload.type.slice(photo.upload.type.lastIndexOf('/') + 1)
+    : '';
+
+  return `${preDesignatorText}${designator}.${fileType}`;
 };
 
 export const correctPhotoNames = (photos: TextPhotoWithName[]) => {

@@ -4,6 +4,7 @@ import {
   Pagination,
   SearchCooccurrence,
   SearchNullDiscourseLine,
+  TextEpigraphyRow,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -292,6 +293,27 @@ class TextEpigraphyDao {
     await knex('text_epigraphy')
       .update('discourse_uuid', discourseUuid)
       .whereIn('uuid', epigraphyUuids);
+  }
+
+  async insertEpigraphyRow(row: TextEpigraphyRow) {
+    await knex('text_epigraphy').insert({
+      uuid: row.uuid,
+      type: row.type,
+      text_uuid: row.textUuid,
+      tree_uuid: row.treeUuid,
+      parent_uuid: row.parentUuid,
+      object_on_tablet: row.objectOnTablet,
+      side: row.side,
+      column: row.column,
+      line: row.line,
+      char_on_line: row.charOnLine,
+      char_on_tablet: row.charOnTablet,
+      sign_uuid: row.signUuid,
+      sign: row.sign,
+      reading_uuid: row.readingUuid,
+      reading: row.reading,
+      discourse_uuid: row.discourseUuid,
+    });
   }
 }
 

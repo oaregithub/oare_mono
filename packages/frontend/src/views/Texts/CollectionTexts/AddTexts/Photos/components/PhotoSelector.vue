@@ -58,7 +58,9 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const photoUrl = ref<string>();
+    const localUpload = ref<File>();
     const setFile = async (upload: File) => {
+      localUpload.value = upload;
       photoUrl.value = await readURL(upload);
     };
 
@@ -176,12 +178,18 @@ export default defineComponent({
     ]);
 
     const photo: ComputedRef<TextPhoto | null> = computed(() => {
-      if (photoUrl.value && sideSelection.value && viewSelection.value) {
+      if (
+        photoUrl.value &&
+        sideSelection.value &&
+        viewSelection.value &&
+        localUpload.value
+      ) {
         return {
           uuid: props.uuid,
           url: photoUrl.value,
           side: sideSelection.value,
           view: viewSelection.value,
+          upload: localUpload.value,
         };
       } else {
         return null;
