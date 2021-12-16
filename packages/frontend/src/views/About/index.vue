@@ -13,8 +13,6 @@
         events they recorded.
       </p>
 
-      <p>To read more here about the data structure of oare.</p>
-
       <p>
         oare.byu.edu was organized and directed by Edward Stratford, Brigham
         Young University, but is the beneficiary of help from a great number of
