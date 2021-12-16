@@ -10,6 +10,7 @@
       v-model="text"
       @keyup.enter.native="performSearch"
       :disabled="textSearchDisabled"
+      :textNameDisplayHelp="true"
     />
     <search-field
       class="mt-n3 test-transliteration-input"
@@ -17,7 +18,7 @@
       v-model="translit"
       @keyup.enter.native="performSearch"
       :disabled="textSearchDisabled"
-      :displayHelp="true"
+      :transliterationDisplayHelp="true"
     />
     <search-field
       class="mt-n3 test-words-input"

@@ -4,13 +4,7 @@
     <slot name="header"></slot>
 
     <v-card-title
-      class="
-        oare-header
-        d-flex
-        justify-space-between
-        align-center
-        test-content-title
-      "
+      class="oare-header d-flex justify-space-between align-center test-content-title"
     >
       <slot name="title">
         <div class="d-flex align-center">
@@ -18,8 +12,18 @@
           <span
             class="font-weight-bold"
             v-if="title !== null && title !== undefined"
-            >{{ title }}</span
-          >
+            >{{ title }}
+            <v-menu offset-y open-on-hover v-if="informationCard">
+              <template #activator="{ on, attrs }">
+                <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
+                  mdi-information-outline
+                </v-icon>
+              </template>
+              <v-card class="pa-3">
+                {{ informationCard }}
+              </v-card>
+            </v-menu>
+          </span>
           <slot name="title:post"></slot>
         </div>
       </slot>
@@ -42,6 +46,10 @@ export default defineComponent({
     title: {
       type: String,
       default: null,
+    },
+    informationCard: {
+      type: String,
+      required: false,
     },
     loading: {
       type: Boolean,

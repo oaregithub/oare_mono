@@ -1,5 +1,20 @@
 <template>
-  <OareContentView title="Old Assyrian Lexicon" :loading="loading">
+  <OareContentView
+    title="Old Assyrian Lexicon"
+    informationCard='This Lexicon is intended to include all common nouns, verbs, adjectives,
+        etc., and month names. Much of the content follows entries from both the
+        CAD and Kouwenberg &#39;s "Introduction to Old Assyrian" (Zaphon, 2019). Many
+        spellings that do not yet have an example in the corpus are included,
+        though they do not show up unless there is an actual example in the
+        corpus to link to. Spellings are indexed and grouped under forms, which
+        take parsing properties, and reflect a normalization, which are in turn
+        grouped under lemmas. Standardization of normalization is ongoing.
+        Indexing is ongoing with many thousand forms and spellings still not
+        indexed. After these projects are finished, a project to standardize
+        readings employed in transliterations based on accepted normalization
+        will also be undertaken.'
+    :loading="loading"
+  >
     <DictionaryDisplay
       :wordList="words"
       :letter="letter"
