@@ -130,7 +130,7 @@ export default defineComponent({
         }
         actions.showErrorSnackbar(
           'Error loading collection texts. Please try again.',
-           err as Error
+          err as Error
         );
       } finally {
         textsLoading.value = false;
