@@ -7,6 +7,7 @@ import {
   DiscourseUnit,
   DiscourseUnitType,
   PersonOccurrenceRow,
+  TextDiscourseRow,
 } from '@oare/types';
 import Knex from 'knex';
 import { v4 } from 'uuid';
@@ -435,6 +436,23 @@ class TextDiscourseDao {
         knex('text_discourse').update('spelling_uuid', null).where('uuid', uuid)
       )
     );
+  }
+
+  async insertDiscourseRow(row: TextDiscourseRow) {
+    await knex('text_discourse').insert({
+      uuid: row.uuid,
+      type: row.type,
+      obj_in_text: row.objInText,
+      word_on_tablet: row.wordOnTablet,
+      child_num: row.childNum,
+      text_uuid: row.textUuid,
+      tree_uuid: row.treeUuid,
+      parent_uuid: row.parentUuid,
+      spelling_uuid: row.spellingUuid,
+      spelling: row.spelling,
+      explicit_spelling: row.explicitSpelling,
+      transcription: row.transcription,
+    });
   }
 }
 

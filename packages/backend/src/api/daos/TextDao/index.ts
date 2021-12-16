@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { TranslitOption, Text } from '@oare/types';
+import { TranslitOption, Text, TextRow } from '@oare/types';
 
 interface TextUuid {
   uuid: string;
@@ -117,6 +117,27 @@ class TextDao {
     await knex('text')
       .update('translit_status', statusRow.translitUuid)
       .where('uuid', textUuid);
+  }
+
+  async insertTextRow(row: TextRow) {
+    await knex('text').insert({
+      uuid: row.uuid,
+      type: row.type,
+      language: row.language,
+      cdli_num: row.cdliNum,
+      translit_status: row.translitStatus,
+      name: row.name,
+      excavation_prfx: row.excavationPrefix,
+      excavation_no: row.excavationNumber,
+      museum_prfx: row.museumPrefix,
+      museum_no: row.museumNumber,
+      publication_prfx: row.publicationPrefix,
+      publication_no: row.publicationNumber,
+      object_type: row.objectType,
+      source: row.source,
+      genre: row.genre,
+      subgenre: row.subgenre,
+    });
   }
 }
 
