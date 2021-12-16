@@ -176,6 +176,7 @@ router.route('/text_epigraphies/create').post(async (req, res, next) => {
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
+    const PublicDenylistDao = sl.get('PublicDenylistDao');
 
     const { tables }: CreateTextsPayload = req.body;
 
@@ -243,6 +244,8 @@ router.route('/text_epigraphies/create').post(async (req, res, next) => {
     await Promise.all(
       tables.markups.map(row => TextMarkupDao.insertMarkupRow(row))
     );
+
+    await PublicDenylistDao.addItemsToDenylist([tables.text.uuid], 'text');
 
     res.status(201).end();
   } catch (err) {
