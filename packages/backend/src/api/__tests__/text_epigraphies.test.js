@@ -2,6 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
+import { sk } from 'date-fns/locale';
 
 describe('GET /text_epigraphies/transliteration', () => {
   const PATH = `${API_PATH}/text_epigraphies/transliteration`;
@@ -525,6 +526,14 @@ describe('POST /text_epigraphies/create', () => {
     },
   };
 
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'ADD_NEW_TEXTS',
+      },
+    ]),
+  };
+
   const mockTextDao = {
     insertTextRow: jest.fn().mockResolvedValue(),
   };
@@ -559,6 +568,7 @@ describe('POST /text_epigraphies/create', () => {
   };
 
   const setup = () => {
+    sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('TextDao', mockTextDao);
     sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
@@ -571,7 +581,8 @@ describe('POST /text_epigraphies/create', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).post(PATH).send(mockPayload);
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
 
   it('returns 201 on successful text creation', async () => {
     const response = await sendRequest();
@@ -613,5 +624,19 @@ describe('POST /text_epigraphies/create', () => {
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
+  });
+
+  it('returns 401 if user is not logged in', async () => {
+    const response = await request(app).post(PATH).send(mockPayload);
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 if user does not have permission to add texts', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
   });
 });
