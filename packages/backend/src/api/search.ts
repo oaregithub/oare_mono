@@ -44,6 +44,8 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
       searchRows.map(r => textDiscourseDao.getTextSpellings(r.textUuid))
     );
 
+    const wordsNum = 8;
+
     const rows: SearchDiscourseSpellingRow[] = searchRows.map((row, i) => ({
       uuid: row.uuid,
       line: row.line,
@@ -52,8 +54,8 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
       textUuid: row.textUuid,
       readings: textReadings[i].filter(
         tr =>
-          tr.wordOnTablet >= row.wordOnTablet - 5 &&
-          tr.wordOnTablet <= row.wordOnTablet + 5
+          tr.wordOnTablet >= row.wordOnTablet - wordsNum &&
+          tr.wordOnTablet <= row.wordOnTablet + wordsNum
       ),
     }));
 

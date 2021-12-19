@@ -139,8 +139,11 @@ export default defineComponent({
         actions.showSnackbar('Successfully updated translations');
         emit('update:translations', localTranslations.value);
         emit('close-editor');
-      } catch {
-        actions.showErrorSnackbar('Failed to update translations');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to update translations',
+          err as Error
+        );
       } finally {
         isLoading.value = false;
       }

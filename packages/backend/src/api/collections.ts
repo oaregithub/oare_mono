@@ -62,4 +62,21 @@ router
     }
   });
 
+router
+  .route('/collection_hierarchy/:collectionUuid')
+  .get(async (req, res, next) => {
+    try {
+      const HierarchyDao = sl.get('HierarchyDao');
+      const { collectionUuid } = req.params;
+
+      const parentUuid = await HierarchyDao.getParentUuidByCollection(
+        collectionUuid
+      );
+
+      res.json(parentUuid);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
 export default router;

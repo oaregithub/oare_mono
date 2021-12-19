@@ -23,9 +23,9 @@
       >
       <TextsTable
         :page="Number(page)"
-        @update:page="p => (page = p)"
+        @update:page="page = `${$event}`"
         :rows="Number(rows)"
-        @update:rows="r => (rows = r)"
+        @update:rows="rows = `${$event}`"
         :totalTexts="totalTexts"
         :texts="texts"
         :loading="textsLoading"
@@ -129,7 +129,8 @@ export default defineComponent({
           return;
         }
         actions.showErrorSnackbar(
-          'Error loading collection texts. Please try again.'
+          'Error loading collection texts. Please try again.',
+          err as Error
         );
       } finally {
         textsLoading.value = false;
@@ -142,9 +143,10 @@ export default defineComponent({
         collectionName.value = (
           await server.getCollectionInfo(collectionUuid)
         ).name;
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading collection name. Please try again.'
+          'Error loading collection name. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;

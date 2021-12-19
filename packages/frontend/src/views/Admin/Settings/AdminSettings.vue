@@ -7,7 +7,8 @@
         <v-list-item-content>
           <v-list-item-title>Disable Cache</v-list-item-title>
           <v-list-item-subtitle>
-            Temporarily disables cache for development purposes. If not manually re-enabled, cache will automatically be re-enabled after 10 minutes.
+            Temporarily disables cache for development purposes. If not manually
+            re-enabled, cache will automatically be re-enabled after 10 minutes.
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
@@ -40,8 +41,11 @@ export default defineComponent({
       try {
         loading.value = true;
         cacheStatus.value = await server.getCacheStatus();
-      } catch {
-        actions.showErrorSnackbar('Error loading admin settings. Please try again.');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error loading admin settings. Please try again.',
+          err as Error
+        );
       } finally {
         loading.value = false;
       }
@@ -54,8 +58,11 @@ export default defineComponent({
         } else {
           await server.disableCache();
         }
-      } catch {
-        actions.showErrorSnackbar('Error updating cache status. Please try again');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error updating cache status. Please try again',
+          err as Error
+        );
       }
     };
 
@@ -64,6 +71,6 @@ export default defineComponent({
       cacheStatus,
       updateCacheStatus,
     };
-  }
+  },
 });
 </script>

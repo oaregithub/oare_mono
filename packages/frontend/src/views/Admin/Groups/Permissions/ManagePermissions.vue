@@ -143,9 +143,10 @@ export default defineComponent({
         groupPermissions.value = await server.getGroupPermissions(
           Number(groupId)
         );
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error updating permission. Please try again.'
+          'Error updating permission. Please try again.',
+          err as Error
         );
       }
     };
@@ -158,9 +159,10 @@ export default defineComponent({
           Number(groupId)
         );
         allPermissionsOptions.value = await server.getAllPermissions();
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading group permissions. Please try again.'
+          'Error loading group permissions. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;

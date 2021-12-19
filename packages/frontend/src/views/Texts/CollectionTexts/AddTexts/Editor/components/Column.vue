@@ -67,10 +67,13 @@
         <row
           :row="row"
           :autofocus="newRow === idx"
+          :isCurrentRow="isCurrentColumn && currentRow === row.uuid"
           @add-row-after="addRowAfter('Line', idx)"
           @remove-row="removeRow(idx)"
           @update-row-content="updateRowContent(idx, $event)"
           @reset-new-row="newRow = undefined"
+          @set-current-row="setCurrentRow(row.uuid)"
+          @set-focused="setRowFocusStatus(row.uuid, $event)"
         />
         <insert-button
           :hasAddedRow="hasAddedRow"
@@ -131,6 +134,10 @@ export default defineComponent({
     beginningBrokenAreas: {
       type: Number,
       default: 0,
+    },
+    isCurrentColumn: {
+      type: Boolean,
+      default: false,
     },
   },
   components: {
@@ -286,6 +293,21 @@ export default defineComponent({
       rows.value.splice(index, 1, row);
     };
 
+    const currentRow = ref<string>();
+    const setCurrentRow = (rowUuid?: string) => {
+      currentRow.value = rowUuid;
+      emit('set-current-column');
+    };
+
+    const rowFocusStatuses = ref<{ [rowUuid: string]: boolean }>({});
+    const setRowFocusStatus = (uuid: string, value: boolean) => {
+      rowFocusStatuses.value[uuid] = value;
+      emit(
+        'set-column-focus',
+        Object.values(rowFocusStatuses.value).includes(true)
+      );
+    };
+
     return {
       columnEditMenu,
       addRowAfter,
@@ -295,6 +317,10 @@ export default defineComponent({
       rowsWithLineNumbers,
       newRow,
       updateRowContent,
+      currentRow,
+      setCurrentRow,
+      rowFocusStatuses,
+      setRowFocusStatus,
     };
   },
 });

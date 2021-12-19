@@ -121,9 +121,10 @@ export default defineComponent({
           });
           totalResults.value = searchResult.totalRows;
           searchResults.value = searchResult.results;
-        } catch {
+        } catch(err) {
           actions.showErrorSnackbar(
-            'Error performing dictionary search. Please try again.'
+            'Error performing dictionary search. Please try again.',
+            err as Error
           );
         } finally {
           searchLoading.value = false;

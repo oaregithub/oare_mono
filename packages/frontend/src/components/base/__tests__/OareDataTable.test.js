@@ -77,6 +77,6 @@ describe('OareDataTable', () => {
     });
 
     await flushPromises();
-    expect(actions.showErrorSnackbar).toHaveBeenCalledWith(errorMessage);
+    expect(actions.showErrorSnackbar).toHaveBeenCalled();
   });
 });

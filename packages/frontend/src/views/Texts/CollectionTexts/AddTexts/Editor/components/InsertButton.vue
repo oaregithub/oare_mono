@@ -21,7 +21,6 @@
               v-on="on"
               v-bind="attrs"
             >
-              <!-- <v-icon v-if="hover || !hasAddedRow"> mdi-plus </v-icon> -->
               <v-icon> mdi-plus </v-icon>
             </v-btn>
           </template>

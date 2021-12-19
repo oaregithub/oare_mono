@@ -4,6 +4,7 @@ import {
   SearchNamesResultRow,
   SearchNamesPayload,
   TaxonomyTree,
+  HierarchyRow,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -250,6 +251,26 @@ class HierarchyDao {
       .where('obj_parent_uuid', collectionUuid);
 
     return rows;
+  }
+
+  async getParentUuidByCollection(collectionUuid: string): Promise<string> {
+    const results = await knex('hierarchy')
+      .select('parent_uuid AS parentUuid')
+      .where('obj_parent_uuid', collectionUuid)
+      .first();
+    return results.parentUuid;
+  }
+
+  async insertHierarchyRow(row: HierarchyRow) {
+    await knex('hierarchy').insert({
+      uuid: row.uuid,
+      parent_uuid: row.parentUuid,
+      type: row.type,
+      role: row.role,
+      object_uuid: row.objectUuid,
+      obj_parent_uuid: row.objectParentUuid,
+      published: row.published,
+    });
   }
 }
 

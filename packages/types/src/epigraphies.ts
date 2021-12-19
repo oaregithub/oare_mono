@@ -1,7 +1,7 @@
 import { DiscourseUnit, TextDiscourseRow } from './textDiscourse';
 import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
-import { ParseTreeProperty } from './dictionary';
+import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 
 export interface Text {
@@ -33,7 +33,8 @@ export type EpigraphicUnitType =
   | 'phonogram'
   | 'logogram'
   | 'number'
-  | 'determinative';
+  | 'determinative'
+  | 'punctuation';
 
 export type EpigraphicUnitSide =
   | 'obv.'
@@ -113,11 +114,13 @@ export type MarkupType =
   | 'partialDamage'
   | 'isWrittenOverErasure'
   | 'isWrittenBelowTheLine'
+  | 'isWrittenAboveTheLine'
   | 'broken'
   | 'isSealImpression'
   | 'uninscribed'
   | 'ruling'
-  | 'isStampSealImpression';
+  | 'isStampSealImpression'
+  | 'phoneticComplement';
 
 export interface MarkupUnit {
   referenceUuid: string;
@@ -209,6 +212,11 @@ export interface TextPhoto {
   url?: string;
   side?: string | number;
   view?: string;
+  upload?: File;
+}
+
+export interface TextPhotoWithName extends TextPhoto {
+  name: string;
 }
 
 export interface TextEpigraphyRowPartial {
@@ -284,7 +292,7 @@ export interface TextRow {
   excavationNumber: string | null;
   museumPrefix: string | null;
   museumNumber: string | null;
-  publicationPrefic: string | null;
+  publicationPrefix: string | null;
   publicationNumber: string | null;
   objectType: string | null;
   source: string | null;
@@ -298,15 +306,64 @@ export interface SignInfo {
   value: string | null;
 }
 
+export interface ResourceRow {
+  uuid: string;
+  sourceUuid: string | null;
+  type: string;
+  container: string;
+  format: string | null;
+  link: string;
+}
+
+export interface LinkRow {
+  uuid: string;
+  referenceUuid: string;
+  objUuid: string;
+}
+
+export interface HierarchyRow {
+  uuid: string;
+  parentUuid: string | null;
+  type: string;
+  role: string | null;
+  objectUuid: string;
+  objectParentUuid: string | null;
+  published: number;
+}
+
 export interface CreateTextTables {
   epigraphies: TextEpigraphyRow[];
   markups: TextMarkupRow[];
   discourses: TextDiscourseRow[];
   text: TextRow;
+  itemProperties: InsertItemPropertyRow[];
   signInfo: SignInfo[];
+  resources: ResourceRow[];
+  links: LinkRow[];
+  hierarchy: HierarchyRow;
 }
 
 export interface EditorWord {
   spelling: string;
   discourseUuid: string;
+}
+
+export interface EditorMarkupPiece {
+  type: MarkupType;
+  startChar?: number;
+  endChar?: number;
+  altReading?: string;
+  isDeterminative?: boolean;
+  numValue?: number;
+}
+
+export interface EditorMarkup {
+  text: string;
+  markup: EditorMarkupPiece[];
+  post: string;
+  wordIndex: number;
+}
+
+export interface CreateTextsPayload {
+  tables: CreateTextTables;
 }

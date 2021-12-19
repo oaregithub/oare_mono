@@ -122,8 +122,8 @@ export default defineComponent({
       try {
         loading.value = true;
         await fetchItems(tableOptions.value);
-      } catch {
-        actions.showErrorSnackbar(errorMessage);
+      } catch (err) {
+        actions.showErrorSnackbar(errorMessage, err as Error);
       } finally {
         loading.value = false;
       }

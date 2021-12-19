@@ -24,6 +24,8 @@ export {
 
 export { formatLineNumber } from './tabletUtils';
 
+export { convertParsePropsToItemProps } from './parseTreeUtils';
+
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';
 export const AkkadianAlphabetUpper = 'ĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZ';
 export const AkkadianLetterGroupsUpper: { [key: string]: string } = {

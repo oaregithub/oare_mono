@@ -66,6 +66,7 @@
             outlined
             label="Excavation Prefix"
             placeholder="e.g. Kt 91/k, Ac.i., etc."
+            class="test-excavation-prefix"
           />
         </v-col>
         <v-col cols="6" class="pa-0 pl-1">
@@ -74,6 +75,7 @@
             outlined
             label="Excavation Number"
             placeholder="e.g. 435, 1023, 22b, etc."
+            class="test-excavation-number"
           />
         </v-col>
       </v-row>
@@ -278,14 +280,32 @@ export default defineComponent({
     };
 
     const textInfo: ComputedRef<AddTextInfo> = computed(() => ({
-      textName: textName.value,
-      cdliNum: cdliNum.value,
-      excavationPrefix: excavationPrefix.value,
-      excavationNumber: excavationNumber.value,
-      museumPrefix: museumPrefix.value,
-      museumNumber: museumNumber.value,
-      publicationPrefix: publicationPrefix.value,
-      publicationNumber: publicationNumber.value,
+      textName: textName.value && textName.value !== '' ? textName.value : null,
+      cdliNum: cdliNum.value && cdliNum.value !== '' ? cdliNum.value : null,
+      excavationPrefix:
+        excavationPrefix.value && excavationPrefix.value !== ''
+          ? excavationPrefix.value
+          : null,
+      excavationNumber:
+        excavationNumber.value && excavationNumber.value !== ''
+          ? excavationNumber.value
+          : null,
+      museumPrefix:
+        museumPrefix.value && museumPrefix.value !== ''
+          ? museumPrefix.value
+          : null,
+      museumNumber:
+        museumNumber.value && museumNumber.value !== ''
+          ? museumNumber.value
+          : null,
+      publicationPrefix:
+        publicationPrefix.value && publicationPrefix.value !== ''
+          ? publicationPrefix.value
+          : null,
+      publicationNumber:
+        publicationNumber.value && publicationNumber.value !== ''
+          ? publicationNumber.value
+          : null,
       properties: properties.value,
     }));
 
@@ -294,7 +314,19 @@ export default defineComponent({
     });
 
     const stepComplete = computed(() => {
-      return textName.value !== '';
+      const hasTextName = textName.value !== '';
+
+      const hasExcavationInfo =
+        excavationPrefix.value !== '' && excavationNumber.value !== '';
+      const hasMuseumInfo =
+        museumPrefix.value !== '' && museumNumber.value !== '';
+      const hasPublicationInfo =
+        publicationPrefix.value !== '' && publicationNumber.value !== '';
+
+      const hasCollectionInfo =
+        hasExcavationInfo || hasMuseumInfo || hasPublicationInfo;
+
+      return hasTextName && hasCollectionInfo;
     });
 
     watch(stepComplete, () => emit('step-complete', stepComplete.value));

@@ -227,8 +227,8 @@ export default defineComponent({
         const response = await server.getAllThreads(request);
         threadDisplays.value = response.threads;
         serverCount.value = response.count;
-      } catch (e) {
-        actions.showErrorSnackbar('Failed to get threads');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to get threads', err as Error);
       }
     };
 

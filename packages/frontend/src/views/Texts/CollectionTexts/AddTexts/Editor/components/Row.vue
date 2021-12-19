@@ -1,7 +1,7 @@
 <template>
   <v-hover v-slot="{ hover }">
     <v-row class="ma-1 test-row-content">
-      <v-col cols="1" class="px-1 pb-1 pt-0" align="center">
+      <v-col cols="1" class="px-1 pb-1 pt-0" align="center" align-self="end">
         <span v-if="row.line">{{ formatLineNumber(row) }}</span>
       </v-col>
       <v-col cols="10" class="pa-0">
@@ -9,7 +9,7 @@
           <v-row
             v-if="row.signs && row.signs.length > 0"
             class="pa-0 ma-0 mb-1"
-            align="center"
+            align="end"
           >
             <div
               v-for="(sign, index) in row.signs"
@@ -50,11 +50,12 @@
                 justify="space-between"
               >
                 <span>{{ ' ' }} </span>
-                <span>
+                <span v-if="sign.reading !== '@'">
                   {{ sign.reading || '' }}
                 </span>
+                <span v-else>...</span>
                 <span>
-                  {{ sign.post && sign.post !== '*' ? sign.post : ' ' }}
+                  {{ sign.post && sign.post !== '%' ? sign.post : ' ' }}
                 </span>
               </v-row>
             </div>
@@ -69,10 +70,13 @@
               :autofocus="autofocus"
               @keydown.enter.prevent
               @keyup.enter="$emit('add-row-after')"
-              @change="updateText($event)"
-              @keyup="updateRow($event)"
+              @input="updateText($event)"
+              @keyup="updateSignSelection($event)"
               @click="updateSignSelection($event)"
-              @blur="resetSignSelection()"
+              @focus="setFocused"
+              @blur="resetSignSelection"
+              :value="row.text"
+              ref="textareaRef"
             />
           </v-row>
         </v-container>
@@ -124,7 +128,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  nextTick,
+  onMounted,
+  watch,
+} from '@vue/composition-api';
 import { RowWithLine } from './Column.vue';
 import { formatLineNumber as defaultLineFormatter } from '@oare/oare';
 import sl from '@/serviceLocator';
@@ -136,6 +147,9 @@ import {
   EditorWord,
   RowTypes,
 } from '@oare/types';
+import SpecialChars from './SpecialChars.vue';
+import EventBus, { ACTIONS } from '@/EventBus';
+import { applyMarkup } from '../../utils';
 
 export default defineComponent({
   props: {
@@ -147,10 +161,17 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    isCurrentRow: {
+      type: Boolean,
+      default: false,
+    },
   },
+  components: { SpecialChars },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+
+    const textareaRef = ref();
 
     const formatLineNumber = (row: RowWithLine) => {
       if ((!row.lineValue && row.line) || (row.line && row.lineValue === 1)) {
@@ -187,6 +208,7 @@ export default defineComponent({
     };
 
     const resetSignSelection = () => {
+      focused.value = false;
       emit('reset-new-row');
       emit('update-row-content', {
         ...props.row,
@@ -194,17 +216,18 @@ export default defineComponent({
       });
     };
 
+    const cursorIndex = ref(0);
     const updateSignSelection = async (event: any) => {
       if (event.key !== 'Enter') {
         const rowText: string = event.srcElement.value;
-        const cursorIndex: number = event.srcElement.selectionStart;
-        if (!cursorIndex) {
+        cursorIndex.value = event.srcElement.selectionStart;
+        if (!cursorIndex.value) {
           emit('update-row-content', {
             ...props.row,
             selectedSign: 0,
           });
         } else {
-          const textBeforeCursor = rowText.slice(0, cursorIndex);
+          const textBeforeCursor = rowText.slice(0, cursorIndex.value);
           const originalSigns = textBeforeCursor.split(/[\s\-.]+/);
           const formattedSigns = await Promise.all(
             originalSigns.map(sign => {
@@ -230,124 +253,138 @@ export default defineComponent({
       });
     };
 
-    const updateText = (text: string) => {
+    const updateText = async (text: string) => {
       emit('update-row-content', {
         ...props.row,
         text,
       });
+      await getSigns(text);
     };
 
-    const updateRow = (event: any) => {
-      getSigns(event);
-      updateSignSelection(event);
-    };
-
-    const getSigns = async (event: any) => {
-      if (event.key !== 'Enter') {
-        let rowText: string = event.srcElement.value;
-
-        const matches = rowText.match(/\(([^)]+)\)/g);
+    const getSigns = async (rowText: string) => {
+      const determinativeMatches = rowText.match(/\(([^)]+)\)/g);
+      if (determinativeMatches) {
         let matchesText: string[] = [];
-        if (matches) {
-          matchesText = matches.map(text => {
-            return `${text.slice(1, text.length - 1)}*`;
-          });
-          matchesText.forEach(matchText => {
-            rowText = rowText.replace(/\(([^)]+)\)/, matchText);
-          });
-        }
-
-        const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
-        const signsByWord = await Promise.all(
-          wordsText.map(async word => {
-            try {
-              const originalSigns = word
-                .split(/[\-.*]+/)
-                .filter(sign => sign !== '');
-              const formattedSigns = await Promise.all(
-                originalSigns.map(sign => server.getFormattedSign(sign))
-              );
-              const signs = formattedSigns.flat();
-
-              const originalDividers = word
-                .split('')
-                .filter(sign => sign.match(/[\-.*]+/));
-              const visibleDividers: string[] = [];
-              formattedSigns.forEach((signPieces, idx) => {
-                if (signPieces.length > 1) {
-                  for (let i = 1; i < signPieces.length; i += 1) {
-                    visibleDividers.push('+');
-                  }
-                }
-                visibleDividers.push(originalDividers[idx]);
-              });
-
-              const urlDividers = visibleDividers.map(div => {
-                if (div !== '*') {
-                  return 'notAsterisk';
-                }
-                return div;
-              });
-
-              const signCodes: SignCode[] = await Promise.all(
-                signs.map((sign, idx) =>
-                  server.getSignCode(sign, urlDividers[idx])
-                )
-              );
-              const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
-                code => ({
-                  ...code,
-                  uuid: v4(),
-                })
-              );
-              const signCodesWithDividers: SignCodeWithUuid[] =
-                signCodesWithUuids.map((code, idx) => {
-                  return {
-                    ...code,
-                    post: visibleDividers[idx] || undefined,
-                    reading: signs[idx],
-                  };
-                });
-              return signCodesWithDividers;
-            } catch {
-              actions.showErrorSnackbar(
-                'Error generating signs. Please try again.'
-              );
-              return [];
-            }
-          })
-        );
-
-        const words: EditorWord[] = signsByWord.map(word => {
-          let spelling = '';
-          word.forEach(sign => {
-            if (sign.post === '*') {
-              spelling += `(${sign.value || ''})`;
-            } else {
-              spelling += `${sign.value || ''}${sign.post || ''}`;
-            }
-          });
-          return {
-            discourseUuid: v4(),
-            spelling,
-          };
+        matchesText = determinativeMatches.map(text => {
+          return `${text.slice(1, text.length - 1)}%`;
         });
-
-        const signs: SignCodeWithDiscourseUuid[] = signsByWord.flatMap(
-          (word, idx) => {
-            const signs = word.map(sign => ({
-              ...sign,
-              discourseUuid: words[idx].discourseUuid,
-            }));
-            return signs;
-          }
-        );
-        emit('update-row-content', {
-          ...props.row,
-          signs,
-          words,
+        matchesText.forEach(matchText => {
+          rowText = rowText.replace(/\(([^)]+)\)/, matchText);
         });
       }
+
+      const unknownUndeterminedSignsMatches = rowText.match(/\.\.\./g) || [];
+      unknownUndeterminedSignsMatches.forEach(_ => {
+        rowText = rowText.replace('...', '@');
+      });
+
+      const fullMarkup = await applyMarkup(rowText);
+
+      const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
+      const signsByWord = await Promise.all(
+        wordsText.map(async (word, wordIndex) => {
+          try {
+            const originalSigns = word
+              .split(/[\-.%]+/)
+              .filter(sign => sign !== '');
+            const originalMarkup = fullMarkup.filter(
+              markup => markup.wordIndex === wordIndex
+            );
+            const cleanSigns = originalSigns
+              .map(sign =>
+                sign.replace(/([[\]{}⸢⸣«»‹›:;*?/\\!])|(".+")|('.+')+/g, '')
+              )
+              .filter(sign => sign !== '');
+            const formattedSigns = await Promise.all(
+              cleanSigns.map(sign => server.getFormattedSign(sign))
+            );
+            const unflattenedSigns = formattedSigns.map((signs, markupIdx) => {
+              return signs.map(sign => ({
+                sign,
+                markup: originalMarkup[markupIdx],
+              }));
+            });
+            const signs = unflattenedSigns.flat();
+
+            const originalDividers = word
+              .split('')
+              .filter(sign => sign.match(/[\-.%]+/));
+            const visibleDividers: string[] = [];
+            formattedSigns.forEach((signPieces, idx) => {
+              if (signPieces.length > 1) {
+                for (let i = 1; i < signPieces.length; i += 1) {
+                  visibleDividers.push('+');
+                }
+              }
+              visibleDividers.push(originalDividers[idx]);
+            });
+
+            const urlDividers = visibleDividers.map(div => {
+              if (div !== '%') {
+                return 'notPercent';
+              }
+              return 'isPercent';
+            });
+
+            const signCodes: SignCode[] = await Promise.all(
+              signs.map((sign, idx) =>
+                server.getSignCode(sign.sign, urlDividers[idx])
+              )
+            );
+            const signCodesWithUuids: SignCodeWithUuid[] = signCodes.map(
+              code => ({
+                ...code,
+                uuid: v4(),
+              })
+            );
+            const signCodesWithDividers: SignCodeWithUuid[] =
+              signCodesWithUuids.map((code, idx) => {
+                return {
+                  ...code,
+                  post: visibleDividers[idx] || undefined,
+                  reading: signs[idx].sign,
+                  markup: signs[idx].markup,
+                };
+              });
+            return signCodesWithDividers;
+          } catch {
+            actions.showErrorSnackbar(
+              'Error generating signs. Please try again.'
+            );
+            return [];
+          }
+        })
+      );
+
+      const words: EditorWord[] = signsByWord.map(word => {
+        let spelling = '';
+        word.forEach(sign => {
+          if (sign.post === '%') {
+            spelling += `(${sign.value || ''})`;
+          } else {
+            spelling += `${sign.value || ''}${sign.post || ''}`;
+          }
+        });
+        return {
+          discourseUuid: v4(),
+          spelling,
+        };
+      });
+
+      const signs: SignCodeWithDiscourseUuid[] = signsByWord.flatMap(
+        (word, idx) => {
+          const signs = word.map(sign => ({
+            ...sign,
+            discourseUuid: words[idx].discourseUuid,
+          }));
+          return signs;
+        }
+      );
+      emit('update-row-content', {
+        ...props.row,
+        signs,
+        words,
+      });
     };
 
     const getRegionItems = (type: RowTypes) => {
@@ -385,6 +422,37 @@ export default defineComponent({
       });
     };
 
+    const insertChar = async (delineator: string) => {
+      const originalRowText = props.row.text || '';
+      const textBeforeCursor = originalRowText.slice(0, cursorIndex.value);
+      const textAfterCursor = originalRowText.slice(cursorIndex.value);
+      const newText = `${textBeforeCursor}${delineator}${textAfterCursor}`;
+      await updateText(newText);
+      cursorIndex.value += delineator.length;
+      textareaRef.value.focus();
+      const input = textareaRef.value.$el.querySelector('textarea');
+      await nextTick();
+      input.setSelectionRange(cursorIndex.value, cursorIndex.value);
+    };
+
+    const focused = ref(false);
+    const setFocused = () => {
+      focused.value = true;
+      emit('set-current-row');
+    };
+    watch(focused, () => {
+      emit('set-focused', focused.value);
+    });
+
+    onMounted(async () => {
+      emit('set-current-row');
+      EventBus.$on(ACTIONS.SPECIAL_CHAR_INPUT, async (char: string) => {
+        if (props.isCurrentRow) {
+          await insertChar(char);
+        }
+      });
+    });
+
     return {
       formatLineNumber,
       getWidth,
@@ -393,11 +461,14 @@ export default defineComponent({
       updateSignSelection,
       toggleRowEditing,
       updateText,
-      updateRow,
       getRegionItems,
       getSigns,
       formatRuling,
       setLineValue,
+      insertChar,
+      textareaRef,
+      focused,
+      setFocused,
     };
   },
 });

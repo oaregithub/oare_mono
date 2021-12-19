@@ -156,8 +156,11 @@ export default defineComponent({
         } else {
           wordInfo.value = await serverProxy.getDictionaryInfo(props.uuid);
         }
-      } catch {
-        actions.showErrorSnackbar('Failed to retrieve dictionary info');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to retrieve dictionary info',
+          err as Error
+        );
       } finally {
         loading.value = false;
       }

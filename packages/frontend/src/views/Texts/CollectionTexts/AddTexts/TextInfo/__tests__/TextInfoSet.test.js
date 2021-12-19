@@ -14,10 +14,14 @@ describe('TextInfoSet test', () => {
       localVue,
     });
 
-  it('allows advancement if text name is input', async () => {
+  it('allows advancement if text name is input and a pair is filled in', async () => {
     const wrapper = createWrapper();
     const textNameField = wrapper.get('.test-text-name input');
     await textNameField.setValue('Test Name');
+    const excavationPrefixField = wrapper.get('.test-excavation-prefix input');
+    await excavationPrefixField.setValue('Test Exc Pref');
+    const excavationNumberField = wrapper.get('.test-excavation-number input');
+    await excavationNumberField.setValue('Test Exc No');
     expect(wrapper.emitted('step-complete')).toBeTruthy();
     expect(wrapper.emitted('step-complete')[0]).toEqual([true]);
   });
@@ -26,6 +30,10 @@ describe('TextInfoSet test', () => {
     const wrapper = createWrapper();
     const textNameField = wrapper.get('.test-text-name input');
     await textNameField.setValue('Test Name');
+    const excavationPrefixField = wrapper.get('.test-excavation-prefix input');
+    await excavationPrefixField.setValue('Test Exc Pref');
+    const excavationNumberField = wrapper.get('.test-excavation-number input');
+    await excavationNumberField.setValue('Test Exc No');
     await textNameField.setValue('');
     expect(wrapper.emitted('step-complete')).toBeTruthy();
     expect(wrapper.emitted('step-complete')[1]).toEqual([false]);

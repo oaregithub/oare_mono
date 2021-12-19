@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { TranslitOption, Text } from '@oare/types';
+import { TranslitOption, Text, TextRow } from '@oare/types';
 
 interface TextUuid {
   uuid: string;
@@ -23,15 +23,7 @@ class TextDao {
       .where({ uuid });
     const text: Text = {
       ...row,
-      name: this.generateTextName(
-        row.excavationPrefix,
-        row.excavationNumber,
-        row.publicationPrefix,
-        row.publicationNumber,
-        row.museumPrefix,
-        row.museumNumber,
-        row.name
-      ),
+      name: row ? this.generateTextName(row) : '',
     };
     return text;
   }
@@ -82,40 +74,35 @@ class TextDao {
     return stoplightOptions.reverse();
   }
 
-  generateTextName(
-    excavation_prfx: string | null,
-    excavation_no: string | null,
-    publication_prfx: string | null,
-    publication_no: string | null,
-    museum_prfx: string | null,
-    museum_no: string | null,
-    name: string
-  ): string {
+  generateTextName(row: Text): string {
     let textName: string = '';
 
-    if (excavation_prfx && excavation_prfx.slice(0, 2).toLowerCase() === 'kt') {
-      textName = `${excavation_prfx} ${excavation_no}`;
-      if (publication_prfx && publication_no) {
-        textName += ` (${publication_prfx} ${publication_no})`;
-      } else if (museum_prfx && museum_no) {
-        textName += ` (${museum_prfx} ${museum_no})`;
+    if (
+      row.excavationPrefix &&
+      row.excavationPrefix.slice(0, 2).toLowerCase() === 'kt'
+    ) {
+      textName = `${row.excavationPrefix} ${row.excavationNumber}`;
+      if (row.publicationPrefix && row.publicationNumber) {
+        textName += ` (${row.publicationPrefix} ${row.publicationNumber})`;
+      } else if (row.museumPrefix && row.museumNumber) {
+        textName += ` (${row.museumPrefix} ${row.museumNumber})`;
       }
-    } else if (publication_prfx && publication_no) {
-      textName = `${publication_prfx} ${publication_no}`;
-      if (excavation_prfx && excavation_no) {
-        textName += ` (${excavation_prfx} ${excavation_no})`;
-      } else if (museum_prfx && museum_no) {
-        textName += ` (${museum_prfx} ${museum_no})`;
+    } else if (row.publicationPrefix && row.publicationNumber) {
+      textName = `${row.publicationPrefix} ${row.publicationNumber}`;
+      if (row.excavationPrefix && row.excavationNumber) {
+        textName += ` (${row.excavationPrefix} ${row.excavationNumber})`;
+      } else if (row.museumPrefix && row.museumNumber) {
+        textName += ` (${row.museumPrefix} ${row.museumNumber})`;
       }
-    } else if (excavation_prfx && excavation_no) {
-      textName = `${excavation_prfx} ${excavation_no}`;
-      if (museum_prfx && museum_no) {
-        textName += ` (${museum_prfx} ${museum_no})`;
+    } else if (row.excavationPrefix && row.excavationNumber) {
+      textName = `${row.excavationPrefix} ${row.excavationNumber}`;
+      if (row.museumPrefix && row.museumNumber) {
+        textName += ` (${row.museumPrefix} ${row.museumNumber})`;
       }
-    } else if (museum_prfx && museum_no) {
-      textName = `${museum_prfx} ${museum_no}`;
+    } else if (row.museumPrefix && row.museumNumber) {
+      textName = `${row.museumPrefix} ${row.museumNumber}`;
     } else {
-      textName = name;
+      textName = row.name;
     }
 
     return textName;
@@ -130,6 +117,27 @@ class TextDao {
     await knex('text')
       .update('translit_status', statusRow.translitUuid)
       .where('uuid', textUuid);
+  }
+
+  async insertTextRow(row: TextRow) {
+    await knex('text').insert({
+      uuid: row.uuid,
+      type: row.type,
+      language: row.language,
+      cdli_num: row.cdliNum,
+      translit_status: row.translitStatus,
+      name: row.name,
+      excavation_prfx: row.excavationPrefix,
+      excavation_no: row.excavationNumber,
+      museum_prfx: row.museumPrefix,
+      museum_no: row.museumNumber,
+      publication_prfx: row.publicationPrefix,
+      publication_no: row.publicationNumber,
+      object_type: row.objectType,
+      source: row.source,
+      genre: row.genre,
+      subgenre: row.subgenre,
+    });
   }
 }
 

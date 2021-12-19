@@ -3,6 +3,7 @@
     <v-row>
       <v-col cols="8">
         {{ $t('search.textTitle') }}
+        <text-name-information-card />
         <v-text-field
           class="test-title-search"
           v-model="textTitleSearch"
@@ -11,7 +12,7 @@
           outlined
         />
         {{ $t('search.characterSequenceDescription') }}
-        <search-information-card />
+        <transliteration-information-card />
         <v-text-field
           class="test-character-search"
           v-model="translitSearch"
@@ -73,7 +74,8 @@ import {
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
 import ResultTable from '../components/ResultTable.vue';
-import SearchInformationCard from './components/SearchInformationCard.vue';
+import TextNameInformationCard from './components/TextNameInformationCard.vue';
+import TransliterationInformationCard from './components/TransliterationInformationCard.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
@@ -83,7 +85,8 @@ export default defineComponent({
   name: 'TextsSearch',
   components: {
     ResultTable,
-    SearchInformationCard,
+    TextNameInformationCard,
+    TransliterationInformationCard,
   },
   setup() {
     const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
@@ -139,8 +142,11 @@ export default defineComponent({
           } else {
             searchResults.value = results;
           }
-        } catch {
-          actions.showErrorSnackbar('Error searching texts. Please try again.');
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Error searching texts. Please try again.',
+            err as Error
+          );
         } finally {
           searchLoading.value = false;
         }
@@ -155,9 +161,10 @@ export default defineComponent({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
           });
-        } catch {
+        } catch (err) {
           actions.showErrorSnackbar(
-            'Error getting texts total. Please try again.'
+            'Error getting texts total. Please try again.',
+            err as Error
           );
         } finally {
           searchTotalLoading.value = false;
@@ -167,8 +174,8 @@ export default defineComponent({
 
     const resetSearch = async (resetVisited: boolean = true) => {
       totalSearchResults.value = -1;
-      translitQuery.value = translitSearch.value;
       textTitleQuery.value = textTitleSearch.value;
+      translitQuery.value = translitSearch.value;
       if (resetVisited) {
         await setIsVisited('false');
       }

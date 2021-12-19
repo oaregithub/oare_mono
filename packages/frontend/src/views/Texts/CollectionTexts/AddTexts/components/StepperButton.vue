@@ -59,9 +59,10 @@ export default defineComponent({
         if (props.continueAction) {
           await props.continueAction();
         }
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error continuing to next step. Please try again.'
+          'Error continuing to next step. Please try again.',
+          err as Error
         );
       } finally {
         continueLoading.value = false;

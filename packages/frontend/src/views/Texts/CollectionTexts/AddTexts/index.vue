@@ -31,14 +31,23 @@
           <stepper-button
             :showBackButton="false"
             :blockContinue="!stepOneComplete"
-            blockContinueText="To continue, please complete the required item(s)"
+            blockContinueText="To continue, please include a text name. Please also include a prefix and number for at least one of the following: Excavation, Museum, Publication"
             @next="next"
           />
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <add-photos @update-photos="setPhotos" />
-          <stepper-button @next="next" @previous="previous" />
+          <add-photos
+            v-if="step >= 2"
+            @update-photos="setPhotos"
+            @step-complete="stepTwoComplete = $event"
+          />
+          <stepper-button
+            :blockContinue="!stepTwoComplete"
+            blockContinueText="To continue, each photo needs to have a side and view selected. Please make sure you also have uploaded photos for each selector."
+            @next="next"
+            @previous="previous"
+          />
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -77,9 +86,9 @@
           />
           <stepper-button
             continueButtonText="Submit"
-            :blockContinue="true"
-            blockContinueText="Coming Soon"
+            :continueAction="createText"
             @previous="previous"
+            @next="pushToText"
           />
         </v-stepper-content>
       </v-stepper-items>
@@ -110,8 +119,13 @@ import {
   EpigraphyResponse,
   CreateTextTables,
   TextDiscourseRow,
+  TextPhotoWithName,
 } from '@oare/types';
-import { convertTablesToUnits, createNewTextTables } from './utils';
+import {
+  convertTablesToUnits,
+  createNewTextTables,
+  addNamesToTextPhotos,
+} from './utils';
 
 export default defineComponent({
   props: {
@@ -132,12 +146,14 @@ export default defineComponent({
   setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = sl.get('router');
 
     const collectionName = ref('');
     const step = ref(1);
     const loading = ref(false);
 
     const stepOneComplete = ref(false);
+    const stepTwoComplete = ref(false);
     const stepThreeComplete = ref(false);
 
     const textInfo = ref<AddTextInfo>();
@@ -146,11 +162,12 @@ export default defineComponent({
     };
 
     const photos = ref<TextPhoto[]>([]);
+    const photosWithName = ref<TextPhotoWithName[]>([]);
     const setPhotos = (updatedPhotos: TextPhoto[]) => {
       photos.value = updatedPhotos;
     };
     const photoUrls = computed(() =>
-      photos.value.filter(photo => photo.url).map(photo => photo.url)
+      photosWithName.value.filter(photo => photo.url).map(photo => photo.url)
     );
 
     const editorContent = ref<AddTextEditorContent>();
@@ -229,16 +246,43 @@ export default defineComponent({
     const next = () => (step.value += 1);
     const previous = () => (step.value -= 1);
 
+    const pushToText = () => {
+      if (createTextTables.value) {
+        router.push(`/epigraphies/${createTextTables.value.text.uuid}`);
+      }
+    };
+
+    const createText = async () => {
+      if (createTextTables.value) {
+        try {
+          await server.createText(createTextTables.value);
+          await server.uploadImages(photosWithName.value);
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Error creating text. Please try again',
+            err as Error
+          );
+        }
+      }
+    };
+
     const createTextTables = ref<CreateTextTables>();
     const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
       {}
     );
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
+        photosWithName.value = await addNamesToTextPhotos(
+          textInfo.value,
+          photos.value
+        );
+
         createTextTables.value = await createNewTextTables(
           textInfo.value,
           editorContent.value,
-          persistentDiscourseStorage.value
+          persistentDiscourseStorage.value,
+          photosWithName.value,
+          props.collectionUuid
         );
       }
       if (createTextTables.value) {
@@ -275,8 +319,11 @@ export default defineComponent({
       createTextTables,
       updateDiscourseRows,
       stepOneComplete,
+      stepTwoComplete,
       stepThreeComplete,
       buildTables,
+      pushToText,
+      createText,
     };
   },
 });

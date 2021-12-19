@@ -113,8 +113,11 @@ export default defineComponent({
         });
         drafts.value = [...draftData.drafts];
         totalDrafts.value = draftData.totalDrafts;
-      } catch {
-        actions.showErrorSnackbar('Failed to retrieve user drafts');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to retrieve user drafts',
+          err as Error
+        );
       } finally {
         loading.value = false;
       }

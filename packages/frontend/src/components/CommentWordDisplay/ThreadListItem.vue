@@ -138,8 +138,8 @@ export default defineComponent({
         actions.showSnackbar(`Successfully edited the thread name.`);
         emit('nameUpdated', newThreadName.value);
         editThreadNameDialog.value = false;
-      } catch {
-        actions.showErrorSnackbar('Failed to edit thread name');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to edit thread name', err as Error);
       } finally {
         loading.value = false;
         newThreadName.value = '';
@@ -157,8 +157,11 @@ export default defineComponent({
           actions.showSnackbar('Successfully updated the thread');
           emit('statusUpdated');
           await resetAdminBadge();
-        } catch {
-          actions.showErrorSnackbar('Failed to update the thread');
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Failed to update the thread',
+            err as Error
+          );
         } finally {
           loading.value = false;
         }

@@ -1,6 +1,6 @@
-import { EpigraphicUnitType } from './epigraphies';
+import { EpigraphicUnitType, EditorMarkup } from './epigraphies';
 
-export type SignCodeType = 'image' | 'utf8';
+export type SignCodeType = 'image' | 'utf8' | 'undetermined';
 
 export interface SignCode {
   uuid?: string;
@@ -13,6 +13,7 @@ export interface SignCode {
   reading?: string;
   value?: string;
   readingType?: EpigraphicUnitType;
+  markup?: EditorMarkup;
 }
 
 export interface SignCodeWithUuid extends SignCode {

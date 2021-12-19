@@ -248,9 +248,10 @@ export default defineComponent({
         });
         unaddedItems.value = response.items;
         serverCount.value = response.count;
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error updating ${itemType.toLowerCase()} list. Please try again.`
+          `Error updating ${itemType.toLowerCase()} list. Please try again.`,
+          err as Error
         );
       } finally {
         getItemsLoading.value = false;
@@ -274,9 +275,10 @@ export default defineComponent({
           query: { saved: 'true' },
         });
         router.push(backLink.value);
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error adding ${itemType.toLowerCase()}(s). Please try again.`
+          `Error adding ${itemType.toLowerCase()}(s). Please try again.`,
+          err as Error
         );
       } finally {
         addItemsLoading.value = false;
@@ -290,9 +292,10 @@ export default defineComponent({
         groupName.value = groupId
           ? (await server.getGroupInfo(Number(groupId))).name
           : 'Public Denylist';
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error loading ${itemType.toLowerCase()}s. Please try again.`
+          `Error loading ${itemType.toLowerCase()}s. Please try again.`,
+          err as Error
         );
       } finally {
         loading.value = false;
@@ -376,9 +379,10 @@ export default defineComponent({
         page.value = String(searchOptions.value.page);
         rows.value = String(searchOptions.value.itemsPerPage);
         selectAllMessage.value = false;
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error updating ${itemType.toLowerCase()}s list. Please try again.`
+          `Error updating ${itemType.toLowerCase()}s list. Please try again.`,
+          err as Error
         );
       }
     });

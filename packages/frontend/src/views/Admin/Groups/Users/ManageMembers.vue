@@ -85,9 +85,10 @@ export default defineComponent({
         deleteUserDialog.value = false;
         selectedDeleteUsers.value = [];
         actions.showSnackbar('Successfully removed user(s).');
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Could not remove user(s). Please try again.'
+          'Could not remove user(s). Please try again.',
+          err as Error
         );
       } finally {
         deleteUserLoading.value = false;
@@ -104,8 +105,11 @@ export default defineComponent({
         groupUsers.value = allUsers.value.filter(user =>
           user.groups.includes(Number(groupId))
         );
-      } catch {
-        actions.showErrorSnackbar('Error loading users. Please try again.');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error loading users. Please try again.',
+          err as Error
+        );
       } finally {
         loading.value = false;
       }

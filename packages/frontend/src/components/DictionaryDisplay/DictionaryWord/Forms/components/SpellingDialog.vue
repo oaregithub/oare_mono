@@ -175,8 +175,11 @@ export default defineComponent({
         });
         actions.showSnackbar('Successfully added spelling');
         reload && reload();
-      } catch {
-        actions.showErrorSnackbar('Failed to add spelling to form');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to add spelling to form',
+          err as Error
+        );
       } finally {
         submitLoading.value = false;
       }
@@ -201,9 +204,12 @@ export default defineComponent({
         reload && reload();
       } catch (err) {
         if (err.response && err.response.status === 400) {
-          actions.showErrorSnackbar(err.response.data.message);
+          actions.showErrorSnackbar(err.response.data.message, err as Error);
         } else {
-          actions.showErrorSnackbar('Failed to update form spelling');
+          actions.showErrorSnackbar(
+            'Failed to update form spelling',
+            err as Error
+          );
         }
       } finally {
         submitLoading.value = false;
@@ -236,8 +242,8 @@ export default defineComponent({
       try {
         const { errors } = await server.checkSpelling(spelling);
         spellingErrors.value = errors;
-      } catch {
-        actions.showErrorSnackbar('Failed to check spelling');
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to check spelling', err as Error);
       }
     };
 
@@ -255,8 +261,11 @@ export default defineComponent({
 
         discourseSearchResults.value = rows;
         totalDiscourseResults.value = totalResults;
-      } catch {
-        actions.showErrorSnackbar('Failed to search discourse spellings');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to search discourse spellings',
+          err as Error
+        );
       } finally {
         searchDiscourseLoading.value = false;
       }

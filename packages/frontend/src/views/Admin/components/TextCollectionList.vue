@@ -155,9 +155,10 @@ export default defineComponent({
         items.value = items.value.sort((a, b) =>
           a.name && b.name ? a.name.localeCompare(b.name) : -1
         );
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error loading group ${itemType}(s). Please try again.`
+          `Error loading group ${itemType}(s). Please try again.`,
+          err as Error
         );
       } finally {
         loading.value = false;
@@ -181,9 +182,10 @@ export default defineComponent({
           `Successfully removed ${itemType.toLowerCase()}(s).`
         );
         selectedItems.value = [];
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          `Error removing ${itemType.toLowerCase()}(s). Please try again.`
+          `Error removing ${itemType.toLowerCase()}(s). Please try again.`,
+          err as Error
         );
       } finally {
         confirmRemoveDialog.value = false;

@@ -1,5 +1,13 @@
 <template>
-  <OareContentView title="Onomasticon" :loading="loading">
+  <OareContentView
+    title="Onomasticon"
+    informationCard="The list includes personal names and divine names. A project to combine
+        similar renderings that may be the same name is underway, but still in
+        the early stages. Indexing of variant spellings is not yet complete. See
+        info on Words/Old Assyrian Lexicon for intended projects that also apply
+        here."
+    :loading="loading"
+  >
     <DictionaryDisplay
       :wordList="names"
       :letter="letter"
@@ -100,8 +108,11 @@ export default defineComponent({
         loading.value = true;
         try {
           names.value = await server.getNames(props.letter);
-        } catch {
-          actions.showErrorSnackbar('Failed to retrieve name words');
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Failed to retrieve name words',
+            err as Error
+          );
         } finally {
           loading.value = false;
         }

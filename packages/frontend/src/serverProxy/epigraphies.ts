@@ -2,7 +2,11 @@ import {
   EpigraphyResponse,
   TranslitOption,
   UpdateTranslitStatusPayload,
+  CreateTextTables,
+  CreateTextsPayload,
+  TextPhotoWithName,
 } from '@oare/types';
+import baseAxios from 'axios';
 import axios from '../axiosInstance';
 
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
@@ -36,9 +40,34 @@ async function getImageLinks(
   return data;
 }
 
+const getNextImageDesignator = async (preText: string): Promise<number> => {
+  const { data } = await axios.get(`/text_epigraphies/designator/${preText}`);
+  return data;
+};
+
+const createText = async (createTextTables: CreateTextTables) => {
+  const payload: CreateTextsPayload = {
+    tables: createTextTables,
+  };
+  await axios.post('/text_epigraphies/create', payload);
+};
+
+const uploadImages = async (photos: TextPhotoWithName[]) => {
+  photos.forEach(async photo => {
+    const { data: url } = await axios.get(
+      `/text_epigraphies/upload_image/${photo.name}`
+    );
+    // Must use base axios to avoid header conflicts with AWS signing
+    await baseAxios.put(url, photo.upload);
+  });
+};
+
 export default {
   getEpigraphicInfo,
   getImageLinks,
   getTranslitOptions,
   updateTranslitStatus,
+  getNextImageDesignator,
+  createText,
+  uploadImages,
 };

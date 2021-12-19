@@ -288,7 +288,10 @@ export default defineComponent({
             router.replace({ name: '403' });
           }
         } else {
-          actions.showErrorSnackbar('Error loading text. Please try again.');
+          actions.showErrorSnackbar(
+            'Error loading text. Please try again.',
+            err as Error
+          );
         }
       } finally {
         loading.value = false;
