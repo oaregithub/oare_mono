@@ -27,9 +27,12 @@ class ResourceDao {
         return s3.getSignedUrlPromise('getObject', params);
       })
     );
+
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
-    const response = cdliLinks.concat(signedUrls);
+    const metLinks = await this.getValidMetImageLinks(textUuid);
+
+    const response = metLinks.concat(cdliLinks).concat(signedUrls);
 
     return response;
   }
@@ -70,6 +73,40 @@ class ResourceDao {
         status: 'In Progress',
       });
     }
+
+    return response;
+  }
+
+  async getValidMetImageLinks(textUuid: string): Promise<string[]> {
+    const response: string[] = [];
+    const ErrorsDao = sl.get('ErrorsDao');
+
+    const objectIDs: string[] = await knex('resource')
+      .pluck('link')
+      .whereIn(
+        'uuid',
+        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+      )
+      .where('type', 'img');
+
+    await Promise.all(objectIDs.map(async (objectID) => {
+      try {
+        const metUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`;
+        const metResponse = await fetch(metUrl);
+  
+        if (metResponse.ok) {
+          const metJson = await metResponse.json();
+          response.push(metJson.primaryImage);
+        }
+      } catch (err) {
+        await ErrorsDao.logError({
+          userUuid: null,
+          description: 'Error retrieving MET photo',
+          stacktrace: err.stack,
+          status: 'In Progress',
+        });
+      }
+    }))
 
     return response;
   }
