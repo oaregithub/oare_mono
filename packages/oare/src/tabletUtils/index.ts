@@ -14,9 +14,6 @@ export function getMarkupByDamageType(
   return markupUnits.find(unit => unit.type === damageType);
 }
 
-/**
- * markupType is guaranteed to be one of 'damage', 'partialDamage'
- */
 export function unitMatchesDamageType(
   neighbor: EpigraphicUnit,
   markupType: MarkupType

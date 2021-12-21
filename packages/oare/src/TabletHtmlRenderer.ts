@@ -22,7 +22,6 @@ function isMarkupChar(char: string): boolean {
     '+',
     '+',
     'x',
-    '#',
     '⸢',
     '⸣',
     '[',
