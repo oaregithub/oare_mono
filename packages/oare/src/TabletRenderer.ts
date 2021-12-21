@@ -211,9 +211,6 @@ export default class TabletRenderer {
       case 'isUninterpreted':
         formattedReading = `:${formattedReading}:`;
         break;
-      case 'isWrittenWithinPrevSign':
-        formattedReading = `×${formattedReading}`;
-        break;
       case 'omitted':
         formattedReading = `‹${formattedReading}›`;
         break;
@@ -227,9 +224,6 @@ export default class TabletRenderer {
         formattedReading += '?';
         break;
       }
-      case 'isWrittenAsLigature':
-        formattedReading = `+${formattedReading}`;
-        break;
       case 'undeterminedSigns':
         if (markup.value) {
           if (markup.value > 0) {
