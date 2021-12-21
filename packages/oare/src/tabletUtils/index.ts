@@ -26,11 +26,6 @@ export function unitMatchesDamageType(
       if (markup.type === markupType) {
         return true;
       }
-
-      const damages = [markupType, markup.type];
-      if (damages.includes('damage')) {
-        return true;
-      }
       return false;
     });
     return match;
