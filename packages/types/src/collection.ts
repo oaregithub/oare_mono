@@ -9,6 +9,12 @@ export interface CollectionText {
   type: string;
   hasEpigraphy: boolean;
   name: string;
+  excavationPrefix: string;
+  excavationNumber: string;
+  museumPrefix: string;
+  museumNumber: string;
+  publicationPrefix: string;
+  publicationNumber: string;
 }
 export interface CollectionResponse {
   totalTexts: number;

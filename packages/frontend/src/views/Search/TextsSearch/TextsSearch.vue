@@ -139,11 +139,8 @@ export default defineComponent({
           } else {
             searchResults.value = results;
           }
-        } catch (err) {
-          actions.showErrorSnackbar(
-            'Error searching texts. Please try again.',
-            err as Error
-          );
+        } catch {
+          actions.showErrorSnackbar('Error searching texts. Please try again.');
         } finally {
           searchLoading.value = false;
         }
@@ -158,10 +155,9 @@ export default defineComponent({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
           });
-        } catch (err) {
+        } catch {
           actions.showErrorSnackbar(
-            'Error getting texts total. Please try again.',
-            err as Error
+            'Error getting texts total. Please try again.'
           );
         } finally {
           searchTotalLoading.value = false;
@@ -171,8 +167,8 @@ export default defineComponent({
 
     const resetSearch = async (resetVisited: boolean = true) => {
       totalSearchResults.value = -1;
-      textTitleQuery.value = textTitleSearch.value;
       translitQuery.value = translitSearch.value;
+      textTitleQuery.value = textTitleSearch.value;
       if (resetVisited) {
         await setIsVisited('false');
       }
