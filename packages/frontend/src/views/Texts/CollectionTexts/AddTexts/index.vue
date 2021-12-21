@@ -86,13 +86,10 @@
           />
           <stepper-button
             continueButtonText="Submit"
-            :blockContinue="true"
-            blockContinueText="Coming Soon"
+            :continueAction="createText"
             @previous="previous"
+            @next="pushToText"
           />
-          <v-btn color="primary" text class="ml-4 mt-6" @click="printSummary">
-            Print Tables to Console
-          </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -149,6 +146,7 @@ export default defineComponent({
   setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const router = sl.get('router');
 
     const collectionName = ref('');
     const step = ref(1);
@@ -248,6 +246,26 @@ export default defineComponent({
     const next = () => (step.value += 1);
     const previous = () => (step.value -= 1);
 
+    const pushToText = () => {
+      if (createTextTables.value) {
+        router.push(`/epigraphies/${createTextTables.value.text.uuid}`);
+      }
+    };
+
+    const createText = async () => {
+      if (createTextTables.value) {
+        try {
+          await server.createText(createTextTables.value);
+          await server.uploadImages(photosWithName.value);
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Error creating text. Please try again',
+            err as Error
+          );
+        }
+      }
+    };
+
     const createTextTables = ref<CreateTextTables>();
     const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
       {}
@@ -287,31 +305,6 @@ export default defineComponent({
       }
     };
 
-    const printSummary = () => {
-      console.log({
-        text_epigraphy: createTextTables.value
-          ? createTextTables.value.epigraphies
-          : null,
-        text_markup: createTextTables.value
-          ? createTextTables.value.markups
-          : null,
-        text_discourse: createTextTables.value
-          ? createTextTables.value.discourses
-          : null,
-        text: createTextTables.value ? createTextTables.value.text : null,
-        item_properties: createTextTables.value
-          ? createTextTables.value.itemProperties
-          : null,
-        resource: createTextTables.value
-          ? createTextTables.value.resources
-          : null,
-        link: createTextTables.value ? createTextTables.value.links : null,
-        hierarchy: createTextTables.value
-          ? createTextTables.value.hierarchy
-          : null,
-      });
-    };
-
     return {
       collectionName,
       step,
@@ -329,7 +322,8 @@ export default defineComponent({
       stepTwoComplete,
       stepThreeComplete,
       buildTables,
-      printSummary,
+      pushToText,
+      createText,
     };
   },
 });

@@ -2,6 +2,7 @@ import knex from '@/connection';
 import fetch from 'node-fetch';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
+import { ResourceRow, LinkRow } from '@oare/types';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -79,6 +80,25 @@ class ResourceDao {
       .pluck('link')
       .where('link', 'like', `${preText}%`);
     return results;
+  }
+
+  async insertResourceRow(row: ResourceRow) {
+    await knex('resource').insert({
+      uuid: row.uuid,
+      source_uuid: row.sourceUuid,
+      type: row.type,
+      container: row.container,
+      format: row.format,
+      link: row.link,
+    });
+  }
+
+  async insertLinkRow(row: LinkRow) {
+    await knex('link').insert({
+      uuid: row.uuid,
+      reference_uuid: row.referenceUuid,
+      obj_uuid: row.objUuid,
+    });
   }
 }
 

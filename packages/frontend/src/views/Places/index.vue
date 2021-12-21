@@ -1,5 +1,13 @@
 <template>
-  <OareContentView title="Gazetteer" :loading="loading">
+  <OareContentView
+    title="Gazetteer"
+    informationCard='The list of places is largely derived from Barjamovic&#39;s "A Historical
+        Geography of Anatolia in the Old Assyrian Colony Period" (Carsten
+        Niebuhr Institute Publications 38). Indexing of variant spellings is not
+        yet complete. See info on Words/Old Assyrian Lexicon for intended
+        projects that also apply here.'
+    :loading="loading"
+  >
     <DictionaryDisplay
       :wordList="places"
       :letter="letter"

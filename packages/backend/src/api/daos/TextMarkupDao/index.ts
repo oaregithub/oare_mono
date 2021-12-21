@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { MarkupUnit } from '@oare/types';
+import { MarkupUnit, TextMarkupRow } from '@oare/types';
 
 class TextMarkupDao {
   async getMarkups(textUuid: string, line?: number): Promise<MarkupUnit[]> {
@@ -43,6 +43,20 @@ class TextMarkupDao {
       return 0;
     });
     return markups;
+  }
+
+  async insertMarkupRow(row: TextMarkupRow) {
+    await knex('text_markup').insert({
+      uuid: row.uuid,
+      reference_uuid: row.referenceUuid,
+      type: row.type,
+      num_value: row.numValue,
+      alt_reading_uuid: row.altReadingUuid,
+      alt_reading: row.altReading,
+      start_char: row.startChar,
+      end_char: row.endChar,
+      obj_uuid: row.objectUuid,
+    });
   }
 }
 

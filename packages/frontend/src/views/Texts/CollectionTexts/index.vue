@@ -23,9 +23,9 @@
       >
       <TextsTable
         :page="Number(page)"
-        @update:page="p => (page = p)"
+        @update:page="page = `${$event}`"
         :rows="Number(rows)"
-        @update:rows="r => (rows = r)"
+        @update:rows="rows = `${$event}`"
         :totalTexts="totalTexts"
         :texts="texts"
         :loading="textsLoading"

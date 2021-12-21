@@ -212,6 +212,7 @@ export interface TextPhoto {
   url?: string;
   side?: string | number;
   view?: string;
+  upload?: File;
 }
 
 export interface TextPhotoWithName extends TextPhoto {
@@ -291,7 +292,7 @@ export interface TextRow {
   excavationNumber: string | null;
   museumPrefix: string | null;
   museumNumber: string | null;
-  publicationPrefic: string | null;
+  publicationPrefix: string | null;
   publicationNumber: string | null;
   objectType: string | null;
   source: string | null;
@@ -361,4 +362,8 @@ export interface EditorMarkup {
   markup: EditorMarkupPiece[];
   post: string;
   wordIndex: number;
+}
+
+export interface CreateTextsPayload {
+  tables: CreateTextTables;
 }

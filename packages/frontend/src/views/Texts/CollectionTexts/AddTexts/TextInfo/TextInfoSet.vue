@@ -280,14 +280,32 @@ export default defineComponent({
     };
 
     const textInfo: ComputedRef<AddTextInfo> = computed(() => ({
-      textName: textName.value,
-      cdliNum: cdliNum.value,
-      excavationPrefix: excavationPrefix.value,
-      excavationNumber: excavationNumber.value,
-      museumPrefix: museumPrefix.value,
-      museumNumber: museumNumber.value,
-      publicationPrefix: publicationPrefix.value,
-      publicationNumber: publicationNumber.value,
+      textName: textName.value && textName.value !== '' ? textName.value : null,
+      cdliNum: cdliNum.value && cdliNum.value !== '' ? cdliNum.value : null,
+      excavationPrefix:
+        excavationPrefix.value && excavationPrefix.value !== ''
+          ? excavationPrefix.value
+          : null,
+      excavationNumber:
+        excavationNumber.value && excavationNumber.value !== ''
+          ? excavationNumber.value
+          : null,
+      museumPrefix:
+        museumPrefix.value && museumPrefix.value !== ''
+          ? museumPrefix.value
+          : null,
+      museumNumber:
+        museumNumber.value && museumNumber.value !== ''
+          ? museumNumber.value
+          : null,
+      publicationPrefix:
+        publicationPrefix.value && publicationPrefix.value !== ''
+          ? publicationPrefix.value
+          : null,
+      publicationNumber:
+        publicationNumber.value && publicationNumber.value !== ''
+          ? publicationNumber.value
+          : null,
       properties: properties.value,
     }));
 
