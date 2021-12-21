@@ -4,6 +4,7 @@ import {
   EpigraphicUnitSide,
   EpigraphicUnitWithMarkup,
   EpigraphicWord,
+  MarkupType,
 } from '@oare/types';
 import _ from 'lodash';
 
@@ -205,20 +206,8 @@ export default class TabletRenderer {
         formattedReading += '!';
         break;
       }
-      case 'erasure':
-        formattedReading = `{${formattedReading}}`;
-        break;
-      case 'isUninterpreted':
-        formattedReading = `:${formattedReading}:`;
-        break;
-      case 'omitted':
-        formattedReading = `‹${formattedReading}›`;
-        break;
       case 'originalSign':
         formattedReading += '!';
-        break;
-      case 'superfluous':
-        formattedReading = `«${formattedReading}»`;
         break;
       case 'uncertain': {
         formattedReading += '?';
@@ -235,10 +224,12 @@ export default class TabletRenderer {
         break;
       case 'damage':
       case 'partialDamage':
-        formattedReading = this.applyDamageMarkup(markup, reading);
-        break;
+      case 'superfluous':
+      case 'omitted':
+      case 'erasure':
+      case 'isUninterpreted':
       case 'isWrittenOverErasure':
-        formattedReading = `#${formattedReading}`;
+        formattedReading = this.applyBracketMarkup(markup, reading);
         break;
       default:
         break;
@@ -246,14 +237,56 @@ export default class TabletRenderer {
     return formattedReading;
   }
 
-  protected applyDamageMarkup(markup: MarkupUnit, reading: string): string {
+  private getStartBracket(markupType: MarkupType): string {
+    switch (markupType) {
+      case 'damage':
+        return '[';
+      case 'partialDamage':
+        return '⸢';
+      case 'superfluous':
+        return '«';
+      case 'omitted':
+        return '‹';
+      case 'erasure':
+        return '{';
+      case 'isUninterpreted':
+        return ':';
+      case 'isWrittenOverErasure':
+        return '*';
+      default:
+        return '';
+    }
+  }
+
+  private getEndBracket(markupType: MarkupType): string {
+    switch (markupType) {
+      case 'damage':
+        return ']';
+      case 'partialDamage':
+        return '⸣';
+      case 'superfluous':
+        return '»';
+      case 'omitted':
+        return '›';
+      case 'erasure':
+        return '}';
+      case 'isUninterpreted':
+        return ':';
+      case 'isWrittenOverErasure':
+        return '*';
+      default:
+        return '';
+    }
+  }
+
+  protected applyBracketMarkup(markup: MarkupUnit, reading: string): string {
     let formattedReading = this.addStartBracket(markup, reading);
     formattedReading = this.addEndBracket(markup, formattedReading);
     return formattedReading;
   }
 
   protected addStartBracket(markup: MarkupUnit, reading: string): string {
-    const bracket = markup.type === 'damage' ? '[' : '⸢';
+    const bracket = this.getStartBracket(markup.type);
 
     let formattedReading = reading;
     if (markup.startChar === null) {
@@ -270,7 +303,7 @@ export default class TabletRenderer {
   }
 
   protected addEndBracket(markup: MarkupUnit, reading: string): string {
-    const bracket = markup.type === 'damage' ? ']' : '⸣';
+    const bracket = this.getEndBracket(markup.type);
 
     let formattedReading = reading;
     if (markup.endChar === null) {
