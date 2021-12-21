@@ -205,6 +205,7 @@ export interface RowContent {
   text?: string;
   signs?: SignCodeWithDiscourseUuid[];
   words?: EditorWord[];
+  reading?: string;
 }
 
 export interface TextPhoto {
@@ -345,7 +346,7 @@ export interface CreateTextTables {
 
 export interface EditorWord {
   spelling: string;
-  discourseUuid: string;
+  discourseUuid: string | null;
 }
 
 export interface EditorMarkupPiece {

@@ -111,6 +111,7 @@ export interface Row {
   signs?: SignCodeWithDiscourseUuid[];
   selectedSign?: number;
   words?: EditorWord[];
+  reading?: string;
 }
 
 export interface RowWithLine extends Row {
@@ -253,6 +254,7 @@ export default defineComponent({
             lines,
             signs: row.signs,
             words: row.words,
+            reading: row.reading,
           };
         });
         emit('update-column-rows', rowContent);
