@@ -21,5 +21,5 @@ export interface SignCodeWithUuid extends SignCode {
 }
 
 export interface SignCodeWithDiscourseUuid extends SignCodeWithUuid {
-  discourseUuid: string;
+  discourseUuid: string | null;
 }

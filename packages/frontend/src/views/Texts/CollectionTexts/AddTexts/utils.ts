@@ -465,6 +465,7 @@ const createEditorRows = async (
             parentUuid,
             side: sideNumber,
             column: columnNumber,
+            reading: row.reading,
           });
 
           return [regionRow];
@@ -533,7 +534,7 @@ const createSignRows = async (
           sign: sign.sign || undefined,
           readingUuid: sign.readingUuid || undefined,
           reading: sign.value || undefined,
-          discourseUuid: sign.discourseUuid,
+          discourseUuid: sign.discourseUuid || undefined,
           charOnLine: idx + 1,
         });
         return signRow;
@@ -690,40 +691,47 @@ const createDiscourseRows = async (
                     const words = row.words || [];
                     const wordRows = (
                       await Promise.all(
-                        words.map(async word => {
-                          const type =
-                            row.signs &&
-                            row.signs
-                              .filter(
-                                sign =>
-                                  sign.discourseUuid === word.discourseUuid
-                              )
-                              .every(sign => sign.readingType === 'number')
-                              ? 'number'
-                              : 'word';
-                          let spellingUuid: string | undefined;
-                          const forms = await server.searchSpellings(
-                            word.spelling
-                          );
-                          if (persistentDiscourseStorage[word.discourseUuid]) {
-                            spellingUuid =
-                              persistentDiscourseStorage[word.discourseUuid] ||
-                              undefined;
-                          } else if (forms.length === 1) {
-                            spellingUuid = forms[0].spellingUuid;
-                          }
-                          const newDiscourseRow = await createTextDiscourseRow({
-                            uuid: word.discourseUuid,
-                            type,
-                            textUuid,
-                            treeUuid,
-                            parentUuid: discourseUnitRow.uuid,
-                            spelling: word.spelling,
-                            explicitSpelling: word.spelling,
-                            spellingUuid,
-                          });
-                          return newDiscourseRow;
-                        })
+                        words
+                          .filter(word => !!word.discourseUuid)
+                          .map(async word => {
+                            const type =
+                              row.signs &&
+                              row.signs
+                                .filter(
+                                  sign =>
+                                    sign.discourseUuid === word.discourseUuid
+                                )
+                                .every(sign => sign.readingType === 'number')
+                                ? 'number'
+                                : 'word';
+                            let spellingUuid: string | undefined;
+                            const forms = await server.searchSpellings(
+                              word.spelling
+                            );
+                            if (
+                              persistentDiscourseStorage[word.discourseUuid!]
+                            ) {
+                              spellingUuid =
+                                persistentDiscourseStorage[
+                                  word.discourseUuid!
+                                ] || undefined;
+                            } else if (forms.length === 1) {
+                              spellingUuid = forms[0].spellingUuid;
+                            }
+                            const newDiscourseRow = await createTextDiscourseRow(
+                              {
+                                uuid: word.discourseUuid!,
+                                type,
+                                textUuid,
+                                treeUuid,
+                                parentUuid: discourseUnitRow.uuid,
+                                spelling: word.spelling,
+                                explicitSpelling: word.spelling,
+                                spellingUuid,
+                              }
+                            );
+                            return newDiscourseRow;
+                          })
                       )
                     ).flat();
                     return wordRows;

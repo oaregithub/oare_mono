@@ -116,6 +116,25 @@
             </span>
           </v-col>
         </v-row>
+        <v-row class="pa-0 ma-0" v-else-if="row.type === 'Seal Impression'">
+          <span class="my-1"
+            >{{ row.type }} {{ row.reading }}
+            <v-textarea
+              v-if="row.isEditing"
+              placeholder="Enter value here"
+              auto-grow
+              dense
+              rows="1"
+              class="mx-1 mt-0 mb-n5 hide-line d-inline-block"
+              :autofocus="true"
+              @change="setSealImpressionReading($event)"
+              :value="row.reading"
+            />
+            <a @click="toggleRowEditing()" v-if="!row.isEditing" class="ml-2">{{
+              row.reading ? 'Edit Label' : 'Add Label'
+            }}</a>
+          </span>
+        </v-row>
         <span v-else class="my-1">{{ row.type }}</span>
       </v-col>
       <v-col cols="1" class="pa-0" align="right">
@@ -366,7 +385,7 @@ export default defineComponent({
           }
         });
         return {
-          discourseUuid: v4(),
+          discourseUuid: spelling !== '|' ? v4() : null,
           spelling,
         };
       });
@@ -422,6 +441,14 @@ export default defineComponent({
       });
     };
 
+    const setSealImpressionReading = (reading: string) => {
+      emit('update-row-content', {
+        ...props.row,
+        reading,
+        isEditing: false,
+      });
+    };
+
     const insertChar = async (delineator: string) => {
       const originalRowText = props.row.text || '';
       const textBeforeCursor = originalRowText.slice(0, cursorIndex.value);
@@ -469,6 +496,7 @@ export default defineComponent({
       textareaRef,
       focused,
       setFocused,
+      setSealImpressionReading,
     };
   },
 });
