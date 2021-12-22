@@ -18,7 +18,7 @@ export interface Text {
 
 export interface EpigraphyResponse {
   canWrite: boolean;
-  text: Text | null;
+  text: Text;
   collection: Collection;
   cdliNum: string | null;
   units: EpigraphicUnit[];
@@ -124,8 +124,10 @@ export interface MarkupUnit {
   referenceUuid: string;
   type: MarkupType;
   value: number | null;
-  startChar: null | number;
-  endChar: null | number;
+  startChar: number | null;
+  endChar: number | null;
+  altReading: string | null;
+  altReadingUuid: string | null;
 }
 
 export type TextFormatType = 'regular' | 'html';

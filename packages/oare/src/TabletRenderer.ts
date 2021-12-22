@@ -199,20 +199,22 @@ export default class TabletRenderer {
     let formattedReading = reading;
     switch (markup.type) {
       case 'isCollatedReading':
-        formattedReading = `*${formattedReading}*`;
+        formattedReading += '!!';
         break;
-      case 'alternateSign':
       case 'isEmendedReading': {
         formattedReading += '!';
         break;
       }
-      case 'originalSign':
-        formattedReading += '!';
-        break;
       case 'uncertain': {
         formattedReading += '?';
         break;
       }
+      case 'originalSign':
+      case 'alternateSign':
+        if (markup.altReading) {
+          formattedReading += `(${markup.altReading})`;
+        }
+        break;
       case 'undeterminedSigns':
         if (markup.value) {
           if (markup.value > 0) {

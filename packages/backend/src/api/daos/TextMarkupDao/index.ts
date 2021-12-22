@@ -9,7 +9,9 @@ class TextMarkupDao {
         'text_markup.type AS type',
         'text_markup.num_value AS value',
         'text_markup.start_char AS startChar',
-        'text_markup.end_char as endChar'
+        'text_markup.end_char as endChar',
+        'text_markup.alt_reading as altReading',
+        'text_markup.alt_reading_uuid as altReadingUuid'
       )
       .innerJoin(
         'text_epigraphy',
@@ -38,6 +40,13 @@ class TextMarkupDao {
     });
     markups.sort(a => {
       if (a.type === 'damage' || a.type === 'partialDamage') {
+        return -1;
+      }
+      if (
+        a.type === 'isCollatedReading' ||
+        a.type === 'isEmendedReading' ||
+        a.type === 'uncertain'
+      ) {
         return -1;
       }
       return 0;
