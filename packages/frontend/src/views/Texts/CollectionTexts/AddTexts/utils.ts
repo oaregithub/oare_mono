@@ -25,6 +25,7 @@ import {
   LinkRow,
   ResourceRow,
   HierarchyRow,
+  MarkupUnit,
 } from '@oare/types';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
@@ -69,15 +70,24 @@ export const convertTablesToUnits = (
     if (a.type === 'damage' || a.type === 'partialDamage') {
       return -1;
     }
+    if (
+      a.type === 'isCollatedReading' ||
+      a.type === 'isEmendedReading' ||
+      a.type === 'uncertain'
+    ) {
+      return -1;
+    }
     return 0;
   });
 
-  const markupUnits = markups.map(markup => ({
+  const markupUnits: MarkupUnit[] = markups.map(markup => ({
     referenceUuid: markup.referenceUuid,
     type: markup.type,
     value: markup.numValue,
     startChar: markup.startChar,
     endChar: markup.endChar,
+    altReading: markup.altReading,
+    altReadingUuid: markup.altReadingUuid,
   }));
 
   const relevantEpigraphyRows = tables.epigraphies.filter(
