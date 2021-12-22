@@ -155,6 +155,7 @@ export interface EpigraphicSign
 export interface EpigraphicWord
   extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
   signs: EpigraphicSign[];
+  isContraction: boolean;
 }
 
 export interface TranslitOption {

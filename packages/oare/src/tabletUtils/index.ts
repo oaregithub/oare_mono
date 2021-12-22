@@ -144,15 +144,25 @@ export function convertMarkedUpUnitsToEpigraphicWords(
   characters: EpigraphicUnitWithMarkup[]
 ): EpigraphicWord[] {
   const epigraphicWords = separateEpigraphicUnitsByWord(characters);
-  return epigraphicWords.map(word => ({
-    reading: epigraphicWordWithSeparators(word),
-    discourseUuid: word[0].discourseUuid,
-    signs: word.map(({ signUuid, readingUuid, reading }) => ({
-      signUuid,
-      readingUuid,
-      reading,
-    })),
-  }));
+  return epigraphicWords.map(word => {
+    let readingWithoutHtml = word[0].reading || '';
+    const htmlTagMatches = readingWithoutHtml.match(/<\/?(sup|em)>/g) || [];
+    htmlTagMatches.forEach(match => {
+      readingWithoutHtml = readingWithoutHtml.replace(match, '');
+    });
+    const isContraction =
+      readingWithoutHtml === 'a' || readingWithoutHtml === 'i';
+    return {
+      reading: epigraphicWordWithSeparators(word),
+      discourseUuid: word[0].discourseUuid,
+      signs: word.map(({ signUuid, readingUuid, reading }) => ({
+        signUuid,
+        readingUuid,
+        reading,
+      })),
+      isContraction,
+    };
+  });
 }
 
 export function formatLineNumber(

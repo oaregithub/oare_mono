@@ -19,8 +19,9 @@
             <span
               v-for="(word, index) in renderer.getLineWords(lineNum)"
               :key="index"
-              v-html="highlightWord(word)"
-              class="mr-1 cursor-display test-rendered-word"
+              v-html="formatWord(word)"
+              class="cursor-display test-rendered-word"
+              :class="{ 'mr-1': !word.isContraction }"
               @click="openDialog(word.discourseUuid)"
             />
           </span>
@@ -148,12 +149,17 @@ export default defineComponent({
       }
     };
 
-    const highlightWord = (word: EpigraphicWord) => {
+    const formatWord = (word: EpigraphicWord) => {
       const isWordToHighlight =
         props.discourseToHighlight && word.discourseUuid
           ? props.discourseToHighlight.includes(word.discourseUuid)
           : false;
-      return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
+
+      const formattedReading =
+        word.reading && word.isContraction ? `${word.reading}-` : word.reading;
+      return isWordToHighlight
+        ? `<mark>${formattedReading}</mark>`
+        : formattedReading;
     };
 
     return {
@@ -163,7 +169,7 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
-      highlightWord,
+      formatWord,
     };
   },
 });
