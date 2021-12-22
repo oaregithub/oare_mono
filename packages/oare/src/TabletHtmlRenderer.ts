@@ -14,6 +14,7 @@ function isMarkupChar(char: string): boolean {
     '{',
     '}',
     ':',
+    ';',
     '‹',
     '›',
     '«',
@@ -129,6 +130,9 @@ export default class TabletHtmlRenderer extends TabletRenderer {
         break;
       case 'uncertain':
         formattedReading += '<sup>?</sup>';
+        break;
+      case 'phoneticComplement':
+        formattedReading = `<sup>${formattedReading}</sup>`;
         break;
       default:
         return super.applySingleMarkup(markup, reading);
