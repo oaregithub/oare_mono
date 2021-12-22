@@ -531,6 +531,13 @@ const createSignRows = async (
     await Promise.all(
       signs.map(async (sign, idx) => {
         const type = getEpigraphyType(sign.readingType);
+        const discourseUuid =
+          sign.markup &&
+          sign.markup.markup.some(
+            markup => markup.type === 'superfluous' || markup.type === 'erasure'
+          )
+            ? null
+            : sign.discourseUuid;
         const signRow: TextEpigraphyRow = await createTextEpigraphyRow({
           uuid: sign.uuid,
           type,
@@ -544,7 +551,7 @@ const createSignRows = async (
           sign: sign.sign || undefined,
           readingUuid: sign.readingUuid || undefined,
           reading: sign.value || undefined,
-          discourseUuid: sign.discourseUuid || undefined,
+          discourseUuid: discourseUuid || undefined,
           charOnLine: idx + 1,
         });
         return signRow;
