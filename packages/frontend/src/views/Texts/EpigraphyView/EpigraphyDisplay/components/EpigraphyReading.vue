@@ -19,8 +19,9 @@
             <span
               v-for="(word, index) in renderer.getLineWords(lineNum)"
               :key="index"
-              v-html="highlightWord(word)"
-              class="mr-1 cursor-display test-rendered-word"
+              v-html="formatWord(word).html"
+              class="cursor-display test-rendered-word"
+              :class="{ 'mr-1': !formatWord(word).isContraction }"
               @click="openDialog(word.discourseUuid)"
             />
           </span>
@@ -65,6 +66,11 @@ import {
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+
+export interface FormatWordResponse {
+  html: string | null;
+  isContraction: boolean;
+}
 
 export default defineComponent({
   name: 'EpigraphyReading',
@@ -148,12 +154,32 @@ export default defineComponent({
       }
     };
 
-    const highlightWord = (word: EpigraphicWord) => {
+    const formatWord = (word: EpigraphicWord): FormatWordResponse => {
+      let readingWithoutHtml = word.reading || '';
+      const htmlTagMatches = readingWithoutHtml.match(/<\/?(sup|em)>/g) || [];
+      htmlTagMatches.forEach(match => {
+        readingWithoutHtml = readingWithoutHtml.replace(match, '');
+      });
+      const isContraction =
+        readingWithoutHtml === 'a' || readingWithoutHtml === 'i';
+
+      let formattedReading = word.reading;
+      if (isContraction && word.reading) {
+        formattedReading = word.reading + '-';
+      }
+
       const isWordToHighlight =
         props.discourseToHighlight && word.discourseUuid
           ? props.discourseToHighlight.includes(word.discourseUuid)
           : false;
-      return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
+      formattedReading = isWordToHighlight
+        ? `<mark>${formattedReading}</mark>`
+        : formattedReading;
+
+      return {
+        html: formattedReading,
+        isContraction,
+      };
     };
 
     return {
@@ -163,7 +189,7 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
-      highlightWord,
+      formatWord,
     };
   },
 });
