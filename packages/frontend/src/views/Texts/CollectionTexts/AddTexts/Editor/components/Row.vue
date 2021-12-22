@@ -380,6 +380,14 @@ export default defineComponent({
         word.forEach(sign => {
           if (sign.post === '%') {
             spelling += `(${sign.value || ''})`;
+          } else if (
+            sign.markup &&
+            sign.markup.markup.some(
+              markup =>
+                markup.type === 'superfluous' || markup.type === 'erasure'
+            )
+          ) {
+            spelling += '';
           } else {
             spelling += `${sign.value || ''}${sign.post || ''}`;
           }

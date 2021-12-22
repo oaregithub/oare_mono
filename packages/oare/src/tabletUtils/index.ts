@@ -36,14 +36,22 @@ export function separateEpigraphicUnitsByWord(
   const words: EpigraphicUnitWithMarkup[][] = [];
   let lastDiscourseUuid: string | null = '';
   let curWordIdx = -1;
-  characters.forEach(character => {
+  characters.forEach((character, idx) => {
     if (lastDiscourseUuid === character.discourseUuid) {
+      words[curWordIdx].push(character);
+      lastDiscourseUuid = character.discourseUuid;
+    } else if (
+      characters
+        .slice(idx + 1)
+        .map(char => char.discourseUuid)
+        .includes(lastDiscourseUuid || '')
+    ) {
       words[curWordIdx].push(character);
     } else {
       curWordIdx += 1;
       words[curWordIdx] = [character];
+      lastDiscourseUuid = character.discourseUuid;
     }
-    lastDiscourseUuid = character.discourseUuid;
   });
   return words;
 }
