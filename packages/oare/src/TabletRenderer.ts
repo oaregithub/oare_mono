@@ -231,6 +231,7 @@ export default class TabletRenderer {
       case 'erasure':
       case 'isUninterpreted':
       case 'isWrittenOverErasure':
+      case 'phoneticComplement':
         formattedReading = this.applyBracketMarkup(markup, reading);
         break;
       default:
@@ -255,6 +256,8 @@ export default class TabletRenderer {
         return ':';
       case 'isWrittenOverErasure':
         return '*';
+      case 'phoneticComplement':
+        return ';';
       default:
         return '';
     }
@@ -276,6 +279,8 @@ export default class TabletRenderer {
         return ':';
       case 'isWrittenOverErasure':
         return '*';
+      case 'phoneticComplement':
+        return ';';
       default:
         return '';
     }
