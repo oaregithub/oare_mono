@@ -232,6 +232,8 @@ export default class TabletRenderer {
       case 'isUninterpreted':
       case 'isWrittenOverErasure':
       case 'phoneticComplement':
+      case 'isWrittenBelowTheLine':
+      case 'isWrittenAboveTheLine':
         formattedReading = this.applyBracketMarkup(markup, reading);
         break;
       default:
@@ -258,6 +260,10 @@ export default class TabletRenderer {
         return '*';
       case 'phoneticComplement':
         return ';';
+      case 'isWrittenBelowTheLine':
+        return '/';
+      case 'isWrittenAboveTheLine':
+        return '\\';
       default:
         return '';
     }
@@ -281,6 +287,10 @@ export default class TabletRenderer {
         return '*';
       case 'phoneticComplement':
         return ';';
+      case 'isWrittenBelowTheLine':
+        return '';
+      case 'isWrittenAboveTheLine':
+        return '';
       default:
         return '';
     }
