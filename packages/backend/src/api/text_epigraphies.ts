@@ -32,17 +32,14 @@ router
     }
   });
 
-  router
+router
   .route('/text_epigraphies/images_met/:uuid/')
   .get(async (req, res, next) => {
     try {
       const { uuid: textUuid } = req.params;
       const ResourceDao = sl.get('ResourceDao');
 
-      const response = await ResourceDao.getImageLinksByTextUuid(
-        textUuid,
-        ""
-      );
+      const response = await ResourceDao.getImageLinksByTextUuid(textUuid, '');
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));

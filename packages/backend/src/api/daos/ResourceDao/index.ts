@@ -90,28 +90,30 @@ class ResourceDao {
       )
       .where('type', 'img');
 
-    await Promise.all(objectIDs.map(async (objectID) => {
-      try {
-        const metUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`;
-        const metResponse = await fetch(metUrl);
-  
-        if (metResponse.ok) {
-          const metJson = await metResponse.json();
-          response.push(metJson.primaryImage);
+    await Promise.all(
+      objectIDs.map(async objectID => {
+        try {
+          const metUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`;
+          const metResponse = await fetch(metUrl);
+
+          if (metResponse.ok) {
+            const metJson = await metResponse.json();
+            response.push(metJson.primaryImage);
+          }
+        } catch (err) {
+          await ErrorsDao.logError({
+            userUuid: null,
+            description: 'Error retrieving MET photo',
+            stacktrace: err.stack,
+            status: 'In Progress',
+          });
         }
-      } catch (err) {
-        await ErrorsDao.logError({
-          userUuid: null,
-          description: 'Error retrieving MET photo',
-          stacktrace: err.stack,
-          status: 'In Progress',
-        });
-      }
-    }))
+      })
+    );
 
     return response;
   }
-  
+
   async getImageDesignatorMatches(preText: string): Promise<string[]> {
     const results = await knex('resource')
       .pluck('link')
