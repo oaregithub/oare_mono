@@ -29,6 +29,8 @@ function isMarkupChar(char: string): boolean {
     '?',
     '(',
     ')',
+    '/',
+    '\\',
   ].includes(char);
 }
 
