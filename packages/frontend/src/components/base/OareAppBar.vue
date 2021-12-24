@@ -110,7 +110,17 @@
         >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
         <v-btn class="test-search" text to="/search/texts">Search</v-btn>
-        <v-btn text to="/about">About</v-btn>
+
+        <v-menu offset-y open-on-hover>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn color="primary" dark v-bind="attrs" v-on="on"> Misc. </v-btn>
+          </template>
+          <v-list>
+            <v-btn text to="/about">About</v-btn>
+            <br />
+            <v-btn text to="/tutorial">Tutorial</v-btn>
+          </v-list>
+        </v-menu>
       </v-row>
     </template>
   </v-app-bar>

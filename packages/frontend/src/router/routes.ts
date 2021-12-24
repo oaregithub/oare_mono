@@ -50,6 +50,7 @@ import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditC
 import AddNewTexts from '../views/Texts/CollectionTexts/AddTexts/index.vue';
 import UserPreferences from '../views/Dashboard/UserPreferences.vue';
 import AboutView from '../views/About/index.vue';
+import TutorialView from '../views/Tutorial/index.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -367,6 +368,11 @@ const routes: RouteConfig[] = [
     path: '/about',
     name: 'about',
     component: AboutView,
+  },
+  {
+    path: '/tutorial',
+    name: 'tutorial',
+    component: TutorialView,
   },
 ];
 
