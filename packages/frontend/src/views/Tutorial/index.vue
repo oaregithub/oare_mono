@@ -1,5 +1,5 @@
 <template>
-  <OareContentView>
+  <OareContentView title="Tutorial">
     <div class="title font-weight-regular">
       <p>
         Welcome to the Old Assyrian Research Environment. This is an ongoing

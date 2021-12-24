@@ -116,9 +116,9 @@
             <v-btn color="primary" dark v-bind="attrs" v-on="on"> Misc. </v-btn>
           </template>
           <v-list>
-            <v-btn text to="/about">About</v-btn>
+            <v-btn title text to="/about" width="100%">About</v-btn>
             <br />
-            <v-btn text to="/tutorial">Tutorial</v-btn>
+            <v-btn title text to="/tutorial" width="100%">Tutorial</v-btn>
           </v-list>
         </v-menu>
       </v-row>
@@ -192,6 +192,11 @@ export default defineComponent({
 .no_underline {
   text-decoration: none;
 }
+
+.misc {
+  width: 100%;
+}
+
 #appBarContainer {
   display: flex;
   flex-direction: row;
