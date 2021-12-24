@@ -193,10 +193,6 @@ export default defineComponent({
   text-decoration: none;
 }
 
-.misc {
-  width: 100%;
-}
-
 #appBarContainer {
   display: flex;
   flex-direction: row;
