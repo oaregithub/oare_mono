@@ -31,7 +31,7 @@ class ResourceDao {
 
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
-    const metLinks = await this.getValidMetImageLinks(textUuid);
+    const metLinks = await this.getValidMetImageLinks(resourceLinks);
 
     const response = metLinks.concat(cdliLinks).concat(signedUrls);
 
@@ -78,17 +78,9 @@ class ResourceDao {
     return response;
   }
 
-  async getValidMetImageLinks(textUuid: string): Promise<string[]> {
+  async getValidMetImageLinks(objectIDs: string[]): Promise<string[]> {
     const response: string[] = [];
     const ErrorsDao = sl.get('ErrorsDao');
-
-    const objectIDs: string[] = await knex('resource')
-      .pluck('link')
-      .whereIn(
-        'uuid',
-        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
-      )
-      .where('type', 'img');
 
     await Promise.all(
       objectIDs.map(async objectID => {
