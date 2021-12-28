@@ -1,5 +1,5 @@
 <template>
-  <OareContentView>
+  <OareContentView title="About">
     <div class="title font-weight-regular">
       <p>
         oare.byu.edu is an ongoing project with the aim to becoming a valuable
