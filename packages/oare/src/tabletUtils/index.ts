@@ -58,8 +58,16 @@ export function separateEpigraphicUnitsByWord(
 
 export function getEpigraphicSeparator(
   type1: EpigraphicUnitType | null,
-  type2: EpigraphicUnitType | null
+  unit1Markups: MarkupUnit[],
+  type2: EpigraphicUnitType | null,
+  unit2Markups: MarkupUnit[]
 ): string {
+  if (
+    !unit1Markups.map(unit => unit.type).includes('phoneticComplement') &&
+    unit2Markups.map(unit => unit.type).includes('phoneticComplement')
+  ) {
+    return '';
+  }
   if (type1 === 'determinative' || type2 === 'determinative') {
     return '';
   }
@@ -84,7 +92,9 @@ export function epigraphicWordWithSeparators(
     if (index !== characters.length - 1) {
       wordWithSeparators += getEpigraphicSeparator(
         character.type,
-        characters[index + 1].type
+        character.markups,
+        characters[index + 1].type,
+        characters[index + 1].markups
       );
     }
   });

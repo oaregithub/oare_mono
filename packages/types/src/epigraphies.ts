@@ -143,7 +143,7 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
 }
 
 export interface EpigraphicUnitWithMarkup
-  extends Pick<EpigraphicUnit, 'readingUuid' | 'signUuid'> {
+  extends Pick<EpigraphicUnit, 'readingUuid' | 'signUuid' | 'markups'> {
   type: EpigraphicUnitType | null;
   reading: string;
   discourseUuid: string | null;
