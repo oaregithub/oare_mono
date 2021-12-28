@@ -178,6 +178,7 @@ export default class TabletRenderer {
       readingUuid: unit.readingUuid,
       signUuid: unit.signUuid,
       markups: unit.markups,
+      spellingUuid: unit.spellingUuid,
     }));
   }
 

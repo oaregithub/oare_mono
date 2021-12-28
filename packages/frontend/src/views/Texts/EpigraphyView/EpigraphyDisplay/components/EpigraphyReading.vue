@@ -154,12 +154,7 @@ export default defineComponent({
         props.discourseToHighlight && word.discourseUuid
           ? props.discourseToHighlight.includes(word.discourseUuid)
           : false;
-
-      const formattedReading =
-        word.reading && word.isContraction ? `${word.reading}-` : word.reading;
-      return isWordToHighlight
-        ? `<mark>${formattedReading}</mark>`
-        : formattedReading;
+      return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
     };
 
     return {

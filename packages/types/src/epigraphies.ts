@@ -94,6 +94,7 @@ export interface EpigraphicUnit {
   markups: MarkupUnit[];
   readingUuid: string;
   signUuid: string;
+  spellingUuid: string | null;
 }
 
 export type MarkupType =
@@ -143,7 +144,10 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
 }
 
 export interface EpigraphicUnitWithMarkup
-  extends Pick<EpigraphicUnit, 'readingUuid' | 'signUuid' | 'markups'> {
+  extends Pick<
+    EpigraphicUnit,
+    'readingUuid' | 'signUuid' | 'markups' | 'spellingUuid'
+  > {
   type: EpigraphicUnitType | null;
   reading: string;
   discourseUuid: string | null;
