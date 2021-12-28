@@ -118,7 +118,7 @@
           <v-list>
             <v-btn title text to="/about" width="100%">About</v-btn>
             <br />
-            <v-btn title text to="/tutorial" width="100%">Tutorial</v-btn>
+            <v-btn text to="/tutorial" width="100%">Tutorial</v-btn>
           </v-list>
         </v-menu>
       </v-row>
