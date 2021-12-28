@@ -116,7 +116,7 @@
             <v-btn color="primary" dark v-bind="attrs" v-on="on"> Misc. </v-btn>
           </template>
           <v-list>
-            <v-btn title text to="/about" width="100%">About</v-btn>
+            <v-btn text to="/about" width="100%">About</v-btn>
             <br />
             <v-btn text to="/tutorial" width="100%">Tutorial</v-btn>
           </v-list>
