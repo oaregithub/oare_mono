@@ -84,7 +84,8 @@ export function getEpigraphicSeparator(
 }
 
 export function epigraphicWordWithSeparators(
-  characters: EpigraphicUnitWithMarkup[]
+  characters: EpigraphicUnitWithMarkup[],
+  isContraction: boolean
 ): string {
   let wordWithSeparators = '';
   characters.forEach((character, index) => {
@@ -96,6 +97,8 @@ export function epigraphicWordWithSeparators(
         characters[index + 1].type,
         characters[index + 1].markups
       );
+    } else if (isContraction) {
+      wordWithSeparators += '-';
     }
   });
   return wordWithSeparators;
@@ -146,7 +149,10 @@ export function convertMarkedUpUnitsToLineReading(
 ): string {
   const epigraphicWords = separateEpigraphicUnitsByWord(characters);
   return epigraphicWords
-    .map(word => epigraphicWordWithSeparators(word))
+    .map(word => {
+      const isContraction = getContractionStatus(word);
+      return epigraphicWordWithSeparators(word, isContraction);
+    })
     .join(' ');
 }
 
@@ -154,16 +160,33 @@ export function convertMarkedUpUnitsToEpigraphicWords(
   characters: EpigraphicUnitWithMarkup[]
 ): EpigraphicWord[] {
   const epigraphicWords = separateEpigraphicUnitsByWord(characters);
-  return epigraphicWords.map(word => ({
-    reading: epigraphicWordWithSeparators(word),
-    discourseUuid: word[0].discourseUuid,
-    signs: word.map(({ signUuid, readingUuid, reading }) => ({
-      signUuid,
-      readingUuid,
-      reading,
-    })),
-  }));
+  return epigraphicWords.map(word => {
+    const isContraction = getContractionStatus(word);
+    return {
+      reading: epigraphicWordWithSeparators(word, isContraction),
+      discourseUuid: word[0].discourseUuid,
+      signs: word.map(({ signUuid, readingUuid, reading }) => ({
+        signUuid,
+        readingUuid,
+        reading,
+      })),
+      isContraction,
+    };
+  });
 }
+
+export const getContractionStatus = (
+  word: EpigraphicUnitWithMarkup[]
+): boolean => {
+  const spellingUuid = word.map(sign => sign.spellingUuid)[0];
+  if (
+    spellingUuid === '548189514651019744125244140023458311' ||
+    spellingUuid === '548385815967702358357593121218684988'
+  ) {
+    return true;
+  }
+  return false;
+};
 
 export function formatLineNumber(
   lineNum: number,

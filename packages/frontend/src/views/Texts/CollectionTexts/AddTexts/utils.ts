@@ -118,6 +118,7 @@ export const convertTablesToUnits = (
       ),
       readingUuid: epigraphy.readingUuid || '',
       signUuid: epigraphy.signUuid || '',
+      spellingUuid: getSpellingUuid(tables.discourses, epigraphy.discourseUuid),
     };
     return unit;
   });
@@ -130,6 +131,24 @@ export const convertTablesToUnits = (
   });
 
   return orderedInitialUnits;
+};
+
+const getSpellingUuid = (
+  discourseRows: TextDiscourseRow[],
+  discourseUuid: string | null
+): string | null => {
+  if (!discourseUuid) {
+    return null;
+  }
+
+  const relevantDiscourseRow = discourseRows.find(
+    row => row.uuid === discourseUuid
+  );
+  if (!relevantDiscourseRow) {
+    return null;
+  }
+
+  return relevantDiscourseRow.spellingUuid;
 };
 
 const regionMarkupType = (
