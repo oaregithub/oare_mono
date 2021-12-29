@@ -80,27 +80,46 @@
 
     <template #extension>
       <v-row class="d-flex justify-center">
-        <v-btn
-          class="test-words"
-          text
-          to="/words/A"
-          v-if="permissions.includes('WORDS')"
-          >Words</v-btn
+        <v-menu
+          offset-y
+          open-on-hover
+          v-if="
+            permissions.includes('WORDS') ||
+            permissions.includes('NAMES') ||
+            permissions.includes('PLACES')
+          "
         >
-        <v-btn
-          class="test-names"
-          text
-          to="/names/A"
-          v-if="permissions.includes('NAMES')"
-          >Names</v-btn
-        >
-        <v-btn
-          class="test-places"
-          text
-          to="/places/A"
-          v-if="permissions.includes('PLACES')"
-          >Places</v-btn
-        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn color="primary" dark v-bind="attrs" v-on="on">
+              Lexica
+            </v-btn>
+          </template>
+          <v-list>
+            <v-btn
+              class="test-words"
+              text
+              to="/words/A"
+              v-if="permissions.includes('WORDS')"
+              >Words</v-btn
+            >
+            <br />
+            <v-btn
+              class="test-names"
+              text
+              to="/names/A"
+              v-if="permissions.includes('NAMES')"
+              >Names</v-btn
+            >
+            <br />
+            <v-btn
+              class="test-places"
+              text
+              to="/places/A"
+              v-if="permissions.includes('PLACES')"
+              >Places</v-btn
+            >
+          </v-list>
+        </v-menu>
         <v-btn
           class="test-places"
           text
