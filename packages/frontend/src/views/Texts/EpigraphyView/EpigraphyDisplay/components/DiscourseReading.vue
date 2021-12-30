@@ -21,17 +21,24 @@
           v-html="discourseReading(item)"
         ></div>
         <v-btn
-         @click="discourseEdit(item)">Edit</v-btn>
+        v-if="editingUuid !== item.uuid"
+         @click="startEdit(item)">Edit</v-btn>
+        <div v-else>
+        <input type="text" v-model="inputText">
+        <v-btn @click="discourseEdit(item)">SAVE</v-btn>
+        <v-btn @click="editingUuid = ''">CLOSE</v-btn>
+        </div>
       </template>
     </v-treeview>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, ref, PropType } from '@vue/composition-api';
 import { DiscourseUnit } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
@@ -42,6 +49,9 @@ export default defineComponent({
   },
   setup({ discourseUnits }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
+    const server = sl.get('serverProxy');
+    const editingUuid = ref('');
+    const inputText = ref('');
 
     const discourseColor = (discourseType: string) => {
       switch (discourseType) {
@@ -90,16 +100,25 @@ export default defineComponent({
       return reading;
     };
 
-    const discourseEdit = (discourse: DiscourseUnit) => {
-      console.log(discourse);
+    const startEdit = (discourse: DiscourseUnit) => {
+        editingUuid.value = discourse.uuid || '';
+        inputText.value = discourseReading(discourse) || '';
+    };
+
+    const discourseEdit = async (discourse: DiscourseUnit) => {
+      await server.updateDiscourseTranscription(discourse.uuid, inputText.value);
+      editingUuid.value = '';
     };
 
     return {
       discourseRenderer,
       discourseColor,
       discourseReading,
+      startEdit,
       discourseEdit,
       formatLineNumber,
+      editingUuid,
+      inputText,
     };
   },
 });
