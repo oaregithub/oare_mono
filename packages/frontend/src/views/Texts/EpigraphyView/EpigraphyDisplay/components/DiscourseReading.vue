@@ -20,6 +20,8 @@
           style="white-space: normal"
           v-html="discourseReading(item)"
         ></div>
+        <v-btn
+         @click="discourseEdit(item)">Edit</v-btn>
       </template>
     </v-treeview>
   </div>
@@ -88,10 +90,15 @@ export default defineComponent({
       return reading;
     };
 
+    const discourseEdit = (discourse: DiscourseUnit) => {
+      console.log(discourse);
+    };
+
     return {
       discourseRenderer,
       discourseColor,
       discourseReading,
+      discourseEdit,
       formatLineNumber,
     };
   },
