@@ -22,6 +22,11 @@ async function insertDiscourseRow(
   );
 }
 
+async function updateDiscourseTranscription(uuid: string, newTranscription: string) {
+  await axios.patch(`/text_discourse/${uuid}`, newTranscription);
+}
+
 export default {
   insertDiscourseRow,
+  updateDiscourseTranscription,
 };

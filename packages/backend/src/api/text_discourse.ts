@@ -32,4 +32,19 @@ router
     }
   });
 
+  router
+  .route('/text_discourse/:uuid')
+  .patch(permissionRoute('INSERT_DISCOURSE_ROWS'), async (req, res, next) => {
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const { uuid } = req.params;
+    const { newTranscription } = req.body;
+
+    try {
+      await TextDiscourseDao.updateDiscourseTranscription(uuid, newTranscription);
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
 export default router;
