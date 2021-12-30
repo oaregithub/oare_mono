@@ -22,11 +22,43 @@ async function insertDiscourseRow(
   );
 }
 
-async function updateDiscourseTranscription(uuid: string, newTranscription: string) {
-  await axios.patch(`/text_discourse/${uuid}`, newTranscription);
+async function updateDiscourseTranscription(
+  uuid: string,
+  newTranscription: string
+) {
+  await axios.patch(`/text_discourse/${uuid}`, {
+    newTranscription,
+  });
+}
+
+async function updateDiscourseSpelling(uuid: string, newSpelling: string) {
+  await axios.patch(`/text_discourse/${uuid}/spelling`, {
+    newSpelling,
+  });
+}
+
+async function updateDiscourseTranslation(
+  uuid: string,
+  newTranslation: string
+) {
+  await axios.patch(`/text_discourse/${uuid}/translation`, {
+    newTranslation,
+  });
+}
+
+async function updateDiscourseParagraphLabel(
+  uuid: string,
+  newParagraphLabel: string
+) {
+  await axios.patch(`/text_discourse/${uuid}/paragraph_label`, {
+    newParagraphLabel,
+  });
 }
 
 export default {
   insertDiscourseRow,
   updateDiscourseTranscription,
+  updateDiscourseSpelling,
+  updateDiscourseTranslation,
+  updateDiscourseParagraphLabel,
 };

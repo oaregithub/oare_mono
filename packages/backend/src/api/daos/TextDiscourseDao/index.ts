@@ -133,6 +133,33 @@ class TextDiscourseDao {
       .where({ uuid });
   }
 
+  async updateDiscourseSpelling(
+    uuid: string,
+    newSpelling: string
+  ): Promise<void> {
+    await knex('text_discourse')
+      .update({ spelling: newSpelling })
+      .where({ uuid });
+  }
+
+  async updateDiscourseTranslation(
+    uuid: string,
+    newTranslation: string
+  ): Promise<void> {
+    await knex('text_discourse')
+      .update({ translation: newTranslation })
+      .where({ uuid });
+  }
+
+  async updateDiscourseParagraphLabel(
+    uuid: string,
+    newParagraphLabel: string
+  ): Promise<void> {
+    await knex('text_discourse')
+      .update({ paragraphLabel: newParagraphLabel })
+      .where({ uuid });
+  }
+
   async getTextDiscourseUnits(textUuid: string): Promise<DiscourseUnit[]> {
     const discourseQuery = knex('text_discourse')
       .select(
