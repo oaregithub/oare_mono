@@ -89,7 +89,7 @@
             permissions.includes('PLACES')
           "
         >
-          <template v-slot:activator="{ on, attrs }">
+          <template #activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on">
               Lexica
             </v-btn>
@@ -99,6 +99,7 @@
               class="test-words"
               text
               to="/words/A"
+              width="100%"
               v-if="permissions.includes('WORDS')"
               >Words</v-btn
             >
@@ -107,6 +108,7 @@
               class="test-names"
               text
               to="/names/A"
+              width="100%"
               v-if="permissions.includes('NAMES')"
               >Names</v-btn
             >
@@ -115,6 +117,7 @@
               class="test-places"
               text
               to="/places/A"
+              width="100%"
               v-if="permissions.includes('PLACES')"
               >Places</v-btn
             >
@@ -131,7 +134,7 @@
         <v-btn class="test-search" text to="/search/texts">Search</v-btn>
 
         <v-menu offset-y open-on-hover>
-          <template v-slot:activator="{ on, attrs }">
+          <template #activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on"> Misc. </v-btn>
           </template>
           <v-list>
