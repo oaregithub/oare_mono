@@ -94,33 +94,22 @@
               Lexica
             </v-btn>
           </template>
-          <v-list>
-            <v-btn
-              class="test-words"
-              text
-              to="/words/A"
-              width="100%"
-              v-if="permissions.includes('WORDS')"
-              >Words</v-btn
-            >
-            <br />
-            <v-btn
-              class="test-names"
-              text
-              to="/names/A"
-              width="100%"
-              v-if="permissions.includes('NAMES')"
-              >Names</v-btn
-            >
-            <br />
-            <v-btn
-              class="test-places"
-              text
-              to="/places/A"
-              width="100%"
-              v-if="permissions.includes('PLACES')"
-              >Places</v-btn
-            >
+          <v-list dense>
+            <v-list-item v-if="permissions.includes('WORDS')" class="pa-0">
+              <v-btn class="test-words" text to="/words/A" width="100%"
+                >Words</v-btn
+              >
+            </v-list-item>
+            <v-list-item v-if="permissions.includes('NAMES')" class="pa-0">
+              <v-btn class="test-names" text to="/names/A" width="100%"
+                >Names</v-btn
+              >
+            </v-list-item>
+            <v-list-item v-if="permissions.includes('PLACES')" class="pa-0">
+              <v-btn class="test-places" text to="/places/A" width="100%"
+                >Places</v-btn
+              >
+            </v-list-item>
           </v-list>
         </v-menu>
         <v-btn
@@ -137,10 +126,13 @@
           <template #activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on"> Misc. </v-btn>
           </template>
-          <v-list>
-            <v-btn text to="/about" width="100%">About</v-btn>
-            <br />
-            <v-btn text to="/tutorial" width="100%">Tutorial</v-btn>
+          <v-list dense>
+            <v-list-item class="pa-0">
+              <v-btn text to="/about" width="100%">About</v-btn>
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/tutorial" width="100%">Tutorial</v-btn>
+            </v-list-item>
           </v-list>
         </v-menu>
       </v-row>
