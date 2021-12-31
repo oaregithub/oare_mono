@@ -58,7 +58,7 @@
           <stepper-button
             :blockContinue="!stepThreeComplete"
             blockContinueText="To continue, there must be at least one side. No empty sides,
-            columns, or rows are allowed."
+            columns, or rows are allowed. All signs and markup must be valid."
             :continueAction="buildTables"
             @next="next"
             @previous="previous"
