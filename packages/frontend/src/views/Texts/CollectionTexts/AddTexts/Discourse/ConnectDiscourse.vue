@@ -29,7 +29,7 @@
               v-if="renderer.isRegion(lineNum)"
               v-html="renderer.lineReading(lineNum)"
             />
-            <v-row v-else class="pa-0 ma-0" align="top">
+            <v-row v-else class="pa-0 ma-0">
               <div
                 v-for="(word, index) in renderer.getLineWords(lineNum)"
                 :key="index"
