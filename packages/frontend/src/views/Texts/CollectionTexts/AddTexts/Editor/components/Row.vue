@@ -311,7 +311,7 @@ export default defineComponent({
             );
             const cleanSigns = originalSigns
               .map(sign =>
-                sign.replace(/([[\]{}⸢⸣«»‹›:;*?/\\!])|(".+")|('.+')+/g, '')
+                sign.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
               )
               .filter(sign => sign !== '');
             const formattedSigns = await Promise.all(
