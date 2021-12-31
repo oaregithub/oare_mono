@@ -11,7 +11,7 @@ class TextDao {
       .select(
         'uuid',
         'type',
-        'name',
+        'display_name as name',
         'excavation_prfx AS excavationPrefix',
         'excavation_no AS excavationNumber',
         'museum_prfx AS museumPrefix',
@@ -23,7 +23,7 @@ class TextDao {
       .where({ uuid });
     const text: Text = {
       ...row,
-      name: row ? this.generateTextName(row) : '',
+      name: row ? row.name : '',
     };
     return text;
   }
@@ -72,40 +72,6 @@ class TextDao {
       .where('a2.name', 'transliteration status');
 
     return stoplightOptions.reverse();
-  }
-
-  generateTextName(row: Text): string {
-    let textName: string = '';
-
-    if (
-      row.excavationPrefix &&
-      row.excavationPrefix.slice(0, 2).toLowerCase() === 'kt'
-    ) {
-      textName = `${row.excavationPrefix} ${row.excavationNumber}`;
-      if (row.publicationPrefix && row.publicationNumber) {
-        textName += ` (${row.publicationPrefix} ${row.publicationNumber})`;
-      } else if (row.museumPrefix && row.museumNumber) {
-        textName += ` (${row.museumPrefix} ${row.museumNumber})`;
-      }
-    } else if (row.publicationPrefix && row.publicationNumber) {
-      textName = `${row.publicationPrefix} ${row.publicationNumber}`;
-      if (row.excavationPrefix && row.excavationNumber) {
-        textName += ` (${row.excavationPrefix} ${row.excavationNumber})`;
-      } else if (row.museumPrefix && row.museumNumber) {
-        textName += ` (${row.museumPrefix} ${row.museumNumber})`;
-      }
-    } else if (row.excavationPrefix && row.excavationNumber) {
-      textName = `${row.excavationPrefix} ${row.excavationNumber}`;
-      if (row.museumPrefix && row.museumNumber) {
-        textName += ` (${row.museumPrefix} ${row.museumNumber})`;
-      }
-    } else if (row.museumPrefix && row.museumNumber) {
-      textName = `${row.museumPrefix} ${row.museumNumber}`;
-    } else {
-      textName = row.name;
-    }
-
-    return textName;
   }
 
   async updateTranslitStatus(textUuid: string, color: string) {
