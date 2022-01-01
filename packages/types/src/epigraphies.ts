@@ -211,6 +211,7 @@ export interface RowContent {
   signs?: SignCodeWithDiscourseUuid[];
   words?: EditorWord[];
   reading?: string;
+  hasErrors: boolean;
 }
 
 export interface TextPhoto {
@@ -368,6 +369,11 @@ export interface EditorMarkup {
   markup: EditorMarkupPiece[];
   post: string;
   wordIndex: number;
+}
+
+export interface EditorMarkupError {
+  error: string;
+  text?: string;
 }
 
 export interface CreateTextsPayload {

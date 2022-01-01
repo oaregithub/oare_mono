@@ -112,6 +112,7 @@ export interface Row {
   selectedSign?: number;
   words?: EditorWord[];
   reading?: string;
+  hasErrors: boolean;
 }
 
 export interface RowWithLine extends Row {
@@ -197,12 +198,14 @@ export default defineComponent({
           type,
           uuid: v4(),
           isEditing: false,
+          hasErrors: false,
         });
       } else {
         rows.value.splice(index + 1, 0, {
           type,
           uuid: v4(),
           isEditing: false,
+          hasErrors: false,
         });
       }
     };
@@ -255,6 +258,7 @@ export default defineComponent({
             signs: row.signs,
             words: row.words,
             reading: row.reading,
+            hasErrors: row.hasErrors,
           };
         });
         emit('update-column-rows', rowContent);

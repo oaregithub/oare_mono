@@ -337,7 +337,8 @@ export default defineComponent({
                     );
                   }
                   return true;
-                })
+                }) &&
+                column.rows.every(row => !row.hasErrors)
             )
         )
       );

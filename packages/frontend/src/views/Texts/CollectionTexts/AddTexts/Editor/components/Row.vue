@@ -79,6 +79,19 @@
               ref="textareaRef"
             />
           </v-row>
+          <v-container v-if="markupErrors.length > 0" class="pa-0 ma-0 my-2">
+            <v-row
+              v-for="(error, idx) in markupErrors"
+              :key="idx"
+              class="ma-0 pa-0"
+            >
+              <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
+              <span class="red--text"
+                >{{ error.error }}
+                <b v-if="error.text">{{ error.text }}</b>
+              </span>
+            </v-row>
+          </v-container>
         </v-container>
         <v-row
           class="pa-0 ma-0"
@@ -165,10 +178,15 @@ import {
   SignCodeWithDiscourseUuid,
   EditorWord,
   RowTypes,
+  EditorMarkupError,
 } from '@oare/types';
 import SpecialChars from './SpecialChars.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
-import { applyMarkup } from '../../utils';
+import {
+  applyMarkup,
+  getMarkupInputErrors,
+  getMarkupContextErrors,
+} from '../../utils';
 
 export default defineComponent({
   props: {
@@ -191,6 +209,8 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const textareaRef = ref();
+
+    const markupErrors = ref<EditorMarkupError[]>([]);
 
     const formatLineNumber = (row: RowWithLine) => {
       if ((!row.lineValue && row.line) || (row.line && row.lineValue === 1)) {
@@ -297,6 +317,11 @@ export default defineComponent({
         rowText = rowText.replace('...', '@');
       });
 
+      markupErrors.value = [];
+
+      const markupInputErrors = await getMarkupInputErrors(rowText);
+      markupInputErrors.forEach(error => markupErrors.value.push(error));
+
       const fullMarkup = await applyMarkup(rowText);
 
       const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
@@ -308,6 +333,13 @@ export default defineComponent({
               .filter(sign => sign !== '');
             const originalMarkup = fullMarkup.filter(
               markup => markup.wordIndex === wordIndex
+            );
+            const markupContextErrors = await getMarkupContextErrors(
+              originalMarkup,
+              word
+            );
+            markupContextErrors.forEach(error =>
+              markupErrors.value.push(error)
             );
             const cleanSigns = originalSigns
               .map(sign =>
@@ -407,10 +439,14 @@ export default defineComponent({
           return signs;
         }
       );
+
+      const hasErrors = markupErrors.value.length > 0;
+
       emit('update-row-content', {
         ...props.row,
         signs,
         words,
+        hasErrors,
       });
     };
 
@@ -505,6 +541,7 @@ export default defineComponent({
       focused,
       setFocused,
       setSealImpressionReading,
+      markupErrors,
     };
   },
 });
