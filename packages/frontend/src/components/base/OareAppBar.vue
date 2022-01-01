@@ -90,9 +90,7 @@
           "
         >
           <template #activator="{ on, attrs }">
-            <v-btn color="primary" dark v-bind="attrs" v-on="on">
-              Lexica
-            </v-btn>
+            <v-btn text dark v-bind="attrs" v-on="on"> Lexica </v-btn>
           </template>
           <v-list dense>
             <v-list-item v-if="permissions.includes('WORDS')" class="pa-0">
@@ -124,7 +122,7 @@
 
         <v-menu offset-y open-on-hover>
           <template #activator="{ on, attrs }">
-            <v-btn color="primary" dark v-bind="attrs" v-on="on"> Misc. </v-btn>
+            <v-btn text dark v-bind="attrs" v-on="on"> Misc. </v-btn>
           </template>
           <v-list dense>
             <v-list-item class="pa-0">
