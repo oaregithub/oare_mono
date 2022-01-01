@@ -24,39 +24,14 @@
           >Edit</v-btn
         >
 
-        <div v-else>
-          <div v-if="item.transcription">
-            <span>Transcription</span>
-            <input
-              type="text"
-              v-model="inputTranscription"
-            />
-          </div>
-
-          <div v-if="item.spelling">
-            <span>Spelling</span>
-            <input
-              type="text"
-              v-model="inputSpelling"
-            />
-          </div>
-
-          <div v-if="item.translation">
+        <div v-else-if="item.translation">
+          <div>
             <span>Translation</span>
             <input
               type="text"
               v-model="inputTranslation"
             />
           </div>
-
-          <div v-if="item.paragraphLabel">
-            <span>Paragraph Label</span>
-            <input
-              type="text"
-              v-model="inputParagraphLabel"
-            />
-          </div>
-
           <v-btn @click="discourseEdit(item)">SAVE</v-btn>
           <v-btn @click="editingUuid = ''">CLOSE</v-btn>
         </div>
@@ -83,10 +58,7 @@ export default defineComponent({
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
-    const inputTranscription = ref('');
-    const inputSpelling = ref('');
     const inputTranslation = ref('');
-    const inputParagraphLabel = ref('');
 
     const discourseColor = (discourseType: string) => {
       switch (discourseType) {
@@ -138,40 +110,12 @@ export default defineComponent({
     const startEdit = (discourse: DiscourseUnit) => {
       editingUuid.value = discourse.uuid || '';
 
-      if (discourse.transcription) {
-        inputTranscription.value = discourse.transcription;
-      }
-
-      if (discourse.spelling) {
-        inputSpelling.value = discourse.spelling;
-      }
-
       if (discourse.translation) {
         inputTranslation.value = discourse.translation;
-      }
-
-      if (discourse.paragraphLabel) {
-        inputParagraphLabel.value = discourse.paragraphLabel;
       }
     };
 
     const discourseEdit = async (discourse: DiscourseUnit) => {
-
-      if (discourse.transcription) {
-        await server.updateDiscourseTranscription(
-          discourse.uuid,
-          inputTranscription.value
-        );
-        discourse.transcription = inputTranscription.value;
-      }
-
-      if (discourse.spelling) {
-        await server.updateDiscourseSpelling(
-          discourse.uuid,
-          inputSpelling.value
-        );
-        discourse.spelling = inputSpelling.value;
-      }
 
       if (discourse.translation) {
         await server.updateDiscourseTranslation(
@@ -179,14 +123,6 @@ export default defineComponent({
           inputTranslation.value
         );
         discourse.translation = inputTranslation.value;
-      }
-
-      if (discourse.paragraphLabel) {
-        await server.updateDiscourseParagraphLabel(
-          discourse.uuid,
-          inputParagraphLabel.value
-        );
-        discourse.paragraphLabel = inputParagraphLabel.value;
       }
       editingUuid.value = '';
     };
@@ -199,10 +135,7 @@ export default defineComponent({
       discourseEdit,
       formatLineNumber,
       editingUuid,
-      inputSpelling,
-      inputTranscription,
       inputTranslation,
-      inputParagraphLabel,
     };
   },
 });
