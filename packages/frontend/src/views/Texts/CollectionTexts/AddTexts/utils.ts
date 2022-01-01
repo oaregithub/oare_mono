@@ -864,8 +864,8 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
 
   const words = rowText.split(/[\s]+/).filter(word => word !== '');
   const pieces = words.map((word, index) => ({
-    postMatches: word.match(/[\s\-.%]+/g) || [],
-    signs: word.split(/[-.%]+/),
+    postMatches: word.match(/[\s\-.+%]+/g) || [],
+    signs: word.split(/[-.+%]+/),
     wordIndex: index,
   }));
   const editorMarkup: EditorMarkup[] = pieces.flatMap(piece =>
@@ -1450,7 +1450,7 @@ const verifyBracketIndex = (
     char => char !== openingSymbol && char !== closingSymbol
   );
 
-  const dirtySigns = words.flatMap(word => word.split(/[-.%]+/));
+  const dirtySigns = words.flatMap(word => word.split(/[-.+%]+/));
   const signs = dirtySigns.map(sign => {
     const chars = sign.split('');
     const validChars = chars.filter(
@@ -1524,7 +1524,7 @@ const verifyAboveAndBelowSymbols = (words: string[]): EditorMarkupError[] => {
   const errors: EditorMarkupError[] = [];
 
   const signs = words
-    .flatMap(word => word.split(/[-.%]+/))
+    .flatMap(word => word.split(/[-.+%]+/))
     .map(sign => sign.replace('@', '...'));
 
   const belowLineSigns = signs.filter(sign => sign.startsWith('/'));
@@ -1566,7 +1566,7 @@ const verifySymbolPosition = (
   const errors: EditorMarkupError[] = [];
 
   const signs = words
-    .flatMap(word => word.split(/[-.%]+/))
+    .flatMap(word => word.split(/[-.+%]+/))
     .map(sign => sign.replace('@', '...'));
 
   const allPossiblePositions: MarkupSymbolPosition[] = [
