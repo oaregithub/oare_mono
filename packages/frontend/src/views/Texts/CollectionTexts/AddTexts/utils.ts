@@ -1680,6 +1680,20 @@ export const getMarkupInputErrors = async (
   // Damage
   const damageBracketErrors = getBracketErrors(words, '[', ']', 'damage', true);
   damageBracketErrors.forEach(error => errors.push(error));
+  const openDamagePositionErrors = verifySymbolPosition(
+    words,
+    '[',
+    ['start', 'middle'],
+    []
+  );
+  openDamagePositionErrors.forEach(error => errors.push(error));
+  const closeDamagePositionErrors = verifySymbolPosition(
+    words,
+    ']',
+    ['middle', 'end'],
+    []
+  );
+  closeDamagePositionErrors.forEach(error => errors.push(error));
 
   // Partial Damage
   const partialDamageBracketErrors = getBracketErrors(
@@ -1690,6 +1704,20 @@ export const getMarkupInputErrors = async (
     true
   );
   partialDamageBracketErrors.forEach(error => errors.push(error));
+  const openPartialDamagePositionErrors = verifySymbolPosition(
+    words,
+    '⸢',
+    ['start', 'middle'],
+    []
+  );
+  openPartialDamagePositionErrors.forEach(error => errors.push(error));
+  const closePartialDamagePositionErrors = verifySymbolPosition(
+    words,
+    '⸣',
+    ['middle', 'end'],
+    []
+  );
+  closePartialDamagePositionErrors.forEach(error => errors.push(error));
 
   // Superfluous
   const superfluousBracketErrors = getBracketErrors(
