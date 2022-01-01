@@ -20,18 +20,19 @@
           style="white-space: normal"
           v-html="discourseReading(item)"
         ></div>
-        <v-btn v-if="editingUuid !== item.uuid" @click="startEdit(item)"
-          >Edit</v-btn
+        <v-icon v-if="editingUuid !== item.uuid && allowEditing" @click="startEdit(item)"
+          >mdi-pencil</v-icon
         >
 
-        <div v-else-if="item.translation">
-          <div>
-            <span>Translation</span>
-            <input
-              type="text"
-              v-model="inputTranslation"
-            />
-          </div>
+        <div v-else-if="item.translation && allowEditing">
+          <v-textarea
+            label="Translation"
+            auto-grow
+            outlined
+            rows="1"
+            row-height="15"
+            v-model="inputTranslation"
+          ></v-textarea>
           <v-btn @click="discourseEdit(item)">SAVE</v-btn>
           <v-btn @click="editingUuid = ''">CLOSE</v-btn>
         </div>
@@ -52,6 +53,10 @@ export default defineComponent({
     discourseUnits: {
       type: Array as PropType<DiscourseUnit[]>,
       required: true,
+    },
+    allowEditing: {
+      type: Boolean,
+      default: true,
     },
   },
   setup({ discourseUnits }) {
@@ -109,21 +114,16 @@ export default defineComponent({
 
     const startEdit = (discourse: DiscourseUnit) => {
       editingUuid.value = discourse.uuid || '';
-
-      if (discourse.translation) {
-        inputTranslation.value = discourse.translation;
-      }
+      inputTranslation.value = discourse.translation;
     };
 
     const discourseEdit = async (discourse: DiscourseUnit) => {
-
-      if (discourse.translation) {
-        await server.updateDiscourseTranslation(
-          discourse.uuid,
-          inputTranslation.value
-        );
-        discourse.translation = inputTranslation.value;
-      }
+      await server.updateDiscourseTranslation(
+        discourse.uuid,
+        discourse.primacy,
+        inputTranslation.value
+      );
+      discourse.translation = inputTranslation.value;
       editingUuid.value = '';
     };
 

@@ -33,14 +33,14 @@ router
   });
 
 router
-  .route('/text_discourse/:uuid')
-  .patch(permissionRoute('INSERT_DISCOURSE_ROWS'), async (req, res, next) => {
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
-    const { uuid } = req.params;
+  .route('/text_discourse/:uuid/:primacy')
+  .patch(permissionRoute('EDIT_TRANSLATION'), async (req, res, next) => {
+    const FieldDao = sl.get('FieldDao');
+    const { uuid, primacy } = req.params;
     const { newTranslation } = req.body;
 
     try {
-      await TextDiscourseDao.updateDiscourseTranslation(uuid, newTranslation);
+      await FieldDao.updateField(uuid, newTranslation, { primacy: +primacy });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));

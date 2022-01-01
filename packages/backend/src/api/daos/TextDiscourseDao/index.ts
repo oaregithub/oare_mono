@@ -133,15 +133,6 @@ class TextDiscourseDao {
       .where({ uuid });
   }
 
-  async updateDiscourseTranslation(
-    uuid: string,
-    newTranslation: string
-  ): Promise<void> {
-    await knex('text_discourse')
-      .update({ translation: newTranslation })
-      .where({ uuid });
-  }
-
   async getTextDiscourseUnits(textUuid: string): Promise<DiscourseUnit[]> {
     const discourseQuery = knex('text_discourse')
       .select(

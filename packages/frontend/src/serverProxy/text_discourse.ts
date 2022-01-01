@@ -24,9 +24,10 @@ async function insertDiscourseRow(
 
 async function updateDiscourseTranslation(
   uuid: string,
+  primacy: string,
   newTranslation: string
 ) {
-  await axios.patch(`/text_discourse/${uuid}`, {
+  await axios.patch(`/text_discourse/${uuid}/${primacy}`, {
     newTranslation,
   });
 }
