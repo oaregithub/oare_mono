@@ -267,7 +267,7 @@ export default defineComponent({
           });
         } else {
           const textBeforeCursor = rowText.slice(0, cursorIndex.value);
-          const originalSigns = textBeforeCursor.split(/[\s\-.]+/);
+          const originalSigns = textBeforeCursor.split(/[\s\-.\+]+/);
           const formattedSigns = await Promise.all(
             originalSigns.map(sign => {
               if (sign !== '') {
@@ -329,7 +329,7 @@ export default defineComponent({
         wordsText.map(async (word, wordIndex) => {
           try {
             const originalSigns = word
-              .split(/[\-.%]+/)
+              .split(/[\-.\+%]+/)
               .filter(sign => sign !== '');
             const originalMarkup = fullMarkup.filter(
               markup => markup.wordIndex === wordIndex
@@ -359,7 +359,7 @@ export default defineComponent({
 
             const originalDividers = word
               .split('')
-              .filter(sign => sign.match(/[\-.%]+/));
+              .filter(sign => sign.match(/[\-.\+%]+/));
             const visibleDividers: string[] = [];
             formattedSigns.forEach((signPieces, idx) => {
               if (signPieces.length > 1) {
