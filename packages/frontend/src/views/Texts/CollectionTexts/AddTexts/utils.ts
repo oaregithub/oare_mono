@@ -1340,6 +1340,15 @@ const getBracketErrors = (
     bracketIndexErrors.forEach(error => errors.push(error));
   }
 
+  // Brackets cannot be nested
+  const bracketNestingErrors = verifyBracketNesting(
+    words,
+    openingSymbol,
+    closingSymbol,
+    typeText
+  );
+  bracketNestingErrors.forEach(error => errors.push(error));
+
   return errors;
 };
 
@@ -1370,7 +1379,7 @@ const verifyBracketClosing = (
 
   if (bracketStatus && bracketErrorIndex !== null) {
     errors.push({
-      error: `Opening ${typeText} bracket does not have a matching closing bracket:`,
+      error: `Opening ${typeText.toLowerCase()} bracket does not have a matching closing bracket:`,
       text: words[bracketErrorIndex],
     });
   }
@@ -1391,9 +1400,41 @@ const verifyBracketMatching = (
     .length;
   if (numOpenBracket !== numClosingBracket) {
     errors.push({
-      error: `Number of opening and closing ${typeText} brackets does not match`,
+      error: `Number of opening and closing ${typeText.toLowerCase()} brackets does not match`,
     });
   }
+  return errors;
+};
+
+const verifyBracketNesting = (
+  words: string[],
+  openingSymbol: string,
+  closingSymbol: string,
+  typeText: string
+): EditorMarkupError[] => {
+  const errors: EditorMarkupError[] = [];
+
+  const rowText = words.join(' ');
+
+  let regexp: RegExp;
+  if (openingSymbol !== closingSymbol) {
+    regexp = new RegExp(
+      `\\${openingSymbol}.*\\${openingSymbol}.*\\${closingSymbol}.*\\${closingSymbol}`
+    );
+  } else {
+    regexp = new RegExp(
+      `\\${openingSymbol}.*\\${openingSymbol}[\\s]*\\${closingSymbol}.*\\${closingSymbol}`
+    );
+  }
+
+  const hasNestedBrackets = rowText.match(regexp) || false;
+  if (hasNestedBrackets) {
+    errors.push({
+      text: hasNestedBrackets[0],
+      error: `${typeText} brackets cannot be nested: `,
+    });
+  }
+
   return errors;
 };
 
@@ -1404,9 +1445,6 @@ const verifyBracketIndex = (
   typeText: string
 ): EditorMarkupError[] => {
   const errors: EditorMarkupError[] = [];
-  const capitalizedTypeText = `${typeText
-    .charAt(0)
-    .toUpperCase()}${typeText.slice(1)}`;
 
   const markupCharsToRemove = MARKUP_CHARS.filter(
     char => char !== openingSymbol && char !== closingSymbol
@@ -1431,7 +1469,7 @@ const verifyBracketIndex = (
     openingSymbolErrors.forEach(sign =>
       errors.push({
         text: sign,
-        error: `Opening ${typeText} bracket should only appear at beginning of sign: `,
+        error: `Opening ${typeText.toLowerCase()} bracket should only appear at beginning of sign: `,
       })
     );
 
@@ -1444,7 +1482,7 @@ const verifyBracketIndex = (
     closingSymbolErrors.forEach(sign =>
       errors.push({
         text: sign,
-        error: `Closing ${typeText} bracket should only appear at end of sign: `,
+        error: `Closing ${typeText.toLowerCase()} bracket should only appear at end of sign: `,
       })
     );
   } else if (openingSymbol === closingSymbol) {
@@ -1455,7 +1493,7 @@ const verifyBracketIndex = (
     symbolErrors.forEach(sign =>
       errors.push({
         text: sign,
-        error: `${capitalizedTypeText} brackets should only appear at beginning or the end of a sign: `,
+        error: `${typeText} brackets should only appear at beginning or the end of a sign: `,
       })
     );
   }
@@ -1475,7 +1513,7 @@ const verifyIdenticalBrackets = (
   const isValid = numBrackets % 2 === 0;
   if (!isValid) {
     errors.push({
-      error: `Number of opening and closing ${typeText} brackets does not match`,
+      error: `Number of opening and closing ${typeText.toLowerCase()} brackets does not match`,
     });
   }
 
@@ -1678,7 +1716,7 @@ export const getMarkupInputErrors = async (
   const errors: EditorMarkupError[] = [];
 
   // Damage
-  const damageBracketErrors = getBracketErrors(words, '[', ']', 'damage', true);
+  const damageBracketErrors = getBracketErrors(words, '[', ']', 'Damage', true);
   damageBracketErrors.forEach(error => errors.push(error));
   const openDamagePositionErrors = verifySymbolPosition(
     words,
@@ -1700,7 +1738,7 @@ export const getMarkupInputErrors = async (
     words,
     '⸢',
     '⸣',
-    'partial damage',
+    'Partial damage',
     true
   );
   partialDamageBracketErrors.forEach(error => errors.push(error));
@@ -1724,16 +1762,16 @@ export const getMarkupInputErrors = async (
     words,
     '«',
     '»',
-    'superfluous'
+    'Superfluous'
   );
   superfluousBracketErrors.forEach(error => errors.push(error));
 
   // Ommitted
-  const omittedBracketErrors = getBracketErrors(words, '‹', '›', 'omitted');
+  const omittedBracketErrors = getBracketErrors(words, '‹', '›', 'Omitted');
   omittedBracketErrors.forEach(error => errors.push(error));
 
   // Erasure
-  const erasureBracketErrors = getBracketErrors(words, '{', '}', 'erasure');
+  const erasureBracketErrors = getBracketErrors(words, '{', '}', 'Erasure');
   erasureBracketErrors.forEach(error => errors.push(error));
 
   // Uninterpreted
@@ -1741,7 +1779,7 @@ export const getMarkupInputErrors = async (
     words,
     ':',
     ':',
-    'uninterpreted'
+    'Uninterpreted'
   );
   uninterpretedErrors.forEach(error => errors.push(error));
 
@@ -1750,7 +1788,7 @@ export const getMarkupInputErrors = async (
     words,
     '*',
     '*',
-    'written over erasure'
+    'Written over erasure'
   );
   writtenOverErasureErrors.forEach(error => errors.push(error));
 
@@ -1759,7 +1797,7 @@ export const getMarkupInputErrors = async (
     words,
     ';',
     ';',
-    'phonetic complement'
+    'Phonetic complement'
   );
   phoneticComplementErrors.forEach(error => errors.push(error));
 
@@ -1768,7 +1806,7 @@ export const getMarkupInputErrors = async (
     words,
     '"',
     '"',
-    'original sign'
+    'Original sign'
   );
   originalSignBracketErrors.forEach(error => errors.push(error));
 
@@ -1777,7 +1815,7 @@ export const getMarkupInputErrors = async (
     words,
     "'",
     "'",
-    'alternate sign'
+    'Alternate sign'
   );
   alternateSignBracketErrors.forEach(error => errors.push(error));
 
