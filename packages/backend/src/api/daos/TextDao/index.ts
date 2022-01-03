@@ -7,7 +7,7 @@ interface TextUuid {
 
 class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
-    const row: Text = await knex('text')
+    const text: Text = await knex('text')
       .select(
         'uuid',
         'type',
@@ -21,10 +21,6 @@ class TextDao {
       )
       .first()
       .where({ uuid });
-    const text: Text = {
-      ...row,
-      name: row ? row.name : '',
-    };
     return text;
   }
 
@@ -93,6 +89,7 @@ class TextDao {
       cdli_num: row.cdliNum,
       translit_status: row.translitStatus,
       name: row.name,
+      display_name: row.displayName,
       excavation_prfx: row.excavationPrefix,
       excavation_no: row.excavationNumber,
       museum_prfx: row.museumPrefix,

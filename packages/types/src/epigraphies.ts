@@ -289,6 +289,7 @@ export interface TextRow {
   cdliNum: string | null;
   translitStatus: string;
   name: string | null;
+  displayName: string | null;
   excavationPrefix: string | null;
   excavationNumber: string | null;
   museumPrefix: string | null;

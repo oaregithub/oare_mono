@@ -205,6 +205,40 @@ const createTextDiscourseRow = async (
   transcription: row.transcription || null,
 });
 
+function generateDisplayName(textInfo: AddTextInfo): string {
+  let displayName: string = '';
+
+  if (
+    textInfo.excavationPrefix &&
+    textInfo.excavationPrefix.slice(0, 2).toLowerCase() === 'kt'
+  ) {
+    displayName = `${textInfo.excavationPrefix} ${textInfo.excavationNumber}`;
+    if (textInfo.publicationPrefix && textInfo.publicationNumber) {
+      displayName += ` (${textInfo.publicationPrefix} ${textInfo.publicationNumber})`;
+    } else if (textInfo.museumPrefix && textInfo.museumNumber) {
+      displayName += ` (${textInfo.museumPrefix} ${textInfo.museumNumber})`;
+    }
+  } else if (textInfo.publicationPrefix && textInfo.publicationNumber) {
+    displayName = `${textInfo.publicationPrefix} ${textInfo.publicationNumber}`;
+    if (textInfo.excavationPrefix && textInfo.excavationNumber) {
+      displayName += ` (${textInfo.excavationPrefix} ${textInfo.excavationNumber})`;
+    } else if (textInfo.museumPrefix && textInfo.museumNumber) {
+      displayName += ` (${textInfo.museumPrefix} ${textInfo.museumNumber})`;
+    }
+  } else if (textInfo.excavationPrefix && textInfo.excavationNumber) {
+    displayName = `${textInfo.excavationPrefix} ${textInfo.excavationNumber}`;
+    if (textInfo.museumPrefix && textInfo.museumNumber) {
+      displayName += ` (${textInfo.museumPrefix} ${textInfo.museumNumber})`;
+    }
+  } else if (textInfo.museumPrefix && textInfo.museumNumber) {
+    displayName = `${textInfo.museumPrefix} ${textInfo.museumNumber}`;
+  } else {
+    displayName = textInfo.textName ? textInfo.textName : '';
+  }
+
+  return displayName;
+}
+
 const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
   uuid: v4(),
   type: 'logosyllabic',
@@ -212,6 +246,7 @@ const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
   cdliNum: textInfo.cdliNum,
   translitStatus: '5536b5bd-e18e-11ea-8c9d-02b316ca7378',
   name: textInfo.textName,
+  displayName: generateDisplayName(textInfo),
   excavationPrefix: textInfo.excavationPrefix,
   excavationNumber: textInfo.excavationNumber,
   museumPrefix: textInfo.museumPrefix,

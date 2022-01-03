@@ -67,7 +67,7 @@ export async function up(knex: Knex): Promise<void> {
       .where('uuid', text.uuid)
       .update('display_name', displayName);
   }
-  Texts.forEach(generateDisplayName);
+  await Promise.all(Texts.map(text => generateDisplayName(text)));
 }
 
 export async function down(knex: Knex): Promise<void> {
