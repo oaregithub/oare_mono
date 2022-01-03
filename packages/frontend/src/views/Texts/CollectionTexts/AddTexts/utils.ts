@@ -1125,61 +1125,43 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
 
   let isUninterpretedStatus = false;
   editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/:/);
-    if (prefixMatches) {
-      isUninterpretedStatus = true;
-    }
-
-    if (isUninterpretedStatus) {
+    const matches = piece.text.match(/:/);
+    if (matches || isUninterpretedStatus) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [...editorMarkup[idx].markup, { type: 'isUninterpreted' }],
       };
     }
-
-    const postfixMatches = piece.text.match(/:/);
-    if (postfixMatches) {
-      isUninterpretedStatus = false;
+    if (matches) {
+      isUninterpretedStatus = !isUninterpretedStatus;
     }
   });
 
   let isWrittenOverErasureStatus = false;
   editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/\*/);
-    if (prefixMatches) {
-      isWrittenOverErasureStatus = true;
-    }
-
-    if (isWrittenOverErasureStatus) {
+    const matches = piece.text.match(/\*/);
+    if (matches || isWrittenOverErasureStatus) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [...editorMarkup[idx].markup, { type: 'isWrittenOverErasure' }],
       };
     }
-
-    const postfixMatches = piece.text.match(/\*/);
-    if (postfixMatches) {
-      isWrittenOverErasureStatus = false;
+    if (matches) {
+      isWrittenOverErasureStatus = !isWrittenOverErasureStatus;
     }
   });
 
   let phoneticComplementStatus = false;
   editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/;/);
-    if (prefixMatches) {
-      phoneticComplementStatus = true;
-    }
-
-    if (phoneticComplementStatus) {
+    const matches = piece.text.match(/;/);
+    if (matches || phoneticComplementStatus) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [...editorMarkup[idx].markup, { type: 'phoneticComplement' }],
       };
     }
-
-    const postfixMatches = piece.text.match(/;/);
-    if (postfixMatches) {
-      phoneticComplementStatus = false;
+    if (matches) {
+      phoneticComplementStatus = !phoneticComplementStatus;
     }
   });
 
