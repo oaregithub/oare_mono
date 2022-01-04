@@ -120,7 +120,6 @@ export default defineComponent({
     const discourseEdit = async (discourse: DiscourseUnit) => {
       await server.updateDiscourseTranslation(
         discourse.uuid,
-        discourse.primacy,
         inputTranslation.value
       );
       discourse.translation = inputTranslation.value;

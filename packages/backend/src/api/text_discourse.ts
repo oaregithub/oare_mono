@@ -33,14 +33,14 @@ router
   });
 
 router
-  .route('/text_discourse/:uuid/:primacy')
+  .route('/text_discourse/:uuid')
   .patch(permissionRoute('EDIT_TRANSLATION'), async (req, res, next) => {
     const FieldDao = sl.get('FieldDao');
-    const { uuid, primacy } = req.params;
+    const { uuid } = req.params;
     const { newTranslation } = req.body;
 
     try {
-      await FieldDao.updateField(uuid, newTranslation, { primacy: +primacy });
+      await FieldDao.updateField(uuid, newTranslation, { primacy: 1 });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
