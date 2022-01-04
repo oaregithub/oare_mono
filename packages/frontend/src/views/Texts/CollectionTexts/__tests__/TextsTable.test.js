@@ -16,6 +16,12 @@ describe('TextsTable test', () => {
       type: 'text',
       hasEpigraphy: true,
       name: 'CCT 3 31',
+      excavationPrefix: null,
+      excavationNumber: null,
+      museumPrefix: null,
+      museumNumber: null,
+      publicationPrefix: null,
+      publicationNumber: null,
     },
     {
       id: 2,
@@ -23,6 +29,12 @@ describe('TextsTable test', () => {
       type: 'text',
       hasEpigraphy: true,
       name: 'CCT 1 12b',
+      excavationPrefix: null,
+      excavationNumber: null,
+      museumPrefix: null,
+      museumNumber: null,
+      publicationPrefix: null,
+      publicationNumber: null,
     },
   ];
   const mockProps = {

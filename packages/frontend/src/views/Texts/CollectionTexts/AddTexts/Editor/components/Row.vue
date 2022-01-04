@@ -79,6 +79,19 @@
               ref="textareaRef"
             />
           </v-row>
+          <v-container v-if="markupErrors.length > 0" class="pa-0 ma-0 my-2">
+            <v-row
+              v-for="(error, idx) in markupErrors"
+              :key="idx"
+              class="ma-0 pa-0"
+            >
+              <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
+              <span class="red--text"
+                >{{ error.error }}
+                <b v-if="error.text">{{ error.text }}</b>
+              </span>
+            </v-row>
+          </v-container>
         </v-container>
         <v-row
           class="pa-0 ma-0"
@@ -116,6 +129,25 @@
             </span>
           </v-col>
         </v-row>
+        <v-row class="pa-0 ma-0" v-else-if="row.type === 'Seal Impression'">
+          <span class="my-1"
+            >{{ row.type }} {{ row.reading }}
+            <v-textarea
+              v-if="row.isEditing"
+              placeholder="Enter value here"
+              auto-grow
+              dense
+              rows="1"
+              class="mx-1 mt-0 mb-n5 hide-line d-inline-block"
+              :autofocus="true"
+              @change="setSealImpressionReading($event)"
+              :value="row.reading"
+            />
+            <a @click="toggleRowEditing()" v-if="!row.isEditing" class="ml-2">{{
+              row.reading ? 'Edit Label' : 'Add Label'
+            }}</a>
+          </span>
+        </v-row>
         <span v-else class="my-1">{{ row.type }}</span>
       </v-col>
       <v-col cols="1" class="pa-0" align="right">
@@ -146,10 +178,15 @@ import {
   SignCodeWithDiscourseUuid,
   EditorWord,
   RowTypes,
+  EditorMarkupError,
 } from '@oare/types';
 import SpecialChars from './SpecialChars.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
-import { applyMarkup } from '../../utils';
+import {
+  applyMarkup,
+  getMarkupInputErrors,
+  getMarkupContextErrors,
+} from '../../utils';
 
 export default defineComponent({
   props: {
@@ -172,6 +209,8 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const textareaRef = ref();
+
+    const markupErrors = ref<EditorMarkupError[]>([]);
 
     const formatLineNumber = (row: RowWithLine) => {
       if ((!row.lineValue && row.line) || (row.line && row.lineValue === 1)) {
@@ -228,7 +267,7 @@ export default defineComponent({
           });
         } else {
           const textBeforeCursor = rowText.slice(0, cursorIndex.value);
-          const originalSigns = textBeforeCursor.split(/[\s\-.]+/);
+          const originalSigns = textBeforeCursor.split(/[\s\-.\+]+/);
           const formattedSigns = await Promise.all(
             originalSigns.map(sign => {
               if (sign !== '') {
@@ -278,6 +317,11 @@ export default defineComponent({
         rowText = rowText.replace('...', '@');
       });
 
+      markupErrors.value = [];
+
+      const markupInputErrors = await getMarkupInputErrors(rowText);
+      markupInputErrors.forEach(error => markupErrors.value.push(error));
+
       const fullMarkup = await applyMarkup(rowText);
 
       const wordsText = rowText.split(/[\s]+/).filter(word => word !== '');
@@ -285,14 +329,21 @@ export default defineComponent({
         wordsText.map(async (word, wordIndex) => {
           try {
             const originalSigns = word
-              .split(/[\-.%]+/)
+              .split(/[\-.\+%]+/)
               .filter(sign => sign !== '');
             const originalMarkup = fullMarkup.filter(
               markup => markup.wordIndex === wordIndex
             );
+            const markupContextErrors = await getMarkupContextErrors(
+              originalMarkup,
+              word
+            );
+            markupContextErrors.forEach(error =>
+              markupErrors.value.push(error)
+            );
             const cleanSigns = originalSigns
               .map(sign =>
-                sign.replace(/([[\]{}⸢⸣«»‹›:;*?/\\!])|(".+")|('.+')+/g, '')
+                sign.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
               )
               .filter(sign => sign !== '');
             const formattedSigns = await Promise.all(
@@ -308,7 +359,7 @@ export default defineComponent({
 
             const originalDividers = word
               .split('')
-              .filter(sign => sign.match(/[\-.%]+/));
+              .filter(sign => sign.match(/[\-.\+%]+/));
             const visibleDividers: string[] = [];
             formattedSigns.forEach((signPieces, idx) => {
               if (signPieces.length > 1) {
@@ -361,12 +412,20 @@ export default defineComponent({
         word.forEach(sign => {
           if (sign.post === '%') {
             spelling += `(${sign.value || ''})`;
+          } else if (
+            sign.markup &&
+            sign.markup.markup.some(
+              markup =>
+                markup.type === 'superfluous' || markup.type === 'erasure'
+            )
+          ) {
+            spelling += '';
           } else {
             spelling += `${sign.value || ''}${sign.post || ''}`;
           }
         });
         return {
-          discourseUuid: v4(),
+          discourseUuid: spelling !== '|' ? v4() : null,
           spelling,
         };
       });
@@ -380,10 +439,14 @@ export default defineComponent({
           return signs;
         }
       );
+
+      const hasErrors = markupErrors.value.length > 0;
+
       emit('update-row-content', {
         ...props.row,
         signs,
         words,
+        hasErrors,
       });
     };
 
@@ -418,6 +481,14 @@ export default defineComponent({
       emit('update-row-content', {
         ...props.row,
         lineValue: Number(value),
+        isEditing: false,
+      });
+    };
+
+    const setSealImpressionReading = (reading: string) => {
+      emit('update-row-content', {
+        ...props.row,
+        reading,
         isEditing: false,
       });
     };
@@ -469,6 +540,8 @@ export default defineComponent({
       textareaRef,
       focused,
       setFocused,
+      setSealImpressionReading,
+      markupErrors,
     };
   },
 });

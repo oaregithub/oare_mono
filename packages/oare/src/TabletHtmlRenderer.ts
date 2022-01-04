@@ -2,9 +2,9 @@
 import { EpigraphicUnit, MarkupUnit, TabletHtmlOptions } from '@oare/types';
 import TabletRenderer from './TabletRenderer';
 
-const superscriptRegex = /<sup>.*<\/sup>$/;
+const superscriptRegex = /<sup>.*<\/sup>/;
 
-export function endsWithSuperscript(markedupUnit: string): boolean {
+export function containsSuperscript(markedupUnit: string): boolean {
   return !!markedupUnit.match(superscriptRegex);
 }
 
@@ -14,21 +14,23 @@ function isMarkupChar(char: string): boolean {
     '{',
     '}',
     ':',
-    '×',
+    ';',
     '‹',
     '›',
     '«',
     '»',
     '+',
-    '+',
     'x',
-    '#',
     '⸢',
     '⸣',
     '[',
     ']',
     '!',
     '?',
+    '(',
+    ')',
+    '/',
+    '\\',
   ].includes(char);
 }
 
@@ -44,8 +46,12 @@ function italicize(word: string) {
   return reading;
 }
 
-export function wordWithoutSuperscript(word: string): string {
-  return word.split(superscriptRegex)[0];
+export function wordPiecesWithoutSuperscript(word: string): string[] {
+  return word.split(superscriptRegex);
+}
+
+export function wordPiecesWithSuperscript(word: string): string[] {
+  return word.match(/<sup>.*<\/sup>/g) || [];
 }
 /**
  * Renders epigraphic readings for display in a webpage
@@ -73,9 +79,17 @@ export default class TabletHtmlRenderer extends TabletRenderer {
       baseReading = `<sup>${baseReading}</sup>`;
     }
     if (unit.type === 'phonogram' && unit.reading !== '...') {
-      if (endsWithSuperscript(baseReading)) {
-        const word = wordWithoutSuperscript(baseReading);
-        baseReading = italicize(word) + baseReading.substring(word.length);
+      if (containsSuperscript(baseReading)) {
+        const basePieces = wordPiecesWithoutSuperscript(baseReading);
+        const superscriptPieces = wordPiecesWithSuperscript(baseReading);
+
+        let newReading = '';
+
+        basePieces.forEach((piece, idx) => {
+          const followingSuperscript = superscriptPieces[idx] || '';
+          newReading = newReading + italicize(piece) + followingSuperscript;
+        });
+        baseReading = newReading;
       } else {
         baseReading = italicize(baseReading);
       }
@@ -110,12 +124,17 @@ export default class TabletHtmlRenderer extends TabletRenderer {
   applySingleMarkup(markup: MarkupUnit, reading: string): string {
     let formattedReading = reading;
     switch (markup.type) {
-      case 'alternateSign':
+      case 'isCollatedReading':
+        formattedReading += '<sup>!!</sup>';
+        break;
       case 'isEmendedReading':
         formattedReading += '<sup>!</sup>';
         break;
       case 'uncertain':
         formattedReading += '<sup>?</sup>';
+        break;
+      case 'phoneticComplement':
+        formattedReading = `<sup>${formattedReading}</sup>`;
         break;
       default:
         return super.applySingleMarkup(markup, reading);

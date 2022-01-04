@@ -18,7 +18,7 @@ export interface Text {
 
 export interface EpigraphyResponse {
   canWrite: boolean;
-  text: Text | null;
+  text: Text;
   collection: Collection;
   cdliNum: string | null;
   units: EpigraphicUnit[];
@@ -94,6 +94,7 @@ export interface EpigraphicUnit {
   markups: MarkupUnit[];
   readingUuid: string;
   signUuid: string;
+  spellingUuid: string | null;
 }
 
 export type MarkupType =
@@ -102,12 +103,10 @@ export type MarkupType =
   | 'isEmendedReading'
   | 'erasure'
   | 'isUninterpreted'
-  | 'isWrittenWithinPrevSign'
   | 'omitted'
   | 'originalSign'
   | 'superfluous'
   | 'uncertain'
-  | 'isWrittenAsLigature'
   | 'undeterminedSigns'
   | 'undeterminedLines'
   | 'damage'
@@ -126,8 +125,10 @@ export interface MarkupUnit {
   referenceUuid: string;
   type: MarkupType;
   value: number | null;
-  startChar: null | number;
-  endChar: null | number;
+  startChar: number | null;
+  endChar: number | null;
+  altReading: string | null;
+  altReadingUuid: string | null;
 }
 
 export type TextFormatType = 'regular' | 'html';
@@ -143,7 +144,10 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
 }
 
 export interface EpigraphicUnitWithMarkup
-  extends Pick<EpigraphicUnit, 'readingUuid' | 'signUuid'> {
+  extends Pick<
+    EpigraphicUnit,
+    'readingUuid' | 'signUuid' | 'markups' | 'spellingUuid'
+  > {
   type: EpigraphicUnitType | null;
   reading: string;
   discourseUuid: string | null;
@@ -155,6 +159,7 @@ export interface EpigraphicSign
 export interface EpigraphicWord
   extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
   signs: EpigraphicSign[];
+  isContraction: boolean;
 }
 
 export interface TranslitOption {
@@ -205,6 +210,8 @@ export interface RowContent {
   text?: string;
   signs?: SignCodeWithDiscourseUuid[];
   words?: EditorWord[];
+  reading?: string;
+  hasErrors: boolean;
 }
 
 export interface TextPhoto {
@@ -345,7 +352,7 @@ export interface CreateTextTables {
 
 export interface EditorWord {
   spelling: string;
-  discourseUuid: string;
+  discourseUuid: string | null;
 }
 
 export interface EditorMarkupPiece {
@@ -362,6 +369,11 @@ export interface EditorMarkup {
   markup: EditorMarkupPiece[];
   post: string;
   wordIndex: number;
+}
+
+export interface EditorMarkupError {
+  error: string;
+  text?: string;
 }
 
 export interface CreateTextsPayload {

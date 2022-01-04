@@ -80,27 +80,36 @@
 
     <template #extension>
       <v-row class="d-flex justify-center">
-        <v-btn
-          class="test-words"
-          text
-          to="/words/A"
-          v-if="permissions.includes('WORDS')"
-          >Words</v-btn
+        <v-menu
+          offset-y
+          open-on-hover
+          v-if="
+            permissions.includes('WORDS') ||
+            permissions.includes('NAMES') ||
+            permissions.includes('PLACES')
+          "
         >
-        <v-btn
-          class="test-names"
-          text
-          to="/names/A"
-          v-if="permissions.includes('NAMES')"
-          >Names</v-btn
-        >
-        <v-btn
-          class="test-places"
-          text
-          to="/places/A"
-          v-if="permissions.includes('PLACES')"
-          >Places</v-btn
-        >
+          <template #activator="{ on, attrs }">
+            <v-btn text dark v-bind="attrs" v-on="on"> Lexica </v-btn>
+          </template>
+          <v-list dense>
+            <v-list-item v-if="permissions.includes('WORDS')" class="pa-0">
+              <v-btn class="test-words" text to="/words/A" width="100%"
+                >Words</v-btn
+              >
+            </v-list-item>
+            <v-list-item v-if="permissions.includes('NAMES')" class="pa-0">
+              <v-btn class="test-names" text to="/names/A" width="100%"
+                >Names</v-btn
+              >
+            </v-list-item>
+            <v-list-item v-if="permissions.includes('PLACES')" class="pa-0">
+              <v-btn class="test-places" text to="/places/A" width="100%"
+                >Places</v-btn
+              >
+            </v-list-item>
+          </v-list>
+        </v-menu>
         <v-btn
           class="test-places"
           text
@@ -110,7 +119,20 @@
         >
         <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
         <v-btn class="test-search" text to="/search/texts">Search</v-btn>
-        <v-btn text to="/about">About</v-btn>
+
+        <v-menu offset-y open-on-hover>
+          <template #activator="{ on, attrs }">
+            <v-btn text dark v-bind="attrs" v-on="on"> Misc. </v-btn>
+          </template>
+          <v-list dense>
+            <v-list-item class="pa-0">
+              <v-btn text to="/about" width="100%">About</v-btn>
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/tutorial" width="100%">Tutorial</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-row>
     </template>
   </v-app-bar>
@@ -182,6 +204,7 @@ export default defineComponent({
 .no_underline {
   text-decoration: none;
 }
+
 #appBarContainer {
   display: flex;
   flex-direction: row;

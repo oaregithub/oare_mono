@@ -330,10 +330,15 @@ export default defineComponent({
                 column.rows.length > 0 &&
                 column.rows.every(row => {
                   if (row.type === 'Line') {
-                    return row.signs && row.signs.length > 0;
+                    return (
+                      row.signs &&
+                      row.signs.length > 0 &&
+                      row.signs.every(sign => sign.type)
+                    );
                   }
                   return true;
-                })
+                }) &&
+                column.rows.every(row => !row.hasErrors)
             )
         )
       );

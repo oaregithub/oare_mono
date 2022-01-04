@@ -57,7 +57,12 @@ class TextEpigraphyDao {
         'text_epigraphy.reading_uuid',
         'sign_reading.uuid'
       )
-      .where('text_uuid', textUuid)
+      .leftJoin(
+        'text_discourse',
+        'text_epigraphy.discourse_uuid',
+        'text_discourse.uuid'
+      )
+      .where('text_epigraphy.text_uuid', textUuid)
       .andWhere(function () {
         this.whereNot('text_epigraphy.char_on_tablet', null);
         this.orWhere('text_epigraphy.type', 'region');
@@ -77,7 +82,8 @@ class TextEpigraphyDao {
         'text_epigraphy.reading_uuid AS readingUuid',
         'sign_reading.reading',
         'sign_reading.type',
-        'sign_reading.value'
+        'sign_reading.value',
+        'text_discourse.spelling_uuid as spellingUuid'
       )
       .orderBy('text_epigraphy.object_on_tablet');
 

@@ -160,7 +160,13 @@ class HierarchyDao {
         'hierarchy.id',
         'hierarchy.object_uuid as uuid',
         'hierarchy.type',
-        'text.name'
+        'text.name',
+        'text.excavation_prfx as excavationPrefix',
+        'text.excavation_no as excavationNumber',
+        'text.museum_prfx as museumPrefix',
+        'text.museum_no as museumNumber',
+        'text.publication_prfx as publicationPrefix',
+        'text.publication_no as publicationNumber'
       )
       .groupBy('hierarchy.object_uuid')
       .orderBy('text.name')

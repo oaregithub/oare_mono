@@ -4,6 +4,7 @@ import {
   EpigraphicUnitSide,
   EpigraphicUnitWithMarkup,
   EpigraphicWord,
+  MarkupType,
 } from '@oare/types';
 import _ from 'lodash';
 
@@ -176,6 +177,8 @@ export default class TabletRenderer {
       discourseUuid: unit.discourseUuid,
       readingUuid: unit.readingUuid,
       signUuid: unit.signUuid,
+      markups: unit.markups,
+      spellingUuid: unit.spellingUuid,
     }));
   }
 
@@ -198,37 +201,21 @@ export default class TabletRenderer {
     let formattedReading = reading;
     switch (markup.type) {
       case 'isCollatedReading':
-        formattedReading = `*${formattedReading}*`;
+        formattedReading += '!!';
         break;
-      case 'alternateSign':
       case 'isEmendedReading': {
         formattedReading += '!';
         break;
       }
-      case 'erasure':
-        formattedReading = `{${formattedReading}}`;
-        break;
-      case 'isUninterpreted':
-        formattedReading = `:${formattedReading}:`;
-        break;
-      case 'isWrittenWithinPrevSign':
-        formattedReading = `×${formattedReading}`;
-        break;
-      case 'omitted':
-        formattedReading = `‹${formattedReading}›`;
-        break;
-      case 'originalSign':
-        formattedReading += '!';
-        break;
-      case 'superfluous':
-        formattedReading = `«${formattedReading}»`;
-        break;
       case 'uncertain': {
         formattedReading += '?';
         break;
       }
-      case 'isWrittenAsLigature':
-        formattedReading = `+${formattedReading}`;
+      case 'originalSign':
+      case 'alternateSign':
+        if (markup.altReading) {
+          formattedReading += `(${markup.altReading})`;
+        }
         break;
       case 'undeterminedSigns':
         if (markup.value) {
@@ -241,10 +228,15 @@ export default class TabletRenderer {
         break;
       case 'damage':
       case 'partialDamage':
-        formattedReading = this.applyDamageMarkup(markup, reading);
-        break;
+      case 'superfluous':
+      case 'omitted':
+      case 'erasure':
+      case 'isUninterpreted':
       case 'isWrittenOverErasure':
-        formattedReading = `#${formattedReading}`;
+      case 'phoneticComplement':
+      case 'isWrittenBelowTheLine':
+      case 'isWrittenAboveTheLine':
+        formattedReading = this.applyBracketMarkup(markup, reading);
         break;
       default:
         break;
@@ -252,14 +244,68 @@ export default class TabletRenderer {
     return formattedReading;
   }
 
-  protected applyDamageMarkup(markup: MarkupUnit, reading: string): string {
+  private getStartBracket(markupType: MarkupType): string {
+    switch (markupType) {
+      case 'damage':
+        return '[';
+      case 'partialDamage':
+        return '⸢';
+      case 'superfluous':
+        return '«';
+      case 'omitted':
+        return '‹';
+      case 'erasure':
+        return '{';
+      case 'isUninterpreted':
+        return ':';
+      case 'isWrittenOverErasure':
+        return '*';
+      case 'phoneticComplement':
+        return ';';
+      case 'isWrittenBelowTheLine':
+        return '/';
+      case 'isWrittenAboveTheLine':
+        return '\\';
+      default:
+        return '';
+    }
+  }
+
+  private getEndBracket(markupType: MarkupType): string {
+    switch (markupType) {
+      case 'damage':
+        return ']';
+      case 'partialDamage':
+        return '⸣';
+      case 'superfluous':
+        return '»';
+      case 'omitted':
+        return '›';
+      case 'erasure':
+        return '}';
+      case 'isUninterpreted':
+        return ':';
+      case 'isWrittenOverErasure':
+        return '*';
+      case 'phoneticComplement':
+        return ';';
+      case 'isWrittenBelowTheLine':
+        return '';
+      case 'isWrittenAboveTheLine':
+        return '';
+      default:
+        return '';
+    }
+  }
+
+  protected applyBracketMarkup(markup: MarkupUnit, reading: string): string {
     let formattedReading = this.addStartBracket(markup, reading);
     formattedReading = this.addEndBracket(markup, formattedReading);
     return formattedReading;
   }
 
   protected addStartBracket(markup: MarkupUnit, reading: string): string {
-    const bracket = markup.type === 'damage' ? '[' : '⸢';
+    const bracket = this.getStartBracket(markup.type);
 
     let formattedReading = reading;
     if (markup.startChar === null) {
@@ -276,7 +322,7 @@ export default class TabletRenderer {
   }
 
   protected addEndBracket(markup: MarkupUnit, reading: string): string {
-    const bracket = markup.type === 'damage' ? ']' : '⸣';
+    const bracket = this.getEndBracket(markup.type);
 
     let formattedReading = reading;
     if (markup.endChar === null) {
