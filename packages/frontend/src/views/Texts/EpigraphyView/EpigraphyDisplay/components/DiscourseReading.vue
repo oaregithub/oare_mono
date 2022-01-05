@@ -15,15 +15,9 @@
       item-text="spelling"
     >
       <template #label="{ item }">
-        <div
-          :class="`${discourseColor(item.type)}--text`"
-          style="white-space: normal"
-          v-html="discourseReading(item)"
-        ></div>
         <v-icon v-if="item.translation && editingUuid !== item.uuid && allowEditing" @click="startEdit(item)"
           >mdi-pencil</v-icon
         >
-
         <div v-else-if="item.translation && allowEditing">
           <v-textarea
             label="Translation"
@@ -36,6 +30,11 @@
           <v-btn @click="discourseEdit(item)">SAVE</v-btn>
           <v-btn @click="editingUuid = ''">CLOSE</v-btn>
         </div>
+        <div
+          :class="`${discourseColor(item.type)}--text`"
+          style="white-space: normal; display: inline-block;"
+          v-html="discourseReading(item)"
+        ></div>
       </template>
     </v-treeview>
   </div>
