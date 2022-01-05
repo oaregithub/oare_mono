@@ -40,7 +40,10 @@ router
     const { newTranslation } = req.body;
 
     try {
-      await FieldDao.updateField(uuid, newTranslation, { primacy: 1 });
+      const fieldRow = await FieldDao.getByReferenceUuid(uuid);
+      await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
+        primacy: 1,
+      });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));

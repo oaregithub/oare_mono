@@ -20,7 +20,7 @@
           style="white-space: normal"
           v-html="discourseReading(item)"
         ></div>
-        <v-icon v-if="editingUuid !== item.uuid && allowEditing" @click="startEdit(item)"
+        <v-icon v-if="item.translation && editingUuid !== item.uuid && allowEditing" @click="startEdit(item)"
           >mdi-pencil</v-icon
         >
 
@@ -114,7 +114,7 @@ export default defineComponent({
 
     const startEdit = (discourse: DiscourseUnit) => {
       editingUuid.value = discourse.uuid || '';
-      inputTranslation.value = discourse.translation;
+      inputTranslation.value = discourse.translation || '';
     };
 
     const discourseEdit = async (discourse: DiscourseUnit) => {
