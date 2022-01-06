@@ -16,4 +16,12 @@ router
       next(new HttpInternalError(err));
     }
   })
-  .patch(adminRoute, () => {});
+  .patch(adminRoute, async (req, res, next) => {
+    try {
+      const PageContentDao = sl.get('PageContentDao');
+      await PageContentDao.editContent(routeName, newContent);
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
