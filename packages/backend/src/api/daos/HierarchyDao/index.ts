@@ -160,7 +160,7 @@ class HierarchyDao {
         'hierarchy.id',
         'hierarchy.object_uuid as uuid',
         'hierarchy.type',
-        'text.name',
+        'text.display_name as name',
         'text.excavation_prfx as excavationPrefix',
         'text.excavation_no as excavationNumber',
         'text.museum_prfx as museumPrefix',
@@ -169,7 +169,7 @@ class HierarchyDao {
         'text.publication_no as publicationNumber'
       )
       .groupBy('hierarchy.object_uuid')
-      .orderBy('text.name')
+      .orderBy('text.display_name')
       .limit(rows)
       .offset((page - 1) * rows);
 
