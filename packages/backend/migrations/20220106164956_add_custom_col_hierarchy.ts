@@ -4,9 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   const hasCustomColumn = await knex.schema.hasColumn('hierarchy', 'custom');
 
   if (!hasCustomColumn) {
-    await knex.raw(
-      'ALTER TABLE hierarchy ADD COLUMN custom INT(4); '
-    );
+    await knex.raw('ALTER TABLE hierarchy ADD COLUMN custom INT(4); ');
   }
 }
 
