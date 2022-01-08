@@ -57,7 +57,7 @@ class SearchIndexDao {
     if (characterOccurrences.length === 0) {
       return knex('text')
         .select('uuid AS textUuid', 'name AS textName')
-        .where('name', 'like', `%${title}%`)
+        .where(knex.raw(`LOWER(name) LIKE LOWER('%${title}%')`))
         .whereNotIn('uuid', textsToHide)
         .limit(limit)
         .offset((page - 1) * limit)
@@ -75,7 +75,9 @@ class SearchIndexDao {
     }
 
     if (title) {
-      query.modify(qb => qb.where('text_name', 'like', `%${title}%`));
+      query.modify(qb =>
+        qb.where(knex.raw(`LOWER(text_name) LIKE LOWER('%${title}%')`))
+      );
     }
 
     const occurrences = characterOccurrences
@@ -135,7 +137,7 @@ class SearchIndexDao {
     if (characterOccurrences.length === 0) {
       query = knex('text')
         .countDistinct({ count: 'uuid' })
-        .where('name', 'like', `%${title}%`)
+        .where(knex.raw(`LOWER(text_name) LIKE LOWER('%${title}%')`))
         .whereNotIn('uuid', textsToHide)
         .first();
     }
@@ -147,7 +149,9 @@ class SearchIndexDao {
     }
 
     if (title) {
-      query.modify(qb => qb.where('text_name', 'like', `%${title}%`));
+      query.modify(qb =>
+        qb.where(knex.raw(`LOWER(text_name) LIKE LOWER('%${title}%')`))
+      );
     }
 
     const occurrences = characterOccurrences
