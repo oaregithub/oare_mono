@@ -72,9 +72,10 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
 router.route('/search/spellings').get(async (req, res, next) => {
   try {
     const dictionaryWordDao = sl.get('DictionaryWordDao');
+    const userUuid = req.user ? req.user.uuid : null;
     const { spelling } = (req.query as unknown) as SearchSpellingPayload;
 
-    const results = await dictionaryWordDao.searchSpellings(spelling);
+    const results = await dictionaryWordDao.searchSpellings(spelling, userUuid);
     res.json(results);
   } catch (err) {
     next(new HttpInternalError(err));

@@ -807,7 +807,9 @@ const createDiscourseRows = async (
                               word.spelling
                             );
                             if (
-                              persistentDiscourseStorage[word.discourseUuid!]
+                              persistentDiscourseStorage[
+                                word.discourseUuid!
+                              ] !== undefined
                             ) {
                               spellingUuid =
                                 persistentDiscourseStorage[
@@ -815,6 +817,22 @@ const createDiscourseRows = async (
                                 ] || undefined;
                             } else if (forms.length === 1) {
                               spellingUuid = forms[0].spellingUuid;
+                            } else if (forms.length >= 2) {
+                              const sortedFormsByNumOccurrences = forms.sort(
+                                (a, b) => {
+                                  if (a.occurrences >= b.occurrences) {
+                                    return -1;
+                                  }
+                                  return 1;
+                                }
+                              );
+                              const occurrenceRatio =
+                                sortedFormsByNumOccurrences[0].occurrences /
+                                sortedFormsByNumOccurrences[1].occurrences;
+                              if (occurrenceRatio >= 2) {
+                                spellingUuid =
+                                  sortedFormsByNumOccurrences[0].spellingUuid;
+                              }
                             }
                             const newDiscourseRow = await createTextDiscourseRow(
                               {

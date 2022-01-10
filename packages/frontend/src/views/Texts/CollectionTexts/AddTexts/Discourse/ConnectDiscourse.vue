@@ -8,9 +8,13 @@
         spelling inside if it has already been connected to the word. This is
         done for you automatically if there is only one possible option in the
         dictionary (though it can be disconnected if desired). The bubble
-        appears yellow if the word has yet to be connected, but there are a
-        number of options available. Finally, the bubble appears red if there
-        are no forms in the dictionary that match the provided spelling.
+        appears yellow if there are a number of lexical options available for
+        selection. In some instances, a yellow bubble will show a form spelling
+        selected automatically. When this occurs, the selected form was
+        automatically selected for you due to its common occurrence in other
+        texts, but can be adjusted if necessary. Finally, the bubble appears red
+        if there are no forms in the dictionary that match the provided
+        spelling.
       </v-col>
     </v-row>
     <div v-if="renderer" class="mr-10">
@@ -106,6 +110,10 @@ export default defineComponent({
       type: Array as PropType<TextDiscourseRow[]>,
       required: true,
     },
+    manualDiscourseSelections: {
+      type: Array as PropType<string[]>,
+      required: true,
+    },
   },
   components: {
     ConnectDiscourseDialog,
@@ -153,10 +161,13 @@ export default defineComponent({
         }
         return {
           ...row,
-          spellingUuid,
+          spellingUuid: spellingUuid || null,
         };
       });
       emit('update-discourse-rows', newDiscourseRows);
+      if (word) {
+        emit('update-manual-selections', word.uuid);
+      }
     };
 
     const searchSpellingResults = ref<{
@@ -215,7 +226,13 @@ export default defineComponent({
         row => row.uuid === discourseUuid
       )[0].spellingUuid;
       if (spellingUuid) {
-        return 'green';
+        if (
+          props.manualDiscourseSelections.includes(discourseUuid) ||
+          (searchSpellingResults.value[discourseUuid] &&
+            searchSpellingResults.value[discourseUuid].length === 1)
+        ) {
+          return 'green';
+        }
       }
 
       const discourseForms = searchSpellingResults.value[discourseUuid];
