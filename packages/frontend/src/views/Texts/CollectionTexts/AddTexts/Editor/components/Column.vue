@@ -282,7 +282,9 @@ export default defineComponent({
         const numBrokenAreas = rows.value.filter(
           (row, idx) =>
             row.type === 'Broken Area' &&
-            (idx > 0 ? rows.value[idx - 1].type !== 'Broken Area' : true)
+            (idx > 0
+              ? rows.value[idx - 1].type !== 'Broken Area'
+              : !props.beginsWithBreak)
         ).length;
         emit('broken-area', numBrokenAreas);
 
