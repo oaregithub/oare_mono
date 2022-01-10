@@ -123,11 +123,9 @@ import {
   TextDiscourseRow,
   TextPhotoWithName,
 } from '@oare/types';
-import {
-  convertTablesToUnits,
-  createNewTextTables,
-  addNamesToTextPhotos,
-} from './utils';
+import { convertTablesToUnits } from './utils/convertTablesToUnits';
+import { createNewTextTables } from './utils/buildTables';
+import { addNamesToTextPhotos } from './utils/photos';
 
 export default defineComponent({
   props: {
