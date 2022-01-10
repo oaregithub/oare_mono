@@ -53,16 +53,19 @@ export default defineComponent({
       type: Array as PropType<DiscourseUnit[]>,
       required: true,
     },
-    allowEditing: {
-      type: Boolean,
-      default: true,
-    },
   },
   setup({ discourseUnits }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
     const inputTranslation = ref('');
+    const store = sl.get('store');
+
+    const allowEditing = computed(() =>
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('EDIT_TRANSLATION')
+    );
 
     const discourseColor = (discourseType: string) => {
       switch (discourseType) {
