@@ -15,26 +15,50 @@
       item-text="spelling"
     >
       <template #label="{ item }">
-        <v-icon v-if="item.translation && editingUuid !== item.uuid && allowEditing" @click="startEdit(item)"
-          >mdi-pencil</v-icon
+        <v-row
+          v-if="editingUuid !== item.uuid"
+          class="ma-0 pa-0"
+          align="center"
         >
+          <v-btn
+            icon
+            v-if="item.translation && allowEditing"
+            @click="startEdit(item)"
+            class="mr-1"
+          >
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-col>
+            <p
+              :class="`${discourseColor(item.type)}--text`"
+              class="ma-0"
+              style="white-space: normal"
+              v-html="discourseReading(item)"
+            />
+          </v-col>
+        </v-row>
         <div v-else-if="item.translation && allowEditing">
           <v-textarea
             label="Translation"
             auto-grow
             outlined
             rows="1"
-            row-height="15"
             v-model="inputTranslation"
+            class="ma-1"
+            dense
+            hide-details
           ></v-textarea>
-          <v-btn @click="discourseEdit(item)">SAVE</v-btn>
-          <v-btn @click="editingUuid = ''">CLOSE</v-btn>
+          <OareLoaderButton
+            :loading="editLoading"
+            color="primary"
+            @click="discourseEdit(item)"
+            class="ma-1"
+            >Save</OareLoaderButton
+          >
+          <v-btn color="primary" @click="editingUuid = ''" class="ma-1"
+            >Cancel</v-btn
+          >
         </div>
-        <div
-          :class="`${discourseColor(item.type)}--text`"
-          style="white-space: normal; display: inline-block;"
-          v-html="discourseReading(item)"
-        ></div>
       </template>
     </v-treeview>
   </div>
