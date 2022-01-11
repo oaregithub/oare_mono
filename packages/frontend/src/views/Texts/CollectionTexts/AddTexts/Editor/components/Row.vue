@@ -182,11 +182,11 @@ import {
 } from '@oare/types';
 import SpecialChars from './SpecialChars.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
+import { applyMarkup } from '../../utils/applyMarkup';
 import {
-  applyMarkup,
-  getMarkupInputErrors,
   getMarkupContextErrors,
-} from '../../utils';
+  getMarkupInputErrors,
+} from '../../utils/markupErrors';
 
 export default defineComponent({
   props: {

@@ -70,7 +70,9 @@
             v-if="step >= 4"
             :epigraphicUnits="epigraphyDetails.units"
             :discourseRows="createTextTables ? createTextTables.discourses : []"
+            :manualDiscourseSelections="manuallySelectedDiscourses"
             @update-discourse-rows="updateDiscourseRows($event)"
+            @update-manual-selections="updateManualSelections($event)"
           />
           <stepper-button @next="next" @previous="previous" />
         </v-stepper-content>
@@ -121,11 +123,9 @@ import {
   TextDiscourseRow,
   TextPhotoWithName,
 } from '@oare/types';
-import {
-  convertTablesToUnits,
-  createNewTextTables,
-  addNamesToTextPhotos,
-} from './utils';
+import { convertTablesToUnits } from './utils/convertTablesToUnits';
+import { createNewTextTables } from './utils/buildTables';
+import { addNamesToTextPhotos } from './utils/photos';
 
 export default defineComponent({
   props: {
@@ -270,6 +270,12 @@ export default defineComponent({
     const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
       {}
     );
+    const manuallySelectedDiscourses = ref<string[]>([]);
+    const updateManualSelections = (discourseUuid: string) => {
+      manuallySelectedDiscourses.value =
+        manuallySelectedDiscourses.value.filter(uuid => uuid !== discourseUuid);
+      manuallySelectedDiscourses.value.push(discourseUuid);
+    };
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
         photosWithName.value = await addNamesToTextPhotos(
@@ -324,6 +330,8 @@ export default defineComponent({
       buildTables,
       pushToText,
       createText,
+      manuallySelectedDiscourses,
+      updateManualSelections,
     };
   },
 });
