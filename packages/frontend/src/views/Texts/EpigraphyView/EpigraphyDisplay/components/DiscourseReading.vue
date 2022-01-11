@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType } from '@vue/composition-api';
+import { defineComponent, ref, PropType, computed } from '@vue/composition-api';
 import { DiscourseUnit } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
@@ -84,6 +84,7 @@ export default defineComponent({
     const editingUuid = ref('');
     const inputTranslation = ref('');
     const store = sl.get('store');
+    const actions = sl.get('globalActions');
 
     const allowEditing = computed(() =>
       store.getters.permissions
@@ -135,7 +136,7 @@ export default defineComponent({
       } else if (discourse.type === 'clause' || discourse.type === 'phrase') {
         reading = `<em>${reading}</em>`;
       }
-      return reading;
+      return reading || '';
     };
 
     const startEdit = (discourse: DiscourseUnit) => {
@@ -144,12 +145,17 @@ export default defineComponent({
     };
 
     const discourseEdit = async (discourse: DiscourseUnit) => {
-      await server.updateDiscourseTranslation(
-        discourse.uuid,
-        inputTranslation.value
-      );
-      discourse.translation = inputTranslation.value;
-      editingUuid.value = '';
+      try {
+        await server.updateDiscourseTranslation(
+          discourse.uuid,
+          inputTranslation.value
+        );
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to update database', err as Error);
+      } finally {
+        discourse.translation = inputTranslation.value;
+        editingUuid.value = '';
+      }
     };
 
     return {
