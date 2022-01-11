@@ -72,7 +72,7 @@ We recommend using [Visual Studio Code](https://code.visualstudio.com) as your I
 - [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) - Enables Docker container management.
 - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Integrates ESLint, a tool we use to maintain code rules and consistency.
 - [Formatting Toggle](https://marketplace.visualstudio.com/items?itemName=tombonnike.vscode-status-bar-format-toggle) - Adds a toggle to the VS Code options to enable/disable formatting. We rely heavily on auto-formatting.
-- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) - Implements Prettier auto-formatting, helping to keep syling consistent.
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) - Implements Prettier auto-formatting, helping to keep styling consistent.
 - [Vetur](https://marketplace.visualstudio.com/items?itemName=octref.vetur) - Adds Vue tooling and autocomplete to the editor.
 
 ### Recommended VS Code Settings
@@ -163,7 +163,7 @@ First, install the `aws` CLI by following [these instructions](https://docs.aws.
 
 Next, make sure you have your AWS access key ID and secret access key. The team lead will give these to you when you are added as a user in AWS.
 
-The easiest way to configure your account is to run `aws configure` from the command line, and then input your keys. For more information, see [this documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
+The easiest way to configure your account is to run `aws configure` from the command line, and then input your keys. For more information, see [this documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). When asked to enter a default region name, you can simply leave the input blank and hit enter.
 
 ### For the Team Lead
 

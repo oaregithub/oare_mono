@@ -23,11 +23,11 @@ export const normalizeNumber = (num: string): string => {
   } else if (num.match(/^\d0$/)) {
     normalizedNum = `${normalizedNum.charAt(0)}U`;
   } else if (num.match(/^\d{2}$/)) {
-    normalizedNum = `${normalizedNum.charAt(0)}U-${normalizedNum.charAt(1)}DIŠ`;
+    normalizedNum = `${normalizedNum.charAt(0)}U+${normalizedNum.charAt(1)}DIŠ`;
   } else if (num.match(/^\d{2}AŠ/)) {
-    normalizedNum = `${normalizedNum.charAt(0)}U-${normalizedNum.charAt(1)}AŠ`;
+    normalizedNum = `${normalizedNum.charAt(0)}U+${normalizedNum.charAt(1)}AŠ`;
   } else if (num.match(/^\d{2}DIŠ/)) {
-    normalizedNum = `${normalizedNum.charAt(0)}U-${normalizedNum.charAt(1)}DIŠ`;
+    normalizedNum = `${normalizedNum.charAt(0)}U+${normalizedNum.charAt(1)}DIŠ`;
   }
   return normalizedNum;
 };
