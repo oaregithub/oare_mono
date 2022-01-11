@@ -5,26 +5,59 @@
         {{ sideName }}
       </div>
       <div>
-        <div
-          v-for="lineNum in renderer.linesOnSide(sideName)"
-          :key="lineNum"
-          class="oare-title d-flex"
-        >
-          <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
-          <span
-            v-if="renderer.isRegion(lineNum)"
-            v-html="renderer.lineReading(lineNum)"
-          />
-          <span v-else>
+        <div v-if="renderer.columnsOnSide(sideName) < 1">
+          <div
+            v-for="lineNum in renderer.linesOnSide(sideName)"
+            :key="lineNum"
+            class="oare-title d-flex"
+          >
+            <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
             <span
-              v-for="(word, index) in renderer.getLineWords(lineNum)"
-              :key="index"
-              v-html="formatWord(word)"
-              class="cursor-display test-rendered-word"
-              :class="{ 'mr-1': !word.isContraction }"
-              @click="openDialog(word.discourseUuid)"
+              v-if="renderer.isRegion(lineNum)"
+              v-html="renderer.lineReading(lineNum)"
             />
-          </span>
+            <span v-else>
+              <span
+                v-for="(word, index) in renderer.getLineWords(lineNum)"
+                :key="index"
+                v-html="formatWord(word)"
+                class="cursor-display test-rendered-word"
+                :class="{ 'mr-1': !word.isContraction }"
+                @click="openDialog(word.discourseUuid)"
+              />
+            </span>
+          </div>
+        </div>
+        <div v-else>
+          <div v-for="colNum in renderer.columnsOnSide(sideName)" :key="colNum" class="column-display">
+            <div v-if="colNum == 0" class="oare-title mr-1">
+              column: {{ colNum + 1}}  
+            </div>
+            <div v-else class="oare-title mr-1">
+              column: {{ colNum }}
+            </div>
+            <div
+              v-for="lineNum in renderer.linesInColumn(colNum)"
+              :key="lineNum"
+              class="oare-title d-flex"
+            >
+              <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
+              <span
+                v-if="renderer.isRegion(lineNum)"
+                v-html="renderer.lineReading(lineNum)"
+              />
+              <span v-else>
+                <span
+                  v-for="(word, index) in renderer.getLineWords(lineNum)"
+                  :key="index"
+                  v-html="formatWord(word)"
+                  class="cursor-display test-rendered-word"
+                  :class="{ 'mr-1': !word.isContraction }"
+                  @click="openDialog(word.discourseUuid)"
+                />
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -177,6 +210,10 @@ export default defineComponent({
 
 .side-name {
   width: 50px;
+}
+
+.column-display {
+  padding-bottom: 10px;
 }
 
 .cursor-display {

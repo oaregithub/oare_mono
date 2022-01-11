@@ -99,6 +99,16 @@ export default class TabletRenderer {
     return orderedSides;
   }
 
+  get columns(): number[] {
+    const orderedColumns: number[] = [];
+    this.epigraphicUnits.forEach(unit => {
+      if (!orderedColumns.includes(unit.column)) {
+        orderedColumns.push(unit.column);
+      }
+    });
+    return orderedColumns;
+  }
+
   // An ordered list of lines on the tablet
   get lines(): number[] {
     const lineSet = this.epigraphicUnits.reduce(
@@ -163,6 +173,34 @@ export default class TabletRenderer {
       }
     });
     return lines;
+  }
+
+  public linesInColumn(column: number): number[] {
+    const unitsInColumn = this.epigraphicUnits
+      .filter(unit => unit.column === column)
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
+
+    const lines: number[] = [];
+    unitsInColumn.forEach(({ line }) => {
+      if (!lines.includes(line)) {
+        lines.push(line);
+      }
+    });
+    return lines;
+  }
+
+  public columnsOnSide(side: EpigraphicUnitSide): number[] {
+    const unitsOnSide = this.epigraphicUnits
+      .filter(unit => unit.side === side)
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
+
+    const columns: number[] = [];
+    unitsOnSide.forEach(({ column }) => {
+      if (!columns.includes(column)) {
+        columns.push(column);
+      }
+    });
+    return columns;
   }
 
   protected addMarkupToEpigraphicUnits(
