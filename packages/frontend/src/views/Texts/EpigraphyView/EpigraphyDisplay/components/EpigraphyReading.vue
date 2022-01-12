@@ -29,12 +29,9 @@
           </div>
         </div>
         <div v-else>
-          <div v-for="colNum in renderer.columnsOnSide(sideName)" :key="colNum" class="column-display">
-            <div v-if="colNum == 0" class="oare-title mr-1">
-              column: {{ colNum + 1}}  
-            </div>
-            <div v-else class="oare-title mr-1">
-              column: {{ colNum }}
+          <div v-for="colNum in renderer.columnsOnSide(sideName)" :key="colNum" class="pa-1">
+            <div class="oare-title mr-1 pb-1">
+              col. {{ romanNumeral(colNum) }}
             </div>
             <div
               v-for="lineNum in renderer.linesInColumn(colNum)"
@@ -126,6 +123,9 @@ export default defineComponent({
     const loading = ref(false);
     const viewingDialog = ref(false);
     const discourseWordInfo = ref<Word | null>(null);
+    const numeralCodes = [["","I","II","III","IV","V","VI","VII","VIII","IX"],         // Ones
+                    ["","X","XX","XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"],   // Tens
+                    ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM"]];   
 
     const renderer = computed(() => {
       return createTabletRenderer(props.epigraphicUnits, {
@@ -133,6 +133,20 @@ export default defineComponent({
         textFormat: 'html',
       });
     });
+
+    const romanNumeral = (colNum: number): string =>{
+      var numeral = "";
+      if (colNum < 11){
+        var digits = colNum.toString().split('').reverse();
+        for (var i = 0; i < digits.length; i++){
+          numeral = numeralCodes[i][parseInt(digits[i])] + numeral;
+        }
+        return numeral;
+      }
+      else {
+        return `${colNum}`
+      }
+    };
 
     const lineNumber = (line: number): string => {
       if (renderer.value.isRegion(line)) {
@@ -193,6 +207,7 @@ export default defineComponent({
     return {
       renderer,
       lineNumber,
+      romanNumeral,
       openDialog,
       loading,
       discourseWordInfo,
@@ -210,10 +225,6 @@ export default defineComponent({
 
 .side-name {
   width: 50px;
-}
-
-.column-display {
-  padding-bottom: 10px;
 }
 
 .cursor-display {

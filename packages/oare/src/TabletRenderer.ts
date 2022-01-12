@@ -100,12 +100,9 @@ export default class TabletRenderer {
   }
 
   get columns(): number[] {
-    const orderedColumns: number[] = [];
-    this.epigraphicUnits.forEach(unit => {
-      if (!orderedColumns.includes(unit.column)) {
-        orderedColumns.push(unit.column);
-      }
-    });
+    const orderedColumns: number[] = Array.from(
+      new Set(this.epigraphicUnits.map(unit => unit.column))
+    );
     return orderedColumns;
   }
 
@@ -166,12 +163,9 @@ export default class TabletRenderer {
       .filter(unit => unit.side === side)
       .sort((a, b) => a.objOnTablet - b.objOnTablet);
 
-    const lines: number[] = [];
-    unitsOnSide.forEach(({ line }) => {
-      if (!lines.includes(line)) {
-        lines.push(line);
-      }
-    });
+    const lines: number[] = Array.from(
+      new Set(unitsOnSide.map(unit => unit.line))
+    );
     return lines;
   }
 
@@ -180,12 +174,9 @@ export default class TabletRenderer {
       .filter(unit => unit.column === column)
       .sort((a, b) => a.objOnTablet - b.objOnTablet);
 
-    const lines: number[] = [];
-    unitsInColumn.forEach(({ line }) => {
-      if (!lines.includes(line)) {
-        lines.push(line);
-      }
-    });
+    const lines: number[] = Array.from(
+      new Set(unitsInColumn.map(unit => unit.line))
+    );
     return lines;
   }
 
@@ -194,12 +185,9 @@ export default class TabletRenderer {
       .filter(unit => unit.side === side)
       .sort((a, b) => a.objOnTablet - b.objOnTablet);
 
-    const columns: number[] = [];
-    unitsOnSide.forEach(({ column }) => {
-      if (!columns.includes(column)) {
-        columns.push(column);
-      }
-    });
+    const columns: number[] = Array.from(
+      new Set(unitsOnSide.map(unit => unit.column))
+    );
     return columns;
   }
 
