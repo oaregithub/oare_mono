@@ -103,6 +103,8 @@ import {
   defineComponent,
   ref,
   onMounted,
+  onBeforeMount,
+  onBeforeUnmount,
   computed,
   ComputedRef,
 } from '@vue/composition-api';
@@ -134,6 +136,13 @@ export default defineComponent({
       required: true,
     },
   },
+  beforeRouteLeave(_to, _from, next) {
+    if (!this.isDirty) {
+      next();
+    } else {
+      this.actions.showUnsavedChangesWarning(next);
+    }
+  },
   components: {
     AddTextEditor,
     TextInfoSet,
@@ -155,6 +164,8 @@ export default defineComponent({
     const stepOneComplete = ref(false);
     const stepTwoComplete = ref(false);
     const stepThreeComplete = ref(false);
+
+    const isDirty = ref(true);
 
     const textInfo = ref<AddTextInfo>();
     const setTextInfo = (updatedTextInfo: AddTextInfo) => {
@@ -255,6 +266,7 @@ export default defineComponent({
     const createText = async () => {
       if (createTextTables.value) {
         try {
+          isDirty.value = false;
           await server.createText(createTextTables.value);
           await server.uploadImages(photosWithName.value);
         } catch (err) {
@@ -311,7 +323,23 @@ export default defineComponent({
       }
     };
 
+    const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+      if (isDirty) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+
+    onBeforeMount(() => {
+      window.addEventListener('beforeunload', beforeUnloadHandler);
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+    });
+
     return {
+      actions,
       collectionName,
       step,
       loading,
@@ -332,6 +360,7 @@ export default defineComponent({
       createText,
       manuallySelectedDiscourses,
       updateManualSelections,
+      isDirty,
     };
   },
 });
