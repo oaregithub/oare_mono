@@ -582,7 +582,7 @@ export const getMarkupInputErrors = async (
     words,
     '?',
     ['middle', 'end'],
-    ["'"]
+    ["'", '!']
   );
   uncertainPositionErrors.forEach(error => errors.push(error));
 
@@ -591,7 +591,7 @@ export const getMarkupInputErrors = async (
     words,
     '!',
     ['middle', 'end'],
-    ['"', '!']
+    ['"', '!', '?']
   );
   emendedPositionErrors.forEach(error => errors.push(error));
 
@@ -600,7 +600,7 @@ export const getMarkupInputErrors = async (
     words,
     '!!',
     ['middle', 'end'],
-    ['"']
+    ['"', '?']
   );
   collatedPositionErrors.forEach(error => errors.push(error));
 
