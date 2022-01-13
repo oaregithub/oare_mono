@@ -8,7 +8,7 @@
           :startingLine="getStartingLine(idx)"
           :beginningBrokenAreas="getStartingBreak(idx)"
           :beginsWithBreak="getBeginningBreakStatus(idx)"
-          :isCurrentColumn="currentColumn === column.uuid"
+          :isCurrentColumn="isCurrentSide && currentColumn === column.uuid"
           @remove-column="removeColumn(idx)"
           @add-column-after="addColumnAfter(idx)"
           @last-line="setLastLine(idx, $event)"
@@ -57,6 +57,10 @@ export default defineComponent({
     beginningBrokenAreas: {
       type: Number,
       default: 0,
+    },
+    isCurrentSide: {
+      type: Boolean,
+      default: false,
     },
   },
   components: {
@@ -213,6 +217,7 @@ export default defineComponent({
     const currentColumn = ref<string>();
     const setCurrentColumn = (columnUuid?: string) => {
       currentColumn.value = columnUuid;
+      emit('set-current-side');
     };
 
     const sideHasFocus = ref(false);
