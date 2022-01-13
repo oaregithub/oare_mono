@@ -122,10 +122,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const viewingDialog = ref(false);
-    const discourseWordInfo = ref<Word | null>(null);
-    const numeralCodes = [["","I","II","III","IV","V","VI","VII","VIII","IX"],         // Ones
-                    ["","X","XX","XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"],   // Tens
-                    ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM"]];   
+    const discourseWordInfo = ref<Word | null>(null);   
 
     const renderer = computed(() => {
       return createTabletRenderer(props.epigraphicUnits, {
@@ -135,17 +132,42 @@ export default defineComponent({
     });
 
     const romanNumeral = (colNum: number): string =>{
-      var numeral = "";
-      if (colNum < 11){
-        var digits = colNum.toString().split('').reverse();
-        for (var i = 0; i < digits.length; i++){
-          numeral = numeralCodes[i][parseInt(digits[i])] + numeral;
-        }
-        return numeral;
+      let numeral: string = '';
+      switch (colNum){
+        case 1:
+          numeral = 'i';
+          break;
+        case 2:
+          numeral = 'ii';
+          break;
+        case 3:
+          numeral = 'iii';
+          break;
+        case 4:
+          numeral = 'iv';
+          break;
+        case 5:
+          numeral = 'v';
+          break;
+        case 6:
+          numeral = 'vi';
+          break;
+        case 7:
+          numeral = 'vii';
+          break;
+        case 8:
+          numeral = 'viii';
+          break;
+        case 9:
+          numeral = 'ix';
+          break;
+        case 10:
+          numeral = 'x';
+          break;
+        default:
+          numeral = `${colNum}`;
       }
-      else {
-        return `${colNum}`
-      }
+      return numeral;
     };
 
     const lineNumber = (line: number): string => {
