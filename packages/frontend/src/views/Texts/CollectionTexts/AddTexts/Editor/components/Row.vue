@@ -293,11 +293,18 @@ export default defineComponent({
     };
 
     const updateText = async (text: string) => {
+      const newRows = text.split('\n');
       emit('update-row-content', {
         ...props.row,
-        text,
+        text: newRows[0],
       });
-      await getSigns(text);
+      await getSigns(newRows[0]);
+
+      newRows.shift();
+      const reversedNewRows = newRows.reverse();
+      reversedNewRows.forEach(async (rowText, idx) => {
+        emit('add-row-after', rowText);
+      });
     };
 
     const getSigns = async (rowText: string) => {
@@ -517,6 +524,9 @@ export default defineComponent({
 
     onMounted(async () => {
       emit('set-current-row');
+      if (props.row.text) {
+        updateText(props.row.text);
+      }
       EventBus.$on(ACTIONS.SPECIAL_CHAR_INPUT, async (char: string) => {
         if (props.isCurrentRow) {
           await insertChar(char);

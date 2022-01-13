@@ -68,7 +68,7 @@
           :row="row"
           :autofocus="newRow === idx"
           :isCurrentRow="isCurrentColumn && currentRow === row.uuid"
-          @add-row-after="addRowAfter('Line', idx)"
+          @add-row-after="addRowAfter('Line', idx, $event)"
           @remove-row="removeRow(idx)"
           @update-row-content="updateRowContent(idx, $event)"
           @reset-new-row="newRow = undefined"
@@ -190,7 +190,11 @@ export default defineComponent({
     });
 
     const newRow = ref<number>();
-    const addRowAfter = (type: RowTypes, index: number) => {
+    const addRowAfter = (
+      type: RowTypes,
+      index: number,
+      defaultText?: string
+    ) => {
       newRow.value = index + 1;
       hasAddedRow.value = true;
       if (index === -1) {
@@ -199,6 +203,7 @@ export default defineComponent({
           uuid: v4(),
           isEditing: false,
           hasErrors: false,
+          text: defaultText,
         });
       } else {
         rows.value.splice(index + 1, 0, {
@@ -206,6 +211,7 @@ export default defineComponent({
           uuid: v4(),
           isEditing: false,
           hasErrors: false,
+          text: defaultText,
         });
       }
     };

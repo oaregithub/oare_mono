@@ -350,7 +350,6 @@ export default defineComponent({
 
     const currentSide = ref<string>();
     const setCurrentSide = (sideUuid?: string) => {
-      console.log(`setting current side ${sideUuid}`);
       currentSide.value = sideUuid;
     };
 
