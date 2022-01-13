@@ -2,10 +2,10 @@ import knex from '@/connection';
 
 class PageContentDao {
   async getContent(routeName: string) {
-    const content: string | null = await knex('page_content')
+    const row = await knex('page_content')
       .first('content')
-      .where(routeName);
-    return content;
+      .where('page', routeName);
+    return row.content;
   }
 
   async editContent(routeName: string, newContent: string) {

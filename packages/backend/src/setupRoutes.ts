@@ -27,6 +27,7 @@ import groupAllowlist from './api/group_allowlist';
 import groupEditPermissions from './api/group_edit_permissions';
 import signReading from './api/sign_reading';
 import betaAccess from './api/beta_access';
+import pageContent from './api/page_content';
 
 export const API_PATH = '/api/v2';
 
@@ -60,6 +61,7 @@ export default (app: Express) => {
     groupEditPermissions,
     signReading,
     betaAccess,
+    pageContent,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

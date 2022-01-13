@@ -28,3 +28,5 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+export default router;
