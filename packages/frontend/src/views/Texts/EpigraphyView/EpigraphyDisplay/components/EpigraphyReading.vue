@@ -29,7 +29,11 @@
           </div>
         </div>
         <div v-else>
-          <div v-for="colNum in renderer.columnsOnSide(sideName)" :key="colNum" class="pa-1">
+          <div
+            v-for="colNum in renderer.columnsOnSide(sideName)"
+            :key="colNum"
+            class="pa-1"
+          >
             <div class="oare-title mr-1 pb-1">
               col. {{ romanNumeral(colNum) }}
             </div>
@@ -122,7 +126,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const viewingDialog = ref(false);
-    const discourseWordInfo = ref<Word | null>(null);   
+    const discourseWordInfo = ref<Word | null>(null);
 
     const renderer = computed(() => {
       return createTabletRenderer(props.epigraphicUnits, {
@@ -131,9 +135,9 @@ export default defineComponent({
       });
     });
 
-    const romanNumeral = (colNum: number): string =>{
+    const romanNumeral = (colNum: number): string => {
       let numeral: string = '';
-      switch (colNum){
+      switch (colNum) {
         case 1:
           numeral = 'i';
           break;
@@ -191,11 +195,13 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+            discourseUuid
+          );
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
+            spellingUuid
+          );
         } else {
           discourseWordInfo.value = null;
         }
