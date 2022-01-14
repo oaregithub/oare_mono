@@ -5,26 +5,60 @@
         {{ sideName }}
       </div>
       <div>
-        <div
-          v-for="lineNum in renderer.linesOnSide(sideName)"
-          :key="lineNum"
-          class="oare-title d-flex"
-        >
-          <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
-          <span
-            v-if="renderer.isRegion(lineNum)"
-            v-html="renderer.lineReading(lineNum)"
-          />
-          <span v-else>
+        <div v-if="renderer.columnsOnSide(sideName) < 1">
+          <div
+            v-for="lineNum in renderer.linesOnSide(sideName)"
+            :key="lineNum"
+            class="oare-title d-flex"
+          >
+            <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
             <span
-              v-for="(word, index) in renderer.getLineWords(lineNum)"
-              :key="index"
-              v-html="formatWord(word)"
-              class="cursor-display test-rendered-word"
-              :class="{ 'mr-1': !word.isContraction }"
-              @click="openDialog(word.discourseUuid)"
+              v-if="renderer.isRegion(lineNum)"
+              v-html="renderer.lineReading(lineNum)"
             />
-          </span>
+            <span v-else>
+              <span
+                v-for="(word, index) in renderer.getLineWords(lineNum)"
+                :key="index"
+                v-html="formatWord(word)"
+                class="cursor-display test-rendered-word"
+                :class="{ 'mr-1': !word.isContraction }"
+                @click="openDialog(word.discourseUuid)"
+              />
+            </span>
+          </div>
+        </div>
+        <div v-else>
+          <div
+            v-for="colNum in renderer.columnsOnSide(sideName)"
+            :key="colNum"
+            class="pa-1"
+          >
+            <div class="oare-title mr-1 pb-1">
+              col. {{ romanNumeral(colNum) }}
+            </div>
+            <div
+              v-for="lineNum in renderer.linesInColumn(colNum)"
+              :key="lineNum"
+              class="oare-title d-flex"
+            >
+              <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
+              <span
+                v-if="renderer.isRegion(lineNum)"
+                v-html="renderer.lineReading(lineNum)"
+              />
+              <span v-else>
+                <span
+                  v-for="(word, index) in renderer.getLineWords(lineNum)"
+                  :key="index"
+                  v-html="formatWord(word)"
+                  class="cursor-display test-rendered-word"
+                  :class="{ 'mr-1': !word.isContraction }"
+                  @click="openDialog(word.discourseUuid)"
+                />
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -101,6 +135,45 @@ export default defineComponent({
       });
     });
 
+    const romanNumeral = (colNum: number): string => {
+      let numeral: string = '';
+      switch (colNum) {
+        case 1:
+          numeral = 'i';
+          break;
+        case 2:
+          numeral = 'ii';
+          break;
+        case 3:
+          numeral = 'iii';
+          break;
+        case 4:
+          numeral = 'iv';
+          break;
+        case 5:
+          numeral = 'v';
+          break;
+        case 6:
+          numeral = 'vi';
+          break;
+        case 7:
+          numeral = 'vii';
+          break;
+        case 8:
+          numeral = 'viii';
+          break;
+        case 9:
+          numeral = 'ix';
+          break;
+        case 10:
+          numeral = 'x';
+          break;
+        default:
+          numeral = `${colNum}`;
+      }
+      return numeral;
+    };
+
     const lineNumber = (line: number): string => {
       if (renderer.value.isRegion(line)) {
         return '';
@@ -122,11 +195,13 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+            discourseUuid
+          );
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
+            spellingUuid
+          );
         } else {
           discourseWordInfo.value = null;
         }
@@ -160,6 +235,7 @@ export default defineComponent({
     return {
       renderer,
       lineNumber,
+      romanNumeral,
       openDialog,
       loading,
       discourseWordInfo,

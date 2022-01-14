@@ -99,6 +99,13 @@ export default class TabletRenderer {
     return orderedSides;
   }
 
+  get columns(): number[] {
+    const orderedColumns: number[] = Array.from(
+      new Set(this.epigraphicUnits.map(unit => unit.column))
+    );
+    return orderedColumns;
+  }
+
   // An ordered list of lines on the tablet
   get lines(): number[] {
     const lineSet = this.epigraphicUnits.reduce(
@@ -156,13 +163,32 @@ export default class TabletRenderer {
       .filter(unit => unit.side === side)
       .sort((a, b) => a.objOnTablet - b.objOnTablet);
 
-    const lines: number[] = [];
-    unitsOnSide.forEach(({ line }) => {
-      if (!lines.includes(line)) {
-        lines.push(line);
-      }
-    });
+    const lines: number[] = Array.from(
+      new Set(unitsOnSide.map(unit => unit.line))
+    );
     return lines;
+  }
+
+  public linesInColumn(column: number): number[] {
+    const unitsInColumn = this.epigraphicUnits
+      .filter(unit => unit.column === column)
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
+
+    const lines: number[] = Array.from(
+      new Set(unitsInColumn.map(unit => unit.line))
+    );
+    return lines;
+  }
+
+  public columnsOnSide(side: EpigraphicUnitSide): number[] {
+    const unitsOnSide = this.epigraphicUnits
+      .filter(unit => unit.side === side)
+      .sort((a, b) => a.objOnTablet - b.objOnTablet);
+
+    const columns: number[] = Array.from(
+      new Set(unitsOnSide.map(unit => unit.column))
+    );
+    return columns;
   }
 
   protected addMarkupToEpigraphicUnits(
