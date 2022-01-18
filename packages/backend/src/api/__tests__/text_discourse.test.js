@@ -123,35 +123,37 @@ describe('PATCH /text_discourse/:uuid', () => {
   const sendRequest = () =>
     request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
 
-    it('returns 201 on successful discourse translation update', async () => {
-      const response = await sendRequest();
-      expect(mockTextDiscourseDao.updateDiscourseTranslation).toHaveBeenCalled();
-      expect(response.status).toBe(201);
-    });
+  it('returns 201 on successful discourse translation update', async () => {
+    const response = await sendRequest();
+    expect(mockTextDiscourseDao.updateDiscourseTranslation).toHaveBeenCalled();
+    expect(response.status).toBe(201);
+  });
 
-    it('does not allow non-logged-in users to update discourse translation', async () => {
-      const response = await request(app).post(PATH).send(mockPayload);
-      expect(mockTextDiscourseDao.updateDiscourseTranslation).not.toHaveBeenCalled();
-      expect(response.status).toBe(401);
-    });
+  it('does not allow non-logged-in users to update discourse translation', async () => {
+    const response = await request(app).patch(PATH);
+    expect(
+      mockTextDiscourseDao.updateDiscourseTranslation
+    ).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
+  });
 
-    it('does not allow users without permission to update discourse translation', async () => {
-      sl.set('PermissionsDao', {
-        getUserPermissions: jest.fn().mockResolvedValue([]),
-      });
-      const response = await sendRequest();
-      expect(mockTextDiscourseDao.updateDiscourseTranslation).toHaveBeenCalled();
-      expect(response.status).toBe(403);
+  it('does not allow users without permission to update discourse translation', async () => {
+    sl.set('PermissionsDao', {
+      getUserPermissions: jest.fn().mockResolvedValue([]),
     });
+    const response = await sendRequest();
+    expect(mockTextDiscourseDao.updateDiscourseTranslation).toHaveBeenCalled();
+    expect(response.status).toBe(403);
+  });
 
-    it('returns 500 on failed update', async () => {
-      sl.set('TextDiscourseDao', {
-        ...mockTextDiscourseDao,
-        updateDiscourseTranslation: jest
-          .fn()
-          .mockRejectedValue('failed to update discourse translation'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
+  it('returns 500 on failed update', async () => {
+    sl.set('TextDiscourseDao', {
+      ...mockTextDiscourseDao,
+      updateDiscourseTranslation: jest
+        .fn()
+        .mockRejectedValue('failed to update discourse translation'),
     });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
 });
