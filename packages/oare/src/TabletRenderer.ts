@@ -169,9 +169,9 @@ export default class TabletRenderer {
     return lines;
   }
 
-  public linesInColumn(column: number): number[] {
+  public linesInColumn(column: number, side: EpigraphicUnitSide): number[] {
     const unitsInColumn = this.epigraphicUnits
-      .filter(unit => unit.column === column)
+      .filter(unit => unit.column === column && unit.side === side)
       .sort((a, b) => a.objOnTablet - b.objOnTablet);
 
     const lines: number[] = Array.from(

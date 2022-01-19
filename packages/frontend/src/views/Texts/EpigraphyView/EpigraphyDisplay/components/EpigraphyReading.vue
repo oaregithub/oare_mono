@@ -5,7 +5,7 @@
         {{ sideName }}
       </div>
       <div>
-        <div v-if="renderer.columnsOnSide(sideName) < 1">
+        <div v-if="renderer.columnsOnSide(sideName).length === 1">
           <div
             v-for="lineNum in renderer.linesOnSide(sideName)"
             :key="lineNum"
@@ -38,7 +38,7 @@
               col. {{ romanNumeral(colNum) }}
             </div>
             <div
-              v-for="lineNum in renderer.linesInColumn(colNum)"
+              v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
               :key="lineNum"
               class="oare-title d-flex"
             >
@@ -195,13 +195,11 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-            discourseUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
-            spellingUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
         } else {
           discourseWordInfo.value = null;
         }
