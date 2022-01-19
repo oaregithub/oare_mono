@@ -55,6 +55,8 @@
       :headers="listHeaders"
       :items="items"
       item-key="uuid"
+      :search="search"
+      :options.sync="searchOptions"
       class="mt-3"
       show-select
       v-model="selectedItems"
@@ -80,6 +82,7 @@ import {
   onMounted,
   computed,
   PropType,
+  watch,
 } from '@vue/composition-api';
 import { PermissionsListType, DenylistAllowlistItem } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
@@ -91,12 +94,18 @@ export default defineComponent({
       type: String,
       required: false,
     },
+    search: {
+      type: String,
+      required: false,
+    },
     itemType: {
       type: String as PropType<PermissionsListType>,
       required: true,
     },
     getItems: {
-      type: Function as PropType<(groupId?: string) => DenylistAllowlistItem[]>,
+      type: Function as PropType<
+        (groupId?: string, search?: string) => DenylistAllowlistItem[]
+      >,
       required: true,
     },
     removeItems: {
@@ -107,8 +116,28 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    page: {
+      type: Number,
+      default: 1,
+    },
+    rows: {
+      type: Number,
+      default: 10,
+    },
   },
-  setup({ groupId, itemType, getItems, removeItems, addingEditPermissions }) {
+  setup(
+    {
+      groupId,
+      search,
+      itemType,
+      getItems,
+      removeItems,
+      addingEditPermissions,
+      page,
+      rows,
+    },
+    { emit }
+  ) {
     const actions = sl.get('globalActions');
 
     const listHeaders: Ref<DataTableHeader[]> = ref([
@@ -133,6 +162,31 @@ export default defineComponent({
     const loading = ref(true);
     const confirmRemoveDialog = ref(false);
     const removeItemsLoading = ref(false);
+    const searchOptions = ref({
+      page: page,
+      itemsPerPage: rows,
+    });
+
+    watch(
+      () => search,
+      () => {
+        emit('update:search', search);
+      }
+    );
+
+    watch(
+      () => searchOptions.value.page,
+      () => {
+        emit('update:page', searchOptions.value.page);
+      }
+    );
+
+    watch(
+      () => searchOptions.value.itemsPerPage,
+      () => {
+        emit('update:rows', searchOptions.value.itemsPerPage);
+      }
+    );
 
     const confirmRemoveMessage = computed(() => {
       if (groupId) {
@@ -140,7 +194,7 @@ export default defineComponent({
         ${itemType.toLowerCase()}(s) from this group? Members of this group
         will no longer be able to view this ${itemType.toLowerCase()} if it is denylisted.`;
       } else {
-        return `The following ${itemType.toLowerCase()}(s) will be removed 
+        return `The following ${itemType.toLowerCase()}(s) will be removed
         from the public denylist and will be visible to all users. Are you sure you want to remove them?`;
       }
     });
@@ -198,6 +252,8 @@ export default defineComponent({
       items,
       listHeaders,
       selectedItems,
+      search,
+      searchOptions,
       confirmRemoveDialog,
       removeItemsLoading,
       removeListItems,
