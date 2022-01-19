@@ -94,11 +94,14 @@
             :loading="searchSpellingLoading"
           >
             <template #[`item.word`]="{ item }">
-              <router-link
-                :to="`/dictionaryWord/${item.wordUuid}`"
-                target="_blank"
-                >{{ item.word }}</router-link
-              >
+              <v-row>
+                <router-link
+                  :to="`/dictionaryWord/${item.wordUuid}`"
+                  target="_blank"
+                  >{{ item.word }}</router-link
+                >
+                <word-grammar :word="item.wordInfo" onlyShowFirstTranslation />
+              </v-row>
             </template>
             <template #[`item.form`]="{ item }">
               <mark v-if="item.form.uuid === form.uuid">{{
@@ -152,12 +155,14 @@ import { spellingHtmlReading } from '@oare/oare';
 import { DataTableHeader } from 'vuetify';
 import utils from '@/utils';
 import sl from '@/serviceLocator';
+import WordGrammar from '../../components/WordGrammar.vue';
 
 export default defineComponent({
   name: 'EditWordDialog',
   components: {
     SpellingDialog,
     InsertDiscourseRows,
+    WordGrammar,
   },
   props: {
     form: {

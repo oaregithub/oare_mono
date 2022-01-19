@@ -108,6 +108,14 @@ class DictionaryWordDao {
       )
     );
 
+    const grammaticalInfo = await Promise.all(
+      rows.map(r => this.getGrammaticalInfo(r.wordUuid))
+    );
+    const words: Word[] = grammaticalInfo.map(info => ({
+      ...info,
+      forms: [],
+    }));
+
     return rows.map((row, i) => ({
       word: row.word,
       wordUuid: row.wordUuid,
@@ -118,6 +126,7 @@ class DictionaryWordDao {
       },
       spellingUuid: row.spellingUuid,
       occurrences: occurrences[i],
+      wordInfo: words[i],
     }));
   }
 
