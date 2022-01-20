@@ -203,8 +203,11 @@ export default defineComponent({
         actions.showSnackbar('Successfully updated spelling');
         reload && reload();
       } catch (err) {
-        if (err.response && err.response.status === 400) {
-          actions.showErrorSnackbar(err.response.data.message, err as Error);
+        if ((err as any).response && (err as any).response.status === 400) {
+          actions.showErrorSnackbar(
+            (err as any).response.data.message,
+            err as Error
+          );
         } else {
           actions.showErrorSnackbar(
             'Failed to update form spelling',

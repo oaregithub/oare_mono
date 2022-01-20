@@ -29,7 +29,7 @@
       </template>
       <template #forms="{ word }">
         <div
-          v-for="(formInfo, idx) in word.forms"
+          v-for="(formInfo, idx) in getWordForms(word)"
           :key="idx"
           class="d-flex flex-wrap pl-4"
         >
@@ -116,10 +116,15 @@ export default defineComponent({
       { immediate: true }
     );
 
+    const getWordForms = (word: Word) => {
+      return word.forms;
+    };
+
     return {
       places,
       loading,
       searchFilter,
+      getWordForms,
     };
   },
 });
