@@ -26,9 +26,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import _ from 'underscore';
 import TextCollectionList from '../../components/TextCollectionList.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 

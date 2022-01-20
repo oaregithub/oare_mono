@@ -103,9 +103,7 @@ export default defineComponent({
       required: true,
     },
     getItems: {
-      type: Function as PropType<
-        (groupId?: string, search?: string) => DenylistAllowlistItem[]
-      >,
+      type: Function as PropType<(groupId?: string) => DenylistAllowlistItem[]>,
       required: true,
     },
     removeItems: {
@@ -252,7 +250,6 @@ export default defineComponent({
       items,
       listHeaders,
       selectedItems,
-      search,
       searchOptions,
       confirmRemoveDialog,
       removeItemsLoading,
