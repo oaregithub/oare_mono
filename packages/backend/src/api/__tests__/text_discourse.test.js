@@ -83,20 +83,21 @@ describe('PATCH /text_discourse/:uuid', () => {
   const testUuid = 'test-uuid';
   const PATH = `${API_PATH}/text_discourse/${testUuid}`;
 
-  const mockTextDiscourseDao = {
-    updateDiscourseTranslation: jest.fn().mockResolvedValue(),
-  };
-
   const mockUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
 
+  const mockFieldDao = {
+    getByReferenceUuid: jest.fn().mockResolvedValue([{ uuid: 'test-uuid' }]),
+    updateField: jest.fn().mockResolvedValue(),
+  }
+
   const mockPermissionsDao = {
     getUserPermissions: jest
       .fn()
-      .mockResolvedValue([{ name: 'INSERT_DISCOURSE_ROWS' }]),
+      .mockResolvedValue([{ name: 'EDIT_TRANSLATION' }]),
   };
 
   const mockPayload = {
@@ -113,27 +114,27 @@ describe('PATCH /text_discourse/:uuid', () => {
   };
 
   const setup = () => {
-    sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('UserDao', mockUserDao);
+    sl.set('FieldDao', mockFieldDao);
     sl.set('PermissionsDao', mockPermissionsDao);
   };
 
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
+    request(app).patch(PATH).send(mockPayload).set('Authorization', 'token');
 
   it('returns 201 on successful discourse translation update', async () => {
     const response = await sendRequest();
-    expect(mockTextDiscourseDao.updateDiscourseTranslation).toHaveBeenCalled();
+    expect(mockFieldDao.getByReferenceUuid).toHaveBeenCalled();
+    expect(mockFieldDao.updateField).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 
   it('does not allow non-logged-in users to update discourse translation', async () => {
-    const response = await request(app).patch(PATH);
-    expect(
-      mockTextDiscourseDao.updateDiscourseTranslation
-    ).not.toHaveBeenCalled();
+    const response = await request(app).patch(PATH).send(mockPayload);
+    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
 
@@ -142,16 +143,17 @@ describe('PATCH /text_discourse/:uuid', () => {
       getUserPermissions: jest.fn().mockResolvedValue([]),
     });
     const response = await sendRequest();
-    expect(mockTextDiscourseDao.updateDiscourseTranslation).toHaveBeenCalled();
+    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
 
   it('returns 500 on failed update', async () => {
-    sl.set('TextDiscourseDao', {
-      ...mockTextDiscourseDao,
-      updateDiscourseTranslation: jest
+    sl.set('FieldDao', {
+      ...mockFieldDao,
+      getByReferenceUuid: jest
         .fn()
-        .mockRejectedValue('failed to update discourse translation'),
+        .mockRejectedValue('failed to get row by reference uuid'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
