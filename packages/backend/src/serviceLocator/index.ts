@@ -25,7 +25,6 @@ import CacheStatusDao from '@/api/daos/CacheStatusDao';
 import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
 import PersonDao from '@/api/daos/PersonDao';
 import PersonTextOccurrencesDao from '@/api/daos/PersonTextOccurrences';
-import SearchIndexDao from '@/api/daos/SearchIndexDao';
 import GroupAllowlistDao from '@/api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from '@/api/daos/GroupEditPermissionsDao';
 import ResourceDao from '@/api/daos/ResourceDao';
@@ -62,7 +61,6 @@ export type ServiceTypes = {
   CollectionTextUtils: typeof CollectionTextUtils;
   PersonDao: typeof PersonDao;
   PersonTextOccurrencesDao: typeof PersonTextOccurrencesDao;
-  SearchIndexDao: typeof SearchIndexDao;
   GroupAllowlistDao: typeof GroupAllowlistDao;
   GroupEditPermissionsDao: typeof GroupEditPermissionsDao;
   ResourceDao: typeof ResourceDao;
