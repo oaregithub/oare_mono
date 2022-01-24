@@ -91,8 +91,8 @@ export default defineComponent({
         isEditing.value = true;
         confirmedPassword.value = '';
       } catch (err) {
-        if (err && err.code) {
-          if (err.code === 'auth/wrong-password') {
+        if (err && (err as any).code) {
+          if ((err as any).code === 'auth/wrong-password') {
             actions.showErrorSnackbar(
               'The password you have provided is invalid.',
               err as Error

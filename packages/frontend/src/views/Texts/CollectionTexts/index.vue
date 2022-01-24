@@ -124,7 +124,7 @@ export default defineComponent({
         totalTexts.value = collectionResp.totalTexts;
         texts.value = collectionResp.texts;
       } catch (err) {
-        if (err.response && err.response.status === 403) {
+        if ((err as any).response && (err as any).response.status === 403) {
           router.replace({ name: '403' });
           return;
         }

@@ -99,7 +99,7 @@ export default defineComponent({
         const email = await server.verifyPasswordResetCode(oobCode);
         resettingEmail.value = email;
       } catch (err) {
-        handleAuthError(err);
+        handleAuthError(err as any);
       } finally {
         verifyingCode.value = false;
       }
@@ -123,7 +123,7 @@ export default defineComponent({
 
         await server.resetPassword(oobCode, newPassword.value);
       } catch (err) {
-        handleAuthError(err);
+        handleAuthError(err as any);
       } finally {
         loading.value = false;
         submitted.value = true;

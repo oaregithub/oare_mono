@@ -8,16 +8,22 @@ describe('search test', () => {
   describe('GET /search', () => {
     const PATH = `${API_PATH}/search`;
 
-    const SearchIndexDao = {
-      getMatchingTexts: jest.fn().mockResolvedValue([
-        {
-          textName: 'Text 1',
-          textUuid: 'textUuid',
-        },
-      ]),
-      getMatchingTextLines: jest
-        .fn()
-        .mockResolvedValue(['1. text line reading']),
+    const matchingTexts = [
+      {
+        uuid: 'textUuid',
+        lines: [1],
+      },
+    ];
+
+    const TextEpigraphyDao = {
+      searchTexts: jest.fn().mockResolvedValue(matchingTexts),
+      getEpigraphicUnits: jest.fn().mockResolvedValue([]),
+    };
+
+    const TextDao = {
+      getTextByUuid: jest.fn().mockResolvedValue({
+        name: 'Test Text',
+      }),
     };
 
     const SignReadingDao = {
@@ -28,14 +34,10 @@ describe('search test', () => {
       getMatchingSigns: jest.fn().mockResolvedValue(['lì']),
     };
 
-    const TextEpigraphyDao = {
-      getDiscourseUuids: jest.fn().mockResolvedValue(['discourseUuid']),
-    };
-
     beforeEach(() => {
-      sl.set('SearchIndexDao', SearchIndexDao);
       sl.set('SignReadingDao', SignReadingDao);
       sl.set('TextEpigraphyDao', TextEpigraphyDao);
+      sl.set('TextDao', TextDao);
     });
 
     const query = {
@@ -51,14 +53,11 @@ describe('search test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual({
-        results: [
-          {
-            name: 'Text 1',
-            uuid: 'textUuid',
-            matches: ['1. text line reading'],
-            discourseUuids: ['discourseUuid'],
-          },
-        ],
+        results: matchingTexts.map(text => ({
+          ...text,
+          name: 'Test Text',
+          matches: [''],
+        })),
       });
     });
 
@@ -224,16 +223,16 @@ describe('search test', () => {
           characters: '$lì-$lam₅-tam',
         });
 
-      expect(SignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(4);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledTimes(6);
+      expect(SignReadingDao.getMatchingSigns).toHaveBeenCalledTimes(2);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledTimes(3);
 
       expect(response.status).toBe(200);
     });
 
     it('returns 500 if searching texts fails', async () => {
-      sl.set('SearchIndexDao', {
-        ...SearchIndexDao,
-        getMatchingTexts: jest.fn().mockRejectedValue('Failed to search texts'),
+      sl.set('TextEpigraphyDao', {
+        ...TextEpigraphyDao,
+        searchTexts: jest.fn().mockRejectedValue('Failed to search texts'),
       });
 
       const response = await sendRequest();
@@ -241,9 +240,9 @@ describe('search test', () => {
     });
 
     it('returns 500 if getting matching lines', async () => {
-      sl.set('SearchIndexDao', {
-        ...SearchIndexDao,
-        getMatchingTextLines: jest.fn().mockRejectedValue('Failed to get text'),
+      sl.set('TextDao', {
+        ...TextDao,
+        getTextByUuid: jest.fn().mockRejectedValue('Failed to get text'),
       });
 
       const response = await sendRequest();
@@ -254,8 +253,8 @@ describe('search test', () => {
   describe('GET /search/count', () => {
     const PATH = `${API_PATH}/search/count`;
 
-    const SearchIndexDao = {
-      getMatchingTextCount: jest.fn().mockResolvedValue(10),
+    const TextEpigraphyDao = {
+      searchTextsTotal: jest.fn().mockResolvedValue(10),
     };
 
     const SignReadingDao = {
@@ -266,7 +265,7 @@ describe('search test', () => {
     };
 
     beforeEach(() => {
-      sl.set('SearchIndexDao', SearchIndexDao);
+      sl.set('TextEpigraphyDao', TextEpigraphyDao);
       sl.set('SignReadingDao', SignReadingDao);
     });
 
@@ -279,17 +278,17 @@ describe('search test', () => {
 
     it('returns search count', async () => {
       const response = await sendRequest();
-      expect(SearchIndexDao.getMatchingTextCount).toHaveBeenCalled();
+      expect(TextEpigraphyDao.searchTextsTotal).toHaveBeenCalled();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(10);
     });
 
     it('returns 500 on failed search count', async () => {
-      sl.set('SearchIndexDao', {
-        ...SearchIndexDao,
-        getMatchingTextCount: jest
+      sl.set('TextEpigraphyDao', {
+        ...TextEpigraphyDao,
+        searchTextsTotal: jest
           .fn()
-          .mockRejectedValue('failed to retrieve search total'),
+          .mockRejectedValue('Failed to retrieve search total'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);

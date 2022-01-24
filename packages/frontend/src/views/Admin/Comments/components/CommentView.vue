@@ -1,4 +1,4 @@
-<template>
+i<template>
   <OareContentView title="Comments">
     <v-container class="pa-0">
       <v-row>
@@ -69,9 +69,9 @@
             <template #[`item.item`]="{ item }">
               {{ item.word }}
             </template>
-            <template #[`item.comment`]="{ item }">
+            <template #[`item.comments`]="{ item }">
               <div class="pt-2 pb-2">
-                <div v-for="(comment, idx) in item.comments" :key="idx">
+                <div v-for="(comment, idx) in getItemComments(item)" :key="idx">
                   <span v-if="idx <= 2">{{
                     formatCommentText(idx, comment.text)
                   }}</span>
@@ -137,7 +137,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, Ref, ref, watch } from '@vue/composition-api';
+import { defineComponent, Ref, ref } from '@vue/composition-api';
 import {
   ThreadDisplay,
   Comment,
@@ -195,7 +195,7 @@ export default defineComponent({
       { text: 'Status', value: 'status', width: '10%' },
       { text: 'Thread', value: 'name', width: '20%' },
       { text: 'Item', value: 'item', width: '15%' },
-      { text: 'Comments', value: 'comment', width: '40%', sortable: false },
+      { text: 'Comments', value: 'comments', width: '40%', sortable: false },
       { text: 'Timestamp', value: 'timestamp', width: '15%' },
     ]);
 
@@ -254,6 +254,10 @@ export default defineComponent({
       selectedThreadDisplay.value = threadDisplay;
     };
 
+    const getItemComments = (item: ThreadDisplay) => {
+      return item.comments;
+    };
+
     return {
       setupThreadDialog,
       selectedThreadDisplay,
@@ -271,6 +275,7 @@ export default defineComponent({
       selectedComments,
       setSelectedComments,
       getAllThreadsWithComments,
+      getItemComments,
     };
   },
 });
