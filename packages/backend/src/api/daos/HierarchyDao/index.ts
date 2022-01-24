@@ -114,7 +114,7 @@ class HierarchyDao {
       })
       .first();
     let totalItems = 0;
-    if (count.count) {
+    if (count && count.count) {
       totalItems = count.count as number;
     }
 
