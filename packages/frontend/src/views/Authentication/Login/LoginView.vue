@@ -85,14 +85,14 @@ export default defineComponent({
         store.setPermissions(permissions);
         router.push('/');
       } catch (err) {
-        const errorCode = err.code;
+        const errorCode = (err as any).code;
         if (
           errorCode === 'auth/wrong-password' ||
           errorCode === 'auth/user-not-found'
         ) {
           errorMsg.value = 'Invalid credentials';
-        } else if (err.message) {
-          errorMsg.value = err.message;
+        } else if ((err as any).message) {
+          errorMsg.value = (err as any).message;
         } else {
           errorMsg.value = 'There was an unknown error';
         }

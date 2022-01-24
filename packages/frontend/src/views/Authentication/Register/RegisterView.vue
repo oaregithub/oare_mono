@@ -148,8 +148,8 @@ export default defineComponent({
         const user = await server.register(userData);
         store.setUser(user);
         router.push('/');
-      } catch (e) {
-        errorMsg.value = e.response.data.message;
+      } catch (err) {
+        errorMsg.value = (err as any).response.data.message;
       } finally {
         loading.value.registerButton = false;
       }

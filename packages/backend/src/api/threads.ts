@@ -83,7 +83,7 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
 
     await commentsDao.insert(req.user!.uuid, {
       threadUuid: thread.uuid,
-      text: `The status was changed from ${prevThread?.status} to ${thread.status}`,
+      text: `The status was changed from ${prevThread.status} to ${thread.status}`,
     });
 
     res.status(200).end();

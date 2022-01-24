@@ -36,14 +36,17 @@ class FieldDao {
       reference_uuid: referenceUuid,
       type,
       field,
-      primacy: options?.primacy ? options.primacy : null,
+      primacy: options && options.primacy ? options.primacy : null,
     });
     return uuid;
   }
 
   async updateField(uuid: string, field: string, options?: FieldOptions) {
     await knex('field')
-      .update({ field, primacy: options?.primacy ? options.primacy : null })
+      .update({
+        field,
+        primacy: options && options.primacy ? options.primacy : null,
+      })
       .where({ uuid });
   }
 
