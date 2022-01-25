@@ -137,8 +137,7 @@ class HierarchyDao {
 
     const collectionTextQuery = () => {
       const finalSearch: string = `%${search
-        .replace(/[^\w\s]/g, '%')
-        .replace(/ /g, '%')
+        .replace(/\W/g, '%')
         .toLowerCase()}%`;
 
       const query = knex('hierarchy')
