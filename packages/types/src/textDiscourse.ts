@@ -18,6 +18,7 @@ export interface DiscourseUnit {
   type: DiscourseUnitType;
   units: DiscourseUnit[];
   spelling?: string;
+  explicitSpelling?: string;
   transcription?: string;
   line?: number;
   wordOnTablet?: number;

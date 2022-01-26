@@ -178,11 +178,11 @@ export default defineComponent({
       try {
         loading.value = true;
         const discourseRowsWithSpelling = props.discourseRows.filter(
-          row => row.explicitSpelling
+          row => row.spelling
         );
         const forms = await Promise.all(
           discourseRowsWithSpelling.map(row =>
-            server.searchSpellings(row.explicitSpelling || '')
+            server.searchSpellings(row.spelling || '')
           )
         );
 
