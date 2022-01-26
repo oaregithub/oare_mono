@@ -67,6 +67,7 @@ class TextEpigraphyDao {
       .andWhere(function () {
         this.whereNot('text_epigraphy.char_on_tablet', null);
         this.orWhere('text_epigraphy.type', 'region');
+        this.orWhere('text_epigraphy.type', 'undeterminedLines');
       })
       .select(
         'text_epigraphy.uuid',

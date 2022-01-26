@@ -13,7 +13,9 @@
           >
             <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
             <span
-              v-if="renderer.isRegion(lineNum)"
+              v-if="
+                renderer.isRegion(lineNum) || renderer.isUndetermined(lineNum)
+              "
               v-html="renderer.lineReading(lineNum)"
             />
             <span v-else>
@@ -175,7 +177,10 @@ export default defineComponent({
     };
 
     const lineNumber = (line: number): string => {
-      if (renderer.value.isRegion(line)) {
+      if (
+        renderer.value.isRegion(line) ||
+        renderer.value.isUndetermined(line)
+      ) {
         return '';
       }
 

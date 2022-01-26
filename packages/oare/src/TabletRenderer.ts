@@ -14,6 +14,7 @@ import {
   convertMarkedUpUnitsToLineReading,
   convertMarkedUpUnitsToEpigraphicWords,
   regionReading,
+  undeterminedReading,
 } from './tabletUtils';
 
 export default class TabletRenderer {
@@ -128,6 +129,14 @@ export default class TabletRenderer {
     return unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region';
   }
 
+  public isUndetermined(lineNum: number): boolean {
+    const unitsOnLine = this.getUnitsOnLine(lineNum);
+    return (
+      unitsOnLine.length === 1 &&
+      unitsOnLine[0].epigType === 'undeterminedLines'
+    );
+  }
+
   /**
    * Return the epigraphic reading at a specific line number
    */
@@ -136,6 +145,10 @@ export default class TabletRenderer {
 
     if (this.isRegion(lineNum)) {
       return regionReading(unitsOnLine[0]);
+    }
+
+    if (this.isUndetermined(lineNum)) {
+      return undeterminedReading(unitsOnLine[0]);
     }
 
     const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
