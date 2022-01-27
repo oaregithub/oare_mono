@@ -24,7 +24,7 @@
             icon
             v-if="item.translation && allowEditing"
             @click="startEdit(item)"
-            class="mr-1"
+            class="mr-1 test-discourse-startedit"
           >
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
@@ -44,7 +44,7 @@
             outlined
             rows="1"
             v-model="inputTranslation"
-            class="ma-1"
+            class="ma-1 test-discourse-box"
             dense
             hide-details
           ></v-textarea>
@@ -52,7 +52,7 @@
             :loading="editLoading"
             color="primary"
             @click="discourseEdit(item)"
-            class="ma-1"
+            class="ma-1 test-discourse-button"
             >Save</OareLoaderButton
           >
           <v-btn color="primary" @click="editingUuid = ''" class="ma-1"

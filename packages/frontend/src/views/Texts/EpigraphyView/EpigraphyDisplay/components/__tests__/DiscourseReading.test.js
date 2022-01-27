@@ -9,12 +9,18 @@ const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-/*
 describe('DiscourseReading test', () => {
-  const translations = [
+  const discourseUnits = [
     {
       uuid: 'uuid1',
-      translation: 'translation1',
+      type: "translation",
+      units: [],
+      spelling: "abcde",
+      transcription: "fghij",
+      line: 1,
+      wordOnTablet: 2,
+      paragraphLabel: "",
+      translation: "test-translation",
     },
   ];
 
@@ -22,22 +28,17 @@ describe('DiscourseReading test', () => {
     mount(DiscourseReading, {
       localVue,
       vuetify,
-      propsData: props || {
-        wordUuid: 'word-uuid',
-        translations,
-      },
+      propsData: {
+        discourseUnits
+      }
     });
-
-  const mockActions = {
-    showErrorSnackbar: jest.fn(),
-  };
 
   const actions = {
     showErrorSnackbar: jest.fn(),
   };
 
   const server = {
-    discourseReadings: jest.fn().mockResolvedValue(),
+    updateDiscourseTranslation: jest.fn().mockResolvedValue(),
   };
 
   const store = {
@@ -57,16 +58,39 @@ describe('DiscourseReading test', () => {
   });
 
 
-  it('Verify that only users with permission can see the edit button', async () => {
-
+  it('Verify that users without permission cannot see the edit button', async () => {
+    const wrapper = createWrapper();
+    sl.set('store', {
+      store: {
+        getters: {
+          permissions: [],
+        },
+      },
+    });
+    await flushPromises();
+    expect(wrapper.find('.test-discourse-button').exists()).toBe(false);
   });
 
   it('Verifies that clicking save calls the server function', async () => {
-
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.get('.test-discourse-startedit').trigger('click');
+    await wrapper.get('.test-discourse-box input').setValue('new translation');
+    await wrapper.get('.test-discourse-button').trigger('click');
+    await flushPromises();
+    expect(server.updateDiscourseTranslation).toHaveBeenCalledWith('uuid1', 'new translation');
   });
 
   it('Verifies that a failed server call results in an error snackbar', async () => {
-
+    const wrapper = createWrapper();
+    await flushPromises();
+    sl.set('serverProxy', {
+      updateDiscourseTranslation: jest.fn().mockRejectedValue(),
+    });
+    await wrapper.get('.test-discourse-startedit').trigger('click');
+    await wrapper.get('.test-discourse-box input').setValue('');
+    await wrapper.get('.test-discourse-button').trigger('click');
+    await flushPromises();
+    expect(actions.showErrorSnackbar).toHaveBeenCalled();
   });
 });
-*/
