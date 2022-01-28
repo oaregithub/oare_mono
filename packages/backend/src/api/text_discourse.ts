@@ -1,8 +1,9 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { NewDiscourseRowPayload } from '@oare/types';
+import { NewDiscourseRowPayload, DiscourseProperties } from '@oare/types';
 import permissionRoute from '@/middlewares/permissionsRoute';
+import { nestProperties } from '../utils/index';
 
 const router = express.Router();
 
@@ -31,5 +32,29 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
+  try {
+    const { uuid: discourseUuid } = req.params;
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const NoteDao = sl.get('NoteDao');
+
+    const properties = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+      discourseUuid
+    );
+
+    const propertiesWithChildren = nestProperties(properties, null);
+
+    const notes = await NoteDao.getNotesByReferenceUuid(discourseUuid);
+
+    const response: DiscourseProperties = {
+      properties: propertiesWithChildren,
+      notes,
+    };
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
 
 export default router;

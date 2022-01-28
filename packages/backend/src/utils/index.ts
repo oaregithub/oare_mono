@@ -6,6 +6,8 @@ import {
   PersonOccurrenceRow,
   SpellingOccurrenceResponseRow,
   SpellingOccurrenceRow,
+  ItemPropertyRowWithChildren,
+  ItemPropertyRow,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import _ from 'lodash';
@@ -86,4 +88,23 @@ export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
     ...r,
     readings: readings[index],
   }));
+};
+
+export const nestProperties = (
+  propertyRows: ItemPropertyRow[],
+  parentUuid: string | null
+): ItemPropertyRowWithChildren[] => {
+  const children = propertyRows.filter(row => row.parentUuid === parentUuid);
+  const props: ItemPropertyRowWithChildren[] = [];
+
+  children.forEach(child => {
+    const property = {
+      ...child,
+      children: nestProperties(propertyRows, child.uuid),
+    };
+
+    props.push(property);
+  });
+
+  return props;
 };

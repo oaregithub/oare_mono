@@ -15,11 +15,28 @@
       item-text="spelling"
     >
       <template #label="{ item }">
-        <div
-          :class="`${discourseColor(item.type)}--text`"
-          style="white-space: normal"
-          v-html="discourseReading(item)"
-        ></div>
+        <v-menu
+          :close-on-content-click="false"
+          offset-x
+          open-on-hover
+          :open-delay="400"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <span
+              :class="`${discourseColor(item.type)}--text`"
+              style="white-space: normal"
+              v-html="discourseReading(item)"
+              v-bind="attrs"
+              v-on="on"
+              class="pr-8"
+            ></span>
+          </template>
+
+          <discourse-properties-card
+            :discourseUuid="item.uuid"
+            :key="item.uuid"
+          />
+        </v-menu>
       </template>
     </v-treeview>
   </div>
@@ -30,6 +47,7 @@ import { defineComponent, PropType } from '@vue/composition-api';
 import { DiscourseUnit } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
 
 export default defineComponent({
   props: {
@@ -37,6 +55,9 @@ export default defineComponent({
       type: Array as PropType<DiscourseUnit[]>,
       required: true,
     },
+  },
+  components: {
+    DiscoursePropertiesCard,
   },
   setup({ discourseUnits }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);

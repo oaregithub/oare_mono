@@ -1,5 +1,5 @@
 import axios from '@/axiosInstance';
-import { SearchNullDiscourseResultRow } from '@oare/types';
+import { SearchNullDiscourseResultRow, DiscourseProperties } from '@oare/types';
 
 async function insertDiscourseRow(
   spelling: string,
@@ -22,6 +22,16 @@ async function insertDiscourseRow(
   );
 }
 
+async function getDiscourseProperties(
+  discourseUuid: string
+): Promise<DiscourseProperties> {
+  const { data } = await axios.get(
+    `/text_discourse/properties/${discourseUuid}`
+  );
+  return data;
+}
+
 export default {
   insertDiscourseRow,
+  getDiscourseProperties,
 };
