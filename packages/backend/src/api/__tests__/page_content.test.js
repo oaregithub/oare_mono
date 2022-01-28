@@ -38,33 +38,32 @@ describe('GET /page_content/:routeName', () => {
 describe('PATCH /page_content/:routeName', () => {
   const routeName = 'test-route';
   const PATH = `${API_PATH}/page_content/${routeName}`;
-  const mockContent = 'test-content';
+  const mockContent = { newContent: 'test-content' };
 
   const mockPageContentDao = {
-    editContent: jest.fn().mockResolvedValue(['Test-Content']),
+    editContent: jest.fn().mockResolvedValue({}),
   };
 
   const setup = () => {
     sl.set('PageContentDao', mockPageContentDao);
   };
 
-  const sendRequest = () =>
-    request(app).patch(PATH).send(mockContent).set('Authorization', 'token');
+  const sendRequest = () => request(app).patch(PATH).send(mockContent);
 
   beforeEach(setup);
 
-  it('Returns 204 on successful page content update', async () => {
+  it('Returns 204 on successful page content update by admin', async () => {
     const response = await sendRequest();
     expect(mockPageContentDao.editContent).toHaveBeenCalled();
     expect(response.status).toBe(204);
   });
 
-  it('Returns 500 on failed page content update', async () => {
+  it('Returns 500 on failed page content update by admin', async () => {
     sl.set('PageContentDao', {
       ...mockPageContentDao,
       editContent: jest.fn().mockRejectedValue('Failed to update page content'),
     });
     const response = await sendRequest();
-    expect(reponse.status).toBe(500);
+    expect(response.status).toBe(500);
   });
 });
