@@ -183,7 +183,7 @@ export default defineComponent({
       try {
         loading.value = true;
         const discourseRowsWithSpelling = props.discourseRows.filter(
-          row => row.spelling
+          row => row.explicitSpelling
         );
         const forms = await Promise.all(
           discourseRowsWithSpelling.map(row =>
