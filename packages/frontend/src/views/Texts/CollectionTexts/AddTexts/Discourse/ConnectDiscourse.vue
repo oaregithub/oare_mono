@@ -187,7 +187,7 @@ export default defineComponent({
         );
         const forms = await Promise.all(
           discourseRowsWithSpelling.map(row =>
-            server.searchSpellings(row.spelling || '')
+            server.searchSpellings(row.explicitSpelling || '')
           )
         );
 

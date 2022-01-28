@@ -85,8 +85,8 @@ export function lineReadingHelper(
     if (unit.line === line) {
       if (unit.transcription) {
         words.push(trRenderer(unit.transcription));
-      } else if (unit.spelling) {
-        words.push(unit.spelling);
+      } else if (unit.explicitSpelling) {
+        words.push(unit.explicitSpelling);
       }
     }
     lineReadingHelper(unit.units, line, words, trRenderer);

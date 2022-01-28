@@ -141,8 +141,8 @@ class TextDiscourseDao {
         'text_discourse.type',
         'text_discourse.word_on_tablet AS wordOnTablet',
         'text_discourse.parent_uuid AS parentUuid',
-        // this line changes the spelling in tree view of the discourse
-        'text_discourse.explicit_spelling AS spelling',
+        'text_discourse.spelling',
+        'text_discourse.explicit_spelling AS explicitSpelling',
         'text_discourse.transcription',
         'text_epigraphy.line',
         'alias.name AS paragraphLabel',

@@ -71,13 +71,13 @@ export default defineComponent({
       ) {
         reading = discourse.paragraphLabel;
       } else if (discourse.type === 'word') {
-        if (discourse.transcription && discourse.spelling) {
-          reading = `${discourse.transcription} (${discourse.spelling})`;
+        if (discourse.transcription && discourse.explicitSpelling) {
+          reading = `${discourse.transcription} (${discourse.explicitSpelling})`;
         } else {
-          reading = discourse.spelling;
+          reading = discourse.explicitSpelling;
         }
       } else {
-        reading = discourse.spelling;
+        reading = discourse.explicitSpelling;
       }
 
       if (discourse.type === 'paragraph') {
