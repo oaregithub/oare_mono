@@ -30,6 +30,42 @@ async function updateTranslitStatus(
   await axios.patch('/text_epigraphies/transliteration', payload);
 }
 
+async function updateExcavationInfo(
+  textUuid: string,
+  excavation_prfx: string | null,
+  excavation_no: string | null
+) {
+  await axios.patch('/text_epigraphies/edit_excavation_info', {
+    uuid: textUuid,
+    excavationPrefix: excavation_prfx,
+    excavationNumber: excavation_no,
+  });
+}
+
+async function updateMuseumInfo(
+  textUuid: string,
+  museum_prfx: string | null,
+  museum_no: string | null
+) {
+  await axios.patch('/text_epigraphies/edit_museum_info', {
+    uuid: textUuid,
+    museumPrefix: museum_prfx,
+    museumNumber: museum_no,
+  });
+}
+
+async function updatePrimaryPublicationInof(
+  textUuid: string,
+  publication_prefix: string | null,
+  publication_no: string | null
+) {
+  await axios.patch('/text_epigraphies/edit_publication_info', {
+    uuid: textUuid,
+    publicationPrefix: publication_prefix,
+    publicationNumber: publication_no,
+  });
+}
+
 async function getImageLinks(
   textUuid: string,
   cdliNum: string | null
@@ -67,6 +103,9 @@ export default {
   getImageLinks,
   getTranslitOptions,
   updateTranslitStatus,
+  updateExcavationInfo,
+  updateMuseumInfo,
+  updatePrimaryPublicationInof,
   getNextImageDesignator,
   createText,
   uploadImages,

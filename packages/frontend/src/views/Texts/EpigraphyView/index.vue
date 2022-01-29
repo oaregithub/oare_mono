@@ -10,28 +10,115 @@
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
         <div class="textInfo">
+          <v-icon v-if="!editText" @click="toggleTextInfo">{{
+            icons.mdiPencil
+          }}</v-icon>
           <div
             v-if="
-              textInfo.text.excavationPrefix || textInfo.text.excavationNumber
+              textInfo.text.excavationPrefix ||
+              textInfo.text.excavationNumber ||
+              editText
             "
           >
             Excavation Info: {{ textInfo.text.excavationPrefix }}
             {{ textInfo.text.excavationNumber }}
-          </div>
-          <div v-if="textInfo.text.museumPrefix || textInfo.text.museumNumber">
-            Museum Info: {{ textInfo.text.museumPrefix }}
-            {{ textInfo.text.museumNumber }}
+            <v-row v-if="editText">
+              <v-col cols="8" sm="4">
+                <v-text-field
+                  solo
+                  v-model="textInfo.text.excavationPrefix"
+                  label="Prefix"
+                  clearable
+                ></v-text-field>
+              </v-col>
+              <v-col cols="8" sm="4">
+                <v-text-field
+                  solo
+                  v-model="textInfo.text.excavationNumber"
+                  label="Number"
+                  clearable
+                ></v-text-field>
+              </v-col>
+            </v-row>
           </div>
           <div
             v-if="
-              textInfo.text.publicationPrefix || textInfo.text.publicationNumber
+              textInfo.text.museumPrefix ||
+              textInfo.text.museumNumber ||
+              editText
+            "
+          >
+            Museum Info: {{ textInfo.text.museumPrefix }}
+            {{ textInfo.text.museumNumber }}
+            <v-row v-if="editText">
+              <v-col cols="8" sm="4">
+                <v-text-field
+                  solo
+                  v-model="textInfo.text.museumPrefix"
+                  label="Prefix"
+                  clearable
+                ></v-text-field>
+              </v-col>
+              <v-col cols="8" sm="4">
+                <v-text-field
+                  solo
+                  v-model="textInfo.text.museumNumber"
+                  label="Number"
+                  clearable
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </div>
+          <div
+            v-if="
+              textInfo.text.publicationPrefix ||
+              textInfo.text.publicationNumber ||
+              editText
             "
           >
             Primary Publication Info: {{ textInfo.text.publicationPrefix }}
             {{ textInfo.text.publicationNumber }}
+            <v-row v-if="editText">
+              <v-col cols="8" sm="4">
+                <v-text-field
+                  solo
+                  v-model="textInfo.text.publicationPrefix"
+                  label="Prefix"
+                  clearable
+                ></v-text-field>
+              </v-col>
+              <v-col cols="8" sm="4">
+                <v-text-field
+                  v-if="editText"
+                  solo
+                  v-model="textInfo.text.publicationNumber"
+                  label="Number"
+                  clearable
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </div>
+          <div>
+            <div v-if="editText">
+              <v-btn
+                color="primary"
+                width="90px"
+                style="padding-right: 20px"
+                @click="editTextInfo"
+                >Edit</v-btn
+              >
+              <v-btn
+                color="#2196f3"
+                width="90px"
+                class="white--text mx-4"
+                @click="cancelEditTextInfo"
+                >Cancel</v-btn
+              >
+            </div>
           </div>
           <br />
         </div>
+
         <template
           #title:pre
           v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
@@ -64,7 +151,8 @@
           v-on="routeActions"
         ></router-view>
         <span v-if="!textInfo.hasEpigraphy">
-          Apologies, we do not have a transliteration for this text at the moment.
+          Apologies, we do not have a transliteration for this text at the
+          moment.
         </span>
       </OareContentView>
     </v-col>
@@ -102,6 +190,8 @@ import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
+
+import { mdiPencil } from '@mdi/js';
 
 export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
@@ -155,6 +245,12 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = reactive(sl.get('router'));
 
+    const hasEditPermission = computed(() =>
+      store.getters.permissions
+        .map(perm => perm.name)
+        .includes('EDIT_TEXT_INFO')
+    );
+
     const loading = ref(false);
     const draft = ref<DraftContent | null>(null);
     const hasPicture = computed(() => imageUrls.value.length > 0);
@@ -184,6 +280,13 @@ export default defineComponent({
     });
     const imageUrls = ref<string[]>([]);
 
+    const icons = ref({
+      mdiPencil,
+    });
+
+    let editText = ref(false);
+
+    const originalTextinfoArray = ref<Array<string | null>>([]);
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
     const breadcrumbItems = computed(() => {
@@ -261,12 +364,66 @@ export default defineComponent({
           .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
+    const editTextInfo = function () {
+      updateExcavationInfo();
+      updateMuseumInfo();
+      updatePulicationInfo();
+      window.location.reload();
+    };
+
+    const toggleTextInfo = function () {
+      originalTextinfoArray.value.push(textInfo.value.text.excavationPrefix);
+      originalTextinfoArray.value.push(textInfo.value.text.excavationNumber);
+      originalTextinfoArray.value.push(textInfo.value.text.museumPrefix);
+      originalTextinfoArray.value.push(textInfo.value.text.museumNumber);
+      originalTextinfoArray.value.push(textInfo.value.text.publicationPrefix);
+      originalTextinfoArray.value.push(textInfo.value.text.publicationNumber);
+
+      editText.value = !editText.value;
+    };
+
+    const cancelEditTextInfo = function () {
+      textInfo.value.text.excavationPrefix = originalTextinfoArray.value[0];
+      textInfo.value.text.excavationNumber = originalTextinfoArray.value[1];
+      textInfo.value.text.museumPrefix = originalTextinfoArray.value[2];
+      textInfo.value.text.museumNumber = originalTextinfoArray.value[3];
+      textInfo.value.text.publicationPrefix = originalTextinfoArray.value[4];
+      textInfo.value.text.publicationNumber = originalTextinfoArray.value[5];
+
+      originalTextinfoArray.value = [];
+      editText.value = !editText.value;
+    };
+
     const getTextInfo = async () => {
       if (localEpigraphyUnits) {
         textInfo.value = localEpigraphyUnits;
       } else if (textUuid) {
         textInfo.value = await server.getEpigraphicInfo(textUuid);
       }
+    };
+
+    const updateExcavationInfo = async () => {
+      await server.updateExcavationInfo(
+        textInfo.value.text.uuid,
+        textInfo.value.text.excavationPrefix,
+        textInfo.value.text.excavationNumber
+      );
+    };
+
+    const updateMuseumInfo = async () => {
+      await server.updateMuseumInfo(
+        textInfo.value.text.uuid,
+        textInfo.value.text.museumPrefix,
+        textInfo.value.text.museumNumber
+      );
+    };
+
+    const updatePulicationInfo = async () => {
+      await server.updatePrimaryPublicationInof(
+        textInfo.value.text.uuid,
+        textInfo.value.text.publicationPrefix,
+        textInfo.value.text.publicationNumber
+      );
     };
 
     onMounted(async () => {
@@ -318,7 +475,17 @@ export default defineComponent({
       canViewEpigraphyImages,
       imageUrls,
       getTextInfo,
+      updateExcavationInfo,
+      updateMuseumInfo,
+      updatePulicationInfo,
+      cancelEditTextInfo,
+      toggleTextInfo,
+      editTextInfo,
+      hasEditPermission,
       transliteration,
+      icons,
+      editText,
+      originalTextinfoArray,
     };
   },
 });
@@ -327,5 +494,8 @@ export default defineComponent({
 <style scoped>
 .relative {
   position: relative;
+}
+v-btn {
+  padding-right: 20px important;
 }
 </style>

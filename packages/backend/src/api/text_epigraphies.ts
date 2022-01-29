@@ -278,4 +278,59 @@ router
     }
   });
 
+router
+  .route('/text_epigraphies/edit_excavation_info')
+  .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
+    const TextDao = sl.get('TextDao');
+    const uuid = req.body.uuid;
+    const excavationPrefix = req.body.excavationPrefix;
+    const excavationNumber = req.body.excavationNumber;
+
+    try {
+      await TextDao.updateExcavationInof(
+        uuid,
+        excavationPrefix,
+        excavationNumber
+      );
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
+  .route('/text_epigraphies/edit_museum_info')
+  .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
+    const TextDao = sl.get('TextDao');
+    const uuid = req.body.uuid;
+    const museumPrefix = req.body.museumPrefix;
+    const museumNumber = req.body.museumNumber;
+
+    try {
+      await TextDao.updateMuseumInof(uuid, museumPrefix, museumNumber);
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
+  .route('/text_epigraphies/edit_publication_info')
+  .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
+    const TextDao = sl.get('TextDao');
+    const uuid = req.body.uuid;
+    const publicationPrefix = req.body.publicationPrefix;
+    const publicationNumber = req.body.publicationNumber;
+
+    try {
+      await TextDao.updatePrimaryPublicationInof(
+        uuid,
+        publicationPrefix,
+        publicationNumber
+      );
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 export default router;
