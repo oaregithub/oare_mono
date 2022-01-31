@@ -13,14 +13,14 @@ describe('DiscourseReading test', () => {
   const discourseUnits = [
     {
       uuid: 'uuid1',
-      type: "translation",
+      type: 'translation',
       units: [],
-      spelling: "abcde",
-      transcription: "fghij",
+      spelling: 'abcde',
+      transcription: 'fghij',
       line: 1,
       wordOnTablet: 2,
-      paragraphLabel: "",
-      translation: "test-translation",
+      paragraphLabel: '',
+      translation: 'test-translation',
     },
   ];
 
@@ -29,8 +29,8 @@ describe('DiscourseReading test', () => {
       localVue,
       vuetify,
       propsData: {
-        discourseUnits
-      }
+        discourseUnits,
+      },
     });
 
   const actions = {
@@ -57,7 +57,6 @@ describe('DiscourseReading test', () => {
     sl.set('store', store);
   });
 
-
   it('Verify that users without permission cannot see the edit button', async () => {
     sl.set('store', {
       getters: {
@@ -73,10 +72,15 @@ describe('DiscourseReading test', () => {
     const wrapper = createWrapper();
     await flushPromises();
     await wrapper.get('.test-discourse-startedit').trigger('click');
-    await wrapper.get('.test-discourse-box textarea').setValue('new translation');
+    await wrapper
+      .get('.test-discourse-box textarea')
+      .setValue('new translation');
     await wrapper.get('.test-discourse-button').trigger('click');
     await flushPromises();
-    expect(server.updateDiscourseTranslation).toHaveBeenCalledWith('uuid1', 'new translation');
+    expect(server.updateDiscourseTranslation).toHaveBeenCalledWith(
+      'uuid1',
+      'new translation'
+    );
   });
 
   it('Verifies that a failed server call results in an error snackbar', async () => {

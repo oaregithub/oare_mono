@@ -92,7 +92,7 @@ describe('PATCH /text_discourse/:uuid', () => {
   const mockFieldDao = {
     getByReferenceUuid: jest.fn().mockResolvedValue([{ uuid: 'test-uuid' }]),
     updateField: jest.fn().mockResolvedValue(),
-  }
+  };
 
   const mockPermissionsDao = {
     getUserPermissions: jest
