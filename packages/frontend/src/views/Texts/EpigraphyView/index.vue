@@ -440,8 +440,8 @@ export default defineComponent({
           );
         }
       } catch (err) {
-        if (err.response) {
-          if (err.response.status === 403) {
+        if ((err as any).response) {
+          if ((err as any).response.status === 403) {
             router.replace({ name: '403' });
           }
         } else {

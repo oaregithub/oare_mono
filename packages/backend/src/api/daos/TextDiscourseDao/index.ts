@@ -59,7 +59,7 @@ class TextDiscourseDao {
         .andWhere('spelling_uuid', null);
 
     const countRow = await createBaseQuery().count({ count: 'uuid' }).first();
-    const totalResults = countRow?.count || 0;
+    const totalResults = countRow && countRow.count ? countRow.count : 0;
 
     const rows: SearchDiscourseSpellingRow[] = await createBaseQuery()
       .select(
@@ -201,7 +201,7 @@ class TextDiscourseDao {
       .count({ count: 'text_discourse.uuid' })
       .first();
 
-    return (countRow?.count as number) || 0;
+    return countRow && countRow.count ? (countRow.count as number) : 0;
   }
 
   async getSpellingTextOccurrences(

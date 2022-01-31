@@ -42,7 +42,7 @@
       <template #[`item.translations`]="{ item }">
         <div v-if="item.translations.length === 0" />
         <div
-          v-for="(translation, idx) in item.translations"
+          v-for="(translation, idx) in getItemTranslations(item)"
           :key="idx"
           v-html="highlightedItem(translation, lastSearch)"
         ></div>
@@ -50,7 +50,7 @@
 
       <template #[`item.matches`]="{ item }">
         <div
-          v-for="(match, index) in item.matches"
+          v-for="(match, index) in getItemMatches(item)"
           :key="index"
           v-html="highlightedItem(match, lastSearch)"
         ></div>
@@ -121,7 +121,7 @@ export default defineComponent({
           });
           totalResults.value = searchResult.totalRows;
           searchResults.value = searchResult.results;
-        } catch(err) {
+        } catch (err) {
           actions.showErrorSnackbar(
             'Error performing dictionary search. Please try again.',
             err as Error
@@ -165,6 +165,14 @@ export default defineComponent({
       return null;
     };
 
+    const getItemTranslations = (item: DictionarySearchRow) => {
+      return item.translations;
+    };
+
+    const getItemMatches = (item: DictionarySearchRow) => {
+      return item.matches;
+    };
+
     return {
       dictionarySearch,
       canSearch,
@@ -179,6 +187,8 @@ export default defineComponent({
       lastSearch,
       wordLink,
       resetSearch,
+      getItemTranslations,
+      getItemMatches,
     };
   },
 });

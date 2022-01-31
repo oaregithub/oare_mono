@@ -68,7 +68,7 @@
           :row="row"
           :autofocus="newRow === idx"
           :isCurrentRow="isCurrentColumn && currentRow === row.uuid"
-          @add-row-after="addRowAfter('Line', idx)"
+          @add-row-after="addRowAfter('Line', idx, $event)"
           @remove-row="removeRow(idx)"
           @update-row-content="updateRowContent(idx, $event)"
           @reset-new-row="newRow = undefined"
@@ -112,6 +112,7 @@ export interface Row {
   selectedSign?: number;
   words?: EditorWord[];
   reading?: string;
+  hasErrors: boolean;
 }
 
 export interface RowWithLine extends Row {
@@ -189,7 +190,11 @@ export default defineComponent({
     });
 
     const newRow = ref<number>();
-    const addRowAfter = (type: RowTypes, index: number) => {
+    const addRowAfter = (
+      type: RowTypes,
+      index: number,
+      defaultText?: string
+    ) => {
       newRow.value = index + 1;
       hasAddedRow.value = true;
       if (index === -1) {
@@ -197,12 +202,16 @@ export default defineComponent({
           type,
           uuid: v4(),
           isEditing: false,
+          hasErrors: false,
+          text: defaultText,
         });
       } else {
         rows.value.splice(index + 1, 0, {
           type,
           uuid: v4(),
           isEditing: false,
+          hasErrors: false,
+          text: defaultText,
         });
       }
     };
@@ -255,6 +264,7 @@ export default defineComponent({
             signs: row.signs,
             words: row.words,
             reading: row.reading,
+            hasErrors: row.hasErrors,
           };
         });
         emit('update-column-rows', rowContent);
@@ -278,7 +288,9 @@ export default defineComponent({
         const numBrokenAreas = rows.value.filter(
           (row, idx) =>
             row.type === 'Broken Area' &&
-            (idx > 0 ? rows.value[idx - 1].type !== 'Broken Area' : true)
+            (idx > 0
+              ? rows.value[idx - 1].type !== 'Broken Area'
+              : !props.beginsWithBreak)
         ).length;
         emit('broken-area', numBrokenAreas);
 

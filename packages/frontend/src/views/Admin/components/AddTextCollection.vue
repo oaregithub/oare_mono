@@ -419,22 +419,19 @@ export default defineComponent({
       }
     });
 
+    const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+      if (selectedItems.value.length > 0) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+
     onBeforeMount(() => {
-      window.addEventListener('beforeunload', event => {
-        if (selectedItems.value.length > 0) {
-          event.preventDefault();
-          event.returnValue = '';
-        }
-      });
+      window.addEventListener('beforeunload', beforeUnloadHandler);
     });
 
     onBeforeUnmount(() => {
-      window.removeEventListener('beforeunload', event => {
-        if (selectedItems.value.length > 0) {
-          event.preventDefault();
-          event.returnValue = '';
-        }
-      });
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
       selectedItems.value = [];
     });
 

@@ -62,8 +62,7 @@ export type EpigraphicUnitSide =
   | "col. i'"
   | "col. ii'"
   | "col. iii'"
-  | "col. iv'"
-  | 0;
+  | "col. iv'";
 
 export type EpigraphyType =
   | 'column'
@@ -211,6 +210,7 @@ export interface RowContent {
   signs?: SignCodeWithDiscourseUuid[];
   words?: EditorWord[];
   reading?: string;
+  hasErrors: boolean;
 }
 
 export interface TextPhoto {
@@ -294,6 +294,7 @@ export interface TextRow {
   cdliNum: string | null;
   translitStatus: string;
   name: string | null;
+  displayName: string | null;
   excavationPrefix: string | null;
   excavationNumber: string | null;
   museumPrefix: string | null;
@@ -368,6 +369,11 @@ export interface EditorMarkup {
   markup: EditorMarkupPiece[];
   post: string;
   wordIndex: number;
+}
+
+export interface EditorMarkupError {
+  error: string;
+  text?: string;
 }
 
 export interface CreateTextsPayload {

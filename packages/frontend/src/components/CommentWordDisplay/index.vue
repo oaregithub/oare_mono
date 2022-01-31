@@ -55,7 +55,13 @@
           />
         </template>
         <div
-          class="flex-column d-flex justify-center align-center no-thread-selected-display"
+          class="
+            flex-column
+            d-flex
+            justify-center
+            align-center
+            no-thread-selected-display
+          "
           v-else
         >
           <h1>
@@ -106,7 +112,9 @@
         v-if="showDictionary"
         :is="dictionaryWordComponent"
         :uuid="dictionaryWordUuid"
-        :uuid-to-highlight="selectedThread.referenceUuid"
+        :uuid-to-highlight="
+          selectedThread ? selectedThread.referenceUuid : null
+        "
         :allow-commenting="false"
         :allow-editing="false"
         :allow-breadcrumbs="false"
@@ -126,7 +134,7 @@ import {
   computed,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { ThreadWithComments, ThreadStatus } from '@oare/types';
+import { ThreadWithComments } from '@oare/types';
 
 import CommentItem from './CommentItem.vue';
 import ThreadListItem from './ThreadListItem.vue';

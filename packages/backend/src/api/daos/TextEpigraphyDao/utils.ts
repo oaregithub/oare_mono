@@ -141,14 +141,14 @@ export const formattedSearchCharacter = (char: string): string[] => {
   // Formats numbers
   char = normalizeNumber(char);
 
-  const allChars = char.split(/[\s\-.]+/);
+  const allChars = char.split(/[\s\-.+]+/);
   return allChars;
 };
 
 export const stringToCharsArray = (search: string): string[] => {
   const chars = search
     .trim()
-    .split(/[\s\-.]+/)
+    .split(/[\s\-.+]+/)
     .flatMap(formattedSearchCharacter);
 
   if (chars.length === 1 && chars[0] === '') {

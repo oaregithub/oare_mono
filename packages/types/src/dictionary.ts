@@ -1,4 +1,4 @@
-import { DictionaryWordTranslation } from './words';
+import { DictionaryWordTranslation, Word } from './words';
 import { SearchTextsResultRow } from './search';
 
 export interface DisplayableWord {
@@ -99,6 +99,8 @@ export interface SearchSpellingResultRow {
   word: string;
   form: Omit<DictionaryForm, 'spellings'>;
   spellingUuid: string;
+  occurrences: number;
+  wordInfo: Word;
 }
 
 export interface SearchSpellingPayload {
