@@ -167,6 +167,7 @@ export default defineComponent({
       formatLineNumber,
       editingUuid,
       inputTranslation,
+      allowEditing,
     };
   },
 });

@@ -59,36 +59,34 @@ describe('DiscourseReading test', () => {
 
 
   it('Verify that users without permission cannot see the edit button', async () => {
-    const wrapper = createWrapper();
     sl.set('store', {
-      store: {
-        getters: {
-          permissions: [],
-        },
+      getters: {
+        permissions: [],
       },
     });
+    const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.find('.test-discourse-button').exists()).toBe(false);
+    expect(wrapper.find('.test-discourse-startedit').exists()).toBe(false);
   });
 
   it('Verifies that clicking save calls the server function', async () => {
     const wrapper = createWrapper();
     await flushPromises();
     await wrapper.get('.test-discourse-startedit').trigger('click');
-    await wrapper.get('.test-discourse-box input').setValue('new translation');
+    await wrapper.get('.test-discourse-box textarea').setValue('new translation');
     await wrapper.get('.test-discourse-button').trigger('click');
     await flushPromises();
     expect(server.updateDiscourseTranslation).toHaveBeenCalledWith('uuid1', 'new translation');
   });
 
   it('Verifies that a failed server call results in an error snackbar', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
     sl.set('serverProxy', {
       updateDiscourseTranslation: jest.fn().mockRejectedValue(),
     });
+    const wrapper = createWrapper();
+    await flushPromises();
     await wrapper.get('.test-discourse-startedit').trigger('click');
-    await wrapper.get('.test-discourse-box input').setValue('');
+    await wrapper.get('.test-discourse-box textarea').setValue('');
     await wrapper.get('.test-discourse-button').trigger('click');
     await flushPromises();
     expect(actions.showErrorSnackbar).toHaveBeenCalled();
