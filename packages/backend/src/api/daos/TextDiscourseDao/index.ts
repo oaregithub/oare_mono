@@ -26,6 +26,7 @@ export interface DiscourseRow {
   wordOnTablet: number | null;
   parentUuid: string | null;
   spelling: string | null;
+  explicitSpelling: string | null;
   transcription: string | null;
   line: number | null;
   paragraphLabel: string | null;
@@ -141,6 +142,7 @@ class TextDiscourseDao {
         'text_discourse.word_on_tablet AS wordOnTablet',
         'text_discourse.parent_uuid AS parentUuid',
         'text_discourse.spelling',
+        'text_discourse.explicit_spelling AS explicitSpelling',
         'text_discourse.transcription',
         'text_epigraphy.line',
         'alias.name AS paragraphLabel',

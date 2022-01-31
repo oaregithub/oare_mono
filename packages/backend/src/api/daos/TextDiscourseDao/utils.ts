@@ -24,6 +24,7 @@ export function createNestedDiscourses(
       type,
       uuid,
       spelling,
+      explicitSpelling,
       transcription,
       line,
       wordOnTablet,
@@ -41,6 +42,7 @@ export function createNestedDiscourses(
         ...(translation && { translation }),
         ...(paragraphLabel && { paragraphLabel }),
         ...(spelling && { spelling }),
+        ...(explicitSpelling && { explicitSpelling }),
         ...(transcription && { transcription }),
         ...(line && { line }),
         ...(wordOnTablet && { wordOnTablet }),
@@ -60,10 +62,10 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
   }
   discourse.units.forEach(unit => setDiscourseReading(unit));
   // eslint-disable-next-line
-  discourse.spelling = discourse.units
+  discourse.explicitSpelling = discourse.units
     .map(u => {
       if (u.transcription) return u.transcription;
-      return u.spelling || '';
+      return u.explicitSpelling || '';
     })
     .join(' ');
 }
