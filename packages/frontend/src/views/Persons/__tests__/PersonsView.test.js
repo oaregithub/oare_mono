@@ -2,6 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
+import { ReloadKey } from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import PersonsView from '../index.vue';
 import sl from '../../../serviceLocator';
 
@@ -106,6 +107,8 @@ const mockLodash = {
   debounce: cb => cb,
 };
 
+const reload = jest.fn();
+
 const mockLetter = 'T';
 const setup = () => {
   sl.set('serverProxy', mockServer);
@@ -121,6 +124,9 @@ describe('PersonsView test', () => {
     mount(PersonsView, {
       vuetify,
       localVue,
+      provide: {
+        [ReloadKey]: reload,
+      },
       propsData: {
         letter: mockLetter,
       },
