@@ -69,7 +69,7 @@ class PermissionsDao {
     {
       name: 'EDIT_TRANSLATION',
       type: 'text',
-      description: "Allow group users to edit a text's translation",
+      description: "Allow group users to edit a text's discourse translations",
     },
     {
       name: 'INSERT_DISCOURSE_ROWS',
