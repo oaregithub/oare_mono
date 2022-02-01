@@ -5,25 +5,62 @@
         {{ sideName }}
       </div>
       <div>
-        <div
-          v-for="lineNum in renderer.linesOnSide(sideName)"
-          :key="lineNum"
-          class="oare-title d-flex"
-        >
-          <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
-          <span
-            v-if="renderer.isRegion(lineNum)"
-            v-html="renderer.lineReading(lineNum)"
-          />
-          <span v-else>
+        <div v-if="renderer.columnsOnSide(sideName).length === 1">
+          <div
+            v-for="lineNum in renderer.linesOnSide(sideName)"
+            :key="lineNum"
+            class="oare-title d-flex"
+          >
+            <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
             <span
-              v-for="(word, index) in renderer.getLineWords(lineNum)"
-              :key="index"
-              v-html="highlightWord(word)"
-              class="mr-1 cursor-display test-rendered-word"
-              @click="openDialog(word.discourseUuid)"
+              v-if="
+                renderer.isRegion(lineNum) || renderer.isUndetermined(lineNum)
+              "
+              v-html="renderer.lineReading(lineNum)"
             />
-          </span>
+            <span v-else>
+              <span
+                v-for="(word, index) in renderer.getLineWords(lineNum)"
+                :key="index"
+                v-html="formatWord(word)"
+                class="cursor-display test-rendered-word"
+                :class="{ 'mr-1': !word.isContraction }"
+                @click="openDialog(word.discourseUuid)"
+              />
+            </span>
+          </div>
+        </div>
+        <div v-else>
+          <div
+            v-for="colNum in renderer.columnsOnSide(sideName)"
+            :key="colNum"
+            class="pa-1"
+          >
+            <div class="oare-title mr-1 pb-1">
+              col. {{ romanNumeral(colNum) }}
+            </div>
+            <div
+              v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
+              :key="lineNum"
+              class="oare-title d-flex"
+            >
+              <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
+              <span
+                v-if="renderer.isRegion(lineNum)"
+                v-html="renderer.lineReading(lineNum)"
+              />
+              <span v-else>
+                <span
+                  v-for="(word, index) in renderer.getLineWords(lineNum)"
+                  :key="index"
+                  v-html="formatWord(word)"
+                  class="cursor-display test-rendered-word"
+                  :class="{ 'mr-1': !word.isContraction }"
+                  @click="openDialog(word.discourseUuid)"
+                />
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -54,8 +91,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import { createTabletRenderer } from '@oare/oare';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { createTabletRenderer, TabletRenderer } from '@oare/oare';
 import {
   Word,
   EpigraphicUnit,
@@ -93,15 +130,57 @@ export default defineComponent({
     const viewingDialog = ref(false);
     const discourseWordInfo = ref<Word | null>(null);
 
-    const renderer = computed(() => {
-      return createTabletRenderer(props.epigraphicUnits, {
+    const renderer = ref<TabletRenderer>(
+      createTabletRenderer(props.epigraphicUnits, {
         showNullDiscourse: store.getters.isAdmin,
         textFormat: 'html',
-      });
-    });
+      })
+    );
+
+    const romanNumeral = (colNum: number): string => {
+      let numeral: string = '';
+      switch (colNum) {
+        case 1:
+          numeral = 'i';
+          break;
+        case 2:
+          numeral = 'ii';
+          break;
+        case 3:
+          numeral = 'iii';
+          break;
+        case 4:
+          numeral = 'iv';
+          break;
+        case 5:
+          numeral = 'v';
+          break;
+        case 6:
+          numeral = 'vi';
+          break;
+        case 7:
+          numeral = 'vii';
+          break;
+        case 8:
+          numeral = 'viii';
+          break;
+        case 9:
+          numeral = 'ix';
+          break;
+        case 10:
+          numeral = 'x';
+          break;
+        default:
+          numeral = `${colNum}`;
+      }
+      return numeral;
+    };
 
     const lineNumber = (line: number): string => {
-      if (renderer.value.isRegion(line)) {
+      if (
+        renderer.value.isRegion(line) ||
+        renderer.value.isUndetermined(line)
+      ) {
         return '';
       }
 
@@ -148,7 +227,7 @@ export default defineComponent({
       }
     };
 
-    const highlightWord = (word: EpigraphicWord) => {
+    const formatWord = (word: EpigraphicWord) => {
       const isWordToHighlight =
         props.discourseToHighlight && word.discourseUuid
           ? props.discourseToHighlight.includes(word.discourseUuid)
@@ -159,11 +238,12 @@ export default defineComponent({
     return {
       renderer,
       lineNumber,
+      romanNumeral,
       openDialog,
       loading,
       discourseWordInfo,
       viewingDialog,
-      highlightWord,
+      formatWord,
     };
   },
 });

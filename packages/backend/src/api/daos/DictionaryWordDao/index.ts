@@ -8,6 +8,7 @@ import {
   ItemPropertyRow,
 } from '@oare/types';
 import knex from '@/connection';
+import sl from '@/serviceLocator';
 import { assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
@@ -70,7 +71,10 @@ export interface TranslationRow {
 }
 
 class DictionaryWordDao {
-  async searchSpellings(spelling: string): Promise<SearchSpellingResultRow[]> {
+  async searchSpellings(
+    spelling: string,
+    userUuid: string | null
+  ): Promise<SearchSpellingResultRow[]> {
     interface SearchSpellingRow {
       wordUuid: string;
       word: string;
@@ -78,6 +82,8 @@ class DictionaryWordDao {
       form: string;
       spellingUuid: string;
     }
+
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
 
     const rows: SearchSpellingRow[] = await knex
       .select(
@@ -96,6 +102,20 @@ class DictionaryWordDao {
       rows.map(r => DictionaryFormDao.getFormGrammar(r.formUuid))
     );
 
+    const occurrences = await Promise.all(
+      rows.map(r =>
+        TextDiscourseDao.getTotalSpellingTexts(r.spellingUuid, userUuid)
+      )
+    );
+
+    const grammaticalInfo = await Promise.all(
+      rows.map(r => this.getGrammaticalInfo(r.wordUuid))
+    );
+    const words: Word[] = grammaticalInfo.map(info => ({
+      ...info,
+      forms: [],
+    }));
+
     return rows.map((row, i) => ({
       word: row.word,
       wordUuid: row.wordUuid,
@@ -105,6 +125,8 @@ class DictionaryWordDao {
         ...formGrammars[i],
       },
       spellingUuid: row.spellingUuid,
+      occurrences: occurrences[i],
+      wordInfo: words[i],
     }));
   }
 

@@ -21,16 +21,9 @@ export interface SearchTextsResponse {
   results: SearchTextsResultRow[];
 }
 
-interface BaseSearchCoocccurrence {
-  type: 'AND' | 'NOT';
-}
-
-export interface SearchCooccurrence extends BaseSearchCoocccurrence {
+export interface SearchCooccurrence {
   uuids: string[][];
-}
-
-export interface SearchIndexCooccurrence extends BaseSearchCoocccurrence {
-  uuids: string[];
+  type: 'AND' | 'NOT';
 }
 
 export interface SearchNullDiscourseLine {

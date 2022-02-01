@@ -38,7 +38,6 @@ export const epigraphicUnitSide = [
   "col. ii'",
   "col. iii'",
   "col. iv'",
-  0,
 ];
 
 export const epigraphicType = [
@@ -68,12 +67,10 @@ export const markupType = [
   'isEmendedReading',
   'erasure',
   'isUninterpreted',
-  'isWrittenWithinPrevSign',
   'omitted',
   'originalSign',
   'superfluous',
   'uncertain',
-  'isWrittenAsLigature',
   'undeterminedSigns',
   'damage',
   'partialDamage',

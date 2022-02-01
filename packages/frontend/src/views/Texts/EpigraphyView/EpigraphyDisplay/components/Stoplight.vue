@@ -1,7 +1,7 @@
 <template>
   <div>
     <component
-      v-if="showEditDialog"
+      v-if="showEditDialog && dialogComponent"
       :is="dialogComponent"
       v-model="editTranslitDialog"
       :transliteration="transliteration"

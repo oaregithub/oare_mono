@@ -10,10 +10,22 @@
     }"
   >
     <template v-slot:[`item.name`]="{ item }">
-      <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`">{{
-        item.name
-      }}</router-link>
+      <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`"
+        >{{ item.name }}
+      </router-link>
       <span v-else>{{ item.name }}</span>
+    </template>
+
+    <template v-slot:[`item.excavation`]="{ item }">
+      {{ item.excavationPrefix }} {{ item.excavationNumber }}
+    </template>
+
+    <template v-slot:[`item.museum`]="{ item }">
+      {{ item.museumPrefix }} {{ item.museumNumber }}
+    </template>
+
+    <template v-slot:[`item.publication`]="{ item }">
+      {{ item.publicationPrefix }} {{ item.publicationNumber }}
     </template>
   </v-data-table>
 </template>
@@ -44,11 +56,24 @@ export default defineComponent({
       default: 10,
     },
   },
+
   setup(props, { emit }) {
     const headers = ref([
       {
         text: 'Text Name',
         value: 'name',
+      },
+      {
+        text: 'Excavation Info',
+        value: 'excavation',
+      },
+      {
+        text: 'Museum Info',
+        value: 'museum',
+      },
+      {
+        text: 'Primary Publication Info',
+        value: 'publication',
       },
     ]);
 

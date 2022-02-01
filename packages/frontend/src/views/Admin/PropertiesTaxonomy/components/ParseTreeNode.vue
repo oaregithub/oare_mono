@@ -1,5 +1,11 @@
 <template>
-  <v-expansion-panels focusable flat v-if="node.children">
+  <v-expansion-panels
+    focusable
+    flat
+    v-if="node.children"
+    multiple
+    :value="searchResultsToOpen"
+  >
     <v-expansion-panel
       v-for="child in node.children"
       :key="child.uuid"
@@ -47,7 +53,12 @@
                   </v-card>
                 </v-menu>
               </template>
-              {{ child.variableName || child.valueName || child.aliasName }}
+              <mark v-if="nodesToHighlight.includes(child.uuid)">
+                {{ child.variableName || child.valueName || child.aliasName }}
+              </mark>
+              <span v-else>
+                {{ child.variableName || child.valueName || child.aliasName }}
+              </span>
               <i
                 v-if="
                   !child.variableName && !child.valueName && !child.aliasName
@@ -102,6 +113,8 @@
         <parse-tree-node
           :node="child"
           :allowSelections="allowSelections"
+          :nodesToHighlight="nodesToHighlight"
+          :openSearchResults="openSearchResults"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
         />
@@ -133,6 +146,14 @@ export default defineComponent({
       required: true,
     },
     allowSelections: {
+      type: Boolean,
+      default: false,
+    },
+    nodesToHighlight: {
+      type: Array as PropType<String[]>,
+      default: () => [],
+    },
+    openSearchResults: {
       type: Boolean,
       default: false,
     },
@@ -229,12 +250,25 @@ export default defineComponent({
       }
     };
 
+    const searchResultsToOpen = computed(() => {
+      const indices: number[] = [];
+      if (props.node.children && props.openSearchResults) {
+        props.node.children.forEach((child, idx) => {
+          if (props.nodesToHighlight.includes(child.uuid)) {
+            indices.push(idx);
+          }
+        });
+      }
+      return indices;
+    });
+
     return {
       selected,
       ignoredSubtrees,
       showCheck,
       updateCompletedSubtrees,
       updateProperties,
+      searchResultsToOpen,
     };
   },
 });

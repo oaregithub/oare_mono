@@ -58,13 +58,16 @@ router
       const epigraphyStatus = await Promise.all(
         publicDenylist.map(text => TextEpigraphyDao.hasEpigraphy(text))
       );
-      const names = await Promise.all(
+
+      const texts = await Promise.all(
         publicDenylist.map(uuid => TextDao.getTextByUuid(uuid))
       );
+      const names = texts.map(text => (text ? text.name : undefined));
+
       const response: DenylistAllowlistItem[] = publicDenylist.map(
         (uuid, index) => ({
           uuid,
-          name: names[index]?.name,
+          name: names[index],
           hasEpigraphy: epigraphyStatus[index],
         })
       );
@@ -127,13 +130,18 @@ router
       const CollectionDao = sl.get('CollectionDao');
 
       const denylistCollections = await PublicDenylistDao.getDenylistCollectionUuids();
-      const names = await Promise.all(
+
+      const collections = await Promise.all(
         denylistCollections.map(uuid => CollectionDao.getCollectionByUuid(uuid))
       );
+      const names = collections.map(collection =>
+        collection ? collection.name : undefined
+      );
+
       const response: DenylistAllowlistItem[] = denylistCollections.map(
         (collectionUuid, index) => ({
           uuid: collectionUuid,
-          name: names[index]?.name,
+          name: names[index],
         })
       );
       res.json(response);

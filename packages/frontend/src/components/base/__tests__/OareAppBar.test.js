@@ -105,7 +105,7 @@ describe('OareAppBar.vue', () => {
       isAdmin: true,
       isAuthenticated: true,
     });
-    ['words', 'names', 'places', 'texts', 'search'].forEach(link => {
+    ['texts', 'search'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
   });

@@ -271,10 +271,6 @@ export default defineComponent({
       properties.value = propertyList;
     };
 
-    const clearProperties = () => {
-      properties.value = [];
-    };
-
     const propertyText = (property: ParseTreeProperty) => {
       return `${property.variable.variableName} - ${property.value.valueName}`;
     };
@@ -353,7 +349,6 @@ export default defineComponent({
       formComplete,
       properties,
       setProperties,
-      clearProperties,
       propertyText,
       textInfo,
       textNameRules,

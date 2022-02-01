@@ -14,7 +14,7 @@ const keyString = (key: CacheKey): string =>
   JSON.stringify({
     method: key.req.method,
     url: key.req.originalUrl,
-    isAdmin: key.req.user?.isAdmin || false,
+    isAdmin: key.req.user && key.req.user.isAdmin,
   });
 class Cache {
   private responses: { [key: string]: any } = {};

@@ -64,7 +64,8 @@
           v-on="routeActions"
         ></router-view>
         <span v-if="!textInfo.hasEpigraphy">
-          Apologies, we do not have a transliteration for this text at the moment.
+          Apologies, we do not have a transliteration for this text at the
+          moment.
         </span>
       </OareContentView>
     </v-col>
@@ -283,8 +284,8 @@ export default defineComponent({
           );
         }
       } catch (err) {
-        if (err.response) {
-          if (err.response.status === 403) {
+        if ((err as any).response) {
+          if ((err as any).response.status === 403) {
             router.replace({ name: '403' });
           }
         } else {

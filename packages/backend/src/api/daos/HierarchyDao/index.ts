@@ -114,7 +114,8 @@ class HierarchyDao {
       })
       .first();
     let totalItems = 0;
-    if (count?.count) {
+
+    if (count && count.count) {
       totalItems = count.count as number;
     }
 
@@ -135,12 +136,29 @@ class HierarchyDao {
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const collectionTextQuery = () => {
+      const finalSearch: string = `%${search
+        .replace(/\W/g, '%')
+        .toLowerCase()}%`;
+
       const query = knex('hierarchy')
         .leftJoin('text', 'text.uuid', 'hierarchy.object_uuid')
         .where('hierarchy.obj_parent_uuid', collectionUuid)
-        .andWhere('text.name', 'like', `%${search}%`)
-        .whereNotIn('hierarchy.object_uuid', textsToHide);
-
+        .whereNotIn('hierarchy.object_uuid', textsToHide)
+        .andWhere(function () {
+          this.whereRaw('LOWER(text.display_name) LIKE ?', [finalSearch])
+            .orWhereRaw(
+              "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) LIKE ?",
+              [finalSearch]
+            )
+            .orWhereRaw(
+              "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) LIKE ?",
+              [finalSearch]
+            )
+            .orWhereRaw(
+              "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) LIKE ?",
+              [finalSearch]
+            );
+        });
       return query;
     };
 
@@ -151,7 +169,7 @@ class HierarchyDao {
       .first();
 
     let totalTexts = 0;
-    if (countRow?.count) {
+    if (countRow && countRow.count) {
       totalTexts = countRow.count as number;
     }
 
@@ -160,10 +178,16 @@ class HierarchyDao {
         'hierarchy.id',
         'hierarchy.object_uuid as uuid',
         'hierarchy.type',
-        'text.name'
+        'text.display_name as name',
+        'text.excavation_prfx as excavationPrefix',
+        'text.excavation_no as excavationNumber',
+        'text.museum_prfx as museumPrefix',
+        'text.museum_no as museumNumber',
+        'text.publication_prfx as publicationPrefix',
+        'text.publication_no as publicationNumber'
       )
       .groupBy('hierarchy.object_uuid')
-      .orderBy('text.name')
+      .orderBy('text.display_name')
       .limit(rows)
       .offset((page - 1) * rows);
 

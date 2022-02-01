@@ -53,6 +53,29 @@ describe('EditWordDialog test', () => {
           suffix: null,
           spellings: [],
         },
+        wordInfo: {
+          uuid: 'word-uuid',
+          word: 'test-word',
+          forms: [
+            {
+              form: 'test-form-1',
+            },
+            {
+              form: 'test-form-2',
+            },
+          ],
+          partsOfSpeech: [
+            {
+              uuid: 'test-pos-uuid',
+              name: 'test-pos-name',
+              referenceUuid: 'test-pos-ref-uuid',
+              valueUuid: 'test-value-uuid',
+            },
+          ],
+          verbalThematicVowelTypes: [],
+          translations: [],
+          specialClassifications: [],
+        },
       },
     ]),
     searchSpellingDiscourse: jest.fn().mockResolvedValue({

@@ -18,6 +18,15 @@ Object {
               <col
                 class=""
               />
+              <col
+                class=""
+              />
+              <col
+                class=""
+              />
+              <col
+                class=""
+              />
             </colgroup>
             <thead
               class="v-data-table-header"
@@ -39,6 +48,54 @@ Object {
                     style="font-size: 18px;"
                   />
                 </th>
+                <th
+                  aria-label="Excavation Info: Not sorted. Activate to sort ascending."
+                  aria-sort="none"
+                  class="text-start sortable"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span>
+                    Excavation Info
+                  </span>
+                  <i
+                    aria-hidden="true"
+                    class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                    style="font-size: 18px;"
+                  />
+                </th>
+                <th
+                  aria-label="Museum Info: Not sorted. Activate to sort ascending."
+                  aria-sort="none"
+                  class="text-start sortable"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span>
+                    Museum Info
+                  </span>
+                  <i
+                    aria-hidden="true"
+                    class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                    style="font-size: 18px;"
+                  />
+                </th>
+                <th
+                  aria-label="Primary Publication Info: Not sorted. Activate to sort ascending."
+                  aria-sort="none"
+                  class="text-start sortable"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span>
+                    Primary Publication Info
+                  </span>
+                  <i
+                    aria-hidden="true"
+                    class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                    style="font-size: 18px;"
+                  />
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -52,7 +109,29 @@ Object {
                     to="/epigraphies/1"
                   >
                     CCT 3 31
+    
                   </router-link-stub>
+                </td>
+                <td
+                  class="text-start"
+                >
+                  
+     
+  
+                </td>
+                <td
+                  class="text-start"
+                >
+                  
+     
+  
+                </td>
+                <td
+                  class="text-start"
+                >
+                  
+     
+  
                 </td>
               </tr>
               <tr
@@ -65,7 +144,29 @@ Object {
                     to="/epigraphies/2"
                   >
                     CCT 1 12b
+    
                   </router-link-stub>
+                </td>
+                <td
+                  class="text-start"
+                >
+                  
+     
+  
+                </td>
+                <td
+                  class="text-start"
+                >
+                  
+     
+  
+                </td>
+                <td
+                  class="text-start"
+                >
+                  
+     
+  
                 </td>
               </tr>
             </tbody>
@@ -87,7 +188,7 @@ Object {
                 <div
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-owns="list-10"
+                  aria-owns="list-13"
                   class="v-input__slot"
                   role="button"
                 >
@@ -106,7 +207,7 @@ Object {
                         aria-label="Rows per page:"
                         aria-readonly="false"
                         autocomplete="off"
-                        id="input-10"
+                        id="input-13"
                         readonly="readonly"
                         type="text"
                       />
@@ -196,6 +297,15 @@ Object {
             <col
               class=""
             />
+            <col
+              class=""
+            />
+            <col
+              class=""
+            />
+            <col
+              class=""
+            />
           </colgroup>
           <thead
             class="v-data-table-header"
@@ -217,6 +327,54 @@ Object {
                   style="font-size: 18px;"
                 />
               </th>
+              <th
+                aria-label="Excavation Info: Not sorted. Activate to sort ascending."
+                aria-sort="none"
+                class="text-start sortable"
+                role="columnheader"
+                scope="col"
+              >
+                <span>
+                  Excavation Info
+                </span>
+                <i
+                  aria-hidden="true"
+                  class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                  style="font-size: 18px;"
+                />
+              </th>
+              <th
+                aria-label="Museum Info: Not sorted. Activate to sort ascending."
+                aria-sort="none"
+                class="text-start sortable"
+                role="columnheader"
+                scope="col"
+              >
+                <span>
+                  Museum Info
+                </span>
+                <i
+                  aria-hidden="true"
+                  class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                  style="font-size: 18px;"
+                />
+              </th>
+              <th
+                aria-label="Primary Publication Info: Not sorted. Activate to sort ascending."
+                aria-sort="none"
+                class="text-start sortable"
+                role="columnheader"
+                scope="col"
+              >
+                <span>
+                  Primary Publication Info
+                </span>
+                <i
+                  aria-hidden="true"
+                  class="v-icon notranslate v-data-table-header__icon mdi mdi-arrow-up theme--light"
+                  style="font-size: 18px;"
+                />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -230,7 +388,29 @@ Object {
                   to="/epigraphies/1"
                 >
                   CCT 3 31
+    
                 </router-link-stub>
+              </td>
+              <td
+                class="text-start"
+              >
+                
+     
+  
+              </td>
+              <td
+                class="text-start"
+              >
+                
+     
+  
+              </td>
+              <td
+                class="text-start"
+              >
+                
+     
+  
               </td>
             </tr>
             <tr
@@ -243,7 +423,29 @@ Object {
                   to="/epigraphies/2"
                 >
                   CCT 1 12b
+    
                 </router-link-stub>
+              </td>
+              <td
+                class="text-start"
+              >
+                
+     
+  
+              </td>
+              <td
+                class="text-start"
+              >
+                
+     
+  
+              </td>
+              <td
+                class="text-start"
+              >
+                
+     
+  
               </td>
             </tr>
           </tbody>
@@ -265,7 +467,7 @@ Object {
               <div
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-owns="list-10"
+                aria-owns="list-13"
                 class="v-input__slot"
                 role="button"
               >
@@ -284,7 +486,7 @@ Object {
                       aria-label="Rows per page:"
                       aria-readonly="false"
                       autocomplete="off"
-                      id="input-10"
+                      id="input-13"
                       readonly="readonly"
                       type="text"
                     />

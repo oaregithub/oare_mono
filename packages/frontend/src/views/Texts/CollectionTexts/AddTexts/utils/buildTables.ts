@@ -1,7 +1,5 @@
 import {
   CreateTextTables,
-  EpigraphicUnit,
-  EpigraphicUnitSide,
   AddTextInfo,
   AddTextEditorContent,
   TextEpigraphyRow,
@@ -17,10 +15,8 @@ import {
   ColumnContent,
   RowContent,
   SignCodeWithDiscourseUuid,
-  EditorMarkup,
   EpigraphyType,
   EpigraphicUnitType,
-  TextPhoto,
   TextPhotoWithName,
   LinkRow,
   ResourceRow,
@@ -29,98 +25,6 @@ import {
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 import { convertParsePropsToItemProps } from '@oare/oare';
-
-export const getSideNumber = (number: number | null): EpigraphicUnitSide => {
-  switch (number) {
-    case 1:
-      return 'obv.';
-    case 2:
-      return 'lo.e.';
-    case 3:
-      return 'rev.';
-    case 4:
-      return 'u.e.';
-    case 5:
-      return 'le.e.';
-    default:
-      return 'r.e.';
-  }
-};
-
-export const convertTablesToUnits = (
-  tables: CreateTextTables
-): EpigraphicUnit[] => {
-  let { markups } = tables;
-
-  const refTypes: { [key: string]: Set<string> } = {};
-  markups = markups.filter(markup => {
-    if (refTypes[markup.referenceUuid]) {
-      if (refTypes[markup.referenceUuid].has(markup.type)) {
-        return false;
-      }
-    } else {
-      refTypes[markup.referenceUuid] = new Set();
-    }
-
-    refTypes[markup.referenceUuid].add(markup.type);
-    return true;
-  });
-  markups.sort(a => {
-    if (a.type === 'damage' || a.type === 'partialDamage') {
-      return -1;
-    }
-    return 0;
-  });
-
-  const markupUnits = markups.map(markup => ({
-    referenceUuid: markup.referenceUuid,
-    type: markup.type,
-    value: markup.numValue,
-    startChar: markup.startChar,
-    endChar: markup.endChar,
-  }));
-
-  const relevantEpigraphyRows = tables.epigraphies.filter(
-    epigraphy => epigraphy.charOnTablet || epigraphy.type === 'region'
-  );
-
-  const initalUnits: EpigraphicUnit[] = relevantEpigraphyRows.map(epigraphy => {
-    const relevantSignInfo = tables.signInfo.filter(
-      sign => sign.referenceUuid === epigraphy.uuid
-    );
-    const relevantSign =
-      relevantSignInfo.length > 0 ? relevantSignInfo[0] : null;
-    const unit: EpigraphicUnit = {
-      uuid: epigraphy.uuid,
-      side: getSideNumber(epigraphy.side),
-      column: epigraphy.column || 0,
-      line: epigraphy.line || 0,
-      charOnLine: epigraphy.charOnLine || 0,
-      charOnTablet: epigraphy.charOnTablet || 0,
-      objOnTablet: epigraphy.objectOnTablet || 0,
-      discourseUuid: epigraphy.discourseUuid,
-      reading: epigraphy.reading,
-      epigType: epigraphy.type,
-      type: relevantSign ? relevantSign.type : null,
-      value: relevantSign ? relevantSign.value : null,
-      markups: markupUnits.filter(
-        markup => markup.referenceUuid === epigraphy.uuid
-      ),
-      readingUuid: epigraphy.readingUuid || '',
-      signUuid: epigraphy.signUuid || '',
-    };
-    return unit;
-  });
-
-  const orderedInitialUnits = initalUnits.sort((a, b) => {
-    if (a.objOnTablet > b.objOnTablet) {
-      return 1;
-    }
-    return -1;
-  });
-
-  return orderedInitialUnits;
-};
 
 const regionMarkupType = (
   region:
@@ -195,6 +99,40 @@ const createTextDiscourseRow = async (
   transcription: row.transcription || null,
 });
 
+function generateDisplayName(textInfo: AddTextInfo): string {
+  let displayName: string = '';
+
+  if (
+    textInfo.excavationPrefix &&
+    textInfo.excavationPrefix.slice(0, 2).toLowerCase() === 'kt'
+  ) {
+    displayName = `${textInfo.excavationPrefix} ${textInfo.excavationNumber}`;
+    if (textInfo.publicationPrefix && textInfo.publicationNumber) {
+      displayName += ` (${textInfo.publicationPrefix} ${textInfo.publicationNumber})`;
+    } else if (textInfo.museumPrefix && textInfo.museumNumber) {
+      displayName += ` (${textInfo.museumPrefix} ${textInfo.museumNumber})`;
+    }
+  } else if (textInfo.publicationPrefix && textInfo.publicationNumber) {
+    displayName = `${textInfo.publicationPrefix} ${textInfo.publicationNumber}`;
+    if (textInfo.excavationPrefix && textInfo.excavationNumber) {
+      displayName += ` (${textInfo.excavationPrefix} ${textInfo.excavationNumber})`;
+    } else if (textInfo.museumPrefix && textInfo.museumNumber) {
+      displayName += ` (${textInfo.museumPrefix} ${textInfo.museumNumber})`;
+    }
+  } else if (textInfo.excavationPrefix && textInfo.excavationNumber) {
+    displayName = `${textInfo.excavationPrefix} ${textInfo.excavationNumber}`;
+    if (textInfo.museumPrefix && textInfo.museumNumber) {
+      displayName += ` (${textInfo.museumPrefix} ${textInfo.museumNumber})`;
+    }
+  } else if (textInfo.museumPrefix && textInfo.museumNumber) {
+    displayName = `${textInfo.museumPrefix} ${textInfo.museumNumber}`;
+  } else {
+    displayName = textInfo.textName ? textInfo.textName : '';
+  }
+
+  return displayName;
+}
+
 const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
   uuid: v4(),
   type: 'logosyllabic',
@@ -202,6 +140,7 @@ const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
   cdliNum: textInfo.cdliNum,
   translitStatus: '5536b5bd-e18e-11ea-8c9d-02b316ca7378',
   name: textInfo.textName,
+  displayName: generateDisplayName(textInfo),
   excavationPrefix: textInfo.excavationPrefix,
   excavationNumber: textInfo.excavationNumber,
   museumPrefix: textInfo.museumPrefix,
@@ -465,6 +404,7 @@ const createEditorRows = async (
             parentUuid,
             side: sideNumber,
             column: columnNumber,
+            reading: row.reading,
           });
 
           return [regionRow];
@@ -520,6 +460,13 @@ const createSignRows = async (
     await Promise.all(
       signs.map(async (sign, idx) => {
         const type = getEpigraphyType(sign.readingType);
+        const discourseUuid =
+          sign.markup &&
+          sign.markup.markup.some(
+            markup => markup.type === 'superfluous' || markup.type === 'erasure'
+          )
+            ? null
+            : sign.discourseUuid;
         const signRow: TextEpigraphyRow = await createTextEpigraphyRow({
           uuid: sign.uuid,
           type,
@@ -533,7 +480,7 @@ const createSignRows = async (
           sign: sign.sign || undefined,
           readingUuid: sign.readingUuid || undefined,
           reading: sign.value || undefined,
-          discourseUuid: sign.discourseUuid,
+          discourseUuid: discourseUuid || undefined,
           charOnLine: idx + 1,
         });
         return signRow;
@@ -690,40 +637,65 @@ const createDiscourseRows = async (
                     const words = row.words || [];
                     const wordRows = (
                       await Promise.all(
-                        words.map(async word => {
-                          const type =
-                            row.signs &&
-                            row.signs
-                              .filter(
-                                sign =>
-                                  sign.discourseUuid === word.discourseUuid
-                              )
-                              .every(sign => sign.readingType === 'number')
-                              ? 'number'
-                              : 'word';
-                          let spellingUuid: string | undefined;
-                          const forms = await server.searchSpellings(
-                            word.spelling
-                          );
-                          if (persistentDiscourseStorage[word.discourseUuid]) {
-                            spellingUuid =
-                              persistentDiscourseStorage[word.discourseUuid] ||
-                              undefined;
-                          } else if (forms.length === 1) {
-                            spellingUuid = forms[0].spellingUuid;
-                          }
-                          const newDiscourseRow = await createTextDiscourseRow({
-                            uuid: word.discourseUuid,
-                            type,
-                            textUuid,
-                            treeUuid,
-                            parentUuid: discourseUnitRow.uuid,
-                            spelling: word.spelling,
-                            explicitSpelling: word.spelling,
-                            spellingUuid,
-                          });
-                          return newDiscourseRow;
-                        })
+                        words
+                          .filter(word => !!word.discourseUuid)
+                          .map(async word => {
+                            const type =
+                              row.signs &&
+                              row.signs
+                                .filter(
+                                  sign =>
+                                    sign.discourseUuid === word.discourseUuid
+                                )
+                                .every(sign => sign.readingType === 'number')
+                                ? 'number'
+                                : 'word';
+                            let spellingUuid: string | undefined;
+                            const forms = await server.searchSpellings(
+                              word.spelling
+                            );
+                            if (
+                              persistentDiscourseStorage[
+                                word.discourseUuid!
+                              ] !== undefined
+                            ) {
+                              spellingUuid =
+                                persistentDiscourseStorage[
+                                  word.discourseUuid!
+                                ] || undefined;
+                            } else if (forms.length === 1) {
+                              spellingUuid = forms[0].spellingUuid;
+                            } else if (forms.length >= 2) {
+                              const sortedFormsByNumOccurrences = forms.sort(
+                                (a, b) => {
+                                  if (a.occurrences >= b.occurrences) {
+                                    return -1;
+                                  }
+                                  return 1;
+                                }
+                              );
+                              const occurrenceRatio =
+                                sortedFormsByNumOccurrences[0].occurrences /
+                                sortedFormsByNumOccurrences[1].occurrences;
+                              if (occurrenceRatio >= 2) {
+                                spellingUuid =
+                                  sortedFormsByNumOccurrences[0].spellingUuid;
+                              }
+                            }
+                            const newDiscourseRow = await createTextDiscourseRow(
+                              {
+                                uuid: word.discourseUuid!,
+                                type,
+                                textUuid,
+                                treeUuid,
+                                parentUuid: discourseUnitRow.uuid,
+                                spelling: word.spelling,
+                                explicitSpelling: word.spelling,
+                                spellingUuid,
+                              }
+                            );
+                            return newDiscourseRow;
+                          })
                       )
                     ).flat();
                     return wordRows;
@@ -782,527 +754,4 @@ const createSignInformation = async (
     )
   ).flat();
   return signRows;
-};
-
-export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
-  const determinativeAltMatches = rowText.match(/%((!")|(!!")|(\?'))/g) || [];
-  determinativeAltMatches.forEach(match => {
-    const newText = match.replace('%', '$');
-    rowText = rowText.replace(match, newText);
-  });
-
-  const words = rowText.split(/[\s]+/).filter(word => word !== '');
-  const pieces = words.map((word, index) => ({
-    postMatches: word.match(/[\s\-.%]+/g) || [],
-    signs: word.split(/[-.%]+/),
-    wordIndex: index,
-  }));
-  const editorMarkup: EditorMarkup[] = pieces.flatMap(piece =>
-    piece.signs.map((sign, idx) => ({
-      text: sign,
-      markup: [],
-      post: piece.postMatches[idx] || '',
-      wordIndex: piece.wordIndex,
-    }))
-  );
-
-  let damageStatus = false;
-  let pieceWithStart: number;
-  let currentStartValue = 0;
-  editorMarkup.forEach((piece, idx) => {
-    let startChar: number | undefined;
-    let endChar: number | undefined;
-    const prefixMatches = piece.text.match(/\[/g);
-    if (prefixMatches) {
-      startChar = piece.text.indexOf('[');
-      currentStartValue = startChar;
-      damageStatus = true;
-      pieceWithStart = idx;
-    }
-
-    if (damageStatus) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'damage' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/\]/g);
-    if (postfixMatches) {
-      endChar = piece.text.replace('[', '').indexOf(']');
-      damageStatus = false;
-    }
-
-    if (startChar) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup.filter(mark => mark.type !== 'damage'),
-          {
-            type: 'damage',
-            startChar,
-          },
-        ],
-      };
-    }
-
-    if (
-      endChar &&
-      ((endChar !== piece.text.replace('[', '').replace(']', '').length &&
-        currentStartValue === 0) ||
-        currentStartValue > 0)
-    ) {
-      const originalStartDamageRow = editorMarkup[idx].markup.filter(
-        mark => mark.type === 'damage'
-      )[0];
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup.filter(mark => mark.type !== 'damage'),
-          {
-            ...originalStartDamageRow,
-            endChar,
-          },
-        ],
-      };
-      const originalEndDamageRow = editorMarkup[pieceWithStart].markup.filter(
-        mark => mark.type === 'damage'
-      )[0];
-      editorMarkup[pieceWithStart] = {
-        ...editorMarkup[pieceWithStart],
-        markup: [
-          ...editorMarkup[pieceWithStart].markup.filter(
-            mark => mark.type !== 'damage'
-          ),
-          {
-            ...originalEndDamageRow,
-            startChar: currentStartValue,
-          },
-        ],
-      };
-    }
-  });
-
-  let partialDamageStatus = false;
-  let partialPieceWithStart: number;
-  let currentPartialStartValue = 0;
-  editorMarkup.forEach((piece, idx) => {
-    let startChar: number | undefined;
-    let endChar: number | undefined;
-    const prefixMatches = piece.text.match(/⸢/g);
-    if (prefixMatches) {
-      startChar = piece.text.indexOf('⸢');
-      currentPartialStartValue = startChar;
-      partialDamageStatus = true;
-      partialPieceWithStart = idx;
-    }
-
-    if (partialDamageStatus) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'partialDamage' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/⸣/g);
-    if (postfixMatches) {
-      endChar = piece.text.replace('⸢', '').indexOf('⸣');
-      partialDamageStatus = false;
-    }
-
-    if (startChar) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup.filter(
-            mark => mark.type !== 'partialDamage'
-          ),
-          {
-            type: 'partialDamage',
-            startChar,
-          },
-        ],
-      };
-    }
-
-    if (
-      endChar &&
-      ((endChar !== piece.text.replace('⸢', '').replace('⸣', '').length &&
-        currentPartialStartValue === 0) ||
-        currentPartialStartValue > 0)
-    ) {
-      const originalStartDamageRow = editorMarkup[idx].markup.filter(
-        mark => mark.type === 'partialDamage'
-      )[0];
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup.filter(
-            mark => mark.type !== 'partialDamage'
-          ),
-          {
-            ...originalStartDamageRow,
-            endChar,
-          },
-        ],
-      };
-      const originalEndDamageRow = editorMarkup[
-        partialPieceWithStart
-      ].markup.filter(mark => mark.type === 'partialDamage')[0];
-      editorMarkup[partialPieceWithStart] = {
-        ...editorMarkup[partialPieceWithStart],
-        markup: [
-          ...editorMarkup[partialPieceWithStart].markup.filter(
-            mark => mark.type !== 'partialDamage'
-          ),
-          {
-            ...originalEndDamageRow,
-            startChar: currentPartialStartValue,
-          },
-        ],
-      };
-    }
-  });
-
-  editorMarkup.forEach((piece, idx) => {
-    const undeterminedSignsMatches = piece.text.match(/x+/g) || [];
-    if (undeterminedSignsMatches) {
-      undeterminedSignsMatches.forEach(match => {
-        editorMarkup[idx] = {
-          ...editorMarkup[idx],
-          markup: [
-            ...editorMarkup[idx].markup,
-            { type: 'undeterminedSigns', numValue: match.length },
-          ],
-        };
-      });
-    }
-
-    const unknownSignsMatches = piece.text.match(/@/g) || [];
-    if (unknownSignsMatches) {
-      unknownSignsMatches.forEach(_ => {
-        editorMarkup[idx] = {
-          ...editorMarkup[idx],
-          markup: [
-            ...editorMarkup[idx].markup,
-            { type: 'undeterminedSigns', numValue: -1 },
-          ],
-        };
-      });
-    }
-  });
-
-  let superfluousStatus = 0;
-  editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/«/g);
-    if (prefixMatches) {
-      superfluousStatus += prefixMatches.length;
-    }
-
-    if (superfluousStatus > 0) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'superfluous' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/»/g);
-    if (postfixMatches) {
-      superfluousStatus -= postfixMatches.length;
-    }
-  });
-
-  let omittedStatus = 0;
-  editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/‹/g);
-    if (prefixMatches) {
-      omittedStatus += prefixMatches.length;
-    }
-
-    if (omittedStatus > 0) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'omitted' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/›/g);
-    if (postfixMatches) {
-      omittedStatus -= postfixMatches.length;
-    }
-  });
-
-  let erasureStatus = 0;
-  editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/\{/g);
-    if (prefixMatches) {
-      erasureStatus += prefixMatches.length;
-    }
-
-    if (erasureStatus > 0) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'erasure' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/\}/g);
-    if (postfixMatches) {
-      erasureStatus -= postfixMatches.length;
-    }
-  });
-
-  let isUninterpretedStatus = false;
-  editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/:/);
-    if (prefixMatches) {
-      isUninterpretedStatus = true;
-    }
-
-    if (isUninterpretedStatus) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'isUninterpreted' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/:/);
-    if (postfixMatches) {
-      isUninterpretedStatus = false;
-    }
-  });
-
-  let isWrittenOverErasureStatus = false;
-  editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/\*/);
-    if (prefixMatches) {
-      isWrittenOverErasureStatus = true;
-    }
-
-    if (isWrittenOverErasureStatus) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'isWrittenOverErasure' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/\*/);
-    if (postfixMatches) {
-      isWrittenOverErasureStatus = false;
-    }
-  });
-
-  let phoneticComplementStatus = false;
-  editorMarkup.forEach((piece, idx) => {
-    const prefixMatches = piece.text.match(/;/);
-    if (prefixMatches) {
-      phoneticComplementStatus = true;
-    }
-
-    if (phoneticComplementStatus) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'phoneticComplement' }],
-      };
-    }
-
-    const postfixMatches = piece.text.match(/;/);
-    if (postfixMatches) {
-      phoneticComplementStatus = false;
-    }
-  });
-
-  editorMarkup.forEach((piece, idx) => {
-    const match = piece.text.match(/".+"/);
-    if (match) {
-      const innerMatches = piece.text.match(/"/g) || [];
-      let altReading = match[0];
-      innerMatches.forEach(_ => {
-        altReading = altReading.replace('"', '');
-      });
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup,
-          {
-            type: 'originalSign',
-            altReading,
-            isDeterminative: piece.text.includes('$'),
-          },
-        ],
-      };
-    }
-  });
-
-  editorMarkup.forEach((piece, idx) => {
-    const match = piece.text.match(/'.+'/);
-    if (match) {
-      const innerMatches = piece.text.match(/'/g) || [];
-      let altReading = match[0];
-      innerMatches.forEach(_ => {
-        altReading = altReading.replace("'", '');
-      });
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup,
-          {
-            type: 'alternateSign',
-            altReading,
-            isDeterminative: piece.text.includes('$'),
-          },
-        ],
-      };
-    }
-  });
-
-  editorMarkup.forEach((piece, idx) => {
-    if (piece.text.endsWith('?') || piece.text.includes("?'")) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'uncertain' }],
-      };
-    }
-  });
-
-  let lineHasWrittenBelowLine = false;
-  editorMarkup.forEach((piece, idx) => {
-    if (piece.text.startsWith('/') || lineHasWrittenBelowLine) {
-      lineHasWrittenBelowLine = true;
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup,
-          { type: 'isWrittenBelowTheLine' },
-        ],
-      };
-    }
-  });
-
-  let lineHasWrittenAboveLine = false;
-  editorMarkup.forEach((piece, idx) => {
-    if (piece.text.startsWith('\\') || lineHasWrittenAboveLine) {
-      lineHasWrittenAboveLine = true;
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [
-          ...editorMarkup[idx].markup,
-          { type: 'isWrittenAboveTheLine' },
-        ],
-      };
-    }
-  });
-
-  editorMarkup.forEach((piece, idx) => {
-    if (piece.text.endsWith('!!') || piece.text.includes('!!"')) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'isCollatedReading' }],
-      };
-    }
-  });
-
-  editorMarkup.forEach((piece, idx) => {
-    if (
-      (piece.text.endsWith('!') && !piece.text.endsWith('!!')) ||
-      (piece.text.includes('!"') && !piece.text.includes('!!'))
-    ) {
-      editorMarkup[idx] = {
-        ...editorMarkup[idx],
-        markup: [...editorMarkup[idx].markup, { type: 'isEmendedReading' }],
-      };
-    }
-  });
-
-  return editorMarkup;
-};
-
-export const addNamesToTextPhotos = async (
-  textInfo: AddTextInfo | undefined,
-  photos: TextPhoto[]
-): Promise<TextPhotoWithName[]> => {
-  const photoNames = await Promise.all(
-    photos.map(photo => generatePhotoName(textInfo, photo))
-  );
-  const photosWithNamesUncorrected: TextPhotoWithName[] = photos.map(
-    (photo, idx) => ({
-      ...photo,
-      name: photoNames[idx],
-    })
-  );
-  return correctPhotoNames(photosWithNamesUncorrected);
-};
-
-export const generatePhotoName = async (
-  textInfo: AddTextInfo | undefined,
-  photo: TextPhoto
-): Promise<string> => {
-  const store = sl.get('store');
-  const server = sl.get('serverProxy');
-  const { user } = store.getters;
-  const lastNameAbb = user ? user.lastName.slice(0, 2).toLowerCase() : '';
-  const firstNameAbb = user ? user.firstName.slice(0, 2).toLowerCase() : '';
-
-  let collection: string = '';
-  let objectNumber: string = '';
-  if (textInfo && textInfo.excavationPrefix && textInfo.excavationNumber) {
-    collection = textInfo.excavationPrefix;
-    objectNumber = textInfo.excavationNumber;
-  } else if (textInfo && textInfo.museumPrefix && textInfo.museumNumber) {
-    collection = textInfo.museumPrefix;
-    objectNumber = textInfo.museumNumber;
-  } else if (
-    textInfo &&
-    textInfo.publicationPrefix &&
-    textInfo.publicationNumber
-  ) {
-    collection = textInfo.publicationPrefix;
-    objectNumber = textInfo.publicationNumber;
-  }
-
-  collection = collection.toLowerCase();
-  collection = collection.replace('kt', '');
-  const piecesToRemove = collection.match(/[^a-z\d]/g) || [];
-  piecesToRemove.forEach(piece => {
-    collection = collection.replace(piece, '');
-  });
-
-  objectNumber = objectNumber.toLowerCase();
-  const objectPiecesToRemove = objectNumber.match(/[^a-z\d]/g) || [];
-  objectPiecesToRemove.forEach(piece => {
-    objectNumber = objectNumber.replace(piece, '');
-  });
-
-  const preDesignatorText = `${collection}-${objectNumber}-${lastNameAbb}${firstNameAbb}-s-${photo.side}-${photo.view}-`;
-
-  const designator = await server.getNextImageDesignator(preDesignatorText);
-
-  const fileType = photo.upload
-    ? photo.upload.type.slice(photo.upload.type.lastIndexOf('/') + 1)
-    : '';
-
-  return `${preDesignatorText}${designator}.${fileType}`;
-};
-
-export const correctPhotoNames = (photos: TextPhotoWithName[]) => {
-  const photosWithNames: TextPhotoWithName[] = photos.map((photo, idx) => {
-    const relevantPhotosNames = photos
-      .slice(0, idx)
-      .map(relevantPhoto => relevantPhoto.name);
-    if (relevantPhotosNames.some(name => name === photo.name)) {
-      const preDesignatorText = photo.name.slice(
-        0,
-        photo.name.lastIndexOf('-') + 1
-      );
-      const newDesignator =
-        (Number(photo.name.slice(photo.name.lastIndexOf('-') + 1)) || 0) + 1;
-      const name = `${preDesignatorText}${newDesignator}`;
-      return {
-        ...photo,
-        name,
-      };
-    }
-    return photo;
-  });
-  return photosWithNames;
 };
