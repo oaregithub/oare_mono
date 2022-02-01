@@ -9,33 +9,50 @@ class ResourceDao {
     textUuid: string,
     cdliNum: string
   ): Promise<string[]> {
-    const s3 = new AWS.S3();
-
-    const resourceLinks: string[] = await knex('resource')
-      .pluck('link')
-      .whereIn(
-        'uuid',
-        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
-      )
-      .where('type', 'img');
-
-    const signedUrls = await Promise.all(
-      resourceLinks.map(key => {
-        const params = {
-          Bucket: 'oare-image-bucket',
-          Key: key,
-        };
-        return s3.getSignedUrlPromise('getObject', params);
-      })
-    );
-
+    const s3Links = await this.getValidS3ImageLinks(textUuid);
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
+    const metLinks = await this.getValidMetImageLinks(textUuid);
 
-    const metLinks = await this.getValidMetImageLinks(resourceLinks);
-
-    const response = metLinks.concat(cdliLinks).concat(signedUrls);
+    const response = [...s3Links, ...cdliLinks, ...metLinks];
 
     return response;
+  }
+
+  async getValidS3ImageLinks(textUuid: string): Promise<string[]> {
+    let signedUrls: string[] = [];
+
+    try {
+      const s3 = new AWS.S3();
+
+      const resourceLinks: string[] = await knex('resource')
+        .pluck('link')
+        .whereIn(
+          'uuid',
+          knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+        )
+        .where('type', 'img')
+        .andWhere('container', 'oare-image-bucket');
+
+      signedUrls = await Promise.all(
+        resourceLinks.map(key => {
+          const params = {
+            Bucket: 'oare-image-bucket',
+            Key: key,
+          };
+          return s3.getSignedUrlPromise('getObject', params);
+        })
+      );
+    } catch (err) {
+      const ErrorsDao = sl.get('ErrorsDao');
+      await ErrorsDao.logError({
+        userUuid: null,
+        stacktrace: err.stack,
+        status: 'In Progress',
+        description: 'Error retrieving S3 photos',
+      });
+    }
+
+    return signedUrls;
   }
 
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
@@ -78,32 +95,45 @@ class ResourceDao {
     return response;
   }
 
-  async getValidMetImageLinks(objectIDs: string[]): Promise<string[]> {
-    const response: string[] = [];
-    const ErrorsDao = sl.get('ErrorsDao');
+  async getValidMetImageLinks(textUuid: string): Promise<string[]> {
+    const imageLinks: string[] = [];
 
-    await Promise.all(
-      objectIDs.map(async objectID => {
-        try {
-          const metUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`;
-          const metResponse = await fetch(metUrl);
+    try {
+      const row: string = await knex('resource')
+        .select('link')
+        .whereIn(
+          'uuid',
+          knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+        )
+        .where('type', 'img')
+        .andWhere('container', 'metmuseum')
+        .first();
+      const objectId = row.link;
+      const metLink = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`;
 
-          if (metResponse.ok) {
-            const metJson = await metResponse.json();
-            response.push(metJson.primaryImage);
-          }
-        } catch (err) {
-          await ErrorsDao.logError({
-            userUuid: null,
-            description: 'Error retrieving MET photo',
-            stacktrace: err.stack,
-            status: 'In Progress',
-          });
-        }
-      })
-    );
+      // @ts-ignore
+      const response = await fetch(metLink, { insecureHttpParser: true });
 
-    return response;
+      if (response.ok) {
+        const jsonResponse = await response.json();
+        imageLinks.push(jsonResponse.primaryImage);
+
+        const {
+          additionalImages,
+        }: { additionalImages: string[] } = jsonResponse;
+        additionalImages.forEach(image => imageLinks.push(image));
+      }
+    } catch (err) {
+      const ErrorsDao = sl.get('ErrorsDao');
+      await ErrorsDao.logError({
+        userUuid: null,
+        stacktrace: err.stack,
+        status: 'In Progress',
+        description: 'Error retrieving Metropolitan Museum photos',
+      });
+    }
+
+    return imageLinks;
   }
 
   async getImageDesignatorMatches(preText: string): Promise<string[]> {
