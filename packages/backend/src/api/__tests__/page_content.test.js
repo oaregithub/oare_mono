@@ -46,9 +46,15 @@ describe('PATCH /page_content/:routeName', () => {
 
   const setup = () => {
     sl.set('PageContentDao', mockPageContentDao);
+    sl.set('UserDao', {
+      getUserByUuid: jest.fn().mockResolvedValue({
+        isAdmin: true,
+      }),
+    });
   };
 
-  const sendRequest = () => request(app).patch(PATH).send(mockContent);
+  const sendRequest = () =>
+    request(app).patch(PATH).send(mockContent).set('Authorization', 'token');
 
   beforeEach(setup);
 
