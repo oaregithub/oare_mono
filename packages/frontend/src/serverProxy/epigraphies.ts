@@ -56,12 +56,12 @@ async function updateMuseumInfo(
 
 async function updatePrimaryPublicationInfo(
   textUuid: string,
-  publicationPrefix: string | null,
+  publicationPrfx: string | null,
   publicationNo: string | null
 ) {
   await axios.patch('/text_epigraphies/edit_publication_info', {
     uuid: textUuid,
-    publicationPrefix: publicationPrefix,
+    publicationPrefix: publicationPrfx,
     publicationNumber: publicationNo,
   });
 }
