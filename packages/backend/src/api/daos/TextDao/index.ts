@@ -81,7 +81,7 @@ class TextDao {
       .where('uuid', textUuid);
   }
 
-  async updateExcavationInof(
+  async updateExcavationInfo(
     textUuid: string,
     newExcavationPrefix: string | null,
     newExcavationNumber: string | null
@@ -94,7 +94,7 @@ class TextDao {
       .where('uuid', textUuid);
   }
 
-  async updateMuseumInof(
+  async updateMuseumInfo(
     textUuid: string,
     newMuseumPrefix: string | null,
     newMuseumNumber: string | null
@@ -107,7 +107,7 @@ class TextDao {
       .where('uuid', textUuid);
   }
 
-  async updatePrimaryPublicationInof(
+  async updatePrimaryPublicationInfo(
     textUuid: string,
     newPrimaryPublicationPrefix: string | null,
     newPrimaryPublicationNumber: string | null

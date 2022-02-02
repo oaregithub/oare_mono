@@ -10,9 +10,9 @@
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
         <div class="textInfo">
-          <v-icon v-if="!editText" @click="toggleTextInfo">{{
-            icons.mdiPencil
-          }}</v-icon>
+          <v-icon v-if="!editText" @click="toggleTextInfo" class="test-pencil"
+            >mdi-pencil</v-icon
+          >
           <div
             v-if="
               textInfo.text.excavationPrefix ||
@@ -100,11 +100,7 @@
           </div>
           <div>
             <div v-if="editText">
-              <v-btn
-                color="primary"
-                width="90px"
-                style="padding-right: 20px"
-                @click="editTextInfo"
+              <v-btn color="primary" width="90px" @click="editTextInfo"
                 >Edit</v-btn
               >
               <v-btn
@@ -190,8 +186,6 @@ import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
-
-import { mdiPencil } from '@mdi/js';
 
 export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
@@ -280,13 +274,16 @@ export default defineComponent({
     });
     const imageUrls = ref<string[]>([]);
 
-    const icons = ref({
-      mdiPencil,
-    });
-
     let editText = ref(false);
 
-    const originalTextinfoArray = ref<Array<string | null>>([]);
+    const originalTextInfoObject = ref({
+      excavationPrefix: <string | null>{},
+      excavationNumber: <string | null>{},
+      museumPrefix: <string | null>{},
+      museumNumber: <string | null>{},
+      primaryPublicationPrefix: <string | null>{},
+      primaryPublicationNumber: <string | null>{},
+    });
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
     const breadcrumbItems = computed(() => {
@@ -364,33 +361,44 @@ export default defineComponent({
           .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
-    const editTextInfo = function () {
-      updateExcavationInfo();
-      updateMuseumInfo();
-      updatePulicationInfo();
+    const editTextInfo = async () => {
+      await updateExcavationInfo();
+      await updateMuseumInfo();
+      await updatePublicationInfo();
       window.location.reload();
     };
 
     const toggleTextInfo = function () {
-      originalTextinfoArray.value.push(textInfo.value.text.excavationPrefix);
-      originalTextinfoArray.value.push(textInfo.value.text.excavationNumber);
-      originalTextinfoArray.value.push(textInfo.value.text.museumPrefix);
-      originalTextinfoArray.value.push(textInfo.value.text.museumNumber);
-      originalTextinfoArray.value.push(textInfo.value.text.publicationPrefix);
-      originalTextinfoArray.value.push(textInfo.value.text.publicationNumber);
+      originalTextInfoObject.value.excavationPrefix =
+        textInfo.value.text.excavationPrefix;
+      originalTextInfoObject.value.excavationNumber =
+        textInfo.value.text.excavationNumber;
+      originalTextInfoObject.value.museumPrefix =
+        textInfo.value.text.museumPrefix;
+      originalTextInfoObject.value.museumNumber =
+        textInfo.value.text.museumNumber;
+      originalTextInfoObject.value.primaryPublicationPrefix =
+        textInfo.value.text.publicationPrefix;
+      originalTextInfoObject.value.primaryPublicationNumber =
+        textInfo.value.text.publicationNumber;
 
       editText.value = !editText.value;
     };
 
     const cancelEditTextInfo = function () {
-      textInfo.value.text.excavationPrefix = originalTextinfoArray.value[0];
-      textInfo.value.text.excavationNumber = originalTextinfoArray.value[1];
-      textInfo.value.text.museumPrefix = originalTextinfoArray.value[2];
-      textInfo.value.text.museumNumber = originalTextinfoArray.value[3];
-      textInfo.value.text.publicationPrefix = originalTextinfoArray.value[4];
-      textInfo.value.text.publicationNumber = originalTextinfoArray.value[5];
+      textInfo.value.text.excavationPrefix =
+        originalTextInfoObject.value.excavationPrefix;
+      textInfo.value.text.excavationNumber =
+        originalTextInfoObject.value.excavationNumber;
+      textInfo.value.text.museumPrefix =
+        originalTextInfoObject.value.museumPrefix;
+      textInfo.value.text.museumNumber =
+        originalTextInfoObject.value.museumNumber;
+      textInfo.value.text.publicationPrefix =
+        originalTextInfoObject.value.primaryPublicationPrefix;
+      textInfo.value.text.publicationNumber =
+        originalTextInfoObject.value.primaryPublicationNumber;
 
-      originalTextinfoArray.value = [];
       editText.value = !editText.value;
     };
 
@@ -418,8 +426,8 @@ export default defineComponent({
       );
     };
 
-    const updatePulicationInfo = async () => {
-      await server.updatePrimaryPublicationInof(
+    const updatePublicationInfo = async () => {
+      await server.updatePrimaryPublicationInfo(
         textInfo.value.text.uuid,
         textInfo.value.text.publicationPrefix,
         textInfo.value.text.publicationNumber
@@ -477,15 +485,14 @@ export default defineComponent({
       getTextInfo,
       updateExcavationInfo,
       updateMuseumInfo,
-      updatePulicationInfo,
+      updatePublicationInfo,
       cancelEditTextInfo,
       toggleTextInfo,
       editTextInfo,
+      originalTextInfoObject,
       hasEditPermission,
       transliteration,
-      icons,
       editText,
-      originalTextinfoArray,
     };
   },
 });
@@ -494,8 +501,5 @@ export default defineComponent({
 <style scoped>
 .relative {
   position: relative;
-}
-v-btn {
-  padding-right: 20px important;
 }
 </style>

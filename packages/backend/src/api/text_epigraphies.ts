@@ -282,11 +282,14 @@ router
   .route('/text_epigraphies/edit_excavation_info')
   .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
     const TextDao = sl.get('TextDao');
+    const { uuid } = req.body;
+    const { excavationPrefix } = req.body;
+    const { excavationNumber } = req.body;
     try {
-      await TextDao.updateExcavationInof(
-        req.body.uuid,
-        req.body.excavationPrefix,
-        req.body.excavationNumber
+      await TextDao.updateExcavationInfo(
+        uuid,
+        excavationPrefix,
+        excavationNumber
       );
       res.status(201).end();
     } catch (err) {
@@ -298,13 +301,12 @@ router
   .route('/text_epigraphies/edit_museum_info')
   .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
     const TextDao = sl.get('TextDao');
+    const { uuid } = req.body;
+    const { museumPrefix } = req.body;
+    const { museumNumber } = req.body;
 
     try {
-      await TextDao.updateMuseumInof(
-        req.body.uuid,
-        req.body.museumPrefix,
-        req.body.museumNumber
-      );
+      await TextDao.updateMuseumInfo(uuid, museumPrefix, museumNumber);
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
@@ -316,10 +318,14 @@ router
   .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
     const TextDao = sl.get('TextDao');
     try {
-      await TextDao.updatePrimaryPublicationInof(
-        req.body.uuid,
-        req.body.publicationPrefix,
-        req.body.publicationNumber
+      const { uuid } = req.body;
+      const { publicationPrefix } = req.body;
+      const { publicationNumber } = req.body;
+
+      await TextDao.updatePrimaryPublicationInfo(
+        uuid,
+        publicationPrefix,
+        publicationNumber
       );
       res.status(201).end();
     } catch (err) {
