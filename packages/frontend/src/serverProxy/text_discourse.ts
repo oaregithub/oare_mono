@@ -31,7 +31,17 @@ async function getDiscourseProperties(
   return data;
 }
 
+async function updateDiscourseTranslation(
+  uuid: string,
+  newTranslation: string
+) {
+  await axios.patch(`/text_discourse/${uuid}`, {
+    newTranslation,
+  });
+}
+
 export default {
   insertDiscourseRow,
   getDiscourseProperties,
+  updateDiscourseTranslation,
 };

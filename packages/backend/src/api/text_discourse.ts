@@ -57,4 +57,22 @@ router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
   }
 });
 
+router
+  .route('/text_discourse/:uuid')
+  .patch(permissionRoute('EDIT_TRANSLATION'), async (req, res, next) => {
+    const FieldDao = sl.get('FieldDao');
+    const { uuid } = req.params;
+    const { newTranslation } = req.body;
+
+    try {
+      const fieldRow = await FieldDao.getByReferenceUuid(uuid);
+      await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
+        primacy: 1,
+      });
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
 export default router;
