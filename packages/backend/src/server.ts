@@ -36,6 +36,7 @@ import GroupEditPermissionsDao from './api/daos/GroupEditPermissionsDao';
 import ResourceDao from './api/daos/ResourceDao';
 import AliasDao from './api/daos/AliasDao';
 import NoteDao from './api/daos/NoteDao';
+import PageContentDao from './api/daos/PageContentDao';
 
 declare global {
   namespace Express {
@@ -78,6 +79,7 @@ sl.set('ResourceDao', ResourceDao);
 sl.set('AliasDao', AliasDao);
 sl.set('utils', utils);
 sl.set('NoteDao', NoteDao);
+sl.set('PageContentDao', PageContentDao);
 
 initializeFirebase(err => {
   if (err) {

@@ -55,6 +55,7 @@ import TutorialView from '../views/Tutorial/index.vue';
 const routes: RouteConfig[] = [
   {
     path: '/',
+    name: 'home',
     component: LandingPage,
   },
   {
