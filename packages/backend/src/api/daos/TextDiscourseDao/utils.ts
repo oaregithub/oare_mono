@@ -2,16 +2,6 @@ import { DiscourseUnit } from '@oare/types';
 import knex from '@/connection';
 import { DiscourseRow } from './index';
 
-export function discourseUnitOrder(discourse: DiscourseUnit): number {
-  if (discourse.wordOnTablet) {
-    return Number(discourse.wordOnTablet);
-  }
-  if (discourse.units.length < 1) {
-    return 0;
-  }
-  return discourseUnitOrder(discourse.units[0]);
-}
-
 export function createNestedDiscourses(
   discourseRows: DiscourseRow[],
   parentUuid: string | null
@@ -30,15 +20,15 @@ export function createNestedDiscourses(
       wordOnTablet,
       paragraphLabel,
       translation,
+      objInText,
     }) => {
       const unitChildren = createNestedDiscourses(discourseRows, uuid);
-      unitChildren.sort(
-        (a, b) => discourseUnitOrder(a) - discourseUnitOrder(b)
-      );
+      unitChildren.sort((a, b) => a.objInText - b.objInText);
       const unit = {
         uuid,
         type,
         units: unitChildren,
+        objInText,
         ...(translation && { translation }),
         ...(paragraphLabel && { paragraphLabel }),
         ...(spelling && { spelling }),
@@ -51,7 +41,7 @@ export function createNestedDiscourses(
     }
   );
 
-  discourses.sort((a, b) => discourseUnitOrder(a) - discourseUnitOrder(b));
+  discourses.sort((a, b) => a.objInText - b.objInText);
 
   return discourses;
 }

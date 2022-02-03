@@ -69,7 +69,7 @@ function getLineNums(units: DiscourseUnit[]): number[] {
     const childrenLines = getLineNums(unit.units);
     childrenLines.forEach(line => lines.add(line));
   });
-  return Array.from(lines).sort((a, b) => a - b);
+  return Array.from(lines);
 }
 
 interface TranscriptionRenderFunc {

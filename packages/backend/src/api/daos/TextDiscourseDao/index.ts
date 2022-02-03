@@ -31,6 +31,7 @@ export interface DiscourseRow {
   line: number | null;
   paragraphLabel: string | null;
   translation: string | null;
+  objInText: number;
 }
 
 export interface SearchDiscourseSpellingDaoResponse {
@@ -146,7 +147,8 @@ class TextDiscourseDao {
         'text_discourse.transcription',
         'text_epigraphy.line',
         'alias.name AS paragraphLabel',
-        'field.field AS translation'
+        'field.field AS translation',
+        'text_discourse.obj_in_text AS objInText'
       )
       .leftJoin(
         'text_epigraphy',
