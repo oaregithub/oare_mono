@@ -3,6 +3,80 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
+describe('GET /text_discourse/properties/:uuid', () => {
+  const mockDiscourseUuid = 'mock-discoures-uuid';
+  const PATH = `${API_PATH}/text_discourse/properties/${mockDiscourseUuid}`;
+
+  const mockItemProperty = {
+    uuid: 'test-uuid',
+    referenceUuid: 'test-reference-uuid',
+    parentUuid: null,
+    level: 1,
+    variableUuid: 'test-var-uuid',
+    variableName: 'test-var-name',
+    valueUuid: 'test-val-uuid',
+    valueName: 'test-val-name',
+    objectUuid: 'test-obj-uuid',
+    value: 'test-val',
+  };
+  const mockItemPropertiesDao = {
+    getPropertiesByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([mockItemProperty]),
+  };
+
+  const mockNoteDao = {
+    getNotesByReferenceUuid: jest.fn().mockResolvedValue([]),
+  };
+
+  const setup = () => {
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('NoteDao', mockNoteDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () => request(app).get(PATH);
+
+  it('returns 200 on successful properties retrieval', async () => {
+    const response = await sendRequest();
+    expect(
+      mockItemPropertiesDao.getPropertiesByReferenceUuid
+    ).toHaveBeenCalled();
+    expect(mockNoteDao.getNotesByReferenceUuid).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(JSON.parse(response.text)).toEqual({
+      properties: [
+        {
+          ...mockItemProperty,
+          children: [],
+        },
+      ],
+      notes: [],
+    });
+  });
+
+  it('returns 500 on failed item properties retrieval', async () => {
+    sl.set('ItemPropertiesDao', {
+      getPropertiesByReferenceUuid: jest
+        .fn()
+        .mockRejectedValue('failed to retrieve item properties'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 500 on failed notes retrieval', async () => {
+    sl.set('NoteDao', {
+      getNotesByReferenceUuid: jest
+        .fn()
+        .mockRejectedValue('failed to retrieve notes'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
 describe('POST /text_discourse', () => {
   const PATH = `${API_PATH}/text_discourse`;
 

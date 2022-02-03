@@ -29,6 +29,7 @@ import GroupAllowlistDao from '@/api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from '@/api/daos/GroupEditPermissionsDao';
 import ResourceDao from '@/api/daos/ResourceDao';
 import AliasDao from '@/api/daos/AliasDao';
+import NoteDao from '@/api/daos/NoteDao';
 import PageContentDao from '@/api/daos/PageContentDao';
 import * as utils from '@/utils';
 
@@ -66,6 +67,7 @@ export type ServiceTypes = {
   GroupEditPermissionsDao: typeof GroupEditPermissionsDao;
   ResourceDao: typeof ResourceDao;
   AliasDao: typeof AliasDao;
+  NoteDao: typeof NoteDao;
   utils: typeof utils;
   PageContentDao: typeof PageContentDao;
 };

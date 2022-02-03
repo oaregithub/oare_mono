@@ -29,12 +29,28 @@
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
           <v-col>
-            <p
-              :class="`${discourseColor(item.type)}--text`"
-              class="ma-0"
-              style="white-space: normal"
-              v-html="discourseReading(item)"
-            />
+            <v-menu
+              :close-on-content-click="false"
+              offset-x
+              open-on-hover
+              :open-delay="400"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="`${discourseColor(item.type)}--text`"
+                  style="white-space: normal"
+                  v-html="discourseReading(item)"
+                  v-bind="attrs"
+                  v-on="on"
+                  class="pr-8"
+                ></span>
+              </template>
+
+              <discourse-properties-card
+                :discourseUuid="item.uuid"
+                :key="item.uuid"
+              />
+            </v-menu>
           </v-col>
         </v-row>
         <div v-else-if="item.translation && allowEditing">
@@ -69,6 +85,7 @@ import { defineComponent, ref, PropType, computed } from '@vue/composition-api';
 import { DiscourseUnit } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -77,6 +94,9 @@ export default defineComponent({
       type: Array as PropType<DiscourseUnit[]>,
       required: true,
     },
+  },
+  components: {
+    DiscoursePropertiesCard,
   },
   setup({ discourseUnits }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
@@ -144,8 +164,10 @@ export default defineComponent({
       inputTranslation.value = discourse.translation || '';
     };
 
+    const editLoading = ref(false);
     const discourseEdit = async (discourse: DiscourseUnit) => {
       try {
+        editLoading.value = true;
         await server.updateDiscourseTranslation(
           discourse.uuid,
           inputTranslation.value
@@ -155,6 +177,7 @@ export default defineComponent({
       } finally {
         discourse.translation = inputTranslation.value;
         editingUuid.value = '';
+        editLoading.value = false;
       }
     };
 
@@ -168,6 +191,7 @@ export default defineComponent({
       editingUuid,
       inputTranslation,
       allowEditing,
+      editLoading,
     };
   },
 });
