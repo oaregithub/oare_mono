@@ -104,6 +104,21 @@ export function epigraphicWordWithSeparators(
   return wordWithSeparators;
 }
 
+export function undeterminedReading(unit: EpigraphicUnit): string {
+  if (unit.markups.length > 0) {
+    const { value: markupValue } = unit.markups[0];
+
+    if (markupValue === null) {
+      return 'undetermined';
+    }
+    if (markupValue === 1) {
+      return '1 broken line';
+    }
+    return `${markupValue} broken lines`;
+  }
+  return '';
+}
+
 export function regionReading(unit: EpigraphicUnit): string {
   if (unit.markups.length > 0) {
     const { type: markupType, value: markupValue } = unit.markups[0];

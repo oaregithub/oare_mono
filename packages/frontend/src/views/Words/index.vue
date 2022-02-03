@@ -37,7 +37,7 @@
           {{ ` (${itemPropertyString(word.verbalThematicVowelTypes)})` }}
         </div>
         <p>
-          <span v-for="(tr, idx) in word.translations" :key="tr.uuid">
+          <span v-for="(tr, idx) in getWordTranslations(word)" :key="tr.uuid">
             <b>{{ idx + 1 }}</b
             >. {{ tr.translation }}
           </span>
@@ -126,11 +126,16 @@ export default defineComponent({
       { immediate: true }
     );
 
+    const getWordTranslations = (word: DictionaryWord) => {
+      return word.translations;
+    };
+
     return {
       words,
       loading,
       searchFilter,
       itemPropertyString,
+      getWordTranslations,
     };
   },
 });

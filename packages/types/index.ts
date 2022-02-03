@@ -15,5 +15,5 @@ export * from './src/textDiscourse';
 export * from './src/errors';
 export * from './src/people';
 export * from './src/profile';
-export * from './src/searchIndex';
 export * from './src/sign_reading';
+export * from './src/notes';

@@ -66,7 +66,10 @@ export const convertTablesToUnits = (
   }));
 
   const relevantEpigraphyRows = tables.epigraphies.filter(
-    epigraphy => epigraphy.charOnTablet || epigraphy.type === 'region'
+    epigraphy =>
+      epigraphy.charOnTablet ||
+      epigraphy.type === 'region' ||
+      epigraphy.type === 'undeterminedLines'
   );
 
   const initalUnits: EpigraphicUnit[] = relevantEpigraphyRows.map(epigraphy => {

@@ -52,7 +52,7 @@ export default defineComponent({
         await server.sendResetPasswordEmail(email.value);
         emailSent.value = true;
       } catch (err) {
-        const { code, message } = err;
+        const { code, message } = err as any;
         if (code === 'auth/invalid-email') {
           actions.showErrorSnackbar(
             'The email you have provided is invalid. Please try again.',

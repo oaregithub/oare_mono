@@ -43,20 +43,29 @@ router
         groupId,
         type
       );
-      const names = await Promise.all(
-        groupEditPermissions.map(uuid =>
-          type === 'text'
-            ? TextDao.getTextByUuid(uuid)
-            : CollectionDao.getCollectionByUuid(uuid)
-        )
-      );
+
+      let names: (string | undefined)[];
+      if (type === 'text') {
+        const results = await Promise.all(
+          groupEditPermissions.map(uuid => TextDao.getTextByUuid(uuid))
+        );
+        names = results.map(row => (row ? row.name : undefined));
+      } else {
+        const results = await Promise.all(
+          groupEditPermissions.map(uuid =>
+            CollectionDao.getCollectionByUuid(uuid)
+          )
+        );
+        names = results.map(row => (row ? row.name : undefined));
+      }
+
       const epigraphyStatus = await Promise.all(
         groupEditPermissions.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
       );
       const response: DenylistAllowlistItem[] = groupEditPermissions.map(
         (uuid, index) => ({
           uuid,
-          name: names[index]?.name,
+          name: names[index],
           hasEpigraphy: epigraphyStatus[index],
         })
       );

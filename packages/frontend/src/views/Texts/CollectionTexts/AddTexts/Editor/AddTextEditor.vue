@@ -46,11 +46,13 @@
             :startingLine="getStartingLine(idx)"
             :beginningBrokenAreas="getStartingBreak(idx)"
             :beginsWithBreak="getBeginningBreakStatus(idx)"
+            :isCurrentSide="currentSide === side.uuid"
             @side-last-line="setLastLine(idx, $event)"
             @side-broken-area="setBrokenArea(idx, $event)"
             @side-ends-broken="setEndBreakStatus(idx, $event)"
             @side-dirty-status="setDirtyStatus(idx, $event)"
             @update-side-columns="setSideColumns(idx, $event)"
+            @set-current-side="setCurrentSide(side.uuid)"
           />
           <add-side
             v-if="addingSide"
@@ -346,6 +348,11 @@ export default defineComponent({
 
     watch(stepComplete, () => emit('step-complete', stepComplete.value));
 
+    const currentSide = ref<string>();
+    const setCurrentSide = (sideUuid?: string) => {
+      currentSide.value = sideUuid;
+    };
+
     return {
       sides,
       addingSide,
@@ -368,6 +375,8 @@ export default defineComponent({
       setupChangeSide,
       changeSide,
       setSideColumns,
+      currentSide,
+      setCurrentSide,
     };
   },
 });

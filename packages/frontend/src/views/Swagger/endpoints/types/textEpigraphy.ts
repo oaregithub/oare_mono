@@ -38,7 +38,6 @@ export const epigraphicUnitSide = [
   "col. ii'",
   "col. iii'",
   "col. iv'",
-  0,
 ];
 
 export const epigraphicType = [

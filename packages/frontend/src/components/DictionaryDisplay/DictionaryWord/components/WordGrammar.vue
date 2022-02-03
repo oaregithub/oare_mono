@@ -6,7 +6,13 @@
     <div v-if="word.verbalThematicVowelTypes.length > 0" class="mr-1">
       ({{ verbalThematicVowelTypes }})
     </div>
-    <p>
+    <p v-if="onlyShowFirstTranslation" class="mb-0">
+      <span v-if="word.translations.length >= 1">
+        <b>{{ 1 }}</b>
+        . {{ word.translations[0].translation }}
+      </span>
+    </p>
+    <p v-else>
       <span v-for="(tr, idx) in word.translations" :key="tr.uuid">
         <b>{{ idx + 1 }}</b
         >. {{ tr.translation }}
@@ -35,6 +41,10 @@ export default defineComponent({
     word: {
       type: Object as PropType<Word>,
       required: true,
+    },
+    onlyShowFirstTranslation: {
+      type: Boolean,
+      default: false,
     },
   },
   setup({ word }) {

@@ -25,11 +25,11 @@ import CacheStatusDao from '@/api/daos/CacheStatusDao';
 import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
 import PersonDao from '@/api/daos/PersonDao';
 import PersonTextOccurrencesDao from '@/api/daos/PersonTextOccurrences';
-import SearchIndexDao from '@/api/daos/SearchIndexDao';
 import GroupAllowlistDao from '@/api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from '@/api/daos/GroupEditPermissionsDao';
 import ResourceDao from '@/api/daos/ResourceDao';
 import AliasDao from '@/api/daos/AliasDao';
+import NoteDao from '@/api/daos/NoteDao';
 import PageContentDao from '@/api/daos/PageContentDao';
 import * as utils from '@/utils';
 
@@ -63,11 +63,11 @@ export type ServiceTypes = {
   CollectionTextUtils: typeof CollectionTextUtils;
   PersonDao: typeof PersonDao;
   PersonTextOccurrencesDao: typeof PersonTextOccurrencesDao;
-  SearchIndexDao: typeof SearchIndexDao;
   GroupAllowlistDao: typeof GroupAllowlistDao;
   GroupEditPermissionsDao: typeof GroupEditPermissionsDao;
   ResourceDao: typeof ResourceDao;
   AliasDao: typeof AliasDao;
+  NoteDao: typeof NoteDao;
   utils: typeof utils;
   PageContentDao: typeof PageContentDao;
 };

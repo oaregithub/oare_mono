@@ -31,11 +31,11 @@ import CollectionTextUtils from './api/daos/CollectionTextUtils';
 import CacheStatusDao from './api/daos/CacheStatusDao';
 import PersonDao from './api/daos/PersonDao';
 import PersonTextOccurrencesDao from './api/daos/PersonTextOccurrences';
-import SearchIndexDao from './api/daos/SearchIndexDao';
 import GroupAllowlistDao from './api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from './api/daos/GroupEditPermissionsDao';
 import ResourceDao from './api/daos/ResourceDao';
 import AliasDao from './api/daos/AliasDao';
+import NoteDao from './api/daos/NoteDao';
 import PageContentDao from './api/daos/PageContentDao';
 
 declare global {
@@ -73,12 +73,12 @@ sl.set('CacheStatusDao', CacheStatusDao);
 sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('PersonDao', PersonDao);
 sl.set('PersonTextOccurrencesDao', PersonTextOccurrencesDao);
-sl.set('SearchIndexDao', SearchIndexDao);
 sl.set('GroupAllowlistDao', GroupAllowlistDao);
 sl.set('GroupEditPermissionsDao', GroupEditPermissionsDao);
 sl.set('ResourceDao', ResourceDao);
 sl.set('AliasDao', AliasDao);
 sl.set('utils', utils);
+sl.set('NoteDao', NoteDao);
 sl.set('PageContentDao', PageContentDao);
 
 initializeFirebase(err => {

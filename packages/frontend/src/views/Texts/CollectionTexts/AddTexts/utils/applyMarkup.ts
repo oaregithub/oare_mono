@@ -355,7 +355,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
   });
 
   editorMarkup.forEach((piece, idx) => {
-    if (piece.text.endsWith('?') || piece.text.includes("?'")) {
+    if (piece.text.includes('?')) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [...editorMarkup[idx].markup, { type: 'uncertain' }],
@@ -392,7 +392,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
   });
 
   editorMarkup.forEach((piece, idx) => {
-    if (piece.text.endsWith('!!') || piece.text.includes('!!"')) {
+    if (piece.text.includes('!!')) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [...editorMarkup[idx].markup, { type: 'isCollatedReading' }],
@@ -401,10 +401,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
   });
 
   editorMarkup.forEach((piece, idx) => {
-    if (
-      (piece.text.endsWith('!') && !piece.text.endsWith('!!')) ||
-      (piece.text.includes('!"') && !piece.text.includes('!!'))
-    ) {
+    if (piece.text.includes('!') && !piece.text.includes('!!')) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [...editorMarkup[idx].markup, { type: 'isEmendedReading' }],
