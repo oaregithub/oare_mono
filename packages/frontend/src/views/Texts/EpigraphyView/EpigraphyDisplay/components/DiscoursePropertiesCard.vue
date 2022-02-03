@@ -1,5 +1,10 @@
 <template>
-  <v-card v-if="displayCard" class="pa-4">
+  <v-card v-if="loading">
+    <v-row class="justify-center py-4">
+      <v-progress-circular indeterminate class="ma-4" color="info" />
+    </v-row>
+  </v-card>
+  <v-card v-else-if="displayCard" class="pa-4">
     <div v-if="properties && properties.properties.length > 0">
       <h3>Properties</h3>
       <v-divider class="mb-2" />
@@ -47,6 +52,7 @@ export default defineComponent({
   setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const loading = ref(false);
 
     const properties = ref<DiscourseProperties>();
 
@@ -60,6 +66,7 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
+        loading.value = true;
         properties.value = await server.getDiscourseProperties(
           props.discourseUuid
         );
@@ -68,12 +75,15 @@ export default defineComponent({
           'Error loading discourse properties',
           err as Error
         );
+      } finally {
+        loading.value = false;
       }
     });
 
     return {
       properties,
       displayCard,
+      loading,
     };
   },
 });
