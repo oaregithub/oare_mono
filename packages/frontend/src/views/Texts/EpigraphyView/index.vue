@@ -191,6 +191,15 @@ export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
 }
 
+export interface OriginalTextInfo {
+  excavationPrefix: string | null;
+  excavationNumber: string | null;
+  museumPrefix: string | null;
+  museumNumber: string | null;
+  primaryPublicationPrefix: string | null;
+  primaryPublicationNumber: string | null;
+}
+
 export const EpigraphyReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
@@ -276,13 +285,13 @@ export default defineComponent({
 
     let editText = ref(false);
 
-    const originalTextInfoObject = ref({
-      excavationPrefix: <string | null>{},
-      excavationNumber: <string | null>{},
-      museumPrefix: <string | null>{},
-      museumNumber: <string | null>{},
-      primaryPublicationPrefix: <string | null>{},
-      primaryPublicationNumber: <string | null>{},
+    const originalTextInfoObject = ref<OriginalTextInfo>({
+      excavationPrefix: null,
+      excavationNumber: null,
+      museumPrefix: null,
+      museumNumber: null,
+      primaryPublicationPrefix: null,
+      primaryPublicationNumber: null,
     });
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
