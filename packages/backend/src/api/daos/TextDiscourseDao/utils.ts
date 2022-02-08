@@ -21,6 +21,7 @@ export function createNestedDiscourses(
       paragraphLabel,
       translation,
       objInText,
+      side,
     }) => {
       const unitChildren = createNestedDiscourses(discourseRows, uuid);
       unitChildren.sort((a, b) => a.objInText - b.objInText);
@@ -29,13 +30,14 @@ export function createNestedDiscourses(
         type,
         units: unitChildren,
         objInText,
-        ...(translation && { translation }),
-        ...(paragraphLabel && { paragraphLabel }),
-        ...(spelling && { spelling }),
-        ...(explicitSpelling && { explicitSpelling }),
-        ...(transcription && { transcription }),
-        ...(line && { line }),
-        ...(wordOnTablet && { wordOnTablet }),
+        translation: translation || undefined,
+        paragraphLabel: paragraphLabel || undefined,
+        spelling: spelling || undefined,
+        explicitSpelling: explicitSpelling || undefined,
+        transcription: transcription || undefined,
+        line: line || undefined,
+        wordOnTablet: wordOnTablet || undefined,
+        side: side || undefined,
       };
       discourses.push(unit);
     }

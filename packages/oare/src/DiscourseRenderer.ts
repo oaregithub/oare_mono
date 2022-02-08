@@ -27,6 +27,14 @@ export default class DiscourseRenderer {
     this.renderClass = DiscourseRenderer;
   }
 
+  get sides(): number[] {
+    return getSides(this.discourseUnits);
+  }
+
+  public linesOnSide(side: number): number[] {
+    return getSideLines(side, this.discourseUnits);
+  }
+
   get lines(): number[] {
     return getLineNums(this.discourseUnits);
   }
@@ -67,6 +75,30 @@ function getLineNums(units: DiscourseUnit[]): number[] {
       lines.add(unit.line);
     }
     const childrenLines = getLineNums(unit.units);
+    childrenLines.forEach(line => lines.add(line));
+  });
+  return Array.from(lines);
+}
+
+function getSides(units: DiscourseUnit[]): number[] {
+  const sides: Set<number> = new Set();
+  units.forEach(unit => {
+    if (unit.side) {
+      sides.add(unit.side);
+    }
+    const childrenSides = getSides(unit.units);
+    childrenSides.forEach(side => sides.add(side));
+  });
+  return Array.from(sides);
+}
+
+function getSideLines(side: number, units: DiscourseUnit[]): number[] {
+  const lines: Set<number> = new Set();
+  units.forEach(unit => {
+    if (unit.line && unit.side === side) {
+      lines.add(unit.line);
+    }
+    const childrenLines = getSideLines(side, unit.units);
     childrenLines.forEach(line => lines.add(line));
   });
   return Array.from(lines);

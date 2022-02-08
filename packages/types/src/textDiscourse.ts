@@ -27,6 +27,7 @@ export interface DiscourseUnit {
   paragraphLabel?: string;
   translation?: string;
   objInText: number;
+  side?: number;
 }
 
 export interface NewDiscourseRowPayload {
