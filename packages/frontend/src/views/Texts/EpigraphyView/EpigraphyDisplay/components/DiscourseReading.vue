@@ -1,9 +1,16 @@
 <template>
   <div>
     <p class="mt-5 oare-title font-weight-regular">
-      <span v-for="line in discourseRenderer.lines" :key="line" class="mr-1">
-        <sup>{{ formatLineNumber(line, false) }})</sup
-        ><span v-html="discourseRenderer.lineReading(line)" />
+      <span v-for="side in discourseRenderer.sides" :key="side">
+        <span class="mr-1">({{ getSideByNumber(side) }})</span>
+        <span
+          v-for="line in discourseRenderer.linesOnSide(side)"
+          :key="line"
+          class="mr-1"
+        >
+          <sup>{{ formatLineNumber(line, false) }})</sup
+          ><span v-html="discourseRenderer.lineReading(line)" />
+        </span>
       </span>
     </p>
     <v-treeview
@@ -82,7 +89,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, PropType, computed } from '@vue/composition-api';
-import { DiscourseUnit } from '@oare/types';
+import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
@@ -181,6 +188,23 @@ export default defineComponent({
       }
     };
 
+    const getSideByNumber = (number: number | null): EpigraphicUnitSide => {
+      switch (number) {
+        case 1:
+          return 'obv.';
+        case 2:
+          return 'lo.e.';
+        case 3:
+          return 'rev.';
+        case 4:
+          return 'u.e.';
+        case 5:
+          return 'le.e.';
+        default:
+          return 'r.e.';
+      }
+    };
+
     return {
       discourseRenderer,
       discourseColor,
@@ -192,6 +216,7 @@ export default defineComponent({
       inputTranslation,
       allowEditing,
       editLoading,
+      getSideByNumber,
     };
   },
 });
