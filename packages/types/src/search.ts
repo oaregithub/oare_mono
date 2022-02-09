@@ -36,3 +36,14 @@ export interface SearchNullDiscourseResultRow extends SearchNullDiscourseLine {
   textName: string;
   reading: string;
 }
+
+export type SearchType =
+  | 'title'
+  | 'transliteration'
+  | 'words'
+  | 'title+transliteration';
+
+export interface SearchFailureRequest {
+  type: SearchType;
+  query: string;
+}
