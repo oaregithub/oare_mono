@@ -1,20 +1,8 @@
 <template>
   <div>
-    <div>
-      <v-btn
-        v-for="(lett, lettGroup) in publicationLetterGroups"
-        class="mr-2 mb-4"
-        :key="lettGroup"
-        fab
-        small
-        color="primary"
-        :to="`/publications/${encodedLetter(lettGroup)}`"
-        >{{ lettGroup }}</v-btn
-      >
-    </div>
     <v-container>
-      <v-row style="flex-wrap: nowrap">
-        <v-col cols="10" class="flex-grow-0 flex-shrink-0">
+      <v-row>
+        <v-col cols="10">
           <v-expansion-panels popout>
             <v-expansion-panel
               v-for="publication in publications"
@@ -53,7 +41,7 @@
             </v-expansion-panel>
           </v-expansion-panels>
         </v-col>
-        <v-col cols="2" class="flex-grow-0 flex-shrink-0">
+        <v-col cols="2">
           <v-switch
             style="position: fixed"
             v-model="nonPubInfo"
@@ -66,9 +54,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { PublicationResponse } from '@oare/types';
-import { publicationLetterGroups } from './utils';
 
 export default defineComponent({
   name: 'CollectionsList',
@@ -77,16 +64,11 @@ export default defineComponent({
       type: Array as PropType<PublicationResponse[]>,
       required: true,
     },
-    nonPubInfo: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
   },
   setup() {
+    const nonPubInfo = ref(false);
     return {
-      publicationLetterGroups,
-      encodedLetter: (letter: string) => encodeURIComponent(letter),
+      nonPubInfo,
     };
   },
 });

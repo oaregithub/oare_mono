@@ -116,29 +116,16 @@ describe('PublicationsList test', () => {
       },
     });
 
-  it('displays A publications', () => {
+  it('displays publications', () => {
     const { getByText } = createWrapper();
-    ['AAA 1 (1 item)', 'AnOr 42 (1 item)'].forEach(prefix => {
-      expect(getByText(prefix));
-    });
-  });
-
-  it('displays B-I publications', async () => {
-    const { getByText } = createWrapper();
-    const biButton = getByText('B-I');
-
-    await fireEvent.click(biButton);
-    [('BIN 4 (1 item)', 'Chantre (1 item)')].forEach(prefix => {
-      expect(getByText(prefix));
-    });
-  });
-
-  it('displays J-Z texts', async () => {
-    const { getByText } = createWrapper();
-    const jzButton = getByText('J-Z');
-
-    await fireEvent.click(jzButton);
-    [('JEOL 32 (1 item)', 'RA 81 (1 item)')].forEach(prefix => {
+    [
+      'AAA 1 (1 item)',
+      'AnOr 42 (1 item)',
+      'BIN 4 (1 item)',
+      'Chantre (1 item)',
+      'JEOL 32 (1 item)',
+      'RA 81 (1 item)',
+    ].forEach(prefix => {
       expect(getByText(prefix));
     });
   });

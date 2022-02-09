@@ -1,5 +1,5 @@
 <template>
-  <OareContentView title="Archives" :loading="loading">
+  <OareContentView title="Archives">
     <span>Coming Soon</span>
   </OareContentView>
 </template>
