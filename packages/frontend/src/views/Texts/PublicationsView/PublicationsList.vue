@@ -2,11 +2,11 @@
   <div>
     <v-container>
       <v-row>
-        <v-col cols="10">
+        <v-col cols="9">
           <v-expansion-panels popout>
             <v-expansion-panel
-              v-for="publication in publications"
-              :key="publication.prefix"
+              v-for="(publication, idx) in publications"
+              :key="idx"
             >
               <v-expansion-panel-header
                 v-if="publication.textNumbers.length > 1"
@@ -20,8 +20,8 @@
               <v-expansion-panel-content>
                 <div class="d-flex align-content-space-around flex-wrap">
                   <span
-                    v-for="publicationText in publication.textNumbers"
-                    :key="publicationText.publicationNumber"
+                    v-for="(publicationText, idx) in publication.textNumbers"
+                    :key="idx"
                   >
                     <router-link
                       v-if="nonPubInfo"
@@ -41,9 +41,10 @@
             </v-expansion-panel>
           </v-expansion-panels>
         </v-col>
-        <v-col cols="2">
+        <v-col cols="3">
           <v-switch
             style="position: fixed"
+            class="ma-1"
             v-model="nonPubInfo"
             :label="`Remove Non-Publication Info`"
           ></v-switch>
