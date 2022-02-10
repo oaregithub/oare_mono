@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
-import PageContent from '@/views/PageContent/index.vue';
+import PageContent from '@/components/base/OarePageContent.vue';
 
 export default defineComponent({
   components: {
