@@ -51,6 +51,8 @@ import AddNewTexts from '../views/Texts/CollectionTexts/AddTexts/index.vue';
 import UserPreferences from '../views/Dashboard/UserPreferences.vue';
 import AboutView from '../views/About/index.vue';
 import TutorialView from '../views/Tutorial/index.vue';
+import PublicationsView from '../views/Texts/PublicationsView/index.vue';
+import ArchivesView from '../views/Texts/ArchivesView/index.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -373,6 +375,17 @@ const routes: RouteConfig[] = [
     path: '/tutorial',
     name: 'tutorial',
     component: TutorialView,
+  },
+  {
+    path: '/publications/:letter',
+    name: 'publications',
+    component: PublicationsView,
+    props: true,
+  },
+  {
+    path: '/archives',
+    name: 'archives',
+    component: ArchivesView,
   },
 ];
 

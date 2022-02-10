@@ -29,6 +29,7 @@ import GroupAllowlistDao from '@/api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from '@/api/daos/GroupEditPermissionsDao';
 import ResourceDao from '@/api/daos/ResourceDao';
 import AliasDao from '@/api/daos/AliasDao';
+import PublicationDao from '@/api/daos/PublicationDao';
 import * as utils from '@/utils';
 
 const instances: { [key: string]: any } = {};
@@ -66,6 +67,7 @@ export type ServiceTypes = {
   ResourceDao: typeof ResourceDao;
   AliasDao: typeof AliasDao;
   utils: typeof utils;
+  PublicationDao: typeof PublicationDao;
 };
 
 export default {
