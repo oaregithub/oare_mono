@@ -5,8 +5,9 @@ async function updatePageContent(pageName: string, content: string) {
 }
 
 async function getPageContent(pageName: string): Promise<string> {
-  const { content } = await axios.get(`/page_content/${pageName}`);
-  return content;
+  const { data } = await axios.get(`/page_content/${pageName}`);
+  console.log(data);
+  return data;
 }
 
 export default {
