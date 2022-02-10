@@ -6,7 +6,6 @@ async function updatePageContent(pageName: string, content: string) {
 
 async function getPageContent(pageName: string): Promise<string> {
   const { data } = await axios.get(`/page_content/${pageName}`);
-  console.log(data);
   return data;
 }
 
