@@ -57,6 +57,7 @@ import ArchivesView from '../views/Texts/ArchivesView/index.vue';
 const routes: RouteConfig[] = [
   {
     path: '/',
+    name: 'home',
     component: LandingPage,
   },
   {

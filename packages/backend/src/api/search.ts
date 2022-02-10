@@ -8,6 +8,7 @@ import {
   SearchDiscourseSpellingResponse,
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
+  SearchType,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -151,6 +152,25 @@ router.route('/search').get(async (req, res, next) => {
         matches: lineReadings[index],
       })),
     };
+
+    if (response.results.length === 0) {
+      const SearchFailureDao = sl.get('SearchFailureDao');
+      let type: SearchType;
+      let query: string;
+      if (title && title !== '' && charsPayload && charsPayload !== '') {
+        type = 'title+transliteration';
+        query = `title: ${title}, transliteration: ${charsPayload}`;
+      } else if (title && title !== '') {
+        type = 'title';
+        query = title;
+      } else {
+        type = 'transliteration';
+        query = charsPayload || '';
+      }
+
+      const userUuid = user ? user.uuid : null;
+      await SearchFailureDao.insertSearchFailure(type, query, userUuid);
+    }
 
     res.json(response);
   } catch (err) {

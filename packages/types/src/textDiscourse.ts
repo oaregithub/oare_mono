@@ -1,4 +1,6 @@
 import { SearchNullDiscourseResultRow } from './search';
+import { ItemPropertyRow } from './words';
+import { DiscourseNote } from './notes';
 
 export type DiscourseUnitType =
   | 'discourseUnit'
@@ -18,11 +20,14 @@ export interface DiscourseUnit {
   type: DiscourseUnitType;
   units: DiscourseUnit[];
   spelling?: string;
+  explicitSpelling?: string;
   transcription?: string;
   line?: number;
   wordOnTablet?: number;
   paragraphLabel?: string;
   translation?: string;
+  objInText: number;
+  side?: number;
 }
 
 export interface NewDiscourseRowPayload {
@@ -59,4 +64,13 @@ export interface TextDiscourseRowPartial {
   spelling?: string;
   explicitSpelling?: string;
   transcription?: string;
+}
+
+export interface DiscourseProperties {
+  properties: ItemPropertyRowWithChildren[];
+  notes: DiscourseNote[];
+}
+
+export interface ItemPropertyRowWithChildren extends ItemPropertyRow {
+  children: ItemPropertyRowWithChildren[];
 }

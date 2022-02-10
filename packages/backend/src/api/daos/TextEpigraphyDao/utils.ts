@@ -102,8 +102,15 @@ export function getSearchQuery(
   return query;
 }
 
-function mapSideNumberToSideName(side: number): EpigraphicUnitSide {
-  return sideNumbers[side] || 'obv.';
+function mapSideNumberToSideName(
+  side: number,
+  sideMarkup: MarkupUnit[]
+): EpigraphicUnitSide {
+  let sideName = sideNumbers[side] || 'obv.';
+  if (sideMarkup.map(markup => markup.type).includes('isEmendedReading')) {
+    sideName += '!';
+  }
+  return sideName as EpigraphicUnitSide;
 }
 
 export function convertEpigraphicUnitRows(
@@ -111,13 +118,20 @@ export function convertEpigraphicUnitRows(
   markupUnits: MarkupUnit[]
 ): EpigraphicUnit[] {
   return units.map(unit => {
+    const sideUnit = units.filter(
+      epigUnit => epigUnit.side === unit.side && epigUnit.epigType === 'section'
+    )[0];
+    const sideMarkup = markupUnits.filter(
+      markup => markup.referenceUuid === sideUnit.uuid
+    );
+
     const unitMarkups = markupUnits.filter(
       markup => markup.referenceUuid === unit.uuid
     );
 
     const mappedUnit: EpigraphicUnit = {
       ...unit,
-      side: mapSideNumberToSideName(unit.side),
+      side: mapSideNumberToSideName(unit.side, sideMarkup),
       markups: unitMarkups,
     };
     if (unit.reading === null) {

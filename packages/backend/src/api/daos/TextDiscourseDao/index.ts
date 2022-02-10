@@ -26,10 +26,13 @@ export interface DiscourseRow {
   wordOnTablet: number | null;
   parentUuid: string | null;
   spelling: string | null;
+  explicitSpelling: string | null;
   transcription: string | null;
   line: number | null;
   paragraphLabel: string | null;
   translation: string | null;
+  objInText: number;
+  side: number | null;
 }
 
 export interface SearchDiscourseSpellingDaoResponse {
@@ -141,10 +144,13 @@ class TextDiscourseDao {
         'text_discourse.word_on_tablet AS wordOnTablet',
         'text_discourse.parent_uuid AS parentUuid',
         'text_discourse.spelling',
+        'text_discourse.explicit_spelling AS explicitSpelling',
         'text_discourse.transcription',
         'text_epigraphy.line',
         'alias.name AS paragraphLabel',
-        'field.field AS translation'
+        'field.field AS translation',
+        'text_discourse.obj_in_text AS objInText',
+        'text_epigraphy.side'
       )
       .leftJoin(
         'text_epigraphy',

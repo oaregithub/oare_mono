@@ -62,7 +62,13 @@ export type EpigraphicUnitSide =
   | "col. i'"
   | "col. ii'"
   | "col. iii'"
-  | "col. iv'";
+  | "col. iv'"
+  | 'obv.!'
+  | 'lo.e.!'
+  | 'rev.!'
+  | 'u.e.!'
+  | 'le.e.!'
+  | 'r.e.!';
 
 export type EpigraphyType =
   | 'column'

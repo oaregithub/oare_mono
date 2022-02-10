@@ -87,11 +87,10 @@
 import {
   defineComponent,
   PropType,
-  computed,
   ref,
   onMounted,
 } from '@vue/composition-api';
-import { createTabletRenderer } from '@oare/oare';
+import { createTabletRenderer, TabletRenderer } from '@oare/oare';
 import {
   EpigraphicUnit,
   TextDiscourseRow,
@@ -127,12 +126,12 @@ export default defineComponent({
 
     const loading = ref(false);
 
-    const renderer = computed(() => {
-      return createTabletRenderer(props.epigraphicUnits, {
+    const renderer = ref<TabletRenderer>(
+      createTabletRenderer(props.epigraphicUnits, {
         showNullDiscourse: store.getters.isAdmin,
         textFormat: 'html',
-      });
-    });
+      })
+    );
 
     const lineNumber = (line: number): string => {
       if (
