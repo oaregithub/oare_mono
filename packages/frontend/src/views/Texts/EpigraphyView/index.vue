@@ -374,7 +374,7 @@ export default defineComponent({
       await updateExcavationInfo();
       await updateMuseumInfo();
       await updatePublicationInfo();
-      window.location.reload();
+      editText.value = false;
     };
 
     const toggleTextInfo = function () {
