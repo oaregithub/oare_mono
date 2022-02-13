@@ -11,9 +11,13 @@ import {
   AllCommentsRequest,
   AllCommentsResponse,
   CreateThreadPayload,
+  ThreadStatus,
+  CommentSortType,
+  Pagination,
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
+import { toInteger } from 'lodash';
 
 const router = express.Router();
 
@@ -109,47 +113,6 @@ router
 
 router
   .route('/threads')
-  .get(authenticatedRoute, async (req, res, next) => {
-    try {
-      const requestString = (req.query.request as unknown) as string;
-      const request: AllCommentsRequest = JSON.parse(requestString);
-
-      const threadsDao = sl.get('ThreadsDao');
-      const commentsDao = sl.get('CommentsDao');
-
-      const userUuid = req.user ? req.user.uuid : null;
-
-      const threadRows = await threadsDao.getAll(request, userUuid);
-
-      const results: ThreadDisplay[] = await Promise.all(
-        threadRows.threads.map(async threadRow => {
-          const comments = await commentsDao.getAllByThreadUuid(
-            threadRow.uuid,
-            true
-          );
-          return {
-            thread: {
-              uuid: threadRow.uuid,
-              name: threadRow.name,
-              referenceUuid: threadRow.referenceUuid,
-              status: threadRow.status,
-              route: threadRow.route,
-            },
-            word: threadRow.item,
-            latestCommentDate: new Date(threadRow.timestamp),
-            comments,
-          } as ThreadDisplay;
-        })
-      );
-
-      res.json({
-        threads: results,
-        count: threadRows.count,
-      } as AllCommentsResponse);
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  })
   .post(authenticatedRoute, async (req, res, next) => {
     try {
       const ThreadsDao = sl.get('ThreadsDao');
@@ -161,6 +124,85 @@ router
       next(new HttpInternalError(err));
     }
   });
+
+router.route('/threads/:status/:thread/:item/:comment/:sortType/:sortDesc/:page/:limit/:filter/:isUserComments')
+.get(authenticatedRoute, async (req, res, next) => {
+  try {
+    const { status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments } = req.params;
+
+    const threadsDao = sl.get('ThreadsDao');
+    const commentsDao = sl.get('CommentsDao');
+
+    const _threadStatus: ThreadStatus[] = [];
+    const _status = toInteger(status);
+    if ((_status & 8) === 1) {
+      _threadStatus.push("New");
+    }
+    if ((_status & 4) === 1) {
+      _threadStatus.push("Pending");
+    }
+    if ((_status & 2) === 1) {
+      _threadStatus.push("In Progress");
+    }
+    if ((_status & 1) === 1) {
+      _threadStatus.push("Completed");
+    }
+
+    const _sortTypeTable: CommentSortType[] = ['status', 'thread', 'item', 'timestamp'];
+    const _sortType: CommentSortType = _sortTypeTable[toInteger(sortType)];
+
+    const request: AllCommentsRequest = {
+      filters: {
+        status: _threadStatus,
+        thread: thread,
+        item: item,
+        comment: comment,
+      },
+      sort: {
+        type: _sortType,
+        desc: toInteger(sortDesc) === 1,
+      },
+      pagination: {
+        page: toInteger(page),
+        limit: toInteger(limit),
+        filter: filter,
+      },
+      isUserComments: toInteger(isUserComments) === 1,
+    };
+
+    const userUuid = req.user ? req.user.uuid : null;
+
+    const threadRows = await threadsDao.getAll(request, userUuid);
+
+    const results: ThreadDisplay[] = await Promise.all(
+      threadRows.threads.map(async threadRow => {
+        const comments = await commentsDao.getAllByThreadUuid(
+          threadRow.uuid,
+          true
+        );
+        return {
+          thread: {
+            uuid: threadRow.uuid,
+            name: threadRow.name,
+            referenceUuid: threadRow.referenceUuid,
+            status: threadRow.status,
+            route: threadRow.route,
+          },
+          word: threadRow.item,
+          latestCommentDate: new Date(threadRow.timestamp),
+          comments,
+        } as ThreadDisplay;
+      })
+    );
+
+    res.json({
+      threads: results,
+      count: threadRows.count,
+    } as AllCommentsResponse);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+})
 
 router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
   try {
