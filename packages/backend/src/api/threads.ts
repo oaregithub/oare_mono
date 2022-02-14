@@ -135,16 +135,16 @@ router.route('/threads/:status/:thread/:item/:comment/:sortType/:sortDesc/:page/
 
     const _threadStatus: ThreadStatus[] = [];
     const _status = toInteger(status);
-    if ((_status & 8) === 1) {
+    if (_status === 1) {
       _threadStatus.push("New");
     }
-    if ((_status & 4) === 1) {
+    if (_status=== 2) {
       _threadStatus.push("Pending");
     }
-    if ((_status & 2) === 1) {
+    if (_status === 3) {
       _threadStatus.push("In Progress");
     }
-    if ((_status & 1) === 1) {
+    if (_status === 4) {
       _threadStatus.push("Completed");
     }
 

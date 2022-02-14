@@ -37,26 +37,31 @@ async function getAllThreads(
 ): Promise<AllCommentsResponse> {
   let _status: number = 0;
   if (request.filters.status.includes("New")) {
-    _status += 8;
+    _status = 1;
   }
   if (request.filters.status.includes("Pending")) {
-    _status += 4;
+    _status = 2;
   }
   if (request.filters.status.includes("In Progress")) {
-    _status += 2;
+    _status = 3;
   }
   if (request.filters.status.includes("Completed")) {
-    _status += 1;
+    _status = 4;
   }
-  
-  const requestTo: string = '/threads/' + _status + '/'
+
+  const requestTo: string = '/threads/' +  + '/'
   + request.filters.thread + '/' + request.filters.item + '/'
   + request.filters.comment + '/' + request.sort.type.toString() + '/'
   + request.sort.desc ? '1' : '0' + '/' + request.pagination.page + '/'
   + request.pagination.limit + '/' + request.pagination.filter || "" + '/'
   + request.isUserComments ? '1' : '0';
 
-  const { data } = await axios.get(requestTo);
+  const { data } = await axios.get('/threads', {
+    params: {
+      status: _status.toString(),
+
+    }
+  });
   return data;
 }
 
