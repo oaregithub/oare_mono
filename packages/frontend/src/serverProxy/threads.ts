@@ -48,19 +48,15 @@ async function getAllThreads(
   if (request.filters.status.includes("Completed")) {
     _status += 1;
   }
-  const params = {
-    status: _status,
-    thread: request.filters.thread,
-    item: request.filters.item,
-    comment: request.filters.comment,
-    sortType: request.sort.type.toString(),
-    sortDesc: request.sort.desc ? 1 : 0,
-    page: request.pagination.page,
-    limit: request.pagination.limit,
-    filter: request.pagination.filter || "",
-    isUserComment: request.isUserComments ? 1 : 0,
-  }
-  const { data } = await axios.get('/threads', {params: params});
+  
+  const requestTo: string = '/threads/' + _status + '/'
+  + request.filters.thread + '/' + request.filters.item + '/'
+  + request.filters.comment + '/' + request.sort.type.toString() + '/'
+  + request.sort.desc ? '1' : '0' + '/' + request.pagination.page + '/'
+  + request.pagination.limit + '/' + request.pagination.filter || "" + '/'
+  + request.isUserComments ? '1' : '0';
+
+  const { data } = await axios.get(requestTo);
   return data;
 }
 
