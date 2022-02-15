@@ -128,36 +128,24 @@ router
 router.route('/threads')
 .get(authenticatedRoute, async (req, res, next) => {
   try {
-    const { status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments } = req.body;
+    const { status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments } = req.query;
 
-    console.log(status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments);
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
-    const _threadStatus: ThreadStatus[] = [];
-    const _status = toInteger(status);
-    if (_status === 1) {
-      _threadStatus.push("New");
-    }
-    if (_status=== 2) {
-      _threadStatus.push("Pending");
-    }
-    if (_status === 3) {
-      _threadStatus.push("In Progress");
-    }
-    if (_status === 4) {
-      _threadStatus.push("Completed");
-    }
+    const _threadStatuses: ThreadStatus[][] = [[], ["New"], ["Pending"], ["In Progress"], ["Completed"]];
+
+    console.log(status);
 
     const _sortTypeTable: CommentSortType[] = ['status', 'thread', 'item', 'timestamp'];
     const _sortType: CommentSortType = _sortTypeTable[toInteger(sortType)];
 
     const request: AllCommentsRequest = {
       filters: {
-        status: _threadStatus,
-        thread: thread,
-        item: item,
-        comment: comment,
+        status: _threadStatuses[toInteger(status)],
+        thread: thread as any,
+        item: item as any,
+        comment: comment as any,
       },
       sort: {
         type: _sortType,
@@ -166,7 +154,7 @@ router.route('/threads')
       pagination: {
         page: toInteger(page),
         limit: toInteger(limit),
-        filter: filter !== "" ? filter : undefined,
+        filter: filter as any,
       },
       isUserComments: toInteger(isUserComments) === 1,
     };
