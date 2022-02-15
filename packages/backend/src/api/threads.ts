@@ -125,11 +125,12 @@ router
     }
   });
 
-router.route('/threads/:status/:thread/:item/:comment/:sortType/:sortDesc/:page/:limit/:filter/:isUserComments')
+router.route('/threads')
 .get(authenticatedRoute, async (req, res, next) => {
   try {
-    const { status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments } = req.params;
+    const { status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments } = req.body;
 
+    console.log(status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments);
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
@@ -165,7 +166,7 @@ router.route('/threads/:status/:thread/:item/:comment/:sortType/:sortDesc/:page/
       pagination: {
         page: toInteger(page),
         limit: toInteger(limit),
-        filter: filter,
+        filter: filter !== "" ? filter : undefined,
       },
       isUserComments: toInteger(isUserComments) === 1,
     };

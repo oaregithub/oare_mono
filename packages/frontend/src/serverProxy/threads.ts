@@ -49,17 +49,18 @@ async function getAllThreads(
     _status = 4;
   }
 
-  const requestTo: string = '/threads/' +  + '/'
-  + request.filters.thread + '/' + request.filters.item + '/'
-  + request.filters.comment + '/' + request.sort.type.toString() + '/'
-  + request.sort.desc ? '1' : '0' + '/' + request.pagination.page + '/'
-  + request.pagination.limit + '/' + request.pagination.filter || "" + '/'
-  + request.isUserComments ? '1' : '0';
-
   const { data } = await axios.get('/threads', {
     params: {
       status: _status.toString(),
-
+      thread: request.filters.thread,
+      item: request.filters.item,
+      comment: request.filters.comment,
+      sortType: request.sort.type.toString(),
+      sortDesc: request.sort.desc ? '1' : '0',
+      page: request.pagination.page,
+      limit: request.pagination.limit,
+      filter: request.pagination.filter || "",
+      isUserComments: request.isUserComments ? '1' : '0',
     }
   });
   return data;
