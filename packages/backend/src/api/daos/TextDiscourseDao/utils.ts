@@ -2,16 +2,6 @@ import { DiscourseUnit } from '@oare/types';
 import knex from '@/connection';
 import { DiscourseRow } from './index';
 
-export function discourseUnitOrder(discourse: DiscourseUnit): number {
-  if (discourse.wordOnTablet) {
-    return Number(discourse.wordOnTablet);
-  }
-  if (discourse.units.length < 1) {
-    return 0;
-  }
-  return discourseUnitOrder(discourse.units[0]);
-}
-
 export function createNestedDiscourses(
   discourseRows: DiscourseRow[],
   parentUuid: string | null
@@ -24,32 +14,36 @@ export function createNestedDiscourses(
       type,
       uuid,
       spelling,
+      explicitSpelling,
       transcription,
       line,
       wordOnTablet,
       paragraphLabel,
       translation,
+      objInText,
+      side,
     }) => {
       const unitChildren = createNestedDiscourses(discourseRows, uuid);
-      unitChildren.sort(
-        (a, b) => discourseUnitOrder(a) - discourseUnitOrder(b)
-      );
+      unitChildren.sort((a, b) => a.objInText - b.objInText);
       const unit = {
         uuid,
         type,
         units: unitChildren,
-        ...(translation && { translation }),
-        ...(paragraphLabel && { paragraphLabel }),
-        ...(spelling && { spelling }),
-        ...(transcription && { transcription }),
-        ...(line && { line }),
-        ...(wordOnTablet && { wordOnTablet }),
+        objInText,
+        translation: translation || undefined,
+        paragraphLabel: paragraphLabel || undefined,
+        spelling: spelling || undefined,
+        explicitSpelling: explicitSpelling || undefined,
+        transcription: transcription || undefined,
+        line: line || undefined,
+        wordOnTablet: wordOnTablet || undefined,
+        side: side || undefined,
       };
       discourses.push(unit);
     }
   );
 
-  discourses.sort((a, b) => discourseUnitOrder(a) - discourseUnitOrder(b));
+  discourses.sort((a, b) => a.objInText - b.objInText);
 
   return discourses;
 }
@@ -60,10 +54,10 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
   }
   discourse.units.forEach(unit => setDiscourseReading(unit));
   // eslint-disable-next-line
-  discourse.spelling = discourse.units
+  discourse.explicitSpelling = discourse.units
     .map(u => {
       if (u.transcription) return u.transcription;
-      return u.spelling || '';
+      return u.explicitSpelling || '';
     })
     .join(' ');
 }

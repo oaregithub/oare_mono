@@ -91,8 +91,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from '@vue/composition-api';
-import { createTabletRenderer } from '@oare/oare';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { createTabletRenderer, TabletRenderer } from '@oare/oare';
 import {
   Word,
   EpigraphicUnit,
@@ -130,12 +130,12 @@ export default defineComponent({
     const viewingDialog = ref(false);
     const discourseWordInfo = ref<Word | null>(null);
 
-    const renderer = computed(() => {
-      return createTabletRenderer(props.epigraphicUnits, {
+    const renderer = ref<TabletRenderer>(
+      createTabletRenderer(props.epigraphicUnits, {
         showNullDiscourse: store.getters.isAdmin,
         textFormat: 'html',
-      });
-    });
+      })
+    );
 
     const romanNumeral = (colNum: number): string => {
       let numeral: string = '';

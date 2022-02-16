@@ -67,6 +67,11 @@ class PermissionsDao {
         'Allow group users to view text discourses associated with text epigraphies',
     },
     {
+      name: 'EDIT_TRANSLATION',
+      type: 'text',
+      description: "Allow group users to edit a text's discourse translations",
+    },
+    {
       name: 'INSERT_DISCOURSE_ROWS',
       type: 'dictionary',
       description:

@@ -1,5 +1,6 @@
 import knex from '@/connection';
 import {
+  PartialItemPropertyRow,
   ItemPropertyRow,
   Pagination,
   InsertItemPropertyRow,
@@ -10,11 +11,11 @@ export interface GetItemPropertiesOptions {
   referenceUuid?: string;
 }
 
-class ItemProperties {
+class ItemPropertiesDao {
   async getProperties(
     referenceType: string,
     { abbreviation, referenceUuid }: GetItemPropertiesOptions = {}
-  ): Promise<ItemPropertyRow[]> {
+  ): Promise<PartialItemPropertyRow[]> {
     let query = knex('item_properties AS ip')
       .select(
         'ip.uuid',
@@ -87,6 +88,28 @@ class ItemProperties {
       value: property.value,
     });
   }
+
+  async getPropertiesByReferenceUuid(
+    referenceUuid: string
+  ): Promise<ItemPropertyRow[]> {
+    const rows: ItemPropertyRow[] = await knex('item_properties as ip')
+      .select(
+        'ip.uuid',
+        'ip.reference_uuid as referenceUuid',
+        'ip.parent_uuid as parentUuid',
+        'ip.level',
+        'ip.variable_uuid as variableUuid',
+        'variable.name as variableName',
+        'ip.value_uuid as valueUuid',
+        'value.name as valueName',
+        'ip.object_uuid as objectUuid',
+        'ip.value as value,'
+      )
+      .innerJoin('variable', 'variable.uuid', 'ip.variable_uuid')
+      .innerJoin('value', 'value.uuid', 'ip.value_uuid')
+      .where('ip.reference_uuid', referenceUuid);
+    return rows;
+  }
 }
 
-export default new ItemProperties();
+export default new ItemPropertiesDao();

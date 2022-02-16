@@ -27,6 +27,14 @@ export default class DiscourseRenderer {
     this.renderClass = DiscourseRenderer;
   }
 
+  get sides(): number[] {
+    return getSides(this.discourseUnits);
+  }
+
+  public linesOnSide(side: number): number[] {
+    return getSideLines(side, this.discourseUnits);
+  }
+
   get lines(): number[] {
     return getLineNums(this.discourseUnits);
   }
@@ -69,26 +77,57 @@ function getLineNums(units: DiscourseUnit[]): number[] {
     const childrenLines = getLineNums(unit.units);
     childrenLines.forEach(line => lines.add(line));
   });
-  return Array.from(lines).sort((a, b) => a - b);
+  return Array.from(lines);
 }
 
-interface TranscriptionRenderFunc {
+function getSides(units: DiscourseUnit[]): number[] {
+  const sides: Set<number> = new Set();
+  units.forEach(unit => {
+    if (unit.side) {
+      sides.add(unit.side);
+    }
+    const childrenSides = getSides(unit.units);
+    childrenSides.forEach(side => sides.add(side));
+  });
+  return Array.from(sides);
+}
+
+function getSideLines(side: number, units: DiscourseUnit[]): number[] {
+  const lines: Set<number> = new Set();
+  units.forEach(unit => {
+    if (unit.line && unit.side === side) {
+      lines.add(unit.line);
+    }
+    const childrenLines = getSideLines(side, unit.units);
+    childrenLines.forEach(line => lines.add(line));
+  });
+  return Array.from(lines);
+}
+
+interface RenderFunc {
   (word: string): string;
+}
+interface RenderFormat {
+  transliteration: RenderFunc;
+  spelling: RenderFunc;
 }
 export function lineReadingHelper(
   units: DiscourseUnit[],
   line: number,
   words: string[],
-  trRenderer: TranscriptionRenderFunc = word => word
+  renderFormatter: RenderFormat = {
+    transliteration: word => word,
+    spelling: word => word,
+  }
 ) {
   units.forEach(unit => {
     if (unit.line === line) {
       if (unit.transcription) {
-        words.push(trRenderer(unit.transcription));
-      } else if (unit.spelling) {
-        words.push(unit.spelling);
+        words.push(renderFormatter.transliteration(unit.transcription));
+      } else if (unit.explicitSpelling) {
+        words.push(renderFormatter.spelling(unit.explicitSpelling));
       }
     }
-    lineReadingHelper(unit.units, line, words, trRenderer);
+    lineReadingHelper(unit.units, line, words, renderFormatter);
   });
 }

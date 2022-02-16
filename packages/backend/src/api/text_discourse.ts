@@ -1,8 +1,9 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { NewDiscourseRowPayload } from '@oare/types';
+import { NewDiscourseRowPayload, DiscourseProperties } from '@oare/types';
 import permissionRoute from '@/middlewares/permissionsRoute';
+import { nestProperties } from '../utils/index';
 
 const router = express.Router();
 
@@ -26,6 +27,48 @@ router
           occurrences[i].textUuid
         );
       }
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
+  try {
+    const { uuid: discourseUuid } = req.params;
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const NoteDao = sl.get('NoteDao');
+
+    const properties = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+      discourseUuid
+    );
+
+    const propertiesWithChildren = nestProperties(properties, null);
+
+    const notes = await NoteDao.getNotesByReferenceUuid(discourseUuid);
+
+    const response: DiscourseProperties = {
+      properties: propertiesWithChildren,
+      notes,
+    };
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router
+  .route('/text_discourse/:uuid')
+  .patch(permissionRoute('EDIT_TRANSLATION'), async (req, res, next) => {
+    const FieldDao = sl.get('FieldDao');
+    const { uuid } = req.params;
+    const { newTranslation } = req.body;
+
+    try {
+      const fieldRow = await FieldDao.getByReferenceUuid(uuid);
+      await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
+        primacy: 1,
+      });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
