@@ -51,11 +51,11 @@ async function getAllThreads(
 
   const { data } = await axios.get('/threads', {
     params: {
-      status: numStatus.toString(),
+      status: numStatus,
       thread: request.filters.thread,
       item: request.filters.item,
       comment: request.filters.comment,
-      sortType: request.sort.type.toString(),
+      sortType: request.sort.type,
       sortDesc: request.sort.desc ? '1' : '0',
       page: request.pagination.page,
       limit: request.pagination.limit,
