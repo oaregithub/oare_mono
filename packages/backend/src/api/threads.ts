@@ -131,36 +131,21 @@ router
       const threadsDao = sl.get('ThreadsDao');
       const commentsDao = sl.get('CommentsDao');
 
-      const threadStatuses: ThreadStatus[][] = [
-        [],
-        ['New'],
-        ['Pending'],
-        ['In Progress'],
-        ['Completed'],
-      ];
-
-      const sortTypeTable: CommentSortType[] = [
-        'status',
-        'thread',
-        'item',
-        'timestamp',
-      ];
-
       const request: AllCommentsRequest = {
         filters: {
-          status: threadStatuses[toInteger(status)],
-          thread: thread as any,
-          item: item as any,
-          comment: comment as any,
+          status: status as ThreadStatus[],
+          thread: thread as string,
+          item: item as string,
+          comment: comment as string,
         },
         sort: {
-          type: sortTypeTable[toInteger(sortType)],
+          type: sortType as CommentSortType,
           desc: toInteger(sortDesc) === 1,
         },
         pagination: {
           page: toInteger(page),
           limit: toInteger(limit),
-          filter: filter as any,
+          filter: filter as string,
         },
         isUserComments: toInteger(isUserComments) === 1,
       };
