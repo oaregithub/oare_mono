@@ -13,7 +13,6 @@ import {
   CreateThreadPayload,
   ThreadStatus,
   CommentSortType,
-  Pagination,
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
@@ -133,7 +132,7 @@ router
 
       const request: AllCommentsRequest = {
         filters: {
-          status: status as ThreadStatus[],
+          status: status as ThreadStatus,
           thread: thread as string,
           item: item as string,
           comment: comment as string,

@@ -35,23 +35,9 @@ async function updateThreadName(
 async function getAllThreads(
   request: AllCommentsRequest
 ): Promise<AllCommentsResponse> {
-  let numStatus: number = 0;
-  if (request.filters.status.includes('New')) {
-    numStatus = 1;
-  }
-  if (request.filters.status.includes('Pending')) {
-    numStatus = 2;
-  }
-  if (request.filters.status.includes('In Progress')) {
-    numStatus = 3;
-  }
-  if (request.filters.status.includes('Completed')) {
-    numStatus = 4;
-  }
-
   const { data } = await axios.get('/threads', {
     params: {
-      status: numStatus,
+      status: request.filters.status,
       thread: request.filters.thread,
       item: request.filters.item,
       comment: request.filters.comment,
