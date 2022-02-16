@@ -67,6 +67,7 @@ class TextEpigraphyDao {
       .andWhere(function () {
         this.whereNot('text_epigraphy.char_on_tablet', null);
         this.orWhere('text_epigraphy.type', 'region');
+        this.orWhere('text_epigraphy.type', 'section');
         this.orWhere('text_epigraphy.type', 'undeterminedLines');
       })
       .select(
@@ -100,7 +101,14 @@ class TextEpigraphyDao {
     const units: EpigraphicQueryRow[] = await query;
     const markupUnits = await TextMarkupDao.getMarkups(textUuid);
 
-    return convertEpigraphicUnitRows(units, markupUnits);
+    const epigraphicUnitRowsWithSections = convertEpigraphicUnitRows(
+      units,
+      markupUnits
+    );
+    const epigraphicUnits = epigraphicUnitRowsWithSections.filter(
+      unit => unit.epigType !== 'section'
+    );
+    return epigraphicUnits;
   }
 
   private async getMatchingTexts({

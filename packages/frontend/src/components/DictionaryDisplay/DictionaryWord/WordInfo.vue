@@ -49,6 +49,7 @@
       :form="editDialogForm"
       :spelling="editDialogSpelling"
       :allowDiscourseMode="editDialogDiscourse"
+      @select-form="selectForm($event)"
     />
     <add-form-dialog
       v-if="allowEditing && canAddForms"
@@ -169,6 +170,10 @@ export default defineComponent({
       );
     });
 
+    const selectForm = (form: DictionaryForm) => {
+      editDialogForm.value = form;
+    };
+
     return {
       canEditTranslations,
       isEditingTranslations,
@@ -180,6 +185,7 @@ export default defineComponent({
       showSpellingDialog,
       addFormDialog,
       canAddForms,
+      selectForm,
     };
   },
 });
