@@ -111,44 +111,60 @@ router
     }
   });
 
-router
-  .route('/threads')
-  .post(authenticatedRoute, async (req, res, next) => {
-    try {
-      const ThreadsDao = sl.get('ThreadsDao');
-      const newThread: CreateThreadPayload = req.body;
-
-      const newThreadUuid = await ThreadsDao.insert(newThread);
-      res.json(newThreadUuid);
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  });
-
-router.route('/threads')
-.get(authenticatedRoute, async (req, res, next) => {
+router.route('/threads').post(authenticatedRoute, async (req, res, next) => {
   try {
-    const { status, thread, item, comment, sortType, sortDesc, page, limit, filter, isUserComments } = req.query;
+    const ThreadsDao = sl.get('ThreadsDao');
+    const newThread: CreateThreadPayload = req.body;
+
+    const newThreadUuid = await ThreadsDao.insert(newThread);
+    res.json(newThreadUuid);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
+router.route('/threads').get(authenticatedRoute, async (req, res, next) => {
+  try {
+    const {
+      status,
+      thread,
+      item,
+      comment,
+      sortType,
+      sortDesc,
+      page,
+      limit,
+      filter,
+      isUserComments,
+    } = req.query;
 
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
 
-    const _threadStatuses: ThreadStatus[][] = [[], ["New"], ["Pending"], ["In Progress"], ["Completed"]];
+    const threadStatuses: ThreadStatus[][] = [
+      [],
+      ['New'],
+      ['Pending'],
+      ['In Progress'],
+      ['Completed'],
+    ];
 
-    console.log(status);
-
-    const _sortTypeTable: CommentSortType[] = ['status', 'thread', 'item', 'timestamp'];
-    const _sortType: CommentSortType = _sortTypeTable[toInteger(sortType)];
+    const sortTypeTable: CommentSortType[] = [
+      'status',
+      'thread',
+      'item',
+      'timestamp',
+    ];
 
     const request: AllCommentsRequest = {
       filters: {
-        status: _threadStatuses[toInteger(status)],
+        status: threadStatuses[toInteger(status)],
         thread: thread as any,
         item: item as any,
         comment: comment as any,
       },
       sort: {
-        type: _sortType,
+        type: sortTypeTable[toInteger(sortType)],
         desc: toInteger(sortDesc) === 1,
       },
       pagination: {
@@ -191,7 +207,7 @@ router.route('/threads')
   } catch (err) {
     next(new HttpInternalError(err));
   }
-})
+});
 
 router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
   try {
