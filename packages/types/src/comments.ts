@@ -16,7 +16,12 @@ export interface CommentDisplay extends Comment {
   userLastName: string;
 }
 
-export type ThreadStatus = 'New' | 'Pending' | 'In Progress' | 'Completed';
+export type ThreadStatus =
+  | 'All'
+  | 'New'
+  | 'Pending'
+  | 'In Progress'
+  | 'Completed';
 
 export interface Thread {
   uuid: string;
@@ -48,7 +53,7 @@ export type CommentSortType = 'status' | 'thread' | 'item' | 'timestamp';
 
 export interface AllCommentsRequest {
   filters: {
-    status: ThreadStatus[];
+    status: ThreadStatus;
     thread: string;
     item: string;
     comment: string;
