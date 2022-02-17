@@ -33,6 +33,29 @@
     <v-spacer />
     <div>
       <div class="d-flex align-center">
+        <div v-if="isDevelopmentEnvironment" class="mr-5 test-dev-indicator">
+          <v-menu offset-y :nudge-left="66" open-on-hover>
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" color="info" outlined>DEVELOPMENT</v-btn>
+            </template>
+            <v-card class="pa-5" width="270">
+              <v-row class="text-center ma-0" justify="center">
+                <span
+                  >The website is currently running in a development
+                  environment. Changes made will not affect data in the
+                  production database. This environment is meant only for web
+                  developers who are currently building the site.
+                </span>
+                <span class="mt-4"
+                  >If you are not an OARE developer or this appears when
+                  visiting the production website, please contact us immediately
+                  at</span
+                >
+                <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>
+              </v-row>
+            </v-card>
+          </v-menu>
+        </div>
         <v-badge
           v-if="isAdmin"
           :value="displayAdminBadge"
@@ -180,6 +203,9 @@ export default defineComponent({
     const permissions = computed(() =>
       store.getters.permissions.map(permission => permission.name)
     );
+    const isDevelopmentEnvironment = computed(
+      () => process.env.NODE_ENV === 'development'
+    );
 
     const logout = () => {
       store.logout();
@@ -195,6 +221,7 @@ export default defineComponent({
       firstName,
       permissions,
       displayAdminBadge,
+      isDevelopmentEnvironment,
     };
   },
 });
