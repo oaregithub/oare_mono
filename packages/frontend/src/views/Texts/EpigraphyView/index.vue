@@ -9,111 +9,115 @@
         <template #header v-if="!disableEditing">
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
-        <div class="textInfo">
-          <v-icon v-if="!editText" @click="toggleTextInfo" class="test-pencil"
+        <v-row class="ma-0 mb-6">
+          <v-icon
+            v-if="!editText"
+            @click="toggleTextInfo"
+            class="test-pencil mr-4"
             >mdi-pencil</v-icon
           >
-          <div
-            v-if="
-              textInfo.text.excavationPrefix ||
-              textInfo.text.excavationNumber ||
-              editText
-            "
-          >
-            Excavation Info: {{ textInfo.text.excavationPrefix }}
-            {{ textInfo.text.excavationNumber }}
-            <v-row v-if="editText">
-              <v-col cols="8" sm="4">
-                <v-text-field
-                  solo
-                  v-model="textInfo.text.excavationPrefix"
-                  label="Prefix"
-                  clearable
-                ></v-text-field>
-              </v-col>
-              <v-col cols="8" sm="4">
-                <v-text-field
-                  solo
-                  v-model="textInfo.text.excavationNumber"
-                  label="Number"
-                  clearable
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </div>
-          <div
-            v-if="
-              textInfo.text.museumPrefix ||
-              textInfo.text.museumNumber ||
-              editText
-            "
-          >
-            Museum Info: {{ textInfo.text.museumPrefix }}
-            {{ textInfo.text.museumNumber }}
-            <v-row v-if="editText">
-              <v-col cols="8" sm="4">
-                <v-text-field
-                  solo
-                  v-model="textInfo.text.museumPrefix"
-                  label="Prefix"
-                  clearable
-                ></v-text-field>
-              </v-col>
-              <v-col cols="8" sm="4">
-                <v-text-field
-                  solo
-                  v-model="textInfo.text.museumNumber"
-                  label="Number"
-                  clearable
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </div>
-          <div
-            v-if="
-              textInfo.text.publicationPrefix ||
-              textInfo.text.publicationNumber ||
-              editText
-            "
-          >
-            Primary Publication Info: {{ textInfo.text.publicationPrefix }}
-            {{ textInfo.text.publicationNumber }}
-            <v-row v-if="editText">
-              <v-col cols="8" sm="4">
-                <v-text-field
-                  solo
-                  v-model="textInfo.text.publicationPrefix"
-                  label="Prefix"
-                  clearable
-                ></v-text-field>
-              </v-col>
-              <v-col cols="8" sm="4">
-                <v-text-field
-                  v-if="editText"
-                  solo
-                  v-model="textInfo.text.publicationNumber"
-                  label="Number"
-                  clearable
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </div>
           <div>
-            <div v-if="editText">
-              <v-btn color="primary" width="90px" @click="editTextInfo"
-                >Edit</v-btn
-              >
-              <v-btn
-                color="#2196f3"
-                width="90px"
-                class="white--text mx-4"
-                @click="cancelEditTextInfo"
-                >Cancel</v-btn
-              >
+            <div
+              v-if="
+                textInfo.text.excavationPrefix ||
+                textInfo.text.excavationNumber ||
+                editText
+              "
+            >
+              Excavation Info: {{ textInfo.text.excavationPrefix }}
+              {{ textInfo.text.excavationNumber }}
+              <v-row v-if="editText">
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    solo
+                    v-model="textInfo.text.excavationPrefix"
+                    label="Prefix"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    solo
+                    v-model="textInfo.text.excavationNumber"
+                    label="Number"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+            <div
+              v-if="
+                textInfo.text.museumPrefix ||
+                textInfo.text.museumNumber ||
+                editText
+              "
+            >
+              Museum Info: {{ textInfo.text.museumPrefix }}
+              {{ textInfo.text.museumNumber }}
+              <v-row v-if="editText">
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    solo
+                    v-model="textInfo.text.museumPrefix"
+                    label="Prefix"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    solo
+                    v-model="textInfo.text.museumNumber"
+                    label="Number"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+            <div
+              v-if="
+                textInfo.text.publicationPrefix ||
+                textInfo.text.publicationNumber ||
+                editText
+              "
+            >
+              Primary Publication Info: {{ textInfo.text.publicationPrefix }}
+              {{ textInfo.text.publicationNumber }}
+              <v-row v-if="editText">
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    solo
+                    v-model="textInfo.text.publicationPrefix"
+                    label="Prefix"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    v-if="editText"
+                    solo
+                    v-model="textInfo.text.publicationNumber"
+                    label="Number"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+            <div>
+              <div v-if="editText">
+                <v-btn color="primary" width="90px" @click="editTextInfo"
+                  >Edit</v-btn
+                >
+                <v-btn
+                  color="#2196f3"
+                  width="90px"
+                  class="white--text mx-4"
+                  @click="cancelEditTextInfo"
+                  >Cancel</v-btn
+                >
+              </div>
             </div>
           </div>
-          <br />
-        </div>
+        </v-row>
 
         <template
           #title:pre
@@ -371,9 +375,7 @@ export default defineComponent({
     );
 
     const editTextInfo = async () => {
-      await updateExcavationInfo();
-      await updateMuseumInfo();
-      await updatePublicationInfo();
+      await updateTextInfo();
       editText.value = false;
     };
 
@@ -419,25 +421,13 @@ export default defineComponent({
       }
     };
 
-    const updateExcavationInfo = async () => {
-      await server.updateExcavationInfo(
+    const updateTextInfo = async () => {
+      await server.updateTextInfo(
         textInfo.value.text.uuid,
         textInfo.value.text.excavationPrefix,
-        textInfo.value.text.excavationNumber
-      );
-    };
-
-    const updateMuseumInfo = async () => {
-      await server.updateMuseumInfo(
-        textInfo.value.text.uuid,
+        textInfo.value.text.excavationNumber,
         textInfo.value.text.museumPrefix,
-        textInfo.value.text.museumNumber
-      );
-    };
-
-    const updatePublicationInfo = async () => {
-      await server.updatePrimaryPublicationInfo(
-        textInfo.value.text.uuid,
+        textInfo.value.text.museumNumber,
         textInfo.value.text.publicationPrefix,
         textInfo.value.text.publicationNumber
       );
@@ -492,12 +482,10 @@ export default defineComponent({
       canViewEpigraphyImages,
       imageUrls,
       getTextInfo,
-      updateExcavationInfo,
-      updateMuseumInfo,
-      updatePublicationInfo,
       cancelEditTextInfo,
       toggleTextInfo,
       editTextInfo,
+      updateTextInfo,
       originalTextInfoObject,
       hasEditPermission,
       transliteration,

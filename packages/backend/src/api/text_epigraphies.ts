@@ -279,51 +279,24 @@ router
   });
 
 router
-  .route('/text_epigraphies/edit_excavation_info')
-  .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
-    const TextDao = sl.get('TextDao');
-    const { uuid } = req.body;
-    const { excavationPrefix } = req.body;
-    const { excavationNumber } = req.body;
-    try {
-      await TextDao.updateExcavationInfo(
-        uuid,
-        excavationPrefix,
-        excavationNumber
-      );
-      res.status(201).end();
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  });
-
-router
-  .route('/text_epigraphies/edit_museum_info')
-  .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
-    const TextDao = sl.get('TextDao');
-    const { uuid } = req.body;
-    const { museumPrefix } = req.body;
-    const { museumNumber } = req.body;
-
-    try {
-      await TextDao.updateMuseumInfo(uuid, museumPrefix, museumNumber);
-      res.status(201).end();
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  });
-
-router
-  .route('/text_epigraphies/edit_publication_info')
+  .route('/text_epigraphies/edit_text_info')
   .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
     const TextDao = sl.get('TextDao');
     try {
       const { uuid } = req.body;
+      const { excavationPrefix } = req.body;
+      const { excavationNumber } = req.body;
+      const { museumPrefix } = req.body;
+      const { museumNumber } = req.body;
       const { publicationPrefix } = req.body;
       const { publicationNumber } = req.body;
 
-      await TextDao.updatePrimaryPublicationInfo(
+      await TextDao.updateTextInfo(
         uuid,
+        excavationPrefix,
+        excavationNumber,
+        museumPrefix,
+        museumNumber,
         publicationPrefix,
         publicationNumber
       );
