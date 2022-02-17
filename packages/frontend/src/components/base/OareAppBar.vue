@@ -33,7 +33,7 @@
     <v-spacer />
     <div>
       <div class="d-flex align-center">
-        <div v-if="isDevelopmentEnvironment" class="mr-5">
+        <div v-if="isDevelopmentEnvironment" class="mr-5 test-dev-indicator">
           <v-menu offset-y :nudge-left="66" open-on-hover>
             <template v-slot:activator="{ on }">
               <v-btn v-on="on" color="info" outlined>DEVELOPMENT</v-btn>
