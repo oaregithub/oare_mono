@@ -2,16 +2,23 @@
   <div>
     <div v-if="isAdmin">
       <vue-editor v-if="isEditorActive" v-model="content" /><br />
-      <v-btn depressed color="primary" @click="edit">Edit</v-btn>
-      <v-btn v-if="isEditorActive" depressed color="normal" @click="cancel"
-        >Cancel</v-btn
+
+      <v-btn class="mr-2" v-if="isEditorActive" color="primary" @click="edit"
+        >Save</v-btn
       >
+      <v-btn v-if="isEditorActive" text @click="cancel">Cancel</v-btn>
     </div>
     <div
       v-if="isEditorActive == false"
       v-html="content"
       class="title font-weight-regular"
     ></div>
+    <v-row
+      ><v-spacer />
+      <v-btn v-if="isEditorActive == false" color="primary" @click="edit"
+        >Edit</v-btn
+      ></v-row
+    >
   </div>
 </template>
 
@@ -55,12 +62,16 @@ export default defineComponent({
     });
 
     const edit = async () => {
-      console.log(props.pageName);
-      console.log(content.value);
       if (isEditorActive.value) {
-        await server.updatePageContent(props.pageName, content.value);
+        try {
+          await server.updatePageContent(props.pageName, content.value);
+          isEditorActive.value = !isEditorActive.value;
+        } catch (err) {
+          actions.showErrorSnackbar('Page content edit failed', err as Error);
+        }
+      } else {
+        isEditorActive.value = !isEditorActive.value;
       }
-      isEditorActive.value = !isEditorActive.value;
     };
 
     const cancel = async () => {
