@@ -1,9 +1,7 @@
 <template>
   <div v-if="renderer" class="mr-10">
     <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
-      <div class="side-name oare-title mr-4">
-        {{ sideName }}
-      </div>
+      <div class="side-name oare-title mr-4" v-html="formatSide(sideName)" />
       <div>
         <div v-if="renderer.columnsOnSide(sideName).length === 1">
           <div
@@ -98,6 +96,7 @@ import {
   EpigraphicUnit,
   EpigraphicWord,
   TextDiscourseRow,
+  EpigraphicUnitSide,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
@@ -235,6 +234,10 @@ export default defineComponent({
       return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
     };
 
+    const formatSide = (side: EpigraphicUnitSide) => {
+      return side.replace('!', '<sup>!</sup>');
+    };
+
     return {
       renderer,
       lineNumber,
@@ -244,6 +247,7 @@ export default defineComponent({
       discourseWordInfo,
       viewingDialog,
       formatWord,
+      formatSide,
     };
   },
 });
