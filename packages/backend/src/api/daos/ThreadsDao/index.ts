@@ -121,7 +121,7 @@ class ThreadsDao {
         )
         .modify(qb => {
           if (request.filters.status !== ('All' as ThreadStatus)) {
-            qb.whereIn('threads.status', [request.filters.status]);
+            qb.where('threads.status', request.filters.status);
           }
 
           if (request.filters.thread !== '') {
