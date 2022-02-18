@@ -29,7 +29,7 @@
               <v-row v-if="editText">
                 <v-col cols="8" sm="4">
                   <v-text-field
-                    solo
+                    outlined
                     v-model="textInfo.text.excavationPrefix"
                     label="Prefix"
                     clearable
@@ -37,7 +37,7 @@
                 </v-col>
                 <v-col cols="8" sm="4">
                   <v-text-field
-                    solo
+                    outlined
                     v-model="textInfo.text.excavationNumber"
                     label="Number"
                     clearable
@@ -57,7 +57,7 @@
               <v-row v-if="editText">
                 <v-col cols="8" sm="4">
                   <v-text-field
-                    solo
+                    outlined
                     v-model="textInfo.text.museumPrefix"
                     label="Prefix"
                     clearable
@@ -65,7 +65,7 @@
                 </v-col>
                 <v-col cols="8" sm="4">
                   <v-text-field
-                    solo
+                    outlined
                     v-model="textInfo.text.museumNumber"
                     label="Number"
                     clearable
@@ -85,7 +85,7 @@
               <v-row v-if="editText">
                 <v-col cols="8" sm="4">
                   <v-text-field
-                    solo
+                    outlined
                     v-model="textInfo.text.publicationPrefix"
                     label="Prefix"
                     clearable
@@ -94,7 +94,7 @@
                 <v-col cols="8" sm="4">
                   <v-text-field
                     v-if="editText"
-                    solo
+                    outlined
                     v-model="textInfo.text.publicationNumber"
                     label="Number"
                     clearable
@@ -105,10 +105,10 @@
             <div>
               <div v-if="editText">
                 <v-btn color="primary" width="90px" @click="editTextInfo"
-                  >Edit</v-btn
+                  >Save</v-btn
                 >
                 <v-btn
-                  color="#2196f3"
+                  color="info"
                   width="90px"
                   class="white--text mx-4"
                   @click="cancelEditTextInfo"
@@ -422,15 +422,22 @@ export default defineComponent({
     };
 
     const updateTextInfo = async () => {
-      await server.updateTextInfo(
-        textInfo.value.text.uuid,
-        textInfo.value.text.excavationPrefix,
-        textInfo.value.text.excavationNumber,
-        textInfo.value.text.museumPrefix,
-        textInfo.value.text.museumNumber,
-        textInfo.value.text.publicationPrefix,
-        textInfo.value.text.publicationNumber
-      );
+      try {
+        await server.updateTextInfo(
+          textInfo.value.text.uuid,
+          textInfo.value.text.excavationPrefix,
+          textInfo.value.text.excavationNumber,
+          textInfo.value.text.museumPrefix,
+          textInfo.value.text.museumNumber,
+          textInfo.value.text.publicationPrefix,
+          textInfo.value.text.publicationNumber
+        );
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error adding new form. Please try again.',
+          err as Error
+        );
+      }
     };
 
     onMounted(async () => {
