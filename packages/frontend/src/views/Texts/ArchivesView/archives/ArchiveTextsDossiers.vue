@@ -79,7 +79,7 @@ export default defineComponent({
       required: true,
     },
     totalDossiers: {
-      type: String,
+      type: Number,
       required: true,
     },
     page: {

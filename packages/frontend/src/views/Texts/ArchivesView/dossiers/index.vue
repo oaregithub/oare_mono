@@ -1,8 +1,15 @@
 <template>
   <div>
     <v-progress-linear v-if="loading" indeterminate />
-    <oare-content-view :title="dossier.name">
+    <oare-content-view :title="dossierName">
       <v-container>
+        <v-row
+          ><v-col
+            ><router-link :to="`/archives/${archiveUuid}`"
+              >Back to Parent Archive</router-link
+            >
+          </v-col>
+        </v-row>
         <v-row>
           <v-col cols="4">
             <v-text-field
@@ -17,7 +24,7 @@
         </v-row>
       </v-container>
       <dossier-texts
-        :texts="dossier.texts"
+        :texts="texts"
         :page="Number(page)"
         @update:page="page = `${$event}`"
         :rows="Number(rows)"
@@ -51,9 +58,12 @@ export default defineComponent({
   setup({ dossierUuid }) {
     const loading = ref(false);
     const dossier = ref();
+    const dossierName = ref('');
+    const archiveUuid = ref('');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const totalTexts = ref(0);
+    const texts = ref<Text[]>([]);
     const page = useQueryParam('page', '1');
     const rows = useQueryParam('rows', '10');
     const search = useQueryParam('query', '');
@@ -66,7 +76,10 @@ export default defineComponent({
           limit: Number(rows.value),
           filter: search.value,
         });
+        texts.value = dossier.value.texts;
+        dossierName.value = dossier.value.name;
         totalTexts.value = dossier.value.totalTexts;
+        archiveUuid.value = dossier.value.parent_uuid;
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading archive contents. Please try again.',
@@ -98,7 +111,9 @@ export default defineComponent({
 
     return {
       loading,
-      dossier,
+      dossierName,
+      archiveUuid,
+      texts,
       page,
       totalTexts,
       rows,

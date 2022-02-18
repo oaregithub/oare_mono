@@ -1,11 +1,22 @@
 <template>
   <div>
     <v-progress-linear v-if="loading" indeterminate />
-    <oare-content-view :title="archive.name">
-      <v-radio-group v-model="DossiersOrTexts" row>
-        <v-radio label="Dossiers" value="Dossiers"></v-radio>
-        <v-radio label="Texts" value="Texts"></v-radio>
-      </v-radio-group>
+    <oare-content-view :title="archiveName">
+      <v-container>
+        <v-row>
+          <v-col>
+            <router-link to="/archives">Back to Archives</router-link>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <v-radio-group v-model="DossiersOrTexts" row>
+              <v-radio label="Dossiers" value="Dossiers"></v-radio>
+              <v-radio label="Texts" value="Texts"></v-radio>
+            </v-radio-group>
+          </v-col>
+        </v-row>
+      </v-container>
       <v-container>
         <v-row>
           <v-col cols="4">
@@ -37,13 +48,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  onMounted,
-  ref,
-  Ref,
-  watch,
-} from '@vue/composition-api';
+import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { Text, DossierInfo } from '@oare/types';
 import ArchiveTextsDossiers from './ArchiveTextsDossiers.vue';
@@ -69,6 +74,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const DossiersOrTexts = ref('Dossiers');
     const archive = ref();
+    const archiveName = ref('');
     const texts: Ref<Text[] | null> = ref([]);
     const dossiersInfo: Ref<DossierInfo[] | null> = ref([]);
     const totalTexts = ref(0);
@@ -88,6 +94,7 @@ export default defineComponent({
           limit: Number(rows.value),
           filter: search.value,
         });
+        archiveName.value = archive.value.name;
         texts.value = archive.value.texts;
         dossiersInfo.value = archive.value.dossiersInfo;
         totalTexts.value = archive.value.totalTexts;
@@ -131,7 +138,7 @@ export default defineComponent({
       rows,
       page,
       dossiersInfo,
-      archive,
+      archiveName,
       DossiersOrTexts,
       search,
       totalTexts,
