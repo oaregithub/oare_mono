@@ -1,5 +1,17 @@
 <template>
   <OareContentView title="Publications" :loading="loading">
+    <div>
+      <v-btn
+        v-for="(lett, lettGroup) in publicationLetterGroups"
+        class="mr-2 mb-4"
+        :key="lettGroup"
+        fab
+        small
+        color="primary"
+        :to="`/publications/${encodeURIComponent(lettGroup)}`"
+        >{{ lettGroup }}</v-btn
+      >
+    </div>
     <publications-list :publications="shownPublications"></publications-list>
   </OareContentView>
 </template>
@@ -9,7 +21,6 @@ import {
   defineComponent,
   onMounted,
   ref,
-  Ref,
   computed,
 } from '@vue/composition-api';
 import { PublicationResponse } from '@oare/types';
@@ -30,7 +41,7 @@ export default defineComponent({
   },
   setup(props) {
     const loading = ref(false);
-    const publications: Ref<PublicationResponse[]> = ref([]);
+    const publications = ref<PublicationResponse[]>([]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
@@ -46,7 +57,7 @@ export default defineComponent({
         publications.value = await server.getAllPublications();
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading collections. Please try again.',
+          'Error loading publications. Please try again.',
           err as Error
         );
       } finally {
@@ -55,8 +66,10 @@ export default defineComponent({
     });
 
     return {
+      publicationLetterGroups,
       loading,
       shownPublications,
+      encodeURIComponent,
     };
   },
 });

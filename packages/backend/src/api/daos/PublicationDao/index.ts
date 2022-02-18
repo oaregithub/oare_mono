@@ -3,7 +3,7 @@ import { PublicationResponse, PublicationText } from '@oare/types';
 import sl from '@/serviceLocator';
 
 class PublicationDao {
-  async getPublicationByPrfx(
+  async getPublicationsByPrfx(
     prfx: string,
     userUuid: string | null
   ): Promise<PublicationResponse | null> {

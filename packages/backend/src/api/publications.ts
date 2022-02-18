@@ -13,7 +13,7 @@ router.route('/publications').get(async (req, res, next) => {
 
     const publications = await Promise.all(
       publicationPrefixes.map(prefix =>
-        PublicationDao.getPublicationByPrfx(prefix, userUuid)
+        PublicationDao.getPublicationsByPrfx(prefix, userUuid)
       )
     );
 

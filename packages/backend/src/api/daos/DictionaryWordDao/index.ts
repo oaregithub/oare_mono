@@ -5,7 +5,7 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
-  ItemPropertyRow,
+  PartialItemPropertyRow,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -240,7 +240,7 @@ class DictionaryWordDao {
     return translations;
   }
 
-  async getPartsOfSpeech(wordUuid?: string): Promise<ItemPropertyRow[]> {
+  async getPartsOfSpeech(wordUuid?: string): Promise<PartialItemPropertyRow[]> {
     const rows = await ItemPropertiesDao.getProperties('Part of Speech', {
       abbreviation: true,
       ...(wordUuid ? { referenceUuid: wordUuid } : null),
@@ -251,7 +251,7 @@ class DictionaryWordDao {
 
   async getSpecialClassifications(
     wordUuid?: string
-  ): Promise<ItemPropertyRow[]> {
+  ): Promise<PartialItemPropertyRow[]> {
     const rows = await ItemPropertiesDao.getProperties(
       'Special Classifications',
       wordUuid ? { referenceUuid: wordUuid } : {}
@@ -262,7 +262,7 @@ class DictionaryWordDao {
 
   async getVerbalThematicVowelTypes(
     wordUuid?: string
-  ): Promise<ItemPropertyRow[]> {
+  ): Promise<PartialItemPropertyRow[]> {
     const rows = await ItemPropertiesDao.getProperties(
       'Verbal Thematic Vowel Type',
       wordUuid ? { referenceUuid: wordUuid } : {}

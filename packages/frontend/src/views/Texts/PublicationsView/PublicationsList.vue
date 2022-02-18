@@ -1,24 +1,12 @@
 <template>
   <div>
-    <div>
-      <v-btn
-        v-for="(lett, lettGroup) in publicationLetterGroups"
-        class="mr-2 mb-4"
-        :key="lettGroup"
-        fab
-        small
-        color="primary"
-        :to="`/publications/${encodedLetter(lettGroup)}`"
-        >{{ lettGroup }}</v-btn
-      >
-    </div>
     <v-container>
-      <v-row style="flex-wrap: nowrap">
-        <v-col cols="10" class="flex-grow-0 flex-shrink-0">
+      <v-row>
+        <v-col cols="9">
           <v-expansion-panels popout>
             <v-expansion-panel
-              v-for="publication in publications"
-              :key="publication.prefix"
+              v-for="(publication, idx) in publications"
+              :key="idx"
             >
               <v-expansion-panel-header
                 v-if="publication.textNumbers.length > 1"
@@ -32,8 +20,8 @@
               <v-expansion-panel-content>
                 <div class="d-flex align-content-space-around flex-wrap">
                   <span
-                    v-for="publicationText in publication.textNumbers"
-                    :key="publicationText.publicationNumber"
+                    v-for="(publicationText, idx) in publication.textNumbers"
+                    :key="idx"
                   >
                     <router-link
                       v-if="nonPubInfo"
@@ -53,9 +41,10 @@
             </v-expansion-panel>
           </v-expansion-panels>
         </v-col>
-        <v-col cols="2" class="flex-grow-0 flex-shrink-0">
+        <v-col cols="3">
           <v-switch
             style="position: fixed"
+            class="ma-1"
             v-model="nonPubInfo"
             :label="`Remove Non-Publication Info`"
           ></v-switch>
@@ -66,9 +55,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { PublicationResponse } from '@oare/types';
-import { publicationLetterGroups } from './utils';
 
 export default defineComponent({
   name: 'CollectionsList',
@@ -77,16 +65,11 @@ export default defineComponent({
       type: Array as PropType<PublicationResponse[]>,
       required: true,
     },
-    nonPubInfo: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
   },
   setup() {
+    const nonPubInfo = ref(false);
     return {
-      publicationLetterGroups,
-      encodedLetter: (letter: string) => encodeURIComponent(letter),
+      nonPubInfo,
     };
   },
 });

@@ -59,6 +59,7 @@ import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
 const routes: RouteConfig[] = [
   {
     path: '/',
+    name: 'home',
     component: LandingPage,
   },
   {
