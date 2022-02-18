@@ -460,7 +460,7 @@ export default defineComponent({
           }
         } else {
           actions.showErrorSnackbar(
-            'Error loading text. Please try again.',
+            'Error updating text information. Please try again.',
             err as Error
           );
         }
