@@ -80,7 +80,11 @@ import {
   inject,
   onMounted,
 } from '@vue/composition-api';
-import { FormSpelling, DictionaryForm } from '@oare/types';
+import {
+  FormSpelling,
+  DictionaryForm,
+  SpellingOccurrenceRow,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import SpellingDialog from './SpellingDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
@@ -116,7 +120,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -165,6 +169,7 @@ export default defineComponent({
         totalOccurrences.value = await server.getSpellingTotalOccurrences(
           props.spelling.uuid
         );
+        emit('total-occurrences', totalOccurrences.value);
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading spelling occurrences. Please try again.',

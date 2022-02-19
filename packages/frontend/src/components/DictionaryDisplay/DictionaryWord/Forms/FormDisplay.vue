@@ -63,6 +63,10 @@
         </v-btn>
       </div>
 
+      <span v-if="aggregateOccurrences > 0" class="mr-1">
+        ({{ aggregateOccurrences }})
+      </span>
+
       <grammar-display :form="form" />
       <span class="d-flex flex-row flex-wrap mb-0">
         <span
@@ -76,6 +80,7 @@
             :word-uuid="wordUuid"
             :uuid-to-highlight="uuidToHighlight"
             :allow-editing="allowEditing"
+            @total-occurrences="setTotalOccurrences($event)"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -121,7 +126,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -135,6 +140,10 @@ export default defineComponent({
     const editForm = ref({
       ...props.form,
     });
+
+    const aggregateOccurrences = ref(0);
+    const allSpellingOccurrence = ref<number[]>([]);
+
     const canEdit = computed(() =>
       store.getters.permissions
         .map(permission => permission.name)
@@ -177,6 +186,16 @@ export default defineComponent({
       });
     };
 
+    const reducer = (previousValue: number, currentValue: number) =>
+      previousValue + currentValue;
+
+    function setTotalOccurrences($event: number) {
+      allSpellingOccurrence.value.push($event);
+      aggregateOccurrences.value = allSpellingOccurrence.value.reduce(reducer);
+
+      return aggregateOccurrences;
+    }
+
     return {
       isCommenting,
       editing,
@@ -189,6 +208,8 @@ export default defineComponent({
       routeName,
       openComment,
       openEditDialog,
+      setTotalOccurrences,
+      aggregateOccurrences,
     };
   },
 });
