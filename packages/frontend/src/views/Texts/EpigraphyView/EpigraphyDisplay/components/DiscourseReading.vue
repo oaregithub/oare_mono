@@ -60,7 +60,7 @@
             </v-menu>
           </v-col>
         </v-row>
-        <div v-else-if="item.translation && allowEditing">
+        <div v-else-if="(item.translation || item.type === 'discourseUnit') && allowEditing">
           <v-textarea
             label="Translation"
             auto-grow
@@ -167,21 +167,30 @@ export default defineComponent({
     };
 
     const startEdit = (discourse: DiscourseUnit) => {
-      if (!discourse.translation) {
-        console.log('no translation');
-      }
       editingUuid.value = discourse.uuid || '';
-      inputTranslation.value = discourse.translation || '';
+      if (discourse.translation) {
+        inputTranslation.value = discourse.translation || '';
+      } else {
+        inputTranslation.value = discourse.explicitSpelling || '';
+      }
     };
 
     const editLoading = ref(false);
     const discourseEdit = async (discourse: DiscourseUnit) => {
       try {
+        if (discourse.translation) {
+          await server.updateDiscourseTranslation(
+            discourse.uuid,
+            inputTranslation.value
+          );
+        } else {
+          await server.createDiscourseTranslation(
+            discourse.uuid,
+            inputTranslation.value
+          );
+        }
         editLoading.value = true;
-        await server.updateDiscourseTranslation(
-          discourse.uuid,
-          inputTranslation.value
-        );
+        
       } catch (err) {
         actions.showErrorSnackbar('Failed to update database', err as Error);
       } finally {
