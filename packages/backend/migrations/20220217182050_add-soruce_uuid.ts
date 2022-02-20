@@ -4,7 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   const hasColumn = await knex.schema.hasColumn('field', 'source_uuid');
   if (!hasColumn) {
     await knex.schema.table('field', table => {
-      table.text('source_uuid');
+      table.uuid('source_uuid');
     });
   }
 }
