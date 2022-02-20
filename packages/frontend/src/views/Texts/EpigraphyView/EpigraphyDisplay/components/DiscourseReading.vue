@@ -29,7 +29,7 @@
         >
           <v-btn
             icon
-            v-if="item.translation && allowEditing"
+            v-if="(item.translation || item.type === 'discourseUnit') && allowEditing"
             @click="startEdit(item)"
             class="mr-1 test-discourse-startedit"
           >
@@ -167,6 +167,9 @@ export default defineComponent({
     };
 
     const startEdit = (discourse: DiscourseUnit) => {
+      if (!discourse.translation) {
+        console.log('no translation');
+      }
       editingUuid.value = discourse.uuid || '';
       inputTranslation.value = discourse.translation || '';
     };
