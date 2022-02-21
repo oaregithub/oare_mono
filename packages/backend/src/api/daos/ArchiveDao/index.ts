@@ -4,13 +4,11 @@ import sl from '@/serviceLocator';
 
 class ArchiveDao {
   async getAllArchives(): Promise<string[]> {
-    const uuids: Array<{ uuid: string }> = await knex('archive')
-      .select('archive.uuid')
+    const uuids: string[] = await knex('archive')
+      .pluck('archive.uuid')
       .where('parent_uuid', 'b0fe5c7d-6c1c-11ec-bcc3-0282f921eac9');
 
-    const archiveUuids: string[] = uuids.map(({ uuid }) => uuid);
-
-    return archiveUuids;
+    return uuids;
   }
 
   async getArchiveByUuid(
@@ -22,10 +20,10 @@ class ArchiveDao {
       .select(
         'archive.id as id',
         'archive.uuid as uuid',
-        'archive.parent_uuid as parent_uuid',
+        'archive.parent_uuid as parentUuid',
         'archive.name as name',
         'archive.owner as owner',
-        'archive.arch_locus as arch_locus'
+        'archive.arch_locus as archLocus'
       )
       .where('archive.uuid', uuid)
       .first();
@@ -51,13 +49,13 @@ class ArchiveDao {
   }
 
   async getArchiveDossiers(
-    parent_uuid: string,
+    parentUuid: string,
     { page = 1, rows = 10, search = '' }
   ): Promise<string[]> {
     const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
-    const uuids: Array<{ uuid: string }> = await knex('archive')
-      .select('archive.uuid')
-      .where('parent_uuid', parent_uuid)
+    const uuids: string[] = await knex('archive')
+      .pluck('archive.uuid')
+      .where('parent_uuid', parentUuid)
       .andWhere(function () {
         this.whereRaw('LOWER(archive.name) LIKE ?', [finalSearch]);
       })
@@ -65,9 +63,7 @@ class ArchiveDao {
       .limit(rows)
       .offset((page - 1) * rows);
 
-    const dossierUuids: string[] = uuids.map(({ uuid }) => uuid);
-
-    return dossierUuids;
+    return uuids;
   }
 
   async getArchiveInfo(
@@ -78,10 +74,10 @@ class ArchiveDao {
       .select(
         'archive.id as id',
         'archive.uuid as uuid',
-        'archive.parent_uuid as parent_uuid',
+        'archive.parent_uuid as parentUuid',
         'archive.name as name',
         'archive.owner as owner',
-        'archive.arch_locus as arch_locus'
+        'archive.arch_locus as archLocus'
       )
       .where('archive.uuid', uuid)
       .first();
@@ -152,7 +148,7 @@ class ArchiveDao {
       .select(
         'archive.id as id',
         'archive.uuid as uuid',
-        'archive.parent_uuid as parent_uuid',
+        'archive.parent_uuid as parentUuid',
         'archive.name as name',
         'archive.owner as owner'
       )
@@ -175,14 +171,7 @@ class ArchiveDao {
     userUuid: string | null
   ): Promise<DossierInfo> {
     const dossier: Dossier = await knex('archive')
-      .select(
-        'archive.id as id',
-        'archive.uuid as uuid',
-        'archive.parent_uuid as parent_uuid',
-        'archive.name as name',
-        'archive.owner as owner',
-        'archive.arch_locus as arch_locus'
-      )
+      .select('archive.uuid as uuid', 'archive.name as name')
       .where('archive.uuid', uuid)
       .first();
 

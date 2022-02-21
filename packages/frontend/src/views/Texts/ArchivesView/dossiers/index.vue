@@ -1,7 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" indeterminate />
-    <oare-content-view :title="dossierName">
+    <oare-content-view :title="dossierName" :loading="loading">
       <v-container>
         <v-row
           ><v-col
@@ -19,6 +18,7 @@
               hide-details
               clearable
               class="test-search"
+              autofocus
             />
           </v-col>
         </v-row>
@@ -29,7 +29,6 @@
         @update:page="page = `${$event}`"
         :rows="Number(rows)"
         @update:rows="rows = `${$event}`"
-        :search="search"
         :totalTexts="totalTexts"
       ></dossier-texts>
     </oare-content-view>
@@ -79,7 +78,7 @@ export default defineComponent({
         texts.value = dossier.value.texts;
         dossierName.value = dossier.value.name;
         totalTexts.value = dossier.value.totalTexts;
-        archiveUuid.value = dossier.value.parent_uuid;
+        archiveUuid.value = dossier.value.parentUuid;
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading archive contents. Please try again.',
@@ -103,7 +102,7 @@ export default defineComponent({
       _.debounce(function () {
         page.value = '1';
         getDossier();
-      }, 500),
+      }, 1000),
       {
         immediate: false,
       }

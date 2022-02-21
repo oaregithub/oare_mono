@@ -56,10 +56,6 @@ describe('ArchivesList test', () => {
       },
     });
 
-  it('matches snapshot', () => {
-    expect(createWrapper()).toMatchSnapshot();
-  });
-
   it('displays archives', () => {
     const { getByText } = createWrapper();
     [

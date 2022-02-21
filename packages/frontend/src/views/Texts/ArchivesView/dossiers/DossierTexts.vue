@@ -4,9 +4,11 @@
       <v-data-table
         :headers="textHeaders"
         :items="texts"
-        :search="search"
         :options.sync="searchOptions"
         :server-items-length="totalTexts"
+        :footer-props="{
+          'items-per-page-options': [5, 10, 25, 50, 100],
+        }"
       >
         <template v-slot:[`item.name`]="{ item }">
           <router-link
@@ -36,6 +38,7 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { Text } from '@oare/types';
+import { DataTableHeader } from 'vuetify';
 
 export default defineComponent({
   name: 'DossierTexts',
@@ -56,30 +59,31 @@ export default defineComponent({
       type: Number,
       default: 10,
     },
-    search: {
-      type: String,
-      required: false,
-    },
   },
   setup(props, { emit }) {
-    const textHeaders = ref([
+    const textHeaders = ref<DataTableHeader[]>([]);
+    textHeaders.value = [
       {
         text: 'Text Name',
         value: 'name',
+        width: '30%',
       },
       {
         text: 'Excavation Info',
         value: 'excavation',
+        width: '25%',
       },
       {
         text: 'Museum Info',
         value: 'museum',
+        width: '20%',
       },
       {
         text: 'Primary Publication Info',
         value: 'publication',
+        width: '25%',
       },
-    ]);
+    ];
 
     const searchOptions = ref({
       page: props.page,

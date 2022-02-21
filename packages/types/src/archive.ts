@@ -3,10 +3,10 @@ import { Text } from './epigraphies';
 export interface Archive {
   id: string;
   uuid: string;
-  parent_uuid: string;
+  parentUuid: string;
   name: string;
   owner: string;
-  arch_locus: string;
+  archLocus: string;
   dossiersInfo: DossierInfo[] | null;
   texts: Text[] | null;
   totalTexts: number;
@@ -16,10 +16,10 @@ export interface Archive {
 export interface Dossier {
   id: string;
   uuid: string;
-  parent_uuid: string;
+  parentUuid: string;
   name: string;
   owner: string;
-  arch_locus: string;
+  archLocus: string;
   texts: Text[] | null;
   totalTexts: number;
 }

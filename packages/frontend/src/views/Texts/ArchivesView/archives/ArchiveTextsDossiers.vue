@@ -5,7 +5,6 @@
         :headers="dossierHeaders"
         :items="dossiersInfo"
         :server-items-length="totalDossiers"
-        :search="search"
         :options.sync="searchOptions"
       >
         <template v-slot:[`item.name`]="{ item }">
@@ -23,7 +22,6 @@
       <v-data-table
         :headers="textHeaders"
         :items="texts"
-        :search="search"
         :server-items-length="totalTexts"
         :options.sync="searchOptions"
         :footer-props="{
@@ -58,6 +56,7 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { Text, DossierInfo } from '@oare/types';
+import { DataTableHeader } from 'vuetify';
 
 export default defineComponent({
   name: 'ArchiveTextsDossiers',
@@ -90,40 +89,46 @@ export default defineComponent({
       type: Number,
       default: 10,
     },
-    search: {
-      type: String,
-      required: false,
-    },
   },
   setup(props, { emit }) {
-    const textHeaders = ref([
+    const textHeaders = ref<DataTableHeader[]>([]);
+    const dossierHeaders = ref<DataTableHeader[]>([]);
+
+    textHeaders.value = [
       {
         text: 'Text Name',
         value: 'name',
+        width: '30%',
       },
       {
         text: 'Excavation Info',
         value: 'excavation',
+        width: '25%',
       },
       {
         text: 'Museum Info',
         value: 'museum',
+        width: '20%',
       },
       {
         text: 'Primary Publication Info',
         value: 'publication',
+        width: '25%',
       },
-    ]);
-    const dossierHeaders = ref([
+    ];
+
+    dossierHeaders.value = [
       {
         text: 'Dossier Name',
         value: 'name',
+        width: '70%',
       },
       {
         text: 'Number of Texts',
         value: 'numTexts',
+        width: '30%',
       },
-    ]);
+    ];
 
     const searchOptions = ref({
       page: props.page,

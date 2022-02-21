@@ -1,36 +1,28 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" indeterminate />
-    <oare-content-view :title="archiveName">
-      <v-container>
-        <v-row>
-          <v-col>
-            <router-link to="/archives">Back to Archives</router-link>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <v-radio-group v-model="DossiersOrTexts" row>
-              <v-radio label="Dossiers" value="Dossiers"></v-radio>
-              <v-radio label="Texts" value="Texts"></v-radio>
-            </v-radio-group>
-          </v-col>
-        </v-row>
-      </v-container>
-      <v-container>
-        <v-row>
-          <v-col cols="4">
-            <v-text-field
-              v-model="search"
-              label="Search"
-              single-line
-              hide-details
-              clearable
-              class="test-search"
-            />
-          </v-col>
-        </v-row>
-      </v-container>
+    <oare-content-view :title="archiveName" :loading="loading">
+      <v-row class="ma-0">
+        <router-link to="/archives">Back to Archive List</router-link>
+      </v-row>
+      <v-row class="ma-0">
+        <v-radio-group v-model="DossiersOrTexts" row>
+          <v-radio label="Dossiers" value="Dossiers"></v-radio>
+          <v-radio label="Texts" value="Texts"></v-radio>
+        </v-radio-group>
+      </v-row>
+      <v-row class="ma-0">
+        <v-col cols="4">
+          <v-text-field
+            v-model="search"
+            label="Search"
+            single-line
+            hide-details
+            clearable
+            class="test-search"
+            autofocus
+          />
+        </v-col>
+      </v-row>
       <archive-texts-dossiers
         :texts="texts"
         :dossiersInfo="dossiersInfo"
@@ -41,7 +33,6 @@
         @update:page="page = `${$event}`"
         :rows="Number(rows)"
         @update:rows="rows = `${$event}`"
-        :search="search"
       ></archive-texts-dossiers>
     </oare-content-view>
   </div>
@@ -70,7 +61,6 @@ export default defineComponent({
   setup({ archiveUuid }) {
     const loading = ref(false);
     const server = sl.get('serverProxy');
-    const router = sl.get('router');
     const actions = sl.get('globalActions');
     const DossiersOrTexts = ref('Dossiers');
     const archive = ref();
@@ -100,10 +90,6 @@ export default defineComponent({
         totalTexts.value = archive.value.totalTexts;
         totalDossiers.value = archive.value.totalDossiers;
       } catch (err) {
-        if ((err as any).response && (err as any).response.status === 403) {
-          router.replace({ name: '403' });
-          return;
-        }
         actions.showErrorSnackbar(
           'Error loading archive dossiers and texts. Please try again.',
           err as Error
@@ -126,11 +112,15 @@ export default defineComponent({
       _.debounce(function () {
         page.value = '1';
         getArchive();
-      }, 500),
+      }, 1000),
       {
         immediate: false,
       }
     );
+
+    watch(DossiersOrTexts, () => {
+      page.value = '1';
+    });
 
     return {
       loading,
