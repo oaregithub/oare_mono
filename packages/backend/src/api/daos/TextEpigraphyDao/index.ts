@@ -130,8 +130,8 @@ class TextEpigraphyDao {
     )
       .select('text_epigraphy.text_uuid as uuid')
       .whereNotIn('text_epigraphy.text_uuid', notUuids)
-      .orderBy('text.name')
-      .groupBy('text.name')
+      .orderBy('text.display_name')
+      .groupBy('text.display_name')
       .limit(pagination.limit)
       .offset((pagination.page - 1) * pagination.limit);
 
