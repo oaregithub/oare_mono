@@ -121,9 +121,9 @@ export function convertEpigraphicUnitRows(
     const sideUnit = units.filter(
       epigUnit => epigUnit.side === unit.side && epigUnit.epigType === 'section'
     )[0];
-    const sideMarkup = markupUnits.filter(
-      markup => markup.referenceUuid === sideUnit.uuid
-    );
+    const sideMarkup = sideUnit
+      ? markupUnits.filter(markup => markup.referenceUuid === sideUnit.uuid)
+      : [];
 
     const unitMarkups = markupUnits.filter(
       markup => markup.referenceUuid === unit.uuid
