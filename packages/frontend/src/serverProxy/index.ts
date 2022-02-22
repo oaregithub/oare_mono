@@ -32,7 +32,6 @@ import publications from './publications';
 import archives from './archives';
 import pageContent from './page_content';
 
-
 const serverProxy = {
   ...groups,
   ...users,
