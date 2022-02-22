@@ -53,6 +53,8 @@ import AboutView from '../views/About/index.vue';
 import TutorialView from '../views/Tutorial/index.vue';
 import PublicationsView from '../views/Texts/PublicationsView/index.vue';
 import ArchivesView from '../views/Texts/ArchivesView/index.vue';
+import ArchiveView from '../views/Texts/ArchivesView/archives/index.vue';
+import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -387,6 +389,18 @@ const routes: RouteConfig[] = [
     path: '/archives',
     name: 'archives',
     component: ArchivesView,
+  },
+  {
+    path: '/archives/:archiveUuid',
+    name: 'archive',
+    component: ArchiveView,
+    props: true,
+  },
+  {
+    path: '/dossier/:dossierUuid',
+    name: 'dossier',
+    component: DossierView,
+    props: true,
   },
 ];
 
