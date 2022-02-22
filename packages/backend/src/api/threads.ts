@@ -11,9 +11,12 @@ import {
   AllCommentsRequest,
   AllCommentsResponse,
   CreateThreadPayload,
+  ThreadStatus,
+  CommentSortType,
 } from '@oare/types';
 import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import adminRoute from '@/middlewares/adminRoute';
+import { toInteger } from 'lodash';
 
 const router = express.Router();
 
@@ -111,11 +114,40 @@ router
   .route('/threads')
   .get(authenticatedRoute, async (req, res, next) => {
     try {
-      const requestString = (req.query.request as unknown) as string;
-      const request: AllCommentsRequest = JSON.parse(requestString);
+      const {
+        status,
+        thread,
+        item,
+        comment,
+        sortType,
+        sortDesc,
+        page,
+        limit,
+        filter,
+        isUserComments,
+      } = req.query;
 
       const threadsDao = sl.get('ThreadsDao');
       const commentsDao = sl.get('CommentsDao');
+
+      const request: AllCommentsRequest = {
+        filters: {
+          status: status as ThreadStatus,
+          thread: thread as string,
+          item: item as string,
+          comment: comment as string,
+        },
+        sort: {
+          type: sortType as CommentSortType,
+          desc: toInteger(sortDesc) === 1,
+        },
+        pagination: {
+          page: toInteger(page),
+          limit: toInteger(limit),
+          filter: filter as string,
+        },
+        isUserComments: toInteger(isUserComments) === 1,
+      };
 
       const userUuid = req.user ? req.user.uuid : null;
 

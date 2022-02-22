@@ -104,23 +104,30 @@ function getSideLines(side: number, units: DiscourseUnit[]): number[] {
   return Array.from(lines);
 }
 
-interface TranscriptionRenderFunc {
+interface RenderFunc {
   (word: string): string;
+}
+interface RenderFormat {
+  transliteration: RenderFunc;
+  spelling: RenderFunc;
 }
 export function lineReadingHelper(
   units: DiscourseUnit[],
   line: number,
   words: string[],
-  trRenderer: TranscriptionRenderFunc = word => word
+  renderFormatter: RenderFormat = {
+    transliteration: word => word,
+    spelling: word => word,
+  }
 ) {
   units.forEach(unit => {
     if (unit.line === line) {
       if (unit.transcription) {
-        words.push(trRenderer(unit.transcription));
+        words.push(renderFormatter.transliteration(unit.transcription));
       } else if (unit.explicitSpelling) {
-        words.push(unit.explicitSpelling);
+        words.push(renderFormatter.spelling(unit.explicitSpelling));
       }
     }
-    lineReadingHelper(unit.units, line, words, trRenderer);
+    lineReadingHelper(unit.units, line, words, renderFormatter);
   });
 }

@@ -30,6 +30,8 @@ import signReading from './sign_reading';
 import betaAccess from './beta_access';
 import publications from './publications';
 import archives from './archives';
+import pageContent from './page_content';
+
 
 const serverProxy = {
   ...groups,
@@ -64,6 +66,7 @@ const serverProxy = {
   ...betaAccess,
   ...publications,
   ...archives,
+  ...pageContent,
 };
 
 export type ServerProxyType = typeof serverProxy;

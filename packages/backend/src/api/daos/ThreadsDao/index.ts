@@ -120,8 +120,8 @@ class ThreadsDao {
           'dictionary_spelling.uuid'
         )
         .modify(qb => {
-          if (request.filters.status.length !== 0) {
-            qb.whereIn('threads.status', request.filters.status);
+          if (request.filters.status !== ('All' as ThreadStatus)) {
+            qb.where('threads.status', request.filters.status);
           }
 
           if (request.filters.thread !== '') {
