@@ -16,4 +16,6 @@ export * from './src/errors';
 export * from './src/people';
 export * from './src/profile';
 export * from './src/sign_reading';
+export * from './src/publication';
+export * from './src/archive';
 export * from './src/notes';

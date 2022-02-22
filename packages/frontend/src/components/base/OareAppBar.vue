@@ -140,7 +140,30 @@
           v-if="permissions.includes('PEOPLE')"
           >People</v-btn
         >
-        <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
+
+        <v-menu offset-y open-on-hover>
+          <template #activator="{ on, attrs }">
+            <v-btn class="test-texts" text dark v-bind="attrs" v-on="on"
+              >Texts</v-btn
+            >
+          </template>
+          <v-list dense>
+            <v-list-item class="pa-0">
+              <v-btn text to="/collections/A-J" width="100%"
+                >By Collection</v-btn
+              >
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/publications/A" width="100%"
+                >By Publication</v-btn
+              >
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/archives" width="100%">By Archive</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
         <v-btn class="test-search" text to="/search/texts">Search</v-btn>
 
         <v-menu offset-y open-on-hover>
