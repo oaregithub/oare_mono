@@ -141,28 +141,16 @@ export default defineComponent({
         discourse.translation
       ) {
         reading = discourse.translation;
-      } else if (
-        (discourse.type === 'paragraph' ||
-          discourse.type === 'clause' ||
-          discourse.type === 'phrase') &&
-        discourse.paragraphLabel
-      ) {
-        reading = discourse.paragraphLabel;
-      } else if (discourse.type === 'word') {
-        if (discourse.transcription && discourse.explicitSpelling) {
-          reading = `${discourse.transcription} (${discourse.explicitSpelling})`;
-        } else {
-          reading = discourse.explicitSpelling;
-        }
+      } else if (discourse.type === 'paragraph' && discourse.paragraphLabel) {
+        reading = `<strong><em>${discourse.paragraphLabel}</em></strong>`;
+      } else if ((discourse.type === 'clause' || discourse.type === 'phrase') && discourse.paragraphLabel) {
+        reading = `<em>${discourse.paragraphLabel}</em>`;
+      } else if (discourse.type === 'word' && discourse.transcription && discourse.explicitSpelling) {
+        reading = `${discourse.transcription} (${discourse.explicitSpelling})`;
       } else {
         reading = discourse.explicitSpelling;
       }
-
-      if (discourse.type === 'paragraph') {
-        reading = `<strong><em>${reading}</em></strong>`;
-      } else if (discourse.type === 'clause' || discourse.type === 'phrase') {
-        reading = `<em>${reading}</em>`;
-      }
+      
       return reading || '';
     };
 
