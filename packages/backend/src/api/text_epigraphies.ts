@@ -278,4 +278,31 @@ router
     }
   });
 
+router
+  .route('/text_epigraphies/edit_text_info')
+  .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
+    const TextDao = sl.get('TextDao');
+    try {
+      const { uuid } = req.body;
+      const { excavationPrefix } = req.body;
+      const { excavationNumber } = req.body;
+      const { museumPrefix } = req.body;
+      const { museumNumber } = req.body;
+      const { publicationPrefix } = req.body;
+      const { publicationNumber } = req.body;
+
+      await TextDao.updateTextInfo(
+        uuid,
+        excavationPrefix,
+        excavationNumber,
+        museumPrefix,
+        museumNumber,
+        publicationPrefix,
+        publicationNumber
+      );
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 export default router;
