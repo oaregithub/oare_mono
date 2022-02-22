@@ -9,29 +9,116 @@
         <template #header v-if="!disableEditing">
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
-        <div class="textInfo">
-          <div
-            v-if="
-              textInfo.text.excavationPrefix || textInfo.text.excavationNumber
-            "
+        <v-row class="ma-0 mb-6">
+          <v-icon
+            v-if="!editText"
+            @click="toggleTextInfo"
+            class="test-pencil mr-4"
+            >mdi-pencil</v-icon
           >
-            Excavation Info: {{ textInfo.text.excavationPrefix }}
-            {{ textInfo.text.excavationNumber }}
+          <div>
+            <div
+              v-if="
+                textInfo.text.excavationPrefix ||
+                textInfo.text.excavationNumber ||
+                editText
+              "
+            >
+              Excavation Info: {{ textInfo.text.excavationPrefix }}
+              {{ textInfo.text.excavationNumber }}
+              <v-row v-if="editText">
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    outlined
+                    v-model="textInfo.text.excavationPrefix"
+                    label="Prefix"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    outlined
+                    v-model="textInfo.text.excavationNumber"
+                    label="Number"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+            <div
+              v-if="
+                textInfo.text.museumPrefix ||
+                textInfo.text.museumNumber ||
+                editText
+              "
+            >
+              Museum Info: {{ textInfo.text.museumPrefix }}
+              {{ textInfo.text.museumNumber }}
+              <v-row v-if="editText">
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    outlined
+                    v-model="textInfo.text.museumPrefix"
+                    label="Prefix"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    outlined
+                    v-model="textInfo.text.museumNumber"
+                    label="Number"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+            <div
+              v-if="
+                textInfo.text.publicationPrefix ||
+                textInfo.text.publicationNumber ||
+                editText
+              "
+            >
+              Primary Publication Info: {{ textInfo.text.publicationPrefix }}
+              {{ textInfo.text.publicationNumber }}
+              <v-row v-if="editText">
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    outlined
+                    v-model="textInfo.text.publicationPrefix"
+                    label="Prefix"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="8" sm="4">
+                  <v-text-field
+                    v-if="editText"
+                    outlined
+                    v-model="textInfo.text.publicationNumber"
+                    label="Number"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+            <div>
+              <div v-if="editText">
+                <v-btn color="primary" width="90px" @click="editTextInfo"
+                  >Save</v-btn
+                >
+                <v-btn
+                  color="info"
+                  width="90px"
+                  class="white--text mx-4"
+                  @click="cancelEditTextInfo"
+                  >Cancel</v-btn
+                >
+              </div>
+            </div>
           </div>
-          <div v-if="textInfo.text.museumPrefix || textInfo.text.museumNumber">
-            Museum Info: {{ textInfo.text.museumPrefix }}
-            {{ textInfo.text.museumNumber }}
-          </div>
-          <div
-            v-if="
-              textInfo.text.publicationPrefix || textInfo.text.publicationNumber
-            "
-          >
-            Primary Publication Info: {{ textInfo.text.publicationPrefix }}
-            {{ textInfo.text.publicationNumber }}
-          </div>
-          <br />
-        </div>
+        </v-row>
+
         <template
           #title:pre
           v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
@@ -108,6 +195,15 @@ export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
 }
 
+export interface OriginalTextInfo {
+  excavationPrefix: string | null;
+  excavationNumber: string | null;
+  museumPrefix: string | null;
+  museumNumber: string | null;
+  primaryPublicationPrefix: string | null;
+  primaryPublicationNumber: string | null;
+}
+
 export const EpigraphyReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
@@ -156,6 +252,12 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = reactive(sl.get('router'));
 
+    const hasEditPermission = computed(() =>
+      store.getters.permissions
+        .map(perm => perm.name)
+        .includes('EDIT_TEXT_INFO')
+    );
+
     const loading = ref(false);
     const draft = ref<DraftContent | null>(null);
     const hasPicture = computed(() => imageUrls.value.length > 0);
@@ -185,6 +287,16 @@ export default defineComponent({
     });
     const imageUrls = ref<string[]>([]);
 
+    let editText = ref(false);
+
+    const originalTextInfoObject = ref<OriginalTextInfo>({
+      excavationPrefix: null,
+      excavationNumber: null,
+      museumPrefix: null,
+      museumNumber: null,
+      primaryPublicationPrefix: null,
+      primaryPublicationNumber: null,
+    });
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
     const breadcrumbItems = computed(() => {
@@ -262,11 +374,69 @@ export default defineComponent({
           .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
+    const editTextInfo = async () => {
+      await updateTextInfo();
+      editText.value = false;
+    };
+
+    const toggleTextInfo = function () {
+      originalTextInfoObject.value.excavationPrefix =
+        textInfo.value.text.excavationPrefix;
+      originalTextInfoObject.value.excavationNumber =
+        textInfo.value.text.excavationNumber;
+      originalTextInfoObject.value.museumPrefix =
+        textInfo.value.text.museumPrefix;
+      originalTextInfoObject.value.museumNumber =
+        textInfo.value.text.museumNumber;
+      originalTextInfoObject.value.primaryPublicationPrefix =
+        textInfo.value.text.publicationPrefix;
+      originalTextInfoObject.value.primaryPublicationNumber =
+        textInfo.value.text.publicationNumber;
+
+      editText.value = !editText.value;
+    };
+
+    const cancelEditTextInfo = function () {
+      textInfo.value.text.excavationPrefix =
+        originalTextInfoObject.value.excavationPrefix;
+      textInfo.value.text.excavationNumber =
+        originalTextInfoObject.value.excavationNumber;
+      textInfo.value.text.museumPrefix =
+        originalTextInfoObject.value.museumPrefix;
+      textInfo.value.text.museumNumber =
+        originalTextInfoObject.value.museumNumber;
+      textInfo.value.text.publicationPrefix =
+        originalTextInfoObject.value.primaryPublicationPrefix;
+      textInfo.value.text.publicationNumber =
+        originalTextInfoObject.value.primaryPublicationNumber;
+
+      editText.value = !editText.value;
+    };
+
     const getTextInfo = async () => {
       if (localEpigraphyUnits) {
         textInfo.value = localEpigraphyUnits;
       } else if (textUuid) {
         textInfo.value = await server.getEpigraphicInfo(textUuid);
+      }
+    };
+
+    const updateTextInfo = async () => {
+      try {
+        await server.updateTextInfo(
+          textInfo.value.text.uuid,
+          textInfo.value.text.excavationPrefix,
+          textInfo.value.text.excavationNumber,
+          textInfo.value.text.museumPrefix,
+          textInfo.value.text.museumNumber,
+          textInfo.value.text.publicationPrefix,
+          textInfo.value.text.publicationNumber
+        );
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error adding new form. Please try again.',
+          err as Error
+        );
       }
     };
 
@@ -290,7 +460,7 @@ export default defineComponent({
           }
         } else {
           actions.showErrorSnackbar(
-            'Error loading text. Please try again.',
+            'Error updating text information. Please try again.',
             err as Error
           );
         }
@@ -319,7 +489,14 @@ export default defineComponent({
       canViewEpigraphyImages,
       imageUrls,
       getTextInfo,
+      cancelEditTextInfo,
+      toggleTextInfo,
+      editTextInfo,
+      updateTextInfo,
+      originalTextInfoObject,
+      hasEditPermission,
       transliteration,
+      editText,
     };
   },
 });
