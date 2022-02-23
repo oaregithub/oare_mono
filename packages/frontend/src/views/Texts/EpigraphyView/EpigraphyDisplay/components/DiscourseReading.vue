@@ -148,7 +148,7 @@ export default defineComponent({
         discourse.paragraphLabel
       ) {
         reading = discourse.paragraphLabel;
-      } else if (discourse.type === 'word') {
+      } else if (discourse.type === 'word' || discourse.type === 'number') {
         if (discourse.transcription && discourse.explicitSpelling) {
           reading = `${discourse.transcription} (${discourse.explicitSpelling})`;
         } else {
