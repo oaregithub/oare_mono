@@ -103,6 +103,12 @@ class PermissionsDao {
       description:
         'Allow group users to add new texts to a collection. Currently requires user to have beta access.',
     },
+    {
+      name: 'EDIT_TEXT_INFO',
+      type: 'text',
+      description:
+        "Allow group users to edit a text's prefix and number information",
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
