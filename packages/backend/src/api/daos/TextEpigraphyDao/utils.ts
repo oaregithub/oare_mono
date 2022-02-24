@@ -95,7 +95,7 @@ export function getSearchQuery(
 
   if (textTitle) {
     const finalSearch: string = `%${textTitle
-      .replace(/\W/g, '%')
+      .replace(/[.,/#!$%^&*;:{}=\-_`~() <>]/g, '%')
       .toLowerCase()}%`;
     query = query.andWhere(function () {
       this.whereRaw('LOWER(text.display_name) LIKE ?', [finalSearch])
