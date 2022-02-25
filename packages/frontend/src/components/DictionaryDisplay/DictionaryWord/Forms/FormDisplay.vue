@@ -189,12 +189,10 @@ export default defineComponent({
     const reducer = (previousValue: number, currentValue: number) =>
       previousValue + currentValue;
 
-    function setTotalOccurrences($event: number) {
-      allSpellingOccurrence.value.push($event);
-      aggregateOccurrences.value = allSpellingOccurrence.value.reduce(reducer);
-
-      return aggregateOccurrences;
-    }
+    const setTotalOccurrences = ($event: number) => {
+      aggregateOccurrences.value += $event;
+      emit('total-occurrences', aggregateOccurrences.value);
+    };
 
     return {
       isCommenting,
