@@ -1,29 +1,20 @@
 <template>
   <div>
-    <div v-if="isAdmin">
-      <vue-editor v-if="isEditorActive" v-model="content" /><br />
-
-      <v-btn
-        class="mr-2 test-save-button"
-        v-if="isEditorActive"
-        color="primary"
-        @click="edit"
+    <div v-if="isAdmin && isEditorActive">
+      <vue-editor v-model="content" /><br />
+      <v-btn class="mr-2 test-save-button" color="primary" @click="edit"
         >Save</v-btn
       >
-      <v-btn v-if="isEditorActive" text @click="cancel">Cancel</v-btn>
+      <v-btn text @click="cancel">Cancel</v-btn>
     </div>
     <div
-      v-if="isEditorActive == false"
+      v-if="!isEditorActive"
       v-html="content"
       class="title font-weight-regular"
     ></div>
-    <v-row v-if="isAdmin"
+    <v-row v-if="isAdmin && !isEditorActive"
       ><v-spacer />
-      <v-btn
-        class="test-edit-button"
-        v-if="isEditorActive == false"
-        color="primary"
-        @click="edit"
+      <v-btn class="test-edit-button" color="primary" @click="edit"
         >Edit</v-btn
       ></v-row
     >
@@ -82,7 +73,7 @@ export default defineComponent({
       }
     };
 
-    const cancel = async () => {
+    const cancel = () => {
       isEditorActive.value = false;
     };
     return {

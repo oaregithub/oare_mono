@@ -39,9 +39,7 @@ describe('PageContent', () => {
 
   beforeEach(setup);
 
-  const createWrapper = () => {
-    return mount(OarePageContent, renderOptions);
-  };
+  const createWrapper = () => mount(OarePageContent, renderOptions);
 
   it('retrieves page content', async () => {
     createWrapper();
