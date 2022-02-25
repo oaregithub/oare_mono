@@ -126,7 +126,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -142,7 +142,6 @@ export default defineComponent({
     });
 
     const aggregateOccurrences = ref(0);
-    const allSpellingOccurrence = ref<number[]>([]);
 
     const canEdit = computed(() =>
       store.getters.permissions
@@ -186,12 +185,8 @@ export default defineComponent({
       });
     };
 
-    const reducer = (previousValue: number, currentValue: number) =>
-      previousValue + currentValue;
-
     const setTotalOccurrences = ($event: number) => {
       aggregateOccurrences.value += $event;
-      emit('total-occurrences', aggregateOccurrences.value);
     };
 
     return {
