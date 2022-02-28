@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="isAdmin && isEditorActive">
-      <vue-editor v-model="content" /><br />
+      <vue-editor v-model="editedContent" /><br />
       <v-btn class="mr-2 test-save-button" color="primary" @click="edit"
         >Save</v-btn
       >
@@ -48,11 +48,13 @@ export default defineComponent({
     const isAdmin = computed(() => store.getters.isAdmin);
 
     const content = ref('');
+    const editedContent = ref('');
     const isEditorActive = ref(false);
 
     onMounted(async () => {
       try {
         content.value = await server.getPageContent(props.pageName);
+        editedContent.value = content.value;
       } catch {
         actions.showErrorSnackbar(
           'Error loading page content. Please try again.'
@@ -63,7 +65,8 @@ export default defineComponent({
     const edit = async () => {
       if (isEditorActive.value) {
         try {
-          await server.updatePageContent(props.pageName, content.value);
+          await server.updatePageContent(props.pageName, editedContent.value);
+          content.value = editedContent.value;
           isEditorActive.value = !isEditorActive.value;
         } catch (err) {
           actions.showErrorSnackbar('Page content edit failed', err as Error);
@@ -75,9 +78,11 @@ export default defineComponent({
 
     const cancel = () => {
       isEditorActive.value = false;
+      editedContent.value = content.value;
     };
     return {
       content,
+      editedContent,
       isAdmin,
       isEditorActive,
       edit,
