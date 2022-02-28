@@ -16,6 +16,8 @@ export default defineComponent({
   components: {
     PageContent,
   },
-  setup() {},
+  setup() {
+    return {};
+  },
 });
 </script>
