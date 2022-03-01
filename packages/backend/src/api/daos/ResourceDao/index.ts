@@ -35,8 +35,10 @@ class ResourceDao {
     return response;
   }
 
-  async getLinkRow(uuid: string) {
-    const link_rows = await knex('resource')
+  async getTextLinksByTextUuid(uuid: string) {
+    const s3 = new AWS.S3();
+  
+    const textLinks: string[] = await knex('resource')
       .pluck('link')
       .whereIn(
         'uuid',
@@ -47,6 +49,18 @@ class ResourceDao {
             knex('text').select('uuid').where('uuid', uuid)
           )
       );
+    
+    const signedLinks = await Promise.all(
+        textLinks.map(key => {
+          const params = {
+            Bucket: 'oare-texttxt-bucket',
+            Key: key,
+          };
+          return s3.getSignedUrlPromise('getObject', params);
+        })
+      );
+
+    return signedLinks;
   }
 
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
