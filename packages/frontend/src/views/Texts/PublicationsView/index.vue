@@ -12,7 +12,10 @@
         >{{ lettGroup }}</v-btn
       >
     </div>
-    <publications-list :publications="shownPublications"></publications-list>
+    <publications-list
+      :publications="shownPublications"
+      :key="letter"
+    ></publications-list>
   </OareContentView>
 </template>
 
