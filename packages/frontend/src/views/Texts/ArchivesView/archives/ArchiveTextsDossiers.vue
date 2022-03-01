@@ -6,6 +6,9 @@
         :items="dossiersInfo"
         :server-items-length="totalDossiers"
         :options.sync="searchOptions"
+        :footer-props="{
+          'items-per-page-options': [10, 15, 25, 50],
+        }"
       >
         <template v-slot:[`item.name`]="{ item }">
           <router-link :to="`/dossier/${item.uuid}`">{{
