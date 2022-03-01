@@ -100,6 +100,20 @@ class ResourceDao {
       obj_uuid: row.objUuid,
     });
   }
+
+  async getLinkRow(uuid: string) {
+    const link_rows = await knex('resource')
+      .pluck('link')
+      .whereIn(
+        'uuid',
+        knex('link')
+          .select('obj_uuid')
+          .where(
+            'reference_uuid',
+            knex('text').select('uuid').where('uuid', uuid)
+          )
+      );
+  }
 }
 
 export default new ResourceDao();
