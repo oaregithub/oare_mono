@@ -35,6 +35,20 @@ class ResourceDao {
     return response;
   }
 
+  async getLinkRow(uuid: string) {
+    const link_rows = await knex('resource')
+      .pluck('link')
+      .whereIn(
+        'uuid',
+        knex('link')
+          .select('obj_uuid')
+          .where(
+            'reference_uuid',
+            knex('text').select('uuid').where('uuid', uuid)
+          )
+      );
+  }
+
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
@@ -99,20 +113,6 @@ class ResourceDao {
       reference_uuid: row.referenceUuid,
       obj_uuid: row.objUuid,
     });
-  }
-
-  async getLinkRow(uuid: string) {
-    const link_rows = await knex('resource')
-      .pluck('link')
-      .whereIn(
-        'uuid',
-        knex('link')
-          .select('obj_uuid')
-          .where(
-            'reference_uuid',
-            knex('text').select('uuid').where('uuid', uuid)
-          )
-      );
   }
 }
 
