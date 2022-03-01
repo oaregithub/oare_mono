@@ -26,8 +26,60 @@ class PublicationDao {
       .where('text.publication_prfx', prfx)
       .whereNotIn('text.uuid', textsToHide);
 
+    const publicationTextsSorted = publicationRows
+      .map(text => text)
+      .sort((a, b) => {
+        const floatA = parseFloat(a.publicationNumber);
+        const floatB = parseFloat(b.publicationNumber);
+        if (floatA !== floatB) {
+          if (Number.isNaN(floatA) && !Number.isNaN(floatB)) {
+            return -1;
+          }
+          if (!Number.isNaN(floatA) && Number.isNaN(floatB)) {
+            return 1;
+          }
+          if (Number.isNaN(floatA) && Number.isNaN(floatB)) {
+            if (!a.publicationNumber && !b.publicationNumber) {
+              return a.name.localeCompare(b.name);
+            }
+            if (!a.publicationNumber) {
+              return 1;
+            }
+            if (!b.publicationNumber) {
+              return -1;
+            }
+            const aValueSplit = a.publicationNumber.split(' ');
+            const bValueSplit = b.publicationNumber.split(' ');
+            let aValue = 0;
+            let bValue = 0;
+
+            for (let i = 0; i < aValueSplit.length; i += 1) {
+              aValue = parseFloat(aValueSplit[i]);
+              if (!Number.isNaN(parseFloat(aValueSplit[i]))) {
+                break;
+              }
+            }
+
+            for (let i = 0; i < bValueSplit.length; i += 1) {
+              bValue = parseFloat(bValueSplit[i]);
+              if (!Number.isNaN(parseFloat(bValueSplit[i]))) {
+                break;
+              }
+            }
+
+            if (aValue !== bValue) {
+              return aValue - bValue;
+            }
+
+            return a.publicationNumber.localeCompare(b.publicationNumber);
+          }
+          return floatA - floatB;
+        }
+        return a.publicationNumber.localeCompare(b.publicationNumber);
+      });
+
     const publicationTexts: PublicationText[] = await Promise.all(
-      publicationRows.map(publicationRow =>
+      publicationTextsSorted.map(publicationRow =>
         this.generateDisplayName(publicationRow)
       )
     );
@@ -42,14 +94,48 @@ class PublicationDao {
   async getAllPublications(): Promise<string[]> {
     const publicationRows: Array<{ prefix: string }> = await knex('text')
       .distinct('text.publication_prfx as prefix')
-      .whereNotNull('text.publication_prfx')
-      .orderBy('text.publication_prfx');
+      .whereNotNull('text.publication_prfx');
 
     const publicationPrefixes: string[] = publicationRows.map(
       ({ prefix }) => prefix
     );
 
-    return publicationPrefixes;
+    const publicationPrefixesSorted = publicationPrefixes.sort((a, b) => {
+      const aValueClean = a.toLowerCase().replace(/[.]/g, '');
+      const bValueClean = b.toLowerCase().replace(/[.]/g, '');
+      const aValueSplit = a.split(' ');
+      const bValueSplit = b.split(' ');
+      const aStringValue = aValueSplit[0];
+      const bStringValue = bValueSplit[0];
+
+      if (aStringValue === bStringValue) {
+        let aNumValue = 0;
+        let bNumValue = 0;
+        for (let i = 0; i < aValueSplit.length; i += 1) {
+          aNumValue = parseFloat(aValueSplit[i]);
+          if (!Number.isNaN(aNumValue)) {
+            break;
+          }
+        }
+
+        for (let i = 0; i < bValueSplit.length; i += 1) {
+          bNumValue = parseFloat(bValueSplit[i]);
+          if (!Number.isNaN(bNumValue)) {
+            break;
+          }
+        }
+        if (Number.isNaN(aNumValue) || Number.isNaN(bNumValue)) {
+          return aValueClean.localeCompare(bValueClean);
+        }
+        if (aNumValue !== bNumValue) {
+          return aNumValue - bNumValue;
+        }
+      }
+
+      return aValueClean.localeCompare(bValueClean);
+    });
+
+    return publicationPrefixesSorted;
   }
 
   async generateDisplayName(
