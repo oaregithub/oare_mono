@@ -11,6 +11,10 @@
       :discourseUnits="discourseUnits"
       class="test-discourses"
     />
+    <TextSourceReading
+      :discourseUnits="discourseUnits"
+      class="test-textsource"
+    />
   </div>
 </template>
 
