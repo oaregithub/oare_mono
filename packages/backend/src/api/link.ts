@@ -8,8 +8,8 @@ router
   .get(async (req, res, next) => {
     try {
         const resourceDao = sl.get('ResourceDao');
-        const signedLinks = await resourceDao.getTextLinksByTextUuid(req.params.uuid)
-        // TODO: parse the signedLinks
+        const response = await resourceDao.getTextLinksByTextUuid(req.params.uuid)
+        res.json(response);
 
     } catch (err) {
       next(new HttpInternalError(err));
