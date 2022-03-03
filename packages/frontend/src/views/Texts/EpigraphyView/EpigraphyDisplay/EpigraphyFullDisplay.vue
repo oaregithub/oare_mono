@@ -23,6 +23,7 @@ import { defineComponent, PropType, computed } from '@vue/composition-api';
 import { EpigraphicUnit, DiscourseUnit, TextDiscourseRow } from '@oare/types';
 import EpigraphyReading from './components/EpigraphyReading.vue';
 import DiscourseReading from './components/DiscourseReading.vue';
+import TextSourceReading from './components/TextSourceReading.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -47,6 +48,7 @@ export default defineComponent({
   components: {
     EpigraphyReading,
     DiscourseReading,
+    TextSourceReading,
   },
   setup() {
     const store = sl.get('store');
