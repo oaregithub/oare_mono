@@ -1,9 +1,7 @@
 <template>
   <div>
     <h1>TEXT SOURCE</h1>
-     <div v-for="unit in discourseUnits" :key="uuid">
-      <div>{{getTextLinksByTextUuid(unit.uuid)}}</div>
-    </div>
+    <div>{{getTextLinksByTextUuid()}}</div>
   </div>
 </template>
 
@@ -14,22 +12,23 @@ import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
-    discourseUnits: {
-      type: Array as PropType<DiscourseUnit[]>,
+    textUuid: {
+      type: String,
       required: true,
     },
   },
-  setup({ discourseUnits }) {
+  setup({ discourseUnits, textUuid }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const getTextLinksByTextUuid = async (uuid: string) => {
+    const getTextLinksByTextUuid = async () => {
       try {
-        const data = await server.getTextLinksByTextUuid(uuid);
+        const data = await server.getTextLinksByTextUuid(textUuid);
+        console.log(data);
       } catch (err) {
         actions.showErrorSnackbar('Failed to get text data', err as Error);
       }
-      return uuid;
+      return data;
     };
 
     return {

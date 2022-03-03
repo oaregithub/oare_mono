@@ -12,7 +12,7 @@
       class="test-discourses"
     />
     <TextSourceReading
-      :discourseUnits="discourseUnits"
+      :textUuid="textUuid"
       class="test-textsource"
     />
   </div>
@@ -34,6 +34,10 @@ export default defineComponent({
     },
     discourseUnits: {
       type: Array as PropType<DiscourseUnit[]>,
+      required: true,
+    },
+    textUuid: {
+      type: String,
       required: true,
     },
     discourseToHighlight: {
