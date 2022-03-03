@@ -138,6 +138,18 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 });
 
 router
+  .route('/text_epigraphies/text_file/:uuid')
+  .get(async (req, res, next) => {
+    try {
+        const resourceDao = sl.get('ResourceDao');
+        const response = await resourceDao.getTextLinksByTextUuid(req.params.uuid);
+        res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+});
+
+router
   .route('/text_epigraphies/designator/:preText')
   .get(async (req, res, next) => {
     try {
