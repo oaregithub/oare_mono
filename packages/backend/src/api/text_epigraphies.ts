@@ -12,6 +12,7 @@ import {
   TextEpigraphyRow,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import baseAxios from 'axios';
 
 const router = express.Router();
 
@@ -138,12 +139,23 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 });
 
 router
-  .route('/text_epigraphies/text_file/:uuid')
+  .route('/text_epigraphies/text_link/:uuid')
   .get(async (req, res, next) => {
     try {
-        const resourceDao = sl.get('ResourceDao');
-        const response = await resourceDao.getTextLinksByTextUuid(req.params.uuid);
-        res.json(response);
+      const resourceDao = sl.get('ResourceDao');
+      const response = await resourceDao.getTextLinkByTextUuid(req.params.uuid);
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+});
+
+router
+  .route('/text_epigraphies/text_file/:url')
+  .get(async (req, res, next) => {
+    try {
+      //const response = await baseAxios.get(req.params.url);
+      //const s3 = new AWS.S3();
     } catch (err) {
       next(new HttpInternalError(err));
     }

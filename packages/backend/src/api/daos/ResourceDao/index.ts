@@ -35,7 +35,7 @@ class ResourceDao {
     return response;
   }
 
-  async getTextLinksByTextUuid(uuid: string) {
+  async getTextLinkByTextUuid(uuid: string) {
     const s3 = new AWS.S3();
 
     const textLinks: string[] = await knex('resource')
