@@ -50,17 +50,12 @@ class ResourceDao {
           )
       );
 
-    const signedLinks = await Promise.all(
-      textLinks.map(key => {
-        const params = {
-          Bucket: 'oare-texttxt-bucket',
-          Key: key,
-        };
-        return s3.getSignedUrlPromise('getObject', params);
-      })
-    );
+    const textCotents = (await (s3.getObject({
+      Bucket: 'oare-texttxt-bucket',
+      Key: textLinks[0],
+    }).promise())).Body?.toString('utf-8');
 
-    return signedLinks;
+    return textCotents;
   }
 
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
