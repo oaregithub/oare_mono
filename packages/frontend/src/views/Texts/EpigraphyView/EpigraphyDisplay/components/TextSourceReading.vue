@@ -1,9 +1,9 @@
 <template>
-  <div v-if="fileText !== ''">
+  <div v-if="textContent !== ''">
     <br>
     <h2>TEXT SOURCE</h2>
     <br>
-    <span style="white-space: pre;">{{fileText}}</span>
+    <span style="white-space: pre;">{{textContent}}</span>
   </div>
 </template>
 
@@ -21,18 +21,27 @@ export default defineComponent({
   setup({ textUuid }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const fileText = ref('');
+    const textFile = ref('');
+    const textContent = ref('');
 
     onMounted(async () => {
       try {
-        fileText.value = await server.getTextByTextUuid(textUuid);
+        textFile.value = await server.getTextFileByTextUuid(textUuid);
       } catch (err) {
         actions.showErrorSnackbar('Failed to get text file', err as Error);
+      }
+      if (textFile.value !== '') {
+        try {
+          textContent.value = await server.getTextContentByTextFile(textFile.value);
+        } catch (err) {
+          actions.showErrorSnackbar('Failed to get text content', err as Error);
+        }
       }
     });
 
     return {
-        fileText,
+      textFile,
+      textContent,
     };
   },
 });

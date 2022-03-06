@@ -143,7 +143,24 @@ router
   .get(async (req, res, next) => {
     try {
       const resourceDao = sl.get('ResourceDao');
-      const response = await resourceDao.getTextByTextUuid(req.params.uuid);
+      const response = await resourceDao.getTextFileByTextUuid(req.params.uuid);
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+});
+
+router
+  .route('/text_epigraphies/text_content/:file')
+  .get(async (req, res, next) => {
+    try {
+      const s3 = new AWS.S3();
+
+      const response = (await (s3.getObject({
+        Bucket: 'oare-texttxt-bucket',
+        Key: req.params.file,
+      }).promise())).Body?.toString('utf-8');
+      
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));

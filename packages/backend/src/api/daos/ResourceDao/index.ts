@@ -35,9 +35,7 @@ class ResourceDao {
     return response;
   }
 
-  async getTextByTextUuid(uuid: string) {
-    const s3 = new AWS.S3();
-
+  async getTextFileByTextUuid(uuid: string) {
     const textLinks: string[] = await knex('resource')
       .pluck('link')
       .whereIn(
@@ -50,14 +48,7 @@ class ResourceDao {
           )
       );
 
-    if (textLinks.length == 0) return '';
-
-    const textCotents = (await (s3.getObject({
-      Bucket: 'oare-texttxt-bucket',
-      Key: textLinks[0],
-    }).promise())).Body?.toString('utf-8');
-
-    return textCotents;
+    return textLinks[0] || '';
   }
 
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {

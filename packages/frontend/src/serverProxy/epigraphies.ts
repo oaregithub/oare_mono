@@ -82,8 +82,13 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
   });
 };
 
-async function getTextByTextUuid(uuid: string) {
+async function getTextFileByTextUuid(uuid: string) {
   const { data } = await axios.get(`/text_epigraphies/text_file/${uuid}`);
+  return data;
+}
+
+async function getTextContentByTextFile(file: string) {
+  const { data } = await axios.get(`/text_epigraphies/text_content/${file}`);
   return data;
 }
 
@@ -96,5 +101,6 @@ export default {
   createText,
   uploadImages,
   updateTextInfo,
-  getTextByTextUuid,
+  getTextFileByTextUuid,
+  getTextContentByTextFile,
 };
