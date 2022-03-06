@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="fileText !== ''">
     <br>
     <h2>TEXT SOURCE</h2>
     <br>
@@ -22,12 +22,10 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const fileText = ref('');
-    const reader = new FileReader();
 
     onMounted(async () => {
       try {
-        fileText.value = await server.getTextLinkByTextUuid(textUuid);
-        console.log(Array.from(fileText.value));
+        fileText.value = await server.getTextByTextUuid(textUuid);
       } catch (err) {
         actions.showErrorSnackbar('Failed to get text file', err as Error);
       }

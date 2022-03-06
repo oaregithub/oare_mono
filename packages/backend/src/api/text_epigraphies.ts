@@ -139,23 +139,12 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 });
 
 router
-  .route('/text_epigraphies/text_link/:uuid')
+  .route('/text_epigraphies/text_file/:uuid')
   .get(async (req, res, next) => {
     try {
       const resourceDao = sl.get('ResourceDao');
-      const response = await resourceDao.getTextLinkByTextUuid(req.params.uuid);
+      const response = await resourceDao.getTextByTextUuid(req.params.uuid);
       res.json(response);
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-});
-
-router
-  .route('/text_epigraphies/text_file/:url')
-  .get(async (req, res, next) => {
-    try {
-      //const response = await baseAxios.get(req.params.url);
-      //const s3 = new AWS.S3();
     } catch (err) {
       next(new HttpInternalError(err));
     }

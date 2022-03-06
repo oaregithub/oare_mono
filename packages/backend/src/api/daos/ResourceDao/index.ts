@@ -35,7 +35,7 @@ class ResourceDao {
     return response;
   }
 
-  async getTextLinkByTextUuid(uuid: string) {
+  async getTextByTextUuid(uuid: string) {
     const s3 = new AWS.S3();
 
     const textLinks: string[] = await knex('resource')
@@ -49,6 +49,8 @@ class ResourceDao {
             knex('text').select('uuid').where('uuid', uuid)
           )
       );
+
+    if (textLinks.length == 0) return '';
 
     const textCotents = (await (s3.getObject({
       Bucket: 'oare-texttxt-bucket',

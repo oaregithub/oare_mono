@@ -82,16 +82,9 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
   });
 };
 
-async function getTextLinkByTextUuid(uuid: string) {
-  const { data } = await axios.get(`/text_epigraphies/text_link/${uuid}`);
+async function getTextByTextUuid(uuid: string) {
+  const { data } = await axios.get(`/text_epigraphies/text_file/${uuid}`);
   return data;
-}
-
-async function getTextFileByLink(url: string) {
-  //const { data } = await axios.get(`/text_epigraphies/text_file/${url}`);
-  //const { data } = await baseAxios.get(url, {headers: {'Access-Control-Allow-Origin': '*',}});
-  //return data;
-  return '';
 }
 
 export default {
@@ -103,6 +96,5 @@ export default {
   createText,
   uploadImages,
   updateTextInfo,
-  getTextLinkByTextUuid,
-  getTextFileByLink,
+  getTextByTextUuid,
 };
