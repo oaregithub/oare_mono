@@ -1,14 +1,20 @@
 <template>
   <div v-if="textContent !== ''">
-    <br>
+    <br />
     <h2>TEXT SOURCE</h2>
-    <br>
-    <span style="white-space: pre;">{{textContent}}</span>
+    <br />
+    <span style="white-space: pre">{{ textContent }}</span>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, PropType, computed } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  PropType,
+  computed,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -25,16 +31,27 @@ export default defineComponent({
     const textContent = ref('');
 
     onMounted(async () => {
-      try {
-        textFile.value = await server.getTextFileByTextUuid(textUuid);
-      } catch (err) {
-        actions.showErrorSnackbar('Failed to get text file', err as Error);
-      }
-      if (textFile.value !== '') {
+      if (
+        store.getters.permissions
+          .map(permission => permission.name)
+          .includes('VIEW_TEXT_FILE')
+      ) {
         try {
-          textContent.value = await server.getTextContentByTextFile(textFile.value);
+          textFile.value = await server.getTextFileByTextUuid(textUuid);
         } catch (err) {
-          actions.showErrorSnackbar('Failed to get text content', err as Error);
+          actions.showErrorSnackbar('Failed to get text file', err as Error);
+        }
+        if (textFile.value !== '') {
+          try {
+            textContent.value = await server.getTextContentByTextFile(
+              textFile.value
+            );
+          } catch (err) {
+            actions.showErrorSnackbar(
+              'Failed to get text content',
+              err as Error
+            );
+          }
         }
       }
     });

@@ -109,6 +109,11 @@ class PermissionsDao {
       description:
         "Allow group users to edit a text's prefix and number information",
     },
+    {
+      name: 'VIEW_TEXT_FILE',
+      type: 'text',
+      description: 'Allow group users to view text source file',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
