@@ -50,7 +50,7 @@
       v-model="textOccurrenceDialog"
       class="test-text-occurrences-display"
       :title="spelling.spelling"
-      :uuid="spelling.uuid"
+      :uuids="[spelling.uuid]"
       :totalTextOccurrences="totalOccurrences"
       :getTexts="server.getSpellingTextOccurrences"
       :get-texts-count="server.getSpellingTotalOccurrences"
@@ -80,11 +80,7 @@ import {
   inject,
   onMounted,
 } from '@vue/composition-api';
-import {
-  FormSpelling,
-  DictionaryForm,
-  SpellingOccurrenceRow,
-} from '@oare/types';
+import { FormSpelling, DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import SpellingDialog from './SpellingDialog.vue';
 import UtilList from '@/components/UtilList/index.vue';
@@ -166,9 +162,9 @@ export default defineComponent({
     onMounted(async () => {
       try {
         totalOccurrencesLoading.value = true;
-        totalOccurrences.value = await server.getSpellingTotalOccurrences(
-          props.spelling.uuid
-        );
+        totalOccurrences.value = await server.getSpellingTotalOccurrences([
+          props.spelling.uuid,
+        ]);
         emit('total-occurrences', totalOccurrences.value);
       } catch (err) {
         actions.showErrorSnackbar(

@@ -986,9 +986,8 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/spellings/:uuid/occurrences', () => {
-    const spellingUuid = 'spelling-uuid';
-    const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/occurrences`;
+  describe('GET /dictionary/spellings/spellingsuuids/occurrences', () => {
+    const PATH = `${API_PATH}/dictionary/spellings/spellingsuuids/occurrences`;
 
     const TextDiscourseDao = {
       getTotalSpellingTexts: jest.fn().mockResolvedValue(12),
@@ -1021,9 +1020,8 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/spellings/:uuid/texts', () => {
-    const spellingUuid = 'spelling-uuid';
-    const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/texts`;
+  describe('GET /dictionary/spellingsoccurrences/texts', () => {
+    const PATH = `${API_PATH}/dictionary/spellingsoccurrences/texts`;
     const mockResponse = [
       {
         textUuid: 'text-uuid',

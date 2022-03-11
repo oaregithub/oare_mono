@@ -78,26 +78,29 @@ async function checkSpelling(spelling: string): Promise<CheckSpellingResponse> {
 }
 
 async function getSpellingTextOccurrences(
-  spellingUuid: string,
+  spellingUuids: string[],
   pagination: Pagination
 ): Promise<SpellingOccurrenceResponseRow[]> {
-  const { data } = await axios.get(
-    `/dictionary/spellings/${spellingUuid}/texts`,
-    {
-      params: pagination,
-    }
-  );
+  const { data } = await axios.get('/dictionary/spellingsoccurrences/texts', {
+    params: {
+      ...pagination,
+      spellingUuids,
+    },
+  });
   return data;
 }
 
 async function getSpellingTotalOccurrences(
-  spellingUuid: string,
+  spellingUuids: string[],
   pagination?: Partial<Pagination>
 ): Promise<number> {
   const { data } = await axios.get(
-    `/dictionary/spellings/${spellingUuid}/occurrences`,
+    '/dictionary/spellings/spellingsuuids/occurrences',
     {
-      params: pagination,
+      params: {
+        ...pagination,
+        spellingUuids,
+      },
     }
   );
   return data;

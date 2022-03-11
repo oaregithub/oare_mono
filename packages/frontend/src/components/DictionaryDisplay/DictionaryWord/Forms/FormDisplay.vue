@@ -64,8 +64,21 @@
       </div>
 
       <span v-if="aggregateOccurrences > 0" class="mr-1">
-        ({{ aggregateOccurrences }})
+        <a @click="textOccurrenceDialog = true">
+          ({{ aggregateOccurrences }})</a
+        >
       </span>
+
+      <text-occurrences
+        v-model="textOccurrenceDialog"
+        class="test-text-occurrences-display"
+        :title="form.form"
+        :uuids="spellingUuids"
+        :totalTextOccurrences="aggregateOccurrences"
+        :getTexts="server.getSpellingTextOccurrences"
+        :getTextsCount="server.getSpellingTotalOccurrences"
+      >
+      </text-occurrences>
 
       <grammar-display :form="form" />
       <span class="d-flex flex-row flex-wrap mb-0">
@@ -95,6 +108,7 @@ import { DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
+import TextOccurrences from './components/TextOccurrences.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 
@@ -103,6 +117,7 @@ export default defineComponent({
     GrammarDisplay,
     SpellingDisplay,
     UtilList,
+    TextOccurrences,
   },
   props: {
     form: {
@@ -126,7 +141,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -142,6 +157,7 @@ export default defineComponent({
     });
 
     const aggregateOccurrences = ref(0);
+    const textOccurrenceDialog = ref(false);
 
     const canEdit = computed(() =>
       store.getters.permissions
@@ -189,6 +205,15 @@ export default defineComponent({
       aggregateOccurrences.value += $event;
     };
 
+    const test = ref([`90f02bd0-3db7-4ad4-a9c7-64d6721ea07a`]);
+
+    const spellingUuids = ref<string[]>([``]);
+
+    const getspellingUuids = computed(() => {
+      spellingUuids.value = props.form.spellings.map(({ uuid }) => uuid);
+      return spellingUuids;
+    });
+
     return {
       isCommenting,
       editing,
@@ -203,6 +228,11 @@ export default defineComponent({
       openEditDialog,
       setTotalOccurrences,
       aggregateOccurrences,
+      textOccurrenceDialog,
+      server,
+      spellingUuids,
+      getspellingUuids,
+      test,
     };
   },
 });

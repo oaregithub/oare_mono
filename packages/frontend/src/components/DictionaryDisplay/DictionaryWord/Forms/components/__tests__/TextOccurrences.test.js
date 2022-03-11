@@ -43,7 +43,7 @@ describe('TextOccurrences test', () => {
   beforeEach(setup);
 
   const mockTitle = 'title';
-  const mockPersonUuid = 'uuid';
+  const mockPersonUuids = ['uuids'];
   const mockTotalTextOccurrences = 2;
   const mockTextOccurrences = [
     {
@@ -58,7 +58,7 @@ describe('TextOccurrences test', () => {
 
   const mockProps = {
     title: mockTitle,
-    uuid: mockPersonUuid,
+    uuids: mockPersonUuids,
     value: true,
     totalTextOccurrences: mockTotalTextOccurrences,
     getTexts: jest.fn().mockResolvedValue(mockTextOccurrences),
@@ -81,7 +81,7 @@ describe('TextOccurrences test', () => {
   it('gets person text occurrences', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockProps.getTexts).toHaveBeenCalledWith(mockPersonUuid, {
+    expect(mockProps.getTexts).toHaveBeenCalledWith(mockPersonUuids, {
       limit: 10,
       page: 1,
     });
