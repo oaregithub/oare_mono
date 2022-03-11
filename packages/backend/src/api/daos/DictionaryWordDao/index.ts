@@ -9,6 +9,8 @@ import {
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
+import { prepareIndividualSearchCharactersDict } from '@/api/daos/SignReadingDao/utils';
+import { HttpInternalError } from '@/exceptions';
 import { assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
@@ -304,40 +306,131 @@ class DictionaryWordDao {
     };
   }
 
+  async concatenateDictWordArray(searchArray: string[][]) {
+    let result: string[] = [];
+    if (searchArray.length === 0) return [];
+    if (searchArray.length === 1) return searchArray[0];
+    let regex = '^';
+    let regexMax = 0;
+    let regexMin = 0;
+    for (let i = 0; i < searchArray.length; i += 1) {
+      const currentArray = searchArray[i];
+      const nextArray = searchArray[i + 1];
+      const currentArraySorted = currentArray.sort(
+        (a, b) => a.length - b.length
+      );
+      regexMin = currentArraySorted[0].length;
+      regexMax = currentArraySorted[currentArraySorted.length - 1].length;
+      if (i < searchArray.length - 1) {
+        regex += `.{${regexMin},${regexMax}}-`;
+      }
+      if (i === searchArray.length - 1) {
+        regex += `.{${regexMin},${regexMax}}$`;
+      }
+      if (i < 1) {
+        for (let x = 0; x < currentArray.length; x += 1) {
+          result.push(currentArray[x]);
+        }
+        for (let f = 0; f < currentArray.length; f += 1) {
+          if (i !== searchArray.length - 1) {
+            for (let j = 0; j < nextArray.length; j += 1) {
+              result.push(`${result[f]}-${nextArray[j]}`);
+            }
+          }
+        }
+      } else {
+        const resultLength = result.length;
+        for (let f = 0; f < resultLength; f += 1) {
+          if (i !== searchArray.length - 1) {
+            for (let j = 0; j < nextArray.length; j += 1) {
+              result.push(`${result[f]}-${nextArray[j]}`);
+            }
+          }
+        }
+      }
+    }
+    const r = RegExp(regex);
+    result = result.filter(word => r.test(word));
+    return result;
+  }
+
   async searchWords(search: string, page: number, numRows: number) {
-    const lowerSearch = search.toLowerCase();
-    const query = knex
-      .from('dictionary_word AS dw')
-      .leftJoin('field', 'field.reference_uuid', 'dw.uuid')
-      .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
-      .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
-      .where(knex.raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(knex.raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(knex.raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(
-        knex.raw('LOWER(ds.explicit_spelling) LIKE ?', [`%${lowerSearch}%`])
-      )
-      .select(
-        'dw.uuid',
-        'dw.type',
-        'dw.word AS name',
-        knex.raw(
-          "GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"
-        ),
-        'df.form',
-        knex.raw(
-          "GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings"
+    const searchArray = await prepareIndividualSearchCharactersDict(
+      search.replace(/[;'"><=]/g, '')
+    );
+    const concatenatedSearchArray = await this.concatenateDictWordArray(
+      searchArray
+    );
+    let query;
+    if (search.includes('-')) {
+      const spellingSearchSQL = concatenatedSearchArray
+        .map(word => `LOWER(ds.explicit_spelling) LIKE '%${word}%'`)
+        .join(' OR ');
+
+      query = knex
+        .from('dictionary_word AS dw')
+        .leftJoin('field', 'field.reference_uuid', 'dw.uuid')
+        .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
+        .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
+        .where(knex.raw(spellingSearchSQL))
+        .select(
+          'dw.uuid',
+          'dw.type',
+          'dw.word AS name',
+          knex.raw(
+            "GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"
+          ),
+          'df.form',
+          knex.raw(
+            "GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings"
+          )
         )
-      )
-      .groupBy('df.uuid');
+        .groupBy('df.uuid');
+    } else {
+      const wordSearchSQL = concatenatedSearchArray
+        .map(word => `LOWER(dw.word) LIKE '%${word}%'`)
+        .join(' OR ');
+      const fieldSearchSQL = concatenatedSearchArray
+        .map(word => `LOWER(field.field) LIKE '%${word}%'`)
+        .join(' OR ');
+      const formSearchSQL = concatenatedSearchArray
+        .map(word => `LOWER(df.form) LIKE '%${word}%'`)
+        .join(' OR ');
+      const spellingSearchSQL = concatenatedSearchArray
+        .map(word => `LOWER(ds.explicit_spelling) LIKE '%${word}%'`)
+        .join(' OR ');
+
+      query = knex
+        .from('dictionary_word AS dw')
+        .leftJoin('field', 'field.reference_uuid', 'dw.uuid')
+        .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
+        .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
+        .where(knex.raw(wordSearchSQL))
+        .orWhere(knex.raw(fieldSearchSQL))
+        .orWhere(knex.raw(formSearchSQL))
+        .orWhere(knex.raw(spellingSearchSQL))
+        .select(
+          'dw.uuid',
+          'dw.type',
+          'dw.word AS name',
+          knex.raw(
+            "GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"
+          ),
+          'df.form',
+          knex.raw(
+            "GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings"
+          )
+        )
+        .groupBy('df.uuid');
+    }
     const rows: SearchWordsQueryRow[] = await query;
-    const resultRows = assembleSearchResult(rows, search);
+    const resultRows = assembleSearchResult(rows, concatenatedSearchArray);
     const offset = (page - 1) * numRows;
     const results = resultRows.slice(offset, offset + numRows);
-
     return {
       totalRows: resultRows.length,
       results,
+      searchArray: concatenatedSearchArray,
     };
   }
 

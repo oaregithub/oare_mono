@@ -124,6 +124,7 @@ export interface DictionarySearchRow
 export interface DictionarySearchResult {
   totalRows: number;
   results: DictionarySearchRow[];
+  searchArray: string[];
 }
 
 export interface DictionarySearchPayload {

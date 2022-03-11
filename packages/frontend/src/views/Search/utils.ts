@@ -13,3 +13,16 @@ export const highlightedItem = (item: string, search: string) => {
   }
   return components.join('');
 };
+
+export const dictHighlightedItem = (item: string, searchArray: string[]) => {
+  let component: string = item;
+  const searchArrayFiltered = searchArray.filter(s =>
+    item.toLocaleLowerCase().includes(s)
+  );
+  for (let i = 0; i < searchArrayFiltered.length; i += 1) {
+    const search = searchArrayFiltered[i];
+    const regex = new RegExp(search, 'gi');
+    component = component.replace(regex, `<mark>${search}</mark>`);
+  }
+  return component;
+};

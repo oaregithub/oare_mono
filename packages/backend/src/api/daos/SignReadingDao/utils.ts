@@ -10,13 +10,19 @@ export async function prepareIndividualSearchCharacters(
 
   const charactersArray = charsPayload ? stringToCharsArray(charsPayload) : [];
   const signsArray = await applyIntellisearch(charactersArray);
-
   const characterUuids = await Promise.all(
     signsArray.map(signs => SignReadingDao.getIntellisearchSignUuids(signs))
   );
   return characterUuids;
 }
 
+export async function prepareIndividualSearchCharactersDict(
+  charsPayload?: string
+): Promise<string[][]> {
+  const charactersArray = charsPayload ? stringToCharsArray(charsPayload) : [];
+  const signsArray = await applyIntellisearch(charactersArray);
+  return signsArray;
+}
 export async function prepareCharactersForSearch(
   charsPayload?: string
 ): Promise<SearchCooccurrence[]> {

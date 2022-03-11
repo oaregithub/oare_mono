@@ -14,22 +14,24 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
 
 export function assembleSearchResult(
   rows: SearchWordsQueryRow[],
-  search: string
+  searchArray: string[]
 ): DictionarySearchRow[] {
-  const lowerSearch = search.toLowerCase();
   const wordMap = mapWordsToRows(rows);
 
   const searchResults: DictionarySearchRow[] = [];
   Object.values(wordMap).forEach(wordRows => {
     const { uuid, type, name, translations } = wordRows[0];
     const matches: string[] = [];
+    const lowerSearch = searchArray.find(s =>
+      name.toLocaleLowerCase().includes(s)
+    );
 
     wordRows.forEach(wordRow => {
       const { form, spellings } = wordRow;
       const spellingsList = spellings ? spellings.split(', ') : [];
       if (
-        (form && form.toLowerCase().includes(lowerSearch)) ||
-        spellingsList.some(s => s.toLowerCase().includes(lowerSearch))
+        (form && form.toLowerCase().includes(lowerSearch || '')) ||
+        spellingsList.some(s => s.toLowerCase().includes(lowerSearch || ''))
       ) {
         const spelling = spellings ? `: ${spellings}` : '';
         matches.push(`${form}: ${spelling}`);
@@ -39,7 +41,7 @@ export function assembleSearchResult(
     const matchingTranslations = translations
       ? translations
           .split(';')
-          .filter(tr => tr.toLowerCase().includes(lowerSearch))
+          .filter(tr => tr.toLowerCase().includes(lowerSearch || ''))
       : [];
     searchResults.push({
       uuid,
