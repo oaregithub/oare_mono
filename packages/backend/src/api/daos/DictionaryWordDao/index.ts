@@ -10,7 +10,6 @@ import {
 import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { prepareIndividualSearchCharactersDict } from '@/api/daos/SignReadingDao/utils';
-import { HttpInternalError } from '@/exceptions';
 import { assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
@@ -396,9 +395,6 @@ class DictionaryWordDao {
       const formSearchSQL = concatenatedSearchArray
         .map(word => `LOWER(df.form) LIKE '%${word}%'`)
         .join(' OR ');
-      const spellingSearchSQL = concatenatedSearchArray
-        .map(word => `LOWER(ds.explicit_spelling) LIKE '%${word}%'`)
-        .join(' OR ');
 
       query = knex
         .from('dictionary_word AS dw')
@@ -408,7 +404,6 @@ class DictionaryWordDao {
         .where(knex.raw(wordSearchSQL))
         .orWhere(knex.raw(fieldSearchSQL))
         .orWhere(knex.raw(formSearchSQL))
-        .orWhere(knex.raw(spellingSearchSQL))
         .select(
           'dw.uuid',
           'dw.type',
