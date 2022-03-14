@@ -27,6 +27,7 @@ export default defineComponent({
   setup({ textUuid }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
     const textFile = ref('');
     const textContent = ref('');
 
