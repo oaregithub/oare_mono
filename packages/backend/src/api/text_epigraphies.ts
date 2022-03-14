@@ -147,7 +147,7 @@ router
     } catch (err) {
       next(new HttpInternalError(err));
     }
-});
+  });
 
 router
   .route('/text_epigraphies/text_content/:file')
@@ -155,16 +155,20 @@ router
     try {
       const s3 = new AWS.S3();
 
-      const response = (await (s3.getObject({
-        Bucket: 'oare-texttxt-bucket',
-        Key: req.params.file,
-      }).promise())).Body?.toString('utf-8');
-      
+      const response = (
+        await s3
+          .getObject({
+            Bucket: 'oare-texttxt-bucket',
+            Key: req.params.file,
+          })
+          .promise()
+      ).Body?.toString('utf-8');
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
     }
-});
+  });
 
 router
   .route('/text_epigraphies/designator/:preText')
