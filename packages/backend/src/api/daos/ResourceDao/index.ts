@@ -38,6 +38,7 @@ class ResourceDao {
   async getTextFileByTextUuid(uuid: string) {
     const textLinks: string[] = await knex('resource')
       .pluck('link')
+      .where('container', 'oare-texttxt-bucket')
       .whereIn(
         'uuid',
         knex('link')
