@@ -11,7 +11,7 @@
   >
     <template v-slot:[`item.name`]="{ item }">
       <v-icon
-        v-if="editText !== item.uuid"
+        v-if="editText !== item.uuid && item.name != null && hasEditPermission"
         @click="toggleTextInfo(item.uuid, item)"
         class="test-pencil mr-4"
         >mdi-pencil</v-icon
@@ -21,7 +21,7 @@
       </router-link>
       <span v-if="editText === item.uuid">
         <v-btn
-          class="mr-3"
+          class="edit-text-save-btn mr-3"
           color="primary"
           width="45px"
           @click="updateTextInfo(item)"
@@ -47,6 +47,7 @@
             outlined
             v-model="item.excavationPrefix"
             label="Prefix"
+            class="excavationPrefix"
             clearable
           ></v-text-field>
         </v-col>
@@ -55,6 +56,7 @@
             outlined
             v-model="item.excavationNumber"
             label="Prefix"
+            class="excavationNumber"
             clearable
           ></v-text-field>
         </v-col>
@@ -75,6 +77,7 @@
             outlined
             v-model="item.museumPrefix"
             label="Prefix"
+            class="museumPrefix"
             clearable
           ></v-text-field>
         </v-col>
@@ -83,6 +86,7 @@
             outlined
             v-model="item.museumNumber"
             label="Prefix"
+            class="museumNumber"
             clearable
           ></v-text-field>
         </v-col>
@@ -103,6 +107,7 @@
             outlined
             v-model="item.publicationPrefix"
             label="Prefix"
+            class="publicationPrefix"
             clearable
           ></v-text-field>
         </v-col>
@@ -111,6 +116,7 @@
             outlined
             v-model="item.publicationNumber"
             label="Prefix"
+            class="publicationNumber"
             clearable
           ></v-text-field>
         </v-col>
@@ -120,7 +126,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, PropType } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  watch,
+  PropType,
+  computed,
+} from '@vue/composition-api';
 import { CollectionText } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -160,6 +172,13 @@ export default defineComponent({
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
+
+    const hasEditPermission = computed(() =>
+      store.getters.permissions
+        .map(perm => perm.name)
+        .includes('EDIT_TEXT_INFO')
+    );
 
     const originalTextInfoObject = ref<OriginalTextInfo>({
       excavationPrefix: null,
@@ -268,6 +287,7 @@ export default defineComponent({
       toggleTextInfo,
       cancelEditTextInfo,
       updateTextInfo,
+      hasEditPermission,
     };
   },
 });
