@@ -142,29 +142,24 @@ router
   .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
     try {
       const resourceDao = sl.get('ResourceDao');
-      const response = await resourceDao.getTextFileByTextUuid(req.params.uuid);
-      res.json(response);
-    } catch (err) {
-      next(new HttpInternalError(err));
-    }
-  });
+      const textFile = await resourceDao.getTextFileByTextUuid(req.params.uuid);
 
-router
-  .route('/text_epigraphies/text_content/:file')
-  .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
-    try {
-      const s3 = new AWS.S3();
+      if (textFile !== '') {
+        const s3 = new AWS.S3();
 
-      const response = (
-        await s3
-          .getObject({
-            Bucket: 'oare-texttxt-bucket',
-            Key: req.params.file,
-          })
-          .promise()
-      ).Body?.toString('utf-8');
+        const textContent = (
+          await s3
+            .getObject({
+              Bucket: 'oare-texttxt-bucket',
+              Key: textFile,
+            })
+            .promise()
+        ).Body?.toString('utf-8');
 
-      res.json(response);
+        res.json(textContent);
+      } else {
+        res.json('');
+      }
     } catch (err) {
       next(new HttpInternalError(err));
     }

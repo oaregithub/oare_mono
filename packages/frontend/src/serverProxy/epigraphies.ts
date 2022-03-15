@@ -87,11 +87,6 @@ async function getTextFileByTextUuid(uuid: string) {
   return data;
 }
 
-async function getTextContentByTextFile(file: string) {
-  const { data } = await axios.get(`/text_epigraphies/text_content/${file}`);
-  return data;
-}
-
 export default {
   getEpigraphicInfo,
   getImageLinks,
@@ -102,5 +97,4 @@ export default {
   uploadImages,
   updateTextInfo,
   getTextFileByTextUuid,
-  getTextContentByTextFile,
 };

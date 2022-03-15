@@ -28,7 +28,6 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
-    const textFile = ref('');
     const textContent = ref('');
 
     onMounted(async () => {
@@ -38,27 +37,14 @@ export default defineComponent({
           .includes('VIEW_TEXT_FILE')
       ) {
         try {
-          textFile.value = await server.getTextFileByTextUuid(textUuid);
+          textContent.value = await server.getTextFileByTextUuid(textUuid);
         } catch (err) {
           actions.showErrorSnackbar('Failed to get text file', err as Error);
-        }
-        if (textFile.value !== '') {
-          try {
-            textContent.value = await server.getTextContentByTextFile(
-              textFile.value
-            );
-          } catch (err) {
-            actions.showErrorSnackbar(
-              'Failed to get text content',
-              err as Error
-            );
-          }
         }
       }
     });
 
     return {
-      textFile,
       textContent,
     };
   },
