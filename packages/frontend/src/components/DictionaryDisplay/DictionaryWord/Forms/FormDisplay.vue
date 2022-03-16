@@ -103,7 +103,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  computed,
+  onMounted,
+} from '@vue/composition-api';
 import { DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
@@ -205,13 +211,10 @@ export default defineComponent({
       aggregateOccurrences.value += $event;
     };
 
-    const test = ref([`90f02bd0-3db7-4ad4-a9c7-64d6721ea07a`]);
-
     const spellingUuids = ref<string[]>([``]);
 
-    const getspellingUuids = computed(() => {
+    onMounted(() => {
       spellingUuids.value = props.form.spellings.map(({ uuid }) => uuid);
-      return spellingUuids;
     });
 
     return {
@@ -231,8 +234,6 @@ export default defineComponent({
       textOccurrenceDialog,
       server,
       spellingUuids,
-      getspellingUuids,
-      test,
     };
   },
 });
