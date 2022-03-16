@@ -5,6 +5,8 @@ import {
   CreateTextTables,
   CreateTextsPayload,
   TextPhotoWithName,
+  ResourceRow,
+  LinkRow,
 } from '@oare/types';
 import baseAxios from 'axios';
 import axios from '../axiosInstance';
@@ -65,6 +67,13 @@ const getNextImageDesignator = async (preText: string): Promise<number> => {
   return data;
 };
 
+const addPhotosToText = async (resources: ResourceRow[], links: LinkRow[]) => {
+  await axios.post('/text_epigraphies/additional_images', {
+    resources,
+    links,
+  });
+};
+
 const createText = async (createTextTables: CreateTextTables) => {
   const payload: CreateTextsPayload = {
     tables: createTextTables,
@@ -91,4 +100,5 @@ export default {
   createText,
   uploadImages,
   updateTextInfo,
+  addPhotosToText,
 };

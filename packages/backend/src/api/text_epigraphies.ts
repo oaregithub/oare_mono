@@ -10,6 +10,8 @@ import {
   InsertItemPropertyRow,
   TextDiscourseRow,
   TextEpigraphyRow,
+  ResourceRow,
+  LinkRow,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 
@@ -162,6 +164,29 @@ router
         designatorsAsNumbers.length > 0 ? Math.max(...designatorsAsNumbers) : 0;
 
       res.json(max + 1);
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
+  .route('/text_epigraphies/additional_images')
+  .post(permissionsRoute('UPLOAD_EPIGRAPHY_IMAGES'), async (req, res, next) => {
+    try {
+      const ResourceDao = sl.get('ResourceDao');
+
+      const {
+        resources,
+        links,
+      }: { resources: ResourceRow[]; links: LinkRow[] } = req.body;
+
+      await Promise.all(
+        resources.map(row => ResourceDao.insertResourceRow(row))
+      );
+
+      await Promise.all(links.map(row => ResourceDao.insertLinkRow(row)));
+
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }

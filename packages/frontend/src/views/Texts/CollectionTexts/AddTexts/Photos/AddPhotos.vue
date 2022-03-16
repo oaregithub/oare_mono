@@ -1,5 +1,5 @@
 <template>
-  <OareContentView title="Upload Photos">
+  <OareContentView :title="inDialog ? '' : 'Upload Photos'">
     <v-row>
       <v-col cols="6">
         <v-row
@@ -7,7 +7,7 @@
           justify="center"
           class="ma-0 mb-4 d-inline-block"
         >
-          <b>Optional.</b>
+          <b v-if="!inDialog">Optional.</b>
           To begin adding photos, click the "Add Photo" button below. Uploads
           currently support PNG, JPEG, JPG, and TIFF file types. To inquire
           about support for other file types, please
@@ -55,6 +55,12 @@ export default defineComponent({
   components: {
     EpigraphyImage,
     PhotoSelector,
+  },
+  props: {
+    inDialog: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(_, { emit }) {
     const photos = ref<TextPhoto[]>([]);

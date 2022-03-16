@@ -291,7 +291,12 @@ export default defineComponent({
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
         photosWithName.value = await addNamesToTextPhotos(
-          textInfo.value,
+          textInfo.value.excavationPrefix,
+          textInfo.value.excavationNumber,
+          textInfo.value.museumPrefix,
+          textInfo.value.museumNumber,
+          textInfo.value.publicationPrefix,
+          textInfo.value.publicationNumber,
           photos.value
         );
 

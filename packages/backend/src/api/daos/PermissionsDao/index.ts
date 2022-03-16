@@ -109,6 +109,12 @@ class PermissionsDao {
       description:
         "Allow group users to edit a text's prefix and number information",
     },
+    {
+      name: 'UPLOAD_EPIGRAPHY_IMAGES',
+      type: 'text',
+      description:
+        'Allow group users to upload additional images to an existing epigraphy page',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
