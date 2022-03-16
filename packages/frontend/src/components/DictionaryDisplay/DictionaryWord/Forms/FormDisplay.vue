@@ -147,7 +147,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -211,7 +211,7 @@ export default defineComponent({
       aggregateOccurrences.value += $event;
     };
 
-    const spellingUuids = ref<string[]>([``]);
+    const spellingUuids = ref<string[]>([]);
 
     onMounted(() => {
       spellingUuids.value = props.form.spellings.map(({ uuid }) => uuid);

@@ -267,7 +267,7 @@ router
   });
 
 router
-  .route('/dictionary/spellings/spellingsuuids/occurrences')
+  .route('/dictionary/spellings/spelling_occurrences/occurrences')
   .get(async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
@@ -288,7 +288,7 @@ router
   });
 
 router
-  .route('/dictionary/spellingsoccurrences/texts')
+  .route('/dictionary/spelling_occurrences/texts')
   .get(async (req, res, next) => {
     try {
       const utils = sl.get('utils');
