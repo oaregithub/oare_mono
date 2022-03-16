@@ -12,6 +12,7 @@
       class="test-discourses"
     />
     <TextSourceReading
+      v-if="canViewTextSource"
       :textUuid="textUuid"
       class="test-textsource"
     />
@@ -38,7 +39,7 @@ export default defineComponent({
     },
     textUuid: {
       type: String,
-      required: true,
+      required: false,
     },
     discourseToHighlight: {
       type: String,
@@ -63,8 +64,15 @@ export default defineComponent({
         .includes('VIEW_TEXT_DISCOURSE')
     );
 
+    const canViewTextSource = computed(() =>
+      store.getters.permissions
+        .map(permission => permission.name)
+        .includes('VIEW_TEXT_FILE')
+    );
+
     return {
       canViewDiscourses,
+      canViewTextSource,
     };
   },
 });

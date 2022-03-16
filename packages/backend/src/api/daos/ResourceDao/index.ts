@@ -49,7 +49,7 @@ class ResourceDao {
           )
       );
 
-    return textLinks[0] || '';
+    return textLinks[0] || null;
   }
 
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {

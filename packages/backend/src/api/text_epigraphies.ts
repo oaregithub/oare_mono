@@ -141,10 +141,10 @@ router
   .route('/text_epigraphies/text_file/:uuid')
   .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
     try {
-      const resourceDao = sl.get('ResourceDao');
-      const textFile = await resourceDao.getTextFileByTextUuid(req.params.uuid);
+      const ResourceDao = sl.get('ResourceDao');
+      const textFile = await ResourceDao.getTextFileByTextUuid(req.params.uuid);
 
-      if (textFile !== '') {
+      if (textFile !== null) {
         const s3 = new AWS.S3();
 
         const textContentRaw = (

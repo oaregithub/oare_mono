@@ -3,7 +3,7 @@
     <br />
     <h2>TEXT SOURCE</h2>
     <br />
-    <span style="white-space: pre">{{ textContent }}</span>
+    <span class="text-source-content">{{ textContent }}</span>
   </div>
 </template>
 
@@ -12,8 +12,6 @@ import {
   defineComponent,
   ref,
   onMounted,
-  PropType,
-  computed,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 
@@ -27,20 +25,13 @@ export default defineComponent({
   setup({ textUuid }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const store = sl.get('store');
     const textContent = ref('');
 
     onMounted(async () => {
-      if (
-        store.getters.permissions
-          .map(permission => permission.name)
-          .includes('VIEW_TEXT_FILE')
-      ) {
-        try {
-          textContent.value = await server.getTextFileByTextUuid(textUuid);
-        } catch (err) {
-          actions.showErrorSnackbar('Failed to get text file', err as Error);
-        }
+      try {
+        textContent.value = await server.getTextFileByTextUuid(textUuid);
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to get text file', err as Error);
       }
     });
 
@@ -50,3 +41,8 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+.text-source-content {
+  white-space: pre;
+}
+</style>
