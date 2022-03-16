@@ -1,18 +1,14 @@
 <template>
   <div v-if="textContent !== ''">
     <br />
-    <h2>TEXT SOURCE</h2>
+    <h2>Text Source</h2>
     <br />
     <span class="text-source-content">{{ textContent }}</span>
   </div>
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  onMounted,
-} from '@vue/composition-api';
+import { defineComponent, ref, onMounted } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -41,6 +37,7 @@ export default defineComponent({
   },
 });
 </script>
+
 <style scoped>
 .text-source-content {
   white-space: pre;

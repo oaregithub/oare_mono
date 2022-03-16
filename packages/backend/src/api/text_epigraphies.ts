@@ -156,10 +156,9 @@ router
             .promise()
         ).Body;
 
-        const textContent =
-          textContentRaw !== null && textContentRaw !== undefined
-            ? textContentRaw.toString('utf-8')
-            : '';
+        const textContent = textContentRaw
+          ? textContentRaw.toString('utf-8')
+          : '';
 
         res.json(textContent);
       } else {
