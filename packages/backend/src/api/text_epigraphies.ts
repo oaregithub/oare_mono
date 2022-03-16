@@ -147,14 +147,19 @@ router
       if (textFile !== '') {
         const s3 = new AWS.S3();
 
-        const textContent = (
+        const textContentRaw = (
           await s3
             .getObject({
               Bucket: 'oare-texttxt-bucket',
               Key: textFile,
             })
             .promise()
-        ).Body?.toString('utf-8');
+        ).Body;
+
+        const textContent =
+          textContentRaw !== null && textContentRaw !== undefined
+            ? textContentRaw.toString('utf-8')
+            : '';
 
         res.json(textContent);
       } else {
