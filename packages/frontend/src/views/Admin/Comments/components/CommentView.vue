@@ -208,7 +208,7 @@ export default defineComponent({
       try {
         const request: AllCommentsRequest = {
           filters: {
-            status: status.value ? [status.value as ThreadStatus] : [],
+            status: status.value ? status.value as ThreadStatus : 'All' as ThreadStatus,
             thread: name.value,
             item: item.value,
             comment: comment.value,

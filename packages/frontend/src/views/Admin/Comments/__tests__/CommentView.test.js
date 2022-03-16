@@ -57,7 +57,7 @@ const mockActions = {
 
 const mockRequest = {
   filters: {
-    status: [],
+    status: 'All',
     thread: '',
     item: '',
     comment: '',
@@ -222,7 +222,7 @@ describe('CommentView test', () => {
       ...mockRequest,
       filters: {
         ...mockRequest.filters,
-        status: ['In Progress'],
+        status: 'In Progress',
       },
     });
     await wrapper.findAll('button.mdi-close').trigger('click');

@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
-import serverProxy from '@/serverProxy';
+import server from '@/serverProxy';
 import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
 import store from '@/ts-store';
@@ -16,11 +16,10 @@ import loadBases from './loadBases';
 import i18n from './i18n';
 import 'flag-icon-css/css/flag-icon.css';
 import firebase from './firebase';
-import server from './serverProxy';
 import 'swagger-ui/dist/swagger-ui.css';
 import 'vue-inner-image-zoom/lib/vue-inner-image-zoom.css';
 
-sl.set('serverProxy', serverProxy);
+sl.set('serverProxy', server);
 sl.set('globalActions', globalActions);
 sl.set('store', store);
 sl.set('lodash', _);
@@ -49,8 +48,8 @@ firebase.auth().onIdTokenChanged(async user => {
 
     try {
       const [oareUser, permissions] = await Promise.all([
-        serverProxy.getUser(currentUser.uid),
-        serverProxy.getUserPermissions(),
+        server.getUser(currentUser.uid),
+        server.getUserPermissions(),
       ]);
       store.setPermissions(permissions);
       store.setUser(oareUser);
@@ -58,7 +57,7 @@ firebase.auth().onIdTokenChanged(async user => {
         await setupAdminBadge();
       }
     } catch (err) {
-      server.logError({
+      await server.logError({
         description: 'Error initializing site',
         stacktrace: err.stack,
         status: 'New',

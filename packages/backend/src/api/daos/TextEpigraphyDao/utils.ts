@@ -94,7 +94,25 @@ export function getSearchQuery(
   );
 
   if (textTitle) {
-    query = query.andWhere('text.name', 'like', `%${textTitle}%`);
+    const finalSearch: string = `%${textTitle
+      .replace(/[.,/#!$%^&*;:{}=\-_`~() <>]/g, '%')
+      .toLowerCase()}%`;
+    query = query.andWhere(function () {
+      this.whereRaw('LOWER(text.display_name) LIKE ?', [finalSearch])
+        .orWhereRaw('LOWER(text.cdli_num) LIKE ?', [finalSearch])
+        .orWhereRaw(
+          "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) LIKE ?",
+          [finalSearch]
+        )
+        .orWhereRaw(
+          "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) LIKE ?",
+          [finalSearch]
+        )
+        .orWhereRaw(
+          "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) LIKE ?",
+          [finalSearch]
+        );
+    });
   }
 
   query = query.whereNotIn('text_epigraphy.text_uuid', textsToHide);
@@ -121,9 +139,9 @@ export function convertEpigraphicUnitRows(
     const sideUnit = units.filter(
       epigUnit => epigUnit.side === unit.side && epigUnit.epigType === 'section'
     )[0];
-    const sideMarkup = markupUnits.filter(
-      markup => markup.referenceUuid === sideUnit.uuid
-    );
+    const sideMarkup = sideUnit
+      ? markupUnits.filter(markup => markup.referenceUuid === sideUnit.uuid)
+      : [];
 
     const unitMarkups = markupUnits.filter(
       markup => markup.referenceUuid === unit.uuid

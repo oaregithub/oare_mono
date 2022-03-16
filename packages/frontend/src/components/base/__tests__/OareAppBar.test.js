@@ -95,6 +95,11 @@ describe('OareAppBar.vue', () => {
     expect(wrapper.find('.test-admin-btn').exists()).toBe(true);
   });
 
+  it("doesn't show development indicator when not in development", async () => {
+    const wrapper = await createWrapper();
+    expect(wrapper.find('.test-dev-indicator').exists()).toBe(false);
+  });
+
   it('shows Login button when not logged in', async () => {
     const wrapper = await createWrapper({ isAuthenticated: false });
     expect(wrapper.find('.test-login-btn').exists()).toBe(true);
