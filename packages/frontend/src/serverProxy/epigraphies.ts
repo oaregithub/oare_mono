@@ -8,7 +8,6 @@ import {
   ResourceRow,
   LinkRow,
 } from '@oare/types';
-import baseAxios from 'axios';
 import axios from '../axiosInstance';
 
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
@@ -87,8 +86,9 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
       `/text_epigraphies/upload_image/${photo.name}`
     );
     console.log('Test 4'); // eslint-disable-line no-console
-    // Must use base axios to avoid header conflicts with AWS signing
-    await baseAxios.put(url, photo.upload);
+    const response = await axios.put(url, photo.upload);
+    console.log('Response'); // eslint-disable-line no-console
+    console.log(response); // eslint-disable-line no-console
     console.log('Test 5'); // eslint-disable-line no-console
   });
 };
