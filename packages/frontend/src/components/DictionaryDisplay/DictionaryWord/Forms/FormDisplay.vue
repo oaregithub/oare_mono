@@ -68,17 +68,18 @@
           ({{ aggregateOccurrences }})</a
         >
       </span>
-
-      <text-occurrences
-        v-model="textOccurrenceDialog"
-        class="test-text-occurrences-display"
-        :title="form.form"
-        :uuids="spellingUuids"
-        :totalTextOccurrences="aggregateOccurrences"
-        :getTexts="server.getSpellingTextOccurrences"
-        :getTextsCount="server.getSpellingTotalOccurrences"
-      >
-      </text-occurrences>
+      <span v-if="spellingUuids.length > 0">
+        <text-occurrences
+          v-model="textOccurrenceDialog"
+          class="test-text-occurrences-display"
+          :title="form.form"
+          :uuids="spellingUuids"
+          :totalTextOccurrences="aggregateOccurrences"
+          :getTexts="server.getSpellingTextOccurrences"
+          :getTextsCount="server.getSpellingTotalOccurrences"
+        >
+        </text-occurrences>
+      </span>
 
       <grammar-display :form="form" />
       <span class="d-flex flex-row flex-wrap mb-0">
