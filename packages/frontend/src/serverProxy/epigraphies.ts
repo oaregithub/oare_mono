@@ -86,8 +86,10 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
     const { data: url } = await axios.get(
       `/text_epigraphies/upload_image/${photo.name}`
     );
+    console.log('Test 4'); // eslint-disable-line no-console
     // Must use base axios to avoid header conflicts with AWS signing
     await baseAxios.put(url, photo.upload);
+    console.log('Test 5'); // eslint-disable-line no-console
   });
 };
 

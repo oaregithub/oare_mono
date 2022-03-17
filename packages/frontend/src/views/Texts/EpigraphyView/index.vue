@@ -143,7 +143,7 @@
             v-if="canAddPictures"
             color="primary"
             @click="photosDialogOpen = true"
-            >Add Photos</v-btn
+            >Add Photos (BETA)</v-btn
           >
         </template>
         <epigraphy-full-display
@@ -541,10 +541,11 @@ export default defineComponent({
         }));
         await server.addPhotosToText(resourceRows, linkRows);
         await server.uploadImages(photosWithName);
-        imageUrls.value = await server.getImageLinks(
-          textUuid || '',
-          textInfo.value.cdliNum
-        );
+        photosToAdd.value.forEach(photo => {
+          if (photo.url) {
+            imageUrls.value.push(photo.url);
+          }
+        });
       } catch (err) {
         actions.showErrorSnackbar(
           'Error adding photos to text. Please try again.',
