@@ -86,9 +86,16 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
       `/text_epigraphies/upload_image/${photo.name}`
     );
     console.log('Test 4'); // eslint-disable-line no-console
-    const response = await axios.put(url, photo.upload);
-    console.log('Response'); // eslint-disable-line no-console
-    console.log(response); // eslint-disable-line no-console
+    let response;
+    try {
+      response = await axios.put(url, photo.upload);
+      console.log('Response'); // eslint-disable-line no-console
+      console.log(response); // eslint-disable-line no-console
+    } catch (err) {
+      console.log('Error Response'); // eslint-disable-line no-console
+      console.log(response); // eslint-disable-line no-console
+    }
+
     console.log('Test 5'); // eslint-disable-line no-console
   });
 };
