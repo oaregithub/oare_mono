@@ -10,6 +10,8 @@ import {
   InsertItemPropertyRow,
   TextDiscourseRow,
   TextEpigraphyRow,
+  ResourceRow,
+  LinkRow,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 
@@ -200,6 +202,29 @@ router
   });
 
 router
+  .route('/text_epigraphies/additional_images')
+  .post(permissionsRoute('UPLOAD_EPIGRAPHY_IMAGES'), async (req, res, next) => {
+    try {
+      const ResourceDao = sl.get('ResourceDao');
+
+      const {
+        resources,
+        links,
+      }: { resources: ResourceRow[]; links: LinkRow[] } = req.body;
+
+      await Promise.all(
+        resources.map(row => ResourceDao.insertResourceRow(row))
+      );
+
+      await Promise.all(links.map(row => ResourceDao.insertLinkRow(row)));
+
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
   .route('/text_epigraphies/create')
   .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
     try {
@@ -297,13 +322,19 @@ router
         region: 'us-west-2',
         signatureVersion: 'v4',
       });
+      console.log('Test 1'); // eslint-disable-line no-console
       const { key } = req.params;
 
       const params = {
         Bucket: 'oare-image-bucket',
         Key: key,
       };
+
+      console.log('Test 2'); // eslint-disable-line no-console
       const url = await s3.getSignedUrlPromise('putObject', params);
+
+      console.log('Test 3'); // eslint-disable-line no-console
+
       res.json(url);
     } catch (err) {
       next(new HttpInternalError(err));

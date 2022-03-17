@@ -40,8 +40,18 @@ async function updateDiscourseTranslation(
   });
 }
 
+async function createDiscourseTranslation(
+  uuid: string,
+  newTranslation: string
+) {
+  await axios.post(`/text_discourse/${uuid}`, {
+    newTranslation,
+  });
+}
+
 export default {
   insertDiscourseRow,
   getDiscourseProperties,
   updateDiscourseTranslation,
+  createDiscourseTranslation,
 };

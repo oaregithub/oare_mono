@@ -1,7 +1,7 @@
 import axios from '../axiosInstance';
 
 async function updatePageContent(pageName: string, content: string) {
-  await axios.patch(`/page_content/${pageName}`, content);
+  await axios.patch(`/page_content/${pageName}`, { content });
 }
 
 async function getPageContent(pageName: string): Promise<string> {

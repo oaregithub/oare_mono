@@ -35,6 +35,7 @@ export interface TextPermission extends PermissionTemplate {
     | 'VIEW_TEXT_FILE'
     | 'ADD_NEW_TEXTS'
     | 'EDIT_TEXT_INFO'
+    | 'UPLOAD_EPIGRAPHY_IMAGES'
     | 'EDIT_TRANSLATION';
   type: 'text';
 }

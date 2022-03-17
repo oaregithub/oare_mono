@@ -110,6 +110,12 @@ class PermissionsDao {
         "Allow group users to edit a text's prefix and number information",
     },
     {
+      name: 'UPLOAD_EPIGRAPHY_IMAGES',
+      type: 'text',
+      description:
+        'Allow group users to upload additional images to an existing epigraphy page',
+    },
+    {
       name: 'VIEW_TEXT_FILE',
       type: 'text',
       description: 'Allow group users to view text source file',

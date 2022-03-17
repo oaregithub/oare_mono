@@ -5,6 +5,8 @@ import {
   CreateTextTables,
   CreateTextsPayload,
   TextPhotoWithName,
+  ResourceRow,
+  LinkRow,
 } from '@oare/types';
 import baseAxios from 'axios';
 import axios from '../axiosInstance';
@@ -65,6 +67,13 @@ const getNextImageDesignator = async (preText: string): Promise<number> => {
   return data;
 };
 
+const addPhotosToText = async (resources: ResourceRow[], links: LinkRow[]) => {
+  await axios.post('/text_epigraphies/additional_images', {
+    resources,
+    links,
+  });
+};
+
 const createText = async (createTextTables: CreateTextTables) => {
   const payload: CreateTextsPayload = {
     tables: createTextTables,
@@ -77,8 +86,10 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
     const { data: url } = await axios.get(
       `/text_epigraphies/upload_image/${photo.name}`
     );
+    console.log('Test 4'); // eslint-disable-line no-console
     // Must use base axios to avoid header conflicts with AWS signing
     await baseAxios.put(url, photo.upload);
+    console.log('Test 5'); // eslint-disable-line no-console
   });
 };
 
@@ -96,5 +107,6 @@ export default {
   createText,
   uploadImages,
   updateTextInfo,
+  addPhotosToText,
   getTextFileByTextUuid,
 };
