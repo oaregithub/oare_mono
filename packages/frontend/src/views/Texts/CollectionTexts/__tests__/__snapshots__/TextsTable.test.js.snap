@@ -21,22 +21,20 @@ exports[`TextsTable test matches snapshot 1`] = `
       <tbody>
         <tr class="">
           <td class="text-start"><button type="button" class="v-icon notranslate test-pencil mr-4 v-icon--link mdi mdi-pencil theme--light"></button>
-            <router-link-stub to="/epigraphies/1"><span>CCT 3 31</span></router-link-stub>
+            <router-link-stub to="/epigraphies/1">
+              CCT 3 31
+            </router-link-stub>
             <!---->
           </td>
           <td class="text-start">
             <div class="row">
-              <div class="col-sm-6 col-8"><span>
-
-        </span></div>
+              <div class="col-sm-6 col-8"><span>   </span></div>
             </div>
             <!---->
           </td>
           <td class="text-start">
             <div class="row">
-              <div class="col-sm-6 col-8"><span>
-
-        </span></div>
+              <div class="col-sm-6 col-8"><span>   </span></div>
             </div>
             <!---->
           </td>
@@ -51,22 +49,20 @@ exports[`TextsTable test matches snapshot 1`] = `
         </tr>
         <tr class="">
           <td class="text-start"><button type="button" class="v-icon notranslate test-pencil mr-4 v-icon--link mdi mdi-pencil theme--light"></button>
-            <router-link-stub to="/epigraphies/2"><span>CCT 1 12b</span></router-link-stub>
+            <router-link-stub to="/epigraphies/2">
+              CCT 1 12b
+            </router-link-stub>
             <!---->
           </td>
           <td class="text-start">
             <div class="row">
-              <div class="col-sm-6 col-8"><span>
-
-        </span></div>
+              <div class="col-sm-6 col-8"><span>   </span></div>
             </div>
             <!---->
           </td>
           <td class="text-start">
             <div class="row">
-              <div class="col-sm-6 col-8"><span>
-
-        </span></div>
+              <div class="col-sm-6 col-8"><span>   </span></div>
             </div>
             <!---->
           </td>

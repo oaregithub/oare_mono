@@ -19,8 +19,11 @@
       <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`">
         {{ item.name }}
       </router-link>
+      <span v-else>{{ item.name }}</span>
       <v-row v-if="editText === item.uuid" class="ma-1">
-        <v-icon @click="updateTextInfo(item)" class="mr-2">mdi-check</v-icon>
+        <v-icon @click="updateTextInfo(item)" class="edit-text-save-btn mr-2"
+          >mdi-check</v-icon
+        >
         <v-icon @click="cancelEditTextInfo(item)">mdi-close</v-icon>
       </v-row>
     </template>
