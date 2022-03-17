@@ -110,6 +110,18 @@ class ItemPropertiesDao {
       .where('ip.reference_uuid', referenceUuid);
     return rows;
   }
+
+  async getVariableObjectByReference(
+    referenceUuid: string,
+    variableUuid: string
+  ) {
+    const objUuids: string[] = await knex('item_properties as ip')
+      .pluck('ip.object_uuid')
+      .where('variable_uuid', variableUuid)
+      .where('reference_uuid', referenceUuid);
+
+    return objUuids;
+  }
 }
 
 export default new ItemPropertiesDao();

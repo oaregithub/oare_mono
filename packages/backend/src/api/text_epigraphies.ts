@@ -74,7 +74,17 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const TextDraftsDao = sl.get('TextDraftsDao');
     const CollectionDao = sl.get('CollectionDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const BibliographyDao = sl.get('BibliographyDao');
 
+    //
+    const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
+      textUuid,
+      'b3938276-173b-11ec-8b77-024de1c1cc1d'
+    );
+    const bibliography = await Promise.all(
+      objUuids.map(uuid => BibliographyDao.getBibliographyByUuid(uuid))
+    );
     const text = await TextDao.getTextByUuid(textUuid);
 
     if (!text) {
