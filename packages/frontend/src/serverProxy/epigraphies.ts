@@ -96,7 +96,7 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
       console.log('Error Response'); // eslint-disable-line no-console
       console.log(response); // eslint-disable-line no-console
       console.log(err); // eslint-disable-line no-console
-      console.log('Photo Upload'); // eslint-disable-line no-console
+      console.log('Photo Upload File'); // eslint-disable-line no-console
       console.log(photo.upload); // eslint-disable-line no-console
     }
 
