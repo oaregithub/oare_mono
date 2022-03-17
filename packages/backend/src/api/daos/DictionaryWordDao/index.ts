@@ -104,7 +104,7 @@ class DictionaryWordDao {
 
     const occurrences = await Promise.all(
       rows.map(r =>
-        TextDiscourseDao.getTotalSpellingTexts(r.spellingUuid, userUuid)
+        TextDiscourseDao.getTotalSpellingTexts([r.spellingUuid], userUuid)
       )
     );
 
