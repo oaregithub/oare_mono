@@ -85,7 +85,7 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
     const { data: url } = await axios.get(
       `/text_epigraphies/upload_image/${photo.name}`
     );
-    console.log('Test 4'); // eslint-disable-line no-console
+    console.log('Test 1'); // eslint-disable-line no-console
     let response;
     try {
       response = await axios.put(url, photo.upload);
@@ -94,9 +94,10 @@ const uploadImages = async (photos: TextPhotoWithName[]) => {
     } catch (err) {
       console.log('Error Response'); // eslint-disable-line no-console
       console.log(response); // eslint-disable-line no-console
+      console.log(err); // eslint-disable-line no-console
     }
 
-    console.log('Test 5'); // eslint-disable-line no-console
+    console.log('Test 2'); // eslint-disable-line no-console
   });
 };
 
