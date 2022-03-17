@@ -17,31 +17,33 @@
         >mdi-pencil</v-icon
       >
       <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`">
-        <span v-if="editText !== item.uuid">{{ item.name }}</span>
+        {{ item.name }}
       </router-link>
       <span v-if="editText === item.uuid">
         <v-btn
-          class="edit-text-save-btn mr-3"
+          class="edit-text-save-btn mr-3 mt-3"
           color="primary"
           width="45px"
           @click="updateTextInfo(item)"
           >Save</v-btn
         >
-        <v-btn color="info" width="45px" @click="cancelEditTextInfo(item)"
+        <v-btn
+          class="mt-3"
+          color="info"
+          width="45px"
+          @click="cancelEditTextInfo(item)"
           >Cancel</v-btn
         >
       </span>
     </template>
 
     <template v-slot:[`item.excavation`]="{ item }">
-      <v-row>
+      <v-row v-if="editText !== item.uuid">
         <v-col cols="8" sm="6">
-          <span v-if="editText !== item.uuid">
-            {{ item.excavationPrefix }} {{ item.excavationNumber }}
-          </span>
+          <span> {{ item.excavationPrefix }} {{ item.excavationNumber }} </span>
         </v-col>
       </v-row>
-      <v-row v-if="editText === item.uuid">
+      <v-row v-if="editText === item.uuid" class="mt-3">
         <v-col cols="8" sm="6">
           <v-text-field
             outlined
@@ -49,29 +51,29 @@
             label="Prefix"
             class="excavationPrefix"
             clearable
+            dense
           ></v-text-field>
         </v-col>
         <v-col cols="8" sm="6">
           <v-text-field
             outlined
             v-model="item.excavationNumber"
-            label="Prefix"
+            label="Number"
             class="excavationNumber"
             clearable
+            dense
           ></v-text-field>
         </v-col>
       </v-row>
     </template>
 
     <template v-slot:[`item.museum`]="{ item }">
-      <v-row>
+      <v-row v-if="editText !== item.uuid">
         <v-col cols="8" sm="6">
-          <span v-if="editText !== item.uuid">
-            {{ item.museumPrefix }} {{ item.museumNumber }}
-          </span>
+          <span> {{ item.museumPrefix }} {{ item.museumNumber }} </span>
         </v-col>
       </v-row>
-      <v-row v-if="editText === item.uuid">
+      <v-row v-if="editText === item.uuid" class="mt-3">
         <v-col cols="8" sm="6">
           <v-text-field
             outlined
@@ -79,29 +81,31 @@
             label="Prefix"
             class="museumPrefix"
             clearable
+            dense
           ></v-text-field>
         </v-col>
         <v-col cols="8" sm="6">
           <v-text-field
             outlined
             v-model="item.museumNumber"
-            label="Prefix"
+            label="Number"
             class="museumNumber"
             clearable
+            dense
           ></v-text-field>
         </v-col>
       </v-row>
     </template>
 
     <template v-slot:[`item.publication`]="{ item }">
-      <v-row>
+      <v-row v-if="editText !== item.uuid">
         <v-col cols="8" sm="6">
-          <span v-if="editText !== item.uuid">
+          <span>
             {{ item.publicationPrefix }} {{ item.publicationNumber }}
           </span>
         </v-col>
       </v-row>
-      <v-row v-if="editText === item.uuid">
+      <v-row v-if="editText === item.uuid" class="mt-3">
         <v-col cols="4" sm="6">
           <v-text-field
             outlined
@@ -109,15 +113,17 @@
             label="Prefix"
             class="publicationPrefix"
             clearable
+            dense
           ></v-text-field>
         </v-col>
         <v-col cols="4" sm="6">
           <v-text-field
             outlined
             v-model="item.publicationNumber"
-            label="Prefix"
+            label="Number"
             class="publicationNumber"
             clearable
+            dense
           ></v-text-field>
         </v-col>
       </v-row>
@@ -255,7 +261,7 @@ export default defineComponent({
         editText.value = undefined;
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error happened while editing text. Please try again.',
+          'Error editing text info. Please try again.',
           err as Error
         );
       }
