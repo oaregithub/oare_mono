@@ -322,7 +322,6 @@ router
         region: 'us-west-2',
         signatureVersion: 'v4',
       });
-      console.log('Test 1'); // eslint-disable-line no-console
       const { key } = req.params;
 
       const params = {
@@ -330,10 +329,7 @@ router
         Key: key,
       };
 
-      console.log('Test 2'); // eslint-disable-line no-console
       const url = await s3.getSignedUrlPromise('putObject', params);
-
-      console.log('Test 3'); // eslint-disable-line no-console
 
       res.json(url);
     } catch (err) {
