@@ -5,17 +5,31 @@ import sl from '@/serviceLocator';
 import { ResourceRow, LinkRow } from '@oare/types';
 
 class ResourceDao {
-  async getImageLinksByTextUuid(
+  async getImageUuidsByTextUuid(
     textUuid: string,
-    cdliNum: string
+  ): Promise<string[]> {
+
+    const imageUuids: string[] = await knex('resource')
+    .pluck('uuid')
+    .whereIn(
+      'uuid',
+      knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+    )
+    .where('type', 'img');
+
+    return imageUuids;
+  }
+
+  async getImageLinksByImageUuids(
+    imageUuids: string[],
+    cdliNum: string,
   ): Promise<string[]> {
     const s3 = new AWS.S3();
 
     const resourceLinks: string[] = await knex('resource')
       .pluck('link')
       .whereIn(
-        'uuid',
-        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+        'uuid', imageUuids
       )
       .where('type', 'img');
 
@@ -31,23 +45,6 @@ class ResourceDao {
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
     const response = cdliLinks.concat(signedUrls);
-
-    return response;
-  }
-
-  async getPhotoUuidByTextUuid(
-    textUuid: string,
-  ): Promise<string[]> {
-
-    const response: string[] = await knex('resource')
-    .pluck('uuid')
-    .whereIn(
-      'uuid',
-      knex('link').select('obj_uuid').where('reference_uuid', textUuid)
-    )
-    .where('type', 'img');
-
-    //console.log(response);
 
     return response;
   }

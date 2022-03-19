@@ -24,16 +24,19 @@ router
       const { uuid: textUuid, cdliNum } = req.params;
       const ResourceDao = sl.get('ResourceDao');
       const PersonDao = sl.get('PersonDao');
+      
+      const imageUuids = await ResourceDao.getImageUuidsByTextUuid(textUuid);
 
-      const response = await ResourceDao.getImageLinksByTextUuid(
-        textUuid,
+      const response = await ResourceDao.getImageLinksByImageUuids(
+        imageUuids,
         cdliNum
       );
 
-      const photoUuid = await ResourceDao.getPhotoUuidByTextUuid(
-        textUuid,
+      const personLabel = await PersonDao.getLabelByUuid(
+        imageUuids,
       );
-      console.log(photoUuid);
+
+      console.log(personLabel);
 
       res.json(response);
     } catch (err) {

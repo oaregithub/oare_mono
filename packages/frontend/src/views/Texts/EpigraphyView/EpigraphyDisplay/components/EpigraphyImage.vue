@@ -57,6 +57,7 @@
         />
       </div>
     </v-row>
+    <span>"Photo Source: " (source) ". "For more information in photo, click (here)."</span>
   </v-container>
 </template>
 
