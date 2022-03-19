@@ -35,6 +35,23 @@ class ResourceDao {
     return response;
   }
 
+  async getPhotoUuidByTextUuid(
+    textUuid: string,
+  ): Promise<string[]> {
+
+    const response: string[] = await knex('resource')
+    .pluck('uuid')
+    .whereIn(
+      'uuid',
+      knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+    )
+    .where('type', 'img');
+
+    //console.log(response);
+
+    return response;
+  }
+
   async getTextFileByTextUuid(uuid: string) {
     const textLinks: string[] = await knex('resource')
       .pluck('link')

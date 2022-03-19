@@ -68,6 +68,18 @@ class PersonDao {
 
     return people;
   }
+
+  async getLabelByUuid(uuids: string[]) : Promise<string[]> {
+    const response: string[] = await knex('person')
+    .pluck('label')
+    .whereIn(
+      'uuid', uuids
+    );
+
+    console.log(response);
+    return [];
+    //return response;
+  }
 }
 
 export default new PersonDao();

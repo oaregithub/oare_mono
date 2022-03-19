@@ -23,11 +23,18 @@ router
     try {
       const { uuid: textUuid, cdliNum } = req.params;
       const ResourceDao = sl.get('ResourceDao');
+      const PersonDao = sl.get('PersonDao');
 
       const response = await ResourceDao.getImageLinksByTextUuid(
         textUuid,
         cdliNum
       );
+
+      const photoUuid = await ResourceDao.getPhotoUuidByTextUuid(
+        textUuid,
+      );
+      console.log(photoUuid);
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
