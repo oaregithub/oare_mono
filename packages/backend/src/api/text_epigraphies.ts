@@ -27,7 +27,7 @@ router
       
       const imageUuids = await ResourceDao.getImageUuidsByTextUuid(textUuid);
 
-      const response = await ResourceDao.getImageLinksByImageUuids(
+      const response = await ResourceDao.getImageLinksByTextUuid(
         imageUuids,
         cdliNum
       );

@@ -151,7 +151,7 @@ describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
   const PATH = `${API_PATH}/text_epigraphies/images/${uuid}/${cdliNum}`;
 
   const mockResourceDao = {
-    getImageLinksByImageUuids: jest
+    getImageLinksByTextUuid: jest
       .fn()
       .mockResolvedValue(['test-cdli-link', 'test-s3-link']),
   };
@@ -172,7 +172,7 @@ describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
   it('returns 500 on failed link retrieval', async () => {
     sl.set('ResourceDao', {
       ...mockResourceDao,
-      getImageLinksByImageUuids: jest
+      getImageLinksByTextUuid: jest
         .fn()
         .mockRejectedValue('failed image link retrieval'),
     });

@@ -20,18 +20,29 @@ class ResourceDao {
     return imageUuids;
   }
 
-  async getImageLinksByImageUuids(
-    imageUuids: string[],
-    cdliNum: string,
+  async getImageLinksByTextUuid(
+    textUuid: string,
+    cdliNum: string
   ): Promise<string[]> {
     const s3 = new AWS.S3();
 
     const resourceLinks: string[] = await knex('resource')
       .pluck('link')
       .whereIn(
-        'uuid', imageUuids
+        'uuid',
+        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
       )
       .where('type', 'img');
+    console.log(resourceLinks);
+
+    const resourceLinks2: string[] = await knex('resource')
+      .select('*')
+      .whereIn(
+        'uuid',
+        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+      )
+      .where('type', 'img');
+    console.log(resourceLinks2);
 
     const signedUrls = await Promise.all(
       resourceLinks.map(key => {
