@@ -8,6 +8,7 @@ import {
   DiscourseUnitType,
   PersonOccurrenceRow,
   TextDiscourseRow,
+  SearchCooccurrence,
 } from '@oare/types';
 import Knex from 'knex';
 import { v4 } from 'uuid';
@@ -18,7 +19,10 @@ import {
   incrementWordOnTablet,
   createNestedDiscourses,
   setDiscourseReading,
+  findNumSignsInWordForSearch,
+  splitAndCompareDiscourseParts,
 } from './utils';
+import { concatenateSignReadingsForSearch } from '../SignReadingDao/utils';
 
 export interface DiscourseRow {
   uuid: string;
@@ -459,6 +463,42 @@ class TextDiscourseDao {
       explicit_spelling: row.explicitSpelling,
       transcription: row.transcription,
     });
+  }
+
+  async getDiscourseUuidsByCharsForSearch(
+    characterUuids: SearchCooccurrence[],
+    charsPayload: string | null
+  ): Promise<string[]> {
+    const SignReadingDao = sl.get('SignReadingDao');
+    const charUuids = characterUuids.map(cooccurrence => cooccurrence.uuids)[0];
+    const signReadings = await Promise.all(
+      charUuids.map(uuids =>
+        SignReadingDao.getSignReadingByUuidForSearch(uuids)
+      )
+    );
+    const discourseParts: string[] = charsPayload
+      ? charsPayload.split(' ')
+      : [];
+    const numCharsInWord: number[] = await findNumSignsInWordForSearch(
+      discourseParts
+    );
+    const discoursePartsFromUuids: string[] = await concatenateSignReadingsForSearch(
+      signReadings,
+      numCharsInWord
+    );
+    const comparedDiscourseParts: string[] = await splitAndCompareDiscourseParts(
+      discoursePartsFromUuids
+    );
+    const discourseUuids: string[] = await knex('text_discourse')
+      .pluck('text_discourse.uuid')
+      .innerJoin(
+        'text_epigraphy',
+        'text_epigraphy.discourse_uuid',
+        'text_discourse.uuid'
+      )
+      .whereIn('text_discourse.spelling', comparedDiscourseParts)
+      .orWhereIn('text_discourse.explicit_spelling', comparedDiscourseParts);
+    return discourseUuids;
   }
 }
 

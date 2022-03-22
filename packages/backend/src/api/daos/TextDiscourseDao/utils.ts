@@ -105,3 +105,31 @@ export async function incrementObjInText(
       .increment('obj_in_text', 1);
   }
 }
+
+export async function findNumSignsInWordForSearch(discourseParts: string[]) {
+  const numSignsInWordForSearch: number[] = [];
+  if (discourseParts.length <= 1) return [];
+  for (let i = 0; i < discourseParts.length; i += 1) {
+    let numChars = 1;
+    for (let j = 0; j < discourseParts[i].length; j += 1) {
+      if (discourseParts[i].charAt(j) === '-') {
+        numChars += 1;
+      }
+    }
+    numSignsInWordForSearch.push(numChars);
+  }
+  return numSignsInWordForSearch;
+}
+
+export async function splitAndCompareDiscourseParts(
+  discourseParts: string[]
+): Promise<string[]> {
+  const combinedDiscourseParts: string[] = discourseParts.join(' ').split(' ');
+  const comparedDiscourseParts: string[] = [];
+  for (let i = 0; i < combinedDiscourseParts.length; i += 1) {
+    if (!comparedDiscourseParts.includes(combinedDiscourseParts[i])) {
+      comparedDiscourseParts.push(combinedDiscourseParts[i]);
+    }
+  }
+  return comparedDiscourseParts;
+}

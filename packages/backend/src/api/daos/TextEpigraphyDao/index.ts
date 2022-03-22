@@ -38,6 +38,7 @@ export interface SearchTextArgs {
   title: string;
   userUuid: string | null;
   pagination: Pagination;
+  discourseUuids?: string[];
 }
 
 export interface AnchorInfo {
@@ -116,6 +117,7 @@ class TextEpigraphyDao {
     title,
     pagination,
     userUuid,
+    discourseUuids,
   }: SearchTextArgs): Promise<string[]> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
@@ -126,7 +128,8 @@ class TextEpigraphyDao {
       characters,
       textsToHide,
       true,
-      title
+      title,
+      discourseUuids
     )
       .select('text_epigraphy.text_uuid as uuid')
       .whereNotIn('text_epigraphy.text_uuid', notUuids)
@@ -140,13 +143,20 @@ class TextEpigraphyDao {
 
   private async getMatchingLines(
     textUuid: string,
-    rawCharacters: SearchCooccurrence[]
+    rawCharacters: SearchCooccurrence[],
+    discourseUuids?: string[]
   ): Promise<number[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ line: number }> = (
       await Promise.all(
         characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(characters, true);
+          let query = getSequentialCharacterQuery(characters, true);
+          if (discourseUuids && discourseUuids.length > 0) {
+            query = query.whereIn(
+              'text_epigraphy.discourse_uuid',
+              discourseUuids
+            );
+          }
           return query
             .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
             .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
@@ -161,13 +171,20 @@ class TextEpigraphyDao {
 
   private async getDiscourseUuids(
     textUuid: string,
-    rawCharacters: SearchCooccurrence[]
+    rawCharacters: SearchCooccurrence[],
+    discourseUuids?: string[]
   ): Promise<string[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ discourseUuid: string }> = (
       await Promise.all(
         characters.map(_char => {
-          const query = getSequentialCharacterQuery(characters, true);
+          let query = getSequentialCharacterQuery(characters, true);
+          if (discourseUuids && discourseUuids.length > 0) {
+            query = query.whereIn(
+              'text_epigraphy.discourse_uuid',
+              discourseUuids
+            );
+          }
           return query
             .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
             .where('text_epigraphy.text_uuid', textUuid);
@@ -183,11 +200,15 @@ class TextEpigraphyDao {
     const textUuids = await this.getMatchingTexts(args);
 
     const textLines = await Promise.all(
-      textUuids.map(uuid => this.getMatchingLines(uuid, args.characters))
+      textUuids.map(uuid =>
+        this.getMatchingLines(uuid, args.characters, args.discourseUuids)
+      )
     );
 
     const discourseUuids = await Promise.all(
-      textUuids.map(uuid => this.getDiscourseUuids(uuid, args.characters))
+      textUuids.map(uuid =>
+        this.getDiscourseUuids(uuid, args.characters, args.discourseUuids)
+      )
     );
 
     return textUuids.map((uuid, index) => ({
@@ -201,9 +222,10 @@ class TextEpigraphyDao {
     characters,
     title,
     userUuid,
+    discourseUuids,
   }: Pick<
     SearchTextArgs,
-    'characters' | 'title' | 'userUuid'
+    'characters' | 'title' | 'userUuid' | 'discourseUuids'
   >): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
@@ -211,7 +233,7 @@ class TextEpigraphyDao {
     const notUuids = await getNotOccurrenceTexts(characters);
 
     const totalRows: number = (
-      await getSearchQuery(characters, textsToHide, true, title)
+      await getSearchQuery(characters, textsToHide, true, title, discourseUuids)
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()

@@ -127,6 +127,13 @@ class SignReadingDao {
     const formattedSign = formattedSearchCharacter(sign);
     return formattedSign;
   }
+
+  async getSignReadingByUuidForSearch(uuids: string[]): Promise<string[]> {
+    const sign: string[] = await knex('sign_reading')
+      .pluck('reading')
+      .whereIn('uuid', uuids);
+    return sign;
+  }
 }
 
 export default new SignReadingDao();

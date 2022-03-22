@@ -182,3 +182,74 @@ export const getSubscriptVowelOptions = (): string[] => {
   }
   return subscripts;
 };
+
+export async function concatenateSignReadingsForSearch(
+  searchArray: string[][],
+  numCharsInWord: number[]
+): Promise<string[]> {
+  let result: string[] = [];
+  if (searchArray.length === 0) return [];
+  if (searchArray.length === 1) return searchArray[0];
+  let regex = '^';
+  let regexMax = 0;
+  let regexMin = 0;
+  let charCount = 1;
+  for (let i = 0; i < searchArray.length; i += 1) {
+    const currentArray = searchArray[i];
+    const nextArray = searchArray[i + 1];
+    const currentArraySorted = currentArray.sort((a, b) => a.length - b.length);
+    regexMin = currentArraySorted[0].length;
+    regexMax = currentArraySorted[currentArraySorted.length - 1].length;
+    let shift = false;
+    if (i < searchArray.length - 1) {
+      if (charCount === numCharsInWord[0]) {
+        regex += `.{${regexMin},${regexMax}} `;
+        shift = true;
+      } else {
+        regex += `.{${regexMin},${regexMax}}-`;
+      }
+    }
+    if (i === searchArray.length - 1) {
+      regex += `.{${regexMin},${regexMax}}$`;
+    }
+    if (i < 1) {
+      for (let x = 0; x < currentArray.length; x += 1) {
+        result.push(currentArray[x]);
+      }
+      for (let f = 0; f < currentArray.length; f += 1) {
+        if (i !== searchArray.length - 1) {
+          for (let j = 0; j < nextArray.length; j += 1) {
+            if (charCount === numCharsInWord[0]) {
+              result.push(`${result[f]} ${nextArray[j]}`);
+              shift = true;
+            } else {
+              result.push(`${result[f]}-${nextArray[j]}`);
+            }
+          }
+        }
+      }
+    } else {
+      const resultLength = result.length;
+      for (let f = 0; f < resultLength; f += 1) {
+        if (i !== searchArray.length - 1) {
+          for (let j = 0; j < nextArray.length; j += 1) {
+            if (charCount === numCharsInWord[0]) {
+              result.push(`${result[f]} ${nextArray[j]}`);
+              shift = true;
+            } else {
+              result.push(`${result[f]}-${nextArray[j]}`);
+            }
+          }
+        }
+      }
+    }
+    charCount += 1;
+    if (shift) {
+      charCount = 1;
+      numCharsInWord.shift();
+    }
+  }
+  const r = RegExp(regex);
+  result = result.filter(word => r.test(word));
+  return result;
+}

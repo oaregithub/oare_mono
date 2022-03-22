@@ -79,7 +79,8 @@ export function getSearchQuery(
   characters: SearchCooccurrence[],
   textsToHide: string[],
   includeSuperfluous: boolean,
-  textTitle?: string
+  textTitle?: string,
+  discourseUuids?: string[]
 ) {
   // Join text table so text names can be returned
   let query = knex('text_epigraphy')
@@ -92,7 +93,9 @@ export function getSearchQuery(
     includeSuperfluous,
     query
   );
-
+  if (discourseUuids && discourseUuids.length > 0) {
+    query = query.whereIn('text_epigraphy.discourse_uuid', discourseUuids);
+  }
   if (textTitle) {
     const finalSearch: string = `%${textTitle
       .replace(/[.,/#!$%^&*;:{}=\-_`~() <>]/g, '%')

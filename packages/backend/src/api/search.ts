@@ -9,12 +9,14 @@ import {
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
   SearchType,
+  SearchCooccurrence,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
 import { parsedQuery, extractPagination } from '@/utils';
+import { TextUuidWithLines } from './daos/TextEpigraphyDao';
 
 const router = express.Router();
 
@@ -83,19 +85,31 @@ router.route('/search/spellings').get(async (req, res, next) => {
 router.route('/search/count').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
 
     const {
       textTitle: title,
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
-    const characterUuids = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
-
+    let characterUuids: SearchCooccurrence[] = [];
+    let discourseUuids: string[] = [];
+    if (charsPayload && charsPayload.slice(0, 2) === '/w') {
+      const charsPayloadClean = charsPayload.slice(2);
+      characterUuids = await prepareCharactersForSearch(charsPayloadClean);
+      discourseUuids = await TextDiscourseDao.getDiscourseUuidsByCharsForSearch(
+        characterUuids,
+        charsPayloadClean || null
+      );
+    } else {
+      characterUuids = await prepareCharactersForSearch(charsPayload);
+    }
     const totalRows = await TextEpigraphyDao.searchTextsTotal({
       characters: characterUuids,
       title,
       userUuid: user ? user.uuid : null,
+      discourseUuids,
     });
 
     res.json(totalRows);
@@ -108,6 +122,7 @@ router.route('/search').get(async (req, res, next) => {
   try {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDao = sl.get('TextDao');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
 
     const {
       page,
@@ -115,15 +130,26 @@ router.route('/search').get(async (req, res, next) => {
       textTitle: title,
       characters: charsPayload,
     } = (req.query as unknown) as SearchTextsPayload;
-
-    const characterUuids = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
+    let characterUuids: SearchCooccurrence[] = [];
+    let discourseUuids: string[] = [];
+    if (charsPayload && charsPayload.slice(0, 2) === '/w') {
+      const charsPayloadClean = charsPayload.slice(2);
+      characterUuids = await prepareCharactersForSearch(charsPayloadClean);
+      discourseUuids = await TextDiscourseDao.getDiscourseUuidsByCharsForSearch(
+        characterUuids,
+        charsPayloadClean || null
+      );
+    } else {
+      characterUuids = await prepareCharactersForSearch(charsPayload);
+    }
 
     const textMatches = await TextEpigraphyDao.searchTexts({
       characters: characterUuids,
       pagination: { limit: rows, page },
       title,
       userUuid: user ? user.uuid : null,
+      discourseUuids,
     });
 
     const textNames = (
