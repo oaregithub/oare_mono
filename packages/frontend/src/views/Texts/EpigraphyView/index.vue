@@ -131,9 +131,9 @@
             class="mr-2"
           />
         </template>
-        <template #title:post v-if="textInfo.canWrite && !disableEditing">
+        <template #title:post v-if="!disableEditing">
           <v-btn
-            v-if="!isEditing"
+            v-if="!isEditing && textInfo.canWrite"
             color="primary"
             :to="`/epigraphies/${textUuid}/edit`"
             class="mx-4"
@@ -143,7 +143,7 @@
             v-if="canAddPictures"
             color="primary"
             @click="photosDialogOpen = true"
-            >Add Photos (BETA)</v-btn
+            >Add Photos</v-btn
           >
         </template>
         <epigraphy-full-display
