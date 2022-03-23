@@ -11,7 +11,7 @@
         </template>
         <v-row class="ma-0 mb-6">
           <v-icon
-            v-if="!editText"
+            v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
             class="test-pencil mr-4"
             >mdi-pencil</v-icon
