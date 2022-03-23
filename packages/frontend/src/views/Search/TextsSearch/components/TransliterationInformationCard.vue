@@ -47,6 +47,11 @@
           Use <b>!</b> ahead of a string to exclude texts which have that string
           (e.g., a-na; !mì-ma will search for texts with a-na but NOT mì-ma).
         </li>
+        <li>
+          Use <b>\w</b> ahead of a string to respect word boundaries (e.g.,
+          \wa-na will return only texts that contain a-na and NOT a-na-kam,
+          a-na-ku, etc.)
+        </li>
       </ol>
       <br />
       <b>NOTE:</b> Any of these search features may increase time for search

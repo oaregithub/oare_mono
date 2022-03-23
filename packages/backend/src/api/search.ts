@@ -90,13 +90,20 @@ router.route('/search/count').get(async (req, res, next) => {
     const {
       textTitle: title,
       characters: charsPayload,
+      respectWordBoundaries,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
     const user = req.user || null;
     let characterUuids: SearchCooccurrence[] = [];
     let discourseUuids: string[] = [];
-    if (charsPayload && charsPayload.slice(0, 2) === '/w') {
-      const charsPayloadClean = charsPayload.slice(2);
+    if (
+      (charsPayload && charsPayload.slice(0, 2) === '\\w') ||
+      (charsPayload && respectWordBoundaries === 'true')
+    ) {
+      const charsPayloadClean =
+        charsPayload.slice(0, 2) === '\\w'
+          ? charsPayload.slice(2)
+          : charsPayload;
       characterUuids = await prepareCharactersForSearch(charsPayloadClean);
       discourseUuids = await TextDiscourseDao.getDiscourseUuidsByCharsForSearch(
         characterUuids,
@@ -129,12 +136,19 @@ router.route('/search').get(async (req, res, next) => {
       rows,
       textTitle: title,
       characters: charsPayload,
+      respectWordBoundaries,
     } = (req.query as unknown) as SearchTextsPayload;
     const user = req.user || null;
     let characterUuids: SearchCooccurrence[] = [];
     let discourseUuids: string[] = [];
-    if (charsPayload && charsPayload.slice(0, 2) === '/w') {
-      const charsPayloadClean = charsPayload.slice(2);
+    if (
+      (charsPayload && charsPayload.slice(0, 2) === '\\w') ||
+      (charsPayload && respectWordBoundaries === 'true')
+    ) {
+      const charsPayloadClean =
+        charsPayload.slice(0, 2) === '\\w'
+          ? charsPayload.slice(2)
+          : charsPayload;
       characterUuids = await prepareCharactersForSearch(charsPayloadClean);
       discourseUuids = await TextDiscourseDao.getDiscourseUuidsByCharsForSearch(
         characterUuids,

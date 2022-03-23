@@ -10,11 +10,13 @@ export interface SearchTextsPayload {
   textTitle: string;
   page: number;
   rows: number;
+  respectWordBoundaries: string;
 }
 
 export interface SearchTextsCountPayload {
   characters?: string;
   textTitle: string;
+  respectWordBoundaries: string;
 }
 
 export interface SearchTextsResponse {

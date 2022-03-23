@@ -28,6 +28,15 @@
           >{{ $t('search.searchBtnText') }}</v-btn
         >
       </v-col>
+      <v-col cols="4">
+        <v-radio-group
+          label="Respect Word Boundaries"
+          v-model="respectWordBoundaries"
+        >
+          <v-radio label="yes" value="true"></v-radio>
+          <v-radio label="no" value="false"></v-radio>
+        </v-radio-group>
+      </v-col>
     </v-row>
     <oare-data-table
       :server-items-length="totalSearchResults"
@@ -35,7 +44,7 @@
       :items="searchResults"
       item-key="uuid"
       :fetch-items="searchTexts"
-      :watched-params="['translit', 'title']"
+      :watched-params="['translit', 'title', 'respectBoundaries']"
       :default-rows="100"
       :dense="true"
     >
@@ -105,6 +114,8 @@ export default defineComponent({
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
 
+    const respectWordBoundaries = useQueryParam('respectBoundaries', 'false');
+
     const headers = ref([
       {
         text: 'Text Name',
@@ -131,6 +142,7 @@ export default defineComponent({
             textTitle: textTitleSearch.value,
             page,
             rows,
+            respectWordBoundaries: respectWordBoundaries.value,
           });
 
           if (results.length === 1 && getIsVisited() !== 'true') {
@@ -160,6 +172,7 @@ export default defineComponent({
           totalSearchResults.value = await server.searchTextsTotal({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
+            respectWordBoundaries: respectWordBoundaries.value,
           });
         } catch (err) {
           actions.showErrorSnackbar(
@@ -198,6 +211,7 @@ export default defineComponent({
       searchTexts,
       resetSearch,
       searchTotalLoading,
+      respectWordBoundaries,
     };
   },
 });
