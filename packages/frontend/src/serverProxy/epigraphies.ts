@@ -8,7 +8,6 @@ import {
   ResourceRow,
   LinkRow,
 } from '@oare/types';
-import baseAxios from 'axios';
 import axios from '../axiosInstance';
 
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
@@ -81,27 +80,18 @@ const createText = async (createTextTables: CreateTextTables) => {
   await axios.post('/text_epigraphies/create', payload);
 };
 
-const uploadImages = async (photos: TextPhotoWithName[]) => {
-  photos.forEach(async photo => {
-    const { data: url } = await axios.get(
-      `/text_epigraphies/upload_image/${photo.name}`
-    );
-    console.log('Test 1'); // eslint-disable-line no-console
-    let response;
-    try {
-      response = await baseAxios.put(url, photo.upload);
-      console.log('Response'); // eslint-disable-line no-console
-      console.log(response); // eslint-disable-line no-console
-    } catch (err) {
-      console.log('Error Response'); // eslint-disable-line no-console
-      console.log(response); // eslint-disable-line no-console
-      console.log(err); // eslint-disable-line no-console
-      console.log('Photo Upload File'); // eslint-disable-line no-console
-      console.log(photo.upload); // eslint-disable-line no-console
-    }
+const uploadImage = async (photo: TextPhotoWithName) => {
+  const file = photo.upload;
+  if (file) {
+    const formData = new FormData();
+    formData.append('newFile', file, 'newFile');
 
-    console.log('Test 2'); // eslint-disable-line no-console
-  });
+    await axios.post(`/text_epigraphies/upload_image/${photo.name}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
 };
 
 export default {
@@ -111,7 +101,7 @@ export default {
   updateTranslitStatus,
   getNextImageDesignator,
   createText,
-  uploadImages,
+  uploadImage,
   updateTextInfo,
   addPhotosToText,
 };
