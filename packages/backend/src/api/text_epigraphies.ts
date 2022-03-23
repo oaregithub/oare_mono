@@ -141,6 +141,38 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 });
 
 router
+  .route('/text_epigraphies/text_file/:uuid')
+  .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
+    try {
+      const ResourceDao = sl.get('ResourceDao');
+      const textFile = await ResourceDao.getTextFileByTextUuid(req.params.uuid);
+
+      if (textFile !== null) {
+        const s3 = new AWS.S3();
+
+        const textContentRaw = (
+          await s3
+            .getObject({
+              Bucket: 'oare-texttxt-bucket',
+              Key: textFile,
+            })
+            .promise()
+        ).Body;
+
+        const textContent = textContentRaw
+          ? textContentRaw.toString('utf-8')
+          : '';
+
+        res.json(textContent);
+      } else {
+        res.json('');
+      }
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
+
+router
   .route('/text_epigraphies/designator/:preText')
   .get(async (req, res, next) => {
     try {

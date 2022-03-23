@@ -63,6 +63,24 @@
         </v-btn>
       </div>
 
+      <span v-if="aggregateOccurrences > 0" class="mr-1">
+        <a @click="textOccurrenceDialog = true">
+          ({{ aggregateOccurrences }})</a
+        >
+      </span>
+      <span v-if="spellingUuids.length > 0">
+        <text-occurrences
+          v-model="textOccurrenceDialog"
+          class="test-text-occurrences-display"
+          :title="form.form"
+          :uuids="spellingUuids"
+          :totalTextOccurrences="aggregateOccurrences"
+          :getTexts="server.getSpellingTextOccurrences"
+          :getTextsCount="server.getSpellingTotalOccurrences"
+        >
+        </text-occurrences>
+      </span>
+
       <grammar-display :form="form" />
       <span class="d-flex flex-row flex-wrap mb-0">
         <span
@@ -76,6 +94,7 @@
             :word-uuid="wordUuid"
             :uuid-to-highlight="uuidToHighlight"
             :allow-editing="allowEditing"
+            @total-occurrences="setTotalOccurrences($event)"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span></span
@@ -85,11 +104,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  computed,
+  onMounted,
+} from '@vue/composition-api';
 import { DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
+import TextOccurrences from './components/TextOccurrences.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 
@@ -98,6 +124,7 @@ export default defineComponent({
     GrammarDisplay,
     SpellingDisplay,
     UtilList,
+    TextOccurrences,
   },
   props: {
     form: {
@@ -135,6 +162,10 @@ export default defineComponent({
     const editForm = ref({
       ...props.form,
     });
+
+    const aggregateOccurrences = ref(0);
+    const textOccurrenceDialog = ref(false);
+
     const canEdit = computed(() =>
       store.getters.permissions
         .map(permission => permission.name)
@@ -177,6 +208,16 @@ export default defineComponent({
       });
     };
 
+    const setTotalOccurrences = ($event: number) => {
+      aggregateOccurrences.value += $event;
+    };
+
+    const spellingUuids = ref<string[]>([]);
+
+    onMounted(() => {
+      spellingUuids.value = props.form.spellings.map(({ uuid }) => uuid);
+    });
+
     return {
       isCommenting,
       editing,
@@ -189,6 +230,11 @@ export default defineComponent({
       routeName,
       openComment,
       openEditDialog,
+      setTotalOccurrences,
+      aggregateOccurrences,
+      textOccurrenceDialog,
+      server,
+      spellingUuids,
     };
   },
 });

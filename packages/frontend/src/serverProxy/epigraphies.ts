@@ -94,6 +94,11 @@ const uploadImage = async (photo: TextPhotoWithName) => {
   }
 };
 
+async function getTextFileByTextUuid(uuid: string) {
+  const { data } = await axios.get(`/text_epigraphies/text_file/${uuid}`);
+  return data;
+}
+
 export default {
   getEpigraphicInfo,
   getImageLinks,
@@ -104,4 +109,5 @@ export default {
   uploadImage,
   updateTextInfo,
   addPhotosToText,
+  getTextFileByTextUuid,
 };

@@ -32,6 +32,7 @@ export interface TextPermission extends PermissionTemplate {
   name:
     | 'VIEW_EPIGRAPHY_IMAGES'
     | 'VIEW_TEXT_DISCOURSE'
+    | 'VIEW_TEXT_FILE'
     | 'ADD_NEW_TEXTS'
     | 'EDIT_TEXT_INFO'
     | 'UPLOAD_EPIGRAPHY_IMAGES'
