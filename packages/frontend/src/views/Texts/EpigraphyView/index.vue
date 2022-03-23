@@ -540,7 +540,9 @@ export default defineComponent({
           objUuid: resource.uuid,
         }));
         await server.addPhotosToText(resourceRows, linkRows);
-        await server.uploadImages(photosWithName);
+        await Promise.all(
+          photosWithName.map(photo => server.uploadImage(photo))
+        );
         photosToAdd.value.forEach(photo => {
           if (photo.url) {
             imageUrls.value.push(photo.url);

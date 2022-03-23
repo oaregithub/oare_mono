@@ -14,6 +14,7 @@ import {
   LinkRow,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import fileUpload from 'express-fileupload';
 
 const router = express.Router();
 
@@ -316,7 +317,7 @@ router
 
 router
   .route('/text_epigraphies/upload_image/:key')
-  .get(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
+  .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
     try {
       const s3 = new AWS.S3({
         region: 'us-west-2',
@@ -324,14 +325,22 @@ router
       });
       const { key } = req.params;
 
-      const params = {
+      if (!req.files) {
+        res.status(400).end();
+        return;
+      }
+
+      const file = req.files.newFile as fileUpload.UploadedFile;
+
+      const params: AWS.S3.PutObjectRequest = {
         Bucket: 'oare-image-bucket',
         Key: key,
+        Body: file.data,
       };
 
-      const url = await s3.getSignedUrlPromise('putObject', params);
+      await s3.putObject(params).promise();
 
-      res.json(url);
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err));
     }
