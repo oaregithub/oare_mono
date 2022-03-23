@@ -319,10 +319,7 @@ router
   .route('/text_epigraphies/upload_image/:key')
   .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
     try {
-      const s3 = new AWS.S3({
-        region: 'us-west-2',
-        signatureVersion: 'v4',
-      });
+      const s3 = new AWS.S3();
       const { key } = req.params;
 
       if (!req.files) {
