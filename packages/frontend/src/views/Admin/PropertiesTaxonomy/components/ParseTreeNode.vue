@@ -19,6 +19,7 @@
             hide-details
             v-model="selected"
             :value="child"
+            :disabled="disableChildren && !selected.includes(child)"
           >
             <template #label>
               {{ child.valueName }}
@@ -64,6 +65,9 @@
                   !child.variableName && !child.valueName && !child.aliasName
                 "
                 >NO NAME</i
+              >
+              <b v-if="open && child.custom === 1" class="text--disabled ml-7"
+                ><br />Only one selection permitted</b
               >
               <span class="text--disabled">
                 &nbsp;
@@ -262,6 +266,10 @@ export default defineComponent({
       return indices;
     });
 
+    const disableChildren = computed(() => {
+      return selected.value.length > 0 && props.node.custom === 1;
+    });
+
     return {
       selected,
       ignoredSubtrees,
@@ -269,6 +277,7 @@ export default defineComponent({
       updateCompletedSubtrees,
       updateProperties,
       searchResultsToOpen,
+      disableChildren,
     };
   },
 });

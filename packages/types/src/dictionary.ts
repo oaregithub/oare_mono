@@ -161,6 +161,7 @@ export interface TaxonomyTree {
   valueUuid: string | null;
   level: number | null;
   children: TaxonomyTree[] | null;
+  custom: number | null;
 }
 
 export interface ParseTreeProperty {
