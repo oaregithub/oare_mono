@@ -11,7 +11,7 @@
   >
     <template v-slot:[`item.name`]="{ item }">
       <v-icon
-        v-if="editText !== item.uuid && item.name != null && hasEditPermission"
+        v-if="editText !== item.uuid && item.name !== null && hasEditPermission"
         @click="toggleTextInfo(item.uuid, item)"
         class="test-pencil mr-4"
         >mdi-pencil</v-icon
@@ -138,8 +138,8 @@ export interface OriginalTextInfo {
   excavationNumber: string | null;
   museumPrefix: string | null;
   museumNumber: string | null;
-  primaryPublicationPrefix: string | null;
-  primaryPublicationNumber: string | null;
+  publicationPrefix: string | null;
+  publicationNumber: string | null;
 }
 
 export default defineComponent({
@@ -182,8 +182,8 @@ export default defineComponent({
       excavationNumber: null,
       museumPrefix: null,
       museumNumber: null,
-      primaryPublicationPrefix: null,
-      primaryPublicationNumber: null,
+      publicationPrefix: null,
+      publicationNumber: null,
     });
 
     const headers = ref([
@@ -212,28 +212,24 @@ export default defineComponent({
 
     const editText = ref<string>();
 
-    const toggleTextInfo = function (uuid: string, item: any) {
+    const toggleTextInfo = (uuid: string, item: OriginalTextInfo) => {
       originalTextInfoObject.value.excavationPrefix = item.excavationPrefix;
       originalTextInfoObject.value.excavationNumber = item.excavationNumber;
       originalTextInfoObject.value.museumPrefix = item.museumPrefix;
       originalTextInfoObject.value.museumNumber = item.museumNumber;
-      originalTextInfoObject.value.primaryPublicationPrefix =
-        item.publicationPrefix;
-      originalTextInfoObject.value.primaryPublicationNumber =
-        item.publicationNumber;
+      originalTextInfoObject.value.publicationPrefix = item.publicationPrefix;
+      originalTextInfoObject.value.publicationNumber = item.publicationNumber;
 
       editText.value = uuid;
     };
 
-    const cancelEditTextInfo = function (item: any) {
+    const cancelEditTextInfo = (item: OriginalTextInfo) => {
       item.excavationPrefix = originalTextInfoObject.value.excavationPrefix;
       item.excavationNumber = originalTextInfoObject.value.excavationNumber;
       item.museumPrefix = originalTextInfoObject.value.museumPrefix;
       item.museumNumber = originalTextInfoObject.value.museumNumber;
-      item.publicationPrefix =
-        originalTextInfoObject.value.primaryPublicationPrefix;
-      item.publicationNumber =
-        originalTextInfoObject.value.primaryPublicationNumber;
+      item.publicationPrefix = originalTextInfoObject.value.publicationPrefix;
+      item.publicationNumber = originalTextInfoObject.value.publicationNumber;
 
       editText.value = undefined;
     };
