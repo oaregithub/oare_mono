@@ -22,8 +22,17 @@
     <div v-if="wordInfo.forms.length < 1">
       No forms found for {{ wordInfo.word }}
     </div>
+
+    <v-col v-if="wordInfo.forms.length > 1" cols="12" sm="6" md="4">
+      <v-text-field
+        v-model="searchQuery"
+        :placeholder="'Filter forms'"
+        clearable
+      />
+    </v-col>
+
     <form-display
-      v-for="(form, index) in wordInfo.forms"
+      v-for="(form, index) in filteredForms"
       :key="index"
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
@@ -80,6 +89,7 @@ import EditWordDialog from '@/components/DictionaryDisplay/DictionaryWord/Forms/
 import AddFormDialog from './components/AddFormDialog.vue';
 import WordGrammar from './components/WordGrammar.vue';
 import sl from '@/serviceLocator';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   props: {
@@ -125,6 +135,8 @@ export default defineComponent({
     const editDialogDiscourse = ref(false);
     const showSpellingDialog = ref(false);
     const addFormDialog = ref(false);
+
+    const searchQuery = useQueryParam('', '');
 
     const canEditTranslations = computed(() =>
       permissions.value
@@ -174,6 +186,12 @@ export default defineComponent({
       editDialogForm.value = form;
     };
 
+    const filteredForms = computed(() => {
+      return props.wordInfo.forms.filter(form => {
+        return form.form.match(searchQuery.value);
+      });
+    });
+
     return {
       canEditTranslations,
       isEditingTranslations,
@@ -186,6 +204,8 @@ export default defineComponent({
       addFormDialog,
       canAddForms,
       selectForm,
+      searchQuery,
+      filteredForms,
     };
   },
 });
