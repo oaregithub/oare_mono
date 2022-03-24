@@ -87,6 +87,7 @@ router.route('/search/count').get(async (req, res, next) => {
     const {
       textTitle: title,
       characters: charsPayload,
+      respectWordBoundaries,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
@@ -96,6 +97,7 @@ router.route('/search/count').get(async (req, res, next) => {
       characters: characterUuids,
       title,
       userUuid: user ? user.uuid : null,
+      respectWordBoundaries: respectWordBoundaries === 'true',
     });
 
     res.json(totalRows);
@@ -114,6 +116,7 @@ router.route('/search').get(async (req, res, next) => {
       rows,
       textTitle: title,
       characters: charsPayload,
+      respectWordBoundaries,
     } = (req.query as unknown) as SearchTextsPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
@@ -124,6 +127,7 @@ router.route('/search').get(async (req, res, next) => {
       pagination: { limit: rows, page },
       title,
       userUuid: user ? user.uuid : null,
+      respectWordBoundaries: respectWordBoundaries === 'true',
     });
 
     const textNames = (
