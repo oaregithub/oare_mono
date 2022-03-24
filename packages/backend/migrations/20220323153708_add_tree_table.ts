@@ -42,7 +42,7 @@ export async function down(knex: Knex): Promise<void> {
   );
   if (hasFKepigraphy) {
     await knex.schema.alterTable('text_epigraphy', table => {
-      table.dropForeign('tree_uuid');
+      table.dropForeign(['tree_uuid']);
     });
   }
   const hasFKdiscourse = await knex.schema.hasColumn(
@@ -51,7 +51,7 @@ export async function down(knex: Knex): Promise<void> {
   );
   if (hasFKdiscourse) {
     await knex.schema.alterTable('text_discourse', table => {
-      table.dropForeign('tree_uuid');
+      table.dropForeign(['tree_uuid']);
     });
   }
 
