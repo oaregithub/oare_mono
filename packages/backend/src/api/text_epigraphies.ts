@@ -77,14 +77,45 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const BibliographyDao = sl.get('BibliographyDao');
 
-    //
     const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
       textUuid,
       'b3938276-173b-11ec-8b77-024de1c1cc1d'
     );
-    const bibliography = await Promise.all(
+
+    const bibliographies = await Promise.all(
       objUuids.map(uuid => BibliographyDao.getBibliographyByUuid(uuid))
     );
+
+    const zoteroKeys = bibliographies.map(bib => bib.zoteroKey);
+
+    const citationStyle = 'chicago-author-date';
+    const apiKey = '';
+    if (process.env.ZOTERO_API_KEY) {
+      process.env.ZOTERO_API_KEY;
+    } else {
+      const s3 = new AWS.S3();
+      s3.getObject({
+        Bucket: 'oare-resources',
+        Key: 'ZOTERO_API_KEY',
+      });
+    }
+
+    const formattedCitations = await Promise.all(
+      zoteroKeys.map(zoteroKey =>
+        fetch(
+          'https://api.zotero.org/groups/318265/items/' +
+            zoteroKey +
+            '?format=json&include=citation&style=' +
+            citationStyle,
+          {
+            headers: {
+              Authorization: apiKey,
+            },
+          }
+        )
+      )
+    );
+
     const text = await TextDao.getTextByUuid(textUuid);
 
     if (!text) {
