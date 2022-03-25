@@ -204,9 +204,9 @@ import {
   ComputedRef,
   PropType,
 } from '@vue/composition-api';
+
 import sl from '@/serviceLocator';
 import { EpigraphyResponse, TranslitOption } from '@oare/types';
-
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
@@ -407,11 +407,6 @@ export default defineComponent({
           .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
-    const editTextInfo = async () => {
-      await updateTextInfo();
-      editText.value = false;
-    };
-
     const toggleTextInfo = function () {
       originalTextInfoObject.value.excavationPrefix =
         textInfo.value.text.excavationPrefix;
@@ -452,6 +447,11 @@ export default defineComponent({
       } else if (textUuid) {
         textInfo.value = await server.getEpigraphicInfo(textUuid);
       }
+    };
+
+    const editTextInfo = async () => {
+      await updateTextInfo();
+      editText.value = false;
     };
 
     const updateTextInfo = async () => {
