@@ -1,6 +1,5 @@
 import knex from '@/connection';
 import {
-  PartialItemPropertyRow,
   ItemPropertyRow,
   Pagination,
   InsertItemPropertyRow,
@@ -12,32 +11,6 @@ export interface GetItemPropertiesOptions {
 }
 
 class ItemPropertiesDao {
-  async getProperties(
-    referenceType: string,
-    { abbreviation, referenceUuid }: GetItemPropertiesOptions = {}
-  ): Promise<PartialItemPropertyRow[]> {
-    let query = knex('item_properties AS ip')
-      .select(
-        'ip.uuid',
-        'ip.reference_uuid AS referenceUuid',
-        'a2.name',
-        'ip.value_uuid as valueUuid'
-      )
-      .innerJoin('alias AS a1', 'a1.reference_uuid', 'ip.variable_uuid')
-      .innerJoin('alias AS a2', 'a2.reference_uuid', 'ip.value_uuid')
-      .where('a1.name', referenceType);
-
-    if (abbreviation) {
-      query = query.andWhere('a2.type', 'abbreviation');
-    }
-
-    if (referenceUuid) {
-      query = query.andWhere('ip.reference_uuid', referenceUuid);
-    }
-
-    return query;
-  }
-
   private getTextsOfPersonBaseQuery(
     personUuid: string,
     pagination?: Pagination
@@ -100,8 +73,10 @@ class ItemPropertiesDao {
         'ip.level',
         'ip.variable_uuid as variableUuid',
         'variable.name as variableName',
+        'variable.abbreviation as varAbbreviation',
         'ip.value_uuid as valueUuid',
         'value.name as valueName',
+        'value.abbreviation as valAbbreviation',
         'ip.object_uuid as objectUuid',
         'ip.value as value,'
       )

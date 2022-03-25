@@ -86,17 +86,8 @@ describe('AddFormDialog test', () => {
               form: 'test-form-2',
             },
           ],
-          partsOfSpeech: [
-            {
-              uuid: 'test-pos-uuid',
-              name: 'test-pos-name',
-              referenceUuid: 'test-pos-ref-uuid',
-              valueUuid: 'test-value-uuid',
-            },
-          ],
-          verbalThematicVowelTypes: [],
+          properties: [],
           translations: [],
-          specialClassifications: [],
         },
       },
     });
