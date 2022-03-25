@@ -136,7 +136,7 @@ export default defineComponent({
     const showSpellingDialog = ref(false);
     const addFormDialog = ref(false);
 
-    const searchQuery = useQueryParam('', '');
+    const searchQuery = useQueryParam('filter', '');
 
     const canEditTranslations = computed(() =>
       permissions.value
@@ -188,7 +188,7 @@ export default defineComponent({
 
     const filteredForms = computed(() => {
       return props.wordInfo.forms.filter(form => {
-        return form.form.match(searchQuery.value);
+        return form.form.includes(searchQuery.value);
       });
     });
 
