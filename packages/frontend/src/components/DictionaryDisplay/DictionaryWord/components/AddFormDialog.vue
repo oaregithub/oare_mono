@@ -36,11 +36,7 @@
           </v-col>
           <v-col cols="10">
             <add-properties
-              :valueUuid="
-                word.partsOfSpeech.length > 0
-                  ? word.partsOfSpeech[0].valueUuid
-                  : undefined
-              "
+              :valueUuid="partOfSpeechValueUuid"
               requiredNodeValueName="Parse"
               @export-properties="setProperties($event)"
               @form-complete="formComplete = $event"
@@ -101,6 +97,13 @@ export default defineComponent({
       return existingForms.includes(newFormSpelling.value);
     });
 
+    const partOfSpeechValueUuid = computed(() => {
+      const posProperties = word.properties.filter(
+        prop => prop.variableName === 'Part of Speech'
+      );
+      return posProperties.length > 0 ? posProperties[0].valueUuid : undefined;
+    });
+
     const addForm = async () => {
       try {
         addFormLoading.value = true;
@@ -130,6 +133,7 @@ export default defineComponent({
       addForm,
       addFormLoading,
       setProperties,
+      partOfSpeechValueUuid,
     };
   },
 });

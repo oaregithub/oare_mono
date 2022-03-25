@@ -1,4 +1,4 @@
-import { DictionaryWordTranslation, Word } from './words';
+import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
 
 export interface DisplayableWord {
@@ -41,10 +41,9 @@ export interface DictionaryFormGrammar {
   } | null;
 }
 
-export interface DictionaryForm
-  extends DictionaryFormInfo,
-    DictionaryFormGrammar {
+export interface DictionaryForm extends DictionaryFormInfo {
   spellings: FormSpelling[];
+  properties: ItemPropertyRow[];
 }
 
 export interface UpdateFormPayload {

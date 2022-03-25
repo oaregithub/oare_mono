@@ -5,7 +5,6 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
-  PartialItemPropertyRow,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -15,14 +14,6 @@ import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
 import ItemPropertiesDao from '../ItemPropertiesDao';
 
-export interface WordQueryRow {
-  uuid: string;
-  word: string;
-  partsOfSpeech: string | null;
-  verbalThematicVowelTypes: string | null;
-  specialClassifications: string | null;
-}
-
 export interface GrammarInfoRow {
   uuid: string;
   word: string;
@@ -30,28 +21,6 @@ export interface GrammarInfoRow {
   variableNames: string | null;
   variableAbbrevs: string | null;
   translations: string | null;
-}
-
-export interface GrammarInfoResult {
-  uuid: string;
-  word: string;
-  partsOfSpeech: string[];
-  verbalThematicVowelTypes: string[];
-  specialClassifications: string[];
-  translations: string[];
-  persons: string[];
-  genders: string[];
-  grammaticalNumbers: string[];
-  morphologicalForms: string[];
-  cases: string[];
-}
-
-export interface WordQueryResultRow {
-  uuid: string;
-  word: string;
-  partsOfSpeech: string[];
-  verbalThematicVowelTypes: string[];
-  specialClassifications: string[];
 }
 
 export interface SearchWordsQueryRow {
@@ -98,8 +67,8 @@ class DictionaryWordDao {
       .innerJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
       .where('ds.explicit_spelling', spelling);
 
-    const formGrammars = await Promise.all(
-      rows.map(r => DictionaryFormDao.getFormGrammar(r.formUuid))
+    const formProperties = await Promise.all(
+      rows.map(r => ItemPropertiesDao.getPropertiesByReferenceUuid(r.formUuid))
     );
 
     const occurrences = await Promise.all(
@@ -122,7 +91,7 @@ class DictionaryWordDao {
       form: {
         form: row.form,
         uuid: row.formUuid,
-        ...formGrammars[i],
+        properties: formProperties[i],
       },
       spellingUuid: row.spellingUuid,
       occurrences: occurrences[i],
@@ -168,9 +137,11 @@ class DictionaryWordDao {
 
     const words: DisplayableWord[] = await query;
 
-    const partsOfSpeech = await this.getPartsOfSpeech();
-    const specialClassifications = await this.getSpecialClassifications();
-    const verbalThematicVowelTypes = await this.getVerbalThematicVowelTypes();
+    const properties = await Promise.all(
+      words.map(word =>
+        ItemPropertiesDao.getPropertiesByReferenceUuid(word.uuid)
+      )
+    );
     const allTranslations = await this.getAllTranslations();
     const forms = await Promise.all(
       words.map(word => DictionaryFormDao.getWordForms(word.uuid, isAdmin))
@@ -198,17 +169,9 @@ class DictionaryWordDao {
         return {
           uuid: word.uuid,
           word: word.word,
-          partsOfSpeech: partsOfSpeech.filter(
-            ({ referenceUuid }) => referenceUuid === word.uuid
-          ),
-          specialClassifications: specialClassifications.filter(
-            ({ referenceUuid }) => referenceUuid === word.uuid
-          ),
-          verbalThematicVowelTypes: verbalThematicVowelTypes.filter(
-            ({ referenceUuid }) => referenceUuid === word.uuid
-          ),
           translations,
           forms: forms[idx],
+          properties: properties[idx],
         };
       })
       .filter(word => (isAdmin ? word : word.forms.length > 0))
@@ -240,37 +203,6 @@ class DictionaryWordDao {
     return translations;
   }
 
-  async getPartsOfSpeech(wordUuid?: string): Promise<PartialItemPropertyRow[]> {
-    const rows = await ItemPropertiesDao.getProperties('Part of Speech', {
-      abbreviation: true,
-      ...(wordUuid ? { referenceUuid: wordUuid } : null),
-    });
-
-    return rows;
-  }
-
-  async getSpecialClassifications(
-    wordUuid?: string
-  ): Promise<PartialItemPropertyRow[]> {
-    const rows = await ItemPropertiesDao.getProperties(
-      'Special Classifications',
-      wordUuid ? { referenceUuid: wordUuid } : {}
-    );
-
-    return rows;
-  }
-
-  async getVerbalThematicVowelTypes(
-    wordUuid?: string
-  ): Promise<PartialItemPropertyRow[]> {
-    const rows = await ItemPropertiesDao.getProperties(
-      'Verbal Thematic Vowel Type',
-      wordUuid ? { referenceUuid: wordUuid } : {}
-    );
-
-    return rows.filter(r => !r.name.endsWith('-Class'));
-  }
-
   async getWordName(wordUuid: string): Promise<string> {
     const { word }: { word: string } = await knex('dictionary_word')
       .select('word')
@@ -280,26 +212,16 @@ class DictionaryWordDao {
   }
 
   async getGrammaticalInfo(wordUuid: string): Promise<DictionaryWord> {
-    const [
-      word,
-      partsOfSpeech,
-      specialClassifications,
-      verbalThematicVowelTypes,
-      translations,
-    ] = await Promise.all([
+    const [word, properties, translations] = await Promise.all([
       this.getWordName(wordUuid),
-      this.getPartsOfSpeech(wordUuid),
-      this.getSpecialClassifications(wordUuid),
-      this.getVerbalThematicVowelTypes(wordUuid),
+      ItemPropertiesDao.getPropertiesByReferenceUuid(wordUuid),
       this.getWordTranslations(wordUuid),
     ]);
 
     return {
       uuid: wordUuid,
       word,
-      partsOfSpeech,
-      specialClassifications,
-      verbalThematicVowelTypes,
+      properties,
       translations,
     };
   }

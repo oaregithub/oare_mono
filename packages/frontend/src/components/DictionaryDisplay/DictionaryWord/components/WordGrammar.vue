@@ -1,10 +1,10 @@
 <template>
   <div class="d-flex">
-    <div v-if="word.partsOfSpeech.length > 0" class="mr-1">
-      {{ partsOfSpeech }}
+    <div v-if="partsOfSpeech.length > 0" class="mr-1">
+      {{ partsOfSpeechString }}
     </div>
-    <div v-if="word.verbalThematicVowelTypes.length > 0" class="mr-1">
-      ({{ verbalThematicVowelTypes }})
+    <div v-if="verbalThematicVowelTypes.length > 0" class="mr-1">
+      ({{ verbalThematicVowelTypesString }})
     </div>
     <p v-if="onlyShowFirstTranslation" class="mb-0">
       <span v-if="word.translations.length >= 1">
@@ -19,13 +19,11 @@
       </span>
 
       <span
-        v-if="
-          word.translations.length > 0 && word.specialClassifications.length > 0
-        "
+        v-if="word.translations.length > 0 && specialClassifications.length > 0"
         >;</span
       >
-      <span v-if="word.specialClassifications.length > 0">
-        {{ specialClassifications }}
+      <span v-if="specialClassifications.length > 0">
+        {{ specialClassificationsString }}
       </span>
     </p>
   </div>
@@ -49,21 +47,46 @@ export default defineComponent({
   },
   setup({ word }) {
     const partsOfSpeech = computed(() =>
-      word.partsOfSpeech.map(pos => pos.name).join(', ')
+      word.properties.filter(prop => prop.variableName === 'Part of Speech')
+    );
+
+    const partsOfSpeechString = computed(() =>
+      partsOfSpeech.value
+        .map(pos => pos.valAbbreviation || pos.valueName)
+        .join(', ')
     );
 
     const verbalThematicVowelTypes = computed(() =>
-      word.verbalThematicVowelTypes.map(pos => pos.name).join(', ')
+      word.properties.filter(
+        prop => prop.variableName === 'Verbal Thematic Vowel Type'
+      )
+    );
+
+    const verbalThematicVowelTypesString = computed(() =>
+      verbalThematicVowelTypes.value
+        .map(pos => pos.valAbbreviation || pos.valueName)
+        .join(', ')
     );
 
     const specialClassifications = computed(() =>
-      word.specialClassifications.map(pos => pos.name).join(', ')
+      word.properties.filter(
+        prop => prop.variableName === 'Special Classifications'
+      )
+    );
+
+    const specialClassificationsString = computed(() =>
+      specialClassifications.value
+        .map(pos => pos.valAbbreviation || pos.valueName)
+        .join(', ')
     );
 
     return {
       partsOfSpeech,
+      partsOfSpeechString,
       verbalThematicVowelTypes,
+      verbalThematicVowelTypesString,
       specialClassifications,
+      specialClassificationsString,
     };
   },
 });
