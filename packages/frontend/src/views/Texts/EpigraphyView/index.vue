@@ -481,10 +481,11 @@ export default defineComponent({
         if (localImageUrls) {
           imageUrls.value = localImageUrls;
         } else if (textUuid) {
-          imageUrls.value = await server.getImageLinks(
+          const imageLinks = await server.getImageLinks(
             textUuid,
             textInfo.value.cdliNum
           );
+          imageUrls.value = imageLinks.map(elem => elem.link);
         }
       } catch (err) {
         if ((err as any).response) {

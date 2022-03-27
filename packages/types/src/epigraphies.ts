@@ -385,3 +385,8 @@ export interface EditorMarkupError {
 export interface CreateTextsPayload {
   tables: CreateTextTables;
 }
+
+export interface LabelLink {
+  label: string;
+  link: string;
+}

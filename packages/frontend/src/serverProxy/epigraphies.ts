@@ -7,6 +7,7 @@ import {
   TextPhotoWithName,
   ResourceRow,
   LinkRow,
+  LabelLink,
 } from '@oare/types';
 import baseAxios from 'axios';
 import axios from '../axiosInstance';
@@ -55,7 +56,7 @@ async function updateTextInfo(
 async function getImageLinks(
   textUuid: string,
   cdliNum: string | null
-): Promise<string[]> {
+): Promise<LabelLink[]> {
   const { data } = await axios.get(
     `/text_epigraphies/images/${textUuid}/${cdliNum}`
   );

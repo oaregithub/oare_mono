@@ -12,6 +12,7 @@ import {
   TextEpigraphyRow,
   ResourceRow,
   LinkRow,
+  LabelLink,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 
@@ -23,22 +24,11 @@ router
     try {
       const { uuid: textUuid, cdliNum } = req.params;
       const ResourceDao = sl.get('ResourceDao');
-      const PersonDao = sl.get('PersonDao');
-      
-      const imageUuids = await ResourceDao.getImageUuidsByTextUuid(textUuid);
 
-      const response = await ResourceDao.getImageLinksByTextUuid(
+      const response: LabelLink[] = await ResourceDao.getImageLinksByTextUuid(
         textUuid,
         cdliNum
       );
-      /*
-
-      const personLabel = await PersonDao.getLabelByUuid(
-        imageUuids,
-      );
-
-      console.log(personLabel);
-      */
 
       res.json(response);
     } catch (err) {

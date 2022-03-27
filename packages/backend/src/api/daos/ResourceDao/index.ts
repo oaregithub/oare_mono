@@ -2,27 +2,16 @@ import knex from '@/connection';
 import fetch from 'node-fetch';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
-import { ResourceRow, LinkRow } from '@oare/types';
+import { ResourceRow, LinkRow, LabelLink } from '@oare/types';
 
 class ResourceDao {
-  async getImageUuidsByTextUuid(textUuid: string): Promise<string[]> {
-    const imageUuids: string[] = await knex('resource')
-      .pluck('uuid')
-      .whereIn(
-        'uuid',
-        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
-      )
-      .where('type', 'img');
-
-    return imageUuids;
-  }
-
   async getImageLinksByTextUuid(
     textUuid: string,
     cdliNum: string
-  ): Promise<string[]> {
+  ): Promise<LabelLink[]> {
     const s3 = new AWS.S3();
 
+    /*
     const resourceLinks: string[] = await knex('resource')
       .pluck('link')
       .whereIn(
@@ -30,19 +19,30 @@ class ResourceDao {
         knex('link').select('obj_uuid').where('reference_uuid', textUuid)
       )
       .where('type', 'img');
+    */
 
-    const resourceLinks2 = await knex('person as p')
+    const queryLabelLinks = await knex
+      .distinct()
       .select('p.label as label', 'r.link as link')
+      .from('person as p')
       .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
-      .where(
-        'r.source_uuid', 'b6ccd101-8223-2afc-5a2f-3adec5f2edc7'
-      )
-      .whereIn(`r.uuid`,
-      knex('link').select('obj_uuid as uuid').where('reference_uuid', textUuid));
-    console.log(resourceLinks2);
+      .where('r.source_uuid', 'b6ccd101-8223-2afc-5a2f-3adec5f2edc7')
+      .where('r.type', 'img')
+      .whereIn(
+        `r.uuid`,
+        knex('link')
+          .select('obj_uuid as uuid')
+          .where('reference_uuid', textUuid)
+      );
+    
+    const labelLinks: LabelLink[] = queryLabelLinks.map(elem => 
+      {return {label: elem.label, link: elem.link} as LabelLink}
+    );
+
+    const locationLink = labelLinks.map(row => row.link);
 
     const signedUrls = await Promise.all(
-      resourceLinks.map(key => {
+      locationLink.map(key => {
         const params = {
           Bucket: 'oare-image-bucket',
           Key: key,
@@ -50,11 +50,16 @@ class ResourceDao {
         return s3.getSignedUrlPromise('getObject', params);
       })
     );
+
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
-    const response = cdliLinks.concat(signedUrls);
+    const filledLink = cdliLinks.concat(signedUrls);
 
-    return response;
+    labelLinks.forEach((elem, index) => {
+      elem.link = filledLink[index];
+    });
+
+    return labelLinks;
   }
 
   async getTextFileByTextUuid(uuid: string) {
