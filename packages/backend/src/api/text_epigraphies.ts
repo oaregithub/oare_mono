@@ -28,15 +28,17 @@ router
       const imageUuids = await ResourceDao.getImageUuidsByTextUuid(textUuid);
 
       const response = await ResourceDao.getImageLinksByTextUuid(
-        imageUuids,
+        textUuid,
         cdliNum
       );
+      /*
 
       const personLabel = await PersonDao.getLabelByUuid(
         imageUuids,
       );
 
       console.log(personLabel);
+      */
 
       res.json(response);
     } catch (err) {

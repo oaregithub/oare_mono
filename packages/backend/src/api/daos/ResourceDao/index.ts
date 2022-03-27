@@ -5,17 +5,14 @@ import sl from '@/serviceLocator';
 import { ResourceRow, LinkRow } from '@oare/types';
 
 class ResourceDao {
-  async getImageUuidsByTextUuid(
-    textUuid: string,
-  ): Promise<string[]> {
-
+  async getImageUuidsByTextUuid(textUuid: string): Promise<string[]> {
     const imageUuids: string[] = await knex('resource')
-    .pluck('uuid')
-    .whereIn(
-      'uuid',
-      knex('link').select('obj_uuid').where('reference_uuid', textUuid)
-    )
-    .where('type', 'img');
+      .pluck('uuid')
+      .whereIn(
+        'uuid',
+        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+      )
+      .where('type', 'img');
 
     return imageUuids;
   }
@@ -33,15 +30,15 @@ class ResourceDao {
         knex('link').select('obj_uuid').where('reference_uuid', textUuid)
       )
       .where('type', 'img');
-    console.log(resourceLinks);
 
-    const resourceLinks2: string[] = await knex('resource')
-      .select('*')
-      .whereIn(
-        'uuid',
-        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+    const resourceLinks2 = await knex('person as p')
+      .select('p.label as label', 'r.link as link')
+      .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
+      .where(
+        'r.source_uuid', 'b6ccd101-8223-2afc-5a2f-3adec5f2edc7'
       )
-      .where('type', 'img');
+      .whereIn(`r.uuid`,
+      knex('link').select('obj_uuid as uuid').where('reference_uuid', textUuid));
     console.log(resourceLinks2);
 
     const signedUrls = await Promise.all(
