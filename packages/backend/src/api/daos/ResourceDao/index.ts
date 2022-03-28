@@ -29,14 +29,14 @@ class ResourceDao {
       .where('r.source_uuid', 'b6ccd101-8223-2afc-5a2f-3adec5f2edc7')
       .where('r.type', 'img')
       .whereIn(
-        `r.uuid`,
+        'r.uuid',
         knex('link')
           .select('obj_uuid as uuid')
           .where('reference_uuid', textUuid)
       );
-    
-    const labelLinks: LabelLink[] = queryLabelLinks.map(elem => 
-      {return {label: elem.label, link: elem.link} as LabelLink}
+
+    const labelLinks: LabelLink[] = queryLabelLinks.map(
+      elem => ({ label: elem.label, link: elem.link } as LabelLink)
     );
 
     const locationLink = labelLinks.map(row => row.link);

@@ -55,7 +55,7 @@
           :src="imageLinks[selection].link"
           moveType="drag"
         />
-        <span>"Photo Source: " {{imageLinks[selection].label || 'Unavailable'}} ". "For more information in photo, click (here)."</span>
+        <span>Photo Source: " {{imageLinks[selection].label || 'Unavailable'}} ". For more information in photo, click (here).</span>
       </div>
     </v-row>
   </v-container>
