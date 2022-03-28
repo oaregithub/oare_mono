@@ -43,7 +43,9 @@ function getSuffixVariables(
   return values;
 }
 
-const generateFormGrammar = (form: DictionaryForm): DictionaryFormGrammar => {
+export const generateFormGrammar = (
+  form: DictionaryForm
+): DictionaryFormGrammar => {
   const cliticSuffixUuid = getCliticSuffixUuid(form.properties);
 
   let suffix = null;
