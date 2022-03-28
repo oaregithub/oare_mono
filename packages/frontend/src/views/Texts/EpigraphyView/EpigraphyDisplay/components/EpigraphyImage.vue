@@ -23,7 +23,7 @@
             @click="toggle"
           >
             <v-card-text class="justify-center pa-2">
-              <v-img :src="image" :aspect-ratio="1 / 1" class="rounded">
+              <v-img :src="image.link" :aspect-ratio="1 / 1" class="rounded">
                 <v-row class="pt-5" align="center" justify="center">
                   <v-scale-transition>
                     <v-icon
@@ -52,18 +52,18 @@
           >
         </v-row>
         <inner-image-zoom
-          :src="imageLinks[selection]"
+          :src="imageLinks[selection].link"
           moveType="drag"
         />
+        <span>"Photo Source: " {{imageLinks[selection].label || 'Unavailable'}} ". "For more information in photo, click (here)."</span>
       </div>
     </v-row>
-    <span>"Photo Source: " (source) ". "For more information in photo, click (here)."</span>
   </v-container>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
-import { TextPhoto } from '@oare/types';
+import { TextPhoto, LabelLink } from '@oare/types';
 import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
@@ -72,7 +72,7 @@ export default defineComponent({
   },
   props: {
     imageLinks: {
-      type: Array as PropType<String[]>,
+      type: Array as PropType<LabelLink[]>,
       required: true,
     },
     imageDetails: {
@@ -90,6 +90,8 @@ export default defineComponent({
   },
   setup(props) {
     const selectedImages = ref([0]);
+
+    console.log(props.imageLinks);
 
     const updateSelected = (selection: number[]) => {
       selectedImages.value = selection;

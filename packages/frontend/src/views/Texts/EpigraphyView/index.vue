@@ -205,7 +205,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { EpigraphyResponse, TranslitOption } from '@oare/types';
+import { EpigraphyResponse, TranslitOption, LabelLink } from '@oare/types';
 
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
@@ -318,7 +318,7 @@ export default defineComponent({
       discourseUnits: [],
       hasEpigraphy: false,
     });
-    const imageUrls = ref<string[]>([]);
+    const imageUrls = ref<LabelLink[]>([]);
 
     let editText = ref(false);
 
@@ -479,13 +479,14 @@ export default defineComponent({
         await getTextInfo();
         draft.value = textInfo.value.draft || null;
         if (localImageUrls) {
-          imageUrls.value = localImageUrls;
+          imageUrls.value = localImageUrls.map(val => {
+            return {label: '', link: val} as LabelLink; 
+          });
         } else if (textUuid) {
-          const imageLinks = await server.getImageLinks(
+          imageUrls.value = await server.getImageLinks(
             textUuid,
             textInfo.value.cdliNum
           );
-          imageUrls.value = imageLinks.map(elem => elem.link);
         }
       } catch (err) {
         if ((err as any).response) {
@@ -544,7 +545,7 @@ export default defineComponent({
         await server.uploadImages(photosWithName);
         photosToAdd.value.forEach(photo => {
           if (photo.url) {
-            imageUrls.value.push(photo.url);
+            imageUrls.value.push({label: '', link: photo.url});
           }
         });
       } catch (err) {
