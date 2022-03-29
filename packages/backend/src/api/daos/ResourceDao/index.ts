@@ -11,20 +11,9 @@ class ResourceDao {
   ): Promise<LabelLink[]> {
     const s3 = new AWS.S3();
 
-    /*
-    const resourceLinks: string[] = await knex('resource')
-      .pluck('link')
-      .whereIn(
-        'uuid',
-        knex('link').select('obj_uuid').where('reference_uuid', textUuid)
-      )
-      .where('type', 'img');
-    */
-
-    const queryLabelLinks = await knex
+    const queryLabelLinks = await knex('person as p')
       .distinct()
       .select('p.label as label', 'r.link as link')
-      .from('person as p')
       .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
       .where('r.source_uuid', 'b6ccd101-8223-2afc-5a2f-3adec5f2edc7')
       .where('r.type', 'img')
