@@ -26,18 +26,26 @@ export async function prepareCharactersForSearch(
   const cooccurrenceTypes = cooccurrences.map(phrase =>
     phrase[0] === '!' ? 'NOT' : 'AND'
   );
-  const preppedCharUuids = await Promise.all(
-    cooccurrences.map(char => {
-      const searchCharacter = char[0] === '!' ? char.substr(1) : char;
-      return prepareIndividualSearchCharacters(searchCharacter);
-    })
+  const wordsArray = cooccurrences.map(phrase => phrase.split(' '));
+  const cooccurrenceWords = await Promise.all(
+    wordsArray.map(words =>
+      Promise.all(
+        words.map(word => {
+          const searchCharacter = word[0] === '!' ? word.substr(1) : word;
+          return prepareIndividualSearchCharacters(searchCharacter);
+        })
+      )
+    )
   );
 
-  const characterUuids: SearchCooccurrence[] = preppedCharUuids.map(
-    (uuids, index) => ({
-      uuids,
-      type: cooccurrenceTypes[index],
-    })
+  const characterUuids: SearchCooccurrence[] = cooccurrenceWords.map(
+    (cooccurrence, index) => {
+      const words = cooccurrence.map(word => ({ uuids: word }));
+      return {
+        words,
+        type: cooccurrenceTypes[index],
+      };
+    }
   );
 
   return characterUuids;

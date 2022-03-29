@@ -46,8 +46,11 @@
             {{ formInfo.form }}
           </em>
 
-          <div class="mr-1" v-if="formInfo.cases.length > 0">
-            ({{ formInfo.cases.join('/') }})
+          <div
+            class="mr-1"
+            v-if="generateFormGrammar(formInfo).cases.length > 0"
+          >
+            ({{ generateFormGrammar(formInfo).cases.join('/') }})
           </div>
         </div>
       </template>
@@ -59,6 +62,7 @@
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
 import { Word } from '@oare/types';
+import { generateFormGrammar } from '@/utils';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -129,6 +133,7 @@ export default defineComponent({
       loading,
       searchFilter,
       getWordForms,
+      generateFormGrammar,
     };
   },
 });

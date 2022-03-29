@@ -35,16 +35,7 @@ describe('FormsDisplay test', () => {
     uuid: 'testUuid',
     form: 'test form',
     spellings: [],
-    stems: [],
-    morphologicalForms: [],
-    tenses: [],
-    persons: [],
-    genders: [],
-    grammaticalNumbers: [],
-    cases: [],
-    states: [],
-    moods: [],
-    clitics: [],
+    properties: [],
   };
 
   const updateForm = jest.fn();

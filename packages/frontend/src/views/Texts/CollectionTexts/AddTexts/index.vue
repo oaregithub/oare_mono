@@ -268,7 +268,9 @@ export default defineComponent({
         try {
           isDirty.value = false;
           await server.createText(createTextTables.value);
-          await server.uploadImages(photosWithName.value);
+          await Promise.all(
+            photosWithName.value.map(photo => server.uploadImage(photo))
+          );
         } catch (err) {
           actions.showErrorSnackbar(
             'Error creating text. Please try again',

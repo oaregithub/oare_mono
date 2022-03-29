@@ -640,3 +640,81 @@ describe('POST /text_epigraphies/create', () => {
     expect(response.status).toBe(403);
   });
 });
+
+describe('PATCH /text_epigraphies/edit_text_info', () => {
+  const PATH = `${API_PATH}/text_epigraphies/edit_text_info`;
+
+  const mockRequestBody = {
+    uuid: '12345',
+    excavationPrefix: 'a',
+    excavationNumber: 'b',
+    museumPrefix: 'c',
+    museumNumber: 'd',
+    publicationPrefix: 'e',
+    publicationNumber: 'f',
+  };
+
+  const mockTextDao = {
+    updateTextInfo: jest.fn().mockResolvedValue(),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'EDIT_TEXT_INFO',
+      },
+    ]),
+  };
+
+  const setup = () => {
+    sl.set('TextDao', mockTextDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app)
+      .patch(PATH)
+      .send(mockRequestBody)
+      .set('Authorization', 'token');
+
+  it('returns 201 on successful text info edit', async () => {
+    const response = await sendRequest();
+    expect(mockTextDao.updateTextInfo).toHaveBeenCalledWith(
+      '12345',
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f'
+    );
+    expect(response.status).toBe(201);
+  });
+
+  it('returns 500 on failed text info edit', async () => {
+    sl.set('TextDao', {
+      ...mockTextDao,
+      updateTextInfo: jest.fn().mockRejectedValue(),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 401 if user is not logged in', async () => {
+    const response = await request(app).patch(PATH).send(mockRequestBody);
+    expect(mockTextDao.updateTextInfo).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 if user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(mockTextDao.updateTextInfo).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
+  });
+});

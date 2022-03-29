@@ -4,6 +4,7 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 import errorMiddleware from '@/middlewares/error';
 import '../envConfig';
+import fileupload from 'express-fileupload';
 import setupRoutes from './setupRoutes';
 import cacheMiddleware from './middlewares/cache';
 import userMiddleware from './middlewares/user';
@@ -36,6 +37,8 @@ app.use(
 );
 app.use(userMiddleware);
 app.use(cacheMiddleware);
+app.use(fileupload());
+
 setupRoutes(app);
 
 app.use(errorMiddleware);

@@ -11,7 +11,7 @@
         </template>
         <v-row class="ma-0 mb-6">
           <v-icon
-            v-if="!editText"
+            v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
             class="test-pencil mr-4"
             >mdi-pencil</v-icon
@@ -131,9 +131,9 @@
             class="mr-2"
           />
         </template>
-        <template #title:post v-if="textInfo.canWrite && !disableEditing">
+        <template #title:post v-if="!disableEditing">
           <v-btn
-            v-if="!isEditing"
+            v-if="!isEditing && textInfo.canWrite"
             color="primary"
             :to="`/epigraphies/${textUuid}/edit`"
             class="mx-4"
@@ -143,7 +143,7 @@
             v-if="canAddPictures"
             color="primary"
             @click="photosDialogOpen = true"
-            >Add Photos (BETA)</v-btn
+            >Add Photos</v-btn
           >
         </template>
         <epigraphy-full-display
@@ -204,9 +204,9 @@ import {
   ComputedRef,
   PropType,
 } from '@vue/composition-api';
+
 import sl from '@/serviceLocator';
 import { EpigraphyResponse, TranslitOption, LabelLink } from '@oare/types';
-
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
@@ -407,11 +407,6 @@ export default defineComponent({
           .includes('VIEW_EPIGRAPHY_IMAGES')
     );
 
-    const editTextInfo = async () => {
-      await updateTextInfo();
-      editText.value = false;
-    };
-
     const toggleTextInfo = function () {
       originalTextInfoObject.value.excavationPrefix =
         textInfo.value.text.excavationPrefix;
@@ -452,6 +447,11 @@ export default defineComponent({
       } else if (textUuid) {
         textInfo.value = await server.getEpigraphicInfo(textUuid);
       }
+    };
+
+    const editTextInfo = async () => {
+      await updateTextInfo();
+      editText.value = false;
     };
 
     const updateTextInfo = async () => {
@@ -542,7 +542,9 @@ export default defineComponent({
           objUuid: resource.uuid,
         }));
         await server.addPhotosToText(resourceRows, linkRows);
-        await server.uploadImages(photosWithName);
+        await Promise.all(
+          photosWithName.map(photo => server.uploadImage(photo))
+        );
         photosToAdd.value.forEach(photo => {
           if (photo.url) {
             imageUrls.value.push({label: '', link: photo.url});
