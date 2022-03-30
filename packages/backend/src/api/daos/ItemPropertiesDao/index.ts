@@ -85,6 +85,32 @@ class ItemPropertiesDao {
       .where('ip.reference_uuid', referenceUuid);
     return rows;
   }
+
+  async deletePropertiesByReferenceUuid(referenceUuid: string): Promise<void> {
+    const relevantRows: { uuid: string; level: number | null }[] = await knex(
+      'item_properties'
+    )
+      .select('uuid', 'level')
+      .where('reference_uuid', referenceUuid);
+
+    const levels = [...new Set(relevantRows.map(row => row.level))]
+      .sort()
+      .sort((a, _) => {
+        if (a === null) {
+          return -1;
+        }
+        return 0;
+      })
+      .reverse();
+
+    for (let i = 0; i < levels.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await knex('item_properties')
+        .del()
+        .where('reference_uuid', referenceUuid)
+        .andWhere('level', levels[i]);
+    }
+  }
 }
 
 export default new ItemPropertiesDao();

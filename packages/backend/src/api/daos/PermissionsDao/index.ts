@@ -96,12 +96,13 @@ class PermissionsDao {
       type: 'dictionary',
       description:
         "Allow group users to edit a text's transliteration status (visible in stoplight)",
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
       name: 'ADD_NEW_TEXTS',
       type: 'text',
       description:
-        'Allow group users to add new texts to a collection. Currently requires user to have beta access.',
+        'Allow group users to add new texts to a collection. Currently requires user to have beta access',
     },
     {
       name: 'EDIT_TEXT_INFO',
@@ -119,6 +120,12 @@ class PermissionsDao {
       name: 'VIEW_TEXT_FILE',
       type: 'text',
       description: 'Allow group users to view text source file',
+    },
+    {
+      name: 'EDIT_FORM_PARSE_INFO',
+      type: 'dictionary',
+      description: 'Allow group users to edit form parse property information',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
   ];
 
