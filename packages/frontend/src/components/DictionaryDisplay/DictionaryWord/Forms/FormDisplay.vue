@@ -81,7 +81,7 @@
         </text-occurrences>
       </span>
 
-      <grammar-display :form="form" />
+      <grammar-display :word="word" :form="form" :allowEditing="allowEditing" />
       <span class="d-flex flex-row flex-wrap mb-0">
         <span
           class="d-flex flex-row mb-0"
@@ -111,7 +111,7 @@ import {
   computed,
   onMounted,
 } from '@vue/composition-api';
-import { DictionaryForm } from '@oare/types';
+import { DictionaryForm, Word } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
@@ -127,6 +127,10 @@ export default defineComponent({
     TextOccurrences,
   },
   props: {
+    word: {
+      type: Object as PropType<Word>,
+      required: true,
+    },
     form: {
       type: Object as PropType<DictionaryForm>,
       required: true,
