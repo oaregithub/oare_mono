@@ -77,7 +77,16 @@
 
     <div
       v-if="personList.length === 0 && !loading"
-      class="d-flex align-center justify-center pt-2 pb-2 rounded-pill loading-container primary"
+      class="
+        d-flex
+        align-center
+        justify-center
+        pt-2
+        pb-2
+        rounded-pill
+        loading-container
+        primary
+      "
     >
       <span class="white--text">No results found </span>
     </div>
@@ -86,7 +95,7 @@
       v-model="displayTextOccurrences"
       class="test-text-occurrences-display"
       :title="selectedPersonTitle()"
-      :uuid="selectedPerson.uuid"
+      :uuids="[selectedPerson.uuid]"
       :totalTextOccurrences="selectedPersonTextOccurrenceCount()"
       :getTexts="server.getPersonTextOccurrences"
       :get-texts-count="server.getPersonTextOccurrencesCount"
