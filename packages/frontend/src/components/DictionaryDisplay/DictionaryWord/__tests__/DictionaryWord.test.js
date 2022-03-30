@@ -20,9 +20,7 @@ describe('DictionaryWord test', () => {
     getDictionaryInfo: jest.fn().mockResolvedValue({
       word: 'word',
       forms: [],
-      partsOfSpeech: [],
-      verbalThematicVowelTypes: [],
-      specialClassifications: [],
+      properties: [],
       translations: [],
     }),
   };
