@@ -32,9 +32,7 @@ describe('EpigraphyFullDisplay View', () => {
       uuid: 'test-word-uuid',
       word: 'test-word',
       forms: [],
-      partsOfSpeech: [],
-      verbalThematicVowelTypes: [],
-      specialClassifications: [],
+      properties: [],
       translations: [],
     }),
   };

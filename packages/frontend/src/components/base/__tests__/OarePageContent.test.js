@@ -11,7 +11,7 @@ localVue.use(VueCompositionApi);
 
 describe('PageContent', () => {
   const mockServer = {
-    getPageContent: jest.fn().mockResolvedValue({ content: 'mock-content' }),
+    getPageContent: jest.fn().mockResolvedValue('mock-content'),
     updatePageContent: jest.fn().mockResolvedValue(),
   };
 
@@ -29,6 +29,7 @@ describe('PageContent', () => {
     propsData: { pageName: 'testPageName' },
     localVue,
     vuetify,
+    stubs: ['vue-editor'],
   };
 
   const setup = () => {
