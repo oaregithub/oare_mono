@@ -184,10 +184,28 @@ export default defineComponent({
           ? props.node.children[0].level
           : null;
         const relevantExistingProperties = props.existingProperties.filter(
-          prop =>
-            prop.variableUuid === props.node.variableUuid &&
-            childrenValueUuids.includes(prop.valueUuid) &&
-            prop.level === childLevel
+          prop => {
+            const parentProperty = props.existingProperties
+              ? props.existingProperties.filter(
+                  exis => exis.uuid === prop.parentUuid
+                ).length > 0
+                ? props.existingProperties.filter(
+                    exis => exis.uuid === prop.parentUuid
+                  )[0]
+                : undefined
+              : undefined;
+
+            const hasValidParentRelationship = parentProperty
+              ? props.node.objParentUuid === parentProperty.valueUuid
+              : true;
+
+            return (
+              prop.variableUuid === props.node.variableUuid &&
+              childrenValueUuids.includes(prop.valueUuid) &&
+              prop.level === childLevel &&
+              hasValidParentRelationship
+            );
+          }
         );
         const childrenToBeSelected = props.node.children
           ? props.node.children.filter(

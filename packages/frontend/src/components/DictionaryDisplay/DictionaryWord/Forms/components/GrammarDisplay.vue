@@ -3,7 +3,7 @@
     <v-btn
       v-if="allowEditing && canEditParseInfo"
       icon
-      class="test-pencil edit_button"
+      class="test-property-pencil edit-button"
       @click="editPropertiesDialog = true"
     >
       <v-icon>mdi-pencil</v-icon>
@@ -132,7 +132,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.edit_button {
+.edit-button {
   margin-top: -11px;
   margin-bottom: -7px;
 }
