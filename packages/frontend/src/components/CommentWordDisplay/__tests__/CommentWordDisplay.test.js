@@ -54,9 +54,7 @@ const mockServer = {
   getDictionaryInfo: jest.fn().mockResolvedValue({
     word: 'testingWord',
     forms: [],
-    partsOfSpeech: [],
-    verbalThematicVowelTypes: [],
-    specialClassifications: [],
+    properties: [],
     translations: [],
   }),
 };
