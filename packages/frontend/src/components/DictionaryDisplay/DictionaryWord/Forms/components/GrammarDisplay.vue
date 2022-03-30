@@ -99,6 +99,9 @@ export default defineComponent({
     const updateFormProperties = async () => {
       try {
         await server.editFormParseInfo(props.form.uuid, properties.value);
+        actions.showSnackbar(
+          `Successfully updated form parse info for ${props.form.form}`
+        );
         reload && reload();
       } catch (err) {
         actions.showErrorSnackbar(
