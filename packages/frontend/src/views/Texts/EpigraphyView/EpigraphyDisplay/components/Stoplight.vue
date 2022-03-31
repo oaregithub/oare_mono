@@ -95,9 +95,7 @@ export default defineComponent({
     }
 
     const canEditTransliteration = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('EDIT_TRANSLITERATION_STATUS')
+      store.hasPermission('EDIT_TRANSLITERATION_STATUS')
     );
 
     const editTranslitDialog = ref(false);

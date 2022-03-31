@@ -8,6 +8,7 @@ export const getTreeNodeQuery = () =>
       'hierarchy.type',
       'hierarchy.object_uuid as objectUuid',
       'hierarchy.obj_parent_uuid as objParentUuid',
+      'hierarchy.custom',
       'variable.name as variableName',
       'value.name as valueName',
       'variable.abbreviation as varAbbreviation',

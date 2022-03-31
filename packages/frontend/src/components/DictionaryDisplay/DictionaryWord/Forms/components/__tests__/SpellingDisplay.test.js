@@ -25,9 +25,7 @@ describe('SpellingDisplay test', () => {
   const wordUuid = 'testUuid';
 
   const mockStore = {
-    getters: {
-      permissions: [{ name: 'UPDATE_FORM' }],
-    },
+    hasPermission: name => ['UPDATE_FORM'].includes(name),
   };
 
   const mockOccurrences = {
@@ -115,9 +113,7 @@ describe('SpellingDisplay test', () => {
   it("doesn't allow editing without permissions", async () => {
     const wrapper = createWrapper({
       store: {
-        getters: {
-          permissions: [],
-        },
+        hasPermission: () => false,
       },
     });
 

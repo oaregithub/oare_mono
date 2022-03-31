@@ -22,9 +22,19 @@
     <div v-if="wordInfo.forms.length < 1">
       No forms found for {{ wordInfo.word }}
     </div>
+
+    <v-col v-if="wordInfo.forms.length > 1" cols="12" sm="6" md="4">
+      <v-text-field
+        v-model="searchQuery"
+        :placeholder="'Filter forms'"
+        clearable
+      />
+    </v-col>
+
     <form-display
-      v-for="(form, index) in wordInfo.forms"
+      v-for="(form, index) in filteredForms"
       :key="index"
+      :word="wordInfo"
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
       :word-uuid="wordInfo.uuid"
@@ -80,6 +90,7 @@ import EditWordDialog from '@/components/DictionaryDisplay/DictionaryWord/Forms/
 import AddFormDialog from './components/AddFormDialog.vue';
 import WordGrammar from './components/WordGrammar.vue';
 import sl from '@/serviceLocator';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   props: {
@@ -117,7 +128,6 @@ export default defineComponent({
   },
   setup(props) {
     const store = sl.get('store');
-    const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
 
     const editDialogForm = ref<DictionaryForm>();
@@ -126,15 +136,13 @@ export default defineComponent({
     const showSpellingDialog = ref(false);
     const addFormDialog = ref(false);
 
+    const searchQuery = useQueryParam('filter', '');
+
     const canEditTranslations = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('UPDATE_TRANSLATION')
+      store.hasPermission('UPDATE_TRANSLATION')
     );
 
-    const canAddForms = computed(() =>
-      permissions.value.map(permission => permission.name).includes('ADD_FORM')
-    );
+    const canAddForms = computed(() => store.hasPermission('ADD_FORM'));
 
     const updateTranslations = (
       newTranslations: DictionaryWordTranslation[]
@@ -174,6 +182,12 @@ export default defineComponent({
       editDialogForm.value = form;
     };
 
+    const filteredForms = computed(() => {
+      return props.wordInfo.forms.filter(form => {
+        return form.form.includes(searchQuery.value);
+      });
+    });
+
     return {
       canEditTranslations,
       isEditingTranslations,
@@ -186,6 +200,8 @@ export default defineComponent({
       addFormDialog,
       canAddForms,
       selectForm,
+      searchQuery,
+      filteredForms,
     };
   },
 });

@@ -1,15 +1,5 @@
 import { DictionaryForm } from './dictionary';
 
-export interface ItemProperty {
-  uuid: string;
-  name: string;
-}
-
-export interface PartialItemPropertyRow extends ItemProperty {
-  referenceUuid: string;
-  valueUuid: string;
-}
-
 export interface ItemPropertyRow {
   uuid: string;
   referenceUuid: string;
@@ -17,8 +7,10 @@ export interface ItemPropertyRow {
   level: number | null;
   variableUuid: string;
   variableName: string;
+  varAbbrevation: string | null;
   valueUuid: string;
   valueName: string;
+  valAbbreviation: string | null;
   objectUuid: string;
   value: string;
 }
@@ -29,10 +21,8 @@ export interface DictionaryWordTranslation {
 }
 
 export interface DictionaryWordParseInfo {
-  partsOfSpeech: PartialItemPropertyRow[];
-  specialClassifications: PartialItemPropertyRow[];
   translations: DictionaryWordTranslation[];
-  verbalThematicVowelTypes: PartialItemPropertyRow[];
+  properties: ItemPropertyRow[];
 }
 
 export interface Word extends DictionaryWordParseInfo {

@@ -1,6 +1,11 @@
 import Vue from 'vue';
 import VueCompositionAPI, { reactive } from '@vue/composition-api';
-import { User, PermissionItem, AdminBadgeOptions } from '@oare/types';
+import {
+  User,
+  PermissionItem,
+  AdminBadgeOptions,
+  PermissionName,
+} from '@oare/types';
 import firebase from '@/firebase';
 
 Vue.use(VueCompositionAPI);
@@ -53,6 +58,9 @@ export default {
       };
     }
   },
+  hasPermission(name: PermissionName) {
+    return state.permissions.map(perm => perm.name).includes(name);
+  },
   getters: {
     get isAdmin() {
       return state.user ? state.user.isAdmin : false;
@@ -65,9 +73,6 @@ export default {
     },
     get user() {
       return state.user;
-    },
-    get permissions() {
-      return state.permissions;
     },
     get displayAdminBadge() {
       return state.displayAdminBadge;

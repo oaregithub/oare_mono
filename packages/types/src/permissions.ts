@@ -19,7 +19,8 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'INSERT_DISCOURSE_ROWS'
     | 'ADD_FORM'
     | 'DISCONNECT_SPELLING'
-    | 'EDIT_TRANSLITERATION_STATUS';
+    | 'EDIT_TRANSLITERATION_STATUS'
+    | 'EDIT_FORM_PARSE_INFO';
   type: 'dictionary';
 }
 

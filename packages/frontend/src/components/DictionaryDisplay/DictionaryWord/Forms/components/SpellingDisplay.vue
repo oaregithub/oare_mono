@@ -134,11 +134,7 @@ export default defineComponent({
     const totalOccurrences = ref(0);
     const totalOccurrencesLoading = ref(false);
 
-    const canEdit = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('UPDATE_FORM')
-    );
+    const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
 
     const deleteSpelling = async () => {
       try {

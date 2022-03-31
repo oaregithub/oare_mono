@@ -30,11 +30,11 @@
         </router-link>
       </template>
       <template #translation="{ word }">
-        <div v-if="word.partsOfSpeech.length > 0" class="mr-1">
-          {{ itemPropertyString(word.partsOfSpeech) }}
+        <div v-if="partsOfSpeech(word).length > 0" class="mr-1">
+          {{ itemPropertyString(partsOfSpeech(word)) }}
         </div>
-        <div v-if="word.verbalThematicVowelTypes.length > 0" class="mr-1">
-          {{ ` (${itemPropertyString(word.verbalThematicVowelTypes)})` }}
+        <div v-if="verbalThematicVowelTypes(word).length > 0" class="mr-1">
+          {{ ` (${itemPropertyString(verbalThematicVowelTypes(word))})` }}
         </div>
         <p>
           <span v-for="(tr, idx) in getWordTranslations(word)" :key="tr.uuid">
@@ -44,12 +44,12 @@
           <span
             v-if="
               word.translations.length > 0 &&
-              word.specialClassifications.length > 0
+              specialClassifications(word).length > 0
             "
             >;</span
           >
-          <span v-if="word.specialClassifications.length > 0">
-            {{ itemPropertyString(word.specialClassifications) }}
+          <span v-if="specialClassifications(word).length > 0">
+            {{ itemPropertyString(specialClassifications(word)) }}
           </span>
         </p>
       </template>
@@ -60,7 +60,7 @@
 <script lang="ts">
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
-import { DictionaryWord, ItemProperty } from '@oare/types';
+import { DictionaryWord, ItemPropertyRow } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -90,20 +90,14 @@ export default defineComponent({
         word.translations.some(tr =>
           tr.translation.toLowerCase().includes(lowerSearch)
         ) ||
-        word.partsOfSpeech.some(pos =>
-          pos.name.toLowerCase().includes(lowerSearch)
-        ) ||
-        word.specialClassifications.some(sp =>
-          sp.name.toLowerCase().includes(lowerSearch)
-        ) ||
-        word.verbalThematicVowelTypes.some(vt =>
-          vt.name.toLowerCase().includes(lowerSearch)
+        word.properties.some(prop =>
+          prop.valueName.toLowerCase().includes(lowerSearch)
         )
       );
     };
 
-    const itemPropertyString = (properties: ItemProperty[]) =>
-      properties.map(prop => prop.name).join(', ');
+    const itemPropertyString = (properties: ItemPropertyRow[]) =>
+      properties.map(prop => prop.valAbbreviation || prop.valueName).join(', ');
 
     watch(
       () => props.letter,
@@ -130,12 +124,33 @@ export default defineComponent({
       return word.translations;
     };
 
+    const partsOfSpeech = (word: DictionaryWord) => {
+      return word.properties.filter(
+        prop => prop.variableName === 'Part of Speech'
+      );
+    };
+
+    const verbalThematicVowelTypes = (word: DictionaryWord) => {
+      return word.properties.filter(
+        prop => prop.variableName === 'Verbal Thematic Vowel Type'
+      );
+    };
+
+    const specialClassifications = (word: DictionaryWord) => {
+      return word.properties.filter(
+        prop => prop.variableName === 'Special Classifications'
+      );
+    };
+
     return {
       words,
       loading,
       searchFilter,
       itemPropertyString,
       getWordTranslations,
+      partsOfSpeech,
+      verbalThematicVowelTypes,
+      specialClassifications,
     };
   },
 });

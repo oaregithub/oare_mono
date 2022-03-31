@@ -95,12 +95,8 @@ const mockServer = {
 const mockStore = {
   getters: {
     isAdmin: jest.fn().mockResolvedValue(true),
-    permissions: [
-      {
-        name: 'DISCONNECT_SPELLING',
-      },
-    ],
   },
+  hasPermission: name => ['DISCONNECT_SPELLING'].includes(name),
 };
 
 const mockLodash = {

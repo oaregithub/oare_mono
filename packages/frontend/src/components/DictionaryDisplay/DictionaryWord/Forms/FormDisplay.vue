@@ -81,7 +81,7 @@
         </text-occurrences>
       </span>
 
-      <grammar-display :form="form" />
+      <grammar-display :word="word" :form="form" :allowEditing="allowEditing" />
       <span class="d-flex flex-row flex-wrap mb-0">
         <span
           class="d-flex flex-row mb-0"
@@ -111,7 +111,7 @@ import {
   computed,
   onMounted,
 } from '@vue/composition-api';
-import { DictionaryForm } from '@oare/types';
+import { DictionaryForm, Word } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
@@ -127,6 +127,10 @@ export default defineComponent({
     TextOccurrences,
   },
   props: {
+    word: {
+      type: Object as PropType<Word>,
+      required: true,
+    },
     form: {
       type: Object as PropType<DictionaryForm>,
       required: true,
@@ -166,17 +170,9 @@ export default defineComponent({
     const aggregateOccurrences = ref(0);
     const textOccurrenceDialog = ref(false);
 
-    const canEdit = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('UPDATE_FORM')
-    );
+    const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
 
-    const canAddSpelling = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('ADD_SPELLING')
-    );
+    const canAddSpelling = computed(() => store.hasPermission('ADD_SPELLING'));
 
     const saveFormEdit = async (): Promise<void> => {
       loading.value = true;

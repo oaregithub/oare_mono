@@ -12,6 +12,7 @@ import {
   AddFormPayload,
   InsertItemPropertyRow,
   UpdateFormPayload,
+  ParseTreeProperty,
 } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
@@ -545,6 +546,42 @@ router.route('/dictionary/tree/taxonomy').get(async (req, res, next) => {
     next(new HttpInternalError(err));
   }
 });
+
+router
+  .route('/dictionary/editform/:formUuid')
+  .patch(permissionsRoute('EDIT_FORM_PARSE_INFO'), async (req, res, next) => {
+    try {
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+
+      const { formUuid } = req.params;
+      const { properties }: { properties: ParseTreeProperty[] } = req.body;
+
+      await ItemPropertiesDao.deletePropertiesByReferenceUuid(formUuid);
+
+      const itemPropertyRows = convertParsePropsToItemProps(
+        properties,
+        formUuid
+      );
+
+      const itemPropertyRowLevels = [
+        ...new Set(itemPropertyRows.map(row => row.level)),
+      ];
+      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+        level => itemPropertyRows.filter(row => row.level === level)
+      );
+
+      for (let i = 0; i < rowsByLevel.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all(
+          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+        );
+      }
+
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err));
+    }
+  });
 
 router
   .route('/dictionary/addform')

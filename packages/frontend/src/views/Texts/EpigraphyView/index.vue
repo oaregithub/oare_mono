@@ -11,7 +11,7 @@
         </template>
         <v-row class="ma-0 mb-6">
           <v-icon
-            v-if="!editText"
+            v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
             class="test-pencil mr-4"
             >mdi-pencil</v-icon
@@ -204,9 +204,9 @@ import {
   ComputedRef,
   PropType,
 } from '@vue/composition-api';
+
 import sl from '@/serviceLocator';
 import { EpigraphyResponse, TranslitOption } from '@oare/types';
-
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
@@ -280,15 +280,11 @@ export default defineComponent({
     const router = reactive(sl.get('router'));
 
     const hasEditPermission = computed(() =>
-      store.getters.permissions
-        .map(perm => perm.name)
-        .includes('EDIT_TEXT_INFO')
+      store.hasPermission('EDIT_TEXT_INFO')
     );
 
     const canAddPictures = computed(() =>
-      store.getters.permissions
-        .map(perm => perm.name)
-        .includes('UPLOAD_EPIGRAPHY_IMAGES')
+      store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
     );
 
     const loading = ref(false);
@@ -400,17 +396,8 @@ export default defineComponent({
     const isAdmin = computed(() => store.getters.isAdmin);
 
     const canViewEpigraphyImages = computed(
-      () =>
-        hasPicture.value &&
-        store.getters.permissions
-          .map(permission => permission.name)
-          .includes('VIEW_EPIGRAPHY_IMAGES')
+      () => hasPicture.value && store.hasPermission('VIEW_EPIGRAPHY_IMAGES')
     );
-
-    const editTextInfo = async () => {
-      await updateTextInfo();
-      editText.value = false;
-    };
 
     const toggleTextInfo = function () {
       originalTextInfoObject.value.excavationPrefix =
@@ -452,6 +439,11 @@ export default defineComponent({
       } else if (textUuid) {
         textInfo.value = await server.getEpigraphicInfo(textUuid);
       }
+    };
+
+    const editTextInfo = async () => {
+      await updateTextInfo();
+      editText.value = false;
     };
 
     const updateTextInfo = async () => {

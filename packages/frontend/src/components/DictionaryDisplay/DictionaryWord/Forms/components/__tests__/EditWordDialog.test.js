@@ -21,9 +21,7 @@ describe('EditWordDialog test', () => {
   };
 
   const mockStore = {
-    getters: {
-      permissions: [{ name: 'INSERT_DISCOURSE_ROWS' }],
-    },
+    hasPermission: name => ['INSERT_DISCOURSE_ROWS'].includes(name),
   };
 
   const mockSpelling = {
@@ -40,17 +38,7 @@ describe('EditWordDialog test', () => {
         form: {
           uuid: 'form-uuid',
           form: 'form',
-          stems: [],
-          tenses: [],
-          persons: [],
-          genders: [],
-          grammaticalNumbers: [],
-          cases: [],
-          states: [],
-          moods: [],
-          clitics: [],
-          morphologicalForms: [],
-          suffix: null,
+          properties: [],
           spellings: [],
         },
         wordInfo: {
@@ -64,17 +52,8 @@ describe('EditWordDialog test', () => {
               form: 'test-form-2',
             },
           ],
-          partsOfSpeech: [
-            {
-              uuid: 'test-pos-uuid',
-              name: 'test-pos-name',
-              referenceUuid: 'test-pos-ref-uuid',
-              valueUuid: 'test-value-uuid',
-            },
-          ],
-          verbalThematicVowelTypes: [],
+          properties: [],
           translations: [],
-          specialClassifications: [],
         },
       },
     ]),
@@ -133,17 +112,7 @@ describe('EditWordDialog test', () => {
         form: {
           uuid: 'form-uuid',
           form: 'form',
-          stems: [],
-          tenses: [],
-          persons: [],
-          genders: [],
-          grammaticalNumbers: [],
-          cases: [],
-          states: [],
-          moods: [],
-          clitics: [],
-          morphologicalForms: [],
-          suffix: null,
+          properties: [],
           spellings: [
             {
               uuid: 'spelling-uuid',
@@ -353,9 +322,7 @@ describe('EditWordDialog test', () => {
   it('hides discourse switch if user does not have permission', async () => {
     const wrapper = createWrapper({
       store: {
-        getters: {
-          permissions: [],
-        },
+        hasPermission: () => false,
       },
     });
     expect(wrapper.find('.test-discourse-mode input').exists()).toBe(false);
