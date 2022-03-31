@@ -10,6 +10,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from '@vue/composition-api';
 import sl from '@/serviceLocator';
+import TextSourceInformationCard from './TextSourceInformationCard.vue';
 
 export default defineComponent({
   props: {
@@ -17,6 +18,9 @@ export default defineComponent({
       type: String,
       required: true,
     },
+  },
+  components: {
+    TextSourceInformationCard,
   },
   setup({ textUuid }) {
     const server = sl.get('serverProxy');
