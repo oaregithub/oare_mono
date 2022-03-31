@@ -91,8 +91,6 @@ export default defineComponent({
   setup(props) {
     const selectedImages = ref([0]);
 
-    console.log(props.imageLinks);
-
     const updateSelected = (selection: number[]) => {
       selectedImages.value = selection;
       if (selectedImages.value.length > props.maxSelect) {
