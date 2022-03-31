@@ -114,9 +114,7 @@ export default defineComponent({
     };
 
     const canEditParseInfo = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('EDIT_FORM_PARSE_INFO')
+      store.hasPermission('EDIT_FORM_PARSE_INFO')
     );
 
     return {

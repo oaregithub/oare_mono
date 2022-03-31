@@ -29,9 +29,8 @@ describe('CollectionTexts test', () => {
     showErrorSnackbar: jest.fn(),
   };
   const mockStore = {
-    getters: {
-      permissions: [{ name: 'ADD_NEW_TEXTS' }],
-    },
+    getters: {},
+    hasPermission: name => ['ADD_NEW_TEXTS'].includes(name),
   };
   const createWrapper = ({ server, actions } = {}) => {
     sl.set('serverProxy', server || mockServer);

@@ -20,13 +20,7 @@ describe('TextOccurrences test', () => {
   };
 
   const mockStore = {
-    getters: {
-      permissions: [
-        {
-          name: 'DISCONNECT_SPELLING',
-        },
-      ],
-    },
+    hasPermission: name => ['DISCONNECT_SPELLING'].includes(name),
   };
 
   const mockServer = {
@@ -131,9 +125,7 @@ describe('TextOccurrences test', () => {
   it('does not show disconnect buttons if user does not have permission', async () => {
     sl.set('store', {
       ...mockStore,
-      getters: {
-        permissions: [],
-      },
+      hasPermission: () => false,
     });
     const wrapper = createWrapper();
     await flushPromises();

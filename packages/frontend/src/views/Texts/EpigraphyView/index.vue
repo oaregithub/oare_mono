@@ -280,15 +280,11 @@ export default defineComponent({
     const router = reactive(sl.get('router'));
 
     const hasEditPermission = computed(() =>
-      store.getters.permissions
-        .map(perm => perm.name)
-        .includes('EDIT_TEXT_INFO')
+      store.hasPermission('EDIT_TEXT_INFO')
     );
 
     const canAddPictures = computed(() =>
-      store.getters.permissions
-        .map(perm => perm.name)
-        .includes('UPLOAD_EPIGRAPHY_IMAGES')
+      store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
     );
 
     const loading = ref(false);
@@ -400,11 +396,7 @@ export default defineComponent({
     const isAdmin = computed(() => store.getters.isAdmin);
 
     const canViewEpigraphyImages = computed(
-      () =>
-        hasPicture.value &&
-        store.getters.permissions
-          .map(permission => permission.name)
-          .includes('VIEW_EPIGRAPHY_IMAGES')
+      () => hasPicture.value && store.hasPermission('VIEW_EPIGRAPHY_IMAGES')
     );
 
     const toggleTextInfo = function () {

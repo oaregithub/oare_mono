@@ -59,15 +59,11 @@ export default defineComponent({
     const store = sl.get('store');
 
     const canViewDiscourses = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('VIEW_TEXT_DISCOURSE')
+      store.hasPermission('VIEW_TEXT_DISCOURSE')
     );
 
     const canViewTextSource = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('VIEW_TEXT_FILE')
+      store.hasPermission('VIEW_TEXT_FILE')
     );
 
     return {

@@ -20,9 +20,7 @@ describe('FormsDisplay test', () => {
     showErrorSnackbar: jest.fn(),
   };
   const mockStore = {
-    getters: {
-      permissions: [{ name: 'UPDATE_FORM' }],
-    },
+    hasPermission: name => ['UPDATE_FORM'].includes(name),
   };
   const mockLodash = {
     debounce: cb => cb,

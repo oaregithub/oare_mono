@@ -48,12 +48,8 @@ describe('Epigraphy View', () => {
   const mockStore = {
     getters: {
       isAdmin: jest.fn().mockResolvedValue(false),
-      permissions: [
-        {
-          name: 'VIEW_EPIGRAPHY_IMAGES',
-        },
-      ],
     },
+    hasPermission: name => ['VIEW_EPIGRAPHY_IMAGES'].includes(name),
   };
 
   const mockRouter = {
@@ -119,9 +115,8 @@ describe('Epigraphy View', () => {
   it('does not display images when user does not have permission', async () => {
     const wrapper = createWrapper({
       store: {
-        getters: {
-          permissions: [],
-        },
+        ...mockStore,
+        hasPermission: () => false,
       },
     });
     await flushPromises();
