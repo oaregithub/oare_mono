@@ -20,9 +20,9 @@ describe('TextsTable test', () => {
 
   const mockStore = {
     getters: {
-      permissions: [{ name: 'EDIT_TEXT_INFO' }],
       isAdmin: true,
     },
+    hasPermission: name => ['EDIT_TEXT_INFO'].includes(name),
   };
 
   const setup = () => {
@@ -101,8 +101,8 @@ describe('TextsTable test', () => {
     sl.set('store', {
       getters: {
         ...mockStore.getters,
-        permissions: [],
       },
+      hasPermission: () => false,
     });
     const wrapper = createWrapper();
     await flushPromises();

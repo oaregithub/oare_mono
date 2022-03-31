@@ -14,7 +14,7 @@
       >
     </v-col>
     <v-col cols="8">
-      <h3 class="primary--text">Add Properties</h3>
+      <h3 class="primary--text">Select Properties</h3>
       <v-expansion-panels flat v-model="panel">
         <v-expansion-panel>
           <v-expansion-panel-header class="font-weight-bold">{{
@@ -22,10 +22,11 @@
               ? filteredTree.valueName || filteredTree.variableName
               : ''
           }}</v-expansion-panel-header>
-          <v-expansion-panel-content>
+          <v-expansion-panel-content eager>
             <parse-tree-node
               v-if="filteredTree"
               :node="filteredTree"
+              :existingProperties="existingProperties"
               allowSelections
               @update:node="formComplete = $event.status"
               @update:properties="updateProperties"
@@ -46,8 +47,9 @@ import {
   computed,
   ComputedRef,
   watch,
+  PropType,
 } from '@vue/composition-api';
-import { TaxonomyTree, ParseTreeProperty } from '@oare/types';
+import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
 import ParseTreeNode, {
   ParseTreePropertyEvent,
 } from '@/views/Admin/PropertiesTaxonomy/components/ParseTreeNode.vue';
@@ -65,6 +67,10 @@ export default defineComponent({
     },
     requiredNodeValueName: {
       type: String,
+      required: false,
+    },
+    existingProperties: {
+      type: Array as PropType<ItemPropertyRow[]>,
       required: false,
     },
   },

@@ -3,6 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
+import { ReloadKey } from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import FormDisplay from '../FormDisplay.vue';
 import { SendUtilList } from '../../index.vue';
 
@@ -19,9 +20,7 @@ describe('FormsDisplay test', () => {
     showErrorSnackbar: jest.fn(),
   };
   const mockStore = {
-    getters: {
-      permissions: [{ name: 'UPDATE_FORM' }],
-    },
+    hasPermission: name => ['UPDATE_FORM'].includes(name),
   };
   const mockLodash = {
     debounce: cb => cb,
@@ -37,6 +36,10 @@ describe('FormsDisplay test', () => {
     spellings: [],
     properties: [],
   };
+  const mockWord = {
+    properties: [],
+  };
+  const reload = jest.fn();
 
   const updateForm = jest.fn();
   const toUtilList = jest.fn();
@@ -52,12 +55,14 @@ describe('FormsDisplay test', () => {
       vuetify,
       localVue,
       propsData: {
+        word: mockWord,
         form: mockForm,
         updateForm,
       },
       stubs: ['spelling-dialog'],
       provide: {
         [SendUtilList]: toUtilList,
+        [ReloadKey]: reload,
       },
     });
   };
