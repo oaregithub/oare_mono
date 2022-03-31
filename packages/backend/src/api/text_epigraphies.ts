@@ -76,6 +76,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const BibliographyDao = sl.get('BibliographyDao');
+    const ResourceDao = sl.get('ResourceDao');
 
     const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
       textUuid,
@@ -90,6 +91,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     const citationStyle = 'chicago-author-date';
     const apiKey = '';
+
     if (process.env.ZOTERO_API_KEY) {
       process.env.ZOTERO_API_KEY;
     } else {
@@ -100,21 +102,34 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       });
     }
 
-    const formattedCitations = await Promise.all(
+    const zoteroResponses = await Promise.all(
       zoteroKeys.map(zoteroKey =>
         fetch(
-          'https://api.zotero.org/groups/318265/items/' +
-            zoteroKey +
-            '?format=json&include=citation&style=' +
-            citationStyle,
+          `https://api.zotero.org/groups/318265/items/${zoteroKey}
+            ?format=json&include=citation&style=${citationStyle}`,
           {
             headers: {
-              Authorization: apiKey,
+              Authorization: `Bearer ${apiKey}`,
             },
           }
         )
       )
     );
+
+    const zoteroJsons = await Promise.all(
+      zoteroResponses.map(APIresponse => APIresponse.json())
+    );
+
+    const zoteroCitations: string[] = zoteroJsons.map(res => res.citation);
+
+    const resourceLinks: string[] = await Promise.all(
+      zoteroKeys.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
+    );
+
+    const zoteroData = zoteroCitations.map((cit, idx) => ({
+      citation: cit,
+      link: resourceLinks[idx],
+    }));
 
     const text = await TextDao.getTextByUuid(textUuid);
 
@@ -170,6 +185,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       discourseUnits,
       ...(draft ? { draft } : {}),
       hasEpigraphy: hasEpigraphies,
+      zoteroData,
     };
 
     res.json(response);
