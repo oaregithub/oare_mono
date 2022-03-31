@@ -77,8 +77,8 @@ const nonAdminUser = {
 const mockStore = {
   getters: {
     user: adminUser,
-    permissions: [],
   },
+  hasPermission: () => false,
 };
 
 const setup = () => {

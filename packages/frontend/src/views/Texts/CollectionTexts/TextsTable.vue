@@ -172,9 +172,7 @@ export default defineComponent({
     const store = sl.get('store');
 
     const hasEditPermission = computed(() =>
-      store.getters.permissions
-        .map(perm => perm.name)
-        .includes('EDIT_TEXT_INFO')
+      store.hasPermission('EDIT_TEXT_INFO')
     );
 
     const originalTextInfoObject = ref<OriginalTextInfo>({

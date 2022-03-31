@@ -170,17 +170,9 @@ export default defineComponent({
     const aggregateOccurrences = ref(0);
     const textOccurrenceDialog = ref(false);
 
-    const canEdit = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('UPDATE_FORM')
-    );
+    const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
 
-    const canAddSpelling = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('ADD_SPELLING')
-    );
+    const canAddSpelling = computed(() => store.hasPermission('ADD_SPELLING'));
 
     const saveFormEdit = async (): Promise<void> => {
       loading.value = true;

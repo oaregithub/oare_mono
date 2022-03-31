@@ -128,7 +128,6 @@ export default defineComponent({
   },
   setup(props) {
     const store = sl.get('store');
-    const permissions = computed(() => store.getters.permissions);
     const isEditingTranslations = ref(false);
 
     const editDialogForm = ref<DictionaryForm>();
@@ -140,14 +139,10 @@ export default defineComponent({
     const searchQuery = useQueryParam('filter', '');
 
     const canEditTranslations = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('UPDATE_TRANSLATION')
+      store.hasPermission('UPDATE_TRANSLATION')
     );
 
-    const canAddForms = computed(() =>
-      permissions.value.map(permission => permission.name).includes('ADD_FORM')
-    );
+    const canAddForms = computed(() => store.hasPermission('ADD_FORM'));
 
     const updateTranslations = (
       newTranslations: DictionaryWordTranslation[]

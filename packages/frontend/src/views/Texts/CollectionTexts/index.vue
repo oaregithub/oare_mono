@@ -71,7 +71,6 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
     const store = sl.get('store');
-    const permissions = computed(() => store.getters.permissions);
     const hasBetaAccess = computed(() =>
       store.getters.user ? store.getters.user.betaAccess : false
     );
@@ -104,10 +103,7 @@ export default defineComponent({
     };
 
     const canAddNewTexts = computed(
-      () =>
-        permissions.value
-          .map(permission => permission.name)
-          .includes('ADD_NEW_TEXTS') && hasBetaAccess.value
+      () => store.hasPermission('ADD_NEW_TEXTS') && hasBetaAccess.value
     );
 
     const getCollectionTexts = async () => {

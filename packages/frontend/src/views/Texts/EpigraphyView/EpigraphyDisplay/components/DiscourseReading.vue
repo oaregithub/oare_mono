@@ -29,7 +29,10 @@
         >
           <v-btn
             icon
-            v-if="(item.translation || item.type === 'discourseUnit') && allowEditing"
+            v-if="
+              (item.translation || item.type === 'discourseUnit') &&
+              allowEditing
+            "
             @click="startEdit(item)"
             class="mr-1 test-discourse-startedit"
           >
@@ -60,7 +63,11 @@
             </v-menu>
           </v-col>
         </v-row>
-        <div v-else-if="(item.translation || item.type === 'discourseUnit') && allowEditing">
+        <div
+          v-else-if="
+            (item.translation || item.type === 'discourseUnit') && allowEditing
+          "
+        >
           <v-textarea
             label="Translation"
             auto-grow
@@ -114,9 +121,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const allowEditing = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('EDIT_TRANSLATION')
+      store.hasPermission('EDIT_TRANSLATION')
     );
 
     const discourseColor = (discourseType: string) => {
@@ -143,14 +148,21 @@ export default defineComponent({
         reading = discourse.translation;
       } else if (discourse.type === 'paragraph' && discourse.paragraphLabel) {
         reading = `<strong><em>${discourse.paragraphLabel}</em></strong>`;
-      } else if ((discourse.type === 'clause' || discourse.type === 'phrase') && discourse.paragraphLabel) {
+      } else if (
+        (discourse.type === 'clause' || discourse.type === 'phrase') &&
+        discourse.paragraphLabel
+      ) {
         reading = `<em>${discourse.paragraphLabel}</em>`;
-      } else if ((discourse.type === 'word' || discourse.type === 'number') && discourse.transcription && discourse.explicitSpelling) {
+      } else if (
+        (discourse.type === 'word' || discourse.type === 'number') &&
+        discourse.transcription &&
+        discourse.explicitSpelling
+      ) {
         reading = `${discourse.transcription} (${discourse.explicitSpelling})`;
       } else {
         reading = discourse.explicitSpelling;
       }
-      
+
       return reading || '';
     };
 
@@ -178,7 +190,6 @@ export default defineComponent({
           );
         }
         editLoading.value = true;
-        
       } catch (err) {
         actions.showErrorSnackbar('Failed to update database', err as Error);
       } finally {

@@ -62,9 +62,7 @@ describe('GrammarDisplay test', () => {
   };
 
   const mockStore = {
-    getters: {
-      permissions: [{ name: 'EDIT_FORM_PARSE_INFO' }],
-    },
+    hasPermission: name => ['EDIT_FORM_PARSE_INFO'].includes(name),
   };
 
   const setup = () => {
@@ -113,9 +111,7 @@ describe('GrammarDisplay test', () => {
 
   it('does not show edit buttonw hen user does not have permission', async () => {
     sl.set('store', {
-      getters: {
-        permissions: [],
-      },
+      hasPermission: () => false,
     });
     const wrapper = createWrapper();
     await flushPromises();

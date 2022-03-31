@@ -139,9 +139,7 @@ export default defineComponent({
     const wordInfo = ref<Word | null>(null);
 
     const canUpdateWordSpelling = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('UPDATE_WORD_SPELLING')
+      store.hasPermission('UPDATE_WORD_SPELLING')
     );
 
     const updateWordInfo = (newWordInfo: Word) => {

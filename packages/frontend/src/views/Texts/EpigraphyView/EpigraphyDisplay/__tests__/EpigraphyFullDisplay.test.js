@@ -12,13 +12,9 @@ localVue.use(VueCompositionApi);
 describe('EpigraphyFullDisplay View', () => {
   const mockStore = {
     getters: {
-      permissions: [
-        {
-          name: 'VIEW_TEXT_DISCOURSE',
-        },
-      ],
       isAdmin: true,
     },
+    hasPermission: name => ['VIEW_TEXT_DISCOURSE'].includes(name),
   };
 
   const mockRouter = {
@@ -95,9 +91,8 @@ describe('EpigraphyFullDisplay View', () => {
   it('does not display discourses when user does not have permission', async () => {
     const wrapper = createWrapper({
       store: {
-        getters: {
-          permissions: [],
-        },
+        ...mockStore,
+        hasPermission: () => false,
       },
     });
     await flushPromises();

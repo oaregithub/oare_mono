@@ -125,8 +125,8 @@ const adminUser = {
 const mockStore = {
   getters: {
     user: adminUser,
-    permissions: [],
   },
+  hasPermission: () => false,
 };
 
 const mockLodash = {

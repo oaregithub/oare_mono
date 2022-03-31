@@ -21,9 +21,7 @@ describe('EditWordDialog test', () => {
   };
 
   const mockStore = {
-    getters: {
-      permissions: [{ name: 'INSERT_DISCOURSE_ROWS' }],
-    },
+    hasPermission: name => ['INSERT_DISCOURSE_ROWS'].includes(name),
   };
 
   const mockSpelling = {
@@ -324,9 +322,7 @@ describe('EditWordDialog test', () => {
   it('hides discourse switch if user does not have permission', async () => {
     const wrapper = createWrapper({
       store: {
-        getters: {
-          permissions: [],
-        },
+        hasPermission: () => false,
       },
     });
     expect(wrapper.find('.test-discourse-mode input').exists()).toBe(false);

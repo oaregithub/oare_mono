@@ -111,7 +111,6 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const store = sl.get('store');
 
-    const permissions = computed(() => store.getters.permissions);
     const isEditing = ref(false);
     const isLoading = ref(false);
 
@@ -199,9 +198,7 @@ export default defineComponent({
     };
 
     const canUpdateTranslations = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('UPDATE_TRANSLATION')
+      store.hasPermission('UPDATE_TRANSLATION')
     );
 
     return {
