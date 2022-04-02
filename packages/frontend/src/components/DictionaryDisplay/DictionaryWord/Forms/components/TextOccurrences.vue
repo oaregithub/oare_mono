@@ -117,9 +117,7 @@ export default defineComponent({
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
 
     const canDisconnectSpellings = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('DISCONNECT_SPELLING')
+      store.hasPermission('DISCONNECT_SPELLING')
     );
 
     const headers: Ref<DataTableHeader[]> = canDisconnectSpellings.value

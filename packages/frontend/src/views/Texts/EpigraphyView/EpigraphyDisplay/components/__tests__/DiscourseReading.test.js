@@ -42,13 +42,7 @@ describe('DiscourseReading test', () => {
   };
 
   const store = {
-    getters: {
-      permissions: [
-        {
-          name: 'EDIT_TRANSLATION',
-        },
-      ],
-    },
+    hasPermission: name => ['EDIT_TRANSLATION'].includes(name),
   };
 
   beforeEach(() => {
@@ -59,9 +53,7 @@ describe('DiscourseReading test', () => {
 
   it('Verify that users without permission cannot see the edit button', async () => {
     sl.set('store', {
-      getters: {
-        permissions: [],
-      },
+      hasPermission: () => false,
     });
     const wrapper = createWrapper();
     await flushPromises();

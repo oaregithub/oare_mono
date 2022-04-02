@@ -106,38 +106,30 @@
         <v-menu
           offset-y
           open-on-hover
-          v-if="
-            permissions.includes('WORDS') ||
-            permissions.includes('NAMES') ||
-            permissions.includes('PLACES')
-          "
+          v-if="canViewWords || canViewNames || canViewPlaces"
         >
           <template #activator="{ on, attrs }">
             <v-btn text dark v-bind="attrs" v-on="on"> Lexica </v-btn>
           </template>
           <v-list dense>
-            <v-list-item v-if="permissions.includes('WORDS')" class="pa-0">
+            <v-list-item v-if="canViewWords" class="pa-0">
               <v-btn class="test-words" text to="/words/A" width="100%"
                 >Words</v-btn
               >
             </v-list-item>
-            <v-list-item v-if="permissions.includes('NAMES')" class="pa-0">
+            <v-list-item v-if="canViewNames" class="pa-0">
               <v-btn class="test-names" text to="/names/A" width="100%"
                 >Names</v-btn
               >
             </v-list-item>
-            <v-list-item v-if="permissions.includes('PLACES')" class="pa-0">
+            <v-list-item v-if="canViewPlaces" class="pa-0">
               <v-btn class="test-places" text to="/places/A" width="100%"
                 >Places</v-btn
               >
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn
-          class="test-places"
-          text
-          to="/people/A"
-          v-if="permissions.includes('PEOPLE')"
+        <v-btn class="test-places" text to="/people/A" v-if="canViewPeople"
           >People</v-btn
         >
 
@@ -223,12 +215,14 @@ export default defineComponent({
     const firstName = computed(() =>
       store.getters.user ? store.getters.user.firstName : ''
     );
-    const permissions = computed(() =>
-      store.getters.permissions.map(permission => permission.name)
-    );
     const isDevelopmentEnvironment = computed(
       () => process.env.NODE_ENV === 'development'
     );
+
+    const canViewWords = computed(() => store.hasPermission('WORDS'));
+    const canViewNames = computed(() => store.hasPermission('NAMES'));
+    const canViewPlaces = computed(() => store.hasPermission('PLACES'));
+    const canViewPeople = computed(() => store.hasPermission('PEOPLE'));
 
     const logout = () => {
       store.logout();
@@ -242,9 +236,12 @@ export default defineComponent({
       isAdmin,
       isAuthenticated,
       firstName,
-      permissions,
       displayAdminBadge,
       isDevelopmentEnvironment,
+      canViewWords,
+      canViewNames,
+      canViewPlaces,
+      canViewPeople,
     };
   },
 });

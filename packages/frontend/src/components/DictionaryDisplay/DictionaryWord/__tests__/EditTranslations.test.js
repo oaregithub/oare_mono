@@ -37,13 +37,7 @@ describe('EditTranslations test', () => {
   };
 
   const store = {
-    getters: {
-      permissions: [
-        {
-          name: 'UPDATE_TRANSLATION',
-        },
-      ],
-    },
+    hasPermission: name => ['UPDATE_TRANSLATION'].includes(name),
   };
 
   beforeEach(() => {
