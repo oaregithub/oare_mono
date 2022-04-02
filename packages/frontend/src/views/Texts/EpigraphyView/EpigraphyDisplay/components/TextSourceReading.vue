@@ -2,6 +2,7 @@
   <div v-if="textContent !== ''">
     <br />
     <h2>Text Source</h2>
+    <text-source-information-card />
     <br />
     <span class="text-source-content">{{ textContent }}</span>
   </div>

@@ -6,15 +6,26 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      Hello, world!
+      {{ textInfo }}
     </v-card>
   </v-menu>
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, ref} from '@vue/composition-api';
+import sl from '@/serviceLocator';
 
-export default defineComponent({});
+export default defineComponent({
+  setup() {
+    //const server = sl.get('serverProxy');
+    //const actions = sl.get('globalActions');
+    const textInfo = ref('Hello, world!');
+
+    return {
+      textInfo,
+    };
+  }
+});
 </script>
 
 <style></style>
