@@ -122,10 +122,9 @@ class PermissionsDao {
       description: 'Allow group users to view text source file',
     },
     {
-      name: 'EDIT_FORM_PARSE_INFO',
-      type: 'dictionary',
-      description: 'Allow group users to edit form parse property information',
-      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+      name: 'EDIT_ITEM_PROPERTIES',
+      type: 'general',
+      description: 'Allow group users to edit item properties for a given item',
     },
   ];
 

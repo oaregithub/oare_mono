@@ -15,7 +15,7 @@
           <strong>{{ word.word }}</strong>
         </v-row>
       </template>
-      <word-grammar :word="word" />
+      <word-grammar :word="word" :allowEditing="false" />
       <v-text-field
         v-model="newFormSpelling"
         placeholder="New form spelling"

@@ -98,7 +98,10 @@ export default defineComponent({
 
     const updateFormProperties = async () => {
       try {
-        await server.editFormParseInfo(props.form.uuid, properties.value);
+        await server.editPropertiesByReferenceUuid(
+          props.form.uuid,
+          properties.value
+        );
         actions.showSnackbar(
           `Successfully updated form parse info for ${props.form.form}`
         );
@@ -114,7 +117,7 @@ export default defineComponent({
     };
 
     const canEditParseInfo = computed(() =>
-      store.hasPermission('EDIT_FORM_PARSE_INFO')
+      store.hasPermission('EDIT_ITEM_PROPERTIES')
     );
 
     return {

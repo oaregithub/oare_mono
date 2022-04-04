@@ -141,13 +141,6 @@ async function addForm(payload: AddFormPayload): Promise<void> {
   await axios.post('/dictionary/addform', payload);
 }
 
-async function editFormParseInfo(
-  formUuid: string,
-  properties: ParseTreeProperty[]
-): Promise<void> {
-  await axios.patch(`/dictionary/editform/${formUuid}`, { properties });
-}
-
 export default {
   addSpelling,
   updateForm,
@@ -164,5 +157,4 @@ export default {
   addForm,
   disconnectSpellings,
   getDictionaryInfoBySpellingUuid,
-  editFormParseInfo,
 };
