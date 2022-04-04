@@ -17,7 +17,7 @@
         @update:translations="updateTranslations"
         :wordUuid="wordUuid"
       />
-      <word-grammar v-else :word="wordInfo" />
+      <word-grammar v-else :word="wordInfo" :allowEditing="allowEditing" />
     </div>
     <div v-if="wordInfo.forms.length < 1">
       No forms found for {{ wordInfo.word }}

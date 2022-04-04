@@ -41,51 +41,29 @@ describe('dictionary api test', () => {
   };
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
-    deletePropertiesByReferenceUuid: jest.fn().mockResolvedValue(),
   };
   const MockPermissionsDao = {
     getUserPermissions: jest.fn().mockResolvedValue([
       {
         name: 'UPDATE_FORM',
-        type: 'dictionary',
-        description: 'Allow group users to make changes to form(s) of words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'UPDATE_TRANSLATION',
-        type: 'dictionary',
-        description:
-          'Allow group users to make changes to translations of existing words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'UPDATE_WORD_SPELLING',
-        type: 'dictionary',
-        description:
-          'Allow group users to change the spelling of existing words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'ADD_SPELLING',
-        type: 'dictionary',
-        description: 'Allow group users to add new spellings to existing words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'ADD_FORM',
-        type: 'dictionary',
-        description: 'Allow group users to add new forms to words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'DISCONNECT_SPELLING',
-        type: 'dictionary',
-        description:
-          'Allow group users to disconnect spelling occurrences from words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
-        name: 'EDIT_FORM_PARSE_INFO',
+        name: 'EDIT_ITEM_PROPERTIES',
       },
     ]),
   };
@@ -1406,101 +1384,6 @@ describe('dictionary api test', () => {
         addProperty: jest
           .fn()
           .mockRejectedValue('failed to insert form properties'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-  });
-
-  describe('PATCH /dictionary/editform/:formUuid', () => {
-    const mockFormUuid = 'test-uuid';
-    const PATH = `${API_PATH}/dictionary/editform/${mockFormUuid}`;
-
-    const mockPayload = {
-      properties: [
-        {
-          variable: {
-            uuid: 'test-uuid',
-            type: 'test-type',
-            parentUuid: 'test-parent',
-            objectUuid: 'test-object',
-            objParentUuid: 'test-parent',
-            variableName: 'test-name',
-            valueName: 'test-name',
-            aliasName: 'test-name',
-            varAbbreviation: 'test-abb',
-            valAbbreviation: 'test-abb',
-            variableUuid: 'test-uuid',
-            valueUuid: 'test-uuid',
-            level: 1,
-            children: null,
-            custom: null,
-          },
-          value: {
-            uuid: 'test-uuid',
-            type: 'test-type',
-            parentUuid: 'test-parent',
-            objectUuid: 'test-object',
-            objParentUuid: 'test-parent',
-            variableName: 'test-name',
-            valueName: 'test-name',
-            aliasName: 'test-name',
-            varAbbreviation: 'test-abb',
-            valAbbreviation: 'test-abb',
-            variableUuid: 'test-uuid',
-            valueUuid: 'test-uuid',
-            level: 1,
-            children: null,
-            custom: null,
-          },
-        },
-      ],
-    };
-
-    const editFormSetup = () => {
-      sl.set('UserDao', AdminUserDao);
-      sl.set('PermissionsDao', MockPermissionsDao);
-      sl.set('DictionaryFormDao', MockDictionaryFormDao);
-      sl.set('ItemPropertiesDao', mockItemPropertiesDao);
-    };
-
-    beforeEach(editFormSetup);
-
-    const sendRequest = (auth = true) => {
-      const req = request(app).patch(PATH).send(mockPayload);
-      if (auth) {
-        return req.set('Authorization', 'token');
-      }
-      return req;
-    };
-
-    it('returns 201 on successful parse info edit', async () => {
-      const response = await sendRequest();
-      expect(
-        mockItemPropertiesDao.deletePropertiesByReferenceUuid
-      ).toHaveBeenCalled();
-      expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
-      expect(response.status).toBe(204);
-    });
-
-    it('returns 401 when user not logged in', async () => {
-      const response = await sendRequest(false);
-      expect(response.status).toBe(401);
-    });
-
-    it('returns 403 if user does not have permission to edit parse info', async () => {
-      sl.set('PermissionsDao', {
-        getUserPermissions: jest.fn().mockResolvedValue([]),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
-    it('returns 500 on failed form parse info edit', async () => {
-      sl.set('ItemPropertiesDao', {
-        addProperty: jest
-          .fn()
-          .mockRejectedValue('failed to update form properties'),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
