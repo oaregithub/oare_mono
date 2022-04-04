@@ -88,16 +88,19 @@ router.route('/search/count').get(async (req, res, next) => {
       textTitle: title,
       characters: charsPayload,
       respectWordBoundaries,
+      matchWord,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
-
+    const words: string[] = charsPayload ? charsPayload.split(' ') : [];
     const totalRows = await TextEpigraphyDao.searchTextsTotal({
       characters: characterUuids,
       title,
       userUuid: user ? user.uuid : null,
       respectWordBoundaries: respectWordBoundaries === 'true',
+      matchWord: matchWord === 'true',
+      words,
     });
 
     res.json(totalRows);
@@ -117,17 +120,20 @@ router.route('/search').get(async (req, res, next) => {
       textTitle: title,
       characters: charsPayload,
       respectWordBoundaries,
+      matchWord,
     } = (req.query as unknown) as SearchTextsPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
-
+    const words: string[] = charsPayload ? charsPayload.split(' ') : [];
     const textMatches = await TextEpigraphyDao.searchTexts({
       characters: characterUuids,
       pagination: { limit: rows, page },
       title,
       userUuid: user ? user.uuid : null,
       respectWordBoundaries: respectWordBoundaries === 'true',
+      matchWord: matchWord === 'true',
+      words,
     });
 
     const textNames = (

@@ -36,6 +36,10 @@
           <v-radio label="Yes" value="true"></v-radio>
           <v-radio label="No" value="false"></v-radio>
         </v-radio-group>
+        <v-radio-group label="Match Word Exactly" v-model="matchWord">
+          <v-radio label="Yes" value="true"></v-radio>
+          <v-radio label="No" value="false"></v-radio>
+        </v-radio-group>
       </v-col>
     </v-row>
     <oare-data-table
@@ -110,7 +114,8 @@ export default defineComponent({
     const translitQuery = useQueryParam('translit', '');
     const textTitleQuery = useQueryParam('title', '');
     const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
-    const respectWordBoundaries = useQueryParam('respectBoundaries', 'false');
+    const respectWordBoundaries = useQueryParam('respectBoundaries', 'true');
+    const matchWord = useQueryParam('wholeWord', 'true');
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
@@ -142,6 +147,7 @@ export default defineComponent({
             page,
             rows,
             respectWordBoundaries: respectWordBoundaries.value,
+            matchWord: matchWord.value,
           });
 
           if (results.length === 1 && getIsVisited() !== 'true') {
@@ -172,6 +178,7 @@ export default defineComponent({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
             respectWordBoundaries: respectWordBoundaries.value,
+            matchWord: matchWord.value,
           });
         } catch (err) {
           actions.showErrorSnackbar(
@@ -211,6 +218,7 @@ export default defineComponent({
       resetSearch,
       searchTotalLoading,
       respectWordBoundaries,
+      matchWord,
     };
   },
 });

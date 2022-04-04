@@ -109,6 +109,8 @@ export function getSearchQuery(
   textsToHide: string[],
   includeSuperfluous: boolean,
   respectWordBoundaries: boolean,
+  matchWord: boolean,
+  words?: string[],
   textTitle?: string
 ) {
   // Join text table so text names can be returned
@@ -123,7 +125,13 @@ export function getSearchQuery(
     respectWordBoundaries,
     query
   );
-
+  if (matchWord && words) {
+    const discourseSubquery = knex('text_discourse')
+      .select('text_discourse.uuid')
+      .whereIn('text_discourse.explicit_spelling', words)
+      .orWhere('text_discourse.spelling', 'in', words);
+    query = query.whereIn('text_epigraphy.discourse_uuid', discourseSubquery);
+  }
   if (textTitle) {
     const finalSearch: string = `%${textTitle
       .replace(/[.,/#!$%^&*;:{}=\-_`~() <>]/g, '%')
