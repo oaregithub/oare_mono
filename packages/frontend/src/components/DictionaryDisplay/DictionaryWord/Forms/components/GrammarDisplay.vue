@@ -1,13 +1,21 @@
 <template>
   <div>
-    <v-btn
-      v-if="allowEditing && canEditParseInfo"
-      icon
-      class="test-property-pencil edit-button"
-      @click="editPropertiesDialog = true"
-    >
-      <v-icon>mdi-pencil</v-icon>
-    </v-btn>
+    <v-tooltip bottom open-delay="800">
+      <template #activator="{ on, attrs }">
+        <v-btn
+          v-if="allowEditing && canEditParseInfo"
+          icon
+          class="test-property-pencil edit-button mr-1"
+          @click="editPropertiesDialog = true"
+          small
+          v-bind="attrs"
+          v-on="on"
+        >
+          <v-icon size="20">mdi-pencil</v-icon>
+        </v-btn>
+      </template>
+      <span>Edit Parse Info</span>
+    </v-tooltip>
     <span class="mr-1" v-if="formGrammar === ''">(No parse info yet)</span>
     <span class="mr-1" v-else-if="formGrammar !== ''">({{ formGrammar }})</span>
     <oare-dialog

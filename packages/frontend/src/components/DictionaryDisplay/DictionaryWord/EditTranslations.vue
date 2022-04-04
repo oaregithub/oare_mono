@@ -32,7 +32,7 @@
         class="d-flex align-start"
       >
         <span class="mt-6">{{ idx + 1 }}</span>
-        <v-col cols="11" sm="7" lg="5" class="mb-n4">
+        <v-col cols="12" class="mb-n4">
           <v-text-field
             v-model="localTranslations[idx].translation"
             outlined
