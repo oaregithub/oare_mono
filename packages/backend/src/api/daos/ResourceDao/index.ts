@@ -15,7 +15,6 @@ class ResourceDao {
       .distinct()
       .select('p.label as label', 'r.link as link')
       .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
-      .where('r.source_uuid', 'b6ccd101-8223-2afc-5a2f-3adec5f2edc7')
       .where('r.type', 'img')
       .whereIn(
         'r.uuid',
@@ -33,6 +32,8 @@ class ResourceDao {
         return s3.getSignedUrlPromise('getObject', params);
       })
     );
+
+    console.log(signedUrls);
 
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
