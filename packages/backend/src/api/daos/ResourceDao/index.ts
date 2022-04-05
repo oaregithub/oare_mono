@@ -33,17 +33,25 @@ class ResourceDao {
       })
     );
 
-    console.log(signedUrls);
-
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
-    const filledLink = cdliLinks.concat(signedUrls);
+    const response: EpigraphyLabelLink[] = [];
 
-    labelLinks.forEach((elem, index) => {
-      elem.link = filledLink[index];
-    });
+    for (let i = 0; i < signedUrls.length; i++) {
+      response.push({
+        label: labelLinks[i].label,
+        link: signedUrls[i],
+      } as EpigraphyLabelLink);
+    }
 
-    return labelLinks;
+    for (let i = 0; i < cdliLinks.length; i++) {
+      response.push({
+        label: 'CDLI',
+        link: cdliLinks[i],
+      } as EpigraphyLabelLink);
+    }
+
+    return response;
   }
 
   async getTextFileByTextUuid(uuid: string) {
