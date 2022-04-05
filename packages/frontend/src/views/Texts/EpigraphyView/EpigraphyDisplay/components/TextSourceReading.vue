@@ -1,8 +1,7 @@
 <template>
   <div v-if="textContent !== ''">
     <br />
-    <h2>Text Source</h2>
-    <text-source-information-card />
+    <h2>Text Source <text-source-information-card /></h2>
     <br />
     <span class="text-source-content">{{ textContent }}</span>
   </div>
