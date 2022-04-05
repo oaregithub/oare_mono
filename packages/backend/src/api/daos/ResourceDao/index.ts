@@ -33,25 +33,13 @@ class ResourceDao {
       })
     );
 
+    labelLinks.forEach((obj, index) => {
+      obj.link = signedUrls[index];
+    });
+
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
 
-    const response: EpigraphyLabelLink[] = [];
-
-    for (let i = 0; i < signedUrls.length; i++) {
-      response.push({
-        label: labelLinks[i].label,
-        link: signedUrls[i],
-      } as EpigraphyLabelLink);
-    }
-
-    for (let i = 0; i < cdliLinks.length; i++) {
-      response.push({
-        label: 'CDLI',
-        link: cdliLinks[i],
-      } as EpigraphyLabelLink);
-    }
-
-    return response;
+    return labelLinks.concat(cdliLinks);
   }
 
   async getTextFileByTextUuid(uuid: string) {
@@ -71,7 +59,7 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
-  async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
+  async getValidCdliImageLinks(cdliNum: string): Promise<EpigraphyLabelLink[]> {
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
 
@@ -108,7 +96,9 @@ class ResourceDao {
       });
     }
 
-    return response;
+    return response.map(link => {
+      return { label: 'CDLI', link: link } as EpigraphyLabelLink;
+    });
   }
 
   async getImageDesignatorMatches(preText: string): Promise<string[]> {
