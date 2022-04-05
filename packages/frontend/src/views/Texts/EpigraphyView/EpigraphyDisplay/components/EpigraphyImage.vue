@@ -51,11 +51,11 @@
             ><b>View: </b>{{ parseView(imageDetails[selection].view) }}</span
           >
         </v-row>
-        <inner-image-zoom
-          :src="imageLinks[selection].link"
-          moveType="drag"
-        />
-        <span>Photo Source: " {{imageLinks[selection].label || 'Unavailable'}} ". For more information in photo, click (here).</span>
+        <inner-image-zoom :src="imageLinks[selection].link" moveType="drag" />
+        <span
+          >Photo Source: " {{ imageLinks[selection].label || 'Unavailable' }} ".
+          For more information in photo, click (here).</span
+        >
       </div>
     </v-row>
   </v-container>
@@ -63,16 +63,16 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
-import { TextPhoto, LabelLink } from '@oare/types';
+import { TextPhoto, EpigraphyLabelLink } from '@oare/types';
 import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
   components: {
-    InnerImageZoom
+    InnerImageZoom,
   },
   props: {
     imageLinks: {
-      type: Array as PropType<LabelLink[]>,
+      type: Array as PropType<EpigraphyLabelLink[]>,
       required: true,
     },
     imageDetails: {
@@ -178,5 +178,4 @@ export default defineComponent({
 .zoom-container {
   width: 36vw;
 }
-
 </style>

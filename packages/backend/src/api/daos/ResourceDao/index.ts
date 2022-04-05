@@ -2,16 +2,16 @@ import knex from '@/connection';
 import fetch from 'node-fetch';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
-import { ResourceRow, LinkRow, LabelLink } from '@oare/types';
+import { ResourceRow, LinkRow, EpigraphyLabelLink } from '@oare/types';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
     textUuid: string,
     cdliNum: string
-  ): Promise<LabelLink[]> {
+  ): Promise<EpigraphyLabelLink[]> {
     const s3 = new AWS.S3();
 
-    const queryLabelLinks = await knex('person as p')
+    const labelLinks: EpigraphyLabelLink[] = await knex('person as p')
       .distinct()
       .select('p.label as label', 'r.link as link')
       .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
@@ -24,17 +24,11 @@ class ResourceDao {
           .where('reference_uuid', textUuid)
       );
 
-    const labelLinks: LabelLink[] = queryLabelLinks.map(
-      elem => ({ label: elem.label, link: elem.link } as LabelLink)
-    );
-
-    const locationLink = labelLinks.map(row => row.link);
-
     const signedUrls = await Promise.all(
-      locationLink.map(key => {
+      labelLinks.map(key => {
         const params = {
           Bucket: 'oare-image-bucket',
-          Key: key,
+          Key: key.link,
         };
         return s3.getSignedUrlPromise('getObject', params);
       })

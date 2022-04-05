@@ -386,7 +386,7 @@ export interface CreateTextsPayload {
   tables: CreateTextTables;
 }
 
-export interface LabelLink {
+export interface EpigraphyLabelLink {
   label: string;
   link: string;
 }
