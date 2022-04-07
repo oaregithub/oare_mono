@@ -313,6 +313,7 @@ export default defineComponent({
       colorMeaning: '',
       discourseUnits: [],
       hasEpigraphy: false,
+      zoteroData: [],
     });
     const imageUrls = ref<string[]>([]);
 

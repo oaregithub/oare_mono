@@ -236,6 +236,7 @@ export default defineComponent({
         colorMeaning: '',
         discourseUnits: [],
         hasEpigraphy: true,
+        zoteroData: [],
       };
     });
 
@@ -286,8 +287,9 @@ export default defineComponent({
     );
     const manuallySelectedDiscourses = ref<string[]>([]);
     const updateManualSelections = (discourseUuid: string) => {
-      manuallySelectedDiscourses.value =
-        manuallySelectedDiscourses.value.filter(uuid => uuid !== discourseUuid);
+      manuallySelectedDiscourses.value = manuallySelectedDiscourses.value.filter(
+        uuid => uuid !== discourseUuid
+      );
       manuallySelectedDiscourses.value.push(discourseUuid);
     };
     const buildTables = async () => {
