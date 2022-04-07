@@ -77,6 +77,62 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const TextDraftsDao = sl.get('TextDraftsDao');
     const CollectionDao = sl.get('CollectionDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const BibliographyDao = sl.get('BibliographyDao');
+    const ResourceDao = sl.get('ResourceDao');
+
+    const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
+      textUuid,
+      'b3938276-173b-11ec-8b77-024de1c1cc1d'
+    );
+
+    const bibliographies = await Promise.all(
+      objUuids.map(uuid => BibliographyDao.getBibliographyByUuid(uuid))
+    );
+
+    const zoteroKeys = bibliographies.map(bib => bib.zoteroKey);
+
+    const citationStyle = 'chicago-author-date';
+    let apiKey = '';
+
+    if (process.env.ZOTERO_API_KEY) {
+      apiKey = process.env.ZOTERO_API_KEY;
+    } else {
+      const s3 = new AWS.S3();
+      s3.getObject({
+        Bucket: 'oare-resources',
+        Key: 'ZOTERO_API_KEY',
+      });
+    }
+
+    const zoteroResponses = await Promise.all(
+      zoteroKeys.map(zoteroKey =>
+        fetch(
+          `https://api.zotero.org/groups/318265/items/${zoteroKey}
+            ?format=json&include=citation&style=${citationStyle}`,
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+            },
+          }
+        )
+      )
+    );
+
+    const zoteroJsons = await Promise.all(
+      zoteroResponses.map(APIresponse => APIresponse.json())
+    );
+
+    const zoteroCitations: string[] = zoteroJsons.map(res => res.citation);
+
+    const resourceLinks: string[] = await Promise.all(
+      zoteroKeys.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
+    );
+
+    const zoteroData = zoteroCitations.map((cit, idx) => ({
+      citation: cit,
+      link: resourceLinks[idx],
+    }));
 
     const text = await TextDao.getTextByUuid(textUuid);
 
@@ -132,6 +188,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       discourseUnits,
       ...(draft ? { draft } : {}),
       hasEpigraphy: hasEpigraphies,
+      zoteroData,
     };
 
     res.json(response);

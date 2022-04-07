@@ -52,6 +52,21 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
+  async getResourceLinkByUuid(bibliographyUuid: string) {
+    const row = await knex('resource')
+      .select('link')
+      .whereIn(
+        'uuid',
+        knex('link')
+          .select('obj_uuid')
+          .where('reference_uuid', bibliographyUuid)
+      )
+      .where('type', 'img')
+      .first();
+
+    return row.link;
+  }
+
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;

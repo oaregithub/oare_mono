@@ -27,6 +27,11 @@ export interface EpigraphyResponse {
   discourseUnits: DiscourseUnit[];
   draft?: TextDraft;
   hasEpigraphy: boolean;
+  zoteroData: ZoteroData[];
+}
+export interface ZoteroData {
+  citation: string;
+  link: string;
 }
 
 export type EpigraphicUnitType =
