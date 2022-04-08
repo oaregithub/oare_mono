@@ -114,16 +114,16 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     }
 
     const zoteroResponses = await Promise.all(
-      zoteroKeys.map(zoteroKey => {
-        return fetch(
+      zoteroKeys.map(zoteroKey =>
+        fetch(
           `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
           {
             headers: {
               Authorization: `Bearer ${apiKey}`,
             },
           }
-        );
-      })
+        )
+      )
     );
 
     const zoteroJsons = await Promise.all(
