@@ -29,29 +29,16 @@
         >
       </v-col>
       <v-col cols="5">
-        <div class="">
-          <slider-information-card />
-          <v-slider
-            class="float-end"
-            v-model="sliderValue"
-            :tick-labels="ticksLabels"
-            :max="2"
-            step="1"
-            ticks="always"
-            tick-size="10"
-          ></v-slider>
-        </div>
-        <!--<v-radio-group
-          label="Respect Word Boundaries"
-          v-model="respectWordBoundaries"
-        >
-          <v-radio label="Yes" value="true"></v-radio>
-          <v-radio label="No" value="false"></v-radio>
-        </v-radio-group>
-        <v-radio-group label="Match Word Exactly" v-model="matchExact">
-          <v-radio label="Yes" value="true"></v-radio>
-          <v-radio label="No" value="false"></v-radio>
-        </v-radio-group>-->
+        <slider-information-card />
+        <v-slider
+          class="float-end"
+          v-model="sliderValue"
+          :tick-labels="ticksLabels"
+          :max="2"
+          step="1"
+          ticks="always"
+          tick-size="10"
+        ></v-slider>
       </v-col>
     </v-row>
     <oare-data-table
