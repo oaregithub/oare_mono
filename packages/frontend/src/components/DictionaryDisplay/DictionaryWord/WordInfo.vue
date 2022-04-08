@@ -117,7 +117,7 @@ export default defineComponent({
     const showSpellingDialog = ref(false);
     const addFormDialog = ref(false);
 
-    const searchQuery = useQueryParam('filter', '');
+    const searchQuery = useQueryParam('filter', '', true);
 
     const canAddForms = computed(() => store.hasPermission('ADD_FORM'));
 

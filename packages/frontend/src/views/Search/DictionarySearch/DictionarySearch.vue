@@ -87,9 +87,9 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const dictionarySearch = useQueryParam('dictionary', '');
-    const page = useQueryParam('page', '1');
-    const rows = useQueryParam('rows', '25');
+    const dictionarySearch = useQueryParam('dictionary', '', true);
+    const page = useQueryParam('page', '1', false);
+    const rows = useQueryParam('rows', '25', true);
     const lastSearch = ref('');
     const canSearch = computed(() => {
       return dictionarySearch.value.trim() !== '';

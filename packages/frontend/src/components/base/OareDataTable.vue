@@ -89,10 +89,10 @@ export default defineComponent({
   }) {
     const _ = sl.get('lodash');
     const actions = sl.get('globalActions');
-    const sortBy = useQueryParam('sortBy', defaultSort);
-    const sortDesc = useQueryParam('sortDesc', String(defaultDesc));
-    const page = useQueryParam('page', String(defaultPage));
-    const rows = useQueryParam('rows', String(defaultRows));
+    const sortBy = useQueryParam('sortBy', defaultSort, true);
+    const sortDesc = useQueryParam('sortDesc', String(defaultDesc), true);
+    const page = useQueryParam('page', String(defaultPage), false);
+    const rows = useQueryParam('rows', String(defaultRows), true);
 
     const loading = ref(false);
 
@@ -115,7 +115,7 @@ export default defineComponent({
     }));
 
     const queryParams = watchedParams.map(paramName =>
-      useQueryParam(paramName, '')
+      useQueryParam(paramName, '', true)
     );
 
     const performFetch = async () => {
@@ -139,13 +139,24 @@ export default defineComponent({
       debounce ? _.debounce(queryParamsOnChange, 500) : queryParamsOnChange
     );
 
-    watch(sortOptions, newOptions => {
-      sortBy.value = newOptions.sortBy[0];
-      sortDesc.value = String(newOptions.sortDesc[0]);
-      page.value = String(newOptions.page);
-      rows.value = String(newOptions.itemsPerPage);
+    watch(
+      sortOptions,
+      newOptions => {
+        sortBy.value = newOptions.sortBy[0];
+        sortDesc.value = String(newOptions.sortDesc[0]);
+        page.value = String(newOptions.page);
+        rows.value = String(newOptions.itemsPerPage);
 
-      performFetch();
+        performFetch();
+      },
+      { deep: true }
+    );
+
+    watch([page, rows, sortBy, sortDesc], () => {
+      sortOptions.value.page = Number(page.value);
+      sortOptions.value.itemsPerPage = Number(rows.value);
+      sortOptions.value.sortBy = [sortBy.value];
+      sortOptions.value.sortDesc = [sortDesc.value === 'true'];
     });
 
     return {

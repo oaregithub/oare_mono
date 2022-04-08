@@ -190,9 +190,9 @@ export default defineComponent({
     const dialogName = ref('');
     const selectedListPage = ref(1);
 
-    const page = useQueryParam('page', '1');
-    const rows = useQueryParam('rows', '10');
-    const search = useQueryParam('query', '');
+    const page = useQueryParam('page', '1', false);
+    const rows = useQueryParam('rows', '10', true);
+    const search = useQueryParam('query', '', true);
     const savedQueries: Ref<Required<Pagination>> = ref({
       page: 1,
       limit: 10,
@@ -373,18 +373,27 @@ export default defineComponent({
       textsAndCollectionsDialog.value = true;
     };
 
-    watch(searchOptions, async () => {
-      try {
-        await getItems();
-        page.value = String(searchOptions.value.page);
-        rows.value = String(searchOptions.value.itemsPerPage);
-        selectAllMessage.value = false;
-      } catch (err) {
-        actions.showErrorSnackbar(
-          `Error updating ${itemType.toLowerCase()}s list. Please try again.`,
-          err as Error
-        );
-      }
+    watch(
+      searchOptions,
+      async () => {
+        try {
+          await getItems();
+          page.value = String(searchOptions.value.page);
+          rows.value = String(searchOptions.value.itemsPerPage);
+          selectAllMessage.value = false;
+        } catch (err) {
+          actions.showErrorSnackbar(
+            `Error updating ${itemType.toLowerCase()}s list. Please try again.`,
+            err as Error
+          );
+        }
+      },
+      { deep: true }
+    );
+
+    watch([page, rows], () => {
+      searchOptions.value.page = Number(page.value);
+      searchOptions.value.itemsPerPage = Number(rows.value);
     });
 
     watch(
