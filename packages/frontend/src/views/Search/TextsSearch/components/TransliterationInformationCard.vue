@@ -6,12 +6,6 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      <span
-        >At present the Transliteration search is a brute character sequence
-        search. It does not respect word boundaries. This will be upgraded
-        soon.</span
-      >
-      <br />
       <span>The transliteration search supports the following features:</span>
       <ol>
         <li>

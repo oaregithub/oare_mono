@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row>
-      <v-col cols="8">
+      <v-col cols="7">
         {{ $t('search.textTitle') }}
         <text-name-information-card />
         <v-text-field
@@ -28,18 +28,30 @@
           >{{ $t('search.searchBtnText') }}</v-btn
         >
       </v-col>
-      <v-col cols="4">
-        <v-radio-group
+      <v-col cols="5">
+        <div class="">
+          <slider-information-card />
+          <v-slider
+            class="float-end"
+            v-model="sliderValue"
+            :tick-labels="ticksLabels"
+            :max="2"
+            step="1"
+            ticks="always"
+            tick-size="10"
+          ></v-slider>
+        </div>
+        <!--<v-radio-group
           label="Respect Word Boundaries"
           v-model="respectWordBoundaries"
         >
           <v-radio label="Yes" value="true"></v-radio>
           <v-radio label="No" value="false"></v-radio>
         </v-radio-group>
-        <v-radio-group label="Match Word Exactly" v-model="matchWord">
+        <v-radio-group label="Match Word Exactly" v-model="matchExact">
           <v-radio label="Yes" value="true"></v-radio>
           <v-radio label="No" value="false"></v-radio>
-        </v-radio-group>
+        </v-radio-group>-->
       </v-col>
     </v-row>
     <oare-data-table
@@ -84,11 +96,13 @@ import {
   Ref,
   computed,
   onMounted,
+  watch,
 } from '@vue/composition-api';
 import { SearchTextsResultRow, SearchTextsResponse } from '@oare/types';
 import ResultTable from '../components/ResultTable.vue';
 import TextNameInformationCard from './components/TextNameInformationCard.vue';
 import TransliterationInformationCard from './components/TransliterationInformationCard.vue';
+import SliderInformationCard from './components/SliderInformationCard.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
@@ -100,6 +114,7 @@ export default defineComponent({
     ResultTable,
     TextNameInformationCard,
     TransliterationInformationCard,
+    SliderInformationCard,
   },
   setup() {
     const searchResults: Ref<SearchTextsResultRow[]> = ref([]);
@@ -115,7 +130,9 @@ export default defineComponent({
     const textTitleQuery = useQueryParam('title', '');
     const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
     const respectWordBoundaries = useQueryParam('respectBoundaries', 'true');
-    const matchWord = useQueryParam('wholeWord', 'true');
+    const matchExact = useQueryParam('matchExactly', 'false');
+    const ticksLabels = ref(['None', 'Respect Boundaries', 'Match Exactly']);
+    const sliderValue = ref(1);
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
@@ -147,7 +164,7 @@ export default defineComponent({
             page,
             rows,
             respectWordBoundaries: respectWordBoundaries.value,
-            matchWord: matchWord.value,
+            matchExact: matchExact.value,
           });
 
           if (results.length === 1 && getIsVisited() !== 'true') {
@@ -178,7 +195,7 @@ export default defineComponent({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
             respectWordBoundaries: respectWordBoundaries.value,
-            matchWord: matchWord.value,
+            matchExact: matchExact.value,
           });
         } catch (err) {
           actions.showErrorSnackbar(
@@ -205,6 +222,24 @@ export default defineComponent({
       resetSearch(false);
     });
 
+    watch(
+      sliderValue,
+      () => {
+        if (sliderValue.value === 0) {
+          respectWordBoundaries.value = 'false';
+          matchExact.value = 'false';
+        }
+        if (sliderValue.value === 1) {
+          respectWordBoundaries.value = 'true';
+          matchExact.value = 'false';
+        }
+        if (sliderValue.value === 2) {
+          respectWordBoundaries.value = 'true';
+          matchExact.value = 'true';
+        }
+      },
+      { immediate: true }
+    );
     return {
       searchResults,
       textTitleSearch,
@@ -218,7 +253,9 @@ export default defineComponent({
       resetSearch,
       searchTotalLoading,
       respectWordBoundaries,
-      matchWord,
+      matchExact,
+      ticksLabels,
+      sliderValue,
     };
   },
 });

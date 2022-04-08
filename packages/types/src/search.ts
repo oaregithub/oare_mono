@@ -11,14 +11,14 @@ export interface SearchTextsPayload {
   page: number;
   rows: number;
   respectWordBoundaries: string;
-  matchWord: string;
+  matchExact: string;
 }
 
 export interface SearchTextsCountPayload {
   characters?: string;
   textTitle: string;
   respectWordBoundaries: string;
-  matchWord: string;
+  matchExact: string;
 }
 
 export interface SearchTextsResponse {

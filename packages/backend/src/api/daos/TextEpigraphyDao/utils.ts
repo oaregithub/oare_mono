@@ -14,6 +14,7 @@ export function getSequentialCharacterQuery(
   cooccurrences: SearchCooccurrence[],
   includeSuperfluous: boolean,
   respectWordBoundaries: boolean,
+  matchExact: boolean,
   baseQuery?: Knex.QueryBuilder
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
@@ -34,7 +35,7 @@ export function getSequentialCharacterQuery(
           charOffset += words[i].uuids.length;
         }
 
-        if (coocIndex < 1 && wordIndex < 1 && charIndex < 1) {
+        if (coocIndex < 1 && wordIndex < 1 && charIndex < 1 && !matchExact) {
           return;
         }
 
@@ -45,15 +46,29 @@ export function getSequentialCharacterQuery(
               `t${coocIndex}${wordIndex}${charIndex}.text_uuid`,
               'text_epigraphy.text_uuid'
             )
-              .andOnIn(
-                `t${coocIndex}${wordIndex}${charIndex}.reading_uuid`,
-                char
+              .andOn(
+                knex.raw(
+                  `${
+                    coocIndex === 0 && wordIndex === 0 && charIndex === 0
+                      ? `(t${coocIndex}${wordIndex}${charIndex}.reading_uuid in (${char
+                          .map(_ => '?')
+                          .join(',')}) OR 1 = 1)`
+                      : `t${coocIndex}${wordIndex}${charIndex}.reading_uuid in (${char
+                          .map(_ => '?')
+                          .join(',')})`
+                  }`,
+                  [...char]
+                )
               )
               .andOn(
                 knex.raw(
-                  `t${coocIndex}${wordIndex}${charIndex}.char_on_tablet=${
+                  `t${coocIndex}${wordIndex}${charIndex}.char_on_tablet = ${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
-                  }.char_on_tablet + ${charIndex + charOffset}`
+                  }.char_on_tablet ${
+                    coocIndex === 0 && wordIndex === 0 && charIndex === 0
+                      ? '- 1'
+                      : `+ ${charIndex + charOffset}`
+                  }`
                 )
               )
               .andOn(
@@ -67,7 +82,11 @@ export function getSequentialCharacterQuery(
                 knex.raw(
                   `${
                     respectWordBoundaries
-                      ? `t${coocIndex}${wordIndex}${charIndex}.discourse_uuid=${
+                      ? `t${coocIndex}${wordIndex}${charIndex}.discourse_uuid${
+                          coocIndex === 0 && wordIndex === 0 && charIndex === 0
+                            ? '<>'
+                            : '='
+                        }${
                           coocIndex === 0 && wordIndex === 0
                             ? 'text_epigraphy'
                             : `t${coocIndex}${wordIndex}0`
@@ -78,6 +97,43 @@ export function getSequentialCharacterQuery(
               );
           }
         );
+        if (
+          matchExact &&
+          coocIndex === cooccurrences.length - 1 &&
+          wordIndex === words.length - 1 &&
+          charIndex === charSet.length - 1
+        ) {
+          query = query.join('text_epigraphy AS last', function () {
+            this.on('last.text_uuid', 'text_epigraphy.text_uuid')
+              .andOn(
+                knex.raw(
+                  `last.char_on_tablet = ${
+                    coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
+                  }.char_on_tablet ${
+                    coocIndex === 0 && wordIndex === 0 && charIndex === 0
+                      ? '- 1'
+                      : `+ ${charIndex + charOffset + 1}`
+                  }`
+                )
+              )
+              .andOn(
+                knex.raw(
+                  `last.line=${
+                    coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
+                  }.line`
+                )
+              )
+              .andOn(
+                knex.raw(
+                  `last.discourse_uuid<>${
+                    coocIndex === 0 && wordIndex === 0
+                      ? 'text_epigraphy'
+                      : `t${coocIndex}${wordIndex}0`
+                  }.discourse_uuid`
+                )
+              );
+          });
+        }
       });
       if (
         coocIndex < 1 &&
@@ -100,7 +156,6 @@ export function getSequentialCharacterQuery(
       });
     }
   });
-
   return query;
 }
 
@@ -110,7 +165,6 @@ export function getSearchQuery(
   includeSuperfluous: boolean,
   respectWordBoundaries: boolean,
   matchWord: boolean,
-  words?: string[],
   textTitle?: string
 ) {
   // Join text table so text names can be returned
@@ -123,15 +177,9 @@ export function getSearchQuery(
     andCooccurrences,
     includeSuperfluous,
     respectWordBoundaries,
+    matchWord,
     query
   );
-  if (matchWord && words) {
-    const discourseSubquery = knex('text_discourse')
-      .select('text_discourse.uuid')
-      .whereIn('text_discourse.explicit_spelling', words)
-      .orWhere('text_discourse.spelling', 'in', words);
-    query = query.whereIn('text_epigraphy.discourse_uuid', discourseSubquery);
-  }
   if (textTitle) {
     const finalSearch: string = `%${textTitle
       .replace(/[.,/#!$%^&*;:{}=\-_`~() <>]/g, '%')
@@ -230,7 +278,8 @@ export const stringToCharsArray = (search: string): string[] => {
 
 export async function getNotOccurrenceTexts(
   characters: SearchCooccurrence[],
-  respectWordBoundaries: boolean
+  respectWordBoundaries: boolean,
+  matchExact: boolean
 ): Promise<string[]> {
   const notCharacters = characters.filter(char => char.type === 'NOT');
   const notTexts =
@@ -238,7 +287,8 @@ export async function getNotOccurrenceTexts(
       ? await getSequentialCharacterQuery(
           notCharacters,
           true,
-          respectWordBoundaries
+          respectWordBoundaries,
+          matchExact
         ).pluck('text_epigraphy.text_uuid')
       : [];
   return notTexts;

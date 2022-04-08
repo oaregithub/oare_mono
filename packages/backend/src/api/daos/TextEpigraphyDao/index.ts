@@ -39,8 +39,7 @@ export interface SearchTextArgs {
   userUuid: string | null;
   pagination: Pagination;
   respectWordBoundaries: boolean;
-  matchWord: boolean;
-  words: string[];
+  matchExact: boolean;
 }
 
 export interface AnchorInfo {
@@ -120,23 +119,22 @@ class TextEpigraphyDao {
     pagination,
     userUuid,
     respectWordBoundaries,
-    matchWord,
-    words,
+    matchExact,
   }: SearchTextArgs): Promise<string[]> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
     const notUuids = await getNotOccurrenceTexts(
       characters,
-      respectWordBoundaries
+      respectWordBoundaries,
+      matchExact
     );
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
       textsToHide,
       true,
       respectWordBoundaries,
-      matchWord,
-      words,
+      matchExact,
       title
     )
       .select('text_epigraphy.text_uuid as uuid')
@@ -153,28 +151,18 @@ class TextEpigraphyDao {
     textUuid: string,
     rawCharacters: SearchCooccurrence[],
     respectWordBoundaries: boolean,
-    matchWord: boolean,
-    words?: string[]
+    matchExact: boolean
   ): Promise<number[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ line: number }> = (
       await Promise.all(
         characters.map((_char, index) => {
-          let query = getSequentialCharacterQuery(
+          const query = getSequentialCharacterQuery(
             characters,
             true,
-            respectWordBoundaries
+            respectWordBoundaries,
+            matchExact
           );
-          if (matchWord && words) {
-            const discourseSubquery = knex('text_discourse')
-              .select('text_discourse.uuid')
-              .whereIn('text_discourse.explicit_spelling', words)
-              .orWhere('text_discourse.spelling', 'in', words);
-            query = query.whereIn(
-              'text_epigraphy.discourse_uuid',
-              discourseSubquery
-            );
-          }
           return query
             .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
             .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
@@ -191,28 +179,18 @@ class TextEpigraphyDao {
     textUuid: string,
     rawCharacters: SearchCooccurrence[],
     respectWordBoundaries: boolean,
-    matchWord: boolean,
-    words?: string[]
+    matchExact: boolean
   ): Promise<string[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ discourseUuid: string }> = (
       await Promise.all(
         characters.map(_char => {
-          let query = getSequentialCharacterQuery(
+          const query = getSequentialCharacterQuery(
             characters,
             true,
-            respectWordBoundaries
+            respectWordBoundaries,
+            matchExact
           );
-          if (matchWord && words) {
-            const discourseSubquery = knex('text_discourse')
-              .select('text_discourse.uuid')
-              .whereIn('text_discourse.explicit_spelling', words)
-              .orWhere('text_discourse.spelling', 'in', words);
-            query = query.whereIn(
-              'text_epigraphy.discourse_uuid',
-              discourseSubquery
-            );
-          }
           return query
             .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
             .where('text_epigraphy.text_uuid', textUuid);
@@ -233,8 +211,7 @@ class TextEpigraphyDao {
           uuid,
           args.characters,
           args.respectWordBoundaries,
-          args.matchWord,
-          args.words
+          args.matchExact
         )
       )
     );
@@ -245,8 +222,7 @@ class TextEpigraphyDao {
           uuid,
           args.characters,
           args.respectWordBoundaries,
-          args.matchWord,
-          args.words
+          args.matchExact
         )
       )
     );
@@ -263,23 +239,18 @@ class TextEpigraphyDao {
     title,
     userUuid,
     respectWordBoundaries,
-    matchWord,
-    words,
+    matchExact,
   }: Pick<
     SearchTextArgs,
-    | 'characters'
-    | 'title'
-    | 'userUuid'
-    | 'respectWordBoundaries'
-    | 'matchWord'
-    | 'words'
+    'characters' | 'title' | 'userUuid' | 'respectWordBoundaries' | 'matchExact'
   >): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
     const notUuids = await getNotOccurrenceTexts(
       characters,
-      respectWordBoundaries
+      respectWordBoundaries,
+      matchExact
     );
 
     const totalRows: number = (
@@ -288,8 +259,7 @@ class TextEpigraphyDao {
         textsToHide,
         true,
         respectWordBoundaries,
-        matchWord,
-        words,
+        matchExact,
         title
       )
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
