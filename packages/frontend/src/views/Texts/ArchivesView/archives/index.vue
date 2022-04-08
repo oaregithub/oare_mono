@@ -69,9 +69,9 @@ export default defineComponent({
     const dossiersInfo: Ref<DossierInfo[] | null> = ref([]);
     const totalTexts = ref(0);
     const totalDossiers = ref(0);
-    const page = useQueryParam('page', '1');
-    const rows = useQueryParam('rows', '10');
-    const search = useQueryParam('query', '');
+    const page = useQueryParam('page', '1', false);
+    const rows = useQueryParam('rows', '10', true);
+    const search = useQueryParam('query', '', true);
 
     const getArchive = async () => {
       if (loading.value) {

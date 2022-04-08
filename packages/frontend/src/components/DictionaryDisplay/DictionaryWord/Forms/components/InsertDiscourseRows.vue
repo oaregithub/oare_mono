@@ -113,8 +113,8 @@ export default defineComponent({
     const searchNullDiscourseLoading = ref(false);
     const searchNullCountLoading = ref(false);
     const insertDiscourseRowsLoading = ref(false);
-    const page = useQueryParam('page', '1');
-    const limit = useQueryParam('limit', '50');
+    const page = useQueryParam('page', '1', false);
+    const limit = useQueryParam('limit', '50', true);
 
     const nullDiscourseOccurrences: Ref<SearchNullDiscourseResultRow[]> = ref(
       []
@@ -211,19 +211,28 @@ export default defineComponent({
       }, 500)
     );
 
-    watch(searchOptions, async () => {
-      try {
-        page.value = String(searchOptions.value.page);
-        limit.value = String(searchOptions.value.itemsPerPage);
-        if (props.spellingInput) {
-          await searchNullDiscourse();
+    watch(
+      searchOptions,
+      async () => {
+        try {
+          page.value = String(searchOptions.value.page);
+          limit.value = String(searchOptions.value.itemsPerPage);
+          if (props.spellingInput) {
+            await searchNullDiscourse();
+          }
+        } catch (err) {
+          actions.showErrorSnackbar(
+            `Error retrieving more occurrences. Please try again.`,
+            err as Error
+          );
         }
-      } catch (err) {
-        actions.showErrorSnackbar(
-          `Error retrieving more occurrences. Please try again.`,
-          err as Error
-        );
-      }
+      },
+      { deep: true }
+    );
+
+    watch([page, limit], () => {
+      searchOptions.value.page = Number(page.value);
+      searchOptions.value.itemsPerPage = Number(limit.value);
     });
 
     watch(
