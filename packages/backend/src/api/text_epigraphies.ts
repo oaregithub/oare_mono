@@ -15,6 +15,7 @@ import {
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
+import fetch from 'node-fetch';
 
 const router = express.Router();
 
@@ -99,24 +100,30 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       apiKey = process.env.ZOTERO_API_KEY;
     } else {
       const s3 = new AWS.S3();
-      s3.getObject({
-        Bucket: 'oare-resources',
-        Key: 'ZOTERO_API_KEY',
-      });
+      const response = (
+        await s3
+          .getObject({
+            Bucket: 'oare-resources',
+            Key: 'zotero_auth.json',
+          })
+          .promise()
+      ).Body;
+      if (response) {
+        apiKey = JSON.parse(response as string).authKey;
+      }
     }
 
     const zoteroResponses = await Promise.all(
-      zoteroKeys.map(zoteroKey =>
-        fetch(
-          `https://api.zotero.org/groups/318265/items/${zoteroKey}
-            ?format=json&include=citation&style=${citationStyle}`,
+      zoteroKeys.map(zoteroKey => {
+        return fetch(
+          `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
           {
             headers: {
               Authorization: `Bearer ${apiKey}`,
             },
           }
-        )
-      )
+        );
+      })
     );
 
     const zoteroJsons = await Promise.all(
@@ -126,7 +133,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const zoteroCitations: string[] = zoteroJsons.map(res => res.citation);
 
     const resourceLinks: string[] = await Promise.all(
-      zoteroKeys.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
+      objUuids.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
     );
 
     const zoteroData = zoteroCitations.map((cit, idx) => ({

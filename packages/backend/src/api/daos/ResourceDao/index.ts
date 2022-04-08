@@ -61,7 +61,6 @@ class ResourceDao {
           .select('obj_uuid')
           .where('reference_uuid', bibliographyUuid)
       )
-      .where('type', 'img')
       .first();
 
     return row.link;
