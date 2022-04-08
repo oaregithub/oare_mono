@@ -62,7 +62,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const letters = ref(Object.keys(AkkadianLetterGroupsUpper));
-    const wordSearch = useQueryParam('filter', '');
+    const wordSearch = useQueryParam('filter', '', true);
     const encodedLetter = (letter: string) => encodeURIComponent(letter);
 
     const wordsByLetter = computed(() => {
