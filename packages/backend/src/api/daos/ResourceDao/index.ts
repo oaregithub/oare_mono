@@ -96,9 +96,9 @@ class ResourceDao {
       });
     }
 
-    return response.map(link => {
-      return { label: 'CDLI', link: link } as EpigraphyLabelLink;
-    });
+    return response.map(
+      link => ({ label: 'CDLI', link } as EpigraphyLabelLink)
+    );
   }
 
   async getImageDesignatorMatches(preText: string): Promise<string[]> {
