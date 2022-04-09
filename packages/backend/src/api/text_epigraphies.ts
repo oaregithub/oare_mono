@@ -375,7 +375,7 @@ router
   .route('/text_epigraphies/object_link/:bucket/:objectName')
   .get(async (req, res, next) => {
     try {
-      const { bucket: bucket, objectName: objectName } = req.params;
+      const { bucket, objectName } = req.params;
       const ResourceDao = sl.get('ResourceDao');
 
       const response = await ResourceDao.getDirectObjectLink(
