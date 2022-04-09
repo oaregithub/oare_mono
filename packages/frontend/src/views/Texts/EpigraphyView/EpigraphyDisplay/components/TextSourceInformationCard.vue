@@ -6,25 +6,31 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      {{ textInfo }}
+      <v-img :src="imageLink"></v-img>
     </v-card>
   </v-menu>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref} from '@vue/composition-api';
+import { defineComponent, ref, onMounted } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
   setup() {
-    //const server = sl.get('serverProxy');
-    //const actions = sl.get('globalActions');
-    const textInfo = ref('Hello, world!');
+    const server = sl.get('serverProxy');
+    const imageLink = ref('');
+
+    onMounted(async () => {
+      imageLink.value = await server.getDirectObjectLink(
+        'explanation_image.jpg',
+        'oare-image-bucket'
+      );
+    });
 
     return {
-      textInfo,
+      imageLink,
     };
-  }
+  },
 });
 </script>
 

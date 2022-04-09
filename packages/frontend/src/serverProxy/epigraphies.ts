@@ -99,6 +99,13 @@ async function getTextFileByTextUuid(uuid: string) {
   return data;
 }
 
+async function getDirectObjectLink(objectName: string, bucket: string) {
+  const { data } = await axios.get(
+    `/text_epigraphies/object_link/${bucket}/${objectName}`
+  );
+  return data;
+}
+
 export default {
   getEpigraphicInfo,
   getImageLinks,
@@ -110,4 +117,5 @@ export default {
   updateTextInfo,
   addPhotosToText,
   getTextFileByTextUuid,
+  getDirectObjectLink,
 };

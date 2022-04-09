@@ -117,6 +117,20 @@ class ResourceDao {
       obj_uuid: row.objUuid,
     });
   }
+
+  async getDirectObjectLink(
+    objectName: string,
+    bucket: string
+  ): Promise<string> {
+    const s3 = new AWS.S3();
+
+    const response = await s3.getSignedUrlPromise('getObject', {
+      Bucket: bucket,
+      Key: objectName,
+    });
+
+    return response;
+  }
 }
 
 export default new ResourceDao();
