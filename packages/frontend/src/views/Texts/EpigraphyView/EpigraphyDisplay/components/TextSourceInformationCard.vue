@@ -6,7 +6,7 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      <v-img :src="imageLink"></v-img>
+      <v-img :src="imageLink" max-width="500px"></v-img>
     </v-card>
   </v-menu>
 </template>
