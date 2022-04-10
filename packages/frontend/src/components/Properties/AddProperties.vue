@@ -75,6 +75,7 @@
               @update:node="formComplete = $event.status"
               @update:properties="updateProperties"
               class="test-tree"
+              :key="filteredTree.objectUuid"
             />
           </v-expansion-panel-content>
         </v-expansion-panel>
