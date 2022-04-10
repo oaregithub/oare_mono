@@ -228,7 +228,7 @@
         eager
       >
         <add-properties
-          valueUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"
+          startingUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"
           @export-properties="setProperties($event)"
           @form-complete="formComplete = $event"
         />

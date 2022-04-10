@@ -105,7 +105,7 @@ export default defineComponent({
     ParseTreeNode,
   },
   props: {
-    valueUuid: {
+    startingUuid: {
       type: String,
       required: false,
     },
@@ -134,8 +134,8 @@ export default defineComponent({
       try {
         loading.value = true;
         taxonomyTree.value = await server.getTaxonomyTree();
-        filteredTree.value = props.valueUuid
-          ? searchTree(taxonomyTree.value, props.valueUuid)
+        filteredTree.value = props.startingUuid
+          ? searchTree(taxonomyTree.value, props.startingUuid)
           : taxonomyTree.value;
         if (filteredTree.value && !filteredTree.value.children) {
           formComplete.value = true;

@@ -37,7 +37,7 @@
           </v-col>
           <v-col cols="10">
             <add-properties
-              :valueUuid="partOfSpeechValueUuid"
+              :startingUuid="partOfSpeechValueUuid"
               requiredNodeValueName="Parse"
               @export-properties="setProperties($event)"
               @form-complete="formComplete = $event"
