@@ -15,11 +15,55 @@
     </v-col>
     <v-col cols="8">
       <h3 class="primary--text">Select Properties</h3>
+      <oare-dialog
+        v-model="expandDialog"
+        title="Are you sure?"
+        submitText="Yes"
+        cancelText="No"
+        closeOnSubmit
+        @submit="expandUpward"
+        ><div class="mb-12">
+          Moving up a tree level will clear properties that were selected
+          previously and force you to start over. Are you sure you'd like to
+          continue?
+        </div>
+        <div class="grey--text mt-2 mb-n2">
+          Note: Expanding the tree may take a few moments. Please wait.
+        </div>
+      </oare-dialog>
+      <v-tooltip
+        bottom
+        open-delay="800"
+        v-if="filteredTree && filteredTree.role !== 'tree'"
+      >
+        <template #activator="{ on, attrs }">
+          <v-btn
+            @click="expandDialog = true"
+            text
+            color="info"
+            class="mt-2"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon small class="mr-1">mdi-arrow-up</v-icon>Move up tree
+            level</v-btn
+          >
+        </template>
+        <span
+          >If you'd like to access properties above the current starting point,
+          <br />
+          click this button to move the starting point one level up the
+          tree.</span
+        >
+      </v-tooltip>
       <v-expansion-panels flat v-model="panel">
         <v-expansion-panel>
           <v-expansion-panel-header class="font-weight-bold">{{
             filteredTree
-              ? filteredTree.valueName || filteredTree.variableName
+              ? filteredTree.valueName ||
+                filteredTree.variableName ||
+                filteredTree.aliasName
               : ''
           }}</v-expansion-panel-header>
           <v-expansion-panel-content eager>
@@ -81,6 +125,7 @@ export default defineComponent({
     const loading = ref(false);
     const panel = ref(0);
     const formComplete = ref(false);
+    const taxonomyTree = ref<TaxonomyTree | null>(null);
     const filteredTree = ref<TaxonomyTree | null>(null);
     const properties = ref<ParseTreePropertyEvent[]>([]);
     const foundRequiredNode = ref(props.requiredNodeValueName ? false : true);
@@ -88,10 +133,10 @@ export default defineComponent({
     onMounted(async () => {
       try {
         loading.value = true;
-        const taxonomyTree = await server.getTaxonomyTree();
+        taxonomyTree.value = await server.getTaxonomyTree();
         filteredTree.value = props.valueUuid
-          ? searchTree(taxonomyTree, props.valueUuid)
-          : taxonomyTree;
+          ? searchTree(taxonomyTree.value, props.valueUuid)
+          : taxonomyTree.value;
         if (filteredTree.value && !filteredTree.value.children) {
           formComplete.value = true;
         }
@@ -107,12 +152,17 @@ export default defineComponent({
 
     const searchTree = (
       node: TaxonomyTree,
-      valueUuid: string
+      startingUuid: string
     ): TaxonomyTree | null => {
-      if (node.valueUuid === valueUuid && foundRequiredNode.value) {
+      if (
+        (node.variableUuid === startingUuid ||
+          node.valueUuid === startingUuid ||
+          node.objectUuid === startingUuid) &&
+        foundRequiredNode.value
+      ) {
         return node;
       } else if (node.children !== null) {
-        let result = null;
+        let result: TaxonomyTree | null = null;
 
         if (
           props.requiredNodeValueName &&
@@ -122,7 +172,7 @@ export default defineComponent({
         }
 
         for (let i = 0; result === null && i < node.children.length; i++) {
-          result = searchTree(node.children[i], valueUuid);
+          result = searchTree(node.children[i], startingUuid);
           if (result && node.children[i].valueUuid) {
             properties.value.unshift({
               properties: [{ variable: node, value: node.children[i] }],
@@ -169,6 +219,16 @@ export default defineComponent({
 
     watch(formComplete, () => emit('form-complete', formComplete.value));
 
+    const expandDialog = ref(false);
+    const expandUpward = () => {
+      if (taxonomyTree.value && filteredTree.value) {
+        const parentUuid = filteredTree.value.objParentUuid;
+        properties.value = [];
+
+        filteredTree.value = searchTree(taxonomyTree.value, parentUuid);
+      }
+    };
+
     return {
       loading,
       filteredTree,
@@ -178,6 +238,8 @@ export default defineComponent({
       properties,
       propertyList,
       propertyText,
+      expandUpward,
+      expandDialog,
     };
   },
 });
