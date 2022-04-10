@@ -2,7 +2,22 @@
   <v-progress-linear v-if="loading" indeterminate />
   <v-row v-else>
     <v-col cols="4">
-      <h3 class="primary--text mb-5">Properties</h3>
+      <h3 class="primary--text mb-5">
+        Properties<v-menu offset-y open-on-hover>
+          <template #activator="{ on, attrs }">
+            <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1" small>
+              mdi-information-outline
+            </v-icon>
+          </template>
+          <v-card class="pa-3" width="400">
+            This summary of item properties does not necessarily contain all
+            properties assigned to this item. Any assigned properties
+            originating from a higher part of the taxonomy tree may not appear
+            here unless you use the "Move Up Tree Level" button to view those
+            portions of the tree.
+          </v-card>
+        </v-menu>
+      </h3>
       <v-chip
         v-for="(property, index) in propertyList"
         :key="index"
@@ -23,9 +38,9 @@
         closeOnSubmit
         @submit="expandUpward"
         ><div class="mb-12">
-          Moving up a tree level will clear properties that were selected
-          previously and force you to start over. Are you sure you'd like to
-          continue?
+          Moving up a tree level will clear all unsaved properties selections
+          and force you to start over. Any previously saved properties will
+          persist. Are you sure you'd like to continue?
         </div>
         <div class="grey--text mt-2 mb-n2">
           Note: Expanding the tree may take a few moments. Please wait.
