@@ -1,22 +1,22 @@
 <template>
   <div>
     <div class="d-flex">
-      <v-btn
-        v-if="canAddSpelling && !editing && allowEditing"
-        icon
-        class="mt-n2 mr-1"
-        @click="openEditDialog(form)"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-      <v-btn
-        v-if="canEdit && !editing && allowEditing"
-        icon
-        class="test-pencil mt-n2"
-        @click="editing = true"
-      >
-        <v-icon>mdi-pencil</v-icon>
-      </v-btn>
+      <v-tooltip bottom open-delay="800">
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-if="canEdit && !editing && allowEditing"
+            icon
+            class="test-pencil mt-n1 mr-1"
+            @click="editing = true"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon size="20">mdi-pencil</v-icon>
+          </v-btn>
+        </template>
+        <span>Edit Form</span>
+      </v-tooltip>
 
       <UtilList
         v-if="!editing"
@@ -97,8 +97,24 @@
             @total-occurrences="setTotalOccurrences($event)"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
-        </span></span
-      >
+        </span>
+      </span>
+      <v-tooltip bottom open-delay="800">
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-if="canAddSpelling && !editing && allowEditing"
+            icon
+            class="mt-n1 ml-1"
+            @click="openEditDialog(form)"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon size="20">mdi-plus</v-icon>
+          </v-btn>
+        </template>
+        <span>Add Spelling</span>
+      </v-tooltip>
     </div>
   </div>
 </template>

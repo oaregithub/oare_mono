@@ -15,7 +15,7 @@
           <strong>{{ word.word }}</strong>
         </v-row>
       </template>
-      <word-grammar :word="word" />
+      <word-grammar :word="word" :allowEditing="false" />
       <v-text-field
         v-model="newFormSpelling"
         placeholder="New form spelling"
@@ -24,7 +24,8 @@
       <span
         v-if="formAlreadyExists"
         class="red--text text--darken-2 font-weight-bold test-error"
-        >A form with this spelling already exists on this word</span
+        >A form with this same spelling and matching parse properties already
+        exists on this word</span
       >
       <v-container>
         <v-row>
@@ -36,7 +37,7 @@
           </v-col>
           <v-col cols="10">
             <add-properties
-              :valueUuid="partOfSpeechValueUuid"
+              :startingUuid="partOfSpeechValueUuid"
               requiredNodeValueName="Parse"
               @export-properties="setProperties($event)"
               @form-complete="formComplete = $event"
@@ -56,11 +57,17 @@ import {
   computed,
   inject,
 } from '@vue/composition-api';
-import { Word, ParseTreeProperty } from '@oare/types';
+import {
+  Word,
+  ParseTreeProperty,
+  ItemPropertyRow,
+  InsertItemPropertyRow,
+} from '@oare/types';
 import WordGrammar from './WordGrammar.vue';
 import { ReloadKey } from '../index.vue';
 import sl from '@/serviceLocator';
 import AddProperties from '@/components/Properties/AddProperties.vue';
+import { convertParsePropsToItemProps } from '@oare/oare';
 
 export default defineComponent({
   name: 'AddFormDialog',
@@ -93,9 +100,38 @@ export default defineComponent({
     };
 
     const formAlreadyExists = computed(() => {
-      const existingForms = word.forms.map(form => form.form);
-      return existingForms.includes(newFormSpelling.value);
+      const formsWithSameSpelling = word.forms.filter(
+        form => form.form === newFormSpelling.value
+      );
+
+      if (formsWithSameSpelling.length === 0) {
+        return false;
+      }
+
+      const selectedItemProperties = formsWithSameSpelling.map(form =>
+        convertParsePropsToItemProps(properties.value, form.uuid)
+      );
+
+      return formsWithSameSpelling.some(
+        (existing, idx) =>
+          existing.properties.length === selectedItemProperties[idx].length &&
+          existing.properties.every(prop =>
+            hasMatchingProperty(selectedItemProperties[idx], prop)
+          )
+      );
     });
+
+    const hasMatchingProperty = (
+      comparison: InsertItemPropertyRow[],
+      property: ItemPropertyRow
+    ) => {
+      return comparison.some(
+        prop =>
+          prop.variableUuid === property.variableUuid &&
+          prop.valueUuid === property.valueUuid &&
+          prop.level === property.level
+      );
+    };
 
     const partOfSpeechValueUuid = computed(() => {
       const posProperties = word.properties.filter(

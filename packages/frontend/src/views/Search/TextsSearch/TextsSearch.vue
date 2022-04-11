@@ -112,14 +112,24 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
-
-    const translitQuery = useQueryParam('translit', '');
-    const textTitleQuery = useQueryParam('title', '');
-    const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
-    const respectWordBoundaries = useQueryParam('respectBoundaries', 'true');
-    const matchExact = useQueryParam('matchExactly', 'false');
+    
+    const translitQuery = useQueryParam('translit', '', true);
+    const textTitleQuery = useQueryParam('title', '', true);
+    const [getIsVisited, setIsVisited] = useQueryParam(
+      'isVisited',
+      '',
+      true,
+      true
+    );
+    const respectWordBoundaries = useQueryParam(
+      'respectBoundaries',
+      'false',
+      true
+    );
+    const matchExact = useQueryParam('matchExactly', 'false', true);
     const ticksLabels = ref(['None', 'Respect Boundaries', 'Match Exactly']);
     const sliderValue = ref(1);
+
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);

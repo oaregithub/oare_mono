@@ -31,6 +31,7 @@ import betaAccess from './beta_access';
 import publications from './publications';
 import archives from './archives';
 import pageContent from './page_content';
+import properties from './properties';
 
 const serverProxy = {
   ...groups,
@@ -66,6 +67,7 @@ const serverProxy = {
   ...publications,
   ...archives,
   ...pageContent,
+  ...properties,
 };
 
 export type ServerProxyType = typeof serverProxy;

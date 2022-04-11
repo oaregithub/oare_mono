@@ -181,10 +181,10 @@ export default defineComponent({
       latestCommentDate: new Date(),
       comments: [],
     });
-    const status = useQueryParam('status', '');
-    const name = useQueryParam('name', '');
-    const item = useQueryParam('item', '');
-    const comment = useQueryParam('comment', '');
+    const status = useQueryParam('status', '', true);
+    const name = useQueryParam('name', '', true);
+    const item = useQueryParam('item', '', true);
+    const comment = useQueryParam('comment', '', true);
     const statusOptions: ThreadStatus[] = [
       'New',
       'In Progress',
@@ -208,7 +208,9 @@ export default defineComponent({
       try {
         const request: AllCommentsRequest = {
           filters: {
-            status: status.value ? status.value as ThreadStatus : 'All' as ThreadStatus,
+            status: status.value
+              ? (status.value as ThreadStatus)
+              : ('All' as ThreadStatus),
             thread: name.value,
             item: item.value,
             comment: comment.value,

@@ -1,7 +1,8 @@
 export type PermissionItem =
   | DictionaryPermission
   | PagePermission
-  | TextPermission;
+  | TextPermission
+  | GeneralPermission;
 
 export type PermissionName = PermissionItem['name'];
 
@@ -19,8 +20,7 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'INSERT_DISCOURSE_ROWS'
     | 'ADD_FORM'
     | 'DISCONNECT_SPELLING'
-    | 'EDIT_TRANSLITERATION_STATUS'
-    | 'EDIT_FORM_PARSE_INFO';
+    | 'EDIT_TRANSLITERATION_STATUS';
   type: 'dictionary';
 }
 
@@ -39,6 +39,11 @@ export interface TextPermission extends PermissionTemplate {
     | 'UPLOAD_EPIGRAPHY_IMAGES'
     | 'EDIT_TRANSLATION';
   type: 'text';
+}
+
+export interface GeneralPermission extends PermissionTemplate {
+  name: 'EDIT_ITEM_PROPERTIES';
+  type: 'general';
 }
 
 export interface UpdatePermissionPayload {
