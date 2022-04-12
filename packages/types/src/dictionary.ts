@@ -4,6 +4,7 @@ import { SearchTextsResultRow } from './search';
 export interface DisplayableWord {
   uuid: string;
   word: string;
+  wordOccurrences: number;
 }
 
 export interface FormSpelling {

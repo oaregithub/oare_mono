@@ -102,6 +102,7 @@ class DictionaryWordDao {
   async getWords(
     type: DictionaryWordTypes,
     letter: string,
+    userUuid: string | null,
     isAdmin: boolean
   ): Promise<Word[]> {
     const letters = letter.split('/');
@@ -147,6 +148,20 @@ class DictionaryWordDao {
       words.map(word => DictionaryFormDao.getWordForms(word.uuid, isAdmin))
     );
 
+    const spellingUuids = forms.map(form =>
+      form.flatMap(spellings =>
+        spellings.spellings.map(spelling => spelling.uuid)
+      )
+    );
+
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+    const wordOccurrences = await Promise.all(
+      spellingUuids.map(uuids =>
+        TextDiscourseDao.getTotalSpellingTexts(uuids, userUuid)
+      )
+    );
+
     return words
       .map((word, idx) => {
         const translations = allTranslations
@@ -172,6 +187,7 @@ class DictionaryWordDao {
           translations,
           forms: forms[idx],
           properties: properties[idx],
+          wordOccurrences: wordOccurrences[idx],
         };
       })
       .filter(word => (isAdmin ? word : word.forms.length > 0))

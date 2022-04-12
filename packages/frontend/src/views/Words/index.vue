@@ -26,6 +26,44 @@
           <mark v-if="word.forms.length <= 0" class="error">{{
             word.word
           }}</mark>
+          <mark
+            style="background: #c0fdff"
+            v-else-if="word.wordOccurrences >= 0 && word.wordOccurrences <= 10"
+            >{{ word.word }}</mark
+          >
+          <mark
+            style="background: #d0d1ff"
+            v-else-if="
+              word.wordOccurrences >= 11 && word.wordOccurrences <= 100
+            "
+            >{{ word.word }}</mark
+          >
+          <mark
+            style="background: #deaaff"
+            v-else-if="
+              word.wordOccurrences >= 101 && word.wordOccurrences <= 1000
+            "
+            >{{ word.word }}</mark
+          >
+          <mark
+            style="background: #e5b3fe"
+            v-else-if="
+              word.wordOccurrences >= 1001 && word.wordOccurrences <= 10000
+            "
+            >{{ word.word }}</mark
+          >
+          <mark
+            style="background: #f3c4fb"
+            v-else-if="
+              word.wordOccurrences >= 10001 && word.wordOccurrences <= 25000
+            "
+            >{{ word.word }}</mark
+          >
+          <mark
+            style="background: #ffcbf2"
+            v-else-if="word.wordOccurrences >= 25001"
+            >{{ word.word }}</mark
+          >
           <span v-else>{{ word.word }}</span>
         </router-link>
       </template>
