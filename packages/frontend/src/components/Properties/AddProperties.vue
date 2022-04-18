@@ -3,7 +3,7 @@
   <v-row v-else>
     <v-col cols="4">
       <h3 class="primary--text mb-5">
-        Properties<v-menu offset-y open-on-hover>
+        Properties<v-menu v-if="existingProperties" offset-y open-on-hover>
           <template #activator="{ on, attrs }">
             <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1" small>
               mdi-information-outline

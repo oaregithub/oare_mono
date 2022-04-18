@@ -34,6 +34,7 @@ import ArchiveDao from '@/api/daos/ArchiveDao';
 import NoteDao from '@/api/daos/NoteDao';
 import PageContentDao from '@/api/daos/PageContentDao';
 import SearchFailureDao from '@/api/daos/SearchFailureDao';
+import UuidDao from '@/api/daos/UuidDao';
 import * as utils from '@/utils';
 
 const instances: { [key: string]: any } = {};
@@ -76,6 +77,7 @@ export type ServiceTypes = {
   ArchiveDao: typeof ArchiveDao;
   PageContentDao: typeof PageContentDao;
   SearchFailureDao: typeof SearchFailureDao;
+  UuidDao: typeof UuidDao;
 };
 
 export default {

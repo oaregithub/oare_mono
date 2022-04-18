@@ -40,6 +40,7 @@ import ArchiveDao from './api/daos/ArchiveDao';
 import NoteDao from './api/daos/NoteDao';
 import PageContentDao from './api/daos/PageContentDao';
 import SearchFailureDao from './api/daos/SearchFailureDao';
+import UuidDao from './api/daos/UuidDao';
 
 declare global {
   namespace Express {
@@ -86,6 +87,7 @@ sl.set('ArchiveDao', ArchiveDao);
 sl.set('NoteDao', NoteDao);
 sl.set('PageContentDao', PageContentDao);
 sl.set('SearchFailureDao', SearchFailureDao);
+sl.set('UuidDao', UuidDao);
 
 initializeFirebase(err => {
   if (err) {

@@ -1,6 +1,44 @@
 <template>
   <OareContentView :loading="loading" title="Properties Taxonomy">
-    <v-container>
+    <v-container class="pl-0 pt-0 ml-0">
+      <v-row class="ma-0">
+        <v-btn color="primary" @click="bulkPropertiesDialog = true"
+          >Add Properties in Bulk</v-btn
+        >
+        <oare-dialog
+          v-model="bulkPropertiesDialog"
+          title="Add Properties in Bulk"
+          :width="1300"
+          :submitDisabled="!canSubmit"
+          submitText="Submit"
+          closeOnSubmit
+          @submit="updateBulkProperties"
+        >
+          <v-container>
+            <v-row>
+              <v-col cols="3">
+                <h3 class="primary--text mb-5">Item UUIDs</h3>
+                <v-textarea
+                  v-model="bulkUuidInput"
+                  outlined
+                  rows="20"
+                  no-resize
+                  label="UUIDs..."
+                  placeholder="Enter a comma-separated list of the UUIDs for all items you would like to bulk add the selected properties to. All items must be of the same type."
+                  :error-messages="errorMessages"
+                />
+              </v-col>
+              <v-col cols="9">
+                <add-properties
+                  @export-properties="setProperties($event)"
+                  @form-complete="formComplete = $event"
+                  :key="addPropertiesKey"
+                />
+              </v-col>
+            </v-row>
+          </v-container>
+        </oare-dialog>
+      </v-row>
       <v-row>
         <v-spacer />
         <v-col cols="4">
@@ -41,14 +79,16 @@ import {
   watch,
   computed,
 } from '@vue/composition-api';
-import { TaxonomyTree } from '@oare/types';
+import { TaxonomyTree, ParseTreeProperty } from '@oare/types';
 import sl from '@/serviceLocator';
 import ParseTreeNode from './components/ParseTreeNode.vue';
+import AddProperties from '@/components/Properties/AddProperties.vue';
 
 export default defineComponent({
   name: 'ParseTree',
   components: {
     ParseTreeNode,
+    AddProperties,
   },
   setup() {
     const server = sl.get('serverProxy');
@@ -136,6 +176,67 @@ export default defineComponent({
         immediate: false,
       }
     );
+
+    const bulkPropertiesDialog = ref(false);
+    const formComplete = ref(false);
+    const addPropertiesKey = ref(false);
+    watch(bulkPropertiesDialog, () => {
+      if (bulkPropertiesDialog.value) {
+        addPropertiesKey.value = !addPropertiesKey.value;
+        properties.value = [];
+        bulkUuidInput.value = '';
+      }
+    });
+
+    const properties = ref<ParseTreeProperty[]>([]);
+    const setProperties = (propertyList: ParseTreeProperty[]) => {
+      properties.value = propertyList;
+    };
+
+    const updateBulkProperties = async () => {
+      try {
+        await Promise.all(
+          bulkUuidList.value.map(uuid =>
+            server.editPropertiesByReferenceUuid(uuid, properties.value)
+          )
+        );
+      } catch {
+        actions.showErrorSnackbar('Error adding properties. Please try again');
+      }
+    };
+
+    const bulkUuidInput = ref('');
+    const bulkUuidList = computed(() =>
+      bulkUuidInput.value.split(',').map(uuid => uuid.trim())
+    );
+
+    const hasValidUuidInput = ref(true);
+    const errorMessages = ref<string[]>([]);
+
+    watch(
+      bulkUuidList,
+      _.debounce(async () => {
+        hasValidUuidInput.value = await server.haveSameTableReference(
+          bulkUuidList.value
+        );
+      }, 500),
+      { immediate: false }
+    );
+
+    watch(hasValidUuidInput, () => {
+      if (hasValidUuidInput.value) {
+        errorMessages.value = [];
+      } else {
+        errorMessages.value = [
+          'All UUIDs must point to items of the same type. One or more of the provided UUIDs do not match the others.',
+        ];
+      }
+    });
+
+    const canSubmit = computed(
+      () => hasValidUuidInput.value && formComplete.value
+    );
+
     return {
       loading,
       taxonomyTree,
@@ -144,6 +245,17 @@ export default defineComponent({
       searchPath,
       nodesToHightlight,
       openSearchResults,
+      bulkPropertiesDialog,
+      formComplete,
+      addPropertiesKey,
+      properties,
+      setProperties,
+      updateBulkProperties,
+      bulkUuidInput,
+      bulkUuidList,
+      hasValidUuidInput,
+      errorMessages,
+      canSubmit,
     };
   },
 });

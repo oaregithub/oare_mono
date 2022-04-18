@@ -43,4 +43,17 @@ router
     }
   });
 
+router.route('/properties/verify_source').get(async (req, res, next) => {
+  try {
+    const UuidDao = sl.get('UuidDao');
+
+    const uuids = (req.query.uuids as unknown) as string[];
+    const haveSameTableReference = await UuidDao.haveSameTableReference(uuids);
+
+    res.json(haveSameTableReference);
+  } catch (err) {
+    next(new HttpInternalError(err));
+  }
+});
+
 export default router;
