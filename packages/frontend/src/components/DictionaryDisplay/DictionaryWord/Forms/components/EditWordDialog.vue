@@ -111,6 +111,7 @@
                         :word="item.wordInfo"
                         onlyShowFirstTranslation
                         class="ml-2"
+                        :allowEditing="false"
                       />
                     </template>
                   </v-radio>

@@ -131,7 +131,6 @@ export default defineComponent({
             }
           }
         }
-        console.log(searchPath.value);
       }, 500),
       {
         immediate: false,

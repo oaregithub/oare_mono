@@ -56,7 +56,7 @@ export default defineComponent({
       { name: 'Texts', value: 'text' },
       { name: 'Collections', value: 'collection' },
     ]);
-    const selectedType = useQueryParam('type', 'text');
+    const selectedType = useQueryParam('type', 'text', true);
 
     return {
       server,

@@ -153,14 +153,14 @@ export default defineComponent({
     const dialogError: Ref<Partial<ErrorsRowWithUser>> = ref({});
     const serverCount = ref(0);
 
-    const page = useQueryParam('page', '1');
-    const limit = useQueryParam('rows', '10');
-    const sort = useQueryParam('sort', 'timestamp');
-    const desc = useQueryParam('desc', 'true');
-    const status = useQueryParam('status', '');
-    const user = useQueryParam('user', '');
-    const description = useQueryParam('description', '');
-    const stacktrace = useQueryParam('stacktrace', '');
+    const page = useQueryParam('page', '1', false);
+    const limit = useQueryParam('rows', '10', true);
+    const sort = useQueryParam('sort', 'timestamp', true);
+    const desc = useQueryParam('desc', 'true', true);
+    const status = useQueryParam('status', '', true);
+    const user = useQueryParam('user', '', true);
+    const description = useQueryParam('description', '', true);
+    const stacktrace = useQueryParam('stacktrace', '', true);
 
     const statusOptions: ErrorStatus[] = ['New', 'In Progress', 'Resolved'];
 
@@ -257,19 +257,30 @@ export default defineComponent({
       }
     };
 
-    watch(searchOptions, async () => {
-      try {
-        page.value = String(searchOptions.value.page);
-        limit.value = String(searchOptions.value.itemsPerPage);
-        sort.value = searchOptions.value.sortBy[0];
-        desc.value = String(searchOptions.value.sortDesc[0]);
-        await getErrorLog();
-      } catch (err) {
-        actions.showErrorSnackbar(
-          `Error updating error log. Please try again.`,
-          err as Error
-        );
-      }
+    watch(
+      searchOptions,
+      async () => {
+        try {
+          page.value = String(searchOptions.value.page);
+          limit.value = String(searchOptions.value.itemsPerPage);
+          sort.value = searchOptions.value.sortBy[0];
+          desc.value = String(searchOptions.value.sortDesc[0]);
+          await getErrorLog();
+        } catch (err) {
+          actions.showErrorSnackbar(
+            `Error updating error log. Please try again.`,
+            err as Error
+          );
+        }
+      },
+      { deep: true }
+    );
+
+    watch([page, limit, sort, desc], () => {
+      searchOptions.value.page = Number(page.value);
+      searchOptions.value.itemsPerPage = Number(limit.value);
+      searchOptions.value.sortBy = [sort.value];
+      searchOptions.value.sortDesc = [Boolean(desc.value)];
     });
 
     watch(

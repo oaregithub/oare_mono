@@ -107,10 +107,19 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
 
-    const translitQuery = useQueryParam('translit', '');
-    const textTitleQuery = useQueryParam('title', '');
-    const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
-    const respectWordBoundaries = useQueryParam('respectBoundaries', 'false');
+    const translitQuery = useQueryParam('translit', '', true);
+    const textTitleQuery = useQueryParam('title', '', true);
+    const [getIsVisited, setIsVisited] = useQueryParam(
+      'isVisited',
+      '',
+      true,
+      true
+    );
+    const respectWordBoundaries = useQueryParam(
+      'respectBoundaries',
+      'false',
+      true
+    );
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
