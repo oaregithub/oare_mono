@@ -124,11 +124,8 @@ class ResourceDao {
     const result = await knex('resource')
       .select('*')
       .where('uuid', uuid);
-    
-    console.log(result);
-    
-    //const response: string[] = [result.container, result.link];
-    const response: string[] = [];
+
+    const response: string[] = [result[0].container, result[0].link];
 
     return response;
   }
