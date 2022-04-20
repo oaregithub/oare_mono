@@ -12,7 +12,7 @@ localVue.use(VueCompositionApi);
 
 describe('GrammarDisplay test', () => {
   const mockServer = {
-    editFormParseInfo: jest.fn().mockResolvedValue(),
+    editPropertiesByReferenceUuid: jest.fn().mockResolvedValue(),
     getTaxonomyTree: jest.fn().mockResolvedValue({
       variableName: 'test-var-name',
       varAbbreviation: 'test-var-abb',
@@ -62,7 +62,7 @@ describe('GrammarDisplay test', () => {
   };
 
   const mockStore = {
-    hasPermission: name => ['EDIT_FORM_PARSE_INFO'].includes(name),
+    hasPermission: name => ['EDIT_ITEM_PROPERTIES'].includes(name),
   };
 
   const setup = () => {
@@ -154,14 +154,14 @@ describe('GrammarDisplay test', () => {
     await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
-    expect(mockServer.editFormParseInfo).toHaveBeenCalled();
+    expect(mockServer.editPropertiesByReferenceUuid).toHaveBeenCalled();
     expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 
   it('displays error on failed parse info edit', async () => {
     sl.set('serverProxy', {
       ...mockServer,
-      editFormParseInfo: jest
+      editPropertiesByReferenceUuid: jest
         .fn()
         .mockRejectedValue('failed to edit form parse info'),
     });

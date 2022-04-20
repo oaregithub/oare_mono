@@ -1,13 +1,21 @@
 <template>
   <div>
-    <v-btn
-      v-if="allowEditing && canEditParseInfo"
-      icon
-      class="test-property-pencil edit-button"
-      @click="editPropertiesDialog = true"
-    >
-      <v-icon>mdi-pencil</v-icon>
-    </v-btn>
+    <v-tooltip bottom open-delay="800">
+      <template #activator="{ on, attrs }">
+        <v-btn
+          v-if="allowEditing && canEditParseInfo"
+          icon
+          class="test-property-pencil edit-button mr-1"
+          @click="editPropertiesDialog = true"
+          small
+          v-bind="attrs"
+          v-on="on"
+        >
+          <v-icon size="20">mdi-pencil</v-icon>
+        </v-btn>
+      </template>
+      <span>Edit Parse Info</span>
+    </v-tooltip>
     <span class="mr-1" v-if="formGrammar === ''">(No parse info yet)</span>
     <span class="mr-1" v-else-if="formGrammar !== ''">({{ formGrammar }})</span>
     <oare-dialog
@@ -21,7 +29,7 @@
       @submit="updateFormProperties"
     >
       <add-properties
-        :valueUuid="partOfSpeechValueUuid"
+        :startingUuid="partOfSpeechValueUuid"
         requiredNodeValueName="Parse"
         @export-properties="setProperties($event)"
         @form-complete="formComplete = $event"
@@ -98,7 +106,10 @@ export default defineComponent({
 
     const updateFormProperties = async () => {
       try {
-        await server.editFormParseInfo(props.form.uuid, properties.value);
+        await server.editPropertiesByReferenceUuid(
+          props.form.uuid,
+          properties.value
+        );
         actions.showSnackbar(
           `Successfully updated form parse info for ${props.form.form}`
         );
@@ -114,7 +125,7 @@ export default defineComponent({
     };
 
     const canEditParseInfo = computed(() =>
-      store.hasPermission('EDIT_FORM_PARSE_INFO')
+      store.hasPermission('EDIT_ITEM_PROPERTIES')
     );
 
     return {

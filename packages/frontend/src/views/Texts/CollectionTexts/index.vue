@@ -94,9 +94,9 @@ export default defineComponent({
     const textsLoading = ref(false);
     const totalTexts = ref(0);
 
-    const page = useQueryParam('page', '1');
-    const rows = useQueryParam('rows', '10');
-    const search = useQueryParam('query', '');
+    const page = useQueryParam('page', '1', false);
+    const rows = useQueryParam('rows', '10', true);
+    const search = useQueryParam('query', '', true);
 
     const addText = () => {
       router.push(`/add_collection_text/${collectionUuid}`);
