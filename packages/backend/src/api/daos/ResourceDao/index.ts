@@ -119,15 +119,16 @@ class ResourceDao {
   }
 
   async getDirectObjectLink(
-    objectName: string,
-    bucket: string
-  ): Promise<string> {
-    const s3 = new AWS.S3();
-
-    const response = await s3.getSignedUrlPromise('getObject', {
-      Bucket: bucket,
-      Key: objectName,
-    });
+    uuid: string
+  ): Promise<string[]> {
+    const result = await knex('resource')
+      .select('*')
+      .where('uuid', uuid);
+    
+    console.log(result);
+    
+    //const response: string[] = [result.container, result.link];
+    const response: string[] = [];
 
     return response;
   }

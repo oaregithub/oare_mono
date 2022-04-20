@@ -22,8 +22,7 @@ export default defineComponent({
 
     onMounted(async () => {
       imageLink.value = await server.getDirectObjectLink(
-        'explanation_image.jpg',
-        'oare-image-bucket'
+        '3d4d9397-b6a8-11ec-bcc3-0282f921eac9'
       );
     });
 

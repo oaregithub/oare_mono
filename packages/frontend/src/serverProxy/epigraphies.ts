@@ -99,9 +99,9 @@ async function getTextFileByTextUuid(uuid: string) {
   return data;
 }
 
-async function getDirectObjectLink(objectName: string, bucket: string) {
+async function getDirectObjectLink(uuid: string) {
   const { data } = await axios.get(
-    `/text_epigraphies/object_link/${bucket}/${objectName}`
+    `/text_epigraphies/object_link/${uuid}`
   );
   return data;
 }

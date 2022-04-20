@@ -372,16 +372,27 @@ router
   });
 
 router
-  .route('/text_epigraphies/object_link/:bucket/:objectName')
+  .route('/text_epigraphies/object_link/:uuid')
   .get(async (req, res, next) => {
     try {
-      const { bucket, objectName } = req.params;
+      const { uuid } = req.params;
+
       const ResourceDao = sl.get('ResourceDao');
 
-      const response = await ResourceDao.getDirectObjectLink(
-        objectName,
-        bucket
+      const result = await ResourceDao.getDirectObjectLink(
+        uuid
       );
+
+      const container = result[0];
+      const link = result[1];
+
+      const s3 = new AWS.S3();
+
+      const response = await s3.getSignedUrlPromise('getObject', {
+        Bucket: container,
+        Key: link,
+      });
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err));
