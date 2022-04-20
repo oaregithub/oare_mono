@@ -28,6 +28,15 @@
           >{{ $t('search.searchBtnText') }}</v-btn
         >
       </v-col>
+      <v-col cols="4">
+        <v-radio-group
+          label="Respect Word Boundaries"
+          v-model="respectWordBoundaries"
+        >
+          <v-radio label="Yes" value="true"></v-radio>
+          <v-radio label="No" value="false"></v-radio>
+        </v-radio-group>
+      </v-col>
     </v-row>
     <oare-data-table
       :server-items-length="totalSearchResults"
@@ -35,7 +44,7 @@
       :items="searchResults"
       item-key="uuid"
       :fetch-items="searchTexts"
-      :watched-params="['translit', 'title']"
+      :watched-params="['translit', 'title', 'respectBoundaries']"
       :default-rows="100"
       :dense="true"
     >
@@ -98,9 +107,19 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
 
-    const translitQuery = useQueryParam('translit', '');
-    const textTitleQuery = useQueryParam('title', '');
-    const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
+    const translitQuery = useQueryParam('translit', '', true);
+    const textTitleQuery = useQueryParam('title', '', true);
+    const [getIsVisited, setIsVisited] = useQueryParam(
+      'isVisited',
+      '',
+      true,
+      true
+    );
+    const respectWordBoundaries = useQueryParam(
+      'respectBoundaries',
+      'false',
+      true
+    );
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
@@ -131,6 +150,7 @@ export default defineComponent({
             textTitle: textTitleSearch.value,
             page,
             rows,
+            respectWordBoundaries: respectWordBoundaries.value,
           });
 
           if (results.length === 1 && getIsVisited() !== 'true') {
@@ -160,6 +180,7 @@ export default defineComponent({
           totalSearchResults.value = await server.searchTextsTotal({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
+            respectWordBoundaries: respectWordBoundaries.value,
           });
         } catch (err) {
           actions.showErrorSnackbar(
@@ -198,6 +219,7 @@ export default defineComponent({
       searchTexts,
       resetSearch,
       searchTotalLoading,
+      respectWordBoundaries,
     };
   },
 });

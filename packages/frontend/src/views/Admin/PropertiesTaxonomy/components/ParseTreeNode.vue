@@ -19,6 +19,7 @@
             hide-details
             v-model="selected"
             :value="child"
+            :disabled="disableChildren && !selected.includes(child)"
           >
             <template #label>
               {{ child.valueName }}
@@ -65,6 +66,9 @@
                 "
                 >NO NAME</i
               >
+              <b v-if="open && child.custom === 1" class="text--disabled ml-7"
+                ><br />Only one selection permitted</b
+              >
               <span class="text--disabled">
                 &nbsp;
                 <span v-if="child.varAbbreviation"
@@ -109,12 +113,13 @@
           </template>
         </template>
       </v-expansion-panel-header>
-      <v-expansion-panel-content>
+      <v-expansion-panel-content eager>
         <parse-tree-node
           :node="child"
           :allowSelections="allowSelections"
           :nodesToHighlight="nodesToHighlight"
           :openSearchResults="openSearchResults"
+          :existingProperties="existingProperties"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
         />
@@ -130,8 +135,9 @@ import {
   ref,
   watch,
   computed,
+  onMounted,
 } from '@vue/composition-api';
-import { TaxonomyTree, ParseTreeProperty } from '@oare/types';
+import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
 
 export interface ParseTreePropertyEvent {
   properties: ParseTreeProperty[];
@@ -157,11 +163,66 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    existingProperties: {
+      type: Array as PropType<ItemPropertyRow[]>,
+      required: false,
+    },
   },
   setup(props, { emit }) {
     const selected = ref<TaxonomyTree[]>([]);
     const completedSubtrees = ref<TaxonomyTree[]>([]);
     const ignoredSubtrees = ref<TaxonomyTree[]>([]);
+
+    onMounted(() => {
+      if (props.existingProperties && props.node.variableUuid) {
+        const childrenValueUuids = props.node.children
+          ? props.node.children
+              .map(child => child.valueUuid)
+              .filter(valueUuid => valueUuid)
+          : [];
+        const childLevel = props.node.children
+          ? props.node.children[0].level
+          : null;
+        const relevantExistingProperties = props.existingProperties.filter(
+          prop => {
+            const parentProperty = props.existingProperties
+              ? props.existingProperties.filter(
+                  exis => exis.uuid === prop.parentUuid
+                ).length > 0
+                ? props.existingProperties.filter(
+                    exis => exis.uuid === prop.parentUuid
+                  )[0]
+                : undefined
+              : undefined;
+
+            const hasValidParentRelationship = parentProperty
+              ? props.node.objParentUuid === parentProperty.valueUuid
+              : true;
+
+            return (
+              prop.variableUuid === props.node.variableUuid &&
+              childrenValueUuids.includes(prop.valueUuid) &&
+              prop.level === childLevel &&
+              hasValidParentRelationship
+            );
+          }
+        );
+        const childrenToBeSelected = props.node.children
+          ? props.node.children.filter(
+              child =>
+                child.valueUuid &&
+                !child.children &&
+                relevantExistingProperties
+                  .map(prop => prop.valueUuid)
+                  .includes(child.valueUuid)
+            )
+          : [];
+
+        childrenToBeSelected.forEach(child => {
+          selected.value.push(child);
+        });
+      }
+    });
 
     const nodeComplete = computed(() => {
       const numSubtrees = props.node.children
@@ -176,7 +237,7 @@ export default defineComponent({
         return itemSelected;
       } else {
         return (
-          numSubtrees ===
+          numSubtrees <=
           completedSubtrees.value.length + ignoredSubtrees.value.length
         );
       }
@@ -262,6 +323,10 @@ export default defineComponent({
       return indices;
     });
 
+    const disableChildren = computed(() => {
+      return selected.value.length > 0 && props.node.custom === 1;
+    });
+
     return {
       selected,
       ignoredSubtrees,
@@ -269,6 +334,7 @@ export default defineComponent({
       updateCompletedSubtrees,
       updateProperties,
       searchResultsToOpen,
+      disableChildren,
     };
   },
 });

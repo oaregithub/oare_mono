@@ -57,7 +57,7 @@ const mockActions = {
 
 const mockRequest = {
   filters: {
-    status: [],
+    status: 'All',
     thread: '',
     item: '',
     comment: '',
@@ -112,9 +112,7 @@ const mockServer = {
   getDictionaryInfo: jest.fn().mockResolvedValue({
     word: 'testingWord',
     forms: [],
-    partsOfSpeech: [],
-    verbalThematicVowelTypes: [],
-    specialClassifications: [],
+    properties: [],
     translations: [],
   }),
 };
@@ -127,8 +125,8 @@ const adminUser = {
 const mockStore = {
   getters: {
     user: adminUser,
-    permissions: [],
   },
+  hasPermission: () => false,
 };
 
 const mockLodash = {
@@ -222,7 +220,7 @@ describe('CommentView test', () => {
       ...mockRequest,
       filters: {
         ...mockRequest.filters,
-        status: ['In Progress'],
+        status: 'In Progress',
       },
     });
     await wrapper.findAll('button.mdi-close').trigger('click');

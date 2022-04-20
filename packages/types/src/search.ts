@@ -10,11 +10,13 @@ export interface SearchTextsPayload {
   textTitle: string;
   page: number;
   rows: number;
+  respectWordBoundaries: string;
 }
 
 export interface SearchTextsCountPayload {
   characters?: string;
   textTitle: string;
+  respectWordBoundaries: string;
 }
 
 export interface SearchTextsResponse {
@@ -22,8 +24,12 @@ export interface SearchTextsResponse {
 }
 
 export interface SearchCooccurrence {
-  uuids: string[][];
+  words: SearchCooccurrenceWord[];
   type: 'AND' | 'NOT';
+}
+
+export interface SearchCooccurrenceWord {
+  uuids: string[][];
 }
 
 export interface SearchNullDiscourseLine {
@@ -35,4 +41,15 @@ export interface SearchNullDiscourseLine {
 export interface SearchNullDiscourseResultRow extends SearchNullDiscourseLine {
   textName: string;
   reading: string;
+}
+
+export type SearchType =
+  | 'title'
+  | 'transliteration'
+  | 'words'
+  | 'title+transliteration';
+
+export interface SearchFailureRequest {
+  type: SearchType;
+  query: string;
 }

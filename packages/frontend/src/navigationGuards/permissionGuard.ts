@@ -9,8 +9,7 @@ const permissionGuard = (permission: PermissionName) => (
 ) => {
   const store = sl.get('store');
 
-  const userPermissions = store.getters.permissions.map(perm => perm.name);
-  if (userPermissions.includes(permission)) {
+  if (store.hasPermission(permission)) {
     next();
   } else {
     next('/');

@@ -38,6 +38,7 @@ export interface SearchTextArgs {
   title: string;
   userUuid: string | null;
   pagination: Pagination;
+  respectWordBoundaries: boolean;
 }
 
 export interface AnchorInfo {
@@ -67,6 +68,7 @@ class TextEpigraphyDao {
       .andWhere(function () {
         this.whereNot('text_epigraphy.char_on_tablet', null);
         this.orWhere('text_epigraphy.type', 'region');
+        this.orWhere('text_epigraphy.type', 'section');
         this.orWhere('text_epigraphy.type', 'undeterminedLines');
       })
       .select(
@@ -100,7 +102,14 @@ class TextEpigraphyDao {
     const units: EpigraphicQueryRow[] = await query;
     const markupUnits = await TextMarkupDao.getMarkups(textUuid);
 
-    return convertEpigraphicUnitRows(units, markupUnits);
+    const epigraphicUnitRowsWithSections = convertEpigraphicUnitRows(
+      units,
+      markupUnits
+    );
+    const epigraphicUnits = epigraphicUnitRowsWithSections.filter(
+      unit => unit.epigType !== 'section'
+    );
+    return epigraphicUnits;
   }
 
   private async getMatchingTexts({
@@ -108,22 +117,27 @@ class TextEpigraphyDao {
     title,
     pagination,
     userUuid,
+    respectWordBoundaries,
   }: SearchTextArgs): Promise<string[]> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters);
+    const notUuids = await getNotOccurrenceTexts(
+      characters,
+      respectWordBoundaries
+    );
 
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
       textsToHide,
       true,
+      respectWordBoundaries,
       title
     )
       .select('text_epigraphy.text_uuid as uuid')
       .whereNotIn('text_epigraphy.text_uuid', notUuids)
-      .orderBy('text.name')
-      .groupBy('text.name')
+      .orderBy('text.display_name')
+      .groupBy('text.display_name')
       .limit(pagination.limit)
       .offset((pagination.page - 1) * pagination.limit);
 
@@ -132,16 +146,21 @@ class TextEpigraphyDao {
 
   private async getMatchingLines(
     textUuid: string,
-    rawCharacters: SearchCooccurrence[]
+    rawCharacters: SearchCooccurrence[],
+    respectWordBoundaries: boolean
   ): Promise<number[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ line: number }> = (
       await Promise.all(
         characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(characters, true);
+          const query = getSequentialCharacterQuery(
+            characters,
+            true,
+            respectWordBoundaries
+          );
           return query
-            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
-            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
+            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
+            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
             .where('text_epigraphy.text_uuid', textUuid);
         })
       )
@@ -153,13 +172,18 @@ class TextEpigraphyDao {
 
   private async getDiscourseUuids(
     textUuid: string,
-    rawCharacters: SearchCooccurrence[]
+    rawCharacters: SearchCooccurrence[],
+    respectWordBoundaries: boolean
   ): Promise<string[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ discourseUuid: string }> = (
       await Promise.all(
         characters.map(_char => {
-          const query = getSequentialCharacterQuery(characters, true);
+          const query = getSequentialCharacterQuery(
+            characters,
+            true,
+            respectWordBoundaries
+          );
           return query
             .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
             .where('text_epigraphy.text_uuid', textUuid);
@@ -175,11 +199,19 @@ class TextEpigraphyDao {
     const textUuids = await this.getMatchingTexts(args);
 
     const textLines = await Promise.all(
-      textUuids.map(uuid => this.getMatchingLines(uuid, args.characters))
+      textUuids.map(uuid =>
+        this.getMatchingLines(uuid, args.characters, args.respectWordBoundaries)
+      )
     );
 
     const discourseUuids = await Promise.all(
-      textUuids.map(uuid => this.getDiscourseUuids(uuid, args.characters))
+      textUuids.map(uuid =>
+        this.getDiscourseUuids(
+          uuid,
+          args.characters,
+          args.respectWordBoundaries
+        )
+      )
     );
 
     return textUuids.map((uuid, index) => ({
@@ -193,17 +225,27 @@ class TextEpigraphyDao {
     characters,
     title,
     userUuid,
+    respectWordBoundaries,
   }: Pick<
     SearchTextArgs,
-    'characters' | 'title' | 'userUuid'
+    'characters' | 'title' | 'userUuid' | 'respectWordBoundaries'
   >): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters);
+    const notUuids = await getNotOccurrenceTexts(
+      characters,
+      respectWordBoundaries
+    );
 
     const totalRows: number = (
-      await getSearchQuery(characters, textsToHide, true, title)
+      await getSearchQuery(
+        characters,
+        textsToHide,
+        true,
+        respectWordBoundaries,
+        title
+      )
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
@@ -224,15 +266,16 @@ class TextEpigraphyDao {
     const count = await getSearchQuery(
       characterUuids,
       textsToHide,
-      includeSuperfluous
+      includeSuperfluous,
+      false
     )
       .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
       .modify(qb => {
-        characterUuids[0].uuids.forEach((_uuid, idx) => {
+        characterUuids[0].words[0].uuids.forEach((_uuid, idx) => {
           if (idx === 0) {
             qb.whereNull('text_epigraphy.discourse_uuid');
           } else {
-            qb.whereNull(`t0${idx}.discourse_uuid`);
+            qb.whereNull(`t00${idx}.discourse_uuid`);
           }
         });
       })
@@ -253,24 +296,25 @@ class TextEpigraphyDao {
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const epigraphyUuidColumns: string[] = ['text_epigraphy.uuid'];
-    characterUuids[0].uuids.forEach((_char, idx) => {
+    characterUuids[0].words[0].uuids.forEach((_char, idx) => {
       if (idx > 0) {
-        epigraphyUuidColumns.push(`t0${idx}.uuid AS uuid${idx}`);
+        epigraphyUuidColumns.push(`t00${idx}.uuid AS uuid${idx}`);
       }
     });
 
     const occurrences: any[] = await getSearchQuery(
       characterUuids,
       textsToHide,
-      includeSuperfluous
+      includeSuperfluous,
+      false
     )
       .distinct(epigraphyUuidColumns)
       .modify(qb => {
-        characterUuids[0].uuids.forEach((_uuid, idx) => {
+        characterUuids[0].words[0].uuids.forEach((_uuid, idx) => {
           if (idx === 0) {
             qb.whereNull('text_epigraphy.discourse_uuid');
           } else {
-            qb.whereNull(`t0${idx}.discourse_uuid`);
+            qb.whereNull(`t00${idx}.discourse_uuid`);
           }
         });
       })

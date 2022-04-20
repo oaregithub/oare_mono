@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "netlify-lambda serve build/src",
     "build": "rm -rf build && tsc && cp -r src/api/sql build/src/api",
     "postbuild": "ef-tspm",
     "start": "rm -rf build/@oare && cp -r @oare build && cp -r @oare node_modules && NODE_ENV=production node ./build/src/server.js",
@@ -52,6 +51,7 @@
     "@types/connect-history-api-fallback": "^1.3.3",
     "@types/cookie-parser": "^1.4.2",
     "@types/dotenv": "^8.2.0",
+    "@types/express-fileupload": "^1.2.2",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/lodash": "^4.14.153",
     "@types/luxon": "^1.25.0",
@@ -64,6 +64,7 @@
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-fileupload": "^1.3.1",
     "firebase-admin": "^9.6.0",
     "jison": "git+https://github.com/oaregithub/jison.git",
     "knex": "^0.21.1",
@@ -71,14 +72,15 @@
     "luxon": "^1.25.0",
     "mailgun-js": "^0.22.0",
     "mysql": "^2.18.1",
-    "netlify-lambda": "^2.0.9",
     "node-fetch": "^2.6.1",
-    "serverless-http": "^2.7.0",
     "uuid": "^8.1.0"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint"
     }
+  },
+  "engines": {
+    "node": ">=16.0.1"
   }
 }

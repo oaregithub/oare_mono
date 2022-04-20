@@ -31,6 +31,8 @@ export interface DiscourseRow {
   line: number | null;
   paragraphLabel: string | null;
   translation: string | null;
+  objInText: number;
+  side: number | null;
 }
 
 export interface SearchDiscourseSpellingDaoResponse {
@@ -146,7 +148,9 @@ class TextDiscourseDao {
         'text_discourse.transcription',
         'text_epigraphy.line',
         'alias.name AS paragraphLabel',
-        'field.field AS translation'
+        'field.field AS translation',
+        'text_discourse.obj_in_text AS objInText',
+        'text_epigraphy.side'
       )
       .leftJoin(
         'text_epigraphy',
@@ -168,11 +172,11 @@ class TextDiscourseDao {
   }
 
   private createSpellingTextsQuery(
-    spellingUuid: string,
+    spellingUuids: string[],
     { filter }: Partial<Pagination> = {}
   ) {
     let query = knex('text_discourse')
-      .where('text_discourse.spelling_uuid', spellingUuid)
+      .whereIn('text_discourse.spelling_uuid', spellingUuids)
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid');
 
     if (filter) {
@@ -183,7 +187,7 @@ class TextDiscourseDao {
   }
 
   async getTotalSpellingTexts(
-    spellingUuid: string,
+    spellingUuids: string[],
     userUuid: string | null,
     pagination: Partial<Pagination> = {}
   ): Promise<number> {
@@ -191,7 +195,7 @@ class TextDiscourseDao {
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const countRow = await this.createSpellingTextsQuery(
-      spellingUuid,
+      spellingUuids,
       pagination
     )
       .modify(qb => {
@@ -207,14 +211,14 @@ class TextDiscourseDao {
   }
 
   async getSpellingTextOccurrences(
-    spellingUuid: string,
+    spellingUuids: string[],
     userUuid: string | null,
     { limit, page, filter }: Pagination
   ) {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
-    const query = this.createSpellingTextsQuery(spellingUuid, { filter })
+    const query = this.createSpellingTextsQuery(spellingUuids, { filter })
       .distinct(
         'text_discourse.uuid AS discourseUuid',
         'name AS textName',

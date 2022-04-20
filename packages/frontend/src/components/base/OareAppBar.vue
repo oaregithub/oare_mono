@@ -33,6 +33,29 @@
     <v-spacer />
     <div>
       <div class="d-flex align-center">
+        <div v-if="isDevelopmentEnvironment" class="mr-5 test-dev-indicator">
+          <v-menu offset-y :nudge-left="66" open-on-hover>
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" color="info" outlined>DEVELOPMENT</v-btn>
+            </template>
+            <v-card class="pa-5" width="270">
+              <v-row class="text-center ma-0" justify="center">
+                <span
+                  >The website is currently running in a development
+                  environment. Changes made will not affect data in the
+                  production database. This environment is meant only for web
+                  developers who are currently building the site.
+                </span>
+                <span class="mt-4"
+                  >If you are not an OARE developer or this appears when
+                  visiting the production website, please contact us immediately
+                  at</span
+                >
+                <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>
+              </v-row>
+            </v-card>
+          </v-menu>
+        </div>
         <v-badge
           v-if="isAdmin"
           :value="displayAdminBadge"
@@ -83,41 +106,56 @@
         <v-menu
           offset-y
           open-on-hover
-          v-if="
-            permissions.includes('WORDS') ||
-            permissions.includes('NAMES') ||
-            permissions.includes('PLACES')
-          "
+          v-if="canViewWords || canViewNames || canViewPlaces"
         >
           <template #activator="{ on, attrs }">
             <v-btn text dark v-bind="attrs" v-on="on"> Lexica </v-btn>
           </template>
           <v-list dense>
-            <v-list-item v-if="permissions.includes('WORDS')" class="pa-0">
+            <v-list-item v-if="canViewWords" class="pa-0">
               <v-btn class="test-words" text to="/words/A" width="100%"
                 >Words</v-btn
               >
             </v-list-item>
-            <v-list-item v-if="permissions.includes('NAMES')" class="pa-0">
+            <v-list-item v-if="canViewNames" class="pa-0">
               <v-btn class="test-names" text to="/names/A" width="100%"
                 >Names</v-btn
               >
             </v-list-item>
-            <v-list-item v-if="permissions.includes('PLACES')" class="pa-0">
+            <v-list-item v-if="canViewPlaces" class="pa-0">
               <v-btn class="test-places" text to="/places/A" width="100%"
                 >Places</v-btn
               >
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn
-          class="test-places"
-          text
-          to="/people/A"
-          v-if="permissions.includes('PEOPLE')"
+        <v-btn class="test-places" text to="/people/A" v-if="canViewPeople"
           >People</v-btn
         >
-        <v-btn class="test-texts" text to="/collections/A-J">Texts</v-btn>
+
+        <v-menu offset-y open-on-hover>
+          <template #activator="{ on, attrs }">
+            <v-btn class="test-texts" text dark v-bind="attrs" v-on="on"
+              >Texts</v-btn
+            >
+          </template>
+          <v-list dense>
+            <v-list-item class="pa-0">
+              <v-btn text to="/collections/A-J" width="100%"
+                >By Collection</v-btn
+              >
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/publications/A" width="100%"
+                >By Publication</v-btn
+              >
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/archives" width="100%">By Archive</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
         <v-btn class="test-search" text to="/search/texts">Search</v-btn>
 
         <v-menu offset-y open-on-hover>
@@ -177,9 +215,14 @@ export default defineComponent({
     const firstName = computed(() =>
       store.getters.user ? store.getters.user.firstName : ''
     );
-    const permissions = computed(() =>
-      store.getters.permissions.map(permission => permission.name)
+    const isDevelopmentEnvironment = computed(
+      () => process.env.NODE_ENV === 'development'
     );
+
+    const canViewWords = computed(() => store.hasPermission('WORDS'));
+    const canViewNames = computed(() => store.hasPermission('NAMES'));
+    const canViewPlaces = computed(() => store.hasPermission('PLACES'));
+    const canViewPeople = computed(() => store.hasPermission('PEOPLE'));
 
     const logout = () => {
       store.logout();
@@ -193,8 +236,12 @@ export default defineComponent({
       isAdmin,
       isAuthenticated,
       firstName,
-      permissions,
       displayAdminBadge,
+      isDevelopmentEnvironment,
+      canViewWords,
+      canViewNames,
+      canViewPlaces,
+      canViewPeople,
     };
   },
 });

@@ -26,7 +26,7 @@ class FieldDao {
 
   async insertField(
     referenceUuid: string,
-    type: 'definition',
+    type: string,
     field: string,
     options?: FieldOptions
   ): Promise<string> {

@@ -1,5 +1,5 @@
 import axios from '@/axiosInstance';
-import { SearchNullDiscourseResultRow } from '@oare/types';
+import { SearchNullDiscourseResultRow, DiscourseProperties } from '@oare/types';
 
 async function insertDiscourseRow(
   spelling: string,
@@ -22,6 +22,36 @@ async function insertDiscourseRow(
   );
 }
 
+async function getDiscourseProperties(
+  discourseUuid: string
+): Promise<DiscourseProperties> {
+  const { data } = await axios.get(
+    `/text_discourse/properties/${discourseUuid}`
+  );
+  return data;
+}
+
+async function updateDiscourseTranslation(
+  uuid: string,
+  newTranslation: string
+) {
+  await axios.patch(`/text_discourse/${uuid}`, {
+    newTranslation,
+  });
+}
+
+async function createDiscourseTranslation(
+  uuid: string,
+  newTranslation: string
+) {
+  await axios.post(`/text_discourse/${uuid}`, {
+    newTranslation,
+  });
+}
+
 export default {
   insertDiscourseRow,
+  getDiscourseProperties,
+  updateDiscourseTranslation,
+  createDiscourseTranslation,
 };

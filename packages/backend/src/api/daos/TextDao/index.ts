@@ -81,6 +81,27 @@ class TextDao {
       .where('uuid', textUuid);
   }
 
+  async updateTextInfo(
+    textUuid: string,
+    newExcavationPrefix: string | null,
+    newExcavationNumber: string | null,
+    newMuseumPrefix: string | null,
+    newMuseumNumber: string | null,
+    newPrimaryPublicationPrefix: string | null,
+    newPrimaryPublicationNumber: string | null
+  ) {
+    await knex('text')
+      .update({
+        excavation_prfx: newExcavationPrefix,
+        excavation_no: newExcavationNumber,
+        museum_prfx: newMuseumPrefix,
+        museum_no: newMuseumNumber,
+        publication_prfx: newPrimaryPublicationPrefix,
+        publication_no: newPrimaryPublicationNumber,
+      })
+      .where('uuid', textUuid);
+  }
+
   async insertTextRow(row: TextRow) {
     await knex('text').insert({
       uuid: row.uuid,

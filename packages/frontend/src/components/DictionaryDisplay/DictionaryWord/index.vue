@@ -2,14 +2,22 @@
   <OareContentView :loading="loading">
     <template #title>
       <v-row v-if="!isEditing" class="px-3">
-        <v-btn
-          v-if="canUpdateWordSpelling && !isEditing && allowEditing"
-          icon
-          class="mt-n2 mr-1"
-          @click="isEditing = true"
-        >
-          <v-icon class="test-pencil">mdi-pencil</v-icon>
-        </v-btn>
+        <v-tooltip bottom open-delay="800">
+          <template #activator="{ on, attrs }">
+            <v-btn
+              v-if="canUpdateWordSpelling && !isEditing && allowEditing"
+              icon
+              class="mr-1"
+              @click="isEditing = true"
+              small
+              v-bind="attrs"
+              v-on="on"
+            >
+              <v-icon class="test-pencil" size="20">mdi-pencil</v-icon>
+            </v-btn>
+          </template>
+          <span>Edit Word</span>
+        </v-tooltip>
         <UtilList
           @comment-clicked="openComment(uuid, wordInfo ? wordInfo.word : '')"
           :hasEdit="false"
@@ -139,9 +147,7 @@ export default defineComponent({
     const wordInfo = ref<Word | null>(null);
 
     const canUpdateWordSpelling = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('UPDATE_WORD_SPELLING')
+      store.hasPermission('UPDATE_WORD_SPELLING')
     );
 
     const updateWordInfo = (newWordInfo: Word) => {

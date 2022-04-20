@@ -67,6 +67,11 @@ class PermissionsDao {
         'Allow group users to view text discourses associated with text epigraphies',
     },
     {
+      name: 'EDIT_TRANSLATION',
+      type: 'text',
+      description: "Allow group users to edit a text's discourse translations",
+    },
+    {
       name: 'INSERT_DISCOURSE_ROWS',
       type: 'dictionary',
       description:
@@ -91,12 +96,35 @@ class PermissionsDao {
       type: 'dictionary',
       description:
         "Allow group users to edit a text's transliteration status (visible in stoplight)",
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
       name: 'ADD_NEW_TEXTS',
       type: 'text',
       description:
-        'Allow group users to add new texts to a collection. Currently requires user to have beta access.',
+        'Allow group users to add new texts to a collection. Currently requires user to have beta access',
+    },
+    {
+      name: 'EDIT_TEXT_INFO',
+      type: 'text',
+      description:
+        "Allow group users to edit a text's prefix and number information",
+    },
+    {
+      name: 'UPLOAD_EPIGRAPHY_IMAGES',
+      type: 'text',
+      description:
+        'Allow group users to upload additional images to an existing epigraphy page',
+    },
+    {
+      name: 'VIEW_TEXT_FILE',
+      type: 'text',
+      description: 'Allow group users to view text source file',
+    },
+    {
+      name: 'EDIT_ITEM_PROPERTIES',
+      type: 'general',
+      description: 'Allow group users to edit item properties for a given item',
     },
   ];
 

@@ -268,7 +268,9 @@ export default defineComponent({
         try {
           isDirty.value = false;
           await server.createText(createTextTables.value);
-          await server.uploadImages(photosWithName.value);
+          await Promise.all(
+            photosWithName.value.map(photo => server.uploadImage(photo))
+          );
         } catch (err) {
           actions.showErrorSnackbar(
             'Error creating text. Please try again',
@@ -291,7 +293,12 @@ export default defineComponent({
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
         photosWithName.value = await addNamesToTextPhotos(
-          textInfo.value,
+          textInfo.value.excavationPrefix,
+          textInfo.value.excavationNumber,
+          textInfo.value.museumPrefix,
+          textInfo.value.museumNumber,
+          textInfo.value.publicationPrefix,
+          textInfo.value.publicationNumber,
           photos.value
         );
 

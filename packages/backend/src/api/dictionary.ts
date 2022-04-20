@@ -267,16 +267,16 @@ router
   });
 
 router
-  .route('/dictionary/spellings/:uuid/occurrences')
+  .route('/dictionary/spellings/spelling_occurrences/occurrences')
   .get(async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const utils = sl.get('utils');
       const { filter } = utils.extractPagination(req.query);
-      const { uuid } = req.params;
+      const uuids = (req.query.spellingUuids as unknown) as string[];
       const userUuid = req.user ? req.user.uuid : null;
       const totalOccurrences = await TextDiscourseDao.getTotalSpellingTexts(
-        uuid,
+        uuids,
         userUuid,
         { filter }
       );
@@ -288,18 +288,18 @@ router
   });
 
 router
-  .route('/dictionary/spellings/:uuid/texts')
+  .route('/dictionary/spelling_occurrences/texts')
   .get(async (req, res, next) => {
     try {
       const utils = sl.get('utils');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-      const { uuid } = req.params;
       const userUuid = req.user ? req.user.uuid : null;
       const pagination = utils.extractPagination(req.query);
+      const spellingUuids = (req.query.spellingUuids as unknown) as string[];
 
       const rows = await TextDiscourseDao.getSpellingTextOccurrences(
-        uuid,
+        spellingUuids,
         userUuid,
         pagination
       );

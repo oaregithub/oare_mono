@@ -55,6 +55,23 @@ class ResourceDao {
     return signedUrls;
   }
 
+  async getTextFileByTextUuid(uuid: string) {
+    const textLinks: string[] = await knex('resource')
+      .pluck('link')
+      .where('container', 'oare-texttxt-bucket')
+      .whereIn(
+        'uuid',
+        knex('link')
+          .select('obj_uuid')
+          .where(
+            'reference_uuid',
+            knex('text').select('uuid').where('uuid', uuid)
+          )
+      );
+
+    return textLinks[0] || null;
+  }
+
   async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;

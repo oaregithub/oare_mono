@@ -31,13 +31,7 @@ describe('Stoplight', () => {
   };
 
   const mockStore = {
-    getters: {
-      permissions: [
-        {
-          name: 'EDIT_TRANSLITERATION_STATUS',
-        },
-      ],
-    },
+    hasPermission: name => ['EDIT_TRANSLITERATION_STATUS'].includes(name),
   };
 
   const reload = jest.fn();

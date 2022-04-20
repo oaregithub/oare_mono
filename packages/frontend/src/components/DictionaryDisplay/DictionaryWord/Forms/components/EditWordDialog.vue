@@ -95,19 +95,31 @@
           >
             <template #[`item.word`]="{ item }">
               <v-row>
-                <router-link
-                  :to="`/dictionaryWord/${item.wordUuid}`"
-                  target="_blank"
-                  >{{ item.word }}</router-link
+                <v-radio-group
+                  v-model="selectedFormUuid"
+                  @change="selectForm(item.form)"
                 >
-                <word-grammar :word="item.wordInfo" onlyShowFirstTranslation />
+                  <v-radio :value="item.form.uuid" class="ml-2">
+                    <template #label>
+                      <router-link
+                        :to="`/dictionaryWord/${item.wordUuid}`"
+                        target="_blank"
+                        class="ml-1"
+                        >{{ item.word }}</router-link
+                      >
+                      <word-grammar
+                        :word="item.wordInfo"
+                        onlyShowFirstTranslation
+                        class="ml-2"
+                        :allowEditing="false"
+                      />
+                    </template>
+                  </v-radio>
+                </v-radio-group>
               </v-row>
             </template>
             <template #[`item.form`]="{ item }">
-              <mark v-if="item.form.uuid === form.uuid">{{
-                `${item.form.form} (${formGrammarString(item.form)})`
-              }}</mark>
-              <span v-else>{{
+              <span>{{
                 `${item.form.form} (${formGrammarString(item.form)})`
               }}</span>
             </template>
@@ -190,9 +202,7 @@ export default defineComponent({
     const searchSpellingLoading = ref(false);
 
     const canInsertDiscourseRows = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('INSERT_DISCOURSE_ROWS')
+      store.hasPermission('INSERT_DISCOURSE_ROWS')
     );
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);
@@ -271,6 +281,11 @@ export default defineComponent({
       }
     );
 
+    const selectedFormUuid = ref<string>(props.form.uuid);
+    const selectForm = (form: DictionaryForm) => {
+      context.emit('select-form', form);
+    };
+
     return {
       spellingInput,
       spellingHtmlReading,
@@ -282,6 +297,8 @@ export default defineComponent({
       searchSpellingLoading,
       spellingSearchResults,
       canInsertDiscourseRows,
+      selectedFormUuid,
+      selectForm,
     };
   },
 });

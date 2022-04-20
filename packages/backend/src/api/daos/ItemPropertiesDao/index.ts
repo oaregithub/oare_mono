@@ -10,33 +10,7 @@ export interface GetItemPropertiesOptions {
   referenceUuid?: string;
 }
 
-class ItemProperties {
-  async getProperties(
-    referenceType: string,
-    { abbreviation, referenceUuid }: GetItemPropertiesOptions = {}
-  ): Promise<ItemPropertyRow[]> {
-    let query = knex('item_properties AS ip')
-      .select(
-        'ip.uuid',
-        'ip.reference_uuid AS referenceUuid',
-        'a2.name',
-        'ip.value_uuid as valueUuid'
-      )
-      .innerJoin('alias AS a1', 'a1.reference_uuid', 'ip.variable_uuid')
-      .innerJoin('alias AS a2', 'a2.reference_uuid', 'ip.value_uuid')
-      .where('a1.name', referenceType);
-
-    if (abbreviation) {
-      query = query.andWhere('a2.type', 'abbreviation');
-    }
-
-    if (referenceUuid) {
-      query = query.andWhere('ip.reference_uuid', referenceUuid);
-    }
-
-    return query;
-  }
-
+class ItemPropertiesDao {
   private getTextsOfPersonBaseQuery(
     personUuid: string,
     pagination?: Pagination
@@ -87,6 +61,56 @@ class ItemProperties {
       value: property.value,
     });
   }
+
+  async getPropertiesByReferenceUuid(
+    referenceUuid: string
+  ): Promise<ItemPropertyRow[]> {
+    const rows: ItemPropertyRow[] = await knex('item_properties as ip')
+      .select(
+        'ip.uuid',
+        'ip.reference_uuid as referenceUuid',
+        'ip.parent_uuid as parentUuid',
+        'ip.level',
+        'ip.variable_uuid as variableUuid',
+        'variable.name as variableName',
+        'variable.abbreviation as varAbbreviation',
+        'ip.value_uuid as valueUuid',
+        'value.name as valueName',
+        'value.abbreviation as valAbbreviation',
+        'ip.object_uuid as objectUuid',
+        'ip.value as value,'
+      )
+      .innerJoin('variable', 'variable.uuid', 'ip.variable_uuid')
+      .innerJoin('value', 'value.uuid', 'ip.value_uuid')
+      .where('ip.reference_uuid', referenceUuid);
+    return rows;
+  }
+
+  async deletePropertiesByReferenceUuid(referenceUuid: string): Promise<void> {
+    const relevantRows: { uuid: string; level: number | null }[] = await knex(
+      'item_properties'
+    )
+      .select('uuid', 'level')
+      .where('reference_uuid', referenceUuid);
+
+    const levels = [...new Set(relevantRows.map(row => row.level))]
+      .sort()
+      .sort((a, _) => {
+        if (a === null) {
+          return -1;
+        }
+        return 0;
+      })
+      .reverse();
+
+    for (let i = 0; i < levels.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await knex('item_properties')
+        .del()
+        .where('reference_uuid', referenceUuid)
+        .andWhere('level', levels[i]);
+    }
+  }
 }
 
-export default new ItemProperties();
+export default new ItemPropertiesDao();

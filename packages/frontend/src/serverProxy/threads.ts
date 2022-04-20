@@ -37,7 +37,16 @@ async function getAllThreads(
 ): Promise<AllCommentsResponse> {
   const { data } = await axios.get('/threads', {
     params: {
-      request,
+      status: request.filters.status,
+      thread: request.filters.thread,
+      item: request.filters.item,
+      comment: request.filters.comment,
+      sortType: request.sort.type,
+      sortDesc: request.sort.desc ? '1' : '0',
+      page: request.pagination.page,
+      limit: request.pagination.limit,
+      filter: request.pagination.filter || '',
+      isUserComments: request.isUserComments ? '1' : '0',
     },
   });
   return data;

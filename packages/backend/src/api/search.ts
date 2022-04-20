@@ -8,6 +8,7 @@ import {
   SearchDiscourseSpellingResponse,
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
+  SearchType,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -86,6 +87,7 @@ router.route('/search/count').get(async (req, res, next) => {
     const {
       textTitle: title,
       characters: charsPayload,
+      respectWordBoundaries,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
@@ -95,6 +97,7 @@ router.route('/search/count').get(async (req, res, next) => {
       characters: characterUuids,
       title,
       userUuid: user ? user.uuid : null,
+      respectWordBoundaries: respectWordBoundaries === 'true',
     });
 
     res.json(totalRows);
@@ -113,6 +116,7 @@ router.route('/search').get(async (req, res, next) => {
       rows,
       textTitle: title,
       characters: charsPayload,
+      respectWordBoundaries,
     } = (req.query as unknown) as SearchTextsPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
@@ -123,6 +127,7 @@ router.route('/search').get(async (req, res, next) => {
       pagination: { limit: rows, page },
       title,
       userUuid: user ? user.uuid : null,
+      respectWordBoundaries: respectWordBoundaries === 'true',
     });
 
     const textNames = (
@@ -151,6 +156,25 @@ router.route('/search').get(async (req, res, next) => {
         matches: lineReadings[index],
       })),
     };
+
+    if (response.results.length === 0) {
+      const SearchFailureDao = sl.get('SearchFailureDao');
+      let type: SearchType;
+      let query: string;
+      if (title && title !== '' && charsPayload && charsPayload !== '') {
+        type = 'title+transliteration';
+        query = `title: ${title}, transliteration: ${charsPayload}`;
+      } else if (title && title !== '') {
+        type = 'title';
+        query = title;
+      } else {
+        type = 'transliteration';
+        query = charsPayload || '';
+      }
+
+      const userUuid = user ? user.uuid : null;
+      await SearchFailureDao.insertSearchFailure(type, query, userUuid);
+    }
 
     res.json(response);
   } catch (err) {

@@ -17,12 +17,12 @@ describe('OareAppBar.vue', () => {
       user: {
         firstName: 'Test',
       },
-      permissions: [],
       displayAdminBadge: {
         error: false,
         comments: false,
       },
     },
+    hasPermission: () => false,
     logout: jest.fn(),
     setUser: jest.fn(),
     setPermissions: jest.fn(),
@@ -59,20 +59,9 @@ describe('OareAppBar.vue', () => {
         ...mockStore.getters,
         isAdmin,
         isAuthenticated,
-        permissions: isAdmin
-          ? [
-              {
-                name: 'WORDS',
-              },
-              {
-                name: 'NAMES',
-              },
-              {
-                name: 'PLACES',
-              },
-            ]
-          : [],
       },
+      hasPermission: name =>
+        isAdmin ? ['WORDS', 'NAMES', 'PLACES'].includes(name) : false,
     });
     sl.set('serverProxy', server);
     const wrapper = mount(OareAppBar, {
@@ -93,6 +82,11 @@ describe('OareAppBar.vue', () => {
   it('shows Admin button when user is admin', async () => {
     const wrapper = await createWrapper({ isAdmin: true });
     expect(wrapper.find('.test-admin-btn').exists()).toBe(true);
+  });
+
+  it("doesn't show development indicator when not in development", async () => {
+    const wrapper = await createWrapper();
+    expect(wrapper.find('.test-dev-indicator').exists()).toBe(false);
   });
 
   it('shows Login button when not logged in', async () => {

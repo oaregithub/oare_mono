@@ -1,30 +1,29 @@
 <template>
   <div>
-    <div class="d-flex mb-3">
-      <v-btn
-        v-if="canEditTranslations && !isEditingTranslations && allowEditing"
-        icon
-        class="mt-n2"
-        @click="isEditingTranslations = true"
-      >
-        <v-icon>mdi-pencil</v-icon>
-      </v-btn>
-
-      <edit-translations
-        v-if="isEditingTranslations && allowEditing"
-        @close-editor="isEditingTranslations = false"
-        :translations="wordInfo.translations"
-        @update:translations="updateTranslations"
-        :wordUuid="wordUuid"
+    <div class="d-flex">
+      <word-grammar
+        :word="wordInfo"
+        :allowEditing="allowEditing"
+        :updateWordInfo="updateWordInfo"
       />
-      <word-grammar v-else :word="wordInfo" />
     </div>
     <div v-if="wordInfo.forms.length < 1">
       No forms found for {{ wordInfo.word }}
     </div>
+
+    <v-col v-if="wordInfo.forms.length > 1" cols="4" class="pt-0">
+      <v-text-field
+        v-model="searchQuery"
+        :placeholder="'Filter forms'"
+        clearable
+        single-line
+      />
+    </v-col>
+
     <form-display
-      v-for="(form, index) in wordInfo.forms"
+      v-for="(form, index) in filteredForms"
       :key="index"
+      :word="wordInfo"
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
       :word-uuid="wordInfo.uuid"
@@ -49,6 +48,7 @@
       :form="editDialogForm"
       :spelling="editDialogSpelling"
       :allowDiscourseMode="editDialogDiscourse"
+      @select-form="selectForm($event)"
     />
     <add-form-dialog
       v-if="allowEditing && canAddForms"
@@ -66,19 +66,14 @@ import {
   ref,
   onMounted,
 } from '@vue/composition-api';
-import {
-  Word,
-  DictionaryForm,
-  DictionaryWordTranslation,
-  FormSpelling,
-} from '@oare/types';
+import { Word, DictionaryForm, FormSpelling } from '@oare/types';
 import FormDisplay from './Forms/FormDisplay.vue';
-import EditTranslations from './EditTranslations.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 import EditWordDialog from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/EditWordDialog.vue';
 import AddFormDialog from './components/AddFormDialog.vue';
 import WordGrammar from './components/WordGrammar.vue';
 import sl from '@/serviceLocator';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   props: {
@@ -109,15 +104,12 @@ export default defineComponent({
   },
   components: {
     FormDisplay,
-    EditTranslations,
     EditWordDialog,
     AddFormDialog,
     WordGrammar,
   },
   setup(props) {
     const store = sl.get('store');
-    const permissions = computed(() => store.getters.permissions);
-    const isEditingTranslations = ref(false);
 
     const editDialogForm = ref<DictionaryForm>();
     const editDialogSpelling = ref<FormSpelling>();
@@ -125,24 +117,9 @@ export default defineComponent({
     const showSpellingDialog = ref(false);
     const addFormDialog = ref(false);
 
-    const canEditTranslations = computed(() =>
-      permissions.value
-        .map(permission => permission.name)
-        .includes('UPDATE_TRANSLATION')
-    );
+    const searchQuery = useQueryParam('filter', '', true);
 
-    const canAddForms = computed(() =>
-      permissions.value.map(permission => permission.name).includes('ADD_FORM')
-    );
-
-    const updateTranslations = (
-      newTranslations: DictionaryWordTranslation[]
-    ) => {
-      props.updateWordInfo({
-        ...props.wordInfo,
-        translations: newTranslations,
-      });
-    };
+    const canAddForms = computed(() => store.hasPermission('ADD_FORM'));
 
     const updateForm = (index: number, form: DictionaryForm) => {
       const updatedForms = [...props.wordInfo.forms];
@@ -169,10 +146,17 @@ export default defineComponent({
       );
     });
 
+    const selectForm = (form: DictionaryForm) => {
+      editDialogForm.value = form;
+    };
+
+    const filteredForms = computed(() => {
+      return props.wordInfo.forms.filter(form => {
+        return form.form.includes(searchQuery.value);
+      });
+    });
+
     return {
-      canEditTranslations,
-      isEditingTranslations,
-      updateTranslations,
       updateForm,
       editDialogForm,
       editDialogSpelling,
@@ -180,6 +164,9 @@ export default defineComponent({
       showSpellingDialog,
       addFormDialog,
       canAddForms,
+      selectForm,
+      searchQuery,
+      filteredForms,
     };
   },
 });
