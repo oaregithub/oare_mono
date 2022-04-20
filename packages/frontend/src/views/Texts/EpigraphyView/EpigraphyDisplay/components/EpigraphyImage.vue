@@ -53,7 +53,7 @@
         </v-row>
         <inner-image-zoom :src="imageLinks[selection].link" moveType="drag" />
         <span
-          >Photo Source: " {{ imageLinks[selection].label || 'Unavailable' }} ".
+          >Photo Source: {{ imageLinks[selection].label || 'Unavailable' }}.
           For more information in photo, click (here).</span
         >
       </div>
