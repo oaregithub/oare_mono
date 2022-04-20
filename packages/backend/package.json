@@ -79,5 +79,8 @@
     "hooks": {
       "pre-commit": "npm run lint"
     }
+  },
+  "engines": {
+    "node": ">=16.0.1"
   }
 }
