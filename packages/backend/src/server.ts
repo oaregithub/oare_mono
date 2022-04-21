@@ -1,4 +1,3 @@
-import serverless from 'serverless-http';
 import sl from '@/serviceLocator';
 import { User } from '@oare/types';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
@@ -96,5 +95,3 @@ initializeFirebase(err => {
     });
   }
 });
-
-export const handler = serverless(app);
