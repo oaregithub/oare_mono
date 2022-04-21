@@ -21,7 +21,7 @@ router.route('/search_names').get(async (req, res, next) => {
 
     res.json(await HierarchyDao.getBySearchTerm(searchParams));
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

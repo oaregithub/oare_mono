@@ -26,7 +26,7 @@ router.route('/sign_reading/code/:sign/:post').get(async (req, res, next) => {
       res.json(signCode);
     }
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -40,7 +40,7 @@ router.route('/sign_reading/format/:sign').get(async (req, res, next) => {
     cache.insert({ req }, formattedSign);
     res.json(formattedSign);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

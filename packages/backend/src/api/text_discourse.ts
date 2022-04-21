@@ -29,7 +29,7 @@ router
       }
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -53,7 +53,7 @@ router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
     };
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -71,7 +71,7 @@ router
       });
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .post(permissionRoute('EDIT_TRANSLATION'), async (req, res, next) => {
@@ -85,7 +85,7 @@ router
       });
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

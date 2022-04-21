@@ -67,7 +67,7 @@ router
 
       res.json(results);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -91,7 +91,7 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
 
     res.status(200).end();
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -106,7 +106,7 @@ router
 
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -179,7 +179,7 @@ router
         count: threadRows.count,
       } as AllCommentsResponse);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .post(authenticatedRoute, async (req, res, next) => {
@@ -190,7 +190,7 @@ router
       const newThreadUuid = await ThreadsDao.insert(newThread);
       res.json(newThreadUuid);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -201,7 +201,7 @@ router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
     const response = await ThreadsDao.newThreadsExist();
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

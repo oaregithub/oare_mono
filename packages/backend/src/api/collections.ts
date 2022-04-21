@@ -18,7 +18,7 @@ router.route('/collections').get(async (req, res, next) => {
 
     res.json(collections.filter(collection => collection));
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -58,7 +58,7 @@ router
 
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -75,7 +75,7 @@ router
 
       res.json(parentUuid);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
