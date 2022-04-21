@@ -379,9 +379,7 @@ router
 
       const ResourceDao = sl.get('ResourceDao');
 
-      const result = await ResourceDao.getDirectObjectLink(
-        uuid
-      );
+      const result = await ResourceDao.getDirectObjectLink(uuid);
 
       const container = result[0];
       const link = result[1];
