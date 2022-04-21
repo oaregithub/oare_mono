@@ -19,7 +19,7 @@ router.route('/publications').get(async (req, res, next) => {
 
     res.json(publications);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

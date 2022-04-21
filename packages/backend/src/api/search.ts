@@ -63,7 +63,7 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
     };
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -76,7 +76,7 @@ router.route('/search/spellings').get(async (req, res, next) => {
     const results = await dictionaryWordDao.searchSpellings(spelling, userUuid);
     res.json(results);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -102,7 +102,7 @@ router.route('/search/count').get(async (req, res, next) => {
 
     res.json(totalRows);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -178,7 +178,7 @@ router.route('/search').get(async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -201,7 +201,7 @@ router.route('/search/discourse/null/count').get(async (req, res, next) => {
 
     res.json(count);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -257,7 +257,7 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
     );
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

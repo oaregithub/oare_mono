@@ -46,7 +46,7 @@ class ResourceDao {
       const ErrorsDao = sl.get('ErrorsDao');
       await ErrorsDao.logError({
         userUuid: null,
-        stacktrace: err.stack,
+        stacktrace: (err as Error).stack || null,
         status: 'In Progress',
         description: 'Error retrieving S3 photos',
       });
@@ -94,7 +94,7 @@ class ResourceDao {
       await ErrorsDao.logError({
         userUuid: null,
         description: 'Error retrieving CDLI photo',
-        stacktrace: err.stack,
+        stacktrace: (err as Error).stack || null,
         status: 'In Progress',
       });
     }
@@ -111,7 +111,7 @@ class ResourceDao {
       await ErrorsDao.logError({
         userUuid: null,
         description: 'Error retrieving CDLI line art',
-        stacktrace: err.stack,
+        stacktrace: (err as Error).stack || null,
         status: 'In Progress',
       });
     }
@@ -162,7 +162,7 @@ class ResourceDao {
       const ErrorsDao = sl.get('ErrorsDao');
       await ErrorsDao.logError({
         userUuid: null,
-        stacktrace: err.stack,
+        stacktrace: (err as Error).stack || null,
         status: 'New',
         description: 'Error retrieving Metropolitan Museum photos',
       });

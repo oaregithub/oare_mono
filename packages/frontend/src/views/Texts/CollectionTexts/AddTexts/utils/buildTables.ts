@@ -594,7 +594,7 @@ const createMarkupRows = async (
                         ).flat()
                       : [];
 
-                    return [rowMarkup, ...rowSigns];
+                    return [...rowMarkup, ...rowSigns];
                   })
                 )
               ).flat();
