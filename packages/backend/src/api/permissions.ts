@@ -15,7 +15,7 @@ router.route('/userpermissions').get(async (req, res, next) => {
 
     res.json(permissions);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -32,7 +32,7 @@ router
 
       res.json(groupPermissions);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .post(adminRoute, async (req, res, next) => {
@@ -44,7 +44,7 @@ router
       await PermissionsDao.addGroupPermission(groupId, permission);
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -60,7 +60,7 @@ router
       await PermissionsDao.removePermission(groupId, permission);
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -70,7 +70,7 @@ router.route('/allpermissions').get(adminRoute, async (_req, res, next) => {
     const allPermissions = await PermissionsDao.getAllPermissions();
     res.json(allPermissions);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

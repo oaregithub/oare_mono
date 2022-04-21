@@ -26,7 +26,7 @@ router.route('/search_dictionary').get(async (req, res, next) => {
     cache.insert({ req }, results);
     res.json(results);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

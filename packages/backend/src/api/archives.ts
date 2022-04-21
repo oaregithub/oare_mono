@@ -16,7 +16,7 @@ router.route('/archives').get(async (req, res, next) => {
 
     res.json(archives);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -41,7 +41,7 @@ router.route('/archives/:uuid').get(async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -67,7 +67,7 @@ router.route('/dossier/:uuid').get(async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

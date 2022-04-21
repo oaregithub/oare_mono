@@ -46,7 +46,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .delete(authenticatedRoute, async (req, res, next) => {
@@ -78,7 +78,7 @@ router
       await TextDraftsDao.deleteDraft(draftUuid);
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -108,7 +108,7 @@ router
 
       res.json(drafts);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -164,7 +164,7 @@ router
       };
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .post(authenticatedRoute, async (req, res, next) => {
@@ -207,7 +207,7 @@ router
 
       res.status(201).json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

@@ -22,7 +22,7 @@ router
 
       res.json(collection);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
