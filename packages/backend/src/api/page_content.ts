@@ -17,7 +17,7 @@ router
       cache.insert({ req }, content);
       res.json(content);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .patch(adminRoute, async (req, res, next) => {
@@ -38,7 +38,7 @@ router
       );
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

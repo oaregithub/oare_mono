@@ -22,7 +22,7 @@ router.route('/beta_access/allow').patch(adminRoute, async (req, res, next) => {
 
     res.status(204).end();
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -45,7 +45,7 @@ router
 
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

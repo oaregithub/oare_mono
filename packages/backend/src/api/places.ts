@@ -19,7 +19,7 @@ router.route('/places/:letter').get(async (req, res, next) => {
     cache.insert({ req }, dictionaryPlaces);
     res.json(dictionaryPlaces);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

@@ -21,7 +21,7 @@ async function adminRoute(req: Request, res: Response, next: NextFunction) {
 
     authenticatedRoute(req, res, navigateAdmin);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 }
 

@@ -21,7 +21,7 @@ router.route('/words/:letter').get(async (req, res, next) => {
     cache.insert({ req }, response);
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

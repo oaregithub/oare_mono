@@ -3,6 +3,7 @@ import AWSOffline from 'aws-sdk-mock';
 
 export const setupAWS = () => {
   if (process.env.NODE_ENV !== 'production') {
+    // @ts-ignore
     AWSOffline.setSDKInstance(AWS);
 
     AWSOffline.mock(
