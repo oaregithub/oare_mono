@@ -15,7 +15,7 @@ async function authenticatedRoute(
 
     next();
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 }
 

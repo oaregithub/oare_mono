@@ -33,7 +33,7 @@ router
 
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -48,7 +48,7 @@ router
 
         res.json(stoplightOptions);
       } catch (err) {
-        next(new HttpInternalError(err));
+        next(new HttpInternalError(err as string));
       }
     }
   )
@@ -63,7 +63,7 @@ router
 
         res.status(204).end();
       } catch (err) {
-        next(new HttpInternalError(err));
+        next(new HttpInternalError(err as string));
       }
     }
   );
@@ -138,7 +138,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -170,7 +170,7 @@ router
         res.json('');
       }
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -200,7 +200,7 @@ router
 
       res.json(max + 1);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -223,7 +223,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -313,7 +313,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -341,7 +341,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -369,7 +369,7 @@ router
       );
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 export default router;

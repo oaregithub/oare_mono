@@ -20,7 +20,7 @@ router.route('/profile').patch(authenticatedRoute, async (req, res, next) => {
     });
     res.status(204).end();
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
