@@ -46,7 +46,7 @@ class ResourceDao {
         })
       );
 
-      for (let i = 0; i < resourceLinks.length; i++) {
+      for (let i = 0; i < resourceLinks.length; i += 1) {
         s3Links.push({ label: resourceLinks[i].label, link: signedUrls[i] });
       }
     } catch (err) {
