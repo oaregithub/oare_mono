@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import knex from '@/connection';
 import { FormSpelling } from '@oare/types';
-import Knex from 'knex';
+import { Knex } from 'knex';
 import { spellingHtmlReading } from '@oare/oare';
 import TextDiscourseDao from '../TextDiscourseDao';
 

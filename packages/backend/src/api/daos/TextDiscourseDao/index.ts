@@ -9,7 +9,7 @@ import {
   PersonOccurrenceRow,
   TextDiscourseRow,
 } from '@oare/types';
-import Knex from 'knex';
+import { Knex } from 'knex';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 import {
