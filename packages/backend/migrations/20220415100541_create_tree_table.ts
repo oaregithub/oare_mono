@@ -7,7 +7,7 @@ const discourseTreeFK = 'discourse_tree_uuid_foreign';
 export async function up(knex: Knex): Promise<void> {
   const hasTreeTable = await knex.schema.hasTable('tree');
   if (!hasTreeTable) {
-    console.info('1/6 - Generating list of existing Tree UUIDs');
+    console.info('1/6 - Generating list of existing Tree UUIDs'); // eslint-disable-line no-console
 
     const existingEpigraphyTreeUuids: string[] = [
       ...new Set(await knex('text_epigraphy').pluck('tree_uuid')),
@@ -27,7 +27,7 @@ export async function up(knex: Knex): Promise<void> {
       table_reference: 'tree',
     }));
 
-    console.info('2/6 - Adding Tree UUIDs to uuid table');
+    console.info('2/6 - Adding Tree UUIDs to uuid table'); // eslint-disable-line no-console
 
     const progressBar1 = new cliProgress.SingleBar(
       {},
@@ -44,7 +44,7 @@ export async function up(knex: Knex): Promise<void> {
 
     progressBar1.stop();
 
-    console.info('3/6 - Creating tree table');
+    console.info('3/6 - Creating tree table'); // eslint-disable-line no-console
 
     await knex.schema.createTable('tree', table => {
       table.charset('utf8mb4');
@@ -76,7 +76,7 @@ export async function up(knex: Knex): Promise<void> {
       ...existingDiscourseTreeInserts,
     ];
 
-    console.info('4/6 - Inserting existing Tree UUIDs into tree table');
+    console.info('4/6 - Inserting existing Tree UUIDs into tree table'); // eslint-disable-line no-console
 
     const progressBar2 = new cliProgress.SingleBar(
       {},
@@ -93,6 +93,7 @@ export async function up(knex: Knex): Promise<void> {
 
     progressBar2.stop();
 
+    // eslint-disable-next-line no-console
     console.info(
       '5/6 - Creating foreign key relationship in text_epigraphy table - Est. 1-2 hours'
     );
@@ -101,6 +102,7 @@ export async function up(knex: Knex): Promise<void> {
       table.foreign('tree_uuid', epigraphyTreeFK).references('tree.uuid');
     });
 
+    // eslint-disable-next-line no-console
     console.info(
       '6/6 - Creating foreign key relationship in text_discourse table - Est. 1-2 hours'
     );
@@ -109,7 +111,7 @@ export async function up(knex: Knex): Promise<void> {
       table.foreign('tree_uuid', discourseTreeFK).references('tree.uuid');
     });
 
-    console.info('Migration Complete');
+    console.info('Migration Complete'); // eslint-disable-line no-console
   }
 }
 
