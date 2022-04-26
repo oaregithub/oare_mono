@@ -21,7 +21,7 @@ router.route('/names/:letter').get(async (req, res, next) => {
     cache.insert({ req }, dictionaryNames);
     res.json(dictionaryNames);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

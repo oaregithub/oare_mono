@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import Knex from 'knex';
+import { Knex } from 'knex';
 import { ParsedQs } from 'qs';
 import {
   Pagination,

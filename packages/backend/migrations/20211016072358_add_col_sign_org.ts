@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const hasHasPngColumn = await knex.schema.hasColumn('sign_org', 'has_png');

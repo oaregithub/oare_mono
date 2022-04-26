@@ -32,7 +32,7 @@ router
       await ErrorsDao.logError(insertRow);
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .get(adminRoute, async (req, res, next) => {
@@ -45,7 +45,7 @@ router
       const response = await ErrorsDao.getErrorLog(payload);
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .patch(adminRoute, async (req, res, next) => {
@@ -58,7 +58,7 @@ router
       );
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -69,7 +69,7 @@ router.route('/newerrors').get(adminRoute, async (_req, res, next) => {
     const response = await ErrorsDao.newErrorsExist();
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
