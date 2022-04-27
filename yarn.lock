@@ -11194,11 +11194,6 @@ firebase@^8.4.1:
     "@firebase/storage" "0.5.0"
     "@firebase/util" "1.0.0"
 
-flag-icon-css@^3.4.6:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/flag-icon-css/-/flag-icon-css-3.5.0.tgz#430747d5cb91e60babf85494de99173c16dc7cf2"
-  integrity sha512-pgJnJLrtb0tcDgU1fzGaQXmR8h++nXvILJ+r5SmOXaaL/2pocunQo2a8TAXhjQnBpRLPtZ1KCz/TYpqeNuE2ew==
-
 flat-cache@^1.2.1:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/flat-cache/-/flat-cache-1.3.4.tgz#2c2ef77525cc2929007dfffa1dd314aa9c9dee6f"
@@ -22528,11 +22523,6 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
 
-velocity-animate@^1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/velocity-animate/-/velocity-animate-1.5.2.tgz#5a351d75fca2a92756f5c3867548b873f6c32105"
-  integrity sha512-m6EXlCAMetKztO1ppBhGU1/1MR3IiEevO6ESq6rcrSQ3Q77xYSW13jkfXW88o4xMrkXJhy/U7j4wFR/twMB0Eg==
-
 velocityjs@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/velocityjs/-/velocityjs-2.0.6.tgz#fbd5ec5bc6e75a889f73c1d67baddd4e0af7b35a"
@@ -22717,16 +22707,6 @@ vuetify@^2.2.21:
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-2.4.4.tgz#529de23b6b0c65ccfd43fe11f0f3a8a0333e68e6"
   integrity sha512-/4+xX9XbcwXBjrtptDxm5S4NXVaVGF8UJ3U7Nk20fl4aM84PGgGyqVCfi8hVa8t1gd+2Wz4FCztbR7JgJcBIQQ==
-
-vuex-composition-helpers@^1.0.13:
-  version "1.0.22"
-  resolved "https://registry.yarnpkg.com/vuex-composition-helpers/-/vuex-composition-helpers-1.0.22.tgz#3ae954194dfeb1955113d65f92413e14cc373fcf"
-  integrity sha512-laGl+vH0J5ZXRhBWjWEo6ApLGdcemeKaXGHUd6lvm+V2BUwgJ4ObTpgBiFsORsgTFjbHVI9lHyX6llhmuNgYLA==
-
-vuex@^3.6.2:
-  version "3.6.2"
-  resolved "https://registry.yarnpkg.com/vuex/-/vuex-3.6.2.tgz#236bc086a870c3ae79946f107f16de59d5895e71"
-  integrity sha512-ETW44IqCgBpVomy520DT5jf8n0zoCac+sxWnn+hMe/CzaSejb/eVw2YToiXYX+Ex/AuHHia28vWTq4goAexFbw==
 
 w3c-hr-time@^1.0.1, w3c-hr-time@^1.0.2:
   version "1.0.2"
