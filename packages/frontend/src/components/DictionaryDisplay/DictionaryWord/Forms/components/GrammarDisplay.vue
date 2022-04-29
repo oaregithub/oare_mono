@@ -59,7 +59,7 @@ export default defineComponent({
   props: {
     word: {
       type: Object as PropType<Word>,
-      required: true,
+      required: false,
     },
     form: {
       type: Object as PropType<DictionaryForm>,
@@ -90,10 +90,14 @@ export default defineComponent({
     };
 
     const partOfSpeechValueUuid = computed(() => {
-      const posProperties = props.word.properties.filter(
-        prop => prop.variableName === 'Part of Speech'
-      );
-      return posProperties.length > 0 ? posProperties[0].valueUuid : undefined;
+      if (props.word) {
+        const posProperties = props.word.properties.filter(
+          prop => prop.variableName === 'Part of Speech'
+        );
+        return posProperties.length > 0
+          ? posProperties[0].valueUuid
+          : undefined;
+      }
     });
 
     const addPropertiesKey = ref(false);

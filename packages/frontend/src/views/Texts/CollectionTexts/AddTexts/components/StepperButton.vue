@@ -1,5 +1,5 @@
 <template>
-  <v-row class="ma-0 pa-0 pl-4" align="center">
+  <v-row class="ma-0 pa-0 pl-4 mt-2" align="center">
     <v-btn v-if="showBackButton" text @click="previous" class="mr-3">
       Back
     </v-btn>
