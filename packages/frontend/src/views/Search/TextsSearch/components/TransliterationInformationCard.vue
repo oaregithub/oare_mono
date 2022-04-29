@@ -6,7 +6,6 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      <br />
       <span>The transliteration search supports the following features:</span>
       <ol>
         <li>
