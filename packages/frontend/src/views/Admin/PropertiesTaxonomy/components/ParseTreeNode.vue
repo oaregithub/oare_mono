@@ -72,11 +72,37 @@
               <span class="text--disabled">
                 &nbsp;
                 <span v-if="child.varAbbreviation"
-                  >({{ child.varAbbreviation }})</span
-                >
+                  >({{ child.varAbbreviation }})
+                </span>
                 <span v-else-if="child.valAbbreviation">
                   ({{ child.valAbbreviation }})</span
                 >
+                <span
+                  v-if="showUUID && !allowSelections"
+                  class="blue--text mr-3"
+                  >UUID: {{ child.uuid }}
+                  <v-icon @click="copyUUID(child.uuid)" @click.native.stop
+                    >mdi-content-copy</v-icon
+                  >
+                </span>
+                <span v-if="showUUID && !allowSelections">
+                  <span v-if="child.variableUuid" class="blue--text">
+                    variableUUID: {{ child.variableUuid }}
+                    <v-icon
+                      @click="copyUUID(child.variableUuid)"
+                      @click.native.stop
+                      >mdi-content-copy</v-icon
+                    ></span
+                  >
+                  <span v-else class="red--text">
+                    valueUUID: {{ child.valueUuid }}
+                    <v-icon
+                      @click="copyUUID(child.valueUuid)"
+                      @click.native.stop
+                      >mdi-content-copy</v-icon
+                    >
+                  </span>
+                </span>
               </span>
             </span>
           </template>
@@ -120,6 +146,7 @@
           :nodesToHighlight="nodesToHighlight"
           :openSearchResults="openSearchResults"
           :existingProperties="existingProperties"
+          :showUUID="showUUID"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
         />
@@ -138,6 +165,7 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
+import sl from '@/serviceLocator';
 
 export interface ParseTreePropertyEvent {
   properties: ParseTreeProperty[];
@@ -167,11 +195,16 @@ export default defineComponent({
       type: Array as PropType<ItemPropertyRow[]>,
       required: false,
     },
+    showUUID: {
+      type: Boolean,
+      default: true,
+    },
   },
   setup(props, { emit }) {
     const selected = ref<TaxonomyTree[]>([]);
     const completedSubtrees = ref<TaxonomyTree[]>([]);
     const ignoredSubtrees = ref<TaxonomyTree[]>([]);
+    const action = sl.get('globalActions');
 
     onMounted(() => {
       if (props.existingProperties && props.node.variableUuid) {
@@ -281,6 +314,11 @@ export default defineComponent({
       });
     });
 
+    const copyUUID = (uuid: string) => {
+      navigator.clipboard.writeText(uuid);
+      action.showSnackbar('Copied Successfully');
+    };
+
     const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
         prop => prop.source !== args.source
@@ -333,6 +371,7 @@ export default defineComponent({
       showCheck,
       updateCompletedSubtrees,
       updateProperties,
+      copyUUID,
       searchResultsToOpen,
       disableChildren,
     };
