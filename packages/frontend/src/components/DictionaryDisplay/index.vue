@@ -8,37 +8,43 @@
       @filtered-words="getWords"
     >
     </letter-filter>
-
-    <v-container class="mb-3">
+    <v-container>
       <v-row no-gutters>
-        <v-col v-for="n in 6" :key="n" cols="6" sm="2">
-          <v-hover v-slot="{ hover }">
-            <v-card
-              class="pa-2"
-              outlined
-              tile
-              :elevation="hover ? 12 : 2"
-              :style="`background: ${highlightColors[n - 1]}`"
-            >
-              {{ highlightBins[n - 1] }}
-              <v-expand-transition>
-                <div v-if="hover" class="mb-3">total ccurrences per word</div>
-              </v-expand-transition>
-            </v-card>
-          </v-hover>
+        <v-col cols="10">
+          <div
+            v-for="wordInfo in filteredWords"
+            :key="wordInfo.uuid"
+            class="mb-3"
+          >
+            <div class="d-flex">
+              <slot name="word" :word="wordInfo"> </slot>
+              <slot name="translation" :word="wordInfo"></slot>
+            </div>
+            <div>
+              <slot name="forms" :word="wordInfo"></slot>
+            </div>
+          </div>
+        </v-col>
+        <v-col cols="2">
+          <v-tooltip top color="primary">
+            <template v-slot:activator="{ on, attrs }">
+              <v-container :class="{ sticky }" v-bind="attrs" v-on="on">
+                <div v-for="n in 6" :key="n">
+                  <v-card-text
+                    class="pa-2 mx-auto"
+                    width="200px"
+                    :style="`background: ${highlight[n - 1].color}`"
+                  >
+                    {{ highlight[n - 1].bin }}
+                  </v-card-text>
+                </div>
+              </v-container>
+            </template>
+            <span>Frequency of a word.</span>
+          </v-tooltip>
         </v-col>
       </v-row>
     </v-container>
-
-    <div v-for="wordInfo in filteredWords" :key="wordInfo.uuid" class="mb-3">
-      <div class="d-flex">
-        <slot name="word" :word="wordInfo"> </slot>
-        <slot name="translation" :word="wordInfo"></slot>
-      </div>
-      <div>
-        <slot name="forms" :word="wordInfo"></slot>
-      </div>
-    </div>
     <v-btn fab fixed bottom right @click="$vuetify.goTo(0)" color="info">
       <v-icon>mdi-chevron-up</v-icon>
     </v-btn>
@@ -80,6 +86,10 @@ export default defineComponent({
       type: String,
       default: 'words',
     },
+    sticky: {
+      type: Boolean,
+      default: true,
+    },
   },
   setup() {
     const filteredWords = ref<DisplayableWord[]>([]);
@@ -88,32 +98,30 @@ export default defineComponent({
       filteredWords.value = words;
     };
 
-    const highlightBins = [
-      '0-10',
-      '11-100',
-      '101-1000',
-      '1001-10000',
-      '10001-25000',
-      '25001+',
-    ];
-
-    const highlightColors = [
-      '#c0fdff',
-      '#d0d1ff',
-      '#deaaff',
-      '#e5b3fe',
-      '#f3c4fb',
-      ' #ffcbf2',
+    const highlight = [
+      { bin: '0-10', color: '#caf0f8' },
+      { bin: '11-100', color: '#90e0ef' },
+      { bin: '101-1000', color: '#e0aaff' },
+      { bin: '1001-10000', color: '#c77dff' },
+      { bin: '10001-25000', color: '#ffccd5' },
+      { bin: '25001+', color: '#ff8fa3' },
     ];
 
     return {
       filteredWords,
       getWords,
-      highlightBins,
-      highlightColors,
+      highlight,
     };
   },
 });
 </script>
 
-<style></style>
+<style scoped>
+.sticky {
+  position: sticky;
+  top: 2in;
+}
+.zoom-container {
+  width: 36vw;
+}
+</style>
