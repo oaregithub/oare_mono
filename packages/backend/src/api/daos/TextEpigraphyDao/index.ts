@@ -38,7 +38,7 @@ export interface SearchTextArgs {
   title: string;
   userUuid: string | null;
   pagination: Pagination;
-  respectWordBoundaries: boolean;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface AnchorInfo {
@@ -117,21 +117,18 @@ class TextEpigraphyDao {
     title,
     pagination,
     userUuid,
-    respectWordBoundaries,
+    mode,
   }: SearchTextArgs): Promise<string[]> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(
-      characters,
-      respectWordBoundaries
-    );
+    const notUuids = await getNotOccurrenceTexts(characters, mode);
 
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
       textsToHide,
       true,
-      respectWordBoundaries,
+      mode,
       title
     )
       .select('text_epigraphy.text_uuid as uuid')
@@ -147,17 +144,13 @@ class TextEpigraphyDao {
   private async getMatchingLines(
     textUuid: string,
     rawCharacters: SearchCooccurrence[],
-    respectWordBoundaries: boolean
+    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries'
   ): Promise<number[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ line: number }> = (
       await Promise.all(
         characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(
-            characters,
-            true,
-            respectWordBoundaries
-          );
+          const query = getSequentialCharacterQuery(characters, true, mode);
           return query
             .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
             .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
@@ -173,17 +166,13 @@ class TextEpigraphyDao {
   private async getDiscourseUuids(
     textUuid: string,
     rawCharacters: SearchCooccurrence[],
-    respectWordBoundaries: boolean
+    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries'
   ): Promise<string[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ discourseUuid: string }> = (
       await Promise.all(
         characters.map(_char => {
-          const query = getSequentialCharacterQuery(
-            characters,
-            true,
-            respectWordBoundaries
-          );
+          const query = getSequentialCharacterQuery(characters, true, mode);
           return query
             .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
             .where('text_epigraphy.text_uuid', textUuid);
@@ -200,17 +189,13 @@ class TextEpigraphyDao {
 
     const textLines = await Promise.all(
       textUuids.map(uuid =>
-        this.getMatchingLines(uuid, args.characters, args.respectWordBoundaries)
+        this.getMatchingLines(uuid, args.characters, args.mode)
       )
     );
 
     const discourseUuids = await Promise.all(
       textUuids.map(uuid =>
-        this.getDiscourseUuids(
-          uuid,
-          args.characters,
-          args.respectWordBoundaries
-        )
+        this.getDiscourseUuids(uuid, args.characters, args.mode)
       )
     );
 
@@ -225,27 +210,18 @@ class TextEpigraphyDao {
     characters,
     title,
     userUuid,
-    respectWordBoundaries,
+    mode,
   }: Pick<
     SearchTextArgs,
-    'characters' | 'title' | 'userUuid' | 'respectWordBoundaries'
+    'characters' | 'title' | 'userUuid' | 'mode'
   >): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(
-      characters,
-      respectWordBoundaries
-    );
+    const notUuids = await getNotOccurrenceTexts(characters, mode);
 
     const totalRows: number = (
-      await getSearchQuery(
-        characters,
-        textsToHide,
-        true,
-        respectWordBoundaries,
-        title
-      )
+      await getSearchQuery(characters, textsToHide, true, mode, title)
         .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
@@ -267,7 +243,7 @@ class TextEpigraphyDao {
       characterUuids,
       textsToHide,
       includeSuperfluous,
-      false
+      'respectNoBoundaries'
     )
       .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
       .modify(qb => {
@@ -306,7 +282,7 @@ class TextEpigraphyDao {
       characterUuids,
       textsToHide,
       includeSuperfluous,
-      false
+      'respectNoBoundaries'
     )
       .distinct(epigraphyUuidColumns)
       .modify(qb => {

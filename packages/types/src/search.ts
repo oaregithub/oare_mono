@@ -10,13 +10,13 @@ export interface SearchTextsPayload {
   textTitle: string;
   page: number;
   rows: number;
-  respectWordBoundaries: string;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface SearchTextsCountPayload {
   characters?: string;
   textTitle: string;
-  respectWordBoundaries: string;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface SearchTextsResponse {
