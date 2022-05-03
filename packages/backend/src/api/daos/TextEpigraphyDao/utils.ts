@@ -107,21 +107,21 @@ export function getSequentialCharacterQuery(
           wordIndex === words.length - 1 &&
           coocIndex === cooccurrences.length - 1
         ) {
-          query = query.join('text_epigraphy AS after', function () {
-            this.on('after.text_uuid', 'text_epigraphy.text_uuid').andOn(
+          query = query
+            .leftJoin('text_epigraphy AS after', function () {
+              this.on('after.text_uuid', 'text_epigraphy.text_uuid').andOn(
+                knex.raw(
+                  `after.char_on_tablet=${
+                    coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
+                  }.char_on_tablet + ${charIndex + charOffset + 1}`
+                )
+              );
+            })
+            .where(
               knex.raw(
-                `(${
-                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
-                }.char_on_tablet + ${
-                  charIndex + charOffset + 1
-                } = null or (after.char_on_tablet=${
-                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
-                }.char_on_tablet + ${
-                  charIndex + charOffset + 1
-                } and after.discourse_uuid<>t${coocIndex}${wordIndex}${charIndex}.discourse_uuid))`
+                `IF(after.char_on_tablet is null, 1=1, (after.discourse_uuid<>t${coocIndex}${wordIndex}${charIndex}.discourse_uuid or after.discourse_uuid is null))`
               )
             );
-          });
         }
       });
       if (
