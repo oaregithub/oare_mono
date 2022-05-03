@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 import knex from '@/connection';
 import {
   EpigraphicUnit,

@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const hasColumn = await knex.schema.hasColumn('text_markup', '#_value');
