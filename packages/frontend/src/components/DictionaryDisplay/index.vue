@@ -26,22 +26,20 @@
           </div>
         </v-col>
         <v-col cols="2">
-          <v-tooltip top color="primary">
-            <template v-slot:activator="{ on, attrs }">
-              <v-container :class="{ sticky }" v-bind="attrs" v-on="on">
-                <div v-for="n in 6" :key="n">
-                  <v-card-text
-                    class="pa-2 mx-auto"
-                    width="200px"
-                    :style="`background: ${highlight[n - 1].color}`"
-                  >
-                    {{ highlight[n - 1].bin }}
-                  </v-card-text>
-                </div>
-              </v-container>
-            </template>
-            <span>Frequency of a word.</span>
-          </v-tooltip>
+          <v-container :class="{ sticky: true }">
+            <!-- <v-card elevation="2" class="pa-2 mb-4 mx-auto" width="200px"> -->
+            <p class="font-weight-bold">Frequency</p>
+            <!-- </v-card> -->
+            <div v-for="n in 6" :key="n">
+              <v-card-text
+                class="pa-2 mx-auto"
+                width="200px"
+                :style="`background: ${highlight[n - 1].color}`"
+              >
+                {{ highlight[n - 1].bin }}
+              </v-card-text>
+            </div>
+          </v-container>
         </v-col>
       </v-row>
     </v-container>
@@ -86,10 +84,6 @@ export default defineComponent({
       type: String,
       default: 'words',
     },
-    sticky: {
-      type: Boolean,
-      default: true,
-    },
   },
   setup() {
     const filteredWords = ref<DisplayableWord[]>([]);
@@ -120,8 +114,5 @@ export default defineComponent({
 .sticky {
   position: sticky;
   top: 2in;
-}
-.zoom-container {
-  width: 36vw;
 }
 </style>
