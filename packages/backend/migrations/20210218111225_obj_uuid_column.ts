@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 const fkName = 'text_markup_obj_uuid_foreign';
 export async function up(knex: Knex): Promise<void> {

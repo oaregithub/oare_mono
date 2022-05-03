@@ -1,7 +1,6 @@
 import express from 'express';
 import history from 'connect-history-api-fallback';
 import path from 'path';
-import cookieParser from 'cookie-parser';
 import errorMiddleware from '@/middlewares/error';
 import '../envConfig';
 import fileupload from 'express-fileupload';
@@ -28,7 +27,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '2mb' }));
-app.use(cookieParser());
 app.use(
   express.urlencoded({
     limit: '2mb',

@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 import { createTabletRenderer } from '@oare/oare';
 import cliProgress from 'cli-progress';
 import TextEpigraphyDao from '../build/src/api/daos/TextEpigraphyDao';
