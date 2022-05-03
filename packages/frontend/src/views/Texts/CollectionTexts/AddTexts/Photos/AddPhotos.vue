@@ -17,8 +17,8 @@
           v-for="photo in photos"
           :key="photo.uuid"
           :uuid="photo.uuid"
-          @export-photo="setPhoto"
-          @remove-photo="removePhoto"
+          @export-photo="setPhotoDetails"
+          @remove-photo="removePhoto(photo.uuid)"
         />
         <v-btn @click="addPhoto" class="ml-10 my-4" text>
           <v-icon color="primary">mdi-plus</v-icon>
@@ -65,7 +65,7 @@ export default defineComponent({
   setup(_, { emit }) {
     const photos = ref<TextPhoto[]>([]);
 
-    const setPhoto = (photo: TextPhoto) => {
+    const setPhotoDetails = (photo: TextPhoto) => {
       const existingUuids = photos.value.map(upload => upload.uuid);
 
       if (existingUuids.includes(photo.uuid)) {
@@ -109,14 +109,10 @@ export default defineComponent({
       emit('step-complete', stepComplete.value);
     });
 
-    onMounted(() => {
-      emit('step-complete', true);
-    });
-
     return {
       photos,
       photoUrls,
-      setPhoto,
+      setPhotoDetails,
       addPhoto,
       removePhoto,
       photosWithUrl,

@@ -14,7 +14,6 @@ import './styles/base.css';
 import vuetify from './plugins/vuetify';
 import loadBases from './loadBases';
 import i18n from './i18n';
-import 'flag-icon-css/css/flag-icon.css';
 import firebase from './firebase';
 import 'swagger-ui/dist/swagger-ui.css';
 import 'vue-inner-image-zoom/lib/vue-inner-image-zoom.css';

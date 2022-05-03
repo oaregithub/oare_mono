@@ -1,6 +1,6 @@
-import knex from 'knex';
+import knex, { Knex } from 'knex';
 
-export const knexConfig: knex.Config = {
+export const knexConfig: Knex.Config = {
   client: 'mysql',
   connection:
     process.env.NODE_ENV === 'production'
