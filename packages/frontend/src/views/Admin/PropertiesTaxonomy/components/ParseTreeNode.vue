@@ -81,26 +81,33 @@
                   v-if="showUUID && !allowSelections"
                   class="blue--text mr-3"
                   >UUID: {{ child.uuid }}
-                  <v-icon @click="copyUUID(child.uuid)" @click.native.stop
-                    >mdi-content-copy</v-icon
+                  <v-btn
+                    depressed
+                    @click="copyUUID(child.uuid)"
+                    @click.native.stop
                   >
+                    <v-icon small>mdi-content-copy</v-icon>
+                  </v-btn>
                 </span>
                 <span v-if="showUUID && !allowSelections">
                   <span v-if="child.variableUuid" class="blue--text">
-                    variableUUID: {{ child.variableUuid }}
-                    <v-icon
-                      @click="copyUUID(child.variableUuid)"
+                    Variable UUID: {{ child.variableUuid }}
+                    <v-btn
+                      depressed
+                      @click="copyUUID(child.variableUuid || '')"
                       @click.native.stop
-                      >mdi-content-copy</v-icon
-                    ></span
-                  >
-                  <span v-else class="red--text">
-                    valueUUID: {{ child.valueUuid }}
-                    <v-icon
-                      @click="copyUUID(child.valueUuid)"
+                      ><v-icon small>mdi-content-copy </v-icon>
+                    </v-btn>
+                  </span>
+                  <span v-else class="blue--text">
+                    Value UUID: {{ child.valueUuid }}
+                    <v-btn
+                      depressed
+                      @click="copyUUID(child.valueUuid || '')"
                       @click.native.stop
-                      >mdi-content-copy</v-icon
                     >
+                      <v-icon small>mdi-content-copy</v-icon>
+                    </v-btn>
                   </span>
                 </span>
               </span>
@@ -197,14 +204,14 @@ export default defineComponent({
     },
     showUUID: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   setup(props, { emit }) {
     const selected = ref<TaxonomyTree[]>([]);
     const completedSubtrees = ref<TaxonomyTree[]>([]);
     const ignoredSubtrees = ref<TaxonomyTree[]>([]);
-    const action = sl.get('globalActions');
+    const actions = sl.get('globalActions');
 
     onMounted(() => {
       if (props.existingProperties && props.node.variableUuid) {
@@ -316,7 +323,7 @@ export default defineComponent({
 
     const copyUUID = (uuid: string) => {
       navigator.clipboard.writeText(uuid);
-      action.showSnackbar('Copied Successfully');
+      actions.showSnackbar('Copied Successfully');
     };
 
     const updateProperties = (args: ParseTreePropertyEvent) => {

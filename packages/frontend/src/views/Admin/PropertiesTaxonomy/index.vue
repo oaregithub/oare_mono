@@ -13,8 +13,8 @@
             class="test-search"
           />
           <v-switch
-            label="SHOW UUID (on/off)"
-            color="indigo"
+            label="SHOW UUIDs (on/off)"
+            color="primary"
             hide-details
             @click="toggleUUIDVisibility()"
           ></v-switch>
