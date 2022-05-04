@@ -81,11 +81,7 @@
                   v-if="showUUID && !allowSelections"
                   class="blue--text mr-3"
                   >UUID: {{ child.uuid }}
-                  <v-btn
-                    depressed
-                    @click="copyUUID(child.uuid)"
-                    @click.native.stop
-                  >
+                  <v-btn icon @click="copyUUID(child.uuid)" @click.native.stop>
                     <v-icon small>mdi-content-copy</v-icon>
                   </v-btn>
                 </span>
@@ -93,7 +89,7 @@
                   <span v-if="child.variableUuid" class="blue--text">
                     Variable UUID: {{ child.variableUuid }}
                     <v-btn
-                      depressed
+                      icon
                       @click="copyUUID(child.variableUuid || '')"
                       @click.native.stop
                       ><v-icon small>mdi-content-copy </v-icon>
@@ -102,7 +98,7 @@
                   <span v-else class="blue--text">
                     Value UUID: {{ child.valueUuid }}
                     <v-btn
-                      depressed
+                      icon
                       @click="copyUUID(child.valueUuid || '')"
                       @click.native.stop
                     >

@@ -13,10 +13,10 @@
             class="test-search"
           />
           <v-switch
-            label="SHOW UUIDs (on/off)"
+            label="Show UUIDs"
             color="primary"
+            v-model="showUUID"
             hide-details
-            @click="toggleUUIDVisibility()"
           ></v-switch>
         </v-col>
       </v-row>
@@ -91,10 +91,6 @@ export default defineComponent({
       }
     });
 
-    const toggleUUIDVisibility = () => {
-      showUUID.value = !showUUID.value;
-    };
-
     const searchTree = (
       node: TaxonomyTree,
       searchText: string,
@@ -158,7 +154,6 @@ export default defineComponent({
       searchPath,
       nodesToHightlight,
       openSearchResults,
-      toggleUUIDVisibility,
     };
   },
 });
