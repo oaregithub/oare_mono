@@ -26,10 +26,8 @@
           </div>
         </v-col>
         <v-col cols="2">
-          <v-container :class="{ sticky: true }">
-            <!-- <v-card elevation="2" class="pa-2 mb-4 mx-auto" width="200px"> -->
+          <v-container class="sticky">
             <p class="font-weight-bold">Frequency</p>
-            <!-- </v-card> -->
             <div v-for="n in 6" :key="n">
               <v-card-text
                 class="pa-2 mx-auto"
