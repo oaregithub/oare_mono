@@ -10,3 +10,9 @@ export interface AdminBadgeOptions {
   error: boolean;
   comments: boolean;
 }
+
+export interface EnvironmentInfo {
+  elasticBeanstalkRegion?: string;
+  databaseReadRegion?: string;
+  databaseWriteRegion?: string;
+}
