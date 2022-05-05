@@ -197,12 +197,12 @@ class ResourceDao {
     });
   }
 
-  async getDirectObjectLink(uuid: string): Promise<string[]> {
-    const result = await knex('resource').select('*').where('uuid', uuid);
+  async getDirectObjectLink(uuid: string): Promise<ResourceRow> {
+    const result: ResourceRow[] = await knex('resource')
+      .select(['uuid', 'sourceUuid', 'type', 'container', 'format', 'link'])
+      .where('uuid', uuid);
 
-    const response: string[] = [result[0].container, result[0].link];
-
-    return response;
+    return result[0];
   }
 }
 
