@@ -9,8 +9,8 @@ router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
   try {
     const environmentInfo: EnvironmentInfo = {
       elasticBeanstalkRegion: process.env.CURRENT_EB_REGION,
-      databaseReadRegion: 'Coming Soon',
-      databaseWriteRegion: 'Coming Soon',
+      databaseReadRegion: undefined,
+      databaseWriteRegion: undefined,
     };
     res.json(environmentInfo);
   } catch (err) {
