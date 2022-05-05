@@ -72,11 +72,40 @@
               <span class="text--disabled">
                 &nbsp;
                 <span v-if="child.varAbbreviation"
-                  >({{ child.varAbbreviation }})</span
-                >
+                  >({{ child.varAbbreviation }})
+                </span>
                 <span v-else-if="child.valAbbreviation">
                   ({{ child.valAbbreviation }})</span
                 >
+                <span
+                  v-if="showUUID && !allowSelections"
+                  class="blue--text mr-3"
+                  >UUID: {{ child.uuid }}
+                  <v-btn icon @click="copyUUID(child.uuid)" @click.native.stop>
+                    <v-icon small>mdi-content-copy</v-icon>
+                  </v-btn>
+                </span>
+                <span v-if="showUUID && !allowSelections">
+                  <span v-if="child.variableUuid" class="blue--text">
+                    Variable UUID: {{ child.variableUuid }}
+                    <v-btn
+                      icon
+                      @click="copyUUID(child.variableUuid || '')"
+                      @click.native.stop
+                      ><v-icon small>mdi-content-copy </v-icon>
+                    </v-btn>
+                  </span>
+                  <span v-else class="blue--text">
+                    Value UUID: {{ child.valueUuid }}
+                    <v-btn
+                      icon
+                      @click="copyUUID(child.valueUuid || '')"
+                      @click.native.stop
+                    >
+                      <v-icon small>mdi-content-copy</v-icon>
+                    </v-btn>
+                  </span>
+                </span>
               </span>
             </span>
           </template>
@@ -120,6 +149,7 @@
           :nodesToHighlight="nodesToHighlight"
           :openSearchResults="openSearchResults"
           :existingProperties="existingProperties"
+          :showUUID="showUUID"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
         />
@@ -138,6 +168,7 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
+import sl from '@/serviceLocator';
 
 export interface ParseTreePropertyEvent {
   properties: ParseTreeProperty[];
@@ -167,11 +198,16 @@ export default defineComponent({
       type: Array as PropType<ItemPropertyRow[]>,
       required: false,
     },
+    showUUID: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, { emit }) {
     const selected = ref<TaxonomyTree[]>([]);
     const completedSubtrees = ref<TaxonomyTree[]>([]);
     const ignoredSubtrees = ref<TaxonomyTree[]>([]);
+    const actions = sl.get('globalActions');
 
     onMounted(() => {
       if (props.existingProperties && props.node.variableUuid) {
@@ -281,6 +317,11 @@ export default defineComponent({
       });
     });
 
+    const copyUUID = (uuid: string) => {
+      navigator.clipboard.writeText(uuid);
+      actions.showSnackbar('Copied Successfully');
+    };
+
     const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
         prop => prop.source !== args.source
@@ -333,6 +374,7 @@ export default defineComponent({
       showCheck,
       updateCompletedSubtrees,
       updateProperties,
+      copyUUID,
       searchResultsToOpen,
       disableChildren,
     };
