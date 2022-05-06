@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { FormSpelling } from '@oare/types';
 import { Knex } from 'knex';
 import { spellingHtmlReading } from '@oare/oare';
@@ -17,7 +17,7 @@ class DictionarySpellingDao {
     newSpelling: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knex;
+    const k = trx || knexWrite;
     await k('dictionary_spelling')
       .update('explicit_spelling', newSpelling)
       .where({ uuid });
@@ -28,7 +28,7 @@ class DictionarySpellingDao {
     isAdmin: boolean,
     htmlSpelling: boolean
   ): Promise<FormSpelling[]> {
-    const rows: FormSpelling[] = await knex('dictionary_spelling')
+    const rows: FormSpelling[] = await knexRead()('dictionary_spelling')
       .select('uuid', 'explicit_spelling AS spelling')
       .where('reference_uuid', formUuid);
 
@@ -62,7 +62,7 @@ class DictionarySpellingDao {
     formUuid: string,
     spelling: string
   ): Promise<boolean> {
-    const row = await knex('dictionary_spelling')
+    const row = await knexRead()('dictionary_spelling')
       .select()
       .where({
         reference_uuid: formUuid,
@@ -75,7 +75,7 @@ class DictionarySpellingDao {
 
   async addSpelling(formUuid: string, spelling: string): Promise<string> {
     const uuid = v4();
-    await knex('dictionary_spelling').insert({
+    await knexWrite()('dictionary_spelling').insert({
       uuid,
       reference_uuid: formUuid,
       spelling,
@@ -88,13 +88,15 @@ class DictionarySpellingDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knex;
+    const k = trx || knexWrite;
 
     await k('dictionary_spelling').del().where('uuid', spellingUuid);
   }
 
   async getSpellingByUuid(spellingUuid: string): Promise<string> {
-    const row: { explicit_spelling: string } = await knex('dictionary_spelling')
+    const row: { explicit_spelling: string } = await knexRead()(
+      'dictionary_spelling'
+    )
       .where('uuid', spellingUuid)
       .select('explicit_spelling')
       .first();
@@ -103,7 +105,9 @@ class DictionarySpellingDao {
   }
 
   async getFormUuidBySpellingUuid(spellingUuid: string): Promise<string> {
-    const row: { referenceUuid: string } = await knex('dictionary_spelling')
+    const row: { referenceUuid: string } = await knexRead()(
+      'dictionary_spelling'
+    )
       .where('uuid', spellingUuid)
       .select('reference_uuid AS referenceUuid')
       .first();
@@ -116,7 +120,7 @@ class DictionarySpellingDao {
   }
 
   async getUuidBySpelling(spelling: string, formUuid: string): Promise<string> {
-    const row: { uuid: string } = await knex('dictionary_spelling')
+    const row: { uuid: string } = await knexRead()('dictionary_spelling')
       .where('reference_uuid', formUuid)
       .andWhere('explicit_spelling', spelling)
       .select('uuid')
@@ -127,7 +131,7 @@ class DictionarySpellingDao {
   async getReferenceUuidsBySpellingUuid(
     spellingUuid: string
   ): Promise<string[]> {
-    const row = await knex('dictionary_spelling')
+    const row = await knexRead()('dictionary_spelling')
       .where('uuid', spellingUuid)
       .pluck('reference_uuid');
 

@@ -255,11 +255,6 @@ router
           LoggingEditsDao.logEdit('UPDATE', userUuid, 'text_discourse', uuid)
         )
       );
-      await Promise.all(
-        discourseUuids.map(uuid =>
-          TextDiscourseDao.updateDiscourseTranscription(uuid, newForm)
-        )
-      );
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -353,7 +348,7 @@ router
         return;
       }
 
-      await utils.createTransaction(async trx => {
+      await utils.createTransaction(true, async trx => {
         if (currentSpelling !== spelling) {
           await DictionarySpellingDao.updateSpelling(
             spellingUuid,

@@ -6,7 +6,7 @@ import {
   TaxonomyTree,
   HierarchyRow,
 } from '@oare/types';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import { getTreeNodeQuery } from './utils';
 
@@ -23,7 +23,7 @@ class HierarchyDao {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     function createBaseQuery() {
-      const query = knex('hierarchy')
+      const query = knexRead()('hierarchy')
         .distinct('hierarchy.object_uuid as uuid')
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
         .where('hierarchy.type', type.toLowerCase())
@@ -31,7 +31,7 @@ class HierarchyDao {
       if (groupId && showExcluded) {
         return query.whereNotIn(
           'hierarchy.object_uuid',
-          knex('group_edit_permissions')
+          knexRead()('group_edit_permissions')
             .select('uuid')
             .where('group_id', groupId)
         );
@@ -40,17 +40,17 @@ class HierarchyDao {
         return query
           .whereIn(
             'hierarchy.object_uuid',
-            knex('public_denylist').select('uuid').where({ type })
+            knexRead()('public_denylist').select('uuid').where({ type })
           )
           .modify(qb => {
             if (type === 'Text') {
               qb.orWhereIn(
                 'hierarchy.object_uuid',
-                knex('hierarchy')
+                knexRead()('hierarchy')
                   .select('object_uuid')
                   .whereIn(
                     'obj_parent_uuid',
-                    knex('public_denylist')
+                    knexRead()('public_denylist')
                       .select('uuid')
                       .where('type', 'collection')
                   )
@@ -59,7 +59,9 @@ class HierarchyDao {
           })
           .whereNotIn(
             'hierarchy.object_uuid',
-            knex('group_allowlist').select('uuid').where('group_id', groupId)
+            knexRead()('group_allowlist')
+              .select('uuid')
+              .where('group_id', groupId)
           );
       }
       return query
@@ -110,7 +112,7 @@ class HierarchyDao {
 
     const count = await createBaseQuery()
       .count({
-        count: knex.raw('distinct hierarchy.object_uuid'),
+        count: knexRead().raw('distinct hierarchy.object_uuid'),
       })
       .first();
     let totalItems = 0;
@@ -140,7 +142,7 @@ class HierarchyDao {
         .replace(/\W/g, '%')
         .toLowerCase()}%`;
 
-      const query = knex('hierarchy')
+      const query = knexRead()('hierarchy')
         .leftJoin('text', 'text.uuid', 'hierarchy.object_uuid')
         .where('hierarchy.obj_parent_uuid', collectionUuid)
         .whereNotIn('hierarchy.object_uuid', textsToHide)
@@ -164,7 +166,7 @@ class HierarchyDao {
 
     const countRow = await collectionTextQuery()
       .count({
-        count: knex.raw('distinct hierarchy.id'),
+        count: knexRead().raw('distinct hierarchy.id'),
       })
       .first();
 
@@ -205,14 +207,17 @@ class HierarchyDao {
   }
 
   async isPublished(hierarchyUuid: string): Promise<boolean> {
-    const row: { published: boolean } = await knex('hierarchy')
+    const row: { published: boolean } = await knexRead()('hierarchy')
       .first('published')
       .where('object_uuid', hierarchyUuid);
     return row.published;
   }
 
   async hasChild(hierarchyUuid: string) {
-    const rows = await knex('hierarchy').where('parent_uuid', hierarchyUuid);
+    const rows = await knexRead()('hierarchy').where(
+      'parent_uuid',
+      hierarchyUuid
+    );
     if (rows && rows.length > 0) {
       return true;
     }
@@ -270,7 +275,7 @@ class HierarchyDao {
   }
 
   async getTextsInCollection(collectionUuid: string): Promise<string[]> {
-    const rows = await knex('hierarchy')
+    const rows = await knexRead()('hierarchy')
       .pluck('object_uuid')
       .where('obj_parent_uuid', collectionUuid);
 
@@ -278,7 +283,7 @@ class HierarchyDao {
   }
 
   async getParentUuidByCollection(collectionUuid: string): Promise<string> {
-    const results = await knex('hierarchy')
+    const results = await knexRead()('hierarchy')
       .select('parent_uuid AS parentUuid')
       .where('obj_parent_uuid', collectionUuid)
       .first();
@@ -286,7 +291,7 @@ class HierarchyDao {
   }
 
   async insertHierarchyRow(row: HierarchyRow) {
-    await knex('hierarchy').insert({
+    await knexWrite()('hierarchy').insert({
       uuid: row.uuid,
       parent_uuid: row.parentUuid,
       type: row.type,

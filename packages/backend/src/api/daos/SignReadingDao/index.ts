@@ -1,10 +1,10 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 import { UuidRow, SignCode } from '@oare/types';
 import { formattedSearchCharacter } from '@/api/daos/TextEpigraphyDao/utils';
 
 class SignReadingDao {
   async hasSign(sign: string): Promise<boolean> {
-    const row = await knex('sign_reading').where('reading', sign).first();
+    const row = await knexRead()('sign_reading').where('reading', sign).first();
     return !!row;
   }
 
@@ -14,14 +14,14 @@ class SignReadingDao {
    * @returns sign uuids for valid signs found in the array of possible signs
    */
   async getIntellisearchSignUuids(signs: string[]): Promise<string[]> {
-    const rows: UuidRow[] = await knex('sign_reading')
+    const rows: UuidRow[] = await knexRead()('sign_reading')
       .select('uuid')
       .whereIn('reading', signs);
     return rows.map(row => row.uuid);
   }
 
   async getMatchingSigns(sign: string): Promise<string[]> {
-    const matchingSigns = await knex('sign_reading AS sr1')
+    const matchingSigns = await knexRead()('sign_reading AS sr1')
       .select('sr2.reading')
       .innerJoin(
         'sign_reading AS sr2',
@@ -33,7 +33,7 @@ class SignReadingDao {
   }
 
   async getSignCode(sign: string, isDeterminative: boolean): Promise<SignCode> {
-    const imageCodeArray = await knex('sign_reading')
+    const imageCodeArray = await knexRead()('sign_reading')
       .select(
         'sign_org.org_num as signCode',
         'sign_reading.reference_uuid as signUuid',
@@ -63,7 +63,7 @@ class SignReadingDao {
       : null;
 
     if (imageCode) {
-      const newSign = await knex('sign')
+      const newSign = await knexRead()('sign')
         .select('name')
         .where('uuid', imageCodeArray.signUuid)
         .first();
@@ -78,7 +78,7 @@ class SignReadingDao {
       };
     }
 
-    const fontCodeArray = await knex('sign')
+    const fontCodeArray = await knexRead()('sign')
       .select(
         'sign.font_code as fontCode',
         'sign_reading.reference_uuid as signUuid',
@@ -101,7 +101,7 @@ class SignReadingDao {
       ? fontCodeArray.fontCode
       : null;
     if (fontCode) {
-      const newSign = await knex('sign')
+      const newSign = await knexRead()('sign')
         .select('name')
         .where('uuid', fontCodeArray.signUuid)
         .first();

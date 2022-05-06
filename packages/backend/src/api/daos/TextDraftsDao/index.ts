@@ -1,6 +1,6 @@
 import { TextDraft, UuidRow, DraftQueryOptions } from '@oare/types';
 import { v4 } from 'uuid';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { createTabletRenderer } from '@oare/oare';
 import CollectionTextUtils from '../CollectionTextUtils';
 import TextEpigraphyDao from '../TextEpigraphyDao';
@@ -11,7 +11,7 @@ export interface TextDraftRow
 }
 
 function getBaseDraftQuery(userUuid: string) {
-  return knex('text_drafts')
+  return knexRead()('text_drafts')
     .select(
       'text_drafts.created_at AS createdAt',
       'text_drafts.updated_at AS updatedAt',
@@ -30,7 +30,7 @@ function getBaseDraftQuery(userUuid: string) {
 
 class TextDraftsDao {
   async draftExists(draftUuid: string): Promise<boolean> {
-    const row = await knex('text_drafts')
+    const row = await knexRead()('text_drafts')
       .select()
       .where('uuid', draftUuid)
       .first();
@@ -38,7 +38,7 @@ class TextDraftsDao {
   }
 
   async userOwnsDraft(userUuid: string, draftUuid: string): Promise<boolean> {
-    const row = await knex('text_drafts')
+    const row = await knexRead()('text_drafts')
       .select()
       .where('user_uuid', userUuid)
       .andWhere('uuid', draftUuid)
@@ -48,7 +48,7 @@ class TextDraftsDao {
   }
 
   async deleteDraft(draftUuid: string): Promise<void> {
-    await knex('text_drafts').del().where('uuid', draftUuid);
+    await knexWrite()('text_drafts').del().where('uuid', draftUuid);
   }
 
   async getDraftByUuid(draftUuid: string): Promise<TextDraft> {
@@ -57,7 +57,7 @@ class TextDraftsDao {
       throw new Error(`Draft with UUID ${draftUuid} does not exist`);
     }
 
-    const row: TextDraftRow = await knex('text_drafts')
+    const row: TextDraftRow = await knexRead()('text_drafts')
       .select(
         'text_drafts.created_at AS createdAt',
         'text_drafts.updated_at AS updatedAt',
@@ -122,7 +122,7 @@ class TextDraftsDao {
     const creation = new Date();
     const uuid = v4();
 
-    await knex('text_drafts').insert({
+    await knexWrite()('text_drafts').insert({
       uuid,
       user_uuid: userUuid,
       created_at: creation,
@@ -137,7 +137,7 @@ class TextDraftsDao {
 
   async updateDraft(draftUuid: string, content: string, notes: string) {
     const updated = new Date();
-    await knex('text_drafts').where('uuid', draftUuid).update({
+    await knexWrite()('text_drafts').where('uuid', draftUuid).update({
       content,
       updated_at: updated,
       notes,
@@ -149,7 +149,7 @@ class TextDraftsDao {
       uuid: string;
       textUuid: string;
     }
-    const drafts: DraftTextRow[] = await knex('text_drafts')
+    const drafts: DraftTextRow[] = await knexRead()('text_drafts')
       .select('text_drafts.uuid', 'text_uuid AS textUuid')
       .innerJoin('text', 'text.uuid', 'text_drafts.text_uuid')
       .where('user_uuid', userUuid)
@@ -170,7 +170,7 @@ class TextDraftsDao {
     authorFilter,
     textFilter,
   }: Pick<DraftQueryOptions, 'authorFilter' | 'textFilter'>) {
-    return knex('text_drafts')
+    return knexRead()('text_drafts')
       .innerJoin('user', 'user.uuid', 'text_drafts.user_uuid')
       .innerJoin('text', 'text.uuid', 'text_drafts.text_uuid')
       .where('text.name', 'like', `%${textFilter || ''}%`)

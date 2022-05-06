@@ -6,7 +6,7 @@ import {
   Word,
   DisplayableWord,
 } from '@oare/types';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import { assembleSearchResult } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
@@ -54,7 +54,7 @@ class DictionaryWordDao {
 
     const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-    const rows: SearchSpellingRow[] = await knex
+    const rows: SearchSpellingRow[] = await knexRead()
       .select(
         'dw.uuid AS wordUuid',
         'dw.word',
@@ -106,7 +106,7 @@ class DictionaryWordDao {
     isAdmin: boolean
   ): Promise<Word[]> {
     const letters = letter.split('/');
-    let query = knex('dictionary_word').select('uuid', 'word');
+    let query = knexRead()('dictionary_word').select('uuid', 'word');
 
     letters.forEach(possibleVowel => {
       switch (possibleVowel) {
@@ -195,7 +195,7 @@ class DictionaryWordDao {
   }
 
   async getAllTranslations(): Promise<TranslationRow[]> {
-    const rows: TranslationRow[] = await knex('dictionary_word')
+    const rows: TranslationRow[] = await knexRead()('dictionary_word')
       .select(
         'dictionary_word.uuid AS dictionaryUuid',
         'field.uuid AS fieldUuid',
@@ -220,7 +220,7 @@ class DictionaryWordDao {
   }
 
   async getWordName(wordUuid: string): Promise<string> {
-    const { word }: { word: string } = await knex('dictionary_word')
+    const { word }: { word: string } = await knexRead()('dictionary_word')
       .select('word')
       .where('uuid', wordUuid)
       .first();
@@ -244,26 +244,30 @@ class DictionaryWordDao {
 
   async searchWords(search: string, page: number, numRows: number) {
     const lowerSearch = search.toLowerCase();
-    const query = knex
+    const query = knexRead()
       .from('dictionary_word AS dw')
       .leftJoin('field', 'field.reference_uuid', 'dw.uuid')
       .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
       .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
-      .where(knex.raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(knex.raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(knex.raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
+      .where(knexRead().raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
       .orWhere(
-        knex.raw('LOWER(ds.explicit_spelling) LIKE ?', [`%${lowerSearch}%`])
+        knexRead().raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`])
+      )
+      .orWhere(knexRead().raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
+      .orWhere(
+        knexRead().raw('LOWER(ds.explicit_spelling) LIKE ?', [
+          `%${lowerSearch}%`,
+        ])
       )
       .select(
         'dw.uuid',
         'dw.type',
         'dw.word AS name',
-        knex.raw(
+        knexRead().raw(
           "GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"
         ),
         'df.form',
-        knex.raw(
+        knexRead().raw(
           "GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings"
         )
       )
@@ -280,7 +284,7 @@ class DictionaryWordDao {
   }
 
   async updateWordSpelling(uuid: string, word: string): Promise<void> {
-    await knex('dictionary_word').update({ word }).where({ uuid });
+    await knexWrite()('dictionary_word').update({ word }).where({ uuid });
   }
 
   async updateTranslations(

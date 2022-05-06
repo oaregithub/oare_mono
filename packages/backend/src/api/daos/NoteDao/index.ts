@@ -1,11 +1,11 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 import { DiscourseNote } from '@oare/types';
 
 class NoteDao {
   async getNotesByReferenceUuid(
     referenceUuid: string
   ): Promise<DiscourseNote[]> {
-    const rows: DiscourseNote[] = await knex('note')
+    const rows: DiscourseNote[] = await knexRead()('note')
       .select(
         'note.uuid',
         'note.reference_uuid as referenceUuid',
