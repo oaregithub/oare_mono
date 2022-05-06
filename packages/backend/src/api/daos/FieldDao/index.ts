@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 
 interface FieldRow {
   id: number;
@@ -16,7 +16,7 @@ interface FieldOptions {
 }
 class FieldDao {
   async getByReferenceUuid(referenceUuid: string): Promise<FieldRow[]> {
-    return knex('field')
+    return knexRead()('field')
       .select()
       .where({
         reference_uuid: referenceUuid,
@@ -31,7 +31,7 @@ class FieldDao {
     options?: FieldOptions
   ): Promise<string> {
     const uuid = v4();
-    await knex('field').insert({
+    await knexWrite()('field').insert({
       uuid,
       reference_uuid: referenceUuid,
       type,
@@ -42,7 +42,7 @@ class FieldDao {
   }
 
   async updateField(uuid: string, field: string, options?: FieldOptions) {
-    await knex('field')
+    await knexWrite()('field')
       .update({
         field,
         primacy: options && options.primacy ? options.primacy : null,
@@ -51,7 +51,7 @@ class FieldDao {
   }
 
   async deleteField(uuid: string) {
-    await knex('field').del().where({ uuid });
+    await knexWrite()('field').del().where({ uuid });
   }
 }
 

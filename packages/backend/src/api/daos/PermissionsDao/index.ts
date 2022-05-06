@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { PermissionItem, PermissionName } from '@oare/types';
 import UserDao from '../UserDao';
 import UserGroupDao from '../UserGroupDao';
@@ -143,7 +143,7 @@ class PermissionsDao {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
 
       const userPermissions: PermissionName[] = (
-        await knex('permissions')
+        await knexRead()('permissions')
           .select('permission')
           .whereIn('group_id', groupIds)
       ).map(row => row.permission);
@@ -157,7 +157,9 @@ class PermissionsDao {
 
   async getGroupPermissions(groupId: number): Promise<PermissionItem[]> {
     const permissions: string[] = (
-      await knex('permissions').select('permission').where('group_id', groupId)
+      await knexRead()('permissions')
+        .select('permission')
+        .where('group_id', groupId)
     ).map(row => row.permission);
 
     return this.ALL_PERMISSIONS.filter(permission =>
@@ -166,7 +168,7 @@ class PermissionsDao {
   }
 
   async addGroupPermission(groupId: number, { type, name }: PermissionItem) {
-    await knex('permissions').insert({
+    await knexWrite()('permissions').insert({
       group_id: groupId,
       type,
       permission: name,
@@ -174,7 +176,7 @@ class PermissionsDao {
   }
 
   async removePermission(groupId: number, permission: PermissionName) {
-    await knex('permissions')
+    await knexWrite()('permissions')
       .where('group_id', groupId)
       .andWhere('permission', permission)
       .del();

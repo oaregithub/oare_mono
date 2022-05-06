@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { TranslitOption, Text, TextRow } from '@oare/types';
 
 interface TextUuid {
@@ -7,7 +7,7 @@ interface TextUuid {
 
 class TextDao {
   async getTextByUuid(uuid: string): Promise<Text | null> {
-    const text: Text = await knex('text')
+    const text: Text = await knexRead()('text')
       .select(
         'uuid',
         'type',
@@ -25,7 +25,7 @@ class TextDao {
   }
 
   async getUnpublishedTextUuids(): Promise<string[]> {
-    const texts: TextUuid[] = await knex('text')
+    const texts: TextUuid[] = await knexRead()('text')
       .select('text.uuid')
       .innerJoin('hierarchy', 'hierarchy.object_uuid', 'text.uuid')
       .where('hierarchy.published', false);
@@ -34,7 +34,7 @@ class TextDao {
   }
 
   async getCdliNum(uuid: string): Promise<string | null> {
-    const { cdliNum } = await knex('text')
+    const { cdliNum } = await knexRead()('text')
       .select('cdli_num AS cdliNum')
       .where({ uuid })
       .first();
@@ -42,7 +42,7 @@ class TextDao {
   }
 
   async getTranslitStatus(uuid: string) {
-    const { name: color, field: colorMeaning } = await knex('text')
+    const { name: color, field: colorMeaning } = await knexRead()('text')
       .select('alias.name', 'field.field')
       .where({ 'text.uuid': uuid })
       .innerJoin('alias', 'translit_status', 'alias.reference_uuid')
@@ -56,7 +56,7 @@ class TextDao {
   }
 
   async getTranslitOptions() {
-    const stoplightOptions: TranslitOption[] = await knex('hierarchy')
+    const stoplightOptions: TranslitOption[] = await knexRead()('hierarchy')
       .select('a1.name as color', 'field.field as colorMeaning')
       .innerJoin('alias as a1', 'a1.reference_uuid', 'hierarchy.object_uuid')
       .innerJoin(
@@ -71,12 +71,12 @@ class TextDao {
   }
 
   async updateTranslitStatus(textUuid: string, color: string) {
-    const statusRow = await knex('hierarchy')
+    const statusRow = await knexRead()('hierarchy')
       .select('hierarchy.object_uuid as translitUuid')
       .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
       .where('name', color)
       .first();
-    await knex('text')
+    await knexWrite()('text')
       .update('translit_status', statusRow.translitUuid)
       .where('uuid', textUuid);
   }
@@ -90,7 +90,7 @@ class TextDao {
     newPrimaryPublicationPrefix: string | null,
     newPrimaryPublicationNumber: string | null
   ) {
-    await knex('text')
+    await knexWrite()('text')
       .update({
         excavation_prfx: newExcavationPrefix,
         excavation_no: newExcavationNumber,
@@ -103,7 +103,7 @@ class TextDao {
   }
 
   async insertTextRow(row: TextRow) {
-    await knex('text').insert({
+    await knexWrite()('text').insert({
       uuid: row.uuid,
       type: row.type,
       language: row.language,

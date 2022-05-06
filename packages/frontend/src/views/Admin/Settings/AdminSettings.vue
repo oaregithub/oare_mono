@@ -28,7 +28,7 @@
             {{
               environmentInfo && environmentInfo.elasticBeanstalkRegion
                 ? environmentInfo.elasticBeanstalkRegion
-                : 'Development'
+                : 'Development (localhost)'
             }}
           </v-list-item-subtitle>
           <v-list-item-subtitle>
@@ -36,7 +36,7 @@
             {{
               environmentInfo && environmentInfo.databaseReadRegion
                 ? environmentInfo.databaseReadRegion
-                : 'Coming Soon'
+                : 'Development (Docker)'
             }}</v-list-item-subtitle
           >
           <v-list-item-subtitle>
@@ -44,7 +44,7 @@
             {{
               environmentInfo && environmentInfo.databaseWriteRegion
                 ? environmentInfo.databaseWriteRegion
-                : 'Coming Soon'
+                : 'Development (Docker)'
             }}</v-list-item-subtitle
           >
         </v-list-item-content>

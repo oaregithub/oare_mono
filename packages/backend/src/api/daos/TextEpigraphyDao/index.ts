@@ -6,7 +6,7 @@ import {
   SearchNullDiscourseLine,
   TextEpigraphyRow,
 } from '@oare/types';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import {
   getSearchQuery,
@@ -53,7 +53,7 @@ class TextEpigraphyDao {
     textUuid: string,
     { maxLine, minLine }: GetEpigraphicUnitsOptions = {}
   ): Promise<EpigraphicUnit[]> {
-    let query = knex('text_epigraphy')
+    let query = knexRead()('text_epigraphy')
       .leftJoin(
         'sign_reading',
         'text_epigraphy.reading_uuid',
@@ -222,7 +222,7 @@ class TextEpigraphyDao {
 
     const totalRows: number = (
       await getSearchQuery(characters, textsToHide, true, mode, title)
-        .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
+        .select(knexRead().raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
     ).count;
@@ -245,7 +245,7 @@ class TextEpigraphyDao {
       includeSuperfluous,
       'respectNoBoundaries'
     )
-      .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
+      .select(knexRead().raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
       .modify(qb => {
         characterUuids[0].words[0].uuids.forEach((_uuid, idx) => {
           if (idx === 0) {
@@ -304,7 +304,7 @@ class TextEpigraphyDao {
     );
     const lineInfo = await Promise.all(
       epigraphyOccurrencesUuids.map(uuids =>
-        knex('text_epigraphy')
+        knexRead()('text_epigraphy')
           .select('text_uuid AS textUuid', 'line')
           .whereIn('uuid', uuids)
           .first()
@@ -319,7 +319,7 @@ class TextEpigraphyDao {
   }
 
   async hasEpigraphy(uuid: string): Promise<boolean> {
-    const response = await knex('text_epigraphy')
+    const response = await knexRead()('text_epigraphy')
       .first('uuid')
       .where('text_uuid', uuid);
     return !!response;
@@ -330,13 +330,13 @@ class TextEpigraphyDao {
     textUuid: string
   ): Promise<AnchorInfo> {
     const newWordCharOnTablet: number = (
-      await knex('text_epigraphy')
+      await knexRead()('text_epigraphy')
         .whereIn('uuid', epigraphyUuids)
         .pluck('char_on_tablet')
         .orderBy('char_on_tablet', 'asc')
     )[0];
     let isFirstWord = false;
-    let anchorDiscourseRow: { discourseUuid: string } = await knex(
+    let anchorDiscourseRow: { discourseUuid: string } = await knexRead()(
       'text_epigraphy'
     )
       .where('text_uuid', textUuid)
@@ -349,7 +349,7 @@ class TextEpigraphyDao {
       .first();
     if (!anchorDiscourseRow) {
       isFirstWord = true;
-      anchorDiscourseRow = await knex('text_epigraphy')
+      anchorDiscourseRow = await knexRead()('text_epigraphy')
         .where('text_uuid', textUuid)
         .whereNotNull('discourse_uuid')
         .andWhere(function () {
@@ -360,7 +360,7 @@ class TextEpigraphyDao {
         .first();
     }
     const anchorDiscourseUuid = anchorDiscourseRow.discourseUuid;
-    const anchorInfo: AnchorInfo = await knex('text_discourse')
+    const anchorInfo: AnchorInfo = await knexRead()('text_discourse')
       .where('uuid', anchorDiscourseUuid)
       .select(
         'word_on_tablet AS wordOnTablet',
@@ -386,13 +386,13 @@ class TextEpigraphyDao {
     epigraphyUuids: string[],
     discourseUuid: string
   ): Promise<void> {
-    await knex('text_epigraphy')
+    await knexWrite()('text_epigraphy')
       .update('discourse_uuid', discourseUuid)
       .whereIn('uuid', epigraphyUuids);
   }
 
   async insertEpigraphyRow(row: TextEpigraphyRow) {
-    await knex('text_epigraphy').insert({
+    await knexWrite()('text_epigraphy').insert({
       uuid: row.uuid,
       type: row.type,
       text_uuid: row.textUuid,

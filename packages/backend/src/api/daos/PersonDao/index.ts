@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 import { PersonDisplay } from '@oare/types';
 import utils from '../utils';
 
@@ -13,7 +13,7 @@ class PersonDao {
       'dictionary_word_person.word'
     );
 
-    return knex('person')
+    return knexRead()('person')
       .leftJoin(
         'dictionary_word AS dictionary_word_person',
         'dictionary_word_person.uuid',
@@ -26,7 +26,7 @@ class PersonDao {
       )
       .leftJoin('item_properties', function () {
         this.on('item_properties.reference_uuid', '=', 'person.uuid').andOn(
-          knex.raw(
+          knexRead().raw(
             'item_properties.level = (SELECT MAX(ip.level) FROM item_properties AS ip WHERE ip.reference_uuid = person.uuid)'
           )
         );
@@ -52,7 +52,9 @@ class PersonDao {
       .select(
         'person.uuid',
         'person.name_uuid AS personNameUuid',
-        knex.raw('IFNULL(dictionary_word_person.word, person.label) AS word'),
+        knexRead().raw(
+          'IFNULL(dictionary_word_person.word, person.label) AS word'
+        ),
         'dictionary_word_person.word AS person',
         'person.relation',
         'dictionary_word_relation_person.word AS relationPerson',
