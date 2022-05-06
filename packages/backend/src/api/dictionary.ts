@@ -348,7 +348,7 @@ router
         return;
       }
 
-      await utils.createTransaction(true, async trx => {
+      await utils.createTransaction(async trx => {
         if (currentSpelling !== spelling) {
           await DictionarySpellingDao.updateSpelling(
             spellingUuid,

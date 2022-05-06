@@ -46,7 +46,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite;
+    const k = trx || knexWrite();
     await k('text_discourse')
       .update('spelling_uuid', spellingUuid)
       .where({ uuid });
@@ -235,7 +235,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead;
+    const k = trx || knexRead();
     const rows: { uuid: string }[] = await k('text_discourse')
       .select('uuid')
       .where('spelling_uuid', spellingUuid);

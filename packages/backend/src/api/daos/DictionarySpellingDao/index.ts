@@ -17,7 +17,7 @@ class DictionarySpellingDao {
     newSpelling: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite;
+    const k = trx || knexWrite();
     await k('dictionary_spelling')
       .update('explicit_spelling', newSpelling)
       .where({ uuid });
@@ -88,7 +88,7 @@ class DictionarySpellingDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite;
+    const k = trx || knexWrite();
 
     await k('dictionary_spelling').del().where('uuid', spellingUuid);
   }

@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import { knexWrite } from '@/connection';
 import { Knex } from 'knex';
 import { ParsedQs } from 'qs';
 import {
@@ -14,11 +14,9 @@ import _ from 'lodash';
 import sl from '@/serviceLocator';
 
 export const createTransaction = async (
-  write: boolean,
   cb: (trx: Knex.Transaction) => Promise<void>
 ): Promise<void> => {
-  const knex = write ? knexWrite() : knexRead();
-  await knex.transaction(async trx => {
+  await knexWrite().transaction(async trx => {
     await cb(trx);
   });
 };
