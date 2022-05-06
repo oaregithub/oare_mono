@@ -99,8 +99,8 @@ async function getTextFileByTextUuid(uuid: string) {
   return data;
 }
 
-async function getDirectObjectLink(uuid: string) {
-  const { data } = await axios.get(`/text_epigraphies/object_link/${uuid}`);
+async function getSpecialObjectLink(tag: string) {
+  const { data } = await axios.get(`/text_epigraphies/object_link/${tag}`);
   return data;
 }
 
@@ -115,5 +115,5 @@ export default {
   updateTextInfo,
   addPhotosToText,
   getTextFileByTextUuid,
-  getDirectObjectLink,
+  getSpecialObjectLink,
 };

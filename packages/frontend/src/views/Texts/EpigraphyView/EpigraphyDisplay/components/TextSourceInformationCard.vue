@@ -21,8 +21,8 @@ export default defineComponent({
     const imageLink = ref('');
 
     onMounted(async () => {
-      imageLink.value = await server.getDirectObjectLink(
-        '3d4d9397-b6a8-11ec-bcc3-0282f921eac9'
+      imageLink.value = await server.getSpecialObjectLink(
+        'explanation'
       );
     });
 

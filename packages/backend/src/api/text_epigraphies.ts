@@ -372,14 +372,14 @@ router
   });
 
 router
-  .route('/text_epigraphies/object_link/:uuid')
+  .route('/text_epigraphies/object_link/:tag')
   .get(async (req, res, next) => {
     try {
-      const { uuid } = req.params;
+      const { tag } = req.params;
 
       const ResourceDao = sl.get('ResourceDao');
 
-      const result = await ResourceDao.getDirectObjectLink(uuid);
+      const result = await ResourceDao.getDirectObjectLink(tag);
 
       const s3 = new AWS.S3();
 
