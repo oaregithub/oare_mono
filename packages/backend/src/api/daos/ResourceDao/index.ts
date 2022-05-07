@@ -24,7 +24,9 @@ class ResourceDao {
     try {
       const s3 = new AWS.S3();
 
-      const resourceLinks: EpigraphyLabelLink[] = await knexRead()('person as p')
+      const resourceLinks: EpigraphyLabelLink[] = await knexRead()(
+        'person as p'
+      )
         .distinct()
         .select('p.label as label', 'r.link as link')
         .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
@@ -34,7 +36,7 @@ class ResourceDao {
           knexRead()('link')
             .select('obj_uuid as uuid')
             .where('reference_uuid', textUuid)
-      );
+        );
 
       const signedUrls = await Promise.all(
         resourceLinks.map(key => {
