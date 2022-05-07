@@ -205,7 +205,7 @@ class ResourceDao {
       return {} as ResourceRow;
     }
     const result: ResourceRow[] = await knexRead()('resource')
-      .select(['uuid', 'sourceUuid', 'type', 'container', 'format', 'link'])
+      .select(['uuid', 'source_uuid', 'type', 'container', 'format', 'link'])
       .where('uuid', uuid);
 
     return result[0];

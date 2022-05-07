@@ -379,13 +379,13 @@ router
 
       const ResourceDao = sl.get('ResourceDao');
 
-      const result = await ResourceDao.getDirectObjectLink(tag);
+      const object_link = await ResourceDao.getDirectObjectLink(tag);
 
       const s3 = new AWS.S3();
 
       const response = await s3.getSignedUrlPromise('getObject', {
-        Bucket: result.container,
-        Key: result.link,
+        Bucket: object_link.container,
+        Key: object_link.link,
       });
 
       res.json(response);
