@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
 import { ResourceRow, LinkRow } from '@oare/types';
@@ -24,11 +24,13 @@ class ResourceDao {
     try {
       const s3 = new AWS.S3();
 
-      const resourceLinks: string[] = await knex('resource')
+      const resourceLinks: string[] = await knexRead()('resource')
         .pluck('link')
         .whereIn(
           'uuid',
-          knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+          knexRead()('link')
+            .select('obj_uuid')
+            .where('reference_uuid', textUuid)
         )
         .where('type', 'img')
         .andWhere('container', 'oare-image-bucket');
@@ -56,17 +58,12 @@ class ResourceDao {
   }
 
   async getTextFileByTextUuid(uuid: string) {
-    const textLinks: string[] = await knex('resource')
+    const textLinks: string[] = await knexRead()('resource')
       .pluck('link')
       .where('container', 'oare-texttxt-bucket')
       .whereIn(
         'uuid',
-        knex('link')
-          .select('obj_uuid')
-          .where(
-            'reference_uuid',
-            knex('text').select('uuid').where('uuid', uuid)
-          )
+        knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
       );
 
     return textLinks[0] || null;
@@ -128,11 +125,13 @@ class ResourceDao {
     )) as typeof import('node-fetch');
 
     try {
-      const row: string | null = await knex('resource')
+      const row: string | null = await knexRead()('resource')
         .select('link')
         .whereIn(
           'uuid',
-          knex('link').select('obj_uuid').where('reference_uuid', textUuid)
+          knexRead()('link')
+            .select('obj_uuid')
+            .where('reference_uuid', textUuid)
         )
         .where('type', 'img')
         .andWhere('container', 'metmuseum')
@@ -172,14 +171,14 @@ class ResourceDao {
   }
 
   async getImageDesignatorMatches(preText: string): Promise<string[]> {
-    const results = await knex('resource')
+    const results = await knexRead()('resource')
       .pluck('link')
       .where('link', 'like', `${preText}%`);
     return results;
   }
 
   async insertResourceRow(row: ResourceRow) {
-    await knex('resource').insert({
+    await knexWrite()('resource').insert({
       uuid: row.uuid,
       source_uuid: row.sourceUuid,
       type: row.type,
@@ -190,7 +189,7 @@ class ResourceDao {
   }
 
   async insertLinkRow(row: LinkRow) {
-    await knex('link').insert({
+    await knexWrite()('link').insert({
       uuid: row.uuid,
       reference_uuid: row.referenceUuid,
       obj_uuid: row.objUuid,

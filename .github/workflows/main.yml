@@ -75,14 +75,26 @@ jobs:
           yarn workspace @oare/serverless serverless deploy -v -r us-west-2
         if: github.ref == 'refs/heads/master'
 
-      - name: Deploy to EB
+      - name: Deploy to EB - US West (Oregon)
         uses: einaregilsson/beanstalk-deploy@v11
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: oare
           environment_name: oare-env-v2
-          version_label: 'oare-${{ steps.time.outputs.time }}'
+          version_label: 'oare-oregon-${{ steps.time.outputs.time }}'
           region: us-west-2
+          deployment_package: oare_build.zip
+        if: github.ref == 'refs/heads/master'
+
+      - name: Deploy to EB - Europe (Paris)
+        uses: einaregilsson/beanstalk-deploy@v11
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: oare
+          environment_name: oare-env-v2-europe
+          version_label: 'oare-paris-${{ steps.time.outputs.time }}'
+          region: eu-west-3
           deployment_package: oare_build.zip
         if: github.ref == 'refs/heads/master'

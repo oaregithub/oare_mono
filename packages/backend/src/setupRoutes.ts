@@ -31,6 +31,7 @@ import publications from './api/publications';
 import archives from './api/archives';
 import pageContent from './api/page_content';
 import properties from './api/properties';
+import environment from './api/environment';
 
 export const API_PATH = '/api/v2';
 
@@ -68,6 +69,7 @@ export default (app: Express) => {
     archives,
     pageContent,
     properties,
+    environment,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

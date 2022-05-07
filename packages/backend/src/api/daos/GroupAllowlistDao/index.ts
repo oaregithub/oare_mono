@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 
 class GroupAllowlistDao {
@@ -6,7 +6,7 @@ class GroupAllowlistDao {
     groupId: number,
     type: 'text' | 'collection'
   ): Promise<string[]> {
-    const uuids = await knex('group_allowlist')
+    const uuids = await knexRead()('group_allowlist')
       .pluck('uuid')
       .where('group_id', groupId)
       .andWhere('type', type);
@@ -24,11 +24,11 @@ class GroupAllowlistDao {
       type,
       group_id: groupId,
     }));
-    await knex('group_allowlist').insert(rows);
+    await knexWrite()('group_allowlist').insert(rows);
   }
 
   async removeItemFromAllowlist(groupId: number, uuid: string): Promise<void> {
-    await knex('group_allowlist')
+    await knexWrite()('group_allowlist')
       .where('group_id', groupId)
       .andWhere({ uuid })
       .del();
@@ -86,7 +86,7 @@ class GroupAllowlistDao {
   }
 
   async containsAssociation(uuid: string, groupId: number): Promise<boolean> {
-    const containsAssociation = await knex('group_allowlist')
+    const containsAssociation = await knexRead()('group_allowlist')
       .where({ uuid })
       .andWhere('group_id', groupId)
       .first();

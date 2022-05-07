@@ -20,6 +20,35 @@
           </v-switch>
         </v-list-item-action>
       </v-list-item>
+      <v-list-item class="ma-2">
+        <v-list-item-content>
+          <v-list-item-title>Environment Info</v-list-item-title>
+          <v-list-item-subtitle>
+            Elastic Beanstalk Region:
+            {{
+              environmentInfo && environmentInfo.elasticBeanstalkRegion
+                ? environmentInfo.elasticBeanstalkRegion
+                : 'Development (localhost)'
+            }}
+          </v-list-item-subtitle>
+          <v-list-item-subtitle>
+            Database Read Region:
+            {{
+              environmentInfo && environmentInfo.databaseReadRegion
+                ? environmentInfo.databaseReadRegion
+                : 'Development (Docker)'
+            }}</v-list-item-subtitle
+          >
+          <v-list-item-subtitle>
+            Database Write Region:
+            {{
+              environmentInfo && environmentInfo.databaseWriteRegion
+                ? environmentInfo.databaseWriteRegion
+                : 'Development (Docker)'
+            }}</v-list-item-subtitle
+          >
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </OareContentView>
 </template>
@@ -27,6 +56,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import sl from '@/serviceLocator';
+import { EnvironmentInfo } from '@oare/types';
 
 export default defineComponent({
   setup() {
@@ -36,14 +66,16 @@ export default defineComponent({
     const loading = ref(false);
 
     const cacheStatus = ref(false);
+    const environmentInfo = ref<EnvironmentInfo>();
 
     onMounted(async () => {
       try {
         loading.value = true;
         cacheStatus.value = await server.getCacheStatus();
+        environmentInfo.value = await server.getEnvironmentInfo();
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading admin settings. Please try again.',
+          'Error loading admin setting information. Please try again.',
           err as Error
         );
       } finally {
@@ -70,6 +102,7 @@ export default defineComponent({
       loading,
       cacheStatus,
       updateCacheStatus,
+      environmentInfo,
     };
   },
 });
