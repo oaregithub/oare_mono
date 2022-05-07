@@ -198,7 +198,7 @@ class ResourceDao {
 
   async getDirectObjectLink(tag: string): Promise<ResourceRow> {
     const uuidList: { [key: string]: string } = {
-      'explanation': '3d4d9397-b6a8-11ec-bcc3-0282f921eac9',
+      explanation: '3d4d9397-b6a8-11ec-bcc3-0282f921eac9',
     };
     const uuid = uuidList[tag];
     if (uuid === undefined) {
