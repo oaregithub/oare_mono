@@ -1,9 +1,9 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 
 class PublicDenylistDao {
   async getDenylistTextUuids(): Promise<string[]> {
-    const rows: Array<{ uuid: string }> = await knex('public_denylist')
+    const rows: Array<{ uuid: string }> = await knexRead()('public_denylist')
       .select('uuid')
       .where('type', 'text');
 
@@ -11,7 +11,7 @@ class PublicDenylistDao {
   }
 
   async getDenylistCollectionUuids(): Promise<string[]> {
-    const rows: Array<{ uuid: string }> = await knex('public_denylist')
+    const rows: Array<{ uuid: string }> = await knexRead()('public_denylist')
       .select('uuid')
       .where('type', 'collection');
 
@@ -26,11 +26,11 @@ class PublicDenylistDao {
       uuid,
       type,
     }));
-    await knex('public_denylist').insert(insertRows);
+    await knexWrite()('public_denylist').insert(insertRows);
   }
 
   async removeItemFromDenylist(uuid: string): Promise<void> {
-    await knex('public_denylist').where({ uuid }).del();
+    await knexWrite()('public_denylist').where({ uuid }).del();
   }
 
   async textIsPubliclyViewable(textUuid: string): Promise<boolean> {

@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { v4 } from 'uuid';
 import { DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
@@ -14,7 +14,9 @@ export interface FormGrammarRow {
 
 class DictionaryFormDao {
   async updateForm(uuid: string, newForm: string): Promise<void> {
-    await knex('dictionary_form').update({ form: newForm }).where({ uuid });
+    await knexWrite()('dictionary_form')
+      .update({ form: newForm })
+      .where({ uuid });
   }
 
   async getWordForms(
@@ -24,7 +26,7 @@ class DictionaryFormDao {
   ): Promise<DictionaryForm[]> {
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
-    const forms: { uuid: string; form: string }[] = await knex(
+    const forms: { uuid: string; form: string }[] = await knexRead()(
       'dictionary_form'
     )
       .select('uuid', 'form')
@@ -53,7 +55,7 @@ class DictionaryFormDao {
   }
 
   async getDictionaryWordUuidByFormUuid(formUuid: string): Promise<string> {
-    const row: { referenceUuid: string } = await knex('dictionary_form')
+    const row: { referenceUuid: string } = await knexRead()('dictionary_form')
       .where('uuid', formUuid)
       .select('reference_uuid AS referenceUuid')
       .first();
@@ -68,7 +70,7 @@ class DictionaryFormDao {
   async getTranscriptionBySpellingUuids(
     spellingUuids: string[]
   ): Promise<string> {
-    const row: { form: string } = await knex('dictionary_form')
+    const row: { form: string } = await knexRead()('dictionary_form')
       .where('uuid', spellingUuids)
       .select('form')
       .first();
@@ -78,7 +80,7 @@ class DictionaryFormDao {
 
   async addForm(wordUuid: string, formSpelling: string): Promise<string> {
     const newFormUuid = v4();
-    await knex('dictionary_form').insert({
+    await knexWrite()('dictionary_form').insert({
       uuid: newFormUuid,
       reference_uuid: wordUuid,
       form: formSpelling,

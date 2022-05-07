@@ -1,7 +1,7 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 
 export const getTreeNodeQuery = () =>
-  knex('hierarchy')
+  knexRead()('hierarchy')
     .select(
       'hierarchy.uuid',
       'hierarchy.parent_uuid as parentUuid',

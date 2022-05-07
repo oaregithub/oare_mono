@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 import {
   EpigraphicUnit,
   EpigraphicUnitSide,
@@ -18,7 +18,7 @@ export function getSequentialCharacterQuery(
 ): Knex.QueryBuilder {
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
-  let query = baseQuery || knex('text_epigraphy');
+  let query = baseQuery || knexRead()('text_epigraphy');
   query = query.leftJoin(
     'text_markup',
     'text_epigraphy.uuid',
@@ -38,7 +38,7 @@ export function getSequentialCharacterQuery(
           if (mode === 'respectAllBoundaries') {
             query = query.join('text_epigraphy AS before', function () {
               this.on('before.text_uuid', 'text_epigraphy.text_uuid').andOn(
-                knex.raw(
+                knexRead().raw(
                   `(text_epigraphy.char_on_tablet = 1 or (\`before\`.char_on_tablet=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.char_on_tablet - 1 and before.discourse_uuid<>text_epigraphy.discourse_uuid))`
@@ -61,28 +61,28 @@ export function getSequentialCharacterQuery(
                 char
               )
               .andOn(
-                knex.raw(
+                knexRead().raw(
                   `t${coocIndex}${wordIndex}${charIndex}.side=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.side`
                 )
               )
               .andOn(
-                knex.raw(
+                knexRead().raw(
                   `t${coocIndex}${wordIndex}${charIndex}.char_on_tablet=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.char_on_tablet + ${charIndex + charOffset}`
                 )
               )
               .andOn(
-                knex.raw(
+                knexRead().raw(
                   `t${coocIndex}${wordIndex}${charIndex}.line=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.line`
                 )
               )
               .andOn(
-                knex.raw(
+                knexRead().raw(
                   `${
                     mode === 'respectAllBoundaries' ||
                     mode === 'respectBoundaries'
@@ -107,21 +107,21 @@ export function getSequentialCharacterQuery(
           wordIndex === words.length - 1 &&
           coocIndex === cooccurrences.length - 1
         ) {
-          query = query.join('text_epigraphy AS after', function () {
-            this.on('after.text_uuid', 'text_epigraphy.text_uuid').andOn(
-              knex.raw(
-                `(${
-                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
-                }.char_on_tablet + ${
-                  charIndex + charOffset + 1
-                } = null or (after.char_on_tablet=${
-                  coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
-                }.char_on_tablet + ${
-                  charIndex + charOffset + 1
-                } and after.discourse_uuid<>t${coocIndex}${wordIndex}${charIndex}.discourse_uuid))`
+          query = query
+            .leftJoin('text_epigraphy AS after', function () {
+              this.on('after.text_uuid', 'text_epigraphy.text_uuid').andOn(
+                knexRead().raw(
+                  `after.char_on_tablet=${
+                    coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
+                  }.char_on_tablet + ${charIndex + charOffset + 1}`
+                )
+              );
+            })
+            .where(
+              knexRead().raw(
+                `IF(after.char_on_tablet is null, 1=1, (after.discourse_uuid<>t${coocIndex}${wordIndex}${charIndex}.discourse_uuid or after.discourse_uuid is null))`
               )
             );
-          });
         }
       });
       if (
@@ -157,7 +157,7 @@ export function getSearchQuery(
   textTitle?: string
 ) {
   // Join text table so text names can be returned
-  let query = knex('text_epigraphy')
+  let query = knexRead()('text_epigraphy')
     .join('text', 'text.uuid', 'text_epigraphy.text_uuid')
     .join('hierarchy', 'hierarchy.object_uuid', 'text_epigraphy.text_uuid');
 
