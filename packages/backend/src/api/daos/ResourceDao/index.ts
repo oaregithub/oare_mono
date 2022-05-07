@@ -204,7 +204,7 @@ class ResourceDao {
     if (uuid === undefined) {
       return {} as ResourceRow;
     }
-    const result: ResourceRow[] = await knex('resource')
+    const result: ResourceRow[] = await knexRead()('resource')
       .select(['uuid', 'sourceUuid', 'type', 'container', 'format', 'link'])
       .where('uuid', uuid);
 
