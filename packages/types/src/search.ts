@@ -17,11 +17,13 @@ export interface SearchTextsPayload {
   textTitle: string;
   page: number;
   rows: number;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface SearchTextsCountPayload {
   characters?: string;
   textTitle: string;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface SearchTextsResponse {
@@ -34,8 +36,12 @@ export interface WordsInTextsSearchResponse {
 }
 
 export interface SearchCooccurrence {
-  uuids: string[][];
+  words: SearchCooccurrenceWord[];
   type: 'AND' | 'NOT';
+}
+
+export interface SearchCooccurrenceWord {
+  uuids: string[][];
 }
 
 export interface SearchNullDiscourseLine {

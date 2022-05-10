@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 
 export interface CacheStatusRow {
   disableExpires: Date;
@@ -6,7 +6,7 @@ export interface CacheStatusRow {
 
 class CacheStatusDao {
   async cacheIsEnabled(): Promise<boolean> {
-    const row: CacheStatusRow = await knex('cache_status')
+    const row: CacheStatusRow = await knexRead()('cache_status')
       .select('disable_expires AS disableExpires')
       .first();
     const isEnabled = row.disableExpires < new Date();
@@ -18,14 +18,14 @@ class CacheStatusDao {
     const updateRow = {
       disable_expires: expires,
     };
-    await knex('cache_status').update(updateRow);
+    await knexWrite()('cache_status').update(updateRow);
   }
 
   async enableCache(): Promise<void> {
     const updateRow = {
       disable_expires: new Date(),
     };
-    await knex('cache_status').update(updateRow);
+    await knexWrite()('cache_status').update(updateRow);
   }
 }
 

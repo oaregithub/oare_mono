@@ -10,8 +10,11 @@ import {
   InsertItemPropertyRow,
   TextDiscourseRow,
   TextEpigraphyRow,
+  ResourceRow,
+  LinkRow,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import fileUpload from 'express-fileupload';
 
 const router = express.Router();
 
@@ -28,7 +31,7 @@ router
       );
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -43,7 +46,7 @@ router
 
         res.json(stoplightOptions);
       } catch (err) {
-        next(new HttpInternalError(err));
+        next(new HttpInternalError(err as string));
       }
     }
   )
@@ -58,7 +61,7 @@ router
 
         res.status(204).end();
       } catch (err) {
-        next(new HttpInternalError(err));
+        next(new HttpInternalError(err as string));
       }
     }
   );
@@ -133,9 +136,41 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
+
+router
+  .route('/text_epigraphies/text_file/:uuid')
+  .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
+    try {
+      const ResourceDao = sl.get('ResourceDao');
+      const textFile = await ResourceDao.getTextFileByTextUuid(req.params.uuid);
+
+      if (textFile !== null) {
+        const s3 = new AWS.S3();
+
+        const textContentRaw = (
+          await s3
+            .getObject({
+              Bucket: 'oare-texttxt-bucket',
+              Key: textFile,
+            })
+            .promise()
+        ).Body;
+
+        const textContent = textContentRaw
+          ? textContentRaw.toString('utf-8')
+          : '';
+
+        res.json(textContent);
+      } else {
+        res.json('');
+      }
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 router
   .route('/text_epigraphies/designator/:preText')
@@ -163,7 +198,30 @@ router
 
       res.json(max + 1);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/text_epigraphies/additional_images')
+  .post(permissionsRoute('UPLOAD_EPIGRAPHY_IMAGES'), async (req, res, next) => {
+    try {
+      const ResourceDao = sl.get('ResourceDao');
+
+      const {
+        resources,
+        links,
+      }: { resources: ResourceRow[]; links: LinkRow[] } = req.body;
+
+      await Promise.all(
+        resources.map(row => ResourceDao.insertResourceRow(row))
+      );
+
+      await Promise.all(links.map(row => ResourceDao.insertLinkRow(row)));
+
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -253,28 +311,35 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
 router
   .route('/text_epigraphies/upload_image/:key')
-  .get(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
+  .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
     try {
-      const s3 = new AWS.S3({
-        region: 'us-west-2',
-        signatureVersion: 'v4',
-      });
+      const s3 = new AWS.S3();
       const { key } = req.params;
 
-      const params = {
+      if (!req.files) {
+        res.status(400).end();
+        return;
+      }
+
+      const file = req.files.newFile as fileUpload.UploadedFile;
+
+      const params: AWS.S3.PutObjectRequest = {
         Bucket: 'oare-image-bucket',
         Key: key,
+        Body: file.data,
       };
-      const url = await s3.getSignedUrlPromise('putObject', params);
-      res.json(url);
+
+      await s3.putObject(params).promise();
+
+      res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -302,7 +367,7 @@ router
       );
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 export default router;

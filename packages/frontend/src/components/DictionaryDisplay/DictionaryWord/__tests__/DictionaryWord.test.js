@@ -11,18 +11,14 @@ localVue.use(VueCompositionApi);
 
 describe('DictionaryWord test', () => {
   const mockStore = {
-    getters: {
-      permissions: [],
-    },
+    hasPermission: () => false,
   };
 
   const mockServer = {
     getDictionaryInfo: jest.fn().mockResolvedValue({
       word: 'word',
       forms: [],
-      partsOfSpeech: [],
-      verbalThematicVowelTypes: [],
-      specialClassifications: [],
+      properties: [],
       translations: [],
     }),
   };
@@ -75,9 +71,7 @@ describe('DictionaryWord test', () => {
   it('shows pencil icon if user has edit permissions', async () => {
     const wrapper = createWrapper({
       store: {
-        getters: {
-          permissions: [{ name: 'UPDATE_WORD_SPELLING' }],
-        },
+        hasPermission: name => ['UPDATE_WORD_SPELLING'].includes(name),
       },
     });
     await flushPromises();

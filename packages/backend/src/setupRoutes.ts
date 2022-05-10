@@ -31,6 +31,8 @@ import publications from './api/publications';
 import archives from './api/archives';
 import pageContent from './api/page_content';
 import searchWordsTexts from './api/search_words_texts';
+import properties from './api/properties';
+import environment from './api/environment';
 
 export const API_PATH = '/api/v2';
 
@@ -68,6 +70,8 @@ export default (app: Express) => {
     archives,
     pageContent,
     searchWordsTexts,
+    properties,
+    environment,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

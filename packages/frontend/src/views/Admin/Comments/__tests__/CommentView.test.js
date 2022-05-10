@@ -112,9 +112,7 @@ const mockServer = {
   getDictionaryInfo: jest.fn().mockResolvedValue({
     word: 'testingWord',
     forms: [],
-    partsOfSpeech: [],
-    verbalThematicVowelTypes: [],
-    specialClassifications: [],
+    properties: [],
     translations: [],
   }),
 };
@@ -127,8 +125,8 @@ const adminUser = {
 const mockStore = {
   getters: {
     user: adminUser,
-    permissions: [],
   },
+  hasPermission: () => false,
 };
 
 const mockLodash = {

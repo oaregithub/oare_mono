@@ -1,5 +1,4 @@
 import express from 'express';
-import knex from '@/connection';
 import { HttpInternalError } from '@/exceptions';
 import cache from '@/cache';
 import sl from '@/serviceLocator';
@@ -20,7 +19,7 @@ router.route('/wordsAndForms').get(async (req, res, next) => {
     cache.insert({ req }, results);
     res.json(results);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -36,7 +35,7 @@ router.route('/searchWordsInTexts').get(async (req, res, next) => {
     );
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -59,7 +58,7 @@ router.route('/formOptions').get(async (req, res, next) => {
     };
     res.json(result);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 export default router;

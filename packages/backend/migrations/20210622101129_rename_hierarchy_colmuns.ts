@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 const collectionForeignKey = 'collection_uuid_foreign';
 const hierarchyForeignKey2 = 'hierarchy_ibfk_2';

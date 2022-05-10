@@ -1,5 +1,5 @@
 import { DiscourseUnit, WordsInTextsSearchResultRow } from '@oare/types';
-import knex from '@/connection';
+import { knexWrite, knexRead } from '@/connection';
 import { DiscourseRow, TextWithDiscourseUuids } from './index';
 
 export function createNestedDiscourses(
@@ -68,7 +68,7 @@ export async function incrementChildNum(
   childNum: number | null
 ): Promise<void> {
   if (childNum) {
-    await knex('text_discourse')
+    await knexWrite()('text_discourse')
       .where({
         text_uuid: textUuid,
         parent_uuid: parentUuid,
@@ -83,7 +83,7 @@ export async function incrementWordOnTablet(
   wordOnTablet: number | null
 ): Promise<void> {
   if (wordOnTablet) {
-    await knex('text_discourse')
+    await knexWrite()('text_discourse')
       .where({
         text_uuid: textUuid,
       })
@@ -97,7 +97,7 @@ export async function incrementObjInText(
   objInText: number | null
 ): Promise<void> {
   if (objInText) {
-    await knex('text_discourse')
+    await knexWrite()('text_discourse')
       .where({
         text_uuid: textUuid,
       })
@@ -114,7 +114,7 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
   textsToHide: string[],
   sequenced: boolean
 ) {
-  let query = knex('text_discourse as td0').join(
+  let query = knexRead()('text_discourse as td0').join(
     'dictionary_spelling as ds0',
     function () {
       this.on('ds0.uuid', 'td0.spelling_uuid').andOnIn(
@@ -131,23 +131,27 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
         if (sequenced) {
           if (numWordsBetween[i - 1] > -1) {
             this.andOn(
-              knex.raw(
+              knexRead().raw(
                 `td${i}.word_on_tablet <= (td${i - 1}.word_on_tablet + ?)`,
                 [numWordsBetween[i - 1]]
               )
             ).andOn(
-              knex.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
+              knexRead().raw(
+                `td${i}.word_on_tablet > td${i - 1}.word_on_tablet`
+              )
             );
           } else {
             this.andOn(
-              knex.raw(
-                knex.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
+              knexRead().raw(
+                knexRead().raw(
+                  `td${i}.word_on_tablet > td${i - 1}.word_on_tablet`
+                )
               )
             );
           }
         } else if (numWordsBetween[i - 1] > -1) {
           this.andOn(
-            knex.raw(
+            knexRead().raw(
               `ABS(td${i}.word_on_tablet - td${i - 1}.word_on_tablet) <= ?`,
               [numWordsBetween[i - 1]]
             )
@@ -217,21 +221,21 @@ export async function getTextDiscourseForWordsInTextsSearch(
   textUuid: string,
   discourseUuids: string[]
 ): Promise<string> {
-  const subqueryMax = knex('text_discourse')
+  const subqueryMax = knexRead()('text_discourse')
     .max('word_on_tablet')
     .where('text_uuid', textUuid)
     .whereIn('uuid', discourseUuids);
 
-  const subqueryMin = knex('text_discourse')
+  const subqueryMin = knexRead()('text_discourse')
     .min('word_on_tablet')
     .where('text_uuid', textUuid)
     .whereIn('uuid', discourseUuids);
 
-  const discourseRows: Array<{ transcription: string }> = await knex(
+  const discourseRows: Array<{ transcription: string }> = await knexRead()(
     'text_discourse'
   )
     .select(
-      knex.raw(
+      knexRead().raw(
         `IF (uuid in (${discourseUuids
           .map(uuid => '?')
           .join(

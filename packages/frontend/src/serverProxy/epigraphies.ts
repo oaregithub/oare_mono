@@ -5,8 +5,9 @@ import {
   CreateTextTables,
   CreateTextsPayload,
   TextPhotoWithName,
+  ResourceRow,
+  LinkRow,
 } from '@oare/types';
-import baseAxios from 'axios';
 import axios from '../axiosInstance';
 
 async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
@@ -65,6 +66,13 @@ const getNextImageDesignator = async (preText: string): Promise<number> => {
   return data;
 };
 
+const addPhotosToText = async (resources: ResourceRow[], links: LinkRow[]) => {
+  await axios.post('/text_epigraphies/additional_images', {
+    resources,
+    links,
+  });
+};
+
 const createText = async (createTextTables: CreateTextTables) => {
   const payload: CreateTextsPayload = {
     tables: createTextTables,
@@ -72,15 +80,24 @@ const createText = async (createTextTables: CreateTextTables) => {
   await axios.post('/text_epigraphies/create', payload);
 };
 
-const uploadImages = async (photos: TextPhotoWithName[]) => {
-  photos.forEach(async photo => {
-    const { data: url } = await axios.get(
-      `/text_epigraphies/upload_image/${photo.name}`
-    );
-    // Must use base axios to avoid header conflicts with AWS signing
-    await baseAxios.put(url, photo.upload);
-  });
+const uploadImage = async (photo: TextPhotoWithName) => {
+  const file = photo.upload;
+  if (file) {
+    const formData = new FormData();
+    formData.append('newFile', file, 'newFile');
+
+    await axios.post(`/text_epigraphies/upload_image/${photo.name}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
 };
+
+async function getTextFileByTextUuid(uuid: string) {
+  const { data } = await axios.get(`/text_epigraphies/text_file/${uuid}`);
+  return data;
+}
 
 export default {
   getEpigraphicInfo,
@@ -89,6 +106,8 @@ export default {
   updateTranslitStatus,
   getNextImageDesignator,
   createText,
-  uploadImages,
+  uploadImage,
   updateTextInfo,
+  addPhotosToText,
+  getTextFileByTextUuid,
 };

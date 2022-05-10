@@ -28,6 +28,22 @@
           >{{ $t('search.searchBtnText') }}</v-btn
         >
       </v-col>
+      <v-col cols="4" align-self="end">
+        <v-radio-group label="Transliteration Search Mode" v-model="useMode">
+          <v-radio
+            label="Respect No Word Boundaries"
+            value="respectNoBoundaries"
+          ></v-radio>
+          <v-radio
+            label="Respect Word Boundaries"
+            value="respectBoundaries"
+          ></v-radio>
+          <v-radio
+            label="Respect All Word Boundaries"
+            value="respectAllBoundaries"
+          ></v-radio>
+        </v-radio-group>
+      </v-col>
     </v-row>
     <oare-data-table
       :server-items-length="totalSearchResults"
@@ -35,7 +51,7 @@
       :items="searchResults"
       item-key="uuid"
       :fetch-items="searchTexts"
-      :watched-params="['translit', 'title']"
+      :watched-params="['translit', 'title', 'mode']"
       :default-rows="100"
       :dense="true"
     >
@@ -98,12 +114,19 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
 
-    const translitQuery = useQueryParam('translit', '');
-    const textTitleQuery = useQueryParam('title', '');
-    const [getIsVisited, setIsVisited] = useQueryParam('isVisited', '', true);
+    const translitQuery = useQueryParam('translit', '', true);
+    const textTitleQuery = useQueryParam('title', '', true);
+    const mode = useQueryParam('mode', 'respectAllBoundaries', true);
+    const [getIsVisited, setIsVisited] = useQueryParam(
+      'isVisited',
+      '',
+      true,
+      true
+    );
 
     const translitSearch = ref(translitQuery.value);
     const textTitleSearch = ref(textTitleQuery.value);
+    const useMode = ref(mode.value);
 
     const headers = ref([
       {
@@ -123,7 +146,12 @@ export default defineComponent({
     });
 
     const searchTexts = async ({ page, rows }: OareDataTableOptions) => {
-      if (canPerformSearch.value) {
+      if (
+        canPerformSearch.value &&
+        (useMode.value === 'respectNoBoundaries' ||
+          useMode.value === 'respectBoundaries' ||
+          useMode.value === 'respectAllBoundaries')
+      ) {
         searchLoading.value = true;
         try {
           let { results }: SearchTextsResponse = await server.searchTexts({
@@ -131,6 +159,7 @@ export default defineComponent({
             textTitle: textTitleSearch.value,
             page,
             rows,
+            mode: useMode.value,
           });
 
           if (results.length === 1 && getIsVisited() !== 'true') {
@@ -154,12 +183,18 @@ export default defineComponent({
     };
 
     const searchTextsTotal = async () => {
-      if (canPerformSearch.value) {
+      if (
+        canPerformSearch.value &&
+        (useMode.value === 'respectNoBoundaries' ||
+          useMode.value === 'respectBoundaries' ||
+          useMode.value === 'respectAllBoundaries')
+      ) {
         searchTotalLoading.value = true;
         try {
           totalSearchResults.value = await server.searchTextsTotal({
             characters: translitSearch.value,
             textTitle: textTitleSearch.value,
+            mode: useMode.value,
           });
         } catch (err) {
           actions.showErrorSnackbar(
@@ -176,6 +211,7 @@ export default defineComponent({
       totalSearchResults.value = -1;
       textTitleQuery.value = textTitleSearch.value;
       translitQuery.value = translitSearch.value;
+      mode.value = useMode.value;
       if (resetVisited) {
         await setIsVisited('false');
       }
@@ -198,6 +234,7 @@ export default defineComponent({
       searchTexts,
       resetSearch,
       searchTotalLoading,
+      useMode,
     };
   },
 });

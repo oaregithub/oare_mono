@@ -32,6 +32,8 @@ import publications from './publications';
 import archives from './archives';
 import pageContent from './page_content';
 import wordsInTextsSearch from './search_words_texts';
+import properties from './properties';
+import environment from './environment';
 
 const serverProxy = {
   ...groups,
@@ -68,6 +70,8 @@ const serverProxy = {
   ...archives,
   ...pageContent,
   ...wordsInTextsSearch,
+  ...properties,
+  ...environment,
 };
 
 export type ServerProxyType = typeof serverProxy;

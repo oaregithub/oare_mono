@@ -90,8 +90,8 @@ export default defineComponent({
     const dialogOpen = ref(false);
     const totalDrafts = ref(0);
 
-    const authorFilter = useQueryParam('authorFilter', '');
-    const textFilter = useQueryParam('textFilter', '');
+    const authorFilter = useQueryParam('authorFilter', '', true);
+    const textFilter = useQueryParam('textFilter', '', true);
 
     const headers = ref<DataTableHeader[]>([
       { text: 'Text', value: 'text' },

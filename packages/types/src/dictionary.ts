@@ -1,9 +1,10 @@
-import { DictionaryWordTranslation, Word } from './words';
+import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
 
 export interface DisplayableWord {
   uuid: string;
   word: string;
+  wordOccurrences: number;
 }
 
 export interface FormSpelling {
@@ -41,10 +42,9 @@ export interface DictionaryFormGrammar {
   } | null;
 }
 
-export interface DictionaryForm
-  extends DictionaryFormInfo,
-    DictionaryFormGrammar {
+export interface DictionaryForm extends DictionaryFormInfo {
   spellings: FormSpelling[];
+  properties: ItemPropertyRow[];
 }
 
 export interface UpdateFormPayload {
@@ -161,6 +161,8 @@ export interface TaxonomyTree {
   valueUuid: string | null;
   level: number | null;
   children: TaxonomyTree[] | null;
+  custom: number | null;
+  role: string | null;
 }
 
 export interface ParseTreeProperty {

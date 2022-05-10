@@ -63,9 +63,9 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const totalTexts = ref(0);
     const texts = ref<Text[]>([]);
-    const page = useQueryParam('page', '1');
-    const rows = useQueryParam('rows', '10');
-    const search = useQueryParam('query', '');
+    const page = useQueryParam('page', '1', false);
+    const rows = useQueryParam('rows', '10', true);
+    const search = useQueryParam('query', '', true);
 
     const getDossier = async () => {
       loading.value = true;

@@ -39,7 +39,7 @@ const permissionsRoute = (permission: PermissionName) => async (
 
     authenticatedRoute(req, res, permissionGuard);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 };
 

@@ -183,8 +183,8 @@ export default defineComponent({
     const numOptionsUsing: Ref<number> = ref(1);
     const maxOptions = 3;
     const canPerformSearch: Ref<boolean> = ref(false);
-    const page: Ref<string> = ref(useQueryParam('page', '1'));
-    const rows: Ref<string> = ref(useQueryParam('rows', '25'));
+    const page: Ref<string> = ref(useQueryParam('page', '1', false));
+    const rows: Ref<string> = ref(useQueryParam('rows', '25', true));
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
     const total = ref(0);
     const checkboxAll: Ref<{ [uuid: string]: string }> = ref({});
@@ -194,7 +194,7 @@ export default defineComponent({
     const numWordsBetween: Ref<number[]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
     const wordForms: Ref<Word[][]> = ref([]);
-    const sequenced = useQueryParam('sequenced', 'true');
+    const sequenced = useQueryParam('sequenced', 'true', true);
 
     const wordsBetween = ref([
       { name: '<= 1', value: 1 },

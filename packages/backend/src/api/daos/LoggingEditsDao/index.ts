@@ -1,5 +1,5 @@
-import knex from '@/connection';
-import Knex from 'knex';
+import { knexWrite } from '@/connection';
+import { Knex } from 'knex';
 
 class LoggingEditsDao {
   async logEdit(
@@ -9,7 +9,7 @@ class LoggingEditsDao {
     uuid: string,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knex;
+    const k = trx || knexWrite();
     let prevRow: string | null = null;
 
     if (type === 'UPDATE' || type === 'DELETE') {

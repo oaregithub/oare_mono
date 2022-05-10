@@ -1,30 +1,30 @@
 import { Group } from '@oare/types';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 
 class OareGroupDao {
   async getGroupByName(name: string): Promise<Group | null> {
-    return knex('oare_group').first().where({ name });
+    return knexRead()('oare_group').first().where({ name });
   }
 
   async getGroupById(id: number): Promise<Group | null> {
-    return knex('oare_group').first().where({ id });
+    return knexRead()('oare_group').first().where({ id });
   }
 
   async getAllGroups(): Promise<Group[]> {
-    return knex('oare_group')
+    return knexRead()('oare_group')
       .select(
         'oare_group.id',
         'oare_group.name',
         'oare_group.created_on',
         'oare_group.description',
-        knex.raw('COUNT(user_group.id) AS num_users')
+        knexRead().raw('COUNT(user_group.id) AS num_users')
       )
       .leftJoin('user_group', 'user_group.group_id', 'oare_group.id')
       .groupBy('oare_group.id');
   }
 
   async createGroup(name: string, description: string): Promise<number> {
-    const ids: number[] = await knex('oare_group').insert({
+    const ids: number[] = await knexWrite()('oare_group').insert({
       name,
       description,
     });
@@ -32,14 +32,16 @@ class OareGroupDao {
   }
 
   async deleteGroup(groupId: number): Promise<void> {
-    await knex('oare_group').where('id', groupId).del();
+    await knexWrite()('oare_group').where('id', groupId).del();
   }
 
   async updateGroupDescription(
     groupId: number,
     description: string
   ): Promise<void> {
-    await knex('oare_group').where('id', groupId).update({ description });
+    await knexWrite()('oare_group')
+      .where('id', groupId)
+      .update({ description });
   }
 }
 

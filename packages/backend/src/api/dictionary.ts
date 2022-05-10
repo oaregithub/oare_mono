@@ -78,7 +78,7 @@ router
       const response: AddFormSpellingResponse = { uuid: spellingUuid };
       res.status(201).json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -92,12 +92,12 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
       tokens = tokenizeExplicitSpelling(spelling);
     } catch (e) {
       let response: CheckSpellingResponse;
-      if (e.hash) {
+      if ((e as any).hash) {
         const {
           hash: {
             loc: { last_column: errorIndex },
           },
-        } = e;
+        } = e as any;
 
         let errorChar = spelling[errorIndex];
         if (errorIndex === spelling.length) {
@@ -136,7 +136,7 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
       res.json(response);
     }
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -158,7 +158,7 @@ router
       };
       res.json(result);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .patch(permissionsRoute('UPDATE_WORD_SPELLING'), async (req, res, next) => {
@@ -191,7 +191,7 @@ router
       );
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -223,7 +223,7 @@ router
       );
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -255,51 +255,46 @@ router
           LoggingEditsDao.logEdit('UPDATE', userUuid, 'text_discourse', uuid)
         )
       );
-      await Promise.all(
-        discourseUuids.map(uuid =>
-          TextDiscourseDao.updateDiscourseTranscription(uuid, newForm)
-        )
-      );
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
 router
-  .route('/dictionary/spellings/:uuid/occurrences')
+  .route('/dictionary/spellings/spelling_occurrences/occurrences')
   .get(async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const utils = sl.get('utils');
       const { filter } = utils.extractPagination(req.query);
-      const { uuid } = req.params;
+      const uuids = (req.query.spellingUuids as unknown) as string[];
       const userUuid = req.user ? req.user.uuid : null;
       const totalOccurrences = await TextDiscourseDao.getTotalSpellingTexts(
-        uuid,
+        uuids,
         userUuid,
         { filter }
       );
 
       res.json(totalOccurrences);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
 router
-  .route('/dictionary/spellings/:uuid/texts')
+  .route('/dictionary/spelling_occurrences/texts')
   .get(async (req, res, next) => {
     try {
       const utils = sl.get('utils');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-      const { uuid } = req.params;
       const userUuid = req.user ? req.user.uuid : null;
       const pagination = utils.extractPagination(req.query);
+      const spellingUuids = (req.query.spellingUuids as unknown) as string[];
 
       const rows = await TextDiscourseDao.getSpellingTextOccurrences(
-        uuid,
+        spellingUuids,
         userUuid,
         pagination
       );
@@ -308,7 +303,7 @@ router
 
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -322,7 +317,7 @@ router
       await TextDiscourseDao.disconnectSpellings(discourseUuids);
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -393,7 +388,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .delete(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
@@ -425,7 +420,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -466,7 +461,7 @@ router
 
       res.json(result);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -529,7 +524,7 @@ router
 
       res.json(result);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -542,7 +537,7 @@ router.route('/dictionary/tree/taxonomy').get(async (req, res, next) => {
     cache.insert({ req }, tree);
     res.json(tree);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -581,7 +576,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

@@ -1,22 +1,22 @@
 <template>
   <div>
     <div class="d-flex">
-      <v-btn
-        v-if="canAddSpelling && !editing && allowEditing"
-        icon
-        class="mt-n2 mr-1"
-        @click="openEditDialog(form)"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-      <v-btn
-        v-if="canEdit && !editing && allowEditing"
-        icon
-        class="test-pencil mt-n2"
-        @click="editing = true"
-      >
-        <v-icon>mdi-pencil</v-icon>
-      </v-btn>
+      <v-tooltip bottom open-delay="800">
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-if="canEdit && !editing && allowEditing"
+            icon
+            class="test-pencil mt-n1 mr-1"
+            @click="editing = true"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon size="20">mdi-pencil</v-icon>
+          </v-btn>
+        </template>
+        <span>Edit Form</span>
+      </v-tooltip>
 
       <UtilList
         v-if="!editing"
@@ -63,7 +63,25 @@
         </v-btn>
       </div>
 
-      <grammar-display :form="form" />
+      <span v-if="aggregateOccurrences > 0" class="mr-1">
+        <a @click="textOccurrenceDialog = true">
+          ({{ aggregateOccurrences }})</a
+        >
+      </span>
+      <span v-if="spellingUuids.length > 0">
+        <text-occurrences
+          v-model="textOccurrenceDialog"
+          class="test-text-occurrences-display"
+          :title="form.form"
+          :uuids="spellingUuids"
+          :totalTextOccurrences="aggregateOccurrences"
+          :getTexts="server.getSpellingTextOccurrences"
+          :getTextsCount="server.getSpellingTotalOccurrences"
+        >
+        </text-occurrences>
+      </span>
+
+      <grammar-display :word="word" :form="form" :allowEditing="allowEditing" />
       <span class="d-flex flex-row flex-wrap mb-0">
         <span
           class="d-flex flex-row mb-0"
@@ -76,20 +94,44 @@
             :word-uuid="wordUuid"
             :uuid-to-highlight="uuidToHighlight"
             :allow-editing="allowEditing"
+            @total-occurrences="setTotalOccurrences($event)"
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
-        </span></span
-      >
+        </span>
+      </span>
+      <v-tooltip bottom open-delay="800">
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-if="canAddSpelling && !editing && allowEditing"
+            icon
+            class="mt-n1 ml-1"
+            @click="openEditDialog(form)"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon size="20">mdi-plus</v-icon>
+          </v-btn>
+        </template>
+        <span>Add Spelling</span>
+      </v-tooltip>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
-import { DictionaryForm } from '@oare/types';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  computed,
+  onMounted,
+} from '@vue/composition-api';
+import { DictionaryForm, Word } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
+import TextOccurrences from './components/TextOccurrences.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 
@@ -98,8 +140,13 @@ export default defineComponent({
     GrammarDisplay,
     SpellingDisplay,
     UtilList,
+    TextOccurrences,
   },
   props: {
+    word: {
+      type: Object as PropType<Word>,
+      required: true,
+    },
     form: {
       type: Object as PropType<DictionaryForm>,
       required: true,
@@ -135,17 +182,13 @@ export default defineComponent({
     const editForm = ref({
       ...props.form,
     });
-    const canEdit = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('UPDATE_FORM')
-    );
 
-    const canAddSpelling = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('ADD_SPELLING')
-    );
+    const aggregateOccurrences = ref(0);
+    const textOccurrenceDialog = ref(false);
+
+    const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
+
+    const canAddSpelling = computed(() => store.hasPermission('ADD_SPELLING'));
 
     const saveFormEdit = async (): Promise<void> => {
       loading.value = true;
@@ -177,6 +220,16 @@ export default defineComponent({
       });
     };
 
+    const setTotalOccurrences = ($event: number) => {
+      aggregateOccurrences.value += $event;
+    };
+
+    const spellingUuids = ref<string[]>([]);
+
+    onMounted(() => {
+      spellingUuids.value = props.form.spellings.map(({ uuid }) => uuid);
+    });
+
     return {
       isCommenting,
       editing,
@@ -189,6 +242,11 @@ export default defineComponent({
       routeName,
       openComment,
       openEditDialog,
+      setTotalOccurrences,
+      aggregateOccurrences,
+      textOccurrenceDialog,
+      server,
+      spellingUuids,
     };
   },
 });

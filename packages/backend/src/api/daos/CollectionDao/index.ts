@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 import { Collection } from '@oare/types';
 import sl from '@/serviceLocator';
 import UserDao from '../UserDao';
@@ -7,7 +7,7 @@ class CollectionDao {
   async getCollectionByUuid(
     collectionUuid: string
   ): Promise<Collection | null> {
-    const collection = await knex('collection')
+    const collection = await knexRead()('collection')
       .select('uuid', 'name')
       .where('uuid', collectionUuid)
       .first();
@@ -15,7 +15,7 @@ class CollectionDao {
   }
 
   async getTextCollectionUuid(textUuid: string): Promise<string | null> {
-    const collection: { uuid: string } | null = await knex('collection')
+    const collection: { uuid: string } | null = await knexRead()('collection')
       .select('collection.uuid')
       .innerJoin('hierarchy', 'hierarchy.obj_parent_uuid', 'collection.uuid')
       .where('hierarchy.object_uuid', textUuid)
@@ -33,7 +33,9 @@ class CollectionDao {
     const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
     const isAdmin = user ? user.isAdmin : false;
 
-    const collectionRows: Array<{ uuid: string }> = await knex('collection')
+    const collectionRows: Array<{ uuid: string }> = await knexRead()(
+      'collection'
+    )
       .select('collection.uuid')
       .orderBy('collection.name')
       .modify(qb => {

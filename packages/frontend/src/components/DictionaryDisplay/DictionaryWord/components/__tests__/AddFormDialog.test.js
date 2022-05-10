@@ -81,22 +81,15 @@ describe('AddFormDialog test', () => {
           forms: [
             {
               form: 'test-form-1',
+              properties: [],
             },
             {
               form: 'test-form-2',
+              properties: [],
             },
           ],
-          partsOfSpeech: [
-            {
-              uuid: 'test-pos-uuid',
-              name: 'test-pos-name',
-              referenceUuid: 'test-pos-ref-uuid',
-              valueUuid: 'test-value-uuid',
-            },
-          ],
-          verbalThematicVowelTypes: [],
+          properties: [],
           translations: [],
-          specialClassifications: [],
         },
       },
     });
@@ -138,6 +131,8 @@ describe('AddFormDialog test', () => {
     const wrapper = createWrapper();
     await flushPromises();
     await wrapper.get('.test-form-spelling input').setValue('test-form-1');
+    await flushPromises();
+    await wrapper.findAll('.test-ignore input').trigger('click');
     await flushPromises();
     expect(wrapper.find('.test-error').exists()).toBe(true);
     expect(wrapper.get('.test-submit-btn').element).toBeDisabled();

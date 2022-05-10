@@ -17,12 +17,12 @@ describe('OareAppBar.vue', () => {
       user: {
         firstName: 'Test',
       },
-      permissions: [],
       displayAdminBadge: {
         error: false,
         comments: false,
       },
     },
+    hasPermission: () => false,
     logout: jest.fn(),
     setUser: jest.fn(),
     setPermissions: jest.fn(),
@@ -59,20 +59,9 @@ describe('OareAppBar.vue', () => {
         ...mockStore.getters,
         isAdmin,
         isAuthenticated,
-        permissions: isAdmin
-          ? [
-              {
-                name: 'WORDS',
-              },
-              {
-                name: 'NAMES',
-              },
-              {
-                name: 'PLACES',
-              },
-            ]
-          : [],
       },
+      hasPermission: name =>
+        isAdmin ? ['WORDS', 'NAMES', 'PLACES'].includes(name) : false,
     });
     sl.set('serverProxy', server);
     const wrapper = mount(OareAppBar, {

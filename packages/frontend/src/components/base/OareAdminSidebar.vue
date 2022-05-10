@@ -62,16 +62,16 @@ export default defineComponent({
           path: '/admin/drafts',
         },
         {
-          label: 'Admin Settings',
-          path: '/admin/settings',
-        },
-        {
           label: 'Backend Documentation',
           path: '/admin/swagger',
         },
         {
           label: 'Properties Taxonomy',
           path: '/admin/propertiesTaxonomy',
+        },
+        {
+          label: 'Admin Settings',
+          path: '/admin/settings',
         },
       ]),
     });
