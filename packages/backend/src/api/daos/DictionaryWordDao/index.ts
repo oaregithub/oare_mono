@@ -369,7 +369,7 @@ class DictionaryWordDao {
 
   async getWordUuidByWordOrFormUuid(uuid: string): Promise<string> {
     const { wordUuid } = await knexRead()('dictionary_word')
-      .pluck('dictionary_word.uuid as wordUuid')
+      .select('dictionary_word.uuid as wordUuid')
       .innerJoin(
         'dictionary_form',
         'dictionary_form.reference_uuid',
