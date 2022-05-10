@@ -33,6 +33,7 @@ import archives from './archives';
 import pageContent from './page_content';
 import properties from './properties';
 import environment from './environment';
+import text from './text';
 
 const serverProxy = {
   ...groups,
@@ -70,6 +71,7 @@ const serverProxy = {
   ...pageContent,
   ...properties,
   ...environment,
+  ...text,
 };
 
 export type ServerProxyType = typeof serverProxy;

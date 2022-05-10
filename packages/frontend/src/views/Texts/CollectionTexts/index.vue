@@ -29,6 +29,7 @@
         :totalTexts="totalTexts"
         :texts="texts"
         :loading="textsLoading"
+        :collectionUuid="collectionUuid"
       />
     </v-container>
   </OareContentView>

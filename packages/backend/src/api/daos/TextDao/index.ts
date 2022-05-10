@@ -24,6 +24,32 @@ class TextDao {
     return text;
   }
 
+  async getTextRowByUuid(uuid: string): Promise<TextRow | null> {
+    const textRow: TextRow = await knexRead()('text')
+      .select(
+        'uuid',
+        'type',
+        'language',
+        'cdli_num as cdliNum',
+        'translit_status as translitStatus',
+        'name',
+        'display_name as displayName',
+        'excavation_prfx as excavationPrefix',
+        'excavation_no as excavationNumber',
+        'museum_prfx as museumPrefix',
+        'museum_no as museumNumber',
+        'publication_prfx as publicationPrefix',
+        'publication_no as publicationNumber',
+        'object_type as objectType',
+        'source',
+        'genre',
+        'subgenre'
+      )
+      .first()
+      .where({ uuid });
+    return textRow;
+  }
+
   async getUnpublishedTextUuids(): Promise<string[]> {
     const texts: TextUuid[] = await knexRead()('text')
       .select('text.uuid')

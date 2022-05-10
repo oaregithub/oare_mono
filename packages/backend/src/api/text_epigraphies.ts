@@ -237,27 +237,47 @@ router
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const TextMarkupDao = sl.get('TextMarkupDao');
       const PublicDenylistDao = sl.get('PublicDenylistDao');
+      const TreeDao = sl.get('TreeDao');
 
       const { tables }: CreateTextsPayload = req.body;
 
+      const existingTextRow = await TextDao.getTextRowByUuid(tables.text.uuid);
+      const addingToExistingText = !!existingTextRow;
+
       // Text
-      await TextDao.insertTextRow(tables.text);
+      if (!addingToExistingText) {
+        await TextDao.insertTextRow(tables.text);
+      } else {
+        await TextDao.updateTextInfo(
+          tables.text.uuid,
+          tables.text.excavationPrefix,
+          tables.text.excavationNumber,
+          tables.text.museumPrefix,
+          tables.text.museumNumber,
+          tables.text.publicationPrefix,
+          tables.text.publicationNumber
+        );
+      }
 
       // Hierarchy
-      await HierarchyDao.insertHierarchyRow(tables.hierarchy);
+      if (!addingToExistingText) {
+        await HierarchyDao.insertHierarchyRow(tables.hierarchy);
+      }
 
       // Item Properties
-      const itemPropertyRowLevels = [
-        ...new Set(tables.itemProperties.map(row => row.level)),
-      ];
-      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-        level => tables.itemProperties.filter(row => row.level === level)
-      );
-      for (let i = 0; i < rowsByLevel.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.all(
-          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+      if (!addingToExistingText) {
+        const itemPropertyRowLevels = [
+          ...new Set(tables.itemProperties.map(row => row.level)),
+        ];
+        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+          level => tables.itemProperties.filter(row => row.level === level)
         );
+        for (let i = 0; i < rowsByLevel.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all(
+            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+          );
+        }
       }
 
       // Resource
@@ -269,6 +289,9 @@ router
       await Promise.all(
         tables.links.map(row => ResourceDao.insertLinkRow(row))
       );
+
+      // Tree
+      await Promise.all(tables.trees.map(row => TreeDao.insertTreeRow(row)));
 
       // Discourse
       const discourseRowParents = [
@@ -366,6 +389,37 @@ router
         publicationNumber
       );
       res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/text_epigraphies/has_epigraphy/:textUuid')
+  .get(async (req, res, next) => {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
+    try {
+      const { textUuid } = req.params;
+      const userUuid = req.user ? req.user.uuid : null;
+
+      const canViewText = await CollectionTextUtils.canViewText(
+        textUuid,
+        userUuid
+      );
+      if (!canViewText) {
+        next(
+          new HttpForbidden(
+            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
+          )
+        );
+        return;
+      }
+
+      const hasEpigraphy = await TextEpigraphyDao.hasEpigraphy(textUuid);
+
+      res.json(hasEpigraphy);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

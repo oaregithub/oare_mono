@@ -370,6 +370,13 @@ const routes: RouteConfig[] = [
     beforeEnter: permissionGuard('ADD_NEW_TEXTS'),
   },
   {
+    path: '/add_text_epigraphy/:collectionUuid/:existingTextUuid',
+    name: 'addTextEpigraphy',
+    component: AddNewTexts,
+    props: true,
+    beforeEnter: permissionGuard('ADD_NEW_TEXTS'),
+  },
+  {
     path: '/about',
     name: 'about',
     component: AboutView,
