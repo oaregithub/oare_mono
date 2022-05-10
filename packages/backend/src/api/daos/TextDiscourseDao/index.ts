@@ -8,6 +8,8 @@ import {
   DiscourseUnitType,
   PersonOccurrenceRow,
   TextDiscourseRow,
+  WordsInTextSearchPayload,
+  WordsInTextsSearchResponse,
 } from '@oare/types';
 import Knex from 'knex';
 import { v4 } from 'uuid';
@@ -18,6 +20,10 @@ import {
   incrementWordOnTablet,
   createNestedDiscourses,
   setDiscourseReading,
+  getDiscourseAndTextUuidsByWordOrFormUuidsQuery,
+  createTextWithDiscourseUuidsArray,
+  getTextDiscourseForWordsInTextsSearch,
+  sortTextNames,
 } from './utils';
 
 export interface DiscourseRow {
@@ -38,6 +44,11 @@ export interface DiscourseRow {
 export interface SearchDiscourseSpellingDaoResponse {
   totalResults: number;
   rows: SearchDiscourseSpellingRow[];
+}
+
+export interface TextWithDiscourseUuids {
+  textUuid: string;
+  discourseUuids: string[];
 }
 
 class TextDiscourseDao {
@@ -117,6 +128,89 @@ class TextDiscourseDao {
       )
       .where('dictionary_spelling.reference_uuid', formUuid);
     return rows.map(row => row.uuid);
+  }
+
+  async wordsInTextsSearch(
+    payload: WordsInTextSearchPayload,
+    userUuid: string | null
+  ): Promise<WordsInTextsSearchResponse> {
+    const TextDao = sl.get('TextDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const textsToHide: string[] = await CollectionTextUtils.textsToHide(
+      userUuid
+    );
+    let selects = '';
+    for (let i = 1; i < JSON.parse(payload.uuids).length; i += 1) {
+      selects += `, td${i}.uuid as discourse${i}Uuid`;
+    }
+
+    const queryResult: Array<{
+      discourseUuid: string;
+      textUuid: string;
+      discourse1Uuid: string | null;
+      discourse2Uuid: string | null;
+      discourse3Uuid: string | null;
+      discourse4Uuid: string | null;
+    }> = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
+      JSON.parse(payload.uuids),
+      payload.numWordsBetween
+        ? payload.numWordsBetween.map(val => Number(val))
+        : [],
+      textsToHide,
+      payload.sequenced === 'true'
+    )
+      .select(
+        knex.raw(
+          `td0.uuid as discourseUuid, td0.text_uuid as textUuid${selects}`
+        )
+      )
+      .limit(payload.rows)
+      .offset((payload.page - 1) * payload.rows);
+    const countResponse = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
+      JSON.parse(payload.uuids),
+      payload.numWordsBetween
+        ? payload.numWordsBetween.map(val => Number(val))
+        : [],
+      textsToHide,
+      payload.sequenced === 'true'
+    )
+      .select(knex.raw('COUNT(DISTINCT(td0.text_uuid)) as count'))
+      .first();
+
+    const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await createTextWithDiscourseUuidsArray(
+      queryResult
+    );
+
+    const textNames = (
+      await Promise.all(
+        textWithDiscourseUuidsArray.map(({ textUuid }) =>
+          TextDao.getTextByUuid(textUuid)
+        )
+      )
+    ).map(text => (text ? text.name : ''));
+
+    const discourseReadings = await Promise.all(
+      textWithDiscourseUuidsArray.map(async ({ textUuid, discourseUuids }) => {
+        const discourseReading = await getTextDiscourseForWordsInTextsSearch(
+          textUuid,
+          discourseUuids
+        );
+        return discourseReading;
+      })
+    );
+
+    const response: WordsInTextsSearchResponse = {
+      results: sortTextNames(
+        textWithDiscourseUuidsArray.map((text, index) => ({
+          uuid: text.textUuid,
+          name: textNames[index],
+          discourse: discourseReadings[index],
+          discourseUuids: text.discourseUuids,
+        }))
+      ),
+      total: countResponse.count,
+    };
+    return response;
   }
 
   async hasSpelling(spellingUuid: string): Promise<boolean> {

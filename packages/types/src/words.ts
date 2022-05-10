@@ -49,3 +49,19 @@ export interface DictionaryWord extends DictionaryWordParseInfo {
 export interface WordsResponse {
   words: DictionaryWord[];
 }
+
+export interface WordFormAutocompleteDisplay {
+  uuid: string;
+  wordDisplay: string;
+}
+
+export interface WordsInTextSearchPayload {
+  uuids: string;
+  numWordsBetween: number[];
+  page: number;
+  rows: number;
+  sequenced: string;
+}
+export interface UuidPayload {
+  uuid: string;
+}

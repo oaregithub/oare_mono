@@ -30,6 +30,7 @@ import betaAccess from './api/beta_access';
 import publications from './api/publications';
 import archives from './api/archives';
 import pageContent from './api/page_content';
+import searchWordsTexts from './api/search_words_texts';
 
 export const API_PATH = '/api/v2';
 
@@ -66,6 +67,7 @@ export default (app: Express) => {
     publications,
     archives,
     pageContent,
+    searchWordsTexts,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

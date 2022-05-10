@@ -31,6 +31,7 @@ import betaAccess from './beta_access';
 import publications from './publications';
 import archives from './archives';
 import pageContent from './page_content';
+import wordsInTextsSearch from './search_words_texts';
 
 const serverProxy = {
   ...groups,
@@ -66,6 +67,7 @@ const serverProxy = {
   ...publications,
   ...archives,
   ...pageContent,
+  ...wordsInTextsSearch,
 };
 
 export type ServerProxyType = typeof serverProxy;
