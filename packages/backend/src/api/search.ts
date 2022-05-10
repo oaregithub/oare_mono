@@ -63,7 +63,7 @@ router.route('/search/spellings/discourse').get(async (req, res, next) => {
     };
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -76,7 +76,7 @@ router.route('/search/spellings').get(async (req, res, next) => {
     const results = await dictionaryWordDao.searchSpellings(spelling, userUuid);
     res.json(results);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -87,6 +87,7 @@ router.route('/search/count').get(async (req, res, next) => {
     const {
       textTitle: title,
       characters: charsPayload,
+      mode,
     } = (req.query as unknown) as SearchTextsCountPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
@@ -96,11 +97,12 @@ router.route('/search/count').get(async (req, res, next) => {
       characters: characterUuids,
       title,
       userUuid: user ? user.uuid : null,
+      mode,
     });
 
     res.json(totalRows);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -114,6 +116,7 @@ router.route('/search').get(async (req, res, next) => {
       rows,
       textTitle: title,
       characters: charsPayload,
+      mode,
     } = (req.query as unknown) as SearchTextsPayload;
 
     const characterUuids = await prepareCharactersForSearch(charsPayload);
@@ -124,6 +127,7 @@ router.route('/search').get(async (req, res, next) => {
       pagination: { limit: rows, page },
       title,
       userUuid: user ? user.uuid : null,
+      mode,
     });
 
     const textNames = (
@@ -174,7 +178,7 @@ router.route('/search').get(async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -197,7 +201,7 @@ router.route('/search/discourse/null/count').get(async (req, res, next) => {
 
     res.json(count);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -253,7 +257,7 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
     );
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

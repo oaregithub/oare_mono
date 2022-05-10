@@ -69,7 +69,9 @@
           <connect-discourse
             v-if="step >= 4"
             :epigraphicUnits="epigraphyDetails.units"
-            :discourseRows="createTextTables ? createTextTables.discourses : []"
+            :discourseRows="
+              temporaryLocalTables ? temporaryLocalTables.discourses : []
+            "
             :manualDiscourseSelections="manuallySelectedDiscourses"
             @update-discourse-rows="updateDiscourseRows($event)"
             @update-manual-selections="updateManualSelections($event)"
@@ -80,10 +82,10 @@
         <v-stepper-content step="5">
           <final-preview
             v-if="step >= 5"
-            :epigraphyUnits="epigraphyDetails"
+            :epigraphyDetails="epigraphyDetails"
             :photoUrls="photoUrls"
             :localDiscourseInfo="
-              createTextTables ? createTextTables.discourses : []
+              temporaryLocalTables ? temporaryLocalTables.discourses : []
             "
           />
           <stepper-button
@@ -162,10 +164,28 @@ export default defineComponent({
     const loading = ref(false);
 
     const stepOneComplete = ref(false);
-    const stepTwoComplete = ref(false);
+    const stepTwoComplete = ref(true);
     const stepThreeComplete = ref(false);
 
+    const next = () => (step.value += 1);
+    const previous = () => (step.value -= 1);
+
     const isDirty = ref(true);
+
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        collectionName.value = (
+          await server.getCollectionInfo(props.collectionUuid)
+        ).name;
+      } catch {
+        actions.showErrorSnackbar(
+          'Error loading collection name. Please try again.'
+        );
+      } finally {
+        loading.value = false;
+      }
+    });
 
     const textInfo = ref<AddTextInfo>();
     const setTextInfo = (updatedTextInfo: AddTextInfo) => {
@@ -173,10 +193,10 @@ export default defineComponent({
     };
 
     const photos = ref<TextPhoto[]>([]);
-    const photosWithName = ref<TextPhotoWithName[]>([]);
     const setPhotos = (updatedPhotos: TextPhoto[]) => {
       photos.value = updatedPhotos;
     };
+    const photosWithName = ref<TextPhotoWithName[]>([]);
     const photoUrls = computed(() =>
       photosWithName.value.filter(photo => photo.url).map(photo => photo.url)
     );
@@ -186,11 +206,41 @@ export default defineComponent({
       editorContent.value = updatedEditorContent;
     };
 
+    const temporaryLocalTables = ref<CreateTextTables>();
+    const buildTables = async () => {
+      if (textInfo.value && editorContent.value) {
+        photosWithName.value = await addNamesToTextPhotos(
+          textInfo.value.excavationPrefix,
+          textInfo.value.excavationNumber,
+          textInfo.value.museumPrefix,
+          textInfo.value.museumNumber,
+          textInfo.value.publicationPrefix,
+          textInfo.value.publicationNumber,
+          photos.value
+        );
+
+        temporaryLocalTables.value = await createNewTextTables(
+          textInfo.value,
+          editorContent.value,
+          persistentDiscourseStorage.value,
+          photosWithName.value,
+          props.collectionUuid
+        );
+
+        temporaryLocalTables.value.discourses.forEach(discourse => {
+          persistentDiscourseStorage.value[discourse.uuid] =
+            discourse.spellingUuid;
+        });
+      }
+    };
+
     const epigraphyDetails: ComputedRef<EpigraphyResponse> = computed(() => {
       return {
         canWrite: false,
         text: {
-          uuid: createTextTables.value ? createTextTables.value.text.uuid : '',
+          uuid: temporaryLocalTables.value
+            ? temporaryLocalTables.value.text.uuid
+            : '',
           type: 'logosyllabic',
           name:
             textInfo.value && textInfo.value.textName
@@ -229,8 +279,8 @@ export default defineComponent({
           textInfo.value && textInfo.value.cdliNum
             ? textInfo.value.cdliNum
             : '',
-        units: createTextTables.value
-          ? convertTablesToUnits(createTextTables.value)
+        units: temporaryLocalTables.value
+          ? convertTablesToUnits(temporaryLocalTables.value)
           : [],
         color: '',
         colorMeaning: '',
@@ -239,36 +289,36 @@ export default defineComponent({
       };
     });
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        collectionName.value = (
-          await server.getCollectionInfo(props.collectionUuid)
-        ).name;
-      } catch {
-        actions.showErrorSnackbar(
-          'Error loading collection name. Please try again.'
-        );
-      } finally {
-        loading.value = false;
-      }
-    });
-
-    const next = () => (step.value += 1);
-    const previous = () => (step.value -= 1);
-
-    const pushToText = () => {
-      if (createTextTables.value) {
-        router.push(`/epigraphies/${createTextTables.value.text.uuid}`);
+    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
+      {}
+    );
+    const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
+      if (temporaryLocalTables.value) {
+        temporaryLocalTables.value = {
+          ...temporaryLocalTables.value,
+          discourses,
+        };
+        temporaryLocalTables.value.discourses.forEach(row => {
+          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
+        });
       }
     };
 
+    const manuallySelectedDiscourses = ref<string[]>([]);
+    const updateManualSelections = (discourseUuid: string) => {
+      manuallySelectedDiscourses.value =
+        manuallySelectedDiscourses.value.filter(uuid => uuid !== discourseUuid);
+      manuallySelectedDiscourses.value.push(discourseUuid);
+    };
+
     const createText = async () => {
-      if (createTextTables.value) {
+      if (temporaryLocalTables.value) {
         try {
           isDirty.value = false;
-          await server.createText(createTextTables.value);
-          await server.uploadImages(photosWithName.value);
+          await server.createText(temporaryLocalTables.value);
+          await Promise.all(
+            photosWithName.value.map(photo => server.uploadImage(photo))
+          );
         } catch (err) {
           actions.showErrorSnackbar(
             'Error creating text. Please try again',
@@ -278,48 +328,9 @@ export default defineComponent({
       }
     };
 
-    const createTextTables = ref<CreateTextTables>();
-    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
-      {}
-    );
-    const manuallySelectedDiscourses = ref<string[]>([]);
-    const updateManualSelections = (discourseUuid: string) => {
-      manuallySelectedDiscourses.value =
-        manuallySelectedDiscourses.value.filter(uuid => uuid !== discourseUuid);
-      manuallySelectedDiscourses.value.push(discourseUuid);
-    };
-    const buildTables = async () => {
-      if (textInfo.value && editorContent.value) {
-        photosWithName.value = await addNamesToTextPhotos(
-          textInfo.value,
-          photos.value
-        );
-
-        createTextTables.value = await createNewTextTables(
-          textInfo.value,
-          editorContent.value,
-          persistentDiscourseStorage.value,
-          photosWithName.value,
-          props.collectionUuid
-        );
-      }
-      if (createTextTables.value) {
-        createTextTables.value.discourses.forEach(discourse => {
-          persistentDiscourseStorage.value[discourse.uuid] =
-            discourse.spellingUuid;
-        });
-      }
-    };
-
-    const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
-      if (createTextTables.value) {
-        createTextTables.value = {
-          ...createTextTables.value,
-          discourses,
-        };
-        createTextTables.value.discourses.forEach(row => {
-          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
-        });
+    const pushToText = () => {
+      if (temporaryLocalTables.value) {
+        router.push(`/epigraphies/${temporaryLocalTables.value.text.uuid}`);
       }
     };
 
@@ -350,7 +361,7 @@ export default defineComponent({
       epigraphyDetails,
       next,
       previous,
-      createTextTables,
+      temporaryLocalTables,
       updateDiscourseRows,
       stepOneComplete,
       stepTwoComplete,

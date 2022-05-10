@@ -20,13 +20,7 @@ describe('TextOccurrences test', () => {
   };
 
   const mockStore = {
-    getters: {
-      permissions: [
-        {
-          name: 'DISCONNECT_SPELLING',
-        },
-      ],
-    },
+    hasPermission: name => ['DISCONNECT_SPELLING'].includes(name),
   };
 
   const mockServer = {
@@ -43,7 +37,7 @@ describe('TextOccurrences test', () => {
   beforeEach(setup);
 
   const mockTitle = 'title';
-  const mockPersonUuid = 'uuid';
+  const mockPersonUuids = ['uuids'];
   const mockTotalTextOccurrences = 2;
   const mockTextOccurrences = [
     {
@@ -58,7 +52,7 @@ describe('TextOccurrences test', () => {
 
   const mockProps = {
     title: mockTitle,
-    uuid: mockPersonUuid,
+    uuids: mockPersonUuids,
     value: true,
     totalTextOccurrences: mockTotalTextOccurrences,
     getTexts: jest.fn().mockResolvedValue(mockTextOccurrences),
@@ -81,7 +75,7 @@ describe('TextOccurrences test', () => {
   it('gets person text occurrences', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockProps.getTexts).toHaveBeenCalledWith(mockPersonUuid, {
+    expect(mockProps.getTexts).toHaveBeenCalledWith(mockPersonUuids, {
       limit: 10,
       page: 1,
     });
@@ -131,9 +125,7 @@ describe('TextOccurrences test', () => {
   it('does not show disconnect buttons if user does not have permission', async () => {
     sl.set('store', {
       ...mockStore,
-      getters: {
-        permissions: [],
-      },
+      hasPermission: () => false,
     });
     const wrapper = createWrapper();
     await flushPromises();

@@ -35,9 +35,9 @@ export default defineComponent({
   components: { TextCollectionList },
   setup() {
     const server = sl.get('serverProxy');
-    const page = useQueryParam('page', '1');
-    const rows = useQueryParam('rows', '10');
-    const search = useQueryParam('query', '');
+    const page = useQueryParam('page', '1', false);
+    const rows = useQueryParam('rows', '10', true);
+    const search = useQueryParam('query', '', true);
 
     return {
       page,

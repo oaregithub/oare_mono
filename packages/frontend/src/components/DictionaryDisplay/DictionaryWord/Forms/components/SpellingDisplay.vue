@@ -50,7 +50,7 @@
       v-model="textOccurrenceDialog"
       class="test-text-occurrences-display"
       :title="spelling.spelling"
-      :uuid="spelling.uuid"
+      :uuids="[spelling.uuid]"
       :totalTextOccurrences="totalOccurrences"
       :getTexts="server.getSpellingTextOccurrences"
       :get-texts-count="server.getSpellingTotalOccurrences"
@@ -116,7 +116,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -134,11 +134,7 @@ export default defineComponent({
     const totalOccurrences = ref(0);
     const totalOccurrencesLoading = ref(false);
 
-    const canEdit = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('UPDATE_FORM')
-    );
+    const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
 
     const deleteSpelling = async () => {
       try {
@@ -162,9 +158,10 @@ export default defineComponent({
     onMounted(async () => {
       try {
         totalOccurrencesLoading.value = true;
-        totalOccurrences.value = await server.getSpellingTotalOccurrences(
-          props.spelling.uuid
-        );
+        totalOccurrences.value = await server.getSpellingTotalOccurrences([
+          props.spelling.uuid,
+        ]);
+        emit('total-occurrences', totalOccurrences.value);
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading spelling occurrences. Please try again.',

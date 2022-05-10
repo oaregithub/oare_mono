@@ -54,7 +54,7 @@ router.route('/register').post(async (req, res, next) => {
 
     res.status(201).json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

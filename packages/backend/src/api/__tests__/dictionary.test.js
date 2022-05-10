@@ -9,10 +9,8 @@ describe('dictionary api test', () => {
   const mockGrammar = {
     uuid: 'test',
     word: 'word',
-    partsOfSpeech: [],
-    specialClassifications: [],
+    properties: [],
     translations: [],
-    verbalThematicVowelTypes: [],
   };
   const MockDictionaryFormDao = {
     getWordForms: jest.fn().mockResolvedValue(mockForms),
@@ -48,42 +46,24 @@ describe('dictionary api test', () => {
     getUserPermissions: jest.fn().mockResolvedValue([
       {
         name: 'UPDATE_FORM',
-        type: 'dictionary',
-        description: 'Allow group users to make changes to form(s) of words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'UPDATE_TRANSLATION',
-        type: 'dictionary',
-        description:
-          'Allow group users to make changes to translations of existing words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'UPDATE_WORD_SPELLING',
-        type: 'dictionary',
-        description:
-          'Allow group users to change the spelling of existing words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'ADD_SPELLING',
-        type: 'dictionary',
-        description: 'Allow group users to add new spellings to existing words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'ADD_FORM',
-        type: 'dictionary',
-        description: 'Allow group users to add new forms to words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
       },
       {
         name: 'DISCONNECT_SPELLING',
-        type: 'dictionary',
-        description:
-          'Allow group users to disconnect spelling occurrences from words',
-        dependencies: ['WORDS', 'NAMES', 'PLACES'],
+      },
+      {
+        name: 'EDIT_ITEM_PROPERTIES',
       },
     ]),
   };
@@ -407,17 +387,6 @@ describe('dictionary api test', () => {
       expect(FormDao.updateForm).toHaveBeenCalledWith(testUuid, 'newForm');
     });
 
-    it('updates discourse transcriptions', async () => {
-      await sendRequest();
-
-      discourseUuids.forEach(uuid => {
-        expect(DiscourseDao.updateDiscourseTranscription).toHaveBeenCalledWith(
-          uuid,
-          'newForm'
-        );
-      });
-    });
-
     it("returns 500 if logging doesn't work", async () => {
       setup({
         UserDao: AdminUserDao,
@@ -450,22 +419,6 @@ describe('dictionary api test', () => {
           getDiscourseUuidsByFormUuid: jest
             .fn()
             .mockRejectedValue('Failed to get discourse uuids'),
-        },
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if updating discourse transcription fails', async () => {
-      setup({
-        UserDao: AdminUserDao,
-        FormDao,
-        DiscourseDao: {
-          ...DiscourseDao,
-          updateDiscourseTranscription: jest
-            .fn()
-            .mockRejectedValue('Cannot update discourse transcription'),
         },
       });
 
@@ -986,9 +939,8 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/spellings/:uuid/occurrences', () => {
-    const spellingUuid = 'spelling-uuid';
-    const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/occurrences`;
+  describe('GET /dictionary/spellings/spelling_occurrences/occurrences', () => {
+    const PATH = `${API_PATH}/dictionary/spellings/spelling_occurrences/occurrences`;
 
     const TextDiscourseDao = {
       getTotalSpellingTexts: jest.fn().mockResolvedValue(12),
@@ -1021,9 +973,8 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/spellings/:uuid/texts', () => {
-    const spellingUuid = 'spelling-uuid';
-    const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}/texts`;
+  describe('GET /dictionary/spelling_occurrences/texts', () => {
+    const PATH = `${API_PATH}/dictionary/spelling_occurrences/texts`;
     const mockResponse = [
       {
         textUuid: 'text-uuid',

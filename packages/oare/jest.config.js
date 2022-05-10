@@ -8,6 +8,5 @@ module.exports = {
   testRegex: '(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   collectCoverage: false,
-  reporters: ['default', 'jest-html-reporters'],
   setupFilesAfterEnv: ['./setup-jest.js'],
 };

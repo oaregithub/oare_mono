@@ -1,7 +1,8 @@
 export type PermissionItem =
   | DictionaryPermission
   | PagePermission
-  | TextPermission;
+  | TextPermission
+  | GeneralPermission;
 
 export type PermissionName = PermissionItem['name'];
 
@@ -32,10 +33,17 @@ export interface TextPermission extends PermissionTemplate {
   name:
     | 'VIEW_EPIGRAPHY_IMAGES'
     | 'VIEW_TEXT_DISCOURSE'
+    | 'VIEW_TEXT_FILE'
     | 'ADD_NEW_TEXTS'
     | 'EDIT_TEXT_INFO'
+    | 'UPLOAD_EPIGRAPHY_IMAGES'
     | 'EDIT_TRANSLATION';
   type: 'text';
+}
+
+export interface GeneralPermission extends PermissionTemplate {
+  name: 'EDIT_ITEM_PROPERTIES';
+  type: 'general';
 }
 
 export interface UpdatePermissionPayload {

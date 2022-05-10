@@ -4,7 +4,7 @@ import {
   ThreadStatus,
   CreateThreadPayload,
 } from '@oare/types';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 
@@ -30,7 +30,7 @@ class ThreadsDao {
   async insert({ referenceUuid, route }: CreateThreadPayload): Promise<string> {
     const newUuid: string = v4();
     const status: ThreadStatus = 'New';
-    await knex('threads').insert({
+    await knexWrite()('threads').insert({
       uuid: newUuid,
       reference_uuid: referenceUuid,
       status,
@@ -41,13 +41,13 @@ class ThreadsDao {
   }
 
   async update({ uuid, status }: Thread): Promise<void> {
-    await knex('threads').where('uuid', uuid).update({
+    await knexWrite()('threads').where('uuid', uuid).update({
       status,
     });
   }
 
   async getByReferenceUuid(referenceUuid: string): Promise<Thread[]> {
-    const thread: Thread[] = await knex('threads')
+    const thread: Thread[] = await knexRead()('threads')
       .select(
         'threads.uuid AS uuid',
         'threads.reference_uuid AS referenceUuid',
@@ -61,7 +61,7 @@ class ThreadsDao {
   }
 
   async getByUuid(uuid: string): Promise<Thread | null> {
-    const thread: Thread | null = await knex('threads')
+    const thread: Thread | null = await knexRead()('threads')
       .first(
         'threads.uuid AS uuid',
         'threads.reference_uuid AS referenceUuid',
@@ -75,7 +75,7 @@ class ThreadsDao {
   }
 
   async updateThreadName(uuid: string, newName: string): Promise<void> {
-    await knex('threads').where({ uuid }).update({
+    await knexWrite()('threads').where({ uuid }).update({
       name: newName,
     });
   }
@@ -88,7 +88,7 @@ class ThreadsDao {
     const isAdmin = userUuid ? await userDao.userIsAdmin(userUuid) : false;
 
     const baseQuery = () =>
-      knex('threads')
+      knexRead()('threads')
         .select(
           'threads.uuid AS uuid',
           'threads.name AS name',
@@ -98,8 +98,8 @@ class ThreadsDao {
           'comments.comment AS comment',
           'comments.user_uuid AS userUuid',
           'comments.created_at AS timestamp',
-          knex.raw('MAX(comments.created_at) AS timestamp'),
-          knex.raw(
+          knexRead().raw('MAX(comments.created_at) AS timestamp'),
+          knexRead().raw(
             'IFNULL(dictionary_word.word, IFNULL(dictionary_form.form, IFNULL(dictionary_spelling.spelling, NULL))) AS item'
           )
         )
@@ -183,7 +183,7 @@ class ThreadsDao {
   }
 
   async newThreadsExist(): Promise<boolean> {
-    const exists = await knex('threads').first().where('status', 'New');
+    const exists = await knexRead()('threads').first().where('status', 'New');
     return !!exists;
   }
 }

@@ -11,8 +11,14 @@ describe('GET /page_content/:routeName', () => {
     getContent: jest.fn().mockResolvedValue(['Test-Content']),
   };
 
+  const mockCache = {
+    insert: jest.fn(),
+    clear: jest.fn(),
+  };
+
   const setup = () => {
     sl.set('PageContentDao', mockPageContentDao);
+    sl.set('cache', mockCache);
   };
 
   const sendRequest = () => request(app).get(PATH);

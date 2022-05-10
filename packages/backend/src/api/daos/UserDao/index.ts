@@ -1,10 +1,10 @@
 import { GetUserResponse, User, UpdateProfilePayload } from '@oare/types';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import UserGroupDao from '../UserGroupDao';
 
 class UserDao {
   async emailExists(email: string): Promise<boolean> {
-    const user = await knex('user').first().where({ email });
+    const user = await knexRead()('user').first().where({ email });
     return !!user;
   }
 
@@ -14,7 +14,7 @@ class UserDao {
   }
 
   async uuidExists(uuid: string): Promise<boolean> {
-    const user = await knex('user').first().where({ uuid });
+    const user = await knexRead()('user').first().where({ uuid });
     return !!user;
   }
 
@@ -31,7 +31,7 @@ class UserDao {
     column: string,
     value: string | number
   ): Promise<User | null> {
-    const user: User | null = await knex('user')
+    const user: User | null = await knexRead()('user')
       .first(
         'uuid',
         'first_name AS firstName',
@@ -68,7 +68,7 @@ class UserDao {
     isAdmin: boolean;
     betaAccess: boolean;
   }): Promise<void> {
-    await knex('user').insert({
+    await knexWrite()('user').insert({
       uuid,
       first_name: firstName,
       last_name: lastName,
@@ -80,21 +80,21 @@ class UserDao {
   }
 
   async userIsAdmin(uuid: string): Promise<boolean> {
-    const { isAdmin } = await knex('user')
+    const { isAdmin } = await knexRead()('user')
       .first('is_admin AS isAdmin')
       .where({ uuid });
     return isAdmin;
   }
 
   async userHasBetaAccess(uuid: string): Promise<boolean> {
-    const { betaAccess } = await knex('user')
+    const { betaAccess } = await knexRead()('user')
       .first('beta_access AS betaAccess')
       .where({ uuid });
     return betaAccess;
   }
 
   async setBetaAccess(uuid: string, status: boolean): Promise<void> {
-    await knex('user')
+    await knexWrite()('user')
       .update({
         beta_access: status,
       })
@@ -105,7 +105,7 @@ class UserDao {
     const users: Pick<
       User,
       'uuid' | 'firstName' | 'lastName' | 'email'
-    >[] = await knex('user').select(
+    >[] = await knexRead()('user').select(
       'uuid',
       'first_name AS firstName',
       'last_name AS lastName',
@@ -136,7 +136,7 @@ class UserDao {
     { email, firstName, lastName }: Required<UpdateProfilePayload>
   ): Promise<void> {
     const displayName = `${firstName} ${lastName}`;
-    await knex('user')
+    await knexWrite()('user')
       .update({
         email,
         first_name: firstName,

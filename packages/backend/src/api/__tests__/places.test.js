@@ -53,6 +53,7 @@ describe('places api test', () => {
       expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
         'GN',
         'a',
+        null,
         false
       );
       expect(response.status).toBe(200);
@@ -67,6 +68,7 @@ describe('places api test', () => {
       expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
         'GN',
         'u/a',
+        null,
         false
       );
       expect(response.status).toBe(200);

@@ -1,9 +1,9 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { MarkupUnit, TextMarkupRow } from '@oare/types';
 
 class TextMarkupDao {
   async getMarkups(textUuid: string, line?: number): Promise<MarkupUnit[]> {
-    let query = knex('text_markup')
+    let query = knexRead()('text_markup')
       .select(
         'text_markup.reference_uuid AS referenceUuid',
         'text_markup.type AS type',
@@ -55,7 +55,7 @@ class TextMarkupDao {
   }
 
   async insertMarkupRow(row: TextMarkupRow) {
-    await knex('text_markup').insert({
+    await knexWrite()('text_markup').insert({
       uuid: row.uuid,
       reference_uuid: row.referenceUuid,
       type: row.type,

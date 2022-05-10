@@ -39,8 +39,8 @@ describe('CommentItem test', () => {
   const mockStore = {
     getters: {
       user: adminUser,
-      permissions: [],
     },
+    hasPermission: () => false,
   };
 
   const mockServer = {
@@ -103,8 +103,8 @@ describe('CommentItem test', () => {
           ...nonAdminUser,
           uuid: comment.userUuid,
         },
-        permissions: [],
       },
+      hasPermission: () => false,
     });
 
     const wrapper = createWrapper();
@@ -121,8 +121,8 @@ describe('CommentItem test', () => {
       ...mockStore,
       getters: {
         user: nonAdminUser,
-        permissions: [],
       },
+      hasPermission: () => false,
     });
 
     const wrapper = createWrapper();

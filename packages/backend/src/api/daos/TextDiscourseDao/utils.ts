@@ -1,5 +1,5 @@
 import { DiscourseUnit, WordsInTextsSearchResultRow } from '@oare/types';
-import knex from '@/connection';
+import { knexWrite } from '@/connection';
 import { DiscourseRow, TextWithDiscourseUuids } from './index';
 
 export function createNestedDiscourses(
@@ -68,7 +68,7 @@ export async function incrementChildNum(
   childNum: number | null
 ): Promise<void> {
   if (childNum) {
-    await knex('text_discourse')
+    await knexWrite()('text_discourse')
       .where({
         text_uuid: textUuid,
         parent_uuid: parentUuid,
@@ -83,7 +83,7 @@ export async function incrementWordOnTablet(
   wordOnTablet: number | null
 ): Promise<void> {
   if (wordOnTablet) {
-    await knex('text_discourse')
+    await knexWrite()('text_discourse')
       .where({
         text_uuid: textUuid,
       })
@@ -97,7 +97,7 @@ export async function incrementObjInText(
   objInText: number | null
 ): Promise<void> {
   if (objInText) {
-    await knex('text_discourse')
+    await knexWrite()('text_discourse')
       .where({
         text_uuid: textUuid,
       })

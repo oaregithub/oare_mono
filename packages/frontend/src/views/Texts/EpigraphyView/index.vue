@@ -11,7 +11,7 @@
         </template>
         <v-row class="ma-0 mb-6">
           <v-icon
-            v-if="!editText"
+            v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
             class="test-pencil mr-4"
             >mdi-pencil</v-icon
@@ -131,13 +131,19 @@
             class="mr-2"
           />
         </template>
-        <template #title:post v-if="textInfo.canWrite && !disableEditing">
+        <template #title:post v-if="!disableEditing">
           <v-btn
-            v-if="!isEditing"
+            v-if="!isEditing && textInfo.canWrite"
             color="primary"
             :to="`/epigraphies/${textUuid}/edit`"
             class="mx-4"
             >Edit</v-btn
+          >
+          <v-btn
+            v-if="canAddPictures"
+            color="primary"
+            @click="photosDialogOpen = true"
+            >Add Photos</v-btn
           >
         </template>
         <epigraphy-full-display
@@ -154,6 +160,16 @@
           Apologies, we do not have a transliteration for this text at the
           moment.
         </span>
+        <oare-dialog
+          v-model="photosDialogOpen"
+          :title="`Add Photos to ${textInfo.text.name}`"
+          submitText="Add Photos"
+          closeOnSubmit
+          :width="1500"
+          @submit="uploadPhotos"
+        >
+          <add-photos inDialog @update-photos="setPhotosToAdd" />
+        </oare-dialog>
       </OareContentView>
     </v-col>
     <v-col
@@ -170,7 +186,13 @@
 
 <script lang="ts">
 import { createTabletRenderer } from '@oare/oare';
-import { TextDiscourseRow, TextDraft } from '@oare/types';
+import {
+  LinkRow,
+  ResourceRow,
+  TextDiscourseRow,
+  TextDraft,
+  TextPhoto,
+} from '@oare/types';
 import {
   defineComponent,
   reactive,
@@ -182,14 +204,18 @@ import {
   ComputedRef,
   PropType,
 } from '@vue/composition-api';
+
 import sl from '@/serviceLocator';
 import { EpigraphyResponse, TranslitOption } from '@oare/types';
-
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
+import AddPhotos from '@/views/Texts/CollectionTexts/AddTexts/Photos/AddPhotos.vue';
+
+import { addNamesToTextPhotos } from '../CollectionTexts/AddTexts/utils/photos';
+import { v4 } from 'uuid';
 
 export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
@@ -213,6 +239,7 @@ export default defineComponent({
     Stoplight,
     EpigraphyImage,
     EpigraphyFullDisplay,
+    AddPhotos,
   },
   props: {
     textUuid: {
@@ -253,9 +280,11 @@ export default defineComponent({
     const router = reactive(sl.get('router'));
 
     const hasEditPermission = computed(() =>
-      store.getters.permissions
-        .map(perm => perm.name)
-        .includes('EDIT_TEXT_INFO')
+      store.hasPermission('EDIT_TEXT_INFO')
+    );
+
+    const canAddPictures = computed(() =>
+      store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
     );
 
     const loading = ref(false);
@@ -367,17 +396,8 @@ export default defineComponent({
     const isAdmin = computed(() => store.getters.isAdmin);
 
     const canViewEpigraphyImages = computed(
-      () =>
-        hasPicture.value &&
-        store.getters.permissions
-          .map(permission => permission.name)
-          .includes('VIEW_EPIGRAPHY_IMAGES')
+      () => hasPicture.value && store.hasPermission('VIEW_EPIGRAPHY_IMAGES')
     );
-
-    const editTextInfo = async () => {
-      await updateTextInfo();
-      editText.value = false;
-    };
 
     const toggleTextInfo = function () {
       originalTextInfoObject.value.excavationPrefix =
@@ -419,6 +439,11 @@ export default defineComponent({
       } else if (textUuid) {
         textInfo.value = await server.getEpigraphicInfo(textUuid);
       }
+    };
+
+    const editTextInfo = async () => {
+      await updateTextInfo();
+      editText.value = false;
     };
 
     const updateTextInfo = async () => {
@@ -476,6 +501,53 @@ export default defineComponent({
 
     provide(EpigraphyReloadKey, getTextInfo);
 
+    const photosDialogOpen = ref(false);
+    const photosToAdd = ref<TextPhoto[]>([]);
+    const setPhotosToAdd = (photos: TextPhoto[]) => {
+      photosToAdd.value = photos;
+    };
+    const uploadPhotos = async () => {
+      try {
+        const photosWithName = await addNamesToTextPhotos(
+          textInfo.value.text.excavationPrefix,
+          textInfo.value.text.excavationNumber,
+          textInfo.value.text.museumPrefix,
+          textInfo.value.text.museumNumber,
+          textInfo.value.text.publicationPrefix,
+          textInfo.value.text.publicationNumber,
+          photosToAdd.value
+        );
+        const resourceRows: ResourceRow[] = photosWithName.map(photo => ({
+          uuid: v4(),
+          sourceUuid: store.getters.user ? store.getters.user.uuid : null,
+          type: 'img',
+          container: 'oare-image-bucket',
+          format: null,
+          link: photo.name,
+        }));
+
+        const linkRows: LinkRow[] = resourceRows.map(resource => ({
+          uuid: v4(),
+          referenceUuid: textUuid || '',
+          objUuid: resource.uuid,
+        }));
+        await server.addPhotosToText(resourceRows, linkRows);
+        await Promise.all(
+          photosWithName.map(photo => server.uploadImage(photo))
+        );
+        photosToAdd.value.forEach(photo => {
+          if (photo.url) {
+            imageUrls.value.push(photo.url);
+          }
+        });
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error adding photos to text. Please try again.',
+          err as Error
+        );
+      }
+    };
+
     return {
       textInfo,
       isEditing,
@@ -497,6 +569,10 @@ export default defineComponent({
       hasEditPermission,
       transliteration,
       editText,
+      photosDialogOpen,
+      setPhotosToAdd,
+      uploadPhotos,
+      canAddPictures,
     };
   },
 });

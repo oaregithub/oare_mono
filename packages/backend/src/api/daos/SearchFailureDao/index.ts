@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexWrite } from '@/connection';
 import { SearchType } from '@oare/types';
 
 class SearchFailureDao {
@@ -9,7 +9,7 @@ class SearchFailureDao {
   ) {
     const timestamp = new Date();
 
-    await knex('search_failure').insert({
+    await knexWrite()('search_failure').insert({
       user_uuid: userUuid,
       search_type: type,
       query_content: query,

@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 const indexName = 'idx_name_uuid';
 const indexRelationName = 'idx_relation_name_uuid';

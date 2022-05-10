@@ -111,6 +111,7 @@
                         :word="item.wordInfo"
                         onlyShowFirstTranslation
                         class="ml-2"
+                        :allowEditing="false"
                       />
                     </template>
                   </v-radio>
@@ -201,9 +202,7 @@ export default defineComponent({
     const searchSpellingLoading = ref(false);
 
     const canInsertDiscourseRows = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('INSERT_DISCOURSE_ROWS')
+      store.hasPermission('INSERT_DISCOURSE_ROWS')
     );
 
     const spellingSearchResults: Ref<SearchSpellingResultRow[]> = ref([]);

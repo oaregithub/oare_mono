@@ -6,7 +6,7 @@ import {
   SearchNullDiscourseLine,
   TextEpigraphyRow,
 } from '@oare/types';
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import {
   getSearchQuery,
@@ -38,6 +38,7 @@ export interface SearchTextArgs {
   title: string;
   userUuid: string | null;
   pagination: Pagination;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface AnchorInfo {
@@ -52,7 +53,7 @@ class TextEpigraphyDao {
     textUuid: string,
     { maxLine, minLine }: GetEpigraphicUnitsOptions = {}
   ): Promise<EpigraphicUnit[]> {
-    let query = knex('text_epigraphy')
+    let query = knexRead()('text_epigraphy')
       .leftJoin(
         'sign_reading',
         'text_epigraphy.reading_uuid',
@@ -116,16 +117,18 @@ class TextEpigraphyDao {
     title,
     pagination,
     userUuid,
+    mode,
   }: SearchTextArgs): Promise<string[]> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters);
+    const notUuids = await getNotOccurrenceTexts(characters, mode);
 
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
       textsToHide,
       true,
+      mode,
       title
     )
       .select('text_epigraphy.text_uuid as uuid')
@@ -140,16 +143,17 @@ class TextEpigraphyDao {
 
   private async getMatchingLines(
     textUuid: string,
-    rawCharacters: SearchCooccurrence[]
+    rawCharacters: SearchCooccurrence[],
+    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries'
   ): Promise<number[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ line: number }> = (
       await Promise.all(
         characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(characters, true);
+          const query = getSequentialCharacterQuery(characters, true, mode);
           return query
-            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
-            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}0.line`)
+            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
+            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
             .where('text_epigraphy.text_uuid', textUuid);
         })
       )
@@ -161,13 +165,14 @@ class TextEpigraphyDao {
 
   private async getDiscourseUuids(
     textUuid: string,
-    rawCharacters: SearchCooccurrence[]
+    rawCharacters: SearchCooccurrence[],
+    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries'
   ): Promise<string[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ discourseUuid: string }> = (
       await Promise.all(
         characters.map(_char => {
-          const query = getSequentialCharacterQuery(characters, true);
+          const query = getSequentialCharacterQuery(characters, true, mode);
           return query
             .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
             .where('text_epigraphy.text_uuid', textUuid);
@@ -183,11 +188,15 @@ class TextEpigraphyDao {
     const textUuids = await this.getMatchingTexts(args);
 
     const textLines = await Promise.all(
-      textUuids.map(uuid => this.getMatchingLines(uuid, args.characters))
+      textUuids.map(uuid =>
+        this.getMatchingLines(uuid, args.characters, args.mode)
+      )
     );
 
     const discourseUuids = await Promise.all(
-      textUuids.map(uuid => this.getDiscourseUuids(uuid, args.characters))
+      textUuids.map(uuid =>
+        this.getDiscourseUuids(uuid, args.characters, args.mode)
+      )
     );
 
     return textUuids.map((uuid, index) => ({
@@ -201,18 +210,19 @@ class TextEpigraphyDao {
     characters,
     title,
     userUuid,
+    mode,
   }: Pick<
     SearchTextArgs,
-    'characters' | 'title' | 'userUuid'
+    'characters' | 'title' | 'userUuid' | 'mode'
   >): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters);
+    const notUuids = await getNotOccurrenceTexts(characters, mode);
 
     const totalRows: number = (
-      await getSearchQuery(characters, textsToHide, true, title)
-        .select(knex.raw('COUNT(DISTINCT text.name) AS count'))
+      await getSearchQuery(characters, textsToHide, true, mode, title)
+        .select(knexRead().raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
     ).count;
@@ -232,15 +242,16 @@ class TextEpigraphyDao {
     const count = await getSearchQuery(
       characterUuids,
       textsToHide,
-      includeSuperfluous
+      includeSuperfluous,
+      'respectNoBoundaries'
     )
-      .select(knex.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
+      .select(knexRead().raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
       .modify(qb => {
-        characterUuids[0].uuids.forEach((_uuid, idx) => {
+        characterUuids[0].words[0].uuids.forEach((_uuid, idx) => {
           if (idx === 0) {
             qb.whereNull('text_epigraphy.discourse_uuid');
           } else {
-            qb.whereNull(`t0${idx}.discourse_uuid`);
+            qb.whereNull(`t00${idx}.discourse_uuid`);
           }
         });
       })
@@ -261,24 +272,25 @@ class TextEpigraphyDao {
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
     const epigraphyUuidColumns: string[] = ['text_epigraphy.uuid'];
-    characterUuids[0].uuids.forEach((_char, idx) => {
+    characterUuids[0].words[0].uuids.forEach((_char, idx) => {
       if (idx > 0) {
-        epigraphyUuidColumns.push(`t0${idx}.uuid AS uuid${idx}`);
+        epigraphyUuidColumns.push(`t00${idx}.uuid AS uuid${idx}`);
       }
     });
 
     const occurrences: any[] = await getSearchQuery(
       characterUuids,
       textsToHide,
-      includeSuperfluous
+      includeSuperfluous,
+      'respectNoBoundaries'
     )
       .distinct(epigraphyUuidColumns)
       .modify(qb => {
-        characterUuids[0].uuids.forEach((_uuid, idx) => {
+        characterUuids[0].words[0].uuids.forEach((_uuid, idx) => {
           if (idx === 0) {
             qb.whereNull('text_epigraphy.discourse_uuid');
           } else {
-            qb.whereNull(`t0${idx}.discourse_uuid`);
+            qb.whereNull(`t00${idx}.discourse_uuid`);
           }
         });
       })
@@ -292,7 +304,7 @@ class TextEpigraphyDao {
     );
     const lineInfo = await Promise.all(
       epigraphyOccurrencesUuids.map(uuids =>
-        knex('text_epigraphy')
+        knexRead()('text_epigraphy')
           .select('text_uuid AS textUuid', 'line')
           .whereIn('uuid', uuids)
           .first()
@@ -307,7 +319,7 @@ class TextEpigraphyDao {
   }
 
   async hasEpigraphy(uuid: string): Promise<boolean> {
-    const response = await knex('text_epigraphy')
+    const response = await knexRead()('text_epigraphy')
       .first('uuid')
       .where('text_uuid', uuid);
     return !!response;
@@ -318,13 +330,13 @@ class TextEpigraphyDao {
     textUuid: string
   ): Promise<AnchorInfo> {
     const newWordCharOnTablet: number = (
-      await knex('text_epigraphy')
+      await knexRead()('text_epigraphy')
         .whereIn('uuid', epigraphyUuids)
         .pluck('char_on_tablet')
         .orderBy('char_on_tablet', 'asc')
     )[0];
     let isFirstWord = false;
-    let anchorDiscourseRow: { discourseUuid: string } = await knex(
+    let anchorDiscourseRow: { discourseUuid: string } = await knexRead()(
       'text_epigraphy'
     )
       .where('text_uuid', textUuid)
@@ -337,7 +349,7 @@ class TextEpigraphyDao {
       .first();
     if (!anchorDiscourseRow) {
       isFirstWord = true;
-      anchorDiscourseRow = await knex('text_epigraphy')
+      anchorDiscourseRow = await knexRead()('text_epigraphy')
         .where('text_uuid', textUuid)
         .whereNotNull('discourse_uuid')
         .andWhere(function () {
@@ -348,7 +360,7 @@ class TextEpigraphyDao {
         .first();
     }
     const anchorDiscourseUuid = anchorDiscourseRow.discourseUuid;
-    const anchorInfo: AnchorInfo = await knex('text_discourse')
+    const anchorInfo: AnchorInfo = await knexRead()('text_discourse')
       .where('uuid', anchorDiscourseUuid)
       .select(
         'word_on_tablet AS wordOnTablet',
@@ -374,13 +386,13 @@ class TextEpigraphyDao {
     epigraphyUuids: string[],
     discourseUuid: string
   ): Promise<void> {
-    await knex('text_epigraphy')
+    await knexWrite()('text_epigraphy')
       .update('discourse_uuid', discourseUuid)
       .whereIn('uuid', epigraphyUuids);
   }
 
   async insertEpigraphyRow(row: TextEpigraphyRow) {
-    await knex('text_epigraphy').insert({
+    await knexWrite()('text_epigraphy').insert({
       uuid: row.uuid,
       type: row.type,
       text_uuid: row.textUuid,

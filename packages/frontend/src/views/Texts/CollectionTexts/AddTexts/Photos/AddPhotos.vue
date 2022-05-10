@@ -1,5 +1,5 @@
 <template>
-  <OareContentView title="Upload Photos">
+  <OareContentView :title="inDialog ? '' : 'Upload Photos'">
     <v-row>
       <v-col cols="6">
         <v-row
@@ -7,7 +7,7 @@
           justify="center"
           class="ma-0 mb-4 d-inline-block"
         >
-          <b>Optional.</b>
+          <b v-if="!inDialog">Optional.</b>
           To begin adding photos, click the "Add Photo" button below. Uploads
           currently support PNG, JPEG, JPG, and TIFF file types. To inquire
           about support for other file types, please
@@ -17,8 +17,8 @@
           v-for="photo in photos"
           :key="photo.uuid"
           :uuid="photo.uuid"
-          @export-photo="setPhoto"
-          @remove-photo="removePhoto"
+          @export-photo="setPhotoDetails"
+          @remove-photo="removePhoto(photo.uuid)"
         />
         <v-btn @click="addPhoto" class="ml-10 my-4" text>
           <v-icon color="primary">mdi-plus</v-icon>
@@ -56,10 +56,16 @@ export default defineComponent({
     EpigraphyImage,
     PhotoSelector,
   },
+  props: {
+    inDialog: {
+      type: Boolean,
+      default: false,
+    },
+  },
   setup(_, { emit }) {
     const photos = ref<TextPhoto[]>([]);
 
-    const setPhoto = (photo: TextPhoto) => {
+    const setPhotoDetails = (photo: TextPhoto) => {
       const existingUuids = photos.value.map(upload => upload.uuid);
 
       if (existingUuids.includes(photo.uuid)) {
@@ -103,14 +109,10 @@ export default defineComponent({
       emit('step-complete', stepComplete.value);
     });
 
-    onMounted(() => {
-      emit('step-complete', true);
-    });
-
     return {
       photos,
       photoUrls,
-      setPhoto,
+      setPhotoDetails,
       addPhoto,
       removePhoto,
       photosWithUrl,

@@ -80,19 +80,19 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    uuid: {
-      type: String,
+    uuids: {
+      type: Array as PropType<string[]>,
       required: true,
     },
     getTexts: {
       type: Function as PropType<
-        (uuid: string, request: Pagination) => SpellingOccurrenceResponseRow[]
+        (uuid: string[], request: Pagination) => SpellingOccurrenceResponseRow[]
       >,
       required: true,
     },
     getTextsCount: {
       type: Function as PropType<
-        (uuid: string, filter: Partial<Pagination>) => number
+        (uuid: string[], filter: Partial<Pagination>) => number
       >,
       required: true,
     },
@@ -117,9 +117,7 @@ export default defineComponent({
     const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
 
     const canDisconnectSpellings = computed(() =>
-      store.getters.permissions
-        .map(permission => permission.name)
-        .includes('DISCONNECT_SPELLING')
+      store.hasPermission('DISCONNECT_SPELLING')
     );
 
     const headers: Ref<DataTableHeader[]> = canDisconnectSpellings.value
@@ -172,7 +170,7 @@ export default defineComponent({
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        textOccurrences.value = await props.getTexts(props.uuid, {
+        textOccurrences.value = await props.getTexts(props.uuids, {
           page: tableOptions.value.page,
           limit: tableOptions.value.itemsPerPage,
           ...(search.value ? { filter: search.value } : null),
@@ -188,7 +186,7 @@ export default defineComponent({
     };
 
     watch(
-      () => props.uuid,
+      () => props.uuids,
       async () => {
         await getReferences();
       }
@@ -199,7 +197,7 @@ export default defineComponent({
     watch(
       search,
       _.debounce(async () => {
-        textOccurrencesLength.value = await props.getTextsCount(props.uuid, {
+        textOccurrencesLength.value = await props.getTextsCount(props.uuids, {
           filter: search.value,
         });
         tableOptions.value.page = 1;

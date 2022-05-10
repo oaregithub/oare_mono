@@ -2,11 +2,26 @@ import { AddTextInfo, TextPhoto, TextPhotoWithName } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export const addNamesToTextPhotos = async (
-  textInfo: AddTextInfo | undefined,
+  excavationPrefix: string | null,
+  excavationNumber: string | null,
+  museumPrefix: string | null,
+  museumNumber: string | null,
+  publicationPrefix: string | null,
+  publicationNumber: string | null,
   photos: TextPhoto[]
 ): Promise<TextPhotoWithName[]> => {
   const photoNames = await Promise.all(
-    photos.map(photo => generatePhotoName(textInfo, photo))
+    photos.map(photo =>
+      generatePhotoName(
+        excavationPrefix,
+        excavationNumber,
+        museumPrefix,
+        museumNumber,
+        publicationPrefix,
+        publicationNumber,
+        photo
+      )
+    )
   );
   const photosWithNamesUncorrected: TextPhotoWithName[] = photos.map(
     (photo, idx) => ({
@@ -18,7 +33,12 @@ export const addNamesToTextPhotos = async (
 };
 
 export const generatePhotoName = async (
-  textInfo: AddTextInfo | undefined,
+  excavationPrefix: string | null,
+  excavationNumber: string | null,
+  museumPrefix: string | null,
+  museumNumber: string | null,
+  publicationPrefix: string | null,
+  publicationNumber: string | null,
   photo: TextPhoto
 ): Promise<string> => {
   const store = sl.get('store');
@@ -29,19 +49,15 @@ export const generatePhotoName = async (
 
   let collection: string = '';
   let objectNumber: string = '';
-  if (textInfo && textInfo.excavationPrefix && textInfo.excavationNumber) {
-    collection = textInfo.excavationPrefix;
-    objectNumber = textInfo.excavationNumber;
-  } else if (textInfo && textInfo.museumPrefix && textInfo.museumNumber) {
-    collection = textInfo.museumPrefix;
-    objectNumber = textInfo.museumNumber;
-  } else if (
-    textInfo &&
-    textInfo.publicationPrefix &&
-    textInfo.publicationNumber
-  ) {
-    collection = textInfo.publicationPrefix;
-    objectNumber = textInfo.publicationNumber;
+  if (excavationPrefix && excavationNumber) {
+    collection = excavationPrefix;
+    objectNumber = excavationNumber;
+  } else if (museumPrefix && museumNumber) {
+    collection = museumPrefix;
+    objectNumber = museumNumber;
+  } else if (publicationPrefix && publicationNumber) {
+    collection = publicationPrefix;
+    objectNumber = publicationNumber;
   }
 
   collection = collection.toLowerCase();
