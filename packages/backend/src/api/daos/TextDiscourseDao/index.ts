@@ -158,24 +158,11 @@ class TextDiscourseDao {
         : [],
       textsToHide,
       payload.sequenced === 'true'
-    )
-      .select(
-        knexRead().raw(
-          `td0.uuid as discourseUuid, td0.text_uuid as textUuid${selects}`
-        )
+    ).select(
+      knexRead().raw(
+        `td0.uuid as discourseUuid, td0.text_uuid as textUuid${selects}`
       )
-      .limit(payload.rows)
-      .offset((payload.page - 1) * payload.rows);
-    const countResponse = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
-      JSON.parse(payload.uuids),
-      payload.numWordsBetween
-        ? payload.numWordsBetween.map(val => Number(val))
-        : [],
-      textsToHide,
-      payload.sequenced === 'true'
-    )
-      .select(knexRead().raw('COUNT(DISTINCT(td0.text_uuid)) as count'))
-      .first();
+    );
 
     const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await createTextWithDiscourseUuidsArray(
       queryResult
@@ -207,9 +194,10 @@ class TextDiscourseDao {
           discourse: discourseReadings[index],
           discourseUuids: text.discourseUuids,
         }))
-      ),
-      total: countResponse.count,
+      ).slice((payload.page - 1) * payload.rows, payload.page * payload.rows),
+      total: textNames.length,
     };
+
     return response;
   }
 
