@@ -25,6 +25,7 @@
       <v-stepper-items>
         <v-stepper-content step="1">
           <text-info-set
+            :existingTextRow="existingTextRow"
             @update-text-info="setTextInfo"
             @step-complete="stepOneComplete = $event"
           />
@@ -126,6 +127,7 @@ import {
   CreateTextTables,
   TextDiscourseRow,
   TextPhotoWithName,
+  TextRow,
 } from '@oare/types';
 import { convertTablesToUnits } from './utils/convertTablesToUnits';
 import { createNewTextTables } from './utils/buildTables';
@@ -136,6 +138,10 @@ export default defineComponent({
     collectionUuid: {
       type: String,
       required: true,
+    },
+    existingTextUuid: {
+      type: String,
+      required: false,
     },
   },
   beforeRouteLeave(_to, _from, next) {
@@ -172,13 +178,34 @@ export default defineComponent({
 
     const isDirty = ref(true);
 
+    const existingTextRow = ref<TextRow>();
+
     onMounted(async () => {
       loading.value = true;
       try {
         collectionName.value = (
           await server.getCollectionInfo(props.collectionUuid)
         ).name;
-      } catch {
+
+        if (props.existingTextUuid) {
+          const alreadyHasEpigraphy = await server.hasEpigraphy(
+            props.existingTextUuid
+          );
+          if (alreadyHasEpigraphy) {
+            isDirty.value = false;
+            router.replace({ name: '403' });
+          }
+
+          existingTextRow.value =
+            (await server.getTextRowByUuid(props.existingTextUuid)) ||
+            undefined;
+        }
+      } catch (err) {
+        if ((err as any).response && (err as any).response.status === 403) {
+          isDirty.value = false;
+          router.replace({ name: '403' });
+          return;
+        }
         actions.showErrorSnackbar(
           'Error loading collection name. Please try again.'
         );
@@ -224,7 +251,8 @@ export default defineComponent({
           editorContent.value,
           persistentDiscourseStorage.value,
           photosWithName.value,
-          props.collectionUuid
+          props.collectionUuid,
+          existingTextRow.value
         );
 
         temporaryLocalTables.value.discourses.forEach(discourse => {
@@ -372,6 +400,7 @@ export default defineComponent({
       manuallySelectedDiscourses,
       updateManualSelections,
       isDirty,
+      existingTextRow,
     };
   },
 });
