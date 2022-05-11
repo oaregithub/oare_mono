@@ -21,19 +21,15 @@
       </router-link>
       <span v-else
         >{{ item.name }}
-        <v-tooltip top v-if="canAddNewTexts">
-          <template #activator="{ on, attrs }">
-            <v-btn
-              icon
-              small
-              v-bind="attrs"
-              v-on="on"
-              @click="createEpigraphy(item.uuid)"
-              ><v-icon>mdi-plus</v-icon></v-btn
-            >
-          </template>
-          <span>Add Epigraphy to Text</span>
-        </v-tooltip>
+        <v-btn
+          v-if="canAddNewTexts"
+          @click="createEpigraphy(item.uuid)"
+          small
+          class="ml-2"
+          color="info"
+          text
+          ><v-icon small>mdi-plus</v-icon>Create Text</v-btn
+        >
       </span>
       <v-row v-if="editText === item.uuid" class="ma-1">
         <v-icon @click="updateTextInfo(item)" class="edit-text-save-btn mr-2"
