@@ -5,10 +5,11 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
+  WordFormAutocompleteDisplay,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
-import { assembleSearchResult } from './utils';
+import { assembleSearchResult, assembleAutocompleteDisplay } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
@@ -283,6 +284,28 @@ class DictionaryWordDao {
     };
   }
 
+  async getWordsAndFormsForWordsInTexts() {
+    const query = knexRead()
+      .from('dictionary_form AS df')
+      .select(
+        'df.form as name',
+        'df.uuid',
+        knexRead().raw("concat('form') as type")
+      )
+      .union([
+        knexRead()('dictionary_word as dw').select(
+          'dw.word as name',
+          'dw.uuid',
+          knexRead().raw("concat('word') as type")
+        ),
+      ]);
+    const resultRows = await query;
+    const results: WordFormAutocompleteDisplay[] = await Promise.all(
+      resultRows.map(row => assembleAutocompleteDisplay(row))
+    );
+    return results;
+  }
+
   async updateWordSpelling(uuid: string, word: string): Promise<void> {
     await knexWrite()('dictionary_word').update({ word }).where({ uuid });
   }
@@ -342,6 +365,20 @@ class DictionaryWordDao {
     await Promise.all(
       deletedTranslationUuids.map(uuid => FieldDao.deleteField(uuid))
     );
+  }
+
+  async getWordUuidByWordOrFormUuid(uuid: string): Promise<string> {
+    const { wordUuid } = await knexRead()('dictionary_word')
+      .select('dictionary_word.uuid as wordUuid')
+      .innerJoin(
+        'dictionary_form',
+        'dictionary_form.reference_uuid',
+        'dictionary_word.uuid'
+      )
+      .where('dictionary_word.uuid', '=', uuid)
+      .orWhere('dictionary_form.uuid', '=', uuid)
+      .first();
+    return wordUuid;
   }
 }
 
