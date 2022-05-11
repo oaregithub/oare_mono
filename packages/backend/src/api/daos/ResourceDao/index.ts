@@ -50,7 +50,7 @@ class ResourceDao {
         userUuid: null,
         stacktrace: (err as Error).stack || null,
         status: 'In Progress',
-        description: 'Error retrieving S3 photos',
+        description: 'Error retrieving S3 images',
       });
     }
 
@@ -90,7 +90,7 @@ class ResourceDao {
     } catch (err) {
       await ErrorsDao.logError({
         userUuid: null,
-        description: 'Error retrieving CDLI photo',
+        description: 'Error retrieving CDLI image',
         stacktrace: (err as Error).stack || null,
         status: 'In Progress',
       });
@@ -163,7 +163,7 @@ class ResourceDao {
         userUuid: null,
         stacktrace: (err as Error).stack || null,
         status: 'New',
-        description: 'Error retrieving Metropolitan Museum photos',
+        description: 'Error retrieving Metropolitan Museum images',
       });
     }
 

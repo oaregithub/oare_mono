@@ -10,7 +10,7 @@
         </v-stepper-step>
         <v-divider />
         <v-stepper-step :complete="step > 2" step="2">
-          Upload Photos
+          Upload Images
         </v-stepper-step>
         <v-divider />
         <v-stepper-step :complete="step > 3" step="3"> Editor </v-stepper-step>
@@ -42,10 +42,11 @@
             v-if="step >= 2"
             @update-photos="setPhotos"
             @step-complete="stepTwoComplete = $event"
+            @skip="next"
           />
           <stepper-button
             :blockContinue="!stepTwoComplete"
-            blockContinueText="To continue, each photo needs to have a side and view selected. Please make sure you also have uploaded photos for each selector."
+            blockContinueText='To continue, please select "Confirm" or "Skip" in the awknowledgement box. Each image must also have a side and view selected before you can continue.'
             @next="next"
             @previous="previous"
           />
@@ -170,7 +171,7 @@ export default defineComponent({
     const loading = ref(false);
 
     const stepOneComplete = ref(false);
-    const stepTwoComplete = ref(true);
+    const stepTwoComplete = ref(false);
     const stepThreeComplete = ref(false);
 
     const next = () => (step.value += 1);
