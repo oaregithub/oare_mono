@@ -165,7 +165,7 @@ router
 
         res.json(textContent);
       } else {
-        res.json('');
+        next(new HttpForbidden('Failed to get text file'));
       }
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -414,7 +414,7 @@ router
 
         res.json(response);
       } else {
-        res.json('');
+        next(new HttpForbidden('Failed to get special object'));
       }
     } catch (err) {
       next(new HttpInternalError(err as string));
