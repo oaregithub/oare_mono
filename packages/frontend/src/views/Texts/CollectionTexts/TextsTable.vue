@@ -19,7 +19,18 @@
       <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`">
         {{ item.name }}
       </router-link>
-      <span v-else>{{ item.name }}</span>
+      <span v-else
+        >{{ item.name }}
+        <v-btn
+          v-if="canAddNewTexts"
+          @click="createEpigraphy(item.uuid)"
+          small
+          class="ml-2"
+          color="info"
+          text
+          ><v-icon small>mdi-plus</v-icon>Create Text</v-btn
+        >
+      </span>
       <v-row v-if="editText === item.uuid" class="ma-1">
         <v-icon @click="updateTextInfo(item)" class="edit-text-save-btn mr-2"
           >mdi-check</v-icon
@@ -164,16 +175,23 @@ export default defineComponent({
       type: Number,
       default: 10,
     },
+    collectionUuid: {
+      type: String,
+      required: true,
+    },
   },
 
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
+    const router = sl.get('router');
 
     const hasEditPermission = computed(() =>
       store.hasPermission('EDIT_TEXT_INFO')
     );
+
+    const canAddNewTexts = computed(() => store.hasPermission('ADD_NEW_TEXTS'));
 
     const originalTextInfoObject = ref<OriginalTextInfo>({
       excavationPrefix: null,
@@ -271,6 +289,10 @@ export default defineComponent({
       }
     );
 
+    const createEpigraphy = (textUuid: string) => {
+      router.push(`/add_text_epigraphy/${props.collectionUuid}/${textUuid}`);
+    };
+
     return {
       headers,
       searchOptions,
@@ -279,6 +301,8 @@ export default defineComponent({
       cancelEditTextInfo,
       updateTextInfo,
       hasEditPermission,
+      createEpigraphy,
+      canAddNewTexts,
     };
   },
 });

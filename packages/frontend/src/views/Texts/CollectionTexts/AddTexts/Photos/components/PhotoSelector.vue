@@ -33,7 +33,7 @@
         outlined
         accept="image/png, image/jpeg, image/tiff"
         @change="setFile"
-        label="Click to select photo file to upload"
+        label="Click to select image file to upload"
       />
     </v-row>
   </v-container>
@@ -128,6 +128,10 @@ export default defineComponent({
       {
         text: 'Fat Cross',
         value: 'x',
+      },
+      {
+        text: 'Handcopy',
+        value: 'h',
       },
       {
         text: 'Unknown Side',
