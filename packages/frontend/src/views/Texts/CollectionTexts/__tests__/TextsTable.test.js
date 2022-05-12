@@ -65,6 +65,7 @@ describe('TextsTable test', () => {
     loading: false,
     texts,
     totalTexts: 2,
+    collectionUuid: 'test-uuid',
   };
 
   const createWrapper = () =>

@@ -32,6 +32,7 @@
         :rules="textNameRules"
         autofocus
         class="test-text-name"
+        :disabled="existingTextRow"
       />
       <v-row class="pl-3">
         <h3 class="mt-1 mb-2 d-inline">Excavation</h3>
@@ -191,48 +192,51 @@
             outlined
             label="CDLI Number"
             placeholder="e.g. P361444"
+            :disabled="existingTextRow"
           />
         </v-col>
       </v-row>
-      <v-row class="pl-3">
-        <h3 class="mt-1 mb-2 d-inline">Additional Properties</h3>
-      </v-row>
-      <v-row class="px-3 pb-4">
-        <span v-if="properties.length === 0"
-          >No additional properties selected</span
+      <template v-if="!existingTextRow">
+        <v-row class="pl-3">
+          <h3 class="mt-1 mb-2 d-inline">Additional Properties</h3>
+        </v-row>
+        <v-row class="px-3 pb-4">
+          <span v-if="properties.length === 0"
+            >No additional properties selected</span
+          >
+          <v-chip
+            v-else
+            v-for="(property, idx) in properties"
+            :key="idx"
+            class="my-1 mr-2"
+            color="info"
+            outlined
+            :title="propertyText(property)"
+            >{{ propertyText(property) }}
+          </v-chip>
+        </v-row>
+        <v-row class="px-3 mb-6">
+          <v-btn @click="selectPropertiesDialog = true" color="primary">
+            Select Additional Properties
+          </v-btn>
+        </v-row>
+        <oare-dialog
+          v-model="selectPropertiesDialog"
+          title="Additional Text Properties"
+          :width="1000"
+          :submitDisabled="!formComplete"
+          submitText="OK"
+          closeOnSubmit
+          :showCancel="false"
+          eager
         >
-        <v-chip
-          v-else
-          v-for="(property, idx) in properties"
-          :key="idx"
-          class="my-1 mr-2"
-          color="info"
-          outlined
-          :title="propertyText(property)"
-          >{{ propertyText(property) }}
-        </v-chip>
-      </v-row>
-      <v-row class="px-3 mb-6">
-        <v-btn @click="selectPropertiesDialog = true" color="primary">
-          Select Additional Properties
-        </v-btn>
-      </v-row>
-      <oare-dialog
-        v-model="selectPropertiesDialog"
-        title="Additional Text Properties"
-        :width="1000"
-        :submitDisabled="!formComplete"
-        submitText="OK"
-        closeOnSubmit
-        :showCancel="false"
-        eager
-      >
-        <add-properties
-          startingUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"
-          @export-properties="setProperties($event)"
-          @form-complete="formComplete = $event"
-        />
-      </oare-dialog>
+          <add-properties
+            startingUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"
+            @export-properties="setProperties($event)"
+            @form-complete="formComplete = $event"
+          />
+        </oare-dialog>
+      </template>
     </v-col>
   </OareContentView>
 </template>
@@ -244,15 +248,23 @@ import {
   computed,
   watch,
   ComputedRef,
+  onMounted,
+  PropType,
 } from '@vue/composition-api';
 import AddProperties from '@/components/Properties/AddProperties.vue';
-import { ParseTreeProperty, AddTextInfo } from '@oare/types';
+import { ParseTreeProperty, AddTextInfo, TextRow } from '@oare/types';
 
 export default defineComponent({
+  props: {
+    existingTextRow: {
+      type: Object as PropType<TextRow>,
+      required: false,
+    },
+  },
   components: {
     AddProperties,
   },
-  setup(_, { emit }) {
+  setup(props, { emit }) {
     const textName = ref('');
     const cdliNum = ref('');
     const excavationPrefix = ref('');
@@ -335,6 +347,19 @@ export default defineComponent({
         return true;
       },
     ];
+
+    onMounted(async () => {
+      if (props.existingTextRow) {
+        textName.value = props.existingTextRow.name || '';
+        cdliNum.value = props.existingTextRow.cdliNum || '';
+        excavationPrefix.value = props.existingTextRow.excavationPrefix || '';
+        excavationNumber.value = props.existingTextRow.excavationNumber || '';
+        museumPrefix.value = props.existingTextRow.museumPrefix || '';
+        museumNumber.value = props.existingTextRow.museumNumber || '';
+        publicationPrefix.value = props.existingTextRow.publicationPrefix || '';
+        publicationNumber.value = props.existingTextRow.publicationNumber || '';
+      }
+    });
 
     return {
       textName,

@@ -12,7 +12,7 @@
       class="test-discourses"
     />
     <TextSourceReading
-      v-if="canViewTextSource"
+      v-if="canViewTextSource && textUuid"
       :textUuid="textUuid"
       class="test-textsource"
     />
