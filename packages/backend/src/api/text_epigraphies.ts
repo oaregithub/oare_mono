@@ -165,7 +165,7 @@ router
 
         res.json(textContent);
       } else {
-        res.json('');
+        next(new HttpForbidden('Failed to get text file'));
       }
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -389,6 +389,33 @@ router
         publicationNumber
       );
       res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/text_epigraphies/object_link/:tag')
+  .get(async (req, res, next) => {
+    try {
+      const { tag } = req.params;
+
+      const ResourceDao = sl.get('ResourceDao');
+
+      const object_link = await ResourceDao.getDirectObjectLink(tag);
+
+      if (object_link !== null) {
+        const s3 = new AWS.S3();
+
+        const response = await s3.getSignedUrlPromise('getObject', {
+          Bucket: object_link.container,
+          Key: object_link.link,
+        });
+
+        res.json(response);
+      } else {
+        next(new HttpForbidden('Failed to get special object'));
+      }
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

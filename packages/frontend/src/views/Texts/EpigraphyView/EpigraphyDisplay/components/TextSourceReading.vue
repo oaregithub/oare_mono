@@ -1,7 +1,7 @@
 <template>
   <div v-if="textContent !== ''">
     <br />
-    <h2>Text Source</h2>
+    <h2>Text Source <text-source-information-card /></h2>
     <br />
     <span class="text-source-content">{{ textContent }}</span>
   </div>
@@ -10,6 +10,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from '@vue/composition-api';
 import sl from '@/serviceLocator';
+import TextSourceInformationCard from './TextSourceInformationCard.vue';
 
 export default defineComponent({
   props: {
@@ -17,6 +18,9 @@ export default defineComponent({
       type: String,
       required: true,
     },
+  },
+  components: {
+    TextSourceInformationCard,
   },
   setup({ textUuid }) {
     const server = sl.get('serverProxy');

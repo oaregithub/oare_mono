@@ -99,6 +99,11 @@ async function getTextFileByTextUuid(uuid: string) {
   return data;
 }
 
+async function getSpecialObjectLink(tag: string) {
+  const { data } = await axios.get(`/text_epigraphies/object_link/${tag}`);
+  return data;
+}
+
 async function hasEpigraphy(textUuid: string): Promise<boolean> {
   const { data } = await axios.get(
     `/text_epigraphies/has_epigraphy/${textUuid}`
@@ -117,5 +122,6 @@ export default {
   updateTextInfo,
   addPhotosToText,
   getTextFileByTextUuid,
+  getSpecialObjectLink,
   hasEpigraphy,
 };
