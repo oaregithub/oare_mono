@@ -302,7 +302,7 @@ export default defineComponent({
 
       newRows.shift();
       const reversedNewRows = newRows.reverse();
-      reversedNewRows.forEach(async (rowText, idx) => {
+      reversedNewRows.forEach(async rowText => {
         emit('add-row-after', rowText);
       });
     };
