@@ -1,5 +1,5 @@
 <template>
-  <v-menu offset-y open-on-hover>
+  <v-menu offset-y open-on-hover v-if="imageLink">
     <template #activator="{ on, attrs }">
       <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
         mdi-information-outline
@@ -18,12 +18,10 @@ import sl from '@/serviceLocator';
 export default defineComponent({
   setup() {
     const server = sl.get('serverProxy');
-    const imageLink = ref('');
+    const imageLink = ref<string | null>(null);
 
     onMounted(async () => {
-      imageLink.value = await server.getSpecialObjectLink(
-        'explanation'
-      );
+      imageLink.value = await server.getResourceObject('explanation');
     });
 
     return {
