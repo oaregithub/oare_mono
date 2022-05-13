@@ -94,13 +94,13 @@ const uploadImage = async (photo: TextPhotoWithName) => {
   }
 };
 
-async function getTextFileByTextUuid(uuid: string) {
-  const { data } = await axios.get(`/text_epigraphies/text_file/${uuid}`);
+async function getTextSourceFile(textUuid: string): Promise<string | null> {
+  const { data } = await axios.get(`/text_epigraphies/text_source/${textUuid}`);
   return data;
 }
 
-async function getSpecialObjectLink(tag: string) {
-  const { data } = await axios.get(`/text_epigraphies/object_link/${tag}`);
+async function getResourceObject(tag: string): Promise<string | null> {
+  const { data } = await axios.get(`/text_epigraphies/resource/${tag}`);
   return data;
 }
 
@@ -121,7 +121,7 @@ export default {
   uploadImage,
   updateTextInfo,
   addPhotosToText,
-  getTextFileByTextUuid,
-  getSpecialObjectLink,
+  getTextSourceFile,
+  getResourceObject,
   hasEpigraphy,
 };

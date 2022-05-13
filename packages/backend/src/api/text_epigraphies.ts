@@ -141,31 +141,32 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 });
 
 router
-  .route('/text_epigraphies/text_file/:uuid')
+  .route('/text_epigraphies/text_source/:uuid')
   .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
     try {
+      const { uuid: textUuid } = req.params;
       const ResourceDao = sl.get('ResourceDao');
-      const textFile = await ResourceDao.getTextFileByTextUuid(req.params.uuid);
+      const textSourceKey = await ResourceDao.getTextFileByTextUuid(textUuid);
 
-      if (textFile !== null) {
+      if (textSourceKey) {
         const s3 = new AWS.S3();
 
         const textContentRaw = (
           await s3
             .getObject({
               Bucket: 'oare-texttxt-bucket',
-              Key: textFile,
+              Key: textSourceKey,
             })
             .promise()
         ).Body;
 
         const textContent = textContentRaw
           ? textContentRaw.toString('utf-8')
-          : '';
+          : null;
 
         res.json(textContent);
       } else {
-        next(new HttpForbidden('Failed to get text file'));
+        res.json(null);
       }
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -394,32 +395,29 @@ router
     }
   });
 
-router
-  .route('/text_epigraphies/object_link/:tag')
-  .get(async (req, res, next) => {
-    try {
-      const { tag } = req.params;
+router.route('/text_epigraphies/resource/:tag').get(async (req, res, next) => {
+  try {
+    const { tag } = req.params;
 
-      const ResourceDao = sl.get('ResourceDao');
+    const ResourceDao = sl.get('ResourceDao');
+    const resource = await ResourceDao.getDirectObjectLink(tag);
 
-      const object_link = await ResourceDao.getDirectObjectLink(tag);
+    if (resource) {
+      const s3 = new AWS.S3();
 
-      if (object_link !== null) {
-        const s3 = new AWS.S3();
+      const response = await s3.getSignedUrlPromise('getObject', {
+        Bucket: resource.container,
+        Key: resource.link,
+      });
 
-        const response = await s3.getSignedUrlPromise('getObject', {
-          Bucket: object_link.container,
-          Key: object_link.link,
-        });
-
-        res.json(response);
-      } else {
-        next(new HttpForbidden('Failed to get special object'));
-      }
-    } catch (err) {
-      next(new HttpInternalError(err as string));
+      res.json(response);
+    } else {
+      res.json(null);
     }
-  });
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 router
   .route('/text_epigraphies/has_epigraphy/:textUuid')
