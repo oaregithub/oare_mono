@@ -86,11 +86,7 @@ const uploadImage = async (photo: TextPhotoWithName) => {
     const formData = new FormData();
     formData.append('newFile', file, 'newFile');
 
-    await axios.post(`/text_epigraphies/upload_image/${photo.name}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    await axios.post(`/text_epigraphies/upload_image/${photo.name}`, formData);
   }
 };
 
