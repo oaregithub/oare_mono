@@ -52,10 +52,13 @@
           >
         </v-row>
         <inner-image-zoom :src="imageLinks[selection].link" moveType="drag" />
-        <span
-          >Photo Source: {{ imageLinks[selection].label || 'Unavailable' }}.
-          For more information in photo, click (here).</span
-        >
+        <div class="text-center">
+          <span>
+            Photo Source: {{ imageLinks[selection].label || 'Unavailable' }}.
+            <br />
+            For more information in photo, click (here).</span
+          >
+        </div>
       </div>
     </v-row>
   </v-container>
