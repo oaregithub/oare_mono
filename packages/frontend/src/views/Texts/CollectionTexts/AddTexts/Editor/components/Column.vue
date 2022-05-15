@@ -158,11 +158,7 @@ export default defineComponent({
       let brokenAreas = props.beginningBrokenAreas;
       let brokenAreasAdded = 0;
       return rows.value.map((row, idx) => {
-        if (
-          row.type === 'Line' ||
-          row.type === 'Broken Line(s)' ||
-          row.type === 'Uninscribed Line(s)'
-        ) {
+        if (row.type === 'Line' || row.type === 'Broken Line(s)') {
           if (brokenAreas && brokenAreasAdded !== brokenAreas) {
             const decimal = 0.01 * brokenAreas;
             line += decimal;

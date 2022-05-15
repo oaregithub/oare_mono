@@ -214,6 +214,22 @@ class ResourceDao {
       obj_uuid: row.objUuid,
     });
   }
+
+  async getDirectObjectLink(tag: string): Promise<ResourceRow | null> {
+    const tagList: { [key: string]: string } = {
+      explanation: '3d4d9397-b6a8-11ec-bcc3-0282f921eac9',
+    };
+    const uuid = tagList[tag];
+    if (!uuid) {
+      return null;
+    }
+    const result: ResourceRow = await knexRead()('resource')
+      .select('uuid', 'source_uuid', 'type', 'container', 'format', 'link')
+      .where({ uuid })
+      .first();
+
+    return result;
+  }
 }
 
 export default new ResourceDao();
