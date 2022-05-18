@@ -248,59 +248,16 @@ export async function getTextDiscourseForWordsInTextsSearch(
   const discourseUnits: DiscourseUnit[] = await getTextDiscourseUnitsForWordsInTexts(
     textUuid,
     min,
-    max,
-    discourseUuids
+    max
   );
 
   return discourseUnits;
 }
 
-export function sortTextNames(
-  unsortedResults: WordsInTextsSearchResultRow[]
-): WordsInTextsSearchResultRow[] {
-  const sortedResults = unsortedResults.sort((a, b) => {
-    const aValueClean = a.name.toLowerCase().replace(/[.]/g, '');
-    const bValueClean = b.name.toLowerCase().replace(/[.]/g, '');
-    const aValueSplit = a.name.split(' ');
-    const bValueSplit = b.name.split(' ');
-    const aStringValue = aValueSplit[0];
-    const bStringValue = bValueSplit[0];
-
-    if (aStringValue === bStringValue) {
-      let aNumValue = 0;
-      let bNumValue = 0;
-      for (let i = 0; i < aValueSplit.length; i += 1) {
-        aNumValue = parseFloat(aValueSplit[i]);
-        if (!Number.isNaN(aNumValue)) {
-          break;
-        }
-      }
-
-      for (let i = 0; i < bValueSplit.length; i += 1) {
-        bNumValue = parseFloat(bValueSplit[i]);
-        if (!Number.isNaN(bNumValue)) {
-          break;
-        }
-      }
-      if (Number.isNaN(aNumValue) || Number.isNaN(bNumValue)) {
-        return aValueClean.localeCompare(bValueClean);
-      }
-      if (aNumValue !== bNumValue) {
-        return aNumValue - bNumValue;
-      }
-    }
-
-    return aValueClean.localeCompare(bValueClean);
-  });
-
-  return sortedResults;
-}
-
 export async function getTextDiscourseUnitsForWordsInTexts(
   textUuid: string,
   min: number,
-  max: number,
-  discourseUuids: string[]
+  max: number
 ): Promise<DiscourseUnit[]> {
   const discourseQuery = knexRead()('text_discourse')
     .select(
