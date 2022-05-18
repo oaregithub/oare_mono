@@ -523,6 +523,12 @@ describe('POST /text_epigraphies/create', () => {
       hierarchy: {
         uuid: 'test-hierarchy-uuid',
       },
+      trees: [
+        {
+          uuid: 'test-tree-uuid',
+          type: 'test-type',
+        },
+      ],
     },
   };
 
@@ -536,6 +542,7 @@ describe('POST /text_epigraphies/create', () => {
 
   const mockTextDao = {
     insertTextRow: jest.fn().mockResolvedValue(),
+    getTextRowByUuid: jest.fn().mockResolvedValue(false),
   };
 
   const mockHierarchyDao = {
@@ -567,6 +574,10 @@ describe('POST /text_epigraphies/create', () => {
     addItemsToDenylist: jest.fn().mockResolvedValue(),
   };
 
+  const mockTreeDao = {
+    insertTreeRow: jest.fn().mockResolvedValue(),
+  };
+
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('TextDao', mockTextDao);
@@ -577,6 +588,7 @@ describe('POST /text_epigraphies/create', () => {
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
+    sl.set('TreeDao', mockTreeDao);
   };
 
   beforeEach(setup);
@@ -600,6 +612,9 @@ describe('POST /text_epigraphies/create', () => {
     );
     expect(mockResourceDao.insertLinkRow).toHaveBeenCalledWith(
       mockPayload.tables.links[0]
+    );
+    expect(mockTreeDao.insertTreeRow).toHaveBeenCalledWith(
+      mockPayload.tables.trees[0]
     );
     expect(mockTextDiscourseDao.insertDiscourseRow).toHaveBeenCalledWith(
       mockPayload.tables.discourses[0]

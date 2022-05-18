@@ -9,8 +9,7 @@
     "build:types": "yarn workspace @oare/types build",
     "build:oare": "yarn workspace @oare/oare build",
     "build:frontend": "yarn build:types && yarn build:oare && yarn workspace @oare/frontend build",
-    "zip": "cd packages/backend && zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare && cp oare_build.zip ../..",
-    "bootstrap": "lerna bootstrap --use-workspaces",
+    "zip": "./zip.sh",
     "client": "yarn workspace @oare/frontend serve",
     "server": "yarn workspace @oare/backend dev",
     "serverless": "yarn workspace @oare/serverless start",
@@ -44,8 +43,6 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^7.5.0",
-    "husky": "^4.3.0",
-    "lerna": "^3.22.1",
     "lint-staged": "^10.4.0",
     "prettier": "^2.2.1",
     "vue-eslint-parser": "^7.4.1"

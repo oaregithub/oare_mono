@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import {
   DiscourseLineSpelling,
   Pagination,
@@ -9,7 +9,7 @@ import {
   PersonOccurrenceRow,
   TextDiscourseRow,
 } from '@oare/types';
-import Knex from 'knex';
+import { Knex } from 'knex';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 import {
@@ -46,7 +46,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knex;
+    const k = trx || knexWrite();
     await k('text_discourse')
       .update('spelling_uuid', spellingUuid)
       .where({ uuid });
@@ -57,7 +57,7 @@ class TextDiscourseDao {
     { page, limit }: Pagination
   ): Promise<SearchDiscourseSpellingDaoResponse> {
     const createBaseQuery = () =>
-      knex('text_discourse AS td')
+      knexRead()('text_discourse AS td')
         .where('explicit_spelling', spelling)
         .andWhere('spelling_uuid', null);
 
@@ -86,7 +86,7 @@ class TextDiscourseDao {
   }
 
   async getTextSpellings(textUuid: string): Promise<DiscourseLineSpelling[]> {
-    const rows = await knex('text_discourse')
+    const rows = await knexRead()('text_discourse')
       .select(
         'word_on_tablet AS wordOnTablet',
         'explicit_spelling AS spelling',
@@ -108,7 +108,7 @@ class TextDiscourseDao {
   particular form. Useful for updating the logging edits table 
   and then updating the text discourse table itself */
   async getDiscourseUuidsByFormUuid(formUuid: string): Promise<string[]> {
-    const rows: Record<'uuid', string>[] = await knex('text_discourse')
+    const rows: Record<'uuid', string>[] = await knexRead()('text_discourse')
       .select('text_discourse.uuid')
       .innerJoin(
         'dictionary_spelling',
@@ -120,24 +120,15 @@ class TextDiscourseDao {
   }
 
   async hasSpelling(spellingUuid: string): Promise<boolean> {
-    const row = await knex('text_discourse')
+    const row = await knexRead()('text_discourse')
       .select()
       .where('spelling_uuid', spellingUuid)
       .first();
     return !!row;
   }
 
-  async updateDiscourseTranscription(
-    uuid: string,
-    newTranscription: string
-  ): Promise<void> {
-    await knex('text_discourse')
-      .update({ transcription: newTranscription })
-      .where({ uuid });
-  }
-
   async getTextDiscourseUnits(textUuid: string): Promise<DiscourseUnit[]> {
-    const discourseQuery = knex('text_discourse')
+    const discourseQuery = knexRead()('text_discourse')
       .select(
         'text_discourse.uuid',
         'text_discourse.type',
@@ -175,7 +166,7 @@ class TextDiscourseDao {
     spellingUuids: string[],
     { filter }: Partial<Pagination> = {}
   ) {
-    let query = knex('text_discourse')
+    let query = knexRead()('text_discourse')
       .whereIn('text_discourse.spelling_uuid', spellingUuids)
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid');
 
@@ -244,7 +235,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knex;
+    const k = trx || knexRead();
     const rows: { uuid: string }[] = await k('text_discourse')
       .select('uuid')
       .where('spelling_uuid', spellingUuid);
@@ -255,7 +246,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     cb?: (trx: Knex.Transaction) => Promise<void>
   ): Promise<void> {
-    await knex.transaction(async trx => {
+    await knexWrite().transaction(async trx => {
       await trx('text_discourse')
         .update('spelling_uuid', null)
         .where('spelling_uuid', spellingUuid);
@@ -268,7 +259,7 @@ class TextDiscourseDao {
   async getSpellingUuidsByDiscourseUuid(
     discourseUuid: string
   ): Promise<string[]> {
-    const rows: { spellingUuid: string }[] = await knex('text_discourse')
+    const rows: { spellingUuid: string }[] = await knexRead()('text_discourse')
       .select('spelling_uuid AS spellingUuid')
       .where('uuid', discourseUuid);
     return rows
@@ -277,7 +268,7 @@ class TextDiscourseDao {
   }
 
   async textDiscourseExists(discourseUuid: string): Promise<boolean> {
-    const row = await knex('text_discourse')
+    const row = await knexRead()('text_discourse')
       .select()
       .where('uuid', discourseUuid)
       .first();
@@ -285,7 +276,7 @@ class TextDiscourseDao {
   }
 
   async getParentUuidByTextUuid(textUuid: string): Promise<string> {
-    const row: { uuid: string } = await knex('text_discourse')
+    const row: { uuid: string } = await knexRead()('text_discourse')
       .where({
         text_uuid: textUuid,
         type: 'discourseUnit',
@@ -326,7 +317,7 @@ class TextDiscourseDao {
     await incrementObjInText(textUuid, anchorInfo.objInText);
     await incrementWordOnTablet(textUuid, anchorInfo.wordOnTablet);
 
-    await knex('text_discourse').insert({
+    await knexWrite()('text_discourse').insert({
       uuid: discourseUuid,
       type: 'word',
       child_num: anchorInfo.childNum,
@@ -347,7 +338,7 @@ class TextDiscourseDao {
     textDiscourseUuids: string[],
     pagination?: Partial<Pagination>
   ) {
-    return knex('text_discourse')
+    return knexRead()('text_discourse')
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
       .whereIn('text_discourse.uuid', textDiscourseUuids)
       .modify(qb => {
@@ -400,7 +391,7 @@ class TextDiscourseDao {
   async getChildrenByParentUuid(
     phraseUuid: string
   ): Promise<PersonOccurrenceRow[]> {
-    const wordTexts = await knex('text_discourse')
+    const wordTexts = await knexRead()('text_discourse')
       .select(
         'text_discourse.uuid AS discourseUuid',
         'text_discourse.type',
@@ -416,7 +407,7 @@ class TextDiscourseDao {
 
   async getEpigraphicLineOfWord(discourseUuid: string): Promise<number> {
     const line = (
-      await knex('text_discourse')
+      await knexRead()('text_discourse')
         .pluck('text_epigraphy.line')
         .innerJoin(
           'text_epigraphy',
@@ -430,7 +421,7 @@ class TextDiscourseDao {
   }
 
   async hasSpellingOccurrence(spellingUuid: string): Promise<boolean> {
-    const row = await knex('text_discourse')
+    const row = await knexRead()('text_discourse')
       .where('spelling_uuid', spellingUuid)
       .first();
     return !!row;
@@ -439,13 +430,15 @@ class TextDiscourseDao {
   async disconnectSpellings(discourseUuids: string[]): Promise<void> {
     await Promise.all(
       discourseUuids.map(uuid =>
-        knex('text_discourse').update('spelling_uuid', null).where('uuid', uuid)
+        knexWrite()('text_discourse')
+          .update('spelling_uuid', null)
+          .where('uuid', uuid)
       )
     );
   }
 
   async insertDiscourseRow(row: TextDiscourseRow) {
-    await knex('text_discourse').insert({
+    await knexWrite()('text_discourse').insert({
       uuid: row.uuid,
       type: row.type,
       obj_in_text: row.objInText,

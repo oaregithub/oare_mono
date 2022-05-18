@@ -29,7 +29,7 @@ router
 
       res.json(existingGroup);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .delete(adminRoute, async (req, res, next) => {
@@ -40,7 +40,7 @@ router
       await OareGroupDao.deleteGroup(groupId);
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .patch(adminRoute, async (req, res, next) => {
@@ -69,7 +69,7 @@ router
       await OareGroupDao.updateGroupDescription(groupId, description);
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -81,7 +81,7 @@ router
       const groups: Group[] = await OareGroupDao.getAllGroups();
       res.json(groups);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .post(adminRoute, async (req, res, next) => {
@@ -100,7 +100,7 @@ router
         id: groupId,
       });
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

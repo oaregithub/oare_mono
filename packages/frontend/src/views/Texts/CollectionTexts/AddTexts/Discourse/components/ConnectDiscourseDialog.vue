@@ -27,7 +27,7 @@
             <b class="mr-1">
               <i>{{ option.form.form }}</i>
             </b>
-            <grammar-display :form="option.form" />
+            <grammar-display :form="option.form" :allowEditing="false" />
           </template>
         </v-radio>
       </v-radio-group>
@@ -49,6 +49,7 @@ import {
   ref,
   onMounted,
   PropType,
+  watch,
 } from '@vue/composition-api';
 import { SearchSpellingResultRow, TextDiscourseRow } from '@oare/types';
 import GrammarDisplay from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/GrammarDisplay.vue';
@@ -78,15 +79,27 @@ export default defineComponent({
       emit('set-spelling-uuid', selectedOption.value);
     };
 
-    onMounted(() => {
-      if (props.forms.length === 1) {
-        selectedOption.value = props.forms[0].spellingUuid;
-      } else if (props.word.spellingUuid) {
+    const resetSelectedOption = () => {
+      if (props.word.spellingUuid) {
         selectedOption.value = props.forms.filter(
           form => form.spellingUuid === props.word.spellingUuid
         )[0].spellingUuid;
       }
+    };
+
+    onMounted(() => {
+      resetSelectedOption();
     });
+
+    watch(
+      () => props.value,
+      () => {
+        if (props.value) {
+          resetSelectedOption();
+        }
+      }
+    );
+
     return {
       selectedOption,
       setSpellingUuid,

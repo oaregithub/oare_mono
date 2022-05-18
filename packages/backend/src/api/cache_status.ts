@@ -11,7 +11,7 @@ router.route('/cache').get(async (_req, res, next) => {
     const isEnabled = await CacheStatusDao.cacheIsEnabled();
     res.json(isEnabled);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -21,7 +21,7 @@ router.route('/cache/enable').patch(adminRoute, async (_req, res, next) => {
     await CacheStatusDao.enableCache();
     res.status(204).end();
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -31,7 +31,7 @@ router.route('/cache/disable').patch(adminRoute, async (_req, res, next) => {
     await CacheStatusDao.disableCache();
     res.status(204).end();
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

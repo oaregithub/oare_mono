@@ -10,9 +10,11 @@ router.route('/words/:letter').get(async (req, res, next) => {
   try {
     const { letter } = req.params;
     const isAdmin = req.user ? req.user.isAdmin : false;
+    const userUuid = req.user ? req.user.uuid : null;
     const words = await dictionaryWordDao.getWords(
       'word',
       letter.toLowerCase(),
+      userUuid,
       isAdmin
     );
     const response: WordsResponse = {
@@ -21,7 +23,7 @@ router.route('/words/:letter').get(async (req, res, next) => {
     cache.insert({ req }, response);
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

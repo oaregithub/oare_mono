@@ -143,7 +143,7 @@
             v-if="canAddPictures"
             color="primary"
             @click="photosDialogOpen = true"
-            >Add Photos</v-btn
+            >Add Images</v-btn
           >
         </template>
         <epigraphy-full-display
@@ -162,8 +162,8 @@
         </span>
         <oare-dialog
           v-model="photosDialogOpen"
-          :title="`Add Photos to ${textInfo.text.name}`"
-          submitText="Add Photos"
+          :title="`Add Images to ${textInfo.text.name}`"
+          submitText="Add Images"
           closeOnSubmit
           :width="1500"
           @submit="uploadPhotos"

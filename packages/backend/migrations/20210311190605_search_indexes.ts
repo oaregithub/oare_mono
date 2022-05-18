@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const indexName = 'idx_ep_reading_uuid_text_uuid_char_on_tablet';

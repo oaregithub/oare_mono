@@ -31,7 +31,7 @@ router
       );
       res.json(users.filter(user => !!user));
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .post(adminRoute, async (req, res, next) => {
@@ -68,7 +68,7 @@ router
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .delete(adminRoute, async (req, res, next) => {
@@ -91,7 +91,7 @@ router
       );
       res.end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

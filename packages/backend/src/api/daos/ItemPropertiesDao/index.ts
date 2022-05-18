@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import {
   ItemPropertyRow,
   Pagination,
@@ -15,7 +15,7 @@ class ItemPropertiesDao {
     personUuid: string,
     pagination?: Pagination
   ) {
-    return knex('item_properties')
+    return knexRead()('item_properties')
       .leftJoin(
         'text_discourse',
         'text_discourse.uuid',
@@ -42,7 +42,7 @@ class ItemPropertiesDao {
   }
 
   async getUniqueReferenceUuidOfPerson(personUuid: string): Promise<string[]> {
-    const referenceUuids = await knex('item_properties')
+    const referenceUuids = await knexRead()('item_properties')
       .distinct('item_properties.reference_uuid AS referenceUuid')
       .where('item_properties.object_uuid', personUuid);
 
@@ -50,7 +50,7 @@ class ItemPropertiesDao {
   }
 
   async addProperty(property: InsertItemPropertyRow): Promise<void> {
-    await knex('item_properties').insert({
+    await knexWrite()('item_properties').insert({
       uuid: property.uuid,
       reference_uuid: property.referenceUuid,
       parent_uuid: property.parentUuid,
@@ -65,7 +65,7 @@ class ItemPropertiesDao {
   async getPropertiesByReferenceUuid(
     referenceUuid: string
   ): Promise<ItemPropertyRow[]> {
-    const rows: ItemPropertyRow[] = await knex('item_properties as ip')
+    const rows: ItemPropertyRow[] = await knexRead()('item_properties as ip')
       .select(
         'ip.uuid',
         'ip.reference_uuid as referenceUuid',
@@ -87,9 +87,10 @@ class ItemPropertiesDao {
   }
 
   async deletePropertiesByReferenceUuid(referenceUuid: string): Promise<void> {
-    const relevantRows: { uuid: string; level: number | null }[] = await knex(
-      'item_properties'
-    )
+    const relevantRows: {
+      uuid: string;
+      level: number | null;
+    }[] = await knexRead()('item_properties')
       .select('uuid', 'level')
       .where('reference_uuid', referenceUuid);
 
@@ -105,7 +106,7 @@ class ItemPropertiesDao {
 
     for (let i = 0; i < levels.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      await knex('item_properties')
+      await knexWrite()('item_properties')
         .del()
         .where('reference_uuid', referenceUuid)
         .andWhere('level', levels[i]);

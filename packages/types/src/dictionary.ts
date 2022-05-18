@@ -4,6 +4,7 @@ import { SearchTextsResultRow } from './search';
 export interface DisplayableWord {
   uuid: string;
   word: string;
+  wordOccurrences: number;
 }
 
 export interface FormSpelling {
@@ -161,6 +162,7 @@ export interface TaxonomyTree {
   level: number | null;
   children: TaxonomyTree[] | null;
   custom: number | null;
+  role: string | null;
 }
 
 export interface ParseTreeProperty {

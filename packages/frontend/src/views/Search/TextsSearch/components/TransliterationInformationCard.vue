@@ -6,12 +6,6 @@
       </v-icon>
     </template>
     <v-card class="pa-3">
-      <span
-        >At present the Transliteration search is a brute character sequence
-        search. It does not respect word boundaries. This will be upgraded
-        soon.</span
-      >
-      <br />
       <span>The transliteration search supports the following features:</span>
       <ol>
         <li>
@@ -47,6 +41,16 @@
           Use <b>!</b> ahead of a string to exclude texts which have that string
           (e.g., a-na; !mì-ma will search for texts with a-na but NOT mì-ma).
         </li>
+      </ol>
+      <br />
+      <span><b>Transliteration Search Modes</b></span>
+      <ol style="list-style: none">
+        <li>Respect No Word Boundaries -- brute force character search</li>
+        <li>
+          Respect Word Boundaries -- respects word boundaries except for the
+          beginning of the first word and end of the last word
+        </li>
+        <li>Respect All Word Boundaries -- respects all word boundaries</li>
       </ol>
       <br />
       <b>NOTE:</b> Any of these search features may increase time for search

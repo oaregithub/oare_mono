@@ -20,3 +20,4 @@ export * from './src/publication';
 export * from './src/archive';
 export * from './src/notes';
 export * from './src/bibliography';
+export * from './src/tree';

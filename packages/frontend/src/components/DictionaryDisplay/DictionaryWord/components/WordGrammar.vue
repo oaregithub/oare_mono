@@ -82,7 +82,7 @@
       @submit="updateLemmaProperties"
     >
       <add-properties
-        valueUuid="8a6062db-8a6b-f102-98aa-9fa5989bd0a5"
+        startingUuid="8a6062db-8a6b-f102-98aa-9fa5989bd0a5"
         @export-properties="setProperties($event)"
         @form-complete="formComplete = $event"
         :existingProperties="word.properties"

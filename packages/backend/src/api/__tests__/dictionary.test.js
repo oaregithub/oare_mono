@@ -387,17 +387,6 @@ describe('dictionary api test', () => {
       expect(FormDao.updateForm).toHaveBeenCalledWith(testUuid, 'newForm');
     });
 
-    it('updates discourse transcriptions', async () => {
-      await sendRequest();
-
-      discourseUuids.forEach(uuid => {
-        expect(DiscourseDao.updateDiscourseTranscription).toHaveBeenCalledWith(
-          uuid,
-          'newForm'
-        );
-      });
-    });
-
     it("returns 500 if logging doesn't work", async () => {
       setup({
         UserDao: AdminUserDao,
@@ -430,22 +419,6 @@ describe('dictionary api test', () => {
           getDiscourseUuidsByFormUuid: jest
             .fn()
             .mockRejectedValue('Failed to get discourse uuids'),
-        },
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if updating discourse transcription fails', async () => {
-      setup({
-        UserDao: AdminUserDao,
-        FormDao,
-        DiscourseDao: {
-          ...DiscourseDao,
-          updateDiscourseTranscription: jest
-            .fn()
-            .mockRejectedValue('Cannot update discourse transcription'),
         },
       });
 

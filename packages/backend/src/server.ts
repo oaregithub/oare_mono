@@ -1,4 +1,3 @@
-import serverless from 'serverless-http';
 import sl from '@/serviceLocator';
 import { User } from '@oare/types';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
@@ -41,6 +40,7 @@ import NoteDao from './api/daos/NoteDao';
 import PageContentDao from './api/daos/PageContentDao';
 import SearchFailureDao from './api/daos/SearchFailureDao';
 import BibliographyDao from './api/daos/BibliographyDao';
+import TreeDao from './api/daos/TreeDao';
 
 declare global {
   namespace Express {
@@ -88,6 +88,7 @@ sl.set('NoteDao', NoteDao);
 sl.set('PageContentDao', PageContentDao);
 sl.set('SearchFailureDao', SearchFailureDao);
 sl.set('BibliographyDao', BibliographyDao);
+sl.set('TreeDao', TreeDao);
 
 initializeFirebase(err => {
   if (err) {
@@ -98,5 +99,3 @@ initializeFirebase(err => {
     });
   }
 });
-
-export const handler = serverless(app);
