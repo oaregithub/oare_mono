@@ -4,8 +4,6 @@ import cache from '@/cache';
 import sl from '@/serviceLocator';
 import {
   WordsInTextSearchPayload,
-  Word,
-  UuidPayload,
   WordsInTextsSearchResponse,
   WordFormAutocompleteDisplay,
 } from '@oare/types';
@@ -23,9 +21,16 @@ router.route('/wordsAndForms').get(async (req, res, next) => {
   }
 });
 
-router.route('/searchWordsInTexts').get(async (req, res, next) => {
+router.route('/searchWordsInTexts').post(async (req, res, next) => {
   try {
-    const payload: WordsInTextSearchPayload = (req.query as unknown) as WordsInTextSearchPayload;
+    const { uuids, numWordsBetween, page, rows, sequenced } = req.body;
+    const payload: WordsInTextSearchPayload = {
+      uuids: JSON.parse(uuids),
+      numWordsBetween: JSON.parse(numWordsBetween),
+      page: Number(page),
+      rows: Number(rows),
+      sequenced: sequenced === 'true',
+    };
     const userUuid: string | null = req.user ? req.user.uuid : null;
     const TextDiscourseDao = sl.get('TextDiscourseDao');
 
@@ -34,29 +39,6 @@ router.route('/searchWordsInTexts').get(async (req, res, next) => {
       userUuid
     );
     res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
-
-router.route('/formOptions').get(async (req, res, next) => {
-  try {
-    const DictionaryFormDao = sl.get('DictionaryFormDao');
-    const DictionaryWordDao = sl.get('DictionaryWordDao');
-    const { uuid } = (req.query as unknown) as UuidPayload;
-    const isAdmin = req.user ? req.user.isAdmin : false;
-
-    const wordUuid: string = await DictionaryWordDao.getWordUuidByWordOrFormUuid(
-      uuid
-    );
-    const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(wordUuid);
-    const forms = await DictionaryFormDao.getWordForms(wordUuid, isAdmin, true);
-
-    const result: Word = {
-      ...grammarInfo,
-      forms,
-    };
-    res.json(result);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

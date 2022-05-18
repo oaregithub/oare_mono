@@ -7,7 +7,7 @@
             v-model="wordAndFormSelectionUuids[index - 1]"
             :items="items"
             item-text="wordDisplay"
-            item-value="uuid"
+            item-value="info"
             clearable
             :class="`test-autocomplete-${index}`"
             deletable-chips
@@ -17,9 +17,10 @@
             :filter="filter"
             hide-selected
             @change="
+              getWordForms(wordAndFormSelectionUuids[index - 1], index - 1);
               wordAndFormSelectionUuids[index - 1].length < 1
                 ? (expand[index - 1] = false)
-                : (expand[index - 1] = true)
+                : (expand[index - 1] = true);
             "
             item-color="primary"
             :label="`word/form #${index}`"
@@ -36,10 +37,10 @@
               <v-expansion-panels>
                 <v-expansion-panel
                   v-for="(word, i) in wordForms[index - 1]"
-                  :key="`${word.uuid}${index}${i}`"
+                  :key="`${word.name}${index}${i}`"
                 >
                   <v-expansion-panel-header>{{
-                    `${word.word} -- ${
+                    `${word.name} -- ${
                       new Set(
                         wordAndFormSearchUuids[index - 1].filter(uuid => {
                           return word.forms
@@ -74,7 +75,7 @@
                       >
                         <v-list-item-action>
                           <v-checkbox
-                            :label="form.form"
+                            :label="form.name"
                             :value="form.uuid"
                             v-model="wordAndFormSearchUuids[index - 1]"
                           ></v-checkbox>
@@ -99,7 +100,7 @@
           ></v-autocomplete>
           <div class="py-2">
             <v-btn
-              v-if="index === numOptionsUsing && index < 3"
+              v-if="index === numOptionsUsing && index < maxOptions"
               fab
               color="primary"
               x-small
@@ -157,7 +158,6 @@ import {
   watch,
 } from '@vue/composition-api';
 import {
-  Word,
   WordFormAutocompleteDisplay,
   WordsInTextsSearchResultRow,
   WordsInTextsSearchResponse,
@@ -166,6 +166,12 @@ import WordsInTextsSearchTable from './components/WordsInTextSearchTable.vue';
 import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
+
+export interface WordForWordsInTextSearch {
+  name: string;
+  uuid: string;
+  forms: Array<{ name: string; uuid: string }>;
+}
 
 export default defineComponent({
   name: 'WordsInTextsSearch',
@@ -181,19 +187,19 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const numOptionsUsing: Ref<number> = ref(1);
-    const maxOptions = 3;
+    const maxOptions = 5;
     const canPerformSearch: Ref<boolean> = ref(false);
     const page: Ref<string> = ref(useQueryParam('page', '1', false));
     const rows: Ref<string> = ref(useQueryParam('rows', '25', true));
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
     const total = ref(0);
-    const checkboxAll: Ref<{ [uuid: string]: string }> = ref({});
+    const checkboxAll: Ref<{ [uuid: string]: boolean }> = ref({});
     const allUuids: Ref<string[][]> = ref([]);
     const wordAndFormSelectionUuids: Ref<string[][]> = ref([[]]);
     const wordAndFormSearchUuids: Ref<string[][]> = ref([[]]);
     const numWordsBetween: Ref<number[]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
-    const wordForms: Ref<Word[][]> = ref([]);
+    const wordForms: Ref<WordForWordsInTextSearch[][]> = ref([]);
     const sequenced = useQueryParam('sequenced', 'true', true);
 
     const wordsBetween = ref([
@@ -249,14 +255,6 @@ export default defineComponent({
       }
     };
 
-    const filterWordsAndForms = (selected: string[], index: number) => {
-      try {
-        filteredItems.value[index] = items.value.filter(item => {
-          return !selected.includes(item.uuid);
-        });
-      } catch (err) {}
-    };
-
     const performSearch = async (
       pageNum: number,
       rows: number,
@@ -268,9 +266,9 @@ export default defineComponent({
         const response: WordsInTextsSearchResponse = await server.getWordsInTextSearchResults(
           {
             uuids: JSON.stringify(wordAndFormSearchUuids.value),
-            numWordsBetween: numWordsBetween.value,
-            page: pageNum,
-            rows: rows,
+            numWordsBetween: JSON.stringify(numWordsBetween.value),
+            page: JSON.stringify(pageNum),
+            rows: JSON.stringify(rows),
             sequenced: sequenced.value,
           }
         );
@@ -291,7 +289,7 @@ export default defineComponent({
 
     const updateNumOptionsUsing = async (increase: boolean) => {
       try {
-        if (numOptionsUsing.value < 5 && increase) {
+        if (numOptionsUsing.value < maxOptions && increase) {
           numOptionsUsing.value += 1;
         }
         if (numOptionsUsing.value > 1 && !increase) {
@@ -317,11 +315,7 @@ export default defineComponent({
       }
     };
 
-    const selectAll = async (
-      val: boolean | null,
-      index: number,
-      idx: number
-    ) => {
+    const selectAll = (val: boolean | null, index: number, idx: number) => {
       wordForms.value[index][idx].forms.forEach(form => {
         if (wordAndFormSearchUuids.value[index].includes(form.uuid) && !val) {
           wordAndFormSearchUuids.value[index].splice(
@@ -335,50 +329,65 @@ export default defineComponent({
       });
     };
 
-    const getWordForms = async () => {
-      formsLoading.value = true;
-      try {
-        wordForms.value = await Promise.all(
-          wordAndFormSelectionUuids.value.map(wordFormArray => {
-            if (wordFormArray !== null) {
-              return Promise.all(
-                wordFormArray.map(uuid => server.getFormOptions({ uuid }))
-              );
-            } else {
-              return [];
-            }
-          })
-        );
-        for (let i = 0; i < numOptionsUsing.value; i += 1) {
-          wordAndFormSearchUuids.value[i] = [];
-          allUuids.value[i] = [];
-        }
-        wordForms.value.forEach((wordArray, index) => {
-          wordArray.forEach(word => {
-            if (!wordAndFormSelectionUuids.value[index].includes(word.uuid)) {
-              allUuids.value[index].push(word.uuid);
-            }
-            word.forms.forEach(form => {
+    const getWordForms = (
+      selectedItems: Array<{
+        uuid: string;
+        wordUuid: string;
+        name: string;
+      }>,
+      index: number
+    ) => {
+      wordForms.value[index] = [];
+      wordAndFormSearchUuids.value[index] = [];
+      selectedItems.forEach(selectedItem => {
+        if (selectedItem.uuid === selectedItem.wordUuid) {
+          const forms: Array<{ uuid: string; name: string }> = items.value
+            .filter(item => {
               if (
-                wordAndFormSelectionUuids.value[index].includes(word.uuid) ||
-                checkboxAll.value[`${word.uuid}${index}`]
+                item.info.wordUuid === selectedItem.uuid &&
+                item.info.uuid !== item.info.wordUuid
               ) {
-                wordAndFormSearchUuids.value[index].push(form.uuid);
+                return item.info.uuid;
               }
-              if (wordAndFormSelectionUuids.value[index].includes(form.uuid)) {
-                wordAndFormSearchUuids.value[index].push(form.uuid);
-              }
-              if (!wordAndFormSelectionUuids.value[index].includes(form.uuid)) {
-                allUuids.value[index].push(form.uuid);
-              }
+            })
+            .map(item => {
+              return { uuid: item.info.uuid, name: item.info.name };
             });
+          const wordForWordsInTextSearch: WordForWordsInTextSearch = {
+            name: selectedItem.name,
+            uuid: selectedItem.uuid,
+            forms: forms,
+          };
+          wordForms.value[index].push(wordForWordsInTextSearch);
+          wordAndFormSearchUuids.value[index].push(
+            ...forms.map(({ uuid }) => uuid)
+          );
+        } else {
+          const word = items.value.find(item => {
+            if (item.info.uuid === selectedItem.wordUuid) return item;
           });
-        });
-      } catch (err) {
-        actions.showErrorSnackbar('Error retrieving word forms', err as Error);
-      } finally {
-        formsLoading.value = false;
-      }
+          const formSiblings = items.value
+            .filter(item => {
+              if (
+                item.info.wordUuid === selectedItem.wordUuid &&
+                item.info.wordUuid !== item.info.uuid
+              )
+                return item;
+            })
+            .map(item => {
+              return { uuid: item.info.uuid, name: item.info.name };
+            });
+          if (word) {
+            const wordForWordsInTextSearch: WordForWordsInTextSearch = {
+              name: word.info.name,
+              uuid: word.info.uuid,
+              forms: formSiblings,
+            };
+            wordForms.value[index].push(wordForWordsInTextSearch);
+            wordAndFormSearchUuids.value[index].push(selectedItem.uuid);
+          }
+        }
+      });
     };
 
     onMounted(async () => {
@@ -402,10 +411,6 @@ export default defineComponent({
       }
     });
 
-    watch(wordAndFormSelectionUuids, () => {
-      getWordForms();
-    });
-
     watch(
       [
         wordAndFormSearchUuids,
@@ -413,6 +418,7 @@ export default defineComponent({
         numOptionsUsing,
         numWordsBetween,
         sequenced,
+        checkboxAll,
       ],
       () => {
         canPerformSearch.value = true;
@@ -431,7 +437,10 @@ export default defineComponent({
           canPerformSearch.value = false;
           return;
         }
-        if (wordAndFormSelectionUuids.value.length !== numOptionsUsing.value) {
+        if (
+          wordAndFormSelectionUuids.value.length !== numOptionsUsing.value ||
+          wordAndFormSearchUuids.value.length !== numOptionsUsing.value
+        ) {
           canPerformSearch.value = false;
           return;
         }
@@ -442,8 +451,8 @@ export default defineComponent({
           }
         });
 
-        wordAndFormSelectionUuids.value.forEach(array => {
-          if (array.length < 1) {
+        wordAndFormSearchUuids.value.forEach(wordAndFormSearch => {
+          if (wordAndFormSearch.length < 1) {
             canPerformSearch.value = false;
             return;
           }
@@ -476,7 +485,6 @@ export default defineComponent({
       wordAndFormSearchUuids,
       searchLoading,
       filter,
-      filterWordsAndForms,
       headers,
       total,
       results,
@@ -486,6 +494,7 @@ export default defineComponent({
       sequenced,
       allUuids,
       loading,
+      maxOptions,
     };
   },
 });

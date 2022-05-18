@@ -1,3 +1,5 @@
+import { DiscourseUnit } from './textDiscourse';
+
 export interface SearchTextsResultRow {
   uuid: string;
   name: string;
@@ -8,7 +10,7 @@ export interface SearchTextsResultRow {
 export interface WordsInTextsSearchResultRow {
   uuid: string;
   name: string;
-  discourse: string;
+  discourseUnits: DiscourseUnit[];
   discourseUuids: string[];
 }
 

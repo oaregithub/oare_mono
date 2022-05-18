@@ -14,7 +14,7 @@
         <li>Start by searching for a word or form in the autocomplete area.</li>
         <li>Select the word or form you are searching for.</li>
         <li>
-          Then, check any other forms in related to that word or form that you
+          Then, check any other forms in relation to that word or form that you
           would like to search for.
         </li>
         <li>

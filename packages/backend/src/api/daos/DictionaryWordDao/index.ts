@@ -285,23 +285,39 @@ class DictionaryWordDao {
   }
 
   async getWordsAndFormsForWordsInTexts() {
-    const query = knexRead()
+    const forms: Array<{
+      name: string;
+      uuid: string;
+      wordUuid: string;
+    }> = await knexRead()
       .from('dictionary_form AS df')
-      .select(
-        'df.form as name',
-        'df.uuid',
-        knexRead().raw("concat('form') as type")
-      )
-      .union([
-        knexRead()('dictionary_word as dw').select(
-          'dw.word as name',
-          'dw.uuid',
-          knexRead().raw("concat('word') as type")
-        ),
-      ]);
-    const resultRows = await query;
+      .select('df.form as name', 'df.uuid', 'df.reference_uuid as wordUuid');
+    const words: Array<{
+      name: string;
+      uuid: string;
+      wordUuid: string;
+    }> = await knexRead()('dictionary_word as dw').select(
+      'dw.word as name',
+      'dw.uuid',
+      'dw.uuid as wordUuid'
+    );
+
+    const wordAndFormArray = [
+      ...forms.map(form => ({
+        name: form.name,
+        uuid: form.uuid,
+        type: 'form',
+        wordUuid: form.wordUuid,
+      })),
+      ...words.map(word => ({
+        name: word.name,
+        uuid: word.uuid,
+        type: 'word',
+        wordUuid: word.wordUuid,
+      })),
+    ];
     const results: WordFormAutocompleteDisplay[] = await Promise.all(
-      resultRows.map(row => assembleAutocompleteDisplay(row))
+      wordAndFormArray.map(item => assembleAutocompleteDisplay(item))
     );
     return results;
   }
@@ -365,20 +381,6 @@ class DictionaryWordDao {
     await Promise.all(
       deletedTranslationUuids.map(uuid => FieldDao.deleteField(uuid))
     );
-  }
-
-  async getWordUuidByWordOrFormUuid(uuid: string): Promise<string> {
-    const { wordUuid } = await knexRead()('dictionary_word')
-      .select('dictionary_word.uuid as wordUuid')
-      .innerJoin(
-        'dictionary_form',
-        'dictionary_form.reference_uuid',
-        'dictionary_word.uuid'
-      )
-      .where('dictionary_word.uuid', '=', uuid)
-      .orWhere('dictionary_form.uuid', '=', uuid)
-      .first();
-    return wordUuid;
   }
 }
 

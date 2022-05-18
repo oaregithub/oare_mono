@@ -2,10 +2,9 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
-import { getSubscriptVowelOptions } from '../daos/SignReadingDao/utils';
 
 describe('words in texts search test', () => {
-  describe('GET /searchWordsInTexts', () => {
+  describe('POST /searchWordsInTexts', () => {
     const PATH = `${API_PATH}/searchWordsInTexts`;
 
     const wordsInTextsSearchResultRow = [
@@ -43,14 +42,14 @@ describe('words in texts search test', () => {
     });
 
     const query = {
-      uuids: ['uuid1', 'uuid2'],
-      numWordsBetween: [1, 3, 4],
-      page: 1,
-      rows: 25,
+      uuids: JSON.stringify(['uuid1', 'uuid2']),
+      numWordsBetween: JSON.stringify([1, 3, 4]),
+      page: '1',
+      rows: '25',
       sequenced: 'true',
     };
 
-    const sendRequest = () => request(app).get(PATH).query(query);
+    const sendRequest = () => request(app).post(PATH).send(query);
 
     it('returns search results', async () => {
       const response = await sendRequest();
@@ -63,7 +62,7 @@ describe('words in texts search test', () => {
     const PATH = `${API_PATH}/wordsAndForms`;
 
     const wordFormAutoCompleteDisplay = {
-      uuid: 'uuid',
+      info: { uuid: 'uuid', name: 'name', wordUuid: 'wordUuid' },
       wordDisplay: 'wordDisplay',
     };
 
@@ -86,60 +85,6 @@ describe('words in texts search test', () => {
       ).toHaveBeenCalled();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual([wordFormAutoCompleteDisplay]);
-    });
-  });
-
-  describe('GET /formOptions', () => {
-    const PATH = `${API_PATH}/formOptions`;
-    const query = {
-      uuid: 'formOrWordUuid',
-    };
-
-    const wordUuid = 'wordUuid';
-
-    const dictionaryWord = {
-      uuid: wordUuid,
-      word: 'word',
-      partsOfSpeech: [],
-      specialClassifications: [],
-      translations: [],
-      verbalThematicVowelTypes: [],
-    };
-
-    const dictionaryForm = {
-      uuid: 'formUuid',
-      form: 'form',
-      spellings: [],
-    };
-
-    const word = {
-      ...dictionaryWord,
-      forms: [dictionaryForm],
-    };
-
-    const DictionaryWordDao = {
-      getWordUuidByWordOrFormUuid: jest.fn().mockResolvedValue(wordUuid),
-      getGrammaticalInfo: jest.fn().mockResolvedValue(dictionaryWord),
-    };
-
-    const DictionaryFormDao = {
-      getWordForms: jest.fn().mockResolvedValue([dictionaryForm]),
-    };
-
-    beforeEach(() => {
-      sl.set('DictionaryWordDao', DictionaryWordDao);
-      sl.set('DictionaryFormDao', DictionaryFormDao);
-    });
-
-    const sendRequest = () => request(app).get(PATH).query(query);
-
-    it('successfully retruns word form options', async () => {
-      const response = await sendRequest();
-      expect(DictionaryWordDao.getWordUuidByWordOrFormUuid).toHaveBeenCalled();
-      expect(DictionaryWordDao.getGrammaticalInfo).toHaveBeenCalled();
-      expect(DictionaryFormDao.getWordForms).toHaveBeenCalled();
-      expect(JSON.parse(response.text)).toEqual(word);
-      expect(response.status).toBe(200);
     });
   });
 });

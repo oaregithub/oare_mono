@@ -23,7 +23,6 @@ import {
   getDiscourseAndTextUuidsByWordOrFormUuidsQuery,
   createTextWithDiscourseUuidsArray,
   getTextDiscourseForWordsInTextsSearch,
-  sortTextNames,
 } from './utils';
 
 export interface DiscourseRow {
@@ -131,7 +130,7 @@ class TextDiscourseDao {
   }
 
   async wordsInTextsSearch(
-    payload: WordsInTextSearchPayload,
+    { uuids, numWordsBetween, sequenced, page, rows }: WordsInTextSearchPayload,
     userUuid: string | null
   ): Promise<WordsInTextsSearchResponse> {
     const TextDao = sl.get('TextDao');
@@ -139,34 +138,67 @@ class TextDiscourseDao {
     const textsToHide: string[] = await CollectionTextUtils.textsToHide(
       userUuid
     );
-    let selects = '';
-    for (let i = 1; i < JSON.parse(payload.uuids).length; i += 1) {
-      selects += `, td${i}.uuid as discourse${i}Uuid`;
-    }
 
-    const queryResult: Array<{
-      discourseUuid: string;
+    const spellingUuids: string[][] = await Promise.all(
+      uuids.map(async uuidArray => {
+        const spellingUuidsArray: string[] = await knexRead()(
+          'dictionary_spelling as ds'
+        )
+          .pluck('ds.uuid')
+          .whereIn('ds.reference_uuid', uuidArray);
+
+        return spellingUuidsArray;
+      })
+    );
+
+    const textUuids: Array<{
       textUuid: string;
-      discourse1Uuid: string | null;
-      discourse2Uuid: string | null;
-      discourse3Uuid: string | null;
-      discourse4Uuid: string | null;
     }> = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
-      JSON.parse(payload.uuids),
-      payload.numWordsBetween
-        ? payload.numWordsBetween.map(val => Number(val))
-        : [],
+      spellingUuids,
+      numWordsBetween,
       textsToHide,
-      payload.sequenced === 'true'
-    ).select(
-      knexRead().raw(
-        `td0.uuid as discourseUuid, td0.text_uuid as textUuid${selects}`
-      )
-    );
+      sequenced
+    )
+      .join('text', 'text.uuid', 'td0.text_uuid')
+      .orderBy('text.display_name')
+      .distinct({ textUuid: 'td0.text_uuid' })
+      .offset((page - 1) * rows)
+      .limit(rows);
 
-    const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await createTextWithDiscourseUuidsArray(
-      queryResult
-    );
+    const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
+      spellingUuids,
+      numWordsBetween,
+      textsToHide,
+      sequenced
+    )
+      .whereIn(
+        'td0.text_uuid',
+        textUuids.map(({ textUuid }) => textUuid)
+      )
+      .select('td0.uuid as discourseUuid', 'td0.text_uuid as textUuid')
+      .modify(innerQuery => {
+        for (let i = 1; i < uuids.length; i += 1) {
+          innerQuery.select(`td${i}.uuid as discourse${i}Uuid`);
+        }
+      })
+      .then(async discourseRows => {
+        const textAndDiscourseUuids: TextWithDiscourseUuids[] = await createTextWithDiscourseUuidsArray(
+          discourseRows,
+          textUuids
+        );
+        return textAndDiscourseUuids;
+      });
+
+    const {
+      count,
+    }: { count: number } = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
+      spellingUuids,
+      numWordsBetween,
+      textsToHide,
+      sequenced
+    )
+      .select(knexRead().raw('count(distinct td0.text_uuid) as count'))
+      .first();
 
     const textNames = (
       await Promise.all(
@@ -176,26 +208,24 @@ class TextDiscourseDao {
       )
     ).map(text => (text ? text.name : ''));
 
-    const discourseReadings = await Promise.all(
-      textWithDiscourseUuidsArray.map(async ({ textUuid, discourseUuids }) => {
+    const discourseUnits: DiscourseUnit[][] = await Promise.all(
+      textWithDiscourseUuidsArray.map(async textWithDiscourseUuids => {
         const discourseReading = await getTextDiscourseForWordsInTextsSearch(
-          textUuid,
-          discourseUuids
+          textWithDiscourseUuids.textUuid,
+          textWithDiscourseUuids.discourseUuids
         );
         return discourseReading;
       })
     );
 
     const response: WordsInTextsSearchResponse = {
-      results: sortTextNames(
-        textWithDiscourseUuidsArray.map((text, index) => ({
-          uuid: text.textUuid,
-          name: textNames[index],
-          discourse: discourseReadings[index],
-          discourseUuids: text.discourseUuids,
-        }))
-      ).slice((payload.page - 1) * payload.rows, payload.page * payload.rows),
-      total: textNames.length,
+      results: textWithDiscourseUuidsArray.map((text, index) => ({
+        uuid: text.textUuid,
+        name: textNames[index],
+        discourseUnits: discourseUnits[index],
+        discourseUuids: text.discourseUuids,
+      })),
+      total: count,
     };
 
     return response;
