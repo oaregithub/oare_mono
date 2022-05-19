@@ -99,24 +99,29 @@
             item-color="primary"
             label="determine how many words between"
           ></v-autocomplete>
-          <div class="py-2">
-            <v-btn
-              class="test-increase-button"
+          <div v-if="index === numOptionsUsing" class="pt-4 pb-2">
+            <span
               v-if="index === numOptionsUsing && index < maxOptions"
-              fab
-              color="primary"
-              x-small
-              @click="updateNumOptionsUsing(true)"
-              ><v-icon>mdi-plus</v-icon></v-btn
+              class="pr-2"
             >
-            <v-btn
-              v-if="index === numOptionsUsing && index !== 1"
-              class="test-decrease-button"
-              fab
-              color="primary"
-              x-small
-              @click="updateNumOptionsUsing(false)"
-              ><v-icon>mdi-minus</v-icon></v-btn
+              <v-btn
+                class="test-increase-button"
+                fab
+                color="primary"
+                x-small
+                @click="updateNumOptionsUsing(true)"
+                ><v-icon>mdi-plus</v-icon></v-btn
+              ></span
+            >
+            <span v-if="index === numOptionsUsing && index !== 1">
+              <v-btn
+                class="test-decrease-button"
+                fab
+                color="primary"
+                x-small
+                @click="updateNumOptionsUsing(false)"
+                ><v-icon>mdi-minus</v-icon></v-btn
+              ></span
             >
           </div>
         </div>
@@ -133,12 +138,14 @@
         </v-radio-group>
       </v-col>
     </v-row>
-    <v-btn
-      @click="performSearch(1, Number(rows), true)"
-      class="pa-5 test-submit"
-      :disabled="!canPerformSearch"
-      >Search</v-btn
-    >
+    <div class="py-3">
+      <v-btn
+        @click="performSearch(1, Number(rows), true)"
+        class="test-submit"
+        :disabled="!canPerformSearch"
+        >Search</v-btn
+      >
+    </div>
     <words-in-texts-search-table
       :items="results"
       :total="total"
@@ -198,7 +205,13 @@ export default defineComponent({
     const total = ref(0);
     const checkboxAll: Ref<{ [uuid: string]: boolean }> = ref({});
     const allUuids: Ref<string[][]> = ref([]);
-    const wordAndFormSelectionUuids: Ref<string[][]> = ref([[]]);
+    const wordAndFormSelectionUuids: Ref<
+      {
+        uuid: string;
+        wordUuid: string;
+        name: string;
+      }[][]
+    > = ref([[]]);
     const wordAndFormSearchUuids: Ref<string[][]> = ref([[]]);
     const numWordsBetween: Ref<number[]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
@@ -332,6 +345,22 @@ export default defineComponent({
       });
     };
 
+    const markSelectAllFalseOnRemoval = (
+      dict: { [uuid: string]: boolean },
+      index: number
+    ) => {
+      Object.keys(dict).forEach((uuidKey: string) => {
+        const position: number = Number(uuidKey.slice(-1));
+        const uuid: string = uuidKey.slice(0, -1);
+        const selectionUuids: string[] = wordAndFormSelectionUuids.value[
+          index
+        ].map(({ uuid }) => uuid);
+        if (position === index && !selectionUuids.includes(uuid)) {
+          dict[uuidKey] = false;
+        }
+      });
+    };
+
     const getWordForms = (
       selectedItems: Array<{
         uuid: string;
@@ -342,6 +371,7 @@ export default defineComponent({
     ) => {
       wordForms.value[index] = [];
       wordAndFormSearchUuids.value[index] = [];
+      markSelectAllFalseOnRemoval(checkboxAll.value, index);
       selectedItems.forEach(selectedItem => {
         if (selectedItem.uuid === selectedItem.wordUuid) {
           const forms: Array<{ uuid: string; name: string }> = items.value
