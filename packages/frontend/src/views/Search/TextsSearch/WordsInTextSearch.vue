@@ -188,9 +188,6 @@ export default defineComponent({
   components: { WordsInTextsSearchTable, WordsInTextSearchInfoCard },
   setup() {
     const items: Ref<WordFormAutocompleteDisplay[]> = ref([]);
-    const filteredItems: Ref<{
-      [index: string]: WordFormAutocompleteDisplay[];
-    }> = ref({});
     const loading = ref(false);
     const searchLoading = ref(false);
     const formsLoading = ref(false);
@@ -204,7 +201,6 @@ export default defineComponent({
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
     const total = ref(0);
     const checkboxAll: Ref<{ [uuid: string]: boolean }> = ref({});
-    const allUuids: Ref<string[][]> = ref([]);
     const wordAndFormSelectionUuids: Ref<
       {
         uuid: string;
@@ -428,7 +424,6 @@ export default defineComponent({
         items.value = await server.getWordsAndForms();
         for (let i = 0; i < maxOptions; i += 1) {
           expand.value.push(false);
-          allUuids.value.push([]);
         }
       } catch (err) {
         actions.showErrorSnackbar(
@@ -525,7 +520,6 @@ export default defineComponent({
       page,
       rows,
       sequenced,
-      allUuids,
       loading,
       maxOptions,
     };
