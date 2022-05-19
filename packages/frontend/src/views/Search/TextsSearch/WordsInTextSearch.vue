@@ -90,6 +90,7 @@
           <v-autocomplete
             v-if="index < numOptionsUsing"
             v-model="numWordsBetween[index - 1]"
+            :class="`test-numWordsBetween-${index}`"
             :items="wordsBetween"
             item-text="name"
             item-value="value"
@@ -100,6 +101,7 @@
           ></v-autocomplete>
           <div class="py-2">
             <v-btn
+              class="test-increase-button"
               v-if="index === numOptionsUsing && index < maxOptions"
               fab
               color="primary"
@@ -109,6 +111,7 @@
             >
             <v-btn
               v-if="index === numOptionsUsing && index !== 1"
+              class="test-decrease-button"
               fab
               color="primary"
               x-small
