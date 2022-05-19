@@ -23,7 +23,7 @@
             @click="toggle"
           >
             <v-card-text class="justify-center pa-2">
-              <v-img :src="image" :aspect-ratio="1 / 1" class="rounded">
+              <v-img :src="image.link" :aspect-ratio="1 / 1" class="rounded">
                 <v-row class="pt-5" align="center" justify="center">
                   <v-scale-transition>
                     <v-icon
@@ -51,10 +51,14 @@
             ><b>View: </b>{{ parseView(imageDetails[selection].view) }}</span
           >
         </v-row>
-        <inner-image-zoom
-          :src="imageLinks[selection]"
-          moveType="drag"
-        />
+        <inner-image-zoom :src="imageLinks[selection].link" moveType="drag" />
+        <div class="text-center">
+          <span>
+            Photo Source: {{ imageLinks[selection].label || 'Unavailable' }}.
+            <br />
+            For more information in photo, click (here).</span
+          >
+        </div>
       </div>
     </v-row>
   </v-container>
@@ -62,16 +66,16 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
-import { TextPhoto } from '@oare/types';
+import { TextPhoto, EpigraphyLabelLink } from '@oare/types';
 import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
   components: {
-    InnerImageZoom
+    InnerImageZoom,
   },
   props: {
     imageLinks: {
-      type: Array as PropType<String[]>,
+      type: Array as PropType<EpigraphyLabelLink[]>,
       required: true,
     },
     imageDetails: {
@@ -177,5 +181,4 @@ export default defineComponent({
 .zoom-container {
   width: 36vw;
 }
-
 </style>

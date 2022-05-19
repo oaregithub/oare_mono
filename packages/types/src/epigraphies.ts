@@ -392,3 +392,8 @@ export interface EditorMarkupError {
 export interface CreateTextsPayload {
   tables: CreateTextTables;
 }
+
+export interface EpigraphyLabelLink {
+  label: string;
+  link: string;
+}
