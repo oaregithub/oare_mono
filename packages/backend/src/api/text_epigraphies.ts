@@ -12,6 +12,7 @@ import {
   TextEpigraphyRow,
   ResourceRow,
   LinkRow,
+  EpigraphyLabelLink,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
@@ -25,10 +26,11 @@ router
       const { uuid: textUuid, cdliNum } = req.params;
       const ResourceDao = sl.get('ResourceDao');
 
-      const response = await ResourceDao.getImageLinksByTextUuid(
+      const response: EpigraphyLabelLink[] = await ResourceDao.getImageLinksByTextUuid(
         textUuid,
         cdliNum
       );
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));

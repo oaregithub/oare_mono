@@ -1,14 +1,14 @@
 import { knexRead, knexWrite } from '@/connection';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
-import { ResourceRow, LinkRow } from '@oare/types';
+import { ResourceRow, LinkRow, EpigraphyLabelLink } from '@oare/types';
 import { dynamicImport } from 'tsimportlib';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
     textUuid: string,
     cdliNum: string
-  ): Promise<string[]> {
+  ): Promise<EpigraphyLabelLink[]> {
     const s3Links = await this.getValidS3ImageLinks(textUuid);
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
     const metLinks = await this.getValidMetImageLinks(textUuid);
@@ -18,32 +18,39 @@ class ResourceDao {
     return response;
   }
 
-  async getValidS3ImageLinks(textUuid: string): Promise<string[]> {
-    let signedUrls: string[] = [];
+  async getValidS3ImageLinks(textUuid: string): Promise<EpigraphyLabelLink[]> {
+    const s3Links: EpigraphyLabelLink[] = [];
 
     try {
       const s3 = new AWS.S3();
 
-      const resourceLinks: string[] = await knexRead()('resource')
-        .pluck('link')
+      const resourceLinks: EpigraphyLabelLink[] = await knexRead()(
+        'person as p'
+      )
+        .distinct()
+        .select('p.label as label', 'r.link as link')
+        .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
+        .where('r.type', 'img')
         .whereIn(
-          'uuid',
+          'r.uuid',
           knexRead()('link')
-            .select('obj_uuid')
+            .select('obj_uuid as uuid')
             .where('reference_uuid', textUuid)
-        )
-        .where('type', 'img')
-        .andWhere('container', 'oare-image-bucket');
+        );
 
-      signedUrls = await Promise.all(
+      const signedUrls = await Promise.all(
         resourceLinks.map(key => {
           const params = {
             Bucket: 'oare-image-bucket',
-            Key: key,
+            Key: key.link,
           };
           return s3.getSignedUrlPromise('getObject', params);
         })
       );
+
+      resourceLinks.forEach((elem, idx) => {
+        s3Links.push({ label: elem.label, link: signedUrls[idx] });
+      });
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
       await ErrorsDao.logError({
@@ -54,7 +61,7 @@ class ResourceDao {
       });
     }
 
-    return signedUrls;
+    return s3Links;
   }
 
   async getTextFileByTextUuid(uuid: string) {
@@ -69,7 +76,7 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
-  async getValidCdliImageLinks(cdliNum: string): Promise<string[]> {
+  async getValidCdliImageLinks(cdliNum: string): Promise<EpigraphyLabelLink[]> {
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
 
@@ -78,14 +85,14 @@ class ResourceDao {
       module
     )) as typeof import('node-fetch');
 
-    const response: string[] = [];
+    const cdliLinks: string[] = [];
     const ErrorsDao = sl.get('ErrorsDao');
 
     try {
       const photoResponse = await fetch.default(photoUrl, { method: 'HEAD' });
 
       if (photoResponse.ok) {
-        response.push(photoUrl);
+        cdliLinks.push(photoUrl);
       }
     } catch (err) {
       await ErrorsDao.logError({
@@ -102,7 +109,7 @@ class ResourceDao {
       });
 
       if (lineArtResponse.ok) {
-        response.push(lineArtUrl);
+        cdliLinks.push(lineArtUrl);
       }
     } catch (err) {
       await ErrorsDao.logError({
@@ -113,11 +120,15 @@ class ResourceDao {
       });
     }
 
+    const response = cdliLinks.map(
+      link => ({ label: 'CDLI', link } as EpigraphyLabelLink)
+    );
+
     return response;
   }
 
-  async getValidMetImageLinks(textUuid: string): Promise<string[]> {
-    const imageLinks: string[] = [];
+  async getValidMetImageLinks(textUuid: string): Promise<EpigraphyLabelLink[]> {
+    const imageLinks: EpigraphyLabelLink[] = [];
 
     const fetch = (await dynamicImport(
       'node-fetch',
@@ -149,12 +160,20 @@ class ResourceDao {
             primaryImage: string;
             additionalImages: string[];
           };
-          imageLinks.push(jsonResponse.primaryImage);
+          imageLinks.push({
+            label: 'The Metropolitan Museum of Art',
+            link: jsonResponse.primaryImage,
+          });
 
           const {
             additionalImages,
           }: { additionalImages: string[] } = jsonResponse;
-          additionalImages.forEach(image => imageLinks.push(image));
+          additionalImages.forEach(image =>
+            imageLinks.push({
+              label: 'The Metropolitan Museum of Art',
+              link: image,
+            })
+          );
         }
       }
     } catch (err) {
