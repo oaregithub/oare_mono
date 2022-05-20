@@ -3,9 +3,11 @@ import { DiscourseRow } from './index';
 
 export function createNestedDiscourses(
   discourseRows: DiscourseRow[],
-  parentUuid: string | null
+  baseParentUuid: string | null
 ): DiscourseUnit[] {
-  const children = discourseRows.filter(row => row.parentUuid === parentUuid);
+  const children = discourseRows.filter(
+    row => row.parentUuid === baseParentUuid
+  );
   const discourses: DiscourseUnit[] = [];
 
   children.forEach(

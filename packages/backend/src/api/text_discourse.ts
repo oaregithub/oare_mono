@@ -10,9 +10,9 @@ import {
   InsertItemPropertyRow,
 } from '@oare/types';
 import permissionRoute from '@/middlewares/permissionsRoute';
-import { nestProperties } from '../utils/index';
 import { v4 } from 'uuid';
 import { convertParsePropsToItemProps } from '@oare/oare';
+import { nestProperties } from '../utils/index';
 
 const router = express.Router();
 
