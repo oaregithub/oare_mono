@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="d-flex">
-      <v-tooltip bottom open-delay="800">
+      <v-tooltip bottom open-delay="800" :key="editing">
         <template #activator="{ on, attrs }">
           <v-btn
-            v-if="canEdit && !editing && allowEditing"
+            v-if="canEdit && allowEditing && !editing"
             icon
             class="test-pencil mt-n1 mr-1"
             @click="editing = true"
@@ -58,7 +58,12 @@
         <v-btn v-if="!loading" icon @click="saveFormEdit" class="test-check">
           <v-icon>mdi-check</v-icon>
         </v-btn>
-        <v-btn v-if="!loading" icon @click="editing = false" class="test-close">
+        <v-btn
+          v-if="!loading"
+          icon
+          @click="editing = !editing"
+          class="test-close"
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </div>
@@ -102,7 +107,7 @@
       <v-tooltip bottom open-delay="800">
         <template #activator="{ on, attrs }">
           <v-btn
-            v-if="canAddSpelling && !editing && allowEditing"
+            v-if="canAddSpelling && allowEditing && !editing"
             icon
             class="mt-n1 ml-1"
             @click="openEditDialog(form)"
