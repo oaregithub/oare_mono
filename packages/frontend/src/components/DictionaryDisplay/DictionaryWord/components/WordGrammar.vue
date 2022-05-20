@@ -1,10 +1,6 @@
 <template>
   <div class="d-flex">
-    <v-tooltip
-      bottom
-      open-delay="800"
-      :key="`${isEditingTranslations}-lemma-properties`"
-    >
+    <v-tooltip bottom open-delay="800">
       <template #activator="{ on, attrs }">
         <v-btn
           v-if="
@@ -31,11 +27,7 @@
     >
       ({{ verbalThematicVowelTypesString }})
     </div>
-    <v-tooltip
-      bottom
-      open-delay="800"
-      :key="`${isEditingTranslations}-translations`"
-    >
+    <v-tooltip bottom open-delay="800">
       <template #activator="{ on, attrs }">
         <v-btn
           v-if="allowEditing && canEditTranslations && !isEditingTranslations"
