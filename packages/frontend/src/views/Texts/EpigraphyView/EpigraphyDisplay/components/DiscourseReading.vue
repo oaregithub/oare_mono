@@ -13,32 +13,62 @@
         </span>
       </span>
     </p>
+    <v-row align="center" v-if="canInsertParentDiscourse">
+      <v-switch
+        v-model="articulateDiscourseHierarchy"
+        label="Articulate Discourse Hierarchy"
+        class="mx-6"
+      />
+    </v-row>
+    <v-row
+      align="center"
+      v-if="canInsertParentDiscourse && articulateDiscourseHierarchy"
+    >
+      <v-btn
+        :disabled="discourseSelections.length < 1"
+        color="primary"
+        @click="insertParentDiscourseDialog = true"
+        class="mx-6 mb-6"
+        >Insert Parent Discourse</v-btn
+      >
+      <insert-parent-discourse-dialog
+        v-model="insertParentDiscourseDialog"
+        :key="insertParentDiscourseKey"
+        :discourseSelections="discourseSelections"
+        :textUuid="textUuid"
+      />
+    </v-row>
     <v-treeview
       open-all
-      dense
       :items="discourseUnits"
       item-children="units"
       item-key="uuid"
       item-text="spelling"
     >
       <template #label="{ item }">
-        <v-row
-          v-if="editingUuid !== item.uuid"
-          class="ma-0 pa-0"
-          align="center"
-        >
-          <v-btn
-            icon
-            v-if="
-              (item.translation || item.type === 'discourseUnit') &&
-              allowEditing
-            "
-            @click="startEdit(item)"
-            class="mr-1 test-discourse-startedit"
-          >
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
-          <v-col>
+        <v-row class="ma-0 pa-0" align="center">
+          <v-checkbox
+            v-if="articulateDiscourseHierarchy && item.type !== 'discourseUnit'"
+            hide-details
+            dense
+            multiple
+            v-model="discourseSelections"
+            :value="item"
+            class="ml-2 my-2"
+            :disabled="!canSelectDiscourseUnit(item)"
+          />
+          <span v-if="editingUuid !== item.uuid" class="ma-0 pa-0">
+            <v-btn
+              icon
+              v-if="
+                (item.translation || item.type === 'discourseUnit') &&
+                allowEditing
+              "
+              @click="startEdit(item)"
+              class="mr-1 test-discourse-startedit"
+            >
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
             <v-menu
               :close-on-content-click="false"
               offset-x
@@ -61,45 +91,53 @@
                 :key="item.uuid"
               />
             </v-menu>
-          </v-col>
+          </span>
+          <div
+            v-else-if="
+              (item.translation || item.type === 'discourseUnit') &&
+              allowEditing
+            "
+          >
+            <v-textarea
+              label="Translation"
+              auto-grow
+              outlined
+              rows="1"
+              v-model="inputTranslation"
+              class="ma-1 test-discourse-box"
+              dense
+              hide-details
+            ></v-textarea>
+            <OareLoaderButton
+              :loading="editLoading"
+              color="primary"
+              @click="discourseEdit(item)"
+              class="ma-1 test-discourse-button"
+              >Save</OareLoaderButton
+            >
+            <v-btn color="primary" @click="editingUuid = ''" class="ma-1"
+              >Cancel</v-btn
+            >
+          </div>
         </v-row>
-        <div
-          v-else-if="
-            (item.translation || item.type === 'discourseUnit') && allowEditing
-          "
-        >
-          <v-textarea
-            label="Translation"
-            auto-grow
-            outlined
-            rows="1"
-            v-model="inputTranslation"
-            class="ma-1 test-discourse-box"
-            dense
-            hide-details
-          ></v-textarea>
-          <OareLoaderButton
-            :loading="editLoading"
-            color="primary"
-            @click="discourseEdit(item)"
-            class="ma-1 test-discourse-button"
-            >Save</OareLoaderButton
-          >
-          <v-btn color="primary" @click="editingUuid = ''" class="ma-1"
-            >Cancel</v-btn
-          >
-        </div>
       </template>
     </v-treeview>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType, computed } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  PropType,
+  computed,
+  watch,
+} from '@vue/composition-api';
 import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
+import insertParentDiscourseDialog from './InsertParentDiscouresDialog.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -108,9 +146,14 @@ export default defineComponent({
       type: Array as PropType<DiscourseUnit[]>,
       required: true,
     },
+    textUuid: {
+      type: String,
+      required: true,
+    },
   },
   components: {
     DiscoursePropertiesCard,
+    insertParentDiscourseDialog,
   },
   setup({ discourseUnits }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
@@ -216,6 +259,55 @@ export default defineComponent({
       }
     };
 
+    const articulateDiscourseHierarchy = ref(false);
+
+    const discourseSelections = ref<DiscourseUnit[]>([]);
+
+    const canSelectDiscourseUnit = (unit: DiscourseUnit): boolean => {
+      if (discourseSelections.value.length === 0) {
+        return true;
+      }
+      if (discourseSelections.value[0].parentUuid !== unit.parentUuid) {
+        return false;
+      }
+      const childNumArray = discourseSelections.value.map(
+        selection => selection.childNum!
+      );
+      const minimumChildNumInText = Math.min(...childNumArray);
+      const maximumChildNumInText = Math.max(...childNumArray);
+      if (
+        unit.childNum === minimumChildNumInText - 1 ||
+        unit.childNum === maximumChildNumInText + 1 ||
+        unit.childNum === minimumChildNumInText ||
+        unit.childNum === maximumChildNumInText
+      ) {
+        return true;
+      }
+      return false;
+    };
+
+    watch(articulateDiscourseHierarchy, () => {
+      if (!articulateDiscourseHierarchy.value) {
+        discourseSelections.value = [];
+      }
+    });
+
+    const insertParentDiscourseDialog = ref(false);
+
+    const insertParentDiscourseKey = ref(false);
+    watch(insertParentDiscourseDialog, () => {
+      if (insertParentDiscourseDialog.value) {
+        insertParentDiscourseKey.value = !insertParentDiscourseKey.value;
+      } else {
+        discourseSelections.value = [];
+        articulateDiscourseHierarchy.value = false;
+      }
+    });
+
+    const canInsertParentDiscourse = computed(() =>
+      store.hasPermission('INSERT_PARENT_DISCOURSE_ROWS')
+    );
+
     return {
       discourseRenderer,
       discourseColor,
@@ -228,6 +320,12 @@ export default defineComponent({
       allowEditing,
       editLoading,
       getSideByNumber,
+      articulateDiscourseHierarchy,
+      discourseSelections,
+      canSelectDiscourseUnit,
+      insertParentDiscourseDialog,
+      insertParentDiscourseKey,
+      canInsertParentDiscourse,
     };
   },
 });
