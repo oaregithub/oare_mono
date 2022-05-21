@@ -135,7 +135,6 @@ router
           );
         }
 
-        // insert properties
         if (discourseType === 'Sentence') {
           await FieldDao.insertField(
             newRowUuid,
