@@ -28,7 +28,8 @@ class FieldDao {
     referenceUuid: string,
     type: string,
     field: string,
-    options?: FieldOptions
+    primacy: number | null,
+    language: string | null
   ): Promise<string> {
     const uuid = v4();
     await knexWrite()('field').insert({
@@ -36,7 +37,8 @@ class FieldDao {
       reference_uuid: referenceUuid,
       type,
       field,
-      primacy: options && options.primacy ? options.primacy : null,
+      primacy,
+      language,
     });
     return uuid;
   }
