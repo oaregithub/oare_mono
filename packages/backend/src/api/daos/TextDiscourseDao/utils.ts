@@ -68,27 +68,6 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
     .join(' ');
 }
 
-export function setDiscourseReadingForWordsInTexts(
-  discourse: DiscourseUnit,
-  discourseUuids: string[]
-): void {
-  if (discourse.units.length < 1) {
-    return;
-  }
-  discourse.units.forEach(unit => setDiscourseReading(unit));
-  discourse.explicitSpelling = discourse.units
-    .map(u => {
-      if (discourseUuids.includes(u.uuid)) {
-        if (u.transcription) return `<mark>${u.transcription}</mark>`;
-        if (u.explicitSpelling) return `<mark>${u.explicitSpelling}</mark>`;
-        return '';
-      }
-      if (u.transcription) return u.transcription;
-      return u.explicitSpelling || '';
-    })
-    .join(' ');
-}
-
 export async function incrementChildNum(
   textUuid: string,
   parentUuid: string,
