@@ -4,10 +4,11 @@ import {
   UpdateTranslitStatusPayload,
   CreateTextTables,
   CreateTextsPayload,
-  TextPhotoWithName,
+  TextPhotoWithDetails,
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
+  InsertItemPropertyRow,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -67,10 +68,15 @@ const getNextImageDesignator = async (preText: string): Promise<number> => {
   return data;
 };
 
-const addPhotosToText = async (resources: ResourceRow[], links: LinkRow[]) => {
+const addPhotosToText = async (
+  resources: ResourceRow[],
+  links: LinkRow[],
+  itemProperties: InsertItemPropertyRow[]
+) => {
   await axios.post('/text_epigraphies/additional_images', {
     resources,
     links,
+    itemProperties,
   });
 };
 
@@ -81,7 +87,7 @@ const createText = async (createTextTables: CreateTextTables) => {
   await axios.post('/text_epigraphies/create', payload);
 };
 
-const uploadImage = async (photo: TextPhotoWithName) => {
+const uploadImage = async (photo: TextPhotoWithDetails) => {
   const file = photo.upload;
   if (file) {
     const formData = new FormData();

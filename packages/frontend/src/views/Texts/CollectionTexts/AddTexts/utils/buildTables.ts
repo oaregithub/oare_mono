@@ -17,7 +17,7 @@ import {
   SignCodeWithDiscourseUuid,
   EpigraphyType,
   EpigraphicUnitType,
-  TextPhotoWithName,
+  TextPhotoWithDetails,
   LinkRow,
   ResourceRow,
   HierarchyRow,
@@ -161,7 +161,7 @@ export const createNewTextTables = async (
   textInfo: AddTextInfo,
   content: AddTextEditorContent,
   persistentDiscourseStorage: { [uuid: string]: string | null },
-  photos: TextPhotoWithName[],
+  photos: TextPhotoWithDetails[],
   collectionUuid: string,
   existingTextRow: TextRow | undefined
 ): Promise<CreateTextTables> => {
@@ -214,11 +214,6 @@ export const createNewTextTables = async (
   }));
   const signInformation = await createSignInformation(content);
 
-  const itemPropertiesRows = convertParsePropsToItemProps(
-    textInfo.properties,
-    textUuid
-  );
-
   const resourceRows: ResourceRow[] = photos.map(photo => ({
     uuid: v4(),
     sourceUuid: store.getters.user ? store.getters.user.uuid : null,
@@ -233,6 +228,19 @@ export const createNewTextTables = async (
     referenceUuid: textUuid,
     objUuid: resource.uuid,
   }));
+
+  const textItemPropertiesRows = convertParsePropsToItemProps(
+    textInfo.properties,
+    textUuid
+  );
+  const photoItemPropertiesRows = photos.flatMap((photo, idx) =>
+    convertParsePropsToItemProps(photo.properties, resourceRows[idx].uuid)
+  );
+
+  const itemPropertiesRows = [
+    ...textItemPropertiesRows,
+    ...photoItemPropertiesRows,
+  ];
 
   const hierarchyRow: HierarchyRow = {
     uuid: v4(),

@@ -85,7 +85,7 @@
           <final-preview
             v-if="step >= 5"
             :epigraphyDetails="epigraphyDetails"
-            :photoUrls="photoUrls"
+            :photoUrls="epigraphyLabelLinks"
             :localDiscourseInfo="
               temporaryLocalTables ? temporaryLocalTables.discourses : []
             "
@@ -127,12 +127,13 @@ import {
   EpigraphyResponse,
   CreateTextTables,
   TextDiscourseRow,
-  TextPhotoWithName,
+  TextPhotoWithDetails,
   TextRow,
+  EpigraphyLabelLink,
 } from '@oare/types';
 import { convertTablesToUnits } from './utils/convertTablesToUnits';
 import { createNewTextTables } from './utils/buildTables';
-import { addNamesToTextPhotos } from './utils/photos';
+import { addDetailsToTextPhotos } from './utils/photos';
 
 export default defineComponent({
   props: {
@@ -164,6 +165,7 @@ export default defineComponent({
   setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
     const router = sl.get('router');
 
     const collectionName = ref('');
@@ -224,9 +226,18 @@ export default defineComponent({
     const setPhotos = (updatedPhotos: TextPhoto[]) => {
       photos.value = updatedPhotos;
     };
-    const photosWithName = ref<TextPhotoWithName[]>([]);
+    const photosWithName = ref<TextPhotoWithDetails[]>([]);
     const photoUrls = computed(() =>
       photosWithName.value.filter(photo => photo.url).map(photo => photo.url)
+    );
+    const epigraphyLabelLinks: ComputedRef<EpigraphyLabelLink[]> = computed(
+      () =>
+        photos.value.map(photo => ({
+          link: photo.url || '',
+          label: `${store.getters.user?.firstName} ${store.getters.user?.lastName}`,
+          side: photo.side || null,
+          view: photo.view || null,
+        }))
     );
 
     const editorContent = ref<AddTextEditorContent>();
@@ -237,7 +248,7 @@ export default defineComponent({
     const temporaryLocalTables = ref<CreateTextTables>();
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
-        photosWithName.value = await addNamesToTextPhotos(
+        photosWithName.value = await addDetailsToTextPhotos(
           textInfo.value.excavationPrefix,
           textInfo.value.excavationNumber,
           textInfo.value.museumPrefix,
@@ -402,6 +413,7 @@ export default defineComponent({
       updateManualSelections,
       isDirty,
       existingTextRow,
+      epigraphyLabelLinks,
     };
   },
 });

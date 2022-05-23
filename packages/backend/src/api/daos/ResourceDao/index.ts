@@ -1,7 +1,12 @@
 import { knexRead, knexWrite } from '@/connection';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
-import { ResourceRow, LinkRow, EpigraphyLabelLink } from '@oare/types';
+import {
+  ResourceRow,
+  LinkRow,
+  EpigraphyLabelLink,
+  ImageResource,
+} from '@oare/types';
 import { dynamicImport } from 'tsimportlib';
 
 class ResourceDao {
@@ -20,21 +25,20 @@ class ResourceDao {
 
   async getValidS3ImageLinks(textUuid: string): Promise<EpigraphyLabelLink[]> {
     const s3Links: EpigraphyLabelLink[] = [];
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
     try {
       const s3 = new AWS.S3();
 
-      const resourceLinks: EpigraphyLabelLink[] = await knexRead()(
-        'person as p'
-      )
+      const resourceLinks: ImageResource[] = await knexRead()('person as p')
         .distinct()
-        .select('p.label as label', 'r.link as link')
-        .leftOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
+        .select('p.label as label', 'r.link as link', 'r.uuid as uuid')
+        .rightOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
         .where('r.type', 'img')
         .whereIn(
           'r.uuid',
           knexRead()('link')
-            .select('obj_uuid as uuid')
+            .select('obj_uuid')
             .where('reference_uuid', textUuid)
         );
 
@@ -48,8 +52,19 @@ class ResourceDao {
         })
       );
 
+      const imagePropertyDetails = await Promise.all(
+        resourceLinks.map(resource =>
+          ItemPropertiesDao.getImagePropertyDetails(resource.uuid)
+        )
+      );
+
       resourceLinks.forEach((elem, idx) => {
-        s3Links.push({ label: elem.label, link: signedUrls[idx] });
+        s3Links.push({
+          label: elem.label,
+          link: signedUrls[idx],
+          side: imagePropertyDetails[idx].side,
+          view: imagePropertyDetails[idx].view,
+        });
       });
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
@@ -120,9 +135,12 @@ class ResourceDao {
       });
     }
 
-    const response = cdliLinks.map(
-      link => ({ label: 'CDLI', link } as EpigraphyLabelLink)
-    );
+    const response: EpigraphyLabelLink[] = cdliLinks.map(link => ({
+      label: 'CDLI',
+      link,
+      side: null,
+      view: null,
+    }));
 
     return response;
   }
@@ -136,8 +154,8 @@ class ResourceDao {
     )) as typeof import('node-fetch');
 
     try {
-      const row: string | null = await knexRead()('resource')
-        .select('link')
+      const row: ImageResource = await knexRead()('resource')
+        .select('link', 'uuid')
         .whereIn(
           'uuid',
           knexRead()('link')
@@ -163,6 +181,8 @@ class ResourceDao {
           imageLinks.push({
             label: 'The Metropolitan Museum of Art',
             link: jsonResponse.primaryImage,
+            side: null,
+            view: null,
           });
 
           const {
@@ -172,6 +192,8 @@ class ResourceDao {
             imageLinks.push({
               label: 'The Metropolitan Museum of Art',
               link: image,
+              side: null,
+              view: null,
             })
           );
         }
@@ -185,7 +207,6 @@ class ResourceDao {
         description: 'Error retrieving Metropolitan Museum images',
       });
     }
-
     return imageLinks;
   }
 
