@@ -70,14 +70,13 @@ export function setDiscourseReadingForWordsInTexts(
     return;
   }
   discourse.units.forEach(unit => setDiscourseReading(unit));
-  // eslint-disable-next-line
   discourse.explicitSpelling = discourse.units
     .map(u => {
-      if (discourseUuids.includes(u.uuid))
-        return (
-          `<mark>${u.transcription}</mark>` ||
-          `<mark>${u.explicitSpelling}</mark>`
-        );
+      if (discourseUuids.includes(u.uuid)) {
+        if (u.transcription) return `<mark>${u.transcription}</mark>`;
+        if (u.explicitSpelling) return `<mark>${u.explicitSpelling}</mark>`;
+        return '';
+      }
       if (u.transcription) return u.transcription;
       return u.explicitSpelling || '';
     })

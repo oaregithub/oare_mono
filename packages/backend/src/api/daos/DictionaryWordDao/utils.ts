@@ -21,7 +21,7 @@ export async function assembleAutocompleteDisplay(row: {
   const wordFormAutocompleteDisplay: WordFormAutocompleteDisplay = {
     info: { uuid: row.uuid, wordUuid: row.wordUuid, name: row.name },
     wordDisplay: `${
-      row.type === 'form' ? `${row.name} - form` : `${row.name} - word`
+      row.type === 'form' ? `${row.name} - Form` : `${row.name} - Word`
     }`,
   };
   return wordFormAutocompleteDisplay;
