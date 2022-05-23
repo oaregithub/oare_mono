@@ -134,9 +134,14 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     const zoteroCitations: string[] = zoteroJsons.map(res => res.citation);
 
-    const resourceLinks: string[] = await Promise.all(
-      objUuids.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
-    );
+    const resourceLinks: string[] = [];
+    const resourceContainers: string[] = [];
+
+    objUuids.forEach(async uuid => {
+      const row: ResourceRow = await ResourceDao.getResourceLinkByUuid(uuid);
+      resourceLinks.push(row.link);
+      resourceContainers.push(row.container);
+    });
 
     const zoteroData = zoteroCitations.map((cit, idx) => ({
       citation: cit,

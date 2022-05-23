@@ -77,7 +77,7 @@ class ResourceDao {
   }
 
   async getResourceLinkByUuid(bibliographyUuid: string) {
-    const row = await knexRead()('resource')
+    const row: ResourceRow = await knexRead()('resource')
       .select('link')
       .whereIn(
         'uuid',
@@ -87,7 +87,7 @@ class ResourceDao {
       )
       .first();
 
-    return row.link;
+    return row;
   }
 
   async getValidCdliImageLinks(cdliNum: string): Promise<EpigraphyLabelLink[]> {
