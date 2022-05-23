@@ -16,7 +16,7 @@ class GroupEditPermissionsDao {
   async addItemsToGroupEditPermissions(
     groupId: number,
     uuids: string[],
-    type: 'text' | 'collection'
+    type: 'text' | 'img' | 'collection'
   ): Promise<void> {
     const rows = uuids.map(uuid => ({
       uuid,

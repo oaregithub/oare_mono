@@ -6,10 +6,11 @@ import { dynamicImport } from 'tsimportlib';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
+    userUuid: string | null,
     textUuid: string,
     cdliNum: string
   ): Promise<EpigraphyLabelLink[]> {
-    const s3Links = await this.getValidS3ImageLinks(textUuid);
+    const s3Links = await this.getValidS3ImageLinks(textUuid, userUuid);
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
     const metLinks = await this.getValidMetImageLinks(textUuid);
 
@@ -18,11 +19,16 @@ class ResourceDao {
     return response;
   }
 
-  async getValidS3ImageLinks(textUuid: string): Promise<EpigraphyLabelLink[]> {
+  async getValidS3ImageLinks(
+    textUuid: string,
+    userUuid: string | null
+  ): Promise<EpigraphyLabelLink[]> {
     const s3Links: EpigraphyLabelLink[] = [];
 
     try {
       const s3 = new AWS.S3();
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
+      const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
 
       const resourceLinks: EpigraphyLabelLink[] = await knexRead()(
         'person as p'
@@ -36,6 +42,7 @@ class ResourceDao {
           knexRead()('link')
             .select('obj_uuid as uuid')
             .where('reference_uuid', textUuid)
+            .whereNotIn('r.uuid', imagesToHide)
         );
 
       const signedUrls = await Promise.all(

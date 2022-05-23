@@ -50,11 +50,11 @@ export interface UpdatePermissionPayload {
   permission: PermissionItem;
 }
 
-export type PermissionsListType = 'Text' | 'Collection';
+export type PermissionsListType = 'Text' | 'Collection' | 'Image';
 
 export interface DenylistAllowlistPayload {
   uuids: string[];
-  type: 'text' | 'collection';
+  type: 'text' | 'collection' | 'img';
 }
 
 export interface GetDenylistAllowlistParameters {

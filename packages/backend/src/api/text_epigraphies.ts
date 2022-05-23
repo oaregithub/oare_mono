@@ -25,8 +25,10 @@ router
     try {
       const { uuid: textUuid, cdliNum } = req.params;
       const ResourceDao = sl.get('ResourceDao');
+      const userUuid = req.user ? req.user.uuid : null;
 
-      const response: EpigraphyLabelLink[] = await ResourceDao.getImageLinksByTextUuid(
+      const response = await ResourceDao.getImageLinksByTextUuid(
+        userUuid,
         textUuid,
         cdliNum
       );

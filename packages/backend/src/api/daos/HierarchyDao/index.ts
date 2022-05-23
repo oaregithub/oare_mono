@@ -5,10 +5,13 @@ import {
   SearchNamesPayload,
   TaxonomyTree,
   HierarchyRow,
+  SearchImagesResultRow,
+  SearchImagesResponse,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import { getTreeNodeQuery } from './utils';
+import AWS from 'aws-sdk';
 
 class HierarchyDao {
   async getBySearchTerm({
@@ -203,6 +206,98 @@ class HierarchyDao {
         ...text,
         hasEpigraphy: hasEpigraphies[idx],
       })),
+    };
+  }
+
+  async getImages({
+    page,
+    limit,
+    filter,
+    type,
+    groupId,
+    showExcluded,
+  }: SearchNamesPayload): Promise<SearchImagesResponse> {
+    const s3 = new AWS.S3();
+    let signedUrls: string[] = [];
+    let imgUUIDs: string[] = [];
+    let texts: string[] = [];
+    let text: string[] = [];
+    let result: SearchImagesResultRow[] = [];
+    let totalItems: string[] = [];
+
+    const queryForImageUuids = knexRead()('link')
+      .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
+      .innerJoin('text', 'text.uuid', 'link.reference_uuid')
+      .pluck('resource.uuid')
+      .where('resource.container', 'oare-image-bucket')
+      .andWhere('text.display_name', 'like', `%${filter}%`)
+      .whereNotIn(
+        'resource.uuid',
+        knexRead()('public_denylist').select('uuid').where('type', 'img')
+      );
+    const queryForResourceLinks = knexRead()('link')
+      .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
+      .innerJoin('text', 'text.uuid', 'link.reference_uuid')
+      .pluck('resource.link')
+      .where('resource.container', 'oare-image-bucket')
+      .andWhere('text.display_name', 'like', `%${filter}%`)
+      .whereNotIn(
+        'resource.uuid',
+        knexRead()('public_denylist').select('uuid').where('type', 'img')
+      );
+
+    try {
+      totalItems = await queryForImageUuids;
+
+      imgUUIDs = await queryForImageUuids
+        .limit(limit)
+        .offset((page - 1) * limit);
+
+      for (let j = 0; j < imgUUIDs.length; j++) {
+        text = await knexRead()('text')
+          .pluck('display_name')
+          .where(
+            'uuid',
+            knexRead()('link')
+              .select('reference_uuid')
+              .where('obj_uuid', imgUUIDs[j])
+          );
+        texts.push(text[0]);
+      }
+
+      const resourceLinks: string[] = await queryForResourceLinks
+        .limit(limit)
+        .offset((page - 1) * limit);
+
+      signedUrls = await Promise.all(
+        resourceLinks.map(key => {
+          const params = {
+            Bucket: 'oare-image-bucket',
+            Key: key,
+          };
+          return s3.getSignedUrlPromise('getObject', params);
+        })
+      );
+    } catch (err) {
+      const ErrorsDao = sl.get('ErrorsDao');
+      await ErrorsDao.logError({
+        userUuid: null,
+        stacktrace: (err as Error).stack || null,
+        status: 'In Progress',
+        description: 'Error retrieving S3 photos',
+      });
+    }
+
+    for (let i = 0; i < signedUrls.length; i++) {
+      result.push({
+        uuid: imgUUIDs[i],
+        name: texts[i],
+        imgUrl: signedUrls[i],
+      });
+    }
+    return {
+      items: result,
+      count: totalItems.length,
     };
   }
 

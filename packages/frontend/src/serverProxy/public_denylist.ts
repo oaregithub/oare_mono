@@ -11,6 +11,11 @@ async function getDenylistCollections() {
   return data;
 }
 
+async function getDenylistImages() {
+  const { data } = await axios.get('/public_denylist/images');
+  return data;
+}
+
 async function addItemsToPublicDenylist(
   payload: DenylistAllowlistPayload
 ): Promise<number[]> {
@@ -26,6 +31,7 @@ async function removeItemsFromPublicDenylist(uuids: string[]) {
 export default {
   getPublicDenylist,
   getDenylistCollections,
+  getDenylistImages,
   addItemsToPublicDenylist,
   removeItemsFromPublicDenylist,
 };

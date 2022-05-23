@@ -4,7 +4,7 @@ import sl from '@/serviceLocator';
 class GroupAllowlistDao {
   async getGroupAllowlist(
     groupId: number,
-    type: 'text' | 'collection'
+    type: 'text' | 'img' | 'collection'
   ): Promise<string[]> {
     const uuids = await knexRead()('group_allowlist')
       .pluck('uuid')
@@ -17,7 +17,7 @@ class GroupAllowlistDao {
   async addItemsToAllowlist(
     groupId: number,
     uuids: string[],
-    type: 'text' | 'collection'
+    type: 'text' | 'img' | 'collection'
   ): Promise<void> {
     const rows = uuids.map(uuid => ({
       uuid,

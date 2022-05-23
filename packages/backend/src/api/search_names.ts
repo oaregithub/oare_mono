@@ -19,7 +19,11 @@ router.route('/search_names').get(async (req, res, next) => {
       showExcluded: (req.query.showExcluded as string) === 'true',
     };
 
-    res.json(await HierarchyDao.getBySearchTerm(searchParams));
+    if (req.query.type === 'Text' || req.query.type === 'Collection') {
+      res.json(await HierarchyDao.getBySearchTerm(searchParams));
+    } else {
+      res.json(await HierarchyDao.getImages(searchParams));
+    }
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

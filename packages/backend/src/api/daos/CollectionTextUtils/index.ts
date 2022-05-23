@@ -17,6 +17,7 @@ class CollectionTextUtils {
     const isPubliclyViewable = await PublicDenylistDao.textIsPubliclyViewable(
       textUuid
     );
+
     if (isPubliclyViewable) {
       return true;
     }
@@ -126,6 +127,35 @@ class CollectionTextUtils {
     );
 
     return textsToHide;
+  }
+
+  async imagesToHide(userUuid: string | null): Promise<string[]> {
+    const GroupAllowlistDao = sl.get('GroupAllowlistDao');
+    const PublicDenylistDao = sl.get('PublicDenylistDao');
+    const UserGroupDao = sl.get('UserGroupDao');
+    const UserDao = sl.get('UserDao');
+
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+    if (user && user.isAdmin) {
+      return [];
+    }
+
+    const publicImageDenylist = await PublicDenylistDao.getDenylistImageUuids();
+
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid);
+    const imageAllowlist = (
+      await Promise.all(
+        groups.map(groupId =>
+          GroupAllowlistDao.getGroupAllowlist(groupId, 'img')
+        )
+      )
+    ).flat();
+
+    const imagesToHide = publicImageDenylist.filter(
+      image => !imageAllowlist.includes(image)
+    );
+
+    return imagesToHide;
   }
 
   async canEditText(
