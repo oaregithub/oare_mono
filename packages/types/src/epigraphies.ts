@@ -228,8 +228,9 @@ export interface TextPhoto {
   upload?: File;
 }
 
-export interface TextPhotoWithName extends TextPhoto {
+export interface TextPhotoWithDetails extends TextPhoto {
   name: string;
+  properties: ParseTreeProperty[];
 }
 
 export interface TextEpigraphyRowPartial {

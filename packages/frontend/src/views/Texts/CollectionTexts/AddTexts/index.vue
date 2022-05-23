@@ -127,12 +127,12 @@ import {
   EpigraphyResponse,
   CreateTextTables,
   TextDiscourseRow,
-  TextPhotoWithName,
+  TextPhotoWithDetails,
   TextRow,
 } from '@oare/types';
 import { convertTablesToUnits } from './utils/convertTablesToUnits';
 import { createNewTextTables } from './utils/buildTables';
-import { addNamesToTextPhotos } from './utils/photos';
+import { addDetailsToTextPhotos } from './utils/photos';
 
 export default defineComponent({
   props: {
@@ -224,7 +224,7 @@ export default defineComponent({
     const setPhotos = (updatedPhotos: TextPhoto[]) => {
       photos.value = updatedPhotos;
     };
-    const photosWithName = ref<TextPhotoWithName[]>([]);
+    const photosWithName = ref<TextPhotoWithDetails[]>([]);
     const photoUrls = computed(() =>
       photosWithName.value.filter(photo => photo.url).map(photo => photo.url)
     );
@@ -237,7 +237,7 @@ export default defineComponent({
     const temporaryLocalTables = ref<CreateTextTables>();
     const buildTables = async () => {
       if (textInfo.value && editorContent.value) {
-        photosWithName.value = await addNamesToTextPhotos(
+        photosWithName.value = await addDetailsToTextPhotos(
           textInfo.value.excavationPrefix,
           textInfo.value.excavationNumber,
           textInfo.value.museumPrefix,

@@ -78,6 +78,7 @@ import PhotoSelector from './components/PhotoSelector.vue';
 import { defineComponent, ref, computed, watch } from '@vue/composition-api';
 import { TextPhoto } from '@oare/types';
 import { v4 } from 'uuid';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   components: {
@@ -91,6 +92,8 @@ export default defineComponent({
     },
   },
   setup(_, { emit }) {
+    const store = sl.get('store');
+
     const photos = ref<TextPhoto[]>([]);
 
     const confirmed = ref(false);
@@ -110,7 +113,12 @@ export default defineComponent({
     );
 
     const photoUrls = computed(() => {
-      return photosWithUrl.value.map(photo => photo.url);
+      return photosWithUrl.value.map(photo => ({
+        link: photo.url,
+        label: `${store.getters.user!.firstName} ${
+          store.getters.user!.lastName
+        }`,
+      }));
     });
 
     const addPhoto = () => {

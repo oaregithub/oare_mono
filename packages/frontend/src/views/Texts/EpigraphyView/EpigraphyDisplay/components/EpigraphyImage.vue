@@ -54,7 +54,7 @@
         <inner-image-zoom :src="imageLinks[selection].link" moveType="drag" />
         <div class="text-center">
           <span>
-            Photo Source: {{ imageLinks[selection].label || 'Unavailable' }}.
+            Photo Source: {{ imageLinks[selection].label || 'Unavailable' }}
             <br />
             For more information in photo, click (here).</span
           >
@@ -129,6 +129,8 @@ export default defineComponent({
           return 'Envelope Inner r.e.';
         case 'x':
           return 'Fat Cross';
+        case 'h':
+          return 'Handcopy';
         case 8:
           return 'Unknown Side';
         case 9:
@@ -158,6 +160,14 @@ export default defineComponent({
           return 'Emphasis on Name';
         case 's':
           return 'Seal Impression Focus';
+        case 'fr':
+          return 'From Right';
+        case 'fl':
+          return 'From Left';
+        case 'cx':
+          return 'Contextual';
+        case 'du':
+          return 'Detail Unspecified';
         default:
           return 'No view information available';
       }

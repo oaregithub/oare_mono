@@ -217,8 +217,8 @@ import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
 import AddPhotos from '@/views/Texts/CollectionTexts/AddTexts/Photos/AddPhotos.vue';
-
-import { addNamesToTextPhotos } from '../CollectionTexts/AddTexts/utils/photos';
+import { convertParsePropsToItemProps } from '@oare/oare';
+import { addDetailsToTextPhotos } from '../CollectionTexts/AddTexts/utils/photos';
 import { v4 } from 'uuid';
 
 export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
@@ -512,9 +512,10 @@ export default defineComponent({
     const setPhotosToAdd = (photos: TextPhoto[]) => {
       photosToAdd.value = photos;
     };
+
     const uploadPhotos = async () => {
       try {
-        const photosWithName = await addNamesToTextPhotos(
+        const photosWithDetails = await addDetailsToTextPhotos(
           textInfo.value.text.excavationPrefix,
           textInfo.value.text.excavationNumber,
           textInfo.value.text.museumPrefix,
@@ -523,7 +524,7 @@ export default defineComponent({
           textInfo.value.text.publicationNumber,
           photosToAdd.value
         );
-        const resourceRows: ResourceRow[] = photosWithName.map(photo => ({
+        const resourceRows: ResourceRow[] = photosWithDetails.map(photo => ({
           uuid: v4(),
           sourceUuid: store.getters.user ? store.getters.user.uuid : null,
           type: 'img',
@@ -537,9 +538,18 @@ export default defineComponent({
           referenceUuid: textUuid || '',
           objUuid: resource.uuid,
         }));
-        await server.addPhotosToText(resourceRows, linkRows);
+
+        const itemPropertiesRows = photosWithDetails.flatMap((photo, idx) =>
+          convertParsePropsToItemProps(photo.properties, resourceRows[idx].uuid)
+        );
+
+        await server.addPhotosToText(
+          resourceRows,
+          linkRows,
+          itemPropertiesRows
+        );
         await Promise.all(
-          photosWithName.map(photo => server.uploadImage(photo))
+          photosWithDetails.map(photo => server.uploadImage(photo))
         );
         photosToAdd.value.forEach(photo => {
           if (photo.url) {
