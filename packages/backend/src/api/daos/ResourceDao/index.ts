@@ -206,9 +206,8 @@ class ResourceDao {
         status: 'New',
         description: 'Error retrieving Metropolitan Museum images',
       });
-    } finally {
-      return imageLinks;
     }
+    return imageLinks;
   }
 
   async getImageDesignatorMatches(preText: string): Promise<string[]> {
