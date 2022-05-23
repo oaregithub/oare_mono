@@ -42,14 +42,11 @@
     </v-row>
     <v-row align="center" justify="center">
       <div v-for="(selection, idx) in selectedImages" :key="idx">
-        <v-row v-if="imageDetails && imageDetails.length > 0" class="mx-2 mb-1">
-          <span
-            ><b>Side: </b>{{ parseSide(imageDetails[selection].side) }}</span
-          >
-          <v-spacer />
-          <span
-            ><b>View: </b>{{ parseView(imageDetails[selection].view) }}</span
-          >
+        <v-row v-if="imageLinks.length > 0" justify="center">
+          <span><b>Side: </b>{{ parseSide(imageLinks[selection].side) }}</span>
+        </v-row>
+        <v-row v-if="imageLinks.length > 0" class="mb-1" justify="center">
+          <span><b>View: </b>{{ parseView(imageLinks[selection].view) }}</span>
         </v-row>
         <inner-image-zoom :src="imageLinks[selection].link" moveType="drag" />
         <div class="text-center">
@@ -66,7 +63,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
-import { TextPhoto, EpigraphyLabelLink } from '@oare/types';
+import { EpigraphyLabelLink } from '@oare/types';
 import InnerImageZoom from 'vue-inner-image-zoom';
 
 export default defineComponent({
@@ -77,10 +74,6 @@ export default defineComponent({
     imageLinks: {
       type: Array as PropType<EpigraphyLabelLink[]>,
       required: true,
-    },
-    imageDetails: {
-      type: Array as PropType<TextPhoto[]>,
-      required: false,
     },
     maxSelect: {
       type: Number,
@@ -101,7 +94,7 @@ export default defineComponent({
       }
     };
 
-    const parseSide = (sideCode: string | number | undefined) => {
+    const parseSide = (sideCode: string | number | null) => {
       switch (sideCode) {
         case 1:
           return 'obv.';
@@ -135,12 +128,14 @@ export default defineComponent({
           return 'Unknown Side';
         case 9:
           return 'Unknown Edge';
+        case null:
+          return 'No side information';
         default:
-          return 'No side information available';
+          return sideCode;
       }
     };
 
-    const parseView = (viewCode: string | undefined) => {
+    const parseView = (viewCode: string | null) => {
       switch (viewCode) {
         case 'u':
           return 'Upper (from above)';
@@ -168,8 +163,10 @@ export default defineComponent({
           return 'Contextual';
         case 'du':
           return 'Detail Unspecified';
+        case null:
+          return 'No view information';
         default:
-          return 'No view information available';
+          return viewCode;
       }
     };
 

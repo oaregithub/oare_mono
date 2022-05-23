@@ -263,7 +263,7 @@ export default defineComponent({
       required: false,
     },
     localImageUrls: {
-      type: Array as PropType<string[]>,
+      type: Array as PropType<EpigraphyLabelLink[]>,
       required: false,
     },
     localDiscourseInfo: {
@@ -475,9 +475,7 @@ export default defineComponent({
         await getTextInfo();
         draft.value = textInfo.value.draft || null;
         if (localImageUrls) {
-          imageUrls.value = localImageUrls.map(val => {
-            return { label: '', link: val } as EpigraphyLabelLink;
-          });
+          imageUrls.value = localImageUrls;
         } else if (textUuid) {
           imageUrls.value = await server.getImageLinks(
             textUuid,
@@ -553,7 +551,12 @@ export default defineComponent({
         );
         photosToAdd.value.forEach(photo => {
           if (photo.url) {
-            imageUrls.value.push({ label: '', link: photo.url });
+            imageUrls.value.push({
+              label: `${store.getters.user?.firstName} ${store.getters.user?.lastName}`,
+              link: photo.url,
+              side: photo.side || null,
+              view: photo.view || null,
+            });
           }
         });
       } catch (err) {

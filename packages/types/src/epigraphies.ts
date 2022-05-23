@@ -392,4 +392,17 @@ export interface CreateTextsPayload {
 export interface EpigraphyLabelLink {
   label: string;
   link: string;
+  side: string | number | null;
+  view: string | null;
+}
+
+export interface ImageResource {
+  label: string;
+  link: string;
+  uuid: string;
+}
+
+export interface ImageResourcePropertyDetails {
+  side: string | null;
+  view: string | null;
 }
