@@ -341,9 +341,13 @@ class DictionaryWordDao {
     let newTranslations = translationsWithPrimacy.filter(tr => tr.uuid === '');
     const insertedUuids = await Promise.all(
       newTranslations.map(tr =>
-        FieldDao.insertField(wordUuid, 'definition', tr.translation, {
-          primacy: tr.primacy,
-        })
+        FieldDao.insertField(
+          wordUuid,
+          'definition',
+          tr.translation,
+          tr.primacy,
+          null
+        )
       )
     );
     await Promise.all(

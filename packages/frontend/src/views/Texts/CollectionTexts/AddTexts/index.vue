@@ -10,7 +10,7 @@
         </v-stepper-step>
         <v-divider />
         <v-stepper-step :complete="step > 2" step="2">
-          Upload Photos
+          Upload Images
         </v-stepper-step>
         <v-divider />
         <v-stepper-step :complete="step > 3" step="3"> Editor </v-stepper-step>
@@ -25,6 +25,7 @@
       <v-stepper-items>
         <v-stepper-content step="1">
           <text-info-set
+            :existingTextRow="existingTextRow"
             @update-text-info="setTextInfo"
             @step-complete="stepOneComplete = $event"
           />
@@ -41,10 +42,11 @@
             v-if="step >= 2"
             @update-photos="setPhotos"
             @step-complete="stepTwoComplete = $event"
+            @skip="next"
           />
           <stepper-button
             :blockContinue="!stepTwoComplete"
-            blockContinueText="To continue, each photo needs to have a side and view selected. Please make sure you also have uploaded photos for each selector."
+            blockContinueText='To continue, please select "Confirm" or "Skip" in the awknowledgement box. Each image must also have a side and view selected before you can continue.'
             @next="next"
             @previous="previous"
           />
@@ -126,6 +128,7 @@ import {
   CreateTextTables,
   TextDiscourseRow,
   TextPhotoWithName,
+  TextRow,
 } from '@oare/types';
 import { convertTablesToUnits } from './utils/convertTablesToUnits';
 import { createNewTextTables } from './utils/buildTables';
@@ -136,6 +139,10 @@ export default defineComponent({
     collectionUuid: {
       type: String,
       required: true,
+    },
+    existingTextUuid: {
+      type: String,
+      required: false,
     },
   },
   beforeRouteLeave(_to, _from, next) {
@@ -164,7 +171,7 @@ export default defineComponent({
     const loading = ref(false);
 
     const stepOneComplete = ref(false);
-    const stepTwoComplete = ref(true);
+    const stepTwoComplete = ref(false);
     const stepThreeComplete = ref(false);
 
     const next = () => (step.value += 1);
@@ -172,13 +179,34 @@ export default defineComponent({
 
     const isDirty = ref(true);
 
+    const existingTextRow = ref<TextRow>();
+
     onMounted(async () => {
       loading.value = true;
       try {
         collectionName.value = (
           await server.getCollectionInfo(props.collectionUuid)
         ).name;
-      } catch {
+
+        if (props.existingTextUuid) {
+          const alreadyHasEpigraphy = await server.hasEpigraphy(
+            props.existingTextUuid
+          );
+          if (alreadyHasEpigraphy) {
+            isDirty.value = false;
+            router.replace({ name: '403' });
+          }
+
+          existingTextRow.value =
+            (await server.getTextRowByUuid(props.existingTextUuid)) ||
+            undefined;
+        }
+      } catch (err) {
+        if ((err as any).response && (err as any).response.status === 403) {
+          isDirty.value = false;
+          router.replace({ name: '403' });
+          return;
+        }
         actions.showErrorSnackbar(
           'Error loading collection name. Please try again.'
         );
@@ -224,7 +252,8 @@ export default defineComponent({
           editorContent.value,
           persistentDiscourseStorage.value,
           photosWithName.value,
-          props.collectionUuid
+          props.collectionUuid,
+          existingTextRow.value
         );
 
         temporaryLocalTables.value.discourses.forEach(discourse => {
@@ -372,6 +401,7 @@ export default defineComponent({
       manuallySelectedDiscourses,
       updateManualSelections,
       isDirty,
+      existingTextRow,
     };
   },
 });

@@ -38,6 +38,7 @@ export interface DiscourseRow {
   translation: string | null;
   objInText: number;
   side: number | null;
+  childNum: number | null;
 }
 
 export interface SearchDiscourseSpellingDaoResponse {
@@ -253,7 +254,8 @@ class TextDiscourseDao {
         'alias.name AS paragraphLabel',
         'field.field AS translation',
         'text_discourse.obj_in_text AS objInText',
-        'text_epigraphy.side'
+        'text_epigraphy.side',
+        'text_discourse.child_num AS childNum'
       )
       .leftJoin(
         'text_epigraphy',
@@ -425,9 +427,9 @@ class TextDiscourseDao {
       spellingReferenceUuids
     );
 
-    await incrementChildNum(textUuid, parentUuid, anchorInfo.childNum);
-    await incrementObjInText(textUuid, anchorInfo.objInText);
-    await incrementWordOnTablet(textUuid, anchorInfo.wordOnTablet);
+    await this.incrementChildNum(textUuid, parentUuid, anchorInfo.childNum);
+    await this.incrementObjInText(textUuid, anchorInfo.objInText);
+    await this.incrementWordOnTablet(textUuid, anchorInfo.wordOnTablet);
 
     await knexWrite()('text_discourse').insert({
       uuid: discourseUuid,
@@ -564,6 +566,91 @@ class TextDiscourseDao {
       explicit_spelling: row.explicitSpelling,
       transcription: row.transcription,
     });
+  }
+
+  async getDiscourseRowByUuid(uuid: string): Promise<TextDiscourseRow> {
+    const row: TextDiscourseRow = await knexRead()('text_discourse')
+      .select(
+        'uuid',
+        'type',
+        'obj_in_text as objInText',
+        'word_on_tablet as wordOnTablet',
+        'child_num as childNum',
+        'text_uuid as textUuid',
+        'tree_uuid as treeUuid',
+        'parent_uuid as parentUuid',
+        'spelling_uuid as spellingUuid',
+        'spelling',
+        'explicit_spelling as explicitSpelling',
+        'transcription'
+      )
+      .where({ uuid })
+      .first();
+    return row;
+  }
+
+  async incrementChildNum(
+    textUuid: string,
+    parentUuid: string,
+    childNum: number | null
+  ): Promise<void> {
+    if (childNum) {
+      await knexWrite()('text_discourse')
+        .where({
+          text_uuid: textUuid,
+          parent_uuid: parentUuid,
+        })
+        .andWhere('child_num', '>=', childNum)
+        .increment('child_num', 1);
+    }
+  }
+
+  async incrementWordOnTablet(
+    textUuid: string,
+    wordOnTablet: number | null
+  ): Promise<void> {
+    if (wordOnTablet) {
+      await knexWrite()('text_discourse')
+        .where({
+          text_uuid: textUuid,
+        })
+        .andWhere('word_on_tablet', '>=', wordOnTablet)
+        .increment('word_on_tablet', 1);
+    }
+  }
+
+  async incrementObjInText(
+    textUuid: string,
+    objInText: number | null
+  ): Promise<void> {
+    if (objInText) {
+      await knexWrite()('text_discourse')
+        .where({
+          text_uuid: textUuid,
+        })
+        .andWhere('obj_in_text', '>=', objInText)
+        .increment('obj_in_text', 1);
+    }
+  }
+
+  async updateParentUuid(newParentUuid: string, newChildUuids: string[]) {
+    await knexWrite()('text_discourse')
+      .update('parent_uuid', newParentUuid)
+      .whereIn('uuid', newChildUuids);
+  }
+
+  async updateChildNum(uuid: string, newChildNum: number | null) {
+    await knexWrite()('text_discourse')
+      .update('child_num', newChildNum)
+      .where({ uuid });
+  }
+
+  async getChildrenUuids(parentUuid: string): Promise<string[]> {
+    const rows = await knexRead()('text_discourse')
+      .pluck('uuid')
+      .where('parent_uuid', parentUuid)
+      .orderBy('child_num');
+    return rows;
   }
 }
 

@@ -33,6 +33,7 @@ import pageContent from './api/page_content';
 import searchWordsTexts from './api/search_words_texts';
 import properties from './api/properties';
 import environment from './api/environment';
+import text from './api/text';
 
 export const API_PATH = '/api/v2';
 
@@ -72,6 +73,7 @@ export default (app: Express) => {
     searchWordsTexts,
     properties,
     environment,
+    text,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

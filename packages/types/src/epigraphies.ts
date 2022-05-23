@@ -3,6 +3,7 @@ import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
 import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
+import { TreeRow } from './tree';
 
 export interface Text {
   uuid: string;
@@ -354,6 +355,7 @@ export interface CreateTextTables {
   resources: ResourceRow[];
   links: LinkRow[];
   hierarchy: HierarchyRow;
+  trees: TreeRow[];
 }
 
 export interface EditorWord {
@@ -384,4 +386,9 @@ export interface EditorMarkupError {
 
 export interface CreateTextsPayload {
   tables: CreateTextTables;
+}
+
+export interface EpigraphyLabelLink {
+  label: string;
+  link: string;
 }

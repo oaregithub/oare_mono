@@ -7,6 +7,7 @@ import {
   TextPhotoWithName,
   ResourceRow,
   LinkRow,
+  EpigraphyLabelLink,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -54,7 +55,7 @@ async function updateTextInfo(
 async function getImageLinks(
   textUuid: string,
   cdliNum: string | null
-): Promise<string[]> {
+): Promise<EpigraphyLabelLink[]> {
   const { data } = await axios.get(
     `/text_epigraphies/images/${textUuid}/${cdliNum}`
   );
@@ -86,16 +87,24 @@ const uploadImage = async (photo: TextPhotoWithName) => {
     const formData = new FormData();
     formData.append('newFile', file, 'newFile');
 
-    await axios.post(`/text_epigraphies/upload_image/${photo.name}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    await axios.post(`/text_epigraphies/upload_image/${photo.name}`, formData);
   }
 };
 
-async function getTextFileByTextUuid(uuid: string) {
-  const { data } = await axios.get(`/text_epigraphies/text_file/${uuid}`);
+async function getTextSourceFile(textUuid: string): Promise<string | null> {
+  const { data } = await axios.get(`/text_epigraphies/text_source/${textUuid}`);
+  return data;
+}
+
+async function getResourceObject(tag: string): Promise<string | null> {
+  const { data } = await axios.get(`/text_epigraphies/resource/${tag}`);
+  return data;
+}
+
+async function hasEpigraphy(textUuid: string): Promise<boolean> {
+  const { data } = await axios.get(
+    `/text_epigraphies/has_epigraphy/${textUuid}`
+  );
   return data;
 }
 
@@ -109,5 +118,7 @@ export default {
   uploadImage,
   updateTextInfo,
   addPhotosToText,
-  getTextFileByTextUuid,
+  getTextSourceFile,
+  getResourceObject,
+  hasEpigraphy,
 };

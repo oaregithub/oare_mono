@@ -67,6 +67,13 @@ class PermissionsDao {
         'Allow group users to view text discourses associated with text epigraphies',
     },
     {
+      name: 'INSERT_PARENT_DISCOURSE_ROWS',
+      type: 'text',
+      description:
+        'Allow group users to articulate discourse hierarchy and insert new parent rows.',
+      dependencies: ['VIEW_TEXT_DISCOURSE'],
+    },
+    {
       name: 'EDIT_TRANSLATION',
       type: 'text',
       description: "Allow group users to edit a text's discourse translations",

@@ -4,9 +4,11 @@ import { DiscourseRow, TextWithDiscourseUuids } from './index';
 
 export function createNestedDiscourses(
   discourseRows: DiscourseRow[],
-  parentUuid: string | null
+  baseParentUuid: string | null
 ): DiscourseUnit[] {
-  const children = discourseRows.filter(row => row.parentUuid === parentUuid);
+  const children = discourseRows.filter(
+    row => row.parentUuid === baseParentUuid
+  );
   const discourses: DiscourseUnit[] = [];
 
   children.forEach(
@@ -22,6 +24,8 @@ export function createNestedDiscourses(
       translation,
       objInText,
       side,
+      parentUuid,
+      childNum,
     }) => {
       const unitChildren = createNestedDiscourses(discourseRows, uuid);
       unitChildren.sort((a, b) => a.objInText - b.objInText);
@@ -38,6 +42,8 @@ export function createNestedDiscourses(
         line: line || undefined,
         wordOnTablet: wordOnTablet || undefined,
         side: side || undefined,
+        parentUuid: parentUuid || undefined,
+        childNum: childNum || undefined,
       };
       discourses.push(unit);
     }
