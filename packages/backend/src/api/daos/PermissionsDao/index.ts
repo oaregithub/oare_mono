@@ -133,6 +133,12 @@ class PermissionsDao {
       type: 'general',
       description: 'Allow group users to edit item properties for a given item',
     },
+    {
+      name: 'ADD_LEMMA',
+      type: 'dictionary',
+      description: 'Allow group users to add new words to the dictionary',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
