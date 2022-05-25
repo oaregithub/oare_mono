@@ -78,6 +78,12 @@
                   ({{ child.valAbbreviation }})</span
                 >
                 <span
+                  v-if="!open && allowSelections && child.variableUuid"
+                  class="info--text"
+                >
+                  {{ selectionDisplay[child.variableUuid] }}
+                </span>
+                <span
                   v-if="showUUID && !allowSelections"
                   class="blue--text mr-3"
                   >UUID: {{ child.uuid }}
@@ -152,6 +158,9 @@
           :showUUID="showUUID"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
+          @update:selection-display="
+            setSelectionDisplay($event, child.variableUuid)
+          "
         />
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -317,6 +326,22 @@ export default defineComponent({
       });
     });
 
+    watch(selected, () => {
+      emit(
+        'update:selection-display',
+        selected.value.map(val => val.valueName || val.aliasName).join(', ')
+      );
+    });
+    const selectionDisplay = ref<{ [key: string]: string }>({});
+    const setSelectionDisplay = (
+      display: string,
+      variableUuid: string | null
+    ) => {
+      if (variableUuid) {
+        selectionDisplay.value[variableUuid] = display;
+      }
+    };
+
     const copyUUID = (uuid: string) => {
       navigator.clipboard.writeText(uuid);
       actions.showSnackbar('Copied Successfully');
@@ -377,6 +402,8 @@ export default defineComponent({
       copyUUID,
       searchResultsToOpen,
       disableChildren,
+      selectionDisplay,
+      setSelectionDisplay,
     };
   },
 });
