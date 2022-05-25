@@ -163,6 +163,7 @@ describe('DELETE /public_denylist', () => {
   const mockPublicDenylistDao = {
     getDenylistTextUuids: jest.fn().mockResolvedValue(['uuid1', 'uuid2']),
     getDenylistCollectionUuids: jest.fn().mockResolvedValue([]),
+    getDenylistImageUuids: jest.fn().mockResolvedValue([]),
     removeItemFromDenylist: jest.fn().mockResolvedValue(),
   };
   const mockCache = {
@@ -186,8 +187,8 @@ describe('DELETE /public_denylist', () => {
 
   it('returns 204 on successful deletion', async () => {
     const response = await sendRequest();
-    expect(mockPublicDenylistDao.removeItemFromDenylist).toHaveBeenCalled();
     expect(response.status).toBe(204);
+    expect(mockPublicDenylistDao.removeItemFromDenylist).toHaveBeenCalled();
   });
 
   it('does not allow non-admins to delete from denylist', async () => {

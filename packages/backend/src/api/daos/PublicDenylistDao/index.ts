@@ -22,18 +22,20 @@ class PublicDenylistDao {
   async getDenylistImagesWithTexts(): Promise<
     { uuid: string; url: string; text: string }[]
   > {
-    const s3 = new AWS.S3();
     let signedUrls: string[] = [];
     let imgUUIDs: string[] = [];
-    let texts: string[] = [];
     let text: string[] = [];
+    const texts: string[] = [];
+    const result: { uuid: string; url: string; text: string }[] = [];
+    const s3 = new AWS.S3();
 
     try {
       imgUUIDs = await knexRead()('public_denylist')
         .pluck('uuid')
         .where('type', 'img');
 
-      for (let j = 0; j < imgUUIDs.length; j++) {
+      /* eslint-disable no-await-in-loop */
+      for (let j = 0; j < imgUUIDs.length; j += 1) {
         text = await knexRead()('text')
           .pluck('display_name')
           .where(
@@ -44,6 +46,7 @@ class PublicDenylistDao {
           );
         texts.push(text[0]);
       }
+      /* eslint-disable no-await-in-loop */
 
       const resourceLinks: string[] = await knexRead()('resource')
         .pluck('link')
@@ -63,6 +66,10 @@ class PublicDenylistDao {
           return s3.getSignedUrlPromise('getObject', params);
         })
       );
+
+      for (let i = 0; i < signedUrls.length; i += 1) {
+        result.push({ uuid: imgUUIDs[i], url: signedUrls[i], text: texts[i] });
+      }
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
       await ErrorsDao.logError({
@@ -71,12 +78,6 @@ class PublicDenylistDao {
         status: 'In Progress',
         description: 'Error retrieving S3 photos',
       });
-    }
-
-    let result: { uuid: string; url: string; text: string }[] = [];
-
-    for (let i = 0; i < signedUrls.length; i++) {
-      result.push({ uuid: imgUUIDs[i], url: signedUrls[i], text: texts[i] });
     }
 
     return result;

@@ -10,8 +10,8 @@ import {
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
-import { getTreeNodeQuery } from './utils';
 import AWS from 'aws-sdk';
+import { getTreeNodeQuery } from './utils';
 
 class HierarchyDao {
   async getBySearchTerm({
@@ -217,13 +217,13 @@ class HierarchyDao {
     groupId,
     showExcluded,
   }: SearchNamesPayload): Promise<SearchImagesResponse> {
-    const s3 = new AWS.S3();
     let signedUrls: string[] = [];
     let imgUUIDs: string[] = [];
-    let texts: string[] = [];
-    let text: string[] = [];
-    let result: SearchImagesResultRow[] = [];
     let totalItems: string[] = [];
+    let text: string[] = [];
+    const texts: string[] = [];
+    const result: SearchImagesResultRow[] = [];
+    const s3 = new AWS.S3();
 
     const queryForImageUuids = knexRead()('link')
       .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
@@ -253,7 +253,8 @@ class HierarchyDao {
         .limit(limit)
         .offset((page - 1) * limit);
 
-      for (let j = 0; j < imgUUIDs.length; j++) {
+      /* eslint-disable no-await-in-loop */
+      for (let j = 0; j < imgUUIDs.length; j += 1) {
         text = await knexRead()('text')
           .pluck('display_name')
           .where(
@@ -264,6 +265,7 @@ class HierarchyDao {
           );
         texts.push(text[0]);
       }
+      /* eslint-disable no-await-in-loop */
 
       const resourceLinks: string[] = await queryForResourceLinks
         .limit(limit)
@@ -278,6 +280,14 @@ class HierarchyDao {
           return s3.getSignedUrlPromise('getObject', params);
         })
       );
+
+      for (let i = 0; i < signedUrls.length; i += 1) {
+        result.push({
+          uuid: imgUUIDs[i],
+          name: texts[i],
+          imgUrl: signedUrls[i],
+        });
+      }
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
       await ErrorsDao.logError({
@@ -288,13 +298,6 @@ class HierarchyDao {
       });
     }
 
-    for (let i = 0; i < signedUrls.length; i++) {
-      result.push({
-        uuid: imgUUIDs[i],
-        name: texts[i],
-        imgUrl: signedUrls[i],
-      });
-    }
     return {
       items: result,
       count: totalItems.length,
