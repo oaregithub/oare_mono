@@ -1,8 +1,8 @@
 # Welcome to OARE
 
-Welcome to the Old Assyrian Research Environment project! We're glad you're here and are excited to get to work. On this page, you can find information for getting started on the project and running the site on your local machine. Please take the time to review everything on this page before getting started. The live site can be accessed at https://oare.byu.edu.
+Welcome to the Old Assyrian Research Environment project! We're glad you're here and are excited to work with you. On this page, you can find information for getting started on the project and running the site on your local machine for development purposes. You can also find information regarding project styling, best practices, and workflow processes. Please take the time to review everything on this page before getting started. The live site can be accessed at https://oare.byu.edu.
 
-Once again, we're glad you are on the team. The codebase is growing in size and complexity. We understand that it's going to take some time for you to familiarize yourself with the code, the conventions we follow, and the goals of the project. We'll do our best to give you a good overview and guide you along as you get started, but don't be afraid to reach out with any questions you might have.
+Once again, we're glad you are on the team. The codebase is growing in size and complexity. We understand that it's going to take some time for you to familiarize yourself with the code, the conventions we follow, and the goals of the project. We'll do our best to give you a good overview and guide you along as you get started, but don't be afraid to reach out with any questions you might have at any point.
 
 # Table of Contents
 
@@ -41,11 +41,11 @@ Once again, we're glad you are on the team. The codebase is growing in size and 
 
 ## Languages and Frameworks
 
-This is a full-stack project. As such, you'll be writing code for both the frontend views and the backend server, as well as interfacing with the SQL database that serves as the backbone of the project.
+This is a full-stack project. As such, you'll be writing code for both the frontend client views and the backend server, as well as interfacing with the MySQL database that serves as the backbone of the project.
 
-On the frontend, we primarily use [Vue.js](https://vuejs.org), a framework that simplifies frontend logic and allows us to create reusable and scalable components. Specifically, we make use of the [Vue Composition API](https://v3.vuejs.org/guide/composition-api-introduction.html#why-composition-api). When compiled, Vue turns the code we write into valid HTML, CSS, and Javascript for use on the end browser. Additionally, to simplify our work, we use [Vuetify](https://vuetifyjs.com/en/), a Vue framework that makes applying Material Design language components extremely easy. By doing so, we can avoid tedious work in CSS by using pre-built UI components.
+On the frontend, we primarily use [Vue.js](https://vuejs.org), a framework that simplifies frontend logic and allows us to create reusable and scalable components. Specifically, we make use of the [Vue Composition API](https://v3.vuejs.org/guide/composition-api-introduction.html#why-composition-api), which has some important differences from the regular Vue CLI you may be familiar with. When compiled, Vue turns the code we write into valid HTML, CSS, and Javascript for use on the end browser. Additionally, to simplify our work, we use [Vuetify](https://vuetifyjs.com/en/), a Vue framework that makes applying Material Design language components extremely easy. By doing so, we can avoid tedious work in CSS by using pre-built UI components.
 
-On the backend, we use [Node.js](https://nodejs.org/en/), a Javascript runtime environment commonly used on servers. Using a package called [Express](https://expressjs.com), we are able to easily write REST APIs to interact with the data we need. We utilize the [Knex.js](https://knexjs.org) framework to wrap SQL statements and interface with the SQL databse.
+On the backend, we use [Node.js](https://nodejs.org/en/), a Javascript runtime environment commonly used on servers. Using a package called [Express](https://expressjs.com), we are able to easily write REST APIs to interact with the data we need. We utilize the [Knex.js](https://knexjs.org) framework to wrap SQL statements and interface with the MySQL databse.
 
 On both the frontend and the backend, as well as in other parts of the project, we use [TypeScript](https://www.typescriptlang.org) code rather than vanilla Javascript. TypeScript is a superset of Javascript, meaning that all valid Javascript is valid TypeScript, but some additional features, such as strict typing enforcement, have been added. When compiled, TypeScript code is converted to Javascript for use in the browser environment. If you are unfamiliar with TypeScript, take some time to familiarize yourself as it is the primary language in the codebase. Documentation for TypeScript can be found [here](https://www.typescriptlang.org/docs/).
 
@@ -57,15 +57,15 @@ In addition to asynchronous work, we also have weekly in-person team meetings an
 
 ## Style Guide
 
-Our project primarily follows the [Javascript style guide created by Airbnb](https://github.com/airbnb/javascript). However, you may find that there are a few things that we do slightly differently. For example, because we use TypeScript, there will be some differences when it comes to adding strict typing.
+Our project primarily follows the [Javascript style guide created by Airbnb](https://github.com/airbnb/javascript). However, you may find that there are a few things that we may do slightly differently. For example, because we use TypeScript, there will be some differences when it comes to adding strict typing.
 
-To help us enforce this style guide, we use ESLint and Prettier formatting tools, but they are not perfect. Do your best to familiarize yourself with the style guide and follow it as best as you can. In any case, if you accidentally miss something, the team lead will be happy to help you out during code review.
+To help us enforce this style guide, we use both the ESLint linter tool and the Prettier formatter, but they are not perfect. Do your best to familiarize yourself with the style guide and follow it as best as you can. In any case, if you accidentally miss something, the team lead will be happy to help you out during code review.
 
 To check whether your code abides by the existing linting rules, simpy run `yarn lint` in the terminal. Doing so will give you a detailed view of any lines in the code that are not formatted correctly. Running `yarn lint:fix` will fix the majority of these errors automatically, but more complex errors may require manual edits. When pushed to Github, every branch undergoes several test actions, including linting. Code that does not pass the linting cannot be merged, so taking the time to check linting regularly beforehand can make things easier.
 
 ## IDE Recommendation
 
-We recommend using [Visual Studio Code](https://code.visualstudio.com) as your IDE when developing for the project. Though not required, VS Code has excellent integration with TypeScript and a number of great extensions that make developing for our project easier. If you choose to use another IDE, you may do so, but we might not be able to help you get things working properly.
+We recommend using [Visual Studio Code](https://code.visualstudio.com) as your IDE when developing for the project. Though not required, VS Code has excellent integration with TypeScript and a number of great extensions that make developing for our project easier. If you prefer to use a different IDE, you may do so, but we might not be able to help you get things working properly.
 
 ### Recommended VS Code Extensions
 
@@ -89,7 +89,7 @@ This is a monorepository containing all code necessary to run oare.byu.edu. This
 
 ## Create an OARE Account
 
-In order to access all parts of the website, you will need to have an admin account on the project website. To do so, navigate to the [site](https://oare.byu.edu) and click "Login" at the top right.
+In order to access all parts of the website, you will need to have an admin account on the project website. To do so, navigate to the [live site](https://oare.byu.edu) and click "Login" at the top right.
 
 ![](./readme-imgs/oare-login.png)
 
@@ -97,7 +97,7 @@ Then select the "Register for free" option.
 
 ![](./readme-imgs/oare-register.png)
 
-Fill out the form to create a new user account using the credentials of your choice. Once your account is created, ask the team lead to grant you administrator permissions. This will allow you to access all parts of the website.
+Fill out the form to create a new user account using the credentials of your choice. Once your account is created, ask the team lead to grant you administrator access. This will allow you to access all parts of the website.
 
 ## Install WSL 2 (Windows Only)
 
@@ -111,13 +111,13 @@ For most PC machines, simply open Powershell as Administrator and run the follow
 wsl --install
 ```
 
-This command will download WSL, set version 2 as the default (version 2 is required for our project to work), and set Ubuntu as the default Linux distribution. On most machines, this will work properly. If it does not work on your PC, follow the detailed instructions [here](https://docs.microsoft.com/en-us/windows/wsl/install-manual) to install WSL 2 manually. Make sure to set the default version to WSL 2.
+This command will download WSL, set version 2 as the default (version 2 is required for our project to work), and set Ubuntu as the default Linux distribution. On most machines, this will work properly. If it does not work on your PC, follow the detailed instructions [here](https://docs.microsoft.com/en-us/windows/wsl/install-manual) to install WSL 2 manually. Make sure to follow the additional instructions to set the default version to WSL 2.
 
 ## Install Docker
 
 This project uses Docker to locally run a MySQL server. If you are not familiar with Docker, it lets you run apps inside of "containers", which are kind of like very lightweight virtual machines.
 
-First, download Docker at this link: https://www.docker.com/products/docker-desktop. After downloading Docker, you will need to start the Docker Daemon. See the following instructions depending on your operating system.
+First, download Docker Desktop at this link: https://www.docker.com/products/docker-desktop. After downloading Docker, you will need to start the Docker Daemon. See the following instructions depending on your operating system.
 
 ### Mac
 
@@ -155,7 +155,7 @@ The new collaborator will need to accept the invitation sent to their email, and
 
 ## Set up AWS
 
-User authentication for the website is done with Firebase, an easy-to-use development toolkit created by Google. A private key for Firebase is stored in an S3 bucket on AWS. As such, the site will not work locally unless you have AWS access. You will also need to configure the `aws` command line utility.
+User authentication for the website is done with Firebase, an easy-to-use development toolkit created by Google. A private key for Firebase is stored in an S3 bucket on AWS. When the site is run, it first attempts to retrieve that private key from S3 to permit Firebase Authentication. As such, the site will not work locally unless you have access to our AWS account. You will also need to configure the `aws` command line utility on your machine.
 
 The team lead will create an AWS account for you. This will allow you to access the AWS console where the site is hosted. Once the team lead creates the account, you will receive an email with login instructions. You will be asked to change your password the first time you access the console. Once your account is active, you will be ready to configure the `aws` command line utility.
 
@@ -175,11 +175,11 @@ You will need to create an IAM account in AWS for the new developer. In the IAM 
 
 Create a user name (can just be the developer's first and last name), then check both the "Programmatic access" and "AWS Management Console access" boxes. Leave the "Autogenerated password" radio button selected, and leave the "User must create a new password at next sign-in" box checked. Click "Next: Permissions".
 
-Add the user to the "OareCoderAdmin" group then click "Next: Tags". Click "Next: Review". Finally, click "Create user". Make sure to send the new developer the access key ID, secret access key, and password. Make sure they can log in to the AWS console with the password.
+Add the user to the "OareCoderAdmin" group then click "Next: Tags". Click "Next: Review". Finally, click "Create user". Make sure to send the new developer the access key ID, secret access key, and password. Make sure they can log in to the AWS console with the auto-generated password.
 
 ## Clone the Repository
 
-First, clone the repository in the directory of your choice. You will be asked to authenticate using your Github credentials.
+First, clone the repository in the directory of your choice. You will most likely be asked to authenticate using your Github credentials.
 
 ```
 git clone https://github.com/oaregithub/oare_mono.git
@@ -218,7 +218,7 @@ You will want to create three connections in MySQL Workbench - a connection to t
 
 For the production connection, create a new connection with a name of your choice. The hostname is "oare-0-3.c4t2up2es1cx.us-west-2.rds.amazonaws.com" (without the quotes). The username is "oare". Ask another team member for the password.
 
-For the readonly connection, create another connection with a name of your choice. The hostname is the same as the production connection and the username is "oare_readonly". Again, ask another team member for the password. We recommend clicking the box that says "Store in keychain" so you don't have to type the password in every time you want to connect.
+For the readonly connection, create another connection with a name of your choice. The hostname is the same as the production connection and the username is "oare_readonly". Again, ask another team member for the password. We recommend clicking the box that says "Store in keychain", if available, so you don't have to type the password in every time you want to connect.
 
 ### Create a Local Copy of the Database
 
@@ -246,6 +246,8 @@ This will take a while (there are over 15 million rows!). It might take a couple
 
 Running this project requires you to have [Node.js](https://nodejs.org/en/) and [Yarn Package Manager](https://yarnpkg.com) installed on your machine. If you don't already have them installed, follow the instructions below.
 
+Note: The project does require a minimum Node version of 16.0.1. We recommend installing the latest Long-Term Support version, whatever that is at the time of installation. If you are currently using an older version of Node from a previous project, you must update to at least v16.0.1 or the local site will not start.
+
 ### Mac
 
 There are multiple ways to download and install Node.js and Yarn. You can choose to install them however you choose following the various instructions on the Node.js and Yarn installation pages. However, the instructions below outline how to install the packages using Homebrew, which is the method we recommend.
@@ -262,7 +264,7 @@ This command will install both Yarn Package Manager and Node.js (if not previous
 
 ### Windows
 
-There are multiple ways to download and install Node.js and Yarn. You can choose to install them using whatever method we choose. However, the instructions below outline the method that we recommend.
+There are multiple ways to download and install Node.js and Yarn. You can choose to install them using whatever method you choose. However, the instructions below outline the method that we recommend.
 
 First, download the Windows Node.js installer [here](https://nodejs.org/en/).
 
@@ -335,7 +337,7 @@ This will merge the latest version of `master` into the branch you are currently
 
 Keeping the local copy of the database up-to-date is very similar to the first time that you imported the database onto your machine. We recommend you only do this every couple of months, unless some large changes have been made to the database, in which case you'll be told which tables to update.
 
-Unlike the first time you imported the database, you usually will not have to import every single table to keep your database up-to-date. Many tables won't change and therefore won't need to be updated. For example, the `search-index` table hardly changes so updates will be rare. This table is also the largest in the database, so avoiding updating it will cut down on import times significantly.
+Unlike the first time you imported the database, you usually will not have to import every single table to keep your database up-to-date. Many tables won't change often and therefore won't need to be updated regularly.
 
 To update your local copy, you'll first need to export current versions of the tables from production. To do so, open the production database connection in MySQL Workbench. Go to Server > Data Export, select "oarebyue_0.3" in the pane on the left, then select the tables you'd like to update on the right. Make sure to export as a Self-Contained File. You will not need to have "Include Create Schema" selected because the local schema has already been created. Then click "Start Export"
 
@@ -387,7 +389,7 @@ yarn start
 
 In most cases, you will only need to run `yarn start`, but running both `yarn install` and `yarn build` before you begin is a safe way to make sure everything is working properly.
 
-Once these commands have been run, you'll be able to access the development environment at http://localhost:8080 which should update automatically whenever you make a change to the code.
+Once these commands have been run, you'll be able to access the development environment at http://localhost:8080 which should update automatically whenever you make a change to the code. If some changes don't seem to be appearing automatically, you may have to re-run the three commands from above to re-build and restart the project.
 
 ## Make Changes
 
@@ -446,7 +448,7 @@ git push -u origin <branch-name>
 
 ## Open Pull Request on Github
 
-If you are unfamiliar with them, Github Pull Requests are a simple tool for team members to request a review of code changes.
+If you are unfamiliar with them, Github Pull Requests is a simple tool that allows team members to request a review of code changes, view differences between branches, and leave necessary comments.
 
 Whenever you push a new branch to Github, a message will automatically appear at the top of the repository asking if you'd like to "Compare & pull request". Use this button to open a new PR for your branch.
 
@@ -456,7 +458,7 @@ On the page that appears, give the PR a name and a detailed description, if nece
 
 ![](./readme-imgs/create-pr.png)
 
-Next, use the right pane to link the PR to the associated issue that you are working on. By linking the PR and the issue, when the PR is merged into `master`, the issue will automatically close.
+Next, use the right pane to link the PR to the associated issue that you are working on. By linking the PR and the issue, when the PR is merged into `master`, the issue will automatically close and will subsequently be removed from the list of current issues.
 
 ![](./readme-imgs/link-issue.png)
 
@@ -466,7 +468,7 @@ As stated earlier, several checks are run every time new changes are pushed to G
 
 ![](./readme-imgs/checks-pass.png)
 
-Once the checks are complete, make any comments you'd like on the code changes. To do so, click the "Files Changed" tab to view the code diff. There, you can add any comments necessary to the code and click "Start Review". For example, you might need to explain a function, ask a question, or explain styling.
+Once the checks are complete, make any comments you'd like on the code changes. To do so, click the "Files Changed" tab to view the code diff. There, you can add any comments you feel are necessary in order to explain a function, ask a question, explain styling, etc. Once you have finished making comments, click "Start Review".
 
 ![](./readme-imgs/add-comments.png)
 
@@ -474,22 +476,22 @@ Once the PR is looking good and all the checks have passed, you are ready to hav
 
 ![](./readme-imgs/assign-reviewer.png)
 
-Just to be sure that the team lead sees the review request, send the Github link in the #developers Slack channel as well.
-
 ## Await Feedback
 
-As soon as they can, the team lead will review the changes in your Pull Request. If necessary, they will make comments, ask questions, or request changes. If changes are requested, make the necessary changes in the same branch, push the changes, and request another review. Repeat this process until the changes are approved.
+As soon as they can, the team lead will review the changes in your Pull Request. If necessary, they will make comments, ask questions, or request changes. If changes are requested, make the necessary changes in the same branch, push the changes, and request another review. Repeat this process until the changes are approved. Please do not continue to the next step until the team lead has signed off on your changes and indicated that you may continue.
 
 ## Merge Changes
 
-Once the changes have been approved, the code is ready to be merged into the `master` branch. To do so, in the "Conversation" tab of the PR, scroll down until you see the "Squash and merge" button. You may have to click the green arrow to see the exact option. Confirm the merge and delete the branch.
+Once the changes have been approved, the code is ready to be merged into the `master` branch. To do so, in the "Conversation" tab of the PR, scroll down until you see the "Squash and merge" button. You may have to click the green arrow to see this option. Confirm the merge and delete the branch when prompted.
 
 ![](./readme-imgs/squash-and-merge.png)
 
-Then, click the "Actions" tab at the top and select the merge action that is currently running. This action runs the same checks that run whenever changes are pushed. Additionally, it builds the code and deploys it to the Elastic Beanstalk instance on AWS. Make sure that the actions complete successfully. Once complete, the changes should be available on the live site at https://oare.byu.edu.
+Then, click the "Actions" tab at the top and select the merge action that is currently running. This action runs the same checks that run whenever changes are pushed. Additionally, it builds the code and deploys it to the various Elastic Beanstalk instances on AWS. Make sure that the actions complete successfully. Once complete, the changes should be available on the live site at https://oare.byu.edu.
 
 # Appendix: Elastic Beanstalk
 
-Elastic Beanstalk basically automates the process of providing an EC2 instance and load balancer for the site. Most of the time you won't have to do anything here since the site automatically gets deployed to Elastic Beanstalk when your code is merged into the master branch of the Git repository.
+Elastic Beanstalk basically automates the process of providing several EC2 instances and load balancers for the site. Most of the time you won't have to do anything here since the site automatically gets deployed to Elastic Beanstalk when your code is merged into the master branch of the Git repository.
+
+Due to the international nature of this project and its contributors, we currently have EC2 instances hosted in both the United States and Europe, as well as database instances in both regions. AWS automatically handles latency-based routing for both the EC2 instances and the RDS databases. When changes are merged into `master`, the Github Actions that currently run will automatically deploy the identical, updated code to both server instances. It is unlikely that you will ever need to make any changes to this arrangement.
 
 If you do need to change something in EB, it will most likely be environment variables. For example, you should routinely change the password to the database. When you do, you will need to update the OARE_DB_URL environment variable with the new password value.
