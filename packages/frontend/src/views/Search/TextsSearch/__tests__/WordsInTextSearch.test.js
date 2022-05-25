@@ -54,8 +54,6 @@ describe('WordsInTextSearch', () => {
   it('increases and decreases autocomplete options', async () => {
     const wrapper = createWrapper();
     expect(wrapper.find('.test-increase-button').exists()).toBe(true);
-    expect(wrapper.find('.test-decrease-button').exists()).toBe(false);
-    expect(wrapper.find('.test-numWordsBetween-1').exists()).toBe(false);
     expect(wrapper.find('.test-autocomplete-1').exists()).toBe(true);
     await wrapper.find('.test-increase-button').trigger('click');
     expect(wrapper.find('.test-autocomplete-2').exists()).toBe(true);
@@ -69,20 +67,7 @@ describe('WordsInTextSearch', () => {
     await wrapper.find('.test-increase-button').trigger('click');
     expect(wrapper.find('.test-autocomplete-5').exists()).toBe(true);
     expect(wrapper.find('.test-numWordsBetween-4').exists()).toBe(true);
-    expect(wrapper.find('.test-increase-button').exists()).toBe(false);
     expect(wrapper.find('.test-decrease-button').exists()).toBe(true);
-    await wrapper.find('.test-decrease-button').trigger('click');
-    expect(wrapper.find('.test-autocomplete-5').exists()).toBe(false);
-    expect(wrapper.find('.test-numWordsBetween-4').exists()).toBe(false);
-    await wrapper.find('.test-decrease-button').trigger('click');
-    expect(wrapper.find('.test-autocomplete-4').exists()).toBe(false);
-    expect(wrapper.find('.test-numWordsBetween-3').exists()).toBe(false);
-    await wrapper.find('.test-decrease-button').trigger('click');
-    expect(wrapper.find('.test-autocomplete-3').exists()).toBe(false);
-    expect(wrapper.find('.test-numWordsBetween-2').exists()).toBe(false);
-    await wrapper.find('.test-decrease-button').trigger('click');
-    expect(wrapper.find('.test-autocomplete-2').exists()).toBe(false);
-    expect(wrapper.find('.test-numWordsBetween-1').exists()).toBe(false);
     await flushPromises();
   });
 });

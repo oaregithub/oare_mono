@@ -2,37 +2,40 @@
   <div>
     <v-row>
       <v-col cols="7">
-        <div v-for="index in numOptionsUsing" :key="index">
-          <v-autocomplete
-            v-model="wordAndFormSelectionUuids[index - 1]"
-            :items="items"
-            item-text="wordDisplay"
-            item-value="info"
-            clearable
-            :class="`test-autocomplete-${index}`"
-            deletable-chips
-            :loading="formsLoading"
-            chips
-            multiple
-            :filter="filter"
-            hide-selected
-            @change="
-              getWordForms(wordAndFormSelectionUuids[index - 1], index - 1);
-              wordAndFormSelectionUuids[index - 1].length < 1
-                ? (expand[index - 1] = false)
-                : (expand[index - 1] = true);
-            "
-            item-color="primary"
-            :label="`word/form #${index}`"
-          >
-            <template v-if="index === 1" slot="prepend-inner">
-              <words-in-text-search-info-card></words-in-text-search-info-card>
-            </template>
-          </v-autocomplete>
+        <div v-for="index in numOptionsUsing" :key="index" class="pr-3">
+          <v-expand-transition>
+            <v-autocomplete
+              v-model="wordAndFormSelectionUuids[index - 1]"
+              :items="items"
+              item-text="wordDisplay"
+              item-value="info"
+              clearable
+              :class="`test-autocomplete-${index}`"
+              deletable-chips
+              :loading="formsLoading"
+              chips
+              multiple
+              :filter="filter"
+              hide-selected
+              @change="
+                getWordForms(wordAndFormSelectionUuids[index - 1], index - 1);
+                wordAndFormSelectionUuids[index - 1].length < 1
+                  ? expand.splice(index - 1, 1, false)
+                  : expand.splice(index - 1, 1, true);
+              "
+              item-color="primary"
+              :label="`word/form #${index}`"
+            >
+              <template v-if="index === 1" slot="prepend-inner">
+                <words-in-text-search-info-card></words-in-text-search-info-card>
+              </template>
+            </v-autocomplete>
+          </v-expand-transition>
           <v-expand-transition>
             <v-card
-              v-if="wordForms && index <= numOptionsUsing"
-              v-show="expand[index - 1]"
+              v-show="
+                wordForms && index <= numOptionsUsing && expand[index - 1]
+              "
             >
               <v-expansion-panels>
                 <v-expansion-panel
@@ -87,41 +90,48 @@
               </v-expansion-panels>
             </v-card>
           </v-expand-transition>
-          <v-autocomplete
-            v-if="index < numOptionsUsing"
-            v-model="numWordsBetween[index - 1]"
-            :class="`test-numWordsBetween-${index}`"
-            :items="wordsBetween"
-            item-text="name"
-            item-value="value"
-            clearable
-            hide-selected
-            item-color="primary"
-            label="determine how many words between"
-          ></v-autocomplete>
-          <div v-if="index === numOptionsUsing" class="pt-4 pb-2">
+          <v-expand-transition>
+            <v-autocomplete
+              v-show="index < numOptionsUsing"
+              v-model="numWordsBetween[index - 1]"
+              :class="`test-numWordsBetween-${index}`"
+              :items="wordsBetween"
+              item-text="name"
+              item-value="value"
+              clearable
+              hide-selected
+              item-color="primary"
+              label="determine how many words between"
+            ></v-autocomplete>
+          </v-expand-transition>
+          <div v-show="index === numOptionsUsing" class="pt-4 pb-2">
             <span
-              v-if="index === numOptionsUsing && index < maxOptions"
+              v-show="index === numOptionsUsing && index < maxOptions"
               class="pr-2"
             >
-              <v-btn
-                class="test-increase-button"
-                fab
-                color="primary"
-                x-small
-                @click="updateNumOptionsUsing(true)"
-                ><v-icon>mdi-plus</v-icon></v-btn
+              <v-slide-x-transition>
+                <v-btn
+                  class="test-increase-button"
+                  fab
+                  color="primary"
+                  x-small
+                  @click="updateNumOptionsUsing(true)"
+                  ><v-icon>mdi-plus</v-icon></v-btn
+                ></v-slide-x-transition
               ></span
             >
-            <span v-if="index === numOptionsUsing && index !== 1">
-              <v-btn
-                class="test-decrease-button"
-                fab
-                color="primary"
-                x-small
-                @click="updateNumOptionsUsing(false)"
-                ><v-icon>mdi-minus</v-icon></v-btn
-              ></span
+
+            <v-slide-x-reverse-transition>
+              <span v-show="index === numOptionsUsing && index !== 1">
+                <v-btn
+                  class="test-decrease-button"
+                  fab
+                  color="primary"
+                  x-small
+                  @click="updateNumOptionsUsing(false)"
+                  ><v-icon>mdi-minus</v-icon></v-btn
+                ></span
+              ></v-slide-x-reverse-transition
             >
           </div>
         </div>
@@ -256,9 +266,9 @@ export default defineComponent({
           const indicator =
             queryTextClean[i - 1] === itemTextClean[j - 1] ? 0 : 1;
           track[j][i] = Math.min(
-            track[j][i - 1] + 1, // deletion
-            track[j - 1][i] + 1, // insertion
-            track[j - 1][i - 1] + indicator // substitution
+            track[j][i - 1] + 1,
+            track[j - 1][i] + 1,
+            track[j - 1][i - 1] + indicator
           );
         }
       }
