@@ -489,16 +489,6 @@ export default defineComponent({
       }
     });
 
-    watch(
-      [
-        wordAndFormSelectionUuids,
-        wordAndFormSearchUuids,
-        numWordsBetween,
-        sequenced,
-      ],
-      () => {}
-    );
-
     return {
       items,
       wordAndFormSelectionUuids,
