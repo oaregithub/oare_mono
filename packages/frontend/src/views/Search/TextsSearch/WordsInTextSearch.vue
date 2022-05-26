@@ -104,36 +104,32 @@
               label="determine how many words between"
             ></v-autocomplete>
           </v-expand-transition>
-          <div v-show="index === numOptionsUsing" class="pt-4 pb-2">
-            <span
-              v-show="index === numOptionsUsing && index < maxOptions"
-              class="pr-2"
-            >
-              <v-slide-x-transition>
-                <v-btn
-                  class="test-increase-button"
-                  fab
-                  color="primary"
-                  x-small
-                  @click="updateNumOptionsUsing(true)"
-                  ><v-icon>mdi-plus</v-icon></v-btn
-                ></v-slide-x-transition
+        </div>
+        <div class="pt-4 pb-2">
+          <v-fade-transition>
+            <span v-show="numOptionsUsing < maxOptions" class="pr-2">
+              <v-btn
+                class="test-increase-button"
+                fab
+                color="primary"
+                x-small
+                @click="updateNumOptionsUsing(true)"
+                ><v-icon>mdi-plus</v-icon></v-btn
               ></span
-            >
-
-            <v-slide-x-reverse-transition>
-              <span v-show="index === numOptionsUsing && index !== 1">
-                <v-btn
-                  class="test-decrease-button"
-                  fab
-                  color="primary"
-                  x-small
-                  @click="updateNumOptionsUsing(false)"
-                  ><v-icon>mdi-minus</v-icon></v-btn
-                ></span
-              ></v-slide-x-reverse-transition
-            >
-          </div>
+            ></v-fade-transition
+          >
+          <v-fade-transition>
+            <span v-show="numOptionsUsing !== 1">
+              <v-btn
+                class="test-decrease-button"
+                fab
+                color="primary"
+                x-small
+                @click="updateNumOptionsUsing(false)"
+                ><v-icon>mdi-minus</v-icon></v-btn
+              ></span
+            ></v-fade-transition
+          >
         </div>
       </v-col>
       <v-col>
@@ -176,6 +172,7 @@ import {
   Ref,
   onMounted,
   watch,
+  computed,
 } from '@vue/composition-api';
 import {
   WordFormAutocompleteDisplay,
@@ -186,6 +183,7 @@ import WordsInTextsSearchTable from './components/WordsInTextSearchTable.vue';
 import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
+import { isNull } from 'lodash';
 
 export interface WordForWordsInTextSearch {
   name: string;
@@ -205,7 +203,6 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const numOptionsUsing: Ref<number> = ref(1);
     const maxOptions = 5;
-    const canPerformSearch: Ref<boolean> = ref(false);
     const page: Ref<string> = ref(useQueryParam('page', '1', false));
     const rows: Ref<string> = ref(useQueryParam('rows', '25', true));
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
@@ -217,8 +214,8 @@ export default defineComponent({
         wordUuid: string;
         name: string;
       }[][]
-    > = ref([[]]);
-    const wordAndFormSearchUuids: Ref<string[][]> = ref([[]]);
+    > = ref([]);
+    const wordAndFormSearchUuids: Ref<string[][]> = ref([]);
     const numWordsBetween: Ref<number[]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
     const wordForms: Ref<WordForWordsInTextSearch[][]> = ref([]);
@@ -248,6 +245,49 @@ export default defineComponent({
         value: 'discourse',
       },
     ]);
+
+    const canPerformSearch = computed(() => {
+      if (
+        wordAndFormSelectionUuids.value.length < 1 ||
+        wordAndFormSearchUuids.value.length < 1
+      ) {
+        return false;
+      }
+      if (
+        wordAndFormSelectionUuids.value.length !== 1 &&
+        numWordsBetween.value.length < 1 &&
+        sequenced.value === 'true'
+      ) {
+        return false;
+      }
+      if (
+        wordAndFormSelectionUuids.value.length !== numOptionsUsing.value ||
+        wordAndFormSearchUuids.value.length !== numOptionsUsing.value
+      ) {
+        return false;
+      }
+      if (
+        wordAndFormSelectionUuids.value.length !==
+          Object.values(wordAndFormSelectionUuids.value).length ||
+        wordAndFormSearchUuids.value.length !==
+          Object.values(wordAndFormSearchUuids.value).length ||
+        numWordsBetween.value.length !==
+          Object.values(numWordsBetween.value).length
+      ) {
+        return false;
+      }
+      for (let i = 0; i < numOptionsUsing.value; i += 1) {
+        if (wordAndFormSelectionUuids.value[i].length < 1) {
+          return false;
+        }
+      }
+      for (let i = 0; i < numOptionsUsing.value; i += 1) {
+        if (wordAndFormSearchUuids.value[i].length < 1) {
+          return false;
+        }
+      }
+      return true;
+    });
 
     const filter = (item: any, queryText: string, itemText: string) => {
       const itemTextClean = itemText.slice(0, -6).toLocaleLowerCase();
@@ -444,66 +484,19 @@ export default defineComponent({
     });
 
     watch([page, rows], () => {
-      if (canPerformSearch.value) {
+      if (canPerformSearch) {
         performSearch(Number(page.value), Number(rows.value), false);
       }
     });
 
     watch(
       [
-        wordAndFormSearchUuids,
         wordAndFormSelectionUuids,
-        numOptionsUsing,
+        wordAndFormSearchUuids,
         numWordsBetween,
         sequenced,
-        checkboxAll,
       ],
-      () => {
-        canPerformSearch.value = true;
-        if (
-          wordAndFormSelectionUuids.value.length < 1 ||
-          wordAndFormSearchUuids.value.length < 1
-        ) {
-          canPerformSearch.value = false;
-          return;
-        }
-        if (
-          wordAndFormSelectionUuids.value.length !== 1 &&
-          numWordsBetween.value.length < 1 &&
-          sequenced.value === 'true'
-        ) {
-          canPerformSearch.value = false;
-          return;
-        }
-        if (
-          wordAndFormSelectionUuids.value.length !== numOptionsUsing.value ||
-          wordAndFormSearchUuids.value.length !== numOptionsUsing.value
-        ) {
-          canPerformSearch.value = false;
-          return;
-        }
-        wordAndFormSelectionUuids.value.forEach(wordAndFormSelection => {
-          if (wordAndFormSelection.length < 1) {
-            canPerformSearch.value = false;
-            return;
-          }
-        });
-
-        wordAndFormSearchUuids.value.forEach(wordAndFormSearch => {
-          if (wordAndFormSearch.length < 1) {
-            canPerformSearch.value = false;
-            return;
-          }
-        });
-        if (numWordsBetween.value.length > 0 && sequenced.value !== 'false') {
-          numWordsBetween.value.forEach(val => {
-            if (typeof val !== 'number') {
-              canPerformSearch.value = false;
-              return;
-            }
-          });
-        }
-      }
+      () => {}
     );
 
     return {
