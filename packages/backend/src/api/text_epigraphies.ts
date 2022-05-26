@@ -84,6 +84,8 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const BibliographyDao = sl.get('BibliographyDao');
     const ResourceDao = sl.get('ResourceDao');
 
+    const s3 = new AWS.S3();
+
     const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
       textUuid,
       'b3938276-173b-11ec-8b77-024de1c1cc1d'
@@ -143,9 +145,19 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       resourceContainers.push(row.container);
     });
 
+    const fileURL = await Promise.all(
+      resourceLinks.map((key, index) => {
+        const params = {
+          Bucket: key,
+          Key: resourceContainers[index],
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
+
     const zoteroData = zoteroCitations.map((cit, idx) => ({
       citation: cit,
-      link: resourceLinks[idx],
+      link: fileURL[idx],
     }));
 
     const text = await TextDao.getTextByUuid(textUuid);
