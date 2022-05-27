@@ -1,17 +1,14 @@
 import {
-  WordsInTextSearchPayload,
   WordFormAutocompleteDisplay,
-  Word,
-  UuidPayload,
+  WordsInTextsSearchResponse,
+  WordsInTextSearchPayloadUnparsed,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getWordsInTextSearchResults(
-  payload: WordsInTextSearchPayload
-): Promise<any> {
-  const { data } = await axios.get('/searchWordsInTexts', {
-    params: payload,
-  });
+  payload: WordsInTextSearchPayloadUnparsed
+): Promise<WordsInTextsSearchResponse> {
+  const { data } = await axios.post('/searchWordsInTexts', payload);
   return data;
 }
 
@@ -20,13 +17,7 @@ async function getWordsAndForms(): Promise<WordFormAutocompleteDisplay[]> {
   return data;
 }
 
-async function getFormOptions(payload: UuidPayload): Promise<Word> {
-  const { data } = await axios.get('/formOptions', { params: payload });
-  return data;
-}
-
 export default {
   getWordsInTextSearchResults,
   getWordsAndForms,
-  getFormOptions,
 };

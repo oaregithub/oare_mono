@@ -2,44 +2,48 @@
   <div>
     <v-row>
       <v-col cols="7">
-        <div v-for="index in numOptionsUsing" :key="index">
-          <v-autocomplete
-            v-model="wordAndFormSelectionUuids[index - 1]"
-            :items="items"
-            item-text="wordDisplay"
-            item-value="uuid"
-            clearable
-            :class="`test-autocomplete-${index}`"
-            deletable-chips
-            :loading="formsLoading"
-            chips
-            multiple
-            :filter="filter"
-            hide-selected
-            @change="
-              wordAndFormSelectionUuids[index - 1].length < 1
-                ? (expand[index - 1] = false)
-                : (expand[index - 1] = true)
-            "
-            item-color="primary"
-            :label="`word/form #${index}`"
-          >
-            <template v-if="index === 1" slot="prepend-inner">
-              <words-in-text-search-info-card></words-in-text-search-info-card>
-            </template>
-          </v-autocomplete>
+        <div v-for="index in numOptionsUsing" :key="index" class="pr-3">
+          <v-expand-transition>
+            <v-autocomplete
+              v-model="wordAndFormSelectionUuids[index - 1]"
+              :items="items"
+              item-text="wordDisplay"
+              item-value="info"
+              clearable
+              :class="`test-autocomplete-${index}`"
+              deletable-chips
+              :loading="formsLoading"
+              chips
+              multiple
+              :filter="filter"
+              hide-selected
+              @change="
+                getWordForms(wordAndFormSelectionUuids[index - 1], index - 1);
+                wordAndFormSelectionUuids[index - 1].length < 1
+                  ? expand.splice(index - 1, 1, false)
+                  : expand.splice(index - 1, 1, true);
+              "
+              item-color="primary"
+              :label="`word/form #${index}`"
+            >
+              <template v-if="index === 1" slot="prepend-inner">
+                <words-in-text-search-info-card></words-in-text-search-info-card>
+              </template>
+            </v-autocomplete>
+          </v-expand-transition>
           <v-expand-transition>
             <v-card
-              v-if="wordForms && index <= numOptionsUsing"
-              v-show="expand[index - 1]"
+              v-show="
+                wordForms && index <= numOptionsUsing && expand[index - 1]
+              "
             >
               <v-expansion-panels>
                 <v-expansion-panel
                   v-for="(word, i) in wordForms[index - 1]"
-                  :key="`${word.uuid}${index}${i}`"
+                  :key="`${word.name}${index}${i}`"
                 >
                   <v-expansion-panel-header>{{
-                    `${word.word} -- ${
+                    `${word.name} -- ${
                       new Set(
                         wordAndFormSearchUuids[index - 1].filter(uuid => {
                           return word.forms
@@ -74,7 +78,7 @@
                       >
                         <v-list-item-action>
                           <v-checkbox
-                            :label="form.form"
+                            :label="form.name"
                             :value="form.uuid"
                             v-model="wordAndFormSearchUuids[index - 1]"
                           ></v-checkbox>
@@ -86,35 +90,46 @@
               </v-expansion-panels>
             </v-card>
           </v-expand-transition>
-          <v-autocomplete
-            v-if="index < numOptionsUsing"
-            v-model="numWordsBetween[index - 1]"
-            :items="wordsBetween"
-            item-text="name"
-            item-value="value"
-            clearable
-            hide-selected
-            item-color="primary"
-            label="determine how many words between"
-          ></v-autocomplete>
-          <div class="py-2">
-            <v-btn
-              v-if="index === numOptionsUsing && index < 3"
-              fab
-              color="primary"
-              x-small
-              @click="updateNumOptionsUsing(true)"
-              ><v-icon>mdi-plus</v-icon></v-btn
-            >
-            <v-btn
-              v-if="index === numOptionsUsing && index !== 1"
-              fab
-              color="primary"
-              x-small
-              @click="updateNumOptionsUsing(false)"
-              ><v-icon>mdi-minus</v-icon></v-btn
-            >
-          </div>
+          <v-expand-transition>
+            <v-autocomplete
+              v-show="index < numOptionsUsing"
+              v-model="numWordsBetween[index - 1]"
+              :class="`test-numWordsBetween-${index}`"
+              :items="wordsBetween"
+              item-text="name"
+              item-value="value"
+              clearable
+              hide-selected
+              item-color="primary"
+              label="determine how many words between"
+            ></v-autocomplete>
+          </v-expand-transition>
+        </div>
+        <div class="pt-4 pb-2">
+          <v-fade-transition>
+            <span v-show="numOptionsUsing < maxOptions" class="pr-2">
+              <v-btn
+                class="test-increase-button"
+                fab
+                color="primary"
+                x-small
+                @click="updateNumOptionsUsing(true)"
+                ><v-icon>mdi-plus</v-icon></v-btn
+              ></span
+            ></v-fade-transition
+          >
+          <v-fade-transition>
+            <span v-show="numOptionsUsing !== 1">
+              <v-btn
+                class="test-decrease-button"
+                fab
+                color="primary"
+                x-small
+                @click="updateNumOptionsUsing(false)"
+                ><v-icon>mdi-minus</v-icon></v-btn
+              ></span
+            ></v-fade-transition
+          >
         </div>
       </v-col>
       <v-col>
@@ -129,12 +144,14 @@
         </v-radio-group>
       </v-col>
     </v-row>
-    <v-btn
-      @click="performSearch(1, Number(rows), true)"
-      class="pa-5 test-submit"
-      :disabled="!canPerformSearch"
-      >Search</v-btn
-    >
+    <div class="py-3">
+      <v-btn
+        @click="performSearch(1, Number(rows), true)"
+        class="test-submit"
+        :disabled="!canPerformSearch"
+        >Search</v-btn
+      >
+    </div>
     <words-in-texts-search-table
       :items="results"
       :total="total"
@@ -155,9 +172,9 @@ import {
   Ref,
   onMounted,
   watch,
+  computed,
 } from '@vue/composition-api';
 import {
-  Word,
   WordFormAutocompleteDisplay,
   WordsInTextsSearchResultRow,
   WordsInTextsSearchResponse,
@@ -166,34 +183,42 @@ import WordsInTextsSearchTable from './components/WordsInTextSearchTable.vue';
 import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
+import { isNull } from 'lodash';
+
+export interface WordForWordsInTextSearch {
+  name: string;
+  uuid: string;
+  forms: Array<{ name: string; uuid: string }>;
+}
 
 export default defineComponent({
   name: 'WordsInTextsSearch',
   components: { WordsInTextsSearchTable, WordsInTextSearchInfoCard },
   setup() {
     const items: Ref<WordFormAutocompleteDisplay[]> = ref([]);
-    const filteredItems: Ref<{
-      [index: string]: WordFormAutocompleteDisplay[];
-    }> = ref({});
     const loading = ref(false);
     const searchLoading = ref(false);
     const formsLoading = ref(false);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const numOptionsUsing: Ref<number> = ref(1);
-    const maxOptions = 3;
-    const canPerformSearch: Ref<boolean> = ref(false);
+    const maxOptions = 5;
     const page: Ref<string> = ref(useQueryParam('page', '1', false));
     const rows: Ref<string> = ref(useQueryParam('rows', '25', true));
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
     const total = ref(0);
-    const checkboxAll: Ref<{ [uuid: string]: string }> = ref({});
-    const allUuids: Ref<string[][]> = ref([]);
-    const wordAndFormSelectionUuids: Ref<string[][]> = ref([[]]);
-    const wordAndFormSearchUuids: Ref<string[][]> = ref([[]]);
+    const checkboxAll: Ref<{ [uuid: string]: boolean }> = ref({});
+    const wordAndFormSelectionUuids: Ref<
+      {
+        uuid: string;
+        wordUuid: string;
+        name: string;
+      }[][]
+    > = ref([]);
+    const wordAndFormSearchUuids: Ref<string[][]> = ref([]);
     const numWordsBetween: Ref<number[]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
-    const wordForms: Ref<Word[][]> = ref([]);
+    const wordForms: Ref<WordForWordsInTextSearch[][]> = ref([]);
     const sequenced = useQueryParam('sequenced', 'true', true);
 
     const wordsBetween = ref([
@@ -221,6 +246,49 @@ export default defineComponent({
       },
     ]);
 
+    const canPerformSearch = computed(() => {
+      if (
+        wordAndFormSelectionUuids.value.length < 1 ||
+        wordAndFormSearchUuids.value.length < 1
+      ) {
+        return false;
+      }
+      if (
+        wordAndFormSelectionUuids.value.length !== 1 &&
+        numWordsBetween.value.length < 1 &&
+        sequenced.value === 'true'
+      ) {
+        return false;
+      }
+      if (
+        wordAndFormSelectionUuids.value.length !== numOptionsUsing.value ||
+        wordAndFormSearchUuids.value.length !== numOptionsUsing.value
+      ) {
+        return false;
+      }
+      if (
+        wordAndFormSelectionUuids.value.length !==
+          Object.values(wordAndFormSelectionUuids.value).length ||
+        wordAndFormSearchUuids.value.length !==
+          Object.values(wordAndFormSearchUuids.value).length ||
+        numWordsBetween.value.length !==
+          Object.values(numWordsBetween.value).length
+      ) {
+        return false;
+      }
+      for (let i = 0; i < numOptionsUsing.value; i += 1) {
+        if (wordAndFormSelectionUuids.value[i].length < 1) {
+          return false;
+        }
+      }
+      for (let i = 0; i < numOptionsUsing.value; i += 1) {
+        if (wordAndFormSearchUuids.value[i].length < 1) {
+          return false;
+        }
+      }
+      return true;
+    });
+
     const filter = (item: any, queryText: string, itemText: string) => {
       const itemTextClean = itemText.slice(0, -6).toLocaleLowerCase();
       const queryTextClean = queryText.toLocaleLowerCase();
@@ -238,23 +306,15 @@ export default defineComponent({
           const indicator =
             queryTextClean[i - 1] === itemTextClean[j - 1] ? 0 : 1;
           track[j][i] = Math.min(
-            track[j][i - 1] + 1, // deletion
-            track[j - 1][i] + 1, // insertion
-            track[j - 1][i - 1] + indicator // substitution
+            track[j][i - 1] + 1,
+            track[j - 1][i] + 1,
+            track[j - 1][i - 1] + indicator
           );
         }
       }
       if (track[itemTextClean.length][queryTextClean.length] < 3) {
         return item;
       }
-    };
-
-    const filterWordsAndForms = (selected: string[], index: number) => {
-      try {
-        filteredItems.value[index] = items.value.filter(item => {
-          return !selected.includes(item.uuid);
-        });
-      } catch (err) {}
     };
 
     const performSearch = async (
@@ -268,9 +328,9 @@ export default defineComponent({
         const response: WordsInTextsSearchResponse = await server.getWordsInTextSearchResults(
           {
             uuids: JSON.stringify(wordAndFormSearchUuids.value),
-            numWordsBetween: numWordsBetween.value,
-            page: pageNum,
-            rows: rows,
+            numWordsBetween: JSON.stringify(numWordsBetween.value),
+            page: JSON.stringify(pageNum),
+            rows: JSON.stringify(rows),
             sequenced: sequenced.value,
           }
         );
@@ -291,7 +351,7 @@ export default defineComponent({
 
     const updateNumOptionsUsing = async (increase: boolean) => {
       try {
-        if (numOptionsUsing.value < 5 && increase) {
+        if (numOptionsUsing.value < maxOptions && increase) {
           numOptionsUsing.value += 1;
         }
         if (numOptionsUsing.value > 1 && !increase) {
@@ -317,11 +377,7 @@ export default defineComponent({
       }
     };
 
-    const selectAll = async (
-      val: boolean | null,
-      index: number,
-      idx: number
-    ) => {
+    const selectAll = (val: boolean | null, index: number, idx: number) => {
       wordForms.value[index][idx].forms.forEach(form => {
         if (wordAndFormSearchUuids.value[index].includes(form.uuid) && !val) {
           wordAndFormSearchUuids.value[index].splice(
@@ -335,50 +391,82 @@ export default defineComponent({
       });
     };
 
-    const getWordForms = async () => {
-      formsLoading.value = true;
-      try {
-        wordForms.value = await Promise.all(
-          wordAndFormSelectionUuids.value.map(wordFormArray => {
-            if (wordFormArray !== null) {
-              return Promise.all(
-                wordFormArray.map(uuid => server.getFormOptions({ uuid }))
-              );
-            } else {
-              return [];
-            }
-          })
-        );
-        for (let i = 0; i < numOptionsUsing.value; i += 1) {
-          wordAndFormSearchUuids.value[i] = [];
-          allUuids.value[i] = [];
+    const markSelectAllFalseOnRemoval = (
+      dict: { [uuid: string]: boolean },
+      index: number
+    ) => {
+      Object.keys(dict).forEach((uuidKey: string) => {
+        const position: number = Number(uuidKey.slice(-1));
+        const uuid: string = uuidKey.slice(0, -1);
+        const selectionUuids: string[] = wordAndFormSelectionUuids.value[
+          index
+        ].map(({ uuid }) => uuid);
+        if (position === index && !selectionUuids.includes(uuid)) {
+          dict[uuidKey] = false;
         }
-        wordForms.value.forEach((wordArray, index) => {
-          wordArray.forEach(word => {
-            if (!wordAndFormSelectionUuids.value[index].includes(word.uuid)) {
-              allUuids.value[index].push(word.uuid);
-            }
-            word.forms.forEach(form => {
+      });
+    };
+
+    const getWordForms = (
+      selectedItems: Array<{
+        uuid: string;
+        wordUuid: string;
+        name: string;
+      }>,
+      index: number
+    ) => {
+      wordForms.value[index] = [];
+      wordAndFormSearchUuids.value[index] = [];
+      markSelectAllFalseOnRemoval(checkboxAll.value, index);
+      selectedItems.forEach(selectedItem => {
+        if (selectedItem.uuid === selectedItem.wordUuid) {
+          const forms: Array<{ uuid: string; name: string }> = items.value
+            .filter(item => {
               if (
-                wordAndFormSelectionUuids.value[index].includes(word.uuid) ||
-                checkboxAll.value[`${word.uuid}${index}`]
+                item.info.wordUuid === selectedItem.uuid &&
+                item.info.uuid !== item.info.wordUuid
               ) {
-                wordAndFormSearchUuids.value[index].push(form.uuid);
+                return item.info.uuid;
               }
-              if (wordAndFormSelectionUuids.value[index].includes(form.uuid)) {
-                wordAndFormSearchUuids.value[index].push(form.uuid);
-              }
-              if (!wordAndFormSelectionUuids.value[index].includes(form.uuid)) {
-                allUuids.value[index].push(form.uuid);
-              }
+            })
+            .map(item => {
+              return { uuid: item.info.uuid, name: item.info.name };
             });
+          const wordForWordsInTextSearch: WordForWordsInTextSearch = {
+            name: selectedItem.name,
+            uuid: selectedItem.uuid,
+            forms: forms,
+          };
+          wordForms.value[index].push(wordForWordsInTextSearch);
+          wordAndFormSearchUuids.value[index].push(
+            ...forms.map(({ uuid }) => uuid)
+          );
+        } else {
+          const word = items.value.find(item => {
+            if (item.info.uuid === selectedItem.wordUuid) return item;
           });
-        });
-      } catch (err) {
-        actions.showErrorSnackbar('Error retrieving word forms', err as Error);
-      } finally {
-        formsLoading.value = false;
-      }
+          const formSiblings = items.value
+            .filter(item => {
+              if (
+                item.info.wordUuid === selectedItem.wordUuid &&
+                item.info.wordUuid !== item.info.uuid
+              )
+                return item;
+            })
+            .map(item => {
+              return { uuid: item.info.uuid, name: item.info.name };
+            });
+          if (word) {
+            const wordForWordsInTextSearch: WordForWordsInTextSearch = {
+              name: word.info.name,
+              uuid: word.info.uuid,
+              forms: formSiblings,
+            };
+            wordForms.value[index].push(wordForWordsInTextSearch);
+            wordAndFormSearchUuids.value[index].push(selectedItem.uuid);
+          }
+        }
+      });
     };
 
     onMounted(async () => {
@@ -386,7 +474,6 @@ export default defineComponent({
         items.value = await server.getWordsAndForms();
         for (let i = 0; i < maxOptions; i += 1) {
           expand.value.push(false);
-          allUuids.value.push([]);
         }
       } catch (err) {
         actions.showErrorSnackbar(
@@ -397,67 +484,10 @@ export default defineComponent({
     });
 
     watch([page, rows], () => {
-      if (canPerformSearch.value) {
+      if (canPerformSearch) {
         performSearch(Number(page.value), Number(rows.value), false);
       }
     });
-
-    watch(wordAndFormSelectionUuids, () => {
-      getWordForms();
-    });
-
-    watch(
-      [
-        wordAndFormSearchUuids,
-        wordAndFormSelectionUuids,
-        numOptionsUsing,
-        numWordsBetween,
-        sequenced,
-      ],
-      () => {
-        canPerformSearch.value = true;
-        if (
-          wordAndFormSelectionUuids.value.length < 1 ||
-          wordAndFormSearchUuids.value.length < 1
-        ) {
-          canPerformSearch.value = false;
-          return;
-        }
-        if (
-          wordAndFormSelectionUuids.value.length !== 1 &&
-          numWordsBetween.value.length < 1 &&
-          sequenced.value === 'true'
-        ) {
-          canPerformSearch.value = false;
-          return;
-        }
-        if (wordAndFormSelectionUuids.value.length !== numOptionsUsing.value) {
-          canPerformSearch.value = false;
-          return;
-        }
-        wordAndFormSelectionUuids.value.forEach(wordAndFormSelection => {
-          if (wordAndFormSelection.length < 1) {
-            canPerformSearch.value = false;
-            return;
-          }
-        });
-
-        wordAndFormSelectionUuids.value.forEach(array => {
-          if (array.length < 1) {
-            canPerformSearch.value = false;
-            return;
-          }
-        });
-        if (numWordsBetween.value.length > 0 && sequenced.value !== 'false') {
-          numWordsBetween.value.forEach(val => {
-            if (typeof val !== 'number') {
-              canPerformSearch.value = false;
-              return;
-            }
-          });
-        }
-      }
-    );
 
     return {
       items,
@@ -476,7 +506,6 @@ export default defineComponent({
       wordAndFormSearchUuids,
       searchLoading,
       filter,
-      filterWordsAndForms,
       headers,
       total,
       results,
@@ -484,8 +513,8 @@ export default defineComponent({
       page,
       rows,
       sequenced,
-      allUuids,
       loading,
+      maxOptions,
     };
   },
 });

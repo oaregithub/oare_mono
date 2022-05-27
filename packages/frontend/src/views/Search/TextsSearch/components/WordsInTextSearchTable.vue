@@ -19,8 +19,13 @@
         >
       </template>
 
-      <template v-slot:[`item.discourse`]="{ item }">
-        <span v-html="item.discourse"></span>
+      <template v-slot:[`item.discourseUnits`]="{ item }"
+        ><div>
+          <table-discourse
+            :discourseUnits="item.discourseUnits"
+            :discourseUuids="item.discourseUuids"
+          ></table-discourse>
+        </div>
       </template>
     </v-data-table>
   </div>
@@ -30,9 +35,10 @@
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { WordsInTextsSearchResultRow } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
+import TableDiscourse from './TableDiscourse.vue';
 
 export default defineComponent({
-  name: 'ArchiveTextsDossiers',
+  name: 'WordsInTextSearchTable',
   props: {
     items: {
       type: Array as PropType<WordsInTextsSearchResultRow[]>,
@@ -54,6 +60,7 @@ export default defineComponent({
       type: Boolean,
     },
   },
+  components: { TableDiscourse },
   setup(props, { emit }) {
     const headers = ref<DataTableHeader[]>([]);
 
@@ -65,7 +72,7 @@ export default defineComponent({
       },
       {
         text: 'Matching Discourse',
-        value: 'discourse',
+        value: 'discourseUnits',
         width: '70%',
       },
     ];

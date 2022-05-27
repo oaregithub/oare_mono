@@ -41,17 +41,22 @@ export interface WordsResponse {
 }
 
 export interface WordFormAutocompleteDisplay {
-  uuid: string;
+  info: { uuid: string; wordUuid: string; name: string };
   wordDisplay: string;
 }
 
 export interface WordsInTextSearchPayload {
-  uuids: string;
+  uuids: string[][];
   numWordsBetween: number[];
   page: number;
   rows: number;
-  sequenced: string;
+  sequenced: boolean;
 }
-export interface UuidPayload {
-  uuid: string;
+
+export interface WordsInTextSearchPayloadUnparsed {
+  uuids: string;
+  numWordsBetween: string;
+  page: string;
+  rows: string;
+  sequenced: string;
 }

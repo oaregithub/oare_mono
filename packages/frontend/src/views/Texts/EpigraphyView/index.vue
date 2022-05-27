@@ -206,7 +206,11 @@ import {
 } from '@vue/composition-api';
 
 import sl from '@/serviceLocator';
-import { EpigraphyResponse, TranslitOption } from '@oare/types';
+import {
+  EpigraphyResponse,
+  TranslitOption,
+  EpigraphyLabelLink,
+} from '@oare/types';
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
@@ -314,7 +318,7 @@ export default defineComponent({
       discourseUnits: [],
       hasEpigraphy: false,
     });
-    const imageUrls = ref<string[]>([]);
+    const imageUrls = ref<EpigraphyLabelLink[]>([]);
 
     let editText = ref(false);
 
@@ -471,7 +475,9 @@ export default defineComponent({
         await getTextInfo();
         draft.value = textInfo.value.draft || null;
         if (localImageUrls) {
-          imageUrls.value = localImageUrls;
+          imageUrls.value = localImageUrls.map(val => {
+            return { label: '', link: val } as EpigraphyLabelLink;
+          });
         } else if (textUuid) {
           imageUrls.value = await server.getImageLinks(
             textUuid,
@@ -537,7 +543,7 @@ export default defineComponent({
         );
         photosToAdd.value.forEach(photo => {
           if (photo.url) {
-            imageUrls.value.push(photo.url);
+            imageUrls.value.push({ label: '', link: photo.url });
           }
         });
       } catch (err) {

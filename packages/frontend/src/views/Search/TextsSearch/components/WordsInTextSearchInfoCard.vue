@@ -14,7 +14,7 @@
         <li>Start by searching for a word or form in the autocomplete area.</li>
         <li>Select the word or form you are searching for.</li>
         <li>
-          Then, check any other forms in related to that word or form that you
+          Then, check any other forms in relation to that word or form that you
           would like to search for.
         </li>
         <li>
@@ -29,6 +29,12 @@
       word/form #2, word/form #3)
       <br />
       Unsequenced - searches for word forms in any particular order
+      <br />
+      <br />
+      <b>Note:</b> Words added vertically to the search (i.e., word form #1, #2,
+      etc.) functionally have an <b>AND</b> relationship. Words added
+      horizontally (i.e., multiple words in word form #1) functionally have an
+      <b>OR</b> relationship.
     </v-card>
   </v-menu>
 </template>

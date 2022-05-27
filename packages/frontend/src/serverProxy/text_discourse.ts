@@ -1,5 +1,11 @@
 import axios from '@/axiosInstance';
-import { SearchNullDiscourseResultRow, DiscourseProperties } from '@oare/types';
+import {
+  SearchNullDiscourseResultRow,
+  DiscourseProperties,
+  ParseTreeProperty,
+  DiscourseUnit,
+  InsertParentDiscourseRowPayload,
+} from '@oare/types';
 
 async function insertDiscourseRow(
   spelling: string,
@@ -49,9 +55,27 @@ async function createDiscourseTranslation(
   });
 }
 
+async function insertParentDiscourseRow(
+  textUuid: string,
+  discourseSelections: DiscourseUnit[],
+  discourseType: string,
+  newContent: string,
+  properties: ParseTreeProperty[]
+) {
+  const payload: InsertParentDiscourseRowPayload = {
+    textUuid,
+    discourseSelections,
+    discourseType,
+    newContent,
+    properties,
+  };
+  await axios.post('/text_discourse_parent', payload);
+}
+
 export default {
   insertDiscourseRow,
   getDiscourseProperties,
   updateDiscourseTranslation,
   createDiscourseTranslation,
+  insertParentDiscourseRow,
 };

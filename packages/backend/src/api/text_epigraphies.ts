@@ -12,6 +12,7 @@ import {
   TextEpigraphyRow,
   ResourceRow,
   LinkRow,
+  EpigraphyLabelLink,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
@@ -25,10 +26,11 @@ router
       const { uuid: textUuid, cdliNum } = req.params;
       const ResourceDao = sl.get('ResourceDao');
 
-      const response = await ResourceDao.getImageLinksByTextUuid(
+      const response: EpigraphyLabelLink[] = await ResourceDao.getImageLinksByTextUuid(
         textUuid,
         cdliNum
       );
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -141,31 +143,32 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 });
 
 router
-  .route('/text_epigraphies/text_file/:uuid')
+  .route('/text_epigraphies/text_source/:uuid')
   .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
     try {
+      const { uuid: textUuid } = req.params;
       const ResourceDao = sl.get('ResourceDao');
-      const textFile = await ResourceDao.getTextFileByTextUuid(req.params.uuid);
+      const textSourceKey = await ResourceDao.getTextFileByTextUuid(textUuid);
 
-      if (textFile !== null) {
+      if (textSourceKey) {
         const s3 = new AWS.S3();
 
         const textContentRaw = (
           await s3
             .getObject({
               Bucket: 'oare-texttxt-bucket',
-              Key: textFile,
+              Key: textSourceKey,
             })
             .promise()
         ).Body;
 
         const textContent = textContentRaw
           ? textContentRaw.toString('utf-8')
-          : '';
+          : null;
 
         res.json(textContent);
       } else {
-        res.json('');
+        res.json(null);
       }
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -393,6 +396,30 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router.route('/text_epigraphies/resource/:tag').get(async (req, res, next) => {
+  try {
+    const { tag } = req.params;
+
+    const ResourceDao = sl.get('ResourceDao');
+    const resource = await ResourceDao.getDirectObjectLink(tag);
+
+    if (resource) {
+      const s3 = new AWS.S3();
+
+      const response = await s3.getSignedUrlPromise('getObject', {
+        Bucket: resource.container,
+        Key: resource.link,
+      });
+
+      res.json(response);
+    } else {
+      res.json(null);
+    }
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 router
   .route('/text_epigraphies/has_epigraphy/:textUuid')

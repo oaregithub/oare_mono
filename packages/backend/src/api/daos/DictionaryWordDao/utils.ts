@@ -12,13 +12,16 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   return wordMap;
 }
 
-export async function assembleAutocompleteDisplay(
-  row: any
-): Promise<WordFormAutocompleteDisplay> {
+export async function assembleAutocompleteDisplay(row: {
+  name: string;
+  uuid: string;
+  type: string;
+  wordUuid: string;
+}): Promise<WordFormAutocompleteDisplay> {
   const wordFormAutocompleteDisplay: WordFormAutocompleteDisplay = {
-    uuid: row.uuid,
+    info: { uuid: row.uuid, wordUuid: row.wordUuid, name: row.name },
     wordDisplay: `${
-      row.type === 'form' ? `${row.name} - form` : `${row.name} - word`
+      row.type === 'form' ? `${row.name} - Form` : `${row.name} - Word`
     }`,
   };
   return wordFormAutocompleteDisplay;
