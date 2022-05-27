@@ -4,10 +4,10 @@
     flat
     v-if="node.children"
     multiple
-    :value="searchResultsToOpen"
+    v-model="openPanels"
   >
     <v-expansion-panel
-      v-for="child in node.children"
+      v-for="(child, idx) in node.children"
       :key="child.uuid"
       :readonly="!child.children"
     >
@@ -20,6 +20,7 @@
             v-model="selected"
             :value="child"
             :disabled="disableChildren && !selected.includes(child)"
+            @change="$emit('child-selected')"
           >
             <template #label>
               {{ child.valueName }}
@@ -161,6 +162,7 @@
           @update:selection-display="
             setSelectionDisplay($event, child.variableUuid)
           "
+          @child-selected="handleSelections(child, idx)"
         />
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -377,21 +379,32 @@ export default defineComponent({
       }
     };
 
-    const searchResultsToOpen = computed(() => {
-      const indices: number[] = [];
-      if (props.node.children && props.openSearchResults) {
-        props.node.children.forEach((child, idx) => {
-          if (props.nodesToHighlight.includes(child.uuid)) {
-            indices.push(idx);
-          }
-        });
+    watch(
+      () => props.openSearchResults,
+      () => {
+        if (props.node.children) {
+          props.node.children.forEach((child, idx) => {
+            if (props.nodesToHighlight.includes(child.uuid)) {
+              openPanels.value.push(idx);
+            }
+          });
+        }
       }
-      return indices;
-    });
+    );
 
     const disableChildren = computed(() => {
       return selected.value.length > 0 && props.node.custom === 1;
     });
+
+    const openPanels = ref<number[]>([]);
+
+    const handleSelections = (child: TaxonomyTree, idx: number) => {
+      if (child.custom === 1) {
+        const indexToRemove = openPanels.value.indexOf(idx);
+        openPanels.value.splice(indexToRemove, 1);
+        openPanels.value.push(idx + 1);
+      }
+    };
 
     return {
       selected,
@@ -400,10 +413,11 @@ export default defineComponent({
       updateCompletedSubtrees,
       updateProperties,
       copyUUID,
-      searchResultsToOpen,
       disableChildren,
       selectionDisplay,
       setSelectionDisplay,
+      openPanels,
+      handleSelections,
     };
   },
 });
