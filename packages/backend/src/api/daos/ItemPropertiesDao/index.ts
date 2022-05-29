@@ -3,6 +3,7 @@ import {
   ItemPropertyRow,
   Pagination,
   InsertItemPropertyRow,
+  ImageResourcePropertyDetails,
 } from '@oare/types';
 
 export interface GetItemPropertiesOptions {
@@ -123,6 +124,27 @@ class ItemPropertiesDao {
       .where('reference_uuid', referenceUuid);
 
     return objUuids;
+  }
+
+  async getImagePropertyDetails(
+    resourceUuid: string
+  ): Promise<ImageResourcePropertyDetails> {
+    const sides: string[] = await knexRead()('item_properties')
+      .pluck('value.name')
+      .leftJoin('value', 'value.uuid', 'item_properties.value_uuid')
+      .where('reference_uuid', resourceUuid)
+      .andWhere('variable_uuid', '0600c503-7885-11ec-bcc3-0282f921eac9'); // Side Variable UUID
+
+    const views: string[] = await knexRead()('item_properties')
+      .pluck('value.name')
+      .leftJoin('value', 'value.uuid', 'item_properties.value_uuid')
+      .where('reference_uuid', resourceUuid)
+      .andWhere('variable_uuid', '87126737-7885-11ec-bcc3-0282f921eac9'); // View Variable UUID
+
+    return {
+      side: sides.length > 0 ? sides.join(', ') : null,
+      view: views.length > 0 ? views.join(', ') : null,
+    };
   }
 }
 

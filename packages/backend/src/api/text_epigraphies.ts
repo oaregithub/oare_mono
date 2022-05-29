@@ -291,17 +291,36 @@ router
   .post(permissionsRoute('UPLOAD_EPIGRAPHY_IMAGES'), async (req, res, next) => {
     try {
       const ResourceDao = sl.get('ResourceDao');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
       const {
         resources,
         links,
-      }: { resources: ResourceRow[]; links: LinkRow[] } = req.body;
+        itemProperties,
+      }: {
+        resources: ResourceRow[];
+        links: LinkRow[];
+        itemProperties: InsertItemPropertyRow[];
+      } = req.body;
 
       await Promise.all(
         resources.map(row => ResourceDao.insertResourceRow(row))
       );
 
       await Promise.all(links.map(row => ResourceDao.insertLinkRow(row)));
+
+      const itemPropertyRowLevels = [
+        ...new Set(itemProperties.map(row => row.level)),
+      ];
+      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+        level => itemProperties.filter(row => row.level === level)
+      );
+      for (let i = 0; i < rowsByLevel.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all(
+          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+        );
+      }
 
       res.status(201).end();
     } catch (err) {
@@ -346,22 +365,6 @@ router
       // Hierarchy
       if (!addingToExistingText) {
         await HierarchyDao.insertHierarchyRow(tables.hierarchy);
-      }
-
-      // Item Properties
-      if (!addingToExistingText) {
-        const itemPropertyRowLevels = [
-          ...new Set(tables.itemProperties.map(row => row.level)),
-        ];
-        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-          level => tables.itemProperties.filter(row => row.level === level)
-        );
-        for (let i = 0; i < rowsByLevel.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
-          );
-        }
       }
 
       // Resource
@@ -415,6 +418,20 @@ router
       );
 
       await PublicDenylistDao.addItemsToDenylist([tables.text.uuid], 'text');
+
+      // Item Properties
+      const itemPropertyRowLevels = [
+        ...new Set(tables.itemProperties.map(row => row.level)),
+      ];
+      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+        level => tables.itemProperties.filter(row => row.level === level)
+      );
+      for (let i = 0; i < rowsByLevel.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all(
+          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+        );
+      }
 
       res.status(201).end();
     } catch (err) {

@@ -30,6 +30,7 @@ describe('DiscourseReading test', () => {
       vuetify,
       propsData: {
         discourseUnits,
+        textUuid: 'test-uuid',
       },
     });
 

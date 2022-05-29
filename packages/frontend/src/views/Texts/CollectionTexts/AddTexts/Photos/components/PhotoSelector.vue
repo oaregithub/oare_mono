@@ -76,7 +76,7 @@ export default defineComponent({
     const sideSelection = ref<number | string>();
     const viewSelection = ref<string>();
 
-    const sideOptions = ref([
+    const sideOptions = ref<{ text: string; value: string | number }[]>([
       {
         text: 'obv.',
         value: 1,
@@ -142,7 +142,8 @@ export default defineComponent({
         value: 9,
       },
     ]);
-    const viewOptions = ref([
+
+    const viewOptions = ref<{ text: string; value: string }[]>([
       {
         text: 'Upper (from above)',
         value: 'u',
@@ -178,6 +179,22 @@ export default defineComponent({
       {
         text: 'Seal Impression Focus',
         value: 's',
+      },
+      {
+        text: 'From Right',
+        value: 'fr',
+      },
+      {
+        text: 'From Left',
+        value: 'fl',
+      },
+      {
+        text: 'Contextual',
+        value: 'cx',
+      },
+      {
+        text: 'Detail Unspecified',
+        value: 'du',
       },
     ]);
 

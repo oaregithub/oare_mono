@@ -1,12 +1,13 @@
 import { DiscourseUnit } from '@oare/types';
-import { knexWrite } from '@/connection';
 import { DiscourseRow } from './index';
 
 export function createNestedDiscourses(
   discourseRows: DiscourseRow[],
-  parentUuid: string | null
+  baseParentUuid: string | null
 ): DiscourseUnit[] {
-  const children = discourseRows.filter(row => row.parentUuid === parentUuid);
+  const children = discourseRows.filter(
+    row => row.parentUuid === baseParentUuid
+  );
   const discourses: DiscourseUnit[] = [];
 
   children.forEach(
@@ -22,6 +23,8 @@ export function createNestedDiscourses(
       translation,
       objInText,
       side,
+      parentUuid,
+      childNum,
     }) => {
       const unitChildren = createNestedDiscourses(discourseRows, uuid);
       unitChildren.sort((a, b) => a.objInText - b.objInText);
@@ -38,6 +41,8 @@ export function createNestedDiscourses(
         line: line || undefined,
         wordOnTablet: wordOnTablet || undefined,
         side: side || undefined,
+        parentUuid: parentUuid || undefined,
+        childNum: childNum || undefined,
       };
       discourses.push(unit);
     }
@@ -60,48 +65,4 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
       return u.explicitSpelling || '';
     })
     .join(' ');
-}
-
-export async function incrementChildNum(
-  textUuid: string,
-  parentUuid: string,
-  childNum: number | null
-): Promise<void> {
-  if (childNum) {
-    await knexWrite()('text_discourse')
-      .where({
-        text_uuid: textUuid,
-        parent_uuid: parentUuid,
-      })
-      .andWhere('child_num', '>=', childNum)
-      .increment('child_num', 1);
-  }
-}
-
-export async function incrementWordOnTablet(
-  textUuid: string,
-  wordOnTablet: number | null
-): Promise<void> {
-  if (wordOnTablet) {
-    await knexWrite()('text_discourse')
-      .where({
-        text_uuid: textUuid,
-      })
-      .andWhere('word_on_tablet', '>=', wordOnTablet)
-      .increment('word_on_tablet', 1);
-  }
-}
-
-export async function incrementObjInText(
-  textUuid: string,
-  objInText: number | null
-): Promise<void> {
-  if (objInText) {
-    await knexWrite()('text_discourse')
-      .where({
-        text_uuid: textUuid,
-      })
-      .andWhere('obj_in_text', '>=', objInText)
-      .increment('obj_in_text', 1);
-  }
 }

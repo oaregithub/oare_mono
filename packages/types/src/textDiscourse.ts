@@ -1,6 +1,7 @@
 import { SearchNullDiscourseResultRow } from './search';
 import { ItemPropertyRow } from './words';
 import { DiscourseNote } from './notes';
+import { ParseTreeProperty } from './dictionary';
 
 export type DiscourseUnitType =
   | 'discourseUnit'
@@ -28,6 +29,8 @@ export interface DiscourseUnit {
   translation?: string;
   objInText: number;
   side?: number;
+  parentUuid?: string;
+  childNum?: number;
 }
 
 export interface NewDiscourseRowPayload {
@@ -73,4 +76,12 @@ export interface DiscourseProperties {
 
 export interface ItemPropertyRowWithChildren extends ItemPropertyRow {
   children: ItemPropertyRowWithChildren[];
+}
+
+export interface InsertParentDiscourseRowPayload {
+  textUuid: string;
+  discourseSelections: DiscourseUnit[];
+  discourseType: string;
+  newContent: string;
+  properties: ParseTreeProperty[];
 }

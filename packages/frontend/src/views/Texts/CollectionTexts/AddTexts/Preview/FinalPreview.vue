@@ -12,7 +12,11 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
-import { EpigraphyResponse, TextDiscourseRow } from '@oare/types';
+import {
+  EpigraphyLabelLink,
+  EpigraphyResponse,
+  TextDiscourseRow,
+} from '@oare/types';
 import EpigraphyView from '@/views/Texts/EpigraphyView/index.vue';
 
 export default defineComponent({
@@ -22,7 +26,7 @@ export default defineComponent({
       required: true,
     },
     photoUrls: {
-      type: Array as PropType<string[]>,
+      type: Array as PropType<EpigraphyLabelLink[]>,
       required: true,
     },
     localDiscourseInfo: {
