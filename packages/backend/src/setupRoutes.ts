@@ -33,6 +33,7 @@ import pageContent from './api/page_content';
 import properties from './api/properties';
 import environment from './api/environment';
 import text from './api/text';
+import bibliography from './api/bibliography';
 
 export const API_PATH = '/api/v2';
 
@@ -72,6 +73,7 @@ export default (app: Express) => {
     properties,
     environment,
     text,
+    bibliography,
   ].forEach(route => {
     app.use(API_PATH, route);
   });
