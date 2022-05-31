@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.route('/bibliography').get(async (req, res, next) => {
   try {
+    const BibliographyDao = sl.get('BibliographyDao');
+    const rows = BibliographyDao.queryAllRows();
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
