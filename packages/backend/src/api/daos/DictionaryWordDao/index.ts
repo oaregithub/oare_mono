@@ -5,10 +5,11 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
+  WordFormAutocompleteDisplay,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
-import { assembleSearchResult } from './utils';
+import { assembleSearchResult, assembleAutocompleteDisplay } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
@@ -281,6 +282,44 @@ class DictionaryWordDao {
       totalRows: resultRows.length,
       results,
     };
+  }
+
+  async getWordsAndFormsForWordsInTexts() {
+    const forms: Array<{
+      name: string;
+      uuid: string;
+      wordUuid: string;
+    }> = await knexRead()
+      .from('dictionary_form AS df')
+      .select('df.form as name', 'df.uuid', 'df.reference_uuid as wordUuid');
+    const words: Array<{
+      name: string;
+      uuid: string;
+      wordUuid: string;
+    }> = await knexRead()('dictionary_word as dw').select(
+      'dw.word as name',
+      'dw.uuid',
+      'dw.uuid as wordUuid'
+    );
+
+    const wordAndFormArray = [
+      ...forms.map(form => ({
+        name: form.name,
+        uuid: form.uuid,
+        type: 'form',
+        wordUuid: form.wordUuid,
+      })),
+      ...words.map(word => ({
+        name: word.name,
+        uuid: word.uuid,
+        type: 'word',
+        wordUuid: word.wordUuid,
+      })),
+    ];
+    const results: WordFormAutocompleteDisplay[] = await Promise.all(
+      wordAndFormArray.map(item => assembleAutocompleteDisplay(item))
+    );
+    return results;
   }
 
   async updateWordSpelling(uuid: string, word: string): Promise<void> {
