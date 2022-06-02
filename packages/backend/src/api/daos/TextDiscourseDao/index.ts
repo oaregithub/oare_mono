@@ -8,11 +8,22 @@ import {
   DiscourseUnitType,
   PersonOccurrenceRow,
   TextDiscourseRow,
+  WordsInTextSearchPayload,
+  WordsInTextsSearchResponse,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
-import { createNestedDiscourses, setDiscourseReading } from './utils';
+import {
+  incrementChildNum,
+  incrementObjInText,
+  incrementWordOnTablet,
+  createNestedDiscourses,
+  setDiscourseReading,
+  getDiscourseAndTextUuidsByWordOrFormUuidsQuery,
+  createTextWithDiscourseUuidsArray,
+  getTextDiscourseForWordsInTextsSearch,
+} from './utils';
 
 export interface DiscourseRow {
   uuid: string;
@@ -33,6 +44,11 @@ export interface DiscourseRow {
 export interface SearchDiscourseSpellingDaoResponse {
   totalResults: number;
   rows: SearchDiscourseSpellingRow[];
+}
+
+export interface TextWithDiscourseUuids {
+  textUuid: string;
+  discourseUuids: string[];
 }
 
 class TextDiscourseDao {
@@ -112,6 +128,108 @@ class TextDiscourseDao {
       )
       .where('dictionary_spelling.reference_uuid', formUuid);
     return rows.map(row => row.uuid);
+  }
+
+  async wordsInTextsSearch(
+    { uuids, numWordsBetween, sequenced, page, rows }: WordsInTextSearchPayload,
+    userUuid: string | null
+  ): Promise<WordsInTextsSearchResponse> {
+    const TextDao = sl.get('TextDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const textsToHide: string[] = await CollectionTextUtils.textsToHide(
+      userUuid
+    );
+
+    const spellingUuids: string[][] = await Promise.all(
+      uuids.map(async uuidArray => {
+        const spellingUuidsArray: string[] = await knexRead()(
+          'dictionary_spelling as ds'
+        )
+          .pluck('ds.uuid')
+          .whereIn('ds.reference_uuid', uuidArray);
+
+        return spellingUuidsArray;
+      })
+    );
+
+    const textUuids: Array<{
+      textUuid: string;
+    }> = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
+      spellingUuids,
+      numWordsBetween,
+      textsToHide,
+      sequenced
+    )
+      .join('text', 'text.uuid', 'td0.text_uuid')
+      .orderBy('text.display_name')
+      .distinct({ textUuid: 'td0.text_uuid' })
+      .offset((page - 1) * rows)
+      .limit(rows);
+
+    const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
+      spellingUuids,
+      numWordsBetween,
+      textsToHide,
+      sequenced
+    )
+      .whereIn(
+        'td0.text_uuid',
+        textUuids.map(({ textUuid }) => textUuid)
+      )
+      .select('td0.uuid as discourseUuid', 'td0.text_uuid as textUuid')
+      .modify(innerQuery => {
+        for (let i = 1; i < uuids.length; i += 1) {
+          innerQuery.select(`td${i}.uuid as discourse${i}Uuid`);
+        }
+      })
+      .then(async discourseRows => {
+        const textAndDiscourseUuids: TextWithDiscourseUuids[] = await createTextWithDiscourseUuidsArray(
+          discourseRows,
+          textUuids
+        );
+        return textAndDiscourseUuids;
+      });
+
+    const {
+      count,
+    }: { count: number } = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
+      spellingUuids,
+      numWordsBetween,
+      textsToHide,
+      sequenced
+    )
+      .select(knexRead().raw('count(distinct td0.text_uuid) as count'))
+      .first();
+
+    const textNames = (
+      await Promise.all(
+        textWithDiscourseUuidsArray.map(({ textUuid }) =>
+          TextDao.getTextByUuid(textUuid)
+        )
+      )
+    ).map(text => (text ? text.name : ''));
+
+    const discourseUnits: DiscourseUnit[][] = await Promise.all(
+      textWithDiscourseUuidsArray.map(async textWithDiscourseUuids => {
+        const discourseReading = await getTextDiscourseForWordsInTextsSearch(
+          textWithDiscourseUuids.textUuid,
+          textWithDiscourseUuids.discourseUuids
+        );
+        return discourseReading;
+      })
+    );
+
+    const response: WordsInTextsSearchResponse = {
+      results: textWithDiscourseUuidsArray.map((text, index) => ({
+        uuid: text.textUuid,
+        name: textNames[index],
+        discourseUnits: discourseUnits[index],
+        discourseUuids: text.discourseUuids,
+      })),
+      total: count,
+    };
+
+    return response;
   }
 
   async hasSpelling(spellingUuid: string): Promise<boolean> {
