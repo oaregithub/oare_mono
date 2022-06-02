@@ -1,14 +1,17 @@
 import { Comment, CreateCommentPayload } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import { v4 } from 'uuid';
+import { Knex } from 'knex';
 
 class CommentsDao {
   async insert(
     userUuid: string,
-    { threadUuid, text }: CreateCommentPayload
+    { threadUuid, text }: CreateCommentPayload,
+    trx?: Knex.Transaction
   ): Promise<string> {
+    const k = trx || knexWrite();
     const newUuid: string = v4();
-    await knexWrite()('comments').insert({
+    await k('comments').insert({
       uuid: newUuid,
       thread_uuid: threadUuid,
       user_uuid: userUuid,
@@ -20,17 +23,20 @@ class CommentsDao {
     return newUuid;
   }
 
-  async updateDelete(uuid: string): Promise<void> {
-    await knexWrite()('comments').where({ uuid }).update({
+  async updateDelete(uuid: string, trx?: Knex.Transaction): Promise<void> {
+    const k = trx || knexWrite();
+    await k('comments').where({ uuid }).update({
       deleted: true,
     });
   }
 
   async getAllByThreadUuid(
     threadUuid: string,
-    mostRecent = false
+    mostRecent = false,
+    trx?: Knex.Transaction
   ): Promise<Comment[]> {
-    const comments = await knexRead()('comments')
+    const k = trx || knexRead();
+    const comments = await k('comments')
       .select(
         'comments.uuid',
         'comments.thread_uuid AS threadUuid',

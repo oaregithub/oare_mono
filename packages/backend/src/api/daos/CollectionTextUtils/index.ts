@@ -1,21 +1,24 @@
 import sl from '@/serviceLocator';
+import { Knex } from 'knex';
 
 class CollectionTextUtils {
   async canViewText(
     textUuid: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ): Promise<boolean> {
     const UserDao = sl.get('UserDao');
     const PublicDenylistDao = sl.get('PublicDenylistDao');
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
 
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
       return true;
     }
 
     const isPubliclyViewable = await PublicDenylistDao.textIsPubliclyViewable(
-      textUuid
+      textUuid,
+      trx
     );
     if (isPubliclyViewable) {
       return true;
@@ -23,7 +26,8 @@ class CollectionTextUtils {
 
     const textIsInAllowlist = await GroupAllowlistDao.textIsInAllowlist(
       textUuid,
-      userUuid
+      userUuid,
+      trx
     );
     if (textIsInAllowlist) {
       return true;
@@ -34,20 +38,22 @@ class CollectionTextUtils {
 
   async canViewCollection(
     collectionUuid: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ): Promise<boolean> {
     const UserDao = sl.get('UserDao');
     const PublicDenylistDao = sl.get('PublicDenylistDao');
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
     const HierarchyDao = sl.get('HierarchyDao');
 
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
       return true;
     }
 
     const isPubliclyViewable = await PublicDenylistDao.collectionIsPubliclyViewable(
-      collectionUuid
+      collectionUuid,
+      trx
     );
     if (isPubliclyViewable) {
       return true;
@@ -55,17 +61,19 @@ class CollectionTextUtils {
 
     const collectionIsInAllowlist = await GroupAllowlistDao.collectionIsInAllowlist(
       collectionUuid,
-      userUuid
+      userUuid,
+      trx
     );
     if (collectionIsInAllowlist) {
       return true;
     }
 
     const textsInCollection = await HierarchyDao.getTextsInCollection(
-      collectionUuid
+      collectionUuid,
+      trx
     );
     const subtextsViewable = await Promise.all(
-      textsInCollection.map(text => this.canViewText(text, userUuid))
+      textsInCollection.map(text => this.canViewText(text, userUuid, trx))
     );
     if (subtextsViewable.includes(true)) {
       return true;
@@ -74,48 +82,53 @@ class CollectionTextUtils {
     return false;
   }
 
-  async textsToHide(userUuid: string | null): Promise<string[]> {
+  async textsToHide(
+    userUuid: string | null,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
     const PublicDenylistDao = sl.get('PublicDenylistDao');
     const UserGroupDao = sl.get('UserGroupDao');
     const HierarchyDao = sl.get('HierarchyDao');
     const UserDao = sl.get('UserDao');
 
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
       return [];
     }
 
-    const publicDenylist = await PublicDenylistDao.getDenylistTextUuids();
-    const publicDenylistCollections = await PublicDenylistDao.getDenylistCollectionUuids();
+    const publicDenylist = await PublicDenylistDao.getDenylistTextUuids(trx);
+    const publicDenylistCollections = await PublicDenylistDao.getDenylistCollectionUuids(
+      trx
+    );
     const textsInDenylistCollections = (
       await Promise.all(
         publicDenylistCollections.map(collection =>
-          HierarchyDao.getTextsInCollection(collection)
+          HierarchyDao.getTextsInCollection(collection, trx)
         )
       )
     ).flat();
     textsInDenylistCollections.forEach(text => publicDenylist.push(text));
 
-    const groups = await UserGroupDao.getGroupsOfUser(userUuid);
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
     const textAllowlist = (
       await Promise.all(
         groups.map(groupId =>
-          GroupAllowlistDao.getGroupAllowlist(groupId, 'text')
+          GroupAllowlistDao.getGroupAllowlist(groupId, 'text', trx)
         )
       )
     ).flat();
     const collectionAllowlist = (
       await Promise.all(
         groups.map(groupId =>
-          GroupAllowlistDao.getGroupAllowlist(groupId, 'collection')
+          GroupAllowlistDao.getGroupAllowlist(groupId, 'collection', trx)
         )
       )
     ).flat();
     const textsInAllowlistCollections = (
       await Promise.all(
         collectionAllowlist.map(collection =>
-          HierarchyDao.getTextsInCollection(collection)
+          HierarchyDao.getTextsInCollection(collection, trx)
         )
       )
     ).flat();
@@ -130,28 +143,29 @@ class CollectionTextUtils {
 
   async canEditText(
     textUuid: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ): Promise<boolean> {
     const UserDao = sl.get('UserDao');
     const CollectionDao = sl.get('CollectionDao');
     const UserGroupDao = sl.get('UserGroupDao');
     const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
 
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
       return true;
     }
 
-    const canViewText = await this.canViewText(textUuid, userUuid);
+    const canViewText = await this.canViewText(textUuid, userUuid, trx);
     if (!canViewText) {
       return false;
     }
 
-    const groups = await UserGroupDao.getGroupsOfUser(userUuid);
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
     const textEditPermissions = (
       await Promise.all(
         groups.map(groupId =>
-          GroupEditPermissionsDao.getGroupEditPermissions(groupId, 'text')
+          GroupEditPermissionsDao.getGroupEditPermissions(groupId, 'text', trx)
         )
       )
     ).flat();
@@ -161,11 +175,18 @@ class CollectionTextUtils {
       return true;
     }
 
-    const collectionUuid = await CollectionDao.getTextCollectionUuid(textUuid);
+    const collectionUuid = await CollectionDao.getTextCollectionUuid(
+      textUuid,
+      trx
+    );
     const collectionEditPermissions = (
       await Promise.all(
         groups.map(groupId =>
-          GroupEditPermissionsDao.getGroupEditPermissions(groupId, 'collection')
+          GroupEditPermissionsDao.getGroupEditPermissions(
+            groupId,
+            'collection',
+            trx
+          )
         )
       )
     ).flat();
