@@ -13,10 +13,10 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
+  ZoteroResponse,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
-import fetch from 'node-fetch';
 
 const router = express.Router();
 
@@ -117,7 +117,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       }
     }
 
-    const zoteroResponses = await Promise.all(
+    const zoteroResponses: Response[] = await Promise.all(
       zoteroKeys.map(zoteroKey =>
         fetch(
           `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
@@ -130,11 +130,13 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       )
     );
 
-    const zoteroJsons = await Promise.all(
+    const zoteroJsons: ZoteroResponse[] = await Promise.all(
       zoteroResponses.map(APIresponse => APIresponse.json())
     );
 
-    const zoteroCitations: string[] = zoteroJsons.map(res => res.citation);
+    const zoteroCitations: string[] = zoteroJsons.map(
+      res => res.citation || ''
+    );
 
     const resourceLinks: string[] = [];
     const resourceContainers: string[] = [];

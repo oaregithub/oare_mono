@@ -1,4 +1,5 @@
 import { knexRead } from '@/connection';
+import { dynamicImport } from 'tsimportlib';
 
 class BibliographyDao {
   async getBibliographyByUuid(uuid: string) {
@@ -7,6 +8,13 @@ class BibliographyDao {
       .where('uuid', uuid)
       .first();
     return row;
+  }
+
+  async getZoteroResponses(zoteroKey: string) {
+    const fetch = (await dynamicImport(
+      'node-fetch',
+      module
+    )) as typeof import('node-fetch');
   }
 }
 
