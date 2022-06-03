@@ -148,14 +148,14 @@ export default defineComponent({
     },
     textUuid: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   components: {
     DiscoursePropertiesCard,
     insertParentDiscourseDialog,
   },
-  setup({ discourseUnits }) {
+  setup({ discourseUnits, textUuid }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
@@ -304,8 +304,8 @@ export default defineComponent({
       }
     });
 
-    const canInsertParentDiscourse = computed(() =>
-      store.hasPermission('INSERT_PARENT_DISCOURSE_ROWS')
+    const canInsertParentDiscourse = computed(
+      () => textUuid && store.hasPermission('INSERT_PARENT_DISCOURSE_ROWS')
     );
 
     return {
