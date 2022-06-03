@@ -96,6 +96,12 @@ describe('POST /text_discourse', () => {
       .mockResolvedValue([{ name: 'INSERT_DISCOURSE_ROWS' }]),
   };
 
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
+
   const mockPayload = {
     spelling: 'a-na',
     occurrences: [
@@ -113,6 +119,7 @@ describe('POST /text_discourse', () => {
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);
