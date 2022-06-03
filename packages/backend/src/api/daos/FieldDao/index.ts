@@ -1,5 +1,6 @@
 import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
+import { Knex } from 'knex';
 
 interface FieldRow {
   id: number;
@@ -15,8 +16,12 @@ interface FieldOptions {
   primacy?: number;
 }
 class FieldDao {
-  async getByReferenceUuid(referenceUuid: string): Promise<FieldRow[]> {
-    return knexRead()('field')
+  async getByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<FieldRow[]> {
+    const k = trx || knexRead();
+    return k('field')
       .select()
       .where({
         reference_uuid: referenceUuid,
@@ -29,10 +34,12 @@ class FieldDao {
     type: string,
     field: string,
     primacy: number | null,
-    language: string | null
+    language: string | null,
+    trx?: Knex.Transaction
   ): Promise<string> {
+    const k = trx || knexWrite();
     const uuid = v4();
-    await knexWrite()('field').insert({
+    await k('field').insert({
       uuid,
       reference_uuid: referenceUuid,
       type,
@@ -43,8 +50,14 @@ class FieldDao {
     return uuid;
   }
 
-  async updateField(uuid: string, field: string, options?: FieldOptions) {
-    await knexWrite()('field')
+  async updateField(
+    uuid: string,
+    field: string,
+    options?: FieldOptions,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('field')
       .update({
         field,
         primacy: options && options.primacy ? options.primacy : null,
@@ -52,8 +65,9 @@ class FieldDao {
       .where({ uuid });
   }
 
-  async deleteField(uuid: string) {
-    await knexWrite()('field').del().where({ uuid });
+  async deleteField(uuid: string, trx?: Knex.Transaction) {
+    const k = trx || knexWrite();
+    await k('field').del().where({ uuid });
   }
 }
 

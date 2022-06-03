@@ -9,6 +9,7 @@ import {
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
+import { Knex } from 'knex';
 import { assembleSearchResult, assembleAutocompleteDisplay } from './utils';
 import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
@@ -43,8 +44,10 @@ export interface TranslationRow {
 class DictionaryWordDao {
   async searchSpellings(
     spelling: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ): Promise<SearchSpellingResultRow[]> {
+    const k = trx || knexRead();
     interface SearchSpellingRow {
       wordUuid: string;
       word: string;
@@ -55,7 +58,7 @@ class DictionaryWordDao {
 
     const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-    const rows: SearchSpellingRow[] = await knexRead()
+    const rows: SearchSpellingRow[] = await k
       .select(
         'dw.uuid AS wordUuid',
         'dw.word',
@@ -69,17 +72,24 @@ class DictionaryWordDao {
       .where('ds.explicit_spelling', spelling);
 
     const formProperties = await Promise.all(
-      rows.map(r => ItemPropertiesDao.getPropertiesByReferenceUuid(r.formUuid))
+      rows.map(r =>
+        ItemPropertiesDao.getPropertiesByReferenceUuid(r.formUuid, trx)
+      )
     );
 
     const occurrences = await Promise.all(
       rows.map(r =>
-        TextDiscourseDao.getTotalSpellingTexts([r.spellingUuid], userUuid)
+        TextDiscourseDao.getTotalSpellingTexts(
+          [r.spellingUuid],
+          userUuid,
+          undefined,
+          trx
+        )
       )
     );
 
     const grammaticalInfo = await Promise.all(
-      rows.map(r => this.getGrammaticalInfo(r.wordUuid))
+      rows.map(r => this.getGrammaticalInfo(r.wordUuid, trx))
     );
     const words: Word[] = grammaticalInfo.map(info => ({
       ...info,
@@ -104,10 +114,12 @@ class DictionaryWordDao {
     type: DictionaryWordTypes,
     letter: string,
     userUuid: string | null,
-    isAdmin: boolean
+    isAdmin: boolean,
+    trx?: Knex.Transaction
   ): Promise<Word[]> {
+    const k = trx || knexRead();
     const letters = letter.split('/');
-    let query = knexRead()('dictionary_word').select('uuid', 'word');
+    let query = k('dictionary_word').select('uuid', 'word');
 
     letters.forEach(possibleVowel => {
       switch (possibleVowel) {
@@ -141,12 +153,14 @@ class DictionaryWordDao {
 
     const properties = await Promise.all(
       words.map(word =>
-        ItemPropertiesDao.getPropertiesByReferenceUuid(word.uuid)
+        ItemPropertiesDao.getPropertiesByReferenceUuid(word.uuid, trx)
       )
     );
-    const allTranslations = await this.getAllTranslations();
+    const allTranslations = await this.getAllTranslations(trx);
     const forms = await Promise.all(
-      words.map(word => DictionaryFormDao.getWordForms(word.uuid, isAdmin))
+      words.map(word =>
+        DictionaryFormDao.getWordForms(word.uuid, isAdmin, false, trx)
+      )
     );
 
     const spellingUuids = forms.map(form =>
@@ -159,7 +173,7 @@ class DictionaryWordDao {
 
     const wordOccurrences = await Promise.all(
       spellingUuids.map(uuids =>
-        TextDiscourseDao.getTotalSpellingTexts(uuids, userUuid)
+        TextDiscourseDao.getTotalSpellingTexts(uuids, userUuid, undefined, trx)
       )
     );
 
@@ -195,8 +209,9 @@ class DictionaryWordDao {
       .sort((a, b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
   }
 
-  async getAllTranslations(): Promise<TranslationRow[]> {
-    const rows: TranslationRow[] = await knexRead()('dictionary_word')
+  async getAllTranslations(trx?: Knex.Transaction): Promise<TranslationRow[]> {
+    const k = trx || knexRead();
+    const rows: TranslationRow[] = await k('dictionary_word')
       .select(
         'dictionary_word.uuid AS dictionaryUuid',
         'field.uuid AS fieldUuid',
@@ -208,9 +223,10 @@ class DictionaryWordDao {
   }
 
   async getWordTranslations(
-    wordUuid: string
+    wordUuid: string,
+    trx?: Knex.Transaction
   ): Promise<DictionaryWordTranslation[]> {
-    const translations = (await FieldDao.getByReferenceUuid(wordUuid)).map(
+    const translations = (await FieldDao.getByReferenceUuid(wordUuid, trx)).map(
       ({ uuid, field }) => ({
         uuid,
         translation: field,
@@ -220,19 +236,23 @@ class DictionaryWordDao {
     return translations;
   }
 
-  async getWordName(wordUuid: string): Promise<string> {
-    const { word }: { word: string } = await knexRead()('dictionary_word')
+  async getWordName(wordUuid: string, trx?: Knex.Transaction): Promise<string> {
+    const k = trx || knexRead();
+    const { word }: { word: string } = await k('dictionary_word')
       .select('word')
       .where('uuid', wordUuid)
       .first();
     return word;
   }
 
-  async getGrammaticalInfo(wordUuid: string): Promise<DictionaryWord> {
+  async getGrammaticalInfo(
+    wordUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<DictionaryWord> {
     const [word, properties, translations] = await Promise.all([
-      this.getWordName(wordUuid),
-      ItemPropertiesDao.getPropertiesByReferenceUuid(wordUuid),
-      this.getWordTranslations(wordUuid),
+      this.getWordName(wordUuid, trx),
+      ItemPropertiesDao.getPropertiesByReferenceUuid(wordUuid, trx),
+      this.getWordTranslations(wordUuid, trx),
     ]);
 
     return {
@@ -243,34 +263,34 @@ class DictionaryWordDao {
     };
   }
 
-  async searchWords(search: string, page: number, numRows: number) {
+  async searchWords(
+    search: string,
+    page: number,
+    numRows: number,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexRead();
     const lowerSearch = search.toLowerCase();
-    const query = knexRead()
+    const query = k
       .from('dictionary_word AS dw')
       .leftJoin('field', 'field.reference_uuid', 'dw.uuid')
       .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
       .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
-      .where(knexRead().raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
+      .where(k.raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
+      .orWhere(k.raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`]))
+      .orWhere(k.raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
       .orWhere(
-        knexRead().raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`])
-      )
-      .orWhere(knexRead().raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(
-        knexRead().raw('LOWER(ds.explicit_spelling) LIKE ?', [
-          `%${lowerSearch}%`,
-        ])
+        k.raw('LOWER(ds.explicit_spelling) LIKE ?', [`%${lowerSearch}%`])
       )
       .select(
         'dw.uuid',
         'dw.type',
         'dw.word AS name',
-        knexRead().raw(
+        k.raw(
           "GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"
         ),
         'df.form',
-        knexRead().raw(
-          "GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings"
-        )
+        k.raw("GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings")
       )
       .groupBy('df.uuid');
     const rows: SearchWordsQueryRow[] = await query;
@@ -284,19 +304,20 @@ class DictionaryWordDao {
     };
   }
 
-  async getWordsAndFormsForWordsInTexts() {
+  async getWordsAndFormsForWordsInTexts(trx?: Knex.Transaction) {
+    const k = trx || knexRead();
     const forms: Array<{
       name: string;
       uuid: string;
       wordUuid: string;
-    }> = await knexRead()
+    }> = await k
       .from('dictionary_form AS df')
       .select('df.form as name', 'df.uuid', 'df.reference_uuid as wordUuid');
     const words: Array<{
       name: string;
       uuid: string;
       wordUuid: string;
-    }> = await knexRead()('dictionary_word as dw').select(
+    }> = await k('dictionary_word as dw').select(
       'dw.word as name',
       'dw.uuid',
       'dw.uuid as wordUuid'
@@ -322,16 +343,22 @@ class DictionaryWordDao {
     return results;
   }
 
-  async updateWordSpelling(uuid: string, word: string): Promise<void> {
-    await knexWrite()('dictionary_word').update({ word }).where({ uuid });
+  async updateWordSpelling(
+    uuid: string,
+    word: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('dictionary_word').update({ word }).where({ uuid });
   }
 
   async updateTranslations(
     userUuid: string,
     wordUuid: string,
-    translations: DictionaryWordTranslation[]
+    translations: DictionaryWordTranslation[],
+    trx?: Knex.Transaction
   ): Promise<void> {
-    const currentTranslations = await this.getWordTranslations(wordUuid);
+    const currentTranslations = await this.getWordTranslations(wordUuid, trx);
     const translationsWithPrimacy = translations.map((tr, index) => ({
       ...tr,
       primacy: index + 1,
@@ -346,13 +373,14 @@ class DictionaryWordDao {
           'definition',
           tr.translation,
           tr.primacy,
-          null
+          null,
+          trx
         )
       )
     );
     await Promise.all(
       insertedUuids.map(fieldUuid =>
-        LoggingEditsDao.logEdit('INSERT', userUuid, 'field', fieldUuid)
+        LoggingEditsDao.logEdit('INSERT', userUuid, 'field', fieldUuid, trx)
       )
     );
     newTranslations = newTranslations.map((tr, index) => ({
@@ -366,12 +394,19 @@ class DictionaryWordDao {
     );
     await Promise.all(
       existingTranslations.map(tr =>
-        LoggingEditsDao.logEdit('UPDATE', userUuid, 'field', tr.uuid)
+        LoggingEditsDao.logEdit('UPDATE', userUuid, 'field', tr.uuid, trx)
       )
     );
     await Promise.all(
       existingTranslations.map(tr =>
-        FieldDao.updateField(tr.uuid, tr.translation, { primacy: tr.primacy })
+        FieldDao.updateField(
+          tr.uuid,
+          tr.translation,
+          {
+            primacy: tr.primacy,
+          },
+          trx
+        )
       )
     );
 
@@ -383,7 +418,7 @@ class DictionaryWordDao {
       uuid => !remainingTranslationUuids.includes(uuid)
     );
     await Promise.all(
-      deletedTranslationUuids.map(uuid => FieldDao.deleteField(uuid))
+      deletedTranslationUuids.map(uuid => FieldDao.deleteField(uuid, trx))
     );
   }
 }

@@ -1,24 +1,29 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 import sl from '@/serviceLocator';
 import { SearchCooccurrence } from '@oare/types';
+import { Knex } from 'knex';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
 export async function prepareIndividualSearchCharacters(
-  charsPayload?: string
+  charsPayload?: string,
+  trx?: Knex.Transaction
 ): Promise<string[][]> {
   const SignReadingDao = sl.get('SignReadingDao');
 
   const charactersArray = charsPayload ? stringToCharsArray(charsPayload) : [];
-  const signsArray = await applyIntellisearch(charactersArray);
+  const signsArray = await applyIntellisearch(charactersArray, trx);
 
   const characterUuids = await Promise.all(
-    signsArray.map(signs => SignReadingDao.getIntellisearchSignUuids(signs))
+    signsArray.map(signs =>
+      SignReadingDao.getIntellisearchSignUuids(signs, trx)
+    )
   );
   return characterUuids;
 }
 
 export async function prepareCharactersForSearch(
-  charsPayload?: string
+  charsPayload?: string,
+  trx?: Knex.Transaction
 ): Promise<SearchCooccurrence[]> {
   const cooccurrences = charsPayload
     ? charsPayload.split(';').map(phrase => phrase.trim())
@@ -32,7 +37,7 @@ export async function prepareCharactersForSearch(
       Promise.all(
         words.map(word => {
           const searchCharacter = word[0] === '!' ? word.substr(1) : word;
-          return prepareIndividualSearchCharacters(searchCharacter);
+          return prepareIndividualSearchCharacters(searchCharacter, trx);
         })
       )
     )
@@ -52,7 +57,8 @@ export async function prepareCharactersForSearch(
 }
 
 export const applyIntellisearch = async (
-  signs: string[]
+  signs: string[],
+  trx?: Knex.Transaction
 ): Promise<string[][]> => {
   let signArray = signs.map(sign => [sign]);
 
@@ -66,7 +72,9 @@ export const applyIntellisearch = async (
   signArray = signArray.map(applyAmpersandWildcard);
 
   // Apply Dollar Symbol ($)
-  signArray = await Promise.all(signArray.map(applyDollarSymbol));
+  signArray = await Promise.all(
+    signArray.map(array => applyDollarSymbol(array, trx))
+  );
 
   return signArray;
 };
@@ -127,7 +135,10 @@ export const applyBrackets = (signs: string[]): string[] => {
   return bracketSigns;
 };
 
-export const applyDollarSymbol = async (signs: string[]): Promise<string[]> => {
+export const applyDollarSymbol = async (
+  signs: string[],
+  trx?: Knex.Transaction
+): Promise<string[]> => {
   const SignReadingDao = sl.get('SignReadingDao');
 
   let dollarSigns: string[] = signs;
@@ -137,7 +148,7 @@ export const applyDollarSymbol = async (signs: string[]): Promise<string[]> => {
     dollarSigns = dollarSigns.map(sign => sign.substr(1));
     dollarSigns = (
       await Promise.all(
-        dollarSigns.map(sign => SignReadingDao.getMatchingSigns(sign))
+        dollarSigns.map(sign => SignReadingDao.getMatchingSigns(sign, trx))
       )
     ).flat();
   }
