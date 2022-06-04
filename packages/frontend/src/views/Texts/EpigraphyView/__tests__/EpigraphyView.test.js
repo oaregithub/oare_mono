@@ -36,9 +36,10 @@ describe('Epigraphy View', () => {
       markups: [],
     }),
     getSingleDraft: jest.fn().mockResolvedValue({}),
-    getImageLinks: jest
-      .fn()
-      .mockResolvedValue(['test-cdli-link', 'test-s3-link']),
+    getImageLinks: jest.fn().mockResolvedValue([
+      { link: 'test-cdli-link', label: 'CDLI' },
+      { link: 'test-s3-link', label: 'S3' },
+    ]),
   };
 
   const mockActions = {
