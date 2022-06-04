@@ -137,7 +137,7 @@ import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
-import insertParentDiscourseDialog from './InsertParentDiscouresDialog.vue';
+import InsertParentDiscourseDialog from './InsertParentDiscouresDialog.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -153,7 +153,7 @@ export default defineComponent({
   },
   components: {
     DiscoursePropertiesCard,
-    insertParentDiscourseDialog,
+    InsertParentDiscourseDialog,
   },
   setup({ discourseUnits, textUuid }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
