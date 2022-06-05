@@ -125,29 +125,33 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     const zoteroCitations: string[] = [];
 
-    zoteroKeys.forEach(async zoteroKey => {
-      const zotResp = await fetch.default(
-        `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        }
-      );
-      if (zotResp.ok) {
-        const zotJson: ZoteroResponse = (await zotResp.json()) as ZoteroResponse;
-        if (zotJson.citation) zoteroCitations.push(zotJson.citation);
-      }
-    });
+    for (const zoteroKey of zoteroKeys) {
+      await fetch
+        .default(
+          `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+            },
+          }
+        )
+        .then(resp => resp.json())
+        .then(data => {
+          const zotResp = data as ZoteroResponse;
+          if (zotResp.citation) zoteroCitations.push(zotResp.citation);
+        });
+    }
+
+    const resourceRows: ResourceRow[] = await Promise.all(
+      objUuids.map(async uuid => await ResourceDao.getResourceLinkByUuid(uuid))
+    );
 
     const resourceLinks: string[] = [];
     const resourceContainers: string[] = [];
 
-    objUuids.forEach(async uuid => {
-      const row: ResourceRow = await ResourceDao.getResourceLinkByUuid(uuid);
-      console.log(row);
-      //resourceLinks.push(row.link);
-      //resourceContainers.push(row.container);
+    resourceRows.map(row => {
+      resourceLinks.push(row.link);
+      resourceContainers.push(row.container);
     });
 
     const fileURL = await Promise.all(

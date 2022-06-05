@@ -93,7 +93,7 @@ class ResourceDao {
 
   async getResourceLinkByUuid(bibliographyUuid: string) {
     const row: ResourceRow = await knexRead()('resource')
-      .select('link')
+      .select(['link', 'container'])
       .whereIn(
         'uuid',
         knexRead()('link')
