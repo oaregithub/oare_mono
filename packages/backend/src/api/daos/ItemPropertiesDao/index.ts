@@ -118,8 +118,8 @@ class ItemPropertiesDao {
     referenceUuid: string,
     variableUuid: string
   ) {
-    const objUuids: string[] = await knexRead()('item_properties as ip')
-      .pluck('ip.object_uuid')
+    const objUuids: string[] = await knexRead()('item_properties')
+      .pluck('object_uuid')
       .where('variable_uuid', variableUuid)
       .where('reference_uuid', referenceUuid);
 

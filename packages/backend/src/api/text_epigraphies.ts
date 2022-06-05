@@ -17,6 +17,7 @@ import {
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
+import { dynamicImport } from 'tsimportlib';
 
 const router = express.Router();
 
@@ -117,34 +118,36 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       }
     }
 
-    const zoteroResponses: Response[] = await Promise.all(
-      zoteroKeys.map(zoteroKey =>
-        fetch(
-          `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-            },
-          }
-        )
-      )
-    );
+    const fetch = (await dynamicImport(
+      'node-fetch',
+      module
+    )) as typeof import('node-fetch');
 
-    const zoteroJsons: ZoteroResponse[] = await Promise.all(
-      zoteroResponses.map(APIresponse => APIresponse.json())
-    );
+    const zoteroCitations: string[] = [];
 
-    const zoteroCitations: string[] = zoteroJsons.map(
-      res => res.citation || ''
-    );
+    zoteroKeys.forEach(async zoteroKey => {
+      const zotResp = await fetch.default(
+        `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        }
+      );
+      if (zotResp.ok) {
+        const zotJson: ZoteroResponse = (await zotResp.json()) as ZoteroResponse;
+        if (zotJson.citation) zoteroCitations.push(zotJson.citation);
+      }
+    });
 
     const resourceLinks: string[] = [];
     const resourceContainers: string[] = [];
 
     objUuids.forEach(async uuid => {
       const row: ResourceRow = await ResourceDao.getResourceLinkByUuid(uuid);
-      resourceLinks.push(row.link);
-      resourceContainers.push(row.container);
+      console.log(row);
+      //resourceLinks.push(row.link);
+      //resourceContainers.push(row.container);
     });
 
     const fileURL = await Promise.all(
