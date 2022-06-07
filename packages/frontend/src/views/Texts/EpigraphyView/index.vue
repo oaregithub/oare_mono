@@ -149,7 +149,7 @@
           </div>
         </v-row>
 
-        <span v-else-if="!textInfo.hasEpigraphy">
+        <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
           moment.
         </span>
