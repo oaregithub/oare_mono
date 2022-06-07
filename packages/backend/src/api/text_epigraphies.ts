@@ -104,7 +104,6 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     if (process.env.ZOTERO_API_KEY) {
       apiKey = process.env.ZOTERO_API_KEY;
     } else {
-      const s3 = new AWS.S3();
       const response = (
         await s3
           .getObject({
@@ -123,11 +122,9 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       module
     )) as typeof import('node-fetch');
 
-    const zoteroCitations: string[] = [];
-
-    for (const zoteroKey of zoteroKeys) {
-      await fetch
-        .default(
+    const zoteroResp = await Promise.all(
+      zoteroKeys.map(zoteroKey =>
+        fetch.default(
           `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
           {
             headers: {
@@ -135,12 +132,20 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
             },
           }
         )
-        .then(resp => resp.json())
-        .then(data => {
-          const zotResp = data as ZoteroResponse;
-          if (zotResp.citation) zoteroCitations.push(zotResp.citation);
-        });
-    }
+      )
+    );
+
+    const zoteroJson: ZoteroResponse[] = (await Promise.all(
+      zoteroResp.map(resp => resp.json())
+    )) as ZoteroResponse[];
+
+    const zoteroJsonFilter: ZoteroResponse[] = zoteroJson.filter(
+      item => !!item.citation
+    );
+
+    const zoteroCitations: string[] = zoteroJsonFilter.map(
+      item => item.citation!
+    );
 
     const resourceRows: ResourceRow[] = await Promise.all(
       objUuids.map(async uuid => await ResourceDao.getResourceLinkByUuid(uuid))

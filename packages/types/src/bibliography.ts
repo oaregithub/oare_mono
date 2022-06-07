@@ -33,7 +33,7 @@ export interface ZoteroResponse {
   };
   bib?: string | null;
   citation?: string | null;
-  data?: ZoetroData | null;
+  data?: ZoteroResponseData | null;
 }
 
 export interface ZoteroLink {
@@ -41,12 +41,12 @@ export interface ZoteroLink {
   type: string;
 }
 
-export interface ZoetroData {
+export interface ZoteroResponseData {
   key: string;
   version: number;
   itemType: string;
   title: string;
-  creators: ZoetroCreator[];
+  creators: ZoteroCreator[];
   abstractNote: string;
   series: string;
   seriesNumber: string;
@@ -75,7 +75,7 @@ export interface ZoetroData {
   dateModified: string;
 }
 
-export interface ZoetroCreator {
+export interface ZoteroCreator {
   creatorType: string;
   firstName: string;
   lastName: string;
