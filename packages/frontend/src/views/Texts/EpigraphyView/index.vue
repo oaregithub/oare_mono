@@ -118,6 +118,7 @@
             </div>
           </div>
         </v-row>
+        <EpigraphicInfo :textUuid="textUuid" />
 
         <template
           #title:pre
@@ -217,6 +218,7 @@ import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
 import AddPhotos from '@/views/Texts/CollectionTexts/AddTexts/Photos/AddPhotos.vue';
+import EpigraphicInfo from './EpigraphyDisplay/components/EpigraphicInfo.vue';
 import { convertParsePropsToItemProps } from '@oare/oare';
 import { addDetailsToTextPhotos } from '../CollectionTexts/AddTexts/utils/photos';
 import { v4 } from 'uuid';
@@ -244,6 +246,7 @@ export default defineComponent({
     EpigraphyImage,
     EpigraphyFullDisplay,
     AddPhotos,
+    EpigraphicInfo,
   },
   props: {
     textUuid: {
