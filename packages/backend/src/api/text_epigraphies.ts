@@ -148,13 +148,13 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     );
 
     const resourceRows: ResourceRow[] = await Promise.all(
-      objUuids.map(async uuid => await ResourceDao.getResourceLinkByUuid(uuid))
+      objUuids.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
     );
 
     const resourceLinks: string[] = [];
     const resourceContainers: string[] = [];
 
-    resourceRows.map(row => {
+    resourceRows.forEach(row => {
       resourceLinks.push(row.link);
       resourceContainers.push(row.container);
     });

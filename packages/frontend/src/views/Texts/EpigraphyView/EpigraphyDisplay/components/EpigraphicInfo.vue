@@ -1,10 +1,8 @@
 <template>
   <div>
     <div v-for="data in zoteroDataList" :key="data">
-      <div>Citation: {{ data.citation }}</div>
-      <div>
-        Link: <a :href="data.link">{{ data.link }}</a>
-      </div>
+      <div>Citation: <span v-html="data.citation"></span></div>
+      <div>Link: <a :href="data.link" v-html="data.link"></a></div>
     </div>
     <br />
   </div>
