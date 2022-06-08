@@ -9,7 +9,37 @@
         <template #header v-if="!disableEditing">
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
-        <v-row class="ma-0 mb-6">
+
+        <template
+          #title:pre
+          v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
+        >
+          <Stoplight
+            :transliteration="transliteration"
+            :showEditDialog="true"
+            :textUuid="textUuid"
+            :key="textInfo.color"
+            class="mr-2"
+          />
+        </template>
+
+        <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
+          <v-btn
+            v-if="!isEditing && textInfo.canWrite"
+            color="primary"
+            :to="`/epigraphies/${textUuid}/edit`"
+            class="mx-4"
+            >Edit</v-btn
+          >
+          <v-btn
+            v-if="canAddPictures"
+            color="primary"
+            @click="photosDialogOpen = true"
+            >Add Images</v-btn
+          >
+        </template>
+
+        <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
           <v-icon
             v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
@@ -120,35 +150,13 @@
         </v-row>
         <EpigraphicInfo :textUuid="textUuid" />
 
-        <template
-          #title:pre
-          v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
-        >
-          <Stoplight
-            :transliteration="transliteration"
-            :showEditDialog="true"
-            :textUuid="textUuid"
-            :key="textInfo.color"
-            class="mr-2"
-          />
-        </template>
-        <template #title:post v-if="!disableEditing">
-          <v-btn
-            v-if="!isEditing && textInfo.canWrite"
-            color="primary"
-            :to="`/epigraphies/${textUuid}/edit`"
-            class="mx-4"
-            >Edit</v-btn
-          >
-          <v-btn
-            v-if="canAddPictures"
-            color="primary"
-            @click="photosDialogOpen = true"
-            >Add Images</v-btn
-          >
-        </template>
+        <span v-if="!textInfo.hasEpigraphy">
+          Apologies, we do not have a transliteration for this text at the
+          moment.
+        </span>
+
         <epigraphy-full-display
-          v-if="disableEditing"
+          v-else-if="disableEditing"
           v-bind="routeProps"
           :localDiscourseInfo="localDiscourseInfo"
         />
@@ -157,10 +165,7 @@
           v-bind="routeProps"
           v-on="routeActions"
         ></router-view>
-        <span v-if="!textInfo.hasEpigraphy">
-          Apologies, we do not have a transliteration for this text at the
-          moment.
-        </span>
+
         <oare-dialog
           v-model="photosDialogOpen"
           :title="`Add Images to ${textInfo.text.name}`"

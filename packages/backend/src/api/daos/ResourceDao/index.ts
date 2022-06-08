@@ -8,38 +8,42 @@ import {
   ImageResource,
 } from '@oare/types';
 import { dynamicImport } from 'tsimportlib';
+import { Knex } from 'knex';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
     textUuid: string,
-    cdliNum: string
+    cdliNum: string,
+    trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
-    const s3Links = await this.getValidS3ImageLinks(textUuid);
-    const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
-    const metLinks = await this.getValidMetImageLinks(textUuid);
+    const s3Links = await this.getValidS3ImageLinks(textUuid, trx);
+    const cdliLinks = await this.getValidCdliImageLinks(cdliNum, trx);
+    const metLinks = await this.getValidMetImageLinks(textUuid, trx);
 
     const response = [...s3Links, ...cdliLinks, ...metLinks];
 
     return response;
   }
 
-  async getValidS3ImageLinks(textUuid: string): Promise<EpigraphyLabelLink[]> {
+  async getValidS3ImageLinks(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<EpigraphyLabelLink[]> {
+    const k = trx || knexRead();
     const s3Links: EpigraphyLabelLink[] = [];
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
     try {
       const s3 = new AWS.S3();
 
-      const resourceLinks: ImageResource[] = await knexRead()('person as p')
+      const resourceLinks: ImageResource[] = await k('person as p')
         .distinct()
         .select('p.label as label', 'r.link as link', 'r.uuid as uuid')
         .rightOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
         .where('r.type', 'img')
         .whereIn(
           'r.uuid',
-          knexRead()('link')
-            .select('obj_uuid')
-            .where('reference_uuid', textUuid)
+          k('link').select('obj_uuid').where('reference_uuid', textUuid)
         );
 
       const signedUrls = await Promise.all(
@@ -54,7 +58,7 @@ class ResourceDao {
 
       const imagePropertyDetails = await Promise.all(
         resourceLinks.map(resource =>
-          ItemPropertiesDao.getImagePropertyDetails(resource.uuid)
+          ItemPropertiesDao.getImagePropertyDetails(resource.uuid, trx)
         )
       );
 
@@ -68,24 +72,28 @@ class ResourceDao {
       });
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
-      await ErrorsDao.logError({
-        userUuid: null,
-        stacktrace: (err as Error).stack || null,
-        status: 'In Progress',
-        description: 'Error retrieving S3 images',
-      });
+      await ErrorsDao.logError(
+        {
+          userUuid: null,
+          stacktrace: (err as Error).stack || null,
+          status: 'In Progress',
+          description: 'Error retrieving S3 images',
+        },
+        trx
+      );
     }
 
     return s3Links;
   }
 
-  async getTextFileByTextUuid(uuid: string) {
-    const textLinks: string[] = await knexRead()('resource')
+  async getTextFileByTextUuid(uuid: string, trx?: Knex.Transaction) {
+    const k = trx || knexRead();
+    const textLinks: string[] = await k('resource')
       .pluck('link')
       .where('container', 'oare-texttxt-bucket')
       .whereIn(
         'uuid',
-        knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
+        k('link').select('obj_uuid').where('reference_uuid', uuid)
       );
 
     return textLinks[0] || null;
@@ -105,7 +113,10 @@ class ResourceDao {
     return row;
   }
 
-  async getValidCdliImageLinks(cdliNum: string): Promise<EpigraphyLabelLink[]> {
+  async getValidCdliImageLinks(
+    cdliNum: string,
+    trx?: Knex.Transaction
+  ): Promise<EpigraphyLabelLink[]> {
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
 
@@ -124,12 +135,15 @@ class ResourceDao {
         cdliLinks.push(photoUrl);
       }
     } catch (err) {
-      await ErrorsDao.logError({
-        userUuid: null,
-        description: 'Error retrieving CDLI image',
-        stacktrace: (err as Error).stack || null,
-        status: 'In Progress',
-      });
+      await ErrorsDao.logError(
+        {
+          userUuid: null,
+          description: 'Error retrieving CDLI image',
+          stacktrace: (err as Error).stack || null,
+          status: 'In Progress',
+        },
+        trx
+      );
     }
 
     try {
@@ -141,12 +155,15 @@ class ResourceDao {
         cdliLinks.push(lineArtUrl);
       }
     } catch (err) {
-      await ErrorsDao.logError({
-        userUuid: null,
-        description: 'Error retrieving CDLI line art',
-        stacktrace: (err as Error).stack || null,
-        status: 'In Progress',
-      });
+      await ErrorsDao.logError(
+        {
+          userUuid: null,
+          description: 'Error retrieving CDLI line art',
+          stacktrace: (err as Error).stack || null,
+          status: 'In Progress',
+        },
+        trx
+      );
     }
 
     const response: EpigraphyLabelLink[] = cdliLinks.map(link => ({
@@ -159,7 +176,11 @@ class ResourceDao {
     return response;
   }
 
-  async getValidMetImageLinks(textUuid: string): Promise<EpigraphyLabelLink[]> {
+  async getValidMetImageLinks(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<EpigraphyLabelLink[]> {
+    const k = trx || knexRead();
     const imageLinks: EpigraphyLabelLink[] = [];
 
     const fetch = (await dynamicImport(
@@ -168,13 +189,11 @@ class ResourceDao {
     )) as typeof import('node-fetch');
 
     try {
-      const row: ImageResource = await knexRead()('resource')
+      const row: ImageResource = await k('resource')
         .select('link', 'uuid')
         .whereIn(
           'uuid',
-          knexRead()('link')
-            .select('obj_uuid')
-            .where('reference_uuid', textUuid)
+          k('link').select('obj_uuid').where('reference_uuid', textUuid)
         )
         .where('type', 'img')
         .andWhere('container', 'metmuseum')
@@ -214,25 +233,33 @@ class ResourceDao {
       }
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
-      await ErrorsDao.logError({
-        userUuid: null,
-        stacktrace: (err as Error).stack || null,
-        status: 'New',
-        description: 'Error retrieving Metropolitan Museum images',
-      });
+      await ErrorsDao.logError(
+        {
+          userUuid: null,
+          stacktrace: (err as Error).stack || null,
+          status: 'New',
+          description: 'Error retrieving Metropolitan Museum images',
+        },
+        trx
+      );
     }
     return imageLinks;
   }
 
-  async getImageDesignatorMatches(preText: string): Promise<string[]> {
-    const results = await knexRead()('resource')
+  async getImageDesignatorMatches(
+    preText: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knexRead();
+    const results = await k('resource')
       .pluck('link')
       .where('link', 'like', `${preText}%`);
     return results;
   }
 
-  async insertResourceRow(row: ResourceRow) {
-    await knexWrite()('resource').insert({
+  async insertResourceRow(row: ResourceRow, trx?: Knex.Transaction) {
+    const k = trx || knexWrite();
+    await k('resource').insert({
       uuid: row.uuid,
       source_uuid: row.sourceUuid,
       type: row.type,
@@ -242,15 +269,20 @@ class ResourceDao {
     });
   }
 
-  async insertLinkRow(row: LinkRow) {
-    await knexWrite()('link').insert({
+  async insertLinkRow(row: LinkRow, trx?: Knex.Transaction) {
+    const k = trx || knexWrite();
+    await k('link').insert({
       uuid: row.uuid,
       reference_uuid: row.referenceUuid,
       obj_uuid: row.objUuid,
     });
   }
 
-  async getDirectObjectLink(tag: string): Promise<ResourceRow | null> {
+  async getDirectObjectLink(
+    tag: string,
+    trx?: Knex.Transaction
+  ): Promise<ResourceRow | null> {
+    const k = trx || knexRead();
     const tagList: { [key: string]: string } = {
       explanation: '3d4d9397-b6a8-11ec-bcc3-0282f921eac9',
     };
@@ -258,7 +290,7 @@ class ResourceDao {
     if (!uuid) {
       return null;
     }
-    const result: ResourceRow = await knexRead()('resource')
+    const result: ResourceRow = await k('resource')
       .select('uuid', 'source_uuid', 'type', 'container', 'format', 'link')
       .where({ uuid })
       .first();

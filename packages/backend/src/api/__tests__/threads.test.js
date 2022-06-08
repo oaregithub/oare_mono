@@ -51,8 +51,6 @@ describe('threads api test', () => {
     count: 1,
   };
 
-  const threadWord = 'threadWord';
-
   const MockThreadsDao = {
     getByReferenceUuid: jest.fn().mockResolvedValue(threadsGetByReferenceUuid),
     update: jest.fn().mockResolvedValue({}),
@@ -69,6 +67,12 @@ describe('threads api test', () => {
     getUserByUuid: jest.fn().mockResolvedValue({
       ...userGetUserByUuid,
       isAdmin: true,
+    }),
+  };
+
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
     }),
   };
 
@@ -105,6 +109,7 @@ describe('threads api test', () => {
     sl.set('CommentsDao', MockCommentsDao);
     sl.set('ThreadsDao', MockThreadsDao);
     sl.set('UserDao', MockUserDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);
