@@ -43,6 +43,14 @@ class GroupEditPermissionsDao {
       .del();
   }
 
+  async removeItemFromAllEditPermissions(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('group_edit_permissions').andWhere({ uuid }).del();
+  }
+
   async containsAssociation(
     uuid: string,
     groupId: number,

@@ -48,6 +48,10 @@ export default defineComponent({
           path: '/admin/denylist/texts',
         },
         {
+          label: 'Quarantined Texts',
+          path: '/admin/quarantine',
+        },
+        {
           label: 'Error Log',
           path: '/admin/errors',
           showIndicator: store.getters.displayAdminBadge.error,

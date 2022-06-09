@@ -283,6 +283,14 @@ class ResourceDao {
 
     return result;
   }
+
+  async removeLinkRowByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('link').del().where({ reference_uuid: referenceUuid });
+  }
 }
 
 export default new ResourceDao();

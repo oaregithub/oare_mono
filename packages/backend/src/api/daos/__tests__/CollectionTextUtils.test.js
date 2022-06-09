@@ -21,6 +21,10 @@ describe('CollectionTextUtils test', () => {
       textIsInAllowlist: jest.fn().mockResolvedValue(false),
     };
 
+    const QuarantineTextDao = {
+      textIsQuarantined: jest.fn().mockResolvedValue(false),
+    };
+
     const textUuid = 'text-uuid';
 
     const canViewText = () =>
@@ -31,6 +35,7 @@ describe('CollectionTextUtils test', () => {
       sl.set('PublicDenylistDao', PublicDenylistDao);
       sl.set('CollectionDao', CollectionDao);
       sl.set('GroupAllowlistDao', GroupAllowlistDao);
+      sl.set('QuarantineTextDao', QuarantineTextDao);
     });
 
     it('returns public status if user is not logged in', async () => {

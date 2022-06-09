@@ -737,6 +737,14 @@ class TextDiscourseDao {
       .orderBy('child_num');
     return rows;
   }
+
+  async removeDiscourseRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('text_discourse').del().where({ text_uuid: textUuid });
+  }
 }
 
 export default new TextDiscourseDao();

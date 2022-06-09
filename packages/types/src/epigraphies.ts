@@ -406,3 +406,9 @@ export interface ImageResourcePropertyDetails {
   side: string | null;
   view: string | null;
 }
+
+export interface QuarantineText {
+  text: Text;
+  hasEpigraphy: boolean;
+  timestamp: string;
+}

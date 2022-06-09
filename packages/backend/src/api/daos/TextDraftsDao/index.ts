@@ -262,6 +262,14 @@ class TextDraftsDao {
       .offset((page - 1) * limit);
     return draftUuids.map(({ uuid }) => uuid);
   }
+
+  async removeDraftsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('text_drafts').del().where({ text_uuid: textUuid });
+  }
 }
 
 export default new TextDraftsDao();

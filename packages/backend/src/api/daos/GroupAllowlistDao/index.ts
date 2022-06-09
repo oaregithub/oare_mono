@@ -44,6 +44,14 @@ class GroupAllowlistDao {
       .del();
   }
 
+  async removeItemFromAllAllowlists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('group_allowlist').where({ uuid }).del();
+  }
+
   async textIsInAllowlist(
     textUuid: string,
     userUuid: string | null,

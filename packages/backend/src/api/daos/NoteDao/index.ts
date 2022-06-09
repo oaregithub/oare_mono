@@ -1,4 +1,4 @@
-import { knexRead } from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { DiscourseNote } from '@oare/types';
 import { Knex } from 'knex';
 
@@ -23,6 +23,14 @@ class NoteDao {
       .where('note.reference_uuid', referenceUuid);
 
     return rows;
+  }
+
+  async removeNotesByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('note').del().where({ reference_uuid: referenceUuid });
   }
 }
 

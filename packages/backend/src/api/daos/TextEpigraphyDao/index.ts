@@ -8,7 +8,7 @@ import {
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
-import knex, { Knex } from 'knex';
+import { Knex } from 'knex';
 import {
   getSearchQuery,
   convertEpigraphicUnitRows,
@@ -447,6 +447,14 @@ class TextEpigraphyDao {
       reading: row.reading,
       discourse_uuid: row.discourseUuid,
     });
+  }
+
+  async removeEpigraphyRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('text_epigraphy').del().where({ text_uuid: textUuid });
   }
 }
 

@@ -37,6 +37,24 @@
             @click="photosDialogOpen = true"
             >Add Images</v-btn
           >
+          <oare-dialog
+            v-if="isAdmin && textUuid"
+            v-model="quarantineDialog"
+            title="Quarantine Text"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="quarantineText"
+            :submitLoading="quarantineLoading"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" class="mx-4" v-on="on"
+                ><v-icon>mdi-biohazard</v-icon></v-btn
+              >
+            </template>
+            Are you sure you want to quarantine this text? If you continue, this
+            text will no longer appear in text lists or search results and its
+            contents will not count toward any item totals.
+          </oare-dialog>
         </template>
 
         <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
@@ -572,6 +590,25 @@ export default defineComponent({
       }
     };
 
+    const quarantineText = async () => {
+      try {
+        quarantineLoading.value = true;
+        await server.quarantineText(textUuid!);
+        quarantineDialog.value = false;
+        router.push(`/collections/name/${textInfo.value.collection.uuid}`);
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error quarantining text. Please try again.',
+          err as Error
+        );
+      } finally {
+        quarantineLoading.value = false;
+      }
+    };
+
+    const quarantineDialog = ref(false);
+    const quarantineLoading = ref(false);
+
     return {
       textInfo,
       isEditing,
@@ -597,6 +634,9 @@ export default defineComponent({
       setPhotosToAdd,
       uploadPhotos,
       canAddPictures,
+      quarantineText,
+      quarantineDialog,
+      quarantineLoading,
     };
   },
 });
