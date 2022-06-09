@@ -9,6 +9,7 @@
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"
+      :textUuid="textUuid"
       class="test-discourses"
     />
     <TextSourceReading

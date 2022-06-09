@@ -5,10 +5,15 @@
     <v-list>
       <v-list-item class="ma-2">
         <v-list-item-content>
-          <v-list-item-title>Disable Cache</v-list-item-title>
+          <v-list-item-title>Apply Cache</v-list-item-title>
           <v-list-item-subtitle>
-            Temporarily disables cache for development purposes. If not manually
-            re-enabled, cache will automatically be re-enabled after 10 minutes.
+            Temporarily toggles the backend cache for development purposes. If
+            not manually re-enabled, the cache will automatically be re-enabled
+            after 10 minutes.
+          </v-list-item-subtitle>
+          <v-list-item-subtitle>
+            The toggle switch's position corresponds to the cache's current
+            status.
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>

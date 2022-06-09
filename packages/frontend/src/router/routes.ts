@@ -57,6 +57,7 @@ import PublicationsView from '../views/Texts/PublicationsView/index.vue';
 import ArchivesView from '../views/Texts/ArchivesView/index.vue';
 import ArchiveView from '../views/Texts/ArchivesView/archives/index.vue';
 import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
+import WordsInTextsSearch from '../views/Search/TextsSearch/WordsInTextSearch.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -305,6 +306,11 @@ const routes: RouteConfig[] = [
         path: 'texts',
         name: 'textsSearch',
         component: TextsSearch,
+      },
+      {
+        path: 'wordsInTexts',
+        name: 'wordsInTextsSearch',
+        component: WordsInTextsSearch,
       },
     ],
   },

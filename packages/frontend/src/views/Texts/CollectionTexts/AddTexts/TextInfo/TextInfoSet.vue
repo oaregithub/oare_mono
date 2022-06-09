@@ -32,7 +32,7 @@
         :rules="textNameRules"
         autofocus
         class="test-text-name"
-        :disabled="existingTextRow"
+        :disabled="!!existingTextRow"
       />
       <v-row class="pl-3">
         <h3 class="mt-1 mb-2 d-inline">Excavation</h3>
@@ -192,7 +192,7 @@
             outlined
             label="CDLI Number"
             placeholder="e.g. P361444"
-            :disabled="existingTextRow"
+            :disabled="!!existingTextRow"
           />
         </v-col>
       </v-row>
