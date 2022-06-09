@@ -56,7 +56,7 @@
       title="Permanently Delete Text(s)?"
       submitText="Yes"
       cancelText="Cancel"
-      @submit="deleteTexts"
+      @submit="setupReauthentication"
       :cancelDisabled="deleteLoading"
       :submitLoading="deleteLoading"
     >
@@ -69,6 +69,11 @@
           >Permanently Delete</v-btn
         >
       </template>
+      <reautheticate
+        v-model="reautheticateDialog"
+        description="To acknowledge that you understand that deleting the selected text(s) is permanent, please re-enter your password."
+        @reauthenticated="handleReauthentication"
+      />
       <span
         >Are you sure you want to permanently delete the selected text(s)? All
         associated database pieces will be permanently deleted. Once complete,
@@ -113,9 +118,13 @@ import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
 import { QuarantineText } from '@oare/types';
 import { DateTime } from 'luxon';
+import Reautheticate from '@/views/Authentication/Verification/Reautheticate.vue';
 
 export default defineComponent({
   name: 'QuarantinedTexts',
+  components: {
+    Reautheticate,
+  },
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -205,6 +214,16 @@ export default defineComponent({
       }
     };
 
+    const reautheticateDialog = ref(false);
+
+    const setupReauthentication = () => {
+      reautheticateDialog.value = true;
+    };
+
+    const handleReauthentication = async () => {
+      await deleteTexts();
+    };
+
     return {
       loading,
       listHeaders,
@@ -217,6 +236,9 @@ export default defineComponent({
       confirmDeleteDialog,
       deleteLoading,
       deleteTexts,
+      reautheticateDialog,
+      setupReauthentication,
+      handleReauthentication,
     };
   },
 });
