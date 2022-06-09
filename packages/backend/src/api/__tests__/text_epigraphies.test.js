@@ -153,6 +153,10 @@ describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
     getImageLinksByTextUuid: jest
       .fn()
       .mockResolvedValue(['test-cdli-link', 'test-s3-link']),
+    getResourceLinkByUuid: jest.fn().mockResolvedValue({
+      link: '',
+      container: '',
+    }),
   };
 
   const setup = () => {
@@ -236,6 +240,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       },
     ],
     hasEpigraphy: true,
+    zoteroData: [],
   };
 
   const mockTextEpigraphyDao = {
@@ -550,6 +555,7 @@ describe('POST /text_epigraphies/create', () => {
 
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
+    getVariableObjectByReference: jest.fn().mockResolvedValue([]),
   };
 
   const mockResourceDao = {
@@ -576,6 +582,11 @@ describe('POST /text_epigraphies/create', () => {
   const mockTreeDao = {
     insertTreeRow: jest.fn().mockResolvedValue(),
   };
+
+  const mockBibliographyDao = {
+    getBibliographyByUuid: jest.fn().mockResolvedValue(''),
+  };
+
   const mockUtils = {
     createTransaction: jest.fn(async cb => {
       await cb();
@@ -593,6 +604,7 @@ describe('POST /text_epigraphies/create', () => {
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('TreeDao', mockTreeDao);
+    sl.set('BibliographyDao', mockBibliographyDao);
     sl.set('utils', mockUtils);
   };
 
