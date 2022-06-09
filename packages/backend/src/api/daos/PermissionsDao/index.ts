@@ -1,5 +1,6 @@
 import { knexRead, knexWrite } from '@/connection';
 import { PermissionItem, PermissionName } from '@oare/types';
+import { Knex } from 'knex';
 import UserDao from '../UserDao';
 import UserGroupDao from '../UserGroupDao';
 
@@ -67,6 +68,13 @@ class PermissionsDao {
         'Allow group users to view text discourses associated with text epigraphies',
     },
     {
+      name: 'INSERT_PARENT_DISCOURSE_ROWS',
+      type: 'text',
+      description:
+        'Allow group users to articulate discourse hierarchy and insert new parent rows.',
+      dependencies: ['VIEW_TEXT_DISCOURSE'],
+    },
+    {
       name: 'EDIT_TRANSLATION',
       type: 'text',
       description: "Allow group users to edit a text's discourse translations",
@@ -132,18 +140,22 @@ class PermissionsDao {
     return this.ALL_PERMISSIONS;
   }
 
-  async getUserPermissions(userUuid: string | null): Promise<PermissionItem[]> {
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+  async getUserPermissions(
+    userUuid: string | null,
+    trx?: Knex.Transaction
+  ): Promise<PermissionItem[]> {
+    const k = trx || knexRead();
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
 
     if (user && user.isAdmin) {
       return this.ALL_PERMISSIONS;
     }
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid, trx);
 
       const userPermissions: PermissionName[] = (
-        await knexRead()('permissions')
+        await k('permissions')
           .select('permission')
           .whereIn('group_id', groupIds)
       ).map(row => row.permission);
@@ -155,11 +167,13 @@ class PermissionsDao {
     return [];
   }
 
-  async getGroupPermissions(groupId: number): Promise<PermissionItem[]> {
+  async getGroupPermissions(
+    groupId: number,
+    trx?: Knex.Transaction
+  ): Promise<PermissionItem[]> {
+    const k = trx || knexRead();
     const permissions: string[] = (
-      await knexRead()('permissions')
-        .select('permission')
-        .where('group_id', groupId)
+      await k('permissions').select('permission').where('group_id', groupId)
     ).map(row => row.permission);
 
     return this.ALL_PERMISSIONS.filter(permission =>
@@ -167,16 +181,26 @@ class PermissionsDao {
     );
   }
 
-  async addGroupPermission(groupId: number, { type, name }: PermissionItem) {
-    await knexWrite()('permissions').insert({
+  async addGroupPermission(
+    groupId: number,
+    { type, name }: PermissionItem,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('permissions').insert({
       group_id: groupId,
       type,
       permission: name,
     });
   }
 
-  async removePermission(groupId: number, permission: PermissionName) {
-    await knexWrite()('permissions')
+  async removePermission(
+    groupId: number,
+    permission: PermissionName,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('permissions')
       .where('group_id', groupId)
       .andWhere('permission', permission)
       .del();

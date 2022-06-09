@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex">
-      <v-tooltip bottom open-delay="800" :key="editing">
+      <v-tooltip bottom open-delay="800" :key="`${editing}-${form.uuid}`">
         <template #activator="{ on, attrs }">
           <v-btn
             v-if="canEdit && allowEditing && !editing"

@@ -14,11 +14,13 @@ export function getSequentialCharacterQuery(
   cooccurrences: SearchCooccurrence[],
   includeSuperfluous: boolean,
   mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries',
-  baseQuery?: Knex.QueryBuilder
+  baseQuery?: Knex.QueryBuilder,
+  trx?: Knex.Transaction
 ): Knex.QueryBuilder {
+  const k = trx || knexRead();
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
-  let query = baseQuery || knexRead()('text_epigraphy');
+  let query = baseQuery || k('text_epigraphy');
   query = query.leftJoin(
     'text_markup',
     'text_epigraphy.uuid',
@@ -38,7 +40,7 @@ export function getSequentialCharacterQuery(
           if (mode === 'respectAllBoundaries') {
             query = query.join('text_epigraphy AS before', function () {
               this.on('before.text_uuid', 'text_epigraphy.text_uuid').andOn(
-                knexRead().raw(
+                k.raw(
                   `(text_epigraphy.char_on_tablet = 1 or (\`before\`.char_on_tablet=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.char_on_tablet - 1 and before.discourse_uuid<>text_epigraphy.discourse_uuid))`
@@ -61,28 +63,28 @@ export function getSequentialCharacterQuery(
                 char
               )
               .andOn(
-                knexRead().raw(
+                k.raw(
                   `t${coocIndex}${wordIndex}${charIndex}.side=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.side`
                 )
               )
               .andOn(
-                knexRead().raw(
+                k.raw(
                   `t${coocIndex}${wordIndex}${charIndex}.char_on_tablet=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.char_on_tablet + ${charIndex + charOffset}`
                 )
               )
               .andOn(
-                knexRead().raw(
+                k.raw(
                   `t${coocIndex}${wordIndex}${charIndex}.line=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.line`
                 )
               )
               .andOn(
-                knexRead().raw(
+                k.raw(
                   `${
                     mode === 'respectAllBoundaries' ||
                     mode === 'respectBoundaries'
@@ -110,7 +112,7 @@ export function getSequentialCharacterQuery(
           query = query
             .leftJoin('text_epigraphy AS after', function () {
               this.on('after.text_uuid', 'text_epigraphy.text_uuid').andOn(
-                knexRead().raw(
+                k.raw(
                   `after.char_on_tablet=${
                     coocIndex === 0 ? 'text_epigraphy' : `t${coocIndex}00`
                   }.char_on_tablet + ${charIndex + charOffset + 1}`
@@ -118,7 +120,7 @@ export function getSequentialCharacterQuery(
               );
             })
             .where(
-              knexRead().raw(
+              k.raw(
                 `IF(after.char_on_tablet is null, 1=1, (after.discourse_uuid<>t${coocIndex}${wordIndex}${charIndex}.discourse_uuid or after.discourse_uuid is null))`
               )
             );
@@ -154,10 +156,12 @@ export function getSearchQuery(
   textsToHide: string[],
   includeSuperfluous: boolean,
   mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries',
-  textTitle?: string
+  textTitle?: string,
+  trx?: Knex.Transaction
 ) {
+  const k = trx || knexRead();
   // Join text table so text names can be returned
-  let query = knexRead()('text_epigraphy')
+  let query = k('text_epigraphy')
     .join('text', 'text.uuid', 'text_epigraphy.text_uuid')
     .join('hierarchy', 'hierarchy.object_uuid', 'text_epigraphy.text_uuid');
 
@@ -166,7 +170,8 @@ export function getSearchQuery(
     andCooccurrences,
     includeSuperfluous,
     mode,
-    query
+    query,
+    trx
   );
 
   if (textTitle) {
@@ -267,14 +272,19 @@ export const stringToCharsArray = (search: string): string[] => {
 
 export async function getNotOccurrenceTexts(
   characters: SearchCooccurrence[],
-  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries'
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries',
+  trx?: Knex.Transaction
 ): Promise<string[]> {
   const notCharacters = characters.filter(char => char.type === 'NOT');
   const notTexts =
     notCharacters.length > 0
-      ? await getSequentialCharacterQuery(notCharacters, true, mode).pluck(
-          'text_epigraphy.text_uuid'
-        )
+      ? await getSequentialCharacterQuery(
+          notCharacters,
+          true,
+          mode,
+          undefined,
+          trx
+        ).pluck('text_epigraphy.text_uuid')
       : [];
   return notTexts;
 }
