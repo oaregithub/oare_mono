@@ -762,17 +762,17 @@ class TextDiscourseDao {
     );
     while (numDiscourseRows > 0) {
       const parentUuids = (
-        await k('text_discourse')
+        await k('text_discourse') // eslint-disable-line no-await-in-loop
           .distinct('parent_uuid')
           .where({ text_uuid: textUuid })
           .whereNotNull('parent_uuid')
       ).map(row => row.parent_uuid);
-      const rowsToDelete: string[] = await k('text_discourse')
+      const rowsToDelete: string[] = await k('text_discourse') // eslint-disable-line no-await-in-loop
         .pluck('uuid')
         .where({ text_uuid: textUuid })
         .whereNotIn('uuid', parentUuids);
 
-      await k('text_discourse').del().whereIn('uuid', rowsToDelete);
+      await k('text_discourse').del().whereIn('uuid', rowsToDelete); // eslint-disable-line no-await-in-loop
 
       numDiscourseRows -= rowsToDelete.length;
     }

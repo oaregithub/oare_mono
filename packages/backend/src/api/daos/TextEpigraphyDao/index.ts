@@ -473,17 +473,17 @@ class TextEpigraphyDao {
     );
     while (numEpigraphyRows > 0) {
       const parentUuids = (
-        await k('text_epigraphy')
+        await k('text_epigraphy') // eslint-disable-line no-await-in-loop
           .distinct('parent_uuid')
           .where({ text_uuid: textUuid })
           .whereNotNull('parent_uuid')
       ).map(row => row.parent_uuid);
-      const rowsToDelete: string[] = await k('text_epigraphy')
+      const rowsToDelete: string[] = await k('text_epigraphy') // eslint-disable-line no-await-in-loop
         .pluck('uuid')
         .where({ text_uuid: textUuid })
         .whereNotIn('uuid', parentUuids);
 
-      await k('text_epigraphy').del().whereIn('uuid', rowsToDelete);
+      await k('text_epigraphy').del().whereIn('uuid', rowsToDelete); // eslint-disable-line no-await-in-loop
 
       numEpigraphyRows -= rowsToDelete.length;
     }
