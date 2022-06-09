@@ -74,14 +74,6 @@ class TextMarkupDao {
       obj_uuid: row.objectUuid,
     });
   }
-
-  async removeMarkupRowsByReferenceUuid(
-    referenceUuid: string,
-    trx?: Knex.Transaction
-  ) {
-    const k = trx || knexWrite();
-    await k('text_markup').del().where({ reference_uuid: referenceUuid });
-  }
 }
 
 export default new TextMarkupDao();

@@ -738,12 +738,44 @@ class TextDiscourseDao {
     return rows;
   }
 
+  async getNumDiscourseRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const countResult = await k('text_discourse')
+      .where({ text_uuid: textUuid })
+      .count({ count: 'text_discourse.uuid' })
+      .first();
+    return countResult && countResult.count ? (countResult.count as number) : 0;
+  }
+
   async removeDiscourseRowsByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
-    await k('text_discourse').del().where({ text_uuid: textUuid });
+
+    let numDiscourseRows = await this.getNumDiscourseRowsByTextUuid(
+      textUuid,
+      trx
+    );
+    while (numDiscourseRows > 0) {
+      const parentUuids = (
+        await k('text_discourse')
+          .distinct('parent_uuid')
+          .where({ text_uuid: textUuid })
+          .whereNotNull('parent_uuid')
+      ).map(row => row.parent_uuid);
+      const rowsToDelete: string[] = await k('text_discourse')
+        .pluck('uuid')
+        .where({ text_uuid: textUuid })
+        .whereNotIn('uuid', parentUuids);
+
+      await k('text_discourse').del().whereIn('uuid', rowsToDelete);
+
+      numDiscourseRows -= rowsToDelete.length;
+    }
   }
 }
 

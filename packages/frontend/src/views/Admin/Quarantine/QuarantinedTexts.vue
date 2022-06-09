@@ -25,7 +25,7 @@
 
     <oare-dialog
       v-model="confirmRestoreDialog"
-      title="Restore Text(s)"
+      title="Restore Text(s)?"
       submitText="Yes"
       cancelText="Cancel"
       @submit="restoreTexts"
@@ -53,10 +53,11 @@
 
     <oare-dialog
       v-model="confirmDeleteDialog"
-      title="Permanently Delete Text(s)"
+      title="Permanently Delete Text(s)?"
       submitText="Yes"
       cancelText="Cancel"
       @submit="deleteTexts"
+      :cancelDisabled="deleteLoading"
       :submitLoading="deleteLoading"
     >
       <template v-slot:activator="{ on }">
@@ -68,11 +69,16 @@
           >Permanently Delete</v-btn
         >
       </template>
-      Are you sure you want to permanently delete the selected text(s)? All
-      associated database pieces will be permanently deleted. Once complete,
-      this action cannot be undone.
-
-      <ul>
+      <span
+        >Are you sure you want to permanently delete the selected text(s)? All
+        associated database pieces will be permanently deleted. Once complete,
+        this action cannot be undone.</span
+      >
+      <br />
+      <b class="mt-4"
+        >NOTE: This operation will take a few moments to complete.</b
+      >
+      <ul class="mt-4">
         <li v-for="text in selectedTexts" :key="text.text.uuid">
           {{ text.text.name }}
         </li>

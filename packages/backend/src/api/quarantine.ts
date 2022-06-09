@@ -128,9 +128,8 @@ router
           trx
         );
         await ItemPropertiesDao.deletePropertiesByReferenceUuid(textUuid, trx);
-        await TextMarkupDao.removeMarkupRowsByReferenceUuid(textUuid, trx);
-        await TextEpigraphyDao.removeEpigraphyRowsByTextUuid(textUuid, trx); // FIXME foreign key issues (with parent-child relationship)
-        await TextDiscourseDao.removeDiscourseRowsByTextUuid(textUuid, trx); // FIXME foreign key issues (with parent-child relationship)
+        await TextEpigraphyDao.removeEpigraphyRowsByTextUuid(textUuid, trx);
+        await TextDiscourseDao.removeDiscourseRowsByTextUuid(textUuid, trx);
         await ResourceDao.removeLinkRowByReferenceUuid(textUuid, trx);
         await HierarchyDao.removeHierarchyTextRowsByTextUuid(textUuid, trx);
         await NoteDao.removeNotesByReferenceUuid(textUuid, trx);

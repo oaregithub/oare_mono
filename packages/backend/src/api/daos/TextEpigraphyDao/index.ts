@@ -449,12 +449,44 @@ class TextEpigraphyDao {
     });
   }
 
+  async getNumEpigraphyRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const countResult = await k('text_epigraphy')
+      .where({ text_uuid: textUuid })
+      .count({ count: 'text_epigraphy.uuid' })
+      .first();
+    return countResult && countResult.count ? (countResult.count as number) : 0;
+  }
+
   async removeEpigraphyRowsByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
-    await k('text_epigraphy').del().where({ text_uuid: textUuid });
+
+    let numEpigraphyRows = await this.getNumEpigraphyRowsByTextUuid(
+      textUuid,
+      trx
+    );
+    while (numEpigraphyRows > 0) {
+      const parentUuids = (
+        await k('text_epigraphy')
+          .distinct('parent_uuid')
+          .where({ text_uuid: textUuid })
+          .whereNotNull('parent_uuid')
+      ).map(row => row.parent_uuid);
+      const rowsToDelete: string[] = await k('text_epigraphy')
+        .pluck('uuid')
+        .where({ text_uuid: textUuid })
+        .whereNotIn('uuid', parentUuids);
+
+      await k('text_epigraphy').del().whereIn('uuid', rowsToDelete);
+
+      numEpigraphyRows -= rowsToDelete.length;
+    }
   }
 }
 
