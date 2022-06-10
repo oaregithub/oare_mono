@@ -2,7 +2,6 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
-import { sk } from 'date-fns/locale';
 
 describe('GET /text_epigraphies/transliteration', () => {
   const PATH = `${API_PATH}/text_epigraphies/transliteration`;
@@ -577,6 +576,11 @@ describe('POST /text_epigraphies/create', () => {
   const mockTreeDao = {
     insertTreeRow: jest.fn().mockResolvedValue(),
   };
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
 
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
@@ -589,6 +593,7 @@ describe('POST /text_epigraphies/create', () => {
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('TreeDao', mockTreeDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);
@@ -599,35 +604,45 @@ describe('POST /text_epigraphies/create', () => {
   it('returns 201 on successful text creation', async () => {
     const response = await sendRequest();
     expect(mockTextDao.insertTextRow).toHaveBeenCalledWith(
-      mockPayload.tables.text
+      mockPayload.tables.text,
+      undefined
     );
     expect(mockHierarchyDao.insertHierarchyRow).toHaveBeenCalledWith(
-      mockPayload.tables.hierarchy
+      mockPayload.tables.hierarchy,
+      undefined
     );
     expect(mockItemPropertiesDao.addProperty).toHaveBeenCalledWith(
-      mockPayload.tables.itemProperties[0]
+      mockPayload.tables.itemProperties[0],
+      undefined
     );
     expect(mockResourceDao.insertResourceRow).toHaveBeenCalledWith(
-      mockPayload.tables.resources[0]
+      mockPayload.tables.resources[0],
+      undefined
     );
     expect(mockResourceDao.insertLinkRow).toHaveBeenCalledWith(
-      mockPayload.tables.links[0]
+      mockPayload.tables.links[0],
+      undefined
     );
     expect(mockTreeDao.insertTreeRow).toHaveBeenCalledWith(
-      mockPayload.tables.trees[0]
+      mockPayload.tables.trees[0],
+      undefined
     );
     expect(mockTextDiscourseDao.insertDiscourseRow).toHaveBeenCalledWith(
-      mockPayload.tables.discourses[0]
+      mockPayload.tables.discourses[0],
+      undefined
     );
     expect(mockTextEpigraphyDao.insertEpigraphyRow).toHaveBeenCalledWith(
-      mockPayload.tables.epigraphies[0]
+      mockPayload.tables.epigraphies[0],
+      undefined
     );
     expect(mockTextMarkupDao.insertMarkupRow).toHaveBeenCalledWith(
-      mockPayload.tables.markups[0]
+      mockPayload.tables.markups[0],
+      undefined
     );
     expect(mockPublicDenylistDao.addItemsToDenylist).toHaveBeenCalledWith(
       [mockPayload.tables.text.uuid],
-      'text'
+      'text',
+      undefined
     );
     expect(response.status).toBe(201);
   });

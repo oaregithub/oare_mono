@@ -31,7 +31,8 @@
         class="mx-6 mb-6"
         >Insert Parent Discourse</v-btn
       >
-      <insert-parent-discourse-dialog
+      <component
+        :is="insertParentDiscourseComponent"
         v-model="insertParentDiscourseDialog"
         :key="insertParentDiscourseKey"
         :discourseSelections="discourseSelections"
@@ -137,7 +138,6 @@ import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
-import insertParentDiscourseDialog from './InsertParentDiscouresDialog.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -148,14 +148,13 @@ export default defineComponent({
     },
     textUuid: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   components: {
     DiscoursePropertiesCard,
-    insertParentDiscourseDialog,
   },
-  setup({ discourseUnits }) {
+  setup({ discourseUnits, textUuid }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
@@ -304,8 +303,14 @@ export default defineComponent({
       }
     });
 
-    const canInsertParentDiscourse = computed(() =>
-      store.hasPermission('INSERT_PARENT_DISCOURSE_ROWS')
+    const canInsertParentDiscourse = computed(
+      () => textUuid && store.hasPermission('INSERT_PARENT_DISCOURSE_ROWS')
+    );
+
+    const insertParentDiscourseComponent = computed(() =>
+      textUuid && canInsertParentDiscourse.value
+        ? () => import('./InsertParentDiscourseDialog.vue')
+        : null
     );
 
     return {
@@ -326,6 +331,7 @@ export default defineComponent({
       insertParentDiscourseDialog,
       insertParentDiscourseKey,
       canInsertParentDiscourse,
+      insertParentDiscourseComponent,
     };
   },
 });

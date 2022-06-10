@@ -68,27 +68,34 @@ describe('search test', () => {
           ...query,
           characters: 'asz2-hu3-SZU-t,um-s,e2-HU-tam3',
         });
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        'áš',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        'ḫù',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        'ŠU',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        'ṭum',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        'ṣé',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        'ḪU',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        'tàm',
-      ]);
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['áš'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['ḫù'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['ŠU'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['ṭum'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['ṣé'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['ḪU'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['tàm'],
+        undefined
+      );
       expect(response.status).toBe(200);
     });
 
@@ -99,36 +106,46 @@ describe('search test', () => {
           ...query,
           characters: '2AŠ-3-4DIŠ-12AŠ-23DIŠ-34-1/2',
         });
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '2AŠ',
-      ]); // 2AŠ
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '3DIŠ',
-      ]); // 3
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '4DIŠ',
-      ]); // 4DIŠ
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '1U',
-      ]); // 12AŠ
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '2AŠ',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '2U',
-      ]); // 23DIŠ;
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '3DIŠ',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '3U',
-      ]); // 34
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '4DIŠ',
-      ]);
-      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith([
-        '½',
-      ]); // 1/2
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['2AŠ'],
+        undefined
+      ); // 2AŠ
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['3DIŠ'],
+        undefined
+      ); // 3
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['4DIŠ'],
+        undefined
+      ); // 4DIŠ
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['1U'],
+        undefined
+      ); // 12AŠ
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['2AŠ'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['2U'],
+        undefined
+      ); // 23DIŠ;
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['3DIŠ'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['3U'],
+        undefined
+      ); // 34
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['4DIŠ'],
+        undefined
+      );
+      expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
+        ['½'],
+        undefined
+      ); // 1/2
       expect(response.status).toBe(200);
     });
 
@@ -143,13 +160,15 @@ describe('search test', () => {
       // Cum
       const firstSearchArray = consonants.map(consonant => `${consonant}um`);
       expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
-        firstSearchArray
+        firstSearchArray,
+        undefined
       );
 
       // IŠCAR
       const secondSearchArray = consonants.map(consonant => `IŠ${consonant}AR`);
       expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
-        secondSearchArray
+        secondSearchArray,
+        undefined
       );
       expect(response.status).toBe(200);
     });
@@ -173,7 +192,8 @@ describe('search test', () => {
         ...firstSignSubscriptVowels,
       ];
       expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
-        firstSignPossibleVowels
+        firstSignPossibleVowels,
+        undefined
       );
 
       // &tu
@@ -186,7 +206,8 @@ describe('search test', () => {
         ...secondSignSubscriptVowels,
       ];
       expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
-        secondSignPossibleVowels
+        secondSignPossibleVowels,
+        undefined
       );
 
       expect(response.status).toBe(200);
@@ -203,13 +224,15 @@ describe('search test', () => {
       // [tm]u[rm]
       const firstSignArray = ['tur', 'tum', 'mur', 'mum'];
       expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
-        firstSignArray
+        firstSignArray,
+        undefined
       );
 
       // [bdn]a
       const secondSignArray = ['ba', 'da', 'na'];
       expect(SignReadingDao.getIntellisearchSignUuids).toHaveBeenCalledWith(
-        secondSignArray
+        secondSignArray,
+        undefined
       );
 
       expect(response.status).toBe(200);

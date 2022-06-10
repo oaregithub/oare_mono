@@ -1,10 +1,12 @@
 import { knexRead } from '@/connection';
 import { Archive, Dossier, Text, ArchiveInfo, DossierInfo } from '@oare/types';
 import sl from '@/serviceLocator';
+import { Knex } from 'knex';
 
 class ArchiveDao {
-  async getAllArchives(): Promise<string[]> {
-    const uuids: string[] = await knexRead()('archive')
+  async getAllArchives(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
+    const uuids: string[] = await k('archive')
       .pluck('archive.uuid')
       .where('parent_uuid', 'b0fe5c7d-6c1c-11ec-bcc3-0282f921eac9');
 
@@ -14,9 +16,11 @@ class ArchiveDao {
   async getArchiveByUuid(
     uuid: string,
     userUuid: string | null,
-    { page = 1, rows = 10, search = '' }
+    { page = 1, rows = 10, search = '' },
+    trx?: Knex.Transaction
   ): Promise<Archive> {
-    const archive: Archive = await knexRead()('archive')
+    const k = trx || knexRead();
+    const archive: Archive = await k('archive')
       .select(
         'archive.id as id',
         'archive.uuid as uuid',
@@ -28,32 +32,43 @@ class ArchiveDao {
       .where('archive.uuid', uuid)
       .first();
 
-    const dossierUuids = await this.getArchiveDossiers(uuid, {
-      page,
-      rows,
-      search,
-    });
+    const dossierUuids = await this.getArchiveDossiers(
+      uuid,
+      {
+        page,
+        rows,
+        search,
+      },
+      trx
+    );
     archive.dossiersInfo = await Promise.all(
       dossierUuids.map(dossierUuid =>
-        this.getDossierInfo(dossierUuid, userUuid)
+        this.getDossierInfo(dossierUuid, userUuid, trx)
       )
     );
-    archive.texts = await this.getArchiveTexts(uuid, userUuid, {
-      page,
-      rows,
-      search,
-    });
-    archive.totalTexts = await this.getTotalTexts(uuid, userUuid);
-    archive.totalDossiers = await this.getTotalDossiers(uuid);
+    archive.texts = await this.getArchiveTexts(
+      uuid,
+      userUuid,
+      {
+        page,
+        rows,
+        search,
+      },
+      trx
+    );
+    archive.totalTexts = await this.getTotalTexts(uuid, userUuid, trx);
+    archive.totalDossiers = await this.getTotalDossiers(uuid, trx);
     return archive;
   }
 
   async getArchiveDossiers(
     parentUuid: string,
-    { page = 1, rows = 10, search = '' }
+    { page = 1, rows = 10, search = '' },
+    trx?: Knex.Transaction
   ): Promise<string[]> {
+    const k = trx || knexRead();
     const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
-    const uuids: string[] = await knexRead()('archive')
+    const uuids: string[] = await k('archive')
       .pluck('archive.uuid')
       .where('parent_uuid', parentUuid)
       .andWhere(function () {
@@ -68,9 +83,11 @@ class ArchiveDao {
 
   async getArchiveInfo(
     uuid: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ): Promise<ArchiveInfo> {
-    const archive: Archive = await knexRead()('archive')
+    const k = trx || knexRead();
+    const archive: Archive = await k('archive')
       .select(
         'archive.id as id',
         'archive.uuid as uuid',
@@ -85,8 +102,8 @@ class ArchiveDao {
     const archiveInfo: ArchiveInfo = {
       name: archive.name,
       uuid: archive.uuid,
-      totalTexts: await this.getTotalTexts(uuid, userUuid),
-      totalDossiers: await this.getTotalDossiers(uuid),
+      totalTexts: await this.getTotalTexts(uuid, userUuid, trx),
+      totalDossiers: await this.getTotalDossiers(uuid, trx),
     };
     return archiveInfo;
   }
@@ -94,14 +111,17 @@ class ArchiveDao {
   async getArchiveTexts(
     uuid: string,
     userUuid: string | null,
-    { page = 1, rows = 10, search = '' }
+    { page = 1, rows = 10, search = '' },
+    trx?: Knex.Transaction
   ): Promise<Text[] | null> {
+    const k = trx || knexRead();
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
-      userUuid
+      userUuid,
+      trx
     );
     const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
-    const texts: Text[] = await knexRead()('link')
+    const texts: Text[] = await k('link')
       .select(
         'text.uuid as textUuid',
         'text.type as type',
@@ -142,9 +162,11 @@ class ArchiveDao {
   async getDossierByUuid(
     uuid: string,
     userUuid: string | null,
-    { page = 1, rows = 10, search = '' }
+    { page = 1, rows = 10, search = '' },
+    trx?: Knex.Transaction
   ): Promise<Dossier> {
-    const dossier: Dossier = await knexRead()('archive')
+    const k = trx || knexRead();
+    const dossier: Dossier = await k('archive')
       .select(
         'archive.id as id',
         'archive.uuid as uuid',
@@ -155,22 +177,29 @@ class ArchiveDao {
       .where('archive.uuid', uuid)
       .first();
 
-    dossier.texts = await this.getDossierTexts(uuid, userUuid, {
-      page,
-      rows,
-      search,
-    });
+    dossier.texts = await this.getDossierTexts(
+      uuid,
+      userUuid,
+      {
+        page,
+        rows,
+        search,
+      },
+      trx
+    );
 
-    dossier.totalTexts = await this.getTotalTexts(uuid, userUuid);
+    dossier.totalTexts = await this.getTotalTexts(uuid, userUuid, trx);
 
     return dossier;
   }
 
   async getDossierInfo(
     uuid: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ): Promise<DossierInfo> {
-    const dossier: Dossier = await knexRead()('archive')
+    const k = trx || knexRead();
+    const dossier: Dossier = await k('archive')
       .select('archive.uuid as uuid', 'archive.name as name')
       .where('archive.uuid', uuid)
       .first();
@@ -178,7 +207,7 @@ class ArchiveDao {
     const dossierInfo: DossierInfo = {
       name: dossier.name,
       uuid: dossier.uuid,
-      totalTexts: await this.getTotalTexts(uuid, userUuid),
+      totalTexts: await this.getTotalTexts(uuid, userUuid, trx),
     };
     return dossierInfo;
   }
@@ -186,14 +215,17 @@ class ArchiveDao {
   async getDossierTexts(
     uuid: string,
     userUuid: string | null,
-    { page = 1, rows = 10, search = '' }
+    { page = 1, rows = 10, search = '' },
+    trx?: Knex.Transaction
   ): Promise<Text[] | null> {
+    const k = trx || knexRead();
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
-      userUuid
+      userUuid,
+      trx
     );
     const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
-    const texts: Text[] = await knexRead()('link')
+    const texts: Text[] = await k('link')
       .select(
         'text.uuid as textUuid',
         'text.type as type',
@@ -231,21 +263,32 @@ class ArchiveDao {
     return texts || null;
   }
 
-  async getTotalDossiers(uuid: string): Promise<number> {
-    const totalDossiers = await knexRead()('archive')
-      .select(knexRead().raw('count(archive.uuid) as total'))
+  async getTotalDossiers(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const totalDossiers = await k('archive')
+      .select(k.raw('count(archive.uuid) as total'))
       .where('parent_uuid', uuid)
       .first();
     const total: number = Number(totalDossiers.total);
     return total;
   }
 
-  async getTotalTexts(uuid: string, userUuid: string | null): Promise<number> {
+  async getTotalTexts(
+    uuid: string,
+    userUuid: string | null,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
-      userUuid
+      userUuid,
+      trx
     );
-    const totalTexts = await knexRead()('link')
+    const totalTexts = await k('link')
       .select(knexRead().raw('count(text.uuid) as total'))
       .innerJoin('archive', 'link.obj_uuid', 'archive.uuid')
       .innerJoin('text', 'link.reference_uuid', 'text.uuid')

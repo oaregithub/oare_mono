@@ -1,5 +1,6 @@
-import { DiscourseUnit, WordsInTextsSearchResultRow } from '@oare/types';
-import { knexWrite, knexRead } from '@/connection';
+import { DiscourseUnit } from '@oare/types';
+import { knexRead } from '@/connection';
+import { Knex } from 'knex';
 import { DiscourseRow, TextWithDiscourseUuids } from './index';
 
 export function createNestedDiscourses(
@@ -68,57 +69,15 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
     .join(' ');
 }
 
-export async function incrementChildNum(
-  textUuid: string,
-  parentUuid: string,
-  childNum: number | null
-): Promise<void> {
-  if (childNum) {
-    await knexWrite()('text_discourse')
-      .where({
-        text_uuid: textUuid,
-        parent_uuid: parentUuid,
-      })
-      .andWhere('child_num', '>=', childNum)
-      .increment('child_num', 1);
-  }
-}
-
-export async function incrementWordOnTablet(
-  textUuid: string,
-  wordOnTablet: number | null
-): Promise<void> {
-  if (wordOnTablet) {
-    await knexWrite()('text_discourse')
-      .where({
-        text_uuid: textUuid,
-      })
-      .andWhere('word_on_tablet', '>=', wordOnTablet)
-      .increment('word_on_tablet', 1);
-  }
-}
-
-export async function incrementObjInText(
-  textUuid: string,
-  objInText: number | null
-): Promise<void> {
-  if (objInText) {
-    await knexWrite()('text_discourse')
-      .where({
-        text_uuid: textUuid,
-      })
-      .andWhere('obj_in_text', '>=', objInText)
-      .increment('obj_in_text', 1);
-  }
-}
-
 export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
   spellingUuids: string[][],
   numWordsBetween: number[],
   textsToHide: string[],
-  sequenced: boolean
+  sequenced: boolean,
+  trx?: Knex.Transaction
 ) {
-  let query = knexRead()('text_discourse as td0').whereIn(
+  const k = trx || knexRead();
+  let query = k('text_discourse as td0').whereIn(
     'td0.spelling_uuid',
     spellingUuids[0]
   );
@@ -130,27 +89,23 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
           if (sequenced) {
             if (numWordsBetween[i - 1] > -1) {
               this.andOn(
-                knexRead().raw(
+                k.raw(
                   `td${i}.word_on_tablet <= (td${i - 1}.word_on_tablet + ?)`,
                   [numWordsBetween[i - 1]]
                 )
               ).andOn(
-                knexRead().raw(
-                  `td${i}.word_on_tablet > td${i - 1}.word_on_tablet`
-                )
+                k.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
               );
             } else {
               this.andOn(
-                knexRead().raw(
-                  knexRead().raw(
-                    `td${i}.word_on_tablet > td${i - 1}.word_on_tablet`
-                  )
+                k.raw(
+                  k.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
                 )
               );
             }
           } else if (numWordsBetween[i - 1] > -1) {
             this.andOn(
-              knexRead().raw(
+              k.raw(
                 `ABS(td${i}.word_on_tablet - td${i - 1}.word_on_tablet) <= ?`,
                 [numWordsBetween[i - 1]]
               )
@@ -217,9 +172,11 @@ export async function createTextWithDiscourseUuidsArray(
 
 export async function getTextDiscourseForWordsInTextsSearch(
   textUuid: string,
-  discourseUuids: string[]
+  discourseUuids: string[],
+  trx?: Knex.Transaction
 ): Promise<DiscourseUnit[]> {
-  const minMax = await knexRead()('text_discourse')
+  const k = trx || knexRead();
+  const minMax = await k('text_discourse')
     .max({ max: 'word_on_tablet ' })
     .min({ min: 'word_on_tablet' })
     .where('text_uuid', textUuid)
@@ -232,7 +189,8 @@ export async function getTextDiscourseForWordsInTextsSearch(
   const discourseUnits: DiscourseUnit[] = await getTextDiscourseUnitsForWordsInTexts(
     textUuid,
     min,
-    max
+    max,
+    trx
   );
 
   return discourseUnits;
@@ -241,9 +199,11 @@ export async function getTextDiscourseForWordsInTextsSearch(
 export async function getTextDiscourseUnitsForWordsInTexts(
   textUuid: string,
   min: number,
-  max: number
+  max: number,
+  trx?: Knex.Transaction
 ): Promise<DiscourseUnit[]> {
-  const discourseQuery = knexRead()('text_discourse')
+  const k = trx || knexRead();
+  const discourseQuery = k('text_discourse')
     .select(
       'text_discourse.uuid',
       'text_discourse.type',
