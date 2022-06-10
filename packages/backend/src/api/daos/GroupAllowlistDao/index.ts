@@ -9,10 +9,17 @@ class GroupAllowlistDao {
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knexRead();
+
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
+
     const uuids = await k('group_allowlist')
       .pluck('uuid')
       .where('group_id', groupId)
-      .andWhere('type', type);
+      .andWhere('type', type)
+      .whereNotIn('uuid', quarantinedTexts);
 
     return uuids;
   }

@@ -1,4 +1,5 @@
 import { knexRead, knexWrite } from '@/connection';
+import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
 class GroupEditPermissionsDao {
@@ -8,10 +9,17 @@ class GroupEditPermissionsDao {
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knexRead();
+
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
+
     const uuids = await k('group_edit_permissions')
       .pluck('uuid')
       .where('group_id', groupId)
-      .andWhere('type', type);
+      .andWhere('type', type)
+      .whereNotIn('uuid', quarantinedTexts);
 
     return uuids;
   }
