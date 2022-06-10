@@ -175,6 +175,7 @@
         <epigraphy-full-display
           v-else-if="disableEditing"
           v-bind="routeProps"
+          :disableEditing="true"
           :localDiscourseInfo="localDiscourseInfo"
         />
         <router-view
@@ -293,6 +294,10 @@ export default defineComponent({
       type: Array as PropType<TextDiscourseRow[]>,
       required: false,
     },
+    forceAllowAdminView: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   setup({
@@ -300,6 +305,7 @@ export default defineComponent({
     discourseToHighlight,
     localEpigraphyUnits,
     localImageUrls,
+    forceAllowAdminView,
   }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
@@ -464,7 +470,10 @@ export default defineComponent({
       if (localEpigraphyUnits) {
         textInfo.value = localEpigraphyUnits;
       } else if (textUuid) {
-        textInfo.value = await server.getEpigraphicInfo(textUuid);
+        textInfo.value = await server.getEpigraphicInfo(
+          textUuid,
+          forceAllowAdminView
+        );
       }
     };
 

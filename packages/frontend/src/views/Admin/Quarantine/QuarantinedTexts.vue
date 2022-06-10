@@ -90,6 +90,39 @@
       </ul>
     </oare-dialog>
 
+    <oare-dialog
+      v-if="selectedTextUuid"
+      v-model="selectedTextDialog"
+      :persistent="false"
+      :width="1400"
+      :showSubmit="false"
+      :showCancel="false"
+      closeButton
+      :key="selectedTextUuid"
+    >
+      <v-row>
+        <v-col cols="1">
+          <v-icon color="red" size="100">mdi-biohazard</v-icon>
+        </v-col>
+        <v-col cols="11">
+          <v-row class="ma-0 pb-4">
+            <h1 class="red--text">Quarantine Warning</h1>
+          </v-row>
+          <span class="red--text"
+            >This text has been marked as quarantined and is only available for
+            reference within this dialog window. No edits are allowed on
+            quarantined texts. If you would like to make edits or view this text
+            on the site, please restore the text.</span
+          >
+        </v-col>
+      </v-row>
+      <epigraphy-view
+        :textUuid="selectedTextUuid"
+        :disableEditing="true"
+        :forceAllowAdminView="true"
+      />
+    </oare-dialog>
+
     <v-data-table
       :headers="listHeaders"
       :items="texts"
@@ -98,10 +131,11 @@
       show-select
       v-model="selectedTexts"
       ><template #[`item.name`]="{ item }">
-        <router-link
+        <a
           v-if="item.hasEpigraphy"
-          :to="`/epigraphies/${item.text.uuid}`"
-          >{{ item.text.name }}</router-link
+          @click="setupTextDialog(item.text.uuid)"
+          class="text-decoration-underline"
+          >{{ item.text.name }}</a
         >
         <span v-else>{{ item.text.name }}</span>
       </template>
@@ -119,11 +153,13 @@ import { DataTableHeader } from 'vuetify';
 import { QuarantineText } from '@oare/types';
 import { DateTime } from 'luxon';
 import Reautheticate from '@/views/Authentication/Verification/Reautheticate.vue';
+import EpigraphyView from '@/views/Texts/EpigraphyView/index.vue';
 
 export default defineComponent({
   name: 'QuarantinedTexts',
   components: {
     Reautheticate,
+    EpigraphyView,
   },
   setup() {
     const server = sl.get('serverProxy');
@@ -224,6 +260,14 @@ export default defineComponent({
       await deleteTexts();
     };
 
+    const selectedTextUuid = ref<string | null>(null);
+    const selectedTextDialog = ref(false);
+
+    const setupTextDialog = (textUuid: string) => {
+      selectedTextUuid.value = textUuid;
+      selectedTextDialog.value = true;
+    };
+
     return {
       loading,
       listHeaders,
@@ -239,6 +283,9 @@ export default defineComponent({
       reautheticateDialog,
       setupReauthentication,
       handleReauthentication,
+      selectedTextUuid,
+      selectedTextDialog,
+      setupTextDialog,
     };
   },
 });
