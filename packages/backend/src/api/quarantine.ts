@@ -39,7 +39,7 @@ router
 
       await QuarantineTextDao.quarantineText(textUuid);
 
-      res.status(204).end();
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
@@ -105,7 +105,6 @@ router
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
     const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-    const TextMarkupDao = sl.get('TextMarkupDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const ResourceDao = sl.get('ResourceDao');
