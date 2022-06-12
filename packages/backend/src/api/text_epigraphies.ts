@@ -85,8 +85,6 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const BibliographyDao = sl.get('BibliographyDao');
     const ResourceDao = sl.get('ResourceDao');
 
-    const s3 = new AWS.S3();
-
     const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
       textUuid,
       'b3938276-173b-11ec-8b77-024de1c1cc1d'
@@ -99,40 +97,10 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const zoteroKeys = bibliographies.map(bib => bib.zoteroKey);
 
     const citationStyle = 'chicago-author-date';
-    let apiKey = '';
 
-    if (process.env.ZOTERO_API_KEY) {
-      apiKey = process.env.ZOTERO_API_KEY;
-    } else {
-      const response = (
-        await s3
-          .getObject({
-            Bucket: 'oare-resources',
-            Key: 'zotero_auth.json',
-          })
-          .promise()
-      ).Body;
-      if (response) {
-        apiKey = JSON.parse(response as string).authKey;
-      }
-    }
-
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
-    const zoteroResp = await Promise.all(
-      zoteroKeys.map(zoteroKey =>
-        fetch.default(
-          `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-            },
-          }
-        )
-      )
+    const zoteroResp = await BibliographyDao.getZoteroResponses(
+      zoteroKeys,
+      citationStyle
     );
 
     const zoteroJson: ZoteroResponse[] = (await Promise.all(

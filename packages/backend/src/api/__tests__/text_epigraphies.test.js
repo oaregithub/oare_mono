@@ -585,6 +585,7 @@ describe('POST /text_epigraphies/create', () => {
 
   const mockBibliographyDao = {
     getBibliographyByUuid: jest.fn().mockResolvedValue(''),
+    getZoteroResponses: jest.fn().mockResolvedValue([]),
   };
 
   const mockUtils = {

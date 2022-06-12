@@ -1,4 +1,5 @@
 import { knexRead } from '@/connection';
+import { getZoteroAPIKEY } from '@/utils';
 import { dynamicImport } from 'tsimportlib';
 
 class BibliographyDao {
@@ -10,11 +11,28 @@ class BibliographyDao {
     return row;
   }
 
-  async getZoteroResponses(zoteroKey: string) {
+  async getZoteroResponses(zoteroKeys: string[], citationStyle: string) {
+    const apiKey = await getZoteroAPIKEY();
+
     const fetch = (await dynamicImport(
       'node-fetch',
       module
     )) as typeof import('node-fetch');
+
+    const response = await Promise.all(
+      zoteroKeys.map(zoteroKey =>
+        fetch.default(
+          `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+            },
+          }
+        )
+      )
+    );
+
+    return response;
   }
 }
 
