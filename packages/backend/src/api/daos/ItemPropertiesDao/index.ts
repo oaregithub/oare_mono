@@ -141,7 +141,7 @@ class ItemPropertiesDao {
   async getVariableObjectByReference(
     referenceUuid: string,
     variableUuid: string
-  ) {
+  ): Promise<string[]> {
     const objUuids: string[] = await knexRead()('item_properties')
       .pluck('object_uuid')
       .where('variable_uuid', variableUuid)

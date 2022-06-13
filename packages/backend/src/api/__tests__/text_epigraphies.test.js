@@ -153,10 +153,6 @@ describe('GET /text_epigraphies/images/:uuid/:cdliNum', () => {
     getImageLinksByTextUuid: jest
       .fn()
       .mockResolvedValue(['test-cdli-link', 'test-s3-link']),
-    getResourceLinkByUuid: jest.fn().mockResolvedValue({
-      link: '',
-      container: '',
-    }),
   };
 
   const setup = () => {
@@ -309,9 +305,29 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     getTextCollection: jest.fn().mockResolvedValue(mockResponse.collection),
   };
 
+  const mockItemPropertiesDao = {
+    addProperty: jest.fn().mockResolvedValue(),
+    getVariableObjectByReference: jest.fn().mockResolvedValue(['test-variable-object-uuid']),
+  };
+
   const mockCollectionTextUtils = {
     canViewText: jest.fn().mockResolvedValue(true),
     canEditText: jest.fn().mockResolvedValue(false),
+  };
+
+  const mockResourceDao = {
+    getResourceLinkByUuid: jest.fn().mockResolvedValue({
+      link: 'test-resource-link-abc.pdf',
+      container: 'oare-unit-test',
+    }),
+    getFileURLByRows: jest.fn().mockResolvedValue(['https://oare-unit-test.com/test-resource-link-abc.pdf']),
+  };
+
+  const mockBibliographyDao = {
+    getBibliographyByUuid: jest.fn().mockResolvedValue([{
+      zoteroKey: 'test-bibliography-uuid',
+    },]),
+    getZoteroResponses: jest.fn().mockResolvedValue([]),
   };
 
   const setup = () => {
@@ -321,6 +337,9 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     sl.set('TextDraftsDao', mockTextDraftsDao);
     sl.set('CollectionDao', mockCollectionDao);
     sl.set('CollectionTextUtils', mockCollectionTextUtils);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('ResourceDao', mockResourceDao);
+    sl.set('BibliographyDao', mockBibliographyDao);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -555,7 +574,7 @@ describe('POST /text_epigraphies/create', () => {
 
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
-    getVariableObjectByReference: jest.fn().mockResolvedValue([]),
+    getVariableObjectByReference: jest.fn().mockResolvedValue(['test-variable-object-uuid']),
   };
 
   const mockResourceDao = {
@@ -583,11 +602,6 @@ describe('POST /text_epigraphies/create', () => {
     insertTreeRow: jest.fn().mockResolvedValue(),
   };
 
-  const mockBibliographyDao = {
-    getBibliographyByUuid: jest.fn().mockResolvedValue(''),
-    getZoteroResponses: jest.fn().mockResolvedValue([]),
-  };
-
   const mockUtils = {
     createTransaction: jest.fn(async cb => {
       await cb();
@@ -605,7 +619,6 @@ describe('POST /text_epigraphies/create', () => {
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('TreeDao', mockTreeDao);
-    sl.set('BibliographyDao', mockBibliographyDao);
     sl.set('utils', mockUtils);
   };
 

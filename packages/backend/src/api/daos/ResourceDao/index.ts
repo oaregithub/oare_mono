@@ -113,6 +113,22 @@ class ResourceDao {
     return row;
   }
 
+  async getFileURLByRows(resourceRows: ResourceRow[]): Promise<string[]> {
+    const s3 = new AWS.S3();
+
+    const fileURL = await Promise.all(
+      resourceRows.map((key, index) => {
+        const params = {
+          Bucket: key.link,
+          Key: key.container,
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
+
+    return fileURL;
+  }
+
   async getValidCdliImageLinks(
     cdliNum: string,
     trx?: Knex.Transaction

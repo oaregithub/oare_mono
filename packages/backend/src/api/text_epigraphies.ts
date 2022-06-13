@@ -119,23 +119,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       objUuids.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
     );
 
-    const resourceLinks: string[] = [];
-    const resourceContainers: string[] = [];
-
-    resourceRows.forEach(row => {
-      resourceLinks.push(row.link);
-      resourceContainers.push(row.container);
-    });
-
-    const fileURL = await Promise.all(
-      resourceLinks.map((key, index) => {
-        const params = {
-          Bucket: key,
-          Key: resourceContainers[index],
-        };
-        return s3.getSignedUrlPromise('getObject', params);
-      })
-    );
+    const fileURL = await ResourceDao.getFileURLByRows(resourceRows);
 
     const zoteroData = zoteroCitations.map((cit, idx) => ({
       citation: cit,
