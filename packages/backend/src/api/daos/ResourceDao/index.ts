@@ -99,8 +99,12 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
-  async getResourceLinkByUuid(bibliographyUuid: string) {
-    const row: ResourceRow = await knexRead()('resource')
+  async getResourceLinkByUuid(
+    bibliographyUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<ResourceRow> {
+    const k = trx || knexRead();
+    const row: ResourceRow = await k('resource')
       .select(['link', 'container'])
       .whereIn(
         'uuid',
@@ -117,7 +121,7 @@ class ResourceDao {
     const s3 = new AWS.S3();
 
     const fileURL = await Promise.all(
-      resourceRows.map((key, index) => {
+      resourceRows.map(key => {
         const params = {
           Bucket: key.link,
           Key: key.container,

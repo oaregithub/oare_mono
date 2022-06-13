@@ -1,4 +1,4 @@
-export interface Bibliography {
+export interface BibliographyItem {
   uuid: string;
   zoteroKey: string;
   citation: string;

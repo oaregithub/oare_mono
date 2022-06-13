@@ -140,9 +140,11 @@ class ItemPropertiesDao {
 
   async getVariableObjectByReference(
     referenceUuid: string,
-    variableUuid: string
+    variableUuid: string,
+    trx?: Knex.Transaction
   ): Promise<string[]> {
-    const objUuids: string[] = await knexRead()('item_properties')
+    const k = trx || knexRead();
+    const objUuids: string[] = await k('item_properties')
       .pluck('object_uuid')
       .where('variable_uuid', variableUuid)
       .where('reference_uuid', referenceUuid);

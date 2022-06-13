@@ -99,14 +99,10 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     const citationStyle = 'chicago-author-date';
 
-    const zoteroResp = await BibliographyDao.getZoteroResponses(
+    const zoteroJson = await BibliographyDao.getZoteroResponses(
       zoteroKeys,
       citationStyle
     );
-
-    const zoteroJson: ZoteroResponse[] = (await Promise.all(
-      zoteroResp.map(resp => resp.json())
-    )) as ZoteroResponse[];
 
     const zoteroJsonFilter: ZoteroResponse[] = zoteroJson.filter(
       item => !!item.citation

@@ -1,9 +1,9 @@
 <template>
   <div v-if="allowViewCitations">
-    <div v-for="data in zoteroDataList" :key="data">
-      <div>Citation: <span v-html="data.citation"></span></div>
-      <div>Link: <a :href="data.link" v-html="data.link"></a></div>
+    <div v-for="data in zoteroDataListTop" :key="data">
+      <div>Citation: <a :href="data.link" v-html="data.citation"></a></div>
     </div>
+    <div v-if="zoteroDataListBottom.length">See more...</div>
     <br />
   </div>
 </template>
@@ -28,8 +28,8 @@ export default defineComponent({
   setup({ textUuid }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const zoteroDataList = ref<ZoteroData[]>([]);
-
+    const zoteroDataListTop = ref<ZoteroData[]>([]);
+    const zoteroDataListBottom = ref<ZoteroData[]>([]);
     const store = sl.get('store');
 
     const allowViewCitations = computed(() =>
@@ -40,7 +40,14 @@ export default defineComponent({
       try {
         const epigraphicInfo = await server.getEpigraphicInfo(textUuid);
 
-        zoteroDataList.value = epigraphicInfo.zoteroData;
+        const zoteroDataList = epigraphicInfo.zoteroData;
+
+        if (zoteroDataList.length > 2) {
+          zoteroDataListTop.value = zoteroDataList.slice(0, 2);
+          zoteroDataListBottom.value = zoteroDataList.slice(2);
+        } else {
+          zoteroDataListTop.value = zoteroDataList;
+        }
       } catch (err) {
         actions.showErrorSnackbar(
           'Failed to retrieve citation. Please try again.',
@@ -48,7 +55,7 @@ export default defineComponent({
         );
       }
     });
-    return { zoteroDataList, allowViewCitations };
+    return { zoteroDataListTop, zoteroDataListBottom, allowViewCitations };
   },
 });
 </script>
