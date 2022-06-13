@@ -13,48 +13,43 @@ class PublicDenylistDao {
     return rows.map(({ uuid }) => uuid);
   }
 
-  async getDenylistImageUuids(): Promise<string[]> {
-    const rows: Array<{ uuid: string }> = await knexRead()('public_denylist')
+  async getDenylistImageUuids(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
+    const rows: Array<{ uuid: string }> = await k('public_denylist')
       .select('uuid')
       .where('type', 'img');
 
     return rows.map(({ uuid }) => uuid);
   }
 
-  async getDenylistImagesWithTexts(): Promise<
-    { uuid: string; url: string; text: string }[]
-  > {
+  async getDenylistImagesWithTexts(
+    trx?: Knex.Transaction
+  ): Promise<{ uuid: string; url: string; text: string }[]> {
     let signedUrls: string[] = [];
     let imgUUIDs: string[] = [];
     let texts: any = [];
     let result: { uuid: string; url: string; text: string }[] = [];
     const promises = [];
     const s3 = new AWS.S3();
+    const k = trx || knexRead();
 
-    imgUUIDs = await knexRead()('public_denylist')
-      .pluck('uuid')
-      .where('type', 'img');
+    imgUUIDs = await k('public_denylist').pluck('uuid').where('type', 'img');
 
     for (let j = 0; j < imgUUIDs.length; j += 1) {
-      let text = knexRead()('text')
+      const text = k('text')
         .pluck('display_name')
         .where(
           'uuid',
-          knexRead()('link')
-            .select('reference_uuid')
-            .where('obj_uuid', imgUUIDs[j])
+          k('link').select('reference_uuid').where('obj_uuid', imgUUIDs[j])
         );
       promises.push(text);
     }
 
     texts = await Promise.all(promises);
 
-    const resourceLinks: string[] = await knexRead()('resource')
+    const resourceLinks: string[] = await k('resource')
       .pluck('link')
-      .whereIn(
-        'uuid',
-        knexRead()('public_denylist').select('uuid').where('type', 'img')
-      )
+      .whereIn('uuid', k('public_denylist').select('uuid').where('type', 'img'))
       .where('type', 'img')
       .andWhere('container', 'oare-image-bucket');
 
@@ -68,9 +63,9 @@ class PublicDenylistDao {
       })
     );
 
-    result = signedUrls.map((url, idx) => ({
+    result = signedUrls.map((signedUrl, idx) => ({
       uuid: imgUUIDs[idx],
-      url: url,
+      url: signedUrl,
       text: texts[idx][0],
     }));
 
@@ -134,11 +129,8 @@ class PublicDenylistDao {
     return true;
   }
 
-  async collectionIsPubliclyViewable(
-    collectionUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<boolean> {
-    const collectionDenylist = await this.getDenylistCollectionUuids(trx);
+  async collectionIsPubliclyViewable(collectionUuid: string): Promise<boolean> {
+    const collectionDenylist = await this.getDenylistCollectionUuids();
 
     if (collectionDenylist.includes(collectionUuid)) {
       return false;
