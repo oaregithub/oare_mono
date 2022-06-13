@@ -35,6 +35,7 @@ import wordsInTextsSearch from './search_words_texts';
 import properties from './properties';
 import environment from './environment';
 import text from './text';
+import quarantine from './quarantine';
 
 const serverProxy = {
   ...groups,
@@ -74,6 +75,7 @@ const serverProxy = {
   ...properties,
   ...environment,
   ...text,
+  ...quarantine,
 };
 
 export type ServerProxyType = typeof serverProxy;

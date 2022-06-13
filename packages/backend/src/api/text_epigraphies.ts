@@ -72,6 +72,8 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
   try {
     const { uuid: textUuid } = req.params;
     const { user } = req;
+    const forceAllowAdminView =
+      (req.query.forceAllowAdminView as string) === 'true';
     const userUuid = user ? user.uuid : null;
     const TextDao = sl.get('TextDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
@@ -95,12 +97,14 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     );
 
     if (!canViewText) {
-      next(
-        new HttpForbidden(
-          'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
-        )
-      );
-      return;
+      if (!req.user || !req.user.isAdmin || !forceAllowAdminView) {
+        next(
+          new HttpForbidden(
+            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
+          )
+        );
+        return;
+      }
     }
 
     const collection = await CollectionDao.getTextCollection(text.uuid);

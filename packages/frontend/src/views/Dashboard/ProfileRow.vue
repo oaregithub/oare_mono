@@ -31,24 +31,10 @@
         </v-btn>
       </v-col>
     </v-row>
-    <OareDialog
+    <reathenticate
       v-model="verifyPasswordDialog"
-      title="Verify Password"
-      @submit="verifyPassword"
-      :submitDisabled="!confirmedPassword"
-      :submitLoading="confirmPasswordLoading"
-      :persistent="false"
-    >
-      <v-text-field
-        v-model="confirmedPassword"
-        placeholder="Password"
-        outlined
-        autofocus
-        type="password"
-        class="test-confirm-password"
-        @keypress.enter="confirmedPassword && verifyPassword()"
-      />
-    </OareDialog>
+      @reauthenticated="unlockVerification"
+    />
   </div>
 </template>
 
@@ -56,6 +42,7 @@
 import { defineComponent, ref, PropType } from '@vue/composition-api';
 import { UpdateProfilePayload } from '@oare/types';
 import sl from '@/serviceLocator';
+import Reathenticate from '@/views/Authentication/Verification/Reautheticate.vue';
 
 export default defineComponent({
   props: {
@@ -72,6 +59,9 @@ export default defineComponent({
       required: true,
     },
   },
+  components: {
+    Reathenticate,
+  },
   setup({ currentValue, property }, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -80,29 +70,6 @@ export default defineComponent({
     const editedValue = ref(currentValue);
     const loading = ref(false);
     const verifyPasswordDialog = ref(false);
-    const confirmedPassword = ref('');
-    const confirmPasswordLoading = ref(false);
-
-    const verifyPassword = async () => {
-      confirmPasswordLoading.value = true;
-      try {
-        await server.reauthenticateUser(confirmedPassword.value);
-        verifyPasswordDialog.value = false;
-        isEditing.value = true;
-        confirmedPassword.value = '';
-      } catch (err) {
-        if (err && (err as any).code) {
-          if ((err as any).code === 'auth/wrong-password') {
-            actions.showErrorSnackbar(
-              'The password you have provided is invalid.',
-              err as Error
-            );
-          }
-        }
-      } finally {
-        confirmPasswordLoading.value = false;
-      }
-    };
 
     const triggerEdit = () => {
       if (property === 'email') {
@@ -110,6 +77,10 @@ export default defineComponent({
       } else {
         isEditing.value = true;
       }
+    };
+
+    const unlockVerification = () => {
+      isEditing.value = true;
     };
 
     const cancelEdit = () => {
@@ -143,10 +114,8 @@ export default defineComponent({
       updateValue,
       loading,
       verifyPasswordDialog,
-      confirmedPassword,
-      verifyPassword,
       triggerEdit,
-      confirmPasswordLoading,
+      unlockVerification,
     };
   },
 });
