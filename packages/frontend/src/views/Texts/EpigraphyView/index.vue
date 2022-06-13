@@ -47,7 +47,10 @@
             :submitLoading="quarantineLoading"
           >
             <template v-slot:activator="{ on }">
-              <v-btn color="primary" class="mx-4" v-on="on"
+              <v-btn
+                color="primary"
+                class="mx-4 test-quarantine-button"
+                v-on="on"
                 ><v-icon>mdi-biohazard</v-icon></v-btn
               >
             </template>

@@ -34,7 +34,7 @@
       <template v-slot:activator="{ on }">
         <v-btn
           color="primary"
-          class="mx-4 mt-4"
+          class="mx-4 mt-4 test-restore-button"
           v-on="on"
           :disabled="selectedTexts.length < 1"
           >Restore</v-btn
@@ -63,7 +63,7 @@
       <template v-slot:activator="{ on }">
         <v-btn
           color="primary"
-          class="mt-4"
+          class="mt-4 test-delete-button"
           v-on="on"
           :disabled="selectedTexts.length < 1"
           >Permanently Delete</v-btn
