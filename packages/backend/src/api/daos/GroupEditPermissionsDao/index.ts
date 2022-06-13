@@ -19,7 +19,7 @@ class GroupEditPermissionsDao {
   async addItemsToGroupEditPermissions(
     groupId: number,
     uuids: string[],
-    type: 'text' | 'img' | 'collection',
+    type: 'text' | 'collection',
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();

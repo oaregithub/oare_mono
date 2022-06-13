@@ -26,61 +26,53 @@ class PublicDenylistDao {
   > {
     let signedUrls: string[] = [];
     let imgUUIDs: string[] = [];
-    let text: string[] = [];
-    const texts: string[] = [];
-    const result: { uuid: string; url: string; text: string }[] = [];
+    let texts: any = [];
+    let result: { uuid: string; url: string; text: string }[] = [];
+    const promises = [];
     const s3 = new AWS.S3();
 
-    try {
-      imgUUIDs = await knexRead()('public_denylist')
-        .pluck('uuid')
-        .where('type', 'img');
+    imgUUIDs = await knexRead()('public_denylist')
+      .pluck('uuid')
+      .where('type', 'img');
 
-      /* eslint-disable no-await-in-loop */
-      for (let j = 0; j < imgUUIDs.length; j += 1) {
-        text = await knexRead()('text')
-          .pluck('display_name')
-          .where(
-            'uuid',
-            knexRead()('link')
-              .select('reference_uuid')
-              .where('obj_uuid', imgUUIDs[j])
-          );
-        texts.push(text[0]);
-      }
-      /* eslint-disable no-await-in-loop */
-
-      const resourceLinks: string[] = await knexRead()('resource')
-        .pluck('link')
-        .whereIn(
+    for (let j = 0; j < imgUUIDs.length; j += 1) {
+      let text = knexRead()('text')
+        .pluck('display_name')
+        .where(
           'uuid',
-          knexRead()('public_denylist').select('uuid').where('type', 'img')
-        )
-        .where('type', 'img')
-        .andWhere('container', 'oare-image-bucket');
-
-      signedUrls = await Promise.all(
-        resourceLinks.map(key => {
-          const params = {
-            Bucket: 'oare-image-bucket',
-            Key: key,
-          };
-          return s3.getSignedUrlPromise('getObject', params);
-        })
-      );
-
-      for (let i = 0; i < signedUrls.length; i += 1) {
-        result.push({ uuid: imgUUIDs[i], url: signedUrls[i], text: texts[i] });
-      }
-    } catch (err) {
-      const ErrorsDao = sl.get('ErrorsDao');
-      await ErrorsDao.logError({
-        userUuid: null,
-        stacktrace: (err as Error).stack || null,
-        status: 'In Progress',
-        description: 'Error retrieving S3 photos',
-      });
+          knexRead()('link')
+            .select('reference_uuid')
+            .where('obj_uuid', imgUUIDs[j])
+        );
+      promises.push(text);
     }
+
+    texts = await Promise.all(promises);
+
+    const resourceLinks: string[] = await knexRead()('resource')
+      .pluck('link')
+      .whereIn(
+        'uuid',
+        knexRead()('public_denylist').select('uuid').where('type', 'img')
+      )
+      .where('type', 'img')
+      .andWhere('container', 'oare-image-bucket');
+
+    signedUrls = await Promise.all(
+      resourceLinks.map(key => {
+        const params = {
+          Bucket: 'oare-image-bucket',
+          Key: key,
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
+
+    result = signedUrls.map((url, idx) => ({
+      uuid: imgUUIDs[idx],
+      url: url,
+      text: texts[idx][0],
+    }));
 
     return result;
   }

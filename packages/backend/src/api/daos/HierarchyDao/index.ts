@@ -207,23 +207,34 @@ class HierarchyDao {
     };
   }
 
-  async getImages({
-    page,
-    limit,
-    filter,
-    type,
-    groupId,
-    showExcluded,
-  }: SearchNamesPayload): Promise<SearchImagesResponse> {
+  async getImages(
+    { page, limit, filter }: SearchNamesPayload,
+    trx?: Knex.Transaction
+  ): Promise<SearchImagesResponse> {
+    const k = trx || knexRead();
     let signedUrls: string[] = [];
     let imgUUIDs: string[] = [];
-    let totalItems: string[] = [];
-    let text: string[] = [];
-    const texts: string[] = [];
-    const result: SearchImagesResultRow[] = [];
+    let totalCount: number = 0;
+    let result: SearchImagesResultRow[] = [];
     const s3 = new AWS.S3();
 
-    const queryForImageUuids = knexRead()('link')
+    const totalNum = await k('link')
+      .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
+      .innerJoin('text', 'text.uuid', 'link.reference_uuid')
+      .where('resource.container', 'oare-image-bucket')
+      .andWhere('text.display_name', 'like', `%${filter}%`)
+      .whereNotIn(
+        'resource.uuid',
+        k('public_denylist').select('uuid').where('type', 'img')
+      )
+      .count({
+        count: 'text.display_name',
+      })
+      .first();
+
+    totalCount = totalNum ? Number(totalNum.count) : 0;
+
+    imgUUIDs = await k('link')
       .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
       .innerJoin('text', 'text.uuid', 'link.reference_uuid')
       .pluck('resource.uuid')
@@ -231,9 +242,28 @@ class HierarchyDao {
       .andWhere('text.display_name', 'like', `%${filter}%`)
       .whereNotIn(
         'resource.uuid',
-        knexRead()('public_denylist').select('uuid').where('type', 'img')
-      );
-    const queryForResourceLinks = knexRead()('link')
+        k('public_denylist').select('uuid').where('type', 'img')
+      )
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    const promises = [];
+    let words: any[] = [];
+
+    for (let j = 0; j < imgUUIDs.length; j += 1) {
+      const word = k('text')
+        .pluck('display_name')
+        .where(
+          'uuid',
+          k('link').select('reference_uuid').where('obj_uuid', imgUUIDs[j])
+        );
+
+      promises.push(word);
+    }
+
+    words = await Promise.all(promises);
+
+    const resourceLinks: string[] = await k('link')
       .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
       .innerJoin('text', 'text.uuid', 'link.reference_uuid')
       .pluck('resource.link')
@@ -241,64 +271,32 @@ class HierarchyDao {
       .andWhere('text.display_name', 'like', `%${filter}%`)
       .whereNotIn(
         'resource.uuid',
-        knexRead()('public_denylist').select('uuid').where('type', 'img')
-      );
+        k('public_denylist').select('uuid').where('type', 'img')
+      )
+      .limit(limit)
+      .offset((page - 1) * limit);
 
-    try {
-      totalItems = await queryForImageUuids;
+    signedUrls = await Promise.all(
+      resourceLinks.map(key => {
+        const params = {
+          Bucket: 'oare-image-bucket',
+          Key: key,
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
 
-      imgUUIDs = await queryForImageUuids
-        .limit(limit)
-        .offset((page - 1) * limit);
-
-      /* eslint-disable no-await-in-loop */
-      for (let j = 0; j < imgUUIDs.length; j += 1) {
-        text = await knexRead()('text')
-          .pluck('display_name')
-          .where(
-            'uuid',
-            knexRead()('link')
-              .select('reference_uuid')
-              .where('obj_uuid', imgUUIDs[j])
-          );
-        texts.push(text[0]);
-      }
-      /* eslint-disable no-await-in-loop */
-
-      const resourceLinks: string[] = await queryForResourceLinks
-        .limit(limit)
-        .offset((page - 1) * limit);
-
-      signedUrls = await Promise.all(
-        resourceLinks.map(key => {
-          const params = {
-            Bucket: 'oare-image-bucket',
-            Key: key,
-          };
-          return s3.getSignedUrlPromise('getObject', params);
-        })
-      );
-
-      for (let i = 0; i < signedUrls.length; i += 1) {
-        result.push({
-          uuid: imgUUIDs[i],
-          name: texts[i],
-          imgUrl: signedUrls[i],
-        });
-      }
-    } catch (err) {
-      const ErrorsDao = sl.get('ErrorsDao');
-      await ErrorsDao.logError({
-        userUuid: null,
-        stacktrace: (err as Error).stack || null,
-        status: 'In Progress',
-        description: 'Error retrieving S3 photos',
-      });
-    }
+    signedUrls.forEach((element, idx) =>
+      result.push({
+        uuid: imgUUIDs[idx],
+        name: words[idx][0],
+        imgUrl: element,
+      })
+    );
 
     return {
       items: result,
-      count: totalItems.length,
+      count: totalCount,
     };
   }
 

@@ -285,10 +285,22 @@ export default defineComponent({
 
     const addListItems = async () => {
       const uuids = selectedItems.value.map(item => item.uuid);
+      let type: 'img' | 'text' | 'collection';
+      switch (itemType) {
+        case 'Image':
+          type = 'img';
+          break;
+        case 'Collection':
+          type = 'collection';
+          break;
+        case 'Text':
+          type = 'text';
+          break;
+      }
+
       const payload: DenylistAllowlistPayload = {
         uuids,
-        type:
-          itemType === 'Image' ? 'img' : 'Collection' ? 'collection' : 'img',
+        type: type,
       };
       addItemsLoading.value = true;
       try {

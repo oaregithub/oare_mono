@@ -55,7 +55,12 @@ export type PermissionsListType = 'Text' | 'Collection' | 'Image';
 
 export interface DenylistAllowlistPayload {
   uuids: string[];
-  type: 'text' | 'collection' | 'img';
+  type: 'text' | 'img' | 'collection';
+}
+
+export interface GroupEditPermissionsPayload {
+  uuids: string[];
+  type: 'text' | 'collection';
 }
 
 export interface GetDenylistAllowlistParameters {
