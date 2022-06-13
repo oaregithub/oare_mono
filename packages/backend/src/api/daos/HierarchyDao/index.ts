@@ -19,13 +19,19 @@ class HierarchyDao {
     const k = trx || knexRead();
     const CollectionDao = sl.get('CollectionDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
 
     function createBaseQuery() {
       const query = k('hierarchy')
         .distinct('hierarchy.object_uuid as uuid')
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
         .where('hierarchy.type', type.toLowerCase())
-        .andWhere('alias.name', 'like', `%${filter}%`);
+        .andWhere('alias.name', 'like', `%${filter}%`)
+        .whereNotIn('hierarchy.object_uuid', quarantinedTexts);
       if (groupId && showExcluded) {
         return query.whereNotIn(
           'hierarchy.object_uuid',
@@ -310,6 +316,14 @@ class HierarchyDao {
       obj_parent_uuid: row.objectParentUuid,
       published: row.published,
     });
+  }
+
+  async removeHierarchyTextRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('hierarchy').del().where({ object_uuid: textUuid, type: 'text' });
   }
 }
 

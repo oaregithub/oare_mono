@@ -737,6 +737,46 @@ class TextDiscourseDao {
       .orderBy('child_num');
     return rows;
   }
+
+  async getNumDiscourseRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const countResult = await k('text_discourse')
+      .where({ text_uuid: textUuid })
+      .count({ count: 'text_discourse.uuid' })
+      .first();
+    return countResult && countResult.count ? (countResult.count as number) : 0;
+  }
+
+  async removeDiscourseRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    let numDiscourseRows = await this.getNumDiscourseRowsByTextUuid(
+      textUuid,
+      trx
+    );
+    while (numDiscourseRows > 0) {
+      const parentUuids = (
+        await k('text_discourse') // eslint-disable-line no-await-in-loop
+          .distinct('parent_uuid')
+          .where({ text_uuid: textUuid })
+          .whereNotNull('parent_uuid')
+      ).map(row => row.parent_uuid);
+      const rowsToDelete: string[] = await k('text_discourse') // eslint-disable-line no-await-in-loop
+        .pluck('uuid')
+        .where({ text_uuid: textUuid })
+        .whereNotIn('uuid', parentUuids);
+
+      await k('text_discourse').del().whereIn('uuid', rowsToDelete); // eslint-disable-line no-await-in-loop
+
+      numDiscourseRows -= rowsToDelete.length;
+    }
+  }
 }
 
 export default new TextDiscourseDao();

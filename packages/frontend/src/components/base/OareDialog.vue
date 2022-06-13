@@ -35,6 +35,7 @@
             @click="$emit('input', false)"
             color="error"
             text
+            :disabled="cancelDisabled"
             data-testid="cancel-btn"
             >{{ cancelText }}</v-btn
           >
@@ -95,6 +96,10 @@ export default defineComponent({
       default: false,
     },
     submitDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    cancelDisabled: {
       type: Boolean,
       default: false,
     },

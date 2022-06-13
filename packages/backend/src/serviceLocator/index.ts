@@ -36,6 +36,7 @@ import PageContentDao from '@/api/daos/PageContentDao';
 import SearchFailureDao from '@/api/daos/SearchFailureDao';
 import BibliographyDao from '@/api/daos/BibliographyDao';
 import TreeDao from '@/api/daos/TreeDao';
+import QuarantineTextDao from '@/api/daos/QuarantineTextDao';
 import * as utils from '@/utils';
 
 const instances: { [key: string]: any } = {};
@@ -80,6 +81,7 @@ export type ServiceTypes = {
   SearchFailureDao: typeof SearchFailureDao;
   BibliographyDao: typeof BibliographyDao;
   TreeDao: typeof TreeDao;
+  QuarantineTextDao: typeof QuarantineTextDao;
 };
 
 export default {
