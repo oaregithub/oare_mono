@@ -134,6 +134,11 @@ class PermissionsDao {
       type: 'general',
       description: 'Allow group users to edit item properties for a given item',
     },
+    {
+      name: 'VIEW_BIBLIOGRAPHY',
+      type: 'text',
+      description: 'Allow group users to view the citation(s) of text',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {

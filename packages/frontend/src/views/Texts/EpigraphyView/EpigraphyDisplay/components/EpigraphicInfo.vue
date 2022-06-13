@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="allowViewCitations">
     <div v-for="data in zoteroDataList" :key="data">
       <div>Citation: <span v-html="data.citation"></span></div>
       <div>Link: <a :href="data.link" v-html="data.link"></a></div>
@@ -9,7 +9,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  computed,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { ZoteroData } from '@oare/types';
 
@@ -25,6 +30,12 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const zoteroDataList = ref<ZoteroData[]>([]);
 
+    const store = sl.get('store');
+
+    const allowViewCitations = computed(() =>
+      store.hasPermission('VIEW_BIBLIOGRAPHY')
+    );
+
     onMounted(async () => {
       try {
         const epigraphicInfo = await server.getEpigraphicInfo(textUuid);
@@ -37,7 +48,7 @@ export default defineComponent({
         );
       }
     });
-    return { zoteroDataList };
+    return { zoteroDataList, allowViewCitations };
   },
 });
 </script>
