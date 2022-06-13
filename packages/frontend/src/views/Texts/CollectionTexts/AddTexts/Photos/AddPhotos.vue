@@ -63,7 +63,6 @@
         <epigraphy-image
           v-if="photoUrls.length > 0"
           :imageLinks="photoUrls"
-          :imageDetails="photosWithUrl"
           :maxSelect="1"
           :sticky="false"
         />
@@ -75,9 +74,16 @@
 <script lang="ts">
 import EpigraphyImage from '@/views/Texts/EpigraphyView/EpigraphyDisplay/components/EpigraphyImage.vue';
 import PhotoSelector from './components/PhotoSelector.vue';
-import { defineComponent, ref, computed, watch } from '@vue/composition-api';
-import { TextPhoto } from '@oare/types';
+import {
+  defineComponent,
+  ref,
+  computed,
+  watch,
+  ComputedRef,
+} from '@vue/composition-api';
+import { EpigraphyLabelLink, TextPhoto } from '@oare/types';
 import { v4 } from 'uuid';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   components: {
@@ -91,6 +97,8 @@ export default defineComponent({
     },
   },
   setup(_, { emit }) {
+    const store = sl.get('store');
+
     const photos = ref<TextPhoto[]>([]);
 
     const confirmed = ref(false);
@@ -109,8 +117,15 @@ export default defineComponent({
       photos.value.filter(photo => photo.url)
     );
 
-    const photoUrls = computed(() => {
-      return photosWithUrl.value.map(photo => photo.url);
+    const photoUrls: ComputedRef<EpigraphyLabelLink[]> = computed(() => {
+      return photosWithUrl.value.map(photo => ({
+        link: photo.url || '',
+        label: `${store.getters.user!.firstName} ${
+          store.getters.user!.lastName
+        }`,
+        side: photo.side || null,
+        view: photo.view || null,
+      }));
     });
 
     const addPhoto = () => {

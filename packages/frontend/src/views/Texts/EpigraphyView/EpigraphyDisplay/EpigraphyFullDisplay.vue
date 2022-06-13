@@ -9,6 +9,8 @@
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"
+      :textUuid="textUuid"
+      :disableEditing="disableEditing"
       class="test-discourses"
     />
     <TextSourceReading
@@ -48,6 +50,10 @@ export default defineComponent({
     localDiscourseInfo: {
       type: Array as PropType<TextDiscourseRow[]>,
       required: false,
+    },
+    disableEditing: {
+      type: Boolean,
+      default: false,
     },
   },
   components: {

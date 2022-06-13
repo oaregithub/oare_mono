@@ -30,9 +30,11 @@ import betaAccess from './api/beta_access';
 import publications from './api/publications';
 import archives from './api/archives';
 import pageContent from './api/page_content';
+import searchWordsTexts from './api/search_words_texts';
 import properties from './api/properties';
 import environment from './api/environment';
 import text from './api/text';
+import quarantine from './api/quarantine';
 
 export const API_PATH = '/api/v2';
 
@@ -69,9 +71,11 @@ export default (app: Express) => {
     publications,
     archives,
     pageContent,
+    searchWordsTexts,
     properties,
     environment,
     text,
+    quarantine,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

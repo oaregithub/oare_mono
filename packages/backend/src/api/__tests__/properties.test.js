@@ -68,10 +68,17 @@ describe('PATCH /properties/edit/:referenceUuid', () => {
     deletePropertiesByReferenceUuid: jest.fn().mockResolvedValue(),
   };
 
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
+
   const editFormSetup = () => {
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(editFormSetup);

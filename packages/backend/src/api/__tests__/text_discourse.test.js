@@ -96,6 +96,12 @@ describe('POST /text_discourse', () => {
       .mockResolvedValue([{ name: 'INSERT_DISCOURSE_ROWS' }]),
   };
 
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
+
   const mockPayload = {
     spelling: 'a-na',
     occurrences: [
@@ -113,6 +119,7 @@ describe('POST /text_discourse', () => {
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);
@@ -150,6 +157,138 @@ describe('POST /text_discourse', () => {
     const response = await sendRequest();
     expect(mockTextDiscourseDao.insertNewDiscourseRow).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
+  });
+});
+
+describe('POST /text_discourse_parent', () => {
+  const PATH = `${API_PATH}/text_discourse_parent`;
+
+  const mockTextDiscourseDao = {
+    getDiscourseRowByUuid: jest
+      .fn()
+      .mockResolvedValue({ treeUuid: 'test-tree-uuid', childNum: 2 }),
+    incrementObjInText: jest.fn().mockResolvedValue(),
+    updateChildNum: jest.fn().mockResolvedValue(),
+    insertDiscourseRow: jest.fn().mockResolvedValue(),
+    updateParentUuid: jest.fn().mockResolvedValue(),
+    getChildrenUuids: jest.fn().mockResolvedValue(['test-sibling-uuid']),
+  };
+  const mockFieldDao = {
+    insertField: jest.fn().mockResolvedValue(),
+  };
+  const mockAliasDao = {
+    insertAlias: jest.fn().mockResolvedValue(),
+  };
+  const mockItemPropertiesDao = {
+    addProperty: jest.fn().mockResolvedValue(),
+  };
+  const mockPermissionsDao = {
+    getUserPermissions: jest
+      .fn()
+      .mockResolvedValue([{ name: 'INSERT_PARENT_DISCOURSE_ROWS' }]),
+  };
+
+  const mockPayload = {
+    textUuid: 'test-uuid',
+    discourseSelections: [
+      {
+        uuid: 'test-uuid',
+        type: 'word',
+        units: [],
+        spelling: 'test-spelling',
+        explicitSpelling: 'test-explicit-spelling',
+        transcription: 'test-transcription',
+        line: 1,
+        wordOnTablet: 1,
+        objInText: 2,
+        side: 1,
+        parentUuid: 'test-parent',
+        childNum: 1,
+      },
+    ],
+    discourseType: 'Paragraph',
+    newContent: 'test-content',
+    properties: [
+      {
+        variable: {
+          uuid: 'test-uuid',
+          type: 'test-type',
+          parentUuid: 'test-parent',
+          objectUuid: 'test-obj',
+          objParentUuid: 'test-obj-parent',
+          variableName: 'test-var-name',
+          valueName: null,
+          variableUuid: 'test-var-uuid',
+          valueUuid: null,
+          level: 1,
+          children: [],
+        },
+        value: {
+          uuid: 'test-uuid',
+          type: 'test-type',
+          parentUuid: 'test-parent',
+          objectUuid: 'test-obj',
+          objParentUuid: 'test-obj-parent',
+          variableName: null,
+          valueName: 'test-val-name',
+          variableUuid: null,
+          valueUuid: 'test-val-uuid',
+          level: 1,
+          children: [],
+        },
+      },
+    ],
+  };
+
+  const setup = () => {
+    sl.set('TextDiscourseDao', mockTextDiscourseDao);
+    sl.set('FieldDao', mockFieldDao);
+    sl.set('AliasDao', mockAliasDao);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockPayload).set('Authorization', 'token');
+
+  it('returns 201 on successful parent discourse insertion', async () => {
+    const response = await sendRequest();
+    expect(mockTextDiscourseDao.getDiscourseRowByUuid).toHaveBeenCalled();
+    expect(mockTextDiscourseDao.incrementObjInText).toHaveBeenCalled();
+    expect(mockTextDiscourseDao.updateChildNum).toHaveBeenCalled();
+    expect(mockTextDiscourseDao.insertDiscourseRow).toHaveBeenCalled();
+    expect(mockTextDiscourseDao.getChildrenUuids).toHaveBeenCalled();
+    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalledTimes(1);
+    expect(mockAliasDao.insertAlias).toHaveBeenCalled();
+    expect(response.status).toBe(201);
+  });
+
+  it('does not allow non-logged in users to insert parent discourse rows', async () => {
+    const response = await request(app).post(PATH).send(mockPayload);
+    expect(mockTextDiscourseDao.insertDiscourseRow).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
+  });
+
+  it('does not allow users without permission to insert parent discourse rows', async () => {
+    sl.set('PermissionsDao', {
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(mockTextDiscourseDao.insertDiscourseRow).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 on failed parent discourse insertion', async () => {
+    sl.set('TextDiscourseDao', {
+      ...mockTextDiscourseDao,
+      insertDiscourseRow: jest
+        .fn()
+        .mockRejectedValue('failed to insert discourse row'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
   });
 });
 

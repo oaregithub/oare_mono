@@ -1,17 +1,27 @@
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
+import { Knex } from 'knex';
 
 class PublicDenylistDao {
-  async getDenylistTextUuids(): Promise<string[]> {
-    const rows: Array<{ uuid: string }> = await knexRead()('public_denylist')
+  async getDenylistTextUuids(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
+
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
+
+    const rows: Array<{ uuid: string }> = await k('public_denylist')
       .select('uuid')
-      .where('type', 'text');
+      .where('type', 'text')
+      .whereNotIn('uuid', quarantinedTexts);
 
     return rows.map(({ uuid }) => uuid);
   }
 
-  async getDenylistCollectionUuids(): Promise<string[]> {
-    const rows: Array<{ uuid: string }> = await knexRead()('public_denylist')
+  async getDenylistCollectionUuids(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
+    const rows: Array<{ uuid: string }> = await k('public_denylist')
       .select('uuid')
       .where('type', 'collection');
 
@@ -20,28 +30,38 @@ class PublicDenylistDao {
 
   async addItemsToDenylist(
     uuids: string[],
-    type: 'text' | 'collection'
+    type: 'text' | 'collection',
+    trx?: Knex.Transaction
   ): Promise<void> {
+    const k = trx || knexWrite();
     const insertRows = uuids.map(uuid => ({
       uuid,
       type,
     }));
-    await knexWrite()('public_denylist').insert(insertRows);
+    await k('public_denylist').insert(insertRows);
   }
 
-  async removeItemFromDenylist(uuid: string): Promise<void> {
-    await knexWrite()('public_denylist').where({ uuid }).del();
+  async removeItemFromDenylist(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('public_denylist').where({ uuid }).del();
   }
 
-  async textIsPubliclyViewable(textUuid: string): Promise<boolean> {
+  async textIsPubliclyViewable(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
     const CollectionDao = sl.get('CollectionDao');
     const PDDao = sl.get('PublicDenylistDao');
 
-    const textDenylist = await PDDao.getDenylistTextUuids();
-    const collectionDenylist = await PDDao.getDenylistCollectionUuids();
+    const textDenylist = await PDDao.getDenylistTextUuids(trx);
+    const collectionDenylist = await PDDao.getDenylistCollectionUuids(trx);
 
     const collectionUuidOfText = await CollectionDao.getTextCollectionUuid(
-      textUuid
+      textUuid,
+      trx
     );
 
     if (textDenylist.includes(textUuid)) {
@@ -56,8 +76,11 @@ class PublicDenylistDao {
     return true;
   }
 
-  async collectionIsPubliclyViewable(collectionUuid: string): Promise<boolean> {
-    const collectionDenylist = await this.getDenylistCollectionUuids();
+  async collectionIsPubliclyViewable(
+    collectionUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const collectionDenylist = await this.getDenylistCollectionUuids(trx);
 
     if (collectionDenylist.includes(collectionUuid)) {
       return false;
