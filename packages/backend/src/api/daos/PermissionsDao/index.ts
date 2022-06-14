@@ -136,7 +136,7 @@ class PermissionsDao {
     },
     {
       name: 'COPY_TEXT_TRANSLITERATION',
-      type: 'general',
+      type: 'text',
       description:
         'Allow group users to copy a string representation of text transliterations',
     },

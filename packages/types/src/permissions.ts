@@ -38,12 +38,13 @@ export interface TextPermission extends PermissionTemplate {
     | 'EDIT_TEXT_INFO'
     | 'UPLOAD_EPIGRAPHY_IMAGES'
     | 'EDIT_TRANSLATION'
-    | 'INSERT_PARENT_DISCOURSE_ROWS';
+    | 'INSERT_PARENT_DISCOURSE_ROWS'
+    | 'COPY_TEXT_TRANSLITERATION';
   type: 'text';
 }
 
 export interface GeneralPermission extends PermissionTemplate {
-  name: 'EDIT_ITEM_PROPERTIES' | 'COPY_TEXT_TRANSLITERATION';
+  name: 'EDIT_ITEM_PROPERTIES';
   type: 'general';
 }
 
