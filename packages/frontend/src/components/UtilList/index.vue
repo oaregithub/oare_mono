@@ -1,5 +1,5 @@
 <template>
-  <v-menu offset-y v-if="!hideMenu">
+  <v-menu offset-y v-if="!hideMenu && hasCommentPermission">
     <template v-slot:activator="{ on }">
       <slot name="activator" :on="on"></slot>
     </template>
@@ -42,7 +42,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { computed, defineComponent } from '@vue/composition-api';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'UtilList',
@@ -69,7 +70,12 @@ export default defineComponent({
     },
   },
   setup(props) {
-    return {};
+    const store = sl.get('store');
+
+    const hasCommentPermission = computed(() =>
+      store.hasPermission('ADD_COMMENT')
+    );
+    return { hasCommentPermission };
   },
 });
 </script>

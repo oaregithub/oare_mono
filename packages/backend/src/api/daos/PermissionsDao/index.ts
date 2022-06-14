@@ -134,6 +134,11 @@ class PermissionsDao {
       type: 'general',
       description: 'Allow group users to edit item properties for a given item',
     },
+    {
+      name: 'ADD_COMMENT',
+      type: 'general',
+      description: 'Allow group users to add comment',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
