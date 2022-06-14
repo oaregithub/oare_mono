@@ -28,7 +28,7 @@
             v-if="!isEditing && textInfo.canWrite"
             color="primary"
             :to="`/epigraphies/${textUuid}/edit`"
-            class="ml-4 mr-2"
+            class="mx-2"
             >Edit</v-btn
           >
           <v-btn
@@ -59,7 +59,12 @@
             text will no longer appear in text lists or search results and its
             contents will not count toward any item totals.
           </oare-dialog>
-          <v-btn color="primary" class="mx-2" @click="copyTransliteration">
+          <v-btn
+            v-if="hasCopyPermission"
+            color="primary"
+            class="mx-2 test-copy-button"
+            @click="copyTransliteration"
+          >
             <v-icon small>mdi-content-copy</v-icon>
           </v-btn>
         </template>
@@ -634,6 +639,10 @@ export default defineComponent({
       actions.showSnackbar('Copied transliteration to clipboard');
     };
 
+    const hasCopyPermission = computed(() =>
+      store.hasPermission('COPY_TEXT_TRANSLITERATION')
+    );
+
     return {
       textInfo,
       isEditing,
@@ -663,6 +672,7 @@ export default defineComponent({
       quarantineDialog,
       quarantineLoading,
       copyTransliteration,
+      hasCopyPermission,
     };
   },
 });

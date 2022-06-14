@@ -134,6 +134,12 @@ class PermissionsDao {
       type: 'general',
       description: 'Allow group users to edit item properties for a given item',
     },
+    {
+      name: 'COPY_TEXT_TRANSLITERATION',
+      type: 'text',
+      description:
+        'Allow group users to copy a string representation of text transliterations',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
