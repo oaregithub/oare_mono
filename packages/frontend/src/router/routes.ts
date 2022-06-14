@@ -58,6 +58,7 @@ import ArchivesView from '../views/Texts/ArchivesView/index.vue';
 import ArchiveView from '../views/Texts/ArchivesView/archives/index.vue';
 import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
 import WordsInTextsSearch from '../views/Search/TextsSearch/WordsInTextSearch.vue';
+import QuarantinedTexts from '../views/Admin/Quarantine/QuarantinedTexts.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -150,6 +151,11 @@ const routes: RouteConfig[] = [
     path: '/admin/add_denylist/images',
     name: 'denylistAddImages',
     component: AddDenylistImages,
+  },
+  {
+    path: '/admin/quarantine',
+    name: 'adminQuarantine',
+    component: QuarantinedTexts,
     beforeEnter: adminGuard,
   },
   {

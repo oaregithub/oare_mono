@@ -13,7 +13,7 @@
         </span>
       </span>
     </p>
-    <v-row align="center" v-if="canInsertParentDiscourse">
+    <v-row align="center" v-if="canInsertParentDiscourse && !disableEditing">
       <v-switch
         v-model="articulateDiscourseHierarchy"
         label="Articulate Discourse Hierarchy"
@@ -22,7 +22,11 @@
     </v-row>
     <v-row
       align="center"
-      v-if="canInsertParentDiscourse && articulateDiscourseHierarchy"
+      v-if="
+        canInsertParentDiscourse &&
+        articulateDiscourseHierarchy &&
+        !disableEditing
+      "
     >
       <v-btn
         :disabled="discourseSelections.length < 1"
@@ -49,7 +53,11 @@
       <template #label="{ item }">
         <v-row class="ma-0 pa-0" align="center">
           <v-checkbox
-            v-if="articulateDiscourseHierarchy && item.type !== 'discourseUnit'"
+            v-if="
+              articulateDiscourseHierarchy &&
+              item.type !== 'discourseUnit' &&
+              !disableEditing
+            "
             hide-details
             dense
             multiple
@@ -150,11 +158,15 @@ export default defineComponent({
       type: String,
       required: false,
     },
+    disableEditing: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: {
     DiscoursePropertiesCard,
   },
-  setup({ discourseUnits, textUuid }) {
+  setup({ discourseUnits, textUuid, disableEditing }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
@@ -162,8 +174,8 @@ export default defineComponent({
     const store = sl.get('store');
     const actions = sl.get('globalActions');
 
-    const allowEditing = computed(() =>
-      store.hasPermission('EDIT_TRANSLATION')
+    const allowEditing = computed(
+      () => !disableEditing && store.hasPermission('EDIT_TRANSLATION')
     );
 
     const discourseColor = (discourseType: string) => {

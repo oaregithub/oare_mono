@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import { createTabletRenderer } from '@oare/oare';
 import { Knex } from 'knex';
-import CollectionTextUtils from '../CollectionTextUtils';
+import sl from '@/serviceLocator';
 import TextEpigraphyDao from '../TextEpigraphyDao';
 
 export interface TextDraftRow
@@ -177,15 +177,21 @@ class TextDraftsDao {
     userUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
     interface DraftTextRow {
       uuid: string;
       textUuid: string;
     }
+
+    const k = trx || knexRead();
+
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+
     const drafts: DraftTextRow[] = await k('text_drafts')
       .select('text_drafts.uuid', 'text_uuid AS textUuid')
       .innerJoin('text', 'text.uuid', 'text_drafts.text_uuid')
       .where('user_uuid', userUuid)
+      .whereNotIn('text_uuid', textsToHide)
       .orderBy('text.name');
 
     const draftUuids = drafts.map(({ uuid }) => uuid);
@@ -207,6 +213,7 @@ class TextDraftsDao {
     trx?: Knex.Transaction
   ) {
     const k = trx || knexRead();
+
     return k('text_drafts')
       .innerJoin('user', 'user.uuid', 'text_drafts.user_uuid')
       .innerJoin('text', 'text.uuid', 'text_drafts.text_uuid')
@@ -218,7 +225,13 @@ class TextDraftsDao {
     options: Pick<DraftQueryOptions, 'authorFilter' | 'textFilter'>,
     trx?: Knex.Transaction
   ): Promise<number> {
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
+
     const row = await this.baseDraftQuery(options, trx)
+      .whereNotIn('text.uuid', quarantinedTexts)
       .count({ count: 'text_drafts.uuid' })
       .first();
     return row ? Number(row.count) : 0;
@@ -235,6 +248,11 @@ class TextDraftsDao {
     }: DraftQueryOptions,
     trx?: Knex.Transaction
   ): Promise<string[]> {
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
+
     const draftUuids: UuidRow[] = await this.baseDraftQuery(
       {
         authorFilter,
@@ -243,6 +261,7 @@ class TextDraftsDao {
       trx
     )
       .select('text_drafts.uuid')
+      .whereNotIn('text.uuid', quarantinedTexts)
       .modify(qb => {
         if (sortBy === 'text') {
           qb.orderBy([
@@ -261,6 +280,14 @@ class TextDraftsDao {
       .limit(limit)
       .offset((page - 1) * limit);
     return draftUuids.map(({ uuid }) => uuid);
+  }
+
+  async removeDraftsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('text_drafts').del().where({ text_uuid: textUuid });
   }
 }
 

@@ -8,7 +8,7 @@ import {
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
-import knex, { Knex } from 'knex';
+import { Knex } from 'knex';
 import {
   getSearchQuery,
   convertEpigraphicUnitRows,
@@ -447,6 +447,46 @@ class TextEpigraphyDao {
       reading: row.reading,
       discourse_uuid: row.discourseUuid,
     });
+  }
+
+  async getNumEpigraphyRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const countResult = await k('text_epigraphy')
+      .where({ text_uuid: textUuid })
+      .count({ count: 'text_epigraphy.uuid' })
+      .first();
+    return countResult && countResult.count ? (countResult.count as number) : 0;
+  }
+
+  async removeEpigraphyRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    let numEpigraphyRows = await this.getNumEpigraphyRowsByTextUuid(
+      textUuid,
+      trx
+    );
+    while (numEpigraphyRows > 0) {
+      const parentUuids = (
+        await k('text_epigraphy') // eslint-disable-line no-await-in-loop
+          .distinct('parent_uuid')
+          .where({ text_uuid: textUuid })
+          .whereNotNull('parent_uuid')
+      ).map(row => row.parent_uuid);
+      const rowsToDelete: string[] = await k('text_epigraphy') // eslint-disable-line no-await-in-loop
+        .pluck('uuid')
+        .where({ text_uuid: textUuid })
+        .whereNotIn('uuid', parentUuids);
+
+      await k('text_epigraphy').del().whereIn('uuid', rowsToDelete); // eslint-disable-line no-await-in-loop
+
+      numEpigraphyRows -= rowsToDelete.length;
+    }
   }
 }
 

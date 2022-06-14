@@ -10,6 +10,15 @@ class CollectionTextUtils {
     const UserDao = sl.get('UserDao');
     const PublicDenylistDao = sl.get('PublicDenylistDao');
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+
+    const textIsQuarantined = await QuarantineTextDao.textIsQuarantined(
+      textUuid,
+      trx
+    );
+    if (textIsQuarantined) {
+      return false;
+    }
 
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
@@ -92,10 +101,15 @@ class CollectionTextUtils {
     const UserGroupDao = sl.get('UserGroupDao');
     const HierarchyDao = sl.get('HierarchyDao');
     const UserDao = sl.get('UserDao');
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
 
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
-      return [];
+      return [...quarantinedTexts];
     }
 
     const publicDenylist = await PublicDenylistDao.getDenylistTextUuids(trx);
@@ -135,11 +149,11 @@ class CollectionTextUtils {
     ).flat();
     textsInAllowlistCollections.forEach(text => textAllowlist.push(text));
 
-    const textsToHide = publicDenylist.filter(
+    const denylistTexts = publicDenylist.filter(
       text => !textAllowlist.includes(text)
     );
 
-    return textsToHide;
+    return [...denylistTexts, ...quarantinedTexts];
   }
 
   async imagesToHide(userUuid: string | null): Promise<string[]> {

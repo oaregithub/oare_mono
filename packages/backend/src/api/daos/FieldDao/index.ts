@@ -69,6 +69,14 @@ class FieldDao {
     const k = trx || knexWrite();
     await k('field').del().where({ uuid });
   }
+
+  async removeFieldRowsByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('field').del().where({ reference_uuid: referenceUuid });
+  }
 }
 
 export default new FieldDao();

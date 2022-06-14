@@ -37,6 +37,27 @@
             @click="photosDialogOpen = true"
             >Add Images</v-btn
           >
+          <oare-dialog
+            v-if="isAdmin && textUuid"
+            v-model="quarantineDialog"
+            title="Quarantine Text"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="quarantineText"
+            :submitLoading="quarantineLoading"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn
+                color="primary"
+                class="mx-4 test-quarantine-button"
+                v-on="on"
+                ><v-icon>mdi-biohazard</v-icon></v-btn
+              >
+            </template>
+            Are you sure you want to quarantine this text? If you continue, this
+            text will no longer appear in text lists or search results and its
+            contents will not count toward any item totals.
+          </oare-dialog>
         </template>
 
         <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
@@ -157,6 +178,7 @@
         <epigraphy-full-display
           v-else-if="disableEditing"
           v-bind="routeProps"
+          :disableEditing="true"
           :localDiscourseInfo="localDiscourseInfo"
         />
         <router-view
@@ -275,6 +297,10 @@ export default defineComponent({
       type: Array as PropType<TextDiscourseRow[]>,
       required: false,
     },
+    forceAllowAdminView: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   setup({
@@ -282,6 +308,7 @@ export default defineComponent({
     discourseToHighlight,
     localEpigraphyUnits,
     localImageUrls,
+    forceAllowAdminView,
   }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
@@ -446,7 +473,10 @@ export default defineComponent({
       if (localEpigraphyUnits) {
         textInfo.value = localEpigraphyUnits;
       } else if (textUuid) {
-        textInfo.value = await server.getEpigraphicInfo(textUuid);
+        textInfo.value = await server.getEpigraphicInfo(
+          textUuid,
+          forceAllowAdminView
+        );
       }
     };
 
@@ -572,6 +602,25 @@ export default defineComponent({
       }
     };
 
+    const quarantineText = async () => {
+      try {
+        quarantineLoading.value = true;
+        await server.quarantineText(textUuid!);
+        quarantineDialog.value = false;
+        router.push(`/collections/name/${textInfo.value.collection.uuid}`);
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error quarantining text. Please try again.',
+          err as Error
+        );
+      } finally {
+        quarantineLoading.value = false;
+      }
+    };
+
+    const quarantineDialog = ref(false);
+    const quarantineLoading = ref(false);
+
     return {
       textInfo,
       isEditing,
@@ -597,6 +646,9 @@ export default defineComponent({
       setPhotosToAdd,
       uploadPhotos,
       canAddPictures,
+      quarantineText,
+      quarantineDialog,
+      quarantineLoading,
     };
   },
 });

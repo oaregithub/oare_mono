@@ -12,8 +12,15 @@ import {
 } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
-  const { data } = await axios.get(`/text_epigraphies/text/${textUuid}`);
+async function getEpigraphicInfo(
+  textUuid: string,
+  forceAllowAdminView?: boolean
+): Promise<EpigraphyResponse> {
+  const { data } = await axios.get(`/text_epigraphies/text/${textUuid}`, {
+    params: {
+      forceAllowAdminView,
+    },
+  });
   return data;
 }
 
