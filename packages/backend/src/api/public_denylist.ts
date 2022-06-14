@@ -112,7 +112,7 @@ router
       if (!(await canRemove(uuid))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts,collections or images does not exist in the denylist'
+            'One or more of the selected texts, collections or images does not exist in the denylist'
           )
         );
         return;
