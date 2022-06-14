@@ -28,13 +28,14 @@
             v-if="!isEditing && textInfo.canWrite"
             color="primary"
             :to="`/epigraphies/${textUuid}/edit`"
-            class="mx-4"
+            class="ml-4 mr-2"
             >Edit</v-btn
           >
           <v-btn
             v-if="canAddPictures"
             color="primary"
             @click="photosDialogOpen = true"
+            class="mx-2"
             >Add Images</v-btn
           >
           <oare-dialog
@@ -49,7 +50,7 @@
             <template v-slot:activator="{ on }">
               <v-btn
                 color="primary"
-                class="mx-4 test-quarantine-button"
+                class="mx-2 test-quarantine-button"
                 v-on="on"
                 ><v-icon>mdi-biohazard</v-icon></v-btn
               >
@@ -58,6 +59,9 @@
             text will no longer appear in text lists or search results and its
             contents will not count toward any item totals.
           </oare-dialog>
+          <v-btn color="primary" class="mx-2" @click="copyTransliteration">
+            <v-icon small>mdi-content-copy</v-icon>
+          </v-btn>
         </template>
 
         <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
@@ -621,6 +625,15 @@ export default defineComponent({
     const quarantineDialog = ref(false);
     const quarantineLoading = ref(false);
 
+    const copyTransliteration = () => {
+      const renderer = createTabletRenderer(textInfo.value.units, {
+        lineNumbers: true,
+      });
+      const transliterationString = renderer.getTransliterationString();
+      navigator.clipboard.writeText(transliterationString);
+      actions.showSnackbar('Copied transliteration to clipboard');
+    };
+
     return {
       textInfo,
       isEditing,
@@ -649,6 +662,7 @@ export default defineComponent({
       quarantineText,
       quarantineDialog,
       quarantineLoading,
+      copyTransliteration,
     };
   },
 });
