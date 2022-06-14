@@ -136,8 +136,11 @@ class PublicDenylistDao {
     return true;
   }
 
-  async collectionIsPubliclyViewable(collectionUuid: string): Promise<boolean> {
-    const collectionDenylist = await this.getDenylistCollectionUuids();
+  async collectionIsPubliclyViewable(
+    collectionUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const collectionDenylist = await this.getDenylistCollectionUuids(trx);
 
     if (collectionDenylist.includes(collectionUuid)) {
       return false;
