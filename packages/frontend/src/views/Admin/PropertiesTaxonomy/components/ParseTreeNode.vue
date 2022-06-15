@@ -5,13 +5,17 @@
     v-if="node.children"
     multiple
     :value="searchResultsToOpen"
+    :active-class="wordsInTextSearch ? '' : 'v-item--active'"
   >
     <v-expansion-panel
       v-for="child in node.children"
       :key="child.uuid"
       :readonly="!child.children"
     >
-      <v-expansion-panel-header :disable-icon-rotate="allowSelections">
+      <v-expansion-panel-header
+        :disable-icon-rotate="allowSelections"
+        :hide-actions="wordsInTextSearch"
+      >
         <template #default="{ open }">
           <v-checkbox
             v-if="!child.children && child.valueName && allowSelections"
@@ -19,7 +23,9 @@
             hide-details
             v-model="selected"
             :value="child"
-            :disabled="disableChildren && !selected.includes(child)"
+            :disabled="
+              disableChildren && !selected.includes(child) && !wordsInTextSearch
+            "
           >
             <template #label>
               {{ child.valueName }}
@@ -66,7 +72,9 @@
                 "
                 >NO NAME</i
               >
-              <b v-if="open && child.custom === 1" class="text--disabled ml-7"
+              <b
+                v-if="open && child.custom === 1 && !wordsInTextSearch"
+                class="text--disabled ml-7"
                 ><br />Only one selection permitted</b
               >
               <span class="text--disabled">
@@ -110,7 +118,7 @@
             </span>
           </template>
         </template>
-        <template #actions>
+        <template #actions v-if="!wordsInTextSearch">
           <v-icon v-if="!child.children"></v-icon>
           <v-icon v-else-if="showCheck(child) && allowSelections" color="green"
             >mdi-check-circle-outline</v-icon
@@ -150,6 +158,7 @@
           :openSearchResults="openSearchResults"
           :existingProperties="existingProperties"
           :showUUID="showUUID"
+          :wordsInTextSearch="wordsInTextSearch"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
         />
@@ -199,6 +208,10 @@ export default defineComponent({
       required: false,
     },
     showUUID: {
+      type: Boolean,
+      default: false,
+    },
+    wordsInTextSearch: {
       type: Boolean,
       default: false,
     },

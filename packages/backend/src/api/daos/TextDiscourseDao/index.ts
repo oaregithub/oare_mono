@@ -10,6 +10,7 @@ import {
   TextDiscourseRow,
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
+  ParseTreePropertyUuids,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
@@ -131,22 +132,42 @@ class TextDiscourseDao {
   }
 
   async wordsInTextsSearch(
-    { uuids, numWordsBetween, sequenced, page, rows }: WordsInTextSearchPayload,
+    {
+      uuids,
+      parseProperties,
+      numWordsBetween,
+      sequenced,
+      page,
+      rows,
+    }: WordsInTextSearchPayload,
     userUuid: string | null
   ): Promise<WordsInTextsSearchResponse> {
     const TextDao = sl.get('TextDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const textsToHide: string[] = await CollectionTextUtils.textsToHide(
       userUuid
     );
 
     const spellingUuids: string[][] = await Promise.all(
-      uuids.map(async uuidArray => {
+      uuids.map(async (uuidArray, i) => {
+        const includeParseUuidArray: string[] =
+          uuidArray[0] === 'useParse'
+            ? (
+                await Promise.all(
+                  parseProperties[
+                    i
+                  ].map((parsePropArray: ParseTreePropertyUuids[]) =>
+                    ItemPropertiesDao.getFormsByProperties(parsePropArray)
+                  )
+                )
+              ).flat()
+            : uuidArray;
         const spellingUuidsArray: string[] = await knexRead()(
           'dictionary_spelling as ds'
         )
           .pluck('ds.uuid')
-          .whereIn('ds.reference_uuid', uuidArray);
+          .whereIn('ds.reference_uuid', includeParseUuidArray);
 
         return spellingUuidsArray;
       })

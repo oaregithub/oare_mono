@@ -40,9 +40,21 @@ describe('words in texts search test', () => {
       sl.set('CollectionTextUtils', CollectionTextUtils);
       sl.set('TextDao', TextDao);
     });
-
+    const parseProperties = {
+      variable: {
+        uuid: 'varUuid',
+        parentUuid: 'varParentUuid',
+        variableName: 'variableName',
+      },
+      value: {
+        uuid: 'valUuid',
+        parentUuid: 'valParentUuid',
+        valueName: 'valueName',
+      },
+    };
     const query = {
       uuids: JSON.stringify(['uuid1', 'uuid2']),
+      parseProperties: JSON.stringify({ 2: [[parseProperties]] }),
       numWordsBetween: JSON.stringify([1, 3, 4]),
       page: '1',
       rows: '25',
@@ -61,15 +73,17 @@ describe('words in texts search test', () => {
   describe('GET /wordsAndForms', () => {
     const PATH = `${API_PATH}/wordsAndForms`;
 
-    const wordFormAutoCompleteDisplay = {
-      info: { uuid: 'uuid', name: 'name', wordUuid: 'wordUuid' },
-      wordDisplay: 'wordDisplay',
-    };
+    const wordFormAutoCompleteDisplay = [
+      {
+        info: { uuid: 'uuid', name: 'name', wordUuid: 'wordUuid' },
+        wordDisplay: 'wordDisplay',
+      },
+    ];
 
     const DictionaryWordDao = {
       getWordsAndFormsForWordsInTexts: jest
         .fn()
-        .mockResolvedValue([wordFormAutoCompleteDisplay]),
+        .mockResolvedValue(wordFormAutoCompleteDisplay),
     };
 
     beforeEach(() => {
@@ -84,7 +98,7 @@ describe('words in texts search test', () => {
         DictionaryWordDao.getWordsAndFormsForWordsInTexts
       ).toHaveBeenCalled();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([wordFormAutoCompleteDisplay]);
+      expect(JSON.parse(response.text)).toEqual(wordFormAutoCompleteDisplay);
     });
   });
 });
