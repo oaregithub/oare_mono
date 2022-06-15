@@ -4,7 +4,6 @@
     flat
     v-if="node.children"
     multiple
-    :value="searchResultsToOpen"
     :active-class="wordsInTextSearch ? '' : 'v-item--active'"
     v-model="openPanels"
   >
