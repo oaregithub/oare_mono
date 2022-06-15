@@ -254,7 +254,7 @@ class HierarchyDao {
     const words = await Promise.all(
       imgUUIDs.map(uuid =>
         k('text')
-          .pluck('display_name')
+          .select('display_name')
           .whereIn(
             'uuid',
             k('link').select('reference_uuid').where('obj_uuid', uuid)
@@ -289,7 +289,7 @@ class HierarchyDao {
     const result: SearchImagesResultRow[] = signedUrls.map((element, idx) => {
       const imageInfo = {
         uuid: imgUUIDs[idx],
-        name: words[idx],
+        name: words[idx].display_name,
         imgUrl: element,
       };
       return imageInfo;

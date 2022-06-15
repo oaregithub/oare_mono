@@ -74,7 +74,7 @@ class PublicDenylistDao {
     }[] = signedUrls.map((signedUrl, idx) => ({
       uuid: imgUUIDs[idx],
       url: signedUrl,
-      text: texts[idx],
+      text: texts[idx].display_name,
     }));
 
     return result;
