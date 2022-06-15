@@ -219,9 +219,7 @@ class HierarchyDao {
   ): Promise<SearchImagesResponse> {
     const k = trx || knexRead();
     let signedUrls: string[] = [];
-    let imgUUIDs: string[] = [];
     let totalCount: number = 0;
-    const result: SearchImagesResultRow[] = [];
     const s3 = new AWS.S3();
 
     const totalNum = await k('link')
@@ -240,7 +238,7 @@ class HierarchyDao {
 
     totalCount = totalNum ? Number(totalNum.count) : 0;
 
-    imgUUIDs = await k('link')
+    const imgUUIDs: string[] = await k('link')
       .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
       .innerJoin('text', 'text.uuid', 'link.reference_uuid')
       .pluck('resource.uuid')
@@ -253,21 +251,17 @@ class HierarchyDao {
       .limit(limit)
       .offset((page - 1) * limit);
 
-    const promises = [];
-    let words: any[] = [];
-
-    for (let j = 0; j < imgUUIDs.length; j += 1) {
-      const word = k('text')
-        .pluck('display_name')
-        .where(
-          'uuid',
-          k('link').select('reference_uuid').where('obj_uuid', imgUUIDs[j])
-        );
-
-      promises.push(word);
-    }
-
-    words = await Promise.all(promises);
+    const words = await Promise.all(
+      imgUUIDs.map(uuid =>
+        k('text')
+          .pluck('display_name')
+          .whereIn(
+            'uuid',
+            k('link').select('reference_uuid').where('obj_uuid', uuid)
+          )
+          .first()
+      )
+    );
 
     const resourceLinks: string[] = await k('link')
       .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
@@ -292,13 +286,14 @@ class HierarchyDao {
       })
     );
 
-    signedUrls.forEach((element, idx) =>
-      result.push({
+    const result: SearchImagesResultRow[] = signedUrls.map((element, idx) => {
+      const imageInfo = {
         uuid: imgUUIDs[idx],
-        name: words[idx][0],
+        name: words[idx],
         imgUrl: element,
-      })
-    );
+      };
+      return imageInfo;
+    });
 
     return {
       items: result,

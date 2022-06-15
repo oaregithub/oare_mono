@@ -47,11 +47,9 @@ class ResourceDao {
         .where('r.type', 'img')
         .whereIn(
           'r.uuid',
-          k('link')
-            .select('obj_uuid')
-            .where('reference_uuid', textUuid)
-            .whereNotIn('r.uuid', imagesToHide)
-        );
+          k('link').select('obj_uuid').where('reference_uuid', textUuid)
+        )
+        .whereNotIn('r.uuid', imagesToHide);
 
       const signedUrls = await Promise.all(
         resourceLinks.map(key => {

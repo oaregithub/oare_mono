@@ -6,7 +6,6 @@ import { Knex } from 'knex';
 class PublicDenylistDao {
   async getDenylistTextUuids(trx?: Knex.Transaction): Promise<string[]> {
     const k = trx || knexRead();
-
     const QuarantineTextDao = sl.get('QuarantineTextDao');
     const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
       trx
@@ -32,27 +31,25 @@ class PublicDenylistDao {
   async getDenylistImagesWithTexts(
     trx?: Knex.Transaction
   ): Promise<{ uuid: string; url: string; text: string }[]> {
-    let signedUrls: string[] = [];
-    let imgUUIDs: string[] = [];
-    let texts: any = [];
-    let result: { uuid: string; url: string; text: string }[] = [];
     const promises = [];
     const s3 = new AWS.S3();
     const k = trx || knexRead();
 
-    imgUUIDs = await k('public_denylist').pluck('uuid').where('type', 'img');
+    const imgUUIDs: string[] = await k('public_denylist')
+      .pluck('uuid')
+      .where('type', 'img');
 
-    for (let j = 0; j < imgUUIDs.length; j += 1) {
-      const text = k('text')
-        .pluck('display_name')
-        .where(
-          'uuid',
-          k('link').select('reference_uuid').where('obj_uuid', imgUUIDs[j])
-        );
-      promises.push(text);
-    }
-
-    texts = await Promise.all(promises);
+    const texts = await Promise.all(
+      imgUUIDs.map(uuid =>
+        k('text')
+          .select('display_name')
+          .where(
+            'uuid',
+            k('link').select('reference_uuid').where('obj_uuid', uuid)
+          )
+          .first()
+      )
+    );
 
     const resourceLinks: string[] = await k('resource')
       .pluck('link')
@@ -60,7 +57,7 @@ class PublicDenylistDao {
       .where('type', 'img')
       .andWhere('container', 'oare-image-bucket');
 
-    signedUrls = await Promise.all(
+    const signedUrls: string[] = await Promise.all(
       resourceLinks.map(key => {
         const params = {
           Bucket: 'oare-image-bucket',
@@ -70,10 +67,14 @@ class PublicDenylistDao {
       })
     );
 
-    result = signedUrls.map((signedUrl, idx) => ({
+    const result: {
+      uuid: string;
+      url: string;
+      text: string;
+    }[] = signedUrls.map((signedUrl, idx) => ({
       uuid: imgUUIDs[idx],
       url: signedUrl,
-      text: texts[idx][0],
+      text: texts[idx],
     }));
 
     return result;

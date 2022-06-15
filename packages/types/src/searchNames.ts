@@ -9,7 +9,7 @@ export interface SearchNamesResultRow {
 export interface SearchImagesResultRow {
   uuid: string;
   imgUrl: string;
-  name: any[];
+  name: string;
 }
 
 export interface SearchNamesPayload {
