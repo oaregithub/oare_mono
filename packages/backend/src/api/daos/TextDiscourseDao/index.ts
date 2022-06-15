@@ -150,6 +150,7 @@ class TextDiscourseDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<WordsInTextsSearchResponse> {
+    const k = trx || knexRead();
     const TextDao = sl.get('TextDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
@@ -171,7 +172,7 @@ class TextDiscourseDao {
                 )
               ).flat()
             : uuidArray;
-        const spellingUuidsArray: string[] = await knexRead()(
+        const spellingUuidsArray: string[] = await k(
           'dictionary_spelling as ds'
         )
           .pluck('ds.uuid')
@@ -230,7 +231,7 @@ class TextDiscourseDao {
       sequenced,
       trx
     )
-      .select(knexRead().raw('count(distinct td0.text_uuid) as count'))
+      .select(k.raw('count(distinct td0.text_uuid) as count'))
       .first();
 
     const textNames = (

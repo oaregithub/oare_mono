@@ -109,14 +109,17 @@ class ItemPropertiesDao {
     return rows;
   }
 
-  async getParseProperties(): Promise<ParsePropertiesDisplay[]> {
-    const partsOfSpeech: string[] = await knexRead()('hierarchy as h')
+  async getParseProperties(
+    trx?: Knex.Transaction
+  ): Promise<ParsePropertiesDisplay[]> {
+    const k = trx || knexRead();
+    const partsOfSpeech: string[] = await k('hierarchy as h')
       .where('h.obj_parent_uuid', '11be11d9-f2e8-e12b-520d-88d7f653b746')
       .distinct('h.object_uuid')
       .then((vals: { object_uuid: string }[]) =>
         vals.map(({ object_uuid }) => object_uuid)
       );
-    const childProps: string[] = await knexRead()('item_properties as ip')
+    const childProps: string[] = await k('item_properties as ip')
       .distinct('ip.value_uuid')
       .join('dictionary_form as df', 'df.uuid', 'ip.reference_uuid')
       .whereNotIn('ip.value_uuid', [
@@ -131,37 +134,28 @@ class ItemPropertiesDao {
       await Promise.all(
         partsOfSpeech.map(async partOfSpeech => {
           const partOfSpeechName: string = (
-            await knexRead()('value')
-              .select('name')
-              .where('uuid', partOfSpeech)
-              .first()
+            await k('value').select('name').where('uuid', partOfSpeech).first()
           ).name;
           const properties: ParsePropertiesDisplay[] = await Promise.all(
             childProps.map(async otherProp => {
               const propertyName: string = (
-                await knexRead()('value')
-                  .select('name')
-                  .where('uuid', otherProp)
-                  .first()
+                await k('value').select('name').where('uuid', otherProp).first()
               ).name;
-              const sub1 = knexRead()
+              const sub1 = k
                 .select('df.uuid as uuid')
                 .from('item_properties as ip')
                 .join('dictionary_form as df', 'df.uuid', 'ip.reference_uuid')
                 .where('ip.value_uuid', otherProp);
-              const sub2 = knexRead()
+              const sub2 = k
                 .select('df.uuid as uuid')
                 .from('item_properties as ip')
                 .join('dictionary_form as df', 'df.uuid', 'ip.reference_uuid')
                 .where('ip.value_uuid', partOfSpeech);
               const results: Array<{
                 uuid: string;
-              }> = await knexRead()(sub1.as('sub1'))
+              }> = await k(sub1.as('sub1'))
                 .join(sub2.as('sub2'), 'sub2.uuid', 'sub1.uuid')
                 .select('sub1.uuid as uuid');
-              // .select('df.uuid')
-              // .join('dictionary_form as df', 'df.uuid', 'ip.reference_uuid')
-              // .where('ip.value_uuid', otherProp);
 
               const returnVal: ParsePropertiesDisplay = {
                 partOfSpeech,
@@ -183,15 +177,17 @@ class ItemPropertiesDao {
   }
 
   async getFormsByProperties(
-    parseProperties: ParseTreePropertyUuids[]
+    parseProperties: ParseTreePropertyUuids[],
+    trx?: Knex.Transaction
   ): Promise<string[]> {
+    const k = trx || knexRead();
     const subqueries = parseProperties.map(p =>
-      knexRead()('hierarchy as h')
+      k('hierarchy as h')
         .join('item_properties as ip', 'ip.value_uuid', 'h.object_uuid')
         .where('h.uuid', p.value.uuid)
         .select('ip.reference_uuid as ref_uuid')
     );
-    const formUuids: string[] = await knexRead()('dictionary_form as df')
+    const formUuids: string[] = await k('dictionary_form as df')
       .distinct('df.uuid')
       .modify(qb => {
         parseProperties.forEach((_p, i) => {

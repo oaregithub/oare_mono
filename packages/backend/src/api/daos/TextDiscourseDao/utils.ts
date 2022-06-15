@@ -90,14 +90,12 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
           if (sequenced) {
             if (currentNumWordsBetween > -1) {
               this.andOn(
-                knexRead().raw(
+                k.raw(
                   `td${i}.word_on_tablet <= (td${i - 1}.word_on_tablet + ?)`,
                   [currentNumWordsBetween]
                 )
               ).andOn(
-                knexRead().raw(
-                  `td${i}.word_on_tablet > td${i - 1}.word_on_tablet`
-                )
+                k.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
               );
             } else {
               this.andOn(
