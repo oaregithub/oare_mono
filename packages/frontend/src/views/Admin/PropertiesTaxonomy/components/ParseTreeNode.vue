@@ -6,9 +6,10 @@
     multiple
     :value="searchResultsToOpen"
     :active-class="wordsInTextSearch ? '' : 'v-item--active'"
+    v-model="openPanels"
   >
     <v-expansion-panel
-      v-for="child in node.children"
+      v-for="(child, idx) in node.children"
       :key="child.uuid"
       :readonly="!child.children"
     >
@@ -26,6 +27,7 @@
             :disabled="
               disableChildren && !selected.includes(child) && !wordsInTextSearch
             "
+            @change="$emit('child-selected')"
           >
             <template #label>
               {{ child.valueName }}
@@ -85,6 +87,12 @@
                 <span v-else-if="child.valAbbreviation">
                   ({{ child.valAbbreviation }})</span
                 >
+                <span
+                  v-if="!open && allowSelections && child.variableUuid"
+                  class="info--text"
+                >
+                  {{ selectionDisplay[child.variableUuid] }}
+                </span>
                 <span
                   v-if="showUUID && !allowSelections"
                   class="blue--text mr-3"
@@ -161,6 +169,10 @@
           :wordsInTextSearch="wordsInTextSearch"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
+          @update:selection-display="
+            setSelectionDisplay($event, child.variableUuid)
+          "
+          @child-selected="handleSelections(child, idx)"
         />
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -330,6 +342,22 @@ export default defineComponent({
       });
     });
 
+    watch(selected, () => {
+      emit(
+        'update:selection-display',
+        selected.value.map(val => val.valueName || val.aliasName).join(', ')
+      );
+    });
+    const selectionDisplay = ref<{ [key: string]: string }>({});
+    const setSelectionDisplay = (
+      display: string,
+      variableUuid: string | null
+    ) => {
+      if (variableUuid) {
+        selectionDisplay.value[variableUuid] = display;
+      }
+    };
+
     const copyUUID = (uuid: string) => {
       navigator.clipboard.writeText(uuid);
       actions.showSnackbar('Copied Successfully');
@@ -365,21 +393,32 @@ export default defineComponent({
       }
     };
 
-    const searchResultsToOpen = computed(() => {
-      const indices: number[] = [];
-      if (props.node.children && props.openSearchResults) {
-        props.node.children.forEach((child, idx) => {
-          if (props.nodesToHighlight.includes(child.uuid)) {
-            indices.push(idx);
-          }
-        });
+    watch(
+      () => props.openSearchResults,
+      () => {
+        if (props.node.children) {
+          props.node.children.forEach((child, idx) => {
+            if (props.nodesToHighlight.includes(child.uuid)) {
+              openPanels.value.push(idx);
+            }
+          });
+        }
       }
-      return indices;
-    });
+    );
 
     const disableChildren = computed(() => {
       return selected.value.length > 0 && props.node.custom === 1;
     });
+
+    const openPanels = ref<number[]>([]);
+
+    const handleSelections = (child: TaxonomyTree, idx: number) => {
+      if (child.custom === 1) {
+        const indexToRemove = openPanels.value.indexOf(idx);
+        openPanels.value.splice(indexToRemove, 1);
+        openPanels.value.push(idx + 1);
+      }
+    };
 
     return {
       selected,
@@ -388,8 +427,11 @@ export default defineComponent({
       updateCompletedSubtrees,
       updateProperties,
       copyUUID,
-      searchResultsToOpen,
       disableChildren,
+      selectionDisplay,
+      setSelectionDisplay,
+      openPanels,
+      handleSelections,
     };
   },
 });

@@ -1,4 +1,5 @@
 import { knexRead } from '@/connection';
+import { Knex } from 'knex';
 
 interface PersonTextOccurrenceRow {
   personUuid: string;
@@ -12,8 +13,11 @@ interface PersonTextOccurrenceCounts {
 }
 
 class PersonTextOccurrencesDao {
-  async getAll(): Promise<Record<string, PersonTextOccurrenceCounts>> {
-    const peopleOccurrences: PersonTextOccurrenceRow[] = await knexRead()(
+  async getAll(
+    trx?: Knex.Transaction
+  ): Promise<Record<string, PersonTextOccurrenceCounts>> {
+    const k = trx || knexRead();
+    const peopleOccurrences: PersonTextOccurrenceRow[] = await k(
       'person_text_occurrences'
     ).select(
       'person_text_occurrences.person_uuid AS personUuid',

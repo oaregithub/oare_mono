@@ -33,7 +33,7 @@ describe('OareAdminSidebar', () => {
   it('does not display error indicator when not in store', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.findAll('.test-admin-badge').at(2).html()).toContain(
+    expect(wrapper.findAll('.test-admin-badge').at(3).html()).toContain(
       'display: none'
     );
   });
@@ -41,7 +41,7 @@ describe('OareAdminSidebar', () => {
   it('does not display comment indicator when not in store', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.findAll('.test-admin-badge').at(3).html()).toContain(
+    expect(wrapper.findAll('.test-admin-badge').at(4).html()).toContain(
       'display: none'
     );
   });
@@ -58,7 +58,7 @@ describe('OareAdminSidebar', () => {
       },
     });
     await flushPromises();
-    expect(wrapper.findAll('.test-admin-badge').at(2).html()).not.toContain(
+    expect(wrapper.findAll('.test-admin-badge').at(3).html()).not.toContain(
       'display: none'
     );
   });
@@ -75,7 +75,7 @@ describe('OareAdminSidebar', () => {
       },
     });
     await flushPromises();
-    expect(wrapper.findAll('.test-admin-badge').at(3).html()).not.toContain(
+    expect(wrapper.findAll('.test-admin-badge').at(4).html()).not.toContain(
       'display: none'
     );
   });

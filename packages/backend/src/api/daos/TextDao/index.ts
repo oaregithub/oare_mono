@@ -1,13 +1,18 @@
 import { knexRead, knexWrite } from '@/connection';
 import { TranslitOption, Text, TextRow } from '@oare/types';
+import { Knex } from 'knex';
 
 interface TextUuid {
   uuid: string;
 }
 
 class TextDao {
-  async getTextByUuid(uuid: string): Promise<Text | null> {
-    const text: Text = await knexRead()('text')
+  async getTextByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Text | null> {
+    const k = trx || knexRead();
+    const text: Text = await k('text')
       .select(
         'uuid',
         'type',
@@ -24,8 +29,12 @@ class TextDao {
     return text;
   }
 
-  async getTextRowByUuid(uuid: string): Promise<TextRow | null> {
-    const textRow: TextRow = await knexRead()('text')
+  async getTextRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<TextRow | null> {
+    const k = trx || knexRead();
+    const textRow: TextRow = await k('text')
       .select(
         'uuid',
         'type',
@@ -50,8 +59,9 @@ class TextDao {
     return textRow;
   }
 
-  async getUnpublishedTextUuids(): Promise<string[]> {
-    const texts: TextUuid[] = await knexRead()('text')
+  async getUnpublishedTextUuids(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
+    const texts: TextUuid[] = await k('text')
       .select('text.uuid')
       .innerJoin('hierarchy', 'hierarchy.object_uuid', 'text.uuid')
       .where('hierarchy.published', false);
@@ -59,16 +69,21 @@ class TextDao {
     return texts.map(text => text.uuid);
   }
 
-  async getCdliNum(uuid: string): Promise<string | null> {
-    const { cdliNum } = await knexRead()('text')
+  async getCdliNum(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string | null> {
+    const k = trx || knexRead();
+    const { cdliNum } = await k('text')
       .select('cdli_num AS cdliNum')
       .where({ uuid })
       .first();
     return cdliNum;
   }
 
-  async getTranslitStatus(uuid: string) {
-    const { name: color, field: colorMeaning } = await knexRead()('text')
+  async getTranslitStatus(uuid: string, trx?: Knex.Transaction) {
+    const k = trx || knexRead();
+    const { name: color, field: colorMeaning } = await k('text')
       .select('alias.name', 'field.field')
       .where({ 'text.uuid': uuid })
       .innerJoin('alias', 'translit_status', 'alias.reference_uuid')
@@ -81,8 +96,9 @@ class TextDao {
     };
   }
 
-  async getTranslitOptions() {
-    const stoplightOptions: TranslitOption[] = await knexRead()('hierarchy')
+  async getTranslitOptions(trx?: Knex.Transaction) {
+    const k = trx || knexRead();
+    const stoplightOptions: TranslitOption[] = await k('hierarchy')
       .select('a1.name as color', 'field.field as colorMeaning')
       .innerJoin('alias as a1', 'a1.reference_uuid', 'hierarchy.object_uuid')
       .innerJoin(
@@ -96,13 +112,18 @@ class TextDao {
     return stoplightOptions.reverse();
   }
 
-  async updateTranslitStatus(textUuid: string, color: string) {
-    const statusRow = await knexRead()('hierarchy')
+  async updateTranslitStatus(
+    textUuid: string,
+    color: string,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    const statusRow = await k('hierarchy')
       .select('hierarchy.object_uuid as translitUuid')
       .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
       .where('name', color)
       .first();
-    await knexWrite()('text')
+    await k('text')
       .update('translit_status', statusRow.translitUuid)
       .where('uuid', textUuid);
   }
@@ -114,9 +135,11 @@ class TextDao {
     newMuseumPrefix: string | null,
     newMuseumNumber: string | null,
     newPrimaryPublicationPrefix: string | null,
-    newPrimaryPublicationNumber: string | null
+    newPrimaryPublicationNumber: string | null,
+    trx?: Knex.Transaction
   ) {
-    await knexWrite()('text')
+    const k = trx || knexWrite();
+    await k('text')
       .update({
         excavation_prfx: newExcavationPrefix,
         excavation_no: newExcavationNumber,
@@ -128,8 +151,9 @@ class TextDao {
       .where('uuid', textUuid);
   }
 
-  async insertTextRow(row: TextRow) {
-    await knexWrite()('text').insert({
+  async insertTextRow(row: TextRow, trx?: Knex.Transaction) {
+    const k = trx || knexWrite();
+    await k('text').insert({
       uuid: row.uuid,
       type: row.type,
       language: row.language,
@@ -148,6 +172,11 @@ class TextDao {
       genre: row.genre,
       subgenre: row.subgenre,
     });
+  }
+
+  async removeTextByUuid(textUuid: string, trx?: Knex.Transaction) {
+    const k = trx || knexWrite();
+    await k('text').del().where({ uuid: textUuid });
   }
 }
 

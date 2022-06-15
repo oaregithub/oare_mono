@@ -4,15 +4,23 @@ import {
   UpdateTranslitStatusPayload,
   CreateTextTables,
   CreateTextsPayload,
-  TextPhotoWithName,
+  TextPhotoWithDetails,
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
+  InsertItemPropertyRow,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function getEpigraphicInfo(textUuid: string): Promise<EpigraphyResponse> {
-  const { data } = await axios.get(`/text_epigraphies/text/${textUuid}`);
+async function getEpigraphicInfo(
+  textUuid: string,
+  forceAllowAdminView?: boolean
+): Promise<EpigraphyResponse> {
+  const { data } = await axios.get(`/text_epigraphies/text/${textUuid}`, {
+    params: {
+      forceAllowAdminView,
+    },
+  });
   return data;
 }
 
@@ -67,10 +75,15 @@ const getNextImageDesignator = async (preText: string): Promise<number> => {
   return data;
 };
 
-const addPhotosToText = async (resources: ResourceRow[], links: LinkRow[]) => {
+const addPhotosToText = async (
+  resources: ResourceRow[],
+  links: LinkRow[],
+  itemProperties: InsertItemPropertyRow[]
+) => {
   await axios.post('/text_epigraphies/additional_images', {
     resources,
     links,
+    itemProperties,
   });
 };
 
@@ -81,7 +94,7 @@ const createText = async (createTextTables: CreateTextTables) => {
   await axios.post('/text_epigraphies/create', payload);
 };
 
-const uploadImage = async (photo: TextPhotoWithName) => {
+const uploadImage = async (photo: TextPhotoWithDetails) => {
   const file = photo.upload;
   if (file) {
     const formData = new FormData();
