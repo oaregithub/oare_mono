@@ -1,17 +1,17 @@
 <template>
-  <v-menu offset-y v-if="!hideMenu && hasCommentPermission">
+  <v-menu offset-y v-if="!hideMenu">
     <template v-slot:activator="{ on }">
       <slot name="activator" :on="on"></slot>
     </template>
     <v-list>
       <v-list-item
-        v-if="hasComment"
+        v-if="hasComment && hasCommentPermission"
         @click="$emit('comment-clicked')"
         class="test-comment"
       >
         <v-list-item-title>
           <v-icon>mdi-comment</v-icon>
-          Comment
+          Comments
         </v-list-item-title>
       </v-list-item>
       <v-list-item
@@ -73,7 +73,7 @@ export default defineComponent({
     const store = sl.get('store');
 
     const hasCommentPermission = computed(() =>
-      store.hasPermission('ADD_COMMENT')
+      store.hasPermission('ADD_COMMENTS')
     );
     return { hasCommentPermission };
   },
