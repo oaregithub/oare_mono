@@ -111,6 +111,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const store = sl.get('store');
 
+    const isEditing = ref(false);
     const isLoading = ref(false);
 
     const deletedTranslation = ref<DeletedTranslation | null>(null);
@@ -205,6 +206,7 @@ export default defineComponent({
       addTranslation,
       removeTranslation,
       localTranslations,
+      isEditing,
       closeEditor,
       saveEdits,
       isLoading,

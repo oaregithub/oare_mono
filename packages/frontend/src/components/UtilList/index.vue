@@ -11,7 +11,7 @@
       >
         <v-list-item-title>
           <v-icon>mdi-comment</v-icon>
-          Comments
+          Comment
         </v-list-item-title>
       </v-list-item>
       <v-list-item

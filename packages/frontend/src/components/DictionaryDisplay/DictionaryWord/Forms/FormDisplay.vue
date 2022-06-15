@@ -58,14 +58,6 @@
         <v-btn v-if="!loading" icon @click="saveFormEdit" class="test-check">
           <v-icon>mdi-check</v-icon>
         </v-btn>
-        <v-btn
-          v-if="!loading"
-          icon
-          @click="editing = !editing"
-          class="test-close"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
       </div>
 
       <span v-if="aggregateOccurrences > 0" class="mr-1">
