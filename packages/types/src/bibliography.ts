@@ -5,32 +5,6 @@ export interface BibliographyItem {
 }
 
 export interface ZoteroResponse {
-  key: string;
-  version: number;
-  library: {
-    type: string;
-    id: number;
-    name: string;
-    links: {
-      alternate: ZoteroLink;
-    };
-  };
-  links: {
-    self: ZoteroLink;
-    alternate: ZoteroLink;
-  };
-  meta: {
-    createdByUser: {
-      id: number;
-      username: string;
-      name: string;
-      links: {
-        alternate: ZoteroLink;
-      };
-      creatorSummary: string;
-      numChildren: number;
-    };
-  };
   bib?: string | null;
   citation?: string | null;
   data?: ZoteroResponseData | null;

@@ -9,6 +9,7 @@ import {
 } from '@oare/types';
 import { dynamicImport } from 'tsimportlib';
 import { Knex } from 'knex';
+import { getFileURLByRow } from './utils';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -118,18 +119,7 @@ class ResourceDao {
   }
 
   async getFileURLByRows(resourceRows: ResourceRow[]): Promise<string[]> {
-    const s3 = new AWS.S3();
-
-    const fileURL = await Promise.all(
-      resourceRows.map(key => {
-        const params = {
-          Bucket: key.link,
-          Key: key.container,
-        };
-        return s3.getSignedUrlPromise('getObject', params);
-      })
-    );
-
+    const fileURL = await getFileURLByRow(resourceRows);
     return fileURL;
   }
 

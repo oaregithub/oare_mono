@@ -1,8 +1,9 @@
 import { Knex } from 'knex';
 import { knexRead } from '@/connection';
-import { getZoteroAPIKEY } from '@/utils';
 import { BibliographyItem, ZoteroResponse } from '@oare/types';
-import { dynamicImport } from 'tsimportlib';
+import { getZoteroResponse } from './utils';
+import { getZoteroAPIKEY } from '@/utils';
+
 class BibliographyDao {
   async getBibliographyByUuid(
     uuid: string,
@@ -21,28 +22,7 @@ class BibliographyDao {
     citationStyle: string
   ): Promise<ZoteroResponse[]> {
     const apiKey = await getZoteroAPIKEY();
-
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
-    const response = await Promise.all(
-      zoteroKeys.map(zoteroKey =>
-        fetch
-          .default(
-            `https://api.zotero.org/groups/318265/items/${zoteroKey}?format=json&include=citation&style=${citationStyle}`,
-            {
-              headers: {
-                Authorization: `Bearer ${apiKey}`,
-              },
-            }
-          )
-          .then(value => value.json())
-          .then(json => json as ZoteroResponse)
-      )
-    );
-
+    const response = await getZoteroResponse(zoteroKeys, citationStyle, apiKey);
     return response;
   }
 }

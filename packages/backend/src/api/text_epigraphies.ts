@@ -86,10 +86,14 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const BibliographyDao = sl.get('BibliographyDao');
     const ResourceDao = sl.get('ResourceDao');
 
+    const citationStyle = 'chicago-author-date';
+
     const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
       textUuid,
       'b3938276-173b-11ec-8b77-024de1c1cc1d'
     );
+
+    // BibliographyDao
 
     const bibliographies = await Promise.all(
       objUuids.map(uuid => BibliographyDao.getBibliographyByUuid(uuid))
@@ -97,26 +101,26 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     const zoteroKeys = bibliographies.map(bib => bib.zoteroKey);
 
-    const citationStyle = 'chicago-author-date';
-
     const zoteroJson = await BibliographyDao.getZoteroResponses(
       zoteroKeys,
       citationStyle
     );
 
-    const zoteroJsonFilter: ZoteroResponse[] = zoteroJson.filter(
-      item => !!item.citation
-    );
+    // /BibliographyDao
 
-    const zoteroCitations: string[] = zoteroJsonFilter.map(
-      item => item.citation!
-    );
+    const zoteroCitations: string[] = zoteroJson
+      .filter(item => !!item.citation)
+      .map(item => item.citation!);
+
+    // ResourceDao
 
     const resourceRows: ResourceRow[] = await Promise.all(
       objUuids.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
     );
 
     const fileURL = await ResourceDao.getFileURLByRows(resourceRows);
+
+    // /ResourceDao
 
     const zoteroData = zoteroCitations.map((cit, idx) => ({
       citation: cit,
