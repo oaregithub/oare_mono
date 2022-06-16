@@ -143,7 +143,7 @@ class PermissionsDao {
     {
       name: 'ADD_COMMENTS',
       type: 'general',
-      description: 'Allow group users to add comment',
+      description: 'Allow group users to add comments',
     },
   ];
 
