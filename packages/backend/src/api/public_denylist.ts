@@ -27,7 +27,6 @@ async function canRemove(uuid: string) {
   const getDenylistImageUuids = await PublicDenylistDao.getDenylistImageUuids();
 
   const existingDenylist = denylistTextUuids
-    .concat(denylistTextUuids)
     .concat(denylistCollectionUuids)
     .concat(getDenylistImageUuids);
   if (!existingDenylist.includes(uuid)) {

@@ -218,8 +218,6 @@ class HierarchyDao {
     trx?: Knex.Transaction
   ): Promise<SearchImagesResponse> {
     const k = trx || knexRead();
-    let signedUrls: string[] = [];
-    let totalCount: number = 0;
     const s3 = new AWS.S3();
 
     const totalNum = await k('link')
@@ -236,7 +234,7 @@ class HierarchyDao {
       })
       .first();
 
-    totalCount = totalNum ? Number(totalNum.count) : 0;
+    const totalCount = totalNum ? Number(totalNum.count) : 0;
 
     const imgUUIDs: string[] = await k('link')
       .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
@@ -276,7 +274,7 @@ class HierarchyDao {
       .limit(limit)
       .offset((page - 1) * limit);
 
-    signedUrls = await Promise.all(
+    const signedUrls = await Promise.all(
       resourceLinks.map(key => {
         const params = {
           Bucket: 'oare-image-bucket',

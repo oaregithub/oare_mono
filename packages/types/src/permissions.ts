@@ -76,5 +76,6 @@ export interface DeleteDenylistAllowlistParameters {
 export interface DenylistAllowlistItem {
   uuid: string;
   name?: string;
+  url?: string;
   hasEpigraphy?: boolean;
 }
