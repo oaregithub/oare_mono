@@ -236,7 +236,12 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       },
     ],
     hasEpigraphy: true,
-    zoteroData: [],
+    zoteroData: [
+      {
+        citation: 'test-zotero-citation-2',
+        link: 'https://oare-unit-test.com/test-resource-link-abc.pdf',
+      },
+    ],
   };
 
   const mockTextEpigraphyDao = {
@@ -332,10 +337,16 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   const mockBibliographyDao = {
     getBibliographyByUuid: jest.fn().mockResolvedValue([
       {
-        zoteroKey: 'test-bibliography-uuid',
+        uuid: 'test-bibliography-uuid',
+        zoteroKey: 'test-bibliography-key',
+        citation: 'test-citation',
       },
     ]),
-    getZoteroResponses: jest.fn().mockResolvedValue([]),
+    getZoteroResponses: jest.fn().mockResolvedValue([
+      {
+        citation: 'test-zotero-citation-2',
+      },
+    ]),
   };
 
   const setup = () => {
