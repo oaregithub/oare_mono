@@ -169,7 +169,22 @@
             </div>
           </div>
         </v-row>
-        <EpigraphicInfo :textUuid="textUuid" />
+        <div v-if="allowViewCitations && zoteroDataListTop.length">
+          <div v-for="data in zoteroDataListTop" :key="data">
+            <div>
+              Citation: <a :href="data.link" v-html="data.citation"></a>
+            </div>
+          </div>
+          <div v-if="zoteroDataListBottom.length">
+            See more... <br />
+            <div v-for="data in zoteroDataListBottom" :key="data">
+              <div>
+                Citation: <a :href="data.link" v-html="data.citation"></a>
+              </div>
+            </div>
+          </div>
+          <br />
+        </div>
 
         <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
@@ -238,6 +253,7 @@ import {
   EpigraphyResponse,
   TranslitOption,
   EpigraphyLabelLink,
+  ZoteroData,
 } from '@oare/types';
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
@@ -245,7 +261,6 @@ import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
 import AddPhotos from '@/views/Texts/CollectionTexts/AddTexts/Photos/AddPhotos.vue';
-import EpigraphicInfo from './EpigraphyDisplay/components/EpigraphicInfo.vue';
 import { convertParsePropsToItemProps } from '@oare/oare';
 import { addDetailsToTextPhotos } from '../CollectionTexts/AddTexts/utils/photos';
 import { v4 } from 'uuid';
@@ -273,7 +288,6 @@ export default defineComponent({
     EpigraphyImage,
     EpigraphyFullDisplay,
     AddPhotos,
-    EpigraphicInfo,
   },
   props: {
     textUuid: {
@@ -367,6 +381,13 @@ export default defineComponent({
       primaryPublicationNumber: null,
     });
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
+
+    const zoteroDataListTop = ref<ZoteroData[]>([]);
+    const zoteroDataListBottom = ref<ZoteroData[]>([]);
+
+    const allowViewCitations = computed(() =>
+      store.hasPermission('VIEW_BIBLIOGRAPHY')
+    );
 
     const breadcrumbItems = computed(() => {
       const letterGroup = getLetterGroup(textInfo.value.collection.name);
@@ -521,6 +542,13 @@ export default defineComponent({
             textInfo.value.cdliNum
           );
         }
+        const zoteroDataList = textInfo.value.zoteroData;
+        if (zoteroDataList.length > 2) {
+          zoteroDataListTop.value = zoteroDataList.slice(0, 2);
+          zoteroDataListBottom.value = zoteroDataList.slice(2);
+        } else {
+          zoteroDataListTop.value = zoteroDataList;
+        }
       } catch (err) {
         if ((err as any).response) {
           if ((err as any).response.status === 403) {
@@ -653,6 +681,9 @@ export default defineComponent({
       quarantineText,
       quarantineDialog,
       quarantineLoading,
+      zoteroDataListTop,
+      zoteroDataListBottom,
+      allowViewCitations,
     };
   },
 });
