@@ -1,8 +1,8 @@
 import { Knex } from 'knex';
 import { knexRead } from '@/connection';
 import { BibliographyItem, ZoteroResponse } from '@oare/types';
-import { getZoteroResponse } from './utils';
 import { getZoteroAPIKEY } from '@/utils';
+import { getZoteroResponse } from './utils';
 
 class BibliographyDao {
   async getBibliographyByUuid(
