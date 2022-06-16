@@ -139,6 +139,12 @@ class PermissionsDao {
       type: 'text',
       description: 'Allow group users to view the citation(s) of text',
     },
+    {
+      name: 'COPY_TEXT_TRANSLITERATION',
+      type: 'text',
+      description:
+        'Allow group users to copy a string representation of text transliterations',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {

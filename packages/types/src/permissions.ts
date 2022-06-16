@@ -39,7 +39,8 @@ export interface TextPermission extends PermissionTemplate {
     | 'UPLOAD_EPIGRAPHY_IMAGES'
     | 'EDIT_TRANSLATION'
     | 'INSERT_PARENT_DISCOURSE_ROWS'
-    | 'VIEW_BIBLIOGRAPHY';
+    | 'VIEW_BIBLIOGRAPHY'
+    | 'COPY_TEXT_TRANSLITERATION';
   type: 'text';
 }
 
