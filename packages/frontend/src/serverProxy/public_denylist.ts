@@ -1,4 +1,4 @@
-import { DenylistAllowlistPayload } from '@oare/types';
+import { DenylistAllowlistItem, DenylistAllowlistPayload } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getPublicDenylist() {
@@ -11,7 +11,7 @@ async function getDenylistCollections() {
   return data;
 }
 
-async function getDenylistImages() {
+async function getDenylistImages(): Promise<DenylistAllowlistItem[]> {
   const { data } = await axios.get('/public_denylist/images');
   return data;
 }
