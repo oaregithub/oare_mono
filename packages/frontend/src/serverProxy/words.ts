@@ -1,4 +1,4 @@
-import { WordsResponse, AddWordPayload } from '@oare/types';
+import { WordsResponse } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getDictionaryWords(letter: string): Promise<WordsResponse> {
@@ -6,10 +6,6 @@ async function getDictionaryWords(letter: string): Promise<WordsResponse> {
   return data;
 }
 
-async function addWord(payload: AddWordPayload): Promise<void> {
-  await axios.post('/words/addword', payload);
-}
 export default {
   getDictionaryWords,
-  addWord,
 };

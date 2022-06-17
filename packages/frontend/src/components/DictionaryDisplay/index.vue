@@ -9,21 +9,14 @@
     >
     </letter-filter>
 
-    <v-btn
-      color="#ffffff"
-      elevation="0"
-      class="mt-4 px-2"
-      @click="addWordDialog = true"
-    >
-      <v-icon color="primary">mdi-plus</v-icon>
-      <h3 class="text--primary">Add Lemma</h3>
+    <v-btn text color="primary" class="mt-4" @click="addWordDialog = true">
+      <v-icon>mdi-plus</v-icon>
+      <h3>Add Lemma</h3>
     </v-btn>
 
     <add-word-dialog
       v-model="addWordDialog"
-      :wordList="wordList"
       :key="addWordKey"
-      closeOnSubmit
     ></add-word-dialog>
 
     <v-container>
@@ -66,28 +59,16 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  PropType,
-  InjectionKey,
-  provide,
-  watch,
-} from '@vue/composition-api';
+import { defineComponent, ref, PropType, watch } from '@vue/composition-api';
 import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
 import { DisplayableWord, ParseTreeProperty } from '@oare/types';
 import AddWordDialog from './DictionaryWord/AddWordDialog.vue';
-import properties from '@/serverProxy/properties';
-import AddProperties from '@/components/Properties/AddProperties.vue';
-
-export const AddWordReloadKey: InjectionKey<() => Promise<void>> = Symbol();
 
 export default defineComponent({
   name: 'DictionaryDisplay',
   components: {
     LetterFilter,
     AddWordDialog,
-    AddProperties,
   },
   props: {
     wordList: {
@@ -115,15 +96,13 @@ export default defineComponent({
       default: 'words',
     },
   },
-  setup(props) {
+  setup() {
     const addWordDialog = ref(false);
     const filteredWords = ref<DisplayableWord[]>([]);
 
     const getWords = (words: DisplayableWord[]) => {
       filteredWords.value = words;
     };
-
-    provide(AddWordReloadKey, getWords);
 
     const highlight = [
       { bin: '0-10', color: '#caf0f8' },
@@ -134,16 +113,10 @@ export default defineComponent({
       { bin: '25001+', color: '#ff8fa3' },
     ];
 
-    const properties = ref<ParseTreeProperty[]>([]);
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
-      properties.value = propertyList;
-    };
-
     const addWordKey = ref(false);
     watch(addWordDialog, () => {
       if (addWordDialog.value) {
         addWordKey.value = !addWordKey.value;
-        properties.value = [];
       }
     });
 
