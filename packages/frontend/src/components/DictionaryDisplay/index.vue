@@ -9,11 +9,6 @@
     >
     </letter-filter>
 
-    <v-btn text color="primary" class="mt-4" @click="addWordDialog = true">
-      <v-icon>mdi-plus</v-icon>
-      <h3>Add Lemma</h3>
-    </v-btn>
-
     <add-word-dialog
       v-model="addWordDialog"
       :key="addWordKey"
@@ -22,6 +17,15 @@
     <v-container>
       <v-row no-gutters>
         <v-col cols="10">
+          <v-btn
+            text
+            color="primary"
+            class="mb-8"
+            @click="addWordDialog = true"
+          >
+            <v-icon>mdi-plus</v-icon>
+            <h3>Add Lemma</h3>
+          </v-btn>
           <div
             v-for="wordInfo in filteredWords"
             :key="wordInfo.uuid"
