@@ -11,7 +11,7 @@ import {
   SpellingOccurrenceResponseRow,
   TaxonomyTree,
   AddFormPayload,
-  ParseTreeProperty,
+  AddWordPayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -141,6 +141,10 @@ async function addForm(payload: AddFormPayload): Promise<void> {
   await axios.post('/dictionary/addform', payload);
 }
 
+async function addWord(payload: AddWordPayload): Promise<void> {
+  await axios.post('/words/addword', payload);
+}
+
 export default {
   addSpelling,
   updateForm,
@@ -157,4 +161,5 @@ export default {
   addForm,
   disconnectSpellings,
   getDictionaryInfoBySpellingUuid,
+  addWord,
 };
