@@ -179,9 +179,10 @@
           </div>
         </v-row>
         <div v-if="allowViewCitations && zoteroDataList.length">
-          <div v-for="data in zoteroDataList" :key="data">
+          <div v-for="(data, idx) in zoteroDataList" :key="idx">
             <div>
-              Citation: <a :href="data.link" v-html="data.citation"></a>
+              Citation:
+              <a :href="data.link" v-html="data.citation" target="_blank"></a>
             </div>
           </div>
           <br />

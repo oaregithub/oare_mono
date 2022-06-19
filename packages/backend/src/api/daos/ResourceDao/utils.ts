@@ -9,8 +9,8 @@ export async function getFileURLByRow(
   const fileURL = await Promise.all(
     resourceRows.map(key => {
       const params = {
-        Bucket: key.link,
-        Key: key.container,
+        Bucket: key.container,
+        Key: key.link,
       };
       return s3.getSignedUrlPromise('getObject', params);
     })
