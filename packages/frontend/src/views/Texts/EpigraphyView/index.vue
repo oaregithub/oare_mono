@@ -178,18 +178,10 @@
             </div>
           </div>
         </v-row>
-        <div v-if="allowViewCitations && zoteroDataListTop.length">
-          <div v-for="data in zoteroDataListTop" :key="data">
+        <div v-if="allowViewCitations && zoteroDataList.length">
+          <div v-for="data in zoteroDataList" :key="data">
             <div>
               Citation: <a :href="data.link" v-html="data.citation"></a>
-            </div>
-          </div>
-          <div v-if="zoteroDataListBottom.length">
-            See more... <br />
-            <div v-for="data in zoteroDataListBottom" :key="data">
-              <div>
-                Citation: <a :href="data.link" v-html="data.citation"></a>
-              </div>
             </div>
           </div>
           <br />
@@ -391,8 +383,7 @@ export default defineComponent({
     });
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
-    const zoteroDataListTop = ref<ZoteroData[]>([]);
-    const zoteroDataListBottom = ref<ZoteroData[]>([]);
+    const zoteroDataList = ref<ZoteroData[]>([]);
 
     const allowViewCitations = computed(() =>
       store.hasPermission('VIEW_BIBLIOGRAPHY')
@@ -551,13 +542,7 @@ export default defineComponent({
             textInfo.value.cdliNum
           );
         }
-        const zoteroDataList = textInfo.value.zoteroData;
-        if (zoteroDataList.length > 2) {
-          zoteroDataListTop.value = zoteroDataList.slice(0, 2);
-          zoteroDataListBottom.value = zoteroDataList.slice(2);
-        } else {
-          zoteroDataListTop.value = zoteroDataList;
-        }
+        zoteroDataList.value = textInfo.value.zoteroData;
       } catch (err) {
         if ((err as any).response) {
           if ((err as any).response.status === 403) {
@@ -703,8 +688,7 @@ export default defineComponent({
       quarantineText,
       quarantineDialog,
       quarantineLoading,
-      zoteroDataListTop,
-      zoteroDataListBottom,
+      zoteroDataList,
       allowViewCitations,
       copyTransliteration,
       hasCopyPermission,
