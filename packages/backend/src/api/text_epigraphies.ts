@@ -93,26 +93,12 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       'b3938276-173b-11ec-8b77-024de1c1cc1d'
     );
 
-    const bibliographies = await Promise.all(
-      objUuids.map(uuid => BibliographyDao.getBibliographyByUuid(uuid))
-    );
-
-    const zoteroKeys = bibliographies.map(bib => bib.zoteroKey);
-
-    const zoteroJson = await BibliographyDao.getZoteroResponses(
-      zoteroKeys,
+    const zoteroCitations = await BibliographyDao.getZoteroCitationsByUuid(
+      objUuids,
       citationStyle
     );
 
-    const zoteroCitations: string[] = zoteroJson
-      .filter(item => !!item.citation)
-      .map(item => item.citation!);
-
-    const resourceRows: ResourceRow[] = await Promise.all(
-      objUuids.map(uuid => ResourceDao.getResourceLinkByUuid(uuid))
-    );
-
-    const fileURL = await ResourceDao.getFileURLByRows(resourceRows);
+    const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
 
     const zoteroData = zoteroCitations.map((cit, idx) => ({
       citation: cit,

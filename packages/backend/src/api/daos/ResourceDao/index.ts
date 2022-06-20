@@ -9,7 +9,6 @@ import {
 } from '@oare/types';
 import { dynamicImport } from 'tsimportlib';
 import { Knex } from 'knex';
-import { getFileURLByRow } from './utils';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -100,26 +99,36 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
-  async getResourceLinkByUuid(
-    bibliographyUuid: string,
+  async getFileURLByUuid(
+    objUuids: string[],
     trx?: Knex.Transaction
-  ): Promise<ResourceRow> {
+  ): Promise<string[]> {
     const k = trx || knexRead();
-    const row: ResourceRow = await k('resource')
-      .select(['link', 'container'])
-      .whereIn(
-        'uuid',
-        knexRead()('link')
-          .select('obj_uuid')
-          .where('reference_uuid', bibliographyUuid)
+
+    const resourceRows: ResourceRow[] = await Promise.all(
+      objUuids.map(uuid =>
+        k('resource')
+          .select(['link', 'container'])
+          .whereIn(
+            'uuid',
+            knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
+          )
+          .first()
       )
-      .first();
+    );
 
-    return row;
-  }
+    const s3 = new AWS.S3();
 
-  async getFileURLByRows(resourceRows: ResourceRow[]): Promise<string[]> {
-    const fileURL = await getFileURLByRow(resourceRows);
+    const fileURL: string[] = await Promise.all(
+      resourceRows.map(key => {
+        const params = {
+          Bucket: key.container,
+          Key: key.link,
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
+
     return fileURL;
   }
 
