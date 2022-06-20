@@ -131,3 +131,43 @@ export function lineReadingHelper(
     lineReadingHelper(unit.units, line, words, renderFormatter);
   });
 }
+
+export function lineReadingHelperForWordsInTexts(
+  units: DiscourseUnit[],
+  discourseUuids: string[],
+  line: number,
+  words: string[],
+  renderFormatter: RenderFormat = {
+    transliteration: word => word,
+    spelling: word => word,
+  }
+) {
+  units.forEach(unit => {
+    if (unit.line === line) {
+      if (unit.transcription) {
+        words.push(
+          renderFormatter.transliteration(
+            discourseUuids.includes(unit.uuid)
+              ? `<mark>${unit.transcription}</mark>`
+              : unit.transcription
+          )
+        );
+      } else if (unit.explicitSpelling) {
+        words.push(
+          renderFormatter.spelling(
+            discourseUuids.includes(unit.uuid)
+              ? `<mark>${unit.explicitSpelling}</mark>`
+              : unit.explicitSpelling
+          )
+        );
+      }
+    }
+    lineReadingHelperForWordsInTexts(
+      unit.units,
+      discourseUuids,
+      line,
+      words,
+      renderFormatter
+    );
+  });
+}

@@ -5,6 +5,7 @@ import {
   InsertItemPropertyRow,
   ImageResourcePropertyDetails,
 } from '@oare/types';
+import { Knex } from 'knex';
 
 export interface GetItemPropertiesOptions {
   abbreviation?: boolean;
@@ -14,9 +15,11 @@ export interface GetItemPropertiesOptions {
 class ItemPropertiesDao {
   private getTextsOfPersonBaseQuery(
     personUuid: string,
-    pagination?: Pagination
+    pagination?: Pagination,
+    trx?: Knex.Transaction
   ) {
-    return knexRead()('item_properties')
+    const k = trx || knexRead();
+    return k('item_properties')
       .leftJoin(
         'text_discourse',
         'text_discourse.uuid',
@@ -35,23 +38,38 @@ class ItemPropertiesDao {
       });
   }
 
-  async getTextsOfPersonCount(personUuid: string): Promise<number> {
-    const textsOfPeopleCount = await this.getTextsOfPersonBaseQuery(personUuid)
+  async getTextsOfPersonCount(
+    personUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const textsOfPeopleCount = await this.getTextsOfPersonBaseQuery(
+      personUuid,
+      undefined,
+      trx
+    )
       .count({ count: 'text_discourse.text_uuid' })
       .first();
     return textsOfPeopleCount ? Number(textsOfPeopleCount.count) : 0;
   }
 
-  async getUniqueReferenceUuidOfPerson(personUuid: string): Promise<string[]> {
-    const referenceUuids = await knexRead()('item_properties')
+  async getUniqueReferenceUuidOfPerson(
+    personUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knexRead();
+    const referenceUuids = await k('item_properties')
       .distinct('item_properties.reference_uuid AS referenceUuid')
       .where('item_properties.object_uuid', personUuid);
 
     return referenceUuids.map(item => item.referenceUuid);
   }
 
-  async addProperty(property: InsertItemPropertyRow): Promise<void> {
-    await knexWrite()('item_properties').insert({
+  async addProperty(
+    property: InsertItemPropertyRow,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('item_properties').insert({
       uuid: property.uuid,
       reference_uuid: property.referenceUuid,
       parent_uuid: property.parentUuid,
@@ -64,9 +82,11 @@ class ItemPropertiesDao {
   }
 
   async getPropertiesByReferenceUuid(
-    referenceUuid: string
+    referenceUuid: string,
+    trx?: Knex.Transaction
   ): Promise<ItemPropertyRow[]> {
-    const rows: ItemPropertyRow[] = await knexRead()('item_properties as ip')
+    const k = trx || knexRead();
+    const rows: ItemPropertyRow[] = await k('item_properties as ip')
       .select(
         'ip.uuid',
         'ip.reference_uuid as referenceUuid',
@@ -87,11 +107,15 @@ class ItemPropertiesDao {
     return rows;
   }
 
-  async deletePropertiesByReferenceUuid(referenceUuid: string): Promise<void> {
+  async deletePropertiesByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
     const relevantRows: {
       uuid: string;
       level: number | null;
-    }[] = await knexRead()('item_properties')
+    }[] = await k('item_properties')
       .select('uuid', 'level')
       .where('reference_uuid', referenceUuid);
 
@@ -107,7 +131,7 @@ class ItemPropertiesDao {
 
     for (let i = 0; i < levels.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      await knexWrite()('item_properties')
+      await k('item_properties')
         .del()
         .where('reference_uuid', referenceUuid)
         .andWhere('level', levels[i]);
@@ -115,15 +139,17 @@ class ItemPropertiesDao {
   }
 
   async getImagePropertyDetails(
-    resourceUuid: string
+    resourceUuid: string,
+    trx?: Knex.Transaction
   ): Promise<ImageResourcePropertyDetails> {
-    const sides: string[] = await knexRead()('item_properties')
+    const k = trx || knexRead();
+    const sides: string[] = await k('item_properties')
       .pluck('value.name')
       .leftJoin('value', 'value.uuid', 'item_properties.value_uuid')
       .where('reference_uuid', resourceUuid)
       .andWhere('variable_uuid', '0600c503-7885-11ec-bcc3-0282f921eac9'); // Side Variable UUID
 
-    const views: string[] = await knexRead()('item_properties')
+    const views: string[] = await k('item_properties')
       .pluck('value.name')
       .leftJoin('value', 'value.uuid', 'item_properties.value_uuid')
       .where('reference_uuid', resourceUuid)

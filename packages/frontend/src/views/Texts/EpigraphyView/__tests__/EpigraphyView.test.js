@@ -34,11 +34,14 @@ describe('Epigraphy View', () => {
       colorMeaning: 'test meaning',
       discourseUnits: [],
       markups: [],
+      hasEpigraphy: true,
     }),
     getSingleDraft: jest.fn().mockResolvedValue({}),
-    getImageLinks: jest
-      .fn()
-      .mockResolvedValue(['test-cdli-link', 'test-s3-link']),
+    getImageLinks: jest.fn().mockResolvedValue([
+      { link: 'test-cdli-link', label: 'CDLI' },
+      { link: 'test-s3-link', label: 'S3' },
+    ]),
+    quarantineText: jest.fn().mockResolvedValue(),
   };
 
   const mockActions = {
@@ -49,13 +52,15 @@ describe('Epigraphy View', () => {
     getters: {
       isAdmin: jest.fn().mockResolvedValue(false),
     },
-    hasPermission: name => ['VIEW_EPIGRAPHY_IMAGES'].includes(name),
+    hasPermission: name =>
+      ['VIEW_EPIGRAPHY_IMAGES', 'COPY_TEXT_TRANSLITERATION'].includes(name),
   };
 
   const mockRouter = {
     currentRoute: {
       name: 'epigraphy',
     },
+    push: jest.fn(),
   };
 
   const renderOptions = {
@@ -121,5 +126,56 @@ describe('Epigraphy View', () => {
     });
     await flushPromises();
     expect(wrapper.find('.test-cdli-image').exists()).toBe(false);
+  });
+
+  it('quarantines text when quarantine button clicked', async () => {
+    const wrapper = createWrapper({
+      store: {
+        ...mockStore,
+        getters: {
+          isAdmin: jest.fn().mockResolvedValue(true),
+        },
+      },
+    });
+    await flushPromises();
+    await wrapper.get('.test-quarantine-button').trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockServer.quarantineText).toHaveBeenCalled();
+  });
+
+  it('displays error snackbar on failed quarantine', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        quarantineText: jest
+          .fn()
+          .mockRejectedValue('failed to quarantine text'),
+      },
+    });
+    await flushPromises();
+    await wrapper.get('.test-quarantine-button').trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('displays copy button when user has permission', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('.test-copy-button').exists()).toBe(true);
+  });
+
+  it('does not display copy button when user does not have permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        ...mockStore,
+        hasPermission: () => false,
+      },
+    });
+    await flushPromises();
+    expect(wrapper.find('.test-copy-button').exists()).toBe(false);
   });
 });

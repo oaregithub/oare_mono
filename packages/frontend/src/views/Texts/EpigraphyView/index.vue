@@ -9,7 +9,67 @@
         <template #header v-if="!disableEditing">
           <OareBreadcrumbs :items="breadcrumbItems" />
         </template>
-        <v-row class="ma-0 mb-6">
+
+        <template
+          #title:pre
+          v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
+        >
+          <Stoplight
+            :transliteration="transliteration"
+            :showEditDialog="true"
+            :textUuid="textUuid"
+            :key="textInfo.color"
+            class="mr-2"
+          />
+        </template>
+
+        <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
+          <v-btn
+            v-if="!isEditing && textInfo.canWrite"
+            color="primary"
+            :to="`/epigraphies/${textUuid}/edit`"
+            class="mx-2"
+            >Edit</v-btn
+          >
+          <v-btn
+            v-if="canAddPictures"
+            color="primary"
+            @click="photosDialogOpen = true"
+            class="mx-2"
+            >Add Images</v-btn
+          >
+          <oare-dialog
+            v-if="isAdmin && textUuid"
+            v-model="quarantineDialog"
+            title="Quarantine Text"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="quarantineText"
+            :submitLoading="quarantineLoading"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn
+                color="primary"
+                class="mx-2 test-quarantine-button"
+                v-on="on"
+                ><v-icon>mdi-biohazard</v-icon></v-btn
+              >
+            </template>
+            Are you sure you want to quarantine this text? If you continue, this
+            text will no longer appear in text lists or search results and its
+            contents will not count toward any item totals.
+          </oare-dialog>
+          <v-btn
+            v-if="hasCopyPermission"
+            color="primary"
+            class="mx-2 test-copy-button"
+            @click="copyTransliteration"
+          >
+            <v-icon small>mdi-content-copy</v-icon>
+          </v-btn>
+        </template>
+
+        <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
           <v-icon
             v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
@@ -119,36 +179,15 @@
           </div>
         </v-row>
 
-        <template
-          #title:pre
-          v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
-        >
-          <Stoplight
-            :transliteration="transliteration"
-            :showEditDialog="true"
-            :textUuid="textUuid"
-            :key="textInfo.color"
-            class="mr-2"
-          />
-        </template>
-        <template #title:post v-if="!disableEditing">
-          <v-btn
-            v-if="!isEditing && textInfo.canWrite"
-            color="primary"
-            :to="`/epigraphies/${textUuid}/edit`"
-            class="mx-4"
-            >Edit</v-btn
-          >
-          <v-btn
-            v-if="canAddPictures"
-            color="primary"
-            @click="photosDialogOpen = true"
-            >Add Images</v-btn
-          >
-        </template>
+        <span v-if="!textInfo.hasEpigraphy">
+          Apologies, we do not have a transliteration for this text at the
+          moment.
+        </span>
+
         <epigraphy-full-display
-          v-if="disableEditing"
+          v-else-if="disableEditing"
           v-bind="routeProps"
+          :disableEditing="true"
           :localDiscourseInfo="localDiscourseInfo"
         />
         <router-view
@@ -156,10 +195,7 @@
           v-bind="routeProps"
           v-on="routeActions"
         ></router-view>
-        <span v-if="!textInfo.hasEpigraphy">
-          Apologies, we do not have a transliteration for this text at the
-          moment.
-        </span>
+
         <oare-dialog
           v-model="photosDialogOpen"
           :title="`Add Images to ${textInfo.text.name}`"
@@ -270,6 +306,10 @@ export default defineComponent({
       type: Array as PropType<TextDiscourseRow[]>,
       required: false,
     },
+    forceAllowAdminView: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   setup({
@@ -277,6 +317,7 @@ export default defineComponent({
     discourseToHighlight,
     localEpigraphyUnits,
     localImageUrls,
+    forceAllowAdminView,
   }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
@@ -441,7 +482,10 @@ export default defineComponent({
       if (localEpigraphyUnits) {
         textInfo.value = localEpigraphyUnits;
       } else if (textUuid) {
-        textInfo.value = await server.getEpigraphicInfo(textUuid);
+        textInfo.value = await server.getEpigraphicInfo(
+          textUuid,
+          forceAllowAdminView
+        );
       }
     };
 
@@ -567,6 +611,38 @@ export default defineComponent({
       }
     };
 
+    const quarantineText = async () => {
+      try {
+        quarantineLoading.value = true;
+        await server.quarantineText(textUuid!);
+        quarantineDialog.value = false;
+        router.push(`/collections/name/${textInfo.value.collection.uuid}`);
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error quarantining text. Please try again.',
+          err as Error
+        );
+      } finally {
+        quarantineLoading.value = false;
+      }
+    };
+
+    const quarantineDialog = ref(false);
+    const quarantineLoading = ref(false);
+
+    const copyTransliteration = () => {
+      const renderer = createTabletRenderer(textInfo.value.units, {
+        lineNumbers: true,
+      });
+      const transliterationString = renderer.getTransliterationString();
+      navigator.clipboard.writeText(transliterationString);
+      actions.showSnackbar('Copied transliteration to clipboard');
+    };
+
+    const hasCopyPermission = computed(() =>
+      store.hasPermission('COPY_TEXT_TRANSLITERATION')
+    );
+
     return {
       textInfo,
       isEditing,
@@ -592,6 +668,11 @@ export default defineComponent({
       setPhotosToAdd,
       uploadPhotos,
       canAddPictures,
+      quarantineText,
+      quarantineDialog,
+      quarantineLoading,
+      copyTransliteration,
+      hasCopyPermission,
     };
   },
 });

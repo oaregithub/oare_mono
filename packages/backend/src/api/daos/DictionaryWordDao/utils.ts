@@ -1,4 +1,4 @@
-import { DictionarySearchRow } from '@oare/types';
+import { DictionarySearchRow, WordFormAutocompleteDisplay } from '@oare/types';
 import { SearchWordsQueryRow } from './index';
 
 function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
@@ -10,6 +10,21 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
     wordMap[row.uuid].push(row);
   });
   return wordMap;
+}
+
+export async function assembleAutocompleteDisplay(row: {
+  name: string;
+  uuid: string;
+  type: string;
+  wordUuid: string;
+}): Promise<WordFormAutocompleteDisplay> {
+  const wordFormAutocompleteDisplay: WordFormAutocompleteDisplay = {
+    info: { uuid: row.uuid, wordUuid: row.wordUuid, name: row.name },
+    wordDisplay: `${
+      row.type === 'form' ? `${row.name} - Form` : `${row.name} - Word`
+    }`,
+  };
+  return wordFormAutocompleteDisplay;
 }
 
 export function assembleSearchResult(

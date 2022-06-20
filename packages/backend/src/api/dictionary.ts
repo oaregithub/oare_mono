@@ -32,6 +32,7 @@ router
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const utils = sl.get('utils');
 
       const {
         formUuid,
@@ -48,32 +49,43 @@ router
         return;
       }
 
-      const spellingUuid = await DictionarySpellingDao.addSpelling(
-        formUuid,
-        spelling
-      );
-      await LoggingEditsDao.logEdit(
-        'INSERT',
-        req.user!.uuid,
-        'dictionary_spelling',
-        spellingUuid
-      );
+      let spellingUuid: string = '';
 
-      await Promise.all(
-        discourseUuids.map(discourseUuid =>
-          LoggingEditsDao.logEdit(
-            'UPDATE',
-            req.user!.uuid,
-            'text_discourse',
-            discourseUuid
+      await utils.createTransaction(async trx => {
+        spellingUuid = await DictionarySpellingDao.addSpelling(
+          formUuid,
+          spelling,
+          trx
+        );
+        await LoggingEditsDao.logEdit(
+          'INSERT',
+          req.user!.uuid,
+          'dictionary_spelling',
+          spellingUuid,
+          trx
+        );
+
+        await Promise.all(
+          discourseUuids.map(discourseUuid =>
+            LoggingEditsDao.logEdit(
+              'UPDATE',
+              req.user!.uuid,
+              'text_discourse',
+              discourseUuid,
+              trx
+            )
           )
-        )
-      );
-      await Promise.all(
-        discourseUuids.map(discourseUuid =>
-          TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid)
-        )
-      );
+        );
+        await Promise.all(
+          discourseUuids.map(discourseUuid =>
+            TextDiscourseDao.updateSpellingUuid(
+              discourseUuid,
+              spellingUuid,
+              trx
+            )
+          )
+        );
+      });
 
       const response: AddFormSpellingResponse = { uuid: spellingUuid };
       res.status(201).json(response);
@@ -166,18 +178,22 @@ router
       const DictionaryWordDao = sl.get('DictionaryWordDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const cache = sl.get('cache');
+      const utils = sl.get('utils');
 
       const { uuid } = req.params;
       const { word }: UpdateDictionaryWordPayload = req.body;
       const userUuid = req.user!.uuid;
 
-      await LoggingEditsDao.logEdit(
-        'UPDATE',
-        userUuid,
-        'dictionary_word',
-        uuid
-      );
-      await DictionaryWordDao.updateWordSpelling(uuid, word);
+      await utils.createTransaction(async trx => {
+        await LoggingEditsDao.logEdit(
+          'UPDATE',
+          userUuid,
+          'dictionary_word',
+          uuid,
+          trx
+        );
+        await DictionaryWordDao.updateWordSpelling(uuid, word, trx);
+      });
 
       // Updated word, cache must be cleared
       cache.clear(
@@ -201,15 +217,19 @@ router
     try {
       const cache = sl.get('cache');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const utils = sl.get('utils');
 
       const { uuid } = req.params;
       const { translations }: UpdateDictionaryTranslationPayload = req.body;
 
-      await DictionaryWordDao.updateTranslations(
-        req.user!.uuid,
-        uuid,
-        translations
-      );
+      await utils.createTransaction(async trx => {
+        await DictionaryWordDao.updateTranslations(
+          req.user!.uuid,
+          uuid,
+          translations,
+          trx
+        );
+      });
 
       // Updated word, cache must be cleared
       cache.clear(
@@ -234,27 +254,39 @@ router
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const utils = sl.get('utils');
 
       const { uuid: formUuid } = req.params;
       const { newForm }: UpdateFormPayload = req.body;
       const userUuid = req.user!.uuid;
 
-      await LoggingEditsDao.logEdit(
-        'UPDATE',
-        userUuid,
-        'dictionary_form',
-        formUuid
-      );
-      await DictionaryFormDao.updateForm(formUuid, newForm);
+      await utils.createTransaction(async trx => {
+        await LoggingEditsDao.logEdit(
+          'UPDATE',
+          userUuid,
+          'dictionary_form',
+          formUuid,
+          trx
+        );
+        await DictionaryFormDao.updateForm(formUuid, newForm, trx);
 
-      const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(
-        formUuid
-      );
-      await Promise.all(
-        discourseUuids.map(uuid =>
-          LoggingEditsDao.logEdit('UPDATE', userUuid, 'text_discourse', uuid)
-        )
-      );
+        const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(
+          formUuid,
+          trx
+        );
+        await Promise.all(
+          discourseUuids.map(uuid =>
+            LoggingEditsDao.logEdit(
+              'UPDATE',
+              userUuid,
+              'text_discourse',
+              uuid,
+              trx
+            )
+          )
+        );
+      });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -394,11 +426,14 @@ router
   .delete(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid } = req.params;
+
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const utils = sl.get('utils');
 
-      await TextDiscourseDao.unsetSpellingUuid(uuid, async trx => {
+      await utils.createTransaction(async trx => {
+        await TextDiscourseDao.unsetSpellingUuid(uuid, trx);
         await DictionarySpellingDao.deleteSpelling(uuid, trx);
 
         const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(
@@ -547,32 +582,36 @@ router
     try {
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const utils = sl.get('utils');
 
       const { wordUuid, formSpelling, properties }: AddFormPayload = req.body;
 
-      const newFormUuid = await DictionaryFormDao.addForm(
-        wordUuid,
-        formSpelling
-      );
-
-      const itemPropertyRows = convertParsePropsToItemProps(
-        properties,
-        newFormUuid
-      );
-
-      const itemPropertyRowLevels = [
-        ...new Set(itemPropertyRows.map(row => row.level)),
-      ];
-      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-        level => itemPropertyRows.filter(row => row.level === level)
-      );
-
-      for (let i = 0; i < rowsByLevel.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.all(
-          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+      await utils.createTransaction(async trx => {
+        const newFormUuid = await DictionaryFormDao.addForm(
+          wordUuid,
+          formSpelling,
+          trx
         );
-      }
+
+        const itemPropertyRows = convertParsePropsToItemProps(
+          properties,
+          newFormUuid
+        );
+
+        const itemPropertyRowLevels = [
+          ...new Set(itemPropertyRows.map(row => row.level)),
+        ];
+        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+          level => itemPropertyRows.filter(row => row.level === level)
+        );
+
+        for (let i = 0; i < rowsByLevel.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all(
+            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
+          );
+        }
+      });
 
       res.status(201).end();
     } catch (err) {

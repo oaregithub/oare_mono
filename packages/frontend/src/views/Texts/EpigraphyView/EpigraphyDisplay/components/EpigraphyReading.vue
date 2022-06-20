@@ -100,7 +100,7 @@ import {
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
-import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
   name: 'EpigraphyReading',
@@ -135,45 +135,6 @@ export default defineComponent({
         textFormat: 'html',
       })
     );
-
-    const romanNumeral = (colNum: number): string => {
-      let numeral: string = '';
-      switch (colNum) {
-        case 1:
-          numeral = 'i';
-          break;
-        case 2:
-          numeral = 'ii';
-          break;
-        case 3:
-          numeral = 'iii';
-          break;
-        case 4:
-          numeral = 'iv';
-          break;
-        case 5:
-          numeral = 'v';
-          break;
-        case 6:
-          numeral = 'vi';
-          break;
-        case 7:
-          numeral = 'vii';
-          break;
-        case 8:
-          numeral = 'viii';
-          break;
-        case 9:
-          numeral = 'ix';
-          break;
-        case 10:
-          numeral = 'x';
-          break;
-        default:
-          numeral = `${colNum}`;
-      }
-      return numeral;
-    };
 
     const lineNumber = (line: number): string => {
       if (
@@ -241,13 +202,13 @@ export default defineComponent({
     return {
       renderer,
       lineNumber,
-      romanNumeral,
       openDialog,
       loading,
       discourseWordInfo,
       viewingDialog,
       formatWord,
       formatSide,
+      romanNumeral,
     };
   },
 });

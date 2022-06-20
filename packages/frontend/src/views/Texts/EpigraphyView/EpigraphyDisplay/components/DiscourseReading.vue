@@ -13,7 +13,7 @@
         </span>
       </span>
     </p>
-    <v-row align="center" v-if="canInsertParentDiscourse">
+    <v-row align="center" v-if="canInsertParentDiscourse && !disableEditing">
       <v-switch
         v-model="articulateDiscourseHierarchy"
         label="Articulate Discourse Hierarchy"
@@ -22,7 +22,11 @@
     </v-row>
     <v-row
       align="center"
-      v-if="canInsertParentDiscourse && articulateDiscourseHierarchy"
+      v-if="
+        canInsertParentDiscourse &&
+        articulateDiscourseHierarchy &&
+        !disableEditing
+      "
     >
       <v-btn
         :disabled="discourseSelections.length < 1"
@@ -31,7 +35,8 @@
         class="mx-6 mb-6"
         >Insert Parent Discourse</v-btn
       >
-      <insert-parent-discourse-dialog
+      <component
+        :is="insertParentDiscourseComponent"
         v-model="insertParentDiscourseDialog"
         :key="insertParentDiscourseKey"
         :discourseSelections="discourseSelections"
@@ -48,7 +53,11 @@
       <template #label="{ item }">
         <v-row class="ma-0 pa-0" align="center">
           <v-checkbox
-            v-if="articulateDiscourseHierarchy && item.type !== 'discourseUnit'"
+            v-if="
+              articulateDiscourseHierarchy &&
+              item.type !== 'discourseUnit' &&
+              !disableEditing
+            "
             hide-details
             dense
             multiple
@@ -137,7 +146,6 @@ import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
-import insertParentDiscourseDialog from './InsertParentDiscouresDialog.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -148,14 +156,17 @@ export default defineComponent({
     },
     textUuid: {
       type: String,
-      required: true,
+      required: false,
+    },
+    disableEditing: {
+      type: Boolean,
+      default: false,
     },
   },
   components: {
     DiscoursePropertiesCard,
-    insertParentDiscourseDialog,
   },
-  setup({ discourseUnits }) {
+  setup({ discourseUnits, textUuid, disableEditing }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
@@ -163,8 +174,8 @@ export default defineComponent({
     const store = sl.get('store');
     const actions = sl.get('globalActions');
 
-    const allowEditing = computed(() =>
-      store.hasPermission('EDIT_TRANSLATION')
+    const allowEditing = computed(
+      () => !disableEditing && store.hasPermission('EDIT_TRANSLATION')
     );
 
     const discourseColor = (discourseType: string) => {
@@ -304,8 +315,14 @@ export default defineComponent({
       }
     });
 
-    const canInsertParentDiscourse = computed(() =>
-      store.hasPermission('INSERT_PARENT_DISCOURSE_ROWS')
+    const canInsertParentDiscourse = computed(
+      () => textUuid && store.hasPermission('INSERT_PARENT_DISCOURSE_ROWS')
+    );
+
+    const insertParentDiscourseComponent = computed(() =>
+      textUuid && canInsertParentDiscourse.value
+        ? () => import('./InsertParentDiscourseDialog.vue')
+        : null
     );
 
     return {
@@ -326,6 +343,7 @@ export default defineComponent({
       insertParentDiscourseDialog,
       insertParentDiscourseKey,
       canInsertParentDiscourse,
+      insertParentDiscourseComponent,
     };
   },
 });

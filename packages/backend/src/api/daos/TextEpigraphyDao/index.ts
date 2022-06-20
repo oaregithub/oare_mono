@@ -8,6 +8,7 @@ import {
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
+import { Knex } from 'knex';
 import {
   getSearchQuery,
   convertEpigraphicUnitRows,
@@ -51,9 +52,11 @@ export interface AnchorInfo {
 class TextEpigraphyDao {
   async getEpigraphicUnits(
     textUuid: string,
-    { maxLine, minLine }: GetEpigraphicUnitsOptions = {}
+    { maxLine, minLine }: GetEpigraphicUnitsOptions = {},
+    trx?: Knex.Transaction
   ): Promise<EpigraphicUnit[]> {
-    let query = knexRead()('text_epigraphy')
+    const k = trx || knexRead();
+    let query = k('text_epigraphy')
       .leftJoin(
         'sign_reading',
         'text_epigraphy.reading_uuid',
@@ -100,7 +103,11 @@ class TextEpigraphyDao {
     }
 
     const units: EpigraphicQueryRow[] = await query;
-    const markupUnits = await TextMarkupDao.getMarkups(textUuid);
+    const markupUnits = await TextMarkupDao.getMarkups(
+      textUuid,
+      undefined,
+      trx
+    );
 
     const epigraphicUnitRowsWithSections = convertEpigraphicUnitRows(
       units,
@@ -112,24 +119,22 @@ class TextEpigraphyDao {
     return epigraphicUnits;
   }
 
-  private async getMatchingTexts({
-    characters,
-    title,
-    pagination,
-    userUuid,
-    mode,
-  }: SearchTextArgs): Promise<string[]> {
+  private async getMatchingTexts(
+    { characters, title, pagination, userUuid, mode }: SearchTextArgs,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters, mode);
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    const notUuids = await getNotOccurrenceTexts(characters, mode, trx);
 
     const matchingTexts: Array<{ uuid: string }> = await getSearchQuery(
       characters,
       textsToHide,
       true,
       mode,
-      title
+      title,
+      trx
     )
       .select('text_epigraphy.text_uuid as uuid')
       .whereNotIn('text_epigraphy.text_uuid', notUuids)
@@ -144,13 +149,20 @@ class TextEpigraphyDao {
   private async getMatchingLines(
     textUuid: string,
     rawCharacters: SearchCooccurrence[],
-    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries'
+    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries',
+    trx?: Knex.Transaction
   ): Promise<number[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ line: number }> = (
       await Promise.all(
         characters.map((_char, index) => {
-          const query = getSequentialCharacterQuery(characters, true, mode);
+          const query = getSequentialCharacterQuery(
+            characters,
+            true,
+            mode,
+            undefined,
+            trx
+          );
           return query
             .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
             .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
@@ -166,13 +178,20 @@ class TextEpigraphyDao {
   private async getDiscourseUuids(
     textUuid: string,
     rawCharacters: SearchCooccurrence[],
-    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries'
+    mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries',
+    trx?: Knex.Transaction
   ): Promise<string[]> {
     const characters = rawCharacters.filter(char => char.type === 'AND');
     const rows: Array<{ discourseUuid: string }> = (
       await Promise.all(
         characters.map(_char => {
-          const query = getSequentialCharacterQuery(characters, true, mode);
+          const query = getSequentialCharacterQuery(
+            characters,
+            true,
+            mode,
+            undefined,
+            trx
+          );
           return query
             .distinct('text_epigraphy.discourse_uuid AS discourseUuid')
             .where('text_epigraphy.text_uuid', textUuid);
@@ -184,18 +203,21 @@ class TextEpigraphyDao {
     return [...new Set(uuids)];
   }
 
-  async searchTexts(args: SearchTextArgs): Promise<TextUuidWithLines[]> {
-    const textUuids = await this.getMatchingTexts(args);
+  async searchTexts(
+    args: SearchTextArgs,
+    trx?: Knex.Transaction
+  ): Promise<TextUuidWithLines[]> {
+    const textUuids = await this.getMatchingTexts(args, trx);
 
     const textLines = await Promise.all(
       textUuids.map(uuid =>
-        this.getMatchingLines(uuid, args.characters, args.mode)
+        this.getMatchingLines(uuid, args.characters, args.mode, trx)
       )
     );
 
     const discourseUuids = await Promise.all(
       textUuids.map(uuid =>
-        this.getDiscourseUuids(uuid, args.characters, args.mode)
+        this.getDiscourseUuids(uuid, args.characters, args.mode, trx)
       )
     );
 
@@ -206,23 +228,24 @@ class TextEpigraphyDao {
     }));
   }
 
-  async searchTextsTotal({
-    characters,
-    title,
-    userUuid,
-    mode,
-  }: Pick<
-    SearchTextArgs,
-    'characters' | 'title' | 'userUuid' | 'mode'
-  >): Promise<number> {
+  async searchTextsTotal(
+    {
+      characters,
+      title,
+      userUuid,
+      mode,
+    }: Pick<SearchTextArgs, 'characters' | 'title' | 'userUuid' | 'mode'>,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-    const notUuids = await getNotOccurrenceTexts(characters, mode);
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    const notUuids = await getNotOccurrenceTexts(characters, mode, trx);
 
     const totalRows: number = (
-      await getSearchQuery(characters, textsToHide, true, mode, title)
-        .select(knexRead().raw('COUNT(DISTINCT text.name) AS count'))
+      await getSearchQuery(characters, textsToHide, true, mode, title, trx)
+        .select(k.raw('COUNT(DISTINCT text.name) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
     ).count;
@@ -233,19 +256,23 @@ class TextEpigraphyDao {
   async searchNullDiscourseCount(
     characterUuids: SearchCooccurrence[],
     userUuid: string | null,
-    includeSuperfluous: boolean
+    includeSuperfluous: boolean,
+    trx?: Knex.Transaction
   ): Promise<number> {
+    const k = trx || knexRead();
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
     const count = await getSearchQuery(
       characterUuids,
       textsToHide,
       includeSuperfluous,
-      'respectNoBoundaries'
+      'respectNoBoundaries',
+      undefined,
+      trx
     )
-      .select(knexRead().raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
+      .select(k.raw('COUNT(DISTINCT text_epigraphy.uuid) AS count'))
       .modify(qb => {
         characterUuids[0].words[0].uuids.forEach((_uuid, idx) => {
           if (idx === 0) {
@@ -265,11 +292,13 @@ class TextEpigraphyDao {
     page: number,
     limit: number,
     userUuid: string | null,
-    includeSuperfluous: boolean
+    includeSuperfluous: boolean,
+    trx?: Knex.Transaction
   ): Promise<SearchNullDiscourseLine[]> {
+    const k = trx || knexRead();
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
     const epigraphyUuidColumns: string[] = ['text_epigraphy.uuid'];
     characterUuids[0].words[0].uuids.forEach((_char, idx) => {
@@ -282,7 +311,9 @@ class TextEpigraphyDao {
       characterUuids,
       textsToHide,
       includeSuperfluous,
-      'respectNoBoundaries'
+      'respectNoBoundaries',
+      undefined,
+      trx
     )
       .distinct(epigraphyUuidColumns)
       .modify(qb => {
@@ -304,7 +335,7 @@ class TextEpigraphyDao {
     );
     const lineInfo = await Promise.all(
       epigraphyOccurrencesUuids.map(uuids =>
-        knexRead()('text_epigraphy')
+        k('text_epigraphy')
           .select('text_uuid AS textUuid', 'line')
           .whereIn('uuid', uuids)
           .first()
@@ -318,8 +349,9 @@ class TextEpigraphyDao {
     }));
   }
 
-  async hasEpigraphy(uuid: string): Promise<boolean> {
-    const response = await knexRead()('text_epigraphy')
+  async hasEpigraphy(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
+    const k = trx || knexRead();
+    const response = await k('text_epigraphy')
       .first('uuid')
       .where('text_uuid', uuid);
     return !!response;
@@ -327,16 +359,18 @@ class TextEpigraphyDao {
 
   async getAnchorInfo(
     epigraphyUuids: string[],
-    textUuid: string
+    textUuid: string,
+    trx?: Knex.Transaction
   ): Promise<AnchorInfo> {
+    const k = trx || knexRead();
     const newWordCharOnTablet: number = (
-      await knexRead()('text_epigraphy')
+      await k('text_epigraphy')
         .whereIn('uuid', epigraphyUuids)
         .pluck('char_on_tablet')
         .orderBy('char_on_tablet', 'asc')
     )[0];
     let isFirstWord = false;
-    let anchorDiscourseRow: { discourseUuid: string } = await knexRead()(
+    let anchorDiscourseRow: { discourseUuid: string } = await k(
       'text_epigraphy'
     )
       .where('text_uuid', textUuid)
@@ -349,7 +383,7 @@ class TextEpigraphyDao {
       .first();
     if (!anchorDiscourseRow) {
       isFirstWord = true;
-      anchorDiscourseRow = await knexRead()('text_epigraphy')
+      anchorDiscourseRow = await k('text_epigraphy')
         .where('text_uuid', textUuid)
         .whereNotNull('discourse_uuid')
         .andWhere(function () {
@@ -360,7 +394,7 @@ class TextEpigraphyDao {
         .first();
     }
     const anchorDiscourseUuid = anchorDiscourseRow.discourseUuid;
-    const anchorInfo: AnchorInfo = await knexRead()('text_discourse')
+    const anchorInfo: AnchorInfo = await k('text_discourse')
       .where('uuid', anchorDiscourseUuid)
       .select(
         'word_on_tablet AS wordOnTablet',
@@ -384,15 +418,18 @@ class TextEpigraphyDao {
 
   async addDiscourseUuid(
     epigraphyUuids: string[],
-    discourseUuid: string
+    discourseUuid: string,
+    trx?: Knex.Transaction
   ): Promise<void> {
-    await knexWrite()('text_epigraphy')
+    const k = trx || knexWrite();
+    await k('text_epigraphy')
       .update('discourse_uuid', discourseUuid)
       .whereIn('uuid', epigraphyUuids);
   }
 
-  async insertEpigraphyRow(row: TextEpigraphyRow) {
-    await knexWrite()('text_epigraphy').insert({
+  async insertEpigraphyRow(row: TextEpigraphyRow, trx?: Knex.Transaction) {
+    const k = trx || knexWrite();
+    await k('text_epigraphy').insert({
       uuid: row.uuid,
       type: row.type,
       text_uuid: row.textUuid,
@@ -410,6 +447,46 @@ class TextEpigraphyDao {
       reading: row.reading,
       discourse_uuid: row.discourseUuid,
     });
+  }
+
+  async getNumEpigraphyRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const countResult = await k('text_epigraphy')
+      .where({ text_uuid: textUuid })
+      .count({ count: 'text_epigraphy.uuid' })
+      .first();
+    return countResult && countResult.count ? (countResult.count as number) : 0;
+  }
+
+  async removeEpigraphyRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    let numEpigraphyRows = await this.getNumEpigraphyRowsByTextUuid(
+      textUuid,
+      trx
+    );
+    while (numEpigraphyRows > 0) {
+      const parentUuids = (
+        await k('text_epigraphy') // eslint-disable-line no-await-in-loop
+          .distinct('parent_uuid')
+          .where({ text_uuid: textUuid })
+          .whereNotNull('parent_uuid')
+      ).map(row => row.parent_uuid);
+      const rowsToDelete: string[] = await k('text_epigraphy') // eslint-disable-line no-await-in-loop
+        .pluck('uuid')
+        .where({ text_uuid: textUuid })
+        .whereNotIn('uuid', parentUuids);
+
+      await k('text_epigraphy').del().whereIn('uuid', rowsToDelete); // eslint-disable-line no-await-in-loop
+
+      numEpigraphyRows -= rowsToDelete.length;
+    }
   }
 }
 
