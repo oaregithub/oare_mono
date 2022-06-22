@@ -336,7 +336,7 @@ const routes: RouteConfig[] = [
     path: '/dashboard/comments',
     name: 'dashboardComments',
     component: UserCommentView,
-    beforeEnter: authenticatedGuard,
+    beforeEnter: permissionGuard('ADD_COMMENTS'),
   },
   {
     path: '/dashboard/preferences',

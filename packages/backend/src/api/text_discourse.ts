@@ -9,7 +9,7 @@ import {
   DiscourseUnitType,
   InsertItemPropertyRow,
 } from '@oare/types';
-import permissionRoute from '@/middlewares/permissionsRoute';
+import permissionsRoute from '@/middlewares/permissionsRoute';
 import { v4 } from 'uuid';
 import { convertParsePropsToItemProps } from '@oare/oare';
 import { nestProperties } from '../utils/index';
@@ -18,7 +18,7 @@ const router = express.Router();
 
 router
   .route('/text_discourse')
-  .post(permissionRoute('INSERT_DISCOURSE_ROWS'), async (req, res, next) => {
+  .post(permissionsRoute('INSERT_DISCOURSE_ROWS'), async (req, res, next) => {
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const utils = sl.get('utils');
 
@@ -50,7 +50,7 @@ router
 router
   .route('/text_discourse_parent')
   .post(
-    permissionRoute('INSERT_PARENT_DISCOURSE_ROWS'),
+    permissionsRoute('INSERT_PARENT_DISCOURSE_ROWS'),
     async (req, res, next) => {
       try {
         const TextDiscourseDao = sl.get('TextDiscourseDao');
@@ -209,7 +209,7 @@ router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
 
 router
   .route('/text_discourse/:uuid')
-  .patch(permissionRoute('EDIT_TRANSLATION'), async (req, res, next) => {
+  .patch(permissionsRoute('EDIT_TRANSLATION'), async (req, res, next) => {
     const FieldDao = sl.get('FieldDao');
     const { uuid } = req.params;
     const { newTranslation } = req.body;
@@ -224,7 +224,7 @@ router
       next(new HttpInternalError(err as string));
     }
   })
-  .post(permissionRoute('EDIT_TRANSLATION'), async (req, res, next) => {
+  .post(permissionsRoute('EDIT_TRANSLATION'), async (req, res, next) => {
     const FieldDao = sl.get('FieldDao');
     const { uuid } = req.params;
     const { newTranslation } = req.body;

@@ -52,7 +52,8 @@ describe('Epigraphy View', () => {
     getters: {
       isAdmin: jest.fn().mockResolvedValue(false),
     },
-    hasPermission: name => ['VIEW_EPIGRAPHY_IMAGES'].includes(name),
+    hasPermission: name =>
+      ['VIEW_EPIGRAPHY_IMAGES', 'COPY_TEXT_TRANSLITERATION'].includes(name),
   };
 
   const mockRouter = {
@@ -159,5 +160,22 @@ describe('Epigraphy View', () => {
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('displays copy button when user has permission', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('.test-copy-button').exists()).toBe(true);
+  });
+
+  it('does not display copy button when user does not have permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        ...mockStore,
+        hasPermission: () => false,
+      },
+    });
+    await flushPromises();
+    expect(wrapper.find('.test-copy-button').exists()).toBe(false);
   });
 });
