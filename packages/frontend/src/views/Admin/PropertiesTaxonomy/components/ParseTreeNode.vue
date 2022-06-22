@@ -4,7 +4,6 @@
     flat
     v-if="node.children"
     multiple
-    :active-class="wordsInTextSearch ? '' : 'v-item--active'"
     v-model="openPanels"
   >
     <v-expansion-panel
@@ -14,7 +13,7 @@
     >
       <v-expansion-panel-header
         :disable-icon-rotate="allowSelections"
-        :hide-actions="wordsInTextSearch"
+        :hideActions="hideActions"
       >
         <template #default="{ open }">
           <v-checkbox
@@ -23,9 +22,7 @@
             hide-details
             v-model="selected"
             :value="child"
-            :disabled="
-              disableChildren && !selected.includes(child) && !wordsInTextSearch
-            "
+            :disabled="disableChildren && !selected.includes(child)"
             @change="$emit('child-selected')"
           >
             <template #label>
@@ -74,7 +71,7 @@
                 >NO NAME</i
               >
               <b
-                v-if="open && child.custom === 1 && !wordsInTextSearch"
+                v-if="open && child.custom === 1 && !selectMultiple"
                 class="text--disabled ml-7"
                 ><br />Only one selection permitted</b
               >
@@ -125,7 +122,7 @@
             </span>
           </template>
         </template>
-        <template #actions v-if="!wordsInTextSearch">
+        <template #actions v-if="!hideActions">
           <v-icon v-if="!child.children"></v-icon>
           <v-icon v-else-if="showCheck(child) && allowSelections" color="green"
             >mdi-check-circle-outline</v-icon
@@ -165,7 +162,8 @@
           :openSearchResults="openSearchResults"
           :existingProperties="existingProperties"
           :showUUID="showUUID"
-          :wordsInTextSearch="wordsInTextSearch"
+          :hideActions="hideActions"
+          :selectMultiple="selectMultiple"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
           @update:selection-display="
@@ -222,7 +220,11 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    wordsInTextSearch: {
+    hideActions: {
+      type: Boolean,
+      default: false,
+    },
+    selectMultiple: {
       type: Boolean,
       default: false,
     },

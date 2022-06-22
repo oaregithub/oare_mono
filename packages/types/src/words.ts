@@ -46,18 +46,20 @@ export interface WordFormAutocompleteDisplay {
 }
 
 export interface WordsInTextSearchPayload {
-  uuids: string[][];
-  parseProperties: { [index: number]: ParseTreePropertyUuids[][] };
-  numWordsBetween: (number | null)[];
+  items: WordsInTextSearchPayloadItem[];
   page: number;
   rows: number;
   sequenced: boolean;
 }
 
+export interface WordsInTextSearchPayloadItem {
+  uuids: ParseTreePropertyUuids[][] | string[];
+  type: 'parse' | 'form';
+  numWordsBefore: number | null;
+}
+
 export interface WordsInTextSearchPayloadUnparsed {
-  uuids: string;
-  parseProperties: string;
-  numWordsBetween: string;
+  items: string;
   page: string;
   rows: string;
   sequenced: string;
@@ -74,10 +76,14 @@ export interface ParseTreePropertyUuids {
     uuid: string;
     parentUuid: string;
     variableName: string | null;
+    variableUuid: string | null;
+    level: number | null;
   };
   value: {
     uuid: string;
     parentUuid: string;
     valueName: string | null;
+    valueUuid: string | null;
+    level: number | null;
   };
 }

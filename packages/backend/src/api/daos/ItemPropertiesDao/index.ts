@@ -8,6 +8,7 @@ import {
   ImageResourcePropertyDetails,
 } from '@oare/types';
 import { Knex } from 'knex';
+import { first } from 'lodash';
 
 export interface GetItemPropertiesOptions {
   abbreviation?: boolean;
@@ -114,21 +115,33 @@ class ItemPropertiesDao {
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knexRead();
-    const subqueries = parseProperties.map(p =>
-      k('hierarchy as h')
-        .join('item_properties as ip', 'ip.value_uuid', 'h.object_uuid')
-        .where('h.uuid', p.value.uuid)
-        .select('ip.reference_uuid as ref_uuid')
-    );
-    const formUuids: string[] = await k('dictionary_form as df')
-      .distinct('df.uuid')
-      .modify(qb => {
-        parseProperties.forEach((_p, i) => {
-          qb.join(subqueries[i].as(`sub${i}`), `sub${i}.ref_uuid`, 'df.uuid');
-        });
-      })
-      .then((results: { uuid: string }[]) => results.map(({ uuid }) => uuid));
-    return formUuids;
+    const possibleFormUuids: string[][] = (
+      await Promise.all(
+        parseProperties.map(p =>
+          k('item_properties')
+            .pluck('reference_uuid')
+            .where('variable_uuid', p.variable.variableUuid)
+            .andWhere('value_uuid', p.value.valueUuid)
+            .andWhere('level', p.variable.level)
+        )
+      )
+    ).map(p => [...new Set(p)]);
+    const returnUuids: string[] = [];
+    const firstArray: string[] = possibleFormUuids[0];
+    for (let i = 0; i < firstArray.length; i += 1) {
+      let commonUuid: boolean = true;
+      const currentUuid: string = firstArray[i];
+      for (let j = 1; j < possibleFormUuids.length; j += 1) {
+        if (!possibleFormUuids[j].includes(currentUuid)) {
+          commonUuid = false;
+          break;
+        }
+      }
+      if (commonUuid) {
+        returnUuids.push(currentUuid);
+      }
+    }
+    return returnUuids;
   }
 
   async deletePropertiesByReferenceUuid(

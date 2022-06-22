@@ -121,6 +121,8 @@
                     :node="
                       filteredTrees[index - 1] ? filteredTrees[index - 1] : {}
                     "
+                    :selectMultiple="true"
+                    :hideActions="true"
                     :allowSelections="true"
                     :wordsInTextSearch="true"
                     @update:properties="updateProperties($event, index - 1)"
@@ -239,6 +241,7 @@ import {
   WordsInTextsSearchResponse,
   TaxonomyTree,
   ParseTreePropertyUuids,
+  WordsInTextSearchPayloadItem,
 } from '@oare/types';
 import WordsInTextsSearchTable from './components/WordsInTextSearchTable.vue';
 import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vue';
@@ -263,6 +266,13 @@ export default defineComponent({
   },
   setup() {
     const items: Ref<WordFormAutocompleteDisplay[]> = ref([]);
+    const searchItems: Ref<WordsInTextSearchPayloadItem[]> = ref([
+      {
+        uuids: [],
+        type: 'form' as 'form' | 'parse',
+        numWordsBefore: null,
+      },
+    ]);
     const loading = ref(false);
     const searchLoading = ref(false);
     const formsLoading = ref(false);
@@ -323,62 +333,22 @@ export default defineComponent({
     ]);
 
     const canPerformSearch = computed(() => {
-      if (
-        (wordAndFormSelectionUuids.value.filter(val => val.length > 0).length <
-          1 &&
-          Object.keys(propertyList.value).length < 1) ||
-        wordAndFormSearchUuids.value.filter(val => val.length > 0).length < 1
-      ) {
-        return false;
-      }
-      if (
-        (wordAndFormSelectionUuids.value.filter(val => val.length > 0).length >
-          1 ||
-          Object.keys(propertyList.value).length > 1) &&
-        numWordsBetween.value.length < 1 &&
-        mode.value === 'true'
-      ) {
-        return false;
-      }
-      if (
-        (mode.value === 'true' &&
-          Object.values(numWordsBetween.value).length !==
-            numOptionsUsing.value - 1) ||
-        Object.values(
-          wordAndFormSelectionUuids.value.filter(val => val.length > 0)
-        ).length +
-          Object.keys(propertyList.value).length !==
-          numOptionsUsing.value ||
-        wordAndFormSearchUuids.value.filter(val => val.length > 0).length !==
-          numOptionsUsing.value
-      ) {
-        return false;
-      }
-      if (
-        wordAndFormSearchUuids.value.filter(val => val.length > 0).length !==
-          Object.values(
-            wordAndFormSearchUuids.value.filter(val => val.length > 0)
-          ).length ||
-        (numWordsBetween.value.length !==
-          Object.values(numWordsBetween.value).length &&
-          mode.value === 'sequenced')
-      ) {
-        return false;
-      }
-      for (let i = 0; i < numOptionsUsing.value; i += 1) {
+      let allowSearch = true;
+      for (let i = 0; i < searchItems.value.length; i += 1) {
+        if (searchItems.value[i].uuids.length < 1) {
+          allowSearch = false;
+          break;
+        }
         if (
-          wordAndFormSelectionUuids.value[i]?.length < 1 &&
-          propertyList.value[i]?.length < 1
+          sequenced.value === 'true' &&
+          !searchItems.value[i].numWordsBefore &&
+          i > 0
         ) {
-          return false;
+          allowSearch = false;
+          break;
         }
       }
-      for (let i = 0; i < numOptionsUsing.value; i += 1) {
-        if (wordAndFormSearchUuids.value[i].length < 1) {
-          return false;
-        }
-      }
-      return true;
+      return allowSearch;
     });
 
     const filter = (item: any, queryText: string, itemText: string) => {
@@ -419,9 +389,7 @@ export default defineComponent({
       try {
         const response: WordsInTextsSearchResponse = await server.getWordsInTextSearchResults(
           {
-            uuids: JSON.stringify(wordAndFormSearchUuids.value),
-            numWordsBetween: JSON.stringify(numWordsBetween.value),
-            parseProperties: JSON.stringify(propertyList.value),
+            items: JSON.stringify(searchItems.value),
             page: JSON.stringify(pageNum),
             rows: JSON.stringify(rows),
             sequenced: mode.value,
@@ -452,6 +420,11 @@ export default defineComponent({
               [numOptionsUsing.value - 1]: [],
             };
           }
+          searchItems.value.push({
+            uuids: [],
+            type: 'form' as 'form' | 'parse',
+            numWordsBefore: null,
+          });
         }
         if (numOptionsUsing.value > 1 && !increase) {
           numOptionsUsing.value -= 1;
@@ -479,6 +452,7 @@ export default defineComponent({
               ...propertyList.value,
             };
           }
+          searchItems.value.pop();
         }
       } catch (err) {
         actions.showErrorSnackbar(
@@ -490,6 +464,31 @@ export default defineComponent({
 
     const updateUseParse = async (index: number) => {
       useParse.value = { ...useParse.value, [index]: !useParse.value[index] };
+      if (searchItems.value[index].type === 'form') {
+        searchItems.value[index].type = 'parse';
+      } else {
+        searchItems.value[index].type = 'form';
+      }
+      searchItems.value[index].uuids = [];
+      searchItems.value.splice(index, 1, searchItems.value[index]);
+      wordAndFormSearchUuids.value[index] = [];
+      wordAndFormSearchUuids.value.splice(
+        index,
+        1,
+        wordAndFormSearchUuids.value[index]
+      );
+      wordAndFormSelectionUuids.value[index] = [];
+      wordAndFormSelectionUuids.value.splice(
+        index,
+        1,
+        wordAndFormSelectionUuids.value[index]
+      );
+      properties.value[index] = [];
+      properties.value = {
+        ...properties.value,
+        [index]: properties.value[index],
+      };
+      expand.value.splice(index, 1, false);
     };
 
     const selectAll = (val: boolean | null, index: number, idx: number) => {
@@ -582,6 +581,11 @@ export default defineComponent({
           }
         }
       });
+      wordAndFormSearchUuids.value.splice(
+        index,
+        1,
+        wordAndFormSearchUuids.value[index]
+      );
     };
 
     const searchTree = (
@@ -644,11 +648,15 @@ export default defineComponent({
             uuid: prop.variable.uuid,
             variableName: prop.variable.variableName,
             parentUuid: prop.variable.parentUuid,
+            variableUuid: prop.variable.variableUuid,
+            level: prop.variable.level,
           },
           value: {
             uuid: prop.value.uuid,
             valueName: prop.value.valueName,
             parentUuid: prop.value.parentUuid,
+            valueUuid: prop.value.valueUuid,
+            level: prop.value.level,
           },
         })
       );
@@ -664,16 +672,8 @@ export default defineComponent({
           arrangedProperties.push(arrangeProperties(neededProperties, prop));
         }
       });
-      if (arrangedProperties.length > 0) {
-        propertyList.value = {
-          ...propertyList.value,
-          [index]: arrangedProperties,
-        };
-        wordAndFormSearchUuids.value[index] = ['useParse'];
-      } else {
-        delete propertyList.value[index];
-        propertyList.value = { ...propertyList.value };
-      }
+      searchItems.value[index].uuids = arrangedProperties;
+      searchItems.value.splice(index, 1, searchItems.value[index]);
     };
 
     const filteredTrees: ComputedRef<{
@@ -724,8 +724,22 @@ export default defineComponent({
       mode.value = sequenced.value;
     });
 
+    watch(wordAndFormSearchUuids, () => {
+      wordAndFormSearchUuids.value.forEach((val, index) => {
+        searchItems.value[index].uuids = val;
+      });
+      searchItems.value = searchItems.value;
+    });
+
+    watch(numWordsBetween, () => {
+      numWordsBetween.value.forEach((val, index) => {
+        searchItems.value[index + 1].numWordsBefore = val;
+      });
+      searchItems.value = searchItems.value;
+    });
     return {
       items,
+      searchItems,
       properties,
       propertyList,
       useParse,

@@ -11,6 +11,7 @@ import {
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
   ParseTreePropertyUuids,
+  WordsInTextSearchPayloadItem,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
@@ -139,14 +140,7 @@ class TextDiscourseDao {
   }
 
   async wordsInTextsSearch(
-    {
-      uuids,
-      parseProperties,
-      numWordsBetween,
-      sequenced,
-      page,
-      rows,
-    }: WordsInTextSearchPayload,
+    { items, sequenced, page, rows }: WordsInTextSearchPayload,
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<WordsInTextsSearchResponse> {
@@ -157,27 +151,29 @@ class TextDiscourseDao {
     const textsToHide: string[] = await CollectionTextUtils.textsToHide(
       userUuid
     );
-
+    const wordsBetween: (number | null)[] = [];
+    for (let i = 1; i < items.length; i += 1) {
+      wordsBetween.push(items[i].numWordsBefore);
+    }
     const spellingUuids: string[][] = await Promise.all(
-      uuids.map(async (uuidArray, i) => {
-        const includeParseUuidArray: string[] =
-          uuidArray[0] === 'useParse'
-            ? (
-                await Promise.all(
-                  parseProperties[
-                    i
-                  ].map((parsePropArray: ParseTreePropertyUuids[]) =>
-                    ItemPropertiesDao.getFormsByProperties(parsePropArray)
-                  )
-                )
-              ).flat()
-            : uuidArray;
-        const spellingUuidsArray: string[] = await k(
-          'dictionary_spelling as ds'
-        )
+      items.map(async payloadObject => {
+        let formUuids: string[] = [];
+        if (payloadObject.type === 'parse') {
+          const parseProperties = payloadObject.uuids as ParseTreePropertyUuids[][];
+          formUuids = (
+            await Promise.all(
+              parseProperties.map(parsePropArray =>
+                ItemPropertiesDao.getFormsByProperties(parsePropArray)
+              )
+            )
+          ).flat();
+        }
+        if (payloadObject.type === 'form') {
+          formUuids = payloadObject.uuids as string[];
+        }
+        const spellingUuidsArray = await k('dictionary_spelling as ds')
           .pluck('ds.uuid')
-          .whereIn('ds.reference_uuid', includeParseUuidArray);
-
+          .whereIn('ds.reference_uuid', formUuids);
         return spellingUuidsArray;
       })
     );
@@ -186,7 +182,7 @@ class TextDiscourseDao {
       textUuid: string;
     }> = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       spellingUuids,
-      numWordsBetween,
+      wordsBetween,
       textsToHide,
       sequenced,
       trx
@@ -199,7 +195,7 @@ class TextDiscourseDao {
 
     const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       spellingUuids,
-      numWordsBetween,
+      wordsBetween,
       textsToHide,
       sequenced,
       trx
@@ -210,7 +206,7 @@ class TextDiscourseDao {
       )
       .select('td0.uuid as discourseUuid', 'td0.text_uuid as textUuid')
       .modify(innerQuery => {
-        for (let i = 1; i < uuids.length; i += 1) {
+        for (let i = 1; i < items.length; i += 1) {
           innerQuery.select(`td${i}.uuid as discourse${i}Uuid`);
         }
       })
@@ -226,7 +222,7 @@ class TextDiscourseDao {
       count,
     }: { count: number } = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       spellingUuids,
-      numWordsBetween,
+      wordsBetween,
       textsToHide,
       sequenced,
       trx

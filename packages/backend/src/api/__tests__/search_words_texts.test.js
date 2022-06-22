@@ -2,6 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
+import { json } from 'express';
 
 describe('words in texts search test', () => {
   describe('POST /searchWordsInTexts', () => {
@@ -45,17 +46,36 @@ describe('words in texts search test', () => {
         uuid: 'varUuid',
         parentUuid: 'varParentUuid',
         variableName: 'variableName',
+        variableUuid: 'variableUuid',
+        level: '1',
       },
       value: {
         uuid: 'valUuid',
         parentUuid: 'valParentUuid',
         valueName: 'valueName',
+        valueUuid: 'valueUuid',
+        level: '1',
       },
     };
+    const searchItems = [
+      {
+        uuids: [[parseProperties]],
+        type: 'parse',
+        numWordsBefore: null,
+      },
+      {
+        uuids: ['uuid'],
+        type: 'form',
+        numWordsBefore: '2',
+      },
+      {
+        uuids: ['uuid'],
+        type: 'form',
+        numWordsBefore: '5',
+      },
+    ];
     const query = {
-      uuids: JSON.stringify(['uuid1', 'uuid2']),
-      parseProperties: JSON.stringify({ 2: [[parseProperties]] }),
-      numWordsBetween: JSON.stringify([1, 3, 4]),
+      items: JSON.stringify(searchItems),
       page: '1',
       rows: '25',
       sequenced: 'true',
