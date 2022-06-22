@@ -2,7 +2,6 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
-import { json } from 'express';
 
 describe('words in texts search test', () => {
   describe('POST /searchWordsInTexts', () => {

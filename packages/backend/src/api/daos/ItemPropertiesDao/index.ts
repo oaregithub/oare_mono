@@ -3,12 +3,10 @@ import {
   ItemPropertyRow,
   Pagination,
   InsertItemPropertyRow,
-  ParsePropertiesDisplay,
   ParseTreePropertyUuids,
   ImageResourcePropertyDetails,
 } from '@oare/types';
 import { Knex } from 'knex';
-import { first } from 'lodash';
 
 export interface GetItemPropertiesOptions {
   abbreviation?: boolean;

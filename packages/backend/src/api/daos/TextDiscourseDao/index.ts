@@ -11,7 +11,6 @@ import {
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
   ParseTreePropertyUuids,
-  WordsInTextSearchPayloadItem,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
