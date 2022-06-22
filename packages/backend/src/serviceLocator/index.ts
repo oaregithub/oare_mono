@@ -34,6 +34,7 @@ import ArchiveDao from '@/api/daos/ArchiveDao';
 import NoteDao from '@/api/daos/NoteDao';
 import PageContentDao from '@/api/daos/PageContentDao';
 import SearchFailureDao from '@/api/daos/SearchFailureDao';
+import BibliographyDao from '@/api/daos/BibliographyDao';
 import TreeDao from '@/api/daos/TreeDao';
 import BibliographyDao from '@/api/daos/BibliographyDao';
 import QuarantineTextDao from '@/api/daos/QuarantineTextDao';
@@ -79,6 +80,7 @@ export type ServiceTypes = {
   ArchiveDao: typeof ArchiveDao;
   PageContentDao: typeof PageContentDao;
   SearchFailureDao: typeof SearchFailureDao;
+  BibliographyDao: typeof BibliographyDao;
   TreeDao: typeof TreeDao;
   BibliographyDao: typeof BibliographyDao;
   QuarantineTextDao: typeof QuarantineTextDao;

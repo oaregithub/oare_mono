@@ -14,7 +14,7 @@ import {
   ThreadStatus,
   CommentSortType,
 } from '@oare/types';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import permissionsRoute from '@/middlewares/permissionsRoute';
 import adminRoute from '@/middlewares/adminRoute';
 import { toInteger } from 'lodash';
 
@@ -22,7 +22,7 @@ const router = express.Router();
 
 router
   .route('/threads/:referenceUuid')
-  .get(authenticatedRoute, async (req, res, next) => {
+  .get(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const { referenceUuid } = req.params;
       const threadsDao = sl.get('ThreadsDao');
@@ -104,7 +104,7 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
 
 router
   .route('/threads/name')
-  .put(authenticatedRoute, async (req, res, next) => {
+  .put(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const { threadUuid, newName }: UpdateThreadNameRequest = req.body;
       const threadsDao = sl.get('ThreadsDao');
@@ -119,7 +119,7 @@ router
 
 router
   .route('/threads')
-  .get(authenticatedRoute, async (req, res, next) => {
+  .get(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const {
         status,
@@ -189,7 +189,7 @@ router
       next(new HttpInternalError(err as string));
     }
   })
-  .post(authenticatedRoute, async (req, res, next) => {
+  .post(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const ThreadsDao = sl.get('ThreadsDao');
       const newThread: CreateThreadPayload = req.body;

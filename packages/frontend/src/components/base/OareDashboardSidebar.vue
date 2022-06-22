@@ -12,32 +12,58 @@
 
 <script lang="ts">
 import { defineComponent, reactive, toRefs } from '@vue/composition-api';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   setup() {
-    const state = reactive({
-      routes: [
-        {
-          label: 'Profile',
-          path: 'profile',
-        },
-        {
-          label: 'Drafts',
-          path: 'drafts',
-        },
-        {
-          label: 'Comments',
-          path: 'comments',
-        },
-        {
-          label: 'Preferences',
-          path: 'preferences',
-        },
-      ],
-    });
+    const store = sl.get('store');
+    const hasCommentPermission = store.hasPermission('ADD_COMMENTS');
+
+    let state;
+
+    if (hasCommentPermission) {
+      state = reactive({
+        routes: [
+          {
+            label: 'Profile',
+            path: 'profile',
+          },
+          {
+            label: 'Drafts',
+            path: 'drafts',
+          },
+          {
+            label: 'Comments',
+            path: 'comments',
+          },
+          {
+            label: 'Preferences',
+            path: 'preferences',
+          },
+        ],
+      });
+    } else {
+      state = reactive({
+        routes: [
+          {
+            label: 'Profile',
+            path: 'profile',
+          },
+          {
+            label: 'Drafts',
+            path: 'drafts',
+          },
+          {
+            label: 'Preferences',
+            path: 'preferences',
+          },
+        ],
+      });
+    }
 
     return {
       ...toRefs(state),
+      hasCommentPermission,
     };
   },
 });

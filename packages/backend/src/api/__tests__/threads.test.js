@@ -76,6 +76,14 @@ describe('threads api test', () => {
     }),
   };
 
+  const MockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'ADD_COMMENTS',
+      },
+    ]),
+  };
+
   const threadFoundInfo = {
     uuid: 'string',
     referenceUuid: 'string',
@@ -110,6 +118,7 @@ describe('threads api test', () => {
     sl.set('ThreadsDao', MockThreadsDao);
     sl.set('UserDao', MockUserDao);
     sl.set('utils', mockUtils);
+    sl.set('PermissionsDao', MockPermissionsDao);
   };
 
   beforeEach(setup);
