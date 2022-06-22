@@ -29,6 +29,7 @@ class CollectionTextUtils {
       textUuid,
       trx
     );
+
     if (isPubliclyViewable) {
       return true;
     }
@@ -153,6 +154,40 @@ class CollectionTextUtils {
     );
 
     return [...denylistTexts, ...quarantinedTexts];
+  }
+
+  async imagesToHide(
+    userUuid: string | null,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const GroupAllowlistDao = sl.get('GroupAllowlistDao');
+    const PublicDenylistDao = sl.get('PublicDenylistDao');
+    const UserGroupDao = sl.get('UserGroupDao');
+    const UserDao = sl.get('UserDao');
+
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
+    if (user && user.isAdmin) {
+      return [];
+    }
+
+    const publicImageDenylist = await PublicDenylistDao.getDenylistImageUuids(
+      trx
+    );
+
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
+    const imageAllowlist = (
+      await Promise.all(
+        groups.map(groupId =>
+          GroupAllowlistDao.getGroupAllowlist(groupId, 'img', trx)
+        )
+      )
+    ).flat();
+
+    const imagesToHide = publicImageDenylist.filter(
+      image => !imageAllowlist.includes(image)
+    );
+
+    return imagesToHide;
   }
 
   async canEditText(

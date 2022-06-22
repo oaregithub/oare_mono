@@ -5,7 +5,7 @@ import { Knex } from 'knex';
 class GroupAllowlistDao {
   async getGroupAllowlist(
     groupId: number,
-    type: 'text' | 'collection',
+    type: 'text' | 'img' | 'collection',
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knexRead();
@@ -27,7 +27,7 @@ class GroupAllowlistDao {
   async addItemsToAllowlist(
     groupId: number,
     uuids: string[],
-    type: 'text' | 'collection',
+    type: 'text' | 'img' | 'collection',
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();

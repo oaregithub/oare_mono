@@ -8,8 +8,10 @@ import TextsSearch from '@/views/Search/TextsSearch/TextsSearch.vue';
 import AddGroupUsers from '@/views/Admin/Groups/Users/AddGroupUsers.vue';
 import DenylistTexts from '@/views/Admin/PublicDenylist/Texts/DenylistTexts.vue';
 import DenylistCollections from '@/views/Admin/PublicDenylist/Collections/DenylistCollections.vue';
+import DenyListImages from '@/views/Admin/PublicDenylist/Images/DenylistImages.vue';
 import AddDenylistTexts from '@/views/Admin/PublicDenylist/Texts/AddDenylistTexts.vue';
 import AddDenylistCollections from '@/views/Admin/PublicDenylist/Collections/AddDenylistCollections.vue';
+import AddDenylistImages from '@/views/Admin/PublicDenylist/Images/AddDenylistImages.vue';
 import SendResetPasswordEmailView from '@/views/Authentication/ResetPassword/SendResetPasswordEmailView.vue';
 import ResetPasswordView from '@/views/Authentication/ResetPassword/ResetPasswordView.vue';
 import ManagePermissions from '@/views/Admin/Groups/Permissions/ManagePermissions.vue';
@@ -96,6 +98,11 @@ const routes: RouteConfig[] = [
         name: 'denylistCollections',
         component: DenylistCollections,
       },
+      {
+        path: 'images',
+        name: 'denylistImages',
+        component: DenyListImages,
+      },
     ],
   },
   {
@@ -139,6 +146,11 @@ const routes: RouteConfig[] = [
     name: 'denylistAddCollections',
     component: AddDenylistCollections,
     beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/add_denylist/images',
+    name: 'denylistAddImages',
+    component: AddDenylistImages,
   },
   {
     path: '/admin/quarantine',

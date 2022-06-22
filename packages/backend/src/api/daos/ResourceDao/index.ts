@@ -12,11 +12,12 @@ import { Knex } from 'knex';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
+    userUuid: string | null,
     textUuid: string,
     cdliNum: string,
     trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
-    const s3Links = await this.getValidS3ImageLinks(textUuid, trx);
+    const s3Links = await this.getValidS3ImageLinks(textUuid, userUuid, trx);
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum, trx);
     const metLinks = await this.getValidMetImageLinks(textUuid, trx);
 
@@ -27,6 +28,7 @@ class ResourceDao {
 
   async getValidS3ImageLinks(
     textUuid: string,
+    userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
     const k = trx || knexRead();
@@ -35,6 +37,8 @@ class ResourceDao {
 
     try {
       const s3 = new AWS.S3();
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
+      const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
 
       const resourceLinks: ImageResource[] = await k('person as p')
         .distinct()
@@ -44,7 +48,8 @@ class ResourceDao {
         .whereIn(
           'r.uuid',
           k('link').select('obj_uuid').where('reference_uuid', textUuid)
-        );
+        )
+        .whereNotIn('r.uuid', imagesToHide);
 
       const signedUrls = await Promise.all(
         resourceLinks.map(key => {

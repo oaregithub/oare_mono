@@ -163,6 +163,7 @@ describe('DELETE /public_denylist', () => {
   const mockPublicDenylistDao = {
     getDenylistTextUuids: jest.fn().mockResolvedValue(['uuid1', 'uuid2']),
     getDenylistCollectionUuids: jest.fn().mockResolvedValue([]),
+    getDenylistImageUuids: jest.fn().mockResolvedValue([]),
     removeItemFromDenylist: jest.fn().mockResolvedValue(),
   };
   const mockCache = {
