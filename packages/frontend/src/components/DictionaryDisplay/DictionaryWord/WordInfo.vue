@@ -34,12 +34,12 @@
     <v-btn
       v-if="allowEditing && canAddForms"
       @click="addFormDialog = true"
-      color="#ffffff"
-      elevation="0"
-      class="mt-4 px-2"
+      text
+      class="mt-4"
+      color="primary"
     >
-      <v-icon color="primary">mdi-plus</v-icon>
-      <h3 class="text--primary">Add Form</h3>
+      <v-icon>mdi-plus</v-icon>
+      <h3>Add Form</h3>
     </v-btn>
     <edit-word-dialog
       v-if="editDialogForm"
