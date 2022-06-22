@@ -5,7 +5,7 @@
     </template>
     <v-list>
       <v-list-item
-        v-if="hasComment"
+        v-if="hasComment && hasCommentPermission"
         @click="$emit('comment-clicked')"
         class="test-comment"
       >
@@ -42,7 +42,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { computed, defineComponent } from '@vue/composition-api';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'UtilList',
@@ -69,7 +70,12 @@ export default defineComponent({
     },
   },
   setup(props) {
-    return {};
+    const store = sl.get('store');
+
+    const hasCommentPermission = computed(() =>
+      store.hasPermission('ADD_COMMENTS')
+    );
+    return { hasCommentPermission };
   },
 });
 </script>

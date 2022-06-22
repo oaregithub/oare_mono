@@ -44,7 +44,7 @@ export interface TextPermission extends PermissionTemplate {
 }
 
 export interface GeneralPermission extends PermissionTemplate {
-  name: 'EDIT_ITEM_PROPERTIES';
+  name: 'EDIT_ITEM_PROPERTIES' | 'ADD_COMMENTS';
   type: 'general';
 }
 
