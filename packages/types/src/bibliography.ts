@@ -1,7 +1,7 @@
 export interface BibliographyItem {
   uuid: string;
-  zoteroKey: string;
-  citation: string;
+  zot_item_key: string;
+  short_cit: string;
 }
 
 export interface ZoteroResponse {
@@ -64,11 +64,4 @@ export interface ZoteroCollection {}
 export interface ZoteroRelation {
   'owl:sameAs': string;
   'dc:replaces': string;
-}
-
-export interface BibliographyRow {
-  id: string;
-  uuid: string;
-  zot_item_key: string;
-  short_cit: string;
 }
