@@ -236,6 +236,12 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       },
     ],
     hasEpigraphy: true,
+    zoteroData: [
+      {
+        citation: 'test-zotero-citation-2',
+        link: 'https://oare-unit-test.com/test-resource-link-abc.pdf',
+      },
+    ],
   };
 
   const mockTextEpigraphyDao = {
@@ -304,9 +310,30 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     getTextCollection: jest.fn().mockResolvedValue(mockResponse.collection),
   };
 
+  const mockItemPropertiesDao = {
+    addProperty: jest.fn().mockResolvedValue(),
+    getVariableObjectByReference: jest
+      .fn()
+      .mockResolvedValue(['test-variable-object-uuid']),
+  };
+
   const mockCollectionTextUtils = {
     canViewText: jest.fn().mockResolvedValue(true),
     canEditText: jest.fn().mockResolvedValue(false),
+  };
+
+  const mockResourceDao = {
+    getFileURLByUuid: jest
+      .fn()
+      .mockResolvedValue([
+        'https://oare-unit-test.com/test-resource-link-abc.pdf',
+      ]),
+  };
+
+  const mockBibliographyDao = {
+    getZoteroCitationsByUuid: jest
+      .fn()
+      .mockResolvedValue(['test-zotero-citation-2']),
   };
 
   const setup = () => {
@@ -316,6 +343,9 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     sl.set('TextDraftsDao', mockTextDraftsDao);
     sl.set('CollectionDao', mockCollectionDao);
     sl.set('CollectionTextUtils', mockCollectionTextUtils);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('ResourceDao', mockResourceDao);
+    sl.set('BibliographyDao', mockBibliographyDao);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -550,6 +580,9 @@ describe('POST /text_epigraphies/create', () => {
 
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
+    getVariableObjectByReference: jest
+      .fn()
+      .mockResolvedValue(['test-variable-object-uuid']),
   };
 
   const mockResourceDao = {
@@ -576,6 +609,7 @@ describe('POST /text_epigraphies/create', () => {
   const mockTreeDao = {
     insertTreeRow: jest.fn().mockResolvedValue(),
   };
+
   const mockUtils = {
     createTransaction: jest.fn(async cb => {
       await cb();
