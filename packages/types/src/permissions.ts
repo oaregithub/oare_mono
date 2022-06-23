@@ -66,7 +66,7 @@ export interface GroupEditPermissionsPayload {
 
 export interface GetDenylistAllowlistParameters {
   groupId: number;
-  type: 'text' | 'collection';
+  type: 'text' | 'collection' | 'img';
 }
 
 export interface DeleteDenylistAllowlistParameters {

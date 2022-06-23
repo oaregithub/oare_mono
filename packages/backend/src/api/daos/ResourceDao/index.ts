@@ -9,6 +9,7 @@ import {
 } from '@oare/types';
 import { dynamicImport } from 'tsimportlib';
 import { Knex } from 'knex';
+import { Image } from '@oare/types';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -285,6 +286,51 @@ class ResourceDao {
       .select('uuid', 'source_uuid', 'type', 'container', 'format', 'link')
       .where({ uuid })
       .first();
+
+    return result;
+  }
+
+  async getImageByUuid(
+    imageUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Image | null> {
+    const k = trx || knexRead();
+    const image = await k('resource')
+      .select('uuid', 'link')
+      .where('uuid', imageUuid)
+      .first();
+    return image || null;
+  }
+
+  async getAllowListImageWithText(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<{ uuid: string; url: string; text: string }> {
+    const s3 = new AWS.S3();
+    const k = trx || knexRead();
+
+    const text = await k('text')
+      .select('display_name')
+      .where('uuid', k('link').select('reference_uuid').where('obj_uuid', uuid))
+      .first();
+
+    const resourceLink = await k('resource')
+      .select('link')
+      .where('uuid', uuid)
+      .andWhere('type', 'img')
+      .andWhere('container', 'oare-image-bucket')
+      .first();
+
+    const signedUrl: string = await s3.getSignedUrlPromise('getObject', {
+      Bucket: 'oare-image-bucket',
+      Key: resourceLink.link,
+    });
+
+    const result = {
+      uuid: uuid,
+      url: signedUrl,
+      text: text,
+    };
 
     return result;
   }
