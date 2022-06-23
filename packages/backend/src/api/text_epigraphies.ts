@@ -13,6 +13,7 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
+  ZoteroResponse,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
@@ -83,6 +84,28 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const TextDraftsDao = sl.get('TextDraftsDao');
     const CollectionDao = sl.get('CollectionDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const BibliographyDao = sl.get('BibliographyDao');
+    const ResourceDao = sl.get('ResourceDao');
+
+    const citationStyle = 'chicago-author-date';
+
+    const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
+      textUuid,
+      'b3938276-173b-11ec-8b77-024de1c1cc1d'
+    );
+
+    const zoteroCitations = await BibliographyDao.getZoteroCitationsByUuid(
+      objUuids,
+      citationStyle
+    );
+
+    const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
+
+    const zoteroData = zoteroCitations.map((cit, idx) => ({
+      citation: cit,
+      link: fileURL[idx],
+    }));
 
     const text = await TextDao.getTextByUuid(textUuid);
 
@@ -140,6 +163,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       discourseUnits,
       ...(draft ? { draft } : {}),
       hasEpigraphy: hasEpigraphies,
+      zoteroData,
     };
 
     res.json(response);

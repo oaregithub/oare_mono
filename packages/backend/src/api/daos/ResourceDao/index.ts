@@ -104,6 +104,39 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
+  async getFileURLByUuid(
+    objUuids: string[],
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knexRead();
+
+    const resourceRows: ResourceRow[] = await Promise.all(
+      objUuids.map(uuid =>
+        k('resource')
+          .select(['link', 'container'])
+          .whereIn(
+            'uuid',
+            knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
+          )
+          .first()
+      )
+    );
+
+    const s3 = new AWS.S3();
+
+    const fileURL: string[] = await Promise.all(
+      resourceRows.map(key => {
+        const params = {
+          Bucket: key.container,
+          Key: key.link,
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
+
+    return fileURL;
+  }
+
   async getValidCdliImageLinks(
     cdliNum: string,
     trx?: Knex.Transaction

@@ -138,6 +138,20 @@ class ItemPropertiesDao {
     }
   }
 
+  async getVariableObjectByReference(
+    referenceUuid: string,
+    variableUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knexRead();
+    const objUuids: string[] = await k('item_properties')
+      .pluck('object_uuid')
+      .where('variable_uuid', variableUuid)
+      .where('reference_uuid', referenceUuid);
+
+    return objUuids;
+  }
+
   async getImagePropertyDetails(
     resourceUuid: string,
     trx?: Knex.Transaction
