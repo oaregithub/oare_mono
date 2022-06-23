@@ -45,7 +45,7 @@ router
       );
 
       let names: (string | undefined)[];
-      let images: (DenylistAllowlistItem | undefined)[];
+      let urls: (string | undefined)[];
       if (type === 'text') {
         const results = await Promise.all(
           groupAllowlist.map(uuid => TextDao.getTextByUuid(uuid))
@@ -62,7 +62,8 @@ router
             ResourceDao.getAllowListImageWithText(uuid)
           )
         );
-        images = results.map(row => (row ? row : undefined));
+        names = results.map(row => (row ? row.name : undefined));
+        urls = results.map(row => (row ? row.url : undefined));
       }
 
       let response: DenylistAllowlistItem[];
@@ -78,8 +79,8 @@ router
       } else {
         response = groupAllowlist.map((uuid, index) => ({
           uuid,
-          name: images[index]?.name,
-          url: images[index]?.url,
+          name: names[index],
+          url: urls[index],
         }));
       }
       res.json(response);

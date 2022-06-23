@@ -1,6 +1,7 @@
 export interface Image {
   uuid: string;
-  link: string;
+  name: string;
+  url: string;
 }
 
 export interface ImageResponse {

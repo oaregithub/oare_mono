@@ -6,10 +6,10 @@ import {
   LinkRow,
   EpigraphyLabelLink,
   ImageResource,
+  Image,
 } from '@oare/types';
 import { dynamicImport } from 'tsimportlib';
 import { Knex } from 'knex';
-import { Image } from '@oare/types';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -303,20 +303,23 @@ class ResourceDao {
   }
 
   async getAllowListImageWithText(
-    uuid: string,
+    imageUuid: string,
     trx?: Knex.Transaction
-  ): Promise<{ uuid: string; url: string; text: string }> {
+  ): Promise<Image | null> {
     const s3 = new AWS.S3();
     const k = trx || knexRead();
 
-    const text = await k('text')
+    const textInfo = await k('text')
       .select('display_name')
-      .where('uuid', k('link').select('reference_uuid').where('obj_uuid', uuid))
+      .where(
+        'uuid',
+        k('link').select('reference_uuid').where('obj_uuid', imageUuid)
+      )
       .first();
 
     const resourceLink = await k('resource')
       .select('link')
-      .where('uuid', uuid)
+      .where('uuid', imageUuid)
       .andWhere('type', 'img')
       .andWhere('container', 'oare-image-bucket')
       .first();
@@ -326,13 +329,13 @@ class ResourceDao {
       Key: resourceLink.link,
     });
 
-    const result = {
-      uuid: uuid,
+    const result: Image = {
+      uuid: imageUuid,
       url: signedUrl,
-      text: text,
+      name: textInfo,
     };
 
-    return result;
+    return result || null;
   }
 
   async removeLinkRowByReferenceUuid(
