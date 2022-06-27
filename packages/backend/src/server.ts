@@ -41,7 +41,6 @@ import PageContentDao from './api/daos/PageContentDao';
 import SearchFailureDao from './api/daos/SearchFailureDao';
 import BibliographyDao from './api/daos/BibliographyDao';
 import TreeDao from './api/daos/TreeDao';
-import BibliographyDao from './api/daos/BibliographyDao';
 import QuarantineTextDao from './api/daos/QuarantineTextDao';
 
 declare global {
