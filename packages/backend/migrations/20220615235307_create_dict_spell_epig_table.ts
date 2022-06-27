@@ -25,13 +25,11 @@ export const stringToCharsArray = async (
     type: string;
     spellNum: number;
   }[] = await Promise.all(
-    chars.map(async (char, idx) => {
-      return {
-        char: char.replace(/[()]/g, ''),
-        type: await determineType(char),
-        spellNum: idx + 1,
-      };
-    })
+    chars.map(async (char, idx) => ({
+      char: char.replace(/[()]/g, ''),
+      type: await determineType(char),
+      spellNum: idx + 1,
+    }))
   );
 
   return charArray;
@@ -40,15 +38,17 @@ export const stringToCharsArray = async (
 export const determineType = async (char: string): Promise<string> => {
   if (char.match(/^\([^.]*\)$/)) {
     return 'determinative';
-  } else if (/^\d+$|^(\d+\.\d+)$/.test(char)) {
-    return 'number';
-  } else if (char.toLocaleUpperCase() === char) {
-    return 'logogram';
-  } else if (char.toLocaleLowerCase() === char) {
-    return 'phonogram';
-  } else {
-    return 'uninterpreted';
   }
+  if (/^\d+$|^(\d+\.\d+)$/.test(char)) {
+    return 'number';
+  }
+  if (char.toLocaleUpperCase() === char) {
+    return 'logogram';
+  }
+  if (char.toLocaleLowerCase() === char) {
+    return 'phonogram';
+  }
+  return 'uninterpreted';
 };
 
 export const getSignInfo = async (
@@ -135,15 +135,12 @@ export async function up(knex: Knex): Promise<void> {
             return sign;
           })
         );
-        console.log(`${(((index + 1) / total) * 100).toFixed(4)}% generated`);
         return {
           dictionarySpellingInfo: { referenceUuid, explicitSpelling },
-          signInfo: signInfo,
+          signInfo,
         } as dictionarySpellingEpigraphy;
       })
     );
-
-    console.log('creating table');
 
     await knex.schema.createTable('dictionary_spelling_epigraphy', table => {
       table.charset('utf8mb4');
@@ -178,7 +175,6 @@ export async function up(knex: Knex): Promise<void> {
           uuid: v4(),
         });
       });
-      console.log(`${(((index + 1) / total) * 100).toFixed(4)}% populated`);
     });
   }
 }
