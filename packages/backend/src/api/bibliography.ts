@@ -7,9 +7,10 @@ const router = express.Router();
 
 router.route('/bibliography/query').get(async (req, res, next) => {
   try {
-    const { filter: search, limit: rows, page } = extractPagination(req.query);
+    const { filter: search, limit: rows, page } = extractPagination(req.query, {
+      defaultLimit: 25,
+    });
     const BibliographyDao = sl.get('BibliographyDao');
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const ResourceDao = sl.get('ResourceDao');
 
     const bibliographies = await BibliographyDao.queryBibliographyPage(
@@ -17,14 +18,11 @@ router.route('/bibliography/query').get(async (req, res, next) => {
       { rows, page }
     );
 
-    /*
-    const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
-      textUuid,
-      'b3938276-173b-11ec-8b77-024de1c1cc1d'
-    );
-    */
+    const objUuids: string[] = [];
 
-    //const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
+    const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
+
+    const response = { bibliographies: bibliographies, fileURL: fileURL };
 
     res.json(bibliographies);
   } catch (err) {

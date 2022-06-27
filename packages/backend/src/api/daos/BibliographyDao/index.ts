@@ -1,10 +1,41 @@
 import { Knex } from 'knex';
 import { knexRead } from '@/connection';
 import { BibliographyItem, ZoteroResponse } from '@oare/types';
-import { getZoteroAPIKEY } from '@/utils';
 import { dynamicImport } from 'tsimportlib';
+import { fetchZotero } from './utils';
 
 class BibliographyDao {
+  /*
+  async queryBibliographyByUuids(
+    objUuids: string[],
+    trx?: Knex.Transaction
+  ): Promise<BibliographyItem[]> {
+    const k = trx || knexRead();
+    const bibliographies: BibliographyItem[] = await Promise.all(
+      objUuids.map(uuid =>
+        k('bibliography')
+          .select('uuid', 'zot_item_key', 'short_cit')
+          .where('uuid', uuid)
+          .first()
+      )
+    );
+    return bibliographies;
+  }
+
+  async queryBibliographyByPage(
+    { page = 1, rows = 25 },
+    trx?: Knex.Transaction
+  ): Promise<BibliographyItem[]> {
+    const k = trx || knexRead();
+    const bibliographies: BibliographyItem[] = await k('bibliography')
+      .select('uuid', 'zot_item_key')
+      .orderBy('id')
+      .limit(rows)
+      .offset((page - 1) * rows);
+    return bibliographies;
+  }
+  */
+
   async getZoteroCitationsByUuid(
     objUuids: string[],
     citationStyle: string,
@@ -20,27 +51,7 @@ class BibliographyDao {
       )
     );
 
-    const apiKey = await getZoteroAPIKEY();
-
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
-    const response = await Promise.all(
-      bibliographies.map(async bibliography => {
-        const resp = await fetch.default(
-          `https://api.zotero.org/groups/318265/items/${bibliography.zot_item_key}?format=json&include=citation&style=${citationStyle}`,
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-            },
-          }
-        );
-        const json = (await resp.json()) as ZoteroResponse;
-        return json;
-      })
-    );
+    const response = await fetchZotero(bibliographies, citationStyle);
 
     const zoteroCitations: string[] = response
       .filter(item => !!item.citation)
@@ -51,37 +62,19 @@ class BibliographyDao {
 
   async queryBibliographyPage(
     citationStyle: string,
-    { page = 1, rows = 10 },
+    { page = 1, rows = 25 },
     trx?: Knex.Transaction
   ): Promise<ZoteroResponse[]> {
-    //page = 1, rows = 10
-    const zoteroRows: BibliographyItem[] = await knexRead()('bibliography')
+    const k = trx || knexRead();
+    const bibliographies: BibliographyItem[] = await k('bibliography')
       .select('uuid', 'zot_item_key')
       .orderBy('id')
       .limit(rows)
       .offset((page - 1) * rows);
 
-    const apiKey = await getZoteroAPIKEY();
+    const response = await fetchZotero(bibliographies, citationStyle);
 
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
-    const response = await Promise.all(
-      zoteroRows.map(async row => {
-        const resp = await fetch.default(
-          `https://api.zotero.org/groups/318265/items/${row.zot_item_key}?format=json&include=bib,data&style=${citationStyle}`,
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-            },
-          }
-        );
-        const json = (await resp.json()) as ZoteroResponse;
-        return json;
-      })
-    );
+    //const objUuids = bibliographies.map(item => item.uuid);
 
     return response;
   }

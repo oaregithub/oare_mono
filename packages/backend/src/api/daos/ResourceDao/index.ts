@@ -111,7 +111,7 @@ class ResourceDao {
           .select(['link', 'container'])
           .whereIn(
             'uuid',
-            knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
+            k('link').select('obj_uuid').where('reference_uuid', uuid)
           )
           .first()
       )
