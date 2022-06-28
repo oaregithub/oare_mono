@@ -144,6 +144,9 @@ export const getDictionaryCacheRouteToClear = (
     case 'GN':
       cacheRouteToClear = `/places/${firstLetter}`;
       break;
+    default:
+      cacheRouteToClear = `/words/${firstLetter}`;
+      break;
   }
 
   return cacheRouteToClear;

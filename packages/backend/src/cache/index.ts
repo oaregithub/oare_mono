@@ -27,7 +27,7 @@ class Cache {
     await redis.set(key.req.originalUrl, JSON.stringify(response), {
       EX: expireInHours ? expireInHours * 60 * 60 : undefined,
     });
-    return await filter(response, key.req.user);
+    return filter(response, key.req.user);
   }
 
   public async retrieve<T>(
@@ -39,7 +39,7 @@ class Cache {
       return null;
     }
 
-    return await filter(JSON.parse(cachedValue), key.req.user);
+    return filter(JSON.parse(cachedValue), key.req.user);
   }
 
   public async clear(url: string, options: ClearCacheOptions) {

@@ -10,21 +10,17 @@ import sl from '@/serviceLocator';
 export const dictionaryWordFilter = async (
   word: Word,
   user: User | null
-): Promise<Word> => {
-  return {
-    ...word,
-    forms: word.forms
-      .map(form => ({
-        ...form,
-        spellings: form.spellings.filter(spelling =>
-          user && user.isAdmin ? spelling : spelling.hasOccurrence
-        ),
-      }))
-      .filter(form =>
-        user && user.isAdmin ? form : form.spellings.length > 0
+): Promise<Word> => ({
+  ...word,
+  forms: word.forms
+    .map(form => ({
+      ...form,
+      spellings: form.spellings.filter(spelling =>
+        user && user.isAdmin ? spelling : spelling.hasOccurrence
       ),
-  };
-};
+    }))
+    .filter(form => (user && user.isAdmin ? form : form.spellings.length > 0)),
+});
 
 export const dictionaryFilter = async (
   words: Word[],

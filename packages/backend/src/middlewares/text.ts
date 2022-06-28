@@ -26,12 +26,10 @@ const textMiddleware = async (
       if (req.user && req.user.isAdmin && forceAllowAdminView) {
         next();
         return;
-      } else {
-        next(
-          new HttpForbidden('You do not have permission to view this text.')
-        );
-        return;
       }
+
+      next(new HttpForbidden('You do not have permission to view this text.'));
+      return;
     }
 
     next();
