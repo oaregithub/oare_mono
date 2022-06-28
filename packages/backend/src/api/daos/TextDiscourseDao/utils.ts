@@ -86,7 +86,7 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       for (let i = 1; i < spellingUuids.length; i += 1) {
         qb.join(`text_discourse as td${i}`, function () {
           this.on(`td${i}.text_uuid`, `td${sequenced ? i - 1 : 0}.text_uuid`);
-          const currentNumWordsBetween: number = numWordsBetween[i - 1] ?? -1;
+          const currentNumWordsBetween: number = numWordsBetween[i] ?? -1;
           if (sequenced) {
             if (currentNumWordsBetween > -1) {
               this.andOn(

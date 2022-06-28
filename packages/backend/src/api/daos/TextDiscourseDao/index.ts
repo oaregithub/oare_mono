@@ -150,10 +150,10 @@ class TextDiscourseDao {
     const textsToHide: string[] = await CollectionTextUtils.textsToHide(
       userUuid
     );
-    const wordsBetween: (number | null)[] = [];
-    for (let i = 1; i < items.length; i += 1) {
-      wordsBetween.push(items[i].numWordsBefore);
-    }
+    const wordsBetween: (number | null)[] = items.map(
+      item => item.numWordsBefore
+    );
+
     const spellingUuids: string[][] = await Promise.all(
       items.map(async payloadObject => {
         let formUuids: string[] = [];
