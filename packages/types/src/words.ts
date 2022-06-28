@@ -31,13 +31,9 @@ export interface Word extends DictionaryWordParseInfo {
   forms: DictionaryForm[];
 }
 
-export interface DictionaryWord extends DictionaryWordParseInfo {
+export interface WordWithoutForms extends DictionaryWordParseInfo {
   uuid: string;
   word: string;
-}
-
-export interface WordsResponse {
-  words: DictionaryWord[];
 }
 
 export interface WordFormAutocompleteDisplay {

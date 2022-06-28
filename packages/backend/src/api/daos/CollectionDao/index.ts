@@ -40,37 +40,16 @@ class CollectionDao {
       : null;
   }
 
-  async getAllCollections(
-    userUuid: string | null,
-    trx?: Knex.Transaction
-  ): Promise<string[]> {
+  async getAllCollections(trx?: Knex.Transaction): Promise<string[]> {
     const k = trx || knexRead();
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
-    const isAdmin = user ? user.isAdmin : false;
 
     const collectionRows: Array<{ uuid: string }> = await k('collection')
       .select('collection.uuid')
-      .orderBy('collection.name')
-      .modify(qb => {
-        if (!isAdmin) {
-          qb.innerJoin(
-            'hierarchy',
-            'hierarchy.object_uuid',
-            'collection.uuid'
-          ).andWhere('hierarchy.published', true);
-        }
-      });
+      .orderBy('collection.name');
 
     const collectionUuids = collectionRows.map(({ uuid }) => uuid);
 
-    const collectionsViewable = await Promise.all(
-      collectionUuids.map(uuid =>
-        CollectionTextUtils.canViewCollection(uuid, userUuid, trx)
-      )
-    );
-
-    return collectionUuids.filter((_, index) => collectionsViewable[index]);
+    return collectionUuids;
   }
 }
 

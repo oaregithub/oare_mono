@@ -317,12 +317,15 @@ class TextDiscourseDao {
 
   async getTotalSpellingTexts(
     spellingUuids: string[],
-    userUuid: string | null,
+    userUuid?: string | null,
     pagination: Partial<Pagination> = {},
     trx?: Knex.Transaction
   ): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    const textsToHide =
+      userUuid !== undefined
+        ? await CollectionTextUtils.textsToHide(userUuid, trx)
+        : [];
 
     const countRow = await this.createSpellingTextsQuery(
       spellingUuids,

@@ -191,3 +191,14 @@ export interface InsertItemPropertyRow {
   objectUuid: string | null;
   value: string | null;
 }
+
+export interface DictionaryWordRow {
+  uuid: string;
+  word: string;
+  type: DictionaryWordTypes;
+}
+
+export interface EditPropertiesPayload {
+  properties: ParseTreeProperty[];
+  wordUuid?: string;
+}

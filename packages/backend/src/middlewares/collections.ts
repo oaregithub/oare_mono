@@ -4,13 +4,15 @@ import sl from '@/serviceLocator';
 
 async function collectionsMiddleware(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
-  const user = req.user || null;
-  const uuid = req.params.uuid as string;
-
+  const CollectionTextUtils = sl.get('CollectionTextUtils');
   const HierarchyDao = sl.get('HierarchyDao');
+
+  const user = req.user;
+  const userUuid = req.user ? req.user.uuid : null;
+  const uuid = req.params.uuid as string;
 
   if (!user || !user.isAdmin) {
     const isCollectionPublished = await HierarchyDao.isPublished(uuid);
@@ -19,6 +21,21 @@ async function collectionsMiddleware(
       return;
     }
   }
+
+  const canViewCollection = await CollectionTextUtils.canViewCollection(
+    uuid,
+    userUuid
+  );
+
+  if (!canViewCollection) {
+    next(
+      new HttpForbidden(
+        'You do not have permission to view this collection. If you think this is a mistake, please contact your administrator.'
+      )
+    );
+    return;
+  }
+
   next();
 }
 

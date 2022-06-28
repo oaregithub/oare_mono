@@ -2,7 +2,7 @@ import { knexRead, knexWrite } from '@/connection';
 import { Knex } from 'knex';
 
 class PageContentDao {
-  async getContent(routeName: string, trx?: Knex.Transaction) {
+  async getContent(routeName: string, trx?: Knex.Transaction): Promise<string> {
     const k = trx || knexRead();
     const row = await k('page_content')
       .first('content')

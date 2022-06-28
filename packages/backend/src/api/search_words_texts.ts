@@ -1,6 +1,5 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import cache from '@/cache';
 import sl from '@/serviceLocator';
 import {
   WordsInTextSearchPayload,
@@ -10,11 +9,10 @@ import {
 
 const router = express.Router();
 
-router.route('/wordsAndForms').get(async (req, res, next) => {
+router.route('/wordsAndForms').get(async (_req, res, next) => {
   try {
     const DictionaryWordDao = sl.get('DictionaryWordDao');
     const results: WordFormAutocompleteDisplay[] = await DictionaryWordDao.getWordsAndFormsForWordsInTexts();
-    cache.insert({ req }, results);
     res.json(results);
   } catch (err) {
     next(new HttpInternalError(err as string));

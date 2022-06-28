@@ -108,3 +108,43 @@ export const nestProperties = (
 
   return props;
 };
+
+const getDictionaryFirstLetter = (word: string): string => {
+  const firstLetter = word.substring(0, 1).toUpperCase();
+  switch (firstLetter) {
+    case 'Ā':
+      return 'A';
+    case 'Ē':
+      return 'E';
+    case 'Ī':
+      return 'I';
+    case 'Õ':
+      return 'O';
+    case 'Ū':
+      return 'U';
+    default:
+      return firstLetter;
+  }
+};
+
+export const getDictionaryCacheRouteToClear = (
+  word: string,
+  type: 'word' | 'PN' | 'GN'
+): string => {
+  const firstLetter = getDictionaryFirstLetter(word);
+
+  let cacheRouteToClear = '';
+  switch (type) {
+    case 'word':
+      cacheRouteToClear = `/words/${firstLetter}`;
+      break;
+    case 'PN':
+      cacheRouteToClear = `/names/${firstLetter}`;
+      break;
+    case 'GN':
+      cacheRouteToClear = `/places/${firstLetter}`;
+      break;
+  }
+
+  return cacheRouteToClear;
+};
