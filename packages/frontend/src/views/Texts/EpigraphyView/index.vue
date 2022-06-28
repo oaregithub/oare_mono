@@ -178,6 +178,15 @@
             </div>
           </div>
         </v-row>
+        <div v-if="allowViewCitations && zoteroDataList.length">
+          <div v-for="(data, idx) in zoteroDataList" :key="idx">
+            <div>
+              Citation:
+              <a :href="data.link" v-html="data.citation" target="_blank"></a>
+            </div>
+          </div>
+          <br />
+        </div>
 
         <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
@@ -246,6 +255,7 @@ import {
   EpigraphyResponse,
   TranslitOption,
   EpigraphyLabelLink,
+  ZoteroData,
 } from '@oare/types';
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
@@ -358,6 +368,7 @@ export default defineComponent({
       colorMeaning: '',
       discourseUnits: [],
       hasEpigraphy: false,
+      zoteroData: [],
     });
     const imageUrls = ref<EpigraphyLabelLink[]>([]);
 
@@ -372,6 +383,12 @@ export default defineComponent({
       primaryPublicationNumber: null,
     });
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
+
+    const zoteroDataList = ref<ZoteroData[]>([]);
+
+    const allowViewCitations = computed(() =>
+      store.hasPermission('VIEW_BIBLIOGRAPHY')
+    );
 
     const breadcrumbItems = computed(() => {
       const letterGroup = getLetterGroup(textInfo.value.collection.name);
@@ -526,6 +543,7 @@ export default defineComponent({
             textInfo.value.cdliNum
           );
         }
+        zoteroDataList.value = textInfo.value.zoteroData;
       } catch (err) {
         if ((err as any).response) {
           if ((err as any).response.status === 403) {
@@ -671,6 +689,8 @@ export default defineComponent({
       quarantineText,
       quarantineDialog,
       quarantineLoading,
+      zoteroDataList,
+      allowViewCitations,
       copyTransliteration,
       hasCopyPermission,
     };
