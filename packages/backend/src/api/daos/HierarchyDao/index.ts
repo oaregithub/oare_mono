@@ -213,7 +213,7 @@ class HierarchyDao {
     };
   }
 
-  async getImages(
+  async getImagesForDenylist(
     { page, limit, filter }: SearchNamesPayload,
     trx?: Knex.Transaction
   ): Promise<SearchImagesResponse> {
@@ -270,6 +270,113 @@ class HierarchyDao {
       .whereNotIn(
         'resource.uuid',
         k('public_denylist').select('uuid').where('type', 'img')
+      )
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    const signedUrls = await Promise.all(
+      resourceLinks.map(key => {
+        const params = {
+          Bucket: 'oare-image-bucket',
+          Key: key,
+        };
+        return s3.getSignedUrlPromise('getObject', params);
+      })
+    );
+
+    const result: SearchImagesResultRow[] = signedUrls.map((element, idx) => {
+      const imageInfo = {
+        uuid: imgUUIDs[idx],
+        name: words[idx].display_name,
+        imgUrl: element,
+      };
+      return imageInfo;
+    });
+
+    return {
+      items: result,
+      count: totalCount,
+    };
+  }
+
+  async getImagesForAllowlist(
+    { page, limit, filter, groupId }: SearchNamesPayload,
+    trx?: Knex.Transaction
+  ): Promise<SearchImagesResponse> {
+    const k = trx || knexRead();
+    const s3 = new AWS.S3();
+
+    const totalNum = await k('link')
+      .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
+      .innerJoin('text', 'text.uuid', 'link.reference_uuid')
+      .where('resource.container', 'oare-image-bucket')
+      .andWhere('text.display_name', 'like', `%${filter}%`)
+      .whereIn(
+        'resource.uuid',
+        k('public_denylist').select('uuid').where('type', 'img')
+      )
+      .whereNotIn(
+        'resource.uuid',
+        k('group_allowlist')
+          .select('uuid')
+          .where('group_id', groupId)
+          .andWhere('type', 'img')
+      )
+      .count({
+        count: 'text.display_name',
+      })
+      .first();
+
+    const totalCount = totalNum ? Number(totalNum.count) : 0;
+
+    const imgUUIDs: string[] = await k('link')
+      .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
+      .innerJoin('text', 'text.uuid', 'link.reference_uuid')
+      .pluck('resource.uuid')
+      .where('resource.container', 'oare-image-bucket')
+      .andWhere('text.display_name', 'like', `%${filter}%`)
+      .whereIn(
+        'resource.uuid',
+        k('public_denylist').select('uuid').where('type', 'img')
+      )
+      .whereNotIn(
+        'resource.uuid',
+        k('group_allowlist')
+          .select('uuid')
+          .where('group_id', groupId)
+          .andWhere('type', 'img')
+      )
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    const words = await Promise.all(
+      imgUUIDs.map(uuid =>
+        k('text')
+          .select('display_name')
+          .whereIn(
+            'uuid',
+            k('link').select('reference_uuid').where('obj_uuid', uuid)
+          )
+          .first()
+      )
+    );
+
+    const resourceLinks: string[] = await k('link')
+      .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
+      .innerJoin('text', 'text.uuid', 'link.reference_uuid')
+      .pluck('resource.link')
+      .where('resource.container', 'oare-image-bucket')
+      .andWhere('text.display_name', 'like', `%${filter}%`)
+      .whereIn(
+        'resource.uuid',
+        k('public_denylist').select('uuid').where('type', 'img')
+      )
+      .whereNotIn(
+        'resource.uuid',
+        k('group_allowlist')
+          .select('uuid')
+          .where('group_id', groupId)
+          .andWhere('type', 'img')
       )
       .limit(limit)
       .offset((page - 1) * limit);
