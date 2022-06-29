@@ -2,8 +2,16 @@ import { createClient } from 'redis';
 import { API_PATH } from '@/setupRoutes';
 import { User } from '@oare/types';
 
-const redis = createClient();
-// FIXME setup prod redis
+const redis = createClient(
+  process.env.NODE_ENV === 'production'
+    ? {
+        socket: {
+          host: process.env.REDIS_HOST,
+          port: 6379,
+        },
+      }
+    : undefined
+);
 redis.connect();
 
 export interface CacheKey {
