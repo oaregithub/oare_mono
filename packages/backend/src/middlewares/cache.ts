@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import cache, { CacheKey } from '@/cache';
+import { CacheKey } from '@/cache';
 import sl from '@/serviceLocator';
 import { User } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
@@ -9,6 +9,7 @@ const cacheMiddleware = <T>(
 ) => async (req: Request, res: Response, next: NextFunction) => {
   try {
     const CacheStatusDao = sl.get('CacheStatusDao');
+    const cache = sl.get('cache');
     const cacheIsEnabled =
       process.env.NODE_ENV === 'test' ||
       (await CacheStatusDao.cacheIsEnabled());

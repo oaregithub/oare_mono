@@ -15,6 +15,7 @@ describe('GET /sign_reading/code/:sign/:post', () => {
   };
 
   const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
     insert: jest.fn(),
   };
 
@@ -66,6 +67,7 @@ describe('GET /sign_reading/format/:sign', () => {
   };
 
   const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
     insert: jest.fn(),
   };
 

@@ -13,7 +13,6 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
-  ZoteroResponse,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';

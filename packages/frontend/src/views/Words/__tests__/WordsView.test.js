@@ -14,7 +14,7 @@ describe('WordsView test', () => {
     showErrorSnackbar: jest.fn(),
   };
   const mockServer = {
-    getDictionaryWords: jest.fn().mockResolvedValue({ words: [] }),
+    getDictionaryWords: jest.fn().mockResolvedValue([]),
     getDictionaryPermissions: jest.fn().mockResolvedValue({ canEdit: false }),
   };
 

@@ -5,10 +5,6 @@ import sl from '@/serviceLocator';
 import * as utils from '@/utils';
 
 describe('people api test', () => {
-  const mockCache = {
-    insert: jest.fn(),
-  };
-
   const allPeople = [
     {
       uuid: 'test1',
@@ -129,7 +125,6 @@ describe('people api test', () => {
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
     sl.set('PersonTextOccurrencesDao', mockPersonTextOccurrencesDao);
     sl.set('utils', mockUtils);
-    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
@@ -150,7 +145,6 @@ describe('people api test', () => {
       expect(JSON.parse(response.text)).toEqual(allPeopleExpectedResponse);
       expect(mockPersonDao.getAllPeople).toHaveBeenCalledWith(letter);
       expect(mockPersonTextOccurrencesDao.getAll).toHaveBeenCalled();
-      expect(mockCache.insert).toHaveBeenCalled();
     });
 
     it('fails to return people when getting people fails.', async () => {
@@ -161,7 +155,6 @@ describe('people api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
-      expect(mockCache.insert).not.toHaveBeenCalled();
     });
 
     it('fails to return text occurrence counts for people.', async () => {
@@ -174,7 +167,6 @@ describe('people api test', () => {
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);
-      expect(mockCache.insert).not.toHaveBeenCalled();
     });
 
     it('fails to return people when does not have permission', async () => {
