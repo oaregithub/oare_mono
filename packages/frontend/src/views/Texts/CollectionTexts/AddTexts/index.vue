@@ -322,6 +322,7 @@ export default defineComponent({
         colorMeaning: '',
         discourseUnits: [],
         hasEpigraphy: true,
+        zoteroData: [],
       };
     });
 

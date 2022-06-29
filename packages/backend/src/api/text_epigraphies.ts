@@ -13,6 +13,7 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
+  ZoteroResponse,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
@@ -91,6 +92,9 @@ router
         const TextDiscourseDao = sl.get('TextDiscourseDao');
         const TextDraftsDao = sl.get('TextDraftsDao');
         const CollectionDao = sl.get('CollectionDao');
+        const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+        const BibliographyDao = sl.get('BibliographyDao');
+        const ResourceDao = sl.get('ResourceDao');
         const cache = sl.get('cache');
 
         const text = await TextDao.getTextByUuid(textUuid);
@@ -128,6 +132,25 @@ router
 
         const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
 
+        const citationStyle = 'chicago-author-date';
+
+        const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
+          textUuid,
+          'b3938276-173b-11ec-8b77-024de1c1cc1d'
+        );
+
+        const zoteroCitations = await BibliographyDao.getZoteroCitationsByUuid(
+          objUuids,
+          citationStyle
+        );
+
+        const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
+
+        const zoteroData = zoteroCitations.map((cit, idx) => ({
+          citation: cit,
+          link: fileURL[idx],
+        }));
+
         const epigraphy: EpigraphyResponse = {
           text,
           collection,
@@ -139,6 +162,7 @@ router
           discourseUnits,
           ...(draft ? { draft } : {}),
           hasEpigraphy: hasEpigraphies,
+          zoteroData,
         };
 
         const response = await cache.insert<EpigraphyResponse>(
