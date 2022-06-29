@@ -13,10 +13,10 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
-  ZoteroResponse,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
+import { fetchZotero } from '@/api/daos/BibliographyDao/utils';
 
 const router = express.Router();
 
@@ -93,10 +93,15 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       'b3938276-173b-11ec-8b77-024de1c1cc1d'
     );
 
-    const zoteroCitations = await BibliographyDao.getZoteroCitationsByUuid(
-      objUuids,
-      citationStyle
+    const zoteroQuery = await BibliographyDao.queryBibliographyByUuids(
+      objUuids
     );
+
+    const zoteroResponse = await fetchZotero(zoteroQuery, citationStyle);
+
+    const zoteroCitations: string[] = zoteroResponse
+      .filter(item => !!item.citation)
+      .map(item => item.citation!);
 
     const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
 
