@@ -75,16 +75,10 @@
                         :key="`${word.name}${index}${i}`"
                       >
                         <v-expansion-panel-header>{{
-                          `${word.name} -- ${
-                            new Set(
-                              searchItems[index - 1].uuids.filter(uuid => {
-                                const stringUuid = `${uuid}`;
-                                return word.forms
-                                  .map(form => form.uuid)
-                                  .includes(stringUuid);
-                              })
-                            ).size
-                          }/${word.forms.length} form${
+                          `${word.name} -- ${getNumFormsSelected(
+                            index - 1,
+                            word
+                          )}/${word.forms.length} form${
                             word.forms.length > 1 ? 's' : ''
                           } selected`
                         }}</v-expansion-panel-header>
@@ -582,6 +576,17 @@ export default defineComponent({
       searchItems.value.splice(index, 1, searchItems.value[index]);
     };
 
+    const getNumFormsSelected = (
+      index: number,
+      word: WordForWordsInTextSearch
+    ): number => {
+      return new Set(
+        (searchItems.value[index].uuids as string[]).filter(uuid => {
+          return word.forms.map(form => form.uuid).includes(uuid);
+        })
+      ).size;
+    };
+
     onMounted(async () => {
       loading.value = true;
       try {
@@ -630,6 +635,7 @@ export default defineComponent({
       expand,
       wordForms,
       getWordForms,
+      getNumFormsSelected,
       searchLoading,
       filter,
       headers,
