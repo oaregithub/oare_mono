@@ -108,8 +108,6 @@ export async function up(knex: Knex): Promise<void> {
       uuid: 'uuid',
     });
 
-    const total = dictionarySpellings.length;
-
     const spellEpigObjects: DictionarySpellingEpigraphy[] = await Promise.all(
       dictionarySpellings.map(async (ds, index) => {
         const referenceUuid: string = ds.uuid;
