@@ -331,9 +331,21 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   };
 
   const mockBibliographyDao = {
-    getZoteroCitationsByUuid: jest
-      .fn()
-      .mockResolvedValue(['test-zotero-citation-2']),
+    queryBibliographyByUuids: jest.fn().mockResolvedValue([
+      {
+        uuid: 'test-zotero-uuid-1',
+        zot_item_key: 'test-zotero-key-1',
+        short_cit: 'test-zotero-citation-short',
+      },
+    ]),
+  };
+
+  const mockBibliographyUtils = {
+    fetchZotero: jest.fn().mockResolvedValue([
+      {
+        citation: 'test-zotero-citation-2',
+      },
+    ]),
   };
 
   const setup = () => {
@@ -346,6 +358,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
     sl.set('ResourceDao', mockResourceDao);
     sl.set('BibliographyDao', mockBibliographyDao);
+    sl.set('BibliographyUtils', mockBibliographyUtils);
   };
 
   const sendRequest = () => request(app).get(PATH);

@@ -16,7 +16,6 @@ import {
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import fileUpload from 'express-fileupload';
-import { fetchZotero } from '@/api/daos/BibliographyDao/utils';
 
 const router = express.Router();
 
@@ -84,6 +83,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const BibliographyDao = sl.get('BibliographyDao');
+    const BibliographyUtils = sl.get('BibliographyUtils');
     const ResourceDao = sl.get('ResourceDao');
 
     const citationStyle = 'chicago-author-date';
@@ -97,7 +97,10 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       objUuids
     );
 
-    const zoteroResponse = await fetchZotero(zoteroQuery, citationStyle);
+    const zoteroResponse = await BibliographyUtils.fetchZotero(
+      zoteroQuery,
+      citationStyle
+    );
 
     const zoteroCitations: string[] = zoteroResponse
       .filter(item => !!item.citation)

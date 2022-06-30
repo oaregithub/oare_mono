@@ -2,7 +2,6 @@ import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import { extractPagination } from '@/utils';
-import { fetchZotero } from './daos/BibliographyDao/utils';
 
 const router = express.Router();
 
@@ -12,15 +11,19 @@ router.route('/bibliography/query').get(async (req, res, next) => {
       defaultLimit: 25,
     });
     const BibliographyDao = sl.get('BibliographyDao');
+    const BibliographyUtils = sl.get('BibliographyUtils');
     const ResourceDao = sl.get('ResourceDao');
     const citationStyle = 'chicago-author-date';
 
     const bibliographies = await BibliographyDao.queryBibliographyByPage({
-      page: page,
-      rows: rows,
+      page,
+      rows,
     });
 
-    const zoteroResponse = await fetchZotero(bibliographies, citationStyle);
+    const zoteroResponse = await BibliographyUtils.fetchZotero(
+      bibliographies,
+      citationStyle
+    );
 
     const objUuids = bibliographies.map(item => item.uuid);
 
@@ -30,7 +33,7 @@ router.route('/bibliography/query').get(async (req, res, next) => {
 
     const datas = zoteroResponse.map(item => item.data);
 
-    const response = { bib: bibs, data: datas, fileURL: fileURL };
+    const response = { bibs, datas, fileURL };
 
     res.json(response);
   } catch (err) {
@@ -44,15 +47,19 @@ router.route('/bibliography/style').get(async (req, res, next) => {
       defaultLimit: 25,
     });
     const BibliographyDao = sl.get('BibliographyDao');
+    const BibliographyUtils = sl.get('BibliographyUtils');
     const ResourceDao = sl.get('ResourceDao');
     const citationStyle = (req.query.style || 'chicago-author-date') as string;
 
     const bibliographies = await BibliographyDao.queryBibliographyByPage({
-      page: page,
-      rows: rows,
+      page,
+      rows,
     });
 
-    const zoteroResponse = await fetchZotero(bibliographies, citationStyle);
+    const zoteroResponse = await BibliographyUtils.fetchZotero(
+      bibliographies,
+      citationStyle
+    );
 
     const objUuids = bibliographies.map(item => item.uuid);
 
@@ -62,7 +69,7 @@ router.route('/bibliography/style').get(async (req, res, next) => {
 
     const datas = zoteroResponse.map(item => item.data);
 
-    const response = { bib: bibs, data: datas, fileURL: fileURL };
+    const response = { bibs, datas, fileURL };
 
     res.json(response);
   } catch (err) {
