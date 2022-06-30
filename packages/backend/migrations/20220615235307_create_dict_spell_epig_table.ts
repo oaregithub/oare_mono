@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
 
-export interface dictionarySpellingEpigraphy {
+export interface DictionarySpellingEpigraphy {
   dictionarySpellingInfo: { referenceUuid: string; explicitSpelling: string };
   signInfo: {
     signSpellNum: number;
@@ -110,7 +110,7 @@ export async function up(knex: Knex): Promise<void> {
 
     const total = dictionarySpellings.length;
 
-    const spellEpigObjects: dictionarySpellingEpigraphy[] = await Promise.all(
+    const spellEpigObjects: DictionarySpellingEpigraphy[] = await Promise.all(
       dictionarySpellings.map(async (ds, index) => {
         const referenceUuid: string = ds.uuid;
         const explicitSpelling: string = ds.explicit_spelling;
@@ -138,7 +138,7 @@ export async function up(knex: Knex): Promise<void> {
         return {
           dictionarySpellingInfo: { referenceUuid, explicitSpelling },
           signInfo,
-        } as dictionarySpellingEpigraphy;
+        } as DictionarySpellingEpigraphy;
       })
     );
 
@@ -164,18 +164,20 @@ export async function up(knex: Knex): Promise<void> {
       table.foreign('sign_uuid', 'sign_uuid_fk').references('sign.uuid');
     });
 
-    spellEpigObjects.forEach(async (obj, index) => {
-      obj.signInfo.forEach(async sign => {
-        await knex('dictionary_spelling_epigraphy').insert({
+    const insertions = spellEpigObjects
+      .map(obj =>
+        obj.signInfo.map(sign => ({
           reference_uuid: obj.dictionarySpellingInfo.referenceUuid,
           sign_spell_num: sign.signSpellNum,
           reading_uuid: sign.readingUuid,
           reading: sign.reading,
           sign_uuid: sign.signUuid,
           uuid: v4(),
-        });
-      });
-    });
+        }))
+      )
+      .flat();
+
+    await knex('dictionary_spelling_epigraphy').insert(insertions);
   }
 }
 
