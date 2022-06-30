@@ -29,6 +29,20 @@ class FieldDao {
       .orderBy('primacy');
   }
 
+  async getPropertyDescription(
+    referenceUuid: string | null,
+    trx?: Knex.Transaction
+  ): Promise<string> {
+    const k = trx || knexRead();
+    const description: string = await k('field')
+      .select('field.field')
+      .where('field.reference_uuid', referenceUuid)
+      .andWhere('field.type', 'description')
+      .first()
+      .then((res: { field: string | null }) => res?.field || 'No Description');
+    return description;
+  }
+
   async insertField(
     referenceUuid: string,
     type: string,

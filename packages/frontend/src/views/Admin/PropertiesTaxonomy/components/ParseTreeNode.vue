@@ -68,8 +68,7 @@
                 >NO NAME</i
               >
               <property-info
-                :valueDescription="child.valueName"
-                :variableDescription="child.variableName"
+                :description="child.description"
                 :valueUuid="child.valueUuid"
                 :variableUuid="child.variableUuid"
               ></property-info>

@@ -8,15 +8,7 @@
     <v-card class="pa-3">
       Coming soon
       <br />
-      <span
-        >Variable Description: {{ variableDescription }}
-        <v-icon>mdi-pencil</v-icon></span
-      >
-      <br />
-      <span
-        >Value Description: {{ valueDescription }}
-        <v-icon>mdi-pencil</v-icon></span
-      >
+      <span>Description: {{ description }} <v-icon>mdi-pencil</v-icon></span>
     </v-card>
   </v-menu>
 </template>
@@ -33,10 +25,7 @@ export default defineComponent({
     valueUuid: {
       type: String,
     },
-    variableDescription: {
-      type: String,
-    },
-    valueDescription: {
+    description: {
       type: String,
     },
   },
