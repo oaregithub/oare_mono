@@ -78,9 +78,10 @@
                           `${word.name} -- ${
                             new Set(
                               searchItems[index - 1].uuids.filter(uuid => {
+                                const stringUuid = `${uuid}`;
                                 return word.forms
                                   .map(form => form.uuid)
-                                  .includes(uuid);
+                                  .includes(stringUuid);
                               })
                             ).size
                           }/${word.forms.length} form${
@@ -226,7 +227,6 @@ import {
   onMounted,
   watch,
   computed,
-  ComputedRef,
 } from '@vue/composition-api';
 import {
   WordFormAutocompleteDisplay,
