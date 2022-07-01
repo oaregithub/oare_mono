@@ -67,6 +67,11 @@
                 "
                 >NO NAME</i
               >
+              <property-info
+                :description="child.description"
+                :valueUuid="child.valueUuid"
+                :variableUuid="child.variableUuid"
+              ></property-info>
               <b v-if="open && child.custom === 1" class="text--disabled ml-7"
                 ><br />Only one selection permitted</b
               >
@@ -178,6 +183,7 @@ import {
   computed,
   onMounted,
 } from '@vue/composition-api';
+import PropertyInfo from './PropertyInfo.vue';
 import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -188,6 +194,9 @@ export interface ParseTreePropertyEvent {
 
 export default defineComponent({
   name: 'ParseTreeNode',
+  components: {
+    PropertyInfo,
+  },
   props: {
     node: {
       type: Object as PropType<TaxonomyTree>,

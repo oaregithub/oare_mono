@@ -163,6 +163,7 @@ export interface TaxonomyTree {
   children: TaxonomyTree[] | null;
   custom: number | null;
   role: string | null;
+  description: string | null;
 }
 
 export interface ParseTreeProperty {
