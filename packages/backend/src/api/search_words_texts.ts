@@ -21,17 +21,15 @@ router.route('/wordsAndForms').get(async (_req, res, next) => {
 
 router.route('/searchWordsInTexts').post(async (req, res, next) => {
   try {
-    const { uuids, numWordsBetween, page, rows, sequenced } = req.body;
+    const { items, page, rows, sequenced } = req.body;
     const payload: WordsInTextSearchPayload = {
-      uuids: JSON.parse(uuids),
-      numWordsBetween: JSON.parse(numWordsBetween),
+      items: JSON.parse(items),
       page: Number(page),
       rows: Number(rows),
       sequenced: sequenced === 'true',
     };
     const userUuid: string | null = req.user ? req.user.uuid : null;
     const TextDiscourseDao = sl.get('TextDiscourseDao');
-
     const response: WordsInTextsSearchResponse = await TextDiscourseDao.wordsInTextsSearch(
       payload,
       userUuid

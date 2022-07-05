@@ -42,17 +42,44 @@ export interface WordFormAutocompleteDisplay {
 }
 
 export interface WordsInTextSearchPayload {
-  uuids: string[][];
-  numWordsBetween: number[];
+  items: WordsInTextSearchPayloadItem[];
   page: number;
   rows: number;
   sequenced: boolean;
 }
 
+export interface WordsInTextSearchPayloadItem {
+  uuids: ParseTreePropertyUuids[][] | string[];
+  type: 'parse' | 'form';
+  numWordsBefore: number | null;
+}
+
 export interface WordsInTextSearchPayloadUnparsed {
-  uuids: string;
-  numWordsBetween: string;
+  items: string;
   page: string;
   rows: string;
   sequenced: string;
+}
+export interface ParsePropertiesDisplay {
+  display: string;
+  name: string;
+  partOfSpeech: string;
+  formUuids: string[];
+}
+
+export interface ParseTreePropertyUuids {
+  variable: {
+    uuid: string;
+    parentUuid: string;
+    variableName: string | null;
+    variableUuid: string | null;
+    level: number | null;
+  };
+  value: {
+    uuid: string;
+    parentUuid: string;
+    valueName: string | null;
+    valueUuid: string | null;
+    level: number | null;
+  };
 }
