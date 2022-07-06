@@ -38,13 +38,12 @@ router
       const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
 
       const response: BibliographyResponse[] = zoteroResponse.map(
-        (item, index) => {
-          return {
+        (item, index) =>
+          ({
             bib: item.bib,
             data: item.data,
             url: fileURL[index],
-          } as BibliographyResponse;
-        }
+          } as BibliographyResponse)
       );
 
       res.json(response);
