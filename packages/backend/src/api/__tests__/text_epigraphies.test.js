@@ -331,7 +331,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   };
 
   const mockBibliographyDao = {
-    queryBibliographyByUuids: jest.fn().mockResolvedValue([
+    getBibliographyByUuids: jest.fn().mockResolvedValue([
       {
         uuid: 'test-zotero-uuid-1',
         zot_item_key: 'test-zotero-key-1',

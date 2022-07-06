@@ -93,9 +93,7 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
       'b3938276-173b-11ec-8b77-024de1c1cc1d'
     );
 
-    const zoteroQuery = await BibliographyDao.queryBibliographyByUuids(
-      objUuids
-    );
+    const zoteroQuery = await BibliographyDao.getBibliographyByUuids(objUuids);
 
     const zoteroResponse = await BibliographyUtils.fetchZotero(
       zoteroQuery,

@@ -3,7 +3,7 @@ import { knexRead } from '@/connection';
 import { BibliographyItem } from '@oare/types';
 
 class BibliographyDao {
-  async queryBibliographyByUuids(
+  async getBibliographyByUuids(
     objUuids: string[],
     trx?: Knex.Transaction
   ): Promise<BibliographyItem[]> {
@@ -19,7 +19,7 @@ class BibliographyDao {
     return bibliographies;
   }
 
-  async queryBibliographyByPage(
+  async getBiblographies(
     { page = 1, rows = 25 },
     trx?: Knex.Transaction
   ): Promise<BibliographyItem[]> {

@@ -8,7 +8,7 @@ import permissionsRoute from '@/middlewares/permissionsRoute';
 const router = express.Router();
 
 router
-  .route('/bibliography/query')
+  .route('/bibliographies')
   .get(permissionsRoute('VIEW_BIBLIOGRAPHY'), async (req, res, next) => {
     try {
       const { filter: search, limit: rows, page } = extractPagination(
@@ -23,7 +23,7 @@ router
       const citationStyle = (req.query.style ||
         'chicago-author-date') as string;
 
-      const bibliographies = await BibliographyDao.queryBibliographyByPage({
+      const bibliographies = await BibliographyDao.getBiblographies({
         page,
         rows,
       });
@@ -33,23 +33,19 @@ router
         citationStyle
       );
 
-      const bibs = zoteroResponse
-        .filter(item => !!item.bib)
-        .map(item => item.bib!);
-
-      const datas = zoteroResponse
-        .filter(item => !!item.data)
-        .map(item => item.data!);
-
       const objUuids = bibliographies.map(item => item.uuid);
 
       const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
 
-      const response: BibliographyResponse = {
-        bibs,
-        datas,
-        fileURL,
-      };
+      const response: BibliographyResponse[] = zoteroResponse.map(
+        (item, index) => {
+          return {
+            bib: item.bib,
+            data: item.data,
+            url: fileURL[index],
+          } as BibliographyResponse;
+        }
+      );
 
       res.json(response);
     } catch (err) {

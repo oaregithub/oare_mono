@@ -3,11 +3,11 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-describe('GET /bibliography/query', () => {
-  const PATH = `${API_PATH}/bibliography/query`;
+describe('GET /bibliographies', () => {
+  const PATH = `${API_PATH}/bibliographies`;
 
   const mockBibliographyDao = {
-    queryBibliographyByPage: jest.fn().mockResolvedValue([
+    getBiblographies: jest.fn().mockResolvedValue([
       {
         uuid: 'bib-test-uuid',
       },
@@ -93,7 +93,7 @@ describe('GET /bibliography/query', () => {
   it('returns 500 on failed fetching bibliography', async () => {
     sl.set('BibliographyDao', {
       ...mockBibliographyDao,
-      queryBibliographyByPage: jest
+      getBiblographies: jest
         .fn()
         .mockRejectedValue('failed to retreive bibliography'),
     });

@@ -45,7 +45,7 @@ export interface ZoteroResponseData {
 }
 
 export interface BibliographyResponse {
-  bibs: string[];
-  datas: ZoteroResponseData[];
-  fileURL: string[];
+  bib: string;
+  data: ZoteroResponseData;
+  url: string;
 }
