@@ -33,15 +33,13 @@ describe('GET /bibliographies', () => {
       ]),
   };
 
-  const mockResponse = {
-    bibs: ['mock-bib-3'],
-    datas: [
-      {
-        title: 'Hello',
-      },
-    ],
-    fileURL: ['https://oare-unit-test.com/test-resource-link-def.pdf'],
-  };
+  const mockResponse = [
+    {
+      bib: 'mock-bib-3',
+      data: { title: 'Hello' },
+      url: 'https://oare-unit-test.com/test-resource-link-def.pdf',
+    },
+  ];
 
   const mockUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
