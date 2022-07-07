@@ -1,7 +1,7 @@
 export interface BibliographyItem {
   uuid: string;
-  zot_item_key: string;
-  short_cit: string;
+  zoteroKey: string;
+  citation: string;
 }
 
 export interface ZoteroResponse {

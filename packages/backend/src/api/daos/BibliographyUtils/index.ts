@@ -29,7 +29,8 @@ class BibliographyUtils {
 
   async fetchZotero(
     bibliographies: BibliographyItem[],
-    citationStyle: string
+    citationStyle: string,
+    toInclude: string
   ): Promise<ZoteroResponse[]> {
     const apiKey = await this.getZoteroAPIKEY();
 
@@ -41,7 +42,7 @@ class BibliographyUtils {
     const response = await Promise.all(
       bibliographies.map(async bibliography => {
         const resp = await fetch.default(
-          `https://api.zotero.org/groups/318265/items/${bibliography.zot_item_key}?format=json&include=citation&style=${citationStyle}`,
+          `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=${toInclude}&style=${citationStyle}`,
           {
             headers: {
               Authorization: `Bearer ${apiKey}`,

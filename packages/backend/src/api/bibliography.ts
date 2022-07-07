@@ -30,7 +30,8 @@ router
 
       const zoteroResponse = await BibliographyUtils.fetchZotero(
         bibliographies,
-        citationStyle
+        citationStyle,
+        'bib,data'
       );
 
       const objUuids = bibliographies.map(item => item.uuid);

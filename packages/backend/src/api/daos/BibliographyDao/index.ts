@@ -11,7 +11,7 @@ class BibliographyDao {
     const bibliographies: BibliographyItem[] = await Promise.all(
       objUuids.map(uuid =>
         k('bibliography')
-          .select('uuid', 'zot_item_key', 'short_cit')
+          .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
           .where('uuid', uuid)
           .first()
       )
@@ -25,8 +25,7 @@ class BibliographyDao {
   ): Promise<BibliographyItem[]> {
     const k = trx || knexRead();
     const bibliographies: BibliographyItem[] = await k('bibliography')
-      .select('uuid', 'zot_item_key')
-      .orderBy('id')
+      .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
       .limit(rows)
       .offset((page - 1) * rows);
     return bibliographies;

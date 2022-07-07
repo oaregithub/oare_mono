@@ -97,7 +97,8 @@ router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
 
     const zoteroResponse = await BibliographyUtils.fetchZotero(
       zoteroQuery,
-      citationStyle
+      citationStyle,
+      'citation'
     );
 
     const zoteroCitations: string[] = zoteroResponse

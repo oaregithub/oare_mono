@@ -102,7 +102,7 @@ class ResourceDao {
   async getFileURLByUuid(
     objUuids: string[],
     trx?: Knex.Transaction
-  ): Promise<string[]> {
+  ): Promise<(string | null)[]> {
     const k = trx || knexRead();
 
     const resourceRows: ResourceRow[] = await Promise.all(
@@ -119,13 +119,19 @@ class ResourceDao {
 
     const s3 = new AWS.S3();
 
-    const fileURL: string[] = await Promise.all(
+    console.log(resourceRows);
+
+    const fileURL: (string | null)[] = await Promise.all(
       resourceRows.map(key => {
-        const params = {
-          Bucket: key.container,
-          Key: key.link,
-        };
-        return s3.getSignedUrlPromise('getObject', params);
+        if (key) {
+          const params = {
+            Bucket: key.container,
+            Key: key.link,
+          };
+          return s3.getSignedUrlPromise('getObject', params);
+        } else {
+          return null;
+        }
       })
     );
 
