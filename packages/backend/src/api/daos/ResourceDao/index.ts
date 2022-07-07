@@ -129,9 +129,8 @@ class ResourceDao {
             Key: key.link,
           };
           return s3.getSignedUrlPromise('getObject', params);
-        } else {
-          return null;
         }
+        return null;
       })
     );
 
