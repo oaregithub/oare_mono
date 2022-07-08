@@ -3,11 +3,8 @@
     :headers="headers"
     :items="loading ? [] : texts"
     :loading="loading"
-    :options.sync="searchOptions"
-    :server-items-length="totalTexts"
-    :footer-props="{
-      'items-per-page-options': [10, 25, 50, 100],
-    }"
+    disable-pagination
+    hide-default-footer
   >
     <template v-slot:[`item.name`]="{ item }">
       <v-icon
@@ -163,18 +160,6 @@ export default defineComponent({
       type: Array as PropType<CollectionText[]>,
       required: true,
     },
-    totalTexts: {
-      type: Number,
-      required: true,
-    },
-    page: {
-      type: Number,
-      default: 1,
-    },
-    rows: {
-      type: Number,
-      default: 10,
-    },
     collectionUuid: {
       type: String,
       required: true,
@@ -221,11 +206,6 @@ export default defineComponent({
       },
     ]);
 
-    const searchOptions = ref({
-      page: props.page,
-      itemsPerPage: props.rows,
-    });
-
     const editText = ref<string>();
 
     const toggleTextInfo = (uuid: string, item: OriginalTextInfo) => {
@@ -270,32 +250,12 @@ export default defineComponent({
       }
     };
 
-    watch(
-      () => props.page,
-      () => (searchOptions.value.page = props.page)
-    );
-
-    watch(
-      () => searchOptions.value.page,
-      () => {
-        emit('update:page', searchOptions.value.page);
-      }
-    );
-
-    watch(
-      () => searchOptions.value.itemsPerPage,
-      () => {
-        emit('update:rows', searchOptions.value.itemsPerPage);
-      }
-    );
-
     const createEpigraphy = (textUuid: string) => {
       router.push(`/add_text_epigraphy/${props.collectionUuid}/${textUuid}`);
     };
 
     return {
       headers,
-      searchOptions,
       editText,
       toggleTextInfo,
       cancelEditTextInfo,

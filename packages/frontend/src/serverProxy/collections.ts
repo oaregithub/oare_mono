@@ -17,15 +17,9 @@ async function getAllCollections(): Promise<Collection[]> {
 /**
  * Returns the texts in a given collection
  */
-async function getCollectionTexts(
-  uuid: string,
-  pagination: Pagination
-): Promise<CollectionResponse> {
-  const { data: texts } = await axios.get(`/collections/${uuid}`, {
-    params: pagination,
-  });
-
-  return texts;
+async function getCollectionTexts(uuid: string): Promise<CollectionResponse> {
+  const { data } = await axios.get(`/collections/${uuid}`);
+  return data;
 }
 
 async function getCollectionInfo(uuid: string): Promise<CollectionInfo> {

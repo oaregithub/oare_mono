@@ -13,8 +13,13 @@ async function disableCache(): Promise<void> {
   await axios.patch('/cache/disable');
 }
 
+async function flushCache(): Promise<void> {
+  await axios.delete('/cache/flush');
+}
+
 export default {
   getCacheStatus,
   enableCache,
   disableCache,
+  flushCache,
 };

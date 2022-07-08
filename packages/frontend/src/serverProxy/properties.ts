@@ -1,11 +1,16 @@
-import { ParseTreeProperty } from '@oare/types';
+import { ParseTreeProperty, EditPropertiesPayload } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function editPropertiesByReferenceUuid(
   referenceUuid: string,
-  properties: ParseTreeProperty[]
+  properties: ParseTreeProperty[],
+  wordUuid?: string
 ): Promise<void> {
-  await axios.patch(`/properties/edit/${referenceUuid}`, { properties });
+  const payload: EditPropertiesPayload = {
+    properties,
+    wordUuid,
+  };
+  await axios.patch(`/properties/edit/${referenceUuid}`, payload);
 }
 
 export default {

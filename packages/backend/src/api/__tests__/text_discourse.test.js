@@ -187,6 +187,9 @@ describe('POST /text_discourse_parent', () => {
       .fn()
       .mockResolvedValue([{ name: 'INSERT_PARENT_DISCOURSE_ROWS' }]),
   };
+  const mockCache = {
+    clear: jest.fn(),
+  };
 
   const mockPayload = {
     textUuid: 'test-uuid',
@@ -246,6 +249,7 @@ describe('POST /text_discourse_parent', () => {
     sl.set('AliasDao', mockAliasDao);
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
@@ -313,6 +317,10 @@ describe('PATCH /text_discourse/:uuid', () => {
       .mockResolvedValue([{ name: 'EDIT_TRANSLATION' }]),
   };
 
+  const mockCache = {
+    clear: jest.fn(),
+  };
+
   const mockPayload = {
     spelling: 'a-na',
     occurrences: [
@@ -330,6 +338,7 @@ describe('PATCH /text_discourse/:uuid', () => {
     sl.set('UserDao', mockUserDao);
     sl.set('FieldDao', mockFieldDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);

@@ -112,7 +112,8 @@ export default defineComponent({
       try {
         await server.editPropertiesByReferenceUuid(
           props.form.uuid,
-          properties.value
+          properties.value,
+          props.word ? props.word.uuid : undefined
         );
         actions.showSnackbar(
           `Successfully updated form parse info for ${props.form.form}`
