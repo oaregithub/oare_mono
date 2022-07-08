@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use(
       return axiosInstance(error.config);
     }
 
-    if (error.response.status === 403) {
+    if (error.response && error.response.status === 403) {
       router.replace({ name: '403' });
     }
 

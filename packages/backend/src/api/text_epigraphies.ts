@@ -13,6 +13,7 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
+  ZoteroData,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
@@ -131,24 +132,37 @@ router
 
         const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
 
-        const citationStyle = 'chicago-author-date';
-
-        const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
+        const bibliographyUuids = await ItemPropertiesDao.getObjectUuidsByReferenceAndVariable(
           textUuid,
           'b3938276-173b-11ec-8b77-024de1c1cc1d'
         );
 
-        const zoteroCitations = await BibliographyDao.getZoteroCitationsByUuid(
-          objUuids,
-          citationStyle
+        const zoteroCitations = await Promise.all(
+          bibliographyUuids.map(uuid =>
+            BibliographyDao.getZoteroCitationsByUuid(
+              uuid,
+              'chicago-author-date'
+            )
+          )
         );
 
-        const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
+        const fileURLs = await Promise.all(
+          bibliographyUuids.map(uuid =>
+            ResourceDao.getPDFUrlByBibliographyUuid(uuid)
+          )
+        );
 
-        const zoteroData = zoteroCitations.map((cit, idx) => ({
+        const rawZoteroData = zoteroCitations.map((cit, idx) => ({
           citation: cit,
-          link: fileURL[idx],
+          link: fileURLs[idx],
         }));
+
+        const zoteroData: ZoteroData[] = rawZoteroData
+          .filter(item => item.citation !== null && item.link !== null)
+          .map(item => ({
+            citation: item.citation!,
+            link: item.link!,
+          }));
 
         const epigraphy: EpigraphyResponse = {
           text,

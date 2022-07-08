@@ -317,7 +317,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
 
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
-    getVariableObjectByReference: jest
+    getObjectUuidsByReferenceAndVariable: jest
       .fn()
       .mockResolvedValue(['test-variable-object-uuid']),
   };
@@ -328,17 +328,17 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   };
 
   const mockResourceDao = {
-    getFileURLByUuid: jest
+    getPDFUrlByBibliographyUuid: jest
       .fn()
-      .mockResolvedValue([
-        'https://oare-unit-test.com/test-resource-link-abc.pdf',
-      ]),
+      .mockResolvedValue(
+        'https://oare-unit-test.com/test-resource-link-abc.pdf'
+      ),
   };
 
   const mockBibliographyDao = {
     getZoteroCitationsByUuid: jest
       .fn()
-      .mockResolvedValue(['test-zotero-citation-2']),
+      .mockResolvedValue('test-zotero-citation-2'),
   };
 
   const mockCache = {

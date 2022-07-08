@@ -158,8 +158,10 @@ export default defineComponent({
       try {
         if (enable) {
           await server.enableCache();
+          actions.showSnackbar('Cache successfully enabled.');
         } else {
           await server.disableCache();
+          actions.showSnackbar('Cache successfully disabled.');
         }
       } catch (err) {
         actions.showErrorSnackbar(
@@ -172,6 +174,7 @@ export default defineComponent({
     const flushCache = async () => {
       try {
         await server.flushCache();
+        actions.showSnackbar('Cache flushed successfully');
       } catch (err) {
         actions.showErrorSnackbar(
           'Error flushing cache. Please try again.',
@@ -187,17 +190,20 @@ export default defineComponent({
         if (flush) {
           populateFlushLoading.value = true;
           await server.flushCache();
+          actions.showSnackbar('Cache flushed successfully.');
         } else {
           populateLoading.value = true;
         }
 
         const collections = await server.getAllCollections();
+        actions.showSnackbar('Collections Lists Cached');
 
         const textsByCollectionPromises = await Promise.allSettled(
           collections.map(collection =>
             server.getCollectionTexts(collection.uuid)
           )
         );
+        actions.showSnackbar('Collection Texts Lists Cached');
         const textsByCollection = textsByCollectionPromises
           .filter(text => text.status === 'fulfilled')
           .map(
@@ -210,21 +216,25 @@ export default defineComponent({
         await Promise.allSettled(
           textUuids.map(textUuid => server.getEpigraphicInfo(textUuid))
         );
+        actions.showSnackbar('Text Epigraphic Info Cached');
 
         if (process.env.NODE_ENV === 'production') {
           await Promise.allSettled(
             textUuids.map(textUuid => server.getTextSourceFile(textUuid))
           );
+          actions.showSnackbar('Text Source Files Cached');
         }
 
         await Promise.allSettled(
           ['home', 'about'].map(page => server.getPageContent(page))
         );
+        actions.showSnackbar('Page Content Cached');
 
         const letters = Object.keys(AkkadianLetterGroupsUpper);
         const wordsPromises = await Promise.allSettled(
           letters.map(letter => server.getDictionaryWords(letter))
         );
+        actions.showSnackbar('Words Cached');
         const words = wordsPromises
           .filter(word => word.status === 'fulfilled')
           .map(word => (word as PromiseFulfilledResult<Word[]>).value)
@@ -233,6 +243,7 @@ export default defineComponent({
         const namesPromises = await Promise.allSettled(
           letters.map(letter => server.getNames(letter))
         );
+        actions.showSnackbar('Names Cached');
         const names = namesPromises
           .filter(word => word.status === 'fulfilled')
           .map(word => (word as PromiseFulfilledResult<Word[]>).value)
@@ -241,6 +252,7 @@ export default defineComponent({
         const placesPromises = await Promise.allSettled(
           letters.map(letter => server.getPlaces(letter))
         );
+        actions.showSnackbar('Places Cached');
         const places = placesPromises
           .filter(word => word.status === 'fulfilled')
           .map(word => (word as PromiseFulfilledResult<Word[]>).value)
@@ -251,8 +263,10 @@ export default defineComponent({
         await Promise.allSettled(
           dictionaryItems.map(word => server.getDictionaryInfo(word.uuid))
         );
+        actions.showSnackbar('Dictionary Entries Cached');
 
         await server.getTaxonomyTree();
+        actions.showSnackbar('Taxonomy Tree Cached');
       } catch (err) {
         actions.showErrorSnackbar(
           'Error populating cache. Please try again.',
