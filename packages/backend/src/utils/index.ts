@@ -171,6 +171,7 @@ export const getZoteroAPIKEY = async (): Promise<string> => {
     ).Body;
     if (response) {
       apiKey = JSON.parse(response as string).authKey;
+      process.env.ZOTERO_API_KEY = apiKey;
     }
   }
 
