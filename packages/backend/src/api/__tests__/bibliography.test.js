@@ -53,12 +53,24 @@ describe('GET /bibliographies', () => {
     ]),
   };
 
+  const mockCollectionTextUtils = {
+    canViewText: jest.fn().mockResolvedValue(true),
+    canEditText: jest.fn().mockResolvedValue(false),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+  };
+
   const setup = () => {
     sl.set('BibliographyDao', mockBibliographyDao);
     sl.set('BibliographyUtils', mockBibliographyUtils);
     sl.set('ResourceDao', mockResourceDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('CollectionTextUtils', mockCollectionTextUtils);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
