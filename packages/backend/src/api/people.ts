@@ -33,7 +33,6 @@ router
           textOccurrenceDistinctCount: null,
         };
       });
-      cache.insert({ req }, resultPeople);
       res.json(resultPeople);
     } catch (err) {
       next(new HttpInternalError(err as string));

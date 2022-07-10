@@ -5,6 +5,7 @@ import {
   ParseTreeProperty,
   DiscourseUnit,
   InsertParentDiscourseRowPayload,
+  EditTranslationPayload,
 } from '@oare/types';
 
 async function insertDiscourseRow(
@@ -39,20 +40,26 @@ async function getDiscourseProperties(
 
 async function updateDiscourseTranslation(
   uuid: string,
-  newTranslation: string
+  newTranslation: string,
+  textUuid: string
 ) {
-  await axios.patch(`/text_discourse/${uuid}`, {
+  const payload: EditTranslationPayload = {
     newTranslation,
-  });
+    textUuid,
+  };
+  await axios.patch(`/text_discourse/${uuid}`, payload);
 }
 
 async function createDiscourseTranslation(
   uuid: string,
-  newTranslation: string
+  newTranslation: string,
+  textUuid: string
 ) {
-  await axios.post(`/text_discourse/${uuid}`, {
+  const payload: EditTranslationPayload = {
     newTranslation,
-  });
+    textUuid,
+  };
+  await axios.post(`/text_discourse/${uuid}`, payload);
 }
 
 async function insertParentDiscourseRow(

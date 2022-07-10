@@ -72,7 +72,8 @@ describe('DiscourseReading test', () => {
     await flushPromises();
     expect(server.updateDiscourseTranslation).toHaveBeenCalledWith(
       'uuid1',
-      'new translation'
+      'new translation',
+      'test-uuid'
     );
   });
 

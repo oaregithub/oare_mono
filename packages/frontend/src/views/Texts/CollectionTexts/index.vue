@@ -22,12 +22,7 @@
         >Add Text (BETA)</v-btn
       >
       <TextsTable
-        :page="Number(page)"
-        @update:page="page = `${$event}`"
-        :rows="Number(rows)"
-        @update:rows="rows = `${$event}`"
-        :totalTexts="totalTexts"
-        :texts="texts"
+        :texts="visibleTexts"
         :loading="textsLoading"
         :collectionUuid="collectionUuid"
       />
@@ -92,11 +87,9 @@ export default defineComponent({
       },
     ]);
     const texts: Ref<CollectionText[]> = ref([]);
+    const visibleTexts: Ref<CollectionText[]> = ref([]);
     const textsLoading = ref(false);
-    const totalTexts = ref(0);
 
-    const page = useQueryParam('page', '1', false);
-    const rows = useQueryParam('rows', '10', true);
     const search = useQueryParam('query', '', true);
 
     const addText = () => {
@@ -113,18 +106,10 @@ export default defineComponent({
       }
       textsLoading.value = true;
       try {
-        const collectionResp = await server.getCollectionTexts(collectionUuid, {
-          page: Number(page.value),
-          limit: Number(rows.value),
-          filter: search.value,
-        });
-        totalTexts.value = collectionResp.totalTexts;
+        const collectionResp = await server.getCollectionTexts(collectionUuid);
         texts.value = collectionResp.texts;
+        filterTexts();
       } catch (err) {
-        if ((err as any).response && (err as any).response.status === 403) {
-          router.replace({ name: '403' });
-          return;
-        }
         actions.showErrorSnackbar(
           'Error loading collection texts. Please try again.',
           err as Error
@@ -140,9 +125,10 @@ export default defineComponent({
         collectionName.value = (
           await server.getCollectionInfo(collectionUuid)
         ).name;
+        await getCollectionTexts();
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading collection name. Please try again.',
+          'Error loading collection texts. Please try again.',
           err as Error
         );
       } finally {
@@ -150,37 +136,37 @@ export default defineComponent({
       }
     });
 
-    watch(
-      [page, rows],
-      () => {
-        getCollectionTexts();
-      },
-      { immediate: true }
-    );
+    const filterTexts = () => {
+      visibleTexts.value = texts.value.filter(text => {
+        return (
+          text.name.toLowerCase().includes(search.value.toLowerCase()) ||
+          `${text.excavationPrefix || ''} ${text.excavationNumber || ''}`
+            .toLowerCase()
+            .includes(search.value.toLowerCase()) ||
+          `${text.museumPrefix || ''} ${text.museumNumber || ''}`
+            .toLowerCase()
+            .includes(search.value.toLowerCase()) ||
+          `${text.publicationNumber || ''} ${text.publicationNumber || ''}`
+            .toLowerCase()
+            .includes(search.value.toLowerCase())
+        );
+      });
+    };
 
-    watch(
-      search,
-      _.debounce(function () {
-        page.value = '1';
-        getCollectionTexts();
-      }, 500),
-      {
-        immediate: false,
-      }
-    );
+    watch(search, _.debounce(filterTexts, 100), {
+      immediate: false,
+    });
 
     return {
       collectionName,
       loading,
       texts,
       textsLoading,
-      totalTexts,
       search,
       breadcrumbItems,
-      page,
-      rows,
       addText,
       canAddNewTexts,
+      visibleTexts,
     };
   },
 });

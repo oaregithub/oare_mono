@@ -28,33 +28,31 @@ class BibliographyUtils {
   }
 
   async fetchZotero(
-    bibliographies: BibliographyItem[],
+    bibliography: BibliographyItem,
     citationStyle: string,
     toInclude: string
-  ): Promise<ZoteroResponse[]> {
-    const apiKey = await this.getZoteroAPIKEY();
+  ): Promise<ZoteroResponse | null> {
+    const zoteroAPIKey = await this.getZoteroAPIKEY();
 
     const fetch = (await dynamicImport(
       'node-fetch',
       module
     )) as typeof import('node-fetch');
 
-    const response = await Promise.all(
-      bibliographies.map(async bibliography => {
-        const resp = await fetch.default(
-          `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=${toInclude}&style=${citationStyle}`,
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-            },
-          }
-        );
-        const json = (await resp.json()) as ZoteroResponse;
-        return json;
-      })
+    const zoteroResponse = await fetch.default(
+      `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=${toInclude}&style=${citationStyle}`,
+      {
+        headers: {
+          Authorization: `Bearer ${zoteroAPIKey}`,
+        },
+      }
     );
 
-    return response;
+    const zoteroJSON = zoteroResponse.ok
+      ? ((await zoteroResponse.json()) as ZoteroResponse)
+      : null;
+
+    return zoteroJSON;
   }
 }
 

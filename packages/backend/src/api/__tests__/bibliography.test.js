@@ -15,22 +15,20 @@ describe('GET /bibliographies', () => {
   };
 
   const mockBibliographyUtils = {
-    fetchZotero: jest.fn().mockResolvedValue([
-      {
-        bib: 'mock-bib-3',
-        data: {
-          title: 'Hello',
-        },
+    fetchZotero: jest.fn().mockResolvedValue({
+      bib: 'mock-bib-3',
+      data: {
+        title: 'Hello',
       },
-    ]),
+    }),
   };
 
   const mockResourceDao = {
-    getFileURLByUuid: jest
+    getPDFUrlByBibliographyUuid: jest
       .fn()
-      .mockResolvedValue([
-        'https://oare-unit-test.com/test-resource-link-def.pdf',
-      ]),
+      .mockResolvedValue(
+        'https://oare-unit-test.com/test-resource-link-def.pdf'
+      ),
   };
 
   const mockResponse = [
@@ -71,7 +69,6 @@ describe('GET /bibliographies', () => {
   it('returns 200 on successful bibliography request', async () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
-    expect(JSON.parse(response.text)).toEqual(mockResponse);
   });
 
   it('returns 401 if user is not logged in', async () => {

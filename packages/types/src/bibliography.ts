@@ -45,7 +45,7 @@ export interface ZoteroResponseData {
 }
 
 export interface BibliographyResponse {
-  bib: string;
-  data: ZoteroResponseData;
-  url: string;
+  bib: string | null;
+  data: ZoteroResponseData | null;
+  url: string | null;
 }

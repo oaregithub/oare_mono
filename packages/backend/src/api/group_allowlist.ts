@@ -2,26 +2,12 @@ import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
-import { API_PATH } from '@/setupRoutes';
 import {
   DenylistAllowlistPayload,
   GetDenylistAllowlistParameters,
   DeleteDenylistAllowlistParameters,
   DenylistAllowlistItem,
 } from '@oare/types';
-
-function clearCache() {
-  const cache = sl.get('cache');
-  cache.clear(
-    {
-      req: {
-        originalUrl: `${API_PATH}/collections`,
-        method: 'GET',
-      },
-    },
-    { exact: false }
-  );
-}
 
 const router = express.Router();
 
@@ -123,7 +109,6 @@ router
       }
 
       await GroupAllowlistDao.addItemsToAllowlist(groupId, uuids, type);
-      clearCache();
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -159,7 +144,6 @@ router
       }
 
       await GroupAllowlistDao.removeItemFromAllowlist(groupId, uuid);
-      clearCache();
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

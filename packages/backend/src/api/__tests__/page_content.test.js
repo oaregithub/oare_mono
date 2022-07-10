@@ -12,6 +12,7 @@ describe('GET /page_content/:routeName', () => {
   };
 
   const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
     insert: jest.fn(),
     clear: jest.fn(),
   };

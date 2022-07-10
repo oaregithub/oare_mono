@@ -232,20 +232,28 @@ export default defineComponent({
     const editLoading = ref(false);
     const discourseEdit = async (discourse: DiscourseUnit) => {
       try {
+        if (!textUuid) {
+          throw new Error('No text uuid');
+        }
         if (discourse.translation) {
           await server.updateDiscourseTranslation(
             discourse.uuid,
-            inputTranslation.value
+            inputTranslation.value,
+            textUuid
           );
         } else {
           await server.createDiscourseTranslation(
             discourse.uuid,
-            inputTranslation.value
+            inputTranslation.value,
+            textUuid
           );
         }
         editLoading.value = true;
       } catch (err) {
-        actions.showErrorSnackbar('Failed to update database', err as Error);
+        actions.showErrorSnackbar(
+          'Failed to update translations. Please try again.',
+          err as Error
+        );
       } finally {
         discourse.translation = inputTranslation.value;
         editingUuid.value = '';
