@@ -38,20 +38,18 @@ router
         });
 
         const zoteroResponse = await Promise.all(
-          bibliographies.map(
-            async bibliography =>
-              await BibliographyUtils.fetchZotero(
-                bibliography,
-                citationStyle,
-                'bib,data'
-              )
+          bibliographies.map(async bibliography =>
+            BibliographyUtils.fetchZotero(
+              bibliography,
+              citationStyle,
+              'bib,data'
+            )
           )
         );
 
         const fileURL = await Promise.all(
-          bibliographies.map(
-            async item =>
-              await ResourceDao.getPDFUrlByBibliographyUuid(item.uuid)
+          bibliographies.map(async item =>
+            ResourceDao.getPDFUrlByBibliographyUuid(item.uuid)
           )
         );
 
