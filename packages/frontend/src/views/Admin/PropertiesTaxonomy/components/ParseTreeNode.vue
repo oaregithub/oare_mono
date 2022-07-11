@@ -71,12 +71,31 @@
                 >NO NAME</i
               >
               <property-info
-                :description="child.description"
-                :valueUuid="child.valueUuid"
-                :variableUuid="child.variableUuid"
+                v-if="(child.variableUuid || child.valueUuid) && showFieldInfo"
+                :name="child.variableName || child.valueName || child.aliasName"
+                :description="child.fieldInfo.field"
+                :primacy="child.fieldInfo.primacy"
+                :fieldUuid="child.fieldInfo.uuid"
+                :language="
+                  child.fieldInfo.language === 'default'
+                    ? 'English'
+                    : child.fieldInfo.language
+                "
+                :type="child.variableType"
+                :tableReference="child.variableTableReference"
+                @update:description="child.fieldInfo.field = $event"
+                @update:primacy="child.fieldInfo.primacy = $event"
+                @update:language="child.fieldInfo.language = $event"
+                @update:fieldUuid="child.fieldInfo.uuid = $event"
+                :variableOrValueUuid="child.variableUuid || child.valueUuid"
               ></property-info>
               <b
-                v-if="open && child.custom === 1 && !selectMultiple"
+                v-if="
+                  open &&
+                  child.custom === 1 &&
+                  !selectMultiple &&
+                  allowSelections
+                "
                 class="text--disabled ml-7"
                 ><br />Only one selection permitted</b
               >
@@ -169,6 +188,7 @@
           :showUUID="showUUID"
           :hideActions="hideActions"
           :selectMultiple="selectMultiple"
+          :showFieldInfo="showFieldInfo"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
           @update:selection-display="
@@ -234,6 +254,10 @@ export default defineComponent({
       default: false,
     },
     selectMultiple: {
+      type: Boolean,
+      default: false,
+    },
+    showFieldInfo: {
       type: Boolean,
       default: false,
     },

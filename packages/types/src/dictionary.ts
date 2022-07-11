@@ -157,13 +157,20 @@ export interface TaxonomyTree {
   aliasName: string | null;
   varAbbreviation: string | null;
   valAbbreviation: string | null;
+  variableType: string | null;
+  variableTableReference: string | null;
   variableUuid: string | null;
   valueUuid: string | null;
   level: number | null;
   children: TaxonomyTree[] | null;
   custom: number | null;
   role: string | null;
-  description: string | null;
+  fieldInfo: {
+    uuid: string | null;
+    field: string | null;
+    primacy: number | null;
+    language: string | null;
+  };
 }
 
 export interface ParseTreeProperty {

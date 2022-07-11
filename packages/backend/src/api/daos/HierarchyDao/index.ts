@@ -206,15 +206,26 @@ class HierarchyDao {
       const results = await Promise.all(
         rows.map(async row => {
           const names = await AliasDao.getAliasNames(row.objectUuid, trx);
+          const fieldRow: {
+            uuid: string | null;
+            field: string | null;
+            primacy: number | null;
+            language: string | null;
+          } = await FieldDao.getFieldInfoByReferenceAndType(
+            row.variableUuid || row.valueUuid
+          );
 
           return {
             ...row,
             aliasName: names[0] || null,
             level,
             children: await this.getChildren(row.uuid, level || 0, trx),
-            description: await FieldDao.getPropertyDescription(
-              row.variableUuid || row.valueUuid
-            ),
+            fieldInfo: {
+              field: fieldRow?.field,
+              uuid: fieldRow?.uuid,
+              primacy: fieldRow?.primacy,
+              language: fieldRow?.language,
+            },
           };
         })
       );
@@ -233,15 +244,24 @@ class HierarchyDao {
       .first();
 
     const names = await AliasDao.getAliasNames(topNode.objectUuid, trx);
-
+    const fieldRow: {
+      uuid: string | null;
+      field: string | null;
+      primacy: number | null;
+      language: string | null;
+    } = await FieldDao.getFieldInfoByReferenceAndType(
+      topNode.variableUuid || topNode.valueUuid
+    );
     const tree = {
       ...topNode,
       aliasName: names[0] || null,
       children: await this.getChildren(topNode.uuid, null, trx),
-      description: await FieldDao.getPropertyDescription(
-        topNode.variableUuid || topNode.valueUuid,
-        trx
-      ),
+      fieldInfo: {
+        field: fieldRow?.field,
+        uuid: fieldRow?.uuid,
+        primacy: fieldRow?.primacy,
+        language: fieldRow?.language,
+      },
     };
     return tree;
   }
