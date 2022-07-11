@@ -173,7 +173,7 @@ class ItemPropertiesDao {
     }
   }
 
-  async getVariableObjectByReference(
+  async getObjectUuidsByReferenceAndVariable(
     referenceUuid: string,
     variableUuid: string,
     trx?: Knex.Transaction

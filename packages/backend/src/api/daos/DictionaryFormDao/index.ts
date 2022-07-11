@@ -25,7 +25,6 @@ class DictionaryFormDao {
 
   async getWordForms(
     wordUuid: string,
-    isAdmin: boolean,
     htmlSpelling = false,
     trx?: Knex.Transaction
   ): Promise<DictionaryForm[]> {
@@ -38,12 +37,7 @@ class DictionaryFormDao {
 
     const formSpellings = await Promise.all(
       forms.map(f =>
-        DictionarySpellingDao.getFormSpellings(
-          f.uuid,
-          isAdmin,
-          htmlSpelling,
-          trx
-        )
+        DictionarySpellingDao.getFormSpellings(f.uuid, htmlSpelling, trx)
       )
     );
 
@@ -59,7 +53,6 @@ class DictionaryFormDao {
         properties: formProperties[i],
         spellings: formSpellings[i],
       }))
-      .filter(form => (isAdmin ? form : form.spellings.length > 0))
       .sort((a, b) => a.form.localeCompare(b.form));
   }
 

@@ -541,16 +541,10 @@ export default defineComponent({
         }
         zoteroDataList.value = textInfo.value.zoteroData;
       } catch (err) {
-        if ((err as any).response) {
-          if ((err as any).response.status === 403) {
-            router.replace({ name: '403' });
-          }
-        } else {
-          actions.showErrorSnackbar(
-            'Error updating text information. Please try again.',
-            err as Error
-          );
-        }
+        actions.showErrorSnackbar(
+          'Error updating text information. Please try again.',
+          err as Error
+        );
       } finally {
         loading.value = false;
       }

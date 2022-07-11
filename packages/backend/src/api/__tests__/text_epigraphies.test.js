@@ -99,10 +99,15 @@ describe('PATCH /text_epigraphies/transliteration', () => {
     ]),
   };
 
+  const mockCache = {
+    clear: jest.fn(),
+  };
+
   const setup = () => {
     sl.set('TextDao', mockTextDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('cache', mockCache);
   };
 
   const sendRequest = () =>
@@ -312,7 +317,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
 
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
-    getVariableObjectByReference: jest
+    getObjectUuidsByReferenceAndVariable: jest
       .fn()
       .mockResolvedValue(['test-variable-object-uuid']),
   };
@@ -323,17 +328,22 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   };
 
   const mockResourceDao = {
-    getFileURLByUuid: jest
+    getPDFUrlByBibliographyUuid: jest
       .fn()
-      .mockResolvedValue([
-        'https://oare-unit-test.com/test-resource-link-abc.pdf',
-      ]),
+      .mockResolvedValue(
+        'https://oare-unit-test.com/test-resource-link-abc.pdf'
+      ),
   };
 
   const mockBibliographyDao = {
     getZoteroCitationsByUuid: jest
       .fn()
-      .mockResolvedValue(['test-zotero-citation-2']),
+      .mockResolvedValue('test-zotero-citation-2'),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
   };
 
   const setup = () => {
@@ -346,6 +356,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
     sl.set('ResourceDao', mockResourceDao);
     sl.set('BibliographyDao', mockBibliographyDao);
+    sl.set('cache', mockCache);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -616,6 +627,10 @@ describe('POST /text_epigraphies/create', () => {
     }),
   };
 
+  const mockCache = {
+    clear: jest.fn(),
+  };
+
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('TextDao', mockTextDao);
@@ -628,6 +643,7 @@ describe('POST /text_epigraphies/create', () => {
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
     sl.set('TreeDao', mockTreeDao);
     sl.set('utils', mockUtils);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
@@ -718,6 +734,14 @@ describe('PATCH /text_epigraphies/edit_text_info', () => {
     publicationNumber: 'f',
   };
 
+  const mockCollectionDao = {
+    getTextCollectionUuid: jest.fn().mockResolvedValue('test-uuid'),
+  };
+
+  const mockCache = {
+    clear: jest.fn(),
+  };
+
   const mockTextDao = {
     updateTextInfo: jest.fn().mockResolvedValue(),
   };
@@ -732,7 +756,9 @@ describe('PATCH /text_epigraphies/edit_text_info', () => {
 
   const setup = () => {
     sl.set('TextDao', mockTextDao);
+    sl.set('CollectionDao', mockCollectionDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);

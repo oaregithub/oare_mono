@@ -12,8 +12,8 @@ const router = express.Router();
 router.route('/wordsAndForms').get(async (_req, res, next) => {
   try {
     const DictionaryWordDao = sl.get('DictionaryWordDao');
-    const wordForms: WordFormAutocompleteDisplay[] = await DictionaryWordDao.getWordsAndFormsForWordsInTexts();
-    res.json(wordForms);
+    const results: WordFormAutocompleteDisplay[] = await DictionaryWordDao.getWordsAndFormsForWordsInTexts();
+    res.json(results);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

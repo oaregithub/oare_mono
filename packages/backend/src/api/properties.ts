@@ -1,5 +1,5 @@
 import express from 'express';
-import { InsertItemPropertyRow, ParseTreeProperty } from '@oare/types';
+import { InsertItemPropertyRow, EditPropertiesPayload } from '@oare/types';
 import { convertParsePropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
@@ -13,9 +13,11 @@ router
     try {
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
       const utils = sl.get('utils');
+      const cache = sl.get('cache');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
 
       const { referenceUuid } = req.params;
-      const { properties }: { properties: ParseTreeProperty[] } = req.body;
+      const { properties, wordUuid }: EditPropertiesPayload = req.body;
 
       await utils.createTransaction(async trx => {
         await ItemPropertiesDao.deletePropertiesByReferenceUuid(
@@ -42,6 +44,20 @@ router
           );
         }
       });
+
+      if (wordUuid) {
+        const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+          wordUuid
+        );
+
+        const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+          dictionaryRow.word,
+          dictionaryRow.type
+        );
+
+        await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+        await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
+      }
 
       res.status(204).end();
     } catch (err) {
