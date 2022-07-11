@@ -34,7 +34,7 @@
         <span class="mt-6">{{ idx + 1 }}</span>
         <v-col cols="12" class="mb-n4">
           <v-text-field
-            v-model="localTranslations[idx].translation"
+            v-model="localTranslations[idx].val"
             outlined
             :disabled="isLoading || !canUpdateTranslations"
             class="test-translation"
@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts">
-import { DictionaryWordTranslation } from '@oare/types';
+import { DictionaryWordLemma, DictionaryWordTranslation } from '@oare/types';
 import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import _ from 'lodash';
@@ -100,7 +100,13 @@ export default defineComponent({
       required: true,
     },
     translations: {
-      type: Array as PropType<DictionaryWordTranslation[]>,
+      type: Array as PropType<
+        DictionaryWordTranslation[] | DictionaryWordLemma[]
+      >,
+      required: true,
+    },
+    fieldType: {
+      type: String,
       required: true,
     },
   },
@@ -119,11 +125,7 @@ export default defineComponent({
     const closeEditor = () => emit('close-editor');
 
     const saveEdits = async () => {
-      if (
-        localTranslations.value.some(
-          ({ translation }) => translation.trim() === ''
-        )
-      ) {
+      if (localTranslations.value.some(({ val }) => val.trim() === '')) {
         actions.showErrorSnackbar(
           'One or more translations are blank. Either provide a translation or remove the blank fields.'
         );
@@ -134,6 +136,7 @@ export default defineComponent({
         isLoading.value = true;
         await server.editTranslations(props.wordUuid, {
           translations: localTranslations.value,
+          fieldType: props.fieldType,
         });
         actions.showSnackbar('Successfully updated translations');
         emit('update:translations', localTranslations.value);
@@ -149,9 +152,9 @@ export default defineComponent({
     };
 
     const moveTranslation = (oldIndex: number, newIndex: number) => {
-      const updatedTranslations: DictionaryWordTranslation[] = [
-        ...localTranslations.value,
-      ];
+      const updatedTranslations:
+        | DictionaryWordTranslation[]
+        | DictionaryWordLemma[] = [...localTranslations.value];
 
       const temp = updatedTranslations[oldIndex];
       updatedTranslations[oldIndex] = updatedTranslations[newIndex];
@@ -161,11 +164,13 @@ export default defineComponent({
     };
 
     const addTranslation = () => {
-      const updatedTranslations: DictionaryWordTranslation[] = [
+      const updatedTranslations:
+        | DictionaryWordTranslation[]
+        | DictionaryWordLemma[] = [
         ...localTranslations.value,
         {
           uuid: '',
-          translation: '',
+          val: '',
         },
       ];
       localTranslations.value = updatedTranslations;

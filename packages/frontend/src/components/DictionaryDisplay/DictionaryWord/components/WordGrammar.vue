@@ -1,84 +1,161 @@
 <template>
-  <div class="d-flex">
-    <v-tooltip
-      bottom
-      open-delay="800"
-      :key="`${isEditingTranslations}-lemma-properties`"
-    >
-      <template #activator="{ on, attrs }">
-        <v-btn
-          v-if="
-            allowEditing && canEditLemmaProperties && !isEditingTranslations
-          "
-          icon
-          class="test-property-pencil edit-button mt-n1 mr-1"
-          @click="editLemmaPropertiesDialog = true"
-          small
-          v-bind="attrs"
-          v-on="on"
-        >
-          <v-icon size="20">mdi-pencil</v-icon>
-        </v-btn>
-      </template>
-      <span>Edit Lemma Properties</span>
-    </v-tooltip>
-    <div v-if="partsOfSpeech.length > 0 && !isEditingTranslations" class="mr-1">
-      {{ partsOfSpeechString }}
-    </div>
-    <div
-      v-if="verbalThematicVowelTypes.length > 0 && !isEditingTranslations"
-      class="mr-1"
-    >
-      ({{ verbalThematicVowelTypesString }})
-    </div>
-    <v-tooltip
-      bottom
-      open-delay="800"
-      :key="`${isEditingTranslations}-translations`"
-    >
-      <template #activator="{ on, attrs }">
-        <v-btn
-          v-if="allowEditing && canEditTranslations && !isEditingTranslations"
-          icon
-          class="mt-n1 mr-1"
-          @click="isEditingTranslations = true"
-          small
-          v-bind="attrs"
-          v-on="on"
-        >
-          <v-icon size="20">mdi-pencil</v-icon>
-        </v-btn>
-      </template>
-      <span>Edit Translations</span>
-    </v-tooltip>
-
-    <edit-translations
-      v-if="isEditingTranslations && allowEditing"
-      @close-editor="isEditingTranslations = false"
-      :translations="word.translations"
-      @update:translations="updateTranslations"
-      :wordUuid="word.uuid"
-    />
-    <p v-if="onlyShowFirstTranslation && !isEditingTranslations" class="mb-0">
-      <span v-if="word.translations.length >= 1">
-        <b>{{ 1 }}</b>
-        . {{ word.translations[0].translation }}
-      </span>
-    </p>
-    <p v-else-if="!isEditingTranslations">
-      <span v-for="(tr, idx) in word.translations" :key="tr.uuid">
-        <b>{{ idx + 1 }}</b
-        >. {{ tr.translation }}
-      </span>
-
-      <span
-        v-if="word.translations.length > 0 && specialClassifications.length > 0"
-        >;</span
+  <div>
+    <v-row class="mt-2">
+      <v-tooltip
+        bottom
+        open-delay="800"
+        :key="`${isEditingLemmaProperties}-lemma-properties`"
       >
-      <span v-if="specialClassifications.length > 0">
-        {{ specialClassificationsString }}
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-if="
+              allowEditing &&
+              canEditLemmaProperties &&
+              !isEditingLemmaProperties
+            "
+            icon
+            class="test-property-pencil edit-button mt-n1 mr-1 ml-3"
+            @click="editLemmaPropertiesDialog = true"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon size="20">mdi-pencil</v-icon>
+          </v-btn>
+        </template>
+        <span>Edit Lemma Properties</span>
+      </v-tooltip>
+      <div
+        v-if="partsOfSpeech.length > 0 && !isEditingLemmaProperties"
+        class="mr-1"
+      >
+        {{ partsOfSpeechString }}
+      </div>
+      <div
+        v-if="verbalThematicVowelTypes.length > 0 && !isEditingLemmaProperties"
+        class="mr-1"
+      >
+        ({{ verbalThematicVowelTypesString }})
+      </div>
+
+      <v-tooltip
+        bottom
+        open-delay="800"
+        :key="`${isEditingDefinitionTranslations}-translations`"
+      >
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-if="
+              allowEditing &&
+              canEditTranslations &&
+              !isEditingDefinitionTranslations
+            "
+            icon
+            class="mt-n1 mr-1"
+            @click="isEditingDefinitionTranslations = true"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon size="20">mdi-pencil</v-icon>
+          </v-btn>
+        </template>
+        <span>Edit Definition Translations</span>
+      </v-tooltip>
+
+      <edit-translations
+        v-if="isEditingDefinitionTranslations && allowEditing"
+        @close-editor="isEditingDefinitionTranslations = false"
+        :translations="word.translationsForDefinition"
+        @update:translations="updateDefinitionTranslations"
+        :wordUuid="word.uuid"
+        fieldType="definition"
+      />
+      <span class="mr-1">Definition(s):</span>
+      <p
+        v-if="onlyShowFirstTranslation && !isEditingDefinitionTranslations"
+        class="mb-0"
+      >
+        <span v-if="word.translationForDefinition.length >= 1">
+          <b>{{ 1 }}</b>
+          . {{ word.translations[0].val }}
+        </span>
+      </p>
+      <p v-else-if="!isEditingDefinitionTranslations">
+        <span v-if="word.translationsForDefinition.length === 0">
+          No definition found for this word
+        </span>
+        <span
+          v-for="(tr, idx) in word.translationsForDefinition"
+          :key="tr.uuid"
+        >
+          <b>{{ idx + 1 }}</b
+          >. {{ tr.val }}
+        </span>
+
+        <span
+          v-if="
+            word.translationsForDefinition.length > 0 &&
+            specialClassifications.length > 0
+          "
+          >;</span
+        >
+        <span v-if="specialClassifications.length > 0">
+          {{ specialClassificationsString }}
+        </span>
+      </p>
+    </v-row>
+    <v-row>
+      <v-tooltip
+        bottom
+        open-delay="800"
+        :key="`${isEditingLemmaTranslations}-translations`"
+      >
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-if="
+              allowEditing && canEditTranslations && !isEditingLemmaTranslations
+            "
+            icon
+            class="mt-n1 mr-2 ml-3"
+            @click="isEditingLemmaTranslations = true"
+            small
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon size="20">mdi-pencil</v-icon>
+          </v-btn>
+        </template>
+        <span>Edit Lemma Translations</span>
+      </v-tooltip>
+      <edit-translations
+        v-if="isEditingLemmaTranslations && allowEditing"
+        @close-editor="isEditingLemmaTranslations = false"
+        :translations="word.lemmas"
+        @update:translations="updateLemma"
+        :wordUuid="word.uuid"
+        fieldType="discussionLemma"
+      />
+      <span class="mr-4">Lemmas(s):</span>
+      <span v-if="word.lemmas.length === 0">
+        No lemma found for this word
       </span>
-    </p>
+      <p
+        v-if="onlyShowFirstTranslation && !isEditingLemmaTranslations"
+        class="mt-3"
+      >
+        <span v-if="word.lemmas.length >= 1">
+          <b>{{ 1 }}</b>
+          . {{ word.lemmas[0].val }}
+        </span>
+      </p>
+      <p v-else-if="!isEditingLemmaTranslations" class="mt-3">
+        <v-row v-for="lm in word.lemmas" :key="lm.uuid">
+          {{ lm.val }}
+        </v-row>
+      </p>
+    </v-row>
+
     <oare-dialog
       v-if="allowEditing && canEditLemmaProperties"
       v-model="editLemmaPropertiesDialog"
@@ -113,6 +190,7 @@ import {
   Word,
   ParseTreeProperty,
   DictionaryWordTranslation,
+  DictionaryWordLemma,
 } from '@oare/types';
 import { ReloadKey } from '../index.vue';
 import AddProperties from '@/components/Properties/AddProperties.vue';
@@ -149,7 +227,9 @@ export default defineComponent({
     const store = sl.get('store');
     const reload = inject(ReloadKey);
 
-    const isEditingTranslations = ref(false);
+    const isEditingLemmaProperties = ref(false);
+    const isEditingDefinitionTranslations = ref(false);
+    const isEditingLemmaTranslations = ref(false);
 
     const partsOfSpeech = computed(() =>
       word.properties.filter(prop => prop.variableName === 'Part of Speech')
@@ -226,13 +306,22 @@ export default defineComponent({
       store.hasPermission('UPDATE_TRANSLATION')
     );
 
-    const updateTranslations = (
+    const updateDefinitionTranslations = (
       newTranslations: DictionaryWordTranslation[]
     ) => {
       if (updateWordInfo) {
         updateWordInfo({
           ...word,
-          translations: newTranslations,
+          translationsForDefinition: newTranslations,
+        });
+      }
+    };
+
+    const updateLemma = (newTranslations: DictionaryWordLemma[]) => {
+      if (updateWordInfo) {
+        updateWordInfo({
+          ...word,
+          lemmas: newTranslations,
         });
       }
     };
@@ -252,8 +341,11 @@ export default defineComponent({
       updateLemmaProperties,
       canEditLemmaProperties,
       canEditTranslations,
-      isEditingTranslations,
-      updateTranslations,
+      isEditingLemmaProperties,
+      isEditingDefinitionTranslations,
+      isEditingLemmaTranslations,
+      updateDefinitionTranslations,
+      updateLemma,
     };
   },
 });

@@ -303,7 +303,12 @@ describe('PATCH /text_discourse/:uuid', () => {
   };
 
   const mockFieldDao = {
-    getByReferenceUuid: jest.fn().mockResolvedValue([{ uuid: 'test-uuid' }]),
+    getDefinitionsByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'test-uuid' }]),
+    getLemmasByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'test-uuid' }]),
     updateField: jest.fn().mockResolvedValue(),
   };
 
@@ -339,14 +344,16 @@ describe('PATCH /text_discourse/:uuid', () => {
 
   it('returns 201 on successful discourse translation update', async () => {
     const response = await sendRequest();
-    expect(mockFieldDao.getByReferenceUuid).toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).toHaveBeenCalled();
+    expect(mockFieldDao.getLemmasByReferenceUuid).toHaveBeenCalled();
     expect(mockFieldDao.updateField).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 
   it('does not allow non-logged-in users to update discourse translation', async () => {
     const response = await request(app).patch(PATH).send(mockPayload);
-    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getLemmasByReferenceUuid).not.toHaveBeenCalled();
     expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
@@ -356,7 +363,8 @@ describe('PATCH /text_discourse/:uuid', () => {
       getUserPermissions: jest.fn().mockResolvedValue([]),
     });
     const response = await sendRequest();
-    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
     expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });
@@ -364,7 +372,10 @@ describe('PATCH /text_discourse/:uuid', () => {
   it('returns 500 on failed update', async () => {
     sl.set('FieldDao', {
       ...mockFieldDao,
-      getByReferenceUuid: jest
+      getDefinitionsByReferenceUuid: jest
+        .fn()
+        .mockRejectedValue('failed to get row by reference uuid'),
+      getLemmasByReferenceUuid: jest
         .fn()
         .mockRejectedValue('failed to get row by reference uuid'),
     });

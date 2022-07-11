@@ -31,27 +31,44 @@
           }}</mark>
         </router-link>
       </template>
-      <template #translation="{ word }">
+      <template #translationForDefinition="{ word }">
         <div v-if="partsOfSpeech(word).length > 0" class="mr-1">
           {{ itemPropertyString(partsOfSpeech(word)) }}
         </div>
-        <div v-if="verbalThematicVowelTypes(word).length > 0" class="mr-1">
+        <div v-if="verbalThematicVowelTypes(word).length > 0" class="mr-3">
           {{ ` (${itemPropertyString(verbalThematicVowelTypes(word))})` }}
         </div>
         <p>
-          <span v-for="(tr, idx) in getWordTranslations(word)" :key="tr.uuid">
+          <span class="mr-1">Definition(s):</span>
+          <span v-if="word.translationsForDefinition.length === 0"
+            >No definition found</span
+          >
+          <span
+            v-for="(tr, idx) in word.translationsForDefinition"
+            :key="tr.uuid"
+          >
             <b>{{ idx + 1 }}</b
-            >. {{ tr.translation }}
+            >. {{ tr.val }}
           </span>
           <span
             v-if="
-              word.translations.length > 0 &&
+              word.translationsForDefinition.length > 0 &&
               specialClassifications(word).length > 0
             "
             >;</span
           >
           <span v-if="specialClassifications(word).length > 0">
             {{ itemPropertyString(specialClassifications(word)) }}
+          </span>
+        </p>
+      </template>
+      <template #lemmas="{ word }">
+        <p class="ml-3">
+          <span class="mr-1">Lemma(s):</span>
+          <span v-if="word.lemmas.length === 0">No lemma found</span>
+          <span v-for="(lm, idx) in word.lemmas" :key="lm.uuid">
+            <b>{{ idx + 1 }}</b
+            >. {{ lm.val }}
           </span>
         </p>
       </template>
@@ -89,8 +106,8 @@ export default defineComponent({
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        word.translations.some(tr =>
-          tr.translation.toLowerCase().includes(lowerSearch)
+        word.translationsForDefinition.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
         ) ||
         word.properties.some(prop =>
           prop.valueName.toLowerCase().includes(lowerSearch)
@@ -123,7 +140,7 @@ export default defineComponent({
     );
 
     const getWordTranslations = (word: DictionaryWord) => {
-      return word.translations;
+      return word.translationsForDefinition;
     };
 
     const partsOfSpeech = (word: DictionaryWord) => {

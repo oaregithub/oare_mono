@@ -215,7 +215,11 @@ router
     const { newTranslation } = req.body;
 
     try {
-      const fieldRow = await FieldDao.getByReferenceUuid(uuid);
+      const definisionFieldRow = await FieldDao.getDefinitionsByReferenceUuid(
+        uuid
+      );
+      const lemmaFieldRow = await FieldDao.getLemmasByReferenceUuid(uuid);
+      const fieldRow = definisionFieldRow.concat(lemmaFieldRow);
       await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
         primacy: 1,
       });
