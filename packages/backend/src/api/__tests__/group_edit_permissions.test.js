@@ -19,15 +19,11 @@ describe('GET /group_edit_permissions/:groupId/:type', () => {
   const mockTextEpigraphyDao = {
     hasEpigraphy: jest.fn().mockResolvedValue(true),
   };
-  const mockCache = {
-    clear: jest.fn(),
-  };
 
   const setup = () => {
     sl.set('GroupEditPermissionsDao', mockGroupEditPermissionsDao);
     sl.set('TextDao', mockTextDao);
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
-    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -104,15 +100,11 @@ describe('POST /group_edit_permissions/:groupId', () => {
       name: 'test-name',
     }),
   };
-  const mockCache = {
-    clear: jest.fn(),
-  };
 
   const setup = () => {
     sl.set('GroupEditPermissionsDao', mockGroupEditPermissionsDao);
     sl.set('TextDao', mockTextDao);
     sl.set('OareGroupDao', mockOareGroupDao);
-    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -200,14 +192,10 @@ describe('DELETE /group_edit_permissions/:groupId/:uuid', () => {
   const mockOareGroupDao = {
     getGroupById: jest.fn().mockResolvedValue(true),
   };
-  const mockCache = {
-    clear: jest.fn(),
-  };
 
   const setup = () => {
     sl.set('GroupEditPermissionsDao', mockGroupEditPermissionsDao);
     sl.set('OareGroupDao', mockOareGroupDao);
-    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,

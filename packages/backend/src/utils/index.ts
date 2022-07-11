@@ -12,6 +12,7 @@ import {
 import { createTabletRenderer } from '@oare/oare';
 import _ from 'lodash';
 import sl from '@/serviceLocator';
+import AWS from 'aws-sdk';
 
 export const createTransaction = async (
   cb: (trx: Knex.Transaction) => Promise<void>
@@ -107,4 +108,72 @@ export const nestProperties = (
   });
 
   return props;
+};
+
+const getDictionaryFirstLetter = (word: string): string => {
+  const firstLetter = word.substring(0, 1).toUpperCase();
+  switch (firstLetter) {
+    case 'Ā':
+      return 'A';
+    case 'Ē':
+      return 'E';
+    case 'Ī':
+      return 'I';
+    case 'Õ':
+      return 'O';
+    case 'Ū':
+      return 'U';
+    default:
+      return firstLetter;
+  }
+};
+
+export const getDictionaryCacheRouteToClear = (
+  word: string,
+  type: 'word' | 'PN' | 'GN'
+): string => {
+  const firstLetter = getDictionaryFirstLetter(word);
+
+  let cacheRouteToClear = '';
+  switch (type) {
+    case 'word':
+      cacheRouteToClear = `/words/${firstLetter}`;
+      break;
+    case 'PN':
+      cacheRouteToClear = `/names/${firstLetter}`;
+      break;
+    case 'GN':
+      cacheRouteToClear = `/places/${firstLetter}`;
+      break;
+    default:
+      cacheRouteToClear = `/words/${firstLetter}`;
+      break;
+  }
+
+  return cacheRouteToClear;
+};
+
+export const getZoteroAPIKEY = async (): Promise<string> => {
+  const s3 = new AWS.S3();
+
+  let apiKey = '';
+
+  if (process.env.ZOTERO_API_KEY) {
+    apiKey = process.env.ZOTERO_API_KEY;
+  } else {
+    const response = (
+      await s3
+        .getObject({
+          Bucket: 'oare-resources',
+          Key: 'zotero_auth.json',
+        })
+        .promise()
+    ).Body;
+    if (response) {
+      apiKey = JSON.parse(response as string).authKey;
+      process.env.ZOTERO_API_KEY = apiKey;
+    }
+  }
+
+  return apiKey;
 };

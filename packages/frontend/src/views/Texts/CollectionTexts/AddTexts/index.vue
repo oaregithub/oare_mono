@@ -204,11 +204,7 @@ export default defineComponent({
             undefined;
         }
       } catch (err) {
-        if ((err as any).response && (err as any).response.status === 403) {
-          isDirty.value = false;
-          router.replace({ name: '403' });
-          return;
-        }
+        isDirty.value = false;
         actions.showErrorSnackbar(
           'Error loading collection name. Please try again.'
         );
@@ -326,6 +322,7 @@ export default defineComponent({
         colorMeaning: '',
         discourseUnits: [],
         hasEpigraphy: true,
+        zoteroData: [],
       };
     });
 

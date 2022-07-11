@@ -99,6 +99,36 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
+  async getPDFUrlByBibliographyUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string | null> {
+    const k = trx || knexRead();
+    const resourceRow: { link: string; container: string } = await k('resource')
+      .select('link', 'container')
+      .whereIn(
+        'uuid',
+        knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
+      )
+      .where('type', 'pdf')
+      .first();
+
+    const s3 = new AWS.S3();
+
+    let fileUrl: string | null;
+
+    try {
+      fileUrl = await s3.getSignedUrlPromise('getObject', {
+        Bucket: resourceRow.container,
+        Key: resourceRow.link,
+      });
+    } catch {
+      fileUrl = null;
+    }
+
+    return fileUrl;
+  }
+
   async getValidCdliImageLinks(
     cdliNum: string,
     trx?: Knex.Transaction

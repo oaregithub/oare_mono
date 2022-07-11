@@ -2,6 +2,7 @@ import axios from 'axios';
 import store from '@/ts-store';
 import firebase from '@/firebase';
 import actions from '@/globalActions';
+import router from '@/router';
 import { FirebaseError } from '@firebase/util';
 
 const host =
@@ -38,6 +39,10 @@ axiosInstance.interceptors.response.use(
       }
 
       return axiosInstance(error.config);
+    }
+
+    if (error.response && error.response.status === 403) {
+      router.replace({ name: '403' });
     }
 
     throw error;

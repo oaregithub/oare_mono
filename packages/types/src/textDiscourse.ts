@@ -85,3 +85,8 @@ export interface InsertParentDiscourseRowPayload {
   newContent: string;
   properties: ParseTreeProperty[];
 }
+
+export interface EditTranslationPayload {
+  newTranslation: string;
+  textUuid: string;
+}

@@ -11,7 +11,10 @@
       :key="child.uuid"
       :readonly="!child.children"
     >
-      <v-expansion-panel-header :disable-icon-rotate="allowSelections">
+      <v-expansion-panel-header
+        :disable-icon-rotate="allowSelections"
+        :hideActions="hideActions"
+      >
         <template #default="{ open }">
           <v-checkbox
             v-if="!child.children && child.valueName && allowSelections"
@@ -67,7 +70,9 @@
                 "
                 >NO NAME</i
               >
-              <b v-if="open && child.custom === 1" class="text--disabled ml-7"
+              <b
+                v-if="open && child.custom === 1 && !selectMultiple"
+                class="text--disabled ml-7"
                 ><br />Only one selection permitted</b
               >
               <span class="text--disabled">
@@ -117,7 +122,7 @@
             </span>
           </template>
         </template>
-        <template #actions>
+        <template #actions v-if="!hideActions">
           <v-icon v-if="!child.children"></v-icon>
           <v-icon v-else-if="showCheck(child) && allowSelections" color="green"
             >mdi-check-circle-outline</v-icon
@@ -157,6 +162,8 @@
           :openSearchResults="openSearchResults"
           :existingProperties="existingProperties"
           :showUUID="showUUID"
+          :hideActions="hideActions"
+          :selectMultiple="selectMultiple"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
           @update:selection-display="
@@ -210,6 +217,14 @@ export default defineComponent({
       required: false,
     },
     showUUID: {
+      type: Boolean,
+      default: false,
+    },
+    hideActions: {
+      type: Boolean,
+      default: false,
+    },
+    selectMultiple: {
       type: Boolean,
       default: false,
     },

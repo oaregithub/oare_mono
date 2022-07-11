@@ -25,7 +25,6 @@ class DictionarySpellingDao {
 
   async getFormSpellings(
     formUuid: string,
-    isAdmin: boolean,
     htmlSpelling: boolean,
     trx?: Knex.Transaction
   ): Promise<FormSpelling[]> {
@@ -54,10 +53,7 @@ class DictionarySpellingDao {
       }));
     }
 
-    if (isAdmin) {
-      return resultRows;
-    }
-    return resultRows.filter(row => row.hasOccurrence);
+    return resultRows;
   }
 
   async spellingExistsOnForm(
