@@ -3,6 +3,7 @@ import {
   ItemPropertyRow,
   Pagination,
   InsertItemPropertyRow,
+  ParseTreePropertyUuids,
   ImageResourcePropertyDetails,
 } from '@oare/types';
 import { Knex } from 'knex';
@@ -107,6 +108,40 @@ class ItemPropertiesDao {
     return rows;
   }
 
+  async getFormsByProperties(
+    parseProperties: ParseTreePropertyUuids[],
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knexRead();
+    const possibleFormUuids: string[][] = (
+      await Promise.all(
+        parseProperties.map(p =>
+          k('item_properties')
+            .pluck('reference_uuid')
+            .where('variable_uuid', p.variable.variableUuid)
+            .andWhere('value_uuid', p.value.valueUuid)
+            .andWhere('level', p.variable.level)
+        )
+      )
+    ).map(p => [...new Set(p)]);
+    const returnUuids: string[] = [];
+    const firstArray: string[] = possibleFormUuids[0];
+    for (let i = 0; i < firstArray.length; i += 1) {
+      let commonUuid: boolean = true;
+      const currentUuid: string = firstArray[i];
+      for (let j = 1; j < possibleFormUuids.length; j += 1) {
+        if (!possibleFormUuids[j].includes(currentUuid)) {
+          commonUuid = false;
+          break;
+        }
+      }
+      if (commonUuid) {
+        returnUuids.push(currentUuid);
+      }
+    }
+    return returnUuids;
+  }
+
   async deletePropertiesByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
@@ -138,7 +173,7 @@ class ItemPropertiesDao {
     }
   }
 
-  async getVariableObjectByReference(
+  async getObjectUuidsByReferenceAndVariable(
     referenceUuid: string,
     variableUuid: string,
     trx?: Knex.Transaction

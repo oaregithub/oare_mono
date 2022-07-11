@@ -110,6 +110,49 @@ export const nestProperties = (
   return props;
 };
 
+const getDictionaryFirstLetter = (word: string): string => {
+  const firstLetter = word.substring(0, 1).toUpperCase();
+  switch (firstLetter) {
+    case 'Ā':
+      return 'A';
+    case 'Ē':
+      return 'E';
+    case 'Ī':
+      return 'I';
+    case 'Õ':
+      return 'O';
+    case 'Ū':
+      return 'U';
+    default:
+      return firstLetter;
+  }
+};
+
+export const getDictionaryCacheRouteToClear = (
+  word: string,
+  type: 'word' | 'PN' | 'GN'
+): string => {
+  const firstLetter = getDictionaryFirstLetter(word);
+
+  let cacheRouteToClear = '';
+  switch (type) {
+    case 'word':
+      cacheRouteToClear = `/words/${firstLetter}`;
+      break;
+    case 'PN':
+      cacheRouteToClear = `/names/${firstLetter}`;
+      break;
+    case 'GN':
+      cacheRouteToClear = `/places/${firstLetter}`;
+      break;
+    default:
+      cacheRouteToClear = `/words/${firstLetter}`;
+      break;
+  }
+
+  return cacheRouteToClear;
+};
+
 export const getZoteroAPIKEY = async (): Promise<string> => {
   const s3 = new AWS.S3();
 
@@ -128,6 +171,7 @@ export const getZoteroAPIKEY = async (): Promise<string> => {
     ).Body;
     if (response) {
       apiKey = JSON.parse(response as string).authKey;
+      process.env.ZOTERO_API_KEY = apiKey;
     }
   }
 

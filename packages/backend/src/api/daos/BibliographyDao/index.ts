@@ -6,47 +6,37 @@ import { dynamicImport } from 'tsimportlib';
 
 class BibliographyDao {
   async getZoteroCitationsByUuid(
-    objUuids: string[],
+    uuid: string,
     citationStyle: string,
     trx?: Knex.Transaction
-  ): Promise<string[]> {
+  ): Promise<string | null> {
     const k = trx || knexRead();
-    const bibliographies: BibliographyItem[] = await Promise.all(
-      objUuids.map(uuid =>
-        k('bibliography')
-          .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
-          .where('uuid', uuid)
-          .first()
-      )
-    );
+    const bibliography: BibliographyItem = await k('bibliography')
+      .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
+      .where({ uuid })
+      .first();
 
-    const apiKey = await getZoteroAPIKEY();
+    const zoteroAPIKey = await getZoteroAPIKEY();
 
     const fetch = (await dynamicImport(
       'node-fetch',
       module
     )) as typeof import('node-fetch');
 
-    const response = await Promise.all(
-      bibliographies.map(async bibliography => {
-        const resp = await fetch.default(
-          `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=citation&style=${citationStyle}`,
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-            },
-          }
-        );
-        const json = (await resp.json()) as ZoteroResponse;
-        return json;
-      })
+    const zoteroResponse = await fetch.default(
+      `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=citation&style=${citationStyle}`,
+      {
+        headers: {
+          Authorization: `Bearer ${zoteroAPIKey}`,
+        },
+      }
     );
 
-    const zoteroCitations: string[] = response
-      .filter(item => !!item.citation)
-      .map(item => item.citation!);
+    const zoteroJSON = zoteroResponse.ok
+      ? ((await zoteroResponse.json()) as ZoteroResponse)
+      : null;
 
-    return zoteroCitations;
+    return zoteroJSON && zoteroJSON.citation ? zoteroJSON.citation : null;
   }
 }
 
