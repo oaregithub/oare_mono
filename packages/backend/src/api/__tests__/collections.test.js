@@ -36,8 +36,14 @@ describe('GET /collections', () => {
     getCollectionByUuid: jest.fn().mockResolvedValue(collection),
   };
 
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+  };
+
   const setup = () => {
     sl.set('CollectionDao', mockCollectionDao);
+    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -97,10 +103,16 @@ describe('GET /collections/:uuid', () => {
       .mockReturnValue({ filter: '', limit: 10, page: 1 }),
   };
 
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+  };
+
   const setup = () => {
     sl.set('CollectionTextUtils', mockCollectionTextUtils);
     sl.set('HierarchyDao', mockHierarchyDao);
     sl.set('utils', mockUtils);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);

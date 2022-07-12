@@ -2,7 +2,6 @@ import express from 'express';
 import { DenylistAllowlistPayload, DenylistAllowlistItem } from '@oare/types';
 import adminRoute from '@/middlewares/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
-import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 
 async function canInsert(uuids: string[]) {
@@ -33,19 +32,6 @@ async function canRemove(uuid: string) {
     return false;
   }
   return true;
-}
-
-function clearCache() {
-  const cache = sl.get('cache');
-  cache.clear(
-    {
-      req: {
-        originalUrl: `${API_PATH}/collections`,
-        method: 'GET',
-      },
-    },
-    { exact: false }
-  );
 }
 
 const router = express.Router();
@@ -95,7 +81,6 @@ router
       }
 
       const insertIds = await PublicDenylistDao.addItemsToDenylist(uuids, type);
-      clearCache();
       res.status(201).json(insertIds);
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -118,7 +103,6 @@ router
       }
 
       await PublicDenylistDao.removeItemFromDenylist(uuid);
-      clearCache();
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

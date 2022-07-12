@@ -16,10 +16,14 @@ describe('GET /collection_info/:uuid', () => {
   const mockHierarchyDao = {
     isPublished: jest.fn().mockResolvedValue(true),
   };
+  const mockCollectionTextUtils = {
+    canViewCollection: jest.fn().mockResolvedValue(true),
+  };
 
   const setup = () => {
     sl.set('CollectionDao', mockCollectionDao);
     sl.set('HierarchyDao', mockHierarchyDao);
+    sl.set('CollectionTextUtils', mockCollectionTextUtils);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue(),
     });

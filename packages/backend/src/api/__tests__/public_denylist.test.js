@@ -92,13 +92,9 @@ describe('POST /public_denylist', () => {
     getDenylistCollectionUuids: jest.fn().mockResolvedValue([]),
     addItemsToDenylist: jest.fn().mockResolvedValue(),
   };
-  const mockCache = {
-    clear: jest.fn(),
-  };
 
   const setup = () => {
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
-    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -166,13 +162,9 @@ describe('DELETE /public_denylist', () => {
     getDenylistImageUuids: jest.fn().mockResolvedValue([]),
     removeItemFromDenylist: jest.fn().mockResolvedValue(),
   };
-  const mockCache = {
-    clear: jest.fn(),
-  };
 
   const setup = () => {
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
-    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
