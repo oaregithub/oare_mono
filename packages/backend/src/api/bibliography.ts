@@ -1,29 +1,20 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { extractPagination } from '@/utils';
 import { BibliographyResponse } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
-import textMiddleware from '@/middlewares/text';
-import { noFilter, textFilter } from '@/cache/filters';
+import { noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
 router
   .route('/bibliographies')
   .get(
-    textMiddleware,
     permissionsRoute('VIEW_BIBLIOGRAPHY'),
     cacheMiddleware<BibliographyResponse[]>(noFilter),
     async (req, res, next) => {
       try {
-        const { filter: search, limit: rows, page } = extractPagination(
-          req.query,
-          {
-            defaultLimit: 25,
-          }
-        );
         const BibliographyDao = sl.get('BibliographyDao');
         const BibliographyUtils = sl.get('BibliographyUtils');
         const ResourceDao = sl.get('ResourceDao');
@@ -32,18 +23,14 @@ router
         const citationStyle = (req.query.style ||
           'chicago-author-date') as string;
 
-        const bibliographies = await BibliographyDao.getBiblographies({
-          page,
-          rows,
-        });
+        const bibliographies = await BibliographyDao.getBiblographies();
 
         const zoteroResponse = await Promise.all(
           bibliographies.map(async bibliography =>
-            BibliographyUtils.fetchZotero(
-              bibliography,
-              citationStyle,
-              'bib,data'
-            )
+            BibliographyUtils.getZoteroReferences(bibliography, citationStyle, [
+              'bib',
+              'data',
+            ])
           )
         );
 

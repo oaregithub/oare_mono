@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError, HttpForbidden, HttpBadRequest } from '@/exceptions';
+import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
 import {
@@ -138,16 +138,18 @@ router
           'b3938276-173b-11ec-8b77-024de1c1cc1d'
         );
 
-        const bibItems = await BibliographyDao.getBibliographyByUuids(
-          bibliographyUuids
+        const bibItems = await Promise.all(
+          bibliographyUuids.map(bibliography =>
+            BibliographyDao.getBibliographyByUuid(bibliography)
+          )
         );
 
         const zoteroCitations = await Promise.all(
           bibItems.map(async item => {
-            const cit = await BibliographyUtils.fetchZotero(
+            const cit = await BibliographyUtils.getZoteroReferences(
               item,
               'chicago-author-date',
-              'citation'
+              ['citation']
             );
             return cit && cit.citation ? cit.citation : null;
           })

@@ -49,3 +49,5 @@ export interface BibliographyResponse {
   data: ZoteroResponseData | null;
   url: string | null;
 }
+
+export type ZoteroRequestType = 'citation' | 'bib' | 'data';

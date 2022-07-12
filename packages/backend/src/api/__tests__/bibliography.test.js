@@ -15,7 +15,7 @@ describe('GET /bibliographies', () => {
   };
 
   const mockBibliographyUtils = {
-    fetchZotero: jest.fn().mockResolvedValue({
+    getZoteroReferences: jest.fn().mockResolvedValue({
       bib: 'mock-bib-3',
       data: {
         title: 'Hello',
