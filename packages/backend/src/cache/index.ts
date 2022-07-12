@@ -59,6 +59,19 @@ class Cache {
     }
   }
 
+  public async keys(
+    url: string,
+    level: 'exact' | 'startsWith'
+  ): Promise<number> {
+    if (level === 'exact') {
+      const value = await redis.get(`${API_PATH}${url}`);
+      return value ? 1 : 0;
+    }
+
+    const keys = await redis.keys(`${API_PATH}${url}*`);
+    return keys.length;
+  }
+
   public async flush() {
     await redis.flushDb();
   }

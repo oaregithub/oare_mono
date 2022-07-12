@@ -34,9 +34,21 @@
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
-          <v-btn color="primary" @click="flushCache">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
+          <oare-dialog
+            v-model="flushCacheDialog"
+            title="Flush Cache?"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="flushCache"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+            Are you sure you want to flush all cache entries? This cannot be
+            undone.
+          </oare-dialog>
         </v-list-item-action>
       </v-list-item>
       <v-divider />
@@ -54,13 +66,25 @@
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
-          <OareLoaderButton
-            @click="populateCache(true)"
-            color="primary"
-            :loading="populateFlushLoading"
+          <oare-dialog
+            v-model="repopulateCacheDialog"
+            title="Repopulate All Cache Entries?"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="populateCache(true)"
+            :submitLoading="populateFlushLoading"
           >
-            <v-icon>mdi-refresh</v-icon>
-          </OareLoaderButton>
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on">
+                <v-icon>mdi-refresh</v-icon>
+              </v-btn>
+            </template>
+            Are you sure you want to repopulate all cache entries? This will
+            flush all exising cache entries and send a request to repopulate
+            each route's data. This will result in thousand of requests which
+            may result in increased costs and load on the server. This should
+            not be done regularly.
+          </oare-dialog>
         </v-list-item-action>
       </v-list-item>
       <v-divider />
@@ -77,13 +101,76 @@
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
-          <OareLoaderButton
-            @click="populateCache(false)"
-            color="primary"
-            :loading="populateLoading"
+          <oare-dialog
+            v-model="fillMissingCacheDialog"
+            title="Fill In Missing Cache Entries?"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="populateCache(false)"
+            :submitLoading="populateLoading"
           >
-            <v-icon>mdi-database-sync</v-icon>
-          </OareLoaderButton>
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on">
+                <v-icon>mdi-database-sync</v-icon>
+              </v-btn>
+            </template>
+            Are you sure you want to fill in all missing cache entries? This
+            will send a request to each cached route, triggering a cache event
+            for those that do not have an existing entry. This will result in
+            thousand of requests which may result in increased costs and load on
+            the server. This should not be done regularly.
+          </oare-dialog>
+        </v-list-item-action>
+      </v-list-item>
+      <v-divider />
+      <v-list-item class="ma-2">
+        <v-list-item-content>
+          <v-list-item-title>Clear Individual Cache Entries</v-list-item-title>
+          <v-list-item-subtitle>
+            Clear cache entries for a selected backend route. Will open a dialog
+          </v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-action>
+          <oare-dialog
+            v-model="individualClearDialog"
+            title="Clear Individual Cache Entry"
+            @submit="clearRoute"
+            :submitLoading="individualClearLoading"
+            :submitDisabled="!routeToClear || numMatchingKeys === 0"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on">
+                <v-icon>mdi-text-search-variant</v-icon>
+              </v-btn>
+            </template>
+            <v-text-field
+              v-model="routeToClear"
+              outlined
+              label="Backend Route URL To Clear"
+              placeholder="Ex: /words/A"
+              hide-details
+              class="mt-2"
+            />
+            <span>
+              <b>Note: </b>Do not include the API prefix <i>/api/v2</i>
+            </span>
+            <v-radio-group v-model="selectedLevel" hide-details class="mb-2">
+              <v-radio label="Exact" :value="'exact'" />
+              <v-radio label="Starts With" :value="'startsWith'" />
+            </v-radio-group>
+            <v-row class="ma-0 mt-6">
+              <span
+                :class="{
+                  'red--text': numMatchingKeys === 0,
+                  'primary--text': numMatchingKeys !== 0,
+                }"
+              >
+                <b>{{ numMatchingKeys }}</b> matching key{{
+                  numMatchingKeys !== 1 ? 's' : ''
+                }}</span
+              >
+            </v-row>
+          </oare-dialog>
         </v-list-item-action>
       </v-list-item>
     </v-list>
@@ -124,7 +211,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { EnvironmentInfo, CollectionResponse, Word } from '@oare/types';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
@@ -133,6 +220,7 @@ export default defineComponent({
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const _ = sl.get('lodash');
 
     const loading = ref(false);
 
@@ -171,6 +259,7 @@ export default defineComponent({
       }
     };
 
+    const flushCacheDialog = ref(false);
     const flushCache = async () => {
       try {
         await server.flushCache();
@@ -180,9 +269,13 @@ export default defineComponent({
           'Error flushing cache. Please try again.',
           err as Error
         );
+      } finally {
+        flushCacheDialog.value = false;
       }
     };
 
+    const repopulateCacheDialog = ref(false);
+    const fillMissingCacheDialog = ref(false);
     const populateFlushLoading = ref(false);
     const populateLoading = ref(false);
     const populateCache = async (flush: boolean) => {
@@ -275,8 +368,50 @@ export default defineComponent({
       } finally {
         populateFlushLoading.value = false;
         populateLoading.value = false;
+        repopulateCacheDialog.value = false;
+        fillMissingCacheDialog.value = false;
       }
     };
+
+    const individualClearDialog = ref(false);
+    const individualClearLoading = ref(false);
+    const routeToClear = ref('/');
+
+    const selectedLevel = ref<'exact' | 'startsWith'>('exact');
+    const clearRoute = async () => {
+      try {
+        individualClearLoading.value = true;
+        await server.clearCacheRoute(routeToClear.value, selectedLevel.value);
+        actions.showSnackbar('Successfully cleared specified cache route(s).');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error clearing individual cache route(s). Please try again.',
+          err as Error
+        );
+      } finally {
+        individualClearLoading.value = false;
+        individualClearDialog.value = false;
+        routeToClear.value = '/';
+        selectedLevel.value = 'exact';
+      }
+    };
+
+    const numMatchingKeys = ref(0);
+    const getMatchingKeys = async () => {
+      try {
+        numMatchingKeys.value = await server.getNumKeys(
+          routeToClear.value,
+          selectedLevel.value
+        );
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error getting matching keys. Please try again.',
+          err as Error
+        );
+      }
+    };
+
+    watch([routeToClear, selectedLevel], _.debounce(getMatchingKeys, 200));
 
     return {
       loading,
@@ -287,6 +422,15 @@ export default defineComponent({
       populateCache,
       populateLoading,
       populateFlushLoading,
+      flushCacheDialog,
+      repopulateCacheDialog,
+      fillMissingCacheDialog,
+      individualClearDialog,
+      clearRoute,
+      individualClearLoading,
+      routeToClear,
+      selectedLevel,
+      numMatchingKeys,
     };
   },
 });
