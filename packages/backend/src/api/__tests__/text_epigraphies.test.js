@@ -340,7 +340,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       uuid: 'test-zotero-uuid-1',
       zot_item_key: 'test-zotero-key-1',
       short_cit: 'test-zotero-citation-short',
-    },),
+    }),
   };
 
   const mockBibliographyUtils = {
