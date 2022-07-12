@@ -36,12 +36,30 @@ describe('places api test', () => {
   };
 
   const mockCache = {
-    insert: jest.fn(),
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      isAdmin: false,
+      uuid: 'test-user-uuid',
+    }),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'PLACES',
+      },
+    ]),
   };
 
   const setup = ({ WordDao, cache } = {}) => {
     sl.set('DictionaryWordDao', WordDao || MockDictionaryWordDao);
-    sl.set('cache', cache || mockCache);
+    sl.set('cache', mockCache);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('UserDao', mockUserDao);
   };
 
   describe('GET /places/:letter', () => {
@@ -49,13 +67,10 @@ describe('places api test', () => {
       const letter = 'A';
       const PATH = `${API_PATH}/places/${letter}`;
       setup();
-      const response = await request(app).get(PATH);
-      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
-        'GN',
-        'a',
-        null,
-        false
-      );
+      const response = await request(app)
+        .get(PATH)
+        .set('Authorization', 'token');
+      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith('GN', 'a');
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(resolveValue);
     });
@@ -64,13 +79,10 @@ describe('places api test', () => {
       const letter = 'U/A';
       const PATH = `${API_PATH}/places/${encodeURIComponent(letter)}`;
       setup();
-      const response = await request(app).get(PATH);
-      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith(
-        'GN',
-        'u/a',
-        null,
-        false
-      );
+      const response = await request(app)
+        .get(PATH)
+        .set('Authorization', 'token');
+      expect(MockDictionaryWordDao.getWords).toHaveBeenCalledWith('GN', 'u/a');
       expect(response.status).toBe(200);
     });
 
@@ -81,10 +93,11 @@ describe('places api test', () => {
         WordDao: {
           getWords: jest.fn().mockRejectedValue('Not a valid letter'),
         },
-        ...mockCache,
       });
 
-      const response = await request(app).get(PATH);
+      const response = await request(app)
+        .get(PATH)
+        .set('Authorization', 'token');
       expect(response.status).toBe(500);
       expect(mockCache.insert).toHaveBeenCalledTimes(0);
     });
@@ -93,7 +106,7 @@ describe('places api test', () => {
       const letter = 'A';
       const PATH = `${API_PATH}/places/${letter}`;
       setup();
-      await request(app).get(PATH);
+      await request(app).get(PATH).set('Authorization', 'token');
       expect(mockCache.insert).toHaveBeenCalled();
     });
   });

@@ -104,37 +104,34 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
-  async getFileURLByUuid(
-    objUuids: string[],
+  async getPDFUrlByBibliographyUuid(
+    uuid: string,
     trx?: Knex.Transaction
-  ): Promise<string[]> {
+  ): Promise<string | null> {
     const k = trx || knexRead();
-
-    const resourceRows: ResourceRow[] = await Promise.all(
-      objUuids.map(uuid =>
-        k('resource')
-          .select(['link', 'container'])
-          .whereIn(
-            'uuid',
-            knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
-          )
-          .first()
+    const resourceRow: { link: string; container: string } = await k('resource')
+      .select('link', 'container')
+      .whereIn(
+        'uuid',
+        knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
       )
-    );
+      .where('type', 'pdf')
+      .first();
 
     const s3 = new AWS.S3();
 
-    const fileURL: string[] = await Promise.all(
-      resourceRows.map(key => {
-        const params = {
-          Bucket: key.container,
-          Key: key.link,
-        };
-        return s3.getSignedUrlPromise('getObject', params);
-      })
-    );
+    let fileUrl: string | null;
 
-    return fileURL;
+    try {
+      fileUrl = await s3.getSignedUrlPromise('getObject', {
+        Bucket: resourceRow.container,
+        Key: resourceRow.link,
+      });
+    } catch {
+      fileUrl = null;
+    }
+
+    return fileUrl;
   }
 
   async getValidCdliImageLinks(

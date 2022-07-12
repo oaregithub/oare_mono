@@ -35,4 +35,14 @@ router.route('/cache/disable').patch(adminRoute, async (_req, res, next) => {
   }
 });
 
+router.route('/cache/flush').delete(adminRoute, async (_req, res, next) => {
+  try {
+    const cache = sl.get('cache');
+    await cache.flush();
+    res.status(204).end();
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
 export default router;

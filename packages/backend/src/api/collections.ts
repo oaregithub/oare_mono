@@ -1,66 +1,70 @@
 import express from 'express';
-import { HttpInternalError, HttpForbidden } from '@/exceptions';
+import { HttpInternalError } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/collections';
 import sl from '@/serviceLocator';
+import cacheMiddleware from '@/middlewares/cache';
+import { CollectionResponse, Collection } from '@oare/types';
+import { collectionTextsFilter, collectionFilter } from '@/cache/filters';
 
 const router = express.Router();
 
-router.route('/collections').get(async (req, res, next) => {
-  try {
-    const userUuid = req.user ? req.user.uuid : null;
+router
+  .route('/collections')
+  .get(
+    cacheMiddleware<Collection[]>(collectionFilter),
+    async (req, res, next) => {
+      try {
+        const CollectionDao = sl.get('CollectionDao');
+        const cache = sl.get('cache');
 
-    const CollectionDao = sl.get('CollectionDao');
+        const collectionUuids = await CollectionDao.getAllCollections();
+        const collections = (
+          await Promise.all(
+            collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
+          )
+        )
+          .filter(collection => collection)
+          .map(collection => collection!);
 
-    const collectionUuids = await CollectionDao.getAllCollections(userUuid);
-    const collections = await Promise.all(
-      collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-    );
+        const response = await cache.insert<Collection[]>(
+          { req },
+          collections,
+          collectionFilter
+        );
 
-    res.json(collections.filter(collection => collection));
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+        res.json(response);
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
+    }
+  );
 
 router
   .route('/collections/:uuid')
-  .get(collectionsMiddleware, async (req, res, next) => {
-    try {
-      const CollectionTextUtils = sl.get('CollectionTextUtils');
-      const uuid = req.params.uuid as string;
-      const userUuid = req.user ? req.user.uuid : null;
-      const utils = sl.get('utils');
+  .get(
+    collectionsMiddleware,
+    cacheMiddleware<CollectionResponse>(collectionTextsFilter),
+    async (req, res, next) => {
+      try {
+        const uuid = req.params.uuid as string;
 
-      const canViewCollection = await CollectionTextUtils.canViewCollection(
-        uuid,
-        userUuid
-      );
-      if (!canViewCollection) {
-        next(
-          new HttpForbidden(
-            'You do not have permission to view this collection. If you think this is a mistake, please contact your administrator.'
-          )
+        const cache = sl.get('cache');
+        const HierarchyDao = sl.get('HierarchyDao');
+
+        const texts = await HierarchyDao.getCollectionTexts(uuid);
+
+        const response = await cache.insert<CollectionResponse>(
+          { req },
+          texts,
+          collectionTextsFilter
         );
-        return;
+
+        res.json(response);
+      } catch (err) {
+        next(new HttpInternalError(err as string));
       }
-
-      const { filter: search, limit: rows, page } = utils.extractPagination(
-        req.query
-      );
-
-      const HierarchyDao = sl.get('HierarchyDao');
-
-      const response = await HierarchyDao.getCollectionTexts(userUuid, uuid, {
-        page,
-        rows,
-        search,
-      });
-
-      res.json(response);
-    } catch (err) {
-      next(new HttpInternalError(err as string));
     }
-  });
+  );
 
 router
   .route('/collection_hierarchy/:collectionUuid')

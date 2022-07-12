@@ -13,10 +13,13 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
-  ZoteroResponse,
+  ZoteroData,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import cacheMiddleware from '@/middlewares/cache';
+import textMiddleware from '@/middlewares/text';
 import fileUpload from 'express-fileupload';
+import { noFilter, textFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -61,8 +64,13 @@ router
       try {
         const TextDao = sl.get('TextDao');
         const { textUuid, color }: UpdateTranslitStatusPayload = req.body;
+        const cache = sl.get('cache');
 
         await TextDao.updateTranslitStatus(textUuid, color);
+
+        await cache.clear(`/text_epigraphies/text/${textUuid}`, {
+          level: 'startsWith',
+        });
 
         res.status(204).end();
       } catch (err) {
@@ -71,139 +79,167 @@ router
     }
   );
 
-router.route('/text_epigraphies/text/:uuid').get(async (req, res, next) => {
-  try {
-    const { uuid: textUuid } = req.params;
-    const { user } = req;
-    const forceAllowAdminView =
-      (req.query.forceAllowAdminView as string) === 'true';
-    const userUuid = user ? user.uuid : null;
-    const TextDao = sl.get('TextDao');
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
-    const TextDraftsDao = sl.get('TextDraftsDao');
-    const CollectionDao = sl.get('CollectionDao');
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-    const BibliographyDao = sl.get('BibliographyDao');
-    const ResourceDao = sl.get('ResourceDao');
+router
+  .route('/text_epigraphies/text/:uuid')
+  .get(
+    textMiddleware,
+    cacheMiddleware<EpigraphyResponse>(textFilter),
+    async (req, res, next) => {
+      try {
+        const { uuid: textUuid } = req.params;
+        const { user } = req;
 
-    const citationStyle = 'chicago-author-date';
+        const TextDao = sl.get('TextDao');
+        const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+        const TextDiscourseDao = sl.get('TextDiscourseDao');
+        const TextDraftsDao = sl.get('TextDraftsDao');
+        const CollectionDao = sl.get('CollectionDao');
+        const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+        const BibliographyDao = sl.get('BibliographyDao');
+        const ResourceDao = sl.get('ResourceDao');
+        const cache = sl.get('cache');
 
-    const objUuids = await ItemPropertiesDao.getVariableObjectByReference(
-      textUuid,
-      'b3938276-173b-11ec-8b77-024de1c1cc1d'
-    );
+        const text = await TextDao.getTextByUuid(textUuid);
 
-    const zoteroCitations = await BibliographyDao.getZoteroCitationsByUuid(
-      objUuids,
-      citationStyle
-    );
+        if (!text) {
+          next(
+            new HttpBadRequest(
+              `Text with UUID ${textUuid} does not exist`,
+              true
+            )
+          );
+          return;
+        }
 
-    const fileURL = await ResourceDao.getFileURLByUuid(objUuids);
+        const collection = await CollectionDao.getTextCollection(text.uuid);
 
-    const zoteroData = zoteroCitations.map((cit, idx) => ({
-      citation: cit,
-      link: fileURL[idx],
-    }));
+        if (!collection) {
+          next(
+            new HttpBadRequest('Text does not belong to a valid collection')
+          );
+          return;
+        }
 
-    const text = await TextDao.getTextByUuid(textUuid);
+        const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
+        const cdliNum = await TextDao.getCdliNum(textUuid);
+        const { color, colorMeaning } = await TextDao.getTranslitStatus(
+          textUuid
+        );
+        const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
+          textUuid
+        );
+        const draft = user
+          ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid)
+          : null;
 
-    if (!text) {
-      next(
-        new HttpBadRequest(`Text with UUID ${textUuid} does not exist`, true)
-      );
-      return;
-    }
+        const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
 
-    const canViewText = await CollectionTextUtils.canViewText(
-      textUuid,
-      userUuid
-    );
+        const bibliographyUuids = await ItemPropertiesDao.getObjectUuidsByReferenceAndVariable(
+          textUuid,
+          'b3938276-173b-11ec-8b77-024de1c1cc1d'
+        );
 
-    if (!canViewText) {
-      if (!req.user || !req.user.isAdmin || !forceAllowAdminView) {
-        next(
-          new HttpForbidden(
-            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
+        const zoteroCitations = await Promise.all(
+          bibliographyUuids.map(uuid =>
+            BibliographyDao.getZoteroCitationsByUuid(
+              uuid,
+              'chicago-author-date'
+            )
           )
         );
-        return;
+
+        const fileURLs = await Promise.all(
+          bibliographyUuids.map(uuid =>
+            ResourceDao.getPDFUrlByBibliographyUuid(uuid)
+          )
+        );
+
+        const rawZoteroData = zoteroCitations.map((cit, idx) => ({
+          citation: cit,
+          link: fileURLs[idx],
+        }));
+
+        const zoteroData: ZoteroData[] = rawZoteroData
+          .filter(item => item.citation !== null && item.link !== null)
+          .map(item => ({
+            citation: item.citation!,
+            link: item.link!,
+          }));
+
+        const epigraphy: EpigraphyResponse = {
+          text,
+          collection,
+          units,
+          canWrite: false,
+          cdliNum,
+          color,
+          colorMeaning,
+          discourseUnits,
+          ...(draft ? { draft } : {}),
+          hasEpigraphy: hasEpigraphies,
+          zoteroData,
+        };
+
+        const response = await cache.insert<EpigraphyResponse>(
+          { req },
+          epigraphy,
+          textFilter
+        );
+
+        res.json(response);
+      } catch (err) {
+        next(new HttpInternalError(err as string));
       }
     }
-
-    const collection = await CollectionDao.getTextCollection(text.uuid);
-
-    if (!collection) {
-      next(new HttpBadRequest('Text does not belong to a valid collection'));
-      return;
-    }
-
-    const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
-    const cdliNum = await TextDao.getCdliNum(textUuid);
-    const { color, colorMeaning } = await TextDao.getTranslitStatus(textUuid);
-    const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
-      textUuid
-    );
-    const canWrite = await CollectionTextUtils.canEditText(textUuid, userUuid);
-    const draft = user
-      ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid)
-      : null;
-
-    const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
-
-    const response: EpigraphyResponse = {
-      text,
-      collection,
-      units,
-      canWrite,
-      cdliNum,
-      color,
-      colorMeaning,
-      discourseUnits,
-      ...(draft ? { draft } : {}),
-      hasEpigraphy: hasEpigraphies,
-      zoteroData,
-    };
-
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+  );
 
 router
   .route('/text_epigraphies/text_source/:uuid')
-  .get(permissionsRoute('VIEW_TEXT_FILE'), async (req, res, next) => {
-    try {
-      const { uuid: textUuid } = req.params;
-      const ResourceDao = sl.get('ResourceDao');
-      const textSourceKey = await ResourceDao.getTextFileByTextUuid(textUuid);
+  .get(
+    textMiddleware,
+    permissionsRoute('VIEW_TEXT_FILE'),
+    cacheMiddleware<string | null>(noFilter),
+    async (req, res, next) => {
+      try {
+        const { uuid: textUuid } = req.params;
+        const ResourceDao = sl.get('ResourceDao');
+        const cache = sl.get('cache');
 
-      if (textSourceKey) {
-        const s3 = new AWS.S3();
+        const textSourceKey = await ResourceDao.getTextFileByTextUuid(textUuid);
 
-        const textContentRaw = (
-          await s3
-            .getObject({
-              Bucket: 'oare-texttxt-bucket',
-              Key: textSourceKey,
-            })
-            .promise()
-        ).Body;
+        if (textSourceKey) {
+          const s3 = new AWS.S3();
 
-        const textContent = textContentRaw
-          ? textContentRaw.toString('utf-8')
-          : null;
+          const textContentRaw = (
+            await s3
+              .getObject({
+                Bucket: 'oare-texttxt-bucket',
+                Key: textSourceKey,
+              })
+              .promise()
+          ).Body;
 
-        res.json(textContent);
-      } else {
-        res.json(null);
+          const textContent = textContentRaw
+            ? textContentRaw.toString('utf-8')
+            : null;
+
+          const response = await cache.insert<string | null>(
+            { req },
+            textContent,
+            noFilter
+          );
+
+          res.json(response);
+        } else {
+          const response = await cache.insert<null>({ req }, null, noFilter);
+
+          res.json(response);
+        }
+      } catch (err) {
+        next(new HttpInternalError(err as string));
       }
-    } catch (err) {
-      next(new HttpInternalError(err as string));
     }
-  });
+  );
 
 router
   .route('/text_epigraphies/designator/:preText')
@@ -296,6 +332,7 @@ router
       const PublicDenylistDao = sl.get('PublicDenylistDao');
       const TreeDao = sl.get('TreeDao');
       const utils = sl.get('utils');
+      const cache = sl.get('cache');
 
       const { tables }: CreateTextsPayload = req.body;
 
@@ -397,6 +434,10 @@ router
         }
       });
 
+      await cache.clear(`/collections/${tables.hierarchy.objectParentUuid}`, {
+        level: 'exact',
+      });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -435,6 +476,9 @@ router
   .route('/text_epigraphies/edit_text_info')
   .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
     const TextDao = sl.get('TextDao');
+    const CollectionDao = sl.get('CollectionDao');
+    const cache = sl.get('cache');
+
     try {
       const { uuid } = req.body;
       const { excavationPrefix } = req.body;
@@ -453,6 +497,14 @@ router
         publicationPrefix,
         publicationNumber
       );
+
+      const collectionUuid = await CollectionDao.getTextCollectionUuid(uuid);
+
+      await cache.clear(`/text_epigraphies/text/${uuid}`, {
+        level: 'startsWith',
+      });
+      await cache.clear(`/collections/${collectionUuid}`, { level: 'exact' });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -484,27 +536,12 @@ router.route('/text_epigraphies/resource/:tag').get(async (req, res, next) => {
 });
 
 router
-  .route('/text_epigraphies/has_epigraphy/:textUuid')
-  .get(async (req, res, next) => {
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
+  .route('/text_epigraphies/has_epigraphy/:uuid')
+  .get(textMiddleware, async (req, res, next) => {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     try {
-      const { textUuid } = req.params;
-      const userUuid = req.user ? req.user.uuid : null;
-
-      const canViewText = await CollectionTextUtils.canViewText(
-        textUuid,
-        userUuid
-      );
-      if (!canViewText) {
-        next(
-          new HttpForbidden(
-            'You do not have permission to view this text. If you think this is a mistake, please contact your administrator.'
-          )
-        );
-        return;
-      }
+      const { uuid: textUuid } = req.params;
 
       const hasEpigraphy = await TextEpigraphyDao.hasEpigraphy(textUuid);
 

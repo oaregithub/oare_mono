@@ -1,7 +1,6 @@
 import express from 'express';
 import { DictionarySearchPayload } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
-import cache from '@/cache';
 import sl from '@/serviceLocator';
 import dictionaryWordDao from './daos/DictionaryWordDao';
 
@@ -23,7 +22,6 @@ router.route('/search_dictionary').get(async (req, res, next) => {
       await SearchFailureDao.insertSearchFailure('words', search, userUuid);
     }
 
-    cache.insert({ req }, results);
     res.json(results);
   } catch (err) {
     next(new HttpInternalError(err as string));
