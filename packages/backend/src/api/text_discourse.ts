@@ -8,6 +8,7 @@ import {
   TextDiscourseRow,
   DiscourseUnitType,
   InsertItemPropertyRow,
+  EditTranslationPayload,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import { v4 } from 'uuid';
@@ -58,6 +59,7 @@ router
         const AliasDao = sl.get('AliasDao');
         const ItemPropertiesDao = sl.get('ItemPropertiesDao');
         const utils = sl.get('utils');
+        const cache = sl.get('cache');
 
         const {
           textUuid,
@@ -176,6 +178,10 @@ router
           }
         });
 
+        await cache.clear(`/text_epigraphies/text/${textUuid}`, {
+          level: 'startsWith',
+        });
+
         res.status(201).end();
       } catch (err) {
         next(new HttpInternalError(err as string));
@@ -211,8 +217,9 @@ router
   .route('/text_discourse/:uuid')
   .patch(permissionsRoute('EDIT_TRANSLATION'), async (req, res, next) => {
     const FieldDao = sl.get('FieldDao');
+    const cache = sl.get('cache');
     const { uuid } = req.params;
-    const { newTranslation } = req.body;
+    const { newTranslation, textUuid }: EditTranslationPayload = req.body;
 
     try {
       const definisionFieldRow = await FieldDao.getDefinitionsByReferenceUuid(
@@ -223,6 +230,11 @@ router
       await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
         primacy: 1,
       });
+
+      await cache.clear(`/text_epigraphies/text/${textUuid}`, {
+        level: 'startsWith',
+      });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -230,11 +242,17 @@ router
   })
   .post(permissionsRoute('EDIT_TRANSLATION'), async (req, res, next) => {
     const FieldDao = sl.get('FieldDao');
+    const cache = sl.get('cache');
     const { uuid } = req.params;
-    const { newTranslation } = req.body;
+    const { newTranslation, textUuid }: EditTranslationPayload = req.body;
 
     try {
       await FieldDao.insertField(uuid, 'translation', newTranslation, 0, null);
+
+      await cache.clear(`/text_epigraphies/text/${textUuid}`, {
+        level: 'startsWith',
+      });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

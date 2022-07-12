@@ -1,12 +1,13 @@
 import {
   DictionaryWordTranslation,
-  DictionaryWord,
+  WordWithoutForms,
   SearchSpellingResultRow,
   DictionaryWordTypes,
   Word,
   DisplayableWord,
   WordFormAutocompleteDisplay,
   DictionaryWordLemma,
+  DictionaryWordRow,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
@@ -114,8 +115,6 @@ class DictionaryWordDao {
   async getWords(
     type: DictionaryWordTypes,
     letter: string,
-    userUuid: string | null,
-    isAdmin: boolean,
     trx?: Knex.Transaction
   ): Promise<Word[]> {
     const k = trx || knexRead();
@@ -163,9 +162,7 @@ class DictionaryWordDao {
     );
     const getAllLemmas = await this.getAllTranslations('discussionLemma', trx);
     const forms = await Promise.all(
-      words.map(word =>
-        DictionaryFormDao.getWordForms(word.uuid, isAdmin, false, trx)
-      )
+      words.map(word => DictionaryFormDao.getWordForms(word.uuid, false, trx))
     );
 
     const spellingUuids = forms.map(form =>
@@ -178,7 +175,7 @@ class DictionaryWordDao {
 
     const wordOccurrences = await Promise.all(
       spellingUuids.map(uuids =>
-        TextDiscourseDao.getTotalSpellingTexts(uuids, userUuid, undefined, trx)
+        TextDiscourseDao.getTotalSpellingTexts(uuids, undefined, undefined, trx)
       )
     );
 
@@ -227,7 +224,6 @@ class DictionaryWordDao {
           wordOccurrences: wordOccurrences[idx],
         };
       })
-      .filter(word => (isAdmin ? word : word.forms.length > 0))
       .sort((a, b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
   }
 
@@ -288,7 +284,7 @@ class DictionaryWordDao {
   async getGrammaticalInfo(
     wordUuid: string,
     trx?: Knex.Transaction
-  ): Promise<DictionaryWord> {
+  ): Promise<WordWithoutForms> {
     const [
       word,
       properties,
@@ -473,6 +469,18 @@ class DictionaryWordDao {
     await Promise.all(
       deletedTranslationUuids.map(uuid => FieldDao.deleteField(uuid, trx))
     );
+  }
+
+  async getDictionaryWordRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<DictionaryWordRow> {
+    const k = trx || knexRead();
+    const row = await k('dictionary_word')
+      .select('uuid', 'word', 'type')
+      .where({ uuid })
+      .first();
+    return row;
   }
 }
 

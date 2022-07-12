@@ -79,7 +79,7 @@
 <script lang="ts">
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
-import { DictionaryWord, ItemPropertyRow } from '@oare/types';
+import { ItemPropertyRow, Word } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -98,10 +98,10 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const words: Ref<DictionaryWord[]> = ref([]);
+    const words: Ref<Word[]> = ref([]);
     const loading = ref(false);
 
-    const searchFilter = (search: string, word: DictionaryWord): boolean => {
+    const searchFilter = (search: string, word: Word): boolean => {
       const lowerSearch = search ? search.toLowerCase() : '';
 
       return (
@@ -123,10 +123,7 @@ export default defineComponent({
       async () => {
         loading.value = true;
         try {
-          const { words: wordsResp } = await server.getDictionaryWords(
-            props.letter
-          );
-          words.value = wordsResp;
+          words.value = await server.getDictionaryWords(props.letter);
         } catch (err) {
           actions.showErrorSnackbar(
             'Failed to retrieve dictionary words',
@@ -139,23 +136,23 @@ export default defineComponent({
       { immediate: true }
     );
 
-    const getWordTranslations = (word: DictionaryWord) => {
+    const getWordTranslations = (word: Word) => {
       return word.translationsForDefinition;
     };
 
-    const partsOfSpeech = (word: DictionaryWord) => {
+    const partsOfSpeech = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Part of Speech'
       );
     };
 
-    const verbalThematicVowelTypes = (word: DictionaryWord) => {
+    const verbalThematicVowelTypes = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Verbal Thematic Vowel Type'
       );
     };
 
-    const specialClassifications = (word: DictionaryWord) => {
+    const specialClassifications = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Special Classifications'
       );

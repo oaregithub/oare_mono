@@ -10,6 +10,7 @@ import {
   TextDiscourseRow,
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
+  ParseTreePropertyUuids,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
@@ -138,26 +139,40 @@ class TextDiscourseDao {
   }
 
   async wordsInTextsSearch(
-    { uuids, numWordsBetween, sequenced, page, rows }: WordsInTextSearchPayload,
+    { items, sequenced, page, rows }: WordsInTextSearchPayload,
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<WordsInTextsSearchResponse> {
     const k = trx || knexRead();
     const TextDao = sl.get('TextDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const textsToHide: string[] = await CollectionTextUtils.textsToHide(
-      userUuid,
-      trx
+      userUuid
+    );
+    const wordsBetween: (number | null)[] = items.map(
+      item => item.numWordsBefore
     );
 
     const spellingUuids: string[][] = await Promise.all(
-      uuids.map(async uuidArray => {
-        const spellingUuidsArray: string[] = await k(
-          'dictionary_spelling as ds'
-        )
+      items.map(async payloadObject => {
+        let formUuids: string[] = [];
+        if (payloadObject.type === 'parse') {
+          const parseProperties = payloadObject.uuids as ParseTreePropertyUuids[][];
+          formUuids = (
+            await Promise.all(
+              parseProperties.map(parsePropArray =>
+                ItemPropertiesDao.getFormsByProperties(parsePropArray)
+              )
+            )
+          ).flat();
+        }
+        if (payloadObject.type === 'form') {
+          formUuids = payloadObject.uuids as string[];
+        }
+        const spellingUuidsArray = await k('dictionary_spelling as ds')
           .pluck('ds.uuid')
-          .whereIn('ds.reference_uuid', uuidArray);
-
+          .whereIn('ds.reference_uuid', formUuids);
         return spellingUuidsArray;
       })
     );
@@ -166,7 +181,7 @@ class TextDiscourseDao {
       textUuid: string;
     }> = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       spellingUuids,
-      numWordsBetween,
+      wordsBetween,
       textsToHide,
       sequenced,
       trx
@@ -179,7 +194,7 @@ class TextDiscourseDao {
 
     const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       spellingUuids,
-      numWordsBetween,
+      wordsBetween,
       textsToHide,
       sequenced,
       trx
@@ -190,7 +205,7 @@ class TextDiscourseDao {
       )
       .select('td0.uuid as discourseUuid', 'td0.text_uuid as textUuid')
       .modify(innerQuery => {
-        for (let i = 1; i < uuids.length; i += 1) {
+        for (let i = 1; i < items.length; i += 1) {
           innerQuery.select(`td${i}.uuid as discourse${i}Uuid`);
         }
       })
@@ -206,12 +221,12 @@ class TextDiscourseDao {
       count,
     }: { count: number } = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       spellingUuids,
-      numWordsBetween,
+      wordsBetween,
       textsToHide,
       sequenced,
       trx
     )
-      .select(knexRead().raw('count(distinct td0.text_uuid) as count'))
+      .select(k.raw('count(distinct td0.text_uuid) as count'))
       .first();
 
     const textNames = (
@@ -317,12 +332,15 @@ class TextDiscourseDao {
 
   async getTotalSpellingTexts(
     spellingUuids: string[],
-    userUuid: string | null,
+    userUuid?: string | null,
     pagination: Partial<Pagination> = {},
     trx?: Knex.Transaction
   ): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    const textsToHide =
+      userUuid !== undefined
+        ? await CollectionTextUtils.textsToHide(userUuid, trx)
+        : [];
 
     const countRow = await this.createSpellingTextsQuery(
       spellingUuids,

@@ -283,7 +283,11 @@ export default defineComponent({
 
     const updateLemmaProperties = async () => {
       try {
-        await server.editPropertiesByReferenceUuid(word.uuid, properties.value);
+        await server.editPropertiesByReferenceUuid(
+          word.uuid,
+          properties.value,
+          word.uuid
+        );
         actions.showSnackbar(
           `Successfully updated lemma properties for ${word.word}`
         );

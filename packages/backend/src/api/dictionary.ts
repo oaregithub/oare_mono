@@ -12,6 +12,7 @@ import {
   AddFormPayload,
   InsertItemPropertyRow,
   UpdateFormPayload,
+  TaxonomyTree,
 } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
@@ -19,9 +20,10 @@ import {
   convertParsePropsToItemProps,
 } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
-import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import cacheMiddleware from '@/middlewares/cache';
+import { dictionaryWordFilter, noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -32,6 +34,9 @@ router
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const cache = sl.get('cache');
       const utils = sl.get('utils');
 
       const {
@@ -86,6 +91,22 @@ router
           )
         );
       });
+
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
+      );
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       const response: AddFormSpellingResponse = { uuid: spellingUuid };
       res.status(201).json(response);
@@ -154,19 +175,29 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
 
 router
   .route('/dictionary/:uuid')
-  .get(async (req, res, next) => {
+  .get(cacheMiddleware<Word>(dictionaryWordFilter), async (req, res, next) => {
     try {
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const cache = sl.get('cache');
+
       const { uuid } = req.params;
-      const isAdmin = req.user ? req.user.isAdmin : false;
+
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
-      const forms = await DictionaryFormDao.getWordForms(uuid, isAdmin, true);
+      const forms = await DictionaryFormDao.getWordForms(uuid, true);
+
       const result: Word = {
         ...grammarInfo,
         forms,
       };
-      res.json(result);
+
+      const response = await cache.insert<Word>(
+        { req },
+        result,
+        dictionaryWordFilter
+      );
+
+      res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
@@ -182,6 +213,10 @@ router
       const { word }: UpdateDictionaryWordPayload = req.body;
       const userUuid = req.user!.uuid;
 
+      const originalDictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        uuid
+      );
+
       await utils.createTransaction(async trx => {
         await LoggingEditsDao.logEdit(
           'UPDATE',
@@ -193,16 +228,21 @@ router
         await DictionaryWordDao.updateWordSpelling(uuid, word, trx);
       });
 
-      // Updated word, cache must be cleared
-      cache.clear(
-        {
-          req: {
-            originalUrl: `${API_PATH}/words`,
-            method: 'GET',
-          },
-        },
-        { exact: false }
+      const originalDictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        originalDictionaryRow.word,
+        originalDictionaryRow.type
       );
+      const newDictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        word,
+        originalDictionaryRow.type
+      );
+
+      // Updated word, cache must be cleared
+      await cache.clear(originalDictionaryCacheRouteToClear, {
+        level: 'exact',
+      });
+      await cache.clear(newDictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -233,16 +273,20 @@ router
         );
       });
 
-      // Updated word, cache must be cleared
-      cache.clear(
-        {
-          req: {
-            originalUrl: `${API_PATH}/words`,
-            method: 'GET',
-          },
-        },
-        { exact: false }
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        uuid
       );
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
+      );
+
+      // Updated word, cache must be cleared
+      await cache.clear(dictionaryCacheRouteToClear, {
+        level: 'exact',
+      });
+      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -257,6 +301,8 @@ router
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const utils = sl.get('utils');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const cache = sl.get('cache');
 
       const { uuid: formUuid } = req.params;
       const { newForm }: UpdateFormPayload = req.body;
@@ -288,6 +334,21 @@ router
           )
         );
       });
+
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
+      );
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       res.status(201).end();
     } catch (err) {
@@ -363,8 +424,10 @@ router
       const { spelling, discourseUuids }: UpdateFormSpellingPayload = req.body;
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const utils = sl.get('utils');
+      const cache = sl.get('cache');
 
       // If it doesn't exist in text_discourse, update
       const currentSpelling = await DictionarySpellingDao.getSpellingByUuid(
@@ -420,6 +483,15 @@ router
         );
       });
 
+      const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+        spellingUuid
+      );
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -430,9 +502,23 @@ router
       const { uuid } = req.params;
 
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const LoggingEditsDao = sl.get('LoggingEditsDao');
       const utils = sl.get('utils');
+      const cache = sl.get('cache');
+
+      const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+        uuid
+      );
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
+      );
 
       await utils.createTransaction(async trx => {
         await TextDiscourseDao.unsetSpellingUuid(uuid, trx);
@@ -455,6 +541,14 @@ router
         );
       });
 
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -466,7 +560,6 @@ router
   .get(async (req, res, next) => {
     try {
       const { spellingUuid } = req.params;
-      const isAdmin = req.user ? req.user.isAdmin : false;
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
@@ -482,11 +575,7 @@ router
       );
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(wordUuid);
-      const forms = await DictionaryFormDao.getWordForms(
-        wordUuid,
-        isAdmin,
-        true
-      );
+      const forms = await DictionaryFormDao.getWordForms(wordUuid, true);
 
       // Only get the one form from the formUuid (keep all spellings of the form)
       const selectedForms = forms.filter(form => form.uuid === formUuid);
@@ -507,7 +596,6 @@ router
   .get(async (req, res, next) => {
     try {
       const { discourseUuid } = req.params;
-      const isAdmin = req.user ? req.user.isAdmin : false;
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const DictionaryFormDao = sl.get('DictionaryFormDao');
@@ -544,11 +632,7 @@ router
         const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(
           wordUuid
         );
-        const forms = await DictionaryFormDao.getWordForms(
-          wordUuid,
-          isAdmin,
-          true
-        );
+        const forms = await DictionaryFormDao.getWordForms(wordUuid, true);
 
         // Only get the one form from the formUuid (keep all spellings of the form)
         const selectedForms = forms.filter(form => form.uuid === formUuid);
@@ -565,26 +649,31 @@ router
     }
   });
 
-router.route('/dictionary/tree/taxonomy').get(async (req, res, next) => {
-  try {
-    const HierarchyDao = sl.get('HierarchyDao');
-    const cache = sl.get('cache');
+router
+  .route('/dictionary/tree/taxonomy')
+  .get(cacheMiddleware<TaxonomyTree>(noFilter), async (req, res, next) => {
+    try {
+      const HierarchyDao = sl.get('HierarchyDao');
+      const cache = sl.get('cache');
 
-    const tree = await HierarchyDao.createTaxonomyTree();
-    cache.insert({ req }, tree);
-    res.json(tree);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+      const tree = await HierarchyDao.createTaxonomyTree();
+
+      const response = await cache.insert({ req }, tree, noFilter);
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 router
   .route('/dictionary/addform')
   .post(permissionsRoute('ADD_FORM'), async (req, res, next) => {
     try {
       const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
       const utils = sl.get('utils');
+      const cache = sl.get('cache');
 
       const { wordUuid, formSpelling, properties }: AddFormPayload = req.body;
 
@@ -614,6 +703,18 @@ router
           );
         }
       });
+
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
+      );
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       res.status(201).end();
     } catch (err) {

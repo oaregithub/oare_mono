@@ -1,74 +1,70 @@
 <template>
-  <v-row>
-    <v-col
-      cols="12"
-      :sm="canViewEpigraphyImages ? 7 : 12"
-      :md="canViewEpigraphyImages ? 5 : 12"
+  <OareContentView :title="textInfo.text.name" :loading="loading">
+    <template #header v-if="!disableEditing">
+      <OareBreadcrumbs :items="breadcrumbItems" />
+    </template>
+
+    <template
+      #title:pre
+      v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
     >
-      <OareContentView :title="textInfo.text.name" :loading="loading">
-        <template #header v-if="!disableEditing">
-          <OareBreadcrumbs :items="breadcrumbItems" />
-        </template>
+      <Stoplight
+        :transliteration="transliteration"
+        :showEditDialog="true"
+        :textUuid="textUuid"
+        :key="textInfo.color"
+        class="mr-2"
+      />
+    </template>
 
-        <template
-          #title:pre
-          v-if="textInfo.color && textInfo.colorMeaning && !disableEditing"
-        >
-          <Stoplight
-            :transliteration="transliteration"
-            :showEditDialog="true"
-            :textUuid="textUuid"
-            :key="textInfo.color"
-            class="mr-2"
-          />
+    <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
+      <v-btn
+        v-if="!isEditing && textInfo.canWrite"
+        color="primary"
+        :to="`/epigraphies/${textUuid}/edit`"
+        class="mx-2"
+        >Edit</v-btn
+      >
+      <v-btn
+        v-if="canAddPictures"
+        color="primary"
+        @click="photosDialogOpen = true"
+        class="mx-2"
+        >Add Images</v-btn
+      >
+      <oare-dialog
+        v-if="isAdmin && textUuid"
+        v-model="quarantineDialog"
+        title="Quarantine Text"
+        submitText="Yes"
+        cancelText="Cancel"
+        @submit="quarantineText"
+        :submitLoading="quarantineLoading"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn color="primary" class="mx-2 test-quarantine-button" v-on="on"
+            ><v-icon>mdi-biohazard</v-icon></v-btn
+          >
         </template>
-
-        <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
-          <v-btn
-            v-if="!isEditing && textInfo.canWrite"
-            color="primary"
-            :to="`/epigraphies/${textUuid}/edit`"
-            class="mx-2"
-            >Edit</v-btn
-          >
-          <v-btn
-            v-if="canAddPictures"
-            color="primary"
-            @click="photosDialogOpen = true"
-            class="mx-2"
-            >Add Images</v-btn
-          >
-          <oare-dialog
-            v-if="isAdmin && textUuid"
-            v-model="quarantineDialog"
-            title="Quarantine Text"
-            submitText="Yes"
-            cancelText="Cancel"
-            @submit="quarantineText"
-            :submitLoading="quarantineLoading"
-          >
-            <template v-slot:activator="{ on }">
-              <v-btn
-                color="primary"
-                class="mx-2 test-quarantine-button"
-                v-on="on"
-                ><v-icon>mdi-biohazard</v-icon></v-btn
-              >
-            </template>
-            Are you sure you want to quarantine this text? If you continue, this
-            text will no longer appear in text lists or search results and its
-            contents will not count toward any item totals.
-          </oare-dialog>
-          <v-btn
-            v-if="hasCopyPermission"
-            color="primary"
-            class="mx-2 test-copy-button"
-            @click="copyTransliteration"
-          >
-            <v-icon small>mdi-content-copy</v-icon>
-          </v-btn>
-        </template>
-
+        Are you sure you want to quarantine this text? If you continue, this
+        text will no longer appear in text lists or search results and its
+        contents will not count toward any item totals.
+      </oare-dialog>
+      <v-btn
+        v-if="hasCopyPermission"
+        color="primary"
+        class="mx-2 test-copy-button"
+        @click="copyTransliteration"
+      >
+        <v-icon small>mdi-content-copy</v-icon>
+      </v-btn>
+    </template>
+    <v-row>
+      <v-col
+        cols="12"
+        :sm="canViewEpigraphyImages ? 7 : 12"
+        :md="canViewEpigraphyImages ? 5 : 12"
+      >
         <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
           <v-icon
             v-if="!editText && !disableEditing"
@@ -215,18 +211,18 @@
         >
           <add-photos inDialog @update-photos="setPhotosToAdd" />
         </oare-dialog>
-      </OareContentView>
-    </v-col>
-    <v-col
-      cols="12"
-      sm="5"
-      md="7"
-      v-if="canViewEpigraphyImages"
-      class="relative test-cdli-image"
-    >
-      <EpigraphyImage :imageLinks="imageUrls" :sticky="!disableEditing" />
-    </v-col>
-  </v-row>
+      </v-col>
+      <v-col
+        cols="12"
+        sm="5"
+        md="7"
+        v-if="canViewEpigraphyImages"
+        class="relative test-cdli-image"
+      >
+        <EpigraphyImage :imageLinks="imageUrls" :sticky="!disableEditing" />
+      </v-col>
+    </v-row>
+  </OareContentView>
 </template>
 
 <script lang="ts">
@@ -545,16 +541,10 @@ export default defineComponent({
         }
         zoteroDataList.value = textInfo.value.zoteroData;
       } catch (err) {
-        if ((err as any).response) {
-          if ((err as any).response.status === 403) {
-            router.replace({ name: '403' });
-          }
-        } else {
-          actions.showErrorSnackbar(
-            'Error updating text information. Please try again.',
-            err as Error
-          );
-        }
+        actions.showErrorSnackbar(
+          'Error updating text information. Please try again.',
+          err as Error
+        );
       } finally {
         loading.value = false;
       }

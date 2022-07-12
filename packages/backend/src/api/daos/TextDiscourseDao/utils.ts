@@ -71,7 +71,7 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
 
 export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
   spellingUuids: string[][],
-  numWordsBetween: number[],
+  numWordsBetween: (number | null)[],
   textsToHide: string[],
   sequenced: boolean,
   trx?: Knex.Transaction
@@ -86,28 +86,27 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       for (let i = 1; i < spellingUuids.length; i += 1) {
         qb.join(`text_discourse as td${i}`, function () {
           this.on(`td${i}.text_uuid`, `td${sequenced ? i - 1 : 0}.text_uuid`);
+          const currentNumWordsBetween: number = numWordsBetween[i] ?? -1;
           if (sequenced) {
-            if (numWordsBetween[i - 1] > -1) {
+            if (currentNumWordsBetween > -1) {
               this.andOn(
                 k.raw(
                   `td${i}.word_on_tablet <= (td${i - 1}.word_on_tablet + ?)`,
-                  [numWordsBetween[i - 1]]
+                  [currentNumWordsBetween]
                 )
               ).andOn(
                 k.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
               );
             } else {
               this.andOn(
-                k.raw(
-                  k.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
-                )
+                k.raw(`td${i}.word_on_tablet > td${i - 1}.word_on_tablet`)
               );
             }
-          } else if (numWordsBetween[i - 1] > -1) {
+          } else if (currentNumWordsBetween > -1) {
             this.andOn(
               k.raw(
                 `ABS(td${i}.word_on_tablet - td${i - 1}.word_on_tablet) <= ?`,
-                [numWordsBetween[i - 1]]
+                [currentNumWordsBetween]
               )
             );
           }
