@@ -174,20 +174,15 @@
             </div>
           </div>
         </v-row>
-        <div v-if="allowViewCitations && zoteroDataListTop.length">
-          <div v-for="data in zoteroDataListTop" :key="data">
-            <div>
-              Citation: <a :href="data.link" v-html="data.citation"></a>
+        <div v-if="allowViewCitations && zoteroDataList.length">
+          <div v-for="(zotero, idx) in zoteroDataList" :key="idx">
+            <div v-if="idx <= 1 || seeMoreZotero">
+              Citation: <a :href="zotero.link" v-html="zotero.citation"></a>
             </div>
           </div>
-          <div v-if="zoteroDataListBottom.length">
-            See more... <br />
-            <div v-for="data in zoteroDataListBottom" :key="data">
-              <div>
-                Citation: <a :href="data.link" v-html="data.citation"></a>
-              </div>
-            </div>
-          </div>
+          <v-btn v-if="zoteroDataList.length >= 3" @click="seeMoreSwitch"
+            >See more...</v-btn
+          >
           <br />
         </div>
 
@@ -387,8 +382,8 @@ export default defineComponent({
     });
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
-    const zoteroDataListTop = ref<ZoteroData[]>([]);
-    const zoteroDataListBottom = ref<ZoteroData[]>([]);
+    const zoteroDataList = ref<ZoteroData[]>([]);
+    const seeMoreZotero = ref<boolean>(false);
 
     const allowViewCitations = computed(() =>
       store.hasPermission('VIEW_BIBLIOGRAPHY')
@@ -547,13 +542,7 @@ export default defineComponent({
             textInfo.value.cdliNum
           );
         }
-        const zoteroDataList = textInfo.value.zoteroData;
-        if (zoteroDataList.length > 2) {
-          zoteroDataListTop.value = zoteroDataList.slice(0, 2);
-          zoteroDataListBottom.value = zoteroDataList.slice(2);
-        } else {
-          zoteroDataListTop.value = zoteroDataList;
-        }
+        zoteroDataList.value = textInfo.value.zoteroData;
       } catch (err) {
         actions.showErrorSnackbar(
           'Error updating text information. Please try again.',
@@ -665,6 +654,11 @@ export default defineComponent({
       store.hasPermission('COPY_TEXT_TRANSLITERATION')
     );
 
+    const seeMoreSwitch = () => {
+      seeMoreZotero.value = !seeMoreZotero.value;
+      console.log(zoteroDataList.value);
+    };
+
     return {
       textInfo,
       isEditing,
@@ -693,11 +687,12 @@ export default defineComponent({
       quarantineText,
       quarantineDialog,
       quarantineLoading,
-      zoteroDataListTop,
-      zoteroDataListBottom,
+      zoteroDataList,
       allowViewCitations,
       copyTransliteration,
       hasCopyPermission,
+      seeMoreZotero,
+      seeMoreSwitch,
     };
   },
 });
