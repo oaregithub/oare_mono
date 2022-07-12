@@ -180,13 +180,13 @@
               Citation: <a :href="zotero.link" v-html="zotero.citation"></a>
             </div>
           </div>
-          <div v-if="zoteroDataList.length >= 3">
+          <div v-if="zoteroDataList.length >= 3" color="primary">
             <v-btn text x-small @click="seeMoreSwitch">
               <div v-if="seeMoreZotero">
-                <v-icon small class="mr-1">mdi-arrow-up</v-icon>See Less
+                <v-icon x-small class="mr-1">mdi-arrow-up</v-icon>See Less
               </div>
               <div v-else>
-                <v-icon small class="mr-1">mdi-arrow-down</v-icon>See More
+                <v-icon x-small class="mr-1">mdi-arrow-down</v-icon>See More
               </div>
             </v-btn>
           </div>
