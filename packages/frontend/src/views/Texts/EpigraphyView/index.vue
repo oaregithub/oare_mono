@@ -180,11 +180,18 @@
               Citation: <a :href="zotero.link" v-html="zotero.citation"></a>
             </div>
           </div>
-          <v-btn v-if="zoteroDataList.length >= 3" @click="seeMoreSwitch"
-            >See more...</v-btn
-          >
-          <br />
+          <div v-if="zoteroDataList.length >= 3">
+            <v-btn text x-small @click="seeMoreSwitch">
+              <div v-if="seeMoreZotero">
+                <v-icon small class="mr-1">mdi-arrow-up</v-icon>See Less
+              </div>
+              <div v-else>
+                <v-icon small class="mr-1">mdi-arrow-down</v-icon>See More
+              </div>
+            </v-btn>
+          </div>
         </div>
+        <br />
 
         <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
@@ -656,7 +663,6 @@ export default defineComponent({
 
     const seeMoreSwitch = () => {
       seeMoreZotero.value = !seeMoreZotero.value;
-      console.log(zoteroDataList.value);
     };
 
     return {
