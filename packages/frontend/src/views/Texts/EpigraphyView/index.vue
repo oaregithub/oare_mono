@@ -175,14 +175,23 @@
           </div>
         </v-row>
         <div v-if="allowViewCitations && zoteroDataList.length">
-          <div v-for="(data, idx) in zoteroDataList" :key="idx">
-            <div>
-              Citation:
-              <a :href="data.link" v-html="data.citation" target="_blank"></a>
+          <div v-for="(zotero, idx) in zoteroDataList" :key="idx">
+            <div v-if="idx <= 1 || seeMoreZotero">
+              Citation: <a :href="zotero.link" v-html="zotero.citation"></a>
             </div>
           </div>
-          <br />
+          <div v-if="zoteroDataList.length >= 3" color="primary">
+            <v-btn text x-small @click="seeMoreSwitch">
+              <div v-if="seeMoreZotero">
+                <v-icon x-small class="mr-1">mdi-arrow-up</v-icon>See Less
+              </div>
+              <div v-else>
+                <v-icon x-small class="mr-1">mdi-arrow-down</v-icon>See More
+              </div>
+            </v-btn>
+          </div>
         </div>
+        <br />
 
         <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
@@ -381,6 +390,7 @@ export default defineComponent({
     const updateDraft = (newDraft: DraftContent) => (draft.value = newDraft);
 
     const zoteroDataList = ref<ZoteroData[]>([]);
+    const seeMoreZotero = ref<boolean>(false);
 
     const allowViewCitations = computed(() =>
       store.hasPermission('VIEW_BIBLIOGRAPHY')
@@ -651,6 +661,10 @@ export default defineComponent({
       store.hasPermission('COPY_TEXT_TRANSLITERATION')
     );
 
+    const seeMoreSwitch = () => {
+      seeMoreZotero.value = !seeMoreZotero.value;
+    };
+
     return {
       textInfo,
       isEditing,
@@ -683,6 +697,8 @@ export default defineComponent({
       allowViewCitations,
       copyTransliteration,
       hasCopyPermission,
+      seeMoreZotero,
+      seeMoreSwitch,
     };
   },
 });
