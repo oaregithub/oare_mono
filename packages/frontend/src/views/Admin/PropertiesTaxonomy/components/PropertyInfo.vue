@@ -50,7 +50,7 @@
             @keydown.enter="addDescription"
             filled
           ></v-textarea>
-          <v-select
+          <!-- <v-select
             label="Language"
             v-model="newLanguage"
             filled
@@ -67,7 +67,7 @@
               'Spanish',
               'Arabic',
             ]"
-          ></v-select>
+          ></v-select> -->
           <v-progress-circular
             size="20"
             v-if="isSaving"
@@ -106,6 +106,7 @@
 import { computed, defineComponent, Ref, ref } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import SpecialChars from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/SpecialChars.vue';
+import { FieldInfo } from '@oare/types';
 
 export default defineComponent({
   components: { SpecialChars },
@@ -162,11 +163,11 @@ export default defineComponent({
       isSaving.value = true;
       if (reactiveFieldUuid.value) {
         try {
-          await server.updatePropertyDescriptionField(
-            reactiveFieldUuid.value,
-            newDescription.value,
-            newPrimacy.value
-          );
+          await server.updatePropertyDescriptionField({
+            uuid: reactiveFieldUuid.value,
+            description: newDescription.value,
+            primacy: newPrimacy.value,
+          });
 
           await emitEvents();
           actions.showSnackbar('Successfully updated description');
@@ -185,14 +186,12 @@ export default defineComponent({
       const actions = sl.get('globalActions');
       isSaving.value = true;
       try {
-        await server.createNewPropertyDescriptionField(
-          props.variableOrValueUuid,
-          newDescription.value,
-          newPrimacy.value,
-          newLanguage.value === 'English' ? 'default' : newLanguage.value
-        );
-        reactiveFieldUuid.value =
-          (await server.getFieldInfo(props.variableOrValueUuid)).uuid ?? '';
+        await server.createNewPropertyDescriptionField({
+          referenceUuid: props.variableOrValueUuid,
+          description: newDescription.value,
+          primacy: newPrimacy.value,
+        });
+
         await emitEvents();
         actions.showSnackbar('Successfully updated word spelling');
       } catch (err) {
@@ -206,6 +205,16 @@ export default defineComponent({
     };
 
     const emitEvents = async () => {
+      const newProps: FieldInfo = await server.getFieldInfo(
+        props.variableOrValueUuid
+      );
+      newDescription.value = newProps.field ?? 'none';
+      newPrimacy.value = newProps.primacy ?? 0;
+      newLanguage.value =
+        newProps.language === 'default'
+          ? 'English'
+          : newProps.language || 'n/a';
+      reactiveFieldUuid.value = newProps.uuid || undefined;
       emit('update:description', newDescription.value);
       emit('update:primacy', newPrimacy.value);
       emit('update:language', newLanguage.value);
@@ -213,13 +222,7 @@ export default defineComponent({
     };
 
     const canSubmit = computed(
-      () =>
-        newLanguage.value !== 'n/a' &&
-        newDescription.value !== 'none' &&
-        newPrimacy.value !== 0 &&
-        (newLanguage.value !== props.language ||
-          newDescription.value !== props.description ||
-          newPrimacy.value !== props.primacy)
+      () => newDescription.value !== 'none' && newPrimacy.value !== 0
     );
     return {
       isEditing,

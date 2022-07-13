@@ -177,3 +177,28 @@ export const getZoteroAPIKEY = async (): Promise<string> => {
 
   return apiKey;
 };
+
+export const getDetectLanguageAPIKEY = async (): Promise<string> => {
+  const s3 = new AWS.S3();
+
+  let apiKey = '';
+
+  if (process.env.DETECT_LANGUAGE_API_KEY) {
+    apiKey = process.env.DETECT_LANGUAGE_API_KEY;
+  } else {
+    const response = (
+      await s3
+        .getObject({
+          Bucket: 'oare-resources',
+          Key: 'detectlanguage_auth.json',
+        })
+        .promise()
+    ).Body;
+    if (response) {
+      apiKey = JSON.parse(response as string).authKey;
+      process.env.DETECT_LANGUAGE_API_KEY = apiKey;
+    }
+  }
+
+  return apiKey;
+};

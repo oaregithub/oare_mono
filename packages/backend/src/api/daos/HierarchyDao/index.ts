@@ -5,6 +5,7 @@ import {
   SearchNamesPayload,
   TaxonomyTree,
   HierarchyRow,
+  FieldInfo,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
@@ -206,12 +207,7 @@ class HierarchyDao {
       const results = await Promise.all(
         rows.map(async row => {
           const names = await AliasDao.getAliasNames(row.objectUuid, trx);
-          const fieldRow: {
-            uuid: string | null;
-            field: string | null;
-            primacy: number | null;
-            language: string | null;
-          } = await FieldDao.getFieldInfoByReferenceAndType(
+          const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
             row.variableUuid || row.valueUuid
           );
 
@@ -220,12 +216,7 @@ class HierarchyDao {
             aliasName: names[0] || null,
             level,
             children: await this.getChildren(row.uuid, level || 0, trx),
-            fieldInfo: {
-              field: fieldRow?.field,
-              uuid: fieldRow?.uuid,
-              primacy: fieldRow?.primacy,
-              language: fieldRow?.language,
-            },
+            fieldInfo: fieldRow ?? {},
           };
         })
       );
@@ -244,24 +235,14 @@ class HierarchyDao {
       .first();
 
     const names = await AliasDao.getAliasNames(topNode.objectUuid, trx);
-    const fieldRow: {
-      uuid: string | null;
-      field: string | null;
-      primacy: number | null;
-      language: string | null;
-    } = await FieldDao.getFieldInfoByReferenceAndType(
+    const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
       topNode.variableUuid || topNode.valueUuid
     );
-    const tree = {
+    const tree: TaxonomyTree = {
       ...topNode,
       aliasName: names[0] || null,
       children: await this.getChildren(topNode.uuid, null, trx),
-      fieldInfo: {
-        field: fieldRow?.field,
-        uuid: fieldRow?.uuid,
-        primacy: fieldRow?.primacy,
-        language: fieldRow?.language,
-      },
+      fieldInfo: fieldRow ?? {},
     };
     return tree;
   }

@@ -1,7 +1,8 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { API_PATH } from '@/setupRoutes';
+import { EditFieldPayload, FieldInfo, NewFieldPayload } from '@oare/types';
+import { detectLanguage } from './daos/FieldDao/utils';
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router
       const FieldDao = sl.get('FieldDao');
       const { referenceUuid } = req.params;
 
-      const response = await FieldDao.getFieldInfoByReferenceAndType(
+      const response: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
         referenceUuid
       );
       res.json(response);
@@ -25,22 +26,33 @@ router
   .route('/update_field_description')
   .patch(async (req, res, next) => {
     const FieldDao = sl.get('FieldDao');
-    const utils = sl.get('utils');
     const cache = sl.get('cache');
-    const { uuid, description, primacy, language } = req.body;
+    const {
+      uuid,
+      description,
+      primacy,
+    }: EditFieldPayload = req.body as EditFieldPayload;
 
     try {
-      await utils.createTransaction(async trx => {
-        await FieldDao.updateAllFieldFields(
-          uuid,
-          description,
-          language,
-          'description',
-          { primacy },
-          trx
-        );
+      const language = (await detectLanguage(description)).toLocaleLowerCase();
+
+      await FieldDao.updateAllFieldFields(
+        uuid,
+        description,
+        language === 'english'
+          ? 'default'
+          : language[0].toLocaleUpperCase() + language.substring(1),
+        'description',
+        { primacy }
+      );
+
+      cache.clear('/dictionary/tree/taxonomy', {
+        level: 'exact',
       });
-      cache.clear(`${API_PATH}/dictionary/tree/taxonomy`, { level: 'exact' });
+
+      cache.clear('/field_description/', {
+        level: 'startsWith',
+      });
 
       res.status(201).end();
     } catch (err) {
@@ -50,18 +62,29 @@ router
   .post(async (req, res, next) => {
     const FieldDao = sl.get('FieldDao');
     const cache = sl.get('cache');
-    const { referenceUuid, newDescription, primacy, language } = req.body;
+    const {
+      referenceUuid,
+      description,
+      primacy,
+    }: NewFieldPayload = req.body as NewFieldPayload;
 
     try {
+      const language: string = (
+        await detectLanguage(description)
+      ).toLocaleLowerCase();
       await FieldDao.insertField(
         referenceUuid,
         'description',
-        newDescription,
+        description,
         primacy,
-        language
+        language === 'english'
+          ? 'default'
+          : language[0].toLocaleUpperCase() + language.substring(1)
       );
 
-      cache.clear(`${API_PATH}/dictionary/tree/taxonomy`, { level: 'exact' });
+      cache.clear('/dictionary/tree/taxonomy', {
+        level: 'exact',
+      });
 
       res.status(201).end();
     } catch (err) {

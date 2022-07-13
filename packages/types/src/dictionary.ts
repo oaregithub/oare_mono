@@ -1,5 +1,6 @@
 import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
+import { FieldInfo } from './field';
 
 export interface DisplayableWord {
   uuid: string;
@@ -165,12 +166,7 @@ export interface TaxonomyTree {
   children: TaxonomyTree[] | null;
   custom: number | null;
   role: string | null;
-  fieldInfo: {
-    uuid: string | null;
-    field: string | null;
-    primacy: number | null;
-    language: string | null;
-  };
+  fieldInfo: FieldInfo | null;
 }
 
 export interface ParseTreeProperty {

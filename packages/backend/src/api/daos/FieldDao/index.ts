@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import { Knex } from 'knex';
+import { FieldInfo } from '@oare/types';
 
 interface FieldRow {
   id: number;
@@ -32,10 +33,16 @@ class FieldDao {
   async getFieldInfoByReferenceAndType(
     referenceUuid: string | null,
     trx?: Knex.Transaction
-  ) {
+  ): Promise<FieldInfo> {
     const k = trx || knexRead();
     return k('field')
-      .select('field.field', 'field.uuid', 'field.primacy', 'field.language')
+      .select(
+        'field.field',
+        'field.uuid',
+        'field.primacy',
+        'field.language',
+        'field.reference_uuid as referenceUuid'
+      )
       .where('field.reference_uuid', referenceUuid)
       .andWhere('field.type', 'description')
       .first();
@@ -73,9 +80,7 @@ class FieldDao {
       .update({
         field,
         primacy:
-          options && (options.primacy || options.primacy === 0)
-            ? options.primacy
-            : null,
+          options && options.primacy !== undefined ? options.primacy : null,
       })
       .where({ uuid });
   }
@@ -95,9 +100,7 @@ class FieldDao {
         language,
         type,
         primacy:
-          options && (options.primacy || options.primacy === 0)
-            ? options.primacy
-            : null,
+          options && options.primacy !== undefined ? options.primacy : null,
       })
       .where({ uuid });
   }

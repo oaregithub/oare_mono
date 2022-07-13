@@ -1,39 +1,23 @@
 import axios from '@/axiosInstance';
+import { EditFieldPayload, FieldInfo, NewFieldPayload } from '@oare/types';
 
 async function updatePropertyDescriptionField(
-  uuid: string,
-  description: string,
-  primacy: number
-) {
+  payload: EditFieldPayload
+): Promise<void> {
   await axios.patch('/update_field_description', {
-    uuid,
-    description,
-    primacy,
+    ...payload,
   });
 }
 
 async function createNewPropertyDescriptionField(
-  referenceUuid: string,
-  newDescription: string,
-  primacy: number,
-  language: string
-) {
+  payload: NewFieldPayload
+): Promise<void> {
   await axios.post('/update_field_description', {
-    referenceUuid,
-    newDescription,
-    primacy,
-    language,
+    ...payload,
   });
 }
 
-async function getFieldInfo(
-  referenceUuid: string
-): Promise<{
-  uuid: string | null;
-  field: string | null;
-  primacy: number | null;
-  language: string | null;
-}> {
+async function getFieldInfo(referenceUuid: string): Promise<FieldInfo> {
   const { data } = await axios.get(`/field_description/${referenceUuid}`);
   return data;
 }
