@@ -23,7 +23,7 @@ router
         const citationStyle = (req.query.style ||
           'chicago-author-date') as string;
 
-        const bibliographies = await BibliographyDao.getBiblographies();
+        const bibliographies = await BibliographyDao.getBibliographies();
 
         const zoteroResponse = await Promise.all(
           bibliographies.map(async bibliography =>

@@ -7,7 +7,7 @@ describe('GET /bibliographies', () => {
   const PATH = `${API_PATH}/bibliographies`;
 
   const mockBibliographyDao = {
-    getBiblographies: jest.fn().mockResolvedValue([
+    getBibliographies: jest.fn().mockResolvedValue([
       {
         uuid: 'bib-test-uuid',
       },
@@ -100,7 +100,7 @@ describe('GET /bibliographies', () => {
   it('returns 500 on failed fetching bibliography', async () => {
     sl.set('BibliographyDao', {
       ...mockBibliographyDao,
-      getBiblographies: jest
+      getBibliographies: jest
         .fn()
         .mockRejectedValue('failed to retreive bibliography'),
     });

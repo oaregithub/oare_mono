@@ -15,7 +15,7 @@ class BibliographyDao {
     return bibliography;
   }
 
-  async getBiblographies(trx?: Knex.Transaction): Promise<BibliographyItem[]> {
+  async getBibliographies(trx?: Knex.Transaction): Promise<BibliographyItem[]> {
     const k = trx || knexRead();
     const bibliographies: BibliographyItem[] = await k('bibliography').select(
       'uuid',
