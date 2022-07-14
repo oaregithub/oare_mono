@@ -22,9 +22,9 @@ router.route('/search_names').get(async (req, res, next) => {
     if (req.query.type === 'Text' || req.query.type === 'Collection') {
       res.json(await HierarchyDao.getBySearchTerm(searchParams));
     } else {
-      if (req.query.fromWhere === 'addAllowlstImages')
+      if (searchParams.groupId) {
         res.json(await HierarchyDao.getImagesForAllowlist(searchParams));
-      else res.json(await HierarchyDao.getImagesForDenylist(searchParams));
+      } else res.json(await HierarchyDao.getImagesForDenylist(searchParams));
     }
   } catch (err) {
     next(new HttpInternalError(err as string));

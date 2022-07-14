@@ -70,6 +70,11 @@ export interface GetDenylistAllowlistParameters {
   type: 'text' | 'collection' | 'img';
 }
 
+export interface GetGroupEditPermissionParameters {
+  groupId: number;
+  type: 'text' | 'collection';
+}
+
 export interface DeleteDenylistAllowlistParameters {
   groupId: number;
   uuid: string;

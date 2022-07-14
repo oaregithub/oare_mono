@@ -323,7 +323,7 @@ class ResourceDao {
   async getImageByUuid(
     imageUuid: string,
     trx?: Knex.Transaction
-  ): Promise<Image | null> {
+  ): Promise<{ uuid: string; link: string } | null> {
     const k = trx || knexRead();
     const image = await k('resource')
       .select('uuid', 'link')
@@ -339,15 +339,15 @@ class ResourceDao {
     const s3 = new AWS.S3();
     const k = trx || knexRead();
 
-    const textInfo = await k('text')
+    const textInfo: { display_name: string } = await k('text')
       .select('display_name')
-      .where(
+      .whereIn(
         'uuid',
         k('link').select('reference_uuid').where('obj_uuid', imageUuid)
       )
       .first();
 
-    const resourceLink = await k('resource')
+    const resourceLink: { link: string } = await k('resource')
       .select('link')
       .where('uuid', imageUuid)
       .andWhere('type', 'img')
@@ -362,7 +362,7 @@ class ResourceDao {
     const result: Image = {
       uuid: imageUuid,
       url: signedUrl,
-      name: textInfo,
+      name: textInfo.display_name,
     };
 
     return result || null;
