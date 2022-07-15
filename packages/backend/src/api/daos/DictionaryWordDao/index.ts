@@ -6,7 +6,6 @@ import {
   Word,
   DisplayableWord,
   WordFormAutocompleteDisplay,
-  DictionaryWordLemma,
   DictionaryWordRow,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
@@ -156,11 +155,14 @@ class DictionaryWordDao {
         ItemPropertiesDao.getPropertiesByReferenceUuid(word.uuid, trx)
       )
     );
-    const getAllTranslationsForDefinition = await this.getAllTranslations(
+    const translationsForDefinition = await this.getAllTranslations(
       'definition',
       trx
     );
-    const getAllLemmas = await this.getAllTranslations('discussionLemma', trx);
+    const discussionLemmas = await this.getAllTranslations(
+      'discussionLemma',
+      trx
+    );
     const forms = await Promise.all(
       words.map(word => DictionaryFormDao.getWordForms(word.uuid, false, trx))
     );
@@ -181,7 +183,7 @@ class DictionaryWordDao {
 
     return words
       .map((word, idx) => {
-        const translationsForDefinitionList = getAllTranslationsForDefinition
+        const translationsForDefinitionList = translationsForDefinition
           .filter(({ dictionaryUuid }) => word.uuid === dictionaryUuid)
           .sort((a, b) => {
             if (a.primacy === null) {
@@ -197,7 +199,7 @@ class DictionaryWordDao {
             uuid: tr.fieldUuid,
             val: tr.field,
           }));
-        const lemmaList = getAllLemmas
+        const discussionLemmasList = discussionLemmas
           .filter(({ dictionaryUuid }) => word.uuid === dictionaryUuid)
           .sort((a, b) => {
             if (a.primacy === null) {
@@ -218,7 +220,7 @@ class DictionaryWordDao {
           uuid: word.uuid,
           word: word.word,
           translationsForDefinition: translationsForDefinitionList,
-          lemmas: lemmaList,
+          discussionLemmas: discussionLemmasList,
           forms: forms[idx],
           properties: properties[idx],
           wordOccurrences: wordOccurrences[idx],
@@ -261,13 +263,13 @@ class DictionaryWordDao {
   async getWordLemmas(
     wordUuid: string,
     trx?: Knex.Transaction
-  ): Promise<DictionaryWordLemma[]> {
-    const lemmas = (await FieldDao.getLemmasByReferenceUuid(wordUuid, trx)).map(
-      ({ uuid, field }) => ({
-        uuid,
-        val: field,
-      })
-    ) as DictionaryWordLemma[];
+  ): Promise<DictionaryWordTranslation[]> {
+    const lemmas = (
+      await FieldDao.getDiscussionLemmasByReferenceUuid(wordUuid, trx)
+    ).map(({ uuid, field }) => ({
+      uuid,
+      val: field,
+    })) as DictionaryWordTranslation[];
 
     return lemmas;
   }
@@ -289,7 +291,7 @@ class DictionaryWordDao {
       word,
       properties,
       translationsForDefinition,
-      lemmas,
+      discussionLemmas,
     ] = await Promise.all([
       this.getWordName(wordUuid, trx),
       ItemPropertiesDao.getPropertiesByReferenceUuid(wordUuid, trx),
@@ -302,7 +304,7 @@ class DictionaryWordDao {
       word,
       properties,
       translationsForDefinition,
-      lemmas,
+      discussionLemmas,
     };
   }
 
@@ -404,7 +406,7 @@ class DictionaryWordDao {
   ): Promise<void> {
     let currentTranslations:
       | DictionaryWordTranslation[]
-      | DictionaryWordLemma[] = [];
+      | DictionaryWordTranslation[] = [];
     if (fieldType === 'definition') {
       currentTranslations = await this.getWordTranslationsForDefinition(
         wordUuid,

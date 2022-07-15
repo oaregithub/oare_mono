@@ -222,11 +222,13 @@ router
     const { newTranslation, textUuid }: EditTranslationPayload = req.body;
 
     try {
-      const definisionFieldRow = await FieldDao.getDefinitionsByReferenceUuid(
+      const definitionFieldRow = await FieldDao.getDefinitionsByReferenceUuid(
         uuid
       );
-      const lemmaFieldRow = await FieldDao.getLemmasByReferenceUuid(uuid);
-      const fieldRow = definisionFieldRow.concat(lemmaFieldRow);
+      const discussionLemmaFieldRow = await FieldDao.getDiscussionLemmasByReferenceUuid(
+        uuid
+      );
+      const fieldRow = definitionFieldRow.concat(discussionLemmaFieldRow);
       await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
         primacy: 1,
       });

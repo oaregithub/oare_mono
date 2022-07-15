@@ -5,7 +5,7 @@ import { Knex } from 'knex';
 class GroupEditPermissionsDao {
   async getGroupEditPermissions(
     groupId: number,
-    type: 'text' | 'collection' | 'img',
+    type: 'text' | 'collection',
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knexRead();

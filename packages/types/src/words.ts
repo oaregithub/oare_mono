@@ -20,14 +20,9 @@ export interface DictionaryWordTranslation {
   val: string;
 }
 
-export interface DictionaryWordLemma {
-  uuid: string;
-  val: string;
-}
-
 export interface DictionaryWordParseInfo {
   translationsForDefinition: DictionaryWordTranslation[];
-  lemmas: DictionaryWordLemma[];
+  discussionLemmas: DictionaryWordTranslation[];
   properties: ItemPropertyRow[];
 }
 

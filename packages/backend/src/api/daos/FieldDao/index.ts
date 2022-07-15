@@ -30,7 +30,7 @@ class FieldDao {
       .orderBy('primacy');
   }
 
-  async getLemmasByReferenceUuid(
+  async getDiscussionLemmasByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
