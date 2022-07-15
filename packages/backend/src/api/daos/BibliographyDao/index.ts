@@ -2,7 +2,7 @@ import { Knex } from 'knex';
 import { knexRead } from '@/connection';
 import { BibliographyItem, ZoteroResponse } from '@oare/types';
 import { getZoteroAPIKEY } from '@/utils';
-import { dynamicImport } from 'tsimportlib';
+import axios from 'axios';
 
 class BibliographyDao {
   async getZoteroCitationsByUuid(
@@ -18,12 +18,7 @@ class BibliographyDao {
 
     const zoteroAPIKey = await getZoteroAPIKEY();
 
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
-    const zoteroResponse = await fetch.default(
+    const { data }: { data: ZoteroResponse } = await axios.get(
       `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=citation&style=${citationStyle}`,
       {
         headers: {
@@ -32,11 +27,7 @@ class BibliographyDao {
       }
     );
 
-    const zoteroJSON = zoteroResponse.ok
-      ? ((await zoteroResponse.json()) as ZoteroResponse)
-      : null;
-
-    return zoteroJSON && zoteroJSON.citation ? zoteroJSON.citation : null;
+    return data && data.citation ? data.citation : null;
   }
 }
 
