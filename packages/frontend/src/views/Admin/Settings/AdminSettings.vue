@@ -128,49 +128,14 @@
           <v-list-item-title>Clear Individual Cache Entries</v-list-item-title>
           <v-list-item-subtitle>
             Clear cache entries for a selected backend route. Will open a dialog
+            where individual route(s) can be selected for clearing.
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
-          <oare-dialog
+          <individual-cache-clear-dialog
             v-model="individualClearDialog"
-            title="Clear Individual Cache Entry"
-            @submit="clearRoute"
-            :submitLoading="individualClearLoading"
-            :submitDisabled="!routeToClear || numMatchingKeys === 0"
-          >
-            <template v-slot:activator="{ on }">
-              <v-btn color="primary" v-on="on">
-                <v-icon>mdi-text-search-variant</v-icon>
-              </v-btn>
-            </template>
-            <v-text-field
-              v-model="routeToClear"
-              outlined
-              label="Backend Route URL To Clear"
-              placeholder="Ex: /words/A"
-              hide-details
-              class="mt-2"
-            />
-            <span>
-              <b>Note: </b>Do not include the API prefix <i>/api/v2</i>
-            </span>
-            <v-radio-group v-model="selectedLevel" hide-details class="mb-2">
-              <v-radio label="Exact" :value="'exact'" />
-              <v-radio label="Starts With" :value="'startsWith'" />
-            </v-radio-group>
-            <v-row class="ma-0 mt-6">
-              <span
-                :class="{
-                  'red--text': numMatchingKeys === 0,
-                  'primary--text': numMatchingKeys !== 0,
-                }"
-              >
-                <b>{{ numMatchingKeys }}</b> matching key{{
-                  numMatchingKeys !== 1 ? 's' : ''
-                }}</span
-              >
-            </v-row>
-          </oare-dialog>
+            :key="individualClearDialogKey"
+          />
         </v-list-item-action>
       </v-list-item>
     </v-list>
@@ -215,8 +180,12 @@ import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { EnvironmentInfo, CollectionResponse, Word } from '@oare/types';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
+import IndividualCacheClearDialog from './components/IndividualCacheClearDialog.vue';
 
 export default defineComponent({
+  components: {
+    IndividualCacheClearDialog,
+  },
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -374,44 +343,13 @@ export default defineComponent({
     };
 
     const individualClearDialog = ref(false);
-    const individualClearLoading = ref(false);
-    const routeToClear = ref('/');
+    const individualClearDialogKey = ref(false);
 
-    const selectedLevel = ref<'exact' | 'startsWith'>('exact');
-    const clearRoute = async () => {
-      try {
-        individualClearLoading.value = true;
-        await server.clearCacheRoute(routeToClear.value, selectedLevel.value);
-        actions.showSnackbar('Successfully cleared specified cache route(s).');
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error clearing individual cache route(s). Please try again.',
-          err as Error
-        );
-      } finally {
-        individualClearLoading.value = false;
-        individualClearDialog.value = false;
-        routeToClear.value = '/';
-        selectedLevel.value = 'exact';
+    watch(individualClearDialog, () => {
+      if (individualClearDialog.value) {
+        individualClearDialogKey.value = !individualClearDialogKey.value;
       }
-    };
-
-    const numMatchingKeys = ref(0);
-    const getMatchingKeys = async () => {
-      try {
-        numMatchingKeys.value = await server.getNumKeys(
-          routeToClear.value,
-          selectedLevel.value
-        );
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error getting matching keys. Please try again.',
-          err as Error
-        );
-      }
-    };
-
-    watch([routeToClear, selectedLevel], _.debounce(getMatchingKeys, 200));
+    });
 
     return {
       loading,
@@ -426,11 +364,7 @@ export default defineComponent({
       repopulateCacheDialog,
       fillMissingCacheDialog,
       individualClearDialog,
-      clearRoute,
-      individualClearLoading,
-      routeToClear,
-      selectedLevel,
-      numMatchingKeys,
+      individualClearDialogKey,
     };
   },
 });
