@@ -196,7 +196,7 @@ class ResourceDao {
         const imageUrls = [data.primaryImage, ...data.additionalImages];
         imageUrls.forEach(url => {
           imageLinks.push({
-            label: 'Metropolitan Museum of Art',
+            label: 'The Metropolitan Museum of Art',
             link: url,
             side: null,
             view: null,
