@@ -189,7 +189,6 @@ export default defineComponent({
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const _ = sl.get('lodash');
 
     const loading = ref(false);
 
