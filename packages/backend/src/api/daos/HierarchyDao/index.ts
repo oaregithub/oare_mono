@@ -176,15 +176,10 @@ class HierarchyDao {
     const k = trx || knexRead();
     const s3 = new AWS.S3();
 
-    const createBaseQuery = (column1: string, column2: string) =>
+    const createBaseQuery = () =>
       k('link')
         .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
         .innerJoin('text', 'text.uuid', 'link.reference_uuid')
-        .modify(queryBuilder => {
-          if (column1 !== 'forCount') {
-            queryBuilder.select(column1, column2);
-          }
-        })
         .where('resource.container', 'oare-image-bucket')
         .andWhere('text.display_name', 'like', `%${filter}%`)
         .whereNotIn(
@@ -192,7 +187,7 @@ class HierarchyDao {
           k('public_denylist').select('uuid').where('type', 'img')
         );
 
-    const totalNum = await createBaseQuery('forCount', 'forCount')
+    const totalNum = await createBaseQuery()
       .count({
         count: 'text.display_name',
       })
@@ -203,7 +198,8 @@ class HierarchyDao {
     const imgUuidsAndLinks: {
       uuid: string;
       link: string;
-    }[] = await createBaseQuery('resource.uuid', 'resource.link')
+    }[] = await createBaseQuery()
+      .select('resource.uuid', 'resource.link')
       .limit(limit)
       .offset((page - 1) * limit);
 
@@ -251,15 +247,10 @@ class HierarchyDao {
     const k = trx || knexRead();
     const s3 = new AWS.S3();
 
-    const createBaseQuery = (column1: string, column2: string) =>
+    const createBaseQuery = () =>
       k('link')
         .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
         .innerJoin('text', 'text.uuid', 'link.reference_uuid')
-        .modify(queryBuilder => {
-          if (column1 !== 'forCount') {
-            queryBuilder.select(column1, column2);
-          }
-        })
         .where('resource.container', 'oare-image-bucket')
         .andWhere('text.display_name', 'like', `%${filter}%`)
         .whereIn(
@@ -274,7 +265,7 @@ class HierarchyDao {
             .andWhere('type', 'img')
         );
 
-    const totalNum = await createBaseQuery('forCount', 'forCount')
+    const totalNum = await createBaseQuery()
       .count({
         count: 'text.display_name',
       })
@@ -285,7 +276,8 @@ class HierarchyDao {
     const imgUuidsAndLinks: {
       uuid: string;
       link: string;
-    }[] = await createBaseQuery('resource.uuid', 'resource.link')
+    }[] = await createBaseQuery()
+      .select('resource.uuid', 'resource.link')
       .limit(limit)
       .offset((page - 1) * limit);
 
