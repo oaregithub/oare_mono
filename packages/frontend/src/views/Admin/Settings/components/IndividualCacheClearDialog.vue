@@ -600,6 +600,12 @@ export default defineComponent({
 
     const selectedTemplateType = ref<CacheRouteType>();
 
+    watch(selectedTemplateType, () => {
+      selectedTemplate.value = undefined;
+      routeToClear.value = '/';
+      selectedLevel.value = 'exact';
+    });
+
     return {
       clearRoute,
       individualClearLoading,
