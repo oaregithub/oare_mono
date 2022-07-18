@@ -3,7 +3,7 @@ import {
   ZoteroRequestType,
   ZoteroResponse,
 } from '@oare/types';
-import { dynamicImport } from 'tsimportlib';
+import axios from 'axios';
 import AWS from 'aws-sdk';
 
 class BibliographyUtils {
@@ -39,14 +39,9 @@ class BibliographyUtils {
   ): Promise<ZoteroResponse | null> {
     const zoteroAPIKey = await this.getZoteroAPIKEY();
 
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
     const toIncludeString = toInclude.join(',');
 
-    const zoteroResponse = await fetch.default(
+    const { data }: { data: ZoteroResponse } = await axios.get(
       `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=${toIncludeString}&style=${citationStyle}`,
       {
         headers: {
@@ -55,11 +50,7 @@ class BibliographyUtils {
       }
     );
 
-    const zoteroJSON = zoteroResponse.ok
-      ? ((await zoteroResponse.json()) as ZoteroResponse)
-      : null;
-
-    return zoteroJSON;
+    return data;
   }
 }
 
