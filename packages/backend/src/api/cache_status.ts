@@ -45,4 +45,32 @@ router.route('/cache/flush').delete(adminRoute, async (_req, res, next) => {
   }
 });
 
+router.route('/cache/clear').delete(adminRoute, async (req, res, next) => {
+  try {
+    const cache = sl.get('cache');
+    const { url, level } = (req.query as unknown) as {
+      url: string;
+      level: 'exact' | 'startsWith';
+    };
+    await cache.clear(url, { level });
+    res.status(204).end();
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
+router.route('/cache/keys').get(adminRoute, async (req, res, next) => {
+  try {
+    const cache = sl.get('cache');
+    const { url, level } = (req.query as unknown) as {
+      url: string;
+      level: 'exact' | 'startsWith';
+    };
+    const numKeys = await cache.keys(url, level);
+    res.json(numKeys);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
 export default router;
