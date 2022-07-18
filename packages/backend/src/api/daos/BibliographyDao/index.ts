@@ -15,13 +15,15 @@ class BibliographyDao {
     return bibliography;
   }
 
-  async getBibliographies(trx?: Knex.Transaction): Promise<BibliographyItem[]> {
+  async getBibliographies(
+    { page = 1, rows = 25 },
+    trx?: Knex.Transaction
+  ): Promise<BibliographyItem[]> {
     const k = trx || knexRead();
-    const bibliographies: BibliographyItem[] = await k('bibliography').select(
-      'uuid',
-      'zot_item_key as zoteroKey',
-      'short_cit as citation'
-    );
+    const bibliographies: BibliographyItem[] = await k('bibliography')
+      .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
+      .limit(rows)
+      .offset((page - 1) * rows);
     return bibliographies;
   }
 }
