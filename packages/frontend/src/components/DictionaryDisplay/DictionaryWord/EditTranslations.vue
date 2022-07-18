@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts">
-import { DictionaryWordLemma, DictionaryWordTranslation } from '@oare/types';
+import { DictionaryWordTranslation } from '@oare/types';
 import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import _ from 'lodash';
@@ -100,9 +100,7 @@ export default defineComponent({
       required: true,
     },
     translations: {
-      type: Array as PropType<
-        DictionaryWordTranslation[] | DictionaryWordLemma[]
-      >,
+      type: Array as PropType<DictionaryWordTranslation[]>,
       required: true,
     },
     fieldType: {
@@ -152,9 +150,9 @@ export default defineComponent({
     };
 
     const moveTranslation = (oldIndex: number, newIndex: number) => {
-      const updatedTranslations:
-        | DictionaryWordTranslation[]
-        | DictionaryWordLemma[] = [...localTranslations.value];
+      const updatedTranslations: DictionaryWordTranslation[] = [
+        ...localTranslations.value,
+      ];
 
       const temp = updatedTranslations[oldIndex];
       updatedTranslations[oldIndex] = updatedTranslations[newIndex];
@@ -164,9 +162,7 @@ export default defineComponent({
     };
 
     const addTranslation = () => {
-      const updatedTranslations:
-        | DictionaryWordTranslation[]
-        | DictionaryWordLemma[] = [
+      const updatedTranslations: DictionaryWordTranslation[] = [
         ...localTranslations.value,
         {
           uuid: '',

@@ -90,6 +90,9 @@ export default defineComponent({
         word.translationsForDefinition.some(tr =>
           tr.val.toLowerCase().includes(lowerSearch)
         ) ||
+        word.discussionLemmas.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
+        ) ||
         word.forms.some(form => {
           return (
             form.form.toLowerCase().includes(lowerSearch) ||

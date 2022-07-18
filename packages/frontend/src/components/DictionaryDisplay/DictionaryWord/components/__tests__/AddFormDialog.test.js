@@ -90,7 +90,7 @@ describe('AddFormDialog test', () => {
           ],
           properties: [],
           translationsForDefinition: [],
-          lemmas: [],
+          discussionLemmas: [],
         },
       },
     });

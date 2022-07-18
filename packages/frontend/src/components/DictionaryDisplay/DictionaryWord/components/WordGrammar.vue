@@ -126,31 +126,31 @@
             <v-icon size="20">mdi-pencil</v-icon>
           </v-btn>
         </template>
-        <span>Edit Lemma Translations</span>
+        <span>Edit Discussion Lemma Translations</span>
       </v-tooltip>
       <edit-translations
         v-if="isEditingLemmaTranslations && allowEditing"
         @close-editor="isEditingLemmaTranslations = false"
-        :translations="word.lemmas"
-        @update:translations="updateLemma"
+        :translations="word.discussionLemmas"
+        @update:translations="updateDiscussionLemma"
         :wordUuid="word.uuid"
         fieldType="discussionLemma"
       />
-      <span class="mr-4">Lemmas(s):</span>
-      <span v-if="word.lemmas.length === 0">
-        No lemma found for this word
+      <span class="mr-4">Discussion lemmas(s):</span>
+      <span v-if="word.discussionLemmas.length === 0">
+        No discussion Lemma found for this word
       </span>
       <p
         v-if="onlyShowFirstTranslation && !isEditingLemmaTranslations"
         class="mt-3"
       >
-        <span v-if="word.lemmas.length >= 1">
+        <span v-if="word.discussionLemmas.length >= 1">
           <b>{{ 1 }}</b>
-          . {{ word.lemmas[0].val }}
+          . {{ word.discussionLemmas[0].val }}
         </span>
       </p>
       <p v-else-if="!isEditingLemmaTranslations" class="mt-3">
-        <v-row v-for="lm in word.lemmas" :key="lm.uuid">
+        <v-row v-for="lm in word.discussionLemmas" :key="lm.uuid">
           {{ lm.val }}
         </v-row>
       </p>
@@ -190,7 +190,6 @@ import {
   Word,
   ParseTreeProperty,
   DictionaryWordTranslation,
-  DictionaryWordLemma,
 } from '@oare/types';
 import { ReloadKey } from '../index.vue';
 import AddProperties from '@/components/Properties/AddProperties.vue';
@@ -321,11 +320,13 @@ export default defineComponent({
       }
     };
 
-    const updateLemma = (newTranslations: DictionaryWordLemma[]) => {
+    const updateDiscussionLemma = (
+      newTranslations: DictionaryWordTranslation[]
+    ) => {
       if (updateWordInfo) {
         updateWordInfo({
           ...word,
-          lemmas: newTranslations,
+          discussionLemmas: newTranslations,
         });
       }
     };
@@ -349,7 +350,7 @@ export default defineComponent({
       isEditingDefinitionTranslations,
       isEditingLemmaTranslations,
       updateDefinitionTranslations,
-      updateLemma,
+      updateDiscussionLemma,
     };
   },
 });

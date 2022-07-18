@@ -19,7 +19,7 @@
             <div class="d-flex">
               <slot name="word" :word="wordInfo"> </slot>
               <slot name="translationForDefinition" :word="wordInfo"></slot>
-              <slot name="lemmas" :word="wordInfo"></slot>
+              <slot name="discussionLemmas" :word="wordInfo"></slot>
             </div>
             <div>
               <slot name="forms" :word="wordInfo"></slot>

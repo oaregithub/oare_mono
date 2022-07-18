@@ -260,18 +260,18 @@ class DictionaryWordDao {
     return translations;
   }
 
-  async getWordLemmas(
+  async getWordDiscussionLemmas(
     wordUuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryWordTranslation[]> {
-    const lemmas = (
+    const discussionLemmas = (
       await FieldDao.getDiscussionLemmasByReferenceUuid(wordUuid, trx)
     ).map(({ uuid, field }) => ({
       uuid,
       val: field,
     })) as DictionaryWordTranslation[];
 
-    return lemmas;
+    return discussionLemmas;
   }
 
   async getWordName(wordUuid: string, trx?: Knex.Transaction): Promise<string> {
@@ -296,7 +296,7 @@ class DictionaryWordDao {
       this.getWordName(wordUuid, trx),
       ItemPropertiesDao.getPropertiesByReferenceUuid(wordUuid, trx),
       this.getWordTranslationsForDefinition(wordUuid, trx),
-      this.getWordLemmas(wordUuid, trx),
+      this.getWordDiscussionLemmas(wordUuid, trx),
     ]);
 
     return {
@@ -404,16 +404,14 @@ class DictionaryWordDao {
     fieldType: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    let currentTranslations:
-      | DictionaryWordTranslation[]
-      | DictionaryWordTranslation[] = [];
+    let currentTranslations: DictionaryWordTranslation[] = [];
     if (fieldType === 'definition') {
       currentTranslations = await this.getWordTranslationsForDefinition(
         wordUuid,
         trx
       );
     } else {
-      currentTranslations = await this.getWordLemmas(wordUuid, trx);
+      currentTranslations = await this.getWordDiscussionLemmas(wordUuid, trx);
     }
 
     const translationsWithPrimacy = translations.map((tr, index) => ({

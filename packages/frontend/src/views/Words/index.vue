@@ -62,11 +62,13 @@
           </span>
         </p>
       </template>
-      <template #lemmas="{ word }">
+      <template #discussionLemmas="{ word }">
         <p class="ml-3">
-          <span class="mr-1">Lemma(s):</span>
-          <span v-if="word.lemmas.length === 0">No lemma found</span>
-          <span v-for="(lm, idx) in word.lemmas" :key="lm.uuid">
+          <span class="mr-1">Discussion lemma(s):</span>
+          <span v-if="word.discussionLemmas.length === 0"
+            >No discussion lemma found</span
+          >
+          <span v-for="(lm, idx) in word.discussionLemmas" :key="lm.uuid">
             <b>{{ idx + 1 }}</b
             >. {{ lm.val }}
           </span>
@@ -107,6 +109,9 @@ export default defineComponent({
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
         word.translationsForDefinition.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
+        ) ||
+        word.discussionLemmas.some(tr =>
           tr.val.toLowerCase().includes(lowerSearch)
         ) ||
         word.properties.some(prop =>
