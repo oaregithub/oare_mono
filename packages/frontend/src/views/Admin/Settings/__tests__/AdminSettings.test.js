@@ -18,6 +18,9 @@ describe('Admin Settings View', () => {
   const mockActions = {
     showErrorSnackbar: jest.fn(),
   };
+  const mockLodash = {
+    debounce: cb => cb,
+  };
 
   const renderOptions = {
     localVue,
@@ -27,6 +30,7 @@ describe('Admin Settings View', () => {
   const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('lodash', mockLodash);
     return mount(AdminSettings, renderOptions);
   };
 

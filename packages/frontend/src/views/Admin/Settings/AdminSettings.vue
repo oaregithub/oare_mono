@@ -34,9 +34,21 @@
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
-          <v-btn color="primary" @click="flushCache">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
+          <oare-dialog
+            v-model="flushCacheDialog"
+            title="Flush Cache?"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="flushCache"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+            Are you sure you want to flush all cache entries? This cannot be
+            undone.
+          </oare-dialog>
         </v-list-item-action>
       </v-list-item>
       <v-divider />
@@ -54,13 +66,25 @@
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
-          <OareLoaderButton
-            @click="populateCache(true)"
-            color="primary"
-            :loading="populateFlushLoading"
+          <oare-dialog
+            v-model="repopulateCacheDialog"
+            title="Repopulate All Cache Entries?"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="populateCache(true)"
+            :submitLoading="populateFlushLoading"
           >
-            <v-icon>mdi-refresh</v-icon>
-          </OareLoaderButton>
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on">
+                <v-icon>mdi-refresh</v-icon>
+              </v-btn>
+            </template>
+            Are you sure you want to repopulate all cache entries? This will
+            flush all exising cache entries and send a request to repopulate
+            each route's data. This will result in thousand of requests which
+            may result in increased costs and load on the server. This should
+            not be done regularly.
+          </oare-dialog>
         </v-list-item-action>
       </v-list-item>
       <v-divider />
@@ -77,13 +101,41 @@
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
-          <OareLoaderButton
-            @click="populateCache(false)"
-            color="primary"
-            :loading="populateLoading"
+          <oare-dialog
+            v-model="fillMissingCacheDialog"
+            title="Fill In Missing Cache Entries?"
+            submitText="Yes"
+            cancelText="Cancel"
+            @submit="populateCache(false)"
+            :submitLoading="populateLoading"
           >
-            <v-icon>mdi-database-sync</v-icon>
-          </OareLoaderButton>
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on">
+                <v-icon>mdi-database-sync</v-icon>
+              </v-btn>
+            </template>
+            Are you sure you want to fill in all missing cache entries? This
+            will send a request to each cached route, triggering a cache event
+            for those that do not have an existing entry. This will result in
+            thousand of requests which may result in increased costs and load on
+            the server. This should not be done regularly.
+          </oare-dialog>
+        </v-list-item-action>
+      </v-list-item>
+      <v-divider />
+      <v-list-item class="ma-2">
+        <v-list-item-content>
+          <v-list-item-title>Clear Individual Cache Entries</v-list-item-title>
+          <v-list-item-subtitle>
+            Clear cache entries for a selected backend route. Will open a dialog
+            where individual route(s) can be selected for clearing.
+          </v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-action>
+          <individual-cache-clear-dialog
+            v-model="individualClearDialog"
+            :key="individualClearDialogKey"
+          />
         </v-list-item-action>
       </v-list-item>
     </v-list>
@@ -124,12 +176,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { EnvironmentInfo, CollectionResponse, Word } from '@oare/types';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
+import IndividualCacheClearDialog from './components/IndividualCacheClearDialog.vue';
 
 export default defineComponent({
+  components: {
+    IndividualCacheClearDialog,
+  },
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -171,6 +227,7 @@ export default defineComponent({
       }
     };
 
+    const flushCacheDialog = ref(false);
     const flushCache = async () => {
       try {
         await server.flushCache();
@@ -180,9 +237,13 @@ export default defineComponent({
           'Error flushing cache. Please try again.',
           err as Error
         );
+      } finally {
+        flushCacheDialog.value = false;
       }
     };
 
+    const repopulateCacheDialog = ref(false);
+    const fillMissingCacheDialog = ref(false);
     const populateFlushLoading = ref(false);
     const populateLoading = ref(false);
     const populateCache = async (flush: boolean) => {
@@ -275,8 +336,19 @@ export default defineComponent({
       } finally {
         populateFlushLoading.value = false;
         populateLoading.value = false;
+        repopulateCacheDialog.value = false;
+        fillMissingCacheDialog.value = false;
       }
     };
+
+    const individualClearDialog = ref(false);
+    const individualClearDialogKey = ref(false);
+
+    watch(individualClearDialog, () => {
+      if (individualClearDialog.value) {
+        individualClearDialogKey.value = !individualClearDialogKey.value;
+      }
+    });
 
     return {
       loading,
@@ -287,6 +359,11 @@ export default defineComponent({
       populateCache,
       populateLoading,
       populateFlushLoading,
+      flushCacheDialog,
+      repopulateCacheDialog,
+      fillMissingCacheDialog,
+      individualClearDialog,
+      individualClearDialogKey,
     };
   },
 });

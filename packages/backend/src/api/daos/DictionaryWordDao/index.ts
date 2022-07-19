@@ -7,6 +7,7 @@ import {
   DisplayableWord,
   WordFormAutocompleteDisplay,
   DictionaryWordRow,
+  DictionarySearchRow,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
@@ -16,6 +17,7 @@ import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
 import ItemPropertiesDao from '../ItemPropertiesDao';
+import { prepareIndividualSearchCharacters } from '../SignReadingDao/utils';
 
 export interface GrammarInfoRow {
   uuid: string;
@@ -26,6 +28,11 @@ export interface GrammarInfoRow {
   translations: string | null;
 }
 
+export interface DictSpellEpigRowDictSearch {
+  referenceUuid: string;
+  reading: string;
+}
+
 export interface SearchWordsQueryRow {
   uuid: string;
   type: 'word' | 'PN' | 'GN';
@@ -33,6 +40,7 @@ export interface SearchWordsQueryRow {
   translations: string | null;
   form: string | null;
   spellings: string | null;
+  spellingUuids: string | null;
 }
 
 export interface TranslationRow {
@@ -335,11 +343,33 @@ class DictionaryWordDao {
           "GROUP_CONCAT(DISTINCT `field`.`field` SEPARATOR ';') AS translations"
         ),
         'df.form',
-        k.raw("GROUP_CONCAT(DISTINCT ds.spelling SEPARATOR ', ') AS spellings")
+        k.raw(
+          "GROUP_CONCAT(DISTINCT ds.explicit_spelling SEPARATOR ', ') AS spellings"
+        ),
+        k.raw("GROUP_CONCAT(DISTINCT ds.uuid SEPARATOR ', ') AS spellingUuids")
       )
       .groupBy('df.uuid');
+    let spellEpigRow: DictSpellEpigRowDictSearch[] | null = null;
+    const charUuids: string[][] = await prepareIndividualSearchCharacters(
+      search
+    );
+    if (charUuids.length > 0) {
+      spellEpigRow = await this.getSpellingUuidsForDictionarySearch(charUuids);
+      query.modify(q => {
+        if (spellEpigRow) {
+          q.orWhereIn(
+            'ds.uuid',
+            spellEpigRow.map(({ referenceUuid }) => referenceUuid)
+          );
+        }
+      });
+    }
     const rows: SearchWordsQueryRow[] = await query;
-    const resultRows = assembleSearchResult(rows, search);
+    const resultRows: DictionarySearchRow[] = assembleSearchResult(
+      rows,
+      search,
+      spellEpigRow
+    );
     const offset = (page - 1) * numRows;
     const results = resultRows.slice(offset, offset + numRows);
 
@@ -347,6 +377,75 @@ class DictionaryWordDao {
       totalRows: resultRows.length,
       results,
     };
+  }
+
+  async getSpellingUuidsForDictionarySearch(
+    searchCharUuids: string[][],
+    trx?: Knex.Transaction
+  ): Promise<DictSpellEpigRowDictSearch[]> {
+    const k = trx || knexRead();
+    const firstCharReadings: string[] = await k('sign_reading as sr')
+      .pluck('sr.reading')
+      .whereIn('sr.uuid', searchCharUuids[0]);
+    const lastCharReadings: string[] | null =
+      searchCharUuids.length > 1
+        ? await k('sign_reading as sr')
+            .pluck('sr.reading')
+            .whereIn('sr.uuid', searchCharUuids[searchCharUuids.length - 1])
+        : null;
+    const refUuids: DictSpellEpigRowDictSearch[] = await k
+      .from('dictionary_spelling_epigraphy as dse')
+      .select(
+        'dse.reference_uuid as referenceUuid',
+        k.raw(
+          `CONCAT_WS('-', ${searchCharUuids
+            .map((_s, idx) => `dse${idx === 0 ? '' : idx}.reading`)
+            .join(', ')}) AS reading`
+        )
+      )
+      .modify(query => {
+        searchCharUuids.forEach((searchCharUuidArray, idx) => {
+          if (idx > 0 || searchCharUuids.length === 1) {
+            query.innerJoin(
+              `dictionary_spelling_epigraphy as dse${idx}`,
+              function () {
+                this.on('dse.reference_uuid', `dse${idx}.reference_uuid`).andOn(
+                  function () {
+                    this.onIn(`dse${idx}.reading_uuid`, searchCharUuidArray);
+                    if (
+                      idx === searchCharUuids.length - 1 &&
+                      lastCharReadings
+                    ) {
+                      this.orOn(function () {
+                        lastCharReadings.forEach(charReading => {
+                          this.on(
+                            k.raw(`dse${idx}.reading LIKE ?`, [charReading])
+                          );
+                        });
+                      });
+                    }
+                  }
+                );
+                if (searchCharUuids.length !== 1) {
+                  this.andOn(
+                    k.raw(
+                      `dse.sign_spell_num + ${idx} = dse${idx}.sign_spell_num`
+                    )
+                  );
+                }
+              }
+            );
+          }
+        });
+      })
+      .whereIn('dse.reading_uuid', searchCharUuids[0])
+      .modify(qb => {
+        firstCharReadings.forEach(reading => {
+          qb.orWhereLike('dse.reading', `%${reading}`);
+        });
+      })
+      .groupBy('dse.reference_uuid');
+    return refUuids;
   }
 
   async getWordsAndFormsForWordsInTexts(trx?: Knex.Transaction) {
