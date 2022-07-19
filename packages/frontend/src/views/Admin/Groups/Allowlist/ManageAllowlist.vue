@@ -29,6 +29,14 @@
           :getItems="server.getGroupAllowlistCollections"
           :removeItems="server.removeItemsFromGroupAllowlist"
         />
+        <text-collection-list
+          v-else-if="selectedType === 'img'"
+          :key="selectedType"
+          :groupId="groupId"
+          itemType="Image"
+          :getItems="server.getGroupAllowlistImages"
+          :removeItems="server.removeItemsFromGroupAllowlist"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -55,6 +63,7 @@ export default defineComponent({
     const types = ref([
       { name: 'Texts', value: 'text' },
       { name: 'Collections', value: 'collection' },
+      { name: 'Images', value: 'img' },
     ]);
     const selectedType = useQueryParam('type', 'text', true);
 

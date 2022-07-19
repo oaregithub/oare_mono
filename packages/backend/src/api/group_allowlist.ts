@@ -29,7 +29,6 @@ router
         groupId,
         type
       );
-
       let names: (string | undefined)[];
       let urls: (string | undefined)[];
       if (type === 'text') {
@@ -48,8 +47,8 @@ router
             ResourceDao.getAllowListImageWithText(uuid)
           )
         );
-        names = results.map(row => (row ? row.name : undefined));
-        urls = results.map(row => (row ? row.url : undefined));
+        names = results.map(row => (row ? row.label : undefined));
+        urls = results.map(row => (row ? row.link : undefined));
       }
 
       let response: DenylistAllowlistItem[];
