@@ -19,7 +19,7 @@ router
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const TextDao = sl.get('TextDao');
       const CollectionDao = sl.get('CollectionDao');
-
+      const ResourceDao = sl.get('ResourceDao');
       const {
         groupId,
         type,
@@ -31,28 +31,44 @@ router
       );
 
       let names: (string | undefined)[];
+      let urls: (string | undefined)[];
       if (type === 'text') {
         const results = await Promise.all(
           groupAllowlist.map(uuid => TextDao.getTextByUuid(uuid))
         );
         names = results.map(row => (row ? row.name : undefined));
-      } else {
+      } else if (type === 'collection') {
         const results = await Promise.all(
           groupAllowlist.map(uuid => CollectionDao.getCollectionByUuid(uuid))
         );
         names = results.map(row => (row ? row.name : undefined));
+      } else {
+        const results = await Promise.all(
+          groupAllowlist.map(uuid =>
+            ResourceDao.getAllowListImageWithText(uuid)
+          )
+        );
+        names = results.map(row => (row ? row.name : undefined));
+        urls = results.map(row => (row ? row.url : undefined));
       }
 
-      const epigraphyStatus = await Promise.all(
-        groupAllowlist.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
-      );
-      const response: DenylistAllowlistItem[] = groupAllowlist.map(
-        (uuid, index) => ({
+      let response: DenylistAllowlistItem[];
+      if (type === 'text' || type === 'collection') {
+        const epigraphyStatus = await Promise.all(
+          groupAllowlist.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
+        );
+        response = groupAllowlist.map((uuid, index) => ({
           uuid,
           name: names[index],
           hasEpigraphy: epigraphyStatus[index],
-        })
-      );
+        }));
+      } else {
+        response = groupAllowlist.map((uuid, index) => ({
+          uuid,
+          name: names[index],
+          url: urls[index],
+        }));
+      }
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -72,6 +88,7 @@ router
       const OareGroupDao = sl.get('OareGroupDao');
       const TextDao = sl.get('TextDao');
       const CollectionDao = sl.get('CollectionDao');
+      const ResourceDao = sl.get('ResourceDao');
 
       // Make sure that group ID exists
       const existingGroup = await OareGroupDao.getGroupById(groupId);
@@ -102,6 +119,21 @@ router
           next(
             new HttpBadRequest(
               'One or more of given collection UUIDs does not exist'
+            )
+          );
+          return;
+        }
+      }
+
+      // If images, make sure all images UUIDs exist
+      if (type === 'img') {
+        const images = await Promise.all(
+          uuids.map(uuid => ResourceDao.getImageByUuid(uuid))
+        );
+        if (images.some(image => !image)) {
+          next(
+            new HttpBadRequest(
+              'One or more of given image UUIDs does not exist'
             )
           );
           return;

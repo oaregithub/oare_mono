@@ -4,7 +4,7 @@ import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
 import {
   GroupEditPermissionsPayload,
-  GetDenylistAllowlistParameters,
+  GetGroupEditPermissionParameters,
   DeleteDenylistAllowlistParameters,
   DenylistAllowlistItem,
 } from '@oare/types';
@@ -23,7 +23,7 @@ router
       const {
         groupId,
         type,
-      } = (req.params as unknown) as GetDenylistAllowlistParameters;
+      } = (req.params as unknown) as GetGroupEditPermissionParameters;
 
       const groupEditPermissions = await GroupEditPermissionsDao.getGroupEditPermissions(
         groupId,
