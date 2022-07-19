@@ -50,10 +50,6 @@ router
         level: 'exact',
       });
 
-      cache.clear('/field_description/', {
-        level: 'startsWith',
-      });
-
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

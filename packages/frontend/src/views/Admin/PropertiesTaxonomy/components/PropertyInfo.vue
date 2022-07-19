@@ -10,14 +10,16 @@
         ><h3>{{ name }}</h3></span
       >
       <br />
-      <span
+      <span v-if="type"
         ><b>Var Type</b>: {{ type
         }}{{
           type === 'link' && tableReference ? ` > ${tableReference}` : ''
         }}</span
       >
       <div v-if="!isEditing && !isAdding">
-        <span> <b>Description</b>: {{ newDescription }} </span>
+        <span>
+          <b>Description</b>: {{ newDescription ? newDescription : 'none' }}
+        </span>
         <br />
         <span> <b>Primacy</b>: {{ newPrimacy }} </span>
         <br />
@@ -45,29 +47,9 @@
           ></v-select>
           <v-textarea
             label="Description"
-            :value="description"
             v-model="newDescription"
-            @keydown.enter="addDescription"
             filled
           ></v-textarea>
-          <!-- <v-select
-            label="Language"
-            v-model="newLanguage"
-            filled
-            :items="[
-              'English',
-              'Turkish',
-              'German',
-              'French',
-              'Russian',
-              'Dutch',
-              'Czech',
-              'Danish',
-              'Italian',
-              'Spanish',
-              'Arabic',
-            ]"
-          ></v-select> -->
           <v-progress-circular
             size="20"
             v-if="isSaving"
@@ -122,7 +104,7 @@ export default defineComponent({
     },
     description: {
       type: String,
-      default: 'none',
+      default: '',
     },
     primacy: {
       type: Number,
@@ -130,6 +112,7 @@ export default defineComponent({
     },
     fieldUuid: {
       type: String,
+      default: '',
     },
     language: {
       type: String,
@@ -137,9 +120,11 @@ export default defineComponent({
     },
     type: {
       type: String,
+      default: '',
     },
     tableReference: {
       type: String,
+      default: '',
     },
   },
   setup(props, { emit }) {
@@ -150,7 +135,7 @@ export default defineComponent({
     const newDescription: Ref<string> = ref(props.description);
     const newPrimacy: Ref<number> = ref(props.primacy);
     const newLanguage: Ref<string> = ref(props.language);
-    const reactiveFieldUuid: Ref<string | undefined> = ref(props.fieldUuid);
+    const reactiveFieldUuid: Ref<string> = ref(props.fieldUuid);
 
     const closeInput = () => {
       isEditing.value = false;
@@ -173,7 +158,7 @@ export default defineComponent({
           actions.showSnackbar('Successfully updated description');
         } catch (err) {
           actions.showErrorSnackbar(
-            'Failed to update word spelling',
+            'Failed to update description',
             err as Error
           );
         } finally {
@@ -193,10 +178,10 @@ export default defineComponent({
         });
 
         await emitEvents();
-        actions.showSnackbar('Successfully updated word spelling');
+        actions.showSnackbar('Successfully added new description');
       } catch (err) {
         actions.showErrorSnackbar(
-          'Failed to update word spelling',
+          'Failed to add new description',
           err as Error
         );
       } finally {
@@ -214,15 +199,22 @@ export default defineComponent({
         newProps.language === 'default'
           ? 'English'
           : newProps.language || 'n/a';
-      reactiveFieldUuid.value = newProps.uuid || undefined;
-      emit('update:description', newDescription.value);
-      emit('update:primacy', newPrimacy.value);
-      emit('update:language', newLanguage.value);
-      emit('update:fieldUuid', reactiveFieldUuid.value);
+      reactiveFieldUuid.value = newProps.uuid ?? '';
+      emit('update:fieldInfo', {
+        uuid: reactiveFieldUuid.value,
+        referenceUuid: newProps.referenceUuid,
+        field: newDescription.value,
+        primacy: newPrimacy.value,
+        language: newLanguage.value,
+        type: newProps.type,
+      });
     };
 
     const canSubmit = computed(
-      () => newDescription.value !== 'none' && newPrimacy.value !== 0
+      () =>
+        newDescription.value !== 'none' &&
+        newPrimacy.value !== 0 &&
+        newDescription.value !== ''
     );
     return {
       isEditing,

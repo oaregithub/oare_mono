@@ -71,23 +71,31 @@
                 >NO NAME</i
               >
               <property-info
-                v-if="(child.variableUuid || child.valueUuid) && showFieldInfo"
-                :name="child.variableName || child.valueName || child.aliasName"
-                :description="child.fieldInfo.field"
-                :primacy="child.fieldInfo.primacy"
-                :fieldUuid="child.fieldInfo.uuid"
+                v-if="
+                  (child.variableUuid || child.valueUuid) &&
+                  showFieldInfo &&
+                  child.fieldInfo
+                "
+                :name="
+                  child.variableName ||
+                  child.valueName ||
+                  child.aliasName ||
+                  'No Name'
+                "
+                :description="child.fieldInfo.field || ''"
+                :primacy="child.fieldInfo.primacy || 0"
+                :fieldUuid="child.fieldInfo.uuid || ''"
                 :language="
                   child.fieldInfo.language === 'default'
                     ? 'English'
-                    : child.fieldInfo.language
+                    : child.fieldInfo.language || 'n/a'
                 "
-                :type="child.variableType"
-                :tableReference="child.variableTableReference"
-                @update:description="child.fieldInfo.field = $event"
-                @update:primacy="child.fieldInfo.primacy = $event"
-                @update:language="child.fieldInfo.language = $event"
-                @update:fieldUuid="child.fieldInfo.uuid = $event"
-                :variableOrValueUuid="child.variableUuid || child.valueUuid"
+                :type="child.variableType || ''"
+                :tableReference="child.variableTableReference || ''"
+                @update:propertyInfo="child = updateFieldInfo(child, $event)"
+                :variableOrValueUuid="
+                  child.variableUuid || child.valueUuid || ''
+                "
               ></property-info>
               <b
                 v-if="
@@ -211,7 +219,12 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import PropertyInfo from './PropertyInfo.vue';
-import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
+import {
+  TaxonomyTree,
+  ParseTreeProperty,
+  ItemPropertyRow,
+  FieldInfo,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 
 export interface ParseTreePropertyEvent {
@@ -454,6 +467,11 @@ export default defineComponent({
       }
     };
 
+    const updateFieldInfo = (child: TaxonomyTree, field: FieldInfo) => {
+      child.fieldInfo = field;
+      return child;
+    };
+
     return {
       selected,
       ignoredSubtrees,
@@ -466,6 +484,7 @@ export default defineComponent({
       setSelectionDisplay,
       openPanels,
       handleSelections,
+      updateFieldInfo,
     };
   },
 });
