@@ -308,9 +308,6 @@ class DictionaryWordDao {
       spellEpigRow = await this.getSpellingUuidsForDictionarySearch(charUuids);
       query.modify(q => {
         if (spellEpigRow) {
-          const readings: string[] = [
-            ...new Set(spellEpigRow.map(({ reading }) => reading)),
-          ];
           q.orWhereIn(
             'ds.uuid',
             spellEpigRow.map(({ referenceUuid }) => referenceUuid)
