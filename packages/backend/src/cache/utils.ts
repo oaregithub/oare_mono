@@ -49,6 +49,36 @@ export const crossRegionCacheFlush = async (req: Request) => {
   }
 };
 
+export const crossRegionCacheKeys = async (
+  url: string,
+  level: 'exact' | 'startsWith',
+  req: Request
+): Promise<number> => {
+  let numCrossOriginCacheKeys = 0;
+  if (process.env.NODE_ENV === 'production' && req.headers.authorization) {
+    const oppositeRegionSubDomain = getOppositeRegionSubDomain();
+
+    if (oppositeRegionSubDomain) {
+      const { data } = await axios.get(
+        `https://${oppositeRegionSubDomain}.${process.env.BASE_HOST}${API_PATH}/cache/keys`,
+        {
+          params: {
+            url,
+            level,
+            propogate: 'false',
+          },
+          headers: {
+            Authorization: req.headers.authorization,
+          },
+        }
+      );
+      numCrossOriginCacheKeys = data;
+    }
+  }
+
+  return numCrossOriginCacheKeys;
+};
+
 const getOppositeRegionSubDomain = (): string | null => {
   switch (process.env.CURRENT_EB_REGION) {
     case 'us-west-2':

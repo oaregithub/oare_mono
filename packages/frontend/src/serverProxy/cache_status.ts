@@ -42,6 +42,7 @@ async function getNumKeys(
     params: {
       url,
       level,
+      propogate: 'true',
     },
   });
   return data;

@@ -72,11 +72,12 @@ router
 router.route('/cache/keys').get(adminRoute, async (req, res, next) => {
   try {
     const cache = sl.get('cache');
-    const { url, level } = (req.query as unknown) as {
+    const { url, level, propogate } = (req.query as unknown) as {
       url: string;
       level: 'exact' | 'startsWith';
+      propogate: 'true' | 'false';
     };
-    const numKeys = await cache.keys(url, level);
+    const numKeys = await cache.keys(url, level, req, propogate === 'true');
     res.json(numKeys);
   } catch (err) {
     next(new HttpInternalError(err as string));
