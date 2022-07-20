@@ -22,10 +22,19 @@ describe('comments api test', () => {
     }),
   };
 
+  const MockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'ADD_COMMENTS',
+      },
+    ]),
+  };
+
   const setup = () => {
     sl.set('CommentsDao', MockCommentsDao);
     sl.set('ThreadsDao', MockThreadsDao);
     sl.set('UserDao', MockUserDao);
+    sl.set('PermissionsDao', MockPermissionsDao);
   };
 
   beforeEach(setup);

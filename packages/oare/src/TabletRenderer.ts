@@ -15,6 +15,7 @@ import {
   convertMarkedUpUnitsToEpigraphicWords,
   regionReading,
   undeterminedReading,
+  romanNumeral,
 } from './tabletUtils';
 
 export default class TabletRenderer {
@@ -427,5 +428,36 @@ export default class TabletRenderer {
 
   public getEpigraphicUnitsByLine(line: number): EpigraphicUnit[] {
     return this.epigraphicUnits.filter(unit => unit.line === line);
+  }
+
+  public getTransliterationString(): string {
+    let transliterationString = '';
+
+    this.sides.forEach(side => {
+      if (transliterationString === '') {
+        transliterationString = `${side}\n`;
+      } else {
+        transliterationString = `${transliterationString}\n${side}\n`;
+      }
+
+      const columns = this.columnsOnSide(side);
+
+      columns.forEach(column => {
+        if (columns.length > 1) {
+          transliterationString = `${transliterationString}col. ${romanNumeral(
+            column
+          )}\n`;
+        }
+
+        const lines = this.linesInColumn(column, side);
+
+        lines.forEach(line => {
+          const lineReading = this.lineReading(line);
+          transliterationString = `${transliterationString}${lineReading}\n`;
+        });
+      });
+    });
+
+    return transliterationString;
   }
 }

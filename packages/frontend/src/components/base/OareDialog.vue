@@ -11,12 +11,19 @@
     </template>
 
     <v-card>
-      <div v-if="closeButton">
+      <div v-if="closeButton || showActionsBar || actionTitle">
         <v-card-actions>
+          <slot name="pre-actions" />
           <h2 class="ml-3" v-if="actionTitle">{{ actionTitle }}</h2>
           <v-spacer />
           <slot name="action-options" />
-          <v-btn @click="$emit('input', false)" text color="error">Close</v-btn>
+          <v-btn
+            v-if="closeButton"
+            @click="$emit('input', false)"
+            text
+            color="error"
+            >Close</v-btn
+          >
         </v-card-actions>
         <v-divider />
       </div>
@@ -35,6 +42,7 @@
             @click="$emit('input', false)"
             color="error"
             text
+            :disabled="cancelDisabled"
             data-testid="cancel-btn"
             >{{ cancelText }}</v-btn
           >
@@ -98,6 +106,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    cancelDisabled: {
+      type: Boolean,
+      default: false,
+    },
     closeOnSubmit: {
       type: Boolean,
       default: false,
@@ -117,6 +129,10 @@ export default defineComponent({
     eager: {
       type: Boolean,
       default: false,
+    },
+    showActionsBar: {
+      type: Boolean,
+      defaault: false,
     },
   },
   setup({ closeOnSubmit }, { emit }) {

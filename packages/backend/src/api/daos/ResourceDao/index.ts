@@ -7,8 +7,8 @@ import {
   EpigraphyLabelLink,
   ImageResource,
 } from '@oare/types';
-import { dynamicImport } from 'tsimportlib';
 import { Knex } from 'knex';
+import axios from 'axios';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -41,6 +41,7 @@ class ResourceDao {
         .select('p.label as label', 'r.link as link', 'r.uuid as uuid')
         .rightOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
         .where('r.type', 'img')
+        .andWhere('r.container', 'oare-image-bucket')
         .whereIn(
           'r.uuid',
           k('link').select('obj_uuid').where('reference_uuid', textUuid)
@@ -99,6 +100,36 @@ class ResourceDao {
     return textLinks[0] || null;
   }
 
+  async getPDFUrlByBibliographyUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string | null> {
+    const k = trx || knexRead();
+    const resourceRow: { link: string; container: string } = await k('resource')
+      .select('link', 'container')
+      .whereIn(
+        'uuid',
+        knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
+      )
+      .where('type', 'pdf')
+      .first();
+
+    const s3 = new AWS.S3();
+
+    let fileUrl: string | null;
+
+    try {
+      fileUrl = await s3.getSignedUrlPromise('getObject', {
+        Bucket: resourceRow.container,
+        Key: resourceRow.link,
+      });
+    } catch {
+      fileUrl = null;
+    }
+
+    return fileUrl;
+  }
+
   async getValidCdliImageLinks(
     cdliNum: string,
     trx?: Knex.Transaction
@@ -106,50 +137,20 @@ class ResourceDao {
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
 
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
     const cdliLinks: string[] = [];
-    const ErrorsDao = sl.get('ErrorsDao');
 
     try {
-      const photoResponse = await fetch.default(photoUrl, { method: 'HEAD' });
-
-      if (photoResponse.ok) {
-        cdliLinks.push(photoUrl);
-      }
-    } catch (err) {
-      await ErrorsDao.logError(
-        {
-          userUuid: null,
-          description: 'Error retrieving CDLI image',
-          stacktrace: (err as Error).stack || null,
-          status: 'In Progress',
-        },
-        trx
-      );
+      await axios.head(photoUrl);
+      cdliLinks.push(photoUrl);
+    } catch {
+      // Do nothing. Image does not exist.
     }
 
     try {
-      const lineArtResponse = await fetch.default(lineArtUrl, {
-        method: 'HEAD',
-      });
-
-      if (lineArtResponse.ok) {
-        cdliLinks.push(lineArtUrl);
-      }
-    } catch (err) {
-      await ErrorsDao.logError(
-        {
-          userUuid: null,
-          description: 'Error retrieving CDLI line art',
-          stacktrace: (err as Error).stack || null,
-          status: 'In Progress',
-        },
-        trx
-      );
+      await axios.head(lineArtUrl);
+      cdliLinks.push(lineArtUrl);
+    } catch {
+      // Do nothing. Image line art does not exist.
     }
 
     const response: EpigraphyLabelLink[] = cdliLinks.map(link => ({
@@ -169,11 +170,6 @@ class ResourceDao {
     const k = trx || knexRead();
     const imageLinks: EpigraphyLabelLink[] = [];
 
-    const fetch = (await dynamicImport(
-      'node-fetch',
-      module
-    )) as typeof import('node-fetch');
-
     try {
       const row: ImageResource = await k('resource')
         .select('link', 'uuid')
@@ -188,34 +184,24 @@ class ResourceDao {
         const objectId = row.link;
         const metLink = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`;
 
-        const response = await fetch.default(metLink, {
-          insecureHTTPParser: true,
-        });
-
-        if (response.ok) {
-          const jsonResponse = (await response.json()) as {
+        const {
+          data,
+        }: {
+          data: {
             primaryImage: string;
             additionalImages: string[];
           };
+        } = await axios.get(metLink);
+
+        const imageUrls = [data.primaryImage, ...data.additionalImages];
+        imageUrls.forEach(url => {
           imageLinks.push({
             label: 'The Metropolitan Museum of Art',
-            link: jsonResponse.primaryImage,
+            link: url,
             side: null,
             view: null,
           });
-
-          const {
-            additionalImages,
-          }: { additionalImages: string[] } = jsonResponse;
-          additionalImages.forEach(image =>
-            imageLinks.push({
-              label: 'The Metropolitan Museum of Art',
-              link: image,
-              side: null,
-              view: null,
-            })
-          );
-        }
+        });
       }
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
@@ -282,6 +268,14 @@ class ResourceDao {
       .first();
 
     return result;
+  }
+
+  async removeLinkRowByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('link').del().where({ reference_uuid: referenceUuid });
   }
 }
 

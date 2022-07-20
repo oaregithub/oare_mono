@@ -8,9 +8,24 @@
       @filtered-words="getWords"
     >
     </letter-filter>
+
+    <add-word-dialog
+      v-model="addWordDialog"
+      :key="addWordKey"
+    ></add-word-dialog>
+
     <v-container>
       <v-row no-gutters>
         <v-col cols="10">
+          <v-btn
+            text
+            color="primary"
+            class="mb-8"
+            @click="addWordDialog = true"
+          >
+            <v-icon>mdi-plus</v-icon>
+            <h3>Add Lemma</h3>
+          </v-btn>
           <div
             v-for="wordInfo in filteredWords"
             :key="wordInfo.uuid"
@@ -48,14 +63,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType } from '@vue/composition-api';
+import { defineComponent, ref, PropType, watch } from '@vue/composition-api';
 import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
-import { DisplayableWord } from '@oare/types';
+import { DisplayableWord, ParseTreeProperty } from '@oare/types';
+import AddWordDialog from './DictionaryWord/AddWordDialog.vue';
 
 export default defineComponent({
   name: 'DictionaryDisplay',
   components: {
     LetterFilter,
+    AddWordDialog,
   },
   props: {
     wordList: {
@@ -84,6 +101,7 @@ export default defineComponent({
     },
   },
   setup() {
+    const addWordDialog = ref(false);
     const filteredWords = ref<DisplayableWord[]>([]);
 
     const getWords = (words: DisplayableWord[]) => {
@@ -99,10 +117,19 @@ export default defineComponent({
       { bin: '25001+', color: '#ff8fa3' },
     ];
 
+    const addWordKey = ref(false);
+    watch(addWordDialog, () => {
+      if (addWordDialog.value) {
+        addWordKey.value = !addWordKey.value;
+      }
+    });
+
     return {
       filteredWords,
       getWords,
       highlight,
+      addWordDialog,
+      addWordKey,
     };
   },
 });

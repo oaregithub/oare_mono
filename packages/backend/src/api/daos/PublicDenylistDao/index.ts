@@ -5,9 +5,16 @@ import { Knex } from 'knex';
 class PublicDenylistDao {
   async getDenylistTextUuids(trx?: Knex.Transaction): Promise<string[]> {
     const k = trx || knexRead();
+
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
+
     const rows: Array<{ uuid: string }> = await k('public_denylist')
       .select('uuid')
-      .where('type', 'text');
+      .where('type', 'text')
+      .whereNotIn('uuid', quarantinedTexts);
 
     return rows.map(({ uuid }) => uuid);
   }

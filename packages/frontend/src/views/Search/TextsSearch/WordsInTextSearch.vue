@@ -1,156 +1,204 @@
 <template>
   <div>
-    <v-row>
-      <v-col cols="7">
-        <div v-for="index in numOptionsUsing" :key="index" class="pr-3">
-          <v-expand-transition>
-            <v-autocomplete
-              v-model="wordAndFormSelectionUuids[index - 1]"
-              :items="items"
-              item-text="wordDisplay"
-              item-value="info"
-              clearable
-              :class="`test-autocomplete-${index}`"
-              deletable-chips
-              :loading="formsLoading"
-              chips
-              multiple
-              :filter="filter"
-              hide-selected
-              @change="
-                getWordForms(wordAndFormSelectionUuids[index - 1], index - 1);
-                wordAndFormSelectionUuids[index - 1].length < 1
-                  ? expand.splice(index - 1, 1, false)
-                  : expand.splice(index - 1, 1, true);
-              "
-              item-color="primary"
-              :label="`word/form #${index}`"
-            >
-              <template v-if="index === 1" slot="prepend-inner">
-                <words-in-text-search-info-card></words-in-text-search-info-card>
-              </template>
-            </v-autocomplete>
-          </v-expand-transition>
-          <v-expand-transition>
-            <v-card
-              v-show="
-                wordForms && index <= numOptionsUsing && expand[index - 1]
-              "
-            >
-              <v-expansion-panels>
-                <v-expansion-panel
-                  v-for="(word, i) in wordForms[index - 1]"
-                  :key="`${word.name}${index}${i}`"
+    <div v-if="!loading">
+      <v-row>
+        <v-col cols="10">
+          <div v-for="index in numOptionsUsing" :key="index" class="pr-3">
+            <div>
+              <div v-show="index !== 1">
+                <h4>
+                  {{ `Words Between Search Items ${index - 1} & ${index}` }}
+                </h4>
+                <v-autocomplete
+                  v-model="searchItems[index - 1].numWordsBefore"
+                  @change="
+                    searchItems.splice(index - 1, 1, searchItems[index - 1])
+                  "
+                  @click:clear="searchItems[index - 1].numWordsBefore = null"
+                  :class="`test-numWordsBefore-${index}`"
+                  :items="wordsBetween"
+                  item-text="name"
+                  item-value="value"
+                  clearable
+                  label="determine how many words between"
+                ></v-autocomplete>
+              </div>
+              <div
+                v-show="!useParse[index - 1]"
+                :class="`test-autocomplete-${index} py-2`"
+              >
+                <h4>
+                  <template v-if="index === 1">
+                    <words-in-text-search-info-card></words-in-text-search-info-card> </template
+                  >{{ `Search Item #${index}` }}
+                </h4>
+                <v-autocomplete
+                  v-model="wordAndFormSelectionUuids[index - 1]"
+                  :items="items"
+                  item-text="wordDisplay"
+                  item-value="info"
+                  clearable
+                  deletable-chips
+                  chips
+                  multiple
+                  :filter="filter"
+                  hide-selected
+                  @change="
+                    getWordForms(
+                      wordAndFormSelectionUuids[index - 1],
+                      index - 1
+                    );
+                    wordAndFormSelectionUuids[index - 1].length < 1
+                      ? expand.splice(index - 1, 1, false)
+                      : expand.splice(index - 1, 1, true);
+                  "
+                  item-color="primary"
+                  :label="`word/form #${index}`"
                 >
-                  <v-expansion-panel-header>{{
-                    `${word.name} -- ${
-                      new Set(
-                        wordAndFormSearchUuids[index - 1].filter(uuid => {
-                          return word.forms
-                            .map(form => form.uuid)
-                            .includes(uuid);
-                        })
-                      ).size
-                    }/${word.forms.length} form${
-                      word.forms.length > 1 ? 's' : ''
-                    } selected`
-                  }}</v-expansion-panel-header>
-                  <v-expansion-panel-content>
-                    <v-list-item-group>
-                      <v-list-item
-                        ><v-list-item-action
-                          ><v-checkbox
-                            @click="
-                              selectAll(
-                                checkboxAll[`${word.uuid}${index - 1}`],
-                                index - 1,
-                                i
-                              )
-                            "
-                            v-model="checkboxAll[`${word.uuid}${index - 1}`]"
-                            label="Select All"
-                          ></v-checkbox
-                        ></v-list-item-action>
-                      </v-list-item>
-                      <v-list-item
-                        v-for="(form, j) in word.forms"
-                        :key="`${form.uuid}${index}${i}${j}`"
+                  <template slot="append-outer">
+                    <v-btn
+                      class="test-autocomplete-btn-word-forms"
+                      @click="updateUseParse(index - 1)"
+                      >Change To Parse Properties</v-btn
+                    >
+                  </template>
+                </v-autocomplete>
+                <v-expand-transition>
+                  <v-card
+                    v-show="
+                      wordForms && index <= numOptionsUsing && expand[index - 1]
+                    "
+                  >
+                    <v-expansion-panels>
+                      <v-expansion-panel
+                        v-for="(word, i) in wordForms[index - 1]"
+                        :key="`${word.name}${index}${i}`"
                       >
-                        <v-list-item-action>
-                          <v-checkbox
-                            :label="form.name"
-                            :value="form.uuid"
-                            v-model="wordAndFormSearchUuids[index - 1]"
-                          ></v-checkbox>
-                        </v-list-item-action>
-                      </v-list-item>
-                    </v-list-item-group>
-                  </v-expansion-panel-content>
-                </v-expansion-panel>
-              </v-expansion-panels>
-            </v-card>
-          </v-expand-transition>
-          <v-expand-transition>
-            <v-autocomplete
-              v-show="index < numOptionsUsing"
-              v-model="numWordsBetween[index - 1]"
-              :class="`test-numWordsBetween-${index}`"
-              :items="wordsBetween"
-              item-text="name"
-              item-value="value"
-              clearable
-              hide-selected
-              item-color="primary"
-              label="determine how many words between"
-            ></v-autocomplete>
-          </v-expand-transition>
-        </div>
-        <div class="pt-4 pb-2">
-          <v-fade-transition>
-            <span v-show="numOptionsUsing < maxOptions" class="pr-2">
-              <v-btn
-                class="test-increase-button"
-                fab
-                color="primary"
-                x-small
-                @click="updateNumOptionsUsing(true)"
-                ><v-icon>mdi-plus</v-icon></v-btn
-              ></span
-            ></v-fade-transition
+                        <v-expansion-panel-header>{{
+                          `${word.name} -- ${getNumFormsSelected(
+                            index - 1,
+                            word
+                          )}/${word.forms.length} form${
+                            word.forms.length > 1 ? 's' : ''
+                          } selected`
+                        }}</v-expansion-panel-header>
+                        <v-expansion-panel-content>
+                          <v-list-item-group>
+                            <v-list-item
+                              ><v-list-item-action
+                                ><v-checkbox
+                                  @click="
+                                    selectAll(
+                                      checkboxAll[`${word.uuid}${index - 1}`],
+                                      index - 1,
+                                      i
+                                    )
+                                  "
+                                  v-model="
+                                    checkboxAll[`${word.uuid}${index - 1}`]
+                                  "
+                                  label="Select All"
+                                ></v-checkbox
+                              ></v-list-item-action>
+                            </v-list-item>
+                            <v-list-item
+                              v-for="(form, j) in word.forms"
+                              :key="`${form.uuid}${index}${i}${j}`"
+                            >
+                              <v-list-item-action>
+                                <v-checkbox
+                                  :label="form.name"
+                                  :value="form.uuid"
+                                  v-model="searchItems[index - 1].uuids"
+                                ></v-checkbox>
+                              </v-list-item-action>
+                            </v-list-item>
+                          </v-list-item-group>
+                        </v-expansion-panel-content>
+                      </v-expansion-panel>
+                    </v-expansion-panels>
+                  </v-card>
+                </v-expand-transition>
+              </div>
+              <div
+                v-show="useParse[index - 1]"
+                :class="`test-parse-tree-${index} py-2`"
+              >
+                <h4>
+                  <template v-if="index === 1">
+                    <words-in-text-search-info-card></words-in-text-search-info-card> </template
+                  >{{ `Search Item #${index}` }}
+                </h4>
+                <div class="d-flex align-start pa-2">
+                  <add-properties
+                    startingUuid="7ef55f42-4cfc-446f-6d47-f83b725b34d5"
+                    :disableMoveUpTree="true"
+                    :hideActions="true"
+                    :hideInfo="true"
+                    :selectMultiple="true"
+                    @export-properties="setProperties($event, index - 1)"
+                  ></add-properties>
+                  <span class="pt-4">
+                    <v-btn
+                      class="test-autocomplete-btn-parse-props"
+                      @click="updateUseParse(index - 1)"
+                      >Change To Word Forms</v-btn
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4 pb-2">
+            <v-fade-transition>
+              <span v-show="numOptionsUsing < maxOptions" class="pr-2">
+                <v-btn
+                  class="test-increase-button"
+                  fab
+                  color="primary"
+                  x-small
+                  @click="updateNumOptionsUsing(true)"
+                  ><v-icon>mdi-plus</v-icon></v-btn
+                ></span
+              ></v-fade-transition
+            >
+            <v-fade-transition>
+              <span v-show="numOptionsUsing !== 1">
+                <v-btn
+                  class="test-decrease-button"
+                  fab
+                  color="primary"
+                  x-small
+                  @click="updateNumOptionsUsing(false)"
+                  ><v-icon>mdi-minus</v-icon></v-btn
+                ></span
+              ></v-fade-transition
+            >
+          </div>
+        </v-col>
+        <v-col>
+          <v-radio-group
+            label="Search Mode"
+            v-model="sequenced"
+            class="test-radio-sequence"
+            :disabled="numOptionsUsing < 2"
           >
-          <v-fade-transition>
-            <span v-show="numOptionsUsing !== 1">
-              <v-btn
-                class="test-decrease-button"
-                fab
-                color="primary"
-                x-small
-                @click="updateNumOptionsUsing(false)"
-                ><v-icon>mdi-minus</v-icon></v-btn
-              ></span
-            ></v-fade-transition
-          >
-        </div>
-      </v-col>
-      <v-col>
-        <v-radio-group
-          label="Search Mode"
-          v-model="sequenced"
-          class="test-radio-sequence"
-          :disabled="numOptionsUsing < 2"
+            <v-radio label="Sequenced" value="true"></v-radio>
+            <v-radio label="Unsequenced" value="false"></v-radio>
+          </v-radio-group>
+        </v-col>
+      </v-row>
+      <div class="py-3">
+        <v-btn
+          @click="performSearch(1, Number(rows), true)"
+          class="test-submit"
+          :disabled="!canPerformSearch"
+          >Search</v-btn
         >
-          <v-radio label="Sequenced" value="true"></v-radio>
-          <v-radio label="Unsequenced" value="false"></v-radio>
-        </v-radio-group>
-      </v-col>
-    </v-row>
-    <div class="py-3">
-      <v-btn
-        @click="performSearch(1, Number(rows), true)"
-        class="test-submit"
-        :disabled="!canPerformSearch"
-        >Search</v-btn
-      >
+      </div>
+    </div>
+    <div v-if="loading" class="py-8">
+      <v-progress-linear indeterminate></v-progress-linear>
     </div>
     <words-in-texts-search-table
       :items="results"
@@ -178,12 +226,15 @@ import {
   WordFormAutocompleteDisplay,
   WordsInTextsSearchResultRow,
   WordsInTextsSearchResponse,
+  ParseTreePropertyUuids,
+  WordsInTextSearchPayloadItem,
+  ParseTreeProperty,
 } from '@oare/types';
 import WordsInTextsSearchTable from './components/WordsInTextSearchTable.vue';
 import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
-import { isNull } from 'lodash';
+import AddProperties from '@/components/Properties/AddProperties.vue';
 
 export interface WordForWordsInTextSearch {
   name: string;
@@ -193,12 +244,22 @@ export interface WordForWordsInTextSearch {
 
 export default defineComponent({
   name: 'WordsInTextsSearch',
-  components: { WordsInTextsSearchTable, WordsInTextSearchInfoCard },
+  components: {
+    WordsInTextsSearchTable,
+    WordsInTextSearchInfoCard,
+    AddProperties,
+  },
   setup() {
     const items: Ref<WordFormAutocompleteDisplay[]> = ref([]);
+    const searchItems: Ref<WordsInTextSearchPayloadItem[]> = ref([
+      {
+        uuids: [],
+        type: 'form' as 'form' | 'parse',
+        numWordsBefore: null,
+      },
+    ]);
     const loading = ref(false);
     const searchLoading = ref(false);
-    const formsLoading = ref(false);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const numOptionsUsing: Ref<number> = ref(1);
@@ -215,11 +276,11 @@ export default defineComponent({
         name: string;
       }[][]
     > = ref([]);
-    const wordAndFormSearchUuids: Ref<string[][]> = ref([]);
-    const numWordsBetween: Ref<number[]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
+    const useParse: Ref<{ [index: number]: boolean }> = ref({});
     const wordForms: Ref<WordForWordsInTextSearch[][]> = ref([]);
     const sequenced = useQueryParam('sequenced', 'true', true);
+    const mode: Ref<string> = ref(sequenced.value);
 
     const wordsBetween = ref([
       { name: '<= 1', value: 1 },
@@ -247,46 +308,22 @@ export default defineComponent({
     ]);
 
     const canPerformSearch = computed(() => {
-      if (
-        wordAndFormSelectionUuids.value.length < 1 ||
-        wordAndFormSearchUuids.value.length < 1
-      ) {
-        return false;
-      }
-      if (
-        wordAndFormSelectionUuids.value.length !== 1 &&
-        numWordsBetween.value.length < 1 &&
-        sequenced.value === 'true'
-      ) {
-        return false;
-      }
-      if (
-        wordAndFormSelectionUuids.value.length !== numOptionsUsing.value ||
-        wordAndFormSearchUuids.value.length !== numOptionsUsing.value
-      ) {
-        return false;
-      }
-      if (
-        wordAndFormSelectionUuids.value.length !==
-          Object.values(wordAndFormSelectionUuids.value).length ||
-        wordAndFormSearchUuids.value.length !==
-          Object.values(wordAndFormSearchUuids.value).length ||
-        numWordsBetween.value.length !==
-          Object.values(numWordsBetween.value).length
-      ) {
-        return false;
-      }
+      let allowSearch = true;
       for (let i = 0; i < numOptionsUsing.value; i += 1) {
-        if (wordAndFormSelectionUuids.value[i].length < 1) {
-          return false;
+        if (searchItems.value[i].uuids.length < 1) {
+          allowSearch = false;
+          break;
+        }
+        if (
+          sequenced.value === 'true' &&
+          !searchItems.value[i].numWordsBefore &&
+          i > 0
+        ) {
+          allowSearch = false;
+          break;
         }
       }
-      for (let i = 0; i < numOptionsUsing.value; i += 1) {
-        if (wordAndFormSearchUuids.value[i].length < 1) {
-          return false;
-        }
-      }
-      return true;
+      return allowSearch;
     });
 
     const filter = (item: any, queryText: string, itemText: string) => {
@@ -327,11 +364,14 @@ export default defineComponent({
       try {
         const response: WordsInTextsSearchResponse = await server.getWordsInTextSearchResults(
           {
-            uuids: JSON.stringify(wordAndFormSearchUuids.value),
-            numWordsBetween: JSON.stringify(numWordsBetween.value),
+            items: JSON.stringify(
+              searchItems.value.filter(
+                (_val, index) => index < numOptionsUsing.value
+              )
+            ),
             page: JSON.stringify(pageNum),
             rows: JSON.stringify(rows),
-            sequenced: sequenced.value,
+            sequenced: mode.value,
           }
         );
         results.value = response.results;
@@ -355,19 +395,12 @@ export default defineComponent({
           numOptionsUsing.value += 1;
         }
         if (numOptionsUsing.value > 1 && !increase) {
+          searchItems.value.splice(numOptionsUsing.value - 1, 1, {
+            uuids: [],
+            type: 'form' as 'form' | 'parse',
+            numWordsBefore: null,
+          });
           numOptionsUsing.value -= 1;
-          if (wordAndFormSelectionUuids.value.length > numOptionsUsing.value) {
-            wordAndFormSelectionUuids.value.pop();
-          }
-          if (wordAndFormSearchUuids.value.length > numOptionsUsing.value) {
-            wordAndFormSearchUuids.value.pop();
-          }
-          if (wordForms.value.length > numOptionsUsing.value) {
-            wordForms.value.pop();
-          }
-          if (numWordsBetween.value.length > numOptionsUsing.value - 1) {
-            numWordsBetween.value.pop();
-          }
         }
       } catch (err) {
         actions.showErrorSnackbar(
@@ -377,18 +410,31 @@ export default defineComponent({
       }
     };
 
+    const updateUseParse = async (index: number) => {
+      useParse.value = { ...useParse.value, [index]: !useParse.value[index] };
+      if (searchItems.value[index].type === 'form') {
+        searchItems.value[index].type = 'parse';
+      } else {
+        searchItems.value[index].type = 'form';
+      }
+      searchItems.value[index].uuids = [];
+      searchItems.value.splice(index, 1, searchItems.value[index]);
+      expand.value.splice(index, 1, false);
+    };
+
     const selectAll = (val: boolean | null, index: number, idx: number) => {
+      let selectedUuids: string[] = (searchItems.value[index]
+        .uuids as unknown) as string[];
       wordForms.value[index][idx].forms.forEach(form => {
-        if (wordAndFormSearchUuids.value[index].includes(form.uuid) && !val) {
-          wordAndFormSearchUuids.value[index].splice(
-            wordAndFormSearchUuids.value[index].indexOf(form.uuid),
-            1
-          );
+        if (selectedUuids.includes(form.uuid) && !val) {
+          selectedUuids.splice(selectedUuids.indexOf(form.uuid), 1);
         }
-        if (!wordAndFormSearchUuids.value[index].includes(form.uuid) && val) {
-          wordAndFormSearchUuids.value[index].push(form.uuid);
+        if (!selectedUuids.includes(form.uuid) && val) {
+          selectedUuids.push(form.uuid);
         }
       });
+      searchItems.value[index].uuids = selectedUuids;
+      searchItems.value.splice(index, 1, searchItems.value[index]);
     };
 
     const markSelectAllFalseOnRemoval = (
@@ -416,7 +462,7 @@ export default defineComponent({
       index: number
     ) => {
       wordForms.value[index] = [];
-      wordAndFormSearchUuids.value[index] = [];
+      searchItems.value[index].uuids = [];
       markSelectAllFalseOnRemoval(checkboxAll.value, index);
       selectedItems.forEach(selectedItem => {
         if (selectedItem.uuid === selectedItem.wordUuid) {
@@ -438,9 +484,7 @@ export default defineComponent({
             forms: forms,
           };
           wordForms.value[index].push(wordForWordsInTextSearch);
-          wordAndFormSearchUuids.value[index].push(
-            ...forms.map(({ uuid }) => uuid)
-          );
+          searchItems.value[index].uuids = [...forms.map(({ uuid }) => uuid)];
         } else {
           const word = items.value.find(item => {
             if (item.info.uuid === selectedItem.wordUuid) return item;
@@ -463,23 +507,106 @@ export default defineComponent({
               forms: formSiblings,
             };
             wordForms.value[index].push(wordForWordsInTextSearch);
-            wordAndFormSearchUuids.value[index].push(selectedItem.uuid);
+            let searchItemUuids: string[] = searchItems.value[index]
+              .uuids as string[];
+            searchItems.value[index].uuids = [
+              ...searchItemUuids,
+              selectedItem.uuid,
+            ];
           }
         }
       });
+      searchItems.value.splice(index, 1, searchItems.value[index]);
+    };
+
+    const arrangeProperties = (
+      combinedProperties: ParseTreePropertyUuids[],
+      prop: ParseTreePropertyUuids
+    ) => {
+      let currentProp: ParseTreePropertyUuids = prop;
+      let parent: ParseTreePropertyUuids | undefined;
+      let propArray: ParseTreePropertyUuids[] = [];
+      do {
+        propArray.push(currentProp);
+        parent = combinedProperties.find(
+          par => par.value.uuid === currentProp.variable.parentUuid
+        );
+        if (parent) {
+          currentProp = parent;
+        }
+      } while (parent);
+      return propArray.reverse();
+    };
+
+    const setProperties = (
+      propertyList: ParseTreeProperty[],
+      index: number
+    ) => {
+      const neededProperties: ParseTreePropertyUuids[] = propertyList.map(
+        prop => ({
+          variable: {
+            uuid: prop.variable.uuid,
+            variableName: prop.variable.variableName,
+            parentUuid: prop.variable.parentUuid,
+            variableUuid: prop.variable.variableUuid,
+            level: prop.variable.level,
+          },
+          value: {
+            uuid: prop.value.uuid,
+            valueName: prop.value.valueName,
+            parentUuid: prop.value.parentUuid,
+            valueUuid: prop.value.valueUuid,
+            level: prop.value.level,
+          },
+        })
+      );
+      let arrangedProperties: ParseTreePropertyUuids[][] = [];
+      const parentUuids: string[] = neededProperties.map(
+        prop => prop.variable.parentUuid
+      );
+      neededProperties.forEach(prop => {
+        if (
+          !parentUuids.includes(prop.value.uuid) &&
+          prop.variable.variableName !== 'Primary Classification'
+        ) {
+          arrangedProperties.push(arrangeProperties(neededProperties, prop));
+        }
+      });
+      searchItems.value[index].uuids = arrangedProperties;
+      searchItems.value.splice(index, 1, searchItems.value[index]);
+    };
+
+    const getNumFormsSelected = (
+      index: number,
+      word: WordForWordsInTextSearch
+    ): number => {
+      return new Set(
+        (searchItems.value[index].uuids as string[]).filter(uuid => {
+          return word.forms.map(form => form.uuid).includes(uuid);
+        })
+      ).size;
     };
 
     onMounted(async () => {
+      loading.value = true;
       try {
         items.value = await server.getWordsAndForms();
         for (let i = 0; i < maxOptions; i += 1) {
           expand.value.push(false);
+          useParse.value[i] = false;
+          searchItems.value.push({
+            uuids: [],
+            type: 'form' as 'form' | 'parse',
+            numWordsBefore: null,
+          });
         }
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading words and forms. Please try again.',
           err as Error
         );
+      } finally {
+        loading.value = false;
       }
     });
 
@@ -489,10 +616,16 @@ export default defineComponent({
       }
     });
 
+    watch(sequenced, () => {
+      mode.value = sequenced.value;
+    });
+
     return {
       items,
+      searchItems,
+      useParse,
+      setProperties,
       wordAndFormSelectionUuids,
-      numWordsBetween,
       wordsBetween,
       numOptionsUsing,
       updateNumOptionsUsing,
@@ -501,9 +634,8 @@ export default defineComponent({
       selectAll,
       expand,
       wordForms,
-      formsLoading,
       getWordForms,
-      wordAndFormSearchUuids,
+      getNumFormsSelected,
       searchLoading,
       filter,
       headers,
@@ -515,6 +647,7 @@ export default defineComponent({
       sequenced,
       loading,
       maxOptions,
+      updateUseParse,
     };
   },
 });

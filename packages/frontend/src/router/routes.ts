@@ -56,6 +56,7 @@ import ArchivesView from '../views/Texts/ArchivesView/index.vue';
 import ArchiveView from '../views/Texts/ArchivesView/archives/index.vue';
 import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
 import WordsInTextsSearch from '../views/Search/TextsSearch/WordsInTextSearch.vue';
+import QuarantinedTexts from '../views/Admin/Quarantine/QuarantinedTexts.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -137,6 +138,12 @@ const routes: RouteConfig[] = [
     path: '/admin/add_denylist/collections',
     name: 'denylistAddCollections',
     component: AddDenylistCollections,
+    beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/quarantine',
+    name: 'adminQuarantine',
+    component: QuarantinedTexts,
     beforeEnter: adminGuard,
   },
   {
@@ -317,7 +324,7 @@ const routes: RouteConfig[] = [
     path: '/dashboard/comments',
     name: 'dashboardComments',
     component: UserCommentView,
-    beforeEnter: authenticatedGuard,
+    beforeEnter: permissionGuard('ADD_COMMENTS'),
   },
   {
     path: '/dashboard/preferences',

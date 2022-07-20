@@ -39,7 +39,9 @@ import ArchiveDao from './api/daos/ArchiveDao';
 import NoteDao from './api/daos/NoteDao';
 import PageContentDao from './api/daos/PageContentDao';
 import SearchFailureDao from './api/daos/SearchFailureDao';
+import BibliographyDao from './api/daos/BibliographyDao';
 import TreeDao from './api/daos/TreeDao';
+import QuarantineTextDao from './api/daos/QuarantineTextDao';
 
 declare global {
   namespace Express {
@@ -86,7 +88,9 @@ sl.set('ArchiveDao', ArchiveDao);
 sl.set('NoteDao', NoteDao);
 sl.set('PageContentDao', PageContentDao);
 sl.set('SearchFailureDao', SearchFailureDao);
+sl.set('BibliographyDao', BibliographyDao);
 sl.set('TreeDao', TreeDao);
+sl.set('QuarantineTextDao', QuarantineTextDao);
 
 initializeFirebase(err => {
   if (err) {

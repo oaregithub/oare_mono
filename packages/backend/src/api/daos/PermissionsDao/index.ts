@@ -130,15 +130,31 @@ class PermissionsDao {
       description: 'Allow group users to view text source file',
     },
     {
+      name: 'COPY_TEXT_TRANSLITERATION',
+      type: 'text',
+      description:
+        'Allow group users to copy a string representation of text transliterations',
+    },
+    {
       name: 'EDIT_ITEM_PROPERTIES',
       type: 'general',
       description: 'Allow group users to edit item properties for a given item',
     },
     {
-      name: 'ADD_LEMMA',
-      type: 'dictionary',
-      description: 'Allow group users to add new words to the dictionary',
-      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+      name: 'VIEW_BIBLIOGRAPHY',
+      type: 'text',
+      description: 'Allow group users to view the citation(s) of text',
+    },
+    {
+      name: 'COPY_TEXT_TRANSLITERATION',
+      type: 'text',
+      description:
+        'Allow group users to copy a string representation of text transliterations',
+    },
+    {
+      name: 'ADD_COMMENTS',
+      type: 'general',
+      description: 'Allow group users to add comments',
     },
   ];
 

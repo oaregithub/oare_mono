@@ -173,6 +173,11 @@ class TextDao {
       subgenre: row.subgenre,
     });
   }
+
+  async removeTextByUuid(textUuid: string, trx?: Knex.Transaction) {
+    const k = trx || knexWrite();
+    await k('text').del().where({ uuid: textUuid });
+  }
 }
 
 export default new TextDao();

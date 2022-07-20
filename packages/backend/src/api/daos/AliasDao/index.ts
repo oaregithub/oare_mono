@@ -33,6 +33,14 @@ class AliasDao {
       primacy,
     });
   }
+
+  async removeAliasByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('alias').del().where({ reference_uuid: referenceUuid });
+  }
 }
 
 export default new AliasDao();

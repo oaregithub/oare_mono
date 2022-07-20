@@ -19,13 +19,19 @@ class HierarchyDao {
     const k = trx || knexRead();
     const CollectionDao = sl.get('CollectionDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+
+    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+      trx
+    );
 
     function createBaseQuery() {
       const query = k('hierarchy')
         .distinct('hierarchy.object_uuid as uuid')
         .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
         .where('hierarchy.type', type.toLowerCase())
-        .andWhere('alias.name', 'like', `%${filter}%`);
+        .andWhere('alias.name', 'like', `%${filter}%`)
+        .whereNotIn('hierarchy.object_uuid', quarantinedTexts);
       if (groupId && showExcluded) {
         return query.whereNotIn(
           'hierarchy.object_uuid',
@@ -124,56 +130,15 @@ class HierarchyDao {
   }
 
   async getCollectionTexts(
-    userUuid: string | null,
     collectionUuid: string,
-    { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
   ): Promise<CollectionResponse> {
     const k = trx || knexRead();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
 
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
-
-    const collectionTextQuery = () => {
-      const finalSearch: string = `%${search
-        .replace(/\W/g, '%')
-        .toLowerCase()}%`;
-
-      const query = k('hierarchy')
-        .leftJoin('text', 'text.uuid', 'hierarchy.object_uuid')
-        .where('hierarchy.obj_parent_uuid', collectionUuid)
-        .whereNotIn('hierarchy.object_uuid', textsToHide)
-        .andWhere(function () {
-          this.whereRaw('LOWER(text.display_name) LIKE ?', [finalSearch])
-            .orWhereRaw(
-              "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) LIKE ?",
-              [finalSearch]
-            )
-            .orWhereRaw(
-              "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) LIKE ?",
-              [finalSearch]
-            )
-            .orWhereRaw(
-              "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) LIKE ?",
-              [finalSearch]
-            );
-        });
-      return query;
-    };
-
-    const countRow = await collectionTextQuery()
-      .count({
-        count: k.raw('distinct hierarchy.id'),
-      })
-      .first();
-
-    let totalTexts = 0;
-    if (countRow && countRow.count) {
-      totalTexts = countRow.count as number;
-    }
-
-    const texts = await collectionTextQuery()
+    const texts = await k('hierarchy')
+      .innerJoin('text', 'text.uuid', 'hierarchy.object_uuid')
+      .where('hierarchy.obj_parent_uuid', collectionUuid)
       .distinct(
         'hierarchy.id',
         'hierarchy.object_uuid as uuid',
@@ -187,16 +152,13 @@ class HierarchyDao {
         'text.publication_no as publicationNumber'
       )
       .groupBy('hierarchy.object_uuid')
-      .orderBy('text.display_name')
-      .limit(rows)
-      .offset((page - 1) * rows);
+      .orderBy('text.display_name');
 
     const hasEpigraphies = await Promise.all(
       texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid, trx))
     );
 
     return {
-      totalTexts,
       texts: texts.map((text, idx) => ({
         ...text,
         hasEpigraphy: hasEpigraphies[idx],
@@ -310,6 +272,14 @@ class HierarchyDao {
       obj_parent_uuid: row.objectParentUuid,
       published: row.published,
     });
+  }
+
+  async removeHierarchyTextRowsByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('hierarchy').del().where({ object_uuid: textUuid, type: 'text' });
   }
 }
 

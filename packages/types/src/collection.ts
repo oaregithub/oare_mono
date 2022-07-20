@@ -17,7 +17,6 @@ export interface CollectionText {
   publicationNumber: string;
 }
 export interface CollectionResponse {
-  totalTexts: number;
   texts: CollectionText[];
 }
 

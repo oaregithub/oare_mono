@@ -28,6 +28,11 @@ export interface EpigraphyResponse {
   discourseUnits: DiscourseUnit[];
   draft?: TextDraft;
   hasEpigraphy: boolean;
+  zoteroData: ZoteroData[];
+}
+export interface ZoteroData {
+  citation: string;
+  link: string;
 }
 
 export type EpigraphicUnitType =
@@ -405,4 +410,10 @@ export interface ImageResource {
 export interface ImageResourcePropertyDetails {
   side: string | null;
   view: string | null;
+}
+
+export interface QuarantineText {
+  text: Text;
+  hasEpigraphy: boolean;
+  timestamp: string;
 }
