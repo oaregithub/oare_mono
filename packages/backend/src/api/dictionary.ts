@@ -1,5 +1,5 @@
 import express from 'express';
-import _ from 'lodash';
+import _, { words } from 'lodash';
 import {
   Word,
   UpdateDictionaryWordPayload,
@@ -13,6 +13,9 @@ import {
   InsertItemPropertyRow,
   UpdateFormPayload,
   TaxonomyTree,
+  AddWordPayload,
+  ItemPropertyRow,
+  AddWordCheckPayload,
 } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
@@ -717,5 +720,106 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router.route('/dictionary/checknewword').post(async (req, res, next) => {
+  try {
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+
+    const { wordSpelling, properties }: AddWordCheckPayload = req.body;
+
+    const firstLetter = wordSpelling.charAt(0);
+
+    const wordsToCompare = await DictionaryWordDao.getWords(
+      'word',
+      firstLetter.toLowerCase()
+    );
+
+    const wordsSameSpelling = wordsToCompare.filter(
+      word => word.word === wordSpelling
+    );
+
+    const hasMatchingProperty = (
+      comparison: InsertItemPropertyRow[],
+      property: ItemPropertyRow
+    ) => {
+      return comparison.some(
+        prop =>
+          prop.variableUuid === property.variableUuid &&
+          prop.valueUuid === property.valueUuid &&
+          prop.level === property.level
+      );
+    };
+
+    const newWordProperties = convertParsePropsToItemProps(properties, '');
+
+    if (
+      wordsSameSpelling &&
+      wordsSameSpelling.some(
+        existing =>
+          existing.properties.length === newWordProperties.length &&
+          existing.properties.every(prop =>
+            hasMatchingProperty(newWordProperties, prop)
+          )
+      )
+    ) {
+      res.json(true);
+    } else {
+      res.json(false);
+    }
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
+router.route('/dictionary/addword').post(async (req, res, next) => {
+  try {
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const utils = sl.get('utils');
+    const cache = sl.get('cache');
+
+    const { wordSpelling, wordType, properties }: AddWordPayload = req.body;
+
+    let newWordUuid: string = '';
+
+    await utils.createTransaction(async trx => {
+      newWordUuid = await DictionaryWordDao.addWord(
+        wordSpelling,
+        wordType,
+        trx
+      );
+
+      const itemPropertyRows = convertParsePropsToItemProps(
+        properties,
+        newWordUuid
+      );
+
+      const itemPropertyRowLevels = [
+        ...new Set(itemPropertyRows.map(row => row.level)),
+      ];
+      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+        level => itemPropertyRows.filter(row => row.level === level)
+      );
+
+      for (let i = 0; i < rowsByLevel.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all(
+          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
+        );
+      }
+    });
+
+    const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+      wordSpelling,
+      wordType
+    );
+
+    await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+
+    res.status(201).json(newWordUuid);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 export default router;

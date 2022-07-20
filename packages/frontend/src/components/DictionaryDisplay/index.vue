@@ -12,6 +12,7 @@
     <add-word-dialog
       v-model="addWordDialog"
       :key="addWordKey"
+      :route="route"
     ></add-word-dialog>
 
     <v-container>
@@ -65,7 +66,7 @@
 <script lang="ts">
 import { defineComponent, ref, PropType, watch } from '@vue/composition-api';
 import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
-import { DisplayableWord, ParseTreeProperty } from '@oare/types';
+import { DisplayableWord } from '@oare/types';
 import AddWordDialog from './DictionaryWord/AddWordDialog.vue';
 
 export default defineComponent({
