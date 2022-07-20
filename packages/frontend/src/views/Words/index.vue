@@ -39,14 +39,7 @@
           {{ ` (${itemPropertyString(verbalThematicVowelTypes(word))})` }}
         </div>
         <p>
-          <span class="mr-1">Definition(s):</span>
-          <span v-if="word.translationsForDefinition.length === 0"
-            >No definition found</span
-          >
-          <span
-            v-for="(tr, idx) in word.translationsForDefinition"
-            :key="tr.uuid"
-          >
+          <span v-for="(tr, idx) in getWordTranslations(word)" :key="tr.uuid">
             <b>{{ idx + 1 }}</b
             >. {{ tr.val }}
           </span>
@@ -59,18 +52,6 @@
           >
           <span v-if="specialClassifications(word).length > 0">
             {{ itemPropertyString(specialClassifications(word)) }}
-          </span>
-        </p>
-      </template>
-      <template #discussionLemmas="{ word }">
-        <p class="ml-3">
-          <span class="mr-1">Discussion lemma(s):</span>
-          <span v-if="word.discussionLemmas.length === 0"
-            >No discussion lemma found</span
-          >
-          <span v-for="(lm, idx) in word.discussionLemmas" :key="lm.uuid">
-            <b>{{ idx + 1 }}</b
-            >. {{ lm.val }}
           </span>
         </p>
       </template>
@@ -145,6 +126,9 @@ export default defineComponent({
       return word.translationsForDefinition;
     };
 
+    const getWordDiscussionLemmas = (word: Word) => {
+      return word.discussionLemmas;
+    };
     const partsOfSpeech = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Part of Speech'
@@ -187,6 +171,7 @@ export default defineComponent({
       searchFilter,
       itemPropertyString,
       getWordTranslations,
+      getWordDiscussionLemmas,
       partsOfSpeech,
       verbalThematicVowelTypes,
       specialClassifications,

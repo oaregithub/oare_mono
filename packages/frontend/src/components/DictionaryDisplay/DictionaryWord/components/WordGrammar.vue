@@ -4,14 +4,17 @@
       <v-tooltip
         bottom
         open-delay="800"
-        :key="`${isEditingLemmaProperties}-lemma-properties`"
+        :key="`${
+          isEditingLemmaTranslations | isEditingDefinitionTranslations
+        }-lemma-properties`"
       >
         <template #activator="{ on, attrs }">
           <v-btn
             v-if="
               allowEditing &&
               canEditLemmaProperties &&
-              !isEditingLemmaProperties
+              !isEditingLemmaTranslations &&
+              !isEditingDefinitionTranslations
             "
             icon
             class="test-property-pencil edit-button mt-n1 mr-1 ml-3"
@@ -26,13 +29,21 @@
         <span>Edit Lemma Properties</span>
       </v-tooltip>
       <div
-        v-if="partsOfSpeech.length > 0 && !isEditingLemmaProperties"
+        v-if="
+          partsOfSpeech.length > 0 &&
+          !isEditingLemmaTranslations &&
+          !isEditingDefinitionTranslations
+        "
         class="mr-1"
       >
         {{ partsOfSpeechString }}
       </div>
       <div
-        v-if="verbalThematicVowelTypes.length > 0 && !isEditingLemmaProperties"
+        v-if="
+          verbalThematicVowelTypes.length > 0 &&
+          !isEditingLemmaTranslations &&
+          !isEditingDefinitionTranslations
+        "
         class="mr-1"
       >
         ({{ verbalThematicVowelTypesString }})
@@ -41,14 +52,17 @@
       <v-tooltip
         bottom
         open-delay="800"
-        :key="`${isEditingDefinitionTranslations}-translations`"
+        :key="`${
+          isEditingDefinitionTranslations | isEditingLemmaTranslations
+        }-translations`"
       >
         <template #activator="{ on, attrs }">
           <v-btn
             v-if="
               allowEditing &&
               canEditTranslations &&
-              !isEditingDefinitionTranslations
+              !isEditingDefinitionTranslations &&
+              !isEditingLemmaTranslations
             "
             icon
             class="mt-n1 mr-1"
@@ -71,20 +85,24 @@
         :wordUuid="word.uuid"
         fieldType="definition"
       />
-      <span class="mr-1">Definition(s):</span>
       <p
-        v-if="onlyShowFirstTranslation && !isEditingDefinitionTranslations"
+        v-if="
+          onlyShowFirstTranslation &&
+          !isEditingDefinitionTranslations &&
+          !isEditingLemmaTranslations
+        "
         class="mb-0"
       >
-        <span v-if="word.translationForDefinition.length >= 1">
+        <span v-if="word.translationsForDefinition.length >= 1">
           <b>{{ 1 }}</b>
-          . {{ word.translations[0].val }}
+          . {{ word.translationsForDefinition[0].val }}
         </span>
       </p>
-      <p v-else-if="!isEditingDefinitionTranslations">
-        <span v-if="word.translationsForDefinition.length === 0">
-          No definition found for this word
-        </span>
+      <p
+        v-else-if="
+          !isEditingDefinitionTranslations && !isEditingLemmaTranslations
+        "
+      >
         <span
           v-for="(tr, idx) in word.translationsForDefinition"
           :key="tr.uuid"
@@ -109,12 +127,17 @@
       <v-tooltip
         bottom
         open-delay="800"
-        :key="`${isEditingLemmaTranslations}-translations`"
+        :key="`${
+          isEditingDefinitionTranslations | isEditingLemmaTranslations
+        }-translations`"
       >
         <template #activator="{ on, attrs }">
           <v-btn
             v-if="
-              allowEditing && canEditTranslations && !isEditingLemmaTranslations
+              allowEditing &&
+              canEditTranslations &&
+              !isEditingLemmaTranslations &&
+              !isEditingDefinitionTranslations
             "
             icon
             class="mt-n1 mr-2 ml-3"
@@ -136,20 +159,21 @@
         :wordUuid="word.uuid"
         fieldType="discussionLemma"
       />
-      <span class="mr-4">Discussion lemmas(s):</span>
-      <span v-if="word.discussionLemmas.length === 0">
+      <span
+        v-if="
+          word.discussionLemmas.length === 0 &&
+          !isEditingLemmaTranslations &&
+          !isEditingDefinitionTranslations
+        "
+      >
         No discussion Lemma found for this word
       </span>
       <p
-        v-if="onlyShowFirstTranslation && !isEditingLemmaTranslations"
+        v-else-if="
+          !isEditingLemmaTranslations && !isEditingDefinitionTranslations
+        "
         class="mt-3"
       >
-        <span v-if="word.discussionLemmas.length >= 1">
-          <b>{{ 1 }}</b>
-          . {{ word.discussionLemmas[0].val }}
-        </span>
-      </p>
-      <p v-else-if="!isEditingLemmaTranslations" class="mt-3">
         <v-row v-for="lm in word.discussionLemmas" :key="lm.uuid">
           {{ lm.val }}
         </v-row>
