@@ -14,7 +14,11 @@ async function disableCache(): Promise<void> {
 }
 
 async function flushCache(): Promise<void> {
-  await axios.delete('/cache/flush');
+  await axios.delete('/cache/flush', {
+    params: {
+      propogate: 'true',
+    },
+  });
 }
 
 async function clearCacheRoute(
@@ -25,6 +29,7 @@ async function clearCacheRoute(
     params: {
       url,
       level,
+      propogate: 'true',
     },
   });
 }

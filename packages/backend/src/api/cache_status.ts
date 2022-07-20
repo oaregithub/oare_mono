@@ -2,6 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/adminRoute';
+import authenticatedRoute from '@/middlewares/authenticatedRoute';
 
 const router = express.Router();
 
@@ -35,29 +36,38 @@ router.route('/cache/disable').patch(adminRoute, async (_req, res, next) => {
   }
 });
 
-router.route('/cache/flush').delete(adminRoute, async (_req, res, next) => {
+router.route('/cache/flush').delete(adminRoute, async (req, res, next) => {
   try {
     const cache = sl.get('cache');
-    await cache.flush();
+    const { propogate } = (req.query as unknown) as {
+      propogate: 'true' | 'false';
+    };
+
+    await cache.flush(req, propogate === 'true');
     res.status(204).end();
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
 });
 
-router.route('/cache/clear').delete(adminRoute, async (req, res, next) => {
-  try {
-    const cache = sl.get('cache');
-    const { url, level } = (req.query as unknown) as {
-      url: string;
-      level: 'exact' | 'startsWith';
-    };
-    await cache.clear(url, { level });
-    res.status(204).end();
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+router
+  .route('/cache/clear')
+  .delete(authenticatedRoute, async (req, res, next) => {
+    try {
+      const cache = sl.get('cache');
+      const { url, level, propogate } = (req.query as unknown) as {
+        url: string;
+        level: 'exact' | 'startsWith';
+        propogate: 'true' | 'false';
+      };
+
+      await cache.clear(url, { level }, req, propogate === 'true');
+
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 router.route('/cache/keys').get(adminRoute, async (req, res, next) => {
   try {
