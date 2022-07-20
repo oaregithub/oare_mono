@@ -2,7 +2,11 @@ import { createClient } from 'redis';
 import { API_PATH } from '@/setupRoutes';
 import { User } from '@oare/types';
 import { Request } from 'express';
-import { crossRegionCacheClear, crossRegionCacheFlush } from './utils';
+import {
+  crossRegionCacheClear,
+  crossRegionCacheFlush,
+  crossRegionCacheKeys,
+} from './utils';
 
 const redis = createClient(
   process.env.NODE_ENV === 'production'
@@ -72,15 +76,25 @@ class Cache {
 
   public async keys(
     url: string,
-    level: 'exact' | 'startsWith'
+    level: 'exact' | 'startsWith',
+    req: Request,
+    propogate: boolean = true
   ): Promise<number> {
+    let numOriginKeys = 0;
     if (level === 'exact') {
       const value = await redis.get(`${API_PATH}${url}`);
-      return value ? 1 : 0;
+      numOriginKeys = value ? 1 : 0;
+    } else {
+      const keys = await redis.keys(`${API_PATH}${url}*`);
+      numOriginKeys = keys.length;
     }
 
-    const keys = await redis.keys(`${API_PATH}${url}*`);
-    return keys.length;
+    let numRemoteKeys = 0;
+    if (propogate) {
+      numRemoteKeys = await crossRegionCacheKeys(url, level, req);
+    }
+
+    return numOriginKeys + numRemoteKeys;
   }
 
   public async flush(req: Request, propogate: boolean = true) {
