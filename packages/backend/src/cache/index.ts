@@ -1,6 +1,8 @@
 import { createClient } from 'redis';
 import { API_PATH } from '@/setupRoutes';
 import { User } from '@oare/types';
+import { Request } from 'express';
+import { crossRegionCacheClear, crossRegionCacheFlush } from './utils';
 
 const redis = createClient(
   process.env.NODE_ENV === 'production'
@@ -50,12 +52,21 @@ class Cache {
     return filter(JSON.parse(cachedValue), key.req.user);
   }
 
-  public async clear(url: string, options: ClearCacheOptions) {
+  public async clear(
+    url: string,
+    options: ClearCacheOptions,
+    req: Request,
+    propogate: boolean = true
+  ) {
     if (options.level === 'exact') {
       await redis.del(`${API_PATH}${url}`);
     } else if (options.level === 'startsWith') {
       const matchingKeys = await redis.keys(`${API_PATH}${url}*`);
       await Promise.all(matchingKeys.map(match => redis.del(match)));
+    }
+
+    if (propogate) {
+      await crossRegionCacheClear(url, options, req);
     }
   }
 
@@ -72,8 +83,12 @@ class Cache {
     return keys.length;
   }
 
-  public async flush() {
+  public async flush(req: Request, propogate: boolean = true) {
     await redis.flushDb();
+
+    if (propogate) {
+      await crossRegionCacheFlush(req);
+    }
   }
 }
 
