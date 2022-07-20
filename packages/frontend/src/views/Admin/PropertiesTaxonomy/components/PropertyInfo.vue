@@ -154,7 +154,7 @@ export default defineComponent({
             primacy: newPrimacy.value,
           });
 
-          await emitEvents();
+          await assignNewValues();
           actions.showSnackbar('Successfully updated description');
         } catch (err) {
           actions.showErrorSnackbar(
@@ -177,7 +177,7 @@ export default defineComponent({
           primacy: newPrimacy.value,
         });
 
-        await emitEvents();
+        await assignNewValues();
         actions.showSnackbar('Successfully added new description');
       } catch (err) {
         actions.showErrorSnackbar(
@@ -189,7 +189,7 @@ export default defineComponent({
       }
     };
 
-    const emitEvents = async () => {
+    const assignNewValues = async () => {
       const newProps: FieldInfo = await server.getFieldInfo(
         props.variableOrValueUuid
       );
@@ -200,14 +200,6 @@ export default defineComponent({
           ? 'English'
           : newProps.language || 'n/a';
       reactiveFieldUuid.value = newProps.uuid ?? '';
-      emit('update:fieldInfo', {
-        uuid: reactiveFieldUuid.value,
-        referenceUuid: newProps.referenceUuid,
-        field: newDescription.value,
-        primacy: newPrimacy.value,
-        language: newLanguage.value,
-        type: newProps.type,
-      });
     };
 
     const canSubmit = computed(

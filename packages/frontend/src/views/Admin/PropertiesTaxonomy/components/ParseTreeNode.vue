@@ -92,7 +92,6 @@
                 "
                 :type="child.variableType || ''"
                 :tableReference="child.variableTableReference || ''"
-                @update:propertyInfo="child = updateFieldInfo(child, $event)"
                 :variableOrValueUuid="
                   child.variableUuid || child.valueUuid || ''
                 "
@@ -467,11 +466,6 @@ export default defineComponent({
       }
     };
 
-    const updateFieldInfo = (child: TaxonomyTree, field: FieldInfo) => {
-      child.fieldInfo = field;
-      return child;
-    };
-
     return {
       selected,
       ignoredSubtrees,
@@ -484,7 +478,6 @@ export default defineComponent({
       setSelectionDisplay,
       openPanels,
       handleSelections,
-      updateFieldInfo,
     };
   },
 });
