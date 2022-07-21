@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError, HttpForbidden, HttpBadRequest } from '@/exceptions';
+import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
 import {
@@ -66,9 +66,13 @@ router
 
         await TextDao.updateTranslitStatus(textUuid, color);
 
-        await cache.clear(`/text_epigraphies/text/${textUuid}`, {
-          level: 'startsWith',
-        });
+        await cache.clear(
+          `/text_epigraphies/text/${textUuid}`,
+          {
+            level: 'startsWith',
+          },
+          req
+        );
 
         res.status(204).end();
       } catch (err) {
@@ -95,6 +99,7 @@ router
         const ItemPropertiesDao = sl.get('ItemPropertiesDao');
         const BibliographyDao = sl.get('BibliographyDao');
         const ResourceDao = sl.get('ResourceDao');
+        const BibliographyUtils = sl.get('BibliographyUtils');
         const cache = sl.get('cache');
 
         const text = await TextDao.getTextByUuid(textUuid);
@@ -137,13 +142,21 @@ router
           'b3938276-173b-11ec-8b77-024de1c1cc1d'
         );
 
-        const zoteroCitations = await Promise.all(
-          bibliographyUuids.map(uuid =>
-            BibliographyDao.getZoteroCitationsByUuid(
-              uuid,
-              'chicago-author-date'
-            )
+        const bibItems = await Promise.all(
+          bibliographyUuids.map(bibliography =>
+            BibliographyDao.getBibliographyByUuid(bibliography)
           )
+        );
+
+        const zoteroCitations = await Promise.all(
+          bibItems.map(async item => {
+            const cit = await BibliographyUtils.getZoteroReferences(
+              item,
+              'chicago-author-date',
+              ['citation']
+            );
+            return cit && cit.citation ? cit.citation : null;
+          })
         );
 
         const fileURLs = await Promise.all(
@@ -432,9 +445,13 @@ router
         }
       });
 
-      await cache.clear(`/collections/${tables.hierarchy.objectParentUuid}`, {
-        level: 'exact',
-      });
+      await cache.clear(
+        `/collections/${tables.hierarchy.objectParentUuid}`,
+        {
+          level: 'exact',
+        },
+        req
+      );
 
       res.status(201).end();
     } catch (err) {
@@ -498,10 +515,18 @@ router
 
       const collectionUuid = await CollectionDao.getTextCollectionUuid(uuid);
 
-      await cache.clear(`/text_epigraphies/text/${uuid}`, {
-        level: 'startsWith',
-      });
-      await cache.clear(`/collections/${collectionUuid}`, { level: 'exact' });
+      await cache.clear(
+        `/text_epigraphies/text/${uuid}`,
+        {
+          level: 'startsWith',
+        },
+        req
+      );
+      await cache.clear(
+        `/collections/${collectionUuid}`,
+        { level: 'exact' },
+        req
+      );
 
       res.status(201).end();
     } catch (err) {

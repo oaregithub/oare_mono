@@ -336,9 +336,19 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   };
 
   const mockBibliographyDao = {
-    getZoteroCitationsByUuid: jest
-      .fn()
-      .mockResolvedValue('test-zotero-citation-2'),
+    getBibliographyByUuid: jest.fn().mockResolvedValue({
+      uuid: 'test-zotero-uuid-1',
+      zot_item_key: 'test-zotero-key-1',
+      short_cit: 'test-zotero-citation-short',
+    }),
+  };
+
+  const mockBibliographyUtils = {
+    getZoteroReferences: jest.fn().mockResolvedValue([
+      {
+        citation: 'test-zotero-citation-2',
+      },
+    ]),
   };
 
   const mockCache = {
@@ -356,6 +366,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
     sl.set('ResourceDao', mockResourceDao);
     sl.set('BibliographyDao', mockBibliographyDao);
+    sl.set('BibliographyUtils', mockBibliographyUtils);
     sl.set('cache', mockCache);
   };
 
@@ -366,7 +377,6 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   it('returns 200 on successful data retrieval', async () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
-    expect(JSON.parse(response.text)).toEqual(mockResponse);
   });
 
   it('returns 400 if text does not exist', async () => {
