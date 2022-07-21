@@ -824,7 +824,7 @@ router.route('/dictionary/addword').post(async (req, res, next) => {
       wordType
     );
 
-    await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+    await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
 
     res.status(201).json(newWordUuid);
   } catch (err) {
