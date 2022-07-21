@@ -753,15 +753,13 @@ router.route('/dictionary/checknewword').post(async (req, res, next) => {
     const hasMatchingProperty = (
       comparison: InsertItemPropertyRow[],
       property: ItemPropertyRow
-    ) => {
-      return comparison.some(
+    ) =>
+      comparison.some(
         prop =>
           prop.variableUuid === property.variableUuid &&
           prop.valueUuid === property.valueUuid &&
           prop.level === property.level
       );
-    };
-
     const newWordProperties = convertParsePropsToItemProps(properties, '');
 
     if (

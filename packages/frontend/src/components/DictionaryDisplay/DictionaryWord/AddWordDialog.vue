@@ -3,10 +3,10 @@
     title="Add Lemma"
     @input="$emit('input', $event)"
     :submitDisabled="
-      !newWordSpelling || !formComplete || ifwordExists || !doneChecking
+      !newWordSpelling || !formComplete || ifwordExists || outstandingCheck > 0
     "
     @submit="addWord"
-    :submitLoading="addWordLoading || !doneChecking"
+    :submitLoading="addWordLoading || outstandingCheck > 0"
     :value="value"
     :persistent="false"
     :width="1150"
@@ -19,7 +19,7 @@
         class="test-word-spelling"
       />
       <span
-        v-if="ifwordExists && newWordSpelling"
+        v-if="ifwordExists"
         class="red--text text--darken-2 font-weight-bold test-error"
         >A lemma with this same spelling and matching lemma properties already
         exists.
@@ -69,6 +69,11 @@ export default defineComponent({
     const newWordSpelling = ref('');
     const properties = ref<ParseTreeProperty[]>([]);
 
+    const ifwordExists = ref(false);
+    const outstandingCheck = ref(0);
+
+    const newWord = ref('');
+
     const setProperties = (propertyList: ParseTreeProperty[]) => {
       properties.value = propertyList;
     };
@@ -82,8 +87,6 @@ export default defineComponent({
         return (route = 'word');
       }
     };
-
-    const newWord = ref('');
 
     const addWord = async () => {
       try {
@@ -105,14 +108,11 @@ export default defineComponent({
       }
     };
 
-    const ifwordExists = ref(true);
-    const doneChecking = ref(false);
-
     watch(
       [newWordSpelling, properties],
       _.debounce(async () => {
         try {
-          doneChecking.value = false;
+          outstandingCheck.value++;
           if (newWordSpelling.value) {
             ifwordExists.value = await server.checkNewWord(
               newWordSpelling.value,
@@ -125,7 +125,7 @@ export default defineComponent({
             err as Error
           );
         } finally {
-          doneChecking.value = true;
+          outstandingCheck.value--;
         }
       }, 500),
       { deep: true }
@@ -139,7 +139,7 @@ export default defineComponent({
       newWordSpelling,
       convertRouteName,
       ifwordExists,
-      doneChecking,
+      outstandingCheck,
     };
   },
 });
