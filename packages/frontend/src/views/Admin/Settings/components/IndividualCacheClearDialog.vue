@@ -161,7 +161,8 @@
       >
         <b>{{ numMatchingKeys }}</b> Matching Cache Entr{{
           numMatchingKeys !== 1 ? 'ies' : 'y'
-        }}</span
+        }}
+        Across All Cache Server Instances</span
       >
     </v-row>
   </oare-dialog>

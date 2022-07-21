@@ -2,7 +2,8 @@
   <div>
     <v-row>
       <v-col cols="8">
-        Search lemma, forms, and translations
+        Search lemma, forms, and translations<dictionary-search-info-card
+        ></dictionary-search-info-card>
         <v-text-field
           class="test-dictionary-search"
           v-model="dictionarySearch"
@@ -71,6 +72,7 @@ import {
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { DictionarySearchRow } from '@oare/types';
 import ResultTable from '../components/ResultTable.vue';
+import DictionarySearchInfoCard from './components/DictionarySearchInfoCard.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
@@ -79,6 +81,7 @@ export default defineComponent({
   name: 'DictionarySearch',
   components: {
     ResultTable,
+    DictionarySearchInfoCard,
   },
   setup() {
     const totalResults = ref(0);

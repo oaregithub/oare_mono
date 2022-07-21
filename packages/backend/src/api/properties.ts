@@ -55,8 +55,8 @@ router
           dictionaryRow.type
         );
 
-        await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
-        await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
+        await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+        await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
       }
 
       res.status(204).end();

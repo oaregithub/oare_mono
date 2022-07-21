@@ -178,9 +178,13 @@ router
           }
         });
 
-        await cache.clear(`/text_epigraphies/text/${textUuid}`, {
-          level: 'startsWith',
-        });
+        await cache.clear(
+          `/text_epigraphies/text/${textUuid}`,
+          {
+            level: 'startsWith',
+          },
+          req
+        );
 
         res.status(201).end();
       } catch (err) {
@@ -227,9 +231,13 @@ router
         primacy: 1,
       });
 
-      await cache.clear(`/text_epigraphies/text/${textUuid}`, {
-        level: 'startsWith',
-      });
+      await cache.clear(
+        `/text_epigraphies/text/${textUuid}`,
+        {
+          level: 'startsWith',
+        },
+        req
+      );
 
       res.status(201).end();
     } catch (err) {
@@ -245,9 +253,13 @@ router
     try {
       await FieldDao.insertField(uuid, 'translation', newTranslation, 0, null);
 
-      await cache.clear(`/text_epigraphies/text/${textUuid}`, {
-        level: 'startsWith',
-      });
+      await cache.clear(
+        `/text_epigraphies/text/${textUuid}`,
+        {
+          level: 'startsWith',
+        },
+        req
+      );
 
       res.status(201).end();
     } catch (err) {
