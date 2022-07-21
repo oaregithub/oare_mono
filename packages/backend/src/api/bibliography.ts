@@ -16,12 +16,9 @@ router
     cacheMiddleware<BibliographyResponse[]>(noFilter),
     async (req, res, next) => {
       try {
-        const { filter: search, limit: rows, page } = extractPagination(
-          req.query,
-          {
-            defaultLimit: 25,
-          }
-        );
+        const { limit: rows, page } = extractPagination(req.query, {
+          defaultLimit: 25,
+        });
 
         const BibliographyDao = sl.get('BibliographyDao');
         const BibliographyUtils = sl.get('BibliographyUtils');
