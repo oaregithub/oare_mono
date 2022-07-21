@@ -34,6 +34,7 @@ import searchWordsTexts from './api/search_words_texts';
 import properties from './api/properties';
 import environment from './api/environment';
 import text from './api/text';
+import bibliography from './api/bibliography';
 import quarantine from './api/quarantine';
 
 export const API_PATH = '/api/v2';
@@ -75,6 +76,7 @@ export default (app: Express) => {
     properties,
     environment,
     text,
+    bibliography,
     quarantine,
   ].forEach(route => {
     app.use(API_PATH, route);
