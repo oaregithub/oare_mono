@@ -130,6 +130,7 @@ export interface DictionarySearchPayload {
   search: string;
   page: number;
   rows: number;
+  mode: string;
 }
 
 export interface SpellingOccurrenceRow {

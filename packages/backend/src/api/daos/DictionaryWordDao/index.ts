@@ -271,6 +271,7 @@ class DictionaryWordDao {
     search: string,
     page: number,
     numRows: number,
+    mode: string,
     trx?: Knex.Transaction
   ) {
     const k = trx || knexRead();
@@ -305,7 +306,10 @@ class DictionaryWordDao {
       search
     );
     if (charUuids.length > 0) {
-      spellEpigRow = await this.getSpellingUuidsForDictionarySearch(charUuids);
+      spellEpigRow = await this.getSpellingUuidsForDictionarySearch(
+        charUuids,
+        mode
+      );
       query.modify(q => {
         if (spellEpigRow) {
           q.orWhereIn(
@@ -332,18 +336,24 @@ class DictionaryWordDao {
 
   async getSpellingUuidsForDictionarySearch(
     searchCharUuids: string[][],
+    mode: string,
     trx?: Knex.Transaction
   ): Promise<DictSpellEpigRowDictSearch[]> {
     const k = trx || knexRead();
-    const firstCharReadings: string[] = await k('sign_reading as sr')
-      .pluck('sr.reading')
-      .whereIn('sr.uuid', searchCharUuids[0]);
-    const lastCharReadings: string[] | null =
-      searchCharUuids.length > 1
-        ? await k('sign_reading as sr')
-            .pluck('sr.reading')
-            .whereIn('sr.uuid', searchCharUuids[searchCharUuids.length - 1])
-        : null;
+    let firstCharReadings: string[] = [];
+    let lastCharReadings: string[] | null = null;
+    if (mode === 'respectNoBoundaries') {
+      firstCharReadings = await k('sign_reading as sr')
+        .pluck('sr.reading')
+        .whereIn('sr.uuid', searchCharUuids[0]);
+      lastCharReadings =
+        searchCharUuids.length > 1
+          ? await k('sign_reading as sr')
+              .pluck('sr.reading')
+              .whereIn('sr.uuid', searchCharUuids[searchCharUuids.length - 1])
+          : null;
+    }
+
     const refUuids: DictSpellEpigRowDictSearch[] = await k
       .from('dictionary_spelling_epigraphy as dse')
       .select(
@@ -365,14 +375,13 @@ class DictionaryWordDao {
                     this.onIn(`dse${idx}.reading_uuid`, searchCharUuidArray);
                     if (
                       idx === searchCharUuids.length - 1 &&
-                      lastCharReadings
+                      lastCharReadings &&
+                      mode === 'respectNoBoundaries'
                     ) {
-                      this.orOn(function () {
-                        lastCharReadings.forEach(charReading => {
-                          this.on(
-                            k.raw(`dse${idx}.reading LIKE ?`, [charReading])
-                          );
-                        });
+                      lastCharReadings.forEach(charReading => {
+                        this.orOn(
+                          k.raw(`dse${idx}.reading LIKE ?`, [charReading])
+                        );
                       });
                     }
                   }
@@ -391,9 +400,11 @@ class DictionaryWordDao {
       })
       .whereIn('dse.reading_uuid', searchCharUuids[0])
       .modify(qb => {
-        firstCharReadings.forEach(reading => {
-          qb.orWhereLike('dse.reading', `%${reading}`);
-        });
+        if (mode === 'respectNoBoundaries') {
+          firstCharReadings.forEach(reading => {
+            qb.orWhereLike('dse.reading', `%${reading}`);
+          });
+        }
       })
       .groupBy('dse.reference_uuid');
     return refUuids;
