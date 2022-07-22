@@ -31,7 +31,7 @@
           }}</mark>
         </router-link>
       </template>
-      <template #translationForDefinition="{ word }">
+      <template #translationsForDefinition="{ word }">
         <div v-if="partsOfSpeech(word).length > 0" class="mr-1">
           {{ itemPropertyString(partsOfSpeech(word)) }}
         </div>

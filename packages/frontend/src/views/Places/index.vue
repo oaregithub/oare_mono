@@ -24,9 +24,9 @@
           }}</mark>
         </router-link>
       </template>
-      <template #translation="{ word }">
-        <div v-if="word.translations.length > 0">
-          {{ word.translations[0].translation }}
+      <template #translationsForDefinition="{ word }">
+        <div v-if="word.translationsForDefinition.length > 0">
+          {{ word.translationsForDefinition[0].val }}
         </div>
       </template>
       <template #forms="{ word }">

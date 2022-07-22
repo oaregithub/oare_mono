@@ -24,11 +24,11 @@
           }}</mark>
         </router-link>
       </template>
-      <template #translation="{ word }">
+      <template #translationsForDefinition="{ word }">
         <div>
           {{
-            word.translations.length > 0
-              ? word.translations[0].translation
+            word.translationsForDefinition.length > 0
+              ? word.translationsForDefinition[0].val
               : '(no trans.)'
           }}
         </div>

@@ -76,7 +76,8 @@
         class="test-new-translation"
       >
         <v-icon>mdi-plus</v-icon>
-        Add translation
+        <span v-if="fieldType === 'definition'">Add Translation</span>
+        <span v-else>Add Discussion Lemma</span>
       </v-btn>
     </div>
   </div>

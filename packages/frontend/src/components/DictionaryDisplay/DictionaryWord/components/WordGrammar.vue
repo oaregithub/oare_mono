@@ -166,13 +166,13 @@
           !isEditingDefinitionTranslations
         "
       >
-        No discussion Lemma found for this word
+        No discussion lemma
       </span>
       <p
         v-else-if="
           !isEditingLemmaTranslations && !isEditingDefinitionTranslations
         "
-        class="mt-3"
+        class="mt-3 ml-3"
       >
         <v-row v-for="lm in word.discussionLemmas" :key="lm.uuid">
           {{ lm.val }}
