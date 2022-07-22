@@ -2,6 +2,7 @@ import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import { EditFieldPayload, FieldInfo, NewFieldPayload } from '@oare/types';
+import permissionsRoute from '@/middlewares/permissionsRoute';
 import { detectLanguage } from './daos/FieldDao/utils';
 
 const router = express.Router();
@@ -12,7 +13,6 @@ router
     try {
       const FieldDao = sl.get('FieldDao');
       const { referenceUuid } = req.params;
-
       const response: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
         referenceUuid
       );
@@ -24,68 +24,86 @@ router
 
 router
   .route('/update_field_description')
-  .patch(async (req, res, next) => {
-    const FieldDao = sl.get('FieldDao');
-    const cache = sl.get('cache');
-    const {
-      uuid,
-      description,
-      primacy,
-    }: EditFieldPayload = req.body as EditFieldPayload;
-
-    try {
-      const language = (await detectLanguage(description)).toLocaleLowerCase();
-
-      await FieldDao.updateAllFieldFields(
+  .patch(
+    permissionsRoute('ADD_EDIT_FIELD_DESCRIPTION'),
+    async (req, res, next) => {
+      const FieldDao = sl.get('FieldDao');
+      const cache = sl.get('cache');
+      const {
         uuid,
         description,
-        language === 'english'
-          ? 'default'
-          : language[0].toLocaleUpperCase() + language.substring(1),
-        'description',
-        { primacy }
-      );
+        primacy,
+      }: EditFieldPayload = req.body as EditFieldPayload;
 
-      cache.clear('/dictionary/tree/taxonomy', {
-        level: 'exact',
-      });
+      if (req.user && !req.user.isAdmin && primacy > 1) {
+        next(res.status(403).end());
+        return;
+      }
 
-      res.status(201).end();
-    } catch (err) {
-      next(new HttpInternalError(err as string));
+      try {
+        const language = (
+          await detectLanguage(description)
+        ).toLocaleLowerCase();
+
+        await FieldDao.updateAllFieldFields(
+          uuid,
+          description,
+          language === 'english'
+            ? 'default'
+            : language[0].toLocaleUpperCase() + language.substring(1),
+          'description',
+          { primacy }
+        );
+
+        cache.clear('/dictionary/tree/taxonomy', {
+          level: 'exact',
+        });
+
+        res.status(201).end();
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
     }
-  })
-  .post(async (req, res, next) => {
-    const FieldDao = sl.get('FieldDao');
-    const cache = sl.get('cache');
-    const {
-      referenceUuid,
-      description,
-      primacy,
-    }: NewFieldPayload = req.body as NewFieldPayload;
-
-    try {
-      const language: string = (
-        await detectLanguage(description)
-      ).toLocaleLowerCase();
-      await FieldDao.insertField(
+  )
+  .post(
+    permissionsRoute('ADD_EDIT_FIELD_DESCRIPTION'),
+    async (req, res, next) => {
+      const FieldDao = sl.get('FieldDao');
+      const cache = sl.get('cache');
+      const {
         referenceUuid,
-        'description',
         description,
         primacy,
-        language === 'english'
-          ? 'default'
-          : language[0].toLocaleUpperCase() + language.substring(1)
-      );
+      }: NewFieldPayload = req.body as NewFieldPayload;
 
-      cache.clear('/dictionary/tree/taxonomy', {
-        level: 'exact',
-      });
+      if (req.user && !req.user.isAdmin && primacy > 1) {
+        next(res.status(403).end());
+        return;
+      }
 
-      res.status(201).end();
-    } catch (err) {
-      next(new HttpInternalError(err as string));
+      try {
+        const language: string = (
+          await detectLanguage(description)
+        ).toLocaleLowerCase();
+        await FieldDao.insertField(
+          referenceUuid,
+          'description',
+          description,
+          primacy,
+          language === 'english'
+            ? 'default'
+            : language[0].toLocaleUpperCase() + language.substring(1)
+        );
+
+        cache.clear('/dictionary/tree/taxonomy', {
+          level: 'exact',
+        });
+
+        res.status(201).end();
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
     }
-  });
+  );
 
 export default router;
