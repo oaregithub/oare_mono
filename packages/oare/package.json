@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@oare/types": "^1.0.0",
-    "jison": "git+https://github.com/oaregithub/jison.git"
+    "jison": "git+https://github.com/oaregithub/jison.git",
+    "script-case": "^1.0.0"
   },
   "files": [
     "build"

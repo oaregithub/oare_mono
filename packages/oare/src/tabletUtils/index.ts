@@ -6,6 +6,7 @@ import {
   EpigraphicUnitType,
   EpigraphicWord,
 } from '@oare/types';
+import scriptCase from 'script-case';
 
 export function getMarkupByDamageType(
   markupUnits: MarkupUnit[],
@@ -162,7 +163,15 @@ export function regionReading(unit: EpigraphicUnit): string {
 export function convertMarkedUpUnitsToLineReading(
   characters: EpigraphicUnitWithMarkup[]
 ): string {
-  const epigraphicWords = separateEpigraphicUnitsByWord(characters);
+  const superscriptedCharacters = characters.map(character =>
+    character.type !== 'determinative'
+      ? character
+      : { ...character, reading: scriptCase.superscript(character.reading) }
+  );
+
+  const epigraphicWords = separateEpigraphicUnitsByWord(
+    superscriptedCharacters
+  );
   return epigraphicWords
     .map(word => {
       const isContraction = getContractionStatus(word);
