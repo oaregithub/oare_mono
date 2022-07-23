@@ -107,7 +107,6 @@ export default defineComponent({
         loading.value = true;
         try {
           words.value = await server.getDictionaryWords(props.letter);
-          console.log(words);
         } catch (err) {
           actions.showErrorSnackbar(
             'Failed to retrieve dictionary words',

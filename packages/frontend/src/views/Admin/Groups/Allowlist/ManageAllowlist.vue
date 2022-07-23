@@ -30,7 +30,7 @@
           :removeItems="server.removeItemsFromGroupAllowlist"
         />
         <text-collection-list
-          v-else-if="selectedType === 'img'"
+          v-else-if="selectedType === 'image'"
           :key="selectedType"
           :groupId="groupId"
           itemType="Image"
@@ -63,7 +63,7 @@ export default defineComponent({
     const types = ref([
       { name: 'Texts', value: 'text' },
       { name: 'Collections', value: 'collection' },
-      { name: 'Images', value: 'img' },
+      { name: 'Images', value: 'image' },
     ]);
     const selectedType = useQueryParam('type', 'text', true);
 
