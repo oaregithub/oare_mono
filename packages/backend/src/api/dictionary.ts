@@ -1,5 +1,4 @@
 import express from 'express';
-import _, { words } from 'lodash';
 import {
   Word,
   UpdateDictionaryWordPayload,
@@ -763,7 +762,6 @@ router.route('/dictionary/checknewword').post(async (req, res, next) => {
     const newWordProperties = convertParsePropsToItemProps(properties, '');
 
     if (
-      wordsSameSpelling &&
       wordsSameSpelling.some(
         existing =>
           existing.properties.length === newWordProperties.length &&

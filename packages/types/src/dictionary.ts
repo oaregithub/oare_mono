@@ -74,10 +74,6 @@ export interface AddFormSpellingResponse {
   uuid: string;
 }
 
-export interface AddWordUuidResponse {
-  uuid: string;
-}
-
 export interface DiscourseLineSpelling {
   wordOnTablet: number;
   spelling: string;
