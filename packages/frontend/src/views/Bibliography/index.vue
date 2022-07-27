@@ -13,59 +13,54 @@
             ></v-radio>
           </v-radio-group>
         </v-col>
-        <v-col cols="10">
-          <text-collection-list
-            v-if="selectedType === 'text'"
-            :key="selectedType"
-            :groupId="groupId"
-            itemType="Text"
-            :getItems="server.getGroupAllowlistTexts"
-            :removeItems="server.removeItemsFromGroupAllowlist"
-          />
-          <text-collection-list
-            v-else-if="selectedType === 'collection'"
-            :key="selectedType"
-            :groupId="groupId"
-            itemType="Collection"
-            :getItems="server.getGroupAllowlistCollections"
-            :removeItems="server.removeItemsFromGroupAllowlist"
-          />
-        </v-col>
+        <v-data-table :header="itemsHeaders" :items="bibliographyResponse" />
       </v-row>
     </div>
   </OareContentView>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
 import PageContent from '@/components/base/OarePageContent.vue';
 import TextCollectionList from '@/views/Admin/components/TextCollectionList.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
+import { BibliographyResponse } from '@oare/types';
+import { DataTableHeader } from 'vuetify';
 
 export default defineComponent({
   components: {
     TextCollectionList,
     PageContent,
   },
-  props: {
-    groupId: {
-      type: String,
-      required: true,
-    },
-  },
   setup() {
     const server = sl.get('serverProxy');
     const types = ref([
-      { name: 'Texts', value: 'text' },
-      { name: 'Collections', value: 'collection' },
+      { name: 'Chicago Author Date', value: 'chicago-author-date' },
+      { name: 'Chicago Note Bibliography', value: 'chicago-note-bibliography' },
     ]);
-    const selectedType = useQueryParam('type', 'text', true);
+    const selectedType = useQueryParam('type', 'chicago-author-date', true);
+
+    const itemsHeaders: Ref<DataTableHeader[]> = ref([
+      { text: 'Bib', value: 'bib' },
+    ]);
+    const bibliographyResponse = ref<BibliographyResponse[]>([]);
+
+    onMounted(async () => {
+      bibliographyResponse.value = await server.getBibliographies({
+        citationStyle: selectedType.value,
+        page: 1,
+        limit: 25,
+      });
+      console.log(bibliographyResponse.value);
+    });
 
     return {
       server,
       types,
       selectedType,
+      itemsHeaders,
+      bibliographyResponse,
     };
   },
 });

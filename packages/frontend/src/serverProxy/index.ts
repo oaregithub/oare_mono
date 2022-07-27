@@ -36,6 +36,7 @@ import properties from './properties';
 import environment from './environment';
 import text from './text';
 import quarantine from './quarantine';
+import bibliography from './bibliography';
 
 const serverProxy = {
   ...groups,
@@ -76,6 +77,7 @@ const serverProxy = {
   ...environment,
   ...text,
   ...quarantine,
+  ...bibliography,
 };
 
 export type ServerProxyType = typeof serverProxy;
