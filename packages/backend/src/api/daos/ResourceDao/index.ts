@@ -6,7 +6,6 @@ import {
   LinkRow,
   EpigraphyLabelLink,
   ImageResource,
-  Image,
 } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
@@ -291,7 +290,7 @@ class ResourceDao {
   async getAllowListImageWithText(
     imageUuid: string,
     trx?: Knex.Transaction
-  ): Promise<Image | null> {
+  ): Promise<ImageResource | null> {
     const s3 = new AWS.S3();
     const k = trx || knexRead();
 
@@ -302,7 +301,6 @@ class ResourceDao {
         k('link').select('reference_uuid').where('obj_uuid', imageUuid)
       )
       .first();
-
     const resourceLink: { link: string } = await k('resource')
       .select('link')
       .where('uuid', imageUuid)
@@ -315,10 +313,10 @@ class ResourceDao {
       Key: resourceLink.link,
     });
 
-    const result: Image = {
+    const result: ImageResource = {
       uuid: imageUuid,
-      url: signedUrl,
-      name: textInfo.display_name,
+      link: signedUrl,
+      label: textInfo.display_name,
     };
 
     return result || null;

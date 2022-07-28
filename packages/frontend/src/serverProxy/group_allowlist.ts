@@ -15,6 +15,13 @@ async function getGroupAllowlistCollections(
   return data;
 }
 
+async function getGroupAllowlistImages(
+  groupId: number
+): Promise<DenylistAllowlistItem[]> {
+  const { data } = await axios.get(`/group_allowlist/${groupId}/img`);
+  return data;
+}
+
 async function addItemsToGroupAllowlist(
   payload: DenylistAllowlistPayload,
   groupId: number
@@ -34,6 +41,7 @@ async function removeItemsFromGroupAllowlist(
 export default {
   getGroupAllowlistTexts,
   getGroupAllowlistCollections,
+  getGroupAllowlistImages,
   addItemsToGroupAllowlist,
   removeItemsFromGroupAllowlist,
 };
