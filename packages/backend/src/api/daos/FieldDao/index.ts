@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import { Knex } from 'knex';
+import { FieldInfo } from '@oare/types';
 
 interface FieldRow {
   id: number;
@@ -29,18 +30,22 @@ class FieldDao {
       .orderBy('primacy');
   }
 
-  async getPropertyDescription(
+  async getFieldInfoByReferenceAndType(
     referenceUuid: string | null,
     trx?: Knex.Transaction
-  ): Promise<string> {
+  ): Promise<FieldInfo> {
     const k = trx || knexRead();
-    const description: string = await k('field')
-      .select('field.field')
+    return k('field')
+      .select(
+        'field.field',
+        'field.uuid',
+        'field.primacy',
+        'field.language',
+        'field.reference_uuid as referenceUuid'
+      )
       .where('field.reference_uuid', referenceUuid)
       .andWhere('field.type', 'description')
-      .first()
-      .then((res: { field: string | null }) => res?.field || 'No Description');
-    return description;
+      .first();
   }
 
   async insertField(
@@ -74,7 +79,28 @@ class FieldDao {
     await k('field')
       .update({
         field,
-        primacy: options && options.primacy ? options.primacy : null,
+        primacy:
+          options && options.primacy !== undefined ? options.primacy : null,
+      })
+      .where({ uuid });
+  }
+
+  async updateAllFieldFields(
+    uuid: string,
+    field: string,
+    language: string | null,
+    type: string | null,
+    options?: FieldOptions,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('field')
+      .update({
+        field,
+        language,
+        type,
+        primacy:
+          options && options.primacy !== undefined ? options.primacy : null,
       })
       .where({ uuid });
   }

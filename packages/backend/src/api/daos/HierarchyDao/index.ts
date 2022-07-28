@@ -5,6 +5,7 @@ import {
   SearchNamesPayload,
   TaxonomyTree,
   HierarchyRow,
+  FieldInfo,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
@@ -206,15 +207,16 @@ class HierarchyDao {
       const results = await Promise.all(
         rows.map(async row => {
           const names = await AliasDao.getAliasNames(row.objectUuid, trx);
+          const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
+            row.variableUuid || row.valueUuid
+          );
 
           return {
             ...row,
             aliasName: names[0] || null,
             level,
             children: await this.getChildren(row.uuid, level || 0, trx),
-            description: await FieldDao.getPropertyDescription(
-              row.variableUuid || row.valueUuid
-            ),
+            fieldInfo: fieldRow ?? {},
           };
         })
       );
@@ -233,15 +235,14 @@ class HierarchyDao {
       .first();
 
     const names = await AliasDao.getAliasNames(topNode.objectUuid, trx);
-
-    const tree = {
+    const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
+      topNode.variableUuid || topNode.valueUuid
+    );
+    const tree: TaxonomyTree = {
       ...topNode,
       aliasName: names[0] || null,
       children: await this.getChildren(topNode.uuid, null, trx),
-      description: await FieldDao.getPropertyDescription(
-        topNode.variableUuid || topNode.valueUuid,
-        trx
-      ),
+      fieldInfo: fieldRow ?? {},
     };
     return tree;
   }
