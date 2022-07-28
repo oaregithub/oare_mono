@@ -13,6 +13,7 @@ router
     try {
       const FieldDao = sl.get('FieldDao');
       const { referenceUuid } = req.params;
+
       const response: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
         referenceUuid
       );
