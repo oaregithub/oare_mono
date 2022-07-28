@@ -153,7 +153,7 @@ export interface TaxonomyTree {
   objectUuid: string;
   objParentUuid: string;
   variableName: string | null;
-  valueName: string | null;
+  valueName: string;
   aliasName: string | null;
   varAbbreviation: string | null;
   valAbbreviation: string | null;
