@@ -61,8 +61,14 @@ export interface WordsInTextSearchPayloadUnparsed {
   sequenced: string;
 }
 
+export interface AddWordCheckPayload {
+  wordSpelling: string;
+  properties: ParseTreeProperty[];
+}
+
 export interface AddWordPayload {
   wordSpelling: string;
+  wordType: 'word' | 'PN' | 'GN';
   properties: ParseTreeProperty[];
 }
 export interface ParsePropertiesDisplay {
