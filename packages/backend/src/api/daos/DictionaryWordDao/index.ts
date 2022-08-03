@@ -9,6 +9,7 @@ import {
   DictionaryWordRow,
   DictionarySearchRow,
 } from '@oare/types';
+import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
@@ -527,6 +528,21 @@ class DictionaryWordDao {
       .where({ uuid })
       .first();
     return row;
+  }
+
+  async addWord(
+    wordSpelling: string,
+    wordType: string,
+    trx?: Knex.Transaction
+  ): Promise<string> {
+    const k = trx || knexWrite();
+    const newWordUuid = v4();
+    await k('dictionary_word').insert({
+      uuid: newWordUuid,
+      word: wordSpelling,
+      type: wordType,
+    });
+    return newWordUuid;
   }
 }
 
