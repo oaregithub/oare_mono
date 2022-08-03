@@ -7,7 +7,7 @@ async function getBibliographies(params: {
   limit: number;
 }): Promise<BibliographyResponse[]> {
   const { data } = await axios.get('/bibliographies', {
-    params: params,
+    params,
   });
   return data;
 }
