@@ -266,13 +266,17 @@ router
       const utils = sl.get('utils');
 
       const { uuid } = req.params;
-      const { translations }: UpdateDictionaryTranslationPayload = req.body;
+      const {
+        translations,
+        fieldType,
+      }: UpdateDictionaryTranslationPayload = req.body;
 
       await utils.createTransaction(async trx => {
         await DictionaryWordDao.updateTranslations(
           req.user!.uuid,
           uuid,
           translations,
+          fieldType,
           trx
         );
       });

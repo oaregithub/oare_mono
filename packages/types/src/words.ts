@@ -17,11 +17,12 @@ export interface ItemPropertyRow {
 
 export interface DictionaryWordTranslation {
   uuid: string;
-  translation: string;
+  val: string;
 }
 
 export interface DictionaryWordParseInfo {
-  translations: DictionaryWordTranslation[];
+  translationsForDefinition: DictionaryWordTranslation[];
+  discussionLemmas: DictionaryWordTranslation[];
   properties: ItemPropertyRow[];
 }
 
