@@ -24,9 +24,9 @@
           }}</mark>
         </router-link>
       </template>
-      <template #translation="{ word }">
-        <div v-if="word.translations.length > 0">
-          {{ word.translations[0].translation }}
+      <template #translationsForDefinition="{ word }">
+        <div v-if="word.translationsForDefinition.length > 0">
+          {{ word.translationsForDefinition[0].val }}
         </div>
       </template>
       <template #forms="{ word }">
@@ -87,8 +87,11 @@ export default defineComponent({
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        word.translations.some(tr =>
-          tr.translation.toLowerCase().includes(lowerSearch)
+        word.translationsForDefinition.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
+        ) ||
+        word.discussionLemmas.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
         ) ||
         word.forms.some(form => {
           return (

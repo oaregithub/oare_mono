@@ -308,6 +308,12 @@ describe('PATCH /text_discourse/:uuid', () => {
 
   const mockFieldDao = {
     getByReferenceUuid: jest.fn().mockResolvedValue([{ uuid: 'test-uuid' }]),
+    getDefinitionsByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'test-uuid' }]),
+    getDiscussionLemmasByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'test-uuid' }]),
     updateField: jest.fn().mockResolvedValue(),
   };
 
@@ -355,7 +361,10 @@ describe('PATCH /text_discourse/:uuid', () => {
 
   it('does not allow non-logged-in users to update discourse translation', async () => {
     const response = await request(app).patch(PATH).send(mockPayload);
-    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
+    expect(
+      mockFieldDao.getDiscussionLemmasByReferenceUuid
+    ).not.toHaveBeenCalled();
     expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
@@ -365,7 +374,8 @@ describe('PATCH /text_discourse/:uuid', () => {
       getUserPermissions: jest.fn().mockResolvedValue([]),
     });
     const response = await sendRequest();
-    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
     expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });

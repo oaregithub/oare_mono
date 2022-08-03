@@ -53,6 +53,7 @@ export interface UpdateFormPayload {
 
 export interface UpdateDictionaryTranslationPayload {
   translations: DictionaryWordTranslation[];
+  fieldType: string;
 }
 
 export interface UpdateFormSpellingPayload {

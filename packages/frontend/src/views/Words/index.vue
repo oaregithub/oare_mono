@@ -31,21 +31,21 @@
           }}</mark>
         </router-link>
       </template>
-      <template #translation="{ word }">
+      <template #translationsForDefinition="{ word }">
         <div v-if="partsOfSpeech(word).length > 0" class="mr-1">
           {{ itemPropertyString(partsOfSpeech(word)) }}
         </div>
-        <div v-if="verbalThematicVowelTypes(word).length > 0" class="mr-1">
+        <div v-if="verbalThematicVowelTypes(word).length > 0" class="mr-3">
           {{ ` (${itemPropertyString(verbalThematicVowelTypes(word))})` }}
         </div>
         <p>
           <span v-for="(tr, idx) in getWordTranslations(word)" :key="tr.uuid">
             <b>{{ idx + 1 }}</b
-            >. {{ tr.translation }}
+            >. {{ tr.val }}
           </span>
           <span
             v-if="
-              word.translations.length > 0 &&
+              word.translationsForDefinition.length > 0 &&
               specialClassifications(word).length > 0
             "
             >;</span
@@ -89,8 +89,11 @@ export default defineComponent({
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        word.translations.some(tr =>
-          tr.translation.toLowerCase().includes(lowerSearch)
+        word.translationsForDefinition.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
+        ) ||
+        word.discussionLemmas.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
         ) ||
         word.properties.some(prop =>
           prop.valueName.toLowerCase().includes(lowerSearch)
@@ -120,9 +123,12 @@ export default defineComponent({
     );
 
     const getWordTranslations = (word: Word) => {
-      return word.translations;
+      return word.translationsForDefinition;
     };
 
+    const getWordDiscussionLemmas = (word: Word) => {
+      return word.discussionLemmas;
+    };
     const partsOfSpeech = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Part of Speech'
@@ -165,6 +171,7 @@ export default defineComponent({
       searchFilter,
       itemPropertyString,
       getWordTranslations,
+      getWordDiscussionLemmas,
       partsOfSpeech,
       verbalThematicVowelTypes,
       specialClassifications,
