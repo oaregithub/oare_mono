@@ -1,5 +1,10 @@
 <template>
-  <v-menu offset-y open-on-click :close-on-content-click="false">
+  <v-menu
+    v-if="(canView2 && primacy === 2) || primacy < 2"
+    offset-y
+    open-on-click
+    :close-on-content-click="false"
+  >
     <template #activator="{ on, attrs }">
       <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
         mdi-information-outline
@@ -10,7 +15,7 @@
         ><h3>{{ name }}</h3></span
       >
       <br />
-      <span v-if="type"
+      <span v-if="type && ((canAddEdit1 && primacy < 2) || isAdmin)"
         ><b>Var Type</b>: {{ type
         }}{{
           type === 'link' && tableReference ? ` > ${tableReference}` : ''
@@ -23,27 +28,39 @@
         <br />
         <span> <b>Primacy</b>: {{ newPrimacy }} </span>
         <br />
-        <span><b>Language</b>: {{ newLanguage }}</span
-        ><br />
-        <br />
-        <v-btn
-          v-if="reactiveFieldUuid"
-          class="mr-1"
-          @click="isEditing = true"
-          small
-          >Edit</v-btn
-        >
-        <v-btn v-else class="mr-1" @click="isAdding = true" small
-          >Add Description</v-btn
-        >
+        <span><b>Language</b>: {{ newLanguage }}</span>
+        <div v-if="(canAddEdit1 && primacy < 2) || isAdmin" class="pt-2">
+          <v-btn
+            v-if="reactiveFieldUuid"
+            class="mr-1"
+            @click="isEditing = true"
+            small
+            >Edit</v-btn
+          >
+          <v-btn v-else class="mr-1" @click="isAdding = true" small
+            >Add Description</v-btn
+          >
+        </div>
       </div>
-      <div v-else>
+      <div
+        v-if="
+          (isAdding || isEditing) && ((canAddEdit1 && primacy < 2) || isAdmin)
+        "
+      >
         <span>
           <v-select
+            v-if="isAdmin"
             label="Primacy"
             v-model="newPrimacy"
             filled
             :items="[1, 2]"
+          ></v-select>
+          <v-select
+            v-if="!isAdmin"
+            label="Primacy"
+            v-model="newPrimacy"
+            filled
+            :items="[1]"
           ></v-select>
           <v-textarea
             label="Description"
@@ -129,6 +146,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
+    const store = sl.get('store');
     const isEditing: Ref<Boolean> = ref(false);
     const isAdding: Ref<Boolean> = ref(false);
     const isSaving: Ref<Boolean> = ref(false);
@@ -208,6 +226,17 @@ export default defineComponent({
         newPrimacy.value !== 0 &&
         newDescription.value !== ''
     );
+
+    const canView2 = computed(() =>
+      store.hasPermission('VIEW_FIELD_DESCRIPTION')
+    );
+
+    const canAddEdit1 = computed(() =>
+      store.hasPermission('ADD_EDIT_FIELD_DESCRIPTION')
+    );
+
+    const isAdmin = computed(() => store.getters.isAdmin);
+
     return {
       isEditing,
       isAdding,
@@ -220,6 +249,9 @@ export default defineComponent({
       newPrimacy,
       canSubmit,
       reactiveFieldUuid,
+      isAdmin,
+      canView2,
+      canAddEdit1,
     };
   },
 });

@@ -156,6 +156,18 @@ class PermissionsDao {
       type: 'general',
       description: 'Allow group users to add comments',
     },
+    {
+      name: 'ADD_EDIT_FIELD_DESCRIPTION',
+      type: 'general',
+      description:
+        'Allow group users to add or edit taxonomy field descriptions where primacy = 1',
+    },
+    {
+      name: 'VIEW_FIELD_DESCRIPTION',
+      type: 'general',
+      description:
+        'Allow group users to view taxonomy field descriptions where primacy = 2',
+    },
   ];
 
   getAllPermissions(): PermissionItem[] {
