@@ -23,12 +23,7 @@
                 v-html="formatWord(word)"
                 class="cursor-display test-rendered-word"
                 :class="{ 'mr-1': !word.isContraction }"
-                @click="
-                  openDialog(
-                    word.discourseUuid,
-                    word.reading.replace(/<em>|<\/em>/g, '')
-                  )
-                "
+                @click="openDialog(word.discourseUuid)"
               />
             </span>
           </div>
