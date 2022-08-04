@@ -145,6 +145,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const store = sl.get('store');
     const actions = sl.get('globalActions');
+
     const isEditing: Ref<Boolean> = ref(false);
     const isAdding: Ref<Boolean> = ref(false);
     const isSaving: Ref<Boolean> = ref(false);
