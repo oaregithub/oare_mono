@@ -29,7 +29,8 @@ describe('EpigraphyFullDisplay View', () => {
       word: 'test-word',
       forms: [],
       properties: [],
-      translations: [],
+      translationsForDefinition: [],
+      discussionLemmas: [],
     }),
   };
 

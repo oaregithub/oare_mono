@@ -123,6 +123,7 @@ describe('EditTranslations test', () => {
     const wrapper = createWrapper({
       wordUuid: 'word-uuid',
       translations: newTranslations,
+      fieldType: 'definition',
     });
 
     await wrapper.get('.test-move-down').trigger('click');
@@ -130,6 +131,7 @@ describe('EditTranslations test', () => {
     await flushPromises();
     expect(server.editTranslations).toHaveBeenCalledWith('word-uuid', {
       translations: [newTranslations[1], newTranslations[0]],
+      fieldType: 'definition',
     });
   });
 });
