@@ -203,3 +203,8 @@ export interface EditPropertiesPayload {
   properties: ParseTreeProperty[];
   wordUuid?: string;
 }
+
+export interface ConnectSpellingDiscoursePayload {
+  discourseUuid: string;
+  spellingUuid: string;
+}

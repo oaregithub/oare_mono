@@ -23,7 +23,12 @@
                 v-html="formatWord(word)"
                 class="cursor-display test-rendered-word"
                 :class="{ 'mr-1': !word.isContraction }"
-                @click="openDialog(word.discourseUuid)"
+                @click="
+                  openDialog(
+                    word.discourseUuid,
+                    word.reading.replace(/<em>|<\/em>/g, '')
+                  )
+                "
               />
             </span>
           </div>
@@ -62,7 +67,17 @@
         </div>
       </div>
     </div>
-
+    <connect-spelling-occurrence
+      v-if="viewingAdminDialog"
+      :key="`${adminDialogSpelling}-${adminDialogDiscourseUuid}`"
+      class="test-spelling-occurrence-display"
+      :discourseUuid="adminDialogDiscourseUuid"
+      :spelling="adminDialogSpelling"
+      :searchSpellings="server.searchSpellings"
+      :getTexts="server.getSpellingTextOccurrences"
+      @finish="closeAdminDialog"
+      v-model="viewingAdminDialog"
+    ></connect-spelling-occurrence>
     <oare-dialog
       v-if="viewingDialog"
       class="test-rendering-word-dialog"
@@ -89,7 +104,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { computed, defineComponent, PropType, ref } from '@vue/composition-api';
 import { createTabletRenderer, TabletRenderer } from '@oare/oare';
 import {
   Word,
@@ -100,12 +115,14 @@ import {
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
+import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
   name: 'EpigraphyReading',
   components: {
     DictionaryWord,
+    ConnectSpellingOccurrence,
   },
   props: {
     epigraphicUnits: {
@@ -127,7 +144,12 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const viewingDialog = ref(false);
+    const viewingAdminDialog = ref(false);
+    const adminDialogSpelling = ref('');
+    const adminDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
+
+    const isAdmin = computed(() => store.getters.isAdmin);
 
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
@@ -160,18 +182,21 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+            discourseUuid
+          );
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
+            spellingUuid
+          );
         } else {
           discourseWordInfo.value = null;
         }
-
         actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;
+        } else if (isAdmin.value && discourseUuid) {
+          await openAdminDialog(discourseUuid);
         } else {
           actions.showSnackbar(
             'No information exists for this text discourse word'
@@ -184,6 +209,29 @@ export default defineComponent({
         );
       } finally {
         loading.value = false;
+      }
+    };
+
+    const openAdminDialog = async (discourseUuid: string) => {
+      try {
+        const { spelling } = await server.getSpellingByDiscourseUuid(
+          discourseUuid
+        );
+        viewingAdminDialog.value = true;
+        adminDialogSpelling.value = spelling;
+        adminDialogDiscourseUuid.value = discourseUuid;
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to load admin view', err as Error);
+      }
+    };
+
+    const closeAdminDialog = async () => {
+      try {
+        viewingAdminDialog.value = false;
+        adminDialogSpelling.value = '';
+        adminDialogDiscourseUuid.value = '';
+      } catch (err) {
+        actions.showErrorSnackbar('Failed to close admin view', err as Error);
       }
     };
 
@@ -206,9 +254,14 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
+      viewingAdminDialog,
+      adminDialogSpelling,
+      adminDialogDiscourseUuid,
+      closeAdminDialog,
       formatWord,
       formatSide,
       romanNumeral,
+      server,
     };
   },
 });

@@ -24,6 +24,7 @@ import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
 import { dictionaryWordFilter, noFilter } from '@/cache/filters';
+import adminRoute from '@/middlewares/adminRoute';
 
 const router = express.Router();
 
@@ -423,6 +424,18 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router.route('/connect/spellings').patch(adminRoute, async (req, res, next) => {
+  try {
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const { discourseUuid, spellingUuid } = req.body;
+
+    await TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid);
+    res.status(204).end();
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 router
   .route('/dictionary/spellings/:uuid')

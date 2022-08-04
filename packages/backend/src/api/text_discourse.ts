@@ -9,6 +9,7 @@ import {
   DiscourseUnitType,
   InsertItemPropertyRow,
   EditTranslationPayload,
+  DiscourseSpellingResponse,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import { v4 } from 'uuid';
@@ -266,5 +267,20 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router.route('/text_discourse/spelling/:uuid').get(async (req, res, next) => {
+  try {
+    const { uuid: discourseUuid } = req.params;
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+    const spelling: string = await TextDiscourseDao.getSpellingByDiscourseUuid(
+      discourseUuid
+    );
+
+    res.json(spelling);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 export default router;
