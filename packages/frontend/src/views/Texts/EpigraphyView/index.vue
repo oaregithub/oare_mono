@@ -393,7 +393,7 @@ export default defineComponent({
     const seeMoreZotero = ref<boolean>(false);
 
     const allowViewCitations = computed(() =>
-      store.hasPermission('VIEW_BIBLIOGRAPHY')
+      store.hasPermission('VIEW_TEXT_CITATIONS')
     );
 
     const breadcrumbItems = computed(() => {

@@ -163,7 +163,7 @@
             <v-btn text dark v-bind="attrs" v-on="on"> Misc. </v-btn>
           </template>
           <v-list dense>
-            <v-list-item class="pa-0">
+            <v-list-item v-if="canViewBibliography" class="pa-0">
               <v-btn text to="/bibliography" width="100%">Bibliography</v-btn>
             </v-list-item>
             <v-list-item class="pa-0">
@@ -226,6 +226,9 @@ export default defineComponent({
     const canViewNames = computed(() => store.hasPermission('NAMES'));
     const canViewPlaces = computed(() => store.hasPermission('PLACES'));
     const canViewPeople = computed(() => store.hasPermission('PEOPLE'));
+    const canViewBibliography = computed(() =>
+      store.hasPermission('BIBLIOGRAPHY')
+    );
 
     const logout = () => {
       store.logout();
@@ -245,6 +248,7 @@ export default defineComponent({
       canViewNames,
       canViewPlaces,
       canViewPeople,
+      canViewBibliography,
     };
   },
 });
