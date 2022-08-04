@@ -34,7 +34,7 @@
           >
             <div class="d-flex">
               <slot name="word" :word="wordInfo"> </slot>
-              <slot name="translation" :word="wordInfo"></slot>
+              <slot name="translationsForDefinition" :word="wordInfo"></slot>
             </div>
             <div>
               <slot name="forms" :word="wordInfo"></slot>
