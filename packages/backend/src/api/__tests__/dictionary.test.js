@@ -77,6 +77,9 @@ describe('dictionary api test', () => {
       {
         name: 'EDIT_ITEM_PROPERTIES',
       },
+      {
+        name: 'ADD_LEMMA',
+      },
     ]),
   };
   const mockUtils = {

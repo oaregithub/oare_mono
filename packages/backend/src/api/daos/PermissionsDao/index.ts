@@ -31,6 +31,12 @@ class PermissionsDao {
         'Allow group users to view "People" tab and access associated pages',
     },
     {
+      name: 'ADD_LEMMA',
+      type: 'dictionary',
+      description: 'Allow group users to add new words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',

@@ -783,55 +783,57 @@ router.route('/dictionary/checknewword').post(async (req, res, next) => {
   }
 });
 
-router.route('/dictionary/addword').post(async (req, res, next) => {
-  try {
-    const DictionaryWordDao = sl.get('DictionaryWordDao');
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-    const utils = sl.get('utils');
-    const cache = sl.get('cache');
+router
+  .route('/dictionary/addword')
+  .post(permissionsRoute('ADD_LEMMA'), async (req, res, next) => {
+    try {
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const utils = sl.get('utils');
+      const cache = sl.get('cache');
 
-    const { wordSpelling, wordType, properties }: AddWordPayload = req.body;
+      const { wordSpelling, wordType, properties }: AddWordPayload = req.body;
 
-    let newWordUuid: string = '';
+      let newWordUuid: string = '';
 
-    await utils.createTransaction(async trx => {
-      newWordUuid = await DictionaryWordDao.addWord(
-        wordSpelling,
-        wordType,
-        trx
-      );
-
-      const itemPropertyRows = convertParsePropsToItemProps(
-        properties,
-        newWordUuid
-      );
-
-      const itemPropertyRowLevels = [
-        ...new Set(itemPropertyRows.map(row => row.level)),
-      ];
-      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-        level => itemPropertyRows.filter(row => row.level === level)
-      );
-
-      for (let i = 0; i < rowsByLevel.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.all(
-          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
+      await utils.createTransaction(async trx => {
+        newWordUuid = await DictionaryWordDao.addWord(
+          wordSpelling,
+          wordType,
+          trx
         );
-      }
-    });
 
-    const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
-      wordSpelling,
-      wordType
-    );
+        const itemPropertyRows = convertParsePropsToItemProps(
+          properties,
+          newWordUuid
+        );
 
-    await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+        const itemPropertyRowLevels = [
+          ...new Set(itemPropertyRows.map(row => row.level)),
+        ];
+        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+          level => itemPropertyRows.filter(row => row.level === level)
+        );
 
-    res.status(201).json(newWordUuid);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+        for (let i = 0; i < rowsByLevel.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all(
+            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
+          );
+        }
+      });
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        wordSpelling,
+        wordType
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+
+      res.status(201).json(newWordUuid);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 export default router;
