@@ -31,6 +31,12 @@ class PermissionsDao {
         'Allow group users to view "People" tab and access associated pages',
     },
     {
+      name: 'BIBLIOGRAPHY',
+      type: 'pages',
+      description:
+        'Allow group users to view "Bibliography" page and associated data',
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',
@@ -141,7 +147,7 @@ class PermissionsDao {
       description: 'Allow group users to edit item properties for a given item',
     },
     {
-      name: 'VIEW_BIBLIOGRAPHY',
+      name: 'VIEW_TEXT_CITATIONS',
       type: 'text',
       description: 'Allow group users to view the citation(s) of text',
     },

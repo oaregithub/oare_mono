@@ -1,33 +1,36 @@
 import { Knex } from 'knex';
 import { knexRead } from '@/connection';
-import { BibliographyItem, ZoteroResponse } from '@oare/types';
-import { getZoteroAPIKEY } from '@/utils';
-import axios from 'axios';
+import { BibliographyItem } from '@oare/types';
 
 class BibliographyDao {
-  async getZoteroCitationsByUuid(
+  async getBibliographyByUuid(
     uuid: string,
-    citationStyle: string,
     trx?: Knex.Transaction
-  ): Promise<string | null> {
+  ): Promise<BibliographyItem> {
     const k = trx || knexRead();
     const bibliography: BibliographyItem = await k('bibliography')
       .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
-      .where({ uuid })
+      .where('uuid', uuid)
       .first();
+    return bibliography;
+  }
 
-    const zoteroAPIKey = await getZoteroAPIKEY();
+  async getBibliographies(
+    { page = 1, rows = 25 },
+    trx?: Knex.Transaction
+  ): Promise<BibliographyItem[]> {
+    const k = trx || knexRead();
+    const bibliographies: BibliographyItem[] = await k('bibliography')
+      .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
+      .limit(rows)
+      .offset((page - 1) * rows);
+    return bibliographies;
+  }
 
-    const { data }: { data: ZoteroResponse } = await axios.get(
-      `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=citation&style=${citationStyle}`,
-      {
-        headers: {
-          Authorization: `Bearer ${zoteroAPIKey}`,
-        },
-      }
-    );
-
-    return data && data.citation ? data.citation : null;
+  async getBibliographiesCount(trx?: Knex.Transaction): Promise<number> {
+    const k = trx || knexRead();
+    const count = await k('bibliography').count('uuid as count').first();
+    return count && count.count ? Number(count.count) : 0;
   }
 }
 

@@ -10,7 +10,8 @@ describe('dictionary api test', () => {
     uuid: 'test',
     word: 'word',
     properties: [],
-    translations: [],
+    translationsForDefinition: [],
+    discussionLemmas: [],
   };
   const MockDictionaryFormDao = {
     getWordForms: jest.fn().mockResolvedValue(mockForms),

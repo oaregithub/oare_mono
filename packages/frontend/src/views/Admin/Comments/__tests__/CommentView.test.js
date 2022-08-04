@@ -113,7 +113,8 @@ const mockServer = {
     word: 'testingWord',
     forms: [],
     properties: [],
-    translations: [],
+    translationsForDefinition: [],
+    discussionLemmas: [],
   }),
 };
 
