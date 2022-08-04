@@ -48,7 +48,10 @@ describe('GET /bibliographies', () => {
   const mockPermissionsDao = {
     getUserPermissions: jest.fn().mockResolvedValue([
       {
-        name: 'VIEW_BIBLIOGRAPHY',
+        name: 'BIBLIOGRAPHY',
+      },
+      {
+        name: 'VIEW_TEXT_CITATIONS',
       },
     ]),
   };
