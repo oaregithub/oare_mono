@@ -19,7 +19,8 @@ describe('DictionaryWord test', () => {
       word: 'word',
       forms: [],
       properties: [],
-      translations: [],
+      translationsForDefinition: [],
+      discussionLemmas: [],
     }),
   };
 
