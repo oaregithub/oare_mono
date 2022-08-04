@@ -10,6 +10,7 @@
     </letter-filter>
 
     <add-word-dialog
+      v-if="canAddWords"
       v-model="addWordDialog"
       :key="addWordKey"
       :route="route"
@@ -19,6 +20,7 @@
       <v-row no-gutters>
         <v-col cols="10">
           <v-btn
+            v-if="canAddWords"
             text
             color="primary"
             class="mb-8"
@@ -64,9 +66,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType, watch } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  PropType,
+  watch,
+  computed,
+} from '@vue/composition-api';
 import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
-import { DisplayableWord } from '@oare/types';
+import { DisplayableWord, ParseTreeProperty } from '@oare/types';
+import sl from '@/serviceLocator';
 import AddWordDialog from './DictionaryWord/AddWordDialog.vue';
 
 export default defineComponent({
@@ -102,8 +111,10 @@ export default defineComponent({
     },
   },
   setup() {
+    const store = sl.get('store');
     const addWordDialog = ref(false);
     const filteredWords = ref<DisplayableWord[]>([]);
+    const canAddWords = computed(() => store.hasPermission('ADD_LEMMA'));
 
     const getWords = (words: DisplayableWord[]) => {
       filteredWords.value = words;
@@ -131,6 +142,7 @@ export default defineComponent({
       highlight,
       addWordDialog,
       addWordKey,
+      canAddWords,
     };
   },
 });
