@@ -37,20 +37,24 @@ class BibliographyUtils {
     citationStyle: string,
     toInclude: ZoteroRequestType[]
   ): Promise<ZoteroResponse | null> {
-    const zoteroAPIKey = await this.getZoteroAPIKEY();
+    try {
+      const zoteroAPIKey = await this.getZoteroAPIKEY();
 
-    const toIncludeString = toInclude.join(',');
+      const toIncludeString = toInclude.join(',');
 
-    const { data }: { data: ZoteroResponse } = await axios.get(
-      `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=${toIncludeString}&style=${citationStyle}`,
-      {
-        headers: {
-          Authorization: `Bearer ${zoteroAPIKey}`,
-        },
-      }
-    );
+      const { data }: { data: ZoteroResponse } = await axios.get(
+        `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=${toIncludeString}&style=${citationStyle}`,
+        {
+          headers: {
+            Authorization: `Bearer ${zoteroAPIKey}`,
+          },
+        }
+      );
 
-    return data;
+      return data;
+    } catch {
+      return null;
+    }
   }
 }
 
