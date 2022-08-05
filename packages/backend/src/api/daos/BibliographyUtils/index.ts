@@ -5,6 +5,7 @@ import {
 } from '@oare/types';
 import axios from 'axios';
 import AWS from 'aws-sdk';
+import sl from '@/serviceLocator';
 
 class BibliographyUtils {
   async getZoteroAPIKEY(): Promise<string> {
@@ -52,7 +53,14 @@ class BibliographyUtils {
       );
 
       return data;
-    } catch {
+    } catch (err) {
+      const ErrorsDao = sl.get('ErrorsDao');
+      await ErrorsDao.logError({
+        userUuid: null,
+        description: 'Error retrieving Zotero API data',
+        stacktrace: JSON.stringify(err),
+        status: 'New',
+      });
       return null;
     }
   }
