@@ -54,9 +54,13 @@ router
           { primacy }
         );
 
-        cache.clear('/dictionary/tree/taxonomy', {
-          level: 'exact',
-        });
+        cache.clear(
+          '/dictionary/tree/taxonomy',
+          {
+            level: 'exact',
+          },
+          req
+        );
 
         res.status(201).end();
       } catch (err) {
@@ -94,9 +98,13 @@ router
             : language[0].toLocaleUpperCase() + language.substring(1)
         );
 
-        cache.clear('/dictionary/tree/taxonomy', {
-          level: 'exact',
-        });
+        cache.clear(
+          '/dictionary/tree/taxonomy',
+          {
+            level: 'exact',
+          },
+          req
+        );
 
         res.status(201).end();
       } catch (err) {
