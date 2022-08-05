@@ -4,13 +4,14 @@
     offset-y
     open-on-click
     :close-on-content-click="false"
+    class="info-popover-test"
   >
     <template #activator="{ on, attrs }">
-      <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
+      <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1 info-icon-test">
         mdi-information-outline
       </v-icon>
     </template>
-    <v-card class="pa-3">
+    <v-card class="pa-3 card-test">
       <span
         ><h3>{{ name }}</h3></span
       >
@@ -32,12 +33,16 @@
         <div v-if="(canAddEdit1 && primacy < 2) || isAdmin" class="pt-2">
           <v-btn
             v-if="reactiveFieldUuid"
-            class="mr-1"
+            class="mr-1 edit-button-test"
             @click="isEditing = true"
             small
             >Edit</v-btn
           >
-          <v-btn v-else class="mr-1" @click="isAdding = true" small
+          <v-btn
+            v-else
+            class="mr-1 add-button-test"
+            @click="isAdding = true"
+            small
             >Add Description</v-btn
           >
         </div>
@@ -49,22 +54,16 @@
       >
         <span>
           <v-select
-            v-if="isAdmin"
             label="Primacy"
+            class="new-primacy-test"
             v-model="newPrimacy"
             filled
-            :items="[1, 2]"
-          ></v-select>
-          <v-select
-            v-if="!isAdmin"
-            label="Primacy"
-            v-model="newPrimacy"
-            filled
-            :items="[1]"
+            :items="isAdmin ? [1, 2] : [1]"
           ></v-select>
           <v-textarea
             label="Description"
             v-model="newDescription"
+            class="new-description-test"
             filled
           ></v-textarea>
           <v-progress-circular
@@ -79,20 +78,18 @@
             icon
             :disabled="!canSubmit"
             @click="saveEdit"
-            class="test-check"
           >
-            <v-icon>mdi-check</v-icon>
+            <v-icon class="edit-submit-test">mdi-check</v-icon>
           </v-btn>
           <v-btn
             v-if="!isSaving && !reactiveFieldUuid && isAdding"
             icon
             :disabled="!canSubmit"
             @click="addDescription"
-            class="test-check"
           >
-            <v-icon>mdi-check</v-icon>
+            <v-icon class="add-submit-test">mdi-check</v-icon>
           </v-btn>
-          <v-btn v-if="!isSaving" icon @click="closeInput" class="test-close">
+          <v-btn v-if="!isSaving" icon @click="closeInput" class="close-test">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </span>
@@ -144,9 +141,11 @@ export default defineComponent({
       default: '',
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const server = sl.get('serverProxy');
     const store = sl.get('store');
+    const actions = sl.get('globalActions');
+
     const isEditing: Ref<Boolean> = ref(false);
     const isAdding: Ref<Boolean> = ref(false);
     const isSaving: Ref<Boolean> = ref(false);
@@ -162,9 +161,8 @@ export default defineComponent({
     };
 
     const saveEdit = async () => {
-      const actions = sl.get('globalActions');
-      isSaving.value = true;
       if (reactiveFieldUuid.value) {
+        isSaving.value = true;
         try {
           await server.updatePropertyDescriptionField({
             uuid: reactiveFieldUuid.value,
@@ -186,9 +184,8 @@ export default defineComponent({
     };
 
     const addDescription = async () => {
-      const actions = sl.get('globalActions');
-      isSaving.value = true;
       try {
+        isSaving.value = true;
         await server.createNewPropertyDescriptionField({
           referenceUuid: props.variableOrValueUuid,
           description: newDescription.value,

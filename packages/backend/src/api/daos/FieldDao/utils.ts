@@ -1,7 +1,4 @@
-import DetectLanguage, { DetectionResult } from 'detectlanguage';
-import { getDetectLanguageAPIKEY } from '@/utils';
-
-const languages = [
+export const languages = [
   {
     code: 'aa',
     name: 'Afar',
@@ -659,17 +656,3 @@ const languages = [
     name: 'Zulu',
   },
 ];
-
-export async function detectLanguage(text: string): Promise<string> {
-  const apiKey: string = await getDetectLanguageAPIKEY();
-  const detectLanguageAPI = new DetectLanguage(apiKey);
-
-  const language:
-    | { code: string; name: string }
-    | undefined = await detectLanguageAPI
-    .detect(text)
-    .then((results: DetectionResult[]) =>
-      languages.find(lang => lang.code === results[0].language)
-    );
-  return language?.name ?? 'unknown';
-}

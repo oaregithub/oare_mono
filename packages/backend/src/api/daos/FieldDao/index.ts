@@ -2,6 +2,9 @@ import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import { Knex } from 'knex';
 import { FieldInfo } from '@oare/types';
+import DetectLanguage, { DetectionResult } from 'detectlanguage';
+import { getDetectLanguageAPIKEY } from '@/utils';
+import { languages } from './utils';
 
 interface FieldRow {
   id: number;
@@ -144,6 +147,20 @@ class FieldDao {
   ): Promise<void> {
     const k = trx || knexWrite();
     await k('field').del().where({ reference_uuid: referenceUuid });
+  }
+
+  async detectLanguage(text: string): Promise<string> {
+    const apiKey: string = await getDetectLanguageAPIKEY();
+    const detectLanguageAPI = new DetectLanguage(apiKey);
+
+    const language:
+      | { code: string; name: string }
+      | undefined = await detectLanguageAPI
+      .detect(text)
+      .then((results: DetectionResult[]) =>
+        languages.find(lang => lang.code === results[0].language)
+      );
+    return language?.name ?? 'unknown';
   }
 }
 
