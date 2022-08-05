@@ -3,7 +3,6 @@ import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import { EditFieldPayload, FieldInfo, NewFieldPayload } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
-import { detectLanguage } from './daos/FieldDao/utils';
 
 const router = express.Router();
 
@@ -13,7 +12,6 @@ router
     try {
       const FieldDao = sl.get('FieldDao');
       const { referenceUuid } = req.params;
-
       const response: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
         referenceUuid
       );
@@ -43,7 +41,7 @@ router
 
       try {
         const language = (
-          await detectLanguage(description)
+          await FieldDao.detectLanguage(description)
         ).toLocaleLowerCase();
 
         await FieldDao.updateAllFieldFields(
@@ -83,8 +81,8 @@ router
       }
 
       try {
-        const language: string = (
-          await detectLanguage(description)
+        const language = (
+          await FieldDao.detectLanguage(description)
         ).toLocaleLowerCase();
         await FieldDao.insertField(
           referenceUuid,
