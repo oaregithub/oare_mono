@@ -7987,6 +7987,13 @@ detective-typescript@^7.0.0:
     node-source-walk "^4.2.0"
     typescript "^3.9.7"
 
+detectlanguage@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/detectlanguage/-/detectlanguage-2.1.0.tgz#cba0f2dfae4b553348f4c94d0771a1eb4f3825cb"
+  integrity sha512-EbLGyZxiQJeur5a+GNOzBV9xL/r/7GfvRALSHAKepw38UAvCssn7obVvhsioRIV+uDj3IQtXzL7iNkwu0oCp7g==
+  dependencies:
+    axios "^0.21.1"
+
 dicer@0.3.0, dicer@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/dicer/-/dicer-0.3.0.tgz#eacd98b3bfbf92e8ab5c2fdb71aaac44bb06b872"
