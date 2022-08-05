@@ -29,9 +29,13 @@ router
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
       await PageContentDao.editContent(routeName, content);
-      await cache.clear(`/page_content/${routeName}`, {
-        level: 'exact',
-      });
+      await cache.clear(
+        `/page_content/${routeName}`,
+        {
+          level: 'exact',
+        },
+        req
+      );
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

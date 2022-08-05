@@ -54,6 +54,7 @@ export interface UpdateFormPayload {
 
 export interface UpdateDictionaryTranslationPayload {
   translations: DictionaryWordTranslation[];
+  fieldType: string;
 }
 
 export interface UpdateFormSpellingPayload {
@@ -131,6 +132,7 @@ export interface DictionarySearchPayload {
   search: string;
   page: number;
   rows: number;
+  mode: string;
 }
 
 export interface SpellingOccurrenceRow {

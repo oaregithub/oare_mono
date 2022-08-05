@@ -32,7 +32,7 @@ export interface EpigraphyResponse {
 }
 export interface ZoteroData {
   citation: string;
-  link: string;
+  link: string | null;
 }
 
 export type EpigraphicUnitType =

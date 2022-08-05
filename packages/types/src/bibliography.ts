@@ -10,9 +10,10 @@ export interface ZoteroResponse {
   data?: ZoteroResponseData | null;
 }
 
-export interface ZoteroLink {
-  href: string;
-  type: string;
+export interface ZoteroCreator {
+  creatorType: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface ZoteroResponseData {
@@ -42,26 +43,21 @@ export interface ZoteroResponseData {
   callNumber: string;
   rights: string;
   extra: string;
-  tags: ZoteroTag[];
-  collections: ZoteroCollection[];
-  relations: ZoteroRelation;
+  tags: any[];
+  collections: any[];
+  relations: any;
   dateAdded: string;
   dateModified: string;
 }
 
-export interface ZoteroCreator {
-  creatorType: string;
-  firstName: string;
-  lastName: string;
+export interface BibliographyResponse {
+  title: string | null;
+  authors: string[];
+  date: string | null;
+  bibliography: {
+    bib: string | null;
+    url: string | null;
+  };
 }
 
-export interface ZoteroTag {
-  tag: string;
-}
-
-export interface ZoteroCollection {}
-
-export interface ZoteroRelation {
-  'owl:sameAs': string;
-  'dc:replaces': string;
-}
+export type ZoteroRequestType = 'citation' | 'bib' | 'data';

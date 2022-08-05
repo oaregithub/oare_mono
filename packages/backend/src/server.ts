@@ -40,6 +40,7 @@ import NoteDao from './api/daos/NoteDao';
 import PageContentDao from './api/daos/PageContentDao';
 import SearchFailureDao from './api/daos/SearchFailureDao';
 import BibliographyDao from './api/daos/BibliographyDao';
+import BibliographyUtils from './api/daos/BibliographyUtils';
 import TreeDao from './api/daos/TreeDao';
 import QuarantineTextDao from './api/daos/QuarantineTextDao';
 
@@ -89,6 +90,7 @@ sl.set('NoteDao', NoteDao);
 sl.set('PageContentDao', PageContentDao);
 sl.set('SearchFailureDao', SearchFailureDao);
 sl.set('BibliographyDao', BibliographyDao);
+sl.set('BibliographyUtils', BibliographyUtils);
 sl.set('TreeDao', TreeDao);
 sl.set('QuarantineTextDao', QuarantineTextDao);
 

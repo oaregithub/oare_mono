@@ -49,6 +49,7 @@ import AddEditTexts from '../views/Admin/Groups/Edits/Texts/AddEditTexts.vue';
 import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditCollections.vue';
 import AddNewTexts from '../views/Texts/CollectionTexts/AddTexts/index.vue';
 import UserPreferences from '../views/Dashboard/UserPreferences.vue';
+import BibliographyView from '../views/Bibliography/index.vue';
 import AboutView from '../views/About/index.vue';
 import TutorialView from '../views/Tutorial/index.vue';
 import PublicationsView from '../views/Texts/PublicationsView/index.vue';
@@ -388,6 +389,11 @@ const routes: RouteConfig[] = [
     component: AddNewTexts,
     props: true,
     beforeEnter: permissionGuard('ADD_NEW_TEXTS'),
+  },
+  {
+    path: '/bibliography',
+    name: 'bibliography',
+    component: BibliographyView,
   },
   {
     path: '/about',

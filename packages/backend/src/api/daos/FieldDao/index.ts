@@ -48,6 +48,34 @@ class FieldDao {
       .first();
   }
 
+  async getDefinitionsByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<FieldRow[]> {
+    const k = trx || knexRead();
+    return k('field')
+      .select()
+      .where({
+        reference_uuid: referenceUuid,
+      })
+      .andWhere('type', 'definition')
+      .orderBy('primacy');
+  }
+
+  async getDiscussionLemmasByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<FieldRow[]> {
+    const k = trx || knexRead();
+    return k('field')
+      .select()
+      .where({
+        reference_uuid: referenceUuid,
+      })
+      .andWhere('type', 'discussionLemma')
+      .orderBy('primacy');
+  }
+
   async insertField(
     referenceUuid: string,
     type: string,

@@ -34,6 +34,7 @@ import searchWordsTexts from './api/search_words_texts';
 import properties from './api/properties';
 import environment from './api/environment';
 import text from './api/text';
+import bibliography from './api/bibliography';
 import quarantine from './api/quarantine';
 import field from './api/field';
 
@@ -76,6 +77,7 @@ export default (app: Express) => {
     properties,
     environment,
     text,
+    bibliography,
     quarantine,
     field,
   ].forEach(route => {

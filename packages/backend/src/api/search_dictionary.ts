@@ -12,10 +12,16 @@ router.route('/search_dictionary').get(async (req, res, next) => {
       search,
       page,
       rows,
+      mode,
     } = (req.query as unknown) as DictionarySearchPayload;
     const userUuid = req.user ? req.user.uuid : null;
 
-    const results = await dictionaryWordDao.searchWords(search, page, rows);
+    const results = await dictionaryWordDao.searchWords(
+      search,
+      page,
+      rows,
+      mode
+    );
 
     if (results.results.length === 0) {
       const SearchFailureDao = sl.get('SearchFailureDao');
