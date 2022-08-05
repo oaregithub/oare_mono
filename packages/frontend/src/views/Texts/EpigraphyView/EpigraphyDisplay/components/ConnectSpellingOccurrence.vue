@@ -133,13 +133,16 @@ export default defineComponent({
   props: {
     getTexts: {
       type: Function as PropType<
-        (uuid: string[], request: Pagination) => SpellingOccurrenceResponseRow[]
+        (
+          uuid: string[],
+          request: Pagination
+        ) => Promise<SpellingOccurrenceResponseRow[]>
       >,
       required: true,
     },
     searchSpellings: {
       type: Function as PropType<
-        (spelling: string) => SearchSpellingResultRow[]
+        (spelling: string) => Promise<SearchSpellingResultRow[]>
       >,
       required: true,
     },

@@ -9,7 +9,6 @@ import {
   DiscourseUnitType,
   InsertItemPropertyRow,
   EditTranslationPayload,
-  DiscourseSpellingResponse,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import { v4 } from 'uuid';

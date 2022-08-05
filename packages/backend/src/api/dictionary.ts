@@ -428,9 +428,19 @@ router
 router.route('/connect/spellings').patch(adminRoute, async (req, res, next) => {
   try {
     const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+    const DictionaryFormDao = sl.get('DictionaryFormDao');
+    const cache = sl.get('cache');
     const { discourseUuid, spellingUuid } = req.body;
 
     await TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid);
+    const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+      spellingUuid
+    );
+    const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+      formUuid
+    );
+    await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
     res.status(204).end();
   } catch (err) {
     next(new HttpInternalError(err as string));

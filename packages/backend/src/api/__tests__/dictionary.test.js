@@ -113,7 +113,6 @@ describe('dictionary api test', () => {
   };
 
   describe('PATCH /connect/spellings', () => {
-    const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/connect/spellings`;
     const MockTextDiscourseDao = {
       updateSpellingUuid: jest.fn().mockResolvedValue(),
@@ -122,11 +121,15 @@ describe('dictionary api test', () => {
       discourseUuid: 'discourseUuid',
       spellingUuid: 'spellingUuid',
     };
+    const MockSpellingDao = {
+      getFormUuidBySpellingUuid: jest.fn().mockResolvedValue('formUuid'),
+    };
 
     beforeEach(() => {
       setup({
         UserDao: AdminUserDao,
         DiscourseDao: MockTextDiscourseDao,
+        DictionarySpellingDao: MockSpellingDao,
       });
     });
 

@@ -417,7 +417,7 @@ class TextDiscourseDao {
   ): Promise<string> {
     const k = trx || knexRead();
     const spelling = await k('text_discourse')
-      .select('spelling')
+      .select('explicit_spelling as spelling')
       .where('uuid', discourseUuid)
       .first();
     return spelling;
