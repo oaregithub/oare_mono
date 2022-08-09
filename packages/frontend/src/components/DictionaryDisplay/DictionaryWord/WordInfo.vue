@@ -14,10 +14,56 @@
     <v-col v-if="wordInfo.forms.length > 1" cols="4" class="pt-0">
       <v-text-field
         v-model="searchQuery"
-        :placeholder="'Filter forms'"
+        :placeholder="'Filter forms or spellings'"
         clearable
         single-line
-      />
+        ><template slot="prepend"
+          ><v-menu offset-y open-on-hover>
+            <template #activator="{ on, attrs }">
+              <v-icon v-bind="attrs" v-on="on" class="ml-2">
+                mdi-information-outline
+              </v-icon>
+            </template>
+            <v-card class="pa-3">
+              When filtering spellings, they must be strictly formatted. Here
+              are the rules:
+              <ol>
+                <li>
+                  Logograms in all uppercase, separated with periods, e.g.:
+                  TÚG.ḪI.A.
+                </li>
+                <li>
+                  Enclose determinatives in parentheses, e.g.: (m), (f), (d),
+                  (ki). All these as lowercase. Logographic determinatives in
+                  uppercase, with all elements including periods in their own
+                  parens, e.g.: (TÚG)(.)(ḪI)(.)(A)ku-ta-nu.
+                </li>
+                <li>
+                  Dashes between syllabic values and between syllabic and
+                  logograms. No dashes between determinatives, e.g.:
+                  a-šur-ANDUL.
+                </li>
+                <li>Dashes between elements of names, e.g.: (d)IŠTAR-ANDUL.</li>
+                <li>
+                  Subscript numerals are just entered as regular numerals, e.g.:
+                  PUZUR4-a-šùr.
+                </li>
+                <li>
+                  Don’t capitalize syllabic readings at the beginning of a name.
+                </li>
+                <li>
+                  Render phonetic complements between curly brackets, e.g.
+                  2{šé}{-}{ne}.
+                </li>
+              </ol>
+              Thus enter spellings into the filter like this: 2{šé}{-}{ne} ANŠE
+              ú 10+2 (TÚG)(.)(ḪI)ra-qu-ú ša (m)(d)UTU-(d)a-šur though in a
+              printed publication they might look like this: 2šé-ne ANŠE ú 12
+              TÚG.ḪIra-qu-ú ša mdUTU-dA-šur
+            </v-card>
+          </v-menu></template
+        ></v-text-field
+      >
     </v-col>
 
     <form-display
@@ -65,6 +111,7 @@ import {
   computed,
   ref,
   onMounted,
+  watch,
 } from '@vue/composition-api';
 import { Word, DictionaryForm, FormSpelling } from '@oare/types';
 import FormDisplay from './Forms/FormDisplay.vue';
@@ -74,6 +121,8 @@ import AddFormDialog from './components/AddFormDialog.vue';
 import WordGrammar from './components/WordGrammar.vue';
 import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
+import { spellingHtmlReading } from '@oare/oare';
+import _ from 'lodash';
 
 export default defineComponent({
   props: {
@@ -116,6 +165,7 @@ export default defineComponent({
     const editDialogDiscourse = ref(false);
     const showSpellingDialog = ref(false);
     const addFormDialog = ref(false);
+    const filteredForms = ref(props.wordInfo.forms);
 
     const searchQuery = useQueryParam('filter', '', true);
 
@@ -150,11 +200,35 @@ export default defineComponent({
       editDialogForm.value = form;
     };
 
-    const filteredForms = computed(() => {
-      return props.wordInfo.forms.filter(form => {
-        return form.form.includes(searchQuery.value);
-      });
-    });
+    watch(
+      () => searchQuery.value,
+      _.debounce(() => {
+        filteredForms.value = props.wordInfo.forms.filter(form => {
+          if (form.form.includes(searchQuery.value)) {
+            return form;
+          }
+          if (
+            form.spellings.some(spelling => {
+              return (
+                spelling.spelling.includes(searchQuery.value) ||
+                spellingHtmlReading(spelling.spelling).includes(
+                  spellingHtmlReading(searchQuery.value)
+                )
+              );
+            })
+          ) {
+            form.spellings = form.spellings.filter(
+              spelling =>
+                spelling.spelling.includes(searchQuery.value) ||
+                spellingHtmlReading(spelling.spelling).includes(
+                  spellingHtmlReading(searchQuery.value)
+                )
+            );
+            return form;
+          }
+        });
+      }, 500)
+    );
 
     return {
       updateForm,
