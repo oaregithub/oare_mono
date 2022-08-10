@@ -33,6 +33,7 @@
             :nodesToHighlight="nodesToHightlight"
             :openSearchResults="openSearchResults"
             :showUUID="showUUID"
+            :showFieldInfo="true"
           />
         </v-expansion-panel-content>
       </v-expansion-panel>

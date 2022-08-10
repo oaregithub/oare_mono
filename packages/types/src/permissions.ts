@@ -26,7 +26,7 @@ export interface DictionaryPermission extends PermissionTemplate {
 }
 
 export interface PagePermission extends PermissionTemplate {
-  name: 'WORDS' | 'NAMES' | 'PLACES' | 'PEOPLE';
+  name: 'WORDS' | 'NAMES' | 'PLACES' | 'PEOPLE' | 'BIBLIOGRAPHY';
   type: 'pages';
 }
 
@@ -40,13 +40,17 @@ export interface TextPermission extends PermissionTemplate {
     | 'UPLOAD_EPIGRAPHY_IMAGES'
     | 'EDIT_TRANSLATION'
     | 'INSERT_PARENT_DISCOURSE_ROWS'
-    | 'VIEW_BIBLIOGRAPHY'
+    | 'VIEW_TEXT_CITATIONS'
     | 'COPY_TEXT_TRANSLITERATION';
   type: 'text';
 }
 
 export interface GeneralPermission extends PermissionTemplate {
-  name: 'EDIT_ITEM_PROPERTIES' | 'ADD_COMMENTS';
+  name:
+    | 'EDIT_ITEM_PROPERTIES'
+    | 'ADD_COMMENTS'
+    | 'ADD_EDIT_FIELD_DESCRIPTION'
+    | 'VIEW_FIELD_DESCRIPTION';
   type: 'general';
 }
 

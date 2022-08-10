@@ -181,7 +181,8 @@ type CacheRouteType =
   | 'Sign Readings'
   | 'Taxonomy Tree'
   | 'Dictionary'
-  | 'Page Content';
+  | 'Page Content'
+  | 'Bibliography';
 
 interface RoutePiece {
   type: 'static' | 'param' | 'separator';
@@ -257,6 +258,7 @@ export default defineComponent({
       'Taxonomy Tree',
       'Dictionary',
       'Page Content',
+      'Bibliography',
     ]);
 
     const individualClearTemplates = ref<IndividualClearTemplate[]>([
@@ -549,6 +551,18 @@ export default defineComponent({
         ],
         level: 'exact',
         type: 'Text Epigraphies',
+      },
+      {
+        name: 'Bibliographies - All',
+        routePieces: [
+          { type: 'separator', label: '/' },
+          {
+            type: 'static',
+            label: 'bibliographies',
+          },
+        ],
+        level: 'startsWith',
+        type: 'Bibliography',
       },
     ]);
 

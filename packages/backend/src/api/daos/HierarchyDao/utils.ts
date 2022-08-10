@@ -17,6 +17,8 @@ export const getTreeNodeQuery = (trx?: Knex.Transaction) => {
       'value.abbreviation as valAbbreviation',
       'variable.uuid as variableUuid',
       'value.uuid as valueUuid',
+      'variable.type as variableType',
+      'variable.table_reference as variableTableReference',
       'hierarchy.role'
     )
     .leftJoin('variable', 'variable.uuid', 'hierarchy.object_uuid')

@@ -12,6 +12,7 @@ import {
 import { createTabletRenderer } from '@oare/oare';
 import _ from 'lodash';
 import sl from '@/serviceLocator';
+import AWS from 'aws-sdk';
 
 export const createTransaction = async (
   cb: (trx: Knex.Transaction) => Promise<void>
@@ -150,4 +151,29 @@ export const getDictionaryCacheRouteToClear = (
   }
 
   return cacheRouteToClear;
+};
+
+export const getDetectLanguageAPIKEY = async (): Promise<string> => {
+  const s3 = new AWS.S3();
+
+  let apiKey = '';
+
+  if (process.env.DETECT_LANGUAGE_API_KEY) {
+    apiKey = process.env.DETECT_LANGUAGE_API_KEY;
+  } else {
+    const response = (
+      await s3
+        .getObject({
+          Bucket: 'oare-resources',
+          Key: 'detectlanguage_auth.json',
+        })
+        .promise()
+    ).Body;
+    if (response) {
+      apiKey = JSON.parse(response as string).authKey;
+      process.env.DETECT_LANGUAGE_API_KEY = apiKey;
+    }
+  }
+
+  return apiKey;
 };

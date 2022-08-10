@@ -411,6 +411,18 @@ class TextDiscourseDao {
       .where('spelling_uuid', spellingUuid);
   }
 
+  async getSpellingByDiscourseUuid(
+    discourseUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string> {
+    const k = trx || knexRead();
+    const spelling = await k('text_discourse')
+      .select('explicit_spelling as spelling')
+      .where('uuid', discourseUuid)
+      .first();
+    return spelling;
+  }
+
   async getSpellingUuidsByDiscourseUuid(
     discourseUuid: string,
     trx?: Knex.Transaction

@@ -12,7 +12,7 @@ const router = express.Router();
 router
   .route('/bibliographies')
   .get(
-    permissionsRoute('VIEW_BIBLIOGRAPHY'),
+    permissionsRoute('BIBLIOGRAPHY'),
     cacheMiddleware<BibliographyResponse[]>(noFilter),
     async (req, res, next) => {
       try {
@@ -25,7 +25,7 @@ router
         const ResourceDao = sl.get('ResourceDao');
         const cache = sl.get('cache');
 
-        const citationStyle = (req.query.style ||
+        const citationStyle = (req.query.citationStyle ||
           'chicago-author-date') as string;
 
         const bibliographies = await BibliographyDao.getBibliographies({
@@ -49,11 +49,22 @@ router
         );
 
         const biblioResponse: BibliographyResponse[] = zoteroResponse.map(
-          (item, index) =>
+          (zot, index) =>
             ({
-              bib: item ? item.bib : null,
-              data: item ? item.data : null,
-              url: fileURL[index],
+              title: zot && zot.data && zot.data.title ? zot.data.title : null,
+              authors:
+                zot && zot.data && zot.data.creators
+                  ? zot.data.creators
+                      .filter(creator => creator.creatorType === 'author')
+                      .map(
+                        creator => `${creator.firstName} ${creator.lastName}`
+                      )
+                  : [],
+              date: zot && zot.data && zot.data.date ? zot.data.date : null,
+              bibliography: {
+                bib: zot && zot.bib ? zot.bib : null,
+                url: fileURL[index] ? fileURL[index] : null,
+              },
             } as BibliographyResponse)
         );
 
@@ -69,5 +80,17 @@ router
       }
     }
   );
+
+router
+  .route('/bibliographies_count')
+  .get(permissionsRoute('BIBLIOGRAPHY'), async (req, res, next) => {
+    try {
+      const BibliographyDao = sl.get('BibliographyDao');
+      const count = await BibliographyDao.getBibliographiesCount();
+      res.json(count);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 export default router;

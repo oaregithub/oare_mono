@@ -14,6 +14,7 @@ import {
   AddWordPayload,
   ParseTreeProperty,
   AddWordCheckPayload,
+  ConnectSpellingDiscoursePayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -116,6 +117,12 @@ async function disconnectSpellings(discourseUuids: string[]): Promise<void> {
   await axios.patch('/disconnect/spellings', payload);
 }
 
+async function connectSpelling(
+  payload: ConnectSpellingDiscoursePayload
+): Promise<void> {
+  await axios.patch('/connect/spellings', payload);
+}
+
 async function getDictionaryInfoBySpellingUuid(
   spellingUuid: string
 ): Promise<Word | null> {
@@ -172,6 +179,7 @@ export default {
   getTaxonomyTree,
   addForm,
   disconnectSpellings,
+  connectSpelling,
   getDictionaryInfoBySpellingUuid,
   checkNewWord,
   addWord,

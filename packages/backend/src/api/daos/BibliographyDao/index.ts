@@ -26,6 +26,12 @@ class BibliographyDao {
       .offset((page - 1) * rows);
     return bibliographies;
   }
+
+  async getBibliographiesCount(trx?: Knex.Transaction): Promise<number> {
+    const k = trx || knexRead();
+    const count = await k('bibliography').count('uuid as count').first();
+    return count && count.count ? Number(count.count) : 0;
+  }
 }
 
 export default new BibliographyDao();

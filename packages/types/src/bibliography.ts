@@ -10,12 +10,18 @@ export interface ZoteroResponse {
   data?: ZoteroResponseData | null;
 }
 
+export interface ZoteroCreator {
+  creatorType: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface ZoteroResponseData {
   key: string;
   version: number;
   itemType: string;
   title: string;
-  creators: any[];
+  creators: ZoteroCreator[];
   abstractNote: string;
   series: string;
   seriesNumber: string;
@@ -45,9 +51,13 @@ export interface ZoteroResponseData {
 }
 
 export interface BibliographyResponse {
-  bib: string | null;
-  data: ZoteroResponseData | null;
-  url: string | null;
+  title: string | null;
+  authors: string[];
+  date: string | null;
+  bibliography: {
+    bib: string | null;
+    url: string | null;
+  };
 }
 
 export type ZoteroRequestType = 'citation' | 'bib' | 'data';

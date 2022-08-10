@@ -70,8 +70,39 @@
                 "
                 >NO NAME</i
               >
+              <property-info
+                v-if="
+                  (child.variableUuid || child.valueUuid) &&
+                  showFieldInfo &&
+                  child.fieldInfo
+                "
+                :name="
+                  child.variableName ||
+                  child.valueName ||
+                  child.aliasName ||
+                  'No Name'
+                "
+                :description="child.fieldInfo.field || ''"
+                :primacy="child.fieldInfo.primacy || 0"
+                :fieldUuid="child.fieldInfo.uuid || ''"
+                :language="
+                  child.fieldInfo.language === 'default'
+                    ? 'English'
+                    : child.fieldInfo.language || 'n/a'
+                "
+                :type="child.variableType || ''"
+                :tableReference="child.variableTableReference || ''"
+                :variableOrValueUuid="
+                  child.variableUuid || child.valueUuid || ''
+                "
+              ></property-info>
               <b
-                v-if="open && child.custom === 1 && !selectMultiple"
+                v-if="
+                  open &&
+                  child.custom === 1 &&
+                  !selectMultiple &&
+                  allowSelections
+                "
                 class="text--disabled ml-7"
                 ><br />Only one selection permitted</b
               >
@@ -164,6 +195,7 @@
           :showUUID="showUUID"
           :hideActions="hideActions"
           :selectMultiple="selectMultiple"
+          :showFieldInfo="showFieldInfo"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
           @update:selection-display="
@@ -185,7 +217,13 @@ import {
   computed,
   onMounted,
 } from '@vue/composition-api';
-import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
+import PropertyInfo from './PropertyInfo.vue';
+import {
+  TaxonomyTree,
+  ParseTreeProperty,
+  ItemPropertyRow,
+  FieldInfo,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 
 export interface ParseTreePropertyEvent {
@@ -195,6 +233,9 @@ export interface ParseTreePropertyEvent {
 
 export default defineComponent({
   name: 'ParseTreeNode',
+  components: {
+    PropertyInfo,
+  },
   props: {
     node: {
       type: Object as PropType<TaxonomyTree>,
@@ -225,6 +266,10 @@ export default defineComponent({
       default: false,
     },
     selectMultiple: {
+      type: Boolean,
+      default: false,
+    },
+    showFieldInfo: {
       type: Boolean,
       default: false,
     },

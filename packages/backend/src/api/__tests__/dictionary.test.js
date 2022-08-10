@@ -10,7 +10,8 @@ describe('dictionary api test', () => {
     uuid: 'test',
     word: 'word',
     properties: [],
-    translations: [],
+    translationsForDefinition: [],
+    discussionLemmas: [],
   };
   const MockDictionaryFormDao = {
     getWordForms: jest.fn().mockResolvedValue(mockForms),
@@ -82,6 +83,7 @@ describe('dictionary api test', () => {
       },
     ]),
   };
+
   const mockUtils = {
     createTransaction: jest.fn(async cb => {
       await cb();
@@ -113,6 +115,79 @@ describe('dictionary api test', () => {
     sl.set('utils', Utils || mockUtils);
     sl.set('DictionarySpellingDao', DictionarySpellingDao);
   };
+
+  describe('PATCH /connect/spellings', () => {
+    const PATH = `${API_PATH}/connect/spellings`;
+    const MockTextDiscourseDao = {
+      updateSpellingUuid: jest.fn().mockResolvedValue(),
+    };
+    const mockPayload = {
+      discourseUuid: 'discourseUuid',
+      spellingUuid: 'spellingUuid',
+    };
+    const MockSpellingDao = {
+      getFormUuidBySpellingUuid: jest.fn().mockResolvedValue('formUuid'),
+    };
+
+    beforeEach(() => {
+      setup({
+        UserDao: AdminUserDao,
+        DiscourseDao: MockTextDiscourseDao,
+        DictionarySpellingDao: MockSpellingDao,
+      });
+    });
+
+    const sendRequest = (auth = true) => {
+      const req = request(app).patch(PATH).send(mockPayload);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('prevents non-logged in users from patching', async () => {
+      setup();
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('prevents non-admin users from patching', async () => {
+      setup({
+        UserDao: {
+          getUserByUuid: jest.fn().mockResolvedValue({
+            isAdmin: false,
+          }),
+        },
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it('returns 204', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(204);
+    });
+
+    it('updates spellingUuid in text discourse', async () => {
+      await sendRequest();
+      expect(MockTextDiscourseDao.updateSpellingUuid).toHaveBeenCalledWith(
+        mockPayload.discourseUuid,
+        mockPayload.spellingUuid
+      );
+    });
+
+    it('returns 500 if text discourse dao fails', async () => {
+      setup({
+        UserDao: AdminUserDao,
+        DiscourseDao: {
+          updateSpellingUuid: jest.fn().mockRejectedValue(),
+        },
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
 
   describe('GET /dictionary/:uuid', () => {
     const PATH = `${API_PATH}/dictionary/test`;
