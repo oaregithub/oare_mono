@@ -216,7 +216,7 @@ export default defineComponent({
           if (result && node.children[i].valueUuid) {
             properties.value.unshift({
               properties: [{ variable: node, value: node.children[i] }],
-              source: node,
+              sourceUuid: node.uuid,
             });
           }
         }
@@ -227,7 +227,7 @@ export default defineComponent({
 
     const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
-        prop => prop.source !== args.source
+        prop => prop.sourceUuid !== args.sourceUuid
       );
       properties.value.push(args);
     };
