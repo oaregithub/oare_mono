@@ -68,7 +68,7 @@
 
     <form-display
       v-for="(form, index) in filteredForms"
-      :key="index"
+      :key="`${form.uuid}-${index}`"
       :word="wordInfo"
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"

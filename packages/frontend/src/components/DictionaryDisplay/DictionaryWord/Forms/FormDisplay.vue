@@ -89,6 +89,7 @@
           :key="index"
         >
           <spelling-display
+            :key="s.uuid"
             :spelling="s"
             :form="form"
             :word-uuid="wordUuid"
