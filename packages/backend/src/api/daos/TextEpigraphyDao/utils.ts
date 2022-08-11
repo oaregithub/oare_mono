@@ -175,22 +175,20 @@ export function getSearchQuery(
   );
 
   if (textTitle) {
-    const finalSearch: string = `%${textTitle
-      .replace(/[.,/#!$%^&*;:{}=\-_`~() <>]/g, '%')
-      .toLowerCase()}%`;
+    const finalSearch: string = ignorePunctuation(textTitle);
     query = query.andWhere(function () {
-      this.whereRaw('LOWER(text.display_name) LIKE ?', [finalSearch])
-        .orWhereRaw('LOWER(text.cdli_num) LIKE ?', [finalSearch])
+      this.whereRaw('LOWER(text.display_name) REGEXP ?', [finalSearch])
+        .orWhereRaw('LOWER(text.cdli_num) REGEXP ?', [finalSearch])
         .orWhereRaw(
-          "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) LIKE ?",
+          "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) REGEXP ?",
           [finalSearch]
         )
         .orWhereRaw(
-          "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) LIKE ?",
+          "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) REGEXP ?",
           [finalSearch]
         )
         .orWhereRaw(
-          "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) LIKE ?",
+          "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) REGEXP ?",
           [finalSearch]
         );
     });
@@ -287,4 +285,13 @@ export async function getNotOccurrenceTexts(
         ).pluck('text_epigraphy.text_uuid')
       : [];
   return notTexts;
+}
+
+export function ignorePunctuation(search: string): string {
+  const ignoredPunctuation: string = `^.*${search
+    .trim()
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()<>]/g, '[.,/#!$%^&*;:{}=-_`~()<>]{0,1}')
+    .replace(/[\s]{1,}/g, '[\\s]{1,}')
+    .toLowerCase()}.*$`;
+  return ignoredPunctuation;
 }
