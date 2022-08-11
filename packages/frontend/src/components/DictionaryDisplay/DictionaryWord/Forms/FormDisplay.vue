@@ -89,7 +89,7 @@
           :key="index"
         >
           <spelling-display
-            :key="s.uuid"
+            :key="`${s.uuid}-${index}`"
             :spelling="s"
             :form="form"
             :word-uuid="wordUuid"

@@ -200,31 +200,39 @@ export default defineComponent({
       editDialogForm.value = form;
     };
 
+    const filterSpellings = (
+      form: DictionaryForm,
+      searchHtmlReading: string
+    ): DictionaryForm => {
+      const filteredSpellings = form.spellings.filter(
+        spelling =>
+          spelling.spelling.includes(searchQuery.value) ||
+          spellingHtmlReading(spelling.spelling).includes(searchHtmlReading)
+      );
+      return { ...form, spellings: filteredSpellings };
+    };
+
     watch(
       () => searchQuery.value,
       _.debounce(() => {
-        filteredForms.value = props.wordInfo.forms.filter(form => {
+        filteredForms.value = [];
+        props.wordInfo.forms.map(form => {
           if (form.form.includes(searchQuery.value)) {
-            return form;
+            filteredForms.value.push(form);
+            return;
           }
+          const searchHtmlReading = spellingHtmlReading(searchQuery.value);
           if (
-            form.spellings.some(spelling => {
-              return (
-                spelling.spelling.includes(searchQuery.value) ||
-                spellingHtmlReading(spelling.spelling).includes(
-                  spellingHtmlReading(searchQuery.value)
-                )
-              );
-            })
-          ) {
-            form.spellings = form.spellings.filter(
+            form.spellings.some(
               spelling =>
                 spelling.spelling.includes(searchQuery.value) ||
                 spellingHtmlReading(spelling.spelling).includes(
-                  spellingHtmlReading(searchQuery.value)
+                  searchHtmlReading
                 )
-            );
-            return form;
+            )
+          ) {
+            const filteredForm = filterSpellings(form, searchHtmlReading);
+            filteredForms.value.push(filteredForm);
           }
         });
       }, 500)
