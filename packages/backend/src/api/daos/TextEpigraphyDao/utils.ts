@@ -291,7 +291,7 @@ export function ignorePunctuation(search: string): string {
   const ignoredPunctuation: string = `^.*${search
     .trim()
     .replace(/[.,/#!$%^&*;:{}=\-_`~()<>]/g, '[.,/#!$%^&*;:{}=-_`~()<>]{0,1}')
-    .replace(/[\s]{1,}/g, '[\\s]{1,}')
+    .replace(/[\s]{1,}/g, '([\\s]{1,}|[.,/#!$%^&*;:{}=-_`~()<>]{1,1})')
     .toLowerCase()}.*$`;
   return ignoredPunctuation;
 }
