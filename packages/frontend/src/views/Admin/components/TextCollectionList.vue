@@ -144,8 +144,8 @@ export default defineComponent({
     const listHeaders: Ref<DataTableHeader[]> = ref(
       itemType === 'Image'
         ? [
-            { text: 'Name', value: 'name' },
-            { text: 'Image', value: 'url' },
+            { text: 'Name', value: 'name', width: '30%' },
+            { text: 'Image', value: 'url', width: '70%' },
           ]
         : [{ text: 'Name', value: 'name' }]
     );
