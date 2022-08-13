@@ -797,9 +797,9 @@ router.route('/dictionary/checknewword').post(async (req, res, next) => {
           )
       )
     ) {
-      res.json(true);
+      res.status(200).json(true);
     } else {
-      res.json(false);
+      res.status(200).json(false);
     }
   } catch (err) {
     next(new HttpInternalError(err as string));

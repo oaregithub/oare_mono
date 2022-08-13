@@ -22,6 +22,8 @@ describe('dictionary api test', () => {
       .mockResolvedValue('test-word-uuid'),
   };
   const MockDictionaryWordDao = {
+    addWord: jest.fn().mockResolvedValue('new-word-uuid'),
+    getWords: jest.fn().mockResolvedValue(['words']),
     getGrammaticalInfo: jest.fn().mockResolvedValue(mockGrammar),
     updateWordSpelling: jest.fn().mockResolvedValue(null),
     updateTranslations: jest.fn().mockResolvedValue(),
@@ -1378,6 +1380,217 @@ describe('dictionary api test', () => {
       sl.set('DictionaryFormDao', {
         ...MockDictionaryFormDao,
         addForm: jest.fn().mockRejectedValue('failed to add form'),
+      });
+      const response = await sendRequest();
+      expect(mockItemPropertiesDao.addProperty).not.toHaveBeenCalled();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 on failed form properties insertion', async () => {
+      sl.set('ItemPropertiesDao', {
+        addProperty: jest
+          .fn()
+          .mockRejectedValue('failed to insert form properties'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('POST /dictionary/checknewword', () => {
+    const PATH = `${API_PATH}/dictionary/checknewword`;
+
+    const mockPayload = {
+      wordSpelling: 'wordie',
+      translation: [],
+      forms: [],
+      properties: [],
+    };
+
+    const existingWord = [
+      {
+        uuid: 'word1',
+        word: 'wordie',
+        translation: [],
+        forms: [],
+        properties: [],
+      },
+    ];
+
+    const diffExistingWord = [
+      {
+        uuid: 'word2',
+        word: 'birdie',
+        translation: [],
+        forms: [],
+        properties: [
+          {
+            variable: {
+              objectUuid: 'test-uuid',
+              type: 'taxonomy',
+              objParentUuid: 'test-parent-uuid',
+              parentUuid: 'test-hierarchy-1',
+              uuid: 'test-hierarchy-2',
+              variableName: 'test-variable-name',
+              valueName: null,
+              varAbbreviation: 'test-var-abb',
+              valAbbreviation: null,
+              variableUuid: 'test-variable-uuid',
+              valueUuid: null,
+              level: null,
+              children: null,
+            },
+            value: {
+              objectUuid: 'test-uuid-2',
+              type: 'taxonomy',
+              objParentUuid: 'test-parent-uuid',
+              parentUuid: 'test-hierarchy-2',
+              uuid: 'test-hierarchy-3',
+              variableName: null,
+              valueName: 'test-value-name',
+              varAbbreviation: null,
+              valAbbreviation: 'test-val-abb',
+              variableUuid: null,
+              valueUuid: 'test-value-uuid',
+              level: 1,
+              children: null,
+            },
+          },
+        ],
+      },
+    ];
+
+    const mockDictionaryWordDao = {
+      getWords: jest.fn().mockResolvedValue(existingWord),
+      hasMatchingProperty: jest.fn().mockResolvedValue([false]),
+    };
+
+    const checkNewWordSetup = () => {
+      sl.set('DictionaryWordDao', mockDictionaryWordDao);
+      sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+      sl.set('utils', mockUtils);
+    };
+
+    beforeEach(checkNewWordSetup);
+
+    const sendRequest = () => request(app).post(PATH).send(mockPayload);
+
+    it('returns 200 if checking new word is successful', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 500 on failed new work check', async () => {
+      sl.set('DictionaryWordDao', {
+        ...mockDictionaryWordDao,
+        getWords: jest.fn().mockRejectedValue('failed to check lemma'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns true if new word matches an existing words spelling and properties', async () => {
+      const response = await sendRequest();
+      expect(mockDictionaryWordDao.getWords).toBeCalled();
+      expect(response.body).toBe(true);
+    });
+
+    it('returns false if new word does not match any existing words', async () => {
+      sl.set('DictionaryWordDao', {
+        ...mockDictionaryWordDao,
+        getWords: jest.fn().mockResolvedValue(diffExistingWord),
+      });
+      const response = await sendRequest();
+      expect(response.body).toBe(false);
+    });
+  });
+
+  describe('POST /dictionary/addword', () => {
+    const PATH = `${API_PATH}/dictionary/addword`;
+    const mockPayload = {
+      wordSpelling: 'word-spelling',
+      properties: [
+        {
+          variable: {
+            objectUuid: 'test-uuid',
+            type: 'taxonomy',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-1',
+            uuid: 'test-hierarchy-2',
+            variableName: 'test-variable-name',
+            valueName: null,
+            varAbbreviation: 'test-var-abb',
+            valAbbreviation: null,
+            variableUuid: 'test-variable-uuid',
+            valueUuid: null,
+            level: null,
+            children: null,
+          },
+          value: {
+            objectUuid: 'test-uuid-2',
+            type: 'taxonomy',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-2',
+            uuid: 'test-hierarchy-3',
+            variableName: null,
+            valueName: 'test-value-name',
+            varAbbreviation: null,
+            valAbbreviation: 'test-val-abb',
+            variableUuid: null,
+            valueUuid: 'test-value-uuid',
+            level: 1,
+            children: null,
+          },
+        },
+      ],
+    };
+
+    const mockDictionaryWordDao = {
+      addWord: jest.fn().mockResolvedValue('new-word-uuid'),
+    };
+
+    const addWordSetup = () => {
+      sl.set('UserDao', AdminUserDao);
+      sl.set('PermissionsDao', MockPermissionsDao);
+      sl.set('DictionaryWordDao', mockDictionaryWordDao);
+      sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+      sl.set('utils', mockUtils);
+    };
+
+    beforeEach(addWordSetup);
+
+    const sendRequest = (auth = true) => {
+      const req = request(app).post(PATH).send(mockPayload);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('returns 201 on successfull lemma addition', async () => {
+      const response = await sendRequest();
+      expect(mockDictionaryWordDao.addWord).toHaveBeenCalled();
+      expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+      expect(response.status).toBe(201);
+    });
+
+    it('returns 401 when user not logged in', async () => {
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 403 if user does not have permission to add lemmas', async () => {
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it('returns 500 on failed lemma insertion', async () => {
+      sl.set('DictionaryWordDao', {
+        ...mockDictionaryWordDao,
+        addWord: jest.fn().mockRejectedValue('failed to add lemma'),
       });
       const response = await sendRequest();
       expect(mockItemPropertiesDao.addProperty).not.toHaveBeenCalled();

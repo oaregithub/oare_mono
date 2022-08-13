@@ -41,7 +41,6 @@ import { ParseTreeProperty } from '@oare/types';
 import OareContentView from '@/components/base/OareContentView.vue';
 import sl from '@/serviceLocator';
 import AddProperties from '@/components/Properties/AddProperties.vue';
-import _ from 'lodash';
 
 export default defineComponent({
   name: 'AddWordDialog',
@@ -63,6 +62,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
+    const _ = sl.get('lodash');
 
     const addWordLoading = ref(false);
     const formComplete = ref(false);

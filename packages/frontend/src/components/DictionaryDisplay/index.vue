@@ -76,7 +76,7 @@ import {
 import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
 import { DisplayableWord, ParseTreeProperty } from '@oare/types';
 import sl from '@/serviceLocator';
-import AddWordDialog from './DictionaryWord/AddWordDialog.vue';
+import AddWordDialog from '../DictionaryDisplay/DictionaryWord/components/AddWordDialog.vue';
 
 export default defineComponent({
   name: 'DictionaryDisplay',
