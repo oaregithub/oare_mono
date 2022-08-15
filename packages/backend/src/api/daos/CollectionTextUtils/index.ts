@@ -217,42 +217,32 @@ class CollectionTextUtils {
 
   async sortCollectionTexts(texts: CollectionText[]) {
     const sortedTexts = texts.sort((a, b) => {
-      const textNameA: string = a.name.replace(/[{}()-,.;: ]{1,}/g, ' ');
-      const textNameB: string = b.name.replace(/[{}()-,.;: ]{1,}/g, ' ');
+      const textNameA: string = a.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
+      const textNameB: string = b.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
       const nameArrayA: string[] = textNameA.split(' ');
       const nameArrayB: string[] = textNameB.split(' ');
-      const shorteLength =
+      nameArrayA.forEach((val, idx) => {
+        const numLetterSplit = val.match(/(\d+|\D+)/g);
+        if (numLetterSplit && numLetterSplit.length > 1) {
+          nameArrayA.splice(idx, 1, ...numLetterSplit);
+        }
+      });
+      nameArrayB.forEach((val, idx) => {
+        const numLetterSplit = val.match(/\d+|\D+/g);
+        if (numLetterSplit && numLetterSplit.length > 1) {
+          nameArrayB.splice(idx, 1, ...numLetterSplit);
+        }
+      });
+      const shorterLength =
         nameArrayA.length <= nameArrayB.length
           ? nameArrayA.length
           : nameArrayB.length;
-      for (let i = 0; i < shorteLength; i += 1) {
+      for (let i = 0; i < shorterLength; i += 1) {
         if (nameArrayA[i] !== nameArrayB[i]) {
           const numA = parseFloat(nameArrayA[i]);
           const numB = parseFloat(nameArrayB[i]);
-          if (numA && numB) {
+          if (numA && numB && numA !== numB) {
             return numA - numB;
-          }
-          const numLetterPattern = new RegExp('(?<=D)(?=d)|(?<=d)(?=D)', 'g');
-          if (
-            numLetterPattern.test(nameArrayA[i]) &&
-            numLetterPattern.test(nameArrayB[i])
-          ) {
-            const patternA = nameArrayA[i].split(numLetterPattern);
-            const patternB = nameArrayB[i].split(numLetterPattern);
-            const shorterInnerLength: number =
-              patternA.length <= patternB.length
-                ? patternA.length
-                : patternB.length;
-            for (let j = 0; j < shorterInnerLength; j += 1) {
-              if (patternA[j] !== patternB[j]) {
-                const patternNumA = parseFloat(patternA[j]);
-                const patternNumB = parseFloat(patternB[j]);
-                if (patternNumA && patternNumB) {
-                  return patternNumA - patternNumB;
-                }
-                return patternA[j].localeCompare(patternB[j]);
-              }
-            }
           }
           return nameArrayA[i].localeCompare(nameArrayB[i]);
         }
