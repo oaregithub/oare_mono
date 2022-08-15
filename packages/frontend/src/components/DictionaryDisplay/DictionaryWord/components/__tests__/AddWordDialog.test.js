@@ -3,7 +3,6 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
-import { ReloadKey } from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import AddWordDialog from '../AddWordDialog.vue';
 
 const vuetify = new Vuetify();
@@ -118,8 +117,6 @@ describe('AddWordDialog test', () => {
     await flushPromises();
     await wrapper.get('.test-word-spelling input').setValue('test-word-1');
     await flushPromises();
-    /* await wrapper.findAll('.test-ignore input').trigger('click');
-    await flushPromises(); */
     expect(mockServer.checkNewWord).toHaveBeenCalledWith('test-word-1', []);
     expect(wrapper.find('.test-error').exists()).toBe(true);
     expect(wrapper.get('.test-submit-btn').element).toBeDisabled();
@@ -172,4 +169,4 @@ describe('AddWordDialog test', () => {
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
-}); // end of the describe statement
+});

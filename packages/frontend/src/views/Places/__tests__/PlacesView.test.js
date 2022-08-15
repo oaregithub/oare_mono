@@ -10,6 +10,10 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('PlacesView', () => {
+  const mockStore = {
+    hasPermission: () => false,
+  };
+
   const mockServer = {
     getPlaces: jest.fn().mockResolvedValue([]),
   };
@@ -18,9 +22,15 @@ describe('PlacesView', () => {
     showErrorSnackbar: jest.fn(),
   };
 
-  const createWrapper = ({ server } = {}) => {
+  const mockLodash = {
+    debounce: cb => cb,
+  };
+
+  const createWrapper = ({ store, server } = {}) => {
+    sl.set('store', store || mockStore);
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('lodash', mockLodash);
 
     return mount(PlacesView, {
       vuetify,
@@ -46,5 +56,15 @@ describe('PlacesView', () => {
     });
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('shows add button icon if user has add word permissions', async () => {
+    const wrapper = createWrapper({
+      store: {
+        hasPermission: name => ['ADD_LEMMA'].includes(name),
+      },
+    });
+    await flushPromises();
+    expect(wrapper.get('.mb-8'));
   });
 });
