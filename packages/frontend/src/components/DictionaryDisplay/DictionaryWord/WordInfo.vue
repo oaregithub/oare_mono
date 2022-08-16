@@ -14,11 +14,11 @@
     <v-row v-if="wordInfo.forms.length > 1">
       <v-col cols="3">
         <v-text-field
-          v-model="searchQuery"
           :placeholder="'Filter forms'"
           :width="100"
           clearable
           single-line
+          @input="onInputChangeListener($event)"
         />
       </v-col>
       <v-col cols="3">
@@ -26,7 +26,10 @@
           v-if="!filterByProperties"
           class="ma-2"
           color="info"
-          @click="filterByProperties = true"
+          @click="
+            filterByProperties = true;
+            editLemmaPropertiesDialog = true;
+          "
         >
           Filter By Properties
         </v-btn>
@@ -40,16 +43,24 @@
       </v-col>
     </v-row>
 
-    <add-properties
+    <oare-dialog
       v-if="wordInfo.forms.length > 1 && filterByProperties"
-      :startingUuid="partOfSpeechValueUuid"
-      requiredNodeValueName="Parse"
-      @export-properties="setProperties($event)"
-      @form-complete="formComplete = $event"
-    />
-
+      v-model="editLemmaPropertiesDialog"
+      title="Select Lemma Properties for filtering"
+      :width="1000"
+      submitText="Filter"
+      @submit="filterWithProps()"
+      closeOnSubmit
+    >
+      <add-properties
+        :startingUuid="partOfSpeechValueUuid"
+        requiredNodeValueName="Parse"
+        @export-properties="setProperties($event)"
+        @form-complete="formComplete = $event"
+      />
+    </oare-dialog>
     <form-display
-      v-for="(form, index) in filteredForms"
+      v-for="(form, index) in filteredVal"
       :key="index"
       :word="wordInfo"
       :form="form"
@@ -107,7 +118,6 @@ import AddFormDialog from './components/AddFormDialog.vue';
 import WordGrammar from './components/WordGrammar.vue';
 import AddProperties from '@/components/Properties/AddProperties.vue';
 import sl from '@/serviceLocator';
-import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   props: {
@@ -152,8 +162,8 @@ export default defineComponent({
     const showSpellingDialog = ref(false);
     const addFormDialog = ref(false);
     const filterByProperties = ref(false);
-
-    const searchQuery = useQueryParam('filter', '', true);
+    const editLemmaPropertiesDialog = ref(false);
+    const appliedPropertiesForFiltering = ref<(string | null)[]>([]);
 
     const canAddForms = computed(() => store.hasPermission('ADD_FORM'));
 
@@ -169,6 +179,9 @@ export default defineComponent({
     const properties = ref<ParseTreeProperty[]>([]);
     const setProperties = (propertyList: ParseTreeProperty[]) => {
       properties.value = propertyList;
+      appliedPropertiesForFiltering.value = propertyList.map(
+        el => el.value.valueName
+      );
     };
 
     const partOfSpeechValueUuid = computed(() => {
@@ -194,24 +207,58 @@ export default defineComponent({
       );
     });
 
+    let filteredVal = ref<DictionaryForm[]>(props.wordInfo.forms);
+    let originalFilteredVal = ref<DictionaryForm[]>(props.wordInfo.forms);
+    let trackInput = ref(''); //This variable is used to track if user's input was backspace or not
+
+    const onInputChangeListener = (input: string) => {
+      //This if statement checks whether user has cleared the text-field or not
+      if (input == null) {
+        filteredVal.value = originalFilteredVal.value;
+      } else {
+        //If user's input was backspace revert filteredVal to originalFilteredVal
+        if (input.length < trackInput.value.length) {
+          filteredVal.value = originalFilteredVal.value.filter(form => {
+            return form.form.includes(input);
+          });
+        } else {
+          trackInput.value = input;
+          filteredVal.value = filteredVal.value.filter(form => {
+            return form.form.includes(input);
+          });
+        }
+      }
+    };
+
     const selectForm = (form: DictionaryForm) => {
       editDialogForm.value = form;
     };
 
-    const filteredForms = computed(() => {
-      return props.wordInfo.forms.filter(form => {
+    const filterWithProps = () => {
+      filteredVal.value = filteredVal.value.filter(form => {
         return (
-          form.form.includes(searchQuery.value) &&
           properties.value
-            .map(el => el.value.valueName)
-            .every(val => form.properties.map(el => el.valueName).includes(val))
+            .map(el => el.value.valueUuid)
+            .every(val =>
+              form.properties.map(el => el.valueUuid).includes(val)
+            ) &&
+          properties.value
+            .map(el => el.variable.variableUuid)
+            .every(val =>
+              form.properties.map(el => el.variableUuid).includes(val)
+            ) &&
+          properties.value
+            .map(el => el.variable.level)
+            .every(val => form.properties.map(el => el.level).includes(val))
         );
       });
-    });
+      originalFilteredVal.value = filteredVal.value;
+    };
 
     const cancelFilterByProperties = () => {
       filterByProperties.value = !filterByProperties.value;
-      setProperties([]);
+      filteredVal.value = props.wordInfo.forms;
+      originalFilteredVal.value = props.wordInfo.forms;
     };
 
     return {
@@ -224,11 +271,15 @@ export default defineComponent({
       showSpellingDialog,
       addFormDialog,
       canAddForms,
+      properties,
+      editLemmaPropertiesDialog,
+      appliedPropertiesForFiltering,
       selectForm,
       setProperties,
       cancelFilterByProperties,
-      searchQuery,
-      filteredForms,
+      filterWithProps,
+      onInputChangeListener,
+      filteredVal,
     };
   },
 });
