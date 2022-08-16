@@ -3,8 +3,8 @@ import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
 import {
-  DenylistAllowlistPayload,
-  GetDenylistAllowlistParameters,
+  GroupEditPermissionsPayload,
+  GetGroupEditPermissionParameters,
   DeleteDenylistAllowlistParameters,
   DenylistAllowlistItem,
 } from '@oare/types';
@@ -23,7 +23,7 @@ router
       const {
         groupId,
         type,
-      } = (req.params as unknown) as GetDenylistAllowlistParameters;
+      } = (req.params as unknown) as GetGroupEditPermissionParameters;
 
       const groupEditPermissions = await GroupEditPermissionsDao.getGroupEditPermissions(
         groupId,
@@ -68,7 +68,7 @@ router
       const { groupId } = (req.params as unknown) as {
         groupId: number;
       };
-      const { uuids, type }: DenylistAllowlistPayload = req.body;
+      const { uuids, type }: GroupEditPermissionsPayload = req.body;
 
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
       const OareGroupDao = sl.get('OareGroupDao');

@@ -34,6 +34,13 @@
           Are you sure you want to add the following
           {{ itemType.toLowerCase() }}(s) to {{ groupName }}?
           <v-data-table :headers="itemsHeaders" :items="selectedItems">
+            <template #[`item.imgUrl`]="{ item }">
+              <v-img
+                :src="item.imgUrl"
+                max-height="150"
+                max-width="250"
+              ></v-img>
+            </template>
           </v-data-table>
         </OareDialog>
         <v-spacer />
@@ -73,6 +80,13 @@
               >
               <span v-else>{{ item.name }}</span>
             </template>
+            <template #[`item.imgUrl`]="{ item }">
+              <v-img
+                :src="item.imgUrl"
+                max-height="100"
+                max-width="150"
+              ></v-img>
+            </template>
             <template slot="no-data">
               No {{ itemType.toLowerCase() }}s selected
             </template>
@@ -110,7 +124,13 @@
                 class="text-decoration-underline"
                 >{{ item.name }}</a
               >
-              <span v-else>{{ item.name }}</span>
+              <span v-else>{{ item.name }}</span> </template
+            ><template #[`item.imgUrl`]="{ item }">
+              <v-img
+                :src="item.imgUrl"
+                max-height="150"
+                max-width="250"
+              ></v-img>
             </template>
           </v-data-table>
         </v-col>
@@ -175,9 +195,14 @@ export default defineComponent({
     const router = sl.get('router');
     const _ = sl.get('lodash');
 
-    const itemsHeaders: Ref<DataTableHeader[]> = ref([
-      { text: 'Name', value: 'name' },
-    ]);
+    const itemsHeaders: Ref<DataTableHeader[]> = ref(
+      itemType === 'Image'
+        ? [
+            { text: 'Name', value: 'name' },
+            { text: 'Image', value: 'imgUrl' },
+          ]
+        : [{ text: 'Name', value: 'name' }]
+    );
 
     const loading = ref(true);
     const addItemsDialog = ref(false);
@@ -260,9 +285,22 @@ export default defineComponent({
 
     const addListItems = async () => {
       const uuids = selectedItems.value.map(item => item.uuid);
+      let type: 'img' | 'text' | 'collection';
+      switch (itemType) {
+        case 'Image':
+          type = 'img';
+          break;
+        case 'Collection':
+          type = 'collection';
+          break;
+        case 'Text':
+          type = 'text';
+          break;
+      }
+
       const payload: DenylistAllowlistPayload = {
         uuids,
-        type: itemType === 'Text' ? 'text' : 'collection',
+        type: type,
       };
       addItemsLoading.value = true;
       try {

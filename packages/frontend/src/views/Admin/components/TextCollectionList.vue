@@ -70,6 +70,9 @@
         >
         <span v-else>{{ item.name }}</span>
       </template>
+      <template #[`item.url`]="{ item }">
+        <v-img :src="item.url" max-height="150" max-width="250"></v-img>
+      </template>
     </v-data-table>
   </div>
 </template>
@@ -138,9 +141,14 @@ export default defineComponent({
   ) {
     const actions = sl.get('globalActions');
 
-    const listHeaders: Ref<DataTableHeader[]> = ref([
-      { text: 'Name', value: 'name' },
-    ]);
+    const listHeaders: Ref<DataTableHeader[]> = ref(
+      itemType === 'Image'
+        ? [
+            { text: 'Name', value: 'name', width: '30%' },
+            { text: 'Image', value: 'url', width: '70%' },
+          ]
+        : [{ text: 'Name', value: 'name' }]
+    );
 
     const items: Ref<DenylistAllowlistItem[]> = ref([]);
     const selectedItems: Ref<DenylistAllowlistItem[]> = ref([]);
@@ -221,7 +229,6 @@ export default defineComponent({
       try {
         removeItemsLoading.value = true;
         let uuidsToRemove = selectedItems.value.map(item => item.uuid);
-
         if (groupId) {
           await removeItems(uuidsToRemove, groupId);
         } else {
