@@ -6270,15 +6270,10 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001181:
-  version "1.0.30001309"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001309.tgz"
-  integrity sha512-Pl8vfigmBXXq+/yUz1jUwULeq9xhMJznzdc/xwl4WclDAuebcTHVefpz8lE/bMI+UN7TOkSSe7B7RnZd6+dzjA==
-
-caniuse-lite@^1.0.30001332:
-  version "1.0.30001332"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001332.tgz#39476d3aa8d83ea76359c70302eafdd4a1d727dd"
-  integrity sha512-10T30NYOEQtN6C11YGg411yebhvpnC6Z102+B95eAsN0oB6KUs01ivE8u+G6FMIRtIrVlYXhL+LUwQ3/hXwDWw==
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001181, caniuse-lite@^1.0.30001332:
+  version "1.0.30001375"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001375.tgz"
+  integrity sha512-kWIMkNzLYxSvnjy0hL8w1NOaWNr2rn39RTAVyIwcw8juu60bZDWiF1/loOYANzjtJmy6qPgNmn38ro5Pygagdw==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -7986,6 +7981,13 @@ detective-typescript@^7.0.0:
     ast-module-types "^2.7.1"
     node-source-walk "^4.2.0"
     typescript "^3.9.7"
+
+detectlanguage@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/detectlanguage/-/detectlanguage-2.1.0.tgz#cba0f2dfae4b553348f4c94d0771a1eb4f3825cb"
+  integrity sha512-EbLGyZxiQJeur5a+GNOzBV9xL/r/7GfvRALSHAKepw38UAvCssn7obVvhsioRIV+uDj3IQtXzL7iNkwu0oCp7g==
+  dependencies:
+    axios "^0.21.1"
 
 dicer@0.3.0, dicer@^0.3.0:
   version "0.3.0"

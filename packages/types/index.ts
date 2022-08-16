@@ -22,4 +22,5 @@ export * from './src/notes';
 export * from './src/bibliography';
 export * from './src/tree';
 export * from './src/resource';
+export * from './src/field';
 export * from './src/bibliography';

@@ -90,3 +90,7 @@ export interface EditTranslationPayload {
   newTranslation: string;
   textUuid: string;
 }
+
+export interface DiscourseSpellingResponse {
+  spelling: string;
+}

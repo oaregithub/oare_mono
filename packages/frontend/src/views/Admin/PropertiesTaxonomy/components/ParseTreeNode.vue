@@ -13,19 +13,31 @@
     >
       <v-expansion-panel-header
         :disable-icon-rotate="allowSelections"
-        :hideActions="hideActions"
+        :hide-actions="hideActions"
       >
         <template #default="{ open }">
-          <v-checkbox
-            v-if="!child.children && child.valueName && allowSelections"
-            class="mt-0 pt-0"
-            hide-details
-            v-model="selected"
-            :value="child"
-            :disabled="disableChildren && !selected.includes(child)"
-            @change="$emit('child-selected')"
+          <v-row
+            class="ma-0"
+            v-if="child.valueName && allowSelections"
+            align="center"
           >
-            <template #label>
+            <v-checkbox
+              class="mt-0 pt-0"
+              hide-details
+              v-model="selected"
+              :value="child"
+              :disabled="
+                (disableChildren && !selected.includes(child)) ||
+                properties.filter(
+                  prop =>
+                    prop.sourceUuid === child.uuid && prop.properties.length > 0
+                ).length > 0
+              "
+              @change="$emit('child-selected')"
+              @click.stop
+            >
+            </v-checkbox>
+            <span>
               {{ child.valueName }}
               <span class="text--disabled">
                 &nbsp;
@@ -33,16 +45,12 @@
                   ({{ child.valAbbreviation }})</span
                 >
               </span>
-            </template>
-          </v-checkbox>
+            </span>
+          </v-row>
           <template v-else>
             <span>
-              <template v-if="allowSelections">
-                <v-icon v-if="open && child.children">mdi-chevron-up</v-icon>
-                <v-icon v-else-if="!open && child.children"
-                  >mdi-chevron-down</v-icon
-                >
-                <v-menu v-else offset-y open-on-hover bottom>
+              <template v-if="allowSelections && !child.children">
+                <v-menu offset-y open-on-hover bottom>
                   <template #activator="{ on, attrs }">
                     <v-icon
                       small
@@ -70,8 +78,39 @@
                 "
                 >NO NAME</i
               >
+              <property-info
+                v-if="
+                  (child.variableUuid || child.valueUuid) &&
+                  showFieldInfo &&
+                  child.fieldInfo
+                "
+                :name="
+                  child.variableName ||
+                  child.valueName ||
+                  child.aliasName ||
+                  'No Name'
+                "
+                :description="child.fieldInfo.field || ''"
+                :primacy="child.fieldInfo.primacy || 0"
+                :fieldUuid="child.fieldInfo.uuid || ''"
+                :language="
+                  child.fieldInfo.language === 'default'
+                    ? 'English'
+                    : child.fieldInfo.language || 'n/a'
+                "
+                :type="child.variableType || ''"
+                :tableReference="child.variableTableReference || ''"
+                :variableOrValueUuid="
+                  child.variableUuid || child.valueUuid || ''
+                "
+              ></property-info>
               <b
-                v-if="open && child.custom === 1 && !selectMultiple"
+                v-if="
+                  open &&
+                  child.custom === 1 &&
+                  !selectMultiple &&
+                  allowSelections
+                "
                 class="text--disabled ml-7"
                 ><br />Only one selection permitted</b
               >
@@ -87,18 +126,22 @@
                   v-if="!open && allowSelections && child.variableUuid"
                   class="info--text"
                 >
-                  {{ selectionDisplay[child.variableUuid] }}
+                  {{
+                    selectionDisplay
+                      .filter(disp => disp.variableUuid === child.variableUuid)
+                      .map(disp => disp.display)[0]
+                  }}
                 </span>
                 <span
                   v-if="showUUID && !allowSelections"
-                  class="blue--text mr-3"
+                  class="info--text mr-3"
                   >UUID: {{ child.uuid }}
                   <v-btn icon @click="copyUUID(child.uuid)" @click.native.stop>
                     <v-icon small>mdi-content-copy</v-icon>
                   </v-btn>
                 </span>
                 <span v-if="showUUID && !allowSelections">
-                  <span v-if="child.variableUuid" class="blue--text">
+                  <span v-if="child.variableUuid" class="info--text">
                     Variable UUID: {{ child.variableUuid }}
                     <v-btn
                       icon
@@ -107,7 +150,7 @@
                       ><v-icon small>mdi-content-copy </v-icon>
                     </v-btn>
                   </span>
-                  <span v-else class="blue--text">
+                  <span v-else class="info--text">
                     Value UUID: {{ child.valueUuid }}
                     <v-btn
                       icon
@@ -152,6 +195,12 @@
             >
             <v-icon v-else color="green">mdi-check-circle-outline</v-icon>
           </template>
+          <v-icon v-if="openPanels.includes(idx) && child.children"
+            >mdi-chevron-up</v-icon
+          >
+          <v-icon v-else-if="!openPanels.includes(idx) && child.children"
+            >mdi-chevron-down</v-icon
+          >
         </template>
       </v-expansion-panel-header>
       <v-expansion-panel-content eager>
@@ -164,6 +213,7 @@
           :showUUID="showUUID"
           :hideActions="hideActions"
           :selectMultiple="selectMultiple"
+          :showFieldInfo="showFieldInfo"
           @update:node="updateCompletedSubtrees"
           @update:properties="updateProperties"
           @update:selection-display="
@@ -185,16 +235,20 @@ import {
   computed,
   onMounted,
 } from '@vue/composition-api';
+import PropertyInfo from './PropertyInfo.vue';
 import { TaxonomyTree, ParseTreeProperty, ItemPropertyRow } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export interface ParseTreePropertyEvent {
   properties: ParseTreeProperty[];
-  source: TaxonomyTree;
+  sourceUuid: string;
 }
 
 export default defineComponent({
   name: 'ParseTreeNode',
+  components: {
+    PropertyInfo,
+  },
   props: {
     node: {
       type: Object as PropType<TaxonomyTree>,
@@ -228,12 +282,17 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    showFieldInfo: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, { emit }) {
+    const actions = sl.get('globalActions');
+
     const selected = ref<TaxonomyTree[]>([]);
     const completedSubtrees = ref<TaxonomyTree[]>([]);
     const ignoredSubtrees = ref<TaxonomyTree[]>([]);
-    const actions = sl.get('globalActions');
 
     onMounted(() => {
       if (props.existingProperties && props.node.variableUuid) {
@@ -269,11 +328,11 @@ export default defineComponent({
             );
           }
         );
+
         const childrenToBeSelected = props.node.children
           ? props.node.children.filter(
               child =>
                 child.valueUuid &&
-                !child.children &&
                 relevantExistingProperties
                   .map(prop => prop.valueUuid)
                   .includes(child.valueUuid)
@@ -329,7 +388,6 @@ export default defineComponent({
       completedSubtrees.value.includes(node);
 
     const properties = ref<ParseTreePropertyEvent[]>([]);
-
     watch([selected, properties], () => {
       emit('update:properties', {
         properties: [
@@ -339,7 +397,7 @@ export default defineComponent({
           })),
           ...properties.value.flatMap(prop => prop.properties),
         ],
-        source: props.node,
+        sourceUuid: props.node.uuid,
       });
     });
 
@@ -349,13 +407,19 @@ export default defineComponent({
         selected.value.map(val => val.valueName || val.aliasName).join(', ')
       );
     });
-    const selectionDisplay = ref<{ [key: string]: string }>({});
+
+    const selectionDisplay = ref<{ display: string; variableUuid: string }[]>(
+      []
+    );
     const setSelectionDisplay = (
       display: string,
       variableUuid: string | null
     ) => {
       if (variableUuid) {
-        selectionDisplay.value[variableUuid] = display;
+        selectionDisplay.value = selectionDisplay.value.filter(
+          disp => disp.variableUuid !== variableUuid
+        );
+        selectionDisplay.value.push({ display, variableUuid });
       }
     };
 
@@ -366,12 +430,12 @@ export default defineComponent({
 
     const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
-        prop => prop.source !== args.source
+        prop => prop.sourceUuid !== args.sourceUuid
       );
       properties.value = properties.value.map(prop => {
-        if (prop.source === props.node) {
+        if (prop.sourceUuid === props.node.uuid) {
           const filteredProps = prop.properties.filter(
-            subProp => subProp.value !== args.source
+            subProp => subProp.value.uuid !== args.sourceUuid
           );
           return {
             ...prop,
@@ -381,16 +445,19 @@ export default defineComponent({
         return prop;
       });
       properties.value.push(args);
-      if (props.node.variableUuid && args.properties.length > 0) {
-        properties.value.unshift({
-          properties: [
-            {
-              variable: props.node,
-              value: args.source,
-            },
-          ],
-          source: props.node,
-        });
+      if (
+        props.node.variableUuid &&
+        args.properties.length > 0 &&
+        props.node.children &&
+        !selected.value
+          .map(selection => selection.uuid)
+          .includes(args.sourceUuid)
+      ) {
+        selected.value.push(
+          props.node.children.filter(child => {
+            return child.uuid === args.sourceUuid;
+          })[0]
+        );
       }
     };
 
@@ -433,6 +500,7 @@ export default defineComponent({
       setSelectionDisplay,
       openPanels,
       handleSelections,
+      properties,
     };
   },
 });

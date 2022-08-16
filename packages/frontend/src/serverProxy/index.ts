@@ -36,6 +36,7 @@ import properties from './properties';
 import environment from './environment';
 import text from './text';
 import quarantine from './quarantine';
+import field from './field';
 import bibliography from './bibliography';
 
 const serverProxy = {
@@ -77,6 +78,7 @@ const serverProxy = {
   ...environment,
   ...text,
   ...quarantine,
+  ...field,
   ...bibliography,
 };
 

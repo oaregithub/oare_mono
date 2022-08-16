@@ -6,6 +6,7 @@ import {
   DiscourseUnit,
   InsertParentDiscourseRowPayload,
   EditTranslationPayload,
+  DiscourseSpellingResponse,
 } from '@oare/types';
 
 async function insertDiscourseRow(
@@ -79,10 +80,18 @@ async function insertParentDiscourseRow(
   await axios.post('/text_discourse_parent', payload);
 }
 
+async function getSpellingByDiscourseUuid(
+  discourseUuid: string
+): Promise<DiscourseSpellingResponse> {
+  const { data } = await axios.get(`/text_discourse/spelling/${discourseUuid}`);
+  return data;
+}
+
 export default {
   insertDiscourseRow,
   getDiscourseProperties,
   updateDiscourseTranslation,
   createDiscourseTranslation,
   insertParentDiscourseRow,
+  getSpellingByDiscourseUuid,
 };

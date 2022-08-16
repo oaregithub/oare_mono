@@ -44,7 +44,7 @@ function getSuffixVariables(
 }
 
 export const generateFormGrammar = (
-  form: DictionaryForm
+  form: DictionaryForm | Omit<DictionaryForm, 'spellings'>
 ): DictionaryFormGrammar => {
   const cliticSuffixUuid = getCliticSuffixUuid(form.properties);
 
@@ -109,7 +109,9 @@ export const generateFormGrammar = (
   };
 };
 
-const formGrammarString = (form: DictionaryForm): string => {
+const formGrammarString = (
+  form: DictionaryForm | Omit<DictionaryForm, 'spellings'>
+): string => {
   const formGrammar = generateFormGrammar(form);
 
   let suffix = '';
