@@ -57,14 +57,24 @@ export interface UpdatePermissionPayload {
   permission: PermissionItem;
 }
 
-export type PermissionsListType = 'Text' | 'Collection';
+export type PermissionsListType = 'Text' | 'Collection' | 'Image';
 
 export interface DenylistAllowlistPayload {
+  uuids: string[];
+  type: 'text' | 'img' | 'collection';
+}
+
+export interface GroupEditPermissionsPayload {
   uuids: string[];
   type: 'text' | 'collection';
 }
 
 export interface GetDenylistAllowlistParameters {
+  groupId: number;
+  type: 'text' | 'collection' | 'img';
+}
+
+export interface GetGroupEditPermissionParameters {
   groupId: number;
   type: 'text' | 'collection';
 }
@@ -77,5 +87,6 @@ export interface DeleteDenylistAllowlistParameters {
 export interface DenylistAllowlistItem {
   uuid: string;
   name?: string;
+  url?: string;
   hasEpigraphy?: boolean;
 }

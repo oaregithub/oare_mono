@@ -6,6 +6,12 @@ export interface SearchNamesResultRow {
   hasEpigraphy: boolean;
 }
 
+export interface SearchImagesResultRow {
+  uuid: string;
+  imgUrl: string;
+  name: string;
+}
+
 export interface SearchNamesPayload {
   page: number;
   limit: number;
@@ -17,5 +23,10 @@ export interface SearchNamesPayload {
 
 export interface SearchNamesResponse {
   items: SearchNamesResultRow[];
+  count: number;
+}
+
+export interface SearchImagesResponse {
+  items: SearchImagesResultRow[];
   count: number;
 }
