@@ -2,6 +2,7 @@ import { knexRead } from '@/connection';
 import { Archive, Dossier, Text, ArchiveInfo, DossierInfo } from '@oare/types';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
+import { ignorePunctuation } from '../TextEpigraphyDao/utils';
 
 class ArchiveDao {
   async getAllArchives(trx?: Knex.Transaction): Promise<string[]> {
@@ -120,7 +121,7 @@ class ArchiveDao {
       userUuid,
       trx
     );
-    const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
+    const finalSearch: string = ignorePunctuation(search);
     const texts: Text[] = await k('link')
       .select(
         'text.uuid as textUuid',
@@ -138,17 +139,17 @@ class ArchiveDao {
       .where('archive.uuid', uuid)
       .whereNotIn('text.uuid', textsToHide)
       .andWhere(function () {
-        this.whereRaw('LOWER(text.display_name) LIKE ?', [finalSearch])
+        this.whereRaw('LOWER(text.display_name) REGEXP ?', [finalSearch])
           .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) LIKE ?",
+            "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) REGEXP ?",
             [finalSearch]
           )
           .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) LIKE ?",
+            "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) REGEXP ?",
             [finalSearch]
           )
           .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) LIKE ?",
+            "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) REGEXP ?",
             [finalSearch]
           );
       })
@@ -224,7 +225,7 @@ class ArchiveDao {
       userUuid,
       trx
     );
-    const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
+    const finalSearch: string = ignorePunctuation(search);
     const texts: Text[] = await k('link')
       .select(
         'text.uuid as textUuid',
@@ -242,17 +243,17 @@ class ArchiveDao {
       .where('archive.uuid', uuid)
       .whereNotIn('text.uuid', textsToHide)
       .andWhere(function () {
-        this.whereRaw('LOWER(text.display_name) LIKE ?', [finalSearch])
+        this.whereRaw('LOWER(text.display_name) REGEXP ?', [finalSearch])
           .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) LIKE ?",
+            "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) REGEXP ?",
             [finalSearch]
           )
           .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) LIKE ?",
+            "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) REGEXP ?",
             [finalSearch]
           )
           .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) LIKE ?",
+            "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) REGEXP ?",
             [finalSearch]
           );
       })
