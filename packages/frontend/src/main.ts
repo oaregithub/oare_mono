@@ -7,6 +7,7 @@ import sl from '@/serviceLocator';
 import store from '@/ts-store';
 import _ from 'lodash';
 import { resetAdminBadge } from '@/utils';
+import VueGtag from 'vue-gtag';
 import App from './App.vue';
 import router from './router';
 import 'vuetify/dist/vuetify.min.css';
@@ -27,6 +28,14 @@ sl.set('router', router);
 loadBases();
 
 Vue.use(Vuetify);
+Vue.use(
+  VueGtag,
+  {
+    config: { id: 'G-Q4GPEL16YW' },
+    globalObjectName: 'googleAnalytics',
+  },
+  router
+);
 Vue.config.productionTip = false;
 
 let app: Vue;
