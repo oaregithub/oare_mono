@@ -23,7 +23,11 @@ async function canRemove(uuid: string) {
   const PublicDenylistDao = sl.get('PublicDenylistDao');
   const denylistTextUuids = await PublicDenylistDao.getDenylistTextUuids();
   const denylistCollectionUuids = await PublicDenylistDao.getDenylistCollectionUuids();
-  const existingDenylist = denylistTextUuids.concat(denylistCollectionUuids);
+  const getDenylistImageUuids = await PublicDenylistDao.getDenylistImageUuids();
+
+  const existingDenylist = denylistTextUuids
+    .concat(denylistCollectionUuids)
+    .concat(getDenylistImageUuids);
   if (!existingDenylist.includes(uuid)) {
     return false;
   }
@@ -39,7 +43,6 @@ router
       const PublicDenylistDao = sl.get('PublicDenylistDao');
       const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const TextDao = sl.get('TextDao');
-
       const publicDenylist = await PublicDenylistDao.getDenylistTextUuids();
       const epigraphyStatus = await Promise.all(
         publicDenylist.map(text => TextEpigraphyDao.hasEpigraphy(text))
@@ -57,6 +60,7 @@ router
           hasEpigraphy: epigraphyStatus[index],
         })
       );
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -70,7 +74,7 @@ router
       if (!(await canInsert(uuids))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts or collections is already denylisted'
+            'One or more of the selected texts, collections or images is already denylisted'
           )
         );
         return;
@@ -89,11 +93,10 @@ router
     try {
       const PublicDenylistDao = sl.get('PublicDenylistDao');
       const { uuid } = req.params;
-
       if (!(await canRemove(uuid))) {
         next(
           new HttpBadRequest(
-            'One or more of the selected texts or collections does not exist in the denylist'
+            'One or more of the selected texts, collections or images does not exist in the denylist'
           )
         );
         return;
@@ -134,4 +137,22 @@ router
     }
   });
 
+router
+  .route('/public_denylist/images')
+  .get(adminRoute, async (_req, res, next) => {
+    try {
+      const PublicDenylistDao = sl.get('PublicDenylistDao');
+      const denylistImages = await PublicDenylistDao.getDenylistImagesWithTexts();
+
+      const response: DenylistAllowlistItem[] = denylistImages.map(element => ({
+        uuid: element.uuid,
+        url: element.url,
+        name: element.text,
+      }));
+
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 export default router;
