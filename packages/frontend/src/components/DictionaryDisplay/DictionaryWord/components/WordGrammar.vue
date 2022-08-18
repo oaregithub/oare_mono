@@ -160,6 +160,7 @@
         fieldType="discussionLemma"
       />
       <span
+        class="mb-4"
         v-if="
           word.discussionLemmas.length === 0 &&
           !isEditingLemmaTranslations &&
