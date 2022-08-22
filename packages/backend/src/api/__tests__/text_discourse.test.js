@@ -77,6 +77,41 @@ describe('GET /text_discourse/properties/:uuid', () => {
   });
 });
 
+describe('GET /text_discourse/spelling/:uuid', () => {
+  const discourseUuid = 'mock-discoures-uuid';
+  const PATH = `${API_PATH}/text_discourse/spelling/${discourseUuid}`;
+  const spelling = 'spelling';
+  const TextDiscourseDao = {
+    getSpellingByDiscourseUuid: jest.fn().mockResolvedValue(spelling),
+  };
+
+  const setup = () => {
+    sl.set('TextDiscourseDao', TextDiscourseDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () => request(app).get(PATH);
+
+  it('returns 200 on successful spelling retrieval', async () => {
+    const response = await sendRequest();
+    expect(TextDiscourseDao.getSpellingByDiscourseUuid).toHaveBeenCalledWith(
+      discourseUuid
+    );
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 500 on failed item properties retrieval', async () => {
+    sl.set('TextDiscourseDao', {
+      getSpellingByDiscourseUuid: jest
+        .fn()
+        .mockRejectedValue('failed to retrieve discourse spelling'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
 describe('POST /text_discourse', () => {
   const PATH = `${API_PATH}/text_discourse`;
 
@@ -308,6 +343,12 @@ describe('PATCH /text_discourse/:uuid', () => {
 
   const mockFieldDao = {
     getByReferenceUuid: jest.fn().mockResolvedValue([{ uuid: 'test-uuid' }]),
+    getDefinitionsByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'test-uuid' }]),
+    getDiscussionLemmasByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'test-uuid' }]),
     updateField: jest.fn().mockResolvedValue(),
   };
 
@@ -355,7 +396,10 @@ describe('PATCH /text_discourse/:uuid', () => {
 
   it('does not allow non-logged-in users to update discourse translation', async () => {
     const response = await request(app).patch(PATH).send(mockPayload);
-    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
+    expect(
+      mockFieldDao.getDiscussionLemmasByReferenceUuid
+    ).not.toHaveBeenCalled();
     expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
@@ -365,7 +409,8 @@ describe('PATCH /text_discourse/:uuid', () => {
       getUserPermissions: jest.fn().mockResolvedValue([]),
     });
     const response = await sendRequest();
-    expect(mockFieldDao.getByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
+    expect(mockFieldDao.getDefinitionsByReferenceUuid).not.toHaveBeenCalled();
     expect(mockFieldDao.updateField).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
   });

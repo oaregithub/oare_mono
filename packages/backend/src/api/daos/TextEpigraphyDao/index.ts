@@ -139,7 +139,7 @@ class TextEpigraphyDao {
       .select('text_epigraphy.text_uuid as uuid')
       .whereNotIn('text_epigraphy.text_uuid', notUuids)
       .orderBy('text.display_name')
-      .groupBy('text.display_name')
+      .groupBy('text.uuid')
       .limit(pagination.limit)
       .offset((pagination.page - 1) * pagination.limit);
 
@@ -245,7 +245,7 @@ class TextEpigraphyDao {
 
     const totalRows: number = (
       await getSearchQuery(characters, textsToHide, true, mode, title, trx)
-        .select(k.raw('COUNT(DISTINCT text.name) AS count'))
+        .select(k.raw('COUNT(DISTINCT text.uuid) AS count'))
         .whereNotIn('text_epigraphy.text_uuid', notUuids)
         .first()
     ).count;

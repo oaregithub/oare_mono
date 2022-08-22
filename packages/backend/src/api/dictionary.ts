@@ -24,6 +24,7 @@ import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
 import { dictionaryWordFilter, noFilter } from '@/cache/filters';
+import adminRoute from '@/middlewares/adminRoute';
 
 const router = express.Router();
 
@@ -266,13 +267,17 @@ router
       const utils = sl.get('utils');
 
       const { uuid } = req.params;
-      const { translations }: UpdateDictionaryTranslationPayload = req.body;
+      const {
+        translations,
+        fieldType,
+      }: UpdateDictionaryTranslationPayload = req.body;
 
       await utils.createTransaction(async trx => {
         await DictionaryWordDao.updateTranslations(
           req.user!.uuid,
           uuid,
           translations,
+          fieldType,
           trx
         );
       });
@@ -423,6 +428,28 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router.route('/connect/spellings').patch(adminRoute, async (req, res, next) => {
+  try {
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+    const DictionaryFormDao = sl.get('DictionaryFormDao');
+    const cache = sl.get('cache');
+    const { discourseUuid, spellingUuid } = req.body;
+
+    await TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid);
+    const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+      spellingUuid
+    );
+    const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+      formUuid
+    );
+    await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+    res.status(204).end();
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 router
   .route('/dictionary/spellings/:uuid')

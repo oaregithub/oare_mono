@@ -36,6 +36,7 @@ import environment from './api/environment';
 import text from './api/text';
 import bibliography from './api/bibliography';
 import quarantine from './api/quarantine';
+import field from './api/field';
 
 export const API_PATH = '/api/v2';
 
@@ -78,6 +79,7 @@ export default (app: Express) => {
     text,
     bibliography,
     quarantine,
+    field,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

@@ -267,4 +267,19 @@ router
     }
   });
 
+router.route('/text_discourse/spelling/:uuid').get(async (req, res, next) => {
+  try {
+    const { uuid: discourseUuid } = req.params;
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+    const spelling: string = await TextDiscourseDao.getSpellingByDiscourseUuid(
+      discourseUuid
+    );
+
+    res.json(spelling);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
 export default router;

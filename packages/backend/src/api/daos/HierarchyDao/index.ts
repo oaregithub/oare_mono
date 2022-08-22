@@ -5,6 +5,7 @@ import {
   SearchNamesPayload,
   TaxonomyTree,
   HierarchyRow,
+  FieldInfo,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
@@ -135,6 +136,7 @@ class HierarchyDao {
   ): Promise<CollectionResponse> {
     const k = trx || knexRead();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const texts = await k('hierarchy')
       .innerJoin('text', 'text.uuid', 'hierarchy.object_uuid')
@@ -158,11 +160,17 @@ class HierarchyDao {
       texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid, trx))
     );
 
+    const hasEpigraphyAdded = texts.map((text, idx) => ({
+      ...text,
+      hasEpigraphy: hasEpigraphies[idx],
+    }));
+
+    const sortedTexts = await CollectionTextUtils.sortCollectionTexts(
+      hasEpigraphyAdded
+    );
+
     return {
-      texts: texts.map((text, idx) => ({
-        ...text,
-        hasEpigraphy: hasEpigraphies[idx],
-      })),
+      texts: sortedTexts,
     };
   }
 
@@ -192,6 +200,7 @@ class HierarchyDao {
     trx?: Knex.Transaction
   ): Promise<TaxonomyTree[] | null> {
     const AliasDao = sl.get('AliasDao');
+    const FieldDao = sl.get('FieldDao');
     const hasChild = await this.hasChild(hierarchyUuid, trx);
 
     if (hasChild) {
@@ -205,12 +214,16 @@ class HierarchyDao {
       const results = await Promise.all(
         rows.map(async row => {
           const names = await AliasDao.getAliasNames(row.objectUuid, trx);
+          const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
+            row.variableUuid || row.valueUuid
+          );
 
           return {
             ...row,
             aliasName: names[0] || null,
             level,
             children: await this.getChildren(row.uuid, level || 0, trx),
+            fieldInfo: fieldRow ?? {},
           };
         })
       );
@@ -221,6 +234,7 @@ class HierarchyDao {
 
   async createTaxonomyTree(trx?: Knex.Transaction): Promise<TaxonomyTree> {
     const AliasDao = sl.get('AliasDao');
+    const FieldDao = sl.get('FieldDao');
 
     const topNode: TaxonomyTree = await getTreeNodeQuery(trx)
       .where('hierarchy.type', 'taxonomy')
@@ -228,11 +242,14 @@ class HierarchyDao {
       .first();
 
     const names = await AliasDao.getAliasNames(topNode.objectUuid, trx);
-
-    const tree = {
+    const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
+      topNode.variableUuid || topNode.valueUuid
+    );
+    const tree: TaxonomyTree = {
       ...topNode,
       aliasName: names[0] || null,
       children: await this.getChildren(topNode.uuid, null, trx),
+      fieldInfo: fieldRow ?? {},
     };
     return tree;
   }

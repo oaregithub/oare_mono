@@ -14,12 +14,60 @@
     <v-row v-if="wordInfo.forms.length > 1">
       <v-col cols="3">
         <v-text-field
-          :placeholder="'Filter forms'"
-          :width="100"
+          v-model="searchQuery"
+          :placeholder="'Filter forms or spellings'"
           clearable
           single-line
-          @input="onInputChangeListener($event)"
-        />
+          ><template slot="prepend"
+            ><v-menu offset-y open-on-hover>
+              <template #activator="{ on, attrs }">
+                <v-icon v-bind="attrs" v-on="on" class="ml-2">
+                  mdi-information-outline
+                </v-icon>
+              </template>
+              <v-card class="pa-3">
+                When filtering spellings, they must be strictly formatted. Here
+                are the rules:
+                <ol>
+                  <li>
+                    Logograms in all uppercase, separated with periods, e.g.:
+                    TÚG.ḪI.A.
+                  </li>
+                  <li>
+                    Enclose determinatives in parentheses, e.g.: (m), (f), (d),
+                    (ki). All these as lowercase. Logographic determinatives in
+                    uppercase, with all elements including periods in their own
+                    parens, e.g.: (TÚG)(.)(ḪI)(.)(A)ku-ta-nu.
+                  </li>
+                  <li>
+                    Dashes between syllabic values and between syllabic and
+                    logograms. No dashes between determinatives, e.g.:
+                    a-šur-ANDUL.
+                  </li>
+                  <li>
+                    Dashes between elements of names, e.g.: (d)IŠTAR-ANDUL.
+                  </li>
+                  <li>
+                    Subscript numerals are just entered as regular numerals,
+                    e.g.: PUZUR4-a-šùr.
+                  </li>
+                  <li>
+                    Don’t capitalize syllabic readings at the beginning of a
+                    name.
+                  </li>
+                  <li>
+                    Render phonetic complements between curly brackets, e.g.
+                    2{šé}{-}{ne}.
+                  </li>
+                </ol>
+                Thus enter spellings into the filter like this: 2{šé}{-}{ne}
+                ANŠE ú 10+2 (TÚG)(.)(ḪI)ra-qu-ú ša (m)(d)UTU-(d)a-šur though in
+                a printed publication they might look like this: 2šé-ne ANŠE ú
+                12 TÚG.ḪIra-qu-ú ša mdUTU-dA-šur
+              </v-card>
+            </v-menu></template
+          ></v-text-field
+        >
       </v-col>
       <v-col cols="3">
         <v-btn
@@ -60,8 +108,8 @@
       />
     </oare-dialog>
     <form-display
-      v-for="(form, index) in filteredVal"
-      :key="index"
+      v-for="(form, index) in filteredForms"
+      :key="`${form.uuid}-${index}`"
       :word="wordInfo"
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
@@ -104,6 +152,7 @@ import {
   computed,
   ref,
   onMounted,
+  watch,
 } from '@vue/composition-api';
 import {
   Word,
@@ -118,6 +167,9 @@ import AddFormDialog from './components/AddFormDialog.vue';
 import WordGrammar from './components/WordGrammar.vue';
 import AddProperties from '@/components/Properties/AddProperties.vue';
 import sl from '@/serviceLocator';
+import useQueryParam from '@/hooks/useQueryParam';
+import { spellingHtmlReading } from '@oare/oare';
+import _ from 'lodash';
 
 export default defineComponent({
   props: {
@@ -164,6 +216,10 @@ export default defineComponent({
     const filterByProperties = ref(false);
     const editLemmaPropertiesDialog = ref(false);
     const appliedPropertiesForFiltering = ref<(string | null)[]>([]);
+    const filteredForms = ref(props.wordInfo.forms);
+    const filteredFormsByPropertirs = ref(props.wordInfo.forms);
+
+    const searchQuery = useQueryParam('filter', '', true);
 
     const canAddForms = computed(() => store.hasPermission('ADD_FORM'));
 
@@ -207,35 +263,12 @@ export default defineComponent({
       );
     });
 
-    let filteredVal = ref<DictionaryForm[]>(props.wordInfo.forms);
-    let originalFilteredVal = ref<DictionaryForm[]>(props.wordInfo.forms);
-    let trackInput = ref(''); //This variable is used to track if user's input was backspace or not
-
-    const onInputChangeListener = (input: string) => {
-      //This if statement checks whether user has cleared the text-field or not
-      if (input == null) {
-        filteredVal.value = originalFilteredVal.value;
-      } else {
-        //If user's input was backspace revert filteredVal to originalFilteredVal
-        if (input.length < trackInput.value.length) {
-          filteredVal.value = originalFilteredVal.value.filter(form => {
-            return form.form.includes(input);
-          });
-        } else {
-          trackInput.value = input;
-          filteredVal.value = filteredVal.value.filter(form => {
-            return form.form.includes(input);
-          });
-        }
-      }
-    };
-
     const selectForm = (form: DictionaryForm) => {
       editDialogForm.value = form;
     };
 
     const filterWithProps = () => {
-      filteredVal.value = filteredVal.value.filter(form => {
+      filteredForms.value = filteredForms.value.filter(form => {
         return (
           properties.value
             .map(el => el.value.valueUuid)
@@ -252,14 +285,51 @@ export default defineComponent({
             .every(val => form.properties.map(el => el.level).includes(val))
         );
       });
-      originalFilteredVal.value = filteredVal.value;
+      filteredFormsByPropertirs.value = filteredForms.value;
     };
 
     const cancelFilterByProperties = () => {
       filterByProperties.value = !filterByProperties.value;
-      filteredVal.value = props.wordInfo.forms;
-      originalFilteredVal.value = props.wordInfo.forms;
+      filteredForms.value = props.wordInfo.forms;
+      filteredFormsByPropertirs.value = props.wordInfo.forms;
     };
+    const filterSpellings = (
+      form: DictionaryForm,
+      searchHtmlReading: string
+    ): DictionaryForm => {
+      const filteredSpellings = form.spellings.filter(
+        spelling =>
+          spelling.spelling.includes(searchQuery.value) ||
+          spellingHtmlReading(spelling.spelling).includes(searchHtmlReading)
+      );
+      return { ...form, spellings: filteredSpellings };
+    };
+
+    watch(
+      () => searchQuery.value,
+      _.debounce(() => {
+        filteredForms.value = [];
+        filteredFormsByPropertirs.value.map(form => {
+          if (form.form.includes(searchQuery.value)) {
+            filteredForms.value.push(form);
+            return;
+          }
+          const searchHtmlReading = spellingHtmlReading(searchQuery.value);
+          if (
+            form.spellings.some(
+              spelling =>
+                spelling.spelling.includes(searchQuery.value) ||
+                spellingHtmlReading(spelling.spelling).includes(
+                  searchHtmlReading
+                )
+            )
+          ) {
+            const filteredForm = filterSpellings(form, searchHtmlReading);
+            filteredForms.value.push(filteredForm);
+          }
+        });
+      }, 500)
+    );
 
     return {
       updateForm,
@@ -274,12 +344,12 @@ export default defineComponent({
       properties,
       editLemmaPropertiesDialog,
       appliedPropertiesForFiltering,
+      searchQuery,
+      filteredForms,
       selectForm,
       setProperties,
       cancelFilterByProperties,
       filterWithProps,
-      onInputChangeListener,
-      filteredVal,
     };
   },
 });

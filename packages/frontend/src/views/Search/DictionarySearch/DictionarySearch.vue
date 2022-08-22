@@ -19,6 +19,12 @@
           >Search</v-btn
         >
       </v-col>
+      <v-col cols="4">
+        <v-radio-group label="Respect Character Boundaries" v-model="useMode">
+          <v-radio label="Yes" value="respectCharBoundaries"></v-radio>
+          <v-radio label="No" value="respectNoBoundaries"></v-radio>
+        </v-radio-group>
+      </v-col>
     </v-row>
 
     <ResultTable
@@ -93,6 +99,8 @@ export default defineComponent({
     const dictionarySearch = useQueryParam('dictionary', '', true);
     const page = useQueryParam('page', '1', false);
     const rows = useQueryParam('rows', '25', true);
+    const mode = useQueryParam('mode', 'respectCharBoundaries', true);
+    const useMode = ref(mode.value);
     const lastSearch = ref('');
     const canSearch = computed(() => {
       return dictionarySearch.value.trim() !== '';
@@ -121,6 +129,7 @@ export default defineComponent({
             search: dictionarySearch.value,
             page: Number(page.value),
             rows: Number(rows.value),
+            mode: useMode.value,
           });
           totalResults.value = searchResult.totalRows;
           searchResults.value = searchResult.results;
@@ -134,6 +143,10 @@ export default defineComponent({
         }
       }
     };
+
+    const enableModeSelection = computed(() => {
+      return !dictionarySearch.value.includes('-');
+    });
 
     const resetSearch = () => {
       page.value = '1';
@@ -192,6 +205,8 @@ export default defineComponent({
       resetSearch,
       getItemTranslations,
       getItemMatches,
+      enableModeSelection,
+      useMode,
     };
   },
 });
