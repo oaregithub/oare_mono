@@ -1,3 +1,4 @@
+import { StringLiteral } from 'typescript';
 import { EpigraphicUnitType, EditorMarkup } from './epigraphies';
 
 export type SignCodeType = 'image' | 'utf8' | 'undetermined';
@@ -22,4 +23,25 @@ export interface SignCodeWithUuid extends SignCode {
 
 export interface SignCodeWithDiscourseUuid extends SignCodeWithUuid {
   discourseUuid: string | null;
+}
+export interface SignList {
+  signUuid: string;
+  name: string;
+  abz: number | null;
+  mzl: number | null;
+  hasPng: number | null;
+  frequency: number | null;
+  code: string | null;
+  readings: string | null;
+}
+
+export interface SignListReading {
+  uuid: string;
+  value: string;
+  type: string;
+  count: number | null;
+}
+
+export interface SignListResponse {
+  result: SignList[];
 }

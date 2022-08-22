@@ -1,9 +1,10 @@
-import express from 'express';
+import express, { json } from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { SignCode } from '@oare/types';
+import { SignCode, SignList } from '@oare/types';
 import cacheMiddleware from '@/middlewares/cache';
 import { noFilter } from '@/cache/filters';
+import { concatenateReadings } from './daos/SignReadingDao/utils';
 
 const router = express.Router();
 
@@ -62,5 +63,36 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router.route('/signList').get(async (req, res, next) => {
+  try {
+    const SignReadingDao = sl.get('SignReadingDao');
+
+    const signs: SignList[] = await SignReadingDao.getSignList();
+    const signsWithFrequencies: SignList[] = await Promise.all(
+      signs.map(async s => ({
+        ...s,
+        frequency: await SignReadingDao.getSignCount(s.signUuid),
+      }))
+    );
+    const signList: SignList[] = await Promise.all(
+      signsWithFrequencies.map(async s => {
+        const signReadings = await SignReadingDao.getReadingsForSignList(
+          s.signUuid
+        );
+        return {
+          ...s,
+          readings: await concatenateReadings(signReadings, s.frequency ?? 0),
+        };
+      })
+    );
+    const sortedSignList = signList.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    res.json({ result: sortedSignList });
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 export default router;

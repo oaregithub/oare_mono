@@ -61,6 +61,7 @@ import ArchiveView from '../views/Texts/ArchivesView/archives/index.vue';
 import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
 import WordsInTextsSearch from '../views/Search/TextsSearch/WordsInTextSearch.vue';
 import QuarantinedTexts from '../views/Admin/Quarantine/QuarantinedTexts.vue';
+import SignListView from '../views/Signs/index.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -447,6 +448,11 @@ const routes: RouteConfig[] = [
     name: 'dossier',
     component: DossierView,
     props: true,
+  },
+  {
+    path: '/signList',
+    name: 'signList',
+    component: SignListView,
   },
 ];
 
