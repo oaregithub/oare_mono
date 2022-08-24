@@ -15,8 +15,8 @@ async function getFormattedSign(text: string): Promise<string[]> {
   return data;
 }
 
-async function getSignList(): Promise<SignListResponse> {
-  const { data } = await axios.get('/signList');
+async function getSignList(sortBy: string): Promise<SignListResponse> {
+  const { data } = await axios.get(`/signList/${sortBy}`);
   return data;
 }
 

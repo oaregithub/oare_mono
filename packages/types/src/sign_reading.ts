@@ -27,7 +27,7 @@ export interface SignCodeWithDiscourseUuid extends SignCodeWithUuid {
 export interface SignList {
   signUuid: string;
   name: string;
-  abz: number | null;
+  abz: string | null;
   mzl: number | null;
   hasPng: number | null;
   frequency: number | null;

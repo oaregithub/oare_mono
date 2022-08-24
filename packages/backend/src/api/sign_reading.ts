@@ -64,9 +64,10 @@ router
     }
   });
 
-router.route('/signList').get(async (req, res, next) => {
+router.route('/signList/:sortBy').get(async (req, res, next) => {
   try {
     const SignReadingDao = sl.get('SignReadingDao');
+    const { sortBy } = req.params;
 
     const signs: SignList[] = await SignReadingDao.getSignList();
     const signsWithFrequencies: SignList[] = await Promise.all(
@@ -86,9 +87,27 @@ router.route('/signList').get(async (req, res, next) => {
         };
       })
     );
-    const sortedSignList = signList.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+    const sortedSignList = signList.sort((a, b) => {
+      if (sortBy === 'abz') {
+        if (a.abz && !b.abz) return -1;
+        if (!a.abz && b.abz) return 1;
+        if (a.abz && b.abz) {
+          const aAbz = parseFloat(a.abz);
+          const bAbz = parseFloat(b.abz);
+          if (aAbz !== bAbz) return aAbz - bAbz;
+          return a.abz.localeCompare(b.abz);
+        }
+      }
+      if (sortBy === 'mzl') {
+        if (a.mzl && !b.mzl) return -1;
+        if (!a.mzl && b.mzl) return 1;
+        if (a.mzl && b.mzl) return a.mzl - b.mzl;
+      }
+      if (sortBy === 'frequency') {
+        return (b.frequency ?? 0) - (a.frequency ?? 0);
+      }
+      return a.name.localeCompare(b.name);
+    });
     res.json({ result: sortedSignList });
   } catch (err) {
     next(new HttpInternalError(err as string));
