@@ -8,6 +8,7 @@ import {
   SpellingOccurrenceRow,
   ItemPropertyRowWithChildren,
   ItemPropertyRow,
+  GoogleAnalyticsInfo,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import _ from 'lodash';
@@ -176,4 +177,36 @@ export const getDetectLanguageAPIKEY = async (): Promise<string> => {
   }
 
   return apiKey;
+};
+
+export const getGoogleAnalyticsInfo = async (): Promise<GoogleAnalyticsInfo> => {
+  const s3 = new AWS.S3();
+
+  let src = '';
+  let href = '';
+
+  if (
+    process.env.GOOGLE_ANALYTICS_DASHBOARD_SOURCE &&
+    process.env.GOOGLE_ANALYTICS_HREF
+  ) {
+    src = process.env.GOOGLE_ANALYTICS_DASHBOARD_SOURCE;
+    href = process.env.GOOGLE_ANALYTICS_HREF;
+  } else {
+    const response = (
+      await s3
+        .getObject({
+          Bucket: 'oare-resources',
+          Key: 'google_analytics.json',
+        })
+        .promise()
+    ).Body;
+    if (response) {
+      src = JSON.parse(response as string).embed_src;
+      process.env.GOOGLE_ANALYTICS_DASHBOARD_SOURCE = src;
+      href = JSON.parse(response as string).dashboard_href;
+      process.env.GOOGLE_ANALYTICS_HREF = href;
+    }
+  }
+
+  return { src, href };
 };

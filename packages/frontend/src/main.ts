@@ -31,7 +31,7 @@ Vue.use(Vuetify);
 Vue.use(
   VueGtag,
   {
-    config: { id: 'G-Q4GPEL16YW' },
+    config: { id: process.env.GOOGLE_ANALYTICS_KEY },
     globalObjectName: 'googleAnalytics',
   },
   router

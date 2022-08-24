@@ -1,12 +1,12 @@
 <template>
-  <oare-content-view title="Site Analytics">
+  <oare-content-view title="Site Analytics" :loading="loading">
     <div>
       <v-card max-height="100%"
         ><iframe
           class="test-iframe"
           width="100%"
           height="1000"
-          src="https://datastudio.google.com/embed/reporting/dbd79424-5a61-4c78-9630-74c987f92816/page/tWDGB"
+          :src="src"
           frameborder="0"
           style="border: 0"
           allowfullscreen
@@ -14,25 +14,48 @@
       ></v-card>
     </div>
     <div class="pt-4">
-      <v-btn class="test-google-analytics-site"
-        ><a
-          class="blue-grey--text test-button"
-          style="text-decoration: none"
-          href="https://analytics.google.com/analytics/web/#/p327370913/realtime/overview?params=_u..nav%3Dmaui%26_u..comparisons%3D%5B%7B%22name%22:%22All%20Users%22,%22filters%22:%5B%7B%22isCaseSensitive%22:true,%22expression%22:%220%22,%22fieldName%22:%22audience%22%7D%5D%7D%5D%26_u..pageSize%3D25"
-          target="_blank"
-          >Go to Google Analytics</a
-        ></v-btn
-      >
+      <v-btn class="test-button" :href="href" target="_blank">
+        Go to Google Analytics
+      </v-btn>
     </div>
   </oare-content-view>
 </template>
 
 <script lang="ts">
 import OareContentView from '@/components/base/OareContentView.vue';
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   components: { OareContentView },
   name: 'AnalyticsView',
+  setup() {
+    const actions = sl.get('globalActions');
+    const server = sl.get('serverProxy');
+    const src = ref('');
+    const href = ref('');
+    const loading = ref(false);
+
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const response = await server.getGoogleAnalyticsInfo();
+        if (response.src) {
+          src.value = response.src;
+        }
+        if (response.href) {
+          href.value = response.href;
+        }
+      } catch (err) {
+        actions.showErrorSnackbar('Error loading dashboard', err as Error);
+      } finally {
+        loading.value = false;
+      }
+    });
+    return {
+      src,
+      href,
+    };
+  },
 });
 </script>
