@@ -172,6 +172,9 @@
             <v-list-item class="pa-0">
               <v-btn text to="/tutorial" width="100%">Tutorial</v-btn>
             </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/signList" width="100%">Sign List</v-btn>
+            </v-list-item>
           </v-list>
         </v-menu>
       </v-row>

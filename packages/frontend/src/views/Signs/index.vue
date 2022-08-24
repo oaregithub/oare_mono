@@ -1,6 +1,8 @@
 <template>
   <oare-content-view title="Sign List">
     <v-data-table
+      height="500"
+      fixed-header
       :headers="tableHeaders"
       :items="items"
       :server-items-length="items.length"
