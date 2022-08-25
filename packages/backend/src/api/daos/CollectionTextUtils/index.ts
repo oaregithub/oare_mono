@@ -1,4 +1,5 @@
 import sl from '@/serviceLocator';
+import { CollectionText } from '@oare/types';
 import { Knex } from 'knex';
 
 class CollectionTextUtils {
@@ -29,6 +30,7 @@ class CollectionTextUtils {
       textUuid,
       trx
     );
+
     if (isPubliclyViewable) {
       return true;
     }
@@ -155,6 +157,40 @@ class CollectionTextUtils {
     return [...denylistTexts, ...quarantinedTexts];
   }
 
+  async imagesToHide(
+    userUuid: string | null,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const GroupAllowlistDao = sl.get('GroupAllowlistDao');
+    const PublicDenylistDao = sl.get('PublicDenylistDao');
+    const UserGroupDao = sl.get('UserGroupDao');
+    const UserDao = sl.get('UserDao');
+
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
+    if (user && user.isAdmin) {
+      return [];
+    }
+
+    const publicImageDenylist = await PublicDenylistDao.getDenylistImageUuids(
+      trx
+    );
+
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
+    const imageAllowlist = (
+      await Promise.all(
+        groups.map(groupId =>
+          GroupAllowlistDao.getGroupAllowlist(groupId, 'img', trx)
+        )
+      )
+    ).flat();
+
+    const imagesToHide = publicImageDenylist.filter(
+      image => !imageAllowlist.includes(image)
+    );
+
+    return imagesToHide;
+  }
+
   async canEditText(
     textUuid: string,
     userUuid: string | null,
@@ -212,6 +248,44 @@ class CollectionTextUtils {
     }
 
     return false;
+  }
+
+  async sortCollectionTexts(texts: CollectionText[]) {
+    const sortedTexts = texts.sort((a, b) => {
+      const textNameA: string = a.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
+      const textNameB: string = b.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
+      const nameArrayA: string[] = textNameA.split(' ');
+      const nameArrayB: string[] = textNameB.split(' ');
+      nameArrayA.forEach((val, idx) => {
+        const numLetterSplit = val.match(/(\d+|\D+)/g);
+        if (numLetterSplit && numLetterSplit.length > 1) {
+          nameArrayA.splice(idx, 1, ...numLetterSplit);
+        }
+      });
+      nameArrayB.forEach((val, idx) => {
+        const numLetterSplit = val.match(/\d+|\D+/g);
+        if (numLetterSplit && numLetterSplit.length > 1) {
+          nameArrayB.splice(idx, 1, ...numLetterSplit);
+        }
+      });
+      const shorterLength =
+        nameArrayA.length <= nameArrayB.length
+          ? nameArrayA.length
+          : nameArrayB.length;
+      for (let i = 0; i < shorterLength; i += 1) {
+        if (nameArrayA[i] !== nameArrayB[i]) {
+          const numA = parseFloat(nameArrayA[i]);
+          const numB = parseFloat(nameArrayB[i]);
+          if (numA && numB && numA !== numB) {
+            return numA - numB;
+          }
+          return nameArrayA[i].localeCompare(nameArrayB[i]);
+        }
+      }
+
+      return nameArrayA.length - nameArrayB.length;
+    });
+    return sortedTexts;
   }
 }
 

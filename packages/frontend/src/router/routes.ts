@@ -8,8 +8,10 @@ import TextsSearch from '@/views/Search/TextsSearch/TextsSearch.vue';
 import AddGroupUsers from '@/views/Admin/Groups/Users/AddGroupUsers.vue';
 import DenylistTexts from '@/views/Admin/PublicDenylist/Texts/DenylistTexts.vue';
 import DenylistCollections from '@/views/Admin/PublicDenylist/Collections/DenylistCollections.vue';
+import DenyListImages from '@/views/Admin/PublicDenylist/Images/DenylistImages.vue';
 import AddDenylistTexts from '@/views/Admin/PublicDenylist/Texts/AddDenylistTexts.vue';
 import AddDenylistCollections from '@/views/Admin/PublicDenylist/Collections/AddDenylistCollections.vue';
+import AddDenylistImages from '@/views/Admin/PublicDenylist/Images/AddDenylistImages.vue';
 import SendResetPasswordEmailView from '@/views/Authentication/ResetPassword/SendResetPasswordEmailView.vue';
 import ResetPasswordView from '@/views/Authentication/ResetPassword/ResetPasswordView.vue';
 import ManagePermissions from '@/views/Admin/Groups/Permissions/ManagePermissions.vue';
@@ -44,6 +46,7 @@ import PropertiesTaxonomy from '../views/Admin/PropertiesTaxonomy/index.vue';
 import ManageAllowlist from '../views/Admin/Groups/Allowlist/ManageAllowlist.vue';
 import AddAllowlistTexts from '../views/Admin/Groups/Allowlist/Texts/AddAllowlistTexts.vue';
 import AddAllowlistCollections from '../views/Admin/Groups/Allowlist/Collections/AddAllowlistCollections.vue';
+import AddAllowlistImages from '../views/Admin/Groups/Allowlist/Images/AddAllowlistImages.vue';
 import ManageEdits from '../views/Admin/Groups/Edits/ManageEdits.vue';
 import AddEditTexts from '../views/Admin/Groups/Edits/Texts/AddEditTexts.vue';
 import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditCollections.vue';
@@ -98,6 +101,11 @@ const routes: RouteConfig[] = [
         name: 'denylistCollections',
         component: DenylistCollections,
       },
+      {
+        path: 'images',
+        name: 'denylistImages',
+        component: DenyListImages,
+      },
     ],
   },
   {
@@ -141,6 +149,11 @@ const routes: RouteConfig[] = [
     name: 'denylistAddCollections',
     component: AddDenylistCollections,
     beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/add_denylist/images',
+    name: 'denylistAddImages',
+    component: AddDenylistImages,
   },
   {
     path: '/admin/quarantine',
@@ -229,6 +242,13 @@ const routes: RouteConfig[] = [
     path: '/admin/add_allowlist/collections/:groupId',
     name: 'manageAllowlistCollections',
     component: AddAllowlistCollections,
+    props: true,
+    beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/add_allowlist/images/:groupId',
+    name: 'manageAllowlistImages',
+    component: AddAllowlistImages,
     props: true,
     beforeEnter: adminGuard,
   },

@@ -12,11 +12,12 @@ import axios from 'axios';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
+    userUuid: string | null,
     textUuid: string,
     cdliNum: string,
     trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
-    const s3Links = await this.getValidS3ImageLinks(textUuid, trx);
+    const s3Links = await this.getValidS3ImageLinks(textUuid, userUuid, trx);
     const cdliLinks = await this.getValidCdliImageLinks(cdliNum, trx);
     const metLinks = await this.getValidMetImageLinks(textUuid, trx);
 
@@ -27,6 +28,7 @@ class ResourceDao {
 
   async getValidS3ImageLinks(
     textUuid: string,
+    userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
     const k = trx || knexRead();
@@ -35,6 +37,8 @@ class ResourceDao {
 
     try {
       const s3 = new AWS.S3();
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
+      const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
 
       const resourceLinks: ImageResource[] = await k('person as p')
         .distinct()
@@ -45,7 +49,8 @@ class ResourceDao {
         .whereIn(
           'r.uuid',
           k('link').select('obj_uuid').where('reference_uuid', textUuid)
-        );
+        )
+        .whereNotIn('r.uuid', imagesToHide);
 
       const signedUrls = await Promise.all(
         resourceLinks.map(key => {
@@ -268,6 +273,53 @@ class ResourceDao {
       .first();
 
     return result;
+  }
+
+  async getImageByUuid(
+    imageUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<{ uuid: string; link: string } | null> {
+    const k = trx || knexRead();
+    const image = await k('resource')
+      .select('uuid', 'link')
+      .where('uuid', imageUuid)
+      .first();
+    return image || null;
+  }
+
+  async getAllowListImageWithText(
+    imageUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<ImageResource | null> {
+    const s3 = new AWS.S3();
+    const k = trx || knexRead();
+
+    const textInfo: { display_name: string } = await k('text')
+      .select('display_name')
+      .whereIn(
+        'uuid',
+        k('link').select('reference_uuid').where('obj_uuid', imageUuid)
+      )
+      .first();
+    const resourceLink: { link: string } = await k('resource')
+      .select('link')
+      .where('uuid', imageUuid)
+      .andWhere('type', 'img')
+      .andWhere('container', 'oare-image-bucket')
+      .first();
+
+    const signedUrl: string = await s3.getSignedUrlPromise('getObject', {
+      Bucket: 'oare-image-bucket',
+      Key: resourceLink.link,
+    });
+
+    const result: ImageResource = {
+      uuid: imageUuid,
+      link: signedUrl,
+      label: textInfo.display_name,
+    };
+
+    return result || null;
   }
 
   async removeLinkRowByReferenceUuid(

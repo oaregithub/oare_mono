@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.route('/search_names').get(async (req, res, next) => {
   const HierarchyDao = sl.get('HierarchyDao');
+  const PublicDenylistDao = sl.get('PublicDenylistDao');
+  const GroupAllowlistDao = sl.get('GroupAllowlistDao');
   const utils = sl.get('utils');
   try {
     const { page, limit, filter } = utils.extractPagination(req.query);
@@ -19,7 +21,14 @@ router.route('/search_names').get(async (req, res, next) => {
       showExcluded: (req.query.showExcluded as string) === 'true',
     };
 
-    res.json(await HierarchyDao.getBySearchTerm(searchParams));
+    if (req.query.type === 'Text' || req.query.type === 'Collection') {
+      res.json(await HierarchyDao.getBySearchTerm(searchParams));
+    } else {
+      if (searchParams.groupId) {
+        res.json(await GroupAllowlistDao.getImagesForAllowlist(searchParams));
+      } else
+        res.json(await PublicDenylistDao.getImagesForDenylist(searchParams));
+    }
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

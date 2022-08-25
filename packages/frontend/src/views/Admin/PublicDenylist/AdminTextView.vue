@@ -3,6 +3,7 @@
     <v-tabs class="mb-3" v-model="tab">
       <v-tab to="/admin/denylist/texts">Texts</v-tab>
       <v-tab to="/admin/denylist/collections">Collections</v-tab>
+      <v-tab to="/admin/denylist/images">Images</v-tab>
     </v-tabs>
     <keep-alive>
       <router-view />
