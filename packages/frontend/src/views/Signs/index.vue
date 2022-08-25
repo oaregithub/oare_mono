@@ -63,10 +63,11 @@ import {
   onMounted,
   watch,
 } from '@vue/composition-api';
-import { DataOptions, DataTableHeader } from 'vuetify';
+import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import { SignList } from '@oare/types';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export interface OareDataTableOptions {
   page: number;
@@ -84,7 +85,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const sortByOptions = ['name', 'abz', 'mzl', 'frequency'];
-    const sortBy = ref('name');
+    const sortBy = useQueryParam('sortBy', 'name', true);
     const tableHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Sign', value: 'code', width: '16%', sortable: false },
       {
