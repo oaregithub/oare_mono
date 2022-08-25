@@ -16,8 +16,3 @@ export interface EnvironmentInfo {
   databaseReadRegion?: string;
   databaseWriteRegion?: string;
 }
-
-export interface GoogleAnalyticsInfo {
-  src?: string;
-  href?: string;
-}

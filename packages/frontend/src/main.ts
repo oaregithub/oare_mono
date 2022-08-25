@@ -28,14 +28,16 @@ sl.set('router', router);
 loadBases();
 
 Vue.use(Vuetify);
-Vue.use(
-  VueGtag,
-  {
-    config: { id: process.env.GOOGLE_ANALYTICS_KEY },
-    globalObjectName: 'googleAnalytics',
-  },
-  router
-);
+if (process.env.NODE_ENV === 'production') {
+  Vue.use(
+    VueGtag,
+    {
+      config: { id: process.env.GOOGLE_ANALYTICS_KEY },
+      globalObjectName: 'googleAnalytics',
+    },
+    router
+  );
+}
 Vue.config.productionTip = false;
 
 let app: Vue;

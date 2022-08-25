@@ -34,16 +34,41 @@ beforeEach(setup);
 
 describe('AnalyticsView test', () => {
   const createWrapper = () => mount(AnalyticsView, renderOptions);
+  if (process.env.NODE_ENV === 'production') {
+    it('displays Google Analytics iframe', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('.test-iframe').exists()).toBe(true);
+    });
 
-  it('displays Google Analytics iframe', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    expect(wrapper.find('.test-iframe').exists()).toBe(true);
-  });
+    it('displays Google Analytics Button', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('.test-button').exists()).toBe(true);
+    });
 
-  it('displays Google Analytics Button', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    expect(wrapper.find('.test-button').exists()).toBe(true);
-  });
+    it('does not display page only available on production', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('.test-page-unavailable').exists()).toBe(false);
+    });
+  } else {
+    it('does not display Google Analytics iframe', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('.test-iframe').exists()).toBe(false);
+    });
+
+    it('does not display Google Analytics Button', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('.test-button').exists()).toBe(false);
+    });
+
+    it('displays page only available on production', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('.test-page-unavailable').exists()).toBe(true);
+    });
+  }
 });
