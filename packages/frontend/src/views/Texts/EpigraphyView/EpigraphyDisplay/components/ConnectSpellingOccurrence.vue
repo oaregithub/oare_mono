@@ -169,7 +169,9 @@ export default defineComponent({
     const connectSpellingOccurenceObjs = ref<ConnectSpellingOccurrenceObj[]>(
       []
     );
-    const canConnectSpellings = computed(() => store.getters.isAdmin);
+    const canConnectSpellings = computed(() =>
+      store.hasPermission('CONNECT_SPELLING')
+    );
     const connectSelections = ref<ConnectSpellingDiscoursePayload | null>(null);
     const viewingConfirmationDialog = ref(false);
     const viewingMainDialog = ref(true);
