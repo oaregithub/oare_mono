@@ -137,9 +137,15 @@ describe('dictionary api test', () => {
 
     beforeEach(() => {
       setup({
-        UserDao: AdminUserDao,
+        UserDao: {
+          getUserByUuid: jest.fn().mockResolvedValue({
+            uuid: 'user-uuid',
+            isAdmin: false,
+          }),
+        },
         DiscourseDao: MockTextDiscourseDao,
         DictionarySpellingDao: MockSpellingDao,
+        PermissionsDao: MockPermissionsDao,
       });
     });
 
@@ -159,13 +165,8 @@ describe('dictionary api test', () => {
 
     it('prevents users without permission from patching', async () => {
       setup({
-        UserDao: {
-          getUserByUuid: jest.fn().mockResolvedValue({
-            isAdmin: false,
-          }),
-          PermissionsDao: {
-            getUserPermissions: jest.fn().mockResolvedValue(),
-          },
+        PermissionsDao: {
+          getUserPermissions: jest.fn().mockResolvedValue([]),
         },
       });
 
