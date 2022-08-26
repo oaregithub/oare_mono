@@ -1,5 +1,5 @@
 import axios from '@/axiosInstance';
-import { SignCode } from '@oare/types';
+import { SignCode, SignListResponse } from '@oare/types';
 
 async function getSignCode(sign: string, post: string): Promise<SignCode> {
   const { data } = await axios.get(
@@ -15,7 +15,13 @@ async function getFormattedSign(text: string): Promise<string[]> {
   return data;
 }
 
+async function getSignList(sortBy: string): Promise<SignListResponse> {
+  const { data } = await axios.get(`/signList/${sortBy}`);
+  return data;
+}
+
 export default {
   getSignCode,
   getFormattedSign,
+  getSignList,
 };

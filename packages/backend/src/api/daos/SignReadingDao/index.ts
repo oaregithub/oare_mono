@@ -1,5 +1,5 @@
 import { knexRead } from '@/connection';
-import { UuidRow, SignCode } from '@oare/types';
+import { UuidRow, SignCode, SignList, SignListReading } from '@oare/types';
 import { formattedSearchCharacter } from '@/api/daos/TextEpigraphyDao/utils';
 import { Knex } from 'knex';
 
@@ -141,6 +141,84 @@ class SignReadingDao {
   async getFormattedSign(sign: string): Promise<string[]> {
     const formattedSign = formattedSearchCharacter(sign);
     return formattedSign;
+  }
+
+  async getSignList(trx?: Knex.Transaction): Promise<SignList[]> {
+    const k = trx || knexRead();
+    const signList: SignList[] = await k('sign_reading as sr')
+      .join('sign as s', 's.uuid', 'sr.reference_uuid')
+      .leftJoin('sign_org as so', function () {
+        this.on('so.reference_uuid', 's.uuid').andOn(
+          k.raw('so.type = ?', ['ABZ'])
+        );
+      })
+      .leftJoin('sign_org as so1', function () {
+        this.on('so1.reference_uuid', 's.uuid').andOn(
+          k.raw('so1.type = ?', ['MZL'])
+        );
+      })
+      .distinct({
+        signUuid: 's.uuid',
+        name: 's.name',
+        abz: 'so.org_num',
+        mzl: 'so1.org_num',
+        fontCode: 's.font_code',
+      })
+      .modify(qb => {
+        qb.select(
+          k.raw('IF(so1.has_png = 0, so.has_png, so1.has_png) as hasPng')
+        );
+      });
+    return signList;
+  }
+
+  async getReadingsForSignList(
+    signUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<SignListReading[]> {
+    const k = trx || knexRead();
+    const signReadings: SignListReading[] = await k('sign_reading as sr')
+      .where('sr.reference_uuid', signUuid)
+      .select({ uuid: 'sr.uuid', value: 'sr.value', type: 'sr.type' });
+    const signReadingsWithCount: SignListReading[] = await Promise.all(
+      signReadings.map(async s => ({
+        ...s,
+        count: await this.getReadingCount(s.uuid),
+      }))
+    );
+    return signReadingsWithCount;
+  }
+
+  async getSignCount(
+    signUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const signCount = await k('text_epigraphy as te')
+      .count({ count: '*' })
+      .where('te.sign_uuid', signUuid)
+      .first();
+    let count = 0;
+    if (signCount) {
+      count = Number(signCount.count) || 0;
+    }
+    return count;
+  }
+
+  async getReadingCount(
+    readingUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knexRead();
+    const signCount = await k('text_epigraphy as te')
+      .count({ count: '*' })
+      .where('te.reading_uuid', readingUuid)
+      .first();
+    let count = 0;
+    if (signCount) {
+      count = Number(signCount.count) || 0;
+    }
+    return count;
   }
 }
 
