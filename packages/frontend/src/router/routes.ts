@@ -62,6 +62,7 @@ import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
 import WordsInTextsSearch from '../views/Search/TextsSearch/WordsInTextSearch.vue';
 import QuarantinedTexts from '../views/Admin/Quarantine/QuarantinedTexts.vue';
 import SignListView from '../views/Signs/index.vue';
+import AnalyticsView from '../views/Admin/Analytics/Analytics.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -159,6 +160,12 @@ const routes: RouteConfig[] = [
     path: '/admin/quarantine',
     name: 'adminQuarantine',
     component: QuarantinedTexts,
+    beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/analytics',
+    name: 'analytics',
+    component: AnalyticsView,
     beforeEnter: adminGuard,
   },
   {

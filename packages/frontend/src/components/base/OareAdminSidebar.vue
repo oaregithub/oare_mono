@@ -73,6 +73,7 @@ export default defineComponent({
           label: 'Properties Taxonomy',
           path: '/admin/propertiesTaxonomy',
         },
+        { label: 'Site Analytics', path: '/admin/analytics' },
         {
           label: 'Admin Settings',
           path: '/admin/settings',
