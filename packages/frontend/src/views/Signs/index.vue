@@ -3,12 +3,9 @@
     <v-row>
       <v-col cols="9">
         <v-data-table
-          height="500"
-          fixed-header
           :headers="tableHeaders"
           :items="items"
           :server-items-length="items.length"
-          :sort-by="'name'"
           :loading="loading"
           hide-default-footer
         >
@@ -40,13 +37,13 @@
         </v-data-table>
       </v-col>
       <v-col>
-        <div>
+        <div class="sticky">
           <h3>Sort By</h3>
           <v-checkbox
             v-for="(val, index) in sortByOptions"
             :key="index"
             v-model="sortBy"
-            :value="val"
+            :value="val.toLowerCase()"
             :label="val"
             :class="`test-checkbox-${val} pr-2`"
           ></v-checkbox>
@@ -84,10 +81,15 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const loading = ref(false);
-    const sortByOptions = ['name', 'abz', 'mzl', 'frequency'];
+    const sortByOptions = ['Name', 'ABZ', 'MZL', 'Frequency'];
     const sortBy = useQueryParam('sortBy', 'name', true);
     const tableHeaders: Ref<DataTableHeader[]> = ref([
-      { text: 'Sign', value: 'code', width: '16%', sortable: false },
+      {
+        text: 'Sign',
+        value: 'code',
+        width: '16%',
+        sortable: false,
+      },
       {
         text: 'Name',
         value: 'name',
@@ -112,7 +114,12 @@ export default defineComponent({
         width: '16%',
         sortable: false,
       },
-      { text: 'Readings', value: 'readings', width: '32%', sortable: false },
+      {
+        text: 'Readings',
+        value: 'readings',
+        width: '32%',
+        sortable: false,
+      },
     ]);
 
     const items: Ref<SignList[]> = ref([]);
@@ -170,3 +177,9 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+.sticky {
+  position: sticky;
+  top: 1.3in;
+}
+</style>
