@@ -2,7 +2,6 @@ import { knexRead } from '@/connection';
 import { UuidRow, SignCode, SignList, SignListReading } from '@oare/types';
 import { formattedSearchCharacter } from '@/api/daos/TextEpigraphyDao/utils';
 import { Knex } from 'knex';
-import { sortReadings } from './utils';
 
 class SignReadingDao {
   async hasSign(sign: string, trx?: Knex.Transaction): Promise<boolean> {

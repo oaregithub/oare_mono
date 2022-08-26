@@ -1,4 +1,4 @@
-import express, { json } from 'express';
+import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { SignCode, SignList } from '@oare/types';
