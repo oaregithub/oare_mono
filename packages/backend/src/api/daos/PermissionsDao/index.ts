@@ -31,6 +31,12 @@ class PermissionsDao {
         'Allow group users to view "People" tab and access associated pages',
     },
     {
+      name: 'ADD_LEMMA',
+      type: 'dictionary',
+      description: 'Allow group users to add new words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
       name: 'BIBLIOGRAPHY',
       type: 'pages',
       description:
@@ -103,6 +109,12 @@ class PermissionsDao {
       type: 'dictionary',
       description:
         'Allow group users to disconnect spelling occurrences from words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
+      name: 'CONNECT_SPELLING',
+      type: 'dictionary',
+      description: 'Allow group users to connect spelling occurrences to words',
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {

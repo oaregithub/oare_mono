@@ -63,15 +63,15 @@
       </div>
     </div>
     <connect-spelling-occurrence
-      v-if="viewingAdminDialog"
-      :key="`${adminDialogSpelling}-${adminDialogDiscourseUuid}`"
+      v-if="viewingConnectSpellingDialog"
+      :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
       class="test-spelling-occurrence-display"
-      :discourseUuid="adminDialogDiscourseUuid"
-      :spelling="adminDialogSpelling"
+      :discourseUuid="connectSpellingDialogDiscourseUuid"
+      :spelling="connectSpellingDialogSpelling"
       :searchSpellings="server.searchSpellings"
       :getTexts="server.getSpellingTextOccurrences"
-      @finish="closeAdminDialog"
-      v-model="viewingAdminDialog"
+      @finish="closeConnectSpellingDialog"
+      v-model="viewingConnectSpellingDialog"
     ></connect-spelling-occurrence>
     <oare-dialog
       v-if="viewingDialog"
@@ -139,12 +139,14 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const viewingDialog = ref(false);
-    const viewingAdminDialog = ref(false);
-    const adminDialogSpelling = ref('');
-    const adminDialogDiscourseUuid = ref('');
+    const viewingConnectSpellingDialog = ref(false);
+    const connectSpellingDialogSpelling = ref('');
+    const connectSpellingDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
 
-    const isAdmin = computed(() => store.getters.isAdmin);
+    const canConnectSpellings = computed(() =>
+      store.hasPermission('CONNECT_SPELLING')
+    );
 
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
@@ -190,8 +192,8 @@ export default defineComponent({
         actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;
-        } else if (isAdmin.value && discourseUuid) {
-          await openAdminDialog(discourseUuid);
+        } else if (canConnectSpellings.value && discourseUuid) {
+          await openConnectSpellingDialog(discourseUuid);
         } else {
           actions.showSnackbar(
             'No information exists for this text discourse word'
@@ -207,26 +209,32 @@ export default defineComponent({
       }
     };
 
-    const openAdminDialog = async (discourseUuid: string) => {
+    const openConnectSpellingDialog = async (discourseUuid: string) => {
       try {
         const { spelling } = await server.getSpellingByDiscourseUuid(
           discourseUuid
         );
-        viewingAdminDialog.value = true;
-        adminDialogSpelling.value = spelling;
-        adminDialogDiscourseUuid.value = discourseUuid;
+        viewingConnectSpellingDialog.value = true;
+        connectSpellingDialogSpelling.value = spelling;
+        connectSpellingDialogDiscourseUuid.value = discourseUuid;
       } catch (err) {
-        actions.showErrorSnackbar('Failed to load admin view', err as Error);
+        actions.showErrorSnackbar(
+          'Failed to load connect spelling view',
+          err as Error
+        );
       }
     };
 
-    const closeAdminDialog = async () => {
+    const closeConnectSpellingDialog = async () => {
       try {
-        viewingAdminDialog.value = false;
-        adminDialogSpelling.value = '';
-        adminDialogDiscourseUuid.value = '';
+        viewingConnectSpellingDialog.value = false;
+        connectSpellingDialogSpelling.value = '';
+        connectSpellingDialogDiscourseUuid.value = '';
       } catch (err) {
-        actions.showErrorSnackbar('Failed to close admin view', err as Error);
+        actions.showErrorSnackbar(
+          'Failed to close connect spelling view',
+          err as Error
+        );
       }
     };
 
@@ -249,10 +257,10 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
-      viewingAdminDialog,
-      adminDialogSpelling,
-      adminDialogDiscourseUuid,
-      closeAdminDialog,
+      viewingConnectSpellingDialog,
+      connectSpellingDialogSpelling,
+      connectSpellingDialogDiscourseUuid,
+      closeConnectSpellingDialog,
       formatWord,
       formatSide,
       romanNumeral,

@@ -20,7 +20,9 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'INSERT_DISCOURSE_ROWS'
     | 'ADD_FORM'
     | 'DISCONNECT_SPELLING'
-    | 'EDIT_TRANSLITERATION_STATUS';
+    | 'CONNECT_SPELLING'
+    | 'EDIT_TRANSLITERATION_STATUS'
+    | 'ADD_LEMMA';
   type: 'dictionary';
 }
 

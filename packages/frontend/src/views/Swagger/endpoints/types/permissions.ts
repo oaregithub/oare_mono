@@ -7,6 +7,7 @@ export const dictionaryPermissionNames = [
   'ADD_FORM',
   'DISCONNECT_SPELLING',
   'EDIT_TRANSLITERATION_STATUS',
+  'ADD_LEMMA',
 ];
 export const dictionaryPermission = {
   name: {
