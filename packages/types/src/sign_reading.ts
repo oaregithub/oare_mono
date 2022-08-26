@@ -1,4 +1,3 @@
-import { StringLiteral } from 'typescript';
 import { EpigraphicUnitType, EditorMarkup } from './epigraphies';
 
 export type SignCodeType = 'image' | 'utf8' | 'undetermined';
