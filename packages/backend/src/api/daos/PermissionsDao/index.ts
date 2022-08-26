@@ -112,6 +112,12 @@ class PermissionsDao {
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
+      name: 'CONNECT_SPELLING',
+      type: 'dictionary',
+      description: 'Allow group users to connect spelling occurrences to words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
       name: 'EDIT_TRANSLITERATION_STATUS',
       type: 'dictionary',
       description:

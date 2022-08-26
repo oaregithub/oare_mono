@@ -83,6 +83,9 @@ describe('dictionary api test', () => {
       {
         name: 'ADD_LEMMA',
       },
+      {
+        name: 'CONNECT_SPELLING',
+      },
     ]),
   };
 
@@ -102,6 +105,7 @@ describe('dictionary api test', () => {
     cache,
     HierarchyDao,
     ItemPropertiesDao,
+    PermissionsDao,
     Utils,
     DictionarySpellingDao,
   } = {}) => {
@@ -111,7 +115,7 @@ describe('dictionary api test', () => {
     sl.set('TextDiscourseDao', DiscourseDao);
     sl.set('UserDao', UserDao || MockUserDao);
     sl.set('cache', cache || mockCache);
-    sl.set('PermissionsDao', MockPermissionsDao);
+    sl.set('PermissionsDao', PermissionsDao || MockPermissionsDao);
     sl.set('HierarchyDao', HierarchyDao || MockHierarchyDao);
     sl.set('ItemPropertiesDao', ItemPropertiesDao || mockItemPropertiesDao);
     sl.set('utils', Utils || mockUtils);
@@ -133,9 +137,15 @@ describe('dictionary api test', () => {
 
     beforeEach(() => {
       setup({
-        UserDao: AdminUserDao,
+        UserDao: {
+          getUserByUuid: jest.fn().mockResolvedValue({
+            uuid: 'user-uuid',
+            isAdmin: false,
+          }),
+        },
         DiscourseDao: MockTextDiscourseDao,
         DictionarySpellingDao: MockSpellingDao,
+        PermissionsDao: MockPermissionsDao,
       });
     });
 
@@ -153,12 +163,10 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(401);
     });
 
-    it('prevents non-admin users from patching', async () => {
+    it('prevents users without permission from patching', async () => {
       setup({
-        UserDao: {
-          getUserByUuid: jest.fn().mockResolvedValue({
-            isAdmin: false,
-          }),
+        PermissionsDao: {
+          getUserPermissions: jest.fn().mockResolvedValue([]),
         },
       });
 
