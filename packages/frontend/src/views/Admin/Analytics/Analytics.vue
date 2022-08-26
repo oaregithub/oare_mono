@@ -51,11 +51,11 @@ export default defineComponent({
 
     onMounted(async () => {
       loading.value = true;
-      if (production.value) {
-        src.value = process.env.GOOGLE_ANALYTICS_DASHBOARD_SOURCE;
-        href.value = process.env.GOOGLE_ANALYTICS_HREF;
-      }
       try {
+        if (production.value) {
+          src.value = process.env.GOOGLE_ANALYTICS_DASHBOARD_SOURCE;
+          href.value = process.env.GOOGLE_ANALYTICS_HREF;
+        }
       } catch (err) {
         actions.showErrorSnackbar('Error loading dashboard', err as Error);
       } finally {
