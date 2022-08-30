@@ -209,7 +209,8 @@ export const sortReadings = (
 
 export async function concatenateReadings(
   signReadingsWithCount: SignListReading[],
-  signCount: number
+  signCount: number,
+  allSigns: boolean
 ): Promise<string> {
   const determinatives = sortReadings(
     signReadingsWithCount.filter(s => s.type === 'determinative')
@@ -221,7 +222,7 @@ export async function concatenateReadings(
             ? `<sup>${s.value}</sup> (${((s.count ?? 0) / signCount).toFixed(
                 2
               )})`
-            : `<sup>${s.value}</sup> (0.0)`
+            : `${allSigns ? `<sup>${s.value}</sup> (0.0)` : ''}`
         }`
     )
     .join(', ');
@@ -233,7 +234,7 @@ export async function concatenateReadings(
         `${
           signCount
             ? `${s.value} (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `${s.value} (0.0)`
+            : `${allSigns ? `${s.value} (0.0)` : ''}`
         }`
     )
     .join(', ');
@@ -245,7 +246,7 @@ export async function concatenateReadings(
         `${
           signCount
             ? `<em>${s.value}</em> (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `<em>${s.value}</em> (0.0)`
+            : `${allSigns ? `<em>${s.value}</em> (0.0)` : ''}`
         }`
     )
     .join(', ');
@@ -257,7 +258,7 @@ export async function concatenateReadings(
         `${
           signCount
             ? `${s.value} (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `${s.value} (0.0)`
+            : `${allSigns ? `${s.value} (0.0)` : ''}`
         }`
     )
     .join(', ');
@@ -269,7 +270,7 @@ export async function concatenateReadings(
         `${
           signCount
             ? `${s.value} (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `${s.value} (0.0)`
+            : `${allSigns ? `${s.value} (0.0)` : ''}`
         }`
     )
     .join(', ');

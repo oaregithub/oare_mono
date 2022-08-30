@@ -101,9 +101,10 @@ describe('GET /sign_reading/format/:sign', () => {
   });
 });
 
-describe('GET /signList/:sortBy', () => {
-  const mockSortBy = 'abz';
-  const PATH = `${API_PATH}/signList/${mockSortBy}`;
+describe('GET /signList', () => {
+  const sortBy = 'abz';
+  const allSigns = 'false';
+  const PATH = `${API_PATH}/signList`;
   const signList = [
     {
       signUuid: 'signUuid',
@@ -137,7 +138,7 @@ describe('GET /signList/:sortBy', () => {
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH);
+  const sendRequest = () => request(app).get(PATH).query({ allSigns, sortBy });
 
   it('returns 200 on successful sign list request', async () => {
     const response = await sendRequest();
