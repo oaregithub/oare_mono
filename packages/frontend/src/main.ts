@@ -28,7 +28,7 @@ sl.set('router', router);
 loadBases();
 
 Vue.use(Vuetify);
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'production') {
   Vue.use(
     VueGtag,
     {
