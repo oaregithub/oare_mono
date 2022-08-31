@@ -28,11 +28,11 @@ sl.set('router', router);
 loadBases();
 
 Vue.use(Vuetify);
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV !== 'production') {
   Vue.use(
     VueGtag,
     {
-      config: { id: process.env.VUE_APP_GOOGLE_ANALYTICS_KEY },
+      config: { id: 'G-XKZYX986E9' },
       globalObjectName: 'googleAnalytics',
     },
     router
