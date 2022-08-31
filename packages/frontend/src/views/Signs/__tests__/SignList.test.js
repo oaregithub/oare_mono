@@ -92,4 +92,27 @@ describe('SignList test', () => {
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
+
+  it('gets signs when allSigns is changed', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    const sortByOptions = wrapper.find('.test-all-signs');
+    await sortByOptions.trigger('click');
+    await flushPromises();
+    expect(mockServer.getSignList).toHaveBeenCalled();
+  });
+
+  it('displays error when fails to retrieve sign list on sortByChange', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        getSignList: jest.fn().mockRejectedValue(null),
+      },
+    });
+    await flushPromises();
+    const sortByOptions = wrapper.find('.test-all-signs');
+    await sortByOptions.trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
 });
