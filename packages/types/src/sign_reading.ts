@@ -44,3 +44,8 @@ export interface SignListReading {
 export interface SignListResponse {
   result: SignList[];
 }
+
+export interface SignListPayload {
+  sortBy: string;
+  allSigns: string;
+}

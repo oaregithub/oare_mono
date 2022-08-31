@@ -32,7 +32,7 @@ if (process.env.NODE_ENV !== 'production') {
   Vue.use(
     VueGtag,
     {
-      config: { id: 'G-XKZYX986E9' },
+      config: { id: process.env.VUE_APP_GOOGLE_ANALYTICS_KEY },
       globalObjectName: 'googleAnalytics',
     },
     router

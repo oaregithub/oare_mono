@@ -1,7 +1,7 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { SignCode, SignList } from '@oare/types';
+import { SignCode, SignList, SignListPayload } from '@oare/types';
 import cacheMiddleware from '@/middlewares/cache';
 import { noFilter } from '@/cache/filters';
 import { concatenateReadings } from './daos/SignReadingDao/utils';
@@ -64,18 +64,30 @@ router
     }
   });
 
-router.route('/signList/:sortBy').get(async (req, res, next) => {
+router.route('/signList').get(async (req, res, next) => {
   try {
     const SignReadingDao = sl.get('SignReadingDao');
-    const { sortBy } = req.params;
+    const payload = (req.query as unknown) as SignListPayload;
+    const { sortBy } = payload;
+    const allSigns = payload.allSigns === 'true';
 
     const signs: SignList[] = await SignReadingDao.getSignList();
-    const signsWithFrequencies: SignList[] = await Promise.all(
-      signs.map(async s => ({
-        ...s,
-        frequency: await SignReadingDao.getSignCount(s.signUuid),
-      }))
-    );
+    const signsWithFrequencies: SignList[] = allSigns
+      ? await Promise.all(
+          signs.map(async s => ({
+            ...s,
+            frequency: await SignReadingDao.getSignCount(s.signUuid),
+          }))
+        )
+      : (
+          await Promise.all(
+            signs.map(async s => ({
+              ...s,
+              frequency: await SignReadingDao.getSignCount(s.signUuid),
+            }))
+          )
+        ).filter(sign => sign.frequency > 0);
+
     const signList: SignList[] = await Promise.all(
       signsWithFrequencies.map(async s => {
         const signReadings = await SignReadingDao.getReadingsForSignList(
@@ -83,10 +95,15 @@ router.route('/signList/:sortBy').get(async (req, res, next) => {
         );
         return {
           ...s,
-          readings: await concatenateReadings(signReadings, s.frequency ?? 0),
+          readings: await concatenateReadings(
+            signReadings,
+            s.frequency ?? 0,
+            allSigns
+          ),
         };
       })
     );
+
     const sortedSignList = signList.sort((a, b) => {
       if (sortBy === 'abz') {
         if (a.abz && !b.abz) return -1;
