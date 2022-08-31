@@ -422,9 +422,28 @@ router
   .patch(permissionsRoute('DISCONNECT_SPELLING'), async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const { discourseUuids } = req.body;
+      const cache = sl.get('cache');
+      const { discourseUuids }: { discourseUuids: string[] } = req.body;
 
-      await TextDiscourseDao.disconnectSpellings(discourseUuids);
+      await Promise.all(
+        discourseUuids.map(uuid => TextDiscourseDao.disconnectSpelling(uuid))
+      );
+
+      const discourseRows = await Promise.all(
+        discourseUuids.map(uuid => TextDiscourseDao.getDiscourseRowByUuid(uuid))
+      );
+
+      await Promise.all(
+        discourseRows.map(row =>
+          cache.clear(
+            `/text_epigraphies/text/${row.textUuid}`,
+            {
+              level: 'startsWith',
+            },
+            req
+          )
+        )
+      );
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

@@ -24,7 +24,7 @@ describe('TextOccurrences test', () => {
   };
 
   const mockServer = {
-    disconnectSpellings: jest.fn().mockResolvedValue(),
+    disconnectSpelling: jest.fn().mockResolvedValue(),
   };
 
   const setup = () => {
@@ -104,13 +104,13 @@ describe('TextOccurrences test', () => {
     await wrapper.get('.test-disconnect input').trigger('click');
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
-    expect(mockServer.disconnectSpellings).toHaveBeenCalled();
+    expect(mockServer.disconnectSpelling).toHaveBeenCalled();
   });
 
   it('displays error on failed spelling disconnect', async () => {
     sl.set('serverProxy', {
       ...mockServer,
-      disconnectSpellings: jest
+      disconnectSpelling: jest
         .fn()
         .mockRejectedValue('failed to disconnect spelling'),
     });

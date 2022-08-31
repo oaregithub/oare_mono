@@ -1084,7 +1084,7 @@ describe('dictionary api test', () => {
     };
 
     const mockTextDiscourseDao = {
-      disconnectSpellings: jest.fn().mockResolvedValue(),
+      disconnectSpelling: jest.fn().mockResolvedValue(),
     };
 
     const disconnectSetup = () => {
@@ -1104,7 +1104,7 @@ describe('dictionary api test', () => {
     it('returns 500 on failed spelling disconnect', async () => {
       sl.set('TextDiscourseDao', {
         ...mockTextDiscourseDao,
-        disconnectSpellings: jest
+        disconnectSpelling: jest
           .fn()
           .mockRejectedValue('failed to disconnect spellings'),
       });
@@ -1114,7 +1114,7 @@ describe('dictionary api test', () => {
 
     it('returns 401 if user is not logged in', async () => {
       const response = await request(app).patch(PATH).send(mockPayload);
-      expect(mockTextDiscourseDao.disconnectSpellings).not.toHaveBeenCalled();
+      expect(mockTextDiscourseDao.disconnectSpelling).not.toHaveBeenCalled();
       expect(response.status).toBe(401);
     });
 
@@ -1124,7 +1124,7 @@ describe('dictionary api test', () => {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       const response = await sendRequest();
-      expect(mockTextDiscourseDao.disconnectSpellings).not.toHaveBeenCalled();
+      expect(mockTextDiscourseDao.disconnectSpelling).not.toHaveBeenCalled();
       expect(response.status).toBe(403);
     });
   });
