@@ -153,16 +153,23 @@ export default defineComponent({
     };
 
     const getSignHTMLCode = (code: string) => {
-      let codePt = Number(`0x${code}`);
-      if (codePt > 0xffff) {
-        codePt -= 0x10000;
-        return String.fromCharCode(
-          0xd800 + (codePt >> 10),
-          0xdc00 + (codePt & 0x3ff)
-        );
-      } else {
-        return String.fromCharCode(codePt);
-      }
+      const codeArray: string[] = code.split('+');
+      let finishedCodeArray: string[] = [];
+      codeArray.forEach(c => {
+        let codePt = Number(`0x${c}`);
+        if (codePt > 0xffff) {
+          codePt -= 0x10000;
+          finishedCodeArray.push(
+            String.fromCharCode(
+              0xd800 + (codePt >> 10),
+              0xdc00 + (codePt & 0x3ff)
+            )
+          );
+        } else {
+          finishedCodeArray.push(String.fromCharCode(codePt));
+        }
+      });
+      return finishedCodeArray.join('');
     };
 
     const getSigns = async () => {
@@ -203,5 +210,8 @@ export default defineComponent({
 .sticky {
   position: sticky;
   top: 1.3in;
+}
+.cuneiform {
+  font-family: 'Santakku', 'CuneiformComposite';
 }
 </style>
