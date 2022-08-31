@@ -69,9 +69,10 @@ class Cache {
       await Promise.all(matchingKeys.map(match => redis.del(match)));
     }
 
-    if (propogate) {
+    // NOTE: Temporarily Disabled While International Server(s) Are Deprecated
+    /* if (propogate) {
       await crossRegionCacheClear(url, options, req);
-    }
+    } */
   }
 
   public async keys(
@@ -89,20 +90,24 @@ class Cache {
       numOriginKeys = keys.length;
     }
 
-    let numRemoteKeys = 0;
+    // NOTE: Temporarily Disabled While International Server(s) Are Deprecated
+    /* let numRemoteKeys = 0;
     if (propogate) {
       numRemoteKeys = await crossRegionCacheKeys(url, level, req);
     }
 
-    return numOriginKeys + numRemoteKeys;
+    return numOriginKeys + numRemoteKeys; */
+
+    return numOriginKeys;
   }
 
   public async flush(req: Request, propogate: boolean = true) {
     await redis.flushDb();
 
-    if (propogate) {
+    // NOTE: Temporarily Disabled While International Server(s) Are Deprecated
+    /* if (propogate) {
       await crossRegionCacheFlush(req);
-    }
+    } */
   }
 }
 

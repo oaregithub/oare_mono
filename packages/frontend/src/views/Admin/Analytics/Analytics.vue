@@ -53,8 +53,8 @@ export default defineComponent({
       loading.value = true;
       try {
         if (production.value) {
-          src.value = process.env.GOOGLE_ANALYTICS_DASHBOARD_SOURCE;
-          href.value = process.env.GOOGLE_ANALYTICS_HREF;
+          src.value = process.env.VUE_APP_GOOGLE_ANALYTICS_DASHBOARD_SOURCE;
+          href.value = process.env.VUE_APP_GOOGLE_ANALYTICS_HREF;
         }
       } catch (err) {
         actions.showErrorSnackbar('Error loading dashboard', err as Error);
