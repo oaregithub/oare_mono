@@ -47,6 +47,27 @@
             :label="val"
             :class="`test-checkbox-${val} pr-2`"
           ></v-checkbox>
+
+          <v-btn
+            v-if="allSigns === 'false'"
+            @click="allSigns = 'true'"
+            class="test-all-signs"
+            >Show all signs</v-btn
+          >
+          <v-btn v-else @click="allSigns = 'false'" class="test-only-oa"
+            >Show only OA</v-btn
+          >
+          <v-menu offset-y open-on-hover class="pl-2">
+            <template #activator="{ on, attrs }">
+              <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
+                mdi-information-outline
+              </v-icon>
+            </template>
+            <v-card class="pa-3">
+              As a default, only Old Assyrian (OA) signs and readings will be
+              displayed on this page. To view all signs, click 'SHOW ALL SIGNS'.
+            </v-card>
+          </v-menu>
         </div>
       </v-col>
     </v-row>
@@ -64,7 +85,6 @@ import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import { SignList } from '@oare/types';
-import useQueryParam from '@/hooks/useQueryParam';
 
 export interface OareDataTableOptions {
   page: number;
@@ -82,7 +102,8 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const sortByOptions = ['Name', 'ABZ', 'MZL', 'Frequency'];
-    const sortBy = useQueryParam('sortBy', 'name', true);
+    const sortBy = ref('name');
+    const allSigns = ref('false');
     const tableHeaders: Ref<DataTableHeader[]> = ref([
       {
         text: 'Sign',
@@ -155,7 +176,7 @@ export default defineComponent({
       loading.value = true;
       items.value = [];
       try {
-        const response = await server.getSignList(sortBy.value);
+        const response = await server.getSignList(sortBy.value, allSigns.value);
         items.value = response.result;
       } catch (err) {
         actions.showErrorSnackbar(
@@ -167,7 +188,7 @@ export default defineComponent({
       }
     };
 
-    watch(sortBy, getSigns);
+    watch([sortBy, allSigns], getSigns);
 
     onMounted(async () => {
       await getSigns();
@@ -178,6 +199,7 @@ export default defineComponent({
       loading,
       sortBy,
       sortByOptions,
+      allSigns,
       getWidth,
       getSignHTMLCode,
     };
