@@ -66,6 +66,7 @@ export default defineComponent({
       src,
       href,
       production,
+      loading,
     };
   },
 });
