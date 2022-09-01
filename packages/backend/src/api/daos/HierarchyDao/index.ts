@@ -136,6 +136,7 @@ class HierarchyDao {
   ): Promise<CollectionResponse> {
     const k = trx || knexRead();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const texts = await k('hierarchy')
       .innerJoin('text', 'text.uuid', 'hierarchy.object_uuid')
@@ -159,11 +160,17 @@ class HierarchyDao {
       texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid, trx))
     );
 
+    const hasEpigraphyAdded = texts.map((text, idx) => ({
+      ...text,
+      hasEpigraphy: hasEpigraphies[idx],
+    }));
+
+    const sortedTexts = await CollectionTextUtils.sortCollectionTexts(
+      hasEpigraphyAdded
+    );
+
     return {
-      texts: texts.map((text, idx) => ({
-        ...text,
-        hasEpigraphy: hasEpigraphies[idx],
-      })),
+      texts: sortedTexts,
     };
   }
 

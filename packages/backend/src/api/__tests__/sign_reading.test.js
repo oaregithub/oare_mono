@@ -100,3 +100,64 @@ describe('GET /sign_reading/format/:sign', () => {
     expect(response.status).toBe(500);
   });
 });
+
+describe('GET /signList', () => {
+  const sortBy = 'abz';
+  const allSigns = 'false';
+  const PATH = `${API_PATH}/signList`;
+  const signList = [
+    {
+      signUuid: 'signUuid',
+      name: 'name',
+      abz: '123a',
+      mzl: 123,
+      hasPng: 0,
+      frequency: 100,
+      code: '100',
+      readings: 'readings (1.00)',
+    },
+  ];
+  const signListReadings = [
+    {
+      uuid: 'uuid',
+      value: 'value',
+      type: 'logogram',
+      count: 100,
+    },
+  ];
+
+  const mockSignReadingDao = {
+    getSignList: jest.fn().mockResolvedValue(signList),
+    getSignCount: jest.fn().mockResolvedValue(100),
+    getReadingsForSignList: jest.fn().mockResolvedValue(signListReadings),
+  };
+
+  const setup = () => {
+    sl.set('SignReadingDao', mockSignReadingDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () => request(app).get(PATH).query({ allSigns, sortBy });
+
+  it('returns 200 on successful sign list request', async () => {
+    const response = await sendRequest();
+    expect(mockSignReadingDao.getSignList).toHaveBeenCalled();
+    expect(mockSignReadingDao.getSignCount).toHaveBeenCalled();
+    expect(mockSignReadingDao.getReadingsForSignList).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 500 on failed sign formatting', async () => {
+    sl.set('SignReadingDao', {
+      ...mockSignReadingDao,
+      getSignList: jest.fn().mockRejectedValue('failed to get sign list'),
+      getSignCount: jest.fn().mockRejectedValue('failed to get sign count'),
+      getReadingsForSignList: jest
+        .fn()
+        .mockRejectedValue('failed to get readings for sign list'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
