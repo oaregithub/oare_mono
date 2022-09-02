@@ -1085,6 +1085,9 @@ describe('dictionary api test', () => {
 
     const mockTextDiscourseDao = {
       disconnectSpelling: jest.fn().mockResolvedValue(),
+      getDiscourseRowByUuid: jest
+        .fn()
+        .mockResolvedValue({ textUuid: 'test-uuid' }),
     };
 
     const disconnectSetup = () => {
