@@ -84,16 +84,23 @@
       :width="600"
       v-model="viewingDialog"
     >
-      <dictionary-word
-        v-if="discourseWordInfo"
-        :uuid="discourseWordInfo.uuid"
-        :selected-word-info="discourseWordInfo"
-        :allow-commenting="false"
-        :allow-editing="false"
-        :allow-deleting="false"
-        :allow-breadcrumbs="false"
-      >
-      </dictionary-word>
+      <v-row class="ma-0">
+        <dictionary-word
+          v-if="discourseWordInfo"
+          :uuid="discourseWordInfo.uuid"
+          :selected-word-info="discourseWordInfo"
+          :allow-commenting="false"
+          :allow-editing="false"
+          :allow-deleting="false"
+          :allow-breadcrumbs="false"
+        >
+        </dictionary-word>
+      </v-row>
+      <v-row class="ma-0">
+        <v-btn color="primary" v-if="canDisconnectSpellings">
+          "Disconnect Spelling"
+        </v-btn>
+      </v-row>
     </oare-dialog>
   </div>
 </template>
@@ -146,6 +153,10 @@ export default defineComponent({
 
     const canConnectSpellings = computed(() =>
       store.hasPermission('CONNECT_SPELLING')
+    );
+
+    const canDisconnectSpellings = computed(() =>
+      store.hasPermission('DISCONNECT_SPELLING')
     );
 
     const renderer = ref<TabletRenderer>(
@@ -264,6 +275,7 @@ export default defineComponent({
       formatWord,
       formatSide,
       romanNumeral,
+      canDisconnectSpellings,
       server,
     };
   },
