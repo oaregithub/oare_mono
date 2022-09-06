@@ -29,6 +29,10 @@ jobs:
 
       - name: Build Packages
         run: yarn build
+        env:
+          VUE_APP_GOOGLE_ANALYTICS_DASHBOARD_SOURCE: ${{ secrets.VUE_APP_GOOGLE_ANALYTICS_DASHBOARD_SOURCE }}
+          VUE_APP_GOOGLE_ANALYTICS_HREF: ${{ secrets.VUE_APP_GOOGLE_ANALYTICS_HREF }}
+          VUE_APP_GOOGLE_ANALYTICS_KEY: ${{ secrets.VUE_APP_GOOGLE_ANALYTICS_KEY }}
 
       - name: Lint Files
         run: yarn lint
