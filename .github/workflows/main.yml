@@ -24,25 +24,25 @@ jobs:
         with:
           node-version: 16
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: yarn install
 
-      - name: Build packages
+      - name: Build Packages
         run: yarn build
 
-      - name: Lint files
+      - name: Lint Files
         run: yarn lint
 
-      - name: Run tests
+      - name: Run Tests
         run: yarn test
 
-      - name: Run SQL migrations
+      - name: Run SQL Migrations
         run: yarn migrate:latest-prod
         env:
           OARE_DB_URL: ${{ secrets.OARE_DB_URL }}
         if: github.ref == 'refs/heads/master'
 
-      - name: Zip up files
+      - name: Zip Files
         run: yarn zip
         if: github.ref == 'refs/heads/master'
 
