@@ -97,10 +97,23 @@
         </dictionary-word>
       </v-row>
       <v-row class="ma-0">
-        <v-btn color="primary" v-if="canDisconnectSpellings">
+        <v-btn
+          color="primary"
+          v-if="canDisconnectSpellings"
+          @click="confirmDisconnectDialog = true"
+        >
           Disconnect Spelling
         </v-btn>
       </v-row>
+    </oare-dialog>
+    <oare-dialog
+      v-model="confirmDisconnectDialog"
+      title="Confirm"
+      submitText="Yes"
+      cancelText="Cancel"
+      closeOnSubmit
+    >
+      Are you sure you want to disconnect this word from the dictionary?
     </oare-dialog>
   </div>
 </template>
@@ -158,6 +171,8 @@ export default defineComponent({
     const canDisconnectSpellings = computed(() =>
       store.hasPermission('DISCONNECT_SPELLING')
     );
+
+    const confirmDisconnectDialog = ref(false);
 
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
@@ -276,6 +291,7 @@ export default defineComponent({
       formatSide,
       romanNumeral,
       canDisconnectSpellings,
+      confirmDisconnectDialog,
       server,
     };
   },
