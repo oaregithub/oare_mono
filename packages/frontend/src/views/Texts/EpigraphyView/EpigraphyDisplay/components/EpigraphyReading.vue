@@ -98,7 +98,7 @@
       </v-row>
       <v-row class="ma-0">
         <v-btn color="primary" v-if="canDisconnectSpellings">
-          "Disconnect Spelling"
+          Disconnect Spelling
         </v-btn>
       </v-row>
     </oare-dialog>
