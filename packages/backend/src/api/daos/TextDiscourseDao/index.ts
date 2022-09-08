@@ -631,16 +631,14 @@ class TextDiscourseDao {
     return !!row;
   }
 
-  async disconnectSpellings(
-    discourseUuids: string[],
+  async disconnectSpelling(
+    discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
-    await Promise.all(
-      discourseUuids.map(uuid =>
-        k('text_discourse').update('spelling_uuid', null).where('uuid', uuid)
-      )
-    );
+    await k('text_discourse')
+      .update('spelling_uuid', null)
+      .where('uuid', discourseUuid);
   }
 
   async insertDiscourseRow(row: TextDiscourseRow, trx?: Knex.Transaction) {

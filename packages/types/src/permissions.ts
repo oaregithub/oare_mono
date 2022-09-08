@@ -17,10 +17,11 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'UPDATE_TRANSLATION'
     | 'UPDATE_FORM'
     | 'ADD_SPELLING'
-    | 'INSERT_DISCOURSE_ROWS'
     | 'ADD_FORM'
     | 'DISCONNECT_SPELLING'
-    | 'EDIT_TRANSLITERATION_STATUS';
+    | 'CONNECT_SPELLING'
+    | 'EDIT_TRANSLITERATION_STATUS'
+    | 'ADD_LEMMA';
   type: 'dictionary';
 }
 
@@ -35,6 +36,7 @@ export interface TextPermission extends PermissionTemplate {
     | 'VIEW_TEXT_DISCOURSE'
     | 'VIEW_TEXT_FILE'
     | 'ADD_NEW_TEXTS'
+    | 'INSERT_DISCOURSE_ROWS'
     | 'EDIT_TEXT_INFO'
     | 'UPLOAD_EPIGRAPHY_IMAGES'
     | 'EDIT_TRANSLATION'

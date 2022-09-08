@@ -9,7 +9,7 @@ const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe('DiscourseReading test', () => {
+describe('Connect Spelling Occurence test', () => {
   const mockForm = {
     uuid: 'uuid',
     form: 'form',
@@ -63,8 +63,9 @@ describe('DiscourseReading test', () => {
 
   const mockStore = {
     getters: {
-      isAdmin: true,
+      isAdmin: false,
     },
+    hasPermission: () => true,
   };
 
   const setup = () => {
@@ -106,11 +107,9 @@ describe('DiscourseReading test', () => {
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
-  it('submit button hidden from non-admin', async () => {
+  it('submit button hidden from someone without permission', async () => {
     sl.set('store', {
-      getters: {
-        isAdmin: false,
-      },
+      hasPermission: () => false,
     });
     const wrapper = createWrapper();
     await flushPromises();

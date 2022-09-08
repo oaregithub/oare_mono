@@ -14,7 +14,8 @@ describe('EpigraphyFullDisplay View', () => {
     getters: {
       isAdmin: true,
     },
-    hasPermission: name => ['VIEW_TEXT_DISCOURSE'].includes(name),
+    hasPermission: name =>
+      ['VIEW_TEXT_DISCOURSE', 'CONNECT_SPELLING'].includes(name),
   };
 
   const mockRouter = {
@@ -146,11 +147,15 @@ describe('EpigraphyFullDisplay View', () => {
     expect(dialogExists).toBe(false);
   });
 
-  it('display admin dialog if no dictionary info for a given discourseUuid', async () => {
+  it('display connect spelling dialog if no dictionary info for a given discourseUuid', async () => {
     const wrapper = createWrapper({
       server: {
         ...mockServer,
         getDictionaryInfoByDiscourseUuid: jest.fn().mockResolvedValue(null),
+      },
+      store: {
+        ...mockStore,
+        hasPermission: () => true,
       },
     });
     await flushPromises();

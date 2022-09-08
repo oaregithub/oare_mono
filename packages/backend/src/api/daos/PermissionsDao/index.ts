@@ -87,7 +87,7 @@ class PermissionsDao {
     },
     {
       name: 'INSERT_DISCOURSE_ROWS',
-      type: 'dictionary',
+      type: 'text',
       description:
         'Allow group users to insert new text discourse rows where missing',
       dependencies: ['UPDATE_FORM'],

@@ -1,4 +1,4 @@
-import { DictionaryForm } from './dictionary';
+import { DictionaryForm, ParseTreeProperty } from './dictionary';
 
 export interface ItemPropertyRow {
   uuid: string;
@@ -60,6 +60,17 @@ export interface WordsInTextSearchPayloadUnparsed {
   page: string;
   rows: string;
   sequenced: string;
+}
+
+export interface AddWordCheckPayload {
+  wordSpelling: string;
+  properties: ParseTreeProperty[];
+}
+
+export interface AddWordPayload {
+  wordSpelling: string;
+  wordType: 'word' | 'PN' | 'GN';
+  properties: ParseTreeProperty[];
 }
 export interface ParsePropertiesDisplay {
   display: string;
