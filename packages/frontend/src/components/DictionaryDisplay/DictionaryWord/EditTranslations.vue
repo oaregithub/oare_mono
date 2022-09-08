@@ -11,7 +11,7 @@
       <v-btn
         v-if="!isLoading && canUpdateTranslations"
         icon
-        class="mt-n2 test-save-translations"
+        class="test-save-translations"
         @click="saveEdits"
       >
         <v-icon>mdi-check</v-icon>
@@ -19,7 +19,6 @@
       <v-btn
         v-if="!isLoading && canUpdateTranslations"
         icon
-        class="mt-n2"
         @click="closeEditor"
       >
         <v-icon>mdi-close</v-icon>
