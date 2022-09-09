@@ -70,24 +70,26 @@
         >
       </v-col>
       <v-col cols="3">
-        <v-btn
-          v-if="!filterByProperties"
-          class="ma-2"
-          color="info"
-          @click="
-            filterByProperties = true;
-            editLemmaPropertiesDialog = true;
-          "
-        >
-          Filter By Properties
-        </v-btn>
-        <v-btn
-          v-if="filterByProperties"
-          color="error"
-          @click="cancelFilterByProperties"
-          class="ma-1"
-          >Cancel</v-btn
-        >
+        <div :key="`${filterByProperties}-filter-by-properties`">
+          <v-btn
+            v-if="!filterByProperties"
+            class="ma-2"
+            color="info"
+            @click="
+              filterByProperties = true;
+              editLemmaPropertiesDialog = true;
+            "
+          >
+            Filter By Properties
+          </v-btn>
+          <v-btn
+            v-if="filterByProperties"
+            color="error"
+            @click="cancelFilterByProperties"
+            class="ma-1"
+            >Cancel</v-btn
+          >
+        </div>
       </v-col>
     </v-row>
 
@@ -97,12 +99,15 @@
       title="Select Lemma Properties for filtering"
       :width="1000"
       submitText="Filter"
-      @submit="filterWithProps()"
+      @submit="filterWithProps"
+      @input="filterByProperties = $event"
       closeOnSubmit
     >
       <add-properties
         :startingUuid="partOfSpeechValueUuid"
         requiredNodeValueName="Parse"
+        :hideActions="true"
+        :selectMultiple="true"
         @export-properties="setProperties($event)"
         @form-complete="formComplete = $event"
       />
@@ -217,7 +222,7 @@ export default defineComponent({
     const editLemmaPropertiesDialog = ref(false);
     const appliedPropertiesForFiltering = ref<(string | null)[]>([]);
     const filteredForms = ref(props.wordInfo.forms);
-    const filteredFormsByPropertirs = ref(props.wordInfo.forms);
+    const filteredFormsByProperties = ref(props.wordInfo.forms);
 
     const searchQuery = useQueryParam('filter', '', true);
 
@@ -268,6 +273,7 @@ export default defineComponent({
     };
 
     const filterWithProps = () => {
+      filterByProperties.value = true;
       filteredForms.value = filteredForms.value.filter(form => {
         return (
           properties.value
@@ -285,13 +291,13 @@ export default defineComponent({
             .every(val => form.properties.map(el => el.level).includes(val))
         );
       });
-      filteredFormsByPropertirs.value = filteredForms.value;
+      filteredFormsByProperties.value = filteredForms.value;
     };
 
     const cancelFilterByProperties = () => {
       filterByProperties.value = !filterByProperties.value;
       filteredForms.value = props.wordInfo.forms;
-      filteredFormsByPropertirs.value = props.wordInfo.forms;
+      filteredFormsByProperties.value = props.wordInfo.forms;
     };
     const filterSpellings = (
       form: DictionaryForm,
@@ -309,7 +315,7 @@ export default defineComponent({
       () => searchQuery.value,
       _.debounce(() => {
         filteredForms.value = [];
-        filteredFormsByPropertirs.value.map(form => {
+        filteredFormsByProperties.value.map(form => {
           if (form.form.includes(searchQuery.value)) {
             filteredForms.value.push(form);
             return;
