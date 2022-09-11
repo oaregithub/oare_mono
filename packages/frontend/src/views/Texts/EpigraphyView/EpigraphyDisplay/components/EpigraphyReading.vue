@@ -108,7 +108,7 @@
     </oare-dialog>
     <oare-dialog
       v-model="confirmDisconnectDialog"
-      title="Confirm"
+      title="Confirm Disconnect"
       submitText="Yes"
       cancelText="Cancel"
       closeOnSubmit
@@ -172,7 +172,24 @@ export default defineComponent({
       store.hasPermission('DISCONNECT_SPELLING')
     );
 
+    const selectedDiscourseUuid = ref<any>('');
+
     const confirmDisconnectDialog = ref(false);
+
+    async function disconnectSpelling(): Promise<void> {
+      try {
+        if (selectedDiscourseUuid.value) {
+          await server.disconnectSpellings([selectedDiscourseUuid]);
+          viewingDialog.value = false;
+          actions.showSnackbar('Spelling successfully disconnected.');
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting spelling. Please try again.',
+          err as Error
+        );
+      }
+    }
 
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
@@ -197,6 +214,7 @@ export default defineComponent({
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
+        selectedDiscourseUuid.value = discourseUuid;
 
         const spellingUuid = props.localDiscourseInfo
           ? props.localDiscourseInfo.filter(
@@ -292,6 +310,7 @@ export default defineComponent({
       romanNumeral,
       canDisconnectSpellings,
       confirmDisconnectDialog,
+      selectedDiscourseUuid,
       server,
     };
   },
