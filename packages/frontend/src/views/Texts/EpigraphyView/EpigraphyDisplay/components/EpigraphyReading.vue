@@ -111,6 +111,7 @@
       title="Confirm Disconnect"
       submitText="Yes"
       cancelText="Cancel"
+      @click="disconnectSpelling(selectedDiscourseUuid)"
       closeOnSubmit
     >
       Are you sure you want to disconnect this word from the dictionary?
