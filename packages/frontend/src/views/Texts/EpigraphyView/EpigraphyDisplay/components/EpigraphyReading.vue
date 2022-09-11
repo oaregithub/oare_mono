@@ -182,11 +182,11 @@ export default defineComponent({
         if (selectedDiscourseUuid.value) {
           await server.disconnectSpellings([selectedDiscourseUuid]);
           viewingDialog.value = false;
-          actions.showSnackbar('Spelling successfully disconnected.');
+          actions.showSnackbar('Word successfully disconnected.');
         }
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error disconnecting spelling. Please try again.',
+          'Error disconnecting word. Please try again.',
           err as Error
         );
       }
