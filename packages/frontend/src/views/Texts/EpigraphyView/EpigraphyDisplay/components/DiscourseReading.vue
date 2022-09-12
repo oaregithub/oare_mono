@@ -92,6 +92,7 @@
                   v-bind="attrs"
                   v-on="on"
                   class="pr-8"
+                  @click="openDialog(item.uuid)"
                 ></span>
               </template>
 
@@ -131,6 +132,28 @@
         </v-row>
       </template>
     </v-treeview>
+    <oare-dialog
+      v-if="viewingDialog"
+      class="test-rendering-word-dialog"
+      :closeButton="true"
+      :persistent="false"
+      :show-cancel="false"
+      :show-submit="false"
+      :submitLoading="loading"
+      :width="600"
+      v-model="viewingDialog"
+    >
+      <dictionary-word
+        v-if="discourseWordInfo"
+        :uuid="discourseWordInfo.uuid"
+        :selected-word-info="discourseWordInfo"
+        :allow-commenting="false"
+        :allow-editing="false"
+        :allow-deleting="false"
+        :allow-breadcrumbs="false"
+      >
+      </dictionary-word>
+    </oare-dialog>
   </div>
 </template>
 
@@ -142,9 +165,15 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
+import {
+  DiscourseUnit,
+  EpigraphicUnitSide,
+  TextDiscourseRow,
+  Word,
+} from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
 import sl from '@/serviceLocator';
 
@@ -162,20 +191,35 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    localDiscourseInfo: {
+      type: Array as PropType<TextDiscourseRow[]>,
+      required: false,
+    },
   },
   components: {
     DiscoursePropertiesCard,
+    DictionaryWord,
   },
-  setup({ discourseUnits, textUuid, disableEditing }) {
+  setup({ discourseUnits, textUuid, disableEditing, localDiscourseInfo }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
     const inputTranslation = ref('');
     const store = sl.get('store');
     const actions = sl.get('globalActions');
+    const loading = ref(false);
+    const viewingDialog = ref(false);
+    const discourseWordInfo = ref<Word | null>(null);
+    const viewingConnectSpellingDialog = ref(false);
+    const connectSpellingDialogSpelling = ref('');
+    const connectSpellingDialogDiscourseUuid = ref('');
 
     const allowEditing = computed(
       () => !disableEditing && store.hasPermission('EDIT_TRANSLATION')
+    );
+
+    const canConnectSpellings = computed(() =>
+      store.hasPermission('CONNECT_SPELLING')
     );
 
     const discourseColor = (discourseType: string) => {
@@ -333,6 +377,63 @@ export default defineComponent({
         : null
     );
 
+    const openConnectSpellingDialog = async (discourseUuid: string) => {
+      try {
+        const { spelling } = await server.getSpellingByDiscourseUuid(
+          discourseUuid
+        );
+        viewingConnectSpellingDialog.value = true;
+        connectSpellingDialogSpelling.value = spelling;
+        connectSpellingDialogDiscourseUuid.value = discourseUuid;
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to load connect spelling view',
+          err as Error
+        );
+      }
+    };
+
+    const openDialog = async (discourseUuid: string) => {
+      try {
+        loading.value = true;
+        actions.showSnackbar('Fetching discourse information...');
+
+        const spellingUuid = localDiscourseInfo
+          ? localDiscourseInfo.filter(row => row.uuid === discourseUuid)[0]
+              .spellingUuid
+          : null;
+
+        if (discourseUuid && !localDiscourseInfo) {
+          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+            discourseUuid
+          );
+        } else if (spellingUuid && localDiscourseInfo) {
+          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
+            spellingUuid
+          );
+        } else {
+          discourseWordInfo.value = null;
+        }
+        actions.closeSnackbar();
+        if (discourseWordInfo.value) {
+          viewingDialog.value = true;
+        } else if (canConnectSpellings.value && discourseUuid) {
+          await openConnectSpellingDialog(discourseUuid);
+        } else {
+          actions.showSnackbar(
+            'No information exists for this text discourse word'
+          );
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to retrieve text discourse word info',
+          err as Error
+        );
+      } finally {
+        loading.value = false;
+      }
+    };
+
     return {
       discourseRenderer,
       discourseColor,
@@ -352,6 +453,13 @@ export default defineComponent({
       insertParentDiscourseKey,
       canInsertParentDiscourse,
       insertParentDiscourseComponent,
+      openDialog,
+      loading,
+      discourseWordInfo,
+      viewingDialog,
+      viewingConnectSpellingDialog,
+      connectSpellingDialogSpelling,
+      connectSpellingDialogDiscourseUuid,
     };
   },
 });
