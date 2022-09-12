@@ -5,10 +5,10 @@ export interface ItemPropertyRow {
   referenceUuid: string;
   parentUuid: string;
   level: number | null;
-  variableUuid: string;
+  variableUuid: string | null;
   variableName: string;
   varAbbrevation: string | null;
-  valueUuid: string;
+  valueUuid: string | null;
   valueName: string;
   valAbbreviation: string | null;
   objectUuid: string;
