@@ -78,7 +78,6 @@ export const exportSnapshot: ScheduledHandler = (
             console.log(error, error.stack); // eslint-disable-line no-console
           } else {
             await knex('logging').del();
-            await knex('logging_edits').del();
           }
         });
       }
