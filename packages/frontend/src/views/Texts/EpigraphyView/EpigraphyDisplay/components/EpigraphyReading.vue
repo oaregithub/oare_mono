@@ -111,7 +111,7 @@
       title="Confirm Disconnect"
       submitText="Yes"
       cancelText="Cancel"
-      @click="disconnectSpelling(selectedDiscourseUuid)"
+      @submit="disconnectSpelling()"
       closeOnSubmit
     >
       Are you sure you want to disconnect this word from the dictionary?
@@ -180,7 +180,7 @@ export default defineComponent({
     async function disconnectSpelling(): Promise<void> {
       try {
         if (selectedDiscourseUuid.value) {
-          await server.disconnectSpellings([selectedDiscourseUuid]);
+          await server.disconnectSpellings([selectedDiscourseUuid.value]);
           viewingDialog.value = false;
           actions.showSnackbar('Word successfully disconnected.');
         }
@@ -311,6 +311,7 @@ export default defineComponent({
       romanNumeral,
       canDisconnectSpellings,
       confirmDisconnectDialog,
+      disconnectSpelling,
       selectedDiscourseUuid,
       server,
     };
