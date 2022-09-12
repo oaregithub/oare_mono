@@ -85,9 +85,9 @@
           <v-btn
             v-if="filterByProperties"
             color="error"
-            @click="cancelFilterByProperties"
+            @click="resetFilterByProperties"
             class="ma-1"
-            >Cancel</v-btn
+            >Reset Properties Filter</v-btn
           >
         </div>
       </v-col>
@@ -294,7 +294,7 @@ export default defineComponent({
       filteredFormsByProperties.value = filteredForms.value;
     };
 
-    const cancelFilterByProperties = () => {
+    const resetFilterByProperties = () => {
       filterByProperties.value = !filterByProperties.value;
       filteredForms.value = props.wordInfo.forms;
       filteredFormsByProperties.value = props.wordInfo.forms;
@@ -354,7 +354,7 @@ export default defineComponent({
       filteredForms,
       selectForm,
       setProperties,
-      cancelFilterByProperties,
+      resetFilterByProperties,
       filterWithProps,
     };
   },
