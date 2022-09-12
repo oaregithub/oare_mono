@@ -14,7 +14,6 @@ import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import { assembleSearchResult, assembleAutocompleteDisplay } from './utils';
-import LoggingEditsDao from '../LoggingEditsDao';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
 import ItemPropertiesDao from '../ItemPropertiesDao';
@@ -538,11 +537,6 @@ class DictionaryWordDao {
         FieldDao.insertField(wordUuid, fieldType, tr.val, tr.primacy, null, trx)
       )
     );
-    await Promise.all(
-      insertedUuids.map(fieldUuid =>
-        LoggingEditsDao.logEdit('INSERT', userUuid, 'field', fieldUuid, trx)
-      )
-    );
     newTranslations = newTranslations.map((tr, index) => ({
       ...tr,
       uuid: insertedUuids[index],
@@ -551,11 +545,6 @@ class DictionaryWordDao {
     // Update existing translations
     const existingTranslations = translationsWithPrimacy.filter(
       tr => tr.uuid !== ''
-    );
-    await Promise.all(
-      existingTranslations.map(tr =>
-        LoggingEditsDao.logEdit('UPDATE', userUuid, 'field', tr.uuid, trx)
-      )
     );
     await Promise.all(
       existingTranslations.map(tr =>

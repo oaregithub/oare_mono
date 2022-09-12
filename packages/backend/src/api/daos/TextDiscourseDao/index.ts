@@ -120,8 +120,7 @@ class TextDiscourseDao {
   }
 
   /* Get the uuids of the rows in text discourse associated with a 
-  particular form. Useful for updating the logging edits table 
-  and then updating the text discourse table itself */
+  particular form. */
   async getDiscourseUuidsByFormUuid(
     formUuid: string,
     trx?: Knex.Transaction
