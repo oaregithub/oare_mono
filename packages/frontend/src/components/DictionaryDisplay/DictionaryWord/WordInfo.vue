@@ -2,6 +2,7 @@
   <div>
     <div class="d-flex">
       <word-grammar
+        class="pb-2"
         :word="wordInfo"
         :allowEditing="allowEditing"
         :updateWordInfo="updateWordInfo"

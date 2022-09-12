@@ -1,7 +1,11 @@
 <template>
-  <div>
-    <div class="d-flex">
-      <v-tooltip bottom open-delay="800" :key="`${editing}-${form.uuid}`">
+  <div class="d-flex">
+    <div class="d-flex flex-shrink-0">
+      <v-tooltip
+        bottom
+        open-delay="800"
+        :key="`${editing}-${form.uuid}-edit-form`"
+      >
         <template #activator="{ on, attrs }">
           <v-btn
             v-if="canEdit && !editing && allowEditing"
@@ -63,7 +67,11 @@
         </v-btn>
       </div>
 
-      <span v-if="aggregateOccurrences > 0" class="mr-1">
+      <span
+        v-if="aggregateOccurrences > 0"
+        :key="`${form.uuid}-form-occurences`"
+        :class="editing ? 'mt-2' : ''"
+      >
         <a @click="textOccurrenceDialog = true">
           ({{ aggregateOccurrences }})</a
         >
@@ -81,10 +89,17 @@
         </text-occurrences>
       </span>
 
-      <grammar-display :word="word" :form="form" :allowEditing="allowEditing" />
-      <span class="d-flex flex-row flex-wrap mb-0">
+      <grammar-display
+        :class="editing ? 'mt-2' : ''"
+        :word="word"
+        :form="form"
+        :allowEditing="allowEditing"
+      />
+    </div>
+    <div class="d-inline-flex flex-row flex-shrink-1">
+      <span :class="`d-inline-flex flex-wrap ${editing ? 'mt-2' : ''}`">
         <span
-          class="d-flex flex-row mb-0"
+          class="d-flex flex-row"
           v-for="(s, index) in form.spellings"
           :key="index"
         >
@@ -100,7 +115,11 @@
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span>
       </span>
-      <v-tooltip bottom open-delay="800">
+      <v-tooltip
+        :key="`${editing}-${form.uuid}-add-spelling`"
+        bottom
+        open-delay="800"
+      >
         <template #activator="{ on, attrs }">
           <v-btn
             v-if="canAddSpelling && !editing && allowEditing"
