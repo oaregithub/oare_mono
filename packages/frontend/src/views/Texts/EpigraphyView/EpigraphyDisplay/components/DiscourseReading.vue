@@ -191,16 +191,12 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    localDiscourseInfo: {
-      type: Array as PropType<TextDiscourseRow[]>,
-      required: false,
-    },
   },
   components: {
     DiscoursePropertiesCard,
     DictionaryWord,
   },
-  setup({ discourseUnits, textUuid, disableEditing, localDiscourseInfo }) {
+  setup({ discourseUnits, textUuid, disableEditing }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
@@ -377,39 +373,14 @@ export default defineComponent({
         : null
     );
 
-    const openConnectSpellingDialog = async (discourseUuid: string) => {
-      try {
-        const { spelling } = await server.getSpellingByDiscourseUuid(
-          discourseUuid
-        );
-        viewingConnectSpellingDialog.value = true;
-        connectSpellingDialogSpelling.value = spelling;
-        connectSpellingDialogDiscourseUuid.value = discourseUuid;
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Failed to load connect spelling view',
-          err as Error
-        );
-      }
-    };
-
     const openDialog = async (discourseUuid: string) => {
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
 
-        const spellingUuid = localDiscourseInfo
-          ? localDiscourseInfo.filter(row => row.uuid === discourseUuid)[0]
-              .spellingUuid
-          : null;
-
-        if (discourseUuid && !localDiscourseInfo) {
+        if (discourseUuid) {
           discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
             discourseUuid
-          );
-        } else if (spellingUuid && localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
-            spellingUuid
           );
         } else {
           discourseWordInfo.value = null;
@@ -417,8 +388,6 @@ export default defineComponent({
         actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;
-        } else if (canConnectSpellings.value && discourseUuid) {
-          await openConnectSpellingDialog(discourseUuid);
         } else {
           actions.showSnackbar(
             'No information exists for this text discourse word'
@@ -457,9 +426,6 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
-      viewingConnectSpellingDialog,
-      connectSpellingDialogSpelling,
-      connectSpellingDialogDiscourseUuid,
     };
   },
 });
