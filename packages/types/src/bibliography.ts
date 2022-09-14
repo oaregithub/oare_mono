@@ -61,3 +61,12 @@ export interface BibliographyResponse {
 }
 
 export type ZoteroRequestType = 'citation' | 'bib' | 'data';
+
+export interface ReferringLocationInfo {
+  beginPage: number | null;
+  endPage: number | null;
+  beginPlate: number | null;
+  endPlate: number | null;
+  note: string | null;
+  publicationNumber: number | null;
+}
