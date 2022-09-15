@@ -108,9 +108,10 @@
     </oare-dialog>
     <oare-dialog
       v-model="confirmDisconnectDialog"
-      title="Confirm"
+      title="Confirm Disconnect"
       submitText="Yes"
       cancelText="Cancel"
+      @submit="disconnectSpelling"
       closeOnSubmit
     >
       Are you sure you want to disconnect this word from the dictionary?
@@ -172,7 +173,24 @@ export default defineComponent({
       store.hasPermission('DISCONNECT_SPELLING')
     );
 
+    const selectedDiscourseUuid = ref('');
+
     const confirmDisconnectDialog = ref(false);
+
+    const disconnectSpelling = async (): Promise<void> => {
+      try {
+        if (selectedDiscourseUuid.value) {
+          await server.disconnectSpellings([selectedDiscourseUuid.value]);
+          viewingDialog.value = false;
+          actions.showSnackbar('Word successfully disconnected.');
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting word. Please try again.',
+          err as Error
+        );
+      }
+    };
 
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
@@ -197,7 +215,9 @@ export default defineComponent({
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
-
+        if (discourseUuid) {
+          selectedDiscourseUuid.value = discourseUuid;
+        }
         const spellingUuid = props.localDiscourseInfo
           ? props.localDiscourseInfo.filter(
               row => row.uuid === discourseUuid
@@ -292,6 +312,8 @@ export default defineComponent({
       romanNumeral,
       canDisconnectSpellings,
       confirmDisconnectDialog,
+      disconnectSpelling,
+      selectedDiscourseUuid,
       server,
     };
   },
