@@ -111,11 +111,6 @@ class ResourceDao {
     bibUuid: string,
     trx?: Knex.Transaction
   ): Promise<ReferringLocationInfo> {
-    //     SELECT * FROM `oarebyue_0.3`.item_properties ip
-    // left join item_properties ip2 on ip.parent_uuid = ip2.parent_uuid
-    // left join item_properties ip3 on ip2.uuid = ip3.parent_uuid
-    // left join item_properties ip4 on ip3.uuid = ip4.parent_uuid
-    // where ip4.reference_uuid = '' and ip.object_uuid = '' and ip4.variable_uuid = ''
     const k = trx || knexRead();
     const beginPage: number | null = await k('item_properties as ip')
       .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
