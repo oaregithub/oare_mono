@@ -111,7 +111,7 @@
       title="Confirm Disconnect"
       submitText="Yes"
       cancelText="Cancel"
-      @submit="disconnectSpelling()"
+      @submit="disconnectSpelling"
       closeOnSubmit
     >
       Are you sure you want to disconnect this word from the dictionary?
@@ -173,11 +173,11 @@ export default defineComponent({
       store.hasPermission('DISCONNECT_SPELLING')
     );
 
-    const selectedDiscourseUuid = ref<any>('');
+    const selectedDiscourseUuid = ref('');
 
     const confirmDisconnectDialog = ref(false);
 
-    async function disconnectSpelling(): Promise<void> {
+    const disconnectSpelling = async (): Promise<void> => {
       try {
         if (selectedDiscourseUuid.value) {
           await server.disconnectSpellings([selectedDiscourseUuid.value]);
@@ -190,7 +190,7 @@ export default defineComponent({
           err as Error
         );
       }
-    }
+    };
 
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
@@ -215,8 +215,9 @@ export default defineComponent({
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
-        selectedDiscourseUuid.value = discourseUuid;
-
+        if (discourseUuid) {
+          selectedDiscourseUuid.value = discourseUuid;
+        }
         const spellingUuid = props.localDiscourseInfo
           ? props.localDiscourseInfo.filter(
               row => row.uuid === discourseUuid
