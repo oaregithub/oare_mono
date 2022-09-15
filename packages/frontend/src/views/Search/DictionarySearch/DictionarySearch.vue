@@ -157,26 +157,13 @@ export default defineComponent({
 
     watch([page, rows], performSearch, { immediate: false });
 
-    const getWordGroup = (word: string) => {
-      for (const [group, groupLetters] of Object.entries(
-        AkkadianLetterGroupsUpper
-      )) {
-        if (groupLetters.includes(word[0].toUpperCase())) {
-          return group;
-        }
-      }
-      return 'A';
-    };
-
     const wordLink = (word: DictionarySearchRow) => {
       if (word.type === 'word') {
         return `/dictionaryWord/${word.uuid}`;
       } else if (word.type === 'PN') {
-        const nameGroup = getWordGroup(word.name);
-        return `/names/${encodeURIComponent(nameGroup)}?filter=${word.name}`;
+        return `/namesWord/${word.uuid}`;
       } else if (word.type === 'GN') {
-        const placeGroup = getWordGroup(word.name);
-        return `/places/${encodeURIComponent(placeGroup)}?filter=${word.name}`;
+        return `/placesWord/${word.uuid}`;
       }
       return null;
     };
