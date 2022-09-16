@@ -187,7 +187,7 @@
                     {{ zotero.citation
                     }}<span
                       >; Link to:
-                      <span v-if="zotero.pageLink"
+                      <span v-if="zotero.pageLink" class="mr-1"
                         ><a :href="zotero.pageLink">Page</a></span
                       >
                       <span v-if="zotero.plateLink"
