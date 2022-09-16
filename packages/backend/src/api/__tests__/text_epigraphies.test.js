@@ -333,6 +333,14 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       .mockResolvedValue(
         'https://oare-unit-test.com/test-resource-link-abc.pdf'
       ),
+    getReferringLocationInfo: jest.fn().mockResolvedValue({
+      beginPage: 2,
+      endPage: 3,
+      beginPlate: null,
+      endPlate: null,
+      note: 'hello',
+      publicationNumber: 18,
+    }),
   };
 
   const mockBibliographyDao = {

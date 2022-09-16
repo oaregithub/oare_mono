@@ -20,6 +20,7 @@ import cacheMiddleware from '@/middlewares/cache';
 import textMiddleware from '@/middlewares/text';
 import fileUpload from 'express-fileupload';
 import { noFilter, textFilter } from '@/cache/filters';
+import { concatLocation } from './daos/ResourceDao/utils';
 
 const router = express.Router();
 
@@ -167,8 +168,18 @@ router
           )
         );
 
+        const referenceLocations = await Promise.all(
+          bibliographyUuids.map(uuid =>
+            ResourceDao.getReferringLocationInfo(textUuid, uuid)
+          )
+        );
+
+        const referenceLocationsStrings = await Promise.all(
+          referenceLocations.map(location => concatLocation(location))
+        );
+
         const rawZoteroData = zoteroCitations.map((cit, idx) => ({
-          citation: cit,
+          citation: cit ? `${cit}${referenceLocationsStrings[idx]}` : null,
           link: fileURLs[idx],
         }));
 
