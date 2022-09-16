@@ -132,6 +132,17 @@
         </v-row>
       </template>
     </v-treeview>
+    <connect-spelling-occurrence
+      v-if="viewingConnectSpellingDialog"
+      :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
+      class="test-spelling-occurrence-display"
+      :discourseUuid="connectSpellingDialogDiscourseUuid"
+      :spelling="connectSpellingDialogSpelling"
+      :searchSpellings="server.searchSpellings"
+      :getTexts="server.getSpellingTextOccurrences"
+      @finish="closeConnectSpellingDialog"
+      v-model="viewingConnectSpellingDialog"
+    ></connect-spelling-occurrence>
     <oare-dialog
       v-if="viewingDialog"
       class="test-rendering-word-dialog"
@@ -165,12 +176,7 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import {
-  DiscourseUnit,
-  EpigraphicUnitSide,
-  TextDiscourseRow,
-  Word,
-} from '@oare/types';
+import { DiscourseUnit, EpigraphicUnitSide, Word } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
@@ -388,6 +394,8 @@ export default defineComponent({
         actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;
+        } else if (canConnectSpellings.value && discourseUuid) {
+          await openConnectSpellingDialog(discourseUuid);
         } else {
           actions.showSnackbar(
             'No information exists for this text discourse word'
@@ -400,6 +408,35 @@ export default defineComponent({
         );
       } finally {
         loading.value = false;
+      }
+    };
+
+    const openConnectSpellingDialog = async (discourseUuid: string) => {
+      try {
+        const { spelling } = await server.getSpellingByDiscourseUuid(
+          discourseUuid
+        );
+        viewingConnectSpellingDialog.value = true;
+        connectSpellingDialogSpelling.value = spelling;
+        connectSpellingDialogDiscourseUuid.value = discourseUuid;
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to load connect spelling view',
+          err as Error
+        );
+      }
+    };
+
+    const closeConnectSpellingDialog = async () => {
+      try {
+        viewingConnectSpellingDialog.value = false;
+        connectSpellingDialogSpelling.value = '';
+        connectSpellingDialogDiscourseUuid.value = '';
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to close connect spelling view',
+          err as Error
+        );
       }
     };
 
@@ -426,6 +463,9 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
+      viewingConnectSpellingDialog,
+      connectSpellingDialogSpelling,
+      connectSpellingDialogDiscourseUuid,
     };
   },
 });
