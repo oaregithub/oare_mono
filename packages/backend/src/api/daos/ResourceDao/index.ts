@@ -6,9 +6,11 @@ import {
   LinkRow,
   EpigraphyLabelLink,
   ImageResource,
+  ReferringLocationInfo,
 } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
+import { getReferringLocationInfoQuery } from './utils';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -103,6 +105,66 @@ class ResourceDao {
       );
 
     return textLinks[0] || null;
+  }
+
+  async getReferringLocationInfo(
+    textUuid: string,
+    bibUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<ReferringLocationInfo> {
+    const k = trx || knexRead();
+    const beginPage: number | null = await getReferringLocationInfoQuery(
+      '5ce1f5a2-b68f-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+
+    const endPage: number | null = await getReferringLocationInfoQuery(
+      '5cf077ed-b68f-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+
+    const beginPlate: number | null = await getReferringLocationInfoQuery(
+      '5d42c28a-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+
+    const endPlate: number | null = await getReferringLocationInfoQuery(
+      '5d600469-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+
+    const note: string | null = await getReferringLocationInfoQuery(
+      '5d6b0f28-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => obj?.value ?? null);
+
+    const publicationNumber:
+      | number
+      | null = await getReferringLocationInfoQuery(
+      '5d771785-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+
+    return {
+      beginPage,
+      endPage,
+      beginPlate,
+      endPlate,
+      note,
+      publicationNumber,
+    };
   }
 
   async getPDFUrlByBibliographyUuid(

@@ -1,6 +1,5 @@
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
-import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import UserDao from '@/api/daos/UserDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
@@ -49,7 +48,6 @@ export type ServiceTypes = {
   DictionarySpellingDao: typeof DictionarySpellingDao;
   FieldDao: typeof FieldDao;
   ItemPropertiesDao: typeof ItemPropertiesDao;
-  LoggingEditsDao: typeof LoggingEditsDao;
   TextDiscourseDao: typeof TextDiscourseDao;
   TextDraftsDao: typeof TextDraftsDao;
   UserDao: typeof UserDao;

@@ -509,7 +509,7 @@ export default defineComponent({
             label: 'Text UUID',
           },
         ],
-        level: 'exact',
+        level: 'startsWith',
         type: 'Text Epigraphies',
       },
       {
@@ -549,7 +549,7 @@ export default defineComponent({
             label: 'Text UUID',
           },
         ],
-        level: 'exact',
+        level: 'startsWith',
         type: 'Text Epigraphies',
       },
       {
