@@ -180,6 +180,7 @@ import { DiscourseUnit, EpigraphicUnitSide, Word } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
+import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
 import sl from '@/serviceLocator';
 
@@ -201,6 +202,7 @@ export default defineComponent({
   components: {
     DiscoursePropertiesCard,
     DictionaryWord,
+    ConnectSpellingOccurrence,
   },
   setup({ discourseUnits, textUuid, disableEditing }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
@@ -466,6 +468,8 @@ export default defineComponent({
       viewingConnectSpellingDialog,
       connectSpellingDialogSpelling,
       connectSpellingDialogDiscourseUuid,
+      closeConnectSpellingDialog,
+      server,
     };
   },
 });
