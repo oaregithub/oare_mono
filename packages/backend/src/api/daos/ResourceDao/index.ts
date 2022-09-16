@@ -151,7 +151,7 @@ class ResourceDao {
     const publicationNumber:
       | number
       | null = await getReferringLocationInfoQuery(
-      '',
+      '5d771785-b1fe-11ec-bcc3-0282f921eac9',
       textUuid,
       bibUuid,
       trx
