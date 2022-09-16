@@ -99,6 +99,18 @@ class PermissionsDao {
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
+      name: 'ADD_LEMMA',
+      type: 'dictionary',
+      description: 'Allow group users to add new words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
+      name: 'CONNECT_SPELLING',
+      type: 'dictionary',
+      description: 'Allow group users to connect spelling occurrences to words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
       name: 'DISCONNECT_SPELLING',
       type: 'dictionary',
       description:
