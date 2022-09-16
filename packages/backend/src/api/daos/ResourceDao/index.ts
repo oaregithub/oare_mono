@@ -10,7 +10,7 @@ import {
 } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
-import { getReferringLocationInfoQuery } from './utils';
+import { calcPDFPageNum, getReferringLocationInfoQuery } from './utils';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -151,7 +151,7 @@ class ResourceDao {
     const publicationNumber:
       | number
       | null = await getReferringLocationInfoQuery(
-      '5d771785-b1fe-11ec-bcc3-0282f921eac9',
+      '',
       textUuid,
       bibUuid,
       trx
@@ -169,11 +169,20 @@ class ResourceDao {
 
   async getPDFUrlByBibliographyUuid(
     uuid: string,
+    referenceLocation?: ReferringLocationInfo,
     trx?: Knex.Transaction
-  ): Promise<string | null> {
+  ): Promise<{
+    fileUrl: string | null;
+    pageLink: string | null;
+    plateLink: string | null;
+  }> {
     const k = trx || knexRead();
-    const resourceRow: { link: string; container: string } = await k('resource')
-      .select('link', 'container')
+    const resourceRow: {
+      link: string;
+      container: string;
+      format: string | null;
+    } = await k('resource')
+      .select('link', 'container', 'format')
       .whereIn(
         'uuid',
         knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
@@ -184,6 +193,8 @@ class ResourceDao {
     const s3 = new AWS.S3();
 
     let fileUrl: string | null;
+    let page: number | null = null;
+    let plate: number | null = null;
 
     try {
       fileUrl = await s3.getSignedUrlPromise('getObject', {
@@ -194,7 +205,19 @@ class ResourceDao {
       fileUrl = null;
     }
 
-    return fileUrl;
+    if (resourceRow.format && referenceLocation) {
+      const pdfPageNumResponse = await calcPDFPageNum(
+        resourceRow.format,
+        referenceLocation.beginPage,
+        referenceLocation.beginPlate
+      );
+      page = pdfPageNumResponse.page;
+      plate = pdfPageNumResponse.plate;
+    }
+    const pageLink = page ? `${fileUrl}#page=${page}` : null;
+    const plateLink = plate ? `${fileUrl}#page=${plate}` : null;
+
+    return { fileUrl, pageLink, plateLink };
   }
 
   async getValidCdliImageLinks(
