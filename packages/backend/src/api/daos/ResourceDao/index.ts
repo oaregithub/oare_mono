@@ -10,6 +10,7 @@ import {
 } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
+import { getReferringLocationInfoQuery } from './utils';
 
 class ResourceDao {
   async getImageLinksByTextUuid(
@@ -112,65 +113,49 @@ class ResourceDao {
     trx?: Knex.Transaction
   ): Promise<ReferringLocationInfo> {
     const k = trx || knexRead();
-    const beginPage: number | null = await k('item_properties as ip')
-      .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
-      .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
-      .where('ip3.variable_uuid', '5ce1f5a2-b68f-11ec-bcc3-0282f921eac9')
-      .andWhere('ip3.reference_uuid', textUuid)
-      .andWhere('ip.object_uuid', bibUuid)
-      .select('ip3.value')
-      .first()
-      .then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+    const beginPage: number | null = await getReferringLocationInfoQuery(
+      '5ce1f5a2-b68f-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
 
-    const endPage: number | null = await k('item_properties as ip')
-      .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
-      .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
-      .where('ip3.variable_uuid', '5cf077ed-b68f-11ec-bcc3-0282f921eac9')
-      .andWhere('ip3.reference_uuid', textUuid)
-      .andWhere('ip.object_uuid', bibUuid)
-      .select('ip3.value')
-      .first()
-      .then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+    const endPage: number | null = await getReferringLocationInfoQuery(
+      '5cf077ed-b68f-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
 
-    const beginPlate: number | null = await k('item_properties as ip')
-      .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
-      .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
-      .where('ip3.variable_uuid', '5d42c28a-b1fe-11ec-bcc3-0282f921eac9')
-      .andWhere('ip3.reference_uuid', textUuid)
-      .andWhere('ip.object_uuid', bibUuid)
-      .select('ip3.value')
-      .first()
-      .then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+    const beginPlate: number | null = await getReferringLocationInfoQuery(
+      '5d42c28a-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
 
-    const endPlate: number | null = await k('item_properties as ip')
-      .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
-      .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
-      .where('ip3.variable_uuid', '5d600469-b1fe-11ec-bcc3-0282f921eac9')
-      .andWhere('ip3.reference_uuid', textUuid)
-      .andWhere('ip.object_uuid', bibUuid)
-      .select('ip3.value')
-      .first()
-      .then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+    const endPlate: number | null = await getReferringLocationInfoQuery(
+      '5d600469-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
 
-    const note: string | null = await k('item_properties as ip')
-      .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
-      .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
-      .where('ip3.variable_uuid', '5d6b0f28-b1fe-11ec-bcc3-0282f921eac9')
-      .andWhere('ip3.reference_uuid', textUuid)
-      .andWhere('ip.object_uuid', bibUuid)
-      .select('ip3.value')
-      .first()
-      .then((obj: { value: string | null }) => obj?.value ?? null);
+    const note: string | null = await getReferringLocationInfoQuery(
+      '5d6b0f28-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => obj?.value ?? null);
 
-    const publicationNumber: number | null = await k('item_properties as ip')
-      .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
-      .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
-      .where('ip3.variable_uuid', '5d771785-b1fe-11ec-bcc3-0282f921eac9')
-      .andWhere('ip3.reference_uuid', textUuid)
-      .andWhere('ip.object_uuid', bibUuid)
-      .select('ip3.value')
-      .first()
-      .then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+    const publicationNumber:
+      | number
+      | null = await getReferringLocationInfoQuery(
+      '5d771785-b1fe-11ec-bcc3-0282f921eac9',
+      textUuid,
+      bibUuid,
+      trx
+    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
 
     return {
       beginPage,
