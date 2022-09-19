@@ -15,7 +15,11 @@ describe('EpigraphyFullDisplay View', () => {
       isAdmin: true,
     },
     hasPermission: name =>
-      ['VIEW_TEXT_DISCOURSE', 'CONNECT_SPELLING'].includes(name),
+      [
+        'VIEW_TEXT_DISCOURSE',
+        'CONNECT_SPELLING',
+        'DISCONNECT_SPELLING',
+      ].includes(name),
   };
 
   const mockRouter = {
@@ -38,6 +42,7 @@ describe('EpigraphyFullDisplay View', () => {
       .mockResolvedValue({ spelling: 'spelling' }),
     searchSpellings: jest.fn().mockResolvedValue([]),
     getSpellingTextOccurrences: jest.fn().mockResolvedValue([]),
+    disconnectSpellings: jest.fn().mockResolvedValue([]),
   };
 
   const mostEpigraphicUnits = [
@@ -122,6 +127,47 @@ describe('EpigraphyFullDisplay View', () => {
 
     dialogExists = await wrapper.find('.test-rendering-word-dialog').exists();
     expect(dialogExists).toBe(true);
+  });
+
+  it('displays disconnect button when user has permission', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    const popup = await wrapper.get('.test-epigraphies');
+    expect(wrapper.find('.test-disconnect-word').exists()).toBe(true);
+  });
+
+  it('does not display disconnect button when user does not have permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        ...mockStore,
+        hasPermission: () => false,
+      },
+    });
+    await flushPromises();
+    const popup = await wrapper.get('.test-epigraphies');
+    expect(wrapper.find('.test-disconnect-word').exists()).toBe(false);
+  });
+
+  it('disconnects the word from its spelling', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.get('.test-epigraphies');
+    await flushPromises();
+    await wrapper.get('.test-disconnect-word');
+    expect(mockServer.disconnectSpellings).toHaveBeenCalledTimes(1);
+  });
+
+  it('displays snackbar if attempt to disconnect spelling is unsuccessful', async () => {
+    const wrapper = createWrapper({
+      server: {
+        disconnectSpellings: jest.fn().mockResolvedValue(null),
+      },
+    });
+    await flushPromises();
+    await wrapper.get('.test-epigraphies');
+    await flushPromises();
+    await wrapper.get('.test-disconnect-word');
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalledTimes(1);
   });
 
   it('display snackbar if no spelling for discourseUuid and dialog does not display', async () => {
