@@ -92,7 +92,7 @@
                   v-bind="attrs"
                   v-on="on"
                   class="pr-8"
-                  @click="openDialog(item.uuid)"
+                  @click="`${openDialog(item.uuid, item.type)}`"
                 ></span>
               </template>
 
@@ -381,27 +381,31 @@ export default defineComponent({
         : null
     );
 
-    const openDialog = async (discourseUuid: string) => {
+    const openDialog = async (discourseUuid: string, discourseType: string) => {
       try {
-        loading.value = true;
-        actions.showSnackbar('Fetching discourse information...');
+        if (discourseType != 'word') {
+          return;
+        } else {
+          loading.value = true;
+          actions.showSnackbar('Fetching discourse information...');
 
-        if (discourseUuid) {
-          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-            discourseUuid
-          );
-        } else {
-          discourseWordInfo.value = null;
-        }
-        actions.closeSnackbar();
-        if (discourseWordInfo.value) {
-          viewingDialog.value = true;
-        } else if (canConnectSpellings.value && discourseUuid) {
-          await openConnectSpellingDialog(discourseUuid);
-        } else {
-          actions.showSnackbar(
-            'No information exists for this text discourse word'
-          );
+          if (discourseUuid) {
+            discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+              discourseUuid
+            );
+          } else {
+            discourseWordInfo.value = null;
+          }
+          actions.closeSnackbar();
+          if (discourseWordInfo.value) {
+            viewingDialog.value = true;
+          } else if (canConnectSpellings.value && discourseUuid) {
+            await openConnectSpellingDialog(discourseUuid);
+          } else {
+            actions.showSnackbar(
+              'No information exists for this text discourse word'
+            );
+          }
         }
       } catch (err) {
         actions.showErrorSnackbar(
