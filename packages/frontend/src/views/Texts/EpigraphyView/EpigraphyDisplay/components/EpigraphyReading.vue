@@ -100,6 +100,7 @@
         <v-btn
           color="primary"
           v-if="canDisconnectSpellings"
+          class="test-disconnect-word"
           @click="confirmDisconnectDialog = true"
         >
           Disconnect Spelling
