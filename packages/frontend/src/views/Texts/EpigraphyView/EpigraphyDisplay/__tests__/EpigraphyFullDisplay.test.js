@@ -3,6 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
+import { propertyOf } from 'lodash';
 import EpigraphyFullDisplay from '../EpigraphyFullDisplay.vue';
 
 const vuetify = new Vuetify();
@@ -132,7 +133,8 @@ describe('EpigraphyFullDisplay View', () => {
   it('displays disconnect button when user has permission', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const popup = await wrapper.get('.test-epigraphies');
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
     expect(wrapper.find('.test-disconnect-word').exists()).toBe(true);
   });
 
@@ -144,29 +146,37 @@ describe('EpigraphyFullDisplay View', () => {
       },
     });
     await flushPromises();
-    const popup = await wrapper.get('.test-epigraphies');
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
     expect(wrapper.find('.test-disconnect-word').exists()).toBe(false);
   });
 
   it('disconnects the word from its spelling', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    await wrapper.get('.test-epigraphies');
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
     await flushPromises();
-    await wrapper.get('.test-disconnect-word');
+    await wrapper.get('.test-disconnect-word').trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
     expect(mockServer.disconnectSpellings).toHaveBeenCalledTimes(1);
   });
 
   it('displays snackbar if attempt to disconnect spelling is unsuccessful', async () => {
     const wrapper = createWrapper({
       server: {
-        disconnectSpellings: jest.fn().mockResolvedValue(null),
+        ...mockServer,
+        disconnectSpellings: jest.fn().mockRejectedValue(),
       },
     });
     await flushPromises();
     await wrapper.get('.test-epigraphies');
     await flushPromises();
-    await wrapper.get('.test-disconnect-word');
+    await wrapper.get('.test-disconnect-word').trigger('click)');
+    await flushPromises();
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalledTimes(1);
   });
 
