@@ -171,7 +171,7 @@ describe('EpigraphyFullDisplay View', () => {
       },
     });
     await flushPromises();
-    await wrapper.get('.test-epigraphies');
+    await wrapper.get('.test-rendered-word').at(0).trigger('click');
     await flushPromises();
     await wrapper.get('.test-disconnect-word').trigger('click)');
     await flushPromises();
