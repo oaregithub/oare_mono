@@ -79,18 +79,28 @@ export async function calcPDFPageNum(
   let page = 0;
   let plate = 0;
   if (layout === 'a') {
-    if (beginPage) page = beginPage + pageOffset;
-    if (beginPlate && plateOffset) plate = beginPlate + plateOffset;
+    if (beginPage) {
+      page = beginPage + pageOffset;
+    }
+    if (beginPlate && plateOffset) {
+      plate = beginPlate + plateOffset;
+    }
   }
   if (layout === 'b') {
-    if (beginPage) page = -Math.floor(-beginPage / 2) + pageOffset;
-    if (beginPlate && plateOffset)
+    if (beginPage) {
+      page = -Math.floor(-beginPage / 2) + pageOffset;
+    }
+    if (beginPlate && plateOffset) {
       plate = -Math.floor(-beginPlate / 2) + plateOffset;
+    }
   }
   if (layout === 'c') {
-    if (beginPage) page = Math.floor(beginPage / 2) + pageOffset;
-    if (beginPlate && plateOffset)
+    if (beginPage) {
+      page = Math.floor(beginPage / 2) + pageOffset;
+    }
+    if (beginPlate && plateOffset) {
       plate = Math.floor(beginPlate / 2) + plateOffset;
+    }
   }
 
   return {
