@@ -188,10 +188,14 @@
                     }}<span
                       >; Link to:
                       <span v-if="zotero.pageLink" class="mr-1"
-                        ><a :href="zotero.pageLink">Page</a></span
+                        ><a target="_blank" :href="zotero.pageLink"
+                          >Page</a
+                        ></span
                       >
                       <span v-if="zotero.plateLink"
-                        ><a :href="zotero.plateLink">Plate</a></span
+                        ><a target="_blank" :href="zotero.plateLink"
+                          >Plate</a
+                        ></span
                       ></span
                     >
                   </span>
