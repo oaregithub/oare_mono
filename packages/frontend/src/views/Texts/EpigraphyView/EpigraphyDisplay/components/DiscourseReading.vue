@@ -92,7 +92,7 @@
                   v-bind="attrs"
                   v-on="on"
                   class="pr-8"
-                  @click="`${openDialog(item.uuid, item.type)}`"
+                  @click="openDialog(item.uuid, item.type)"
                 ></span>
               </template>
 
