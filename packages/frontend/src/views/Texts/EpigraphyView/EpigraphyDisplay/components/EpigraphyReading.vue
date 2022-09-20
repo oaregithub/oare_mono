@@ -109,6 +109,7 @@
     </oare-dialog>
     <oare-dialog
       v-model="confirmDisconnectDialog"
+      class="test-submit-btn"
       title="Confirm Disconnect"
       submitText="Yes"
       cancelText="Cancel"
