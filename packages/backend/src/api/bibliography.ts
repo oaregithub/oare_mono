@@ -43,9 +43,12 @@ router
         );
 
         const fileURL = await Promise.all(
-          bibliographies.map(async item =>
-            ResourceDao.getPDFUrlByBibliographyUuid(item.uuid)
-          )
+          bibliographies.map(async item => {
+            const { fileUrl } = await ResourceDao.getPDFUrlByBibliographyUuid(
+              item.uuid
+            );
+            return fileUrl;
+          })
         );
 
         const biblioResponse: BibliographyResponse[] = zoteroResponse.map(

@@ -177,7 +177,30 @@
         <div v-if="allowViewCitations && zoteroDataList.length">
           <div v-for="(zotero, idx) in zoteroDataList" :key="idx">
             <div v-if="idx <= 1 || seeMoreZotero">
-              Citation: <a :href="zotero.link" v-html="zotero.citation"></a>
+              <div v-if="!zotero.pageLink && !zotero.plateLink">
+                Citation: <a :href="zotero.link" v-html="zotero.citation"></a>
+              </div>
+              <div v-else class="d-flex">
+                <span class="float-left">Citation: </span>
+                <div class="d-flex flex-row flex-wrap ml-1">
+                  <span>
+                    {{ zotero.citation
+                    }}<span
+                      >; Link to:
+                      <span v-if="zotero.pageLink" class="mr-1"
+                        ><a target="_blank" :href="zotero.pageLink"
+                          >Page</a
+                        ></span
+                      >
+                      <span v-if="zotero.plateLink"
+                        ><a target="_blank" :href="zotero.plateLink"
+                          >Plate</a
+                        ></span
+                      ></span
+                    >
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           <div v-if="zoteroDataList.length >= 3" color="primary">

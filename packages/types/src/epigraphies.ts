@@ -33,6 +33,8 @@ export interface EpigraphyResponse {
 export interface ZoteroData {
   citation: string;
   link: string | null;
+  pageLink: string | null;
+  plateLink: string | null;
 }
 
 export type EpigraphicUnitType =
