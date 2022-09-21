@@ -92,6 +92,7 @@
                   v-bind="attrs"
                   v-on="on"
                   class="pr-8"
+                  @click="openDialog(item.uuid, item.type)"
                 ></span>
               </template>
 
@@ -131,6 +132,39 @@
         </v-row>
       </template>
     </v-treeview>
+    <connect-spelling-occurrence
+      v-if="viewingConnectSpellingDialog"
+      :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
+      class="test-spelling-occurrence-display"
+      :discourseUuid="connectSpellingDialogDiscourseUuid"
+      :spelling="connectSpellingDialogSpelling"
+      :searchSpellings="server.searchSpellings"
+      :getTexts="server.getSpellingTextOccurrences"
+      @finish="closeConnectSpellingDialog"
+      v-model="viewingConnectSpellingDialog"
+    ></connect-spelling-occurrence>
+    <oare-dialog
+      v-if="viewingDialog"
+      class="test-rendering-word-dialog"
+      :closeButton="true"
+      :persistent="false"
+      :show-cancel="false"
+      :show-submit="false"
+      :submitLoading="loading"
+      :width="600"
+      v-model="viewingDialog"
+    >
+      <dictionary-word
+        v-if="discourseWordInfo"
+        :uuid="discourseWordInfo.uuid"
+        :selected-word-info="discourseWordInfo"
+        :allow-commenting="false"
+        :allow-editing="false"
+        :allow-deleting="false"
+        :allow-breadcrumbs="false"
+      >
+      </dictionary-word>
+    </oare-dialog>
   </div>
 </template>
 
@@ -142,9 +176,11 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
+import { DiscourseUnit, EpigraphicUnitSide, Word } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
+import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
 import sl from '@/serviceLocator';
 
@@ -165,6 +201,8 @@ export default defineComponent({
   },
   components: {
     DiscoursePropertiesCard,
+    DictionaryWord,
+    ConnectSpellingOccurrence,
   },
   setup({ discourseUnits, textUuid, disableEditing }) {
     const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
@@ -173,9 +211,19 @@ export default defineComponent({
     const inputTranslation = ref('');
     const store = sl.get('store');
     const actions = sl.get('globalActions');
+    const loading = ref(false);
+    const viewingDialog = ref(false);
+    const discourseWordInfo = ref<Word | null>(null);
+    const viewingConnectSpellingDialog = ref(false);
+    const connectSpellingDialogSpelling = ref('');
+    const connectSpellingDialogDiscourseUuid = ref('');
 
     const allowEditing = computed(
       () => !disableEditing && store.hasPermission('EDIT_TRANSLATION')
+    );
+
+    const canConnectSpellings = computed(() =>
+      store.hasPermission('CONNECT_SPELLING')
     );
 
     const discourseColor = (discourseType: string) => {
@@ -333,6 +381,71 @@ export default defineComponent({
         : null
     );
 
+    const openDialog = async (discourseUuid: string, discourseType: string) => {
+      try {
+        if (discourseType != 'word') {
+          return;
+        } else {
+          loading.value = true;
+          actions.showSnackbar('Fetching discourse information...');
+
+          if (discourseUuid) {
+            discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+              discourseUuid
+            );
+          } else {
+            discourseWordInfo.value = null;
+          }
+          actions.closeSnackbar();
+          if (discourseWordInfo.value) {
+            viewingDialog.value = true;
+          } else if (canConnectSpellings.value && discourseUuid) {
+            await openConnectSpellingDialog(discourseUuid);
+          } else {
+            actions.showSnackbar(
+              'No information exists for this text discourse word'
+            );
+          }
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to retrieve text discourse word info',
+          err as Error
+        );
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const openConnectSpellingDialog = async (discourseUuid: string) => {
+      try {
+        const { spelling } = await server.getSpellingByDiscourseUuid(
+          discourseUuid
+        );
+        viewingConnectSpellingDialog.value = true;
+        connectSpellingDialogSpelling.value = spelling;
+        connectSpellingDialogDiscourseUuid.value = discourseUuid;
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to load connect spelling view',
+          err as Error
+        );
+      }
+    };
+
+    const closeConnectSpellingDialog = async () => {
+      try {
+        viewingConnectSpellingDialog.value = false;
+        connectSpellingDialogSpelling.value = '';
+        connectSpellingDialogDiscourseUuid.value = '';
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to close connect spelling view',
+          err as Error
+        );
+      }
+    };
+
     return {
       discourseRenderer,
       discourseColor,
@@ -352,6 +465,15 @@ export default defineComponent({
       insertParentDiscourseKey,
       canInsertParentDiscourse,
       insertParentDiscourseComponent,
+      openDialog,
+      loading,
+      discourseWordInfo,
+      viewingDialog,
+      viewingConnectSpellingDialog,
+      connectSpellingDialogSpelling,
+      connectSpellingDialogDiscourseUuid,
+      closeConnectSpellingDialog,
+      server,
     };
   },
 });
