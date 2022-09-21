@@ -205,7 +205,7 @@ class ResourceDao {
       fileUrl = null;
     }
 
-    if (resourceRow.format && referenceLocation) {
+    if (resourceRow && resourceRow.format && referenceLocation) {
       const pdfPageNumResponse = await calcPDFPageNum(
         resourceRow.format,
         referenceLocation.beginPage,
