@@ -3,7 +3,6 @@ import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
-import { propertyOf } from 'lodash';
 import EpigraphyFullDisplay from '../EpigraphyFullDisplay.vue';
 
 const vuetify = new Vuetify();
@@ -173,7 +172,7 @@ describe('EpigraphyFullDisplay View', () => {
     await flushPromises();
     await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
     await flushPromises();
-    await wrapper.get('.test-disconnect-word').trigger('click)');
+    await wrapper.get('.test-disconnect-word').trigger('click');
     await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
