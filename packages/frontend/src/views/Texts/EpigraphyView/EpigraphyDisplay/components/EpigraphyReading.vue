@@ -84,16 +84,38 @@
       :width="600"
       v-model="viewingDialog"
     >
-      <dictionary-word
-        v-if="discourseWordInfo"
-        :uuid="discourseWordInfo.uuid"
-        :selected-word-info="discourseWordInfo"
-        :allow-commenting="false"
-        :allow-editing="false"
-        :allow-deleting="false"
-        :allow-breadcrumbs="false"
-      >
-      </dictionary-word>
+      <v-row class="ma-0">
+        <dictionary-word
+          v-if="discourseWordInfo"
+          :uuid="discourseWordInfo.uuid"
+          :selected-word-info="discourseWordInfo"
+          :allow-commenting="false"
+          :allow-editing="false"
+          :allow-deleting="false"
+          :allow-breadcrumbs="false"
+        >
+        </dictionary-word>
+      </v-row>
+      <v-row class="ma-0">
+        <v-btn
+          color="primary"
+          v-if="canDisconnectSpellings"
+          class="test-disconnect-word"
+          @click="confirmDisconnectDialog = true"
+        >
+          Disconnect Spelling
+        </v-btn>
+      </v-row>
+    </oare-dialog>
+    <oare-dialog
+      v-model="confirmDisconnectDialog"
+      title="Confirm Disconnect"
+      submitText="Yes"
+      cancelText="Cancel"
+      @submit="disconnectSpelling"
+      closeOnSubmit
+    >
+      Are you sure you want to disconnect this word from the dictionary?
     </oare-dialog>
   </div>
 </template>
@@ -148,6 +170,29 @@ export default defineComponent({
       store.hasPermission('CONNECT_SPELLING')
     );
 
+    const canDisconnectSpellings = computed(() =>
+      store.hasPermission('DISCONNECT_SPELLING')
+    );
+
+    const selectedDiscourseUuid = ref('');
+
+    const confirmDisconnectDialog = ref(false);
+
+    const disconnectSpelling = async (): Promise<void> => {
+      try {
+        if (selectedDiscourseUuid.value) {
+          await server.disconnectSpellings([selectedDiscourseUuid.value]);
+          viewingDialog.value = false;
+          actions.showSnackbar('Word successfully disconnected.');
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting word. Please try again.',
+          err as Error
+        );
+      }
+    };
+
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
         showNullDiscourse: store.getters.isAdmin,
@@ -171,7 +216,9 @@ export default defineComponent({
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
-
+        if (discourseUuid) {
+          selectedDiscourseUuid.value = discourseUuid;
+        }
         const spellingUuid = props.localDiscourseInfo
           ? props.localDiscourseInfo.filter(
               row => row.uuid === discourseUuid
@@ -264,6 +311,10 @@ export default defineComponent({
       formatWord,
       formatSide,
       romanNumeral,
+      canDisconnectSpellings,
+      confirmDisconnectDialog,
+      disconnectSpelling,
+      selectedDiscourseUuid,
       server,
     };
   },
