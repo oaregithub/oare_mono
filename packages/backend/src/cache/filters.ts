@@ -10,28 +10,45 @@ import sl from '@/serviceLocator';
 export const dictionaryWordFilter = async (
   word: Word,
   user: User | null
-): Promise<Word> => ({
-  ...word,
-  forms: word.forms
-    .map(form => ({
-      ...form,
-      spellings: form.spellings.filter(spelling =>
-        user && user.isAdmin ? spelling : spelling.hasOccurrence
-      ),
-    }))
-    .filter(form => (user && user.isAdmin ? form : form.spellings.length > 0)),
-});
+): Promise<Word> => {
+  const PermissionsDao = sl.get('PermissionsDao');
+  const userPermissions = user
+    ? await PermissionsDao.getUserPermissions(user.uuid)
+    : [];
+  const canConnectSpellings = userPermissions
+    .map(permission => permission.name)
+    .includes('CONNECT_SPELLING');
+  return {
+    ...word,
+    forms: word.forms
+      .map(form => ({
+        ...form,
+        spellings: form.spellings.filter(spelling =>
+          canConnectSpellings ? spelling : spelling.hasOccurrence
+        ),
+      }))
+      .filter(form => (canConnectSpellings ? form : form.spellings.length > 0)),
+  };
+};
 
 export const dictionaryFilter = async (
   words: Word[],
   user: User | null
 ): Promise<Word[]> => {
+  const PermissionsDao = sl.get('PermissionsDao');
+  const userPermissions = user
+    ? await PermissionsDao.getUserPermissions(user.uuid)
+    : [];
+  const canConnectSpellings = userPermissions
+    .map(permission => permission.name)
+    .includes('CONNECT_SPELLING');
+
   const filteredWords = await Promise.all(
     words.map(word => dictionaryWordFilter(word, user))
   );
 
   return filteredWords.filter(word =>
-    user && user.isAdmin ? word : word.forms.length > 0
+    canConnectSpellings ? word : word.forms.length > 0
   );
 };
 
