@@ -1,27 +1,16 @@
 <template>
-  <v-app-bar app dark clipped-left color="#002E5D">
+  <v-app-bar
+    app
+    dark
+    height="42"
+    clipped-left
+    color="#002E5D"
+    extension-height="42"
+  >
     <v-app-bar-nav-icon @click="$emit('nav-icon-click')" />
-    <div id="logo" v-if="$vuetify.breakpoint.smAndUp">
-      <a href="https://byu.edu" target="_blank">
-        <v-img
-          src="/BYU_abbrev.png"
-          class="mt-5 mx-3"
-          max-height="50px"
-          max-width="75px"
-        />
-      </a>
-    </div>
 
     <div id="leftSide">
       <div id="titleBox">
-        <div class="subtitle-1">
-          <a
-            class="blue-grey--text text--lighten-3 no_underline"
-            href="https://history.byu.edu"
-            target="_blank"
-            >{{ i18n.t('appBar.historyDep') }}</a
-          >
-        </div>
         <div class="headline">
           <router-link class="white--text no_underline" to="/">{{
             title
@@ -102,7 +91,7 @@
     </div>
 
     <template #extension>
-      <v-row class="d-flex justify-center">
+      <v-row class="d-flex justify-center my-1">
         <v-menu
           offset-y
           open-on-hover
@@ -261,16 +250,6 @@ export default defineComponent({
 .no_underline {
   text-decoration: none;
 }
-
-#appBarContainer {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-around;
-  background-color: #002e5d;
-  height: 0.66in;
-  align-items: center;
-}
 #leftSide {
   display: flex;
   flex-direction: row;
@@ -282,8 +261,5 @@ export default defineComponent({
   flex-direction: column;
   align-content: center;
   margin-left: 10px;
-}
-#logo {
-  height: 0.66in;
 }
 </style>
