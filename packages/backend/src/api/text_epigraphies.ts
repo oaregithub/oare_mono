@@ -216,7 +216,8 @@ router
         const response = await cache.insert<EpigraphyResponse>(
           { req },
           epigraphy,
-          textFilter
+          textFilter,
+          60 * 60 * 24 * 30 * 6
         );
 
         res.json(response);

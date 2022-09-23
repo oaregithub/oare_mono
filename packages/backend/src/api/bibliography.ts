@@ -74,7 +74,8 @@ router
         const response = await cache.insert<BibliographyResponse[]>(
           { req },
           biblioResponse,
-          noFilter
+          noFilter,
+          60 * 60 * 24 * 30 * 6
         );
 
         res.json(response);
