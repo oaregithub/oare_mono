@@ -71,6 +71,7 @@
         v-if="aggregateOccurrences > 0"
         :key="`${form.uuid}-form-occurences`"
         :class="editing ? 'mt-2' : ''"
+        class="mr-1"
       >
         <a @click="textOccurrenceDialog = true">
           ({{ aggregateOccurrences }})</a
