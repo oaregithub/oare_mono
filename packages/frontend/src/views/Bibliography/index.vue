@@ -154,6 +154,7 @@ export default defineComponent({
       bibliographyResponse.value = [];
       filteredBib.value = [];
       itemType.value = ['all'];
+      showItemType.value = 'all';
       bibliographyResponse.value = await server.getBibliographies({
         citationStyle: selectedType.value,
       });
