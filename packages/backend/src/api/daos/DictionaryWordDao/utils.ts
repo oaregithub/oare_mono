@@ -91,6 +91,7 @@ export function assembleSearchResult(
         matches.push(`${form}: ${spelling}`);
       }
     });
+    const translationsArray = translations ? translations.split(';') : [];
     const matchingTranslations = translations
       ? translations
           .split(';')
@@ -100,7 +101,10 @@ export function assembleSearchResult(
       uuid,
       type,
       name,
-      translations: matchingTranslations,
+      translations:
+        matchingTranslations.length === 0
+          ? translationsArray
+          : matchingTranslations,
       matches,
     });
   });
