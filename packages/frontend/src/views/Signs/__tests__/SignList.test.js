@@ -73,7 +73,7 @@ describe('SignList test', () => {
   it('gets signs when sortBy is changed', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const sortByOptions = wrapper.find('.test-checkbox-ABZ');
+    const sortByOptions = wrapper.find('.test-radio-ABZ');
     await sortByOptions.trigger('click');
     await flushPromises();
     expect(mockServer.getSignList).toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe('SignList test', () => {
       },
     });
     await flushPromises();
-    const sortByOptions = wrapper.find('.test-checkbox-ABZ');
+    const sortByOptions = wrapper.find('.test-radio-ABZ');
     await sortByOptions.trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
