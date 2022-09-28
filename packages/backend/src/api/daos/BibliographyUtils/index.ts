@@ -6,6 +6,7 @@ import {
 import axios from 'axios';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
+import axiosRetry from 'axios-retry';
 
 class BibliographyUtils {
   async getZoteroAPIKEY(): Promise<string> {
@@ -42,6 +43,11 @@ class BibliographyUtils {
       const zoteroAPIKey = await this.getZoteroAPIKEY();
 
       const toIncludeString = toInclude.join(',');
+
+      axiosRetry(axios, {
+        retries: 3,
+        retryDelay: retryCount => retryCount * 3000,
+      });
 
       const { data }: { data: ZoteroResponse } = await axios.get(
         `https://api.zotero.org/groups/318265/items/${bibliography.zoteroKey}?format=json&include=${toIncludeString}&style=${citationStyle}`,
