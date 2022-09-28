@@ -4,9 +4,9 @@
       <v-col cols="9">
         <v-data-table
           :headers="tableHeaders"
-          :items="items"
-          :server-items-length="items.length"
+          :items="filteredItems"
           :loading="loading"
+          :server-items-length="items.length"
           hide-default-footer
         >
           <template #[`item.code`]="{ item }">
@@ -38,16 +38,27 @@
       </v-col>
       <v-col>
         <div class="sticky">
-          <h3>Sort By</h3>
-          <v-checkbox
-            v-for="(val, index) in sortByOptions"
-            :key="index"
-            v-model="sortBy"
-            :value="val.toLowerCase()"
-            :label="val"
-            :class="`test-checkbox-${val} pr-2`"
-          ></v-checkbox>
-
+          <v-text-field
+            v-model="search"
+            label="Search"
+            single-line
+            hide-details
+            clearable
+            @click:clear="filteredItems = items"
+            class="test-search pb-1"
+          />
+          <v-radio-group v-model="sortBy" hide-details class="pb-3">
+            <template #label>
+              <span class="font-weight-bold">Sort By</span>
+            </template>
+            <v-radio
+              v-for="(val, index) in sortByOptions"
+              :key="index"
+              :value="val.toLowerCase()"
+              :label="val"
+              :class="`test-radio-${val} pr-2`"
+            ></v-radio>
+          </v-radio-group>
           <v-btn
             v-if="allSigns === 'false'"
             @click="allSigns = 'true'"
@@ -57,7 +68,7 @@
           <v-btn v-else @click="allSigns = 'false'" class="test-only-oa"
             >Show only OA</v-btn
           >
-          <v-menu offset-y open-on-hover class="pl-2">
+          <v-menu offset-y open-on-hover class="pl-3">
             <template #activator="{ on, attrs }">
               <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1">
                 mdi-information-outline
@@ -85,6 +96,7 @@ import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import { SignList } from '@oare/types';
+import _ from 'lodash';
 
 export interface OareDataTableOptions {
   page: number;
@@ -104,6 +116,7 @@ export default defineComponent({
     const sortByOptions = ['Name', 'ABZ', 'MZL', 'Frequency'];
     const sortBy = ref('name');
     const allSigns = ref('false');
+    const search = ref('');
     const tableHeaders: Ref<DataTableHeader[]> = ref([
       {
         text: 'Sign',
@@ -144,6 +157,7 @@ export default defineComponent({
     ]);
 
     const items: Ref<SignList[]> = ref([]);
+    const filteredItems: Ref<SignList[]> = ref([]);
 
     const getWidth = (src: string) => {
       const image = new Image();
@@ -172,12 +186,35 @@ export default defineComponent({
       return finishedCodeArray.join('');
     };
 
+    const filterSigns = () => {
+      filteredItems.value = items.value.filter(
+        item =>
+          item.abz
+            ?.toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          `${item.frequency}`
+            .toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          `${item.mzl}`
+            .toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          item.name
+            .toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          item.readings
+            ?.toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase())
+      );
+    };
+
     const getSigns = async () => {
       loading.value = true;
       items.value = [];
+      filteredItems.value = [];
       try {
         const response = await server.getSignList(sortBy.value, allSigns.value);
         items.value = response.result;
+        filterSigns();
       } catch (err) {
         actions.showErrorSnackbar(
           'Error sorting signs. Please try again.',
@@ -190,13 +227,19 @@ export default defineComponent({
 
     watch([sortBy, allSigns], getSigns);
 
+    watch(search, _.debounce(filterSigns, 100), {
+      immediate: false,
+    });
+
     onMounted(async () => {
       await getSigns();
     });
     return {
       tableHeaders,
+      filteredItems,
       items,
       loading,
+      search,
       sortBy,
       sortByOptions,
       allSigns,
