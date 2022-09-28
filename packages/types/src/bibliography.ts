@@ -58,6 +58,7 @@ export interface BibliographyResponse {
     bib: string | null;
     url: string | null;
   };
+  itemType: string | null;
 }
 
 export type ZoteroRequestType = 'citation' | 'bib' | 'data';

@@ -16,10 +16,6 @@ router
     cacheMiddleware<BibliographyResponse[]>(noFilter),
     async (req, res, next) => {
       try {
-        const { limit: rows, page } = extractPagination(req.query, {
-          defaultLimit: 25,
-        });
-
         const BibliographyDao = sl.get('BibliographyDao');
         const BibliographyUtils = sl.get('BibliographyUtils');
         const ResourceDao = sl.get('ResourceDao');
@@ -28,10 +24,8 @@ router
         const citationStyle = (req.query.citationStyle ||
           'chicago-author-date') as string;
 
-        const bibliographies = await BibliographyDao.getBibliographies({
-          page,
-          rows,
-        });
+        const bibliographies = await BibliographyDao.getBibliographies();
+        const totalBibs = bibliographies.length;
 
         const zoteroResponse = await Promise.all(
           bibliographies.map(async bibliography =>
@@ -68,6 +62,8 @@ router
                 bib: zot && zot.bib ? zot.bib : null,
                 url: fileURL[index] ? fileURL[index] : null,
               },
+              itemType:
+                zot && zot.data && zot.data.itemType ? zot.data.itemType : null,
             } as BibliographyResponse)
         );
 
