@@ -111,11 +111,11 @@ export default defineComponent({
         value: 'name',
       },
       {
-        text: 'Matching translations',
+        text: 'Translations',
         value: 'translations',
       },
       {
-        text: 'Matching forms and spellings',
+        text: 'Forms and Spellings',
         value: 'matches',
       },
     ]);
