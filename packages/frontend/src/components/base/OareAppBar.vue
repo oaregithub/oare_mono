@@ -172,25 +172,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, PropType } from '@vue/composition-api';
-import VueI18n from 'vue-i18n';
-import Router from 'vue-router';
-import defaultI18n from '../../i18n/index';
+import { defineComponent, computed } from '@vue/composition-api';
+import i18n from '@/i18n';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'OareAppBar',
-  props: {
-    router: {
-      type: Object as PropType<Router>,
-      required: true,
-    },
-    i18n: {
-      type: Object as PropType<VueI18n>,
-      default: () => defaultI18n,
-    },
-  },
-  setup({ router, i18n }, context) {
+  setup(_, context) {
+    const router = sl.get('router');
     const store = sl.get('store');
     const serverProxy = sl.get('serverProxy');
 
@@ -241,6 +230,7 @@ export default defineComponent({
       canViewPlaces,
       canViewPeople,
       canViewBibliography,
+      i18n,
     };
   },
 });
