@@ -36,14 +36,8 @@ describe('OareAppBar.vue', () => {
     newThreadsExist: jest.fn().mockResolvedValue(false),
   };
 
-  const mockProps = {
-    router: {
-      push: jest.fn(),
-    },
-    i18n: {
-      t: jest.fn(),
-      locale: 'us',
-    },
+  const mockRouter = {
+    push: jest.fn(),
   };
 
   const createWrapper = async (
@@ -64,10 +58,10 @@ describe('OareAppBar.vue', () => {
         isAdmin ? ['WORDS', 'NAMES', 'PLACES'].includes(name) : false,
     });
     sl.set('serverProxy', server);
+    sl.set('router', mockRouter);
     const wrapper = mount(OareAppBar, {
       localVue,
       vuetify,
-      propsData: mockProps,
       stubs: ['router-link'],
     });
     await flushPromises();
