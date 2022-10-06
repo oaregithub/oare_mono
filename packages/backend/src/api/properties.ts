@@ -74,7 +74,7 @@ router.route('/properties/verify_source').get(async (req, res, next) => {
 
     res.json(haveSameTableReference);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
