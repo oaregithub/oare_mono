@@ -10,17 +10,29 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('WordsView test', () => {
+  const mockStore = {
+    hasPermission: () => false,
+  };
+
   const mockActions = {
     showErrorSnackbar: jest.fn(),
   };
+
+  const mockLodash = {
+    debounce: cb => cb,
+  };
+
   const mockServer = {
-    getDictionaryWords: jest.fn().mockResolvedValue({ words: [] }),
+    getDictionaryWords: jest.fn().mockResolvedValue([]),
     getDictionaryPermissions: jest.fn().mockResolvedValue({ canEdit: false }),
   };
 
-  const createWrapper = ({ server } = {}) => {
+  const createWrapper = ({ store, server } = {}) => {
+    sl.set('store', store || mockStore);
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('lodash', mockLodash);
+
     return mount(WordsView, {
       vuetify,
       localVue,
@@ -48,5 +60,15 @@ describe('WordsView test', () => {
     });
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
+  });
+
+  it('shows add button icon if user has add word permissions', async () => {
+    const wrapper = createWrapper({
+      store: {
+        hasPermission: name => ['ADD_LEMMA'].includes(name),
+      },
+    });
+    await flushPromises();
+    expect(wrapper.get('.mb-8'));
   });
 });

@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const tableExists = await knex.schema.hasTable('search_failure');

@@ -50,6 +50,12 @@
             clearable
             class="test-search"
           />
+          <v-switch
+            label="Show UUIDs"
+            color="primary"
+            v-model="showUUID"
+            hide-details
+          ></v-switch>
         </v-col>
       </v-row>
     </v-container>
@@ -64,6 +70,8 @@
             :node="taxonomyTree"
             :nodesToHighlight="nodesToHightlight"
             :openSearchResults="openSearchResults"
+            :showUUID="showUUID"
+            :showFieldInfo="true"
           />
         </v-expansion-panel-content>
       </v-expansion-panel>
@@ -102,6 +110,8 @@ export default defineComponent({
     const search = ref('');
     const searchPath = ref<string[][]>([]);
     const existingFinds = ref<string[]>([]);
+
+    const showUUID = ref(true);
 
     const nodesToHightlight = computed(() =>
       searchPath.value.flatMap(path => path)
@@ -238,6 +248,7 @@ export default defineComponent({
     );
 
     return {
+      showUUID,
       loading,
       taxonomyTree,
       panel,

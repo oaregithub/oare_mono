@@ -1,5 +1,6 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { PermissionItem, PermissionName } from '@oare/types';
+import { Knex } from 'knex';
 import UserDao from '../UserDao';
 import UserGroupDao from '../UserGroupDao';
 
@@ -28,6 +29,12 @@ class PermissionsDao {
       type: 'pages',
       description:
         'Allow group users to view "People" tab and access associated pages',
+    },
+    {
+      name: 'BIBLIOGRAPHY',
+      type: 'pages',
+      description:
+        'Allow group users to view "Bibliography" page and associated data',
     },
     {
       name: 'UPDATE_FORM',
@@ -67,13 +74,20 @@ class PermissionsDao {
         'Allow group users to view text discourses associated with text epigraphies',
     },
     {
+      name: 'INSERT_PARENT_DISCOURSE_ROWS',
+      type: 'text',
+      description:
+        'Allow group users to articulate discourse hierarchy and insert new parent rows.',
+      dependencies: ['VIEW_TEXT_DISCOURSE'],
+    },
+    {
       name: 'EDIT_TRANSLATION',
       type: 'text',
       description: "Allow group users to edit a text's discourse translations",
     },
     {
       name: 'INSERT_DISCOURSE_ROWS',
-      type: 'dictionary',
+      type: 'text',
       description:
         'Allow group users to insert new text discourse rows where missing',
       dependencies: ['UPDATE_FORM'],
@@ -82,6 +96,18 @@ class PermissionsDao {
       name: 'ADD_FORM',
       type: 'dictionary',
       description: 'Allow group users to add new forms to words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
+      name: 'ADD_LEMMA',
+      type: 'dictionary',
+      description: 'Allow group users to add new words',
+      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+    },
+    {
+      name: 'CONNECT_SPELLING',
+      type: 'dictionary',
+      description: 'Allow group users to connect spelling occurrences to words',
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
@@ -122,9 +148,43 @@ class PermissionsDao {
       description: 'Allow group users to view text source file',
     },
     {
+      name: 'COPY_TEXT_TRANSLITERATION',
+      type: 'text',
+      description:
+        'Allow group users to copy a string representation of text transliterations',
+    },
+    {
       name: 'EDIT_ITEM_PROPERTIES',
       type: 'general',
       description: 'Allow group users to edit item properties for a given item',
+    },
+    {
+      name: 'VIEW_TEXT_CITATIONS',
+      type: 'text',
+      description: 'Allow group users to view the citation(s) of text',
+    },
+    {
+      name: 'COPY_TEXT_TRANSLITERATION',
+      type: 'text',
+      description:
+        'Allow group users to copy a string representation of text transliterations',
+    },
+    {
+      name: 'ADD_COMMENTS',
+      type: 'general',
+      description: 'Allow group users to add comments',
+    },
+    {
+      name: 'ADD_EDIT_FIELD_DESCRIPTION',
+      type: 'general',
+      description:
+        'Allow group users to add or edit taxonomy field descriptions where primacy = 1',
+    },
+    {
+      name: 'VIEW_FIELD_DESCRIPTION',
+      type: 'general',
+      description:
+        'Allow group users to view taxonomy field descriptions where primacy = 2',
     },
   ];
 
@@ -132,18 +192,22 @@ class PermissionsDao {
     return this.ALL_PERMISSIONS;
   }
 
-  async getUserPermissions(userUuid: string | null): Promise<PermissionItem[]> {
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
+  async getUserPermissions(
+    userUuid: string | null,
+    trx?: Knex.Transaction
+  ): Promise<PermissionItem[]> {
+    const k = trx || knexRead();
+    const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
 
     if (user && user.isAdmin) {
       return this.ALL_PERMISSIONS;
     }
 
     if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid);
+      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid, trx);
 
       const userPermissions: PermissionName[] = (
-        await knex('permissions')
+        await k('permissions')
           .select('permission')
           .whereIn('group_id', groupIds)
       ).map(row => row.permission);
@@ -155,9 +219,13 @@ class PermissionsDao {
     return [];
   }
 
-  async getGroupPermissions(groupId: number): Promise<PermissionItem[]> {
+  async getGroupPermissions(
+    groupId: number,
+    trx?: Knex.Transaction
+  ): Promise<PermissionItem[]> {
+    const k = trx || knexRead();
     const permissions: string[] = (
-      await knex('permissions').select('permission').where('group_id', groupId)
+      await k('permissions').select('permission').where('group_id', groupId)
     ).map(row => row.permission);
 
     return this.ALL_PERMISSIONS.filter(permission =>
@@ -165,16 +233,26 @@ class PermissionsDao {
     );
   }
 
-  async addGroupPermission(groupId: number, { type, name }: PermissionItem) {
-    await knex('permissions').insert({
+  async addGroupPermission(
+    groupId: number,
+    { type, name }: PermissionItem,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('permissions').insert({
       group_id: groupId,
       type,
       permission: name,
     });
   }
 
-  async removePermission(groupId: number, permission: PermissionName) {
-    await knex('permissions')
+  async removePermission(
+    groupId: number,
+    permission: PermissionName,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('permissions')
       .where('group_id', groupId)
       .andWhere('permission', permission)
       .del();

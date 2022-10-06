@@ -2,26 +2,12 @@ import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import sl from '@/serviceLocator';
-import { API_PATH } from '@/setupRoutes';
 import {
-  DenylistAllowlistPayload,
-  GetDenylistAllowlistParameters,
+  GroupEditPermissionsPayload,
+  GetGroupEditPermissionParameters,
   DeleteDenylistAllowlistParameters,
   DenylistAllowlistItem,
 } from '@oare/types';
-
-function clearCache() {
-  const cache = sl.get('cache');
-  cache.clear(
-    {
-      req: {
-        originalUrl: `${API_PATH}/collections`,
-        method: 'GET',
-      },
-    },
-    { exact: false }
-  );
-}
 
 const router = express.Router();
 
@@ -37,7 +23,7 @@ router
       const {
         groupId,
         type,
-      } = (req.params as unknown) as GetDenylistAllowlistParameters;
+      } = (req.params as unknown) as GetGroupEditPermissionParameters;
 
       const groupEditPermissions = await GroupEditPermissionsDao.getGroupEditPermissions(
         groupId,
@@ -71,7 +57,7 @@ router
       );
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -82,7 +68,7 @@ router
       const { groupId } = (req.params as unknown) as {
         groupId: number;
       };
-      const { uuids, type }: DenylistAllowlistPayload = req.body;
+      const { uuids, type }: GroupEditPermissionsPayload = req.body;
 
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
       const OareGroupDao = sl.get('OareGroupDao');
@@ -129,10 +115,9 @@ router
         uuids,
         type
       );
-      clearCache();
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -168,10 +153,9 @@ router
         groupId,
         uuid
       );
-      clearCache();
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

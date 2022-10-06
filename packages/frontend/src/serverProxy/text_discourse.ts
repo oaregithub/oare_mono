@@ -1,5 +1,13 @@
 import axios from '@/axiosInstance';
-import { SearchNullDiscourseResultRow, DiscourseProperties } from '@oare/types';
+import {
+  SearchNullDiscourseResultRow,
+  DiscourseProperties,
+  ParseTreeProperty,
+  DiscourseUnit,
+  InsertParentDiscourseRowPayload,
+  EditTranslationPayload,
+  DiscourseSpellingResponse,
+} from '@oare/types';
 
 async function insertDiscourseRow(
   spelling: string,
@@ -33,20 +41,50 @@ async function getDiscourseProperties(
 
 async function updateDiscourseTranslation(
   uuid: string,
-  newTranslation: string
+  newTranslation: string,
+  textUuid: string
 ) {
-  await axios.patch(`/text_discourse/${uuid}`, {
+  const payload: EditTranslationPayload = {
     newTranslation,
-  });
+    textUuid,
+  };
+  await axios.patch(`/text_discourse/${uuid}`, payload);
 }
 
 async function createDiscourseTranslation(
   uuid: string,
-  newTranslation: string
+  newTranslation: string,
+  textUuid: string
 ) {
-  await axios.post(`/text_discourse/${uuid}`, {
+  const payload: EditTranslationPayload = {
     newTranslation,
-  });
+    textUuid,
+  };
+  await axios.post(`/text_discourse/${uuid}`, payload);
+}
+
+async function insertParentDiscourseRow(
+  textUuid: string,
+  discourseSelections: DiscourseUnit[],
+  discourseType: string,
+  newContent: string,
+  properties: ParseTreeProperty[]
+) {
+  const payload: InsertParentDiscourseRowPayload = {
+    textUuid,
+    discourseSelections,
+    discourseType,
+    newContent,
+    properties,
+  };
+  await axios.post('/text_discourse_parent', payload);
+}
+
+async function getSpellingByDiscourseUuid(
+  discourseUuid: string
+): Promise<DiscourseSpellingResponse> {
+  const { data } = await axios.get(`/text_discourse/spelling/${discourseUuid}`);
+  return data;
 }
 
 export default {
@@ -54,4 +92,6 @@ export default {
   getDiscourseProperties,
   updateDiscourseTranslation,
   createDiscourseTranslation,
+  insertParentDiscourseRow,
+  getSpellingByDiscourseUuid,
 };

@@ -17,15 +17,16 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'UPDATE_TRANSLATION'
     | 'UPDATE_FORM'
     | 'ADD_SPELLING'
-    | 'INSERT_DISCOURSE_ROWS'
     | 'ADD_FORM'
     | 'DISCONNECT_SPELLING'
-    | 'EDIT_TRANSLITERATION_STATUS';
+    | 'CONNECT_SPELLING'
+    | 'EDIT_TRANSLITERATION_STATUS'
+    | 'ADD_LEMMA';
   type: 'dictionary';
 }
 
 export interface PagePermission extends PermissionTemplate {
-  name: 'WORDS' | 'NAMES' | 'PLACES' | 'PEOPLE';
+  name: 'WORDS' | 'NAMES' | 'PLACES' | 'PEOPLE' | 'BIBLIOGRAPHY';
   type: 'pages';
 }
 
@@ -35,14 +36,22 @@ export interface TextPermission extends PermissionTemplate {
     | 'VIEW_TEXT_DISCOURSE'
     | 'VIEW_TEXT_FILE'
     | 'ADD_NEW_TEXTS'
+    | 'INSERT_DISCOURSE_ROWS'
     | 'EDIT_TEXT_INFO'
     | 'UPLOAD_EPIGRAPHY_IMAGES'
-    | 'EDIT_TRANSLATION';
+    | 'EDIT_TRANSLATION'
+    | 'INSERT_PARENT_DISCOURSE_ROWS'
+    | 'VIEW_TEXT_CITATIONS'
+    | 'COPY_TEXT_TRANSLITERATION';
   type: 'text';
 }
 
 export interface GeneralPermission extends PermissionTemplate {
-  name: 'EDIT_ITEM_PROPERTIES';
+  name:
+    | 'EDIT_ITEM_PROPERTIES'
+    | 'ADD_COMMENTS'
+    | 'ADD_EDIT_FIELD_DESCRIPTION'
+    | 'VIEW_FIELD_DESCRIPTION';
   type: 'general';
 }
 
@@ -50,14 +59,24 @@ export interface UpdatePermissionPayload {
   permission: PermissionItem;
 }
 
-export type PermissionsListType = 'Text' | 'Collection';
+export type PermissionsListType = 'Text' | 'Collection' | 'Image';
 
 export interface DenylistAllowlistPayload {
+  uuids: string[];
+  type: 'text' | 'img' | 'collection';
+}
+
+export interface GroupEditPermissionsPayload {
   uuids: string[];
   type: 'text' | 'collection';
 }
 
 export interface GetDenylistAllowlistParameters {
+  groupId: number;
+  type: 'text' | 'collection' | 'img';
+}
+
+export interface GetGroupEditPermissionParameters {
   groupId: number;
   type: 'text' | 'collection';
 }
@@ -70,5 +89,6 @@ export interface DeleteDenylistAllowlistParameters {
 export interface DenylistAllowlistItem {
   uuid: string;
   name?: string;
+  url?: string;
   hasEpigraphy?: boolean;
 }

@@ -1,5 +1,4 @@
 import express from 'express';
-import _ from 'lodash';
 import {
   Word,
   UpdateDictionaryWordPayload,
@@ -12,6 +11,10 @@ import {
   AddFormPayload,
   InsertItemPropertyRow,
   UpdateFormPayload,
+  TaxonomyTree,
+  AddWordPayload,
+  ItemPropertyRow,
+  AddWordCheckPayload,
 } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
@@ -19,9 +22,11 @@ import {
   convertParsePropsToItemProps,
 } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
-import { API_PATH } from '@/setupRoutes';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import cacheMiddleware from '@/middlewares/cache';
+import { dictionaryWordFilter, noFilter } from '@/cache/filters';
+import adminRoute from '@/middlewares/adminRoute';
 
 const router = express.Router();
 
@@ -30,8 +35,11 @@ router
   .post(permissionsRoute('ADD_SPELLING'), async (req, res, next) => {
     try {
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const cache = sl.get('cache');
+      const utils = sl.get('utils');
 
       const {
         formUuid,
@@ -48,37 +56,46 @@ router
         return;
       }
 
-      const spellingUuid = await DictionarySpellingDao.addSpelling(
-        formUuid,
-        spelling
-      );
-      await LoggingEditsDao.logEdit(
-        'INSERT',
-        req.user!.uuid,
-        'dictionary_spelling',
-        spellingUuid
+      let spellingUuid: string = '';
+
+      await utils.createTransaction(async trx => {
+        spellingUuid = await DictionarySpellingDao.addSpelling(
+          formUuid,
+          spelling,
+          trx
+        );
+
+        await Promise.all(
+          discourseUuids.map(discourseUuid =>
+            TextDiscourseDao.updateSpellingUuid(
+              discourseUuid,
+              spellingUuid,
+              trx
+            )
+          )
+        );
+      });
+
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
       );
 
-      await Promise.all(
-        discourseUuids.map(discourseUuid =>
-          LoggingEditsDao.logEdit(
-            'UPDATE',
-            req.user!.uuid,
-            'text_discourse',
-            discourseUuid
-          )
-        )
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
       );
-      await Promise.all(
-        discourseUuids.map(discourseUuid =>
-          TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid)
-        )
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
       );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
 
       const response: AddFormSpellingResponse = { uuid: spellingUuid };
       res.status(201).json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -92,12 +109,12 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
       tokens = tokenizeExplicitSpelling(spelling);
     } catch (e) {
       let response: CheckSpellingResponse;
-      if (e.hash) {
+      if ((e as any).hash) {
         const {
           hash: {
             loc: { last_column: errorIndex },
           },
-        } = e;
+        } = e as any;
 
         let errorChar = spelling[errorIndex];
         if (errorIndex === spelling.length) {
@@ -136,62 +153,83 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
       res.json(response);
     }
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
 router
   .route('/dictionary/:uuid')
-  .get(async (req, res, next) => {
+  .get(cacheMiddleware<Word>(dictionaryWordFilter), async (req, res, next) => {
     try {
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const cache = sl.get('cache');
+
       const { uuid } = req.params;
-      const isAdmin = req.user ? req.user.isAdmin : false;
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(uuid);
-      const forms = await DictionaryFormDao.getWordForms(uuid, isAdmin, true);
+      const forms = await DictionaryFormDao.getWordForms(uuid, true);
 
       const result: Word = {
         ...grammarInfo,
         forms,
       };
-      res.json(result);
+
+      const response = await cache.insert<Word>(
+        { req },
+        result,
+        dictionaryWordFilter
+      );
+
+      res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .patch(permissionsRoute('UPDATE_WORD_SPELLING'), async (req, res, next) => {
     try {
       const DictionaryWordDao = sl.get('DictionaryWordDao');
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
       const cache = sl.get('cache');
+      const utils = sl.get('utils');
 
       const { uuid } = req.params;
       const { word }: UpdateDictionaryWordPayload = req.body;
       const userUuid = req.user!.uuid;
 
-      await LoggingEditsDao.logEdit(
-        'UPDATE',
-        userUuid,
-        'dictionary_word',
+      const originalDictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
         uuid
       );
-      await DictionaryWordDao.updateWordSpelling(uuid, word);
+
+      await utils.createTransaction(async trx => {
+        await DictionaryWordDao.updateWordSpelling(uuid, word, trx);
+      });
+
+      const originalDictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        originalDictionaryRow.word,
+        originalDictionaryRow.type
+      );
+      const newDictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        word,
+        originalDictionaryRow.type
+      );
 
       // Updated word, cache must be cleared
-      cache.clear(
+      await cache.clear(
+        originalDictionaryCacheRouteToClear,
         {
-          req: {
-            originalUrl: `${API_PATH}/words`,
-            method: 'GET',
-          },
+          level: 'exact',
         },
-        { exact: false }
+        req
       );
+      await cache.clear(
+        newDictionaryCacheRouteToClear,
+        { level: 'exact' },
+        req
+      );
+      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' }, req);
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -201,29 +239,45 @@ router
     try {
       const cache = sl.get('cache');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const utils = sl.get('utils');
 
       const { uuid } = req.params;
-      const { translations }: UpdateDictionaryTranslationPayload = req.body;
+      const {
+        translations,
+        fieldType,
+      }: UpdateDictionaryTranslationPayload = req.body;
 
-      await DictionaryWordDao.updateTranslations(
-        req.user!.uuid,
-        uuid,
-        translations
+      await utils.createTransaction(async trx => {
+        await DictionaryWordDao.updateTranslations(
+          req.user!.uuid,
+          uuid,
+          translations,
+          fieldType,
+          trx
+        );
+      });
+
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        uuid
+      );
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
       );
 
       // Updated word, cache must be cleared
-      cache.clear(
+      await cache.clear(
+        dictionaryCacheRouteToClear,
         {
-          req: {
-            originalUrl: `${API_PATH}/words`,
-            method: 'GET',
-          },
+          level: 'exact',
         },
-        { exact: false }
+        req
       );
+      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' }, req);
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -232,37 +286,42 @@ router
   .patch(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const DictionaryFormDao = sl.get('DictionaryFormDao');
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const utils = sl.get('utils');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const cache = sl.get('cache');
 
       const { uuid: formUuid } = req.params;
       const { newForm }: UpdateFormPayload = req.body;
       const userUuid = req.user!.uuid;
 
-      await LoggingEditsDao.logEdit(
-        'UPDATE',
-        userUuid,
-        'dictionary_form',
-        formUuid
-      );
-      await DictionaryFormDao.updateForm(formUuid, newForm);
+      await utils.createTransaction(async trx => {
+        await DictionaryFormDao.updateForm(formUuid, newForm, trx);
 
-      const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(
+        const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(
+          formUuid,
+          trx
+        );
+      });
+
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
         formUuid
       );
-      await Promise.all(
-        discourseUuids.map(uuid =>
-          LoggingEditsDao.logEdit('UPDATE', userUuid, 'text_discourse', uuid)
-        )
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
       );
-      await Promise.all(
-        discourseUuids.map(uuid =>
-          TextDiscourseDao.updateDiscourseTranscription(uuid, newForm)
-        )
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
       );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -283,7 +342,7 @@ router
 
       res.json(totalOccurrences);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -308,7 +367,7 @@ router
 
       res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -317,12 +376,55 @@ router
   .patch(permissionsRoute('DISCONNECT_SPELLING'), async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const { discourseUuids } = req.body;
+      const cache = sl.get('cache');
+      const { discourseUuids }: { discourseUuids: string[] } = req.body;
 
-      await TextDiscourseDao.disconnectSpellings(discourseUuids);
+      await Promise.all(
+        discourseUuids.map(uuid => TextDiscourseDao.disconnectSpelling(uuid))
+      );
+
+      const discourseRows = await Promise.all(
+        discourseUuids.map(uuid => TextDiscourseDao.getDiscourseRowByUuid(uuid))
+      );
+
+      await Promise.all(
+        discourseRows.map(row =>
+          cache.clear(
+            `/text_epigraphies/text/${row.textUuid}`,
+            {
+              level: 'startsWith',
+            },
+            req
+          )
+        )
+      );
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/connect/spellings')
+  .patch(permissionsRoute('CONNECT_SPELLING'), async (req, res, next) => {
+    try {
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const cache = sl.get('cache');
+      const { discourseUuid, spellingUuid } = req.body;
+
+      await TextDiscourseDao.updateSpellingUuid(discourseUuid, spellingUuid);
+      const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+        spellingUuid
+      );
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -333,9 +435,10 @@ router
       const { uuid: spellingUuid } = req.params;
       const { spelling, discourseUuids }: UpdateFormSpellingPayload = req.body;
       const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const utils = sl.get('utils');
+      const cache = sl.get('cache');
 
       // If it doesn't exist in text_discourse, update
       const currentSpelling = await DictionarySpellingDao.getSpellingByUuid(
@@ -360,26 +463,8 @@ router
             spelling,
             trx
           );
-          await LoggingEditsDao.logEdit(
-            'UPDATE',
-            req.user!.uuid,
-            'dictionary_spelling',
-            spellingUuid,
-            trx
-          );
         }
 
-        await Promise.all(
-          discourseUuids.map(discourseUuid =>
-            LoggingEditsDao.logEdit(
-              'UPDATE',
-              req.user!.uuid,
-              'text_discourse',
-              discourseUuid,
-              trx
-            )
-          )
-        );
         await Promise.all(
           discourseUuids.map(discourseUuid =>
             TextDiscourseDao.updateSpellingUuid(
@@ -391,41 +476,63 @@ router
         );
       });
 
+      const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+        spellingUuid
+      );
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .delete(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid } = req.params;
-      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
-      const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const LoggingEditsDao = sl.get('LoggingEditsDao');
 
-      await TextDiscourseDao.unsetSpellingUuid(uuid, async trx => {
+      const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+      const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const utils = sl.get('utils');
+      const cache = sl.get('cache');
+
+      const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
+        uuid
+      );
+      const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
+        formUuid
+      );
+
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
+      );
+
+      await utils.createTransaction(async trx => {
+        await TextDiscourseDao.unsetSpellingUuid(uuid, trx);
         await DictionarySpellingDao.deleteSpelling(uuid, trx);
 
         const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(
           uuid,
           trx
         );
-        await Promise.all(
-          discourseRowUuids.map(rowUuid =>
-            LoggingEditsDao.logEdit(
-              'UPDATE',
-              req.user!.uuid,
-              'text_discourse',
-              rowUuid,
-              trx
-            )
-          )
-        );
       });
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -434,7 +541,6 @@ router
   .get(async (req, res, next) => {
     try {
       const { spellingUuid } = req.params;
-      const isAdmin = req.user ? req.user.isAdmin : false;
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const DictionaryFormDao = sl.get('DictionaryFormDao');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
@@ -450,11 +556,7 @@ router
       );
 
       const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(wordUuid);
-      const forms = await DictionaryFormDao.getWordForms(
-        wordUuid,
-        isAdmin,
-        true
-      );
+      const forms = await DictionaryFormDao.getWordForms(wordUuid, true);
 
       // Only get the one form from the formUuid (keep all spellings of the form)
       const selectedForms = forms.filter(form => form.uuid === formUuid);
@@ -466,7 +568,7 @@ router
 
       res.json(result);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -475,7 +577,6 @@ router
   .get(async (req, res, next) => {
     try {
       const { discourseUuid } = req.params;
-      const isAdmin = req.user ? req.user.isAdmin : false;
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const DictionarySpellingDao = sl.get('DictionarySpellingDao');
       const DictionaryFormDao = sl.get('DictionaryFormDao');
@@ -512,11 +613,7 @@ router
         const grammarInfo = await DictionaryWordDao.getGrammaticalInfo(
           wordUuid
         );
-        const forms = await DictionaryFormDao.getWordForms(
-          wordUuid,
-          isAdmin,
-          true
-        );
+        const forms = await DictionaryFormDao.getWordForms(wordUuid, true);
 
         // Only get the one form from the formUuid (keep all spellings of the form)
         const selectedForms = forms.filter(form => form.uuid === formUuid);
@@ -529,59 +626,180 @@ router
 
       res.json(result);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
-router.route('/dictionary/tree/taxonomy').get(async (req, res, next) => {
-  try {
-    const HierarchyDao = sl.get('HierarchyDao');
-    const cache = sl.get('cache');
+router
+  .route('/dictionary/tree/taxonomy')
+  .get(cacheMiddleware<TaxonomyTree>(noFilter), async (req, res, next) => {
+    try {
+      const HierarchyDao = sl.get('HierarchyDao');
+      const cache = sl.get('cache');
 
-    const tree = await HierarchyDao.createTaxonomyTree();
-    cache.insert({ req }, tree);
-    res.json(tree);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      const tree = await HierarchyDao.createTaxonomyTree();
+
+      const response = await cache.insert({ req }, tree, noFilter);
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 router
   .route('/dictionary/addform')
   .post(permissionsRoute('ADD_FORM'), async (req, res, next) => {
     try {
       const DictionaryFormDao = sl.get('DictionaryFormDao');
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const utils = sl.get('utils');
+      const cache = sl.get('cache');
 
       const { wordUuid, formSpelling, properties }: AddFormPayload = req.body;
 
-      const newFormUuid = await DictionaryFormDao.addForm(
-        wordUuid,
-        formSpelling
-      );
-
-      const itemPropertyRows = convertParsePropsToItemProps(
-        properties,
-        newFormUuid
-      );
-
-      const itemPropertyRowLevels = [
-        ...new Set(itemPropertyRows.map(row => row.level)),
-      ];
-      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-        level => itemPropertyRows.filter(row => row.level === level)
-      );
-
-      for (let i = 0; i < rowsByLevel.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.all(
-          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row))
+      await utils.createTransaction(async trx => {
+        const newFormUuid = await DictionaryFormDao.addForm(
+          wordUuid,
+          formSpelling,
+          trx
         );
-      }
+
+        const itemPropertyRows = convertParsePropsToItemProps(
+          properties,
+          newFormUuid
+        );
+
+        const itemPropertyRowLevels = [
+          ...new Set(itemPropertyRows.map(row => row.level)),
+        ];
+        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+          level => itemPropertyRows.filter(row => row.level === level)
+        );
+
+        for (let i = 0; i < rowsByLevel.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all(
+            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
+          );
+        }
+      });
+
+      const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        wordUuid
+      );
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        dictionaryRow.word,
+        dictionaryRow.type
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
 
       res.status(201).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router.route('/dictionary/checknewword').post(async (req, res, next) => {
+  try {
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+
+    const { wordSpelling, properties }: AddWordCheckPayload = req.body;
+
+    const firstLetter = wordSpelling.charAt(0);
+
+    const wordsToCompare = await DictionaryWordDao.getWords(
+      'word',
+      firstLetter.toLowerCase()
+    );
+
+    const wordsSameSpelling = wordsToCompare.filter(
+      word => word.word === wordSpelling
+    );
+
+    const hasMatchingProperty = (
+      comparison: InsertItemPropertyRow[],
+      property: ItemPropertyRow
+    ) =>
+      comparison.some(
+        prop =>
+          prop.variableUuid === property.variableUuid &&
+          prop.valueUuid === property.valueUuid &&
+          prop.level === property.level
+      );
+    const newWordProperties = convertParsePropsToItemProps(properties, '');
+
+    if (
+      wordsSameSpelling.some(
+        existing =>
+          existing.properties.length === newWordProperties.length &&
+          existing.properties.every(prop =>
+            hasMatchingProperty(newWordProperties, prop)
+          )
+      )
+    ) {
+      res.status(200).json(true);
+    } else {
+      res.status(200).json(false);
+    }
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
+router
+  .route('/dictionary/addword')
+  .post(permissionsRoute('ADD_LEMMA'), async (req, res, next) => {
+    try {
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const utils = sl.get('utils');
+      const cache = sl.get('cache');
+
+      const { wordSpelling, wordType, properties }: AddWordPayload = req.body;
+
+      let newWordUuid: string = '';
+
+      await utils.createTransaction(async trx => {
+        newWordUuid = await DictionaryWordDao.addWord(
+          wordSpelling,
+          wordType,
+          trx
+        );
+
+        const itemPropertyRows = convertParsePropsToItemProps(
+          properties,
+          newWordUuid
+        );
+
+        const itemPropertyRowLevels = [
+          ...new Set(itemPropertyRows.map(row => row.level)),
+        ];
+        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+          level => itemPropertyRows.filter(row => row.level === level)
+        );
+
+        for (let i = 0; i < rowsByLevel.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all(
+            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
+          );
+        }
+      });
+
+      const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
+        wordSpelling,
+        wordType
+      );
+
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+
+      res.status(201).json(newWordUuid);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
     }
   });
 

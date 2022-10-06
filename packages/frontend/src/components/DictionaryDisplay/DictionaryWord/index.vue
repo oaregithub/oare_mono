@@ -31,8 +31,16 @@
               v-on="on"
               v-bind="attrs"
             >
-              <mark v-if="uuid === uuidToHighlight">{{ title }}</mark>
-              <span v-else>{{ title }}</span>
+              <mark
+                v-if="uuid === uuidToHighlight"
+                :class="allowEditing && canUpdateWordSpelling ? 'ml-1' : ''"
+                >{{ title }}</mark
+              >
+              <span
+                v-else
+                :class="allowEditing && canUpdateWordSpelling ? 'ml-1' : ''"
+                >{{ title }}</span
+              >
             </strong>
           </template>
         </UtilList>

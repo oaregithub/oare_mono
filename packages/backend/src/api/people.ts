@@ -33,10 +33,9 @@ router
           textOccurrenceDistinctCount: null,
         };
       });
-      cache.insert({ req }, resultPeople);
       res.json(resultPeople);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -60,7 +59,7 @@ router
 
       res.json(count);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -184,7 +183,7 @@ router
 
       res.json(textOccurrencesResponse);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

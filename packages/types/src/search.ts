@@ -1,7 +1,16 @@
+import { DiscourseUnit } from './textDiscourse';
+
 export interface SearchTextsResultRow {
   uuid: string;
   name: string;
   matches: string[];
+  discourseUuids: string[];
+}
+
+export interface WordsInTextsSearchResultRow {
+  uuid: string;
+  name: string;
+  discourseUnits: DiscourseUnit[];
   discourseUuids: string[];
 }
 
@@ -10,17 +19,22 @@ export interface SearchTextsPayload {
   textTitle: string;
   page: number;
   rows: number;
-  respectWordBoundaries: string;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface SearchTextsCountPayload {
   characters?: string;
   textTitle: string;
-  respectWordBoundaries: string;
+  mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
 export interface SearchTextsResponse {
   results: SearchTextsResultRow[];
+}
+
+export interface WordsInTextsSearchResponse {
+  results: WordsInTextsSearchResultRow[];
+  total: number;
 }
 
 export interface SearchCooccurrence {

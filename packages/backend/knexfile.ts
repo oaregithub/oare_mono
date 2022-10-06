@@ -1,3 +1,3 @@
 import { knexConfig } from './src/connection';
 
-export default knexConfig;
+export default knexConfig('migration');

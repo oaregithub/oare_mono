@@ -3,6 +3,7 @@ import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
 import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
+import { TreeRow } from './tree';
 
 export interface Text {
   uuid: string;
@@ -27,6 +28,13 @@ export interface EpigraphyResponse {
   discourseUnits: DiscourseUnit[];
   draft?: TextDraft;
   hasEpigraphy: boolean;
+  zoteroData: ZoteroData[];
+}
+export interface ZoteroData {
+  citation: string;
+  link: string | null;
+  pageLink: string | null;
+  plateLink: string | null;
 }
 
 export type EpigraphicUnitType =
@@ -227,8 +235,9 @@ export interface TextPhoto {
   upload?: File;
 }
 
-export interface TextPhotoWithName extends TextPhoto {
+export interface TextPhotoWithDetails extends TextPhoto {
   name: string;
+  properties: ParseTreeProperty[];
 }
 
 export interface TextEpigraphyRowPartial {
@@ -354,6 +363,7 @@ export interface CreateTextTables {
   resources: ResourceRow[];
   links: LinkRow[];
   hierarchy: HierarchyRow;
+  trees: TreeRow[];
 }
 
 export interface EditorWord {
@@ -384,4 +394,28 @@ export interface EditorMarkupError {
 
 export interface CreateTextsPayload {
   tables: CreateTextTables;
+}
+
+export interface EpigraphyLabelLink {
+  label: string;
+  link: string;
+  side: string | number | null;
+  view: string | null;
+}
+
+export interface ImageResource {
+  label: string;
+  link: string;
+  uuid: string;
+}
+
+export interface ImageResourcePropertyDetails {
+  side: string | null;
+  view: string | null;
+}
+
+export interface QuarantineText {
+  text: Text;
+  hasEpigraphy: boolean;
+  timestamp: string;
 }

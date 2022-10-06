@@ -5,7 +5,7 @@
         <v-btn
           v-if="allowEditing && canEditParseInfo"
           icon
-          class="test-property-pencil edit-button mr-1"
+          class="test-property-pencil edit-button"
           @click="editPropertiesDialog = true"
           small
           v-bind="attrs"
@@ -16,7 +16,9 @@
       </template>
       <span>Edit Parse Info</span>
     </v-tooltip>
-    <span class="mr-1" v-if="formGrammar === ''">(No parse info yet)</span>
+    <span class="mr-1" v-if="formGrammar === '' && canEditParseInfo"
+      >(No parse info yet)</span
+    >
     <span class="mr-1" v-else-if="formGrammar !== ''">({{ formGrammar }})</span>
     <oare-dialog
       v-if="allowEditing && canEditParseInfo"
@@ -59,7 +61,7 @@ export default defineComponent({
   props: {
     word: {
       type: Object as PropType<Word>,
-      required: true,
+      required: false,
     },
     form: {
       type: Object as PropType<DictionaryForm>,
@@ -90,10 +92,14 @@ export default defineComponent({
     };
 
     const partOfSpeechValueUuid = computed(() => {
-      const posProperties = props.word.properties.filter(
-        prop => prop.variableName === 'Part of Speech'
-      );
-      return posProperties.length > 0 ? posProperties[0].valueUuid : undefined;
+      if (props.word) {
+        const posProperties = props.word.properties.filter(
+          prop => prop.variableName === 'Part of Speech'
+        );
+        return posProperties.length > 0
+          ? posProperties[0].valueUuid
+          : undefined;
+      }
     });
 
     const addPropertiesKey = ref(false);
@@ -108,7 +114,8 @@ export default defineComponent({
       try {
         await server.editPropertiesByReferenceUuid(
           props.form.uuid,
-          properties.value
+          properties.value,
+          props.word ? props.word.uuid : undefined
         );
         actions.showSnackbar(
           `Successfully updated form parse info for ${props.form.form}`

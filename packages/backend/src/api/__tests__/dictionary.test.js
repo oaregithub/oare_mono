@@ -10,25 +10,37 @@ describe('dictionary api test', () => {
     uuid: 'test',
     word: 'word',
     properties: [],
-    translations: [],
+    translationsForDefinition: [],
+    discussionLemmas: [],
   };
   const MockDictionaryFormDao = {
     getWordForms: jest.fn().mockResolvedValue(mockForms),
     addForm: jest.fn().mockResolvedValue('new-form-uuid'),
+    updateForm: jest.fn().mockResolvedValue(null),
+    getDictionaryWordUuidByFormUuid: jest
+      .fn()
+      .mockResolvedValue('test-word-uuid'),
   };
   const MockDictionaryWordDao = {
+    addWord: jest.fn().mockResolvedValue('new-word-uuid'),
+    getWords: jest.fn().mockResolvedValue(['words']),
     getGrammaticalInfo: jest.fn().mockResolvedValue(mockGrammar),
     updateWordSpelling: jest.fn().mockResolvedValue(null),
-  };
-  const MockLoggingEditsDao = {
-    logEdit: jest.fn().mockResolvedValue(null),
+    updateTranslations: jest.fn().mockResolvedValue(),
+    getDictionaryWordRowByUuid: jest.fn().mockResolvedValue({
+      word: 'test-word',
+      type: 'word',
+    }),
   };
   const MockUserDao = {
-    getUserByUuid: jest.fn().mockResolvedValue(null),
+    getUserByUuid: jest.fn().mockResolvedValue({
+      uuid: 'user-uuid',
+    }),
   };
   const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
     clear: jest.fn(),
-    insert: jest.fn(),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
   };
   const AdminUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
@@ -65,29 +77,122 @@ describe('dictionary api test', () => {
       {
         name: 'EDIT_ITEM_PROPERTIES',
       },
+      {
+        name: 'ADD_LEMMA',
+      },
+      {
+        name: 'CONNECT_SPELLING',
+      },
     ]),
+  };
+
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+    getDictionaryCacheRouteToClear: jest.fn().mockResolvedValue('/dictionary'),
   };
 
   const setup = ({
     FormDao,
     WordDao,
-    LoggingDao,
     UserDao,
     DiscourseDao,
     cache,
     HierarchyDao,
     ItemPropertiesDao,
+    PermissionsDao,
+    Utils,
+    DictionarySpellingDao,
   } = {}) => {
     sl.set('DictionaryFormDao', FormDao || MockDictionaryFormDao);
     sl.set('DictionaryWordDao', WordDao || MockDictionaryWordDao);
-    sl.set('LoggingEditsDao', LoggingDao || MockLoggingEditsDao);
     sl.set('TextDiscourseDao', DiscourseDao);
     sl.set('UserDao', UserDao || MockUserDao);
     sl.set('cache', cache || mockCache);
-    sl.set('PermissionsDao', MockPermissionsDao);
+    sl.set('PermissionsDao', PermissionsDao || MockPermissionsDao);
     sl.set('HierarchyDao', HierarchyDao || MockHierarchyDao);
     sl.set('ItemPropertiesDao', ItemPropertiesDao || mockItemPropertiesDao);
+    sl.set('utils', Utils || mockUtils);
+    sl.set('DictionarySpellingDao', DictionarySpellingDao);
   };
+
+  describe('PATCH /connect/spellings', () => {
+    const PATH = `${API_PATH}/connect/spellings`;
+    const MockTextDiscourseDao = {
+      updateSpellingUuid: jest.fn().mockResolvedValue(),
+    };
+    const mockPayload = {
+      discourseUuid: 'discourseUuid',
+      spellingUuid: 'spellingUuid',
+    };
+    const MockSpellingDao = {
+      getFormUuidBySpellingUuid: jest.fn().mockResolvedValue('formUuid'),
+    };
+
+    beforeEach(() => {
+      setup({
+        UserDao: {
+          getUserByUuid: jest.fn().mockResolvedValue({
+            uuid: 'user-uuid',
+            isAdmin: false,
+          }),
+        },
+        DiscourseDao: MockTextDiscourseDao,
+        DictionarySpellingDao: MockSpellingDao,
+        PermissionsDao: MockPermissionsDao,
+      });
+    });
+
+    const sendRequest = (auth = true) => {
+      const req = request(app).patch(PATH).send(mockPayload);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('prevents non-logged in users from patching', async () => {
+      setup();
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('prevents users without permission from patching', async () => {
+      setup({
+        PermissionsDao: {
+          getUserPermissions: jest.fn().mockResolvedValue([]),
+        },
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it('returns 204', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(204);
+    });
+
+    it('updates spellingUuid in text discourse', async () => {
+      await sendRequest();
+      expect(MockTextDiscourseDao.updateSpellingUuid).toHaveBeenCalledWith(
+        mockPayload.discourseUuid,
+        mockPayload.spellingUuid
+      );
+    });
+
+    it('returns 500 if text discourse dao fails', async () => {
+      setup({
+        UserDao: AdminUserDao,
+        DiscourseDao: {
+          updateSpellingUuid: jest.fn().mockRejectedValue(),
+        },
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
 
   describe('GET /dictionary/:uuid', () => {
     const PATH = `${API_PATH}/dictionary/test`;
@@ -179,38 +284,14 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(201);
     });
 
-    it('logs edits', async () => {
-      await sendRequest();
-      expect(MockLoggingEditsDao.logEdit).toHaveBeenCalledWith(
-        'UPDATE',
-        'user-uuid',
-        'dictionary_word',
-        testUuid
-      );
-    });
-
     it('updates word spelling', async () => {
       await sendRequest();
-      expect(MockDictionaryWordDao.updateWordSpelling).toHaveBeenCalledWith(
-        testUuid,
-        'newWord'
-      );
+      expect(MockDictionaryWordDao.updateWordSpelling).toHaveBeenCalled();
     });
 
     it('clears cache', async () => {
       await sendRequest();
       expect(mockCache.clear).toHaveBeenCalled();
-    });
-
-    it('returns 500 if logging dao fails', async () => {
-      setup({
-        UserDao: AdminUserDao,
-        LoggingDao: {
-          logEdit: jest.fn().mockRejectedValue('Logging dao failure'),
-        },
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
     });
 
     it('returns 500 if dictionary word dao fails', async () => {
@@ -230,27 +311,21 @@ describe('dictionary api test', () => {
   describe('PATCH /dictionary/translations/:uuid', () => {
     const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/dictionary/translations/${testUuid}`;
-    const updatedTranslations = [
+    const mockPayload = [
       {
         uuid: 'tr-uuid',
         translation: 'test-translation',
       },
     ];
-    const TranslationWordDao = {
-      updateTranslations: jest.fn().mockResolvedValue(updatedTranslations),
-    };
 
     beforeEach(() => {
       setup({
         UserDao: AdminUserDao,
-        WordDao: TranslationWordDao,
       });
     });
 
     const sendRequest = (auth = true) => {
-      const req = request(app)
-        .patch(PATH)
-        .send({ translations: updatedTranslations });
+      const req = request(app).patch(PATH).send({ translations: mockPayload });
       if (auth) {
         return req.set('Authorization', 'token');
       }
@@ -286,11 +361,7 @@ describe('dictionary api test', () => {
     it('correctly updates translations', async () => {
       await sendRequest();
 
-      expect(TranslationWordDao.updateTranslations).toHaveBeenCalledWith(
-        'user-uuid',
-        testUuid,
-        updatedTranslations
-      );
+      expect(MockDictionaryWordDao.updateTranslations).toHaveBeenCalled();
     });
 
     it('clears cache', async () => {
@@ -319,15 +390,11 @@ describe('dictionary api test', () => {
       getDiscourseUuidsByFormUuid: jest.fn().mockResolvedValue(discourseUuids),
       updateDiscourseTranscription: jest.fn().mockResolvedValue(null),
     };
-    const FormDao = {
-      updateForm: jest.fn().mockResolvedValue(null),
-    };
 
     beforeEach(() => {
       setup({
         UserDao: AdminUserDao,
         DiscourseDao,
-        FormDao,
       });
     });
 
@@ -363,51 +430,9 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(201);
     });
 
-    it('logs edits to form', async () => {
-      await sendRequest();
-      expect(MockLoggingEditsDao.logEdit).toHaveBeenCalledWith(
-        'UPDATE',
-        'user-uuid',
-        'dictionary_form',
-        testUuid
-      );
-
-      discourseUuids.forEach(uuid => {
-        expect(MockLoggingEditsDao.logEdit).toHaveBeenCalledWith(
-          'UPDATE',
-          'user-uuid',
-          'text_discourse',
-          uuid
-        );
-      });
-    });
-
     it('updates form', async () => {
       await sendRequest();
-      expect(FormDao.updateForm).toHaveBeenCalledWith(testUuid, 'newForm');
-    });
-
-    it('updates discourse transcriptions', async () => {
-      await sendRequest();
-
-      discourseUuids.forEach(uuid => {
-        expect(DiscourseDao.updateDiscourseTranscription).toHaveBeenCalledWith(
-          uuid,
-          'newForm'
-        );
-      });
-    });
-
-    it("returns 500 if logging doesn't work", async () => {
-      setup({
-        UserDao: AdminUserDao,
-        LoggingDao: {
-          logEdit: jest.fn().mockRejectedValue('Logging failure'),
-        },
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
+      expect(MockDictionaryFormDao.updateForm).toHaveBeenCalled();
     });
 
     it('returns 500 if dictionary form fails to update', async () => {
@@ -425,27 +450,10 @@ describe('dictionary api test', () => {
     it('returns 500 if getting discourse uuids fails', async () => {
       setup({
         UserDao: AdminUserDao,
-        FormDao,
         DiscourseDao: {
           getDiscourseUuidsByFormUuid: jest
             .fn()
             .mockRejectedValue('Failed to get discourse uuids'),
-        },
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if updating discourse transcription fails', async () => {
-      setup({
-        UserDao: AdminUserDao,
-        FormDao,
-        DiscourseDao: {
-          ...DiscourseDao,
-          updateDiscourseTranscription: jest
-            .fn()
-            .mockRejectedValue('Cannot update discourse transcription'),
         },
       });
 
@@ -467,29 +475,19 @@ describe('dictionary api test', () => {
       updateSpellingUuid: jest.fn().mockResolvedValue(null),
     };
 
-    const LoggingEditsDao = {
-      logEdit: jest.fn().mockResolvedValue(null),
-    };
-
     const DictionarySpellingDao = {
       updateSpelling: jest.fn().mockResolvedValue(null),
       getSpellingByUuid: jest.fn().mockResolvedValue('current spelling'),
+      getFormUuidBySpellingUuid: jest.fn().mockResolvedValue('form-uuid'),
     };
 
-    const mockUtils = {
-      createTransaction: jest.fn(async cb => {
-        await cb();
-      }),
-    };
-
-    const setupPostForm = () => {
-      sl.set('UserDao', AdminUserDao);
-      sl.set('TextDiscourseDao', TextDiscourseDao);
-      sl.set('LoggingEditsDao', LoggingEditsDao);
-      sl.set('DictionarySpellingDao', DictionarySpellingDao);
-      sl.set('utils', mockUtils);
-      sl.set('PermissionsDao', MockPermissionsDao);
-    };
+    beforeEach(() => {
+      setup({
+        UserDao: AdminUserDao,
+        DiscourseDao: TextDiscourseDao,
+        DictionarySpellingDao,
+      });
+    });
 
     const sendRequest = (auth = true) => {
       const req = request(app).put(PATH).send(mockPayload);
@@ -513,25 +511,16 @@ describe('dictionary api test', () => {
     });
 
     it('returns 201', async () => {
-      setupPostForm();
       const response = await sendRequest();
       expect(response.status).toBe(201);
     });
 
-    it('logs edit', async () => {
-      setupPostForm();
-      await sendRequest();
-      expect(LoggingEditsDao.logEdit).toHaveBeenCalled();
-    });
-
     it('updates spelling', async () => {
-      setupPostForm();
       await sendRequest();
       expect(DictionarySpellingDao.updateSpelling).toHaveBeenCalled();
     });
 
     it('updates discourses', async () => {
-      setupPostForm();
       await sendRequest();
 
       expect(TextDiscourseDao.updateSpellingUuid).toHaveBeenCalledTimes(
@@ -540,13 +529,11 @@ describe('dictionary api test', () => {
     });
 
     it('checks to see if text discourse contains the spelling', async () => {
-      setupPostForm();
       await sendRequest();
       expect(TextDiscourseDao.hasSpelling).toHaveBeenCalled();
     });
 
     it("doesn't update spelling if the spelling is the same as the current", async () => {
-      setupPostForm();
       sl.set('DictionarySpellingDao', {
         ...DictionarySpellingDao,
         getSpellingByUuid: jest.fn().mockResolvedValue(mockPayload.spelling),
@@ -557,7 +544,6 @@ describe('dictionary api test', () => {
     });
 
     it('returns 400 if spelling exists in text discourse', async () => {
-      setupPostForm();
       sl.set('TextDiscourseDao', {
         hasSpelling: jest.fn().mockResolvedValue(true),
       });
@@ -566,7 +552,6 @@ describe('dictionary api test', () => {
     });
 
     it('returns 500 if updating discourse spelling uuid fails', async () => {
-      setupPostForm();
       sl.set('TextDiscourseDao', {
         ...TextDiscourseDao,
         updateSpellingUuid: jest
@@ -579,30 +564,16 @@ describe('dictionary api test', () => {
     });
 
     it('returns 500 if checking text discourse fails', async () => {
-      setupPostForm();
       sl.set('TextDiscourseDao', {
         hasSpelling: jest.fn().mockRejectedValue('Failed to check spelling'),
       });
 
       const response = await sendRequest();
       expect(response.status).toBe(500);
-      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
       expect(DictionarySpellingDao.updateSpelling).not.toHaveBeenCalled();
     });
 
-    it('returns 500 if logging edit fails', async () => {
-      setupPostForm();
-      sl.set('LoggingEditsDao', {
-        logEdit: jest.fn().mockRejectedValue('Failed to log edit'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(TextDiscourseDao.updateSpellingUuid).not.toHaveBeenCalled();
-    });
-
     it('returns 500 if updating spelling fails', async () => {
-      setupPostForm();
       sl.set('DictionarySpellingDao', {
         updateSpelling: jest
           .fn()
@@ -632,10 +603,6 @@ describe('dictionary api test', () => {
       addSpelling: jest.fn().mockResolvedValue(newUuid),
     };
 
-    const LoggingEditsDao = {
-      logEdit: jest.fn().mockResolvedValue(null),
-    };
-
     const TextDiscourseDao = {
       updateSpellingUuid: jest.fn().mockResolvedValue(null),
     };
@@ -643,9 +610,9 @@ describe('dictionary api test', () => {
     const setupAddSpelling = () => {
       sl.set('UserDao', AdminUserDao);
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
-      sl.set('LoggingEditsDao', LoggingEditsDao);
       sl.set('TextDiscourseDao', TextDiscourseDao);
       sl.set('PermissionsDao', MockPermissionsDao);
+      sl.set('utils', mockUtils);
     };
 
     const sendRequest = (auth = true) => {
@@ -691,22 +658,7 @@ describe('dictionary api test', () => {
       setupAddSpelling();
       await sendRequest();
 
-      expect(DictionarySpellingDao.addSpelling).toHaveBeenCalledWith(
-        formUuid,
-        spelling
-      );
-    });
-
-    it('logs insertion of new spelling uuid', async () => {
-      setupAddSpelling();
-      await sendRequest();
-
-      expect(LoggingEditsDao.logEdit).toHaveBeenCalledWith(
-        'INSERT',
-        'user-uuid',
-        'dictionary_spelling',
-        newUuid
-      );
+      expect(DictionarySpellingDao.addSpelling).toHaveBeenCalled();
     });
 
     it('updates spellings in text discourse', async () => {
@@ -714,24 +666,7 @@ describe('dictionary api test', () => {
       await sendRequest();
 
       discourseUuids.forEach(uuid => {
-        expect(TextDiscourseDao.updateSpellingUuid).toHaveBeenCalledWith(
-          uuid,
-          newUuid
-        );
-      });
-    });
-
-    it('logs updates to text discourse', async () => {
-      setupAddSpelling();
-      await sendRequest();
-
-      discourseUuids.forEach(uuid => {
-        expect(LoggingEditsDao.logEdit).toHaveBeenCalledWith(
-          'UPDATE',
-          'user-uuid',
-          'text_discourse',
-          uuid
-        );
+        expect(TextDiscourseDao.updateSpellingUuid).toHaveBeenCalled();
       });
     });
 
@@ -745,7 +680,6 @@ describe('dictionary api test', () => {
       expect(response.status).toBe(400);
       expect(DictionarySpellingDao.addSpelling).not.toHaveBeenCalled();
       expect(TextDiscourseDao.updateSpellingUuid).not.toHaveBeenCalled();
-      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
     });
 
     it('returns 500 if checking spelling existence fails', async () => {
@@ -760,7 +694,6 @@ describe('dictionary api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(500);
       expect(DictionarySpellingDao.addSpelling).not.toHaveBeenCalled();
-      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
     });
 
     it('returns 500 if adding spelling fails', async () => {
@@ -768,17 +701,6 @@ describe('dictionary api test', () => {
       sl.set('DictionarySpellingDao', {
         ...DictionarySpellingDao,
         addSpelling: jest.fn().mockRejectedValue('Failed to add spelling'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
-    });
-
-    it('returns 500 if logging edit fails', async () => {
-      setupAddSpelling();
-      sl.set('LoggingEditsDao', {
-        logEdit: jest.fn().mockRejectedValue('Failed to log'),
       });
 
       const response = await sendRequest();
@@ -802,26 +724,21 @@ describe('dictionary api test', () => {
     const spellingUuid = 'spelling-uuid';
     const PATH = `${API_PATH}/dictionary/spellings/${spellingUuid}`;
     const DictionarySpellingDao = {
+      getFormUuidBySpellingUuid: jest.fn().mockResolvedValue('form-uuid'),
       deleteSpelling: jest.fn().mockResolvedValue(null),
-    };
-
-    const LoggingEditsDao = {
-      logEdit: jest.fn().mockResolvedValue(null),
     };
 
     const TextDiscourseDao = {
       uuidsBySpellingUuid: jest.fn().mockResolvedValue(['uuid1']),
-      unsetSpellingUuid: jest.fn(async (_uuid, cb) => {
-        await cb();
-      }),
+      unsetSpellingUuid: jest.fn().mockResolvedValue(),
     };
 
     const setupDeleteSpelling = () => {
       sl.set('UserDao', AdminUserDao);
       sl.set('DictionarySpellingDao', DictionarySpellingDao);
       sl.set('TextDiscourseDao', TextDiscourseDao);
-      sl.set('LoggingEditsDao', LoggingEditsDao);
       sl.set('PermissionsDao', MockPermissionsDao);
+      sl.set('utils', mockUtils);
     };
 
     const sendRequest = () =>
@@ -852,12 +769,6 @@ describe('dictionary api test', () => {
       expect(DictionarySpellingDao.deleteSpelling).toHaveBeenCalled();
     });
 
-    it('logs edits', async () => {
-      setupDeleteSpelling();
-      await sendRequest();
-      expect(LoggingEditsDao.logEdit).toHaveBeenCalled();
-    });
-
     it('sets discourse spelling uuids to null', async () => {
       setupDeleteSpelling();
       await sendRequest();
@@ -875,7 +786,6 @@ describe('dictionary api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(500);
       expect(DictionarySpellingDao.deleteSpelling).not.toHaveBeenCalled();
-      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
     });
 
     it('returns 500 when getting uuids fails', async () => {
@@ -883,17 +793,6 @@ describe('dictionary api test', () => {
       sl.set('TextDiscourseDao', {
         ...TextDiscourseDao,
         uuidsBySpellingUuid: jest.fn().mockRejectedValue('Failed to get uuids'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-      expect(LoggingEditsDao.logEdit).not.toHaveBeenCalled();
-    });
-
-    it('returns 500 when logging edits fails', async () => {
-      setupDeleteSpelling();
-      sl.set('LoggingEditsDao', {
-        logEdit: jest.fn().mockRejectedValue('Failed to log edit'),
       });
 
       const response = await sendRequest();
@@ -1070,7 +969,10 @@ describe('dictionary api test', () => {
     };
 
     const mockTextDiscourseDao = {
-      disconnectSpellings: jest.fn().mockResolvedValue(),
+      disconnectSpelling: jest.fn().mockResolvedValue(),
+      getDiscourseRowByUuid: jest
+        .fn()
+        .mockResolvedValue({ textUuid: 'test-uuid' }),
     };
 
     const disconnectSetup = () => {
@@ -1090,7 +992,7 @@ describe('dictionary api test', () => {
     it('returns 500 on failed spelling disconnect', async () => {
       sl.set('TextDiscourseDao', {
         ...mockTextDiscourseDao,
-        disconnectSpellings: jest
+        disconnectSpelling: jest
           .fn()
           .mockRejectedValue('failed to disconnect spellings'),
       });
@@ -1100,7 +1002,7 @@ describe('dictionary api test', () => {
 
     it('returns 401 if user is not logged in', async () => {
       const response = await request(app).patch(PATH).send(mockPayload);
-      expect(mockTextDiscourseDao.disconnectSpellings).not.toHaveBeenCalled();
+      expect(mockTextDiscourseDao.disconnectSpelling).not.toHaveBeenCalled();
       expect(response.status).toBe(401);
     });
 
@@ -1110,7 +1012,7 @@ describe('dictionary api test', () => {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       const response = await sendRequest();
-      expect(mockTextDiscourseDao.disconnectSpellings).not.toHaveBeenCalled();
+      expect(mockTextDiscourseDao.disconnectSpelling).not.toHaveBeenCalled();
       expect(response.status).toBe(403);
     });
   });
@@ -1337,6 +1239,7 @@ describe('dictionary api test', () => {
       sl.set('PermissionsDao', MockPermissionsDao);
       sl.set('DictionaryFormDao', MockDictionaryFormDao);
       sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+      sl.set('utils', mockUtils);
     };
 
     beforeEach(addFormSetup);
@@ -1373,6 +1276,217 @@ describe('dictionary api test', () => {
       sl.set('DictionaryFormDao', {
         ...MockDictionaryFormDao,
         addForm: jest.fn().mockRejectedValue('failed to add form'),
+      });
+      const response = await sendRequest();
+      expect(mockItemPropertiesDao.addProperty).not.toHaveBeenCalled();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 on failed form properties insertion', async () => {
+      sl.set('ItemPropertiesDao', {
+        addProperty: jest
+          .fn()
+          .mockRejectedValue('failed to insert form properties'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('POST /dictionary/checknewword', () => {
+    const PATH = `${API_PATH}/dictionary/checknewword`;
+
+    const mockPayload = {
+      wordSpelling: 'wordie',
+      translation: [],
+      forms: [],
+      properties: [],
+    };
+
+    const existingWord = [
+      {
+        uuid: 'word1',
+        word: 'wordie',
+        translation: [],
+        forms: [],
+        properties: [],
+      },
+    ];
+
+    const diffExistingWord = [
+      {
+        uuid: 'word2',
+        word: 'birdie',
+        translation: [],
+        forms: [],
+        properties: [
+          {
+            variable: {
+              objectUuid: 'test-uuid',
+              type: 'taxonomy',
+              objParentUuid: 'test-parent-uuid',
+              parentUuid: 'test-hierarchy-1',
+              uuid: 'test-hierarchy-2',
+              variableName: 'test-variable-name',
+              valueName: null,
+              varAbbreviation: 'test-var-abb',
+              valAbbreviation: null,
+              variableUuid: 'test-variable-uuid',
+              valueUuid: null,
+              level: null,
+              children: null,
+            },
+            value: {
+              objectUuid: 'test-uuid-2',
+              type: 'taxonomy',
+              objParentUuid: 'test-parent-uuid',
+              parentUuid: 'test-hierarchy-2',
+              uuid: 'test-hierarchy-3',
+              variableName: null,
+              valueName: 'test-value-name',
+              varAbbreviation: null,
+              valAbbreviation: 'test-val-abb',
+              variableUuid: null,
+              valueUuid: 'test-value-uuid',
+              level: 1,
+              children: null,
+            },
+          },
+        ],
+      },
+    ];
+
+    const mockDictionaryWordDao = {
+      getWords: jest.fn().mockResolvedValue(existingWord),
+      hasMatchingProperty: jest.fn().mockResolvedValue([false]),
+    };
+
+    const checkNewWordSetup = () => {
+      sl.set('DictionaryWordDao', mockDictionaryWordDao);
+      sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+      sl.set('utils', mockUtils);
+    };
+
+    beforeEach(checkNewWordSetup);
+
+    const sendRequest = () => request(app).post(PATH).send(mockPayload);
+
+    it('returns 200 if checking new word is successful', async () => {
+      const response = await sendRequest();
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 500 on failed new work check', async () => {
+      sl.set('DictionaryWordDao', {
+        ...mockDictionaryWordDao,
+        getWords: jest.fn().mockRejectedValue('failed to check lemma'),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns true if new word matches an existing words spelling and properties', async () => {
+      const response = await sendRequest();
+      expect(mockDictionaryWordDao.getWords).toBeCalled();
+      expect(response.body).toBe(true);
+    });
+
+    it('returns false if new word does not match any existing words', async () => {
+      sl.set('DictionaryWordDao', {
+        ...mockDictionaryWordDao,
+        getWords: jest.fn().mockResolvedValue(diffExistingWord),
+      });
+      const response = await sendRequest();
+      expect(response.body).toBe(false);
+    });
+  });
+
+  describe('POST /dictionary/addword', () => {
+    const PATH = `${API_PATH}/dictionary/addword`;
+    const mockPayload = {
+      wordSpelling: 'word-spelling',
+      properties: [
+        {
+          variable: {
+            objectUuid: 'test-uuid',
+            type: 'taxonomy',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-1',
+            uuid: 'test-hierarchy-2',
+            variableName: 'test-variable-name',
+            valueName: null,
+            varAbbreviation: 'test-var-abb',
+            valAbbreviation: null,
+            variableUuid: 'test-variable-uuid',
+            valueUuid: null,
+            level: null,
+            children: null,
+          },
+          value: {
+            objectUuid: 'test-uuid-2',
+            type: 'taxonomy',
+            objParentUuid: 'test-parent-uuid',
+            parentUuid: 'test-hierarchy-2',
+            uuid: 'test-hierarchy-3',
+            variableName: null,
+            valueName: 'test-value-name',
+            varAbbreviation: null,
+            valAbbreviation: 'test-val-abb',
+            variableUuid: null,
+            valueUuid: 'test-value-uuid',
+            level: 1,
+            children: null,
+          },
+        },
+      ],
+    };
+
+    const mockDictionaryWordDao = {
+      addWord: jest.fn().mockResolvedValue('new-word-uuid'),
+    };
+
+    const addWordSetup = () => {
+      sl.set('UserDao', AdminUserDao);
+      sl.set('PermissionsDao', MockPermissionsDao);
+      sl.set('DictionaryWordDao', mockDictionaryWordDao);
+      sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+      sl.set('utils', mockUtils);
+    };
+
+    beforeEach(addWordSetup);
+
+    const sendRequest = (auth = true) => {
+      const req = request(app).post(PATH).send(mockPayload);
+      if (auth) {
+        return req.set('Authorization', 'token');
+      }
+      return req;
+    };
+
+    it('returns 201 on successfull lemma addition', async () => {
+      const response = await sendRequest();
+      expect(mockDictionaryWordDao.addWord).toHaveBeenCalled();
+      expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+      expect(response.status).toBe(201);
+    });
+
+    it('returns 401 when user not logged in', async () => {
+      const response = await sendRequest(false);
+      expect(response.status).toBe(401);
+    });
+
+    it('returns 403 if user does not have permission to add lemmas', async () => {
+      sl.set('PermissionsDao', {
+        getUserPermissions: jest.fn().mockResolvedValue([]),
+      });
+      const response = await sendRequest();
+      expect(response.status).toBe(403);
+    });
+
+    it('returns 500 on failed lemma insertion', async () => {
+      sl.set('DictionaryWordDao', {
+        ...mockDictionaryWordDao,
+        addWord: jest.fn().mockRejectedValue('failed to add lemma'),
       });
       const response = await sendRequest();
       expect(mockItemPropertiesDao.addProperty).not.toHaveBeenCalled();

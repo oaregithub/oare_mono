@@ -1,9 +1,11 @@
 import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
+import { FieldInfo } from './field';
 
 export interface DisplayableWord {
   uuid: string;
   word: string;
+  wordOccurrences: number;
 }
 
 export interface FormSpelling {
@@ -52,6 +54,7 @@ export interface UpdateFormPayload {
 
 export interface UpdateDictionaryTranslationPayload {
   translations: DictionaryWordTranslation[];
+  fieldType: string;
 }
 
 export interface UpdateFormSpellingPayload {
@@ -129,6 +132,7 @@ export interface DictionarySearchPayload {
   search: string;
   page: number;
   rows: number;
+  mode: string;
 }
 
 export interface SpellingOccurrenceRow {
@@ -156,12 +160,15 @@ export interface TaxonomyTree {
   aliasName: string | null;
   varAbbreviation: string | null;
   valAbbreviation: string | null;
+  variableType: string | null;
+  variableTableReference: string | null;
   variableUuid: string | null;
   valueUuid: string | null;
   level: number | null;
   children: TaxonomyTree[] | null;
   custom: number | null;
   role: string | null;
+  fieldInfo: FieldInfo | null;
 }
 
 export interface ParseTreeProperty {
@@ -189,4 +196,20 @@ export interface InsertItemPropertyRow {
   valueUuid: string | null;
   objectUuid: string | null;
   value: string | null;
+}
+
+export interface DictionaryWordRow {
+  uuid: string;
+  word: string;
+  type: DictionaryWordTypes;
+}
+
+export interface EditPropertiesPayload {
+  properties: ParseTreeProperty[];
+  wordUuid?: string;
+}
+
+export interface ConnectSpellingDiscoursePayload {
+  discourseUuid: string;
+  spellingUuid: string;
 }

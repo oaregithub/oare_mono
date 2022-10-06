@@ -3,11 +3,8 @@
     :headers="headers"
     :items="loading ? [] : texts"
     :loading="loading"
-    :options.sync="searchOptions"
-    :server-items-length="totalTexts"
-    :footer-props="{
-      'items-per-page-options': [10, 25, 50, 100],
-    }"
+    disable-pagination
+    hide-default-footer
   >
     <template v-slot:[`item.name`]="{ item }">
       <v-icon
@@ -19,7 +16,18 @@
       <router-link v-if="item.hasEpigraphy" :to="`/epigraphies/${item.uuid}`">
         {{ item.name }}
       </router-link>
-      <span v-else>{{ item.name }}</span>
+      <span v-else
+        >{{ item.name }}
+        <v-btn
+          v-if="canAddNewTexts"
+          @click="createEpigraphy(item.uuid)"
+          small
+          class="ml-2"
+          color="info"
+          text
+          ><v-icon small>mdi-plus</v-icon>Create Text</v-btn
+        >
+      </span>
       <v-row v-if="editText === item.uuid" class="ma-1">
         <v-icon @click="updateTextInfo(item)" class="edit-text-save-btn mr-2"
           >mdi-check</v-icon
@@ -152,17 +160,9 @@ export default defineComponent({
       type: Array as PropType<CollectionText[]>,
       required: true,
     },
-    totalTexts: {
-      type: Number,
+    collectionUuid: {
+      type: String,
       required: true,
-    },
-    page: {
-      type: Number,
-      default: 1,
-    },
-    rows: {
-      type: Number,
-      default: 10,
     },
   },
 
@@ -170,10 +170,13 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
+    const router = sl.get('router');
 
     const hasEditPermission = computed(() =>
       store.hasPermission('EDIT_TEXT_INFO')
     );
+
+    const canAddNewTexts = computed(() => store.hasPermission('ADD_NEW_TEXTS'));
 
     const originalTextInfoObject = ref<OriginalTextInfo>({
       excavationPrefix: null,
@@ -202,11 +205,6 @@ export default defineComponent({
         value: 'publication',
       },
     ]);
-
-    const searchOptions = ref({
-      page: props.page,
-      itemsPerPage: props.rows,
-    });
 
     const editText = ref<string>();
 
@@ -252,33 +250,19 @@ export default defineComponent({
       }
     };
 
-    watch(
-      () => props.page,
-      () => (searchOptions.value.page = props.page)
-    );
-
-    watch(
-      () => searchOptions.value.page,
-      () => {
-        emit('update:page', searchOptions.value.page);
-      }
-    );
-
-    watch(
-      () => searchOptions.value.itemsPerPage,
-      () => {
-        emit('update:rows', searchOptions.value.itemsPerPage);
-      }
-    );
+    const createEpigraphy = (textUuid: string) => {
+      router.push(`/add_text_epigraphy/${props.collectionUuid}/${textUuid}`);
+    };
 
     return {
       headers,
-      searchOptions,
       editText,
       toggleTextInfo,
       cancelEditTextInfo,
       updateTextInfo,
       hasEditPermission,
+      createEpigraphy,
+      canAddNewTexts,
     };
   },
 });

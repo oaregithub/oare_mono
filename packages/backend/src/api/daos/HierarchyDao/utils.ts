@@ -1,7 +1,9 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
+import { Knex } from 'knex';
 
-export const getTreeNodeQuery = () =>
-  knex('hierarchy')
+export const getTreeNodeQuery = (trx?: Knex.Transaction) => {
+  const k = trx || knexRead();
+  return k('hierarchy')
     .select(
       'hierarchy.uuid',
       'hierarchy.parent_uuid as parentUuid',
@@ -15,7 +17,10 @@ export const getTreeNodeQuery = () =>
       'value.abbreviation as valAbbreviation',
       'variable.uuid as variableUuid',
       'value.uuid as valueUuid',
+      'variable.type as variableType',
+      'variable.table_reference as variableTableReference',
       'hierarchy.role'
     )
     .leftJoin('variable', 'variable.uuid', 'hierarchy.object_uuid')
     .leftJoin('value', 'value.uuid', 'hierarchy.object_uuid');
+};

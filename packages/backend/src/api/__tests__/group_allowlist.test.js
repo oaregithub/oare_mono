@@ -102,15 +102,11 @@ describe('POST /group_allowlist/:groupId', () => {
       name: 'test-name',
     }),
   };
-  const mockCache = {
-    clear: jest.fn(),
-  };
 
   const setup = () => {
     sl.set('GroupAllowlistDao', mockGroupAllowlistDao);
     sl.set('TextDao', mockTextDao);
     sl.set('OareGroupDao', mockOareGroupDao);
-    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,
@@ -188,14 +184,10 @@ describe('DELETE /group_allowlist/:groupId/:uuid', () => {
   const mockOareGroupDao = {
     getGroupById: jest.fn().mockResolvedValue(true),
   };
-  const mockCache = {
-    clear: jest.fn(),
-  };
 
   const setup = () => {
     sl.set('GroupAllowlistDao', mockGroupAllowlistDao);
     sl.set('OareGroupDao', mockOareGroupDao);
-    sl.set('cache', mockCache);
     sl.set('UserDao', {
       getUserByUuid: jest.fn().mockResolvedValue({
         isAdmin: true,

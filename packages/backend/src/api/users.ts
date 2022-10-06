@@ -12,7 +12,7 @@ router.route('/users').get(adminRoute, async (_req, res, next) => {
     const users = await UserDao.getAllUsers();
     res.json(users);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
@@ -41,7 +41,7 @@ router.route('/users/:uuid').get(authenticatedRoute, async (req, res, next) => {
 
     res.json(user);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

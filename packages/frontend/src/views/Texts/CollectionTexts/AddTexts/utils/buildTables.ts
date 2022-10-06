@@ -17,10 +17,11 @@ import {
   SignCodeWithDiscourseUuid,
   EpigraphyType,
   EpigraphicUnitType,
-  TextPhotoWithName,
+  TextPhotoWithDetails,
   LinkRow,
   ResourceRow,
   HierarchyRow,
+  TreeRow,
 } from '@oare/types';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
@@ -133,8 +134,11 @@ function generateDisplayName(textInfo: AddTextInfo): string {
   return displayName;
 }
 
-const createTextRow = async (textInfo: AddTextInfo): Promise<TextRow> => ({
-  uuid: v4(),
+const createTextRow = async (
+  textInfo: AddTextInfo,
+  existingTextUuid: string | null
+): Promise<TextRow> => ({
+  uuid: existingTextUuid || v4(),
   type: 'logosyllabic',
   language: null,
   cdliNum: textInfo.cdliNum,
@@ -157,13 +161,17 @@ export const createNewTextTables = async (
   textInfo: AddTextInfo,
   content: AddTextEditorContent,
   persistentDiscourseStorage: { [uuid: string]: string | null },
-  photos: TextPhotoWithName[],
-  collectionUuid: string
+  photos: TextPhotoWithDetails[],
+  collectionUuid: string,
+  existingTextRow: TextRow | undefined
 ): Promise<CreateTextTables> => {
   const server = sl.get('serverProxy');
   const store = sl.get('store');
 
-  const textRow: TextRow = await createTextRow(textInfo);
+  const textRow: TextRow = await createTextRow(
+    textInfo,
+    existingTextRow ? existingTextRow.uuid : null
+  );
   const textUuid = textRow.uuid;
 
   const epigraphyRowsWithoutIterators: TextEpigraphyRow[] = await createEpigraphyRows(
@@ -206,11 +214,6 @@ export const createNewTextTables = async (
   }));
   const signInformation = await createSignInformation(content);
 
-  const itemPropertiesRows = convertParsePropsToItemProps(
-    textInfo.properties,
-    textUuid
-  );
-
   const resourceRows: ResourceRow[] = photos.map(photo => ({
     uuid: v4(),
     sourceUuid: store.getters.user ? store.getters.user.uuid : null,
@@ -226,6 +229,19 @@ export const createNewTextTables = async (
     objUuid: resource.uuid,
   }));
 
+  const textItemPropertiesRows = convertParsePropsToItemProps(
+    textInfo.properties,
+    textUuid
+  );
+  const photoItemPropertiesRows = photos.flatMap((photo, idx) =>
+    convertParsePropsToItemProps(photo.properties, resourceRows[idx].uuid)
+  );
+
+  const itemPropertiesRows = [
+    ...textItemPropertiesRows,
+    ...photoItemPropertiesRows,
+  ];
+
   const hierarchyRow: HierarchyRow = {
     uuid: v4(),
     parentUuid: await server.getHierarchyParentUuidByCollection(collectionUuid),
@@ -235,6 +251,14 @@ export const createNewTextTables = async (
     objectParentUuid: collectionUuid,
     published: 1,
   };
+
+  const treeRows: TreeRow[] = [];
+  if (epigraphyRows[0]) {
+    treeRows.push({ uuid: epigraphyRows[0].treeUuid, type: 'epigraphy' });
+  }
+  if (discourseRows[0]) {
+    treeRows.push({ uuid: discourseRows[0].treeUuid, type: 'discourse' });
+  }
 
   const tables: CreateTextTables = {
     epigraphies: epigraphyRows,
@@ -246,6 +270,7 @@ export const createNewTextTables = async (
     resources: resourceRows,
     links: linkRows,
     hierarchy: hierarchyRow,
+    trees: treeRows,
   };
 
   return tables;
@@ -594,7 +619,7 @@ const createMarkupRows = async (
                         ).flat()
                       : [];
 
-                    return [rowMarkup, ...rowSigns];
+                    return [...rowMarkup, ...rowSigns];
                   })
                 )
               ).flat();

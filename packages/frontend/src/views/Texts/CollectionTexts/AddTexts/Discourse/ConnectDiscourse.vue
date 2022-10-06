@@ -140,7 +140,6 @@ export default defineComponent({
       ) {
         return '';
       }
-
       const lineNumber = formatLineNumber(line);
       return lineNumber;
     };
@@ -191,8 +190,7 @@ export default defineComponent({
         );
 
         discourseRowsWithSpelling.map((row, idx) => {
-          const discourseUuid = row.uuid;
-          searchSpellingResults.value[discourseUuid] = forms[idx];
+          searchSpellingResults.value[row.uuid] = forms[idx];
         });
       } catch {
         actions.showErrorSnackbar(

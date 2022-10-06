@@ -1,17 +1,21 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 import { PublicationResponse, PublicationText } from '@oare/types';
 import sl from '@/serviceLocator';
+import { Knex } from 'knex';
 
 class PublicationDao {
   async getPublicationsByPrfx(
     prfx: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ): Promise<PublicationResponse | null> {
+    const k = trx || knexRead();
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
-      userUuid
+      userUuid,
+      trx
     );
-    const publicationRows: PublicationText[] = await knex('text')
+    const publicationRows: PublicationText[] = await k('text')
       .select(
         'text.uuid as textUuid',
         'text.type as type',
@@ -91,8 +95,9 @@ class PublicationDao {
     return publication || null;
   }
 
-  async getAllPublications(): Promise<string[]> {
-    const publicationRows: Array<{ prefix: string }> = await knex('text')
+  async getAllPublications(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
+    const publicationRows: Array<{ prefix: string }> = await k('text')
       .distinct('text.publication_prfx as prefix')
       .whereNotNull('text.publication_prfx');
 

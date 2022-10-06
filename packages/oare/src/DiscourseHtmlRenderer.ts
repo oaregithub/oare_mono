@@ -1,5 +1,8 @@
 import { DiscourseUnit } from '@oare/types';
-import DiscourseRenderer, { lineReadingHelper } from './DiscourseRenderer';
+import DiscourseRenderer, {
+  lineReadingHelper,
+  lineReadingHelperForWordsInTexts,
+} from './DiscourseRenderer';
 
 export default class DiscourseHtmlRenderer extends DiscourseRenderer {
   constructor(discourseUnits: DiscourseUnit[]) {
@@ -13,6 +16,24 @@ export default class DiscourseHtmlRenderer extends DiscourseRenderer {
       transliteration: (word: string) => `<em>${word}</em>`,
       spelling: determinativeFormatter,
     });
+    return words.join(' ');
+  }
+
+  public lineReadingForWordsInTexts(
+    line: number,
+    discourseUuids: string[]
+  ): string {
+    const words: string[] = [];
+    lineReadingHelperForWordsInTexts(
+      this.discourseUnits,
+      discourseUuids,
+      line,
+      words,
+      {
+        transliteration: (word: string) => `<em>${word}</em>`,
+        spelling: determinativeFormatter,
+      }
+    );
     return words.join(' ');
   }
 }

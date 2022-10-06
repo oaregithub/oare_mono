@@ -10,7 +10,7 @@
         </v-stepper-step>
         <v-divider />
         <v-stepper-step :complete="step > 2" step="2">
-          Upload Photos
+          Upload Images
         </v-stepper-step>
         <v-divider />
         <v-stepper-step :complete="step > 3" step="3"> Editor </v-stepper-step>
@@ -25,6 +25,7 @@
       <v-stepper-items>
         <v-stepper-content step="1">
           <text-info-set
+            :existingTextRow="existingTextRow"
             @update-text-info="setTextInfo"
             @step-complete="stepOneComplete = $event"
           />
@@ -41,10 +42,11 @@
             v-if="step >= 2"
             @update-photos="setPhotos"
             @step-complete="stepTwoComplete = $event"
+            @skip="next"
           />
           <stepper-button
             :blockContinue="!stepTwoComplete"
-            blockContinueText="To continue, each photo needs to have a side and view selected. Please make sure you also have uploaded photos for each selector."
+            blockContinueText='To continue, please select "Confirm" or "Skip" in the awknowledgement box. Each image must also have a side and view selected before you can continue.'
             @next="next"
             @previous="previous"
           />
@@ -69,7 +71,9 @@
           <connect-discourse
             v-if="step >= 4"
             :epigraphicUnits="epigraphyDetails.units"
-            :discourseRows="createTextTables ? createTextTables.discourses : []"
+            :discourseRows="
+              temporaryLocalTables ? temporaryLocalTables.discourses : []
+            "
             :manualDiscourseSelections="manuallySelectedDiscourses"
             @update-discourse-rows="updateDiscourseRows($event)"
             @update-manual-selections="updateManualSelections($event)"
@@ -80,10 +84,10 @@
         <v-stepper-content step="5">
           <final-preview
             v-if="step >= 5"
-            :epigraphyUnits="epigraphyDetails"
-            :photoUrls="photoUrls"
+            :epigraphyDetails="epigraphyDetails"
+            :photoUrls="epigraphyLabelLinks"
             :localDiscourseInfo="
-              createTextTables ? createTextTables.discourses : []
+              temporaryLocalTables ? temporaryLocalTables.discourses : []
             "
           />
           <stepper-button
@@ -123,17 +127,23 @@ import {
   EpigraphyResponse,
   CreateTextTables,
   TextDiscourseRow,
-  TextPhotoWithName,
+  TextPhotoWithDetails,
+  TextRow,
+  EpigraphyLabelLink,
 } from '@oare/types';
 import { convertTablesToUnits } from './utils/convertTablesToUnits';
 import { createNewTextTables } from './utils/buildTables';
-import { addNamesToTextPhotos } from './utils/photos';
+import { addDetailsToTextPhotos } from './utils/photos';
 
 export default defineComponent({
   props: {
     collectionUuid: {
       type: String,
       required: true,
+    },
+    existingTextUuid: {
+      type: String,
+      required: false,
     },
   },
   beforeRouteLeave(_to, _from, next) {
@@ -155,6 +165,7 @@ export default defineComponent({
   setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
     const router = sl.get('router');
 
     const collectionName = ref('');
@@ -165,7 +176,42 @@ export default defineComponent({
     const stepTwoComplete = ref(false);
     const stepThreeComplete = ref(false);
 
+    const next = () => (step.value += 1);
+    const previous = () => (step.value -= 1);
+
     const isDirty = ref(true);
+
+    const existingTextRow = ref<TextRow>();
+
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        collectionName.value = (
+          await server.getCollectionInfo(props.collectionUuid)
+        ).name;
+
+        if (props.existingTextUuid) {
+          const alreadyHasEpigraphy = await server.hasEpigraphy(
+            props.existingTextUuid
+          );
+          if (alreadyHasEpigraphy) {
+            isDirty.value = false;
+            router.replace({ name: '403' });
+          }
+
+          existingTextRow.value =
+            (await server.getTextRowByUuid(props.existingTextUuid)) ||
+            undefined;
+        }
+      } catch (err) {
+        isDirty.value = false;
+        actions.showErrorSnackbar(
+          'Error loading collection name. Please try again.'
+        );
+      } finally {
+        loading.value = false;
+      }
+    });
 
     const textInfo = ref<AddTextInfo>();
     const setTextInfo = (updatedTextInfo: AddTextInfo) => {
@@ -173,12 +219,21 @@ export default defineComponent({
     };
 
     const photos = ref<TextPhoto[]>([]);
-    const photosWithName = ref<TextPhotoWithName[]>([]);
     const setPhotos = (updatedPhotos: TextPhoto[]) => {
       photos.value = updatedPhotos;
     };
+    const photosWithName = ref<TextPhotoWithDetails[]>([]);
     const photoUrls = computed(() =>
       photosWithName.value.filter(photo => photo.url).map(photo => photo.url)
+    );
+    const epigraphyLabelLinks: ComputedRef<EpigraphyLabelLink[]> = computed(
+      () =>
+        photos.value.map(photo => ({
+          link: photo.url || '',
+          label: `${store.getters.user?.firstName} ${store.getters.user?.lastName}`,
+          side: photo.side || null,
+          view: photo.view || null,
+        }))
     );
 
     const editorContent = ref<AddTextEditorContent>();
@@ -186,11 +241,42 @@ export default defineComponent({
       editorContent.value = updatedEditorContent;
     };
 
+    const temporaryLocalTables = ref<CreateTextTables>();
+    const buildTables = async () => {
+      if (textInfo.value && editorContent.value) {
+        photosWithName.value = await addDetailsToTextPhotos(
+          textInfo.value.excavationPrefix,
+          textInfo.value.excavationNumber,
+          textInfo.value.museumPrefix,
+          textInfo.value.museumNumber,
+          textInfo.value.publicationPrefix,
+          textInfo.value.publicationNumber,
+          photos.value
+        );
+
+        temporaryLocalTables.value = await createNewTextTables(
+          textInfo.value,
+          editorContent.value,
+          persistentDiscourseStorage.value,
+          photosWithName.value,
+          props.collectionUuid,
+          existingTextRow.value
+        );
+
+        temporaryLocalTables.value.discourses.forEach(discourse => {
+          persistentDiscourseStorage.value[discourse.uuid] =
+            discourse.spellingUuid;
+        });
+      }
+    };
+
     const epigraphyDetails: ComputedRef<EpigraphyResponse> = computed(() => {
       return {
         canWrite: false,
         text: {
-          uuid: createTextTables.value ? createTextTables.value.text.uuid : '',
+          uuid: temporaryLocalTables.value
+            ? temporaryLocalTables.value.text.uuid
+            : '',
           type: 'logosyllabic',
           name:
             textInfo.value && textInfo.value.textName
@@ -229,45 +315,44 @@ export default defineComponent({
           textInfo.value && textInfo.value.cdliNum
             ? textInfo.value.cdliNum
             : '',
-        units: createTextTables.value
-          ? convertTablesToUnits(createTextTables.value)
+        units: temporaryLocalTables.value
+          ? convertTablesToUnits(temporaryLocalTables.value)
           : [],
         color: '',
         colorMeaning: '',
         discourseUnits: [],
         hasEpigraphy: true,
+        zoteroData: [],
       };
     });
 
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        collectionName.value = (
-          await server.getCollectionInfo(props.collectionUuid)
-        ).name;
-      } catch {
-        actions.showErrorSnackbar(
-          'Error loading collection name. Please try again.'
-        );
-      } finally {
-        loading.value = false;
-      }
-    });
-
-    const next = () => (step.value += 1);
-    const previous = () => (step.value -= 1);
-
-    const pushToText = () => {
-      if (createTextTables.value) {
-        router.push(`/epigraphies/${createTextTables.value.text.uuid}`);
+    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
+      {}
+    );
+    const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
+      if (temporaryLocalTables.value) {
+        temporaryLocalTables.value = {
+          ...temporaryLocalTables.value,
+          discourses,
+        };
+        temporaryLocalTables.value.discourses.forEach(row => {
+          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
+        });
       }
     };
 
+    const manuallySelectedDiscourses = ref<string[]>([]);
+    const updateManualSelections = (discourseUuid: string) => {
+      manuallySelectedDiscourses.value =
+        manuallySelectedDiscourses.value.filter(uuid => uuid !== discourseUuid);
+      manuallySelectedDiscourses.value.push(discourseUuid);
+    };
+
     const createText = async () => {
-      if (createTextTables.value) {
+      if (temporaryLocalTables.value) {
         try {
           isDirty.value = false;
-          await server.createText(createTextTables.value);
+          await server.createText(temporaryLocalTables.value);
           await Promise.all(
             photosWithName.value.map(photo => server.uploadImage(photo))
           );
@@ -280,53 +365,9 @@ export default defineComponent({
       }
     };
 
-    const createTextTables = ref<CreateTextTables>();
-    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
-      {}
-    );
-    const manuallySelectedDiscourses = ref<string[]>([]);
-    const updateManualSelections = (discourseUuid: string) => {
-      manuallySelectedDiscourses.value =
-        manuallySelectedDiscourses.value.filter(uuid => uuid !== discourseUuid);
-      manuallySelectedDiscourses.value.push(discourseUuid);
-    };
-    const buildTables = async () => {
-      if (textInfo.value && editorContent.value) {
-        photosWithName.value = await addNamesToTextPhotos(
-          textInfo.value.excavationPrefix,
-          textInfo.value.excavationNumber,
-          textInfo.value.museumPrefix,
-          textInfo.value.museumNumber,
-          textInfo.value.publicationPrefix,
-          textInfo.value.publicationNumber,
-          photos.value
-        );
-
-        createTextTables.value = await createNewTextTables(
-          textInfo.value,
-          editorContent.value,
-          persistentDiscourseStorage.value,
-          photosWithName.value,
-          props.collectionUuid
-        );
-      }
-      if (createTextTables.value) {
-        createTextTables.value.discourses.forEach(discourse => {
-          persistentDiscourseStorage.value[discourse.uuid] =
-            discourse.spellingUuid;
-        });
-      }
-    };
-
-    const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
-      if (createTextTables.value) {
-        createTextTables.value = {
-          ...createTextTables.value,
-          discourses,
-        };
-        createTextTables.value.discourses.forEach(row => {
-          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
-        });
+    const pushToText = () => {
+      if (temporaryLocalTables.value) {
+        router.push(`/epigraphies/${temporaryLocalTables.value.text.uuid}`);
       }
     };
 
@@ -357,7 +398,7 @@ export default defineComponent({
       epigraphyDetails,
       next,
       previous,
-      createTextTables,
+      temporaryLocalTables,
       updateDiscourseRows,
       stepOneComplete,
       stepTwoComplete,
@@ -368,6 +409,8 @@ export default defineComponent({
       manuallySelectedDiscourses,
       updateManualSelections,
       isDirty,
+      existingTextRow,
+      epigraphyLabelLinks,
     };
   },
 });

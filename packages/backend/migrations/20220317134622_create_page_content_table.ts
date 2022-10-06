@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const hasEditorCreditTable = await knex.schema.hasTable('editor_credit');

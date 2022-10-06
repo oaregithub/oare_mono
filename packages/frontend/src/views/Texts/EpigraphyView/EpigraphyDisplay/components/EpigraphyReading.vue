@@ -62,7 +62,17 @@
         </div>
       </div>
     </div>
-
+    <connect-spelling-occurrence
+      v-if="viewingConnectSpellingDialog"
+      :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
+      class="test-spelling-occurrence-display"
+      :discourseUuid="connectSpellingDialogDiscourseUuid"
+      :spelling="connectSpellingDialogSpelling"
+      :searchSpellings="server.searchSpellings"
+      :getTexts="server.getSpellingTextOccurrences"
+      @finish="closeConnectSpellingDialog"
+      v-model="viewingConnectSpellingDialog"
+    ></connect-spelling-occurrence>
     <oare-dialog
       v-if="viewingDialog"
       class="test-rendering-word-dialog"
@@ -74,22 +84,44 @@
       :width="600"
       v-model="viewingDialog"
     >
-      <dictionary-word
-        v-if="discourseWordInfo"
-        :uuid="discourseWordInfo.uuid"
-        :selected-word-info="discourseWordInfo"
-        :allow-commenting="false"
-        :allow-editing="false"
-        :allow-deleting="false"
-        :allow-breadcrumbs="false"
-      >
-      </dictionary-word>
+      <v-row class="ma-0">
+        <dictionary-word
+          v-if="discourseWordInfo"
+          :uuid="discourseWordInfo.uuid"
+          :selected-word-info="discourseWordInfo"
+          :allow-commenting="false"
+          :allow-editing="false"
+          :allow-deleting="false"
+          :allow-breadcrumbs="false"
+        >
+        </dictionary-word>
+      </v-row>
+      <v-row class="ma-0">
+        <v-btn
+          color="primary"
+          v-if="canDisconnectSpellings"
+          class="test-disconnect-word"
+          @click="confirmDisconnectDialog = true"
+        >
+          Disconnect Spelling
+        </v-btn>
+      </v-row>
+    </oare-dialog>
+    <oare-dialog
+      v-model="confirmDisconnectDialog"
+      title="Confirm Disconnect"
+      submitText="Yes"
+      cancelText="Cancel"
+      @submit="disconnectSpelling"
+      closeOnSubmit
+    >
+      Are you sure you want to disconnect this word from the dictionary?
     </oare-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { computed, defineComponent, PropType, ref } from '@vue/composition-api';
 import { createTabletRenderer, TabletRenderer } from '@oare/oare';
 import {
   Word,
@@ -100,12 +132,14 @@ import {
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
-import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
+import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 
 export default defineComponent({
   name: 'EpigraphyReading',
   components: {
     DictionaryWord,
+    ConnectSpellingOccurrence,
   },
   props: {
     epigraphicUnits: {
@@ -127,7 +161,37 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const viewingDialog = ref(false);
+    const viewingConnectSpellingDialog = ref(false);
+    const connectSpellingDialogSpelling = ref('');
+    const connectSpellingDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
+
+    const canConnectSpellings = computed(() =>
+      store.hasPermission('CONNECT_SPELLING')
+    );
+
+    const canDisconnectSpellings = computed(() =>
+      store.hasPermission('DISCONNECT_SPELLING')
+    );
+
+    const selectedDiscourseUuid = ref('');
+
+    const confirmDisconnectDialog = ref(false);
+
+    const disconnectSpelling = async (): Promise<void> => {
+      try {
+        if (selectedDiscourseUuid.value) {
+          await server.disconnectSpellings([selectedDiscourseUuid.value]);
+          viewingDialog.value = false;
+          actions.showSnackbar('Word successfully disconnected.');
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting word. Please try again.',
+          err as Error
+        );
+      }
+    };
 
     const renderer = ref<TabletRenderer>(
       createTabletRenderer(props.epigraphicUnits, {
@@ -135,45 +199,6 @@ export default defineComponent({
         textFormat: 'html',
       })
     );
-
-    const romanNumeral = (colNum: number): string => {
-      let numeral: string = '';
-      switch (colNum) {
-        case 1:
-          numeral = 'i';
-          break;
-        case 2:
-          numeral = 'ii';
-          break;
-        case 3:
-          numeral = 'iii';
-          break;
-        case 4:
-          numeral = 'iv';
-          break;
-        case 5:
-          numeral = 'v';
-          break;
-        case 6:
-          numeral = 'vi';
-          break;
-        case 7:
-          numeral = 'vii';
-          break;
-        case 8:
-          numeral = 'viii';
-          break;
-        case 9:
-          numeral = 'ix';
-          break;
-        case 10:
-          numeral = 'x';
-          break;
-        default:
-          numeral = `${colNum}`;
-      }
-      return numeral;
-    };
 
     const lineNumber = (line: number): string => {
       if (
@@ -191,7 +216,9 @@ export default defineComponent({
       try {
         loading.value = true;
         actions.showSnackbar('Fetching discourse information...');
-
+        if (discourseUuid) {
+          selectedDiscourseUuid.value = discourseUuid;
+        }
         const spellingUuid = props.localDiscourseInfo
           ? props.localDiscourseInfo.filter(
               row => row.uuid === discourseUuid
@@ -199,18 +226,21 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+            discourseUuid
+          );
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
+            spellingUuid
+          );
         } else {
           discourseWordInfo.value = null;
         }
-
         actions.closeSnackbar();
         if (discourseWordInfo.value) {
           viewingDialog.value = true;
+        } else if (canConnectSpellings.value && discourseUuid) {
+          await openConnectSpellingDialog(discourseUuid);
         } else {
           actions.showSnackbar(
             'No information exists for this text discourse word'
@@ -223,6 +253,35 @@ export default defineComponent({
         );
       } finally {
         loading.value = false;
+      }
+    };
+
+    const openConnectSpellingDialog = async (discourseUuid: string) => {
+      try {
+        const { spelling } = await server.getSpellingByDiscourseUuid(
+          discourseUuid
+        );
+        viewingConnectSpellingDialog.value = true;
+        connectSpellingDialogSpelling.value = spelling;
+        connectSpellingDialogDiscourseUuid.value = discourseUuid;
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to load connect spelling view',
+          err as Error
+        );
+      }
+    };
+
+    const closeConnectSpellingDialog = async () => {
+      try {
+        viewingConnectSpellingDialog.value = false;
+        connectSpellingDialogSpelling.value = '';
+        connectSpellingDialogDiscourseUuid.value = '';
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to close connect spelling view',
+          err as Error
+        );
       }
     };
 
@@ -241,13 +300,22 @@ export default defineComponent({
     return {
       renderer,
       lineNumber,
-      romanNumeral,
       openDialog,
       loading,
       discourseWordInfo,
       viewingDialog,
+      viewingConnectSpellingDialog,
+      connectSpellingDialogSpelling,
+      connectSpellingDialogDiscourseUuid,
+      closeConnectSpellingDialog,
       formatWord,
       formatSide,
+      romanNumeral,
+      canDisconnectSpellings,
+      confirmDisconnectDialog,
+      disconnectSpelling,
+      selectedDiscourseUuid,
+      server,
     };
   },
 });

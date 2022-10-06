@@ -33,7 +33,7 @@
         outlined
         accept="image/png, image/jpeg, image/tiff"
         @change="setFile"
-        label="Click to select photo file to upload"
+        label="Click to select image file to upload"
       />
     </v-row>
   </v-container>
@@ -57,11 +57,11 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const photoUrl = ref<string>();
+    const localPhotoUrl = ref<string>();
     const localUpload = ref<File>();
     const setFile = async (upload: File) => {
       localUpload.value = upload;
-      photoUrl.value = await readURL(upload);
+      localPhotoUrl.value = await readURL(upload);
     };
 
     const readURL = (file: File): Promise<string> => {
@@ -76,7 +76,7 @@ export default defineComponent({
     const sideSelection = ref<number | string>();
     const viewSelection = ref<string>();
 
-    const sideOptions = ref([
+    const sideOptions = ref<{ text: string; value: string | number }[]>([
       {
         text: 'obv.',
         value: 1,
@@ -130,6 +130,10 @@ export default defineComponent({
         value: 'x',
       },
       {
+        text: 'Handcopy',
+        value: 'h',
+      },
+      {
         text: 'Unknown Side',
         value: 8,
       },
@@ -138,7 +142,8 @@ export default defineComponent({
         value: 9,
       },
     ]);
-    const viewOptions = ref([
+
+    const viewOptions = ref<{ text: string; value: string }[]>([
       {
         text: 'Upper (from above)',
         value: 'u',
@@ -175,18 +180,34 @@ export default defineComponent({
         text: 'Seal Impression Focus',
         value: 's',
       },
+      {
+        text: 'From Right',
+        value: 'fr',
+      },
+      {
+        text: 'From Left',
+        value: 'fl',
+      },
+      {
+        text: 'Contextual',
+        value: 'cx',
+      },
+      {
+        text: 'Detail Unspecified',
+        value: 'du',
+      },
     ]);
 
     const photo: ComputedRef<TextPhoto | null> = computed(() => {
       if (
-        photoUrl.value &&
+        localPhotoUrl.value &&
         sideSelection.value &&
         viewSelection.value &&
         localUpload.value
       ) {
         return {
           uuid: props.uuid,
-          url: photoUrl.value,
+          url: localPhotoUrl.value,
           side: sideSelection.value,
           view: viewSelection.value,
           upload: localUpload.value,
@@ -203,12 +224,12 @@ export default defineComponent({
     });
 
     const removePhoto = () => {
-      emit('remove-photo', props.uuid);
+      emit('remove-photo');
     };
 
     return {
       setFile,
-      photoUrl,
+      localPhotoUrl,
       sideOptions,
       viewOptions,
       sideSelection,

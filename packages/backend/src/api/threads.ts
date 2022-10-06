@@ -14,7 +14,7 @@ import {
   ThreadStatus,
   CommentSortType,
 } from '@oare/types';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import permissionsRoute from '@/middlewares/permissionsRoute';
 import adminRoute from '@/middlewares/adminRoute';
 import { toInteger } from 'lodash';
 
@@ -22,7 +22,7 @@ const router = express.Router();
 
 router
   .route('/threads/:referenceUuid')
-  .get(authenticatedRoute, async (req, res, next) => {
+  .get(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const { referenceUuid } = req.params;
       const threadsDao = sl.get('ThreadsDao');
@@ -67,7 +67,7 @@ router
 
       res.json(results);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -76,28 +76,35 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
     const thread: Thread = req.body;
     const threadsDao = sl.get('ThreadsDao');
     const commentsDao = sl.get('CommentsDao');
+    const utils = sl.get('utils');
 
     const prevThread = await threadsDao.getByUuid(thread.uuid);
     if (prevThread === null) {
       throw new HttpInternalError('Previous Thread was not found');
     }
 
-    await threadsDao.update(thread);
+    await utils.createTransaction(async trx => {
+      await threadsDao.update(thread, trx);
 
-    await commentsDao.insert(req.user!.uuid, {
-      threadUuid: thread.uuid,
-      text: `The status was changed from ${prevThread.status} to ${thread.status}`,
+      await commentsDao.insert(
+        req.user!.uuid,
+        {
+          threadUuid: thread.uuid,
+          text: `The status was changed from ${prevThread.status} to ${thread.status}`,
+        },
+        trx
+      );
     });
 
     res.status(200).end();
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 
 router
   .route('/threads/name')
-  .put(authenticatedRoute, async (req, res, next) => {
+  .put(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const { threadUuid, newName }: UpdateThreadNameRequest = req.body;
       const threadsDao = sl.get('ThreadsDao');
@@ -106,13 +113,13 @@ router
 
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
 router
   .route('/threads')
-  .get(authenticatedRoute, async (req, res, next) => {
+  .get(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const {
         status,
@@ -179,10 +186,10 @@ router
         count: threadRows.count,
       } as AllCommentsResponse);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
-  .post(authenticatedRoute, async (req, res, next) => {
+  .post(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const ThreadsDao = sl.get('ThreadsDao');
       const newThread: CreateThreadPayload = req.body;
@@ -190,7 +197,7 @@ router
       const newThreadUuid = await ThreadsDao.insert(newThread);
       res.json(newThreadUuid);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 
@@ -201,7 +208,7 @@ router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
     const response = await ThreadsDao.newThreadsExist();
     res.json(response);
   } catch (err) {
-    next(new HttpInternalError(err));
+    next(new HttpInternalError(err as string));
   }
 });
 

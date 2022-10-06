@@ -1,11 +1,10 @@
 service: oareserverless
 
-frameworkVersion: '2'
+frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: nodejs12.x
-  lambdaHashingVersion: 20201221
+  runtime: nodejs16.x
 
 plugins:
   - serverless-plugin-typescript

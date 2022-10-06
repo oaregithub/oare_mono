@@ -2,22 +2,24 @@ import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
-import { API_PATH } from '@/setupRoutes';
+import cacheMiddleware from '@/middlewares/cache';
+import { noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
 router
   .route('/page_content/:routeName')
-  .get(async (req, res, next) => {
+  .get(cacheMiddleware<string>(noFilter), async (req, res, next) => {
     try {
       const { routeName } = req.params;
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
       const content = await PageContentDao.getContent(routeName);
-      cache.insert({ req }, content);
-      res.json(content);
+
+      const response = await cache.insert<string>({ req }, content, noFilter);
+      res.json(response);
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   })
   .patch(adminRoute, async (req, res, next) => {
@@ -27,18 +29,16 @@ router
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
       await PageContentDao.editContent(routeName, content);
-      cache.clear(
+      await cache.clear(
+        `/page_content/${routeName}`,
         {
-          req: {
-            originalUrl: `${API_PATH}/page_content`,
-            method: 'GET',
-          },
+          level: 'exact',
         },
-        { exact: false }
+        req
       );
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

@@ -1,4 +1,4 @@
-import knex from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import {
   ErrorsRow,
   ErrorStatus,
@@ -6,6 +6,7 @@ import {
   ErrorsRowWithUser,
   GetErrorsPayload,
 } from '@oare/types';
+import { Knex } from 'knex';
 import { v4 } from 'uuid';
 
 export interface InsertErrorsRow {
@@ -16,12 +17,11 @@ export interface InsertErrorsRow {
 }
 
 class ErrorsDao {
-  async logError({
-    userUuid,
-    description,
-    stacktrace,
-    status,
-  }: InsertErrorsRow): Promise<void> {
+  async logError(
+    { userUuid, description, stacktrace, status }: InsertErrorsRow,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
     const uuid = v4();
     const timestamp = new Date();
 
@@ -33,12 +33,16 @@ class ErrorsDao {
       timestamp,
       status,
     };
-    await knex('errors').insert(insertRow);
+    await k('errors').insert(insertRow);
   }
 
-  async getErrorLog(payload: GetErrorsPayload): Promise<ErrorsResponse> {
+  async getErrorLog(
+    payload: GetErrorsPayload,
+    trx?: Knex.Transaction
+  ): Promise<ErrorsResponse> {
+    const k = trx || knexRead();
     function baseQuery() {
-      return knex('errors')
+      return k('errors')
         .select(
           'errors.uuid',
           'errors.user_uuid',
@@ -46,14 +50,14 @@ class ErrorsDao {
           'errors.stacktrace',
           'errors.timestamp',
           'errors.status',
-          knex.raw('CONCAT(user.first_name, " ", user.last_name) AS userName')
+          k.raw('CONCAT(user.first_name, " ", user.last_name) AS userName')
         )
         .leftJoin('user', 'user.uuid', 'errors.user_uuid')
         .where('errors.status', 'like', `%${payload.filters.status}%`)
         .modify(qb => {
           if (payload.filters.user !== '') {
             qb.where(
-              knex.raw('CONCAT(user.first_name, " ", user.last_name)'),
+              k.raw('CONCAT(user.first_name, " ", user.last_name)'),
               'like',
               `%${payload.filters.user}%`
             );
@@ -78,7 +82,7 @@ class ErrorsDao {
 
     const totalItems = await baseQuery()
       .count({
-        count: knex.raw('distinct errors.uuid'),
+        count: k.raw('distinct errors.uuid'),
       })
       .first();
     let count = 0;
@@ -92,12 +96,18 @@ class ErrorsDao {
     };
   }
 
-  async updateErrorStatus(uuid: string, status: ErrorStatus): Promise<void> {
-    await knex('errors').update({ status }).where({ uuid });
+  async updateErrorStatus(
+    uuid: string,
+    status: ErrorStatus,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('errors').update({ status }).where({ uuid });
   }
 
-  async newErrorsExist(): Promise<boolean> {
-    const exists = await knex('errors').first().where('status', 'New');
+  async newErrorsExist(trx?: Knex.Transaction): Promise<boolean> {
+    const k = trx || knexRead();
+    const exists = await k('errors').first().where('status', 'New');
     return !!exists;
   }
 }

@@ -1,27 +1,16 @@
 <template>
-  <v-app-bar app dark clipped-left color="#002E5D">
+  <v-app-bar
+    app
+    dark
+    height="42"
+    clipped-left
+    color="#002E5D"
+    extension-height="42"
+  >
     <v-app-bar-nav-icon @click="$emit('nav-icon-click')" />
-    <div id="logo" v-if="$vuetify.breakpoint.smAndUp">
-      <a href="https://byu.edu" target="_blank">
-        <v-img
-          src="/BYU_abbrev.png"
-          class="mt-5 mx-3"
-          max-height="50px"
-          max-width="75px"
-        />
-      </a>
-    </div>
 
     <div id="leftSide">
       <div id="titleBox">
-        <div class="subtitle-1">
-          <a
-            class="blue-grey--text text--lighten-3 no_underline"
-            href="https://history.byu.edu"
-            target="_blank"
-            >{{ i18n.t('appBar.historyDep') }}</a
-          >
-        </div>
         <div class="headline">
           <router-link class="white--text no_underline" to="/">{{
             title
@@ -102,7 +91,7 @@
     </div>
 
     <template #extension>
-      <v-row class="d-flex justify-center">
+      <v-row class="d-flex justify-center my-1">
         <v-menu
           offset-y
           open-on-hover
@@ -163,11 +152,17 @@
             <v-btn text dark v-bind="attrs" v-on="on"> Misc. </v-btn>
           </template>
           <v-list dense>
+            <v-list-item v-if="canViewBibliography" class="pa-0">
+              <v-btn text to="/bibliography" width="100%">Bibliography</v-btn>
+            </v-list-item>
             <v-list-item class="pa-0">
               <v-btn text to="/about" width="100%">About</v-btn>
             </v-list-item>
             <v-list-item class="pa-0">
               <v-btn text to="/tutorial" width="100%">Tutorial</v-btn>
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/signList" width="100%">Sign List</v-btn>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -177,25 +172,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, PropType } from '@vue/composition-api';
-import VueI18n from 'vue-i18n';
-import Router from 'vue-router';
-import defaultI18n from '../../i18n/index';
+import { defineComponent, computed } from '@vue/composition-api';
+import i18n from '@/i18n';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'OareAppBar',
-  props: {
-    router: {
-      type: Object as PropType<Router>,
-      required: true,
-    },
-    i18n: {
-      type: Object as PropType<VueI18n>,
-      default: () => defaultI18n,
-    },
-  },
-  setup({ router, i18n }, context) {
+  setup(_, context) {
+    const router = sl.get('router');
     const store = sl.get('store');
     const serverProxy = sl.get('serverProxy');
 
@@ -223,6 +207,9 @@ export default defineComponent({
     const canViewNames = computed(() => store.hasPermission('NAMES'));
     const canViewPlaces = computed(() => store.hasPermission('PLACES'));
     const canViewPeople = computed(() => store.hasPermission('PEOPLE'));
+    const canViewBibliography = computed(() =>
+      store.hasPermission('BIBLIOGRAPHY')
+    );
 
     const logout = () => {
       store.logout();
@@ -242,6 +229,8 @@ export default defineComponent({
       canViewNames,
       canViewPlaces,
       canViewPeople,
+      canViewBibliography,
+      i18n,
     };
   },
 });
@@ -250,16 +239,6 @@ export default defineComponent({
 <style scoped>
 .no_underline {
   text-decoration: none;
-}
-
-#appBarContainer {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-around;
-  background-color: #002e5d;
-  height: 0.66in;
-  align-items: center;
 }
 #leftSide {
   display: flex;
@@ -272,8 +251,5 @@ export default defineComponent({
   flex-direction: column;
   align-content: center;
   margin-left: 10px;
-}
-#logo {
-  height: 0.66in;
 }
 </style>

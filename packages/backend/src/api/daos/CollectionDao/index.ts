@@ -1,21 +1,28 @@
-import knex from '@/connection';
+import { knexRead } from '@/connection';
 import { Collection } from '@oare/types';
 import sl from '@/serviceLocator';
+import { Knex } from 'knex';
 import UserDao from '../UserDao';
 
 class CollectionDao {
   async getCollectionByUuid(
-    collectionUuid: string
+    collectionUuid: string,
+    trx?: Knex.Transaction
   ): Promise<Collection | null> {
-    const collection = await knex('collection')
+    const k = trx || knexRead();
+    const collection = await k('collection')
       .select('uuid', 'name')
       .where('uuid', collectionUuid)
       .first();
     return collection || null;
   }
 
-  async getTextCollectionUuid(textUuid: string): Promise<string | null> {
-    const collection: { uuid: string } | null = await knex('collection')
+  async getTextCollectionUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string | null> {
+    const k = trx || knexRead();
+    const collection: { uuid: string } | null = await k('collection')
       .select('collection.uuid')
       .innerJoin('hierarchy', 'hierarchy.obj_parent_uuid', 'collection.uuid')
       .where('hierarchy.object_uuid', textUuid)
@@ -23,38 +30,26 @@ class CollectionDao {
     return collection ? collection.uuid : null;
   }
 
-  async getTextCollection(textUuid: string): Promise<Collection | null> {
-    const collectionUuid = await this.getTextCollectionUuid(textUuid);
-    return collectionUuid ? this.getCollectionByUuid(collectionUuid) : null;
+  async getTextCollection(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Collection | null> {
+    const collectionUuid = await this.getTextCollectionUuid(textUuid, trx);
+    return collectionUuid
+      ? this.getCollectionByUuid(collectionUuid, trx)
+      : null;
   }
 
-  async getAllCollections(userUuid: string | null): Promise<string[]> {
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const user = userUuid ? await UserDao.getUserByUuid(userUuid) : null;
-    const isAdmin = user ? user.isAdmin : false;
+  async getAllCollections(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
 
-    const collectionRows: Array<{ uuid: string }> = await knex('collection')
+    const collectionRows: Array<{ uuid: string }> = await k('collection')
       .select('collection.uuid')
-      .orderBy('collection.name')
-      .modify(qb => {
-        if (!isAdmin) {
-          qb.innerJoin(
-            'hierarchy',
-            'hierarchy.object_uuid',
-            'collection.uuid'
-          ).andWhere('hierarchy.published', true);
-        }
-      });
+      .orderBy('collection.name');
 
     const collectionUuids = collectionRows.map(({ uuid }) => uuid);
 
-    const collectionsViewable = await Promise.all(
-      collectionUuids.map(uuid =>
-        CollectionTextUtils.canViewCollection(uuid, userUuid)
-      )
-    );
-
-    return collectionUuids.filter((_, index) => collectionsViewable[index]);
+    return collectionUuids;
   }
 }
 

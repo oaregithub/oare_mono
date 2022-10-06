@@ -2,6 +2,8 @@ import axios from 'axios';
 import store from '@/ts-store';
 import firebase from '@/firebase';
 import actions from '@/globalActions';
+import router from '@/router';
+import { FirebaseError } from '@firebase/util';
 
 const host =
   process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
@@ -27,16 +29,20 @@ axiosInstance.interceptors.response.use(
           const idTokenResult = await currentUser.getIdTokenResult(true);
           store.setToken(idTokenResult);
         } catch (err) {
-          if (err.code === 'auth/quota-exceeded') {
+          if ((err as FirebaseError).code === 'auth/quota-exceeded') {
             error.config.isRefreshing = false;
             await new Promise(resolve => setTimeout(resolve, 1000));
           } else {
-            actions.logError(err.code, err);
+            actions.logError((err as FirebaseError).code, err as Error);
           }
         }
       }
 
       return axiosInstance(error.config);
+    }
+
+    if (error.response && error.response.status === 403) {
+      router.replace({ name: '403' });
     }
 
     throw error;

@@ -22,32 +22,32 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: yarn install
 
-      - name: Build packages
+      - name: Build Packages
         run: yarn build
+        env:
+          VUE_APP_GOOGLE_ANALYTICS_DASHBOARD_SOURCE: ${{ secrets.VUE_APP_GOOGLE_ANALYTICS_DASHBOARD_SOURCE }}
+          VUE_APP_GOOGLE_ANALYTICS_HREF: ${{ secrets.VUE_APP_GOOGLE_ANALYTICS_HREF }}
+          VUE_APP_GOOGLE_ANALYTICS_KEY: ${{ secrets.VUE_APP_GOOGLE_ANALYTICS_KEY }}
 
-      - name: Lint files
+      - name: Lint Files
         run: yarn lint
 
-      - name: Run tests
+      - name: Run Tests
         run: yarn test
 
-      - name: Run SQL migrations
+      - name: Run SQL Migrations
         run: yarn migrate:latest-prod
         env:
           OARE_DB_URL: ${{ secrets.OARE_DB_URL }}
         if: github.ref == 'refs/heads/master'
 
-      - name: Zip up files
-        run: |
-          cp -R .ebextensions packages/backend
-          cd packages/backend
-          zip -q -r oare_build.zip build dist package.json yarn.lock .ebextensions @oare
-          mv oare_build.zip ../..
+      - name: Zip Files
+        run: yarn zip
         if: github.ref == 'refs/heads/master'
 
       # Uncomment if you want to debug a build. It will upload the zip file to S3.
@@ -79,14 +79,27 @@ jobs:
           yarn workspace @oare/serverless serverless deploy -v -r us-west-2
         if: github.ref == 'refs/heads/master'
 
-      - name: Deploy to EB
+      - name: Deploy to EB - US West (Oregon)
         uses: einaregilsson/beanstalk-deploy@v11
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: oare
-          environment_name: oare-env
-          version_label: 'oare-${{ steps.time.outputs.time }}'
+          environment_name: oare-env-v2
+          version_label: 'oare-oregon-${{ steps.time.outputs.time }}'
           region: us-west-2
           deployment_package: oare_build.zip
         if: github.ref == 'refs/heads/master'
+
+      # NOTE: Temporarily Disabled While International Server(s) Are Deprecated
+      # - name: Deploy to EB - Europe (Paris)
+      #   uses: einaregilsson/beanstalk-deploy@v11
+      #   with:
+      #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     application_name: oare
+      #     environment_name: oare-env-v2-europe
+      #     version_label: 'oare-paris-${{ steps.time.outputs.time }}'
+      #     region: eu-west-3
+      #     deployment_package: oare_build.zip
+      #   if: github.ref == 'refs/heads/master'

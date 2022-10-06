@@ -19,12 +19,14 @@
           <mark v-if="word.forms.length <= 0" class="error">{{
             word.word
           }}</mark>
-          <span v-else>{{ word.word }}</span></router-link
-        >
+          <mark v-else :style="`${highlightWords(word.wordOccurrences)}`">{{
+            word.word
+          }}</mark>
+        </router-link>
       </template>
-      <template #translation="{ word }">
-        <div v-if="word.translations.length > 0">
-          {{ word.translations[0].translation }}
+      <template #translationsForDefinition="{ word }">
+        <div v-if="word.translationsForDefinition.length > 0">
+          {{ word.translationsForDefinition[0].val }}
         </div>
       </template>
       <template #forms="{ word }">
@@ -85,8 +87,11 @@ export default defineComponent({
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        word.translations.some(tr =>
-          tr.translation.toLowerCase().includes(lowerSearch)
+        word.translationsForDefinition.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
+        ) ||
+        word.discussionLemmas.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
         ) ||
         word.forms.some(form => {
           return (
@@ -124,12 +129,31 @@ export default defineComponent({
       return word.forms;
     };
 
+    const highlightWords = (occurrences: number) => {
+      if (occurrences >= 0 && occurrences <= 10) {
+        return 'background: #caf0f8';
+      } else if (occurrences >= 11 && occurrences <= 100) {
+        return 'background: #90e0ef';
+      } else if (occurrences >= 101 && occurrences <= 1000) {
+        return 'background: #e0aaff';
+      } else if (occurrences >= 1001 && occurrences <= 10000) {
+        return 'background: #c77dff';
+      } else if (occurrences >= 10001 && occurrences <= 25000) {
+        return 'background: #ffccd5';
+      } else if (occurrences >= 25001) {
+        return 'background: #ff8fa3';
+      } else {
+        return '';
+      }
+    };
+
     return {
       places,
       loading,
       searchFilter,
       getWordForms,
       generateFormGrammar,
+      highlightWords,
     };
   },
 });

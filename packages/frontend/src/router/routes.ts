@@ -8,8 +8,10 @@ import TextsSearch from '@/views/Search/TextsSearch/TextsSearch.vue';
 import AddGroupUsers from '@/views/Admin/Groups/Users/AddGroupUsers.vue';
 import DenylistTexts from '@/views/Admin/PublicDenylist/Texts/DenylistTexts.vue';
 import DenylistCollections from '@/views/Admin/PublicDenylist/Collections/DenylistCollections.vue';
+import DenyListImages from '@/views/Admin/PublicDenylist/Images/DenylistImages.vue';
 import AddDenylistTexts from '@/views/Admin/PublicDenylist/Texts/AddDenylistTexts.vue';
 import AddDenylistCollections from '@/views/Admin/PublicDenylist/Collections/AddDenylistCollections.vue';
+import AddDenylistImages from '@/views/Admin/PublicDenylist/Images/AddDenylistImages.vue';
 import SendResetPasswordEmailView from '@/views/Authentication/ResetPassword/SendResetPasswordEmailView.vue';
 import ResetPasswordView from '@/views/Authentication/ResetPassword/ResetPasswordView.vue';
 import ManagePermissions from '@/views/Admin/Groups/Permissions/ManagePermissions.vue';
@@ -44,17 +46,23 @@ import PropertiesTaxonomy from '../views/Admin/PropertiesTaxonomy/index.vue';
 import ManageAllowlist from '../views/Admin/Groups/Allowlist/ManageAllowlist.vue';
 import AddAllowlistTexts from '../views/Admin/Groups/Allowlist/Texts/AddAllowlistTexts.vue';
 import AddAllowlistCollections from '../views/Admin/Groups/Allowlist/Collections/AddAllowlistCollections.vue';
+import AddAllowlistImages from '../views/Admin/Groups/Allowlist/Images/AddAllowlistImages.vue';
 import ManageEdits from '../views/Admin/Groups/Edits/ManageEdits.vue';
 import AddEditTexts from '../views/Admin/Groups/Edits/Texts/AddEditTexts.vue';
 import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditCollections.vue';
 import AddNewTexts from '../views/Texts/CollectionTexts/AddTexts/index.vue';
 import UserPreferences from '../views/Dashboard/UserPreferences.vue';
+import BibliographyView from '../views/Bibliography/index.vue';
 import AboutView from '../views/About/index.vue';
 import TutorialView from '../views/Tutorial/index.vue';
 import PublicationsView from '../views/Texts/PublicationsView/index.vue';
 import ArchivesView from '../views/Texts/ArchivesView/index.vue';
 import ArchiveView from '../views/Texts/ArchivesView/archives/index.vue';
 import DossierView from '../views/Texts/ArchivesView/dossiers/index.vue';
+import WordsInTextsSearch from '../views/Search/TextsSearch/WordsInTextSearch.vue';
+import QuarantinedTexts from '../views/Admin/Quarantine/QuarantinedTexts.vue';
+import SignListView from '../views/Signs/index.vue';
+import AnalyticsView from '../views/Admin/Analytics/Analytics.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -93,6 +101,11 @@ const routes: RouteConfig[] = [
         path: 'collections',
         name: 'denylistCollections',
         component: DenylistCollections,
+      },
+      {
+        path: 'images',
+        name: 'denylistImages',
+        component: DenyListImages,
       },
     ],
   },
@@ -136,6 +149,23 @@ const routes: RouteConfig[] = [
     path: '/admin/add_denylist/collections',
     name: 'denylistAddCollections',
     component: AddDenylistCollections,
+    beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/add_denylist/images',
+    name: 'denylistAddImages',
+    component: AddDenylistImages,
+  },
+  {
+    path: '/admin/quarantine',
+    name: 'adminQuarantine',
+    component: QuarantinedTexts,
+    beforeEnter: adminGuard,
+  },
+  {
+    path: '/admin/analytics',
+    name: 'analytics',
+    component: AnalyticsView,
     beforeEnter: adminGuard,
   },
   {
@@ -217,6 +247,13 @@ const routes: RouteConfig[] = [
     beforeEnter: adminGuard,
   },
   {
+    path: '/admin/add_allowlist/images/:groupId',
+    name: 'manageAllowlistImages',
+    component: AddAllowlistImages,
+    props: true,
+    beforeEnter: adminGuard,
+  },
+  {
     path: '/admin/add_edit/texts/:groupId',
     name: 'manageEditTexts',
     component: AddEditTexts,
@@ -293,6 +330,11 @@ const routes: RouteConfig[] = [
         name: 'textsSearch',
         component: TextsSearch,
       },
+      {
+        path: 'wordsInTexts',
+        name: 'wordsInTextsSearch',
+        component: WordsInTextsSearch,
+      },
     ],
   },
   {
@@ -311,7 +353,7 @@ const routes: RouteConfig[] = [
     path: '/dashboard/comments',
     name: 'dashboardComments',
     component: UserCommentView,
-    beforeEnter: authenticatedGuard,
+    beforeEnter: permissionGuard('ADD_COMMENTS'),
   },
   {
     path: '/dashboard/preferences',
@@ -370,6 +412,18 @@ const routes: RouteConfig[] = [
     beforeEnter: permissionGuard('ADD_NEW_TEXTS'),
   },
   {
+    path: '/add_text_epigraphy/:collectionUuid/:existingTextUuid',
+    name: 'addTextEpigraphy',
+    component: AddNewTexts,
+    props: true,
+    beforeEnter: permissionGuard('ADD_NEW_TEXTS'),
+  },
+  {
+    path: '/bibliography',
+    name: 'bibliography',
+    component: BibliographyView,
+  },
+  {
     path: '/about',
     name: 'about',
     component: AboutView,
@@ -401,6 +455,11 @@ const routes: RouteConfig[] = [
     name: 'dossier',
     component: DossierView,
     props: true,
+  },
+  {
+    path: '/signList',
+    name: 'signList',
+    component: SignListView,
   },
 ];
 

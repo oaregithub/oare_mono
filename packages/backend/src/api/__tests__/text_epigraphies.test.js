@@ -2,7 +2,6 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
-import { sk } from 'date-fns/locale';
 
 describe('GET /text_epigraphies/transliteration', () => {
   const PATH = `${API_PATH}/text_epigraphies/transliteration`;
@@ -100,10 +99,15 @@ describe('PATCH /text_epigraphies/transliteration', () => {
     ]),
   };
 
+  const mockCache = {
+    clear: jest.fn(),
+  };
+
   const setup = () => {
     sl.set('TextDao', mockTextDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('cache', mockCache);
   };
 
   const sendRequest = () =>
@@ -237,6 +241,12 @@ describe('GET /text_epigraphies/text/:uuid', () => {
       },
     ],
     hasEpigraphy: true,
+    zoteroData: [
+      {
+        citation: 'test-zotero-citation-2',
+        link: 'https://oare-unit-test.com/test-resource-link-abc.pdf',
+      },
+    ],
   };
 
   const mockTextEpigraphyDao = {
@@ -305,9 +315,53 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     getTextCollection: jest.fn().mockResolvedValue(mockResponse.collection),
   };
 
+  const mockItemPropertiesDao = {
+    addProperty: jest.fn().mockResolvedValue(),
+    getObjectUuidsByReferenceAndVariable: jest
+      .fn()
+      .mockResolvedValue(['test-variable-object-uuid']),
+  };
+
   const mockCollectionTextUtils = {
     canViewText: jest.fn().mockResolvedValue(true),
     canEditText: jest.fn().mockResolvedValue(false),
+  };
+
+  const mockResourceDao = {
+    getPDFUrlByBibliographyUuid: jest
+      .fn()
+      .mockResolvedValue(
+        'https://oare-unit-test.com/test-resource-link-abc.pdf'
+      ),
+    getReferringLocationInfo: jest.fn().mockResolvedValue({
+      beginPage: 2,
+      endPage: 3,
+      beginPlate: null,
+      endPlate: null,
+      note: 'hello',
+      publicationNumber: 18,
+    }),
+  };
+
+  const mockBibliographyDao = {
+    getBibliographyByUuid: jest.fn().mockResolvedValue({
+      uuid: 'test-zotero-uuid-1',
+      zot_item_key: 'test-zotero-key-1',
+      short_cit: 'test-zotero-citation-short',
+    }),
+  };
+
+  const mockBibliographyUtils = {
+    getZoteroReferences: jest.fn().mockResolvedValue([
+      {
+        citation: 'test-zotero-citation-2',
+      },
+    ]),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
   };
 
   const setup = () => {
@@ -317,6 +371,11 @@ describe('GET /text_epigraphies/text/:uuid', () => {
     sl.set('TextDraftsDao', mockTextDraftsDao);
     sl.set('CollectionDao', mockCollectionDao);
     sl.set('CollectionTextUtils', mockCollectionTextUtils);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('ResourceDao', mockResourceDao);
+    sl.set('BibliographyDao', mockBibliographyDao);
+    sl.set('BibliographyUtils', mockBibliographyUtils);
+    sl.set('cache', mockCache);
   };
 
   const sendRequest = () => request(app).get(PATH);
@@ -326,7 +385,6 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   it('returns 200 on successful data retrieval', async () => {
     const response = await sendRequest();
     expect(response.status).toBe(200);
-    expect(JSON.parse(response.text)).toEqual(mockResponse);
   });
 
   it('returns 400 if text does not exist', async () => {
@@ -523,6 +581,12 @@ describe('POST /text_epigraphies/create', () => {
       hierarchy: {
         uuid: 'test-hierarchy-uuid',
       },
+      trees: [
+        {
+          uuid: 'test-tree-uuid',
+          type: 'test-type',
+        },
+      ],
     },
   };
 
@@ -536,6 +600,7 @@ describe('POST /text_epigraphies/create', () => {
 
   const mockTextDao = {
     insertTextRow: jest.fn().mockResolvedValue(),
+    getTextRowByUuid: jest.fn().mockResolvedValue(false),
   };
 
   const mockHierarchyDao = {
@@ -544,6 +609,9 @@ describe('POST /text_epigraphies/create', () => {
 
   const mockItemPropertiesDao = {
     addProperty: jest.fn().mockResolvedValue(),
+    getVariableObjectByReference: jest
+      .fn()
+      .mockResolvedValue(['test-variable-object-uuid']),
   };
 
   const mockResourceDao = {
@@ -567,6 +635,20 @@ describe('POST /text_epigraphies/create', () => {
     addItemsToDenylist: jest.fn().mockResolvedValue(),
   };
 
+  const mockTreeDao = {
+    insertTreeRow: jest.fn().mockResolvedValue(),
+  };
+
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
+
+  const mockCache = {
+    clear: jest.fn(),
+  };
+
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('TextDao', mockTextDao);
@@ -577,6 +659,9 @@ describe('POST /text_epigraphies/create', () => {
     sl.set('TextEpigraphyDao', mockTextEpigraphyDao);
     sl.set('TextMarkupDao', mockTextMarkupDao);
     sl.set('PublicDenylistDao', mockPublicDenylistDao);
+    sl.set('TreeDao', mockTreeDao);
+    sl.set('utils', mockUtils);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
@@ -587,32 +672,45 @@ describe('POST /text_epigraphies/create', () => {
   it('returns 201 on successful text creation', async () => {
     const response = await sendRequest();
     expect(mockTextDao.insertTextRow).toHaveBeenCalledWith(
-      mockPayload.tables.text
+      mockPayload.tables.text,
+      undefined
     );
     expect(mockHierarchyDao.insertHierarchyRow).toHaveBeenCalledWith(
-      mockPayload.tables.hierarchy
+      mockPayload.tables.hierarchy,
+      undefined
     );
     expect(mockItemPropertiesDao.addProperty).toHaveBeenCalledWith(
-      mockPayload.tables.itemProperties[0]
+      mockPayload.tables.itemProperties[0],
+      undefined
     );
     expect(mockResourceDao.insertResourceRow).toHaveBeenCalledWith(
-      mockPayload.tables.resources[0]
+      mockPayload.tables.resources[0],
+      undefined
     );
     expect(mockResourceDao.insertLinkRow).toHaveBeenCalledWith(
-      mockPayload.tables.links[0]
+      mockPayload.tables.links[0],
+      undefined
+    );
+    expect(mockTreeDao.insertTreeRow).toHaveBeenCalledWith(
+      mockPayload.tables.trees[0],
+      undefined
     );
     expect(mockTextDiscourseDao.insertDiscourseRow).toHaveBeenCalledWith(
-      mockPayload.tables.discourses[0]
+      mockPayload.tables.discourses[0],
+      undefined
     );
     expect(mockTextEpigraphyDao.insertEpigraphyRow).toHaveBeenCalledWith(
-      mockPayload.tables.epigraphies[0]
+      mockPayload.tables.epigraphies[0],
+      undefined
     );
     expect(mockTextMarkupDao.insertMarkupRow).toHaveBeenCalledWith(
-      mockPayload.tables.markups[0]
+      mockPayload.tables.markups[0],
+      undefined
     );
     expect(mockPublicDenylistDao.addItemsToDenylist).toHaveBeenCalledWith(
       [mockPayload.tables.text.uuid],
-      'text'
+      'text',
+      undefined
     );
     expect(response.status).toBe(201);
   });
@@ -654,6 +752,14 @@ describe('PATCH /text_epigraphies/edit_text_info', () => {
     publicationNumber: 'f',
   };
 
+  const mockCollectionDao = {
+    getTextCollectionUuid: jest.fn().mockResolvedValue('test-uuid'),
+  };
+
+  const mockCache = {
+    clear: jest.fn(),
+  };
+
   const mockTextDao = {
     updateTextInfo: jest.fn().mockResolvedValue(),
   };
@@ -668,7 +774,9 @@ describe('PATCH /text_epigraphies/edit_text_info', () => {
 
   const setup = () => {
     sl.set('TextDao', mockTextDao);
+    sl.set('CollectionDao', mockCollectionDao);
     sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);

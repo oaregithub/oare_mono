@@ -2,27 +2,29 @@ import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import { CreateCommentPayload } from '@oare/types';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import permissionRoute from '@/middlewares/permissionsRoute';
 
 const router = express.Router();
 
-router.route('/comments').post(authenticatedRoute, async (req, res, next) => {
-  try {
-    const comment: CreateCommentPayload = req.body;
-    const commentsDao = sl.get('CommentsDao');
+router
+  .route('/comments')
+  .post(permissionRoute('ADD_COMMENTS'), async (req, res, next) => {
+    try {
+      const comment: CreateCommentPayload = req.body;
+      const commentsDao = sl.get('CommentsDao');
 
-    // Insert comment.
-    const newCommentUuid = await commentsDao.insert(req.user!.uuid, comment);
+      // Insert comment.
+      const newCommentUuid = await commentsDao.insert(req.user!.uuid, comment);
 
-    res.status(201).json(newCommentUuid);
-  } catch (err) {
-    next(new HttpInternalError(err));
-  }
-});
+      res.status(201).json(newCommentUuid);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 router
   .route('/comments/:uuid')
-  .delete(authenticatedRoute, async (req, res, next) => {
+  .delete(permissionRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const { uuid } = req.params;
       const commentsDao = sl.get('CommentsDao');
@@ -30,7 +32,7 @@ router
 
       res.status(204).end();
     } catch (err) {
-      next(new HttpInternalError(err));
+      next(new HttpInternalError(err as string));
     }
   });
 

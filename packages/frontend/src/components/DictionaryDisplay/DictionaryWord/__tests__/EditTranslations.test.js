@@ -13,7 +13,7 @@ describe('EditTranslations test', () => {
   const translations = [
     {
       uuid: 'uuid1',
-      translation: 'translation1',
+      val: 'translation1',
     },
   ];
 
@@ -24,6 +24,7 @@ describe('EditTranslations test', () => {
       propsData: props || {
         wordUuid: 'word-uuid',
         translations,
+        fieldType: 'definition',
       },
     });
 
@@ -52,10 +53,11 @@ describe('EditTranslations test', () => {
     await wrapper.get('.test-save-translations').trigger('click');
     await flushPromises();
     expect(server.editTranslations).toHaveBeenCalledWith('word-uuid', {
+      fieldType: 'definition',
       translations: [
         {
           uuid: 'uuid1',
-          translation: 'new translation',
+          val: 'new translation',
         },
       ],
     });
@@ -68,6 +70,7 @@ describe('EditTranslations test', () => {
     await flushPromises();
     expect(actions.showSnackbar).toHaveBeenCalled();
     expect(server.editTranslations).toHaveBeenCalledWith('word-uuid', {
+      fieldType: 'definition',
       translations: [],
     });
   });
@@ -83,11 +86,12 @@ describe('EditTranslations test', () => {
     await wrapper.get('.test-save-translations').trigger('click');
     await flushPromises();
     expect(server.editTranslations).toHaveBeenCalledWith('word-uuid', {
+      fieldType: 'definition',
       translations: [
         ...translations,
         {
           uuid: '',
-          translation: 'new translation',
+          val: 'new translation',
         },
       ],
     });
@@ -113,12 +117,13 @@ describe('EditTranslations test', () => {
       ...translations,
       {
         uuid: 'uuid2',
-        translation: 'translation2',
+        val: 'translation2',
       },
     ];
     const wrapper = createWrapper({
       wordUuid: 'word-uuid',
       translations: newTranslations,
+      fieldType: 'definition',
     });
 
     await wrapper.get('.test-move-down').trigger('click');
@@ -126,6 +131,7 @@ describe('EditTranslations test', () => {
     await flushPromises();
     expect(server.editTranslations).toHaveBeenCalledWith('word-uuid', {
       translations: [newTranslations[1], newTranslations[0]],
+      fieldType: 'definition',
     });
   });
 });

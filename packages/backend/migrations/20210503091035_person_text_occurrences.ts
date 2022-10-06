@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 import { v4 } from 'uuid';
 
 const fkName = 'person_uuid_foreign';

@@ -3,7 +3,11 @@
   <v-row v-else>
     <v-col cols="4">
       <h3 class="primary--text mb-5">
-        Properties<v-menu v-if="existingProperties" offset-y open-on-hover>
+        Properties<v-menu
+          v-if="existingProperties && !hideInfo"
+          offset-y
+          open-on-hover
+        >
           <template #activator="{ on, attrs }">
             <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1" small>
               mdi-information-outline
@@ -49,7 +53,9 @@
       <v-tooltip
         bottom
         open-delay="800"
-        v-if="filteredTree && filteredTree.role !== 'tree'"
+        v-if="
+          filteredTree && filteredTree.role !== 'tree' && !disableMoveUpTree
+        "
       >
         <template #activator="{ on, attrs }">
           <v-btn
@@ -86,6 +92,8 @@
               v-if="filteredTree"
               :node="filteredTree"
               :existingProperties="existingProperties"
+              :hideActions="hideActions"
+              :selectMultiple="selectMultiple"
               allowSelections
               @update:node="formComplete = $event.status"
               @update:properties="updateProperties"
@@ -132,6 +140,26 @@ export default defineComponent({
     existingProperties: {
       type: Array as PropType<ItemPropertyRow[]>,
       required: false,
+    },
+    hideActions: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    selectMultiple: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    hideInfo: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    disableMoveUpTree: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   setup(props, { emit }) {
@@ -192,7 +220,7 @@ export default defineComponent({
           if (result && node.children[i].valueUuid) {
             properties.value.unshift({
               properties: [{ variable: node, value: node.children[i] }],
-              source: node,
+              sourceUuid: node.uuid,
             });
           }
         }
@@ -203,7 +231,7 @@ export default defineComponent({
 
     const updateProperties = (args: ParseTreePropertyEvent) => {
       properties.value = properties.value.filter(
-        prop => prop.source !== args.source
+        prop => prop.sourceUuid !== args.sourceUuid
       );
       properties.value.push(args);
     };

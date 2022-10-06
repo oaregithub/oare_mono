@@ -11,7 +11,7 @@
       <v-btn
         v-if="!isLoading && canUpdateTranslations"
         icon
-        class="mt-n2 test-save-translations"
+        class="test-save-translations"
         @click="saveEdits"
       >
         <v-icon>mdi-check</v-icon>
@@ -19,7 +19,6 @@
       <v-btn
         v-if="!isLoading && canUpdateTranslations"
         icon
-        class="mt-n2"
         @click="closeEditor"
       >
         <v-icon>mdi-close</v-icon>
@@ -34,7 +33,7 @@
         <span class="mt-6">{{ idx + 1 }}</span>
         <v-col cols="12" class="mb-n4">
           <v-text-field
-            v-model="localTranslations[idx].translation"
+            v-model="localTranslations[idx].val"
             outlined
             :disabled="isLoading || !canUpdateTranslations"
             class="test-translation"
@@ -76,7 +75,8 @@
         class="test-new-translation"
       >
         <v-icon>mdi-plus</v-icon>
-        Add translation
+        <span v-if="fieldType === 'definition'">Add Translation</span>
+        <span v-else>Add Discussion Lemma</span>
       </v-btn>
     </div>
   </div>
@@ -103,6 +103,10 @@ export default defineComponent({
       type: Array as PropType<DictionaryWordTranslation[]>,
       required: true,
     },
+    fieldType: {
+      type: String,
+      required: true,
+    },
   },
   setup(props, { emit }) {
     const localTranslations = ref(_.cloneDeep(props.translations));
@@ -119,11 +123,7 @@ export default defineComponent({
     const closeEditor = () => emit('close-editor');
 
     const saveEdits = async () => {
-      if (
-        localTranslations.value.some(
-          ({ translation }) => translation.trim() === ''
-        )
-      ) {
+      if (localTranslations.value.some(({ val }) => val.trim() === '')) {
         actions.showErrorSnackbar(
           'One or more translations are blank. Either provide a translation or remove the blank fields.'
         );
@@ -134,6 +134,7 @@ export default defineComponent({
         isLoading.value = true;
         await server.editTranslations(props.wordUuid, {
           translations: localTranslations.value,
+          fieldType: props.fieldType,
         });
         actions.showSnackbar('Successfully updated translations');
         emit('update:translations', localTranslations.value);
@@ -165,7 +166,7 @@ export default defineComponent({
         ...localTranslations.value,
         {
           uuid: '',
-          translation: '',
+          val: '',
         },
       ];
       localTranslations.value = updatedTranslations;

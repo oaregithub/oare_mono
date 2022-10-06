@@ -26,24 +26,26 @@
           <mark v-if="word.forms.length <= 0" class="error">{{
             word.word
           }}</mark>
-          <span v-else>{{ word.word }}</span>
+          <mark v-else :style="`${highlightWords(word.wordOccurrences)}`">{{
+            word.word
+          }}</mark>
         </router-link>
       </template>
-      <template #translation="{ word }">
+      <template #translationsForDefinition="{ word }">
         <div v-if="partsOfSpeech(word).length > 0" class="mr-1">
           {{ itemPropertyString(partsOfSpeech(word)) }}
         </div>
-        <div v-if="verbalThematicVowelTypes(word).length > 0" class="mr-1">
+        <div v-if="verbalThematicVowelTypes(word).length > 0" class="mr-3">
           {{ ` (${itemPropertyString(verbalThematicVowelTypes(word))})` }}
         </div>
         <p>
           <span v-for="(tr, idx) in getWordTranslations(word)" :key="tr.uuid">
             <b>{{ idx + 1 }}</b
-            >. {{ tr.translation }}
+            >. {{ tr.val }}
           </span>
           <span
             v-if="
-              word.translations.length > 0 &&
+              word.translationsForDefinition.length > 0 &&
               specialClassifications(word).length > 0
             "
             >;</span
@@ -60,7 +62,7 @@
 <script lang="ts">
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
 import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
-import { DictionaryWord, ItemPropertyRow } from '@oare/types';
+import { ItemPropertyRow, Word } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -79,16 +81,19 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
-    const words: Ref<DictionaryWord[]> = ref([]);
+    const words: Ref<Word[]> = ref([]);
     const loading = ref(false);
 
-    const searchFilter = (search: string, word: DictionaryWord): boolean => {
+    const searchFilter = (search: string, word: Word): boolean => {
       const lowerSearch = search ? search.toLowerCase() : '';
 
       return (
         word.word.toLowerCase().includes(lowerSearch) ||
-        word.translations.some(tr =>
-          tr.translation.toLowerCase().includes(lowerSearch)
+        word.translationsForDefinition.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
+        ) ||
+        word.discussionLemmas.some(tr =>
+          tr.val.toLowerCase().includes(lowerSearch)
         ) ||
         word.properties.some(prop =>
           prop.valueName.toLowerCase().includes(lowerSearch)
@@ -104,10 +109,7 @@ export default defineComponent({
       async () => {
         loading.value = true;
         try {
-          const { words: wordsResp } = await server.getDictionaryWords(
-            props.letter
-          );
-          words.value = wordsResp;
+          words.value = await server.getDictionaryWords(props.letter);
         } catch (err) {
           actions.showErrorSnackbar(
             'Failed to retrieve dictionary words',
@@ -120,26 +122,47 @@ export default defineComponent({
       { immediate: true }
     );
 
-    const getWordTranslations = (word: DictionaryWord) => {
-      return word.translations;
+    const getWordTranslations = (word: Word) => {
+      return word.translationsForDefinition;
     };
 
-    const partsOfSpeech = (word: DictionaryWord) => {
+    const getWordDiscussionLemmas = (word: Word) => {
+      return word.discussionLemmas;
+    };
+    const partsOfSpeech = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Part of Speech'
       );
     };
 
-    const verbalThematicVowelTypes = (word: DictionaryWord) => {
+    const verbalThematicVowelTypes = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Verbal Thematic Vowel Type'
       );
     };
 
-    const specialClassifications = (word: DictionaryWord) => {
+    const specialClassifications = (word: Word) => {
       return word.properties.filter(
         prop => prop.variableName === 'Special Classifications'
       );
+    };
+
+    const highlightWords = (occurrences: number) => {
+      if (occurrences >= 0 && occurrences <= 10) {
+        return 'background: #caf0f8';
+      } else if (occurrences >= 11 && occurrences <= 100) {
+        return 'background: #90e0ef';
+      } else if (occurrences >= 101 && occurrences <= 1000) {
+        return 'background: #e0aaff';
+      } else if (occurrences >= 1001 && occurrences <= 10000) {
+        return 'background: #c77dff';
+      } else if (occurrences >= 10001 && occurrences <= 25000) {
+        return 'background: #ffccd5';
+      } else if (occurrences >= 25001) {
+        return 'background: #ff8fa3';
+      } else {
+        return '';
+      }
     };
 
     return {
@@ -148,9 +171,11 @@ export default defineComponent({
       searchFilter,
       itemPropertyString,
       getWordTranslations,
+      getWordDiscussionLemmas,
       partsOfSpeech,
       verbalThematicVowelTypes,
       specialClassifications,
+      highlightWords,
     };
   },
 });

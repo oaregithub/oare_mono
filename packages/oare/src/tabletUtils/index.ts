@@ -6,6 +6,7 @@ import {
   EpigraphicUnitType,
   EpigraphicWord,
 } from '@oare/types';
+import scriptCase from 'script-case';
 
 export function getMarkupByDamageType(
   markupUnits: MarkupUnit[],
@@ -162,7 +163,15 @@ export function regionReading(unit: EpigraphicUnit): string {
 export function convertMarkedUpUnitsToLineReading(
   characters: EpigraphicUnitWithMarkup[]
 ): string {
-  const epigraphicWords = separateEpigraphicUnitsByWord(characters);
+  const superscriptedCharacters = characters.map(character =>
+    character.type !== 'determinative'
+      ? character
+      : { ...character, reading: scriptCase.superscript(character.reading) }
+  );
+
+  const epigraphicWords = separateEpigraphicUnitsByWord(
+    superscriptedCharacters
+  );
   return epigraphicWords
     .map(word => {
       const isContraction = getContractionStatus(word);
@@ -224,3 +233,42 @@ export function formatLineNumber(
   }
   return lineNumber;
 }
+
+export const romanNumeral = (colNum: number): string => {
+  let numeral: string = '';
+  switch (colNum) {
+    case 1:
+      numeral = 'i';
+      break;
+    case 2:
+      numeral = 'ii';
+      break;
+    case 3:
+      numeral = 'iii';
+      break;
+    case 4:
+      numeral = 'iv';
+      break;
+    case 5:
+      numeral = 'v';
+      break;
+    case 6:
+      numeral = 'vi';
+      break;
+    case 7:
+      numeral = 'vii';
+      break;
+    case 8:
+      numeral = 'viii';
+      break;
+    case 9:
+      numeral = 'ix';
+      break;
+    case 10:
+      numeral = 'x';
+      break;
+    default:
+      numeral = `${colNum}`;
+  }
+  return numeral;
+};

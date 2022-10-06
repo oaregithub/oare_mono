@@ -2,7 +2,8 @@
   <div>
     <v-row>
       <v-col cols="8">
-        Search lemma, forms, and translations
+        Search lemma, forms, and translations<dictionary-search-info-card
+        ></dictionary-search-info-card>
         <v-text-field
           class="test-dictionary-search"
           v-model="dictionarySearch"
@@ -17,6 +18,12 @@
           @click="resetSearch"
           >Search</v-btn
         >
+      </v-col>
+      <v-col cols="4">
+        <v-radio-group label="Respect Character Boundaries" v-model="useMode">
+          <v-radio label="Yes" value="respectCharBoundaries"></v-radio>
+          <v-radio label="No" value="respectNoBoundaries"></v-radio>
+        </v-radio-group>
       </v-col>
     </v-row>
 
@@ -71,6 +78,7 @@ import {
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 import { DictionarySearchRow } from '@oare/types';
 import ResultTable from '../components/ResultTable.vue';
+import DictionarySearchInfoCard from './components/DictionarySearchInfoCard.vue';
 import { highlightedItem } from '../utils';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
@@ -79,6 +87,7 @@ export default defineComponent({
   name: 'DictionarySearch',
   components: {
     ResultTable,
+    DictionarySearchInfoCard,
   },
   setup() {
     const totalResults = ref(0);
@@ -90,6 +99,8 @@ export default defineComponent({
     const dictionarySearch = useQueryParam('dictionary', '', true);
     const page = useQueryParam('page', '1', false);
     const rows = useQueryParam('rows', '25', true);
+    const mode = useQueryParam('mode', 'respectCharBoundaries', true);
+    const useMode = ref(mode.value);
     const lastSearch = ref('');
     const canSearch = computed(() => {
       return dictionarySearch.value.trim() !== '';
@@ -100,11 +111,11 @@ export default defineComponent({
         value: 'name',
       },
       {
-        text: 'Matching translations',
+        text: 'Translations',
         value: 'translations',
       },
       {
-        text: 'Matching forms and spellings',
+        text: 'Forms and Spellings',
         value: 'matches',
       },
     ]);
@@ -118,6 +129,7 @@ export default defineComponent({
             search: dictionarySearch.value,
             page: Number(page.value),
             rows: Number(rows.value),
+            mode: useMode.value,
           });
           totalResults.value = searchResult.totalRows;
           searchResults.value = searchResult.results;
@@ -132,6 +144,10 @@ export default defineComponent({
       }
     };
 
+    const enableModeSelection = computed(() => {
+      return !dictionarySearch.value.includes('-');
+    });
+
     const resetSearch = () => {
       page.value = '1';
       performSearch();
@@ -141,26 +157,13 @@ export default defineComponent({
 
     watch([page, rows], performSearch, { immediate: false });
 
-    const getWordGroup = (word: string) => {
-      for (const [group, groupLetters] of Object.entries(
-        AkkadianLetterGroupsUpper
-      )) {
-        if (groupLetters.includes(word[0].toUpperCase())) {
-          return group;
-        }
-      }
-      return 'A';
-    };
-
     const wordLink = (word: DictionarySearchRow) => {
       if (word.type === 'word') {
         return `/dictionaryWord/${word.uuid}`;
       } else if (word.type === 'PN') {
-        const nameGroup = getWordGroup(word.name);
-        return `/names/${encodeURIComponent(nameGroup)}?filter=${word.name}`;
+        return `/namesWord/${word.uuid}`;
       } else if (word.type === 'GN') {
-        const placeGroup = getWordGroup(word.name);
-        return `/places/${encodeURIComponent(placeGroup)}?filter=${word.name}`;
+        return `/placesWord/${word.uuid}`;
       }
       return null;
     };
@@ -189,6 +192,8 @@ export default defineComponent({
       resetSearch,
       getItemTranslations,
       getItemMatches,
+      enableModeSelection,
+      useMode,
     };
   },
 });

@@ -1,15 +1,18 @@
-import knex from '@/connection';
+import { knexWrite } from '@/connection';
 import { SearchType } from '@oare/types';
+import { Knex } from 'knex';
 
 class SearchFailureDao {
   async insertSearchFailure(
     type: SearchType,
     query: string,
-    userUuid: string | null
+    userUuid: string | null,
+    trx?: Knex.Transaction
   ) {
+    const k = trx || knexWrite();
     const timestamp = new Date();
 
-    await knex('search_failure').insert({
+    await k('search_failure').insert({
       user_uuid: userUuid,
       search_type: type,
       query_content: query,

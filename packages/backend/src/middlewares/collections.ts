@@ -1,25 +1,46 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpForbidden } from '@/exceptions';
+import { HttpForbidden, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
 async function collectionsMiddleware(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
-  const user = req.user || null;
-  const uuid = req.params.uuid as string;
+  try {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const HierarchyDao = sl.get('HierarchyDao');
 
-  const HierarchyDao = sl.get('HierarchyDao');
+    const { user } = req;
+    const userUuid = req.user ? req.user.uuid : null;
+    const uuid = req.params.uuid as string;
 
-  if (!user || !user.isAdmin) {
-    const isCollectionPublished = await HierarchyDao.isPublished(uuid);
-    if (!isCollectionPublished) {
-      next(new HttpForbidden('You do not have access to that collection.'));
+    if (!user || !user.isAdmin) {
+      const isCollectionPublished = await HierarchyDao.isPublished(uuid);
+      if (!isCollectionPublished) {
+        next(new HttpForbidden('You do not have access to that collection.'));
+        return;
+      }
+    }
+
+    const canViewCollection = await CollectionTextUtils.canViewCollection(
+      uuid,
+      userUuid
+    );
+
+    if (!canViewCollection) {
+      next(
+        new HttpForbidden(
+          'You do not have permission to view this collection. If you think this is a mistake, please contact your administrator.'
+        )
+      );
       return;
     }
+
+    next();
+  } catch (err) {
+    next(new HttpInternalError(err as string));
   }
-  next();
 }
 
 export default collectionsMiddleware;

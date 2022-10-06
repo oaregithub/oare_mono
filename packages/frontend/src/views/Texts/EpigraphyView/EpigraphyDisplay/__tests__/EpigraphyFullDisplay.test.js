@@ -14,7 +14,12 @@ describe('EpigraphyFullDisplay View', () => {
     getters: {
       isAdmin: true,
     },
-    hasPermission: name => ['VIEW_TEXT_DISCOURSE'].includes(name),
+    hasPermission: name =>
+      [
+        'VIEW_TEXT_DISCOURSE',
+        'CONNECT_SPELLING',
+        'DISCONNECT_SPELLING',
+      ].includes(name),
   };
 
   const mockRouter = {
@@ -29,8 +34,15 @@ describe('EpigraphyFullDisplay View', () => {
       word: 'test-word',
       forms: [],
       properties: [],
-      translations: [],
+      translationsForDefinition: [],
+      discussionLemmas: [],
     }),
+    getSpellingByDiscourseUuid: jest
+      .fn()
+      .mockResolvedValue({ spelling: 'spelling' }),
+    searchSpellings: jest.fn().mockResolvedValue([]),
+    getSpellingTextOccurrences: jest.fn().mockResolvedValue([]),
+    disconnectSpellings: jest.fn().mockResolvedValue([]),
   };
 
   const mostEpigraphicUnits = [
@@ -117,8 +129,64 @@ describe('EpigraphyFullDisplay View', () => {
     expect(dialogExists).toBe(true);
   });
 
+  it('displays disconnect button when user has permission', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    expect(wrapper.find('.test-disconnect-word').exists()).toBe(true);
+  });
+
+  it('does not display disconnect button when user does not have permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        ...mockStore,
+        hasPermission: () => false,
+      },
+    });
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    expect(wrapper.find('.test-disconnect-word').exists()).toBe(false);
+  });
+
+  it('disconnects the word from its spelling', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-disconnect-word').trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockServer.disconnectSpellings).toHaveBeenCalledTimes(1);
+  });
+
+  it('displays snackbar if attempt to disconnect spelling is unsuccessful', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        disconnectSpellings: jest.fn().mockRejectedValue(),
+      },
+    });
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-disconnect-word').trigger('click');
+    await flushPromises();
+    await wrapper.get('.test-submit-btn').trigger('click');
+    await flushPromises();
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalledTimes(1);
+  });
+
   it('display snackbar if no spelling for discourseUuid and dialog does not display', async () => {
     const wrapper = createWrapper({
+      store: {
+        getters: {
+          isAdmin: false,
+        },
+        hasPermission: name => ['VIEW_TEXT_DISCOURSE'].includes(name),
+      },
       server: {
         getDictionaryInfoByDiscourseUuid: jest.fn().mockResolvedValue(null),
       },
@@ -132,6 +200,28 @@ describe('EpigraphyFullDisplay View', () => {
       .find('.test-rendering-word-dialog')
       .exists();
     expect(dialogExists).toBe(false);
+  });
+
+  it('display connect spelling dialog if no dictionary info for a given discourseUuid', async () => {
+    const wrapper = createWrapper({
+      server: {
+        ...mockServer,
+        getDictionaryInfoByDiscourseUuid: jest.fn().mockResolvedValue(null),
+      },
+      store: {
+        ...mockStore,
+        hasPermission: () => true,
+      },
+    });
+    await flushPromises();
+    await wrapper.findAll('.test-rendered-word').at(0).trigger('click');
+    await flushPromises();
+    expect(mockActions.showSnackbar).toHaveBeenCalledTimes(1);
+
+    const dialogExists = await wrapper
+      .find('.test-spelling-occurrence-display')
+      .exists();
+    expect(dialogExists).toBe(true);
   });
 
   it('display error snackbar when unable to retrieve word info for rendered word', async () => {

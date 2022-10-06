@@ -1,6 +1,5 @@
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
-import LoggingEditsDao from '@/api/daos/LoggingEditsDao';
 import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
 import UserDao from '@/api/daos/UserDao';
 import TextDraftsDao from '@/api/daos/TextDraftsDao';
@@ -35,7 +34,11 @@ import NoteDao from '@/api/daos/NoteDao';
 import PageContentDao from '@/api/daos/PageContentDao';
 import SearchFailureDao from '@/api/daos/SearchFailureDao';
 import UuidDao from '@/api/daos/UuidDao';
+import BibliographyDao from '@/api/daos/BibliographyDao';
+import TreeDao from '@/api/daos/TreeDao';
+import QuarantineTextDao from '@/api/daos/QuarantineTextDao';
 import * as utils from '@/utils';
+import BibliographyUtils from '@/api/daos/BibliographyUtils';
 
 const instances: { [key: string]: any } = {};
 
@@ -46,7 +49,6 @@ export type ServiceTypes = {
   DictionarySpellingDao: typeof DictionarySpellingDao;
   FieldDao: typeof FieldDao;
   ItemPropertiesDao: typeof ItemPropertiesDao;
-  LoggingEditsDao: typeof LoggingEditsDao;
   TextDiscourseDao: typeof TextDiscourseDao;
   TextDraftsDao: typeof TextDraftsDao;
   UserDao: typeof UserDao;
@@ -78,6 +80,10 @@ export type ServiceTypes = {
   PageContentDao: typeof PageContentDao;
   SearchFailureDao: typeof SearchFailureDao;
   UuidDao: typeof UuidDao;
+  BibliographyDao: typeof BibliographyDao;
+  BibliographyUtils: typeof BibliographyUtils;
+  TreeDao: typeof TreeDao;
+  QuarantineTextDao: typeof QuarantineTextDao;
 };
 
 export default {
