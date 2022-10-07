@@ -27,7 +27,6 @@
             <v-btn v-on="on" v-bind="attrs" text class="mr-2">
               <v-icon small class="mr-1">mdi-translate</v-icon>
               {{ selectedLocale.value }}
-              <!-- <v-icon small>mdi-chevron-down</v-icon> -->
             </v-btn>
           </template>
           <v-list dense>
