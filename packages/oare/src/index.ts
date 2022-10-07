@@ -65,7 +65,7 @@ const createTabletRenderer = (
     highlightDiscourses = [],
   }: CreateTabletRendererOptions = {}
 ): TabletRenderer => {
-  let renderer = new TabletRenderer(epigraphicUnits);
+  let renderer = new TabletRenderer(epigraphicUnits, textFormat);
   if (textFormat === 'html') {
     renderer = new TabletHtmlRenderer(renderer, {
       showNullDiscourse,

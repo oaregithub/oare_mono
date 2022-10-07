@@ -24,8 +24,7 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
-    "jison": "git+https://github.com/oaregithub/jison.git",
-    "script-case": "^1.0.0"
+    "jison": "git+https://github.com/oaregithub/jison.git"
   },
   "files": [
     "build"
