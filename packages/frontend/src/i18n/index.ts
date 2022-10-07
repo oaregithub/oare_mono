@@ -5,7 +5,7 @@ import messages from '../messages';
 Vue.use(VueI18n);
 
 export default new VueI18n({
-  locale: 'us',
+  locale: localStorage.getItem('locale') || navigator.language,
   messages,
   fallbackLocale: 'us',
 });
