@@ -172,6 +172,25 @@
         </v-list-item-content>
       </v-list-item>
     </v-list>
+    <v-divider class="mt-2 primary" />
+    <h3 class="mt-4">Localization</h3>
+    <v-list>
+      <v-list-item class="ma-2">
+        <v-list-item-content>
+          <v-list-item-title>Clear Default Localization</v-list-item-title>
+          <v-list-item-subtitle>
+            Removes stored localization preferences from the browser's local
+            storage. This will be stored again when a language preference is
+            again selected.
+          </v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-action>
+          <v-btn color="primary" @click="clearLocalization">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </v-list-item-action>
+      </v-list-item>
+    </v-list>
   </OareContentView>
 </template>
 
@@ -350,6 +369,11 @@ export default defineComponent({
       }
     });
 
+    const clearLocalization = () => {
+      localStorage.removeItem('locale');
+      actions.showSnackbar('Localization cleared successfully.');
+    };
+
     return {
       loading,
       cacheStatus,
@@ -364,6 +388,7 @@ export default defineComponent({
       fillMissingCacheDialog,
       individualClearDialog,
       individualClearDialogKey,
+      clearLocalization,
     };
   },
 });

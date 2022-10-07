@@ -2,7 +2,7 @@
   <v-app-bar
     app
     dark
-    height="42"
+    height="50"
     clipped-left
     color="#002E5D"
     extension-height="42"
@@ -22,6 +22,35 @@
     <v-spacer />
     <div>
       <div class="d-flex align-center">
+        <v-menu offset-y>
+          <template #activator="{ on, attrs }">
+            <v-btn v-on="on" v-bind="attrs" text class="mr-2">
+              <v-icon small class="mr-1">mdi-translate</v-icon>
+              {{ selectedLocale.value }}
+              <!-- <v-icon small>mdi-chevron-down</v-icon> -->
+            </v-btn>
+          </template>
+          <v-list dense>
+            <v-list-item
+              v-for="(locale, idx) in locales"
+              :key="idx"
+              class="pa-0"
+            >
+              <v-btn width="100%" text @click="setLocale(locale)"
+                ><v-icon
+                  small
+                  class="mr-2"
+                  :color="
+                    selectedLocale.value === locale.value
+                      ? 'black'
+                      : 'transparent'
+                  "
+                  >mdi-check</v-icon
+                >{{ locale.value.toUpperCase() }} - {{ locale.label }}</v-btn
+              >
+            </v-list-item>
+          </v-list>
+        </v-menu>
         <div v-if="isDevelopmentEnvironment" class="mr-5 test-dev-indicator">
           <v-menu offset-y :nudge-left="66" open-on-hover>
             <template v-slot:activator="{ on }">
@@ -172,9 +201,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@vue/composition-api';
+import { defineComponent, computed, ref } from '@vue/composition-api';
 import i18n from '@/i18n';
 import sl from '@/serviceLocator';
+
+export interface Locale {
+  label: string;
+  value: string;
+}
 
 export default defineComponent({
   name: 'OareAppBar',
@@ -217,6 +251,22 @@ export default defineComponent({
       serverProxy.logout();
     };
 
+    const locales = ref<Locale[]>([
+      { label: 'English', value: 'en' },
+      { label: 'Türkçe', value: 'tr' },
+    ]);
+
+    const selectedLocale = ref<Locale>(
+      locales.value.find(locale => locale.value === i18n.locale) ||
+        locales.value[0]
+    );
+
+    const setLocale = (locale: Locale) => {
+      selectedLocale.value = locale;
+      i18n.locale = selectedLocale.value.value;
+      localStorage.setItem('locale', selectedLocale.value.value);
+    };
+
     return {
       title,
       logout,
@@ -231,6 +281,9 @@ export default defineComponent({
       canViewPeople,
       canViewBibliography,
       i18n,
+      locales,
+      selectedLocale,
+      setLocale,
     };
   },
 });
