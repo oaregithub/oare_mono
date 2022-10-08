@@ -137,12 +137,13 @@ router.route('/search').get(async (req, res, next) => {
     ).map(text => (text ? text.name : ''));
 
     const lineReadings = await Promise.all(
-      textMatches.map(async ({ uuid, lines }) => {
+      textMatches.map(async ({ uuid, lines, discourseUuids }) => {
         const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(uuid);
 
         const renderer = createTabletRenderer(epigraphicUnits, {
           textFormat: 'html',
           lineNumbers: true,
+          highlightDiscourses: discourseUuids,
         });
 
         return lines.map(line => renderer.lineReading(line));

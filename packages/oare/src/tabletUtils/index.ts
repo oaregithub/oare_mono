@@ -6,7 +6,80 @@ import {
   EpigraphicUnitType,
   EpigraphicWord,
 } from '@oare/types';
-import scriptCase from 'script-case';
+
+const superscriptChars = {
+  '0': '⁰',
+  '1': '¹',
+  '2': '²',
+  '3': '³',
+  '4': '⁴',
+  '5': '⁵',
+  '6': '⁶',
+  '7': '⁷',
+  '8': '⁸',
+  '9': '⁹',
+  '+': '⁺',
+  '-': '⁻',
+  '=': '⁼',
+  '(': '⁽',
+  ')': '⁾',
+  Á: 'ᴬ',
+  É: 'ᴱ',
+  Í: 'ᴵ',
+  Ú: 'ᵁ',
+  À: 'ᴬ',
+  È: 'ᴱ',
+  Ì: 'ᴵ',
+  Ù: 'ᵁ',
+  a: 'ᵃ',
+  b: 'ᵇ',
+  c: 'ᶜ',
+  d: 'ᵈ',
+  e: 'ᵉ',
+  f: 'ᶠ',
+  g: 'ᵍ',
+  h: 'ʰ',
+  i: 'ⁱ',
+  j: 'ʲ',
+  k: 'ᵏ',
+  l: 'ˡ',
+  m: 'ᵐ',
+  n: 'ⁿ',
+  o: 'ᵒ',
+  p: 'ᵖ',
+  r: 'ʳ',
+  s: 'ˢ',
+  t: 'ᵗ',
+  u: 'ᵘ',
+  v: 'ᵛ',
+  w: 'ʷ',
+  x: 'ˣ',
+  y: 'ʸ',
+  z: 'ᶻ',
+  A: 'ᴬ',
+  B: 'ᴮ',
+  D: 'ᴰ',
+  E: 'ᴱ',
+  G: 'ᴳ',
+  H: 'ᴴ',
+  Ḫ: 'ᴴ',
+  I: 'ᴵ',
+  J: 'ᴶ',
+  K: 'ᴷ',
+  L: 'ᴸ',
+  M: 'ᴹ',
+  N: 'ᴺ',
+  O: 'ᴼ',
+  P: 'ᴾ',
+  R: 'ᴿ',
+  S: 'ˢ',
+  Š: 'ˢᶻ',
+  T: 'ᵀ',
+  U: 'ᵁ',
+  V: 'ⱽ',
+  W: 'ᵂ',
+  X: 'ᵡ',
+};
 
 export function getMarkupByDamageType(
   markupUnits: MarkupUnit[],
@@ -161,12 +234,13 @@ export function regionReading(unit: EpigraphicUnit): string {
 }
 
 export function convertMarkedUpUnitsToLineReading(
-  characters: EpigraphicUnitWithMarkup[]
+  characters: EpigraphicUnitWithMarkup[],
+  isRegular?: boolean
 ): string {
   const superscriptedCharacters = characters.map(character =>
-    character.type !== 'determinative'
-      ? character
-      : { ...character, reading: scriptCase.superscript(character.reading) }
+    character.type === 'determinative' && isRegular
+      ? { ...character, reading: superscript(character.reading) }
+      : character
   );
 
   const epigraphicWords = separateEpigraphicUnitsByWord(
@@ -272,3 +346,30 @@ export const romanNumeral = (colNum: number): string => {
   }
   return numeral;
 };
+
+function superscript(reading: string): string {
+  let add2 = false;
+  let add3 = false;
+  let newReading = reading
+    .split('')
+    .map(value => {
+      let newValue = value;
+      if (/[ÁÉÍÚ]/g.test(newValue.toLocaleUpperCase())) {
+        add2 = true;
+      } else if (/[ÀÈÌÙ]/g.test(newValue.toLocaleUpperCase())) {
+        add3 = true;
+      }
+      if (Object.keys(superscriptChars).includes(newValue)) {
+        const idx = Object.keys(superscriptChars).indexOf(newValue);
+        newValue = Object.values(superscriptChars)[idx];
+      }
+      return newValue;
+    })
+    .join('');
+  if (add2) {
+    newReading = `${newReading}²`;
+  } else if (add3) {
+    newReading = `${newReading}³`;
+  }
+  return newReading;
+}

@@ -5,6 +5,7 @@ import {
   EpigraphicUnitWithMarkup,
   EpigraphicWord,
   MarkupType,
+  TextFormatType,
 } from '@oare/types';
 import _ from 'lodash';
 
@@ -21,12 +22,20 @@ import {
 export default class TabletRenderer {
   protected epigraphicUnits: EpigraphicUnit[] = [];
 
+  protected rendererType: TextFormatType | null = null;
+
   public getEpigraphicUnits() {
     return this.epigraphicUnits;
   }
 
-  constructor(epigraphicUnits: EpigraphicUnit[]) {
+  constructor(
+    epigraphicUnits: EpigraphicUnit[],
+    rendererType?: TextFormatType
+  ) {
     this.epigraphicUnits = epigraphicUnits;
+    if (rendererType) {
+      this.rendererType = rendererType;
+    }
     this.sortMarkupUnits();
     this.addLineNumbersToRegions();
   }
@@ -153,7 +162,10 @@ export default class TabletRenderer {
     }
 
     const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
-    return convertMarkedUpUnitsToLineReading(charactersWithMarkup);
+    return convertMarkedUpUnitsToLineReading(
+      charactersWithMarkup,
+      this.rendererType === 'regular'
+    );
   }
 
   public getLineWords(lineNum: number): EpigraphicWord[] {
