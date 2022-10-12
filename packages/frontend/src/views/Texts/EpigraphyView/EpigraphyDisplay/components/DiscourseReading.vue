@@ -8,8 +8,14 @@
           :key="line"
           class="mr-1"
         >
-          <sup>{{ formatLineNumber(line, false) }})</sup
-          ><span v-html="discourseRenderer.lineReading(line)" />
+          <sup>{{ formatLineNumber(line, false) }})</sup>
+          <span
+            v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
+            :key="idx"
+            v-html="word.display"
+            class="ml-1 cursor-display"
+            @click="openDialog(word.uuid, word.type)"
+          />
         </span>
       </span>
     </p>
@@ -390,9 +396,8 @@ export default defineComponent({
           actions.showSnackbar('Fetching discourse information...');
 
           if (discourseUuid) {
-            discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-              discourseUuid
-            );
+            discourseWordInfo.value =
+              await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
           } else {
             discourseWordInfo.value = null;
           }
@@ -478,3 +483,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>

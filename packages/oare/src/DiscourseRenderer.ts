@@ -1,6 +1,10 @@
 /* eslint-disable max-classes-per-file */
 
-import { DiscourseUnit, DiscourseUnitType } from '@oare/types';
+import {
+  DiscourseUnit,
+  DiscourseUnitType,
+  DiscourseDisplayUnit,
+} from '@oare/types';
 
 function getRenderersHelper(
   units: DiscourseUnit[],
@@ -39,6 +43,12 @@ export default class DiscourseRenderer {
     return getLineNums(this.discourseUnits);
   }
 
+  public wordsOnLine(line: number): DiscourseDisplayUnit[] {
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words);
+    return words;
+  }
+
   get paragraphRenderers(): DiscourseRenderer[] {
     const renderers: DiscourseRenderer[] = [];
     getRenderersHelper(
@@ -62,9 +72,9 @@ export default class DiscourseRenderer {
   }
 
   public lineReading(line: number): string {
-    const words: string[] = [];
-    lineReadingHelper(this.discourseUnits, line, words);
-    return words.join(' ');
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words);
+    return words.map(word => word.display).join(' ');
   }
 }
 
@@ -111,10 +121,10 @@ interface RenderFormat {
   transliteration: RenderFunc;
   spelling: RenderFunc;
 }
-export function lineReadingHelper(
+export function displayUnitHelper(
   units: DiscourseUnit[],
   line: number,
-  words: string[],
+  words: DiscourseDisplayUnit[],
   renderFormatter: RenderFormat = {
     transliteration: word => word,
     spelling: word => word,
@@ -123,12 +133,20 @@ export function lineReadingHelper(
   units.forEach(unit => {
     if (unit.line === line) {
       if (unit.transcription) {
-        words.push(renderFormatter.transliteration(unit.transcription));
+        words.push({
+          uuid: unit.uuid,
+          type: unit.type,
+          display: renderFormatter.transliteration(unit.transcription),
+        });
       } else if (unit.explicitSpelling) {
-        words.push(renderFormatter.spelling(unit.explicitSpelling));
+        words.push({
+          uuid: unit.uuid,
+          type: unit.type,
+          display: renderFormatter.spelling(unit.explicitSpelling),
+        });
       }
     }
-    lineReadingHelper(unit.units, line, words, renderFormatter);
+    displayUnitHelper(unit.units, line, words, renderFormatter);
   });
 }
 
