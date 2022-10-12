@@ -12,8 +12,8 @@
           <span
             v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
             :key="idx"
-            v-html="word.display"
-            class="ml-1 cursor-display"
+            v-html="` ${word.display}`"
+            class="cursor-display"
             @click="openDialog(word.uuid, word.type)"
           />
         </span>
