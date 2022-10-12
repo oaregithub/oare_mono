@@ -1,6 +1,6 @@
-import { DiscourseUnit } from '@oare/types';
+import { DiscourseDisplayUnit, DiscourseUnit } from '@oare/types';
 import DiscourseRenderer, {
-  lineReadingHelper,
+  displayUnitHelper,
   lineReadingHelperForWordsInTexts,
 } from './DiscourseRenderer';
 
@@ -10,13 +10,22 @@ export default class DiscourseHtmlRenderer extends DiscourseRenderer {
     this.renderClass = DiscourseHtmlRenderer;
   }
 
-  public lineReading(line: number): string {
-    const words: string[] = [];
-    lineReadingHelper(this.discourseUnits, line, words, {
+  public wordsOnLine(line: number): DiscourseDisplayUnit[] {
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words, {
       transliteration: (word: string) => `<em>${word}</em>`,
       spelling: determinativeFormatter,
     });
-    return words.join(' ');
+    return words;
+  }
+
+  public lineReading(line: number): string {
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words, {
+      transliteration: (word: string) => `<em>${word}</em>`,
+      spelling: determinativeFormatter,
+    });
+    return words.map(word => word.display).join(' ');
   }
 
   public lineReadingForWordsInTexts(
