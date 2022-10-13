@@ -11,9 +11,9 @@ router.route('/seals').get(async (req, res, next) => {
     const SealDao = sl.get('SealDao');
     const cache = sl.get('cache');
 
-    const sealsNoImages: SealNameUuid[] = await SealDao.getSeals();
+    const sealsNameAndUuid: SealNameUuid[] = await SealDao.getSeals();
     const seals: SealInfo[] = await Promise.all(
-      sealsNoImages.map(async s => ({
+      sealsNameAndUuid.map(async s => ({
         ...s,
         imageLinks: await SealDao.getImageBySealUuid(s.uuid),
         count: await SealDao.getSealImpressionCountBySealUuid(s.uuid),
