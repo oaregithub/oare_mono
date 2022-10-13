@@ -92,6 +92,7 @@
     </div>
 
     <text-occurrences
+      v-if="selectedPerson.uuid"
       v-model="displayTextOccurrences"
       class="test-text-occurrences-display"
       :title="selectedPersonTitle()"
