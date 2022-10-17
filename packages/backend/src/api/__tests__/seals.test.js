@@ -60,7 +60,7 @@ describe('GET /seals/:uuid', () => {
       .mockResolvedValue(seal.sealImpressions),
     getSealProperties: jest.fn().mockResolvedValue(seal.sealProperties),
     getSealImpressionCountBySealUuid: jest.fn().mockResolvedValue(seal.count),
-    getImageBySealUuid: jest.fn().mockResolvedValue(seal.imageLinks),
+    getImagesBySealUuid: jest.fn().mockResolvedValue(seal.imageLinks),
   };
 
   const mockTextDao = {
@@ -88,7 +88,7 @@ describe('GET /seals/:uuid', () => {
     expect(mockSealDao.getSealImpressionCountBySealUuid).toHaveBeenCalled();
     expect(mockSealDao.getSealImpressionsBySealUuid).toHaveBeenCalled();
     expect(mockSealDao.getSealProperties).toHaveBeenCalled();
-    expect(mockSealDao.getImageBySealUuid).toHaveBeenCalled();
+    expect(mockSealDao.getImagesBySealUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
@@ -110,7 +110,7 @@ describe('GET /seals', () => {
       .fn()
       .mockResolvedValue([{ name: seal.name, uuid: seal.uuid }]),
     getSealImpressionCountBySealUuid: jest.fn().mockResolvedValue(seal.count),
-    getImageBySealUuid: jest.fn().mockResolvedValue(seal.imageLinks),
+    getImagesBySealUuid: jest.fn().mockResolvedValue(seal.imageLinks),
   };
 
   const mockCache = {
@@ -131,7 +131,7 @@ describe('GET /seals', () => {
     const response = await sendRequest();
     expect(mockSealDao.getSeals).toHaveBeenCalled();
     expect(mockSealDao.getSealImpressionCountBySealUuid).toHaveBeenCalled();
-    expect(mockSealDao.getImageBySealUuid).toHaveBeenCalled();
+    expect(mockSealDao.getImagesBySealUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
