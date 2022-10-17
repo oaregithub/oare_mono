@@ -27,7 +27,7 @@ class SealDao {
     return seals;
   }
 
-  async getImageBySealUuid(sealUuid: string, trx?: Knex): Promise<string[]> {
+  async getImagesBySealUuid(sealUuid: string, trx?: Knex): Promise<string[]> {
     const k = trx || knexRead();
 
     const imageLinks: string[] = await k('spatial_unit as su')
@@ -47,16 +47,17 @@ class SealDao {
   ): Promise<number> {
     const k = trx || knexRead();
 
-    const count: { count: number }[] = await k('spatial_unit as su')
+    const count = await k('spatial_unit as su')
       .leftJoin('item_properties as ip', 'ip.object_uuid', 'su.uuid')
       .leftJoin('text_epigraphy as te', 'te.uuid', 'ip.reference_uuid')
       .where('su.tree_abb', 'Seal_Cat')
       .andWhere('su.type', 'object')
       .andWhere('su.uuid', sealUuid)
       .whereNotNull('te.text_uuid')
-      .count('su.uuid as count');
+      .count({ count: 'su.uuid' })
+      .first();
 
-    return count[0]?.count || 0;
+    return Number(count?.count) || 0;
   }
 
   async getSealImpressionsBySealUuid(

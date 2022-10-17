@@ -182,7 +182,8 @@ type CacheRouteType =
   | 'Taxonomy Tree'
   | 'Dictionary'
   | 'Page Content'
-  | 'Bibliography';
+  | 'Bibliography'
+  | 'Seal';
 
 interface RoutePiece {
   type: 'static' | 'param' | 'separator';
@@ -259,6 +260,7 @@ export default defineComponent({
       'Dictionary',
       'Page Content',
       'Bibliography',
+      'Seal',
     ]);
 
     const individualClearTemplates = ref<IndividualClearTemplate[]>([
@@ -563,6 +565,36 @@ export default defineComponent({
         ],
         level: 'startsWith',
         type: 'Bibliography',
+      },
+      {
+        name: 'Seals - All',
+        routePieces: [
+          { type: 'separator', label: '/' },
+          {
+            type: 'static',
+            label: 'seals',
+          },
+          { type: 'separator', label: '/' },
+        ],
+        level: 'startsWith',
+        type: 'Seal',
+      },
+      {
+        name: 'Seals - Specific',
+        routePieces: [
+          { type: 'separator', label: '/' },
+          {
+            type: 'static',
+            label: 'seals',
+          },
+          { type: 'separator', label: '/' },
+          {
+            type: 'param',
+            label: 'Seal UUID',
+          },
+        ],
+        level: 'exact',
+        type: 'Seal',
       },
     ]);
 
