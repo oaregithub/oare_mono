@@ -1,33 +1,18 @@
 /* eslint-disable max-classes-per-file */
 
-import {
-  DiscourseUnit,
-  DiscourseUnitType,
-  DiscourseDisplayUnit,
-} from '@oare/types';
-
-function getRenderersHelper(
-  units: DiscourseUnit[],
-  renderers: DiscourseRenderer[],
-  type: DiscourseUnitType,
-  RenderClass: typeof DiscourseRenderer
-) {
-  units.forEach(unit => {
-    if (unit.type === 'paragraph') {
-      renderers.push(new RenderClass(unit.units));
-    } else {
-      getRenderersHelper(unit.units, renderers, type, RenderClass);
-    }
-  });
-}
+import { DiscourseUnit, DiscourseDisplayUnit, LocaleCode } from '@oare/types';
+import { localizeString } from './tabletUtils';
 
 export default class DiscourseRenderer {
   protected discourseUnits: DiscourseUnit[];
 
+  protected locale: LocaleCode;
+
   protected renderClass: typeof DiscourseRenderer;
 
-  constructor(discourseUnits: DiscourseUnit[]) {
+  constructor(discourseUnits: DiscourseUnit[], locale: LocaleCode) {
     this.discourseUnits = discourseUnits;
+    this.locale = locale;
     this.renderClass = DiscourseRenderer;
   }
 
@@ -46,35 +31,18 @@ export default class DiscourseRenderer {
   public wordsOnLine(line: number): DiscourseDisplayUnit[] {
     const words: DiscourseDisplayUnit[] = [];
     displayUnitHelper(this.discourseUnits, line, words);
-    return words;
-  }
-
-  get paragraphRenderers(): DiscourseRenderer[] {
-    const renderers: DiscourseRenderer[] = [];
-    getRenderersHelper(
-      this.discourseUnits,
-      renderers,
-      'paragraph',
-      this.renderClass
-    );
-    return renderers;
-  }
-
-  get sentenceRenderers(): DiscourseRenderer[] {
-    const renderers: DiscourseRenderer[] = [];
-    getRenderersHelper(
-      this.discourseUnits,
-      renderers,
-      'sentence',
-      this.renderClass
-    );
-    return renderers;
+    return words.map(word => ({
+      ...word,
+      display: localizeString(word.display, this.locale),
+    }));
   }
 
   public lineReading(line: number): string {
     const words: DiscourseDisplayUnit[] = [];
     displayUnitHelper(this.discourseUnits, line, words);
-    return words.map(word => word.display).join(' ');
+    return words
+      .map(word => localizeString(word.display, this.locale))
+      .join(' ');
   }
 }
 

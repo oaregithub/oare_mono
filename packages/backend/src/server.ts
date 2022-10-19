@@ -1,5 +1,5 @@
 import sl from '@/serviceLocator';
-import { User } from '@oare/types';
+import { LocaleCode, User } from '@oare/types';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
 import FieldDao from '@/api/daos/FieldDao';
@@ -46,6 +46,7 @@ declare global {
   namespace Express {
     interface Request {
       user: User | null;
+      locale: LocaleCode;
     }
   }
 }

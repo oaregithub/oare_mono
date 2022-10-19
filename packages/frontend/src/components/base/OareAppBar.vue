@@ -203,11 +203,7 @@
 import { defineComponent, computed, ref } from '@vue/composition-api';
 import i18n from '@/i18n';
 import sl from '@/serviceLocator';
-
-export interface Locale {
-  label: string;
-  value: string;
-}
+import { Locale } from '@oare/types';
 
 export default defineComponent({
   name: 'OareAppBar',
@@ -262,8 +258,8 @@ export default defineComponent({
 
     const setLocale = (locale: Locale) => {
       selectedLocale.value = locale;
-      i18n.locale = selectedLocale.value.value;
       localStorage.setItem('locale', selectedLocale.value.value);
+      router.go(0);
     };
 
     return {

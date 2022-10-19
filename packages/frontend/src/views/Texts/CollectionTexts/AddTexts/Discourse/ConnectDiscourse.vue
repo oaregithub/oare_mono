@@ -96,10 +96,12 @@ import {
   TextDiscourseRow,
   EpigraphicWord,
   SearchSpellingResultRow,
+  LocaleCode,
 } from '@oare/types';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import ConnectDiscourseDialog from './components/ConnectDiscourseDialog.vue';
 import sl from '@/serviceLocator';
+import i18n from '@/i18n';
 
 export default defineComponent({
   props: {
@@ -127,7 +129,7 @@ export default defineComponent({
     const loading = ref(false);
 
     const renderer = ref<TabletRenderer>(
-      createTabletRenderer(props.epigraphicUnits, {
+      createTabletRenderer(props.epigraphicUnits, i18n.locale as LocaleCode, {
         showNullDiscourse: store.getters.isAdmin,
         textFormat: 'html',
       })

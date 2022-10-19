@@ -16,3 +16,10 @@ export interface EnvironmentInfo {
   databaseReadRegion?: string;
   databaseWriteRegion?: string;
 }
+
+export interface Locale {
+  label: string;
+  value: LocaleCode;
+}
+
+export type LocaleCode = 'en' | 'tr';

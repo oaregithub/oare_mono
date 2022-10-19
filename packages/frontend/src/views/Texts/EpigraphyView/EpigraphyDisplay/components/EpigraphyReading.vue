@@ -129,11 +129,13 @@ import {
   EpigraphicWord,
   TextDiscourseRow,
   EpigraphicUnitSide,
+  LocaleCode,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
+import i18n from '@/i18n';
 
 export default defineComponent({
   name: 'EpigraphyReading',
@@ -194,7 +196,7 @@ export default defineComponent({
     };
 
     const renderer = ref<TabletRenderer>(
-      createTabletRenderer(props.epigraphicUnits, {
+      createTabletRenderer(props.epigraphicUnits, i18n.locale as LocaleCode, {
         showNullDiscourse: store.getters.isAdmin,
         textFormat: 'html',
       })
@@ -226,13 +228,11 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-            discourseUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
-            spellingUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
         } else {
           discourseWordInfo.value = null;
         }
