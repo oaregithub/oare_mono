@@ -1,4 +1,4 @@
-import { TextDraft, UuidRow, DraftQueryOptions } from '@oare/types';
+import { TextDraft, UuidRow, DraftQueryOptions, LocaleCode } from '@oare/types';
 import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import { createTabletRenderer } from '@oare/oare';
@@ -65,6 +65,7 @@ class TextDraftsDao {
 
   async getDraftByUuid(
     draftUuid: string,
+    locale: LocaleCode,
     trx?: Knex.Transaction
   ): Promise<TextDraft> {
     const k = trx || knexRead();
@@ -93,7 +94,7 @@ class TextDraftsDao {
       undefined,
       trx
     );
-    const originalText = createTabletRenderer(epigraphicUnits, {
+    const originalText = createTabletRenderer(epigraphicUnits, locale, {
       lineNumbers: true,
     }).tabletReading();
 
@@ -107,6 +108,7 @@ class TextDraftsDao {
   async getDraftByTextUuid(
     userUuid: string,
     textUuid: string,
+    locale: LocaleCode,
     trx?: Knex.Transaction
   ): Promise<TextDraft | null> {
     const draft: TextDraftRow | null = await getBaseDraftQuery(userUuid, trx)
@@ -122,7 +124,7 @@ class TextDraftsDao {
       undefined,
       trx
     );
-    const originalText = createTabletRenderer(epigraphicUnits, {
+    const originalText = createTabletRenderer(epigraphicUnits, locale, {
       lineNumbers: true,
     }).tabletReading();
 

@@ -363,7 +363,7 @@ router
         pagination
       );
 
-      const response = await utils.getTextOccurrences(rows);
+      const response = await utils.getTextOccurrences(rows, req.locale);
 
       res.json(response);
     } catch (err) {

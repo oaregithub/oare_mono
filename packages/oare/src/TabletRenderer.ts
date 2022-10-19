@@ -6,6 +6,7 @@ import {
   EpigraphicWord,
   MarkupType,
   TextFormatType,
+  LocaleCode,
 } from '@oare/types';
 import _ from 'lodash';
 
@@ -17,25 +18,36 @@ import {
   regionReading,
   undeterminedReading,
   romanNumeral,
+  localizeString,
 } from './tabletUtils';
 
 export default class TabletRenderer {
   protected epigraphicUnits: EpigraphicUnit[] = [];
 
-  protected rendererType: TextFormatType | null = null;
+  protected locale: LocaleCode;
+
+  protected rendererType: TextFormatType;
 
   public getEpigraphicUnits() {
     return this.epigraphicUnits;
   }
 
+  public getLocale() {
+    return this.locale;
+  }
+
+  public getRendererType() {
+    return this.rendererType;
+  }
+
   constructor(
     epigraphicUnits: EpigraphicUnit[],
-    rendererType?: TextFormatType
+    locale: LocaleCode,
+    rendererType: TextFormatType
   ) {
     this.epigraphicUnits = epigraphicUnits;
-    if (rendererType) {
-      this.rendererType = rendererType;
-    }
+    this.locale = locale;
+    this.rendererType = rendererType;
     this.sortMarkupUnits();
     this.addLineNumbersToRegions();
   }
@@ -94,10 +106,11 @@ export default class TabletRenderer {
   }
 
   public tabletReading(): string {
-    return this.sides
+    const tabletReading = this.sides
       .map(side => `${side}\n${this.sideReading(side)}`)
       .join('\n')
       .trim();
+    return localizeString(tabletReading, this.locale);
   }
 
   get sides(): EpigraphicUnitSide[] {
@@ -131,7 +144,8 @@ export default class TabletRenderer {
     this.linesOnSide(side).forEach(lineNum => {
       lineReadings.push(`${this.lineReading(lineNum)}`);
     });
-    return lineReadings.join('\n');
+    const sideReading = lineReadings.join('\n');
+    return localizeString(sideReading, this.locale);
   }
 
   public isRegion(lineNum: number): boolean {
@@ -162,16 +176,31 @@ export default class TabletRenderer {
     }
 
     const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
-    return convertMarkedUpUnitsToLineReading(
+    const lineReading = convertMarkedUpUnitsToLineReading(
       charactersWithMarkup,
       this.rendererType === 'regular'
     );
+    return localizeString(lineReading, this.locale);
   }
 
   public getLineWords(lineNum: number): EpigraphicWord[] {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
     const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
-    return convertMarkedUpUnitsToEpigraphicWords(charactersWithMarkup);
+    const epigraphicWords = convertMarkedUpUnitsToEpigraphicWords(
+      charactersWithMarkup
+    );
+    return epigraphicWords.map(word => ({
+      ...word,
+      reading: word.reading ? localizeString(word.reading, this.locale) : null,
+      signs: [
+        ...word.signs.map(sign => ({
+          ...sign,
+          reading: sign.reading
+            ? localizeString(sign.reading, this.locale)
+            : null,
+        })),
+      ],
+    }));
   }
 
   /**
@@ -470,6 +499,6 @@ export default class TabletRenderer {
       });
     });
 
-    return transliterationString;
+    return localizeString(transliterationString, this.locale);
   }
 }

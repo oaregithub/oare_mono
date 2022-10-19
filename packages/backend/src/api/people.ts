@@ -165,6 +165,7 @@ router
 
       const textOccurrencesResponse = await utils.getTextOccurrences(
         textsWithEpigraphicUnits,
+        req.locale,
         true
       );
 

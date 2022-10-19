@@ -182,13 +182,19 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import { DiscourseUnit, EpigraphicUnitSide, Word } from '@oare/types';
+import {
+  DiscourseUnit,
+  EpigraphicUnitSide,
+  Word,
+  LocaleCode,
+} from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
 import sl from '@/serviceLocator';
+import i18n from '@/i18n';
 
 export default defineComponent({
   props: {
@@ -211,7 +217,10 @@ export default defineComponent({
     ConnectSpellingOccurrence,
   },
   setup({ discourseUnits, textUuid, disableEditing }) {
-    const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
+    const discourseRenderer = new DiscourseHtmlRenderer(
+      discourseUnits,
+      i18n.locale as LocaleCode
+    );
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
     const inputTranslation = ref('');

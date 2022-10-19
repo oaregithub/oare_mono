@@ -1,4 +1,8 @@
-import { EpigraphicUnit, CreateTabletRendererOptions } from '@oare/types';
+import {
+  EpigraphicUnit,
+  CreateTabletRendererOptions,
+  LocaleCode,
+} from '@oare/types';
 import TabletRenderer from './TabletRenderer';
 import TabletHtmlRenderer from './TabletHtmlRenderer';
 import TabletLineNumRenderer from './TabletLineNumRenderer';
@@ -58,6 +62,7 @@ export const AkkadianLetterGroupsUpper: { [key: string]: string } = {
  */
 const createTabletRenderer = (
   epigraphicUnits: EpigraphicUnit[],
+  locale: LocaleCode,
   {
     textFormat = 'regular',
     lineNumbers = false,
@@ -65,7 +70,7 @@ const createTabletRenderer = (
     highlightDiscourses = [],
   }: CreateTabletRendererOptions = {}
 ): TabletRenderer => {
-  let renderer = new TabletRenderer(epigraphicUnits, textFormat);
+  let renderer = new TabletRenderer(epigraphicUnits, locale, textFormat);
   if (textFormat === 'html') {
     renderer = new TabletHtmlRenderer(renderer, {
       showNullDiscourse,
