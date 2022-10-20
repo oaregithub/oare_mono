@@ -1,7 +1,13 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { SealNameUuid, SealInfo, Seal, Text } from '@oare/types';
+import {
+  SealNameUuid,
+  SealInfo,
+  Seal,
+  Text,
+  SealImpression,
+} from '@oare/types';
 import { noFilter } from '@/cache/filters';
 
 const router = express.Router();
@@ -36,16 +42,8 @@ router.route('/seals/:uuid').get(async (req, res, next) => {
     const cache = sl.get('cache');
 
     const nameAndUuid: SealNameUuid = await SealDao.getSealByUuid(uuid);
-    const textUuids: string[] = await SealDao.getSealImpressionsBySealUuid(
+    const sealImpressions: SealImpression[] = await SealDao.getSealImpressionsBySealUuid(
       uuid
-    );
-    const sealImpressionTexts: Text[] = [];
-    (
-      await Promise.all(
-        textUuids.map(async textUuid => TextDao.getTextByUuid(textUuid))
-      )
-    ).forEach(sealImpressionText =>
-      sealImpressionTexts.push(sealImpressionText!)
     );
 
     const seal: Seal = {
@@ -53,7 +51,7 @@ router.route('/seals/:uuid').get(async (req, res, next) => {
       imageLinks: await SealDao.getImageBySealUuid(uuid),
       count: await SealDao.getSealImpressionCountBySealUuid(uuid),
       sealProperties: await SealDao.getSealProperties(uuid),
-      sealImpressions: sealImpressionTexts,
+      sealImpressions,
     };
 
     const response = await cache.insert<Seal>({ req }, seal, noFilter);

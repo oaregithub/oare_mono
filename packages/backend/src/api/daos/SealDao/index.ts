@@ -1,5 +1,7 @@
 import { knexRead } from '@/connection';
-import { SealNameUuid, SealProperty } from '@oare/types';
+import { SealImpression, SealNameUuid, SealProperty } from '@oare/types';
+import sl from '@/serviceLocator';
+import AWS from 'aws-sdk';
 import { Knex } from 'knex';
 
 class SealDao {
@@ -30,13 +32,31 @@ class SealDao {
   async getImageBySealUuid(sealUuid: string, trx?: Knex): Promise<string[]> {
     const k = trx || knexRead();
 
-    const imageLinks: string[] = await k('spatial_unit as su')
+    const imageLinkRows: { link: string; container: string }[] = await k(
+      'spatial_unit as su'
+    )
       .join('text_markup as tm', 'tm.obj_uuid', 'su.uuid')
       .join('link as l', 'l.reference_uuid', 'tm.reference_uuid')
       .join('resource as re', 'l.obj_uuid', 're.uuid')
       .where('su.tree_abb', 'Seal_Cat')
       .andWhere('su.uuid', sealUuid)
-      .pluck('re.link');
+      .select('re.link', 're.container');
+
+    const s3 = new AWS.S3();
+    let imageLinks: string[] = [];
+    try {
+      imageLinks = await Promise.all(
+        imageLinkRows.map(imageLinkRow =>
+          s3.getSignedUrlPromise('getObject', {
+            Bucket: imageLinkRow.container,
+            Key: imageLinkRow.link,
+            Expires: 15778800,
+          })
+        )
+      );
+    } catch {
+      imageLinks = [];
+    }
 
     return imageLinks;
   }
@@ -62,19 +82,64 @@ class SealDao {
   async getSealImpressionsBySealUuid(
     sealUuid: string,
     trx?: Knex
-  ): Promise<string[]> {
+  ): Promise<SealImpression[]> {
     const k = trx || knexRead();
+    const TextDao = sl.get('TextDao');
 
-    const textUuids: string[] = await k('spatial_unit as su')
+    const sealImpressionRows: {
+      textUuid: string;
+      side: number | null;
+      user: string | null;
+    }[] = await k('spatial_unit as su')
       .leftJoin('item_properties as ip', 'ip.object_uuid', 'su.uuid')
       .leftJoin('text_epigraphy as te', 'te.uuid', 'ip.reference_uuid')
+      .leftJoin('person as p', 'p.uuid', 'ip.object_uuid')
+      .leftJoin('dictionary_word as dw1', 'dw1.uuid', 'p.name_uuid')
+      .leftJoin('dictionary_word as dw2', 'dw2.uuid', 'p.relation_name_uuid')
       .where('su.tree_abb', 'Seal_Cat')
       .andWhere('su.type', 'object')
       .andWhere('su.uuid', sealUuid)
       .whereNotNull('te.text_uuid')
-      .pluck('te.text_uuid');
+      .select(
+        'te.text_uuid as textUuid',
+        'te.side as side',
+        k.raw('CONCAT(dw1.word, " ", p.relation, " ", dw2.word) as user')
+      );
 
-    return textUuids;
+    const sealImpressions: SealImpression[] = ((
+      await Promise.all(
+        sealImpressionRows.map(async row => ({
+          text: await TextDao.getTextByUuid(row.textUuid),
+          side: row.side ? row.side : 0,
+          user: row.user ? row.user.trim() : '',
+        }))
+      )
+    ).filter(
+      impression => impression.text !== null
+    ) as unknown) as SealImpression[];
+    return sealImpressions;
+  }
+
+  async getSealOwner(
+    sealUuid: string,
+    trx?: Knex
+  ): Promise<SealProperty | null> {
+    const k = trx || knexRead();
+    const sealOwner: { name: string } = await k('spatial_unit as su')
+      .innerJoin('item_properties as ip', 'ip.reference_uuid', 'su.uuid')
+      .innerJoin('person as p', 'p.uuid', 'ip.object_uuid')
+      .leftJoin('dictionary_word as dw1', 'dw1.uuid', 'p.name_uuid')
+      .leftJoin('dictionary_word as dw2', 'dw2.uuid', 'p.relation_name_uuid')
+      .where('su.tree_abb', 'Seal_Cat')
+      .andWhere('su.type', 'object')
+      .andWhere('su.uuid', sealUuid)
+      .select(k.raw('CONCAT(dw1.word, " ", p.relation, " ", dw2.word) as name'))
+      .first();
+
+    if (sealOwner && sealOwner.name) {
+      return { 'Owner/user': sealOwner.name.trim() };
+    }
+    return null;
   }
 
   async getSealProperties(
@@ -102,7 +167,9 @@ class SealDao {
         return properties;
       });
 
-    return sealProperties;
+    const owner: SealProperty | null = await this.getSealOwner(sealUuid, trx);
+
+    return owner ? [...sealProperties, owner] : sealProperties;
   }
 }
 
