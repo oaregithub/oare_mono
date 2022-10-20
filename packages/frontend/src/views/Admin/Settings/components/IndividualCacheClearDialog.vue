@@ -596,6 +596,18 @@ export default defineComponent({
         level: 'exact',
         type: 'Seal',
       },
+      {
+        name: 'Seals List',
+        routePieces: [
+          { type: 'separator', label: '/' },
+          {
+            type: 'static',
+            label: 'seals',
+          },
+        ],
+        level: 'exact',
+        type: 'Seal',
+      },
     ]);
 
     const selectedTemplate = ref<IndividualClearTemplate>();
