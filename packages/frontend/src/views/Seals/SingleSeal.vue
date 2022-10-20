@@ -11,25 +11,28 @@
       <v-row>
         <v-col cols="4">
           <h3 class="pb-2">Seal Info</h3>
-          <div v-if="seal.sealProperties.length > 0">
+          <div
+            v-if="seal.sealProperties.length > 0"
+            class="test-seal-properties"
+          >
             <div
               v-for="(property, idx) in seal.sealProperties"
               :key="`property-${idx}`"
-              class="font-weight-medium"
             >
               {{ Object.keys(property)[0] }}:
-              <span class="font-weight-light">
-                {{ Object.values(property)[0] }}</span
-              >
+              <span> {{ Object.values(property)[0] }}</span>
             </div>
           </div>
           <div v-else>
-            <span class="text--disabled"
+            <span class="text--disabled test-seal-no-properties"
               >this seal does not have any properties at this time</span
             >
           </div>
           <h3 class="pb-2 pt-4">Impressions</h3>
-          <div v-if="seal.sealImpressions.length > 0">
+          <div
+            v-if="seal.sealImpressions.length > 0"
+            class="test-seal-impressions"
+          >
             <div
               v-for="(impression, idx) in seal.sealImpressions"
               :key="`impression-${idx}`"
@@ -42,14 +45,14 @@
             </div>
           </div>
           <div v-else>
-            <span class="text--disabled"
+            <span class="text--disabled test-seal-no-impressions"
               >this seal does not have any seal impressions at this time</span
             >
           </div>
         </v-col>
         <v-col cols="8">
           <h3 class="pb-2">Images</h3>
-          <div v-if="seal.imageLinks.length > 0">
+          <div v-if="seal.imageLinks.length > 0" class="test-seal-images">
             <div
               v-for="(image, idx) in seal.imageLinks"
               :key="`image-${idx}`"
@@ -64,13 +67,13 @@
               ></v-img>
             </div>
           </div>
-          <div v-else class="text--disabled">
+          <div v-else class="text--disabled test-seal-no-images">
             There are no images for this seal at this time
           </div>
         </v-col>
       </v-row>
     </div>
-    <div v-else class="text--disabled">
+    <div v-else class="text--disabled test-seal-no-info">
       There is no other information concerning this seal at this time
     </div>
   </OareContentView>

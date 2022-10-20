@@ -21,6 +21,6 @@ export interface Seal extends SealInfo {
 
 export interface SealImpression {
   text: Text;
-  side: string;
+  side: number;
   user: string;
 }

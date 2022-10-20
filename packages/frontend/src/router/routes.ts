@@ -63,7 +63,7 @@ import WordsInTextsSearch from '../views/Search/TextsSearch/WordsInTextSearch.vu
 import QuarantinedTexts from '../views/Admin/Quarantine/QuarantinedTexts.vue';
 import SignListView from '../views/Signs/index.vue';
 import AnalyticsView from '../views/Admin/Analytics/Analytics.vue';
-import SealsView from '../views/Seals/index.vue';
+import SealsView from '../views/Seals/SealList.vue';
 import SealView from '../views/Seals/SingleSeal.vue';
 
 const routes: RouteConfig[] = [
