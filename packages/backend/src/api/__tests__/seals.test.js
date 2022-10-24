@@ -48,6 +48,20 @@ const seal = {
   ],
 };
 
+const mockPermissionsDao = {
+  getUserPermissions: jest.fn().mockResolvedValue([
+    {
+      name: 'SEALS',
+    },
+  ]),
+};
+
+const mockUserDao = {
+  getUserByUuid: jest.fn().mockResolvedValue({
+    uuid: 'user-uuid',
+  }),
+};
+
 describe('GET /seals/:uuid', () => {
   const PATH = `${API_PATH}/seals/${seal.uuid}`;
 
@@ -76,13 +90,21 @@ describe('GET /seals/:uuid', () => {
     sl.set('SealDao', mockSealDao);
     sl.set('cache', mockCache);
     sl.set('TextDao', mockTextDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('UserDao', mockUserDao);
   };
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH);
+  const sendRequest = (auth = true) => {
+    const req = request(app).get(PATH);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
 
-  it('returns 200 on successful collections retrieval', async () => {
+  it('returns 200 on successful seals retrieval', async () => {
     const response = await sendRequest();
     expect(mockSealDao.getSealByUuid).toHaveBeenCalled();
     expect(mockSealDao.getSealImpressionCountBySealUuid).toHaveBeenCalled();
@@ -99,6 +121,20 @@ describe('GET /seals/:uuid', () => {
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
+  });
+
+  it('returns 403 when user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
   });
 });
 
@@ -121,13 +157,21 @@ describe('GET /seals', () => {
   const setup = () => {
     sl.set('SealDao', mockSealDao);
     sl.set('cache', mockCache);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('UserDao', mockUserDao);
   };
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH);
+  const sendRequest = (auth = true) => {
+    const req = request(app).get(PATH);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
 
-  it('returns 200 on successful collections retrieval', async () => {
+  it('returns 200 on successful seals retrieval', async () => {
     const response = await sendRequest();
     expect(mockSealDao.getSeals).toHaveBeenCalled();
     expect(mockSealDao.getSealImpressionCountBySealUuid).toHaveBeenCalled();
@@ -142,5 +186,19 @@ describe('GET /seals', () => {
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
+  });
+
+  it('returns 403 when user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
   });
 });
