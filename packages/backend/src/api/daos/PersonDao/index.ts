@@ -1,6 +1,7 @@
 import { knexRead } from '@/connection';
-import { PersonDisplay } from '@oare/types';
+import { PersonDisplay, PersonRow } from '@oare/types';
 import { Knex } from 'knex';
+import { isNull } from 'lodash';
 import utils from '../utils';
 
 class PersonDao {
@@ -73,6 +74,60 @@ class PersonDao {
       .orderBy('word');
 
     return people;
+  }
+
+  async getPersonsRowsByLetter(
+    letter: string,
+    trx?: Knex.Transaction
+  ): Promise<PersonRow[]> {
+    const k = trx || knexRead();
+    const letters = letter.split('/');
+    let query = k('person')
+      .select(
+        'person.uuid',
+        'name_uuid AS nameUuid',
+        'relation',
+        'relation_name_uuid AS relationNameUuid',
+        'label',
+        'person.type'
+      )
+      .leftJoin('dictionary_word', 'person.name_uuid', 'dictionary_word.uuid')
+      .where('person.type', 'person');
+
+    letters.forEach(possibleVowel => {
+      switch (possibleVowel) {
+        case 'a':
+          return letters.push('ā');
+        case 'e':
+          return letters.push('ē');
+        case 'i':
+          return letters.push('ī');
+        case 'o':
+          return letters.push('ō');
+        case 'u':
+          return letters.push('ū');
+        default:
+          return letters;
+      }
+    });
+
+    query = query.andWhere(qb => {
+      letters.forEach(l => {
+        qb.orWhere('word', 'like', `${l.toLocaleUpperCase()}%`)
+          .orWhere('word', 'like', `(${l.toLocaleUpperCase()}%`)
+          .orWhere('word', 'like', `${l.toLocaleLowerCase()}%`)
+          .orWhere('word', 'like', `(${l.toLocaleLowerCase()}%`)
+          .orWhere('word', null)
+          .andWhere(qb => {
+            qb.orWhere('label', 'like', `${l.toLocaleUpperCase()}%`)
+              .orWhere('label', 'like', `(${l.toLocaleUpperCase()}%`)
+              .orWhere('label', 'like', `${l.toLocaleLowerCase()}%`)
+              .orWhere('label', 'like', `(${l.toLocaleLowerCase()}%`);
+          });
+      });
+    });
+
+    return query;
   }
 }
 
