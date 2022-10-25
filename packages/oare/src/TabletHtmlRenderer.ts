@@ -1,6 +1,7 @@
 /* eslint-disable dot-notation */
 import { EpigraphicUnit, MarkupUnit, TabletHtmlOptions } from '@oare/types';
 import TabletRenderer from './TabletRenderer';
+import { localizeString } from './tabletUtils';
 
 const superscriptRegex = /<sup>.*<\/sup>/;
 
@@ -67,7 +68,11 @@ export default class TabletHtmlRenderer extends TabletRenderer {
     renderer: TabletRenderer,
     { showNullDiscourse, highlightDiscourses }: TabletHtmlOptions = {}
   ) {
-    super(renderer.getEpigraphicUnits());
+    super(
+      renderer.getEpigraphicUnits(),
+      renderer.getLocale(),
+      renderer.getRendererType()
+    );
     this.renderer = renderer;
     this.showNullDiscourse = showNullDiscourse || false;
     this.highlightDiscourses = highlightDiscourses || [];
@@ -116,7 +121,10 @@ export default class TabletHtmlRenderer extends TabletRenderer {
 
       // Intermediate steps are being overridden. We need to supply
       // the renderer with HtmlRenderer's this object
-      return this.renderer.lineReading.call(this, lineNum);
+      return localizeString(
+        this.renderer.lineReading.call(this, lineNum),
+        this.locale
+      );
     }
     throw new Error('Undefined renderer passed to render decorator');
   }

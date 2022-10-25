@@ -8,6 +8,7 @@ import {
   SpellingOccurrenceRow,
   ItemPropertyRowWithChildren,
   ItemPropertyRow,
+  LocaleCode,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import _ from 'lodash';
@@ -56,6 +57,7 @@ export const parsedQuery = (url: string): URLSearchParams => {
 
 export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
   rows: Type,
+  locale: LocaleCode,
   highlightAllDiscourseUuids = false
 ): Promise<SpellingOccurrenceResponseRow[]> => {
   const TextEpigraphyDao = sl.get('TextEpigraphyDao');
@@ -66,7 +68,7 @@ export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
   const readings = rows.map((row, index) => {
     const units = epigraphicUnits[index];
 
-    const renderer = createTabletRenderer(units, {
+    const renderer = createTabletRenderer(units, locale, {
       lineNumbers: true,
       textFormat: 'html',
       highlightDiscourses: highlightAllDiscourseUuids

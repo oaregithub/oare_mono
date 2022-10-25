@@ -103,7 +103,7 @@ router
       );
 
       const drafts: TextDraft[] = await Promise.all(
-        draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
+        draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid, req.locale))
       );
 
       res.json(drafts);
@@ -117,7 +117,6 @@ router
   .get(adminRoute, async (req, res, next) => {
     try {
       const UserDao = sl.get('UserDao');
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const TextDraftsDao = sl.get('TextDraftsDao');
 
       const query = parsedQuery(req.originalUrl);
@@ -141,7 +140,7 @@ router
         textFilter,
       });
       const drafts = await Promise.all(
-        draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid))
+        draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid, req.locale))
       );
       const users = await Promise.all(
         drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
@@ -184,7 +183,11 @@ router
         return;
       }
 
-      const draft = await TextDraftsDao.getDraftByTextUuid(userUuid, textUuid);
+      const draft = await TextDraftsDao.getDraftByTextUuid(
+        userUuid,
+        textUuid,
+        req.locale
+      );
       if (draft) {
         next(
           new HttpBadRequest(

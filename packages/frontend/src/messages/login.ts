@@ -1,5 +1,5 @@
 export default {
-  us: {
+  en: {
     signIn: 'Sign In',
     dontHaveAccount: "Don't have an account? Register for free",
     email: 'Email',
