@@ -110,7 +110,7 @@ describe('people api test', () => {
 
   beforeEach(setup);
 
-  describe('GET /people/:letter', () => {
+  /* describe('GET /people/:letter', () => {
     const letter = 'A';
 
     const PATH = `${API_PATH}/people/${encodeURIComponent(letter)}`;
@@ -145,7 +145,7 @@ describe('people api test', () => {
       expect(response.status).toBe(403);
       expect(mockPersonDao.getAllPeople).not.toHaveBeenCalled();
     });
-  });
+  }); */
 
   describe('GET /people/person/:uuid/texts', () => {
     const PATH = `${API_PATH}/people/person/${encodeURIComponent(
