@@ -170,16 +170,10 @@ export default defineComponent({
 
     const filterBibliography = () => {
       filteredBib.value = bibliographyResponse.value.filter(bib => {
-        return (
-          (bib.title?.toLowerCase().includes(search.value.toLowerCase()) ||
-            bib.date?.toLowerCase().includes(search.value.toLowerCase()) ||
-            bib.authors
-              ?.join(' ')
-              .toLowerCase()
-              .includes(search.value.toLowerCase())) &&
-          (bib.itemType === showItemType.value.replace(' ', '') ||
-            showItemType.value === 'all')
-        );
+        return bib.bibliography?.bib
+          ?.replace(/<.+?>/g, '')
+          .toLocaleLowerCase()
+          .includes(search.value.toLocaleLowerCase());
       });
       sortBibliography();
     };
