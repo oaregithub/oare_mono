@@ -1,7 +1,6 @@
 import { knexRead } from '@/connection';
 import { PersonDisplay, PersonRow } from '@oare/types';
 import { Knex } from 'knex';
-import { isNull } from 'lodash';
 import utils from '../utils';
 
 class PersonDao {

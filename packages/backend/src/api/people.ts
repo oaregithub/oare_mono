@@ -8,7 +8,6 @@ import {
   PersonListItem,
   ItemPropertyRow,
 } from '@oare/types';
-import { PersonDetail } from 'aws-sdk/clients/rekognition';
 
 const router = express.Router();
 
