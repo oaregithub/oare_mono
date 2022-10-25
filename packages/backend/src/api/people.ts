@@ -46,9 +46,8 @@ router
             const name = nameRow.word;
             const relationName = nameRow.word;
             return `${name} ${person.relation} ${relationName}`;
-          } else {
-            return person.label;
           }
+          return person.label;
         })
       );
 

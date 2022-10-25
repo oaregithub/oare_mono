@@ -118,8 +118,9 @@ class PersonDao {
           .orWhere('word', 'like', `${l.toLocaleLowerCase()}%`)
           .orWhere('word', 'like', `(${l.toLocaleLowerCase()}%`)
           .orWhere('word', null)
-          .andWhere(qb => {
-            qb.orWhere('label', 'like', `${l.toLocaleUpperCase()}%`)
+          .andWhere(qb1 => {
+            qb1
+              .orWhere('label', 'like', `${l.toLocaleUpperCase()}%`)
               .orWhere('label', 'like', `(${l.toLocaleUpperCase()}%`)
               .orWhere('label', 'like', `${l.toLocaleLowerCase()}%`)
               .orWhere('label', 'like', `(${l.toLocaleLowerCase()}%`);
