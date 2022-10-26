@@ -1,5 +1,5 @@
 export default {
-  us: {
+  en: {
     searchTexts: 'Search Texts',
     collectionDescription: 'Comma separated list of collection names to search',
     characterSequenceDescription: 'Transliteration Search',

@@ -277,13 +277,13 @@ import {
   ComputedRef,
   PropType,
 } from '@vue/composition-api';
-
 import sl from '@/serviceLocator';
 import {
   EpigraphyResponse,
   TranslitOption,
   EpigraphyLabelLink,
   ZoteroData,
+  LocaleCode,
 } from '@oare/types';
 import EpigraphyEditor from './Editor/EpigraphyEditor.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
@@ -294,6 +294,7 @@ import AddPhotos from '@/views/Texts/CollectionTexts/AddTexts/Photos/AddPhotos.v
 import { convertParsePropsToItemProps } from '@oare/oare';
 import { addDetailsToTextPhotos } from '../CollectionTexts/AddTexts/utils/photos';
 import { v4 } from 'uuid';
+import i18n from '@/i18n';
 
 export interface DraftContent extends Pick<TextDraft, 'content' | 'notes'> {
   uuid: string | null;
@@ -471,9 +472,13 @@ export default defineComponent({
         return draft.value;
       }
 
-      const draftRenderer = createTabletRenderer(textInfo.value.units, {
-        lineNumbers: true,
-      });
+      const draftRenderer = createTabletRenderer(
+        textInfo.value.units,
+        i18n.locale as LocaleCode,
+        {
+          lineNumbers: true,
+        }
+      );
       return {
         uuid: null,
         content: draftRenderer.sides.map(side => ({
@@ -672,9 +677,13 @@ export default defineComponent({
     const quarantineLoading = ref(false);
 
     const copyTransliteration = () => {
-      const renderer = createTabletRenderer(textInfo.value.units, {
-        lineNumbers: true,
-      });
+      const renderer = createTabletRenderer(
+        textInfo.value.units,
+        i18n.locale as LocaleCode,
+        {
+          lineNumbers: true,
+        }
+      );
       const transliterationString = renderer.getTransliterationString();
       navigator.clipboard.writeText(transliterationString);
       actions.showSnackbar('Copied transliteration to clipboard');

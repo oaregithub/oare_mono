@@ -4,6 +4,7 @@ import firebase from '@/firebase';
 import actions from '@/globalActions';
 import router from '@/router';
 import { FirebaseError } from '@firebase/util';
+import i18n from '@/i18n';
 
 const host =
   process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
@@ -52,6 +53,7 @@ axiosInstance.interceptors.response.use(
 axiosInstance.interceptors.request.use(config => {
   if (store.getters.idToken) {
     config.headers.Authorization = store.getters.idToken;
+    config.headers.Locale = i18n.locale;
   }
   return config;
 });

@@ -135,7 +135,7 @@ router
           textUuid
         );
         const draft = user
-          ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid)
+          ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid, 'en')
           : null;
 
         const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
