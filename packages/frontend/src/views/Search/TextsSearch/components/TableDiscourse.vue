@@ -20,9 +20,10 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
-import { DiscourseUnit, EpigraphicUnitSide } from '@oare/types';
+import { DiscourseUnit, EpigraphicUnitSide, LocaleCode } from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import i18n from '@/i18n';
 
 export default defineComponent({
   props: {
@@ -36,7 +37,10 @@ export default defineComponent({
     },
   },
   setup({ discourseUnits }) {
-    const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
+    const discourseRenderer = new DiscourseHtmlRenderer(
+      discourseUnits,
+      i18n.locale as LocaleCode
+    );
 
     const getSideByNumber = (number: number | null): EpigraphicUnitSide => {
       switch (number) {

@@ -6,6 +6,7 @@ import '../envConfig';
 import fileupload from 'express-fileupload';
 import setupRoutes from './setupRoutes';
 import userMiddleware from './middlewares/user';
+import localeMiddleware from './middlewares/locale';
 
 const app = express();
 app.use((req, res, next) => {
@@ -14,7 +15,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
   res.header(
     'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma'
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, Locale'
   );
 
   // intercept OPTIONS
@@ -33,6 +34,7 @@ app.use(
   })
 );
 app.use(userMiddleware);
+app.use(localeMiddleware);
 app.use(fileupload());
 
 setupRoutes(app);
