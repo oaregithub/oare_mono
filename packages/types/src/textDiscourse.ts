@@ -94,3 +94,9 @@ export interface EditTranslationPayload {
 export interface DiscourseSpellingResponse {
   spelling: string;
 }
+
+export interface DiscourseDisplayUnit {
+  uuid: string;
+  type: DiscourseUnitType;
+  display: string;
+}

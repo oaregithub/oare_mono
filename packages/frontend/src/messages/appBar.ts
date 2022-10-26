@@ -1,5 +1,5 @@
 export default {
-  us: {
+  en: {
     historyDep: 'History Department',
     about: 'About',
     oare: 'Old Assyrian Research Environment',

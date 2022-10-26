@@ -1,5 +1,5 @@
 import sl from '@/serviceLocator';
-import { User } from '@oare/types';
+import { LocaleCode, User } from '@oare/types';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
 import FieldDao from '@/api/daos/FieldDao';
@@ -28,7 +28,6 @@ import CollectionDao from './api/daos/CollectionDao';
 import CollectionTextUtils from './api/daos/CollectionTextUtils';
 import CacheStatusDao from './api/daos/CacheStatusDao';
 import PersonDao from './api/daos/PersonDao';
-import PersonTextOccurrencesDao from './api/daos/PersonTextOccurrences';
 import GroupAllowlistDao from './api/daos/GroupAllowlistDao';
 import GroupEditPermissionsDao from './api/daos/GroupEditPermissionsDao';
 import ResourceDao from './api/daos/ResourceDao';
@@ -48,6 +47,7 @@ declare global {
   namespace Express {
     interface Request {
       user: User | null;
+      locale: LocaleCode;
     }
   }
 }
@@ -77,7 +77,6 @@ sl.set('CollectionDao', CollectionDao);
 sl.set('CacheStatusDao', CacheStatusDao);
 sl.set('CollectionTextUtils', CollectionTextUtils);
 sl.set('PersonDao', PersonDao);
-sl.set('PersonTextOccurrencesDao', PersonTextOccurrencesDao);
 sl.set('GroupAllowlistDao', GroupAllowlistDao);
 sl.set('GroupEditPermissionsDao', GroupEditPermissionsDao);
 sl.set('ResourceDao', ResourceDao);

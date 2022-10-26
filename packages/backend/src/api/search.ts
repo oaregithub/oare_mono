@@ -140,7 +140,7 @@ router.route('/search').get(async (req, res, next) => {
       textMatches.map(async ({ uuid, lines, discourseUuids }) => {
         const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(uuid);
 
-        const renderer = createTabletRenderer(epigraphicUnits, {
+        const renderer = createTabletRenderer(epigraphicUnits, req.locale, {
           textFormat: 'html',
           lineNumbers: true,
           highlightDiscourses: discourseUuids,
@@ -239,7 +239,7 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
           textUuid
         );
 
-        const renderer = createTabletRenderer(epigraphicUnits, {
+        const renderer = createTabletRenderer(epigraphicUnits, req.locale, {
           textFormat: 'html',
           lineNumbers: true,
           showNullDiscourse: true,

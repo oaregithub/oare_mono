@@ -5,6 +5,7 @@ import {
   EpigraphicUnitWithMarkup,
   EpigraphicUnitType,
   EpigraphicWord,
+  LocaleCode,
 } from '@oare/types';
 
 const superscriptChars = {
@@ -373,3 +374,11 @@ function superscript(reading: string): string {
   }
   return newReading;
 }
+
+export const localizeString = (string: string, locale: LocaleCode): string => {
+  if (locale === 'tr') {
+    return string.replace(/I/g, 'İ');
+  }
+
+  return string;
+};

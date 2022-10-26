@@ -1,5 +1,5 @@
 export default {
-  us: {
+  en: {
     description:
       'The Old Assyrian Research Environment (OARE – /’ôrə/) is a poly-hierarchical XML database focused on the documentary corpus of the Old Assyrian trade. The purpose of the database is to facilitate work with the Old Assyrian texts from the period of Kültepe Level II and Kültepe Level Ib. OARE is organized to record both textual and archaeological data, and expert observations arising from the interpretation of both sets of evidence. OARE is designed to facilitate collaborative research projects on the historical and archaeological record of the Old Assyrian trade and society through linguistic, lexical, economic, social, and other lenses.',
     ochre:

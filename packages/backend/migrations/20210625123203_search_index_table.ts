@@ -40,7 +40,7 @@ const progressBar = new cliProgress.SingleBar(
 
 async function indexText(knex: Knex, { textUuid, textName }: TextRow) {
   const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
-  const renderer = createTabletRenderer(units, { textFormat: 'html' });
+  const renderer = createTabletRenderer(units, 'en', { textFormat: 'html' });
 
   let rows: SignTextRow[] = [];
 

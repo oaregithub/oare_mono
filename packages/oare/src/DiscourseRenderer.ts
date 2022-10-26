@@ -1,29 +1,18 @@
 /* eslint-disable max-classes-per-file */
 
-import { DiscourseUnit, DiscourseUnitType } from '@oare/types';
-
-function getRenderersHelper(
-  units: DiscourseUnit[],
-  renderers: DiscourseRenderer[],
-  type: DiscourseUnitType,
-  RenderClass: typeof DiscourseRenderer
-) {
-  units.forEach(unit => {
-    if (unit.type === 'paragraph') {
-      renderers.push(new RenderClass(unit.units));
-    } else {
-      getRenderersHelper(unit.units, renderers, type, RenderClass);
-    }
-  });
-}
+import { DiscourseUnit, DiscourseDisplayUnit, LocaleCode } from '@oare/types';
+import { localizeString } from './tabletUtils';
 
 export default class DiscourseRenderer {
   protected discourseUnits: DiscourseUnit[];
 
+  protected locale: LocaleCode;
+
   protected renderClass: typeof DiscourseRenderer;
 
-  constructor(discourseUnits: DiscourseUnit[]) {
+  constructor(discourseUnits: DiscourseUnit[], locale: LocaleCode) {
     this.discourseUnits = discourseUnits;
+    this.locale = locale;
     this.renderClass = DiscourseRenderer;
   }
 
@@ -39,32 +28,21 @@ export default class DiscourseRenderer {
     return getLineNums(this.discourseUnits);
   }
 
-  get paragraphRenderers(): DiscourseRenderer[] {
-    const renderers: DiscourseRenderer[] = [];
-    getRenderersHelper(
-      this.discourseUnits,
-      renderers,
-      'paragraph',
-      this.renderClass
-    );
-    return renderers;
-  }
-
-  get sentenceRenderers(): DiscourseRenderer[] {
-    const renderers: DiscourseRenderer[] = [];
-    getRenderersHelper(
-      this.discourseUnits,
-      renderers,
-      'sentence',
-      this.renderClass
-    );
-    return renderers;
+  public wordsOnLine(line: number): DiscourseDisplayUnit[] {
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words);
+    return words.map(word => ({
+      ...word,
+      display: localizeString(word.display, this.locale),
+    }));
   }
 
   public lineReading(line: number): string {
-    const words: string[] = [];
-    lineReadingHelper(this.discourseUnits, line, words);
-    return words.join(' ');
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words);
+    return words
+      .map(word => localizeString(word.display, this.locale))
+      .join(' ');
   }
 }
 
@@ -111,10 +89,10 @@ interface RenderFormat {
   transliteration: RenderFunc;
   spelling: RenderFunc;
 }
-export function lineReadingHelper(
+export function displayUnitHelper(
   units: DiscourseUnit[],
   line: number,
-  words: string[],
+  words: DiscourseDisplayUnit[],
   renderFormatter: RenderFormat = {
     transliteration: word => word,
     spelling: word => word,
@@ -123,12 +101,20 @@ export function lineReadingHelper(
   units.forEach(unit => {
     if (unit.line === line) {
       if (unit.transcription) {
-        words.push(renderFormatter.transliteration(unit.transcription));
+        words.push({
+          uuid: unit.uuid,
+          type: unit.type,
+          display: renderFormatter.transliteration(unit.transcription),
+        });
       } else if (unit.explicitSpelling) {
-        words.push(renderFormatter.spelling(unit.explicitSpelling));
+        words.push({
+          uuid: unit.uuid,
+          type: unit.type,
+          display: renderFormatter.spelling(unit.explicitSpelling),
+        });
       }
     }
-    lineReadingHelper(unit.units, line, words, renderFormatter);
+    displayUnitHelper(unit.units, line, words, renderFormatter);
   });
 }
 

@@ -8,8 +8,14 @@
           :key="line"
           class="mr-1"
         >
-          <sup>{{ formatLineNumber(line, false) }})</sup
-          ><span v-html="discourseRenderer.lineReading(line)" />
+          <sup>{{ formatLineNumber(line, false) }})</sup>
+          <span
+            v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
+            :key="idx"
+            v-html="` ${word.display}`"
+            class="cursor-display"
+            @click="openDialog(word.uuid, word.type)"
+          />
         </span>
       </span>
     </p>
@@ -176,13 +182,19 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import { DiscourseUnit, EpigraphicUnitSide, Word } from '@oare/types';
+import {
+  DiscourseUnit,
+  EpigraphicUnitSide,
+  Word,
+  LocaleCode,
+} from '@oare/types';
 import { DiscourseHtmlRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
 import sl from '@/serviceLocator';
+import i18n from '@/i18n';
 
 export default defineComponent({
   props: {
@@ -205,7 +217,10 @@ export default defineComponent({
     ConnectSpellingOccurrence,
   },
   setup({ discourseUnits, textUuid, disableEditing }) {
-    const discourseRenderer = new DiscourseHtmlRenderer(discourseUnits);
+    const discourseRenderer = new DiscourseHtmlRenderer(
+      discourseUnits,
+      i18n.locale as LocaleCode
+    );
     const server = sl.get('serverProxy');
     const editingUuid = ref('');
     const inputTranslation = ref('');
@@ -390,9 +405,8 @@ export default defineComponent({
           actions.showSnackbar('Fetching discourse information...');
 
           if (discourseUuid) {
-            discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-              discourseUuid
-            );
+            discourseWordInfo.value =
+              await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
           } else {
             discourseWordInfo.value = null;
           }
@@ -478,3 +492,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>
