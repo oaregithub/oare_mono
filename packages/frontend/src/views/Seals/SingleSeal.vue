@@ -25,7 +25,7 @@
           </div>
           <div v-else>
             <span class="text--disabled test-seal-no-properties"
-              >this seal does not have any properties at this time</span
+              >This seal does not have any properties at this time</span
             >
           </div>
           <h3 class="pb-2 pt-4">Impressions</h3>
@@ -46,7 +46,7 @@
           </div>
           <div v-else>
             <span class="text--disabled test-seal-no-impressions"
-              >this seal does not have any seal impressions at this time</span
+              >This seal does not have any seal impressions at this time</span
             >
           </div>
         </v-col>
@@ -90,7 +90,7 @@ export default defineComponent({
   props: {
     uuid: {
       type: String,
-      required: false,
+      required: true,
     },
   },
   setup(props) {
@@ -131,9 +131,7 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       try {
-        if (props.uuid) {
-          seal.value = await server.getSealByUuid(props.uuid);
-        }
+        seal.value = await server.getSealByUuid(props.uuid);
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading seals. Please try again.',

@@ -13,22 +13,21 @@
         </div>
       </v-col>
     </v-row>
-    <div
-      class="d-flex d-flex-row"
-      v-for="(seal, idx) in filteredSeals"
-      :key="idx"
-    >
-      <span class="align-self-center flex-shrink-0"
+    <div v-for="(seal, idx) in filteredSeals" :key="idx">
+      <span
         ><router-link :to="`/seals/${seal.uuid}`">{{ seal.name }}</router-link>
         ({{ seal.count }})</span
-      ><v-img
-        class="flex-shrink-1"
-        v-if="seal.imageLinks.length > 0"
-        height="80px"
-        max-width="300px"
-        :src="seal.imageLinks[0]"
-        contain
-      ></v-img>
+      >
+      <div class="ml-5">
+        <v-img
+          position="center left"
+          v-if="seal.imageLinks.length > 0"
+          max-height="80px"
+          max-width="300px"
+          :src="seal.imageLinks[0]"
+          contain
+        ></v-img>
+      </div>
     </div>
   </OareContentView>
 </template>
