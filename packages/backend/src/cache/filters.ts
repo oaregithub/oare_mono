@@ -4,8 +4,12 @@ import {
   CollectionResponse,
   Collection,
   EpigraphyResponse,
+  PersonRow,
+  PersonListItem,
 } from '@oare/types';
 import sl from '@/serviceLocator';
+import { displayUnitHelper } from '@oare/oare/build/DiscourseRenderer';
+import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
 
 export const dictionaryWordFilter = async (
   word: Word,
@@ -120,6 +124,25 @@ export const textFilter = async (
     ...epigraphy,
     canWrite,
   };
+};
+
+export const personTextFilter = async (
+  personList: PersonListItem[],
+  user: User | null
+): Promise<PersonListItem[]> => {
+  const PersonDao = sl.get('PersonDao');
+
+  const responseList: PersonListItem[] = await Promise.all(
+    personList.map(async person => ({
+      ...person,
+      occurrences: await PersonDao.getPersonTextOccurrences(
+        person.person.uuid,
+        user ? user.uuid : null
+      ),
+    }))
+  );
+
+  return responseList;
 };
 
 export const noFilter = async (items: any, _user: User | null) => items;
