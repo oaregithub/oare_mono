@@ -5,21 +5,21 @@ import register from './register';
 import landing from './landing';
 
 export default {
-  us: {
+  en: {
     search: {
-      ...search.us,
+      ...search.en,
     },
     appBar: {
-      ...appBar.us,
+      ...appBar.en,
     },
     login: {
-      ...login.us,
+      ...login.en,
     },
     register: {
-      ...register.us,
+      ...register.en,
     },
     landing: {
-      ...landing.us,
+      ...landing.en,
     },
   },
   tr: {

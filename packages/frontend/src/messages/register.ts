@@ -1,5 +1,5 @@
 export default {
-  us: {
+  en: {
     register: 'Register',
     alreadyHaveAccount: 'Already have an account? Login',
     confirm: 'Confirm',

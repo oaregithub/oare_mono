@@ -14,21 +14,16 @@ describe('people api test', () => {
     },
   ];
 
-  const person1TextOccurrenceCount = 1;
-  const person2TextOccurrenceCount = 2;
-  const person1TextOccurrenceDistinctCount = 1;
-  const person2TextOccurrenceDistinctCount = 1;
-
   const allPeopleExpectedResponse = [
     {
       uuid: 'test1',
-      textOccurrenceCount: person1TextOccurrenceCount,
-      textOccurrenceDistinctCount: person1TextOccurrenceDistinctCount,
+      textOccurrenceCount: null,
+      textOccurrenceDistinctCount: null,
     },
     {
       uuid: 'test2',
-      textOccurrenceCount: person2TextOccurrenceCount,
-      textOccurrenceDistinctCount: person2TextOccurrenceDistinctCount,
+      textOccurrenceCount: null,
+      textOccurrenceDistinctCount: null,
     },
   ];
 
@@ -50,19 +45,6 @@ describe('people api test', () => {
         type: 'pages',
       },
     ]),
-  };
-
-  const mockPersonTextOccurrencesDao = {
-    getAll: jest.fn().mockResolvedValue({
-      [allPeople[0].uuid]: {
-        count: person1TextOccurrenceCount,
-        distinctCount: person1TextOccurrenceDistinctCount,
-      },
-      [allPeople[1].uuid]: {
-        count: person2TextOccurrenceCount,
-        distinctCount: person2TextOccurrenceDistinctCount,
-      },
-    }),
   };
 
   const textsOfPerson = [
@@ -123,7 +105,6 @@ describe('people api test', () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('ItemPropertiesDao', mockItemPropertiesDao);
     sl.set('TextDiscourseDao', mockTextDiscourseDao);
-    sl.set('PersonTextOccurrencesDao', mockPersonTextOccurrencesDao);
     sl.set('utils', mockUtils);
   };
 
@@ -144,7 +125,6 @@ describe('people api test', () => {
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(allPeopleExpectedResponse);
       expect(mockPersonDao.getAllPeople).toHaveBeenCalledWith(letter);
-      expect(mockPersonTextOccurrencesDao.getAll).toHaveBeenCalled();
     });
 
     it('fails to return people when getting people fails.', async () => {
@@ -152,18 +132,6 @@ describe('people api test', () => {
         getAllPeople: jest
           .fn()
           .mockRejectedValue('Error, people unable to be retrieved.'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('fails to return text occurrence counts for people.', async () => {
-      sl.set('PersonTextOccurrencesDao', {
-        getAll: jest
-          .fn()
-          .mockRejectedValue(
-            'Error, unable to retrieve all text occurrence counts for the people.'
-          ),
       });
       const response = await sendRequest();
       expect(response.status).toBe(500);

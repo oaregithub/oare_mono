@@ -4,8 +4,19 @@ import messages from '../messages';
 
 Vue.use(VueI18n);
 
+const getLocale = (): string => {
+  const storedLocale = localStorage.getItem('locale');
+  if (storedLocale) {
+    return storedLocale;
+  }
+  if (navigator.language.includes('tr')) {
+    return 'tr';
+  }
+  return 'en';
+};
+
 export default new VueI18n({
-  locale: localStorage.getItem('locale') || navigator.language,
+  locale: getLocale(),
   messages,
-  fallbackLocale: 'us',
+  fallbackLocale: 'en',
 });

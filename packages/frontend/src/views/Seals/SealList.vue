@@ -1,29 +1,48 @@
 <template>
   <OareContentView title="Seals" :loading="loading">
-    <div
-      class="d-flex d-flex-row"
-      v-for="(seal, idx) in sortedSeals"
-      :key="idx"
-    >
-      <span class="align-self-center flex-shrink-0"
+    <v-row>
+      <v-col cols="3">
+        <div>
+          <v-text-field
+            v-model="search"
+            placeholder="Filter Seals"
+            clearable
+            single-line
+          >
+          </v-text-field>
+        </div>
+      </v-col>
+    </v-row>
+    <div v-for="(seal, idx) in filteredSeals" :key="idx">
+      <span
         ><router-link :to="`/seals/${seal.uuid}`">{{ seal.name }}</router-link>
         ({{ seal.count }})</span
-      ><v-img
-        class="flex-shrink-1"
-        v-if="seal.imageLinks.length > 0"
-        height="80px"
-        max-width="300px"
-        :src="seal.imageLinks[0]"
-        contain
-      ></v-img>
+      >
+      <div class="ml-5">
+        <v-img
+          position="center left"
+          v-if="seal.imageLinks.length > 0"
+          max-height="80px"
+          max-width="300px"
+          :src="seal.imageLinks[0]"
+          contain
+        ></v-img>
+      </div>
     </div>
   </OareContentView>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, onMounted } from '@vue/composition-api';
+import {
+  defineComponent,
+  ref,
+  Ref,
+  onMounted,
+  computed,
+} from '@vue/composition-api';
 import { SealInfo } from '@oare/types';
 import sl from '@/serviceLocator';
+import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
   name: 'SealsView',
@@ -32,6 +51,7 @@ export default defineComponent({
     const loading = ref(false);
     const seals: Ref<SealInfo[]> = ref([]);
     const sortedSeals: Ref<SealInfo[]> = ref([]);
+    const search = useQueryParam('filter', '', true);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
@@ -58,6 +78,12 @@ export default defineComponent({
       });
     };
 
+    const filteredSeals = computed(() =>
+      sortedSeals.value.filter(seal =>
+        seal.name.toLocaleLowerCase().includes(search.value.toLocaleLowerCase())
+      )
+    );
+
     onMounted(async () => {
       loading.value = true;
       try {
@@ -75,7 +101,8 @@ export default defineComponent({
 
     return {
       loading,
-      sortedSeals,
+      filteredSeals,
+      search,
     };
   },
 });

@@ -1,22 +1,37 @@
-import { DiscourseUnit } from '@oare/types';
+import { DiscourseDisplayUnit, DiscourseUnit, LocaleCode } from '@oare/types';
 import DiscourseRenderer, {
-  lineReadingHelper,
+  displayUnitHelper,
   lineReadingHelperForWordsInTexts,
 } from './DiscourseRenderer';
+import { localizeString } from './tabletUtils';
 
 export default class DiscourseHtmlRenderer extends DiscourseRenderer {
-  constructor(discourseUnits: DiscourseUnit[]) {
-    super(discourseUnits);
+  constructor(discourseUnits: DiscourseUnit[], locale: LocaleCode) {
+    super(discourseUnits, locale);
     this.renderClass = DiscourseHtmlRenderer;
   }
 
-  public lineReading(line: number): string {
-    const words: string[] = [];
-    lineReadingHelper(this.discourseUnits, line, words, {
+  public wordsOnLine(line: number): DiscourseDisplayUnit[] {
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words, {
       transliteration: (word: string) => `<em>${word}</em>`,
       spelling: determinativeFormatter,
     });
-    return words.join(' ');
+    return words.map(word => ({
+      ...word,
+      display: localizeString(word.display, this.locale),
+    }));
+  }
+
+  public lineReading(line: number): string {
+    const words: DiscourseDisplayUnit[] = [];
+    displayUnitHelper(this.discourseUnits, line, words, {
+      transliteration: (word: string) => `<em>${word}</em>`,
+      spelling: determinativeFormatter,
+    });
+    return words
+      .map(word => localizeString(word.display, this.locale))
+      .join(' ');
   }
 
   public lineReadingForWordsInTexts(
@@ -34,7 +49,7 @@ export default class DiscourseHtmlRenderer extends DiscourseRenderer {
         spelling: determinativeFormatter,
       }
     );
-    return words.join(' ');
+    return words.map(word => localizeString(word, this.locale)).join(' ');
   }
 }
 
