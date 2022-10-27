@@ -467,12 +467,14 @@ const routes: RouteConfig[] = [
     path: '/seals',
     name: 'seals',
     component: SealsView,
+    beforeEnter: permissionGuard('SEALS'),
   },
   {
     path: '/seals/:uuid',
     name: 'seal',
     component: SealView,
     props: true,
+    beforeEnter: permissionGuard('SEALS'),
   },
 ];
 

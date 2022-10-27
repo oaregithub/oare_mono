@@ -26,7 +26,7 @@ export interface DictionaryPermission extends PermissionTemplate {
 }
 
 export interface PagePermission extends PermissionTemplate {
-  name: 'WORDS' | 'NAMES' | 'PLACES' | 'PEOPLE' | 'BIBLIOGRAPHY';
+  name: 'WORDS' | 'NAMES' | 'PLACES' | 'PEOPLE' | 'BIBLIOGRAPHY' | 'SEALS';
   type: 'pages';
 }
 

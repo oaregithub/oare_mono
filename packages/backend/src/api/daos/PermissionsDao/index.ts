@@ -37,6 +37,11 @@ class PermissionsDao {
         'Allow group users to view "Bibliography" page and associated data',
     },
     {
+      name: 'SEALS',
+      type: 'pages',
+      description: 'Allow group users to view "Seals" page and associated data',
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',
