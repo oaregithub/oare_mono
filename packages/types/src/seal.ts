@@ -16,5 +16,11 @@ export interface SealProperty {
 
 export interface Seal extends SealInfo {
   sealProperties: SealProperty[];
-  sealImpressions: Text[];
+  sealImpressions: SealImpression[];
+}
+
+export interface SealImpression {
+  text: Text;
+  side: number;
+  user: string;
 }
