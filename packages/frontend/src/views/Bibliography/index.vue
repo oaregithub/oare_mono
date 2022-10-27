@@ -20,10 +20,14 @@
               :key="idx"
               :label="type.name"
               :value="type.value"
-              class="test-radio-btn-types"
+              :class="`test-radio-btn-bibType-${idx}`"
             ></v-radio>
           </v-radio-group>
-          <v-radio-group v-model="sortBy" hide-details>
+          <v-radio-group
+            v-model="sortBy"
+            class="test-radio-group-sortBy"
+            hide-details
+          >
             <template #label>
               <span class="font-weight-bold">Sort By</span>
             </template>
@@ -32,7 +36,6 @@
               :key="idx"
               :label="item.text"
               :value="item.value"
-              class="test-radio-btn-sort-by"
             ></v-radio>
           </v-radio-group>
         </div>
@@ -51,6 +54,7 @@
               <v-col cols="8">
                 <span v-if="!item.bibliography.bib">No Bibliography Data</span>
                 <span
+                  class="test-bib"
                   v-else-if="!item.bibliography.url"
                   v-html="item.bibliography.bib"
                 >
@@ -77,7 +81,7 @@
               :key="idx"
               :label="`${item.charAt(0).toUpperCase()}${item.substring(1)}`"
               :value="item"
-              class="test-radio-btn-sort-by"
+              :class="`test-radio-${item}`"
             ></v-radio>
           </v-radio-group></div
       ></v-col>
