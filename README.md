@@ -89,7 +89,7 @@ This is a monorepository containing all code necessary to run oare.byu.edu. This
 
 ## Create an OARE Account
 
-In order to access all parts of the website, you will need to have an admin account on the project website. To do so, navigate to the [live site](https://oare.byu.edu) and click "Login" at the top right.
+In order to access all parts of the website, you will need to have an admin account on the project website. To do so, navigate to the [live site](https://oare.byu.edu) and click "Log In" at the top right.
 
 ![](./readme-imgs/oare-login.png)
 
@@ -291,7 +291,7 @@ Finally, start the local server:
 yarn start
 ```
 
-In your browser, navigate to http://localhost:8080 and you should see the site. Login using the account you created earlier and spend some time getting familiar with the site itself. Everything is running locally, so don't be afraid of messing anything up.
+In your browser, navigate to http://localhost:8080 and you should see the site. Log in using the account you created earlier and spend some time getting familiar with the site itself. Everything is running locally, so don't be afraid of messing anything up.
 
 # Workflow Processes
 

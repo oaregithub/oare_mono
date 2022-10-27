@@ -1,7 +1,7 @@
 export default {
   en: {
     register: 'Register',
-    alreadyHaveAccount: 'Already have an account? Login',
+    alreadyHaveAccount: 'Already have an account? Log in',
     confirm: 'Confirm',
     firstName: 'First Name',
     firstNameError: 'First name cannot be blank',

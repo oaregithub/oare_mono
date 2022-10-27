@@ -3,10 +3,10 @@ import sl from '@/serviceLocator';
 
 const adminGuard: NavigationGuard = (_to, _from, next) => {
   const store = sl.get('store');
-  if (!store.getters.isAdmin) {
-    next('/');
-  } else {
+  if (store.getters.isAdmin) {
     next();
+  } else {
+    next('/403');
   }
 };
 

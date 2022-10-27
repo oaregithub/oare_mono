@@ -29,6 +29,8 @@ import CollectionTexts from '../views/Texts/CollectionTexts/index.vue';
 import CollectionsView from '../views/Texts/CollectionsView/index.vue';
 import SearchView from '../views/Search/index.vue';
 import ForbiddenView from '../views/Authentication/Forbidden/ForbiddenView.vue';
+import UnauthorizedView from '../views/Authentication/Unauthorized/UnauthorizedView.vue';
+import NotFoundView from '../views/Authentication/NotFound/NotFound.vue';
 import EpigraphyView from '../views/Texts/EpigraphyView/index.vue';
 import Drafts from '../views/Dashboard/Drafts.vue';
 import Profile from '../views/Dashboard/Profile.vue';
@@ -405,6 +407,11 @@ const routes: RouteConfig[] = [
     component: ForbiddenView,
   },
   {
+    path: '/401',
+    name: '401',
+    component: UnauthorizedView,
+  },
+  {
     path: '/add_collection_text/:collectionUuid',
     name: 'addCollectionText',
     component: AddNewTexts,
@@ -460,6 +467,12 @@ const routes: RouteConfig[] = [
     path: '/signList',
     name: 'signList',
     component: SignListView,
+  },
+  // Defaults to 404 Not Found view if no route matches. This MUST be the last route.
+  {
+    path: '*',
+    name: '404',
+    component: NotFoundView,
   },
 ];
 
