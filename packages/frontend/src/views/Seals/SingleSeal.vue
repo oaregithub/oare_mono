@@ -197,15 +197,16 @@ export default defineComponent({
       try {
         await server.updateSealName(props.uuid, sealName.value);
         actions.showSnackbar('Successfully updated seal name');
+        seal.value.name = sealName.value;
       } catch (err) {
         actions.showErrorSnackbar(
           'Error saving seal name. Please try again.',
           err as Error
         );
+        sealName.value = seal.value.name;
       } finally {
         isSaving.value = false;
         isEditing.value = false;
-        seal.value.name = sealName.value;
       }
     };
 
