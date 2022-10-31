@@ -28,9 +28,9 @@ import GroupView from '../views/Admin/Groups/index.vue';
 import CollectionTexts from '../views/Texts/CollectionTexts/index.vue';
 import CollectionsView from '../views/Texts/CollectionsView/index.vue';
 import SearchView from '../views/Search/index.vue';
-import ForbiddenView from '../views/Authentication/Forbidden/ForbiddenView.vue';
-import UnauthorizedView from '../views/Authentication/Unauthorized/UnauthorizedView.vue';
-import NotFoundView from '../views/Authentication/NotFound/NotFound.vue';
+import ForbiddenView from '../views/Errors/ForbiddenView.vue';
+import UnauthorizedView from '../views/Errors/UnauthorizedView.vue';
+import NotFoundView from '../views/Errors/NotFound.vue';
 import EpigraphyView from '../views/Texts/EpigraphyView/index.vue';
 import Drafts from '../views/Dashboard/Drafts.vue';
 import Profile from '../views/Dashboard/Profile.vue';
@@ -405,11 +405,13 @@ const routes: RouteConfig[] = [
     path: '/403',
     name: '403',
     component: ForbiddenView,
+    props: true,
   },
   {
     path: '/401',
     name: '401',
     component: UnauthorizedView,
+    props: true,
   },
   {
     path: '/add_collection_text/:collectionUuid',
@@ -473,6 +475,7 @@ const routes: RouteConfig[] = [
     path: '*',
     name: '404',
     component: NotFoundView,
+    props: true,
   },
 ];
 
