@@ -19,7 +19,7 @@ axiosInstance.interceptors.response.use(
     if (
       error.config &&
       error.response &&
-      error.response.status === 401 &&
+      error.response.status === 407 &&
       !error.config.isRefreshing
     ) {
       error.config.isRefreshing = true;
@@ -42,11 +42,35 @@ axiosInstance.interceptors.response.use(
       return axiosInstance(error.config);
     }
 
-    if (error.response && error.response.status === 403) {
-      router.replace({ name: '403' });
+    if (error.response) {
+      if (error.response.status === 403) {
+        router.replace({
+          name: '403',
+          params: { message: error.response?.data?.message || undefined },
+        });
+        return Promise.resolve(error);
+      }
+
+      if (error.response.status === 401) {
+        router.replace({
+          name: '401',
+          params: { message: error.response?.data?.message || undefined },
+        });
+        return Promise.resolve(error);
+      }
+
+      if (error.response.status === 404) {
+        router.replace({
+          name: '404',
+          params: { message: error.response?.data?.message || undefined },
+        });
+        return Promise.resolve(error);
+      }
     }
 
-    throw error;
+    return Promise.reject(
+      new Error(error.response?.data?.message || undefined)
+    );
   }
 );
 

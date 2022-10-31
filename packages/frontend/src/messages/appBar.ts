@@ -5,8 +5,8 @@ export default {
     oare: 'Old Assyrian Research Environment',
     search: 'Search',
     welcome: 'Welcome',
-    login: 'Login or Sign Up',
-    logout: 'Logout',
+    login: 'Log In or Sign Up',
+    logout: 'Log Out',
   },
   tr: {
     historyDep: 'Tarih Bölümü',

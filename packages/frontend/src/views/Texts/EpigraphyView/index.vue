@@ -580,7 +580,7 @@ export default defineComponent({
         zoteroDataList.value = textInfo.value.zoteroData;
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error updating text information. Please try again.',
+          'Error getting text epigraphy information. Please try again.',
           err as Error
         );
       } finally {

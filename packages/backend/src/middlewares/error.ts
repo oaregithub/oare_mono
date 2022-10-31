@@ -31,9 +31,13 @@ const errorMiddleware = async (
   if (process.env.NODE_ENV !== 'test' || process.env.TEST_LOG === 'on') {
     console.log(message); // eslint-disable-line no-console
   }
+
   response.status(status).send({
     status,
-    message,
+    message:
+      status < 500 || (request.user && request.user.isAdmin)
+        ? `${status} Error: ${message}`
+        : `${status} Internal Error`,
   });
 };
 

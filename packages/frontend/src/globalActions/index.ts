@@ -27,7 +27,11 @@ const showErrorSnackbar = async (
     status: 'New',
   });
 
-  EventBus.$emit(ACTIONS.TOAST, { text, error: true });
+  EventBus.$emit(ACTIONS.TOAST, {
+    text,
+    error: true,
+    errorMessage: error ? error.message : undefined,
+  });
 };
 
 const inputSpecialChar = async (char: string) => {
