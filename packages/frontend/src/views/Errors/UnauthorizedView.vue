@@ -8,14 +8,15 @@
       <b class="mr-1">Error Details:</b>{{ message }}
     </v-row>
 
-    <v-row class="ma-0 mt-6">
+    <v-row v-if="!isAuthenticated" class="ma-0 mt-6">
       <v-btn color="primary" to="/login">Log In</v-btn>
     </v-row>
   </OareContentView>
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, computed } from '@vue/composition-api';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   props: {
@@ -23,6 +24,15 @@ export default defineComponent({
       type: String,
       required: false,
     },
+  },
+  setup() {
+    const store = sl.get('store');
+
+    const isAuthenticated = computed(() => store.getters.isAuthenticated);
+
+    return {
+      isAuthenticated,
+    };
   },
 });
 </script>
