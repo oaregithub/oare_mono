@@ -42,6 +42,11 @@ class PermissionsDao {
       description: 'Allow group users to view "Seals" page and associated data',
     },
     {
+      name: 'EDIT_SEAL',
+      type: 'text',
+      description: 'Allow group users to edit seal data',
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',

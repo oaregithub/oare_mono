@@ -42,7 +42,8 @@ export interface TextPermission extends PermissionTemplate {
     | 'EDIT_TRANSLATION'
     | 'INSERT_PARENT_DISCOURSE_ROWS'
     | 'VIEW_TEXT_CITATIONS'
-    | 'COPY_TEXT_TRANSLITERATION';
+    | 'COPY_TEXT_TRANSLITERATION'
+    | 'EDIT_SEAL';
   type: 'text';
 }
 
