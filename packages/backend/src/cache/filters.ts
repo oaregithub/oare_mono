@@ -4,12 +4,9 @@ import {
   CollectionResponse,
   Collection,
   EpigraphyResponse,
-  PersonRow,
   PersonListItem,
 } from '@oare/types';
 import sl from '@/serviceLocator';
-import { displayUnitHelper } from '@oare/oare/build/DiscourseRenderer';
-import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
 
 export const dictionaryWordFilter = async (
   word: Word,
