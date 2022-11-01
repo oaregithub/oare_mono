@@ -12,7 +12,7 @@ const permissionGuard = (permission: PermissionName) => (
   if (store.hasPermission(permission)) {
     next();
   } else {
-    next('/');
+    next('/403');
   }
 };
 

@@ -2,7 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
-import { ReloadKey } from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
+import { ReloadKey } from '@/views/DictionaryWord/index.vue';
 import PersonsView from '../index.vue';
 import sl from '../../../serviceLocator';
 

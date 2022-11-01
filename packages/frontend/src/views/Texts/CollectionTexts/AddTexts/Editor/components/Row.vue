@@ -405,9 +405,10 @@ export default defineComponent({
                 };
               });
             return signCodesWithDividers;
-          } catch {
+          } catch (err) {
             actions.showErrorSnackbar(
-              'Error generating signs. Please try again.'
+              'Error generating signs. Please try again.',
+              err as Error
             );
             return [];
           }

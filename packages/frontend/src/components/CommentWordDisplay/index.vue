@@ -320,8 +320,7 @@ export default defineComponent({
 
     const dictionaryWordComponent = computed(() =>
       props.showDictionary
-        ? () =>
-            import('@/components/DictionaryDisplay/DictionaryWord/index.vue')
+        ? () => import('@/views/DictionaryWord/index.vue')
         : null
     );
 

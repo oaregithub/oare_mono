@@ -8,7 +8,7 @@
         here."
     :loading="loading"
   >
-    <DictionaryDisplay
+    <dictionary
       :wordList="names"
       :letter="letter"
       route="names"
@@ -56,13 +56,13 @@
           </div>
         </div>
       </template>
-    </DictionaryDisplay>
+    </dictionary>
   </OareContentView>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
-import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
+import Dictionary from '@/views/Dictionary/index.vue';
 import { Word } from '@oare/types';
 import { generateFormGrammar } from '@/utils';
 import sl from '@/serviceLocator';
@@ -70,7 +70,7 @@ import sl from '@/serviceLocator';
 export default defineComponent({
   name: 'NamesView',
   components: {
-    DictionaryDisplay,
+    Dictionary,
   },
   props: {
     letter: {

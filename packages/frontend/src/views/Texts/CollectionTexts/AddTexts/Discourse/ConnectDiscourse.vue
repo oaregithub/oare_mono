@@ -194,9 +194,10 @@ export default defineComponent({
         discourseRowsWithSpelling.map((row, idx) => {
           searchSpellingResults.value[row.uuid] = forms[idx];
         });
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading discourse forms. Please try again.'
+          'Error loading discourse forms. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;

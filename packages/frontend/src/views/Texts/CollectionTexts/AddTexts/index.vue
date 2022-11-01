@@ -206,7 +206,8 @@ export default defineComponent({
       } catch (err) {
         isDirty.value = false;
         actions.showErrorSnackbar(
-          'Error loading collection name. Please try again.'
+          'Error loading collection name. Please try again.',
+          err as Error
         );
       } finally {
         loading.value = false;

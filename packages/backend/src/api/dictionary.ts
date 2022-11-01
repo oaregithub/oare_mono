@@ -43,9 +43,12 @@ router
 
       const {
         formUuid,
-        spelling,
+        spelling: untrimmedSpelling,
         discourseUuids,
       }: AddFormSpellingPayload = req.body;
+
+      const spelling = untrimmedSpelling.trim();
+
       const spellingExists = await DictionarySpellingDao.spellingExistsOnForm(
         formUuid,
         spelling

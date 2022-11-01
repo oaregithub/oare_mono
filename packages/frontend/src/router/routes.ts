@@ -17,7 +17,7 @@ import ResetPasswordView from '@/views/Authentication/ResetPassword/ResetPasswor
 import ManagePermissions from '@/views/Admin/Groups/Permissions/ManagePermissions.vue';
 import EpigraphyEditor from '@/views/Texts/EpigraphyView/Editor/EpigraphyEditor.vue';
 import EpigraphyFullDisplay from '@/views/Texts/EpigraphyView/EpigraphyDisplay/EpigraphyFullDisplay.vue';
-import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
+import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import KnownIssues from '../views/Home/KnownIssues.vue';
 import LoginView from '../views/Authentication/Login/LoginView.vue';
 import RegisterView from '../views/Authentication/Register/RegisterView.vue';
@@ -28,7 +28,9 @@ import GroupView from '../views/Admin/Groups/index.vue';
 import CollectionTexts from '../views/Texts/CollectionTexts/index.vue';
 import CollectionsView from '../views/Texts/CollectionsView/index.vue';
 import SearchView from '../views/Search/index.vue';
-import ForbiddenView from '../views/Authentication/Forbidden/ForbiddenView.vue';
+import ForbiddenView from '../views/Errors/ForbiddenView.vue';
+import UnauthorizedView from '../views/Errors/UnauthorizedView.vue';
+import NotFoundView from '../views/Errors/NotFound.vue';
 import EpigraphyView from '../views/Texts/EpigraphyView/index.vue';
 import Drafts from '../views/Dashboard/Drafts.vue';
 import Profile from '../views/Dashboard/Profile.vue';
@@ -405,6 +407,13 @@ const routes: RouteConfig[] = [
     path: '/403',
     name: '403',
     component: ForbiddenView,
+    props: true,
+  },
+  {
+    path: '/401',
+    name: '401',
+    component: UnauthorizedView,
+    props: true,
   },
   {
     path: '/add_collection_text/:collectionUuid',
@@ -475,6 +484,13 @@ const routes: RouteConfig[] = [
     component: SealView,
     props: true,
     beforeEnter: permissionGuard('SEALS'),
+  },
+  // Defaults to 404 Not Found view if no route matches. This MUST be the last route.
+  {
+    path: '*',
+    name: '404',
+    component: NotFoundView,
+    props: true,
   },
 ];
 

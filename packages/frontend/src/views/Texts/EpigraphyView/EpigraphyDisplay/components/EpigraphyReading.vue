@@ -132,7 +132,7 @@ import {
   LocaleCode,
 } from '@oare/types';
 import sl from '@/serviceLocator';
-import DictionaryWord from '@/components/DictionaryDisplay/DictionaryWord/index.vue';
+import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';

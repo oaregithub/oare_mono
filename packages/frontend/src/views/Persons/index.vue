@@ -1,14 +1,13 @@
 <template>
   <OareContentView title="People (Prosopographical Index)" :loading="loading">
-    <letter-filter
+    <oare-letter-filter
       :wordList="personList"
       :letter="letter"
       route="people"
       filterTitle="persons"
       :searchFilter="searchFilter"
       @filtered-words="getFilteredPeople"
-    >
-    </letter-filter>
+    />
 
     <div
       v-for="(personInfo, idx) in filteredPersonList"
@@ -113,15 +112,15 @@ import {
   ref,
   watch,
 } from '@vue/composition-api';
-import LetterFilter from '@/components/DictionaryDisplay/DictionaryWord/LetterFilter.vue';
 import { PersonDisplay } from '@oare/types';
 import sl from '@/serviceLocator';
-import TextOccurrences from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/TextOccurrences.vue';
+import OareLetterFilter from '@/components/base/OareLetterFilter.vue';
+import TextOccurrences from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/TextOccurrences.vue';
 
 export default defineComponent({
   name: 'PersonsView',
   components: {
-    LetterFilter,
+    OareLetterFilter,
     TextOccurrences,
   },
   props: {

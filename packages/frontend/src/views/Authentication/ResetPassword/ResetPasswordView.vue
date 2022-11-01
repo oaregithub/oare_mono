@@ -45,7 +45,7 @@
       >
 
       <v-btn class="test-action" color="primary" v-else to="/login"
-        >Login</v-btn
+        >Log In</v-btn
       >
     </template>
   </OareCard>

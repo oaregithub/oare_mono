@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpInternalError, HttpUnauthorized } from '@/exceptions';
+import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import firebase from '@/firebase';
+import HttpException from '@/exceptions/HttpException';
 
 // Attach user object to each request
 async function attachUser(req: Request, _res: Response, next: NextFunction) {
@@ -18,7 +19,7 @@ async function attachUser(req: Request, _res: Response, next: NextFunction) {
       try {
         decodedToken = await firebase.auth().verifyIdToken(idToken);
       } catch (err) {
-        next(new HttpUnauthorized('Invalid firebase token'));
+        next(new HttpException(407, 'Invalid Firebase token'));
         return;
       }
       const user = await UserDao.getUserByUuid(decodedToken.uid);
