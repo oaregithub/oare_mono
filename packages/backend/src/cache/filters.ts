@@ -4,6 +4,8 @@ import {
   CollectionResponse,
   Collection,
   EpigraphyResponse,
+  Seal,
+  SealInfo,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -120,6 +122,66 @@ export const textFilter = async (
     ...epigraphy,
     canWrite,
   };
+};
+
+export const SealFilter = async (
+  seal: Seal,
+  user: User | null
+): Promise<Seal> => {
+  const CollectionTextUtils = sl.get('CollectionTextUtils');
+  const SealDao = sl.get('SealDao');
+
+  const userUuid = user ? user.uuid : null;
+
+  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
+  if (seal.count > 0 || seal.sealImpressions.length > 0) {
+    const count = await SealDao.getSealImpressionCountBySealUuid(
+      seal.uuid,
+      textsToHide
+    );
+
+    const sealImpressions = await SealDao.getSealImpressionsBySealUuid(
+      seal.uuid,
+      textsToHide
+    );
+
+    return {
+      ...seal,
+      count,
+      sealImpressions,
+    };
+  }
+  return seal;
+};
+
+export const SealListFilter = async (
+  sealList: SealInfo[],
+  user: User | null
+): Promise<SealInfo[]> => {
+  const CollectionTextUtils = sl.get('CollectionTextUtils');
+  const SealDao = sl.get('SealDao');
+
+  const userUuid = user ? user.uuid : null;
+
+  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
+  const filteredSealList = await Promise.all(
+    sealList.map(async s => {
+      if (s.count > 0) {
+        return {
+          ...s,
+          count: await SealDao.getSealImpressionCountBySealUuid(
+            s.uuid,
+            textsToHide
+          ),
+        };
+      }
+      return s;
+    })
+  );
+
+  return filteredSealList;
 };
 
 export const noFilter = async (items: any, _user: User | null) => items;

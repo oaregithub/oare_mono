@@ -3,7 +3,7 @@ import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import cacheMiddleware from '@/middlewares/cache';
 import { SealNameUuid, SealInfo, Seal, SealImpression } from '@oare/types';
-import { noFilter } from '@/cache/filters';
+import { noFilter, SealFilter, SealListFilter } from '@/cache/filters';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 
 const router = express.Router();
@@ -12,7 +12,7 @@ router
   .route('/seals')
   .get(
     permissionsRoute('SEALS'),
-    cacheMiddleware<SealInfo[]>(noFilter),
+    cacheMiddleware<SealInfo[]>(SealListFilter),
     async (req, res, next) => {
       try {
         const SealDao = sl.get('SealDao');
@@ -44,7 +44,7 @@ router
   .route('/seals/:uuid')
   .get(
     permissionsRoute('SEALS'),
-    cacheMiddleware<Seal>(noFilter),
+    cacheMiddleware<Seal>(SealFilter),
     async (req, res, next) => {
       try {
         const uuid = req.params.uuid as string;

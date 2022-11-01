@@ -63,6 +63,7 @@ class SealDao {
 
   async getSealImpressionCountBySealUuid(
     sealUuid: string,
+    textsToHide?: string[],
     trx?: Knex
   ): Promise<number> {
     const k = trx || knexRead();
@@ -75,13 +76,19 @@ class SealDao {
       .andWhere('su.uuid', sealUuid)
       .whereNotNull('te.text_uuid')
       .select(k.raw('COUNT(su.uuid) as count'))
-      .first();
+      .first()
+      .modify(qb => {
+        if (textsToHide) {
+          qb.whereNotIn('te.text_uuid', textsToHide);
+        }
+      });
 
     return Number(count?.count) || 0;
   }
 
   async getSealImpressionsBySealUuid(
     sealUuid: string,
+    textsToHide?: string[],
     trx?: Knex
   ): Promise<SealImpression[]> {
     const k = trx || knexRead();
@@ -105,7 +112,12 @@ class SealDao {
         'te.text_uuid as textUuid',
         'te.side as side',
         k.raw('CONCAT(dw1.word, " ", p.relation, " ", dw2.word) as user')
-      );
+      )
+      .modify(qb => {
+        if (textsToHide) {
+          qb.whereNotIn('te.text_uuid', textsToHide);
+        }
+      });
 
     const sealImpressions: SealImpression[] = ((
       await Promise.all(
