@@ -43,8 +43,9 @@ class PermissionsDao {
     },
     {
       name: 'EDIT_SEAL',
-      type: 'text',
+      type: 'seals',
       description: 'Allow group users to edit seal data',
+      dependencies: ['SEALS'],
     },
     {
       name: 'UPDATE_FORM',

@@ -2,7 +2,8 @@ export type PermissionItem =
   | DictionaryPermission
   | PagePermission
   | TextPermission
-  | GeneralPermission;
+  | GeneralPermission
+  | SealPermission;
 
 export type PermissionName = PermissionItem['name'];
 
@@ -30,6 +31,10 @@ export interface PagePermission extends PermissionTemplate {
   type: 'pages';
 }
 
+export interface SealPermission extends PermissionTemplate {
+  name: 'EDIT_SEAL';
+  type: 'seals';
+}
 export interface TextPermission extends PermissionTemplate {
   name:
     | 'VIEW_EPIGRAPHY_IMAGES'
@@ -42,8 +47,7 @@ export interface TextPermission extends PermissionTemplate {
     | 'EDIT_TRANSLATION'
     | 'INSERT_PARENT_DISCOURSE_ROWS'
     | 'VIEW_TEXT_CITATIONS'
-    | 'COPY_TEXT_TRANSLITERATION'
-    | 'EDIT_SEAL';
+    | 'COPY_TEXT_TRANSLITERATION';
   type: 'text';
 }
 
