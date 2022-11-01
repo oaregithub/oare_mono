@@ -52,7 +52,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import { SearchSpellingResultRow, TextDiscourseRow } from '@oare/types';
-import GrammarDisplay from '@/components/DictionaryDisplay/DictionaryWord/Forms/components/GrammarDisplay.vue';
+import GrammarDisplay from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/GrammarDisplay.vue';
 
 export default defineComponent({
   props: {

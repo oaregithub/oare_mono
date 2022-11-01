@@ -15,7 +15,7 @@
         will also be undertaken.'
     :loading="loading"
   >
-    <DictionaryDisplay
+    <dictionary
       :wordList="words"
       :letter="letter"
       route="words"
@@ -55,20 +55,20 @@
           </span>
         </p>
       </template>
-    </DictionaryDisplay>
+    </dictionary>
   </OareContentView>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
-import DictionaryDisplay from '@/components/DictionaryDisplay/index.vue';
+import Dictionary from '@/views/Dictionary/index.vue';
 import { ItemPropertyRow, Word } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'WordsView',
   components: {
-    DictionaryDisplay,
+    Dictionary,
   },
   props: {
     letter: {
