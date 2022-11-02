@@ -108,8 +108,6 @@ describe('GET /seals/:uuid', () => {
   it('returns 200 on successful seals retrieval', async () => {
     const response = await sendRequest();
     expect(mockSealDao.getSealByUuid).toHaveBeenCalled();
-    expect(mockSealDao.getSealImpressionCountBySealUuid).toHaveBeenCalled();
-    expect(mockSealDao.getSealImpressionsBySealUuid).toHaveBeenCalled();
     expect(mockSealDao.getSealProperties).toHaveBeenCalled();
     expect(mockSealDao.getImagesBySealUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
@@ -242,8 +240,6 @@ describe('GET /seals', () => {
   it('returns 200 on successful seals retrieval', async () => {
     const response = await sendRequest();
     expect(mockSealDao.getSeals).toHaveBeenCalled();
-    expect(mockSealDao.getSealImpressionCountBySealUuid).toHaveBeenCalled();
-    expect(mockSealDao.getImagesBySealUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
