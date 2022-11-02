@@ -21,15 +21,8 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  PropType,
-  ref,
-  watch,
-} from '@vue/composition-api';
+import { defineComponent, ref, watch } from '@vue/composition-api';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
-import { DisplayableWord } from '@oare/types';
 import useQueryParam from '@/hooks/useQueryParam';
 
 export default defineComponent({
@@ -39,21 +32,9 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    wordList: {
-      type: Array as PropType<DisplayableWord[]>,
-      required: true,
-    },
     route: {
       type: String,
       required: true,
-    },
-    searchFilter: {
-      type: Function as PropType<
-        (search: string, word: DisplayableWord) => boolean
-      >,
-      default: () => {
-        return () => true;
-      },
     },
     filterTitle: {
       type: String,
@@ -65,30 +46,15 @@ export default defineComponent({
     const wordSearch = useQueryParam('filter', '', true);
     const encodedLetter = (letter: string) => encodeURIComponent(letter);
 
-    const wordsByLetter = computed(() => {
-      return props.wordList.filter(name => {
-        const groupLetters = AkkadianLetterGroupsUpper[props.letter];
-        return groupLetters.includes(name.word[0].toUpperCase());
-      });
-    });
-    const filteredWords = computed(() => {
-      return wordsByLetter.value.filter(word =>
-        props.searchFilter(wordSearch.value, word)
-      );
-    });
-    emit('filtered-words', filteredWords.value);
-
     watch(
       () => props.letter,
       () => (wordSearch.value = ''),
       { immediate: false }
     );
 
-    watch(
-      () => filteredWords.value,
-      () => emit('filtered-words', filteredWords.value),
-      { immediate: false }
-    );
+    watch(wordSearch, () => emit('search-input', wordSearch.value), {
+      immediate: true,
+    });
 
     return {
       letters,
@@ -98,5 +64,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped></style>

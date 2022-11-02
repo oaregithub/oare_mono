@@ -1,12 +1,10 @@
 <template>
   <OareContentView title="People (Prosopographical Index)" :loading="loading">
     <oare-letter-filter
-      :wordList="personList"
       :letter="letter"
       route="people"
       filterTitle="persons"
-      :searchFilter="searchFilter"
-      @filtered-words="getFilteredPeople"
+      @search-input="filterPersons"
     />
 
     <div
@@ -186,6 +184,7 @@ export default defineComponent({
       try {
         loading.value = true;
         personList.value = await server.getPeople(props.letter);
+        filteredPersonList.value = personList.value;
       } catch (err) {
         actions.showErrorSnackbar('Failed to retrieve people', err as Error);
       } finally {
@@ -193,8 +192,10 @@ export default defineComponent({
       }
     };
 
-    const getFilteredPeople = (filteredPeople: PersonDisplay[]) => {
-      filteredPersonList.value = filteredPeople;
+    const filterPersons = (search: string) => {
+      filteredPersonList.value = personList.value.filter(person =>
+        searchFilter(search, person)
+      );
     };
 
     const hasPerson = (personDisplay: PersonDisplay): boolean => {
@@ -267,10 +268,12 @@ export default defineComponent({
       }
     );
 
-    onMounted(getPeople);
+    onMounted(async () => {
+      await getPeople();
+    });
 
     return {
-      getFilteredPeople,
+      filterPersons,
       searchFilter,
       hasPerson,
       hasRelationPerson,
