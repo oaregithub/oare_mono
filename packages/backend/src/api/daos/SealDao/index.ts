@@ -63,7 +63,7 @@ class SealDao {
 
   async getSealImpressionCountBySealUuid(
     sealUuid: string,
-    textsToHide?: string[],
+    textsToHide: string[],
     trx?: Knex
   ): Promise<number> {
     const k = trx || knexRead();
@@ -88,7 +88,7 @@ class SealDao {
 
   async getSealImpressionsBySealUuid(
     sealUuid: string,
-    textsToHide?: string[],
+    textsToHide: string[],
     trx?: Knex
   ): Promise<SealImpression[]> {
     const k = trx || knexRead();

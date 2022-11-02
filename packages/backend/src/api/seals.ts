@@ -23,7 +23,7 @@ router
           sealsNameAndUuid.map(async s => ({
             ...s,
             imageLinks: await SealDao.getImagesBySealUuid(s.uuid),
-            count: await SealDao.getSealImpressionCountBySealUuid(s.uuid),
+            count: 0,
           }))
         );
 
@@ -52,16 +52,13 @@ router
         const cache = sl.get('cache');
 
         const nameAndUuid: SealNameUuid = await SealDao.getSealByUuid(uuid);
-        const sealImpressions: SealImpression[] = await SealDao.getSealImpressionsBySealUuid(
-          uuid
-        );
 
         const seal: Seal = {
           ...nameAndUuid,
           imageLinks: await SealDao.getImagesBySealUuid(uuid),
-          count: await SealDao.getSealImpressionCountBySealUuid(uuid),
+          count: 0,
           sealProperties: await SealDao.getSealProperties(uuid),
-          sealImpressions,
+          sealImpressions: [],
         };
 
         const response = await cache.insert<Seal>({ req }, seal, noFilter);

@@ -135,24 +135,21 @@ export const SealFilter = async (
 
   const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
-  if (seal.count > 0 || seal.sealImpressions.length > 0) {
-    const count = await SealDao.getSealImpressionCountBySealUuid(
-      seal.uuid,
-      textsToHide
-    );
+  const count = await SealDao.getSealImpressionCountBySealUuid(
+    seal.uuid,
+    textsToHide
+  );
 
-    const sealImpressions = await SealDao.getSealImpressionsBySealUuid(
-      seal.uuid,
-      textsToHide
-    );
+  const sealImpressions = await SealDao.getSealImpressionsBySealUuid(
+    seal.uuid,
+    textsToHide
+  );
 
-    return {
-      ...seal,
-      count,
-      sealImpressions,
-    };
-  }
-  return seal;
+  return {
+    ...seal,
+    count,
+    sealImpressions,
+  };
 };
 
 export const SealListFilter = async (
