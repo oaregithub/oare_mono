@@ -1,4 +1,4 @@
-import { knexRead } from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import { SealImpression, SealNameUuid, SealProperty } from '@oare/types';
 import sl from '@/serviceLocator';
 import AWS from 'aws-sdk';
@@ -183,6 +183,15 @@ class SealDao {
     const owner: SealProperty | null = await this.getSealOwner(sealUuid, trx);
 
     return owner ? [...sealProperties, owner] : sealProperties;
+  }
+
+  async updateSealSpelling(
+    uuid: string,
+    sealName: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('alias').update({ name: sealName }).where({ reference_uuid: uuid });
   }
 }
 

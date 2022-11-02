@@ -53,6 +53,7 @@ const mockPermissionsDao = {
     {
       name: 'SEALS',
     },
+    { name: 'EDIT_SEAL' },
   ]),
 };
 
@@ -118,6 +119,73 @@ describe('GET /seals/:uuid', () => {
     sl.set('SealDao', {
       ...mockSealDao,
       getSealByUuid: jest.fn().mockRejectedValue('failed seal retrieval'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 403 when user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
+  });
+});
+
+describe('PATCH /seals/:uuid', () => {
+  const PATH = `${API_PATH}/seals/${seal.uuid}`;
+
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
+
+  const mockSealDao = {
+    updateSealSpelling: jest.fn().mockResolvedValue(),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+    clear: jest.fn().mockResolvedValue(),
+  };
+
+  const setup = () => {
+    sl.set('SealDao', mockSealDao);
+    sl.set('cache', mockCache);
+    sl.set('utils', mockUtils);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('UserDao', mockUserDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = (auth = true) => {
+    const req = request(app).patch(PATH);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
+
+  it('returns 201 on successful seal update', async () => {
+    const response = await sendRequest();
+    expect(mockSealDao.updateSealSpelling).toHaveBeenCalled();
+    expect(response.status).toBe(201);
+  });
+
+  it('returns 500 on failed seal update', async () => {
+    sl.set('SealDao', {
+      ...mockSealDao,
+      updateSealSpelling: jest.fn().mockRejectedValue('failed seal update'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

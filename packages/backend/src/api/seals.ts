@@ -68,6 +68,26 @@ router
         next(new HttpInternalError(err as string));
       }
     }
-  );
+  )
+  .patch(permissionsRoute('EDIT_SEAL'), async (req, res, next) => {
+    try {
+      const SealDao = sl.get('SealDao');
+      const cache = sl.get('cache');
+      const utils = sl.get('utils');
+
+      const { uuid } = req.params;
+      const { name } = req.body;
+
+      await utils.createTransaction(async trx => {
+        await SealDao.updateSealSpelling(uuid, name, trx);
+      });
+
+      await cache.clear('/seals', { level: 'exact' }, req);
+      await cache.clear(`/seals/${uuid}`, { level: 'exact' }, req);
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 export default router;
