@@ -52,6 +52,7 @@ export default defineComponent({
     const seals: Ref<SealInfo[]> = ref([]);
     const sortedSeals: Ref<SealInfo[]> = ref([]);
     const search = useQueryParam('filter', '', true);
+
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 

@@ -11,7 +11,12 @@ async function getSealByUuid(uuid: string): Promise<Seal> {
   return data;
 }
 
+async function updateSealName(uuid: string, name: string): Promise<void> {
+  await axios.patch(`/seals/${uuid}`, { name });
+}
+
 export default {
   getAllSeals,
   getSealByUuid,
+  updateSealName,
 };

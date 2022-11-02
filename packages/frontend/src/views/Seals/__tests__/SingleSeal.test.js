@@ -105,10 +105,16 @@ const mockSealNoImpressions = {
 describe('Single Seal View', () => {
   const mockServer = {
     getSealByUuid: jest.fn().mockResolvedValue(mockSeal1),
+    updateSealName: jest.fn().mockResolvedValue(),
   };
 
   const mockActions = {
     showErrorSnackbar: jest.fn(),
+    showSnackbar: jest.fn(),
+  };
+
+  const mockStore = {
+    hasPermission: () => false,
   };
 
   const renderOptions = {
@@ -120,8 +126,9 @@ describe('Single Seal View', () => {
     stubs: ['router-link'],
   };
 
-  const createWrapper = ({ server } = {}) => {
+  const createWrapper = ({ server, store } = {}) => {
     sl.set('serverProxy', server || mockServer);
+    sl.set('store', store || mockStore);
     sl.set('globalActions', mockActions);
 
     return mount(SingleSeal, renderOptions);
@@ -196,5 +203,36 @@ describe('Single Seal View', () => {
     expect(wrapper.find('.test-seal-images').exists()).toBe(true);
     expect(wrapper.find('.test-seal-impressions').exists()).toBe(false);
     expect(wrapper.find('.test-seal-no-impressions').exists()).toBe(true);
+  });
+
+  it('edit seal name button does not show if user does not have permission', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('.test-pencil').exists()).toBe(false);
+  });
+
+  it('edit seal name button appears if user has permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        hasPermission: () => true,
+      },
+    });
+    await flushPromises();
+    expect(wrapper.find('.test-pencil').exists()).toBe(true);
+  });
+
+  it('edits seal if user has permission', async () => {
+    const wrapper = createWrapper({
+      store: {
+        hasPermission: () => true,
+      },
+    });
+    await flushPromises();
+    await wrapper.find('.test-pencil').trigger('click');
+    await wrapper.find('.test-edit input').setValue('new seal name');
+    await wrapper.find('.test-check').trigger('click');
+    await flushPromises();
+    expect(mockServer.updateSealName).toHaveBeenCalled();
+    expect(mockActions.showSnackbar).toHaveBeenCalled();
   });
 });
