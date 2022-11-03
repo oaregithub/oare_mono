@@ -3,7 +3,6 @@ import { Knex } from 'knex';
 import { ParsedQs } from 'qs';
 import {
   Pagination,
-  PersonOccurrenceRow,
   SpellingOccurrenceResponseRow,
   SpellingOccurrenceRow,
   ItemPropertyRowWithChildren,
@@ -57,8 +56,7 @@ export const parsedQuery = (url: string): URLSearchParams => {
 
 export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
   rows: Type,
-  locale: LocaleCode,
-  highlightAllDiscourseUuids = false
+  locale: LocaleCode
 ): Promise<SpellingOccurrenceResponseRow[]> => {
   const TextEpigraphyDao = sl.get('TextEpigraphyDao');
   const epigraphicUnits = await Promise.all(
@@ -71,9 +69,7 @@ export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
     const renderer = createTabletRenderer(units, locale, {
       lineNumbers: true,
       textFormat: 'html',
-      highlightDiscourses: highlightAllDiscourseUuids
-        ? (row as PersonOccurrenceRow).discoursesToHighlight
-        : [row.discourseUuid],
+      highlightDiscourses: [row.discourseUuid],
     });
     const linesList = renderer.lines;
     const lineIdx = linesList.indexOf(row.line);
