@@ -1,6 +1,6 @@
 import { knexRead } from '@/connection';
-import { PersonDisplay, PersonRow } from '@oare/types';
-import knex, { Knex } from 'knex';
+import { PersonRow } from '@oare/types';
+import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
 class PersonDao {

@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
-import { PersonDisplay } from '@oare/types';
+import { PersonListItem } from '@oare/types';
 import sl from '@/serviceLocator';
 import OareLetterFilter from '@/components/base/OareLetterFilter.vue';
 import TextOccurrences from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/TextOccurrences.vue';
@@ -34,12 +34,12 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const loading = ref(false);
-    const personList = ref<PersonDisplay[]>([]);
-    const filteredPersonList = ref<PersonDisplay[]>([]);
+    const personList = ref<PersonListItem[]>([]);
+    const filteredPersonList = ref<PersonListItem[]>([]);
 
     const searchFilter = (
       _search: string,
-      _personDisplay: PersonDisplay
+      _personDisplay: PersonListItem
     ): boolean => {
       return true;
     };
