@@ -83,7 +83,7 @@ describe('OareAppBar.vue', () => {
     expect(wrapper.find('.test-dev-indicator').exists()).toBe(false);
   });
 
-  it('shows Login button when not logged in', async () => {
+  it('shows Log In button when not logged in', async () => {
     const wrapper = await createWrapper({ isAuthenticated: false });
     expect(wrapper.find('.test-login-btn').exists()).toBe(true);
   });

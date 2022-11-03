@@ -55,9 +55,10 @@ export default defineComponent({
       try {
         content.value = await server.getPageContent(props.pageName);
         editedContent.value = content.value;
-      } catch {
+      } catch (err) {
         actions.showErrorSnackbar(
-          'Error loading page content. Please try again.'
+          'Error loading page content. Please try again.',
+          err as Error
         );
       }
     });
