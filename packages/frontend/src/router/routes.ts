@@ -43,7 +43,6 @@ import AdminCommentView from '../views/Admin/Comments/AdminCommentView.vue';
 import UserCommentView from '../views/Dashboard/UserCommentView.vue';
 import AdminSettings from '../views/Admin/Settings/AdminSettings.vue';
 import PersonsView from '../views/Persons/index.vue';
-import SwaggerView from '../views/Swagger/index.vue';
 import PropertiesTaxonomy from '../views/Admin/PropertiesTaxonomy/index.vue';
 import ManageAllowlist from '../views/Admin/Groups/Allowlist/ManageAllowlist.vue';
 import AddAllowlistTexts from '../views/Admin/Groups/Allowlist/Texts/AddAllowlistTexts.vue';
@@ -71,12 +70,6 @@ const routes: RouteConfig[] = [
     path: '/',
     name: 'home',
     component: LandingPage,
-  },
-  {
-    path: '/admin/swagger',
-    name: 'adminSwagger',
-    component: SwaggerView,
-    beforeEnter: adminGuard,
   },
   {
     path: '/issues',
