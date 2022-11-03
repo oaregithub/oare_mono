@@ -6,7 +6,6 @@ import {
   SpellingOccurrenceRow,
   DiscourseUnit,
   DiscourseUnitType,
-  PersonOccurrenceRow,
   TextDiscourseRow,
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
@@ -519,104 +518,6 @@ class TextDiscourseDao {
       obj_in_text: anchorInfo.objInText,
     });
     await TextEpigraphyDao.addDiscourseUuid(epigraphyUuids, discourseUuid, trx);
-  }
-
-  private getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
-    textDiscourseUuids: string[],
-    pagination?: Partial<Pagination>,
-    trx?: Knex.Transaction
-  ) {
-    const k = trx || knexRead();
-    return k('text_discourse')
-      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
-      .whereIn('text_discourse.uuid', textDiscourseUuids)
-      .modify(qb => {
-        if (pagination) {
-          if (pagination.filter) {
-            qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
-          }
-
-          if (pagination.page && pagination.limit) {
-            qb.limit(pagination.limit).offset(
-              (pagination.page - 1) * pagination.limit
-            );
-          }
-        }
-      });
-  }
-
-  async getPersonTextsByItemPropertyReferenceUuids(
-    textDiscourseUuids: string[],
-    pagination: Pagination,
-    trx?: Knex.Transaction
-  ): Promise<PersonOccurrenceRow[]> {
-    const texts = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
-      textDiscourseUuids,
-      pagination,
-      trx
-    ).select(
-      'text_discourse.uuid AS discourseUuid',
-      'text_discourse.type',
-      'text.name AS textName',
-      'text_discourse.word_on_tablet AS wordOnTablet',
-      'text_discourse.text_uuid AS textUuid'
-    );
-
-    return texts;
-  }
-
-  async getPersonTextsByItemPropertyReferenceUuidsCount(
-    textDiscourseUuids: string[],
-    { filter }: Partial<Pagination> = {},
-    trx?: Knex.Transaction
-  ): Promise<number> {
-    const total = await this.getPersonTextsByItemPropertyReferenceUuidsBaseQuery(
-      textDiscourseUuids,
-      { filter },
-      trx
-    )
-      .count({ count: 'text_discourse.uuid' })
-      .first();
-
-    return total ? Number(total.count) : 0;
-  }
-
-  async getChildrenByParentUuid(
-    phraseUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<PersonOccurrenceRow[]> {
-    const k = trx || knexRead();
-    const wordTexts = await k('text_discourse')
-      .select(
-        'text_discourse.uuid AS discourseUuid',
-        'text_discourse.type',
-        'text.name AS textName',
-        'text_discourse.word_on_tablet AS wordOnTablet',
-        'text_discourse.text_uuid AS textUuid'
-      )
-      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
-      .where('text_discourse.parent_uuid', phraseUuid);
-
-    return wordTexts;
-  }
-
-  async getEpigraphicLineOfWord(
-    discourseUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<number> {
-    const k = trx || knexRead();
-    const line = (
-      await k('text_discourse')
-        .pluck('text_epigraphy.line')
-        .innerJoin(
-          'text_epigraphy',
-          'text_epigraphy.discourse_uuid',
-          'text_discourse.uuid'
-        )
-        .where('text_discourse.uuid', discourseUuid)
-    )[0];
-
-    return line;
   }
 
   async hasSpellingOccurrence(
