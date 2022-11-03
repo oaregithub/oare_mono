@@ -53,18 +53,6 @@ class ItemPropertiesDao {
     return textsOfPeopleCount ? Number(textsOfPeopleCount.count) : 0;
   }
 
-  async getUniqueReferenceUuidOfPerson(
-    personUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<string[]> {
-    const k = trx || knexRead();
-    const referenceUuids = await k('item_properties')
-      .distinct('item_properties.reference_uuid AS referenceUuid')
-      .where('item_properties.object_uuid', personUuid);
-
-    return referenceUuids.map(item => item.referenceUuid);
-  }
-
   async addProperty(
     property: InsertItemPropertyRow,
     trx?: Knex.Transaction
