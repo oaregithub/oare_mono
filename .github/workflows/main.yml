@@ -19,8 +19,8 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -80,7 +80,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
 
       - name: Deploy to EB - US West (Oregon)
-        uses: einaregilsson/beanstalk-deploy@v11
+        uses: einaregilsson/beanstalk-deploy@v20
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -93,7 +93,7 @@ jobs:
 
       # NOTE: Temporarily Disabled While International Server(s) Are Deprecated
       # - name: Deploy to EB - Europe (Paris)
-      #   uses: einaregilsson/beanstalk-deploy@v11
+      #   uses: einaregilsson/beanstalk-deploy@v20
       #   with:
       #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
       #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
