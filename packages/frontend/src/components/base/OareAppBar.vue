@@ -146,8 +146,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn class="test-places" text to="/people/A" v-if="canViewPeople"
-          >People</v-btn
+        <v-btn class="test-places" text to="/persons/A" v-if="canViewPersons"
+          >Persons</v-btn
         >
 
         <v-menu offset-y open-on-hover>
@@ -238,7 +238,7 @@ export default defineComponent({
     const canViewWords = computed(() => store.hasPermission('WORDS'));
     const canViewNames = computed(() => store.hasPermission('NAMES'));
     const canViewPlaces = computed(() => store.hasPermission('PLACES'));
-    const canViewPeople = computed(() => store.hasPermission('PEOPLE'));
+    const canViewPersons = computed(() => store.hasPermission('PERSONS'));
     const canViewBibliography = computed(() =>
       store.hasPermission('BIBLIOGRAPHY')
     );
@@ -277,7 +277,7 @@ export default defineComponent({
       canViewWords,
       canViewNames,
       canViewPlaces,
-      canViewPeople,
+      canViewPersons,
       canViewBibliography,
       canViewSeals,
       i18n,

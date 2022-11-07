@@ -13,7 +13,7 @@ export * from './src/words';
 export * from './src/tokens';
 export * from './src/textDiscourse';
 export * from './src/errors';
-export * from './src/people';
+export * from './src/persons';
 export * from './src/profile';
 export * from './src/sign_reading';
 export * from './src/publication';
