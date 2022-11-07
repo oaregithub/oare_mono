@@ -85,7 +85,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: oare
-          environment_name: oare-env-v2
+          environment_name: oare-env-v3
           version_label: 'oare-oregon-${{ steps.time.outputs.time }}'
           region: us-west-2
           deployment_package: oare_build.zip
