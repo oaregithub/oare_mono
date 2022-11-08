@@ -25,10 +25,10 @@ class PermissionsDao {
         'Allow group users to view "Places" tab and access associated pages',
     },
     {
-      name: 'PEOPLE',
+      name: 'PERSONS',
       type: 'pages',
       description:
-        'Allow group users to view "People" tab and access associated pages',
+        'Allow group users to view "Persons" tab and access associated pages',
     },
     {
       name: 'BIBLIOGRAPHY',

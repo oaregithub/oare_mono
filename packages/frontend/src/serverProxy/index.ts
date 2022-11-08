@@ -21,7 +21,7 @@ import publicDenylist from './public_denylist';
 import searchNames from './search_names';
 import resetPassword from './reset_password';
 import cacheStatus from './cache_status';
-import people from './people';
+import persons from './persons';
 import textDiscourse from './text_discourse';
 import profile from './profile';
 import groupAllowlist from './group_allowlist';
@@ -64,7 +64,7 @@ const serverProxy = {
   ...errors,
   ...threads,
   ...cacheStatus,
-  ...people,
+  ...persons,
   ...textDiscourse,
   ...profile,
   ...groupAllowlist,

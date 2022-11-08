@@ -19,7 +19,7 @@ import searchNames from './api/search_names';
 import comments from './api/comments';
 import errors from './api/errors';
 import threads from './api/threads';
-import people from './api/people';
+import persons from './api/persons';
 import cacheStatus from './api/cache_status';
 import textDiscourse from './api/text_discourse';
 import profile from './api/profile';
@@ -63,7 +63,7 @@ export default (app: Express) => {
     comments,
     errors,
     threads,
-    people,
+    persons,
     cacheStatus,
     textDiscourse,
     profile,

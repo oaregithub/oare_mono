@@ -6,7 +6,7 @@
   >
     <oare-letter-filter
       :letter="letter"
-      route="people"
+      route="persons"
       filterTitle="persons"
       @search-input="filterPersons"
     />
@@ -58,7 +58,7 @@ export default defineComponent({
     const getPersons = async () => {
       try {
         loading.value = true;
-        personList.value = await server.getPeople(props.letter);
+        personList.value = await server.getPersons(props.letter);
         filteredPersonList.value = personList.value;
       } catch (err) {
         actions.showErrorSnackbar(
