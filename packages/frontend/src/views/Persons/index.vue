@@ -13,7 +13,7 @@
     <v-row
       v-for="(person, idx) in filteredPersonList"
       :key="idx"
-      class="ma=0 ml-3"
+      class="ma-0 ml-3"
     >
       <router-link :to="`/person/${person.person.uuid}`" class="mr-1">
         {{ person.display }}</router-link
@@ -50,13 +50,9 @@ export default defineComponent({
     const filteredPersonList = ref<PersonListItem[]>([]);
 
     const searchFilter = (search: string, personDisplay: PersonListItem) => {
-      if (
-        personDisplay.person.label
-          .toLowerCase()
-          .includes(search.toLocaleLowerCase())
-      ) {
-        return true;
-      }
+      return personDisplay.display
+        .toLowerCase()
+        .includes(search.toLocaleLowerCase());
     };
 
     const getPersons = async () => {
