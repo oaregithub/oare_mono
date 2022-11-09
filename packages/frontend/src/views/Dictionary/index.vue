@@ -2,10 +2,9 @@
   <div>
     <oare-letter-filter
       :route="route"
-      :word-list="wordList"
       :letter="letter"
-      :search-filter="searchFilter"
-      @filtered-words="getWords"
+      :filterTitle="filterTitle"
+      @search-input="filterWords"
     />
 
     <add-word-dialog
@@ -98,23 +97,23 @@ export default defineComponent({
       type: Function as PropType<
         (search: string, word: DisplayableWord) => boolean
       >,
-      default: () => {
-        return () => true;
-      },
+      required: true,
     },
     filterTitle: {
       type: String,
       default: 'words',
     },
   },
-  setup() {
+  setup(props) {
     const store = sl.get('store');
     const addWordDialog = ref(false);
-    const filteredWords = ref<DisplayableWord[]>([]);
+    const filteredWords = ref<DisplayableWord[]>(props.wordList);
     const canAddWords = computed(() => store.hasPermission('ADD_LEMMA'));
 
-    const getWords = (words: DisplayableWord[]) => {
-      filteredWords.value = words;
+    const filterWords = (search: string) => {
+      filteredWords.value = props.wordList.filter(word =>
+        props.searchFilter(search, word)
+      );
     };
 
     const highlight = [
@@ -135,7 +134,7 @@ export default defineComponent({
 
     return {
       filteredWords,
-      getWords,
+      filterWords,
       highlight,
       addWordDialog,
       addWordKey,

@@ -1,7 +1,7 @@
 <template>
   <OareContentView title="Seals" :loading="loading">
     <v-row>
-      <v-col cols="4">
+      <v-col cols="3">
         <div>
           <v-text-field
             v-model="search"

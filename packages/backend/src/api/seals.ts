@@ -9,7 +9,7 @@ import {
   InsertItemPropertyRow,
   AddSealLinkPayload,
 } from '@oare/types';
-import { noFilter, SealFilter, SealListFilter } from '@/cache/filters';
+import { SealFilter, SealListFilter } from '@/cache/filters';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import { v4 } from 'uuid';
 

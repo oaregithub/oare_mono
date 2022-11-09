@@ -1,7 +1,6 @@
 import { knexRead, knexWrite } from '@/connection';
 import {
   ItemPropertyRow,
-  Pagination,
   InsertItemPropertyRow,
   ParseTreePropertyUuids,
   ImageResourcePropertyDetails,
@@ -14,57 +13,6 @@ export interface GetItemPropertiesOptions {
 }
 
 class ItemPropertiesDao {
-  private getTextsOfPersonBaseQuery(
-    personUuid: string,
-    pagination?: Pagination,
-    trx?: Knex.Transaction
-  ) {
-    const k = trx || knexRead();
-    return k('item_properties')
-      .leftJoin(
-        'text_discourse',
-        'text_discourse.uuid',
-        'item_properties.reference_uuid'
-      )
-      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
-      .where('item_properties.object_uuid', personUuid)
-      .modify(qb => {
-        if (pagination) {
-          qb.limit(pagination.limit);
-          qb.offset((pagination.page - 1) * pagination.limit);
-          if (pagination.filter) {
-            qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
-          }
-        }
-      });
-  }
-
-  async getTextsOfPersonCount(
-    personUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<number> {
-    const textsOfPeopleCount = await this.getTextsOfPersonBaseQuery(
-      personUuid,
-      undefined,
-      trx
-    )
-      .count({ count: 'text_discourse.text_uuid' })
-      .first();
-    return textsOfPeopleCount ? Number(textsOfPeopleCount.count) : 0;
-  }
-
-  async getUniqueReferenceUuidOfPerson(
-    personUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<string[]> {
-    const k = trx || knexRead();
-    const referenceUuids = await k('item_properties')
-      .distinct('item_properties.reference_uuid AS referenceUuid')
-      .where('item_properties.object_uuid', personUuid);
-
-    return referenceUuids.map(item => item.referenceUuid);
-  }
-
   async addProperty(
     property: InsertItemPropertyRow,
     trx?: Knex.Transaction
