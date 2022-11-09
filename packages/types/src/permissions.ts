@@ -32,7 +32,7 @@ export interface PagePermission extends PermissionTemplate {
 }
 
 export interface SealPermission extends PermissionTemplate {
-  name: 'EDIT_SEAL';
+  name: 'EDIT_SEAL' | 'ADD_SEAL_LINK';
   type: 'seals';
 }
 export interface TextPermission extends PermissionTemplate {

@@ -11,9 +11,12 @@
           >
             <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
             <span
-              v-if="
-                renderer.isRegion(lineNum) || renderer.isUndetermined(lineNum)
-              "
+              v-if="renderer.isRegion(lineNum)"
+              v-html="renderer.lineReading(lineNum)"
+              @click="openConnectSealImpressionDialog(lineNum)"
+            />
+            <span
+              v-else-if="renderer.isUndetermined(lineNum)"
               v-html="renderer.lineReading(lineNum)"
             />
             <span v-else>
@@ -46,6 +49,7 @@
               <span
                 v-if="renderer.isRegion(lineNum)"
                 v-html="renderer.lineReading(lineNum)"
+                @click="openConnectSealImpressionDialog(lineNum)"
               />
               <span v-else>
                 <span
@@ -73,6 +77,30 @@
       @finish="closeConnectSpellingDialog"
       v-model="viewingConnectSpellingDialog"
     ></connect-spelling-occurrence>
+    <oare-dialog
+      v-if="viewingConnectSealDialog && canConnectSealImpression"
+      class="test-rendering-word-dialog"
+      :closeButton="true"
+      :persistent="false"
+      :show-cancel="false"
+      :show-submit="false"
+      :width="600"
+      :hideDivider="true"
+      v-model="viewingConnectSealDialog"
+    >
+      <single-seal
+        v-if="sealLink.linkedSealUuid"
+        :uuid="sealLink.linkedSealUuid"
+      ></single-seal>
+      <seal-list
+        v-else
+        :showRadioBtns="true"
+        :hideImages="true"
+        :textEpigraphyUuid="sealLink.textEpigraphyUuid"
+        :showConnectSeal="true"
+        @finish="viewingConnectSealDialog = false"
+      ></seal-list>
+    </oare-dialog>
     <oare-dialog
       v-if="viewingDialog"
       class="test-rendering-word-dialog"
@@ -133,15 +161,24 @@ import {
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import DictionaryWord from '@/views/DictionaryWord/index.vue';
+import SealList from '@/views/Seals/SealList.vue';
+import SingleSeal from '@/views/Seals/SingleSeal.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';
+
+export interface EpigraphySealLink {
+  textEpigraphyUuid: string;
+  linkedSealUuid: string | null;
+}
 
 export default defineComponent({
   name: 'EpigraphyReading',
   components: {
     DictionaryWord,
     ConnectSpellingOccurrence,
+    SealList,
+    SingleSeal,
   },
   props: {
     epigraphicUnits: {
@@ -164,9 +201,11 @@ export default defineComponent({
     const loading = ref(false);
     const viewingDialog = ref(false);
     const viewingConnectSpellingDialog = ref(false);
+    const viewingConnectSealDialog = ref(false);
     const connectSpellingDialogSpelling = ref('');
     const connectSpellingDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
+    const sealLink = ref<EpigraphySealLink | null>(null);
 
     const canConnectSpellings = computed(() =>
       store.hasPermission('CONNECT_SPELLING')
@@ -174,6 +213,10 @@ export default defineComponent({
 
     const canDisconnectSpellings = computed(() =>
       store.hasPermission('DISCONNECT_SPELLING')
+    );
+
+    const canConnectSealImpression = computed(() =>
+      store.hasPermission('ADD_SEAL_LINK')
     );
 
     const selectedDiscourseUuid = ref('');
@@ -228,11 +271,13 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+            discourseUuid
+          );
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value =
-            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
+          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
+            spellingUuid
+          );
         } else {
           discourseWordInfo.value = null;
         }
@@ -285,6 +330,34 @@ export default defineComponent({
       }
     };
 
+    const openConnectSealImpressionDialog = async (lineNum: number) => {
+      try {
+        if (canConnectSealImpression.value) {
+          const region: EpigraphicUnit = renderer.value.getRegionUnitByLine(
+            lineNum
+          );
+          if (
+            region.uuid &&
+            region.markups[0].type.includes('SealImpression')
+          ) {
+            sealLink.value = {
+              textEpigraphyUuid: region.uuid,
+              linkedSealUuid: await server.getLinkedSeal(region.uuid),
+            };
+
+            viewingConnectSealDialog.value = true;
+          } else {
+            actions.showSnackbar('no region information');
+          }
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'error retrieving region information',
+          err as Error
+        );
+      }
+    };
+
     const formatWord = (word: EpigraphicWord) => {
       const isWordToHighlight =
         props.discourseToHighlight && word.discourseUuid
@@ -301,10 +374,12 @@ export default defineComponent({
       renderer,
       lineNumber,
       openDialog,
+      openConnectSealImpressionDialog,
       loading,
       discourseWordInfo,
       viewingDialog,
       viewingConnectSpellingDialog,
+      viewingConnectSealDialog,
       connectSpellingDialogSpelling,
       connectSpellingDialogDiscourseUuid,
       closeConnectSpellingDialog,
@@ -312,10 +387,12 @@ export default defineComponent({
       formatSide,
       romanNumeral,
       canDisconnectSpellings,
+      canConnectSealImpression,
       confirmDisconnectDialog,
       disconnectSpelling,
       selectedDiscourseUuid,
       server,
+      sealLink,
     };
   },
 });

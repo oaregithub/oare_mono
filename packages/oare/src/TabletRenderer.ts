@@ -148,6 +148,11 @@ export default class TabletRenderer {
     return localizeString(sideReading, this.locale);
   }
 
+  public getRegionUnitByLine(lineNum: number): EpigraphicUnit {
+    const unitsOnLine = this.getUnitsOnLine(lineNum);
+    return unitsOnLine[0];
+  }
+
   public isRegion(lineNum: number): boolean {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
     return unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region';

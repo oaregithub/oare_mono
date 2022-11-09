@@ -48,6 +48,13 @@ class PermissionsDao {
       dependencies: ['SEALS'],
     },
     {
+      name: 'ADD_SEAL_LINK',
+      type: 'seals',
+      description:
+        'Allow group users to connect a seal impression in a text to a seal',
+      dependencies: ['SEALS'],
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',

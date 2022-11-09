@@ -826,3 +826,78 @@ describe('PATCH /text_epigraphies/edit_text_info', () => {
     expect(response.status).toBe(403);
   });
 });
+
+describe('GET /text_epigraphies/seal_impression/:uuid', () => {
+  const textEpigraphyUuid = 'teUuid';
+  const PATH = `${API_PATH}/text_epigraphies/seal_impression/${textEpigraphyUuid}`;
+
+  const sealUuid = 'sealUuid';
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest
+      .fn()
+      .mockResolvedValue([{ name: 'ADD_SEAL_LINK' }]),
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      uuid: 'user-uuid',
+    }),
+  };
+
+  const mockSealDao = {
+    getLinkedSealUuid: jest.fn().mockResolvedValue(sealUuid),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+    clear: jest.fn().mockResolvedValue(),
+  };
+
+  const setup = () => {
+    sl.set('SealDao', mockSealDao);
+    sl.set('cache', mockCache);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('UserDao', mockUserDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = (auth = true) => {
+    const req = request(app).get(PATH);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
+
+  it('returns 200 on successfully getting seal uuid', async () => {
+    const response = await sendRequest();
+    expect(mockSealDao.getLinkedSealUuid).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 500 on failed getting seal uuid', async () => {
+    sl.set('SealDao', {
+      ...mockSealDao,
+      getLinkedSealUuid: jest.fn().mockRejectedValue('failed to get seal uuid'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 403 when user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
+  });
+});

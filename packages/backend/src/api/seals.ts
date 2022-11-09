@@ -2,9 +2,16 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import cacheMiddleware from '@/middlewares/cache';
-import { SealNameUuid, SealInfo, Seal, SealImpression } from '@oare/types';
+import {
+  SealNameUuid,
+  SealInfo,
+  Seal,
+  InsertItemPropertyRow,
+  AddSealLinkPayload,
+} from '@oare/types';
 import { noFilter, SealFilter, SealListFilter } from '@/cache/filters';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import { v4 } from 'uuid';
 
 const router = express.Router();
 
@@ -30,7 +37,7 @@ router
         const response = await cache.insert<SealInfo[]>(
           { req },
           seals,
-          noFilter
+          SealListFilter
         );
 
         res.json(response);
@@ -61,7 +68,7 @@ router
           sealImpressions: [],
         };
 
-        const response = await cache.insert<Seal>({ req }, seal, noFilter);
+        const response = await cache.insert<Seal>({ req }, seal, SealFilter);
 
         res.json(response);
       } catch (err) {
@@ -84,6 +91,43 @@ router
 
       await cache.clear('/seals', { level: 'exact' }, req);
       await cache.clear(`/seals/${uuid}`, { level: 'exact' }, req);
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/connect/seal_impression')
+  .post(permissionsRoute('ADD_SEAL_LINK'), async (req, res, next) => {
+    try {
+      const SealDao = sl.get('SealDao');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const cache = sl.get('cache');
+      const utils = sl.get('utils');
+      const { sealUuid, textEpigraphyUuid } = req.body as AddSealLinkPayload;
+
+      const parentUuid: string = await SealDao.getSealLinkParentUuid(
+        textEpigraphyUuid
+      );
+
+      const itemProperty: InsertItemPropertyRow = {
+        uuid: v4(),
+        referenceUuid: textEpigraphyUuid,
+        objectUuid: sealUuid,
+        parentUuid,
+        variableUuid: 'f32e6903-67c9-41d8-840a-d933b8b3e719',
+        level: 1,
+        valueUuid: null,
+        value: null,
+      };
+
+      await utils.createTransaction(async trx => {
+        await ItemPropertiesDao.addProperty(itemProperty, trx);
+      });
+
+      await cache.clear('/seals', { level: 'exact' }, req);
+      await cache.clear(`/seals/${sealUuid}`, { level: 'exact' }, req);
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
