@@ -19,7 +19,7 @@ async function attachUser(req: Request, _res: Response, next: NextFunction) {
       try {
         decodedToken = await firebase.auth().verifyIdToken(idToken);
       } catch (err) {
-        next(new HttpException(407, 'Invalid Firebase token'));
+        next(new HttpException(407, 'Invalid Firebase token', true));
         return;
       }
       const user = await UserDao.getUserByUuid(decodedToken.uid);
