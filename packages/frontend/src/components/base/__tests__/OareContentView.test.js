@@ -19,10 +19,6 @@ describe('OareContentView', () => {
       },
     });
 
-  it('matches snapshot', () => {
-    expect(createWrapper()).toMatchSnapshot();
-  });
-
   it('shows title', () => {
     expect(createWrapper().find('.test-content-title').text()).toBe(TITLE);
   });

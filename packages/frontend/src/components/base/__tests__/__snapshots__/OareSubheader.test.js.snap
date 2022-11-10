@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`OareSubheader test matches snapshot 1`] = `
-<h3 class="title font-weight-regular mb-4">Test Subheader
-  <hr role="separator" aria-orientation="horizontal" class="v-divider theme--light">
-</h3>
-`;
