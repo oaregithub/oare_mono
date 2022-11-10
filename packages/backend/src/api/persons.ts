@@ -9,9 +9,9 @@ import { personTextFilter } from '@/cache/filters';
 const router = express.Router();
 
 router
-  .route('/people/:letter')
+  .route('/persons/:letter')
   .get(
-    permissionsRoute('PEOPLE'),
+    permissionsRoute('PERSONS'),
     cacheMiddleware<PersonListItem[]>(personTextFilter),
     async (req, res, next) => {
       try {
