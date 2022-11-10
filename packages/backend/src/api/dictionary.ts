@@ -15,6 +15,7 @@ import {
   AddWordPayload,
   ItemPropertyRow,
   AddWordCheckPayload,
+  SpellingOccurrencesCountResponseItem,
 } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
@@ -26,7 +27,6 @@ import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
 import { dictionaryWordFilter, noFilter } from '@/cache/filters';
-import adminRoute from '@/middlewares/adminRoute';
 
 const router = express.Router();
 
@@ -329,28 +329,44 @@ router
   });
 
 router
-  .route('/dictionary/spellings/spelling_occurrences/occurrences')
-  .get(async (req, res, next) => {
+  .route('/dictionary/spellings/occurrences/count')
+  .post(async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
       const utils = sl.get('utils');
-      const { filter } = utils.extractPagination(req.query);
-      const uuids = (req.query.spellingUuids as unknown) as string[];
+
+      const spellingUuids: string[] = req.body;
       const userUuid = req.user ? req.user.uuid : null;
-      const totalOccurrences = await TextDiscourseDao.getTotalSpellingTexts(
-        uuids,
-        userUuid,
-        { filter }
+      const { filter } = utils.extractPagination(req.query);
+
+      const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
+      const spellingOccurrencesCount = await Promise.all(
+        spellingUuids.map(spellingUuid =>
+          TextDiscourseDao.getSpellingOccurrencesCount(
+            spellingUuid,
+            textsToHide,
+            { filter }
+          )
+        )
       );
 
-      res.json(totalOccurrences);
+      const response: SpellingOccurrencesCountResponseItem[] = spellingUuids.map(
+        (uuid, idx) => ({
+          uuid,
+          count: spellingOccurrencesCount[idx],
+        })
+      );
+
+      res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
   });
 
 router
-  .route('/dictionary/spelling_occurrences/texts')
+  .route('/dictionary/spellings/occurrences/texts')
   .get(async (req, res, next) => {
     try {
       const utils = sl.get('utils');
@@ -360,7 +376,7 @@ router
       const pagination = utils.extractPagination(req.query);
       const spellingUuids = (req.query.spellingUuids as unknown) as string[];
 
-      const rows = await TextDiscourseDao.getSpellingTextOccurrences(
+      const rows = await TextDiscourseDao.getSpellingOccurrencesTexts(
         spellingUuids,
         userUuid,
         pagination

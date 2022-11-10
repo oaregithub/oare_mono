@@ -311,62 +311,40 @@ class TextDiscourseDao {
     return nestedDiscourses;
   }
 
-  private createSpellingTextsQuery(
-    spellingUuids: string[],
-    { filter }: Partial<Pagination> = {},
-    trx?: Knex.Transaction
-  ) {
-    const k = trx || knexRead();
-    let query = k('text_discourse')
-      .whereIn('text_discourse.spelling_uuid', spellingUuids)
-      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid');
-
-    if (filter) {
-      query = query.andWhere('text.name', 'like', `%${filter}%`);
-    }
-
-    return query;
-  }
-
-  async getTotalSpellingTexts(
-    spellingUuids: string[],
-    userUuid?: string | null,
+  async getSpellingOccurrencesCount(
+    spellingUuid: string,
+    textsToHide: string[],
     pagination: Partial<Pagination> = {},
     trx?: Knex.Transaction
   ): Promise<number> {
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const textsToHide =
-      userUuid !== undefined
-        ? await CollectionTextUtils.textsToHide(userUuid, trx)
-        : [];
-
-    const countRow = await this.createSpellingTextsQuery(
-      spellingUuids,
-      pagination,
-      trx
-    )
+    const k = trx || knexRead();
+    const count = await k('text_discourse')
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .where('text_discourse.spelling_uuid', spellingUuid)
+      .whereNotIn('text_discourse.text_uuid', textsToHide)
       .modify(qb => {
         if (pagination.filter) {
-          qb.andWhere('text.name', 'like', `%${pagination.filter}%`);
+          qb.where('text.display_name', 'like', `%${pagination.filter}%`);
         }
       })
-      .modify(qb => qb.whereNotIn('text.uuid', textsToHide))
       .count({ count: 'text_discourse.uuid' })
       .first();
 
-    return countRow && countRow.count ? (countRow.count as number) : 0;
+    return count && count.count ? Number(count.count) : 0;
   }
 
-  async getSpellingTextOccurrences(
+  async getSpellingOccurrencesTexts(
     spellingUuids: string[],
     userUuid: string | null,
     { limit, page, filter }: Pagination,
     trx?: Knex.Transaction
-  ) {
+  ): Promise<SpellingOccurrenceRow[]> {
+    const k = trx || knexRead();
+
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
-    const query = this.createSpellingTextsQuery(spellingUuids, { filter }, trx)
+    const rows: SpellingOccurrenceRow[] = await k('text_discourse')
       .distinct(
         'text_discourse.uuid AS discourseUuid',
         'name AS textName',
@@ -374,17 +352,23 @@ class TextDiscourseDao {
         'text_discourse.word_on_tablet AS wordOnTablet',
         'text_discourse.text_uuid AS textUuid'
       )
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
       .innerJoin(
         'text_epigraphy AS te',
         'te.discourse_uuid',
         'text_discourse.uuid'
       )
-      .modify(qb => qb.whereNotIn('text.uuid', textsToHide))
+      .whereIn('text_discourse.spelling_uuid', spellingUuids)
+      .whereNotIn('text.uuid', textsToHide)
+      .modify(qb => {
+        if (filter) {
+          qb.andWhere('text.display_name', 'like', `%${filter}%`);
+        }
+      })
       .orderBy('text.name')
       .limit(limit)
       .offset((page - 1) * limit);
 
-    const rows: SpellingOccurrenceRow[] = await query;
     return rows;
   }
 

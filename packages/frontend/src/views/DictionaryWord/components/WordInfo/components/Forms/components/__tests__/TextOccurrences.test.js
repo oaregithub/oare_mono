@@ -49,14 +49,20 @@ describe('TextOccurrences test', () => {
       readings: ['<strong>2. This is text 2</strong>'],
     },
   ];
+  const mockTextOccurrencesCount = [
+    {
+      uuid: 'uuid',
+      count: 2,
+    },
+  ];
 
   const mockProps = {
     title: mockTitle,
-    uuids: mockPersonUuids,
+    spellingUuids: mockPersonUuids,
     value: true,
     totalTextOccurrences: mockTotalTextOccurrences,
     getTexts: jest.fn().mockResolvedValue(mockTextOccurrences),
-    getTextsCount: jest.fn().mockResolvedValue(mockTextOccurrences.length),
+    getTextsCount: jest.fn().mockResolvedValue(mockTextOccurrencesCount),
   };
 
   const reload = jest.fn();
