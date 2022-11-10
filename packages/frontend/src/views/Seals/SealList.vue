@@ -1,7 +1,7 @@
 <template>
   <OareContentView title="Seals" :loading="loading">
     <v-row>
-      <v-col cols="3">
+      <v-col :cols="showRadioBtns ? 5 : 3">
         <div>
           <v-text-field
             v-model="search"
@@ -16,39 +16,47 @@
     <div v-if="showRadioBtns">
       <v-row>
         <v-col cols="8">
-          <v-radio-group v-model="selectedSeal" hide-details>
-            <v-radio
-              v-for="(seal, idx) in filteredSeals"
-              :key="idx"
-              :value="seal"
-              :class="`radio-${idx}`"
-            >
-              <template #label>
-                <span
-                  ><router-link :to="`/seals/${seal.uuid}`">{{
-                    seal.name
-                  }}</router-link>
-                  ({{ seal.count }})</span
-                >
-              </template></v-radio
-            >
-          </v-radio-group>
+          <v-card>
+            <v-radio-group class="pa-3" v-model="selectedSeal" hide-details>
+              <v-virtual-scroll
+                bench="10"
+                height="150"
+                :items="filteredSeals"
+                itemHeight="30"
+              >
+                <template v-slot:default="{ item }">
+                  <v-radio
+                    :key="item.uuid"
+                    :value="item"
+                    :class="`radio-${item.uuid} pl-3`"
+                  >
+                    <template #label>
+                      <span
+                        ><router-link :to="`/seals/${item.uuid}`">{{
+                          item.name
+                        }}</router-link>
+                        ({{ item.count }})</span
+                      >
+                    </template></v-radio
+                  >
+                </template>
+              </v-virtual-scroll>
+            </v-radio-group>
+          </v-card>
         </v-col>
         <v-col
-          class="d-flex justify-end"
+          class="d-flex align-end flex-column"
           v-if="canConnectSealImpression && showConnectSeal"
           cols="4"
         >
-          <div class="sticky">
-            <v-btn
-              color="primary"
-              class="test-connect-seal"
-              :disabled="!selectedSeal"
-              @click="confirmConnectDialog = true"
-            >
-              Connect Seal
-            </v-btn>
-          </div>
+          <v-btn
+            color="primary"
+            class="test-connect-seal mt-auto"
+            :disabled="!selectedSeal"
+            @click="confirmConnectDialog = true"
+          >
+            Connect Seal
+          </v-btn>
         </v-col>
       </v-row>
     </div>
@@ -149,12 +157,12 @@ export default defineComponent({
             textEpigraphyUuid: props.textEpigraphyUuid,
           });
           actions.showSnackbar(
-            'successfully connected seal to seal impression'
+            'Successfully connected seal to seal impression'
           );
         }
       } catch (err) {
         actions.showErrorSnackbar(
-          'unable to connect seal to seal impression',
+          'Unable to connect seal to seal impression',
           err as Error
         );
       } finally {

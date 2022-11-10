@@ -14,6 +14,7 @@
               v-if="renderer.isRegion(lineNum)"
               v-html="renderer.lineReading(lineNum)"
               @click="openConnectSealImpressionDialog(lineNum)"
+              class="cursor-display"
             />
             <span
               v-else-if="renderer.isUndetermined(lineNum)"
@@ -50,6 +51,7 @@
                 v-if="renderer.isRegion(lineNum)"
                 v-html="renderer.lineReading(lineNum)"
                 @click="openConnectSealImpressionDialog(lineNum)"
+                class="cursor-display"
               />
               <span v-else>
                 <span
@@ -333,10 +335,11 @@ export default defineComponent({
     const openConnectSealImpressionDialog = async (lineNum: number) => {
       try {
         if (canConnectSealImpression.value) {
-          const region: EpigraphicUnit = renderer.value.getRegionUnitByLine(
+          const region: EpigraphicUnit | null = renderer.value.getRegionUnitByLine(
             lineNum
           );
           if (
+            region &&
             region.uuid &&
             region.markups[0].type.includes('SealImpression')
           ) {
@@ -347,7 +350,7 @@ export default defineComponent({
 
             viewingConnectSealDialog.value = true;
           } else {
-            actions.showSnackbar('no region information');
+            actions.showSnackbar('No region information');
           }
         }
       } catch (err) {
