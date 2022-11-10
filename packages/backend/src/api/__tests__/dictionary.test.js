@@ -865,32 +865,38 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/spellings/spelling_occurrences/occurrences', () => {
-    const PATH = `${API_PATH}/dictionary/spellings/spelling_occurrences/occurrences`;
+  describe('POST /dictionary/spellings/spellings/occurrences/count', () => {
+    const PATH = `${API_PATH}/dictionary/spellings/occurrences/count`;
 
-    const TextDiscourseDao = {
-      getTotalSpellingTexts: jest.fn().mockResolvedValue(12),
+    const mockBody = ['uuid1', 'uuid2'];
+
+    const mockTextDiscourseDao = {
+      getSpellingOccurrencesCount: jest.fn().mockResolvedValue(12),
+    };
+
+    const mockCollectionTextUtils = {
+      textsToHide: jest.fn().mockResolvedValue([]),
     };
 
     const textOccurrencesSetup = () => {
-      sl.set('TextDiscourseDao', TextDiscourseDao);
+      sl.set('TextDiscourseDao', mockTextDiscourseDao);
+      sl.set('CollectionTextUtils', mockCollectionTextUtils);
       sl.set('utils', utils);
     };
 
     beforeEach(textOccurrencesSetup);
 
-    const sendRequest = () => request(app).get(PATH);
+    const sendRequest = () => request(app).post(PATH).send(mockBody);
 
     it('gets total spelling occurrences', async () => {
       const response = await sendRequest();
-      expect(response.text).toBe('12');
       expect(response.status).toBe(200);
     });
 
     it('returns 500 on failed total occurrences retreival', async () => {
       sl.set('TextDiscourseDao', {
-        ...TextDiscourseDao,
-        getTotalSpellingTexts: jest
+        ...mockTextDiscourseDao,
+        getSpellingOccurrencesCount: jest
           .fn()
           .mockRejectedValue('failed to retrieve total spelling occurrences'),
       });
@@ -899,8 +905,8 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/spelling_occurrences/texts', () => {
-    const PATH = `${API_PATH}/dictionary/spelling_occurrences/texts`;
+  describe('GET /dictionary/spellings/occurrences/texts', () => {
+    const PATH = `${API_PATH}/dictionary/spellings/occurrences/texts`;
     const mockResponse = [
       {
         textUuid: 'text-uuid',
@@ -909,7 +915,7 @@ describe('dictionary api test', () => {
     ];
 
     const TextDiscourseDao = {
-      getSpellingTextOccurrences: jest.fn().mockResolvedValue(mockResponse),
+      getSpellingOccurrencesTexts: jest.fn().mockResolvedValue(mockResponse),
     };
 
     const TextEpigraphyDao = {
@@ -940,7 +946,7 @@ describe('dictionary api test', () => {
 
     it('returns 500 when getting occurrences fails', async () => {
       sl.set('TextDiscourseDao', {
-        getSpellingTextOccurrences: jest
+        getSpellingOccurrencesTexts: jest
           .fn()
           .mockRejectedValue('Failed to get spelling occurrences'),
       });

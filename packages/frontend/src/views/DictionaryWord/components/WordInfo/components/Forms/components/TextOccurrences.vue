@@ -20,6 +20,7 @@
     <v-data-table
       :headers="headers"
       :items="textOccurrences"
+      item-key="discourseUuid"
       :search="search"
       :loading="referencesLoading"
       :server-items-length="textOccurrencesLength"
@@ -69,7 +70,11 @@ import {
   inject,
   computed,
 } from '@vue/composition-api';
-import { Pagination, SpellingOccurrenceResponseRow } from '@oare/types';
+import {
+  Pagination,
+  SpellingOccurrenceResponseRow,
+  SpellingOccurrencesCountResponseItem,
+} from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import { ReloadKey } from '../../../../../index.vue';
 import sl from '@/serviceLocator';
@@ -80,19 +85,25 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    uuids: {
+    spellingUuids: {
       type: Array as PropType<string[]>,
       required: true,
     },
     getTexts: {
       type: Function as PropType<
-        (uuid: string[], request: Pagination) => SpellingOccurrenceResponseRow[]
+        (
+          uuid: string[],
+          request: Pagination
+        ) => Promise<SpellingOccurrenceResponseRow[]>
       >,
       required: true,
     },
     getTextsCount: {
       type: Function as PropType<
-        (uuid: string[], filter: Partial<Pagination>) => number
+        (
+          uuid: string[],
+          filter: Partial<Pagination>
+        ) => Promise<SpellingOccurrencesCountResponseItem[]>
       >,
       required: true,
     },
@@ -170,7 +181,7 @@ export default defineComponent({
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        textOccurrences.value = await props.getTexts(props.uuids, {
+        textOccurrences.value = await props.getTexts(props.spellingUuids, {
           page: tableOptions.value.page,
           limit: tableOptions.value.itemsPerPage,
           ...(search.value ? { filter: search.value } : null),
@@ -186,7 +197,7 @@ export default defineComponent({
     };
 
     watch(
-      () => props.uuids,
+      () => props.spellingUuids,
       async () => {
         await getReferences();
       }
@@ -197,9 +208,11 @@ export default defineComponent({
     watch(
       search,
       _.debounce(async () => {
-        textOccurrencesLength.value = await props.getTextsCount(props.uuids, {
-          filter: search.value,
-        });
+        textOccurrencesLength.value = (
+          await props.getTextsCount(props.spellingUuids, {
+            filter: search.value,
+          })
+        ).reduce((sum, current) => sum + current.count, 0);
         tableOptions.value.page = 1;
         await getReferences();
       }, 500)

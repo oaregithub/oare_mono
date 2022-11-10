@@ -68,26 +68,28 @@
       </div>
 
       <span
-        v-if="aggregateOccurrences > 0"
+        v-if="formTotalOccurrences === null || formTotalOccurrences > 0"
         :key="`${form.uuid}-form-occurences`"
         :class="editing ? 'mt-2' : ''"
         class="mr-1"
       >
         <a @click="textOccurrenceDialog = true">
-          ({{ aggregateOccurrences }})</a
+          ({{
+            formTotalOccurrences !== null ? formTotalOccurrences : 'Loading...'
+          }})</a
         >
       </span>
       <span v-if="spellingUuids.length > 0">
         <text-occurrences
+          v-if="textOccurrenceDialog"
           v-model="textOccurrenceDialog"
           class="test-text-occurrences-display"
           :title="form.form"
-          :uuids="spellingUuids"
-          :totalTextOccurrences="aggregateOccurrences"
-          :getTexts="server.getSpellingTextOccurrences"
-          :getTextsCount="server.getSpellingTotalOccurrences"
-        >
-        </text-occurrences>
+          :spellingUuids="spellingUuids"
+          :totalTextOccurrences="formTotalOccurrences || 0"
+          :getTexts="server.getSpellingOccurrencesTexts"
+          :getTextsCount="server.getSpellingOccurrencesCounts"
+        />
       </span>
 
       <grammar-display
@@ -108,10 +110,13 @@
             :key="`${s.uuid}-${index}`"
             :spelling="s"
             :form="form"
-            :word-uuid="wordUuid"
-            :uuid-to-highlight="uuidToHighlight"
-            :allow-editing="allowEditing"
-            @total-occurrences="setTotalOccurrences($event)"
+            :uuidToHighlight="uuidToHighlight"
+            :allowEditing="allowEditing"
+            :spellingOccurrencesCount="
+              spellingOccurrencesCounts
+                ? getSpellingOccurrencesByUuid(s.uuid)
+                : null
+            "
           />
           <span v-if="index !== form.spellings.length - 1" class="mr-1">,</span>
         </span>
@@ -148,7 +153,11 @@ import {
   computed,
   onMounted,
 } from '@vue/composition-api';
-import { DictionaryForm, Word } from '@oare/types';
+import {
+  DictionaryForm,
+  SpellingOccurrencesCountResponseItem,
+  Word,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
@@ -176,10 +185,6 @@ export default defineComponent({
       type: Function as PropType<(newForm: DictionaryForm) => void>,
       required: true,
     },
-    wordUuid: {
-      type: String as PropType<string>,
-      required: false,
-    },
     uuidToHighlight: {
       type: String,
       default: null,
@@ -187,6 +192,10 @@ export default defineComponent({
     allowEditing: {
       type: Boolean,
       default: true,
+    },
+    spellingOccurrencesCounts: {
+      type: Array as PropType<SpellingOccurrencesCountResponseItem[]>,
+      default: null,
     },
   },
   setup(props) {
@@ -204,7 +213,15 @@ export default defineComponent({
       ...props.form,
     });
 
-    const aggregateOccurrences = ref(0);
+    const formTotalOccurrences = computed(() =>
+      props.spellingOccurrencesCounts !== null
+        ? props.spellingOccurrencesCounts.reduce(
+            (sum, element) => sum + element.count,
+            0
+          )
+        : null
+    );
+
     const textOccurrenceDialog = ref(false);
 
     const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
@@ -241,15 +258,23 @@ export default defineComponent({
       });
     };
 
-    const setTotalOccurrences = ($event: number) => {
-      aggregateOccurrences.value += $event;
-    };
-
     const spellingUuids = ref<string[]>([]);
 
     onMounted(() => {
       spellingUuids.value = props.form.spellings.map(({ uuid }) => uuid);
     });
+
+    const getSpellingOccurrencesByUuid = (
+      spellingUuid: string
+    ): number | null => {
+      if (props.spellingOccurrencesCounts === null) {
+        return null;
+      }
+      const item = props.spellingOccurrencesCounts.find(
+        item => item.uuid === spellingUuid
+      );
+      return item ? item.count : 0;
+    };
 
     return {
       isCommenting,
@@ -263,11 +288,11 @@ export default defineComponent({
       routeName,
       openComment,
       openEditDialog,
-      setTotalOccurrences,
-      aggregateOccurrences,
       textOccurrenceDialog,
       server,
       spellingUuids,
+      getSpellingOccurrencesByUuid,
+      formTotalOccurrences,
     };
   },
 });

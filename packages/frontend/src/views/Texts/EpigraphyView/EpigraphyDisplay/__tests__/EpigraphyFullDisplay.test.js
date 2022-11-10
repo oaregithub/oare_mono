@@ -41,7 +41,7 @@ describe('EpigraphyFullDisplay View', () => {
       .fn()
       .mockResolvedValue({ spelling: 'spelling' }),
     searchSpellings: jest.fn().mockResolvedValue([]),
-    getSpellingTextOccurrences: jest.fn().mockResolvedValue([]),
+    getSpellingOccurrencesTexts: jest.fn().mockResolvedValue([]),
     disconnectSpellings: jest.fn().mockResolvedValue([]),
   };
 
@@ -176,7 +176,7 @@ describe('EpigraphyFullDisplay View', () => {
     await flushPromises();
     await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalledTimes(1);
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
   it('display snackbar if no spelling for discourseUuid and dialog does not display', async () => {

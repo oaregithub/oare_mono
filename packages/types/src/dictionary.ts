@@ -213,3 +213,8 @@ export interface ConnectSpellingDiscoursePayload {
   discourseUuid: string;
   spellingUuid: string;
 }
+
+export interface SpellingOccurrencesCountResponseItem {
+  uuid: string;
+  count: number;
+}

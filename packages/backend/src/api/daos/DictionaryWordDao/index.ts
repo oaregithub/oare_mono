@@ -66,6 +66,7 @@ class DictionaryWordDao {
     }
 
     const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const rows: SearchSpellingRow[] = await k
       .select(
@@ -86,12 +87,14 @@ class DictionaryWordDao {
       )
     );
 
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+
     const occurrences = await Promise.all(
-      rows.map(r =>
-        TextDiscourseDao.getTotalSpellingTexts(
-          [r.spellingUuid],
-          userUuid,
-          undefined,
+      rows.map(row =>
+        TextDiscourseDao.getSpellingOccurrencesCount(
+          row.spellingUuid,
+          textsToHide,
+          {},
           trx
         )
       )
@@ -125,6 +128,8 @@ class DictionaryWordDao {
     trx?: Knex.Transaction
   ): Promise<Word[]> {
     const k = trx || knexRead();
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
     const letters = letter.split('/');
     let query = k('dictionary_word').select('uuid', 'word');
 
@@ -171,21 +176,23 @@ class DictionaryWordDao {
       'discussionLemma',
       trx
     );
-    const forms = await Promise.all(
+    const formsByWord = await Promise.all(
       words.map(word => DictionaryFormDao.getWordForms(word.uuid, false, trx))
     );
 
-    const spellingUuids = forms.map(form =>
-      form.flatMap(spellings =>
-        spellings.spellings.map(spelling => spelling.uuid)
-      )
+    const spellingUuidsByWord = formsByWord.map(forms =>
+      forms.flatMap(form => form.spellings.map(spelling => spelling.uuid))
     );
 
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
-
-    const wordOccurrences = await Promise.all(
-      spellingUuids.map(uuids =>
-        TextDiscourseDao.getTotalSpellingTexts(uuids, undefined, undefined, trx)
+    const occurrencesByWord = await Promise.all(
+      spellingUuidsByWord.map(async uuids =>
+        (
+          await Promise.all(
+            uuids.map(uuid =>
+              TextDiscourseDao.getSpellingOccurrencesCount(uuid, [], {}, trx)
+            )
+          )
+        ).reduce((sum, element) => sum + element, 0)
       )
     );
 
@@ -229,9 +236,9 @@ class DictionaryWordDao {
           word: word.word,
           translationsForDefinition: translationsForDefinitionList,
           discussionLemmas: discussionLemmasList,
-          forms: forms[idx],
+          forms: formsByWord[idx],
           properties: properties[idx],
-          wordOccurrences: wordOccurrences[idx],
+          wordOccurrences: occurrencesByWord[idx],
         };
       })
       .sort((a, b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
