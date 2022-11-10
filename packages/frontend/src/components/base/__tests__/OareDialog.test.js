@@ -19,11 +19,6 @@ describe('OareDialog', () => {
       },
     });
 
-  test('matches snapshot', () => {
-    const wrapper = createWrapper();
-    expect(wrapper).toMatchSnapshot();
-  });
-
   test('shows title', () => {
     const wrapper = createWrapper();
     const title = wrapper.find('[data-testid="dialog-title"]');

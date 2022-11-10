@@ -93,19 +93,19 @@ describe('OareAppBar.vue', () => {
       isAdmin: true,
       isAuthenticated: true,
     });
-    ['texts', 'search'].forEach(link => {
+    ['texts', 'search', 'misc', 'lexica'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
   });
 
-  it('shows only Texts and Search when not an admin', async () => {
+  it('shows only Texts, Search, and Misc when not an admin', async () => {
     const wrapper = await createWrapper({ isAdmin: false });
 
-    ['texts', 'search'].forEach(link => {
+    ['texts', 'search', 'misc'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
 
-    ['words', 'names', 'places'].forEach(link => {
+    ['lexica'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(false);
     });
   });
@@ -137,5 +137,19 @@ describe('OareAppBar.vue', () => {
       isAdmin: false,
     });
     expect(wrapper.find('.test-admin-badge').exists()).toBe(false);
+  });
+
+  it('shows locale buttons when admin', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: true,
+    });
+    expect(wrapper.find('.test-locale').exists()).toBe(true);
+  });
+
+  it('shows locale buttons when not admin', async () => {
+    const wrapper = await createWrapper({
+      isAdmin: false,
+    });
+    expect(wrapper.find('.test-locale').exists()).toBe(true);
   });
 });

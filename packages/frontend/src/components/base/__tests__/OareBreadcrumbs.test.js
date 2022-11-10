@@ -32,10 +32,6 @@ describe('OareBreadcrumbs test', () => {
       stubs: ['router-link'],
     });
 
-  test('matches snapshot', () => {
-    expect(createWrapper()).toMatchSnapshot();
-  });
-
   test('shows separator between breadcrumb items', () => {
     const breadcrumbTexts = createWrapper()
       .text()

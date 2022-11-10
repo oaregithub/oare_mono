@@ -55,12 +55,6 @@ describe('OareDataTable', () => {
     sl.set('globalActions', actions);
   });
 
-  it('should render', () => {
-    const wrapper = createWrapper();
-
-    expect(wrapper.html()).toMatchSnapshot();
-  });
-
   it('fetches items when performing sort', async () => {
     const wrapper = createWrapper();
     await wrapper.findAll('th').at(0).trigger('click');
