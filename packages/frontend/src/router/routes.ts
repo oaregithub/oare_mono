@@ -380,11 +380,11 @@ const routes: RouteConfig[] = [
     beforeEnter: permissionGuard('PLACES'),
   },
   {
-    path: '/people/:letter',
-    name: 'people',
+    path: '/persons/:letter',
+    name: 'persons',
     component: PersonsView,
     props: true,
-    beforeEnter: permissionGuard('PEOPLE'),
+    beforeEnter: permissionGuard('PERSONS'),
   },
   {
     path: '/send_reset_password_email',
