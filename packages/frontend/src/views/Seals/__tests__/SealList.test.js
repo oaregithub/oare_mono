@@ -95,7 +95,7 @@ describe('Seal List test - Text Epigraphy', () => {
   it('has radio buttons', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.find(`.radio-${sealList[0].uuid}`).exists()).toBe(true);
+    expect(wrapper.find('.radio-0').exists()).toBe(true);
   });
 
   it('shows error snackbar on error', async () => {
