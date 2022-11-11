@@ -15,7 +15,7 @@ import {
   AddWordPayload,
   ItemPropertyRow,
   AddWordCheckPayload,
-  SpellingOccurrencesCountResponseItem,
+  TextOccurrencesCountResponseItem,
 } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
@@ -352,7 +352,7 @@ router
         )
       );
 
-      const response: SpellingOccurrencesCountResponseItem[] = spellingUuids.map(
+      const response: TextOccurrencesCountResponseItem[] = spellingUuids.map(
         (uuid, idx) => ({
           uuid,
           count: spellingOccurrencesCount[idx],

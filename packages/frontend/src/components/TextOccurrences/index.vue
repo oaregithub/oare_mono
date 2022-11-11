@@ -3,7 +3,6 @@
     :value="value"
     :title="`Texts for ${title}`"
     submitText="Disconnect"
-    :closeOnSubmit="true"
     @submit="disconnectSpellings"
     :showSubmit="canDisconnectSpellings"
     :submitDisabled="disconnectSelections.length < 1"
@@ -67,16 +66,14 @@ import {
   Ref,
   ref,
   watch,
-  inject,
   computed,
 } from '@vue/composition-api';
 import {
   Pagination,
-  SpellingOccurrenceResponseRow,
-  SpellingOccurrencesCountResponseItem,
+  TextOccurrencesResponseRow,
+  TextOccurrencesCountResponseItem,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
-import { ReloadKey } from '../../../../../index.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -94,7 +91,7 @@ export default defineComponent({
         (
           uuid: string[],
           request: Pagination
-        ) => Promise<SpellingOccurrenceResponseRow[]>
+        ) => Promise<TextOccurrencesResponseRow[]>
       >,
       required: true,
     },
@@ -103,7 +100,7 @@ export default defineComponent({
         (
           uuid: string[],
           filter: Partial<Pagination>
-        ) => Promise<SpellingOccurrencesCountResponseItem[]>
+        ) => Promise<TextOccurrencesCountResponseItem[]>
       >,
       required: true,
     },
@@ -116,16 +113,15 @@ export default defineComponent({
       default: false,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const store = sl.get('store');
-    const reload = inject(ReloadKey);
 
     const search = ref('');
     const textOccurrencesLength = ref(props.totalTextOccurrences);
-    const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
+    const textOccurrences = ref<TextOccurrencesResponseRow[]>([]);
 
     const canDisconnectSpellings = computed(() =>
       store.hasPermission('DISCONNECT_SPELLING')
@@ -163,7 +159,7 @@ export default defineComponent({
     const disconnectSpellings = async () => {
       try {
         await server.disconnectSpellings(disconnectSelections.value);
-        reload && reload();
+        emit('reload');
       } catch (err) {
         actions.showErrorSnackbar(
           'Error disconnecting spelling(s). Please try again.',

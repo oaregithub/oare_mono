@@ -89,6 +89,7 @@
           :totalTextOccurrences="formTotalOccurrences || 0"
           :getTexts="server.getSpellingOccurrencesTexts"
           :getTextsCount="server.getSpellingOccurrencesCounts"
+          @reload="reload && reload()"
         />
       </span>
 
@@ -152,18 +153,20 @@ import {
   ref,
   computed,
   onMounted,
+  inject,
 } from '@vue/composition-api';
 import {
   DictionaryForm,
-  SpellingOccurrencesCountResponseItem,
+  TextOccurrencesCountResponseItem,
   Word,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import GrammarDisplay from './components/GrammarDisplay.vue';
 import SpellingDisplay from './components/SpellingDisplay.vue';
-import TextOccurrences from './components/TextOccurrences.vue';
+import TextOccurrences from '@/components/TextOccurrences/index.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
+import { ReloadKey } from '@/views/DictionaryWord/index.vue';
 
 export default defineComponent({
   components: {
@@ -194,7 +197,7 @@ export default defineComponent({
       default: true,
     },
     spellingOccurrencesCounts: {
-      type: Array as PropType<SpellingOccurrencesCountResponseItem[]>,
+      type: Array as PropType<TextOccurrencesCountResponseItem[]>,
       default: null,
     },
   },
@@ -203,6 +206,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const router = sl.get('router');
+    const reload = inject(ReloadKey);
 
     const routeName = router.currentRoute.name;
     const spellingDialogOpen = ref(false);
@@ -293,6 +297,7 @@ export default defineComponent({
       spellingUuids,
       getSpellingOccurrencesByUuid,
       formTotalOccurrences,
+      reload,
     };
   },
 });

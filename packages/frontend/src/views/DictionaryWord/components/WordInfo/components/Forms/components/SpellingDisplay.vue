@@ -56,6 +56,7 @@
       :totalTextOccurrences="spellingOccurrencesCount || 0"
       :getTexts="server.getSpellingOccurrencesTexts"
       :getTextsCount="server.getSpellingOccurrencesCounts"
+      @reload="reload && reload()"
     />
     <OareDialog
       v-model="deleteSpellingDialog"
@@ -83,7 +84,7 @@ import {
 import { FormSpelling, DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import UtilList from '@/components/UtilList/index.vue';
-import TextOccurrences from './TextOccurrences.vue';
+import TextOccurrences from '@/components/TextOccurrences/index.vue';
 import { ReloadKey } from '../../../../../index.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 
@@ -171,6 +172,7 @@ export default defineComponent({
       routeName,
       openComment,
       openEditDialog,
+      reload,
     };
   },
 });

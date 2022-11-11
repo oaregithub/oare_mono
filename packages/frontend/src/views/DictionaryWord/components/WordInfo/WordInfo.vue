@@ -169,7 +169,7 @@ import {
   DictionaryForm,
   FormSpelling,
   ParseTreeProperty,
-  SpellingOccurrencesCountResponseItem,
+  TextOccurrencesCountResponseItem,
 } from '@oare/types';
 import FormDisplay from './components/Forms/FormDisplay.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
@@ -231,9 +231,9 @@ export default defineComponent({
     const appliedPropertiesForFiltering = ref<(string | null)[]>([]);
     const filteredForms = ref(props.wordInfo.forms);
     const filteredFormsByProperties = ref(props.wordInfo.forms);
-    const spellingOccurrencesCounts = ref<
-      SpellingOccurrencesCountResponseItem[]
-    >([]);
+    const spellingOccurrencesCounts = ref<TextOccurrencesCountResponseItem[]>(
+      []
+    );
     const spellingOccurrencesCountsLoading = ref(false);
 
     const searchQuery = useQueryParam('filter', '', true);
@@ -367,7 +367,7 @@ export default defineComponent({
 
     const getSpellingOccurrencesByForm = (
       form: DictionaryForm
-    ): SpellingOccurrencesCountResponseItem[] => {
+    ): TextOccurrencesCountResponseItem[] => {
       return spellingOccurrencesCounts.value.filter(item =>
         form.spellings.map(spelling => spelling.uuid).includes(item.uuid)
       );

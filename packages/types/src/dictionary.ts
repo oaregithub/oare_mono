@@ -135,7 +135,7 @@ export interface DictionarySearchPayload {
   mode: string;
 }
 
-export interface SpellingOccurrenceRow {
+export interface TextOccurrencesRow {
   discourseUuid: string;
   textName: string;
   textUuid: string;
@@ -143,7 +143,7 @@ export interface SpellingOccurrenceRow {
   wordOnTablet: number;
 }
 
-export interface SpellingOccurrenceResponseRow extends SpellingOccurrenceRow {
+export interface TextOccurrencesResponseRow extends TextOccurrencesRow {
   readings: string[];
 }
 
@@ -214,7 +214,7 @@ export interface ConnectSpellingDiscoursePayload {
   spellingUuid: string;
 }
 
-export interface SpellingOccurrencesCountResponseItem {
+export interface TextOccurrencesCountResponseItem {
   uuid: string;
   count: number;
 }
