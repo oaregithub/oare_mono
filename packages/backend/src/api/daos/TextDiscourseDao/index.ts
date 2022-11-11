@@ -3,7 +3,7 @@ import {
   DiscourseLineSpelling,
   Pagination,
   SearchDiscourseSpellingRow,
-  SpellingOccurrenceRow,
+  TextOccurrencesRow,
   DiscourseUnit,
   DiscourseUnitType,
   TextDiscourseRow,
@@ -338,13 +338,13 @@ class TextDiscourseDao {
     userUuid: string | null,
     { limit, page, filter }: Pagination,
     trx?: Knex.Transaction
-  ): Promise<SpellingOccurrenceRow[]> {
+  ): Promise<TextOccurrencesRow[]> {
     const k = trx || knexRead();
 
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
-    const rows: SpellingOccurrenceRow[] = await k('text_discourse')
+    const rows: TextOccurrencesRow[] = await k('text_discourse')
       .distinct(
         'text_discourse.uuid AS discourseUuid',
         'name AS textName',

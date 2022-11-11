@@ -8,14 +8,14 @@ import {
   AddFormSpellingResponse,
   CheckSpellingResponse,
   Pagination,
-  SpellingOccurrenceResponseRow,
+  TextOccurrencesResponseRow,
   TaxonomyTree,
   AddFormPayload,
   AddWordPayload,
   ParseTreeProperty,
   AddWordCheckPayload,
   ConnectSpellingDiscoursePayload,
-  SpellingOccurrencesCountResponseItem,
+  TextOccurrencesCountResponseItem,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -85,7 +85,7 @@ async function checkSpelling(spelling: string): Promise<CheckSpellingResponse> {
 async function getSpellingOccurrencesCounts(
   spellingUuids: string[],
   pagination?: Partial<Pagination>
-): Promise<SpellingOccurrencesCountResponseItem[]> {
+): Promise<TextOccurrencesCountResponseItem[]> {
   const { data } = await axios.post(
     '/dictionary/spellings/occurrences/count',
     spellingUuids,
@@ -101,7 +101,7 @@ async function getSpellingOccurrencesCounts(
 async function getSpellingOccurrencesTexts(
   spellingUuids: string[],
   pagination: Pagination
-): Promise<SpellingOccurrenceResponseRow[]> {
+): Promise<TextOccurrencesResponseRow[]> {
   const { data } = await axios.get('/dictionary/spellings/occurrences/texts', {
     params: {
       ...pagination,
