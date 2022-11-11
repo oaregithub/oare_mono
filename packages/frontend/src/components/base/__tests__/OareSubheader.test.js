@@ -17,10 +17,6 @@ describe('OareSubheader test', () => {
       },
     });
 
-  it('matches snapshot', () => {
-    expect(createWrapper('Test Subheader')).toMatchSnapshot();
-  });
-
   it('displays passed in slot', () => {
     const text = 'Test Subheader';
     expect(createWrapper(text).text()).toBe(text);

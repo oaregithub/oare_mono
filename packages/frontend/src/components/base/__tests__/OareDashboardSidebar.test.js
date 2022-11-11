@@ -22,12 +22,31 @@ describe('OareDashboardSidebar', () => {
     });
   });
 
-  it('matches snapshot', () => {
-    expect(wrapper).toMatchSnapshot();
+  it('contains expected sidebar links', () => {
+    ['Profile', 'Drafts'].forEach(link => {
+      const linkItem = wrapper.find(`[data-testid="${link}"]`);
+      expect(linkItem.text()).toBe(link);
+    });
+  });
+});
+
+describe('OareDashboardSidebar with permissions', () => {
+  const mockStore = {
+    hasPermission: () => true,
+  };
+
+  let wrapper;
+  beforeEach(() => {
+    sl.set('store', mockStore);
+    wrapper = mount(OareDashboardSidebar, {
+      localVue,
+      vuetify: new Vuetify(),
+      stubs: ['router-link'],
+    });
   });
 
   it('contains expected sidebar links', () => {
-    ['Profile', 'Drafts'].forEach(link => {
+    ['Profile', 'Drafts', 'Comments', 'Preferences'].forEach(link => {
       const linkItem = wrapper.find(`[data-testid="${link}"]`);
       expect(linkItem.text()).toBe(link);
     });

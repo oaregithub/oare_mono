@@ -24,7 +24,7 @@
       <div class="d-flex align-center">
         <v-menu offset-y>
           <template #activator="{ on, attrs }">
-            <v-btn v-on="on" v-bind="attrs" text class="mr-2">
+            <v-btn v-on="on" v-bind="attrs" text class="test-locale mr-2">
               <v-icon small class="mr-1">mdi-translate</v-icon>
               {{ selectedLocale.value }}
             </v-btn>
@@ -126,7 +126,9 @@
           v-if="canViewWords || canViewNames || canViewPlaces"
         >
           <template #activator="{ on, attrs }">
-            <v-btn text dark v-bind="attrs" v-on="on"> Lexica </v-btn>
+            <v-btn class="test-lexica" text dark v-bind="attrs" v-on="on">
+              Lexica
+            </v-btn>
           </template>
           <v-list dense>
             <v-list-item v-if="canViewWords" class="pa-0">
@@ -146,8 +148,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn class="test-places" text to="/people/A" v-if="canViewPeople"
-          >People</v-btn
+        <v-btn class="test-places" text to="/persons/A" v-if="canViewPersons"
+          >Persons</v-btn
         >
 
         <v-menu offset-y open-on-hover>
@@ -177,7 +179,9 @@
 
         <v-menu offset-y open-on-hover>
           <template #activator="{ on, attrs }">
-            <v-btn text dark v-bind="attrs" v-on="on"> Misc. </v-btn>
+            <v-btn class="test-misc" text dark v-bind="attrs" v-on="on">
+              Misc.
+            </v-btn>
           </template>
           <v-list dense>
             <v-list-item v-if="canViewBibliography" class="pa-0">
@@ -238,7 +242,7 @@ export default defineComponent({
     const canViewWords = computed(() => store.hasPermission('WORDS'));
     const canViewNames = computed(() => store.hasPermission('NAMES'));
     const canViewPlaces = computed(() => store.hasPermission('PLACES'));
-    const canViewPeople = computed(() => store.hasPermission('PEOPLE'));
+    const canViewPersons = computed(() => store.hasPermission('PERSONS'));
     const canViewBibliography = computed(() =>
       store.hasPermission('BIBLIOGRAPHY')
     );
@@ -277,7 +281,7 @@ export default defineComponent({
       canViewWords,
       canViewNames,
       canViewPlaces,
-      canViewPeople,
+      canViewPersons,
       canViewBibliography,
       canViewSeals,
       i18n,

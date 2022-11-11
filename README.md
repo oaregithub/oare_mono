@@ -305,21 +305,21 @@ Because multiple team members are making changes to the code and the contents of
 
 ### Code
 
-To keep your code up-to-date, make sure to pull down the latest version of the `master` branch. We recommend doing this at the beginning of each day you work, after any major changes in the codebase, or anytime after you merge changes into the `master` branch.
+To keep your code up-to-date, make sure to pull down the latest version of the `main` branch. We recommend doing this at the beginning of each day you work, after any major changes in the codebase, or anytime after you merge changes into the `main` branch.
 
-To pull down the latest version of `master`, first make sure that you are on the correct branch:
+To pull down the latest version of `main`, first make sure that you are on the correct branch:
 
 ```
-git checkout master
+git checkout main
 ```
 
-Once you are on the `master` branch, run the following to pull down all the latest changes:
+Once you are on the `main` branch, run the following to pull down all the latest changes:
 
 ```
 git pull
 ```
 
-This will pull in the latest version of the `master` branch. If you are currently in the middle of making changes to a different branch, it is a good idea to update that branch with the newly pulled version of `master`. To do so, first navigate to the branch that needs updating:
+This will pull in the latest version of the `main` branch. If you are currently in the middle of making changes to a different branch, it is a good idea to update that branch with the newly pulled version of `main`. To do so, first navigate to the branch that needs updating:
 
 ```
 git checkout <your-branch>
@@ -328,10 +328,10 @@ git checkout <your-branch>
 Once you are on the branch that needs to be updated, run:
 
 ```
-git merge master
+git merge main
 ```
 
-This will merge the latest version of `master` into the branch you are currently editing. On occasion, this will result in merge conflicts that will need to be resolved before continuing.
+This will merge the latest version of `main` into the branch you are currently editing. On occasion, this will result in merge conflicts that will need to be resolved before continuing.
 
 ### Local Database Copy
 
@@ -357,13 +357,13 @@ For each coding assignment that you receive, you will be assigned an issue on Gi
 
 As a side note, we try to keep our pull requests as atomic as possible for any given task. This makes it easier to review code and prevents big bugs that could result from releasing large chunks of new code at the same time. Many issues that you will be assigned will already be atomic and will only require one pull request. However, some issues may be larger projects that require dozens of changes to dozens of files. If that is the case, please create a plan to separate the issue into separate steps and create new issues for each of those new steps. For example, you might separate frontend changes and new backend API routes into two separate issues.
 
-If you need to split an issue into multiple pieces, it's usually best to use a "feature branch". This means that each individual piece will be merged into one "feature branch". Then, once all the pieces are complete, the whole feature branch will be merged into the master branch. This prevents us from shipping partially complete code, but also allows us to keep our changes as atomic as possible. If you need help knowing how to create a feature branch, the team lead will be happy to help!
+If you need to split an issue into multiple pieces, it's usually best to use a "feature branch". This means that each individual piece will be merged into one "feature branch". Then, once all the pieces are complete, the whole feature branch will be merged into the `main` branch. This prevents us from shipping partially complete code, but also allows us to keep our changes as atomic as possible. If you need help knowing how to create a feature branch, the team lead will be happy to help!
 
 ## Create a Local Branch with a Relevant Name
 
-When making changes to the code, we never want to make changes directly on the `master` branch, which is the source of truth for our production code. Instead, for each new task you will create a new branch off of `master` and make your changes there. Make sure to give the branch a name that is relevant to the task you are completing.
+When making changes to the code, we never want to make changes directly on the `main` branch, which is the source of truth for our production code. Instead, for each new task you will create a new branch off of `main` and make your changes there. Make sure to give the branch a name that is relevant to the task you are completing.
 
-First, from the `master` branch, create a new branch with the relevant name of your choice:
+First, from the `main` branch, create a new branch with the relevant name of your choice:
 
 ```
 git branch <branch-name>
@@ -401,7 +401,7 @@ Make sure to thoroughly test your code to make sure it behaves properly under a 
 
 To make sure that everything works properly, we write thorough unit tests for both the frontend views and the backend API routes. These unit tests help us verify that the code is working correctly, but also allow us to catch unexpected "domino effects" that may result from any changes we make. Similar to how linting is performed in automatic Github Actions, all unit tests are run whenever new changes are pushed. This prevents us from merging changes with failing tests.
 
-As such, the vast majority of the tasks you'll be assigned will require you to write relevant unit tests. For example, you might test that a button changes the view appropriately when clicked or that an API route calls the correct backend function when called. We'll want to make sure all relevant tests have been written before merging any changes into `master`.
+As such, the vast majority of the tasks you'll be assigned will require you to write relevant unit tests. For example, you might test that a button changes the view appropriately when clicked or that an API route calls the correct backend function when called. We'll want to make sure all relevant tests have been written before merging any changes into `main`.
 
 A tutorial for writing unit tests will be created soon. In the meantime, the team lead will help you learn how to write and run unit tests. You can view examples in the codebase by reviewing any file that ends with `.test.js`.
 
@@ -426,7 +426,7 @@ If all of these checks run without errors, you are good to commit and push your 
 
 ## Commit and Push
 
-If you are familiar with Git, you know that the process of saving changes involves staging file changes and committing them with a message. Then, we'll want to push those changes to the remote repository on Github for review before merging them into `master`.
+If you are familiar with Git, you know that the process of saving changes involves staging file changes and committing them with a message. Then, we'll want to push those changes to the remote repository on Github for review before merging them into `main`.
 
 To stage all file changes, run:
 
@@ -458,7 +458,7 @@ On the page that appears, give the PR a name and a detailed description, if nece
 
 ![](./readme-imgs/create-pr.png)
 
-Next, use the right pane to link the PR to the associated issue that you are working on. By linking the PR and the issue, when the PR is merged into `master`, the issue will automatically close and will subsequently be removed from the list of current issues.
+Next, use the right pane to link the PR to the associated issue that you are working on. By linking the PR and the issue, when the PR is merged into `main`, the issue will automatically close and will subsequently be removed from the list of current issues.
 
 ![](./readme-imgs/link-issue.png)
 
@@ -482,7 +482,7 @@ As soon as they can, the team lead will review the changes in your Pull Request.
 
 ## Merge Changes
 
-Once the changes have been approved, the code is ready to be merged into the `master` branch. To do so, in the "Conversation" tab of the PR, scroll down until you see the "Squash and merge" button. You may have to click the green arrow to see this option. Confirm the merge and delete the branch when prompted.
+Once the changes have been approved, the code is ready to be merged into the `main` branch. To do so, in the "Conversation" tab of the PR, scroll down until you see the "Squash and merge" button. You may have to click the green arrow to see this option. Confirm the merge and delete the branch when prompted.
 
 ![](./readme-imgs/squash-and-merge.png)
 
@@ -490,8 +490,8 @@ Then, click the "Actions" tab at the top and select the merge action that is cur
 
 # Appendix: Elastic Beanstalk
 
-Elastic Beanstalk basically automates the process of providing several EC2 instances and load balancers for the site. Most of the time you won't have to do anything here since the site automatically gets deployed to Elastic Beanstalk when your code is merged into the master branch of the Git repository.
+Elastic Beanstalk basically automates the process of providing several EC2 instances and load balancers for the site. Most of the time you won't have to do anything here since the site automatically gets deployed to Elastic Beanstalk when your code is merged into the `main` branch of the Git repository.
 
-Due to the international nature of this project and its contributors, we currently have EC2 instances hosted in both the United States and Europe, as well as database instances in both regions. AWS automatically handles latency-based routing for both the EC2 instances and the RDS databases. When changes are merged into `master`, the Github Actions that currently run will automatically deploy the identical, updated code to both server instances. It is unlikely that you will ever need to make any changes to this arrangement.
+Due to the international nature of this project and its contributors, we currently have EC2 instances hosted in both the United States and Europe, as well as database instances in both regions. AWS automatically handles latency-based routing for both the EC2 instances and the RDS databases. When changes are merged into `main`, the Github Actions that currently run will automatically deploy the identical, updated code to both server instances. It is unlikely that you will ever need to make any changes to this arrangement.
 
 If you do need to change something in EB, it will most likely be environment variables. For example, you should routinely change the password to the database. When you do, you will need to update the OARE_DB_URL environment variable with the new password value.

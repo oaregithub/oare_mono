@@ -28,27 +28,21 @@ describe('SpellingDisplay test', () => {
     hasPermission: name => ['UPDATE_FORM'].includes(name),
   };
 
-  const mockOccurrences = {
-    totalResults: 1,
-    rows: [
-      {
-        textName: 'text-name',
-        textUuid: 'text-uuid',
-        readings: ['spelling reading'],
-      },
-    ],
-  };
-
   const mockServer = {
     updateSpelling: jest.fn().mockResolvedValue(null),
     removeSpelling: jest.fn().mockResolvedValue(null),
-    getSpellingTextOccurrences: jest.fn().mockResolvedValue([
+    getSpellingOccurrencesTexts: jest.fn().mockResolvedValue([
       {
         textName: 'text-name',
         textUuid: 'text-uuid',
       },
     ]),
-    getSpellingTotalOccurrences: jest.fn().mockResolvedValue(12),
+    getSpellingOccurrencesCounts: jest.fn().mockResolvedValue([
+      {
+        uuid: 'spelling-uuid',
+        count: 12,
+      },
+    ]),
   };
 
   const mockActions = {
@@ -79,6 +73,7 @@ describe('SpellingDisplay test', () => {
         spelling,
         form,
         wordUuid,
+        spellingOccurrencesCount: 12,
       },
       stubs: ['router-link'],
       provide: {
@@ -121,23 +116,5 @@ describe('SpellingDisplay test', () => {
 
     expect(wrapper.find('.test-pencil').exists()).toBe(false);
     expect(wrapper.find('.test-close').exists()).toBe(false);
-  });
-
-  it('retrieves total spelling occurrences on load', async () => {
-    createWrapper();
-    expect(mockServer.getSpellingTotalOccurrences).toHaveBeenCalled();
-  });
-
-  it('displays error on failed total occurrences retreival', async () => {
-    createWrapper({
-      server: {
-        ...mockServer,
-        getSpellingTotalOccurrences: jest
-          .fn()
-          .mockRejectedValue('failed to load total occurrences'),
-      },
-    });
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 });

@@ -183,7 +183,8 @@ type CacheRouteType =
   | 'Dictionary'
   | 'Page Content'
   | 'Bibliography'
-  | 'Seal';
+  | 'Seal'
+  | 'Persons';
 
 interface RoutePiece {
   type: 'static' | 'param' | 'separator';
@@ -261,6 +262,7 @@ export default defineComponent({
       'Page Content',
       'Bibliography',
       'Seal',
+      'Persons',
     ]);
 
     const individualClearTemplates = ref<IndividualClearTemplate[]>([
@@ -607,6 +609,48 @@ export default defineComponent({
         ],
         level: 'exact',
         type: 'Seal',
+      },
+      {
+        name: 'Persons List - All',
+        routePieces: [
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'static',
+            label: 'persons',
+          },
+          {
+            type: 'separator',
+            label: '/',
+          },
+        ],
+        level: 'startsWith',
+        type: 'Persons',
+      },
+      {
+        name: 'Persons List - Specific',
+        routePieces: [
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'static',
+            label: 'persons',
+          },
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'param',
+            label: 'Letter',
+          },
+        ],
+        level: 'exact',
+        type: 'Persons',
       },
     ]);
 

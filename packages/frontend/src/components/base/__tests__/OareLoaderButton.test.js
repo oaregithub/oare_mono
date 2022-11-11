@@ -20,10 +20,6 @@ describe('OareLoaderButton test', () => {
       },
     });
 
-  it('matches snapshot', () => {
-    expect(createWrapper(false)).toMatchSnapshot();
-  });
-
   it('displays given text when not loading', () => {
     const wrapper = createWrapper(false);
     expect(wrapper.text()).toBe('Test Button');

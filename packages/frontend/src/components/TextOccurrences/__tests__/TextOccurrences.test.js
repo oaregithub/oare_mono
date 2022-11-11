@@ -3,8 +3,7 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
-import { ReloadKey } from '@/views/DictionaryWord/index.vue';
-import TextOccurrences from '../TextOccurrences.vue';
+import TextOccurrences from '../index.vue';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -49,6 +48,12 @@ describe('TextOccurrences test', () => {
       readings: ['<strong>2. This is text 2</strong>'],
     },
   ];
+  const mockTextOccurrencesCount = [
+    {
+      uuid: 'uuid',
+      count: 2,
+    },
+  ];
 
   const mockProps = {
     title: mockTitle,
@@ -56,18 +61,13 @@ describe('TextOccurrences test', () => {
     value: true,
     totalTextOccurrences: mockTotalTextOccurrences,
     getTexts: jest.fn().mockResolvedValue(mockTextOccurrences),
-    getTextsCount: jest.fn().mockResolvedValue(mockTextOccurrences.length),
+    getTextsCount: jest.fn().mockResolvedValue(mockTextOccurrencesCount),
   };
-
-  const reload = jest.fn();
 
   const createWrapper = ({ props } = {}) =>
     mount(TextOccurrences, {
       vuetify,
       localVue,
-      provide: {
-        [ReloadKey]: reload,
-      },
       propsData: props || mockProps,
       stubs: ['router-link'],
     });

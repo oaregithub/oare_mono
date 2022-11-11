@@ -30,6 +30,24 @@ describe('OareAdminSidebar', () => {
     return mount(OareAdminSidebar, renderOptions);
   };
 
+  it('contains expected sidebar links', () => {
+    const wrapper = createWrapper();
+    [
+      'Groups',
+      'Public Denylist',
+      'Quarantined Texts',
+      'Error Log',
+      'Comments',
+      'Text Drafts',
+      'Properties Taxonomy',
+      'Site Analytics',
+      'Admin Settings',
+    ].forEach(link => {
+      const linkItem = wrapper.find(`[data-testid="${link}"]`);
+      expect(linkItem.text()).toBe(link);
+    });
+  });
+
   it('does not display error indicator when not in store', async () => {
     const wrapper = createWrapper();
     await flushPromises();

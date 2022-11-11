@@ -41,21 +41,23 @@
     &nbsp;
     <span v-if="spelling.hasOccurrence">
       (<a @click="textOccurrenceDialog = true" class="test-num-texts">{{
-        totalOccurrencesLoading ? 'Loading...' : totalOccurrences
+        spellingOccurrencesCount !== null
+          ? spellingOccurrencesCount
+          : 'Loading...'
       }}</a
       >)</span
     >
-
     <text-occurrences
+      v-if="textOccurrenceDialog"
       v-model="textOccurrenceDialog"
       class="test-text-occurrences-display"
       :title="spelling.spelling"
       :uuids="[spelling.uuid]"
-      :totalTextOccurrences="totalOccurrences"
-      :getTexts="server.getSpellingTextOccurrences"
-      :get-texts-count="server.getSpellingTotalOccurrences"
-    >
-    </text-occurrences>
+      :totalTextOccurrences="spellingOccurrencesCount || 0"
+      :getTexts="server.getSpellingOccurrencesTexts"
+      :getTextsCount="server.getSpellingOccurrencesCounts"
+      @reload="reload && reload()"
+    />
     <OareDialog
       v-model="deleteSpellingDialog"
       title="Delete spelling"
@@ -78,12 +80,11 @@ import {
   computed,
   PropType,
   inject,
-  onMounted,
 } from '@vue/composition-api';
 import { FormSpelling, DictionaryForm } from '@oare/types';
 import sl from '@/serviceLocator';
 import UtilList from '@/components/UtilList/index.vue';
-import TextOccurrences from './TextOccurrences.vue';
+import TextOccurrences from '@/components/TextOccurrences/index.vue';
 import { ReloadKey } from '../../../../../index.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 
@@ -101,10 +102,6 @@ export default defineComponent({
       type: Object as PropType<DictionaryForm>,
       required: true,
     },
-    wordUuid: {
-      type: String,
-      required: true,
-    },
     uuidToHighlight: {
       type: String,
       default: null,
@@ -113,8 +110,12 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
+    spellingOccurrencesCount: {
+      type: Number,
+      default: null,
+    },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -129,8 +130,6 @@ export default defineComponent({
     const deleteLoading = ref(false);
     const isEditing = ref(false);
     const isCommenting = ref(false);
-    const totalOccurrences = ref(0);
-    const totalOccurrencesLoading = ref(false);
 
     const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
 
@@ -153,23 +152,6 @@ export default defineComponent({
       });
     };
 
-    onMounted(async () => {
-      try {
-        totalOccurrencesLoading.value = true;
-        totalOccurrences.value = await server.getSpellingTotalOccurrences([
-          props.spelling.uuid,
-        ]);
-        emit('total-occurrences', totalOccurrences.value);
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error loading spelling occurrences. Please try again.',
-          err as Error
-        );
-      } finally {
-        totalOccurrencesLoading.value = false;
-      }
-    });
-
     const openEditDialog = (form: DictionaryForm, spelling: FormSpelling) => {
       EventBus.$emit(ACTIONS.EDIT_WORD_DIALOG, {
         form,
@@ -185,13 +167,12 @@ export default defineComponent({
       canEdit,
       isEditing,
       isCommenting,
-      totalOccurrences,
-      totalOccurrencesLoading,
       deleteSpellingDialog,
       deleteSpelling,
       routeName,
       openComment,
       openEditDialog,
+      reload,
     };
   },
 });

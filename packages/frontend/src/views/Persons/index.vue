@@ -1,11 +1,25 @@
 <template>
-  <OareContentView title="People (Prosopographical Index)" :loading="loading">
+  <OareContentView
+    title="Persons (Prosopographical Index)"
+    informationCard="The list of persons here is under development. There are many duplicates of the type A f. (father of) B and A f. C where A is the same person. In addition, there are surely many persons missing from the current index."
+    :loading="loading"
+  >
     <oare-letter-filter
       :letter="letter"
-      route="people"
+      route="persons"
       filterTitle="persons"
       @search-input="filterPersons"
     />
+    <v-row
+      v-for="(person, idx) in filteredPersonList"
+      :key="idx"
+      class="ma-0 ml-3"
+    >
+      <router-link :to="`/person/${person.person.uuid}`" class="mr-1">
+        {{ person.display }}</router-link
+      >
+      <span>({{ person.occurrences }})</span>
+    </v-row>
   </OareContentView>
 </template>
 
@@ -13,7 +27,7 @@
 import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { PersonListItem } from '@oare/types';
 import sl from '@/serviceLocator';
-import TextOccurrences from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/TextOccurrences.vue';
+import TextOccurrences from '@/components/TextOccurrences/index.vue';
 
 export default defineComponent({
   name: 'PersonsView',
@@ -35,21 +49,20 @@ export default defineComponent({
     const personList = ref<PersonListItem[]>([]);
     const filteredPersonList = ref<PersonListItem[]>([]);
 
-    const searchFilter = (
-      _search: string,
-      _personDisplay: PersonListItem
-    ): boolean => {
-      return true;
+    const searchFilter = (search: string, personDisplay: PersonListItem) => {
+      return personDisplay.display
+        .toLowerCase()
+        .includes(search.toLocaleLowerCase());
     };
 
-    const getPeople = async () => {
+    const getPersons = async () => {
       try {
         loading.value = true;
-        personList.value = []; // Replace with call to server
+        personList.value = await server.getPersons(props.letter);
         filteredPersonList.value = personList.value;
       } catch (err) {
         actions.showErrorSnackbar(
-          'Failed to retrieve people. Please try again.',
+          'Failed to retrieve persons. Please try again.',
           err as Error
         );
       } finally {
@@ -66,12 +79,12 @@ export default defineComponent({
     watch(
       () => props.letter,
       async () => {
-        await getPeople();
+        await getPersons();
       }
     );
 
     onMounted(async () => {
-      await getPeople();
+      await getPersons();
     });
 
     return {
