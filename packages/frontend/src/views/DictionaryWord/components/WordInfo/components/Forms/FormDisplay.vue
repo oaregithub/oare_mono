@@ -85,7 +85,7 @@
           v-model="textOccurrenceDialog"
           class="test-text-occurrences-display"
           :title="form.form"
-          :spellingUuids="spellingUuids"
+          :uuids="spellingUuids"
           :totalTextOccurrences="formTotalOccurrences || 0"
           :getTexts="server.getSpellingOccurrencesTexts"
           :getTextsCount="server.getSpellingOccurrencesCounts"

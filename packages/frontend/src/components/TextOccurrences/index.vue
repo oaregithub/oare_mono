@@ -82,7 +82,7 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    spellingUuids: {
+    uuids: {
       type: Array as PropType<string[]>,
       required: true,
     },
@@ -177,7 +177,7 @@ export default defineComponent({
     const getReferences = async () => {
       try {
         referencesLoading.value = true;
-        textOccurrences.value = await props.getTexts(props.spellingUuids, {
+        textOccurrences.value = await props.getTexts(props.uuids, {
           page: tableOptions.value.page,
           limit: tableOptions.value.itemsPerPage,
           ...(search.value ? { filter: search.value } : null),
@@ -193,7 +193,7 @@ export default defineComponent({
     };
 
     watch(
-      () => props.spellingUuids,
+      () => props.uuids,
       async () => {
         await getReferences();
       }
@@ -205,7 +205,7 @@ export default defineComponent({
       search,
       _.debounce(async () => {
         textOccurrencesLength.value = (
-          await props.getTextsCount(props.spellingUuids, {
+          await props.getTextsCount(props.uuids, {
             filter: search.value,
           })
         ).reduce((sum, current) => sum + current.count, 0);
