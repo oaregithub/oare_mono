@@ -22,10 +22,6 @@ describe('OareSidebar test', () => {
     });
   };
 
-  it('matches snapshot', () => {
-    expect(createWrapper()).toMatchSnapshot();
-  });
-
   it('search button is disabled when inputs are all blank', () => {
     const searchBtn = createWrapper().find('.test-search-btn');
     expect(searchBtn.element).toHaveClass('v-btn--disabled');

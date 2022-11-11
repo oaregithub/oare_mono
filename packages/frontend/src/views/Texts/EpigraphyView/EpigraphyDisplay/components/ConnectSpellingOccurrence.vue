@@ -118,14 +118,14 @@ import {
   ConnectSpellingDiscoursePayload,
   Pagination,
   SearchSpellingResultRow,
-  SpellingOccurrenceResponseRow,
+  TextOccurrencesResponseRow,
 } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import utils from '@/utils';
 
 export interface ConnectSpellingOccurrenceObj {
-  textInfo: SpellingOccurrenceResponseRow[];
+  textInfo: TextOccurrencesResponseRow[];
   dictionaryInfo: SearchSpellingResultRow;
 }
 
@@ -136,7 +136,7 @@ export default defineComponent({
         (
           uuid: string[],
           request: Pagination
-        ) => Promise<SpellingOccurrenceResponseRow[]>
+        ) => Promise<TextOccurrencesResponseRow[]>
       >,
       required: true,
     },

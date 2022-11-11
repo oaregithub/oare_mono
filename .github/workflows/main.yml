@@ -3,7 +3,7 @@
 name: CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# events but only for the main branch
 on:
   push:
     branches:
@@ -44,11 +44,11 @@ jobs:
         run: yarn migrate:latest-prod
         env:
           OARE_DB_URL: ${{ secrets.OARE_DB_URL }}
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
 
       - name: Zip Files
         run: yarn zip
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
 
       # Uncomment if you want to debug a build. It will upload the zip file to S3.
       # The bucket does not have public access, so you'll need to change the access to public for this to work.
@@ -71,13 +71,13 @@ jobs:
         with:
           timeZone: 8
           format: 'YYYY-MM-DD-HH-mm-ss'
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
 
       - name: Deploy Serverless to Lambda
         run: |
           yarn workspace @oare/serverless serverless config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           yarn workspace @oare/serverless serverless deploy -v -r us-west-2
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
 
       - name: Deploy to EB - US West (Oregon)
         uses: einaregilsson/beanstalk-deploy@v20
@@ -85,11 +85,11 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: oare
-          environment_name: oare-env-v2
+          environment_name: oare-env-v3
           version_label: 'oare-oregon-${{ steps.time.outputs.time }}'
           region: us-west-2
           deployment_package: oare_build.zip
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
 
       # NOTE: Temporarily Disabled While International Server(s) Are Deprecated
       # - name: Deploy to EB - Europe (Paris)
@@ -102,4 +102,4 @@ jobs:
       #     version_label: 'oare-paris-${{ steps.time.outputs.time }}'
       #     region: eu-west-3
       #     deployment_package: oare_build.zip
-      #   if: github.ref == 'refs/heads/master'
+      #   if: github.ref == 'refs/heads/main'

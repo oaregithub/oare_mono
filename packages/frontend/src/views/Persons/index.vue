@@ -27,7 +27,7 @@
 import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { PersonListItem } from '@oare/types';
 import sl from '@/serviceLocator';
-import TextOccurrences from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/TextOccurrences.vue';
+import TextOccurrences from '@/components/TextOccurrences/index.vue';
 
 export default defineComponent({
   name: 'PersonsView',

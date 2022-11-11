@@ -3,8 +3,8 @@ import { Knex } from 'knex';
 import { ParsedQs } from 'qs';
 import {
   Pagination,
-  SpellingOccurrenceResponseRow,
-  SpellingOccurrenceRow,
+  TextOccurrencesResponseRow,
+  TextOccurrencesRow,
   ItemPropertyRowWithChildren,
   ItemPropertyRow,
   LocaleCode,
@@ -54,10 +54,10 @@ export const parsedQuery = (url: string): URLSearchParams => {
   return new URLSearchParams(queryString);
 };
 
-export const getTextOccurrences = async <Type extends SpellingOccurrenceRow[]>(
-  rows: Type,
+export const getTextOccurrences = async (
+  rows: TextOccurrencesRow[],
   locale: LocaleCode
-): Promise<SpellingOccurrenceResponseRow[]> => {
+): Promise<TextOccurrencesResponseRow[]> => {
   const TextEpigraphyDao = sl.get('TextEpigraphyDao');
   const epigraphicUnits = await Promise.all(
     rows.map(({ textUuid }) => TextEpigraphyDao.getEpigraphicUnits(textUuid))

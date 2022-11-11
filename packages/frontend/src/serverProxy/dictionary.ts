@@ -8,13 +8,14 @@ import {
   AddFormSpellingResponse,
   CheckSpellingResponse,
   Pagination,
-  SpellingOccurrenceResponseRow,
+  TextOccurrencesResponseRow,
   TaxonomyTree,
   AddFormPayload,
   AddWordPayload,
   ParseTreeProperty,
   AddWordCheckPayload,
   ConnectSpellingDiscoursePayload,
+  TextOccurrencesCountResponseItem,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -81,32 +82,32 @@ async function checkSpelling(spelling: string): Promise<CheckSpellingResponse> {
   return data;
 }
 
-async function getSpellingTextOccurrences(
+async function getSpellingOccurrencesCounts(
+  spellingUuids: string[],
+  pagination?: Partial<Pagination>
+): Promise<TextOccurrencesCountResponseItem[]> {
+  const { data } = await axios.post(
+    '/dictionary/spellings/occurrences/count',
+    spellingUuids,
+    {
+      params: {
+        ...pagination,
+      },
+    }
+  );
+  return data;
+}
+
+async function getSpellingOccurrencesTexts(
   spellingUuids: string[],
   pagination: Pagination
-): Promise<SpellingOccurrenceResponseRow[]> {
-  const { data } = await axios.get('/dictionary/spelling_occurrences/texts', {
+): Promise<TextOccurrencesResponseRow[]> {
+  const { data } = await axios.get('/dictionary/spellings/occurrences/texts', {
     params: {
       ...pagination,
       spellingUuids,
     },
   });
-  return data;
-}
-
-async function getSpellingTotalOccurrences(
-  spellingUuids: string[],
-  pagination?: Partial<Pagination>
-): Promise<number> {
-  const { data } = await axios.get(
-    '/dictionary/spellings/spelling_occurrences/occurrences',
-    {
-      params: {
-        ...pagination,
-        spellingUuids,
-      },
-    }
-  );
   return data;
 }
 
@@ -173,9 +174,8 @@ export default {
   updateSpelling,
   removeSpelling,
   checkSpelling,
-  getSpellingTextOccurrences,
+  getSpellingOccurrencesTexts,
   getDictionaryInfoByDiscourseUuid,
-  getSpellingTotalOccurrences,
   getTaxonomyTree,
   addForm,
   disconnectSpellings,
@@ -183,4 +183,5 @@ export default {
   getDictionaryInfoBySpellingUuid,
   checkNewWord,
   addWord,
+  getSpellingOccurrencesCounts,
 };

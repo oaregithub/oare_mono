@@ -3,7 +3,6 @@
     :value="value"
     :title="`Texts for ${title}`"
     submitText="Disconnect"
-    :closeOnSubmit="true"
     @submit="disconnectSpellings"
     :showSubmit="canDisconnectSpellings"
     :submitDisabled="disconnectSelections.length < 1"
@@ -20,6 +19,7 @@
     <v-data-table
       :headers="headers"
       :items="textOccurrences"
+      item-key="discourseUuid"
       :search="search"
       :loading="referencesLoading"
       :server-items-length="textOccurrencesLength"
@@ -66,12 +66,14 @@ import {
   Ref,
   ref,
   watch,
-  inject,
   computed,
 } from '@vue/composition-api';
-import { Pagination, SpellingOccurrenceResponseRow } from '@oare/types';
+import {
+  Pagination,
+  TextOccurrencesResponseRow,
+  TextOccurrencesCountResponseItem,
+} from '@oare/types';
 import { DataTableHeader } from 'vuetify';
-import { ReloadKey } from '../../../../../index.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -86,13 +88,19 @@ export default defineComponent({
     },
     getTexts: {
       type: Function as PropType<
-        (uuid: string[], request: Pagination) => SpellingOccurrenceResponseRow[]
+        (
+          uuid: string[],
+          request: Pagination
+        ) => Promise<TextOccurrencesResponseRow[]>
       >,
       required: true,
     },
     getTextsCount: {
       type: Function as PropType<
-        (uuid: string[], filter: Partial<Pagination>) => number
+        (
+          uuid: string[],
+          filter: Partial<Pagination>
+        ) => Promise<TextOccurrencesCountResponseItem[]>
       >,
       required: true,
     },
@@ -105,16 +113,15 @@ export default defineComponent({
       default: false,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
     const server = sl.get('serverProxy');
     const store = sl.get('store');
-    const reload = inject(ReloadKey);
 
     const search = ref('');
     const textOccurrencesLength = ref(props.totalTextOccurrences);
-    const textOccurrences = ref<SpellingOccurrenceResponseRow[]>([]);
+    const textOccurrences = ref<TextOccurrencesResponseRow[]>([]);
 
     const canDisconnectSpellings = computed(() =>
       store.hasPermission('DISCONNECT_SPELLING')
@@ -152,7 +159,7 @@ export default defineComponent({
     const disconnectSpellings = async () => {
       try {
         await server.disconnectSpellings(disconnectSelections.value);
-        reload && reload();
+        emit('reload');
       } catch (err) {
         actions.showErrorSnackbar(
           'Error disconnecting spelling(s). Please try again.',
@@ -197,9 +204,11 @@ export default defineComponent({
     watch(
       search,
       _.debounce(async () => {
-        textOccurrencesLength.value = await props.getTextsCount(props.uuids, {
-          filter: search.value,
-        });
+        textOccurrencesLength.value = (
+          await props.getTextsCount(props.uuids, {
+            filter: search.value,
+          })
+        ).reduce((sum, current) => sum + current.count, 0);
         tableOptions.value.page = 1;
         await getReferences();
       }, 500)

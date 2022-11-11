@@ -119,10 +119,14 @@
       :word="wordInfo"
       :form="form"
       :updateForm="newForm => updateForm(index, newForm)"
-      :word-uuid="wordInfo.uuid"
-      :uuid-to-highlight="uuidToHighlight"
+      :uuidToHighlight="uuidToHighlight"
       :cursor="cursor"
-      :allow-editing="allowEditing"
+      :allowEditing="allowEditing"
+      :spellingOccurrencesCounts="
+        spellingOccurrencesCountsLoading
+          ? null
+          : getSpellingOccurrencesByForm(form)
+      "
     />
     <v-btn
       v-if="allowEditing && canAddForms"
@@ -165,6 +169,7 @@ import {
   DictionaryForm,
   FormSpelling,
   ParseTreeProperty,
+  TextOccurrencesCountResponseItem,
 } from '@oare/types';
 import FormDisplay from './components/Forms/FormDisplay.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
@@ -213,6 +218,8 @@ export default defineComponent({
   },
   setup(props) {
     const store = sl.get('store');
+    const actions = sl.get('globalActions');
+    const server = sl.get('serverProxy');
 
     const editDialogForm = ref<DictionaryForm>();
     const editDialogSpelling = ref<FormSpelling>();
@@ -224,6 +231,10 @@ export default defineComponent({
     const appliedPropertiesForFiltering = ref<(string | null)[]>([]);
     const filteredForms = ref(props.wordInfo.forms);
     const filteredFormsByProperties = ref(props.wordInfo.forms);
+    const spellingOccurrencesCounts = ref<TextOccurrencesCountResponseItem[]>(
+      []
+    );
+    const spellingOccurrencesCountsLoading = ref(false);
 
     const searchQuery = useQueryParam('filter', '', true);
 
@@ -253,7 +264,7 @@ export default defineComponent({
       return posProperties.length > 0 ? posProperties[0].valueUuid : undefined;
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       EventBus.$on(
         ACTIONS.EDIT_WORD_DIALOG,
         (options: {
@@ -267,6 +278,22 @@ export default defineComponent({
           showSpellingDialog.value = true;
         }
       );
+
+      try {
+        spellingOccurrencesCountsLoading.value = true;
+        const spellingUuids = props.wordInfo.forms.flatMap(form =>
+          form.spellings.map(spelling => spelling.uuid)
+        );
+        spellingOccurrencesCounts.value =
+          await server.getSpellingOccurrencesCounts(spellingUuids);
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error loading spelling occurrence counts. Please try again.',
+          err as Error
+        );
+      } finally {
+        spellingOccurrencesCountsLoading.value = false;
+      }
     });
 
     const selectForm = (form: DictionaryForm) => {
@@ -338,6 +365,14 @@ export default defineComponent({
       }, 500)
     );
 
+    const getSpellingOccurrencesByForm = (
+      form: DictionaryForm
+    ): TextOccurrencesCountResponseItem[] => {
+      return spellingOccurrencesCounts.value.filter(item =>
+        form.spellings.map(spelling => spelling.uuid).includes(item.uuid)
+      );
+    };
+
     return {
       updateForm,
       editDialogForm,
@@ -357,6 +392,9 @@ export default defineComponent({
       setProperties,
       resetFilterByProperties,
       filterWithProps,
+      spellingOccurrencesCounts,
+      getSpellingOccurrencesByForm,
+      spellingOccurrencesCountsLoading,
     };
   },
 });

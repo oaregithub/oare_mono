@@ -161,7 +161,7 @@ const routes: RouteConfig[] = [
   },
   {
     path: '/admin/analytics',
-    name: 'analytics',
+    name: 'adminAnalytics',
     component: AnalyticsView,
     beforeEnter: adminGuard,
   },

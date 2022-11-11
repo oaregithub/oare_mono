@@ -69,7 +69,7 @@
       :discourseUuid="connectSpellingDialogDiscourseUuid"
       :spelling="connectSpellingDialogSpelling"
       :searchSpellings="server.searchSpellings"
-      :getTexts="server.getSpellingTextOccurrences"
+      :getTexts="server.getSpellingOccurrencesTexts"
       @finish="closeConnectSpellingDialog"
       v-model="viewingConnectSpellingDialog"
     ></connect-spelling-occurrence>
