@@ -57,7 +57,7 @@ describe('TextOccurrences test', () => {
 
   const mockProps = {
     title: mockTitle,
-    spellingUuids: mockPersonUuids,
+    uuids: mockPersonUuids,
     value: true,
     totalTextOccurrences: mockTotalTextOccurrences,
     getTexts: jest.fn().mockResolvedValue(mockTextOccurrences),

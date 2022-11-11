@@ -52,7 +52,7 @@
       v-model="textOccurrenceDialog"
       class="test-text-occurrences-display"
       :title="spelling.spelling"
-      :spellingUuids="[spelling.uuid]"
+      :uuids="[spelling.uuid]"
       :totalTextOccurrences="spellingOccurrencesCount || 0"
       :getTexts="server.getSpellingOccurrencesTexts"
       :getTextsCount="server.getSpellingOccurrencesCounts"
