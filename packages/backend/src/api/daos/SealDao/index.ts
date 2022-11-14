@@ -35,8 +35,7 @@ class SealDao {
     const imageLinkRows: { link: string; container: string }[] = await k(
       'spatial_unit as su'
     )
-      .join('text_markup as tm', 'tm.obj_uuid', 'su.uuid')
-      .join('link as l', 'l.reference_uuid', 'tm.reference_uuid')
+      .join('link as l', 'l.reference_uuid', 'su.uuid')
       .join('resource as re', 'l.obj_uuid', 're.uuid')
       .where('su.tree_abb', 'Seal_Cat')
       .andWhere('su.uuid', sealUuid)
