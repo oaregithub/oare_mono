@@ -48,6 +48,12 @@ class PermissionsDao {
       dependencies: ['SEALS'],
     },
     {
+      name: 'PERIODS',
+      type: 'pages',
+      description:
+        'Allow group users to view "Periods" page and associated data',
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',
