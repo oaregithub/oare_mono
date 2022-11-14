@@ -54,6 +54,7 @@ const mockPermissionsDao = {
       name: 'SEALS',
     },
     { name: 'EDIT_SEAL' },
+    { name: 'ADD_SEAL_LINK' },
   ]),
 };
 
@@ -247,6 +248,86 @@ describe('GET /seals', () => {
     sl.set('SealDao', {
       ...mockSealDao,
       getSeals: jest.fn().mockRejectedValue('failed seals retrieval'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 403 when user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
+  });
+});
+
+describe('POST /connect/seal_impression', () => {
+  const PATH = `${API_PATH}/connect/seal_impression`;
+
+  const parentUuid = 'parentUuid';
+
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
+
+  const mockSealDao = {
+    getSealLinkParentUuid: jest.fn().mockResolvedValue(parentUuid),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+    clear: jest.fn().mockResolvedValue(),
+  };
+
+  const mockItemPropertiesDao = {
+    addProperty: jest.fn().mockResolvedValue(),
+  };
+
+  const setup = () => {
+    sl.set('SealDao', mockSealDao);
+    sl.set('cache', mockCache);
+    sl.set('utils', mockUtils);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('UserDao', mockUserDao);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+  };
+
+  const payload = {
+    textEpigraphyUuid: 'teUuid',
+    sealUuid: 'sealUuid',
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = (auth = true) => {
+    const req = request(app).post(PATH).send(payload);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
+
+  it('returns 201 on successfully connect seal to seal impression', async () => {
+    const response = await sendRequest();
+    expect(mockSealDao.getSealLinkParentUuid).toHaveBeenCalled();
+    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+    expect(response.status).toBe(201);
+  });
+
+  it('returns 500 on failed connection of seal to seal impression', async () => {
+    sl.set('ItemPropertiesDao', {
+      ...mockItemPropertiesDao,
+      addProperty: jest.fn().mockRejectedValue('failed seal connection'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

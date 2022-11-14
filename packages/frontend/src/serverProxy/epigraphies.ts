@@ -121,6 +121,15 @@ async function hasEpigraphy(textUuid: string): Promise<boolean> {
   return data;
 }
 
+async function getLinkedSeal(
+  textEpigraphyUuid: string
+): Promise<string | null> {
+  const { data } = await axios.get(
+    `/text_epigraphies/seal_impression/${textEpigraphyUuid}`
+  );
+  return data;
+}
+
 export default {
   getEpigraphicInfo,
   getImageLinks,
@@ -134,4 +143,5 @@ export default {
   getTextSourceFile,
   getResourceObject,
   hasEpigraphy,
+  getLinkedSeal,
 };

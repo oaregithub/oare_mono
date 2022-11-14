@@ -596,4 +596,22 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router
+  .route('/text_epigraphies/seal_impression/:uuid')
+  .get(permissionsRoute('ADD_SEAL_LINK'), async (req, res, next) => {
+    try {
+      const SealDao = sl.get('SealDao');
+      const { uuid } = req.params;
+
+      const linkedSealUuid: string | null = await SealDao.getLinkedSealUuid(
+        uuid
+      );
+
+      res.json(linkedSealUuid);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
 export default router;
