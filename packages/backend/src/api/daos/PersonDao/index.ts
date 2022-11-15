@@ -1,24 +1,35 @@
 import { knexRead } from '@/connection';
-import { PersonRow } from '@oare/types';
+import {
+  PersonRow,
+  Pagination,
+  TextOccurrencesRow,
+  TextOccurrencesRowWithoutLine,
+} from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
 class PersonDao {
   public readonly PERSON_TYPE = 'person';
 
-  async getPersonTextOccurrences(
+  async getPersonOccurrencesCount(
     uuid: string,
     userUuid: string | null,
+    pagination: Partial<Pagination> = {},
     trx?: Knex.Transaction
   ): Promise<number> {
     const k = trx || knexRead();
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
-    const subquery = k
-      .select('uuid')
-      .from('text_discourse')
-      .whereNotIn('text_uuid', textsTohide);
+    const subquery = k('text_discourse')
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .select('text_discourse.uuid')
+      .whereNotIn('text_uuid', textsTohide)
+      .modify(qb => {
+        if (pagination.filter) {
+          qb.where('text.display_name', 'like', `%${pagination.filter}%`);
+        }
+      });
 
     const count = await k('item_properties')
       .count({ count: 'uuid' })
@@ -27,6 +38,47 @@ class PersonDao {
       .first();
 
     return count ? Number(count.count) : 0;
+  }
+
+  async getPersonOccurrencesTexts(
+    personUuids: string[],
+    userUuid: string | null,
+    { limit, page, filter }: Pagination,
+    trx?: Knex.Transaction
+  ): Promise<TextOccurrencesRow[]> {
+    const k = trx || knexRead();
+
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
+
+    const discourseUuids = await k('item_properties')
+      .pluck('reference_uuid')
+      .whereIn('object_uuid', personUuids)
+      .whereIn('reference_uuid', k('text_discourse').select('uuid'));
+
+    const rows: TextOccurrencesRowWithoutLine[] = await k('text_discourse')
+      .distinct(
+        'text_discourse.uuid AS discourseUuid',
+        'display_name AS textName',
+        'text_discourse.text_uuid AS textUuid'
+      )
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .whereIn('text_discourse.uuid', discourseUuids)
+      .whereNotIn('text.uuid', textsTohide)
+      .modify(qb => {
+        if (filter) {
+          qb.andWhere('text.display_name', 'like', `%${filter}%`);
+        }
+      })
+      .orderBy('text.display_name')
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    const rowsWithLine: TextOccurrencesRow[] = rows.map(row => ({
+      ...row,
+      line: null,
+    }));
+    return rowsWithLine;
   }
 
   async getPersonsRowsByLetter(

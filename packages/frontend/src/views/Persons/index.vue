@@ -18,14 +18,31 @@
       <router-link :to="`/person/${person.person.uuid}`" class="mr-1">
         {{ person.display }}</router-link
       >
-      <span>({{ person.occurrences }})</span>
+      <a @click="setupOccurrencesDialog(person)"
+        >({{
+          personsOccurrencesCountsLoading
+            ? 'Loading...'
+            : getPersonOccurrencesCountsByUuid(person.person.uuid)
+        }})</a
+      >
     </v-row>
+    <text-occurrences
+      v-if="selectedPerson"
+      v-model="textOccurrencesDialog"
+      :title="selectedPerson.display"
+      :uuids="[selectedPerson.person.uuid]"
+      :totalTextOccurrences="
+        getPersonOccurrencesCountsByUuid(selectedPerson.person.uuid)
+      "
+      :getTexts="server.getPersonsOccurrencesTexts"
+      :getTextsCount="server.getPersonsOccurrencesCounts"
+    />
   </OareContentView>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
-import { PersonListItem } from '@oare/types';
+import { PersonListItem, TextOccurrencesCountResponseItem } from '@oare/types';
 import sl from '@/serviceLocator';
 import TextOccurrences from '@/components/TextOccurrences/index.vue';
 
@@ -48,6 +65,11 @@ export default defineComponent({
     const loading = ref(false);
     const personList = ref<PersonListItem[]>([]);
     const filteredPersonList = ref<PersonListItem[]>([]);
+
+    const personsOccurrencesCounts = ref<TextOccurrencesCountResponseItem[]>(
+      []
+    );
+    const personsOccurrencesCountsLoading = ref(false);
 
     const searchFilter = (search: string, personDisplay: PersonListItem) => {
       return personDisplay.display
@@ -87,6 +109,40 @@ export default defineComponent({
       await getPersons();
     });
 
+    watch(personList, async () => {
+      if (personList.value.length > 0) {
+        try {
+          personsOccurrencesCountsLoading.value = true;
+          personsOccurrencesCounts.value =
+            await server.getPersonsOccurrencesCounts(
+              personList.value.map(person => person.person.uuid)
+            );
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Failed to retrieve persons occurrences counts. Please try again.',
+            err as Error
+          );
+        } finally {
+          personsOccurrencesCountsLoading.value = false;
+        }
+      }
+    });
+
+    const getPersonOccurrencesCountsByUuid = (uuid: string) => {
+      const personOccurrencesCount = personsOccurrencesCounts.value.find(
+        item => item.uuid === uuid
+      );
+      return personOccurrencesCount ? personOccurrencesCount.count : 0;
+    };
+
+    const textOccurrencesDialog = ref(false);
+    const selectedPerson = ref<PersonListItem | null>(null);
+
+    const setupOccurrencesDialog = (person: PersonListItem) => {
+      selectedPerson.value = person;
+      textOccurrencesDialog.value = true;
+    };
+
     return {
       filterPersons,
       searchFilter,
@@ -94,6 +150,12 @@ export default defineComponent({
       personList,
       filteredPersonList,
       server,
+      personsOccurrencesCounts,
+      personsOccurrencesCountsLoading,
+      getPersonOccurrencesCountsByUuid,
+      textOccurrencesDialog,
+      selectedPerson,
+      setupOccurrencesDialog,
     };
   },
 });

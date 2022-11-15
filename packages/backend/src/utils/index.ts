@@ -71,16 +71,19 @@ export const getTextOccurrences = async (
       textFormat: 'html',
       highlightDiscourses: [row.discourseUuid],
     });
-    const linesList = renderer.lines;
-    const lineIdx = linesList.indexOf(row.line);
+    if (row.line) {
+      const linesList = renderer.lines;
+      const lineIdx = linesList.indexOf(row.line);
 
-    const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
-    const endIdx =
-      lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
+      const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
+      const endIdx =
+        lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
 
-    return _.range(startIdx, endIdx + 1).map(idx =>
-      renderer.lineReading(linesList[idx])
-    );
+      return _.range(startIdx, endIdx + 1).map(idx =>
+        renderer.lineReading(linesList[idx])
+      );
+    }
+    return null;
   });
 
   return rows.map((r, index) => ({

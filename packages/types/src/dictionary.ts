@@ -135,16 +135,18 @@ export interface DictionarySearchPayload {
   mode: string;
 }
 
-export interface TextOccurrencesRow {
+export interface TextOccurrencesRowWithoutLine {
   discourseUuid: string;
   textName: string;
   textUuid: string;
-  line: number;
-  wordOnTablet: number;
+}
+
+export interface TextOccurrencesRow extends TextOccurrencesRowWithoutLine {
+  line: number | null;
 }
 
 export interface TextOccurrencesResponseRow extends TextOccurrencesRow {
-  readings: string[];
+  readings: string[] | null;
 }
 
 export type DictionaryWordTypes = 'word' | 'GN' | 'PN';

@@ -39,12 +39,15 @@
         >
       </template>
       <template #[`item.context`]="{ item }">
-        <div
-          v-for="(reading, index) in item.readings"
-          class="test-reading"
-          :key="index"
-          v-html="reading"
-        />
+        <div v-if="item.readings">
+          <div
+            v-for="(reading, index) in item.readings"
+            class="test-reading"
+            :key="index"
+            v-html="reading"
+          />
+        </div>
+        <span v-else>No Context</span>
       </template>
       <template #[`item.disconnect`]="{ item }">
         <div class="d-flex justify-center">
@@ -176,6 +179,7 @@ export default defineComponent({
 
     const getReferences = async () => {
       try {
+        textOccurrences.value = [];
         referencesLoading.value = true;
         textOccurrences.value = await props.getTexts(props.uuids, {
           page: tableOptions.value.page,

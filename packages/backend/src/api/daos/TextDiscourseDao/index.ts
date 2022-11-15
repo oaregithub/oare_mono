@@ -347,9 +347,8 @@ class TextDiscourseDao {
     const rows: TextOccurrencesRow[] = await k('text_discourse')
       .distinct(
         'text_discourse.uuid AS discourseUuid',
-        'name AS textName',
+        'display_name AS textName',
         'te.line',
-        'text_discourse.word_on_tablet AS wordOnTablet',
         'text_discourse.text_uuid AS textUuid'
       )
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
@@ -365,7 +364,7 @@ class TextDiscourseDao {
           qb.andWhere('text.display_name', 'like', `%${filter}%`);
         }
       })
-      .orderBy('text.name')
+      .orderBy('text.display_name')
       .limit(limit)
       .offset((page - 1) * limit);
 

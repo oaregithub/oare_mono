@@ -3,8 +3,13 @@ import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
-import { PersonRow, PersonListItem, ItemPropertyRow } from '@oare/types';
-import { personTextFilter } from '@/cache/filters';
+import {
+  PersonRow,
+  PersonListItem,
+  ItemPropertyRow,
+  TextOccurrencesCountResponseItem,
+} from '@oare/types';
+import { noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -12,7 +17,7 @@ router
   .route('/persons/:letter')
   .get(
     permissionsRoute('PERSONS'),
-    cacheMiddleware<PersonListItem[]>(personTextFilter),
+    cacheMiddleware<PersonListItem[]>(noFilter),
     async (req, res, next) => {
       try {
         const { letter } = req.params;
@@ -56,14 +61,13 @@ router
             person,
             display: displays[idx],
             properties: personProperties[idx],
-            occurrences: null,
           })
         );
 
         const response = await cache.insert<PersonListItem[]>(
           { req },
           personListItem,
-          personTextFilter
+          noFilter
         );
 
         res.json(response);
@@ -72,5 +76,60 @@ router
       }
     }
   );
+
+router
+  .route('/persons/occurrences/count')
+  .post(permissionsRoute('PERSONS'), async (req, res, next) => {
+    try {
+      const PersonDao = sl.get('PersonDao');
+      const utils = sl.get('utils');
+
+      const personUuids: string[] = req.body;
+      const userUuid = req.user ? req.user.uuid : null;
+
+      const { filter } = utils.extractPagination(req.query);
+
+      const occurrences = await Promise.all(
+        personUuids.map(uuid =>
+          PersonDao.getPersonOccurrencesCount(uuid, userUuid, { filter })
+        )
+      );
+
+      const response: TextOccurrencesCountResponseItem[] = personUuids.map(
+        (uuid, idx) => ({
+          uuid,
+          count: occurrences[idx],
+        })
+      );
+
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router.route('/persons/occurrences/texts').get(async (req, res, next) => {
+  try {
+    const utils = sl.get('utils');
+    const PersonDao = sl.get('PersonDao');
+
+    const userUuid = req.user ? req.user.uuid : null;
+    const pagination = utils.extractPagination(req.query);
+
+    const personsUuids = (req.query.personsUuids as unknown) as string[];
+
+    const rows = await PersonDao.getPersonOccurrencesTexts(
+      personsUuids,
+      userUuid,
+      pagination
+    );
+
+    const response = await utils.getTextOccurrences(rows, req.locale);
+
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 export default router;
