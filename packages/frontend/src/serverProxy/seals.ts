@@ -1,4 +1,4 @@
-import { Seal, SealInfo } from '@oare/types';
+import { AddSealLinkPayload, Seal, SealInfo } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getAllSeals(): Promise<SealInfo[]> {
@@ -15,7 +15,12 @@ async function updateSealName(uuid: string, name: string): Promise<void> {
   await axios.patch(`/seals/${uuid}`, { name });
 }
 
+async function addSealLink(payload: AddSealLinkPayload): Promise<void> {
+  await axios.post('/connect/seal_impression', payload);
+}
+
 export default {
+  addSealLink,
   getAllSeals,
   getSealByUuid,
   updateSealName,

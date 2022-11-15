@@ -164,18 +164,13 @@ export const SealListFilter = async (
   const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
   const filteredSealList = await Promise.all(
-    sealList.map(async s => {
-      if (s.count > 0) {
-        return {
-          ...s,
-          count: await SealDao.getSealImpressionCountBySealUuid(
-            s.uuid,
-            textsToHide
-          ),
-        };
-      }
-      return s;
-    })
+    sealList.map(async s => ({
+      ...s,
+      count: await SealDao.getSealImpressionCountBySealUuid(
+        s.uuid,
+        textsToHide
+      ),
+    }))
   );
 
   return filteredSealList;
