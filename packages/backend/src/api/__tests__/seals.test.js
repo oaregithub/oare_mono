@@ -330,7 +330,7 @@ describe('POST /connect/seal_impression', () => {
       getSealLinkParentUuid: jest.fn().mockResolvedValue(null),
     });
     const response = await sendRequest();
-    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalledTimes(2);
     expect(response.status).toBe(201);
   });
 
