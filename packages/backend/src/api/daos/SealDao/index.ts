@@ -212,14 +212,14 @@ class SealDao {
   async getSealLinkParentUuid(
     textEpigraphyUuid: string,
     trx?: Knex
-  ): Promise<string> {
+  ): Promise<string | null> {
     const k = trx || knexRead();
-    const sealLinkParentUuid: string = await k('item_properties as ip')
+    const sealLinkParentUuid: string | null = await k('item_properties as ip')
       .where('ip.reference_uuid', textEpigraphyUuid)
       .andWhere('ip.value_uuid', 'ec820e17-ecc7-492f-86a7-a01b379622e1')
-      .select('ip.object_uuid')
+      .select('ip.uuid')
       .first()
-      .then((val: { uuid: string }) => val.uuid);
+      .then((val: { uuid: string | null }) => val?.uuid || null);
     return sealLinkParentUuid;
   }
 }

@@ -324,6 +324,16 @@ describe('POST /connect/seal_impression', () => {
     expect(response.status).toBe(201);
   });
 
+  it('returns 201 on successfully connect seal to seal impression when parentUuid does not exist', async () => {
+    sl.set('SealDao', {
+      ...mockSealDao,
+      getSealLinkParentUuid: jest.fn().mockResolvedValue(null),
+    });
+    const response = await sendRequest();
+    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+    expect(response.status).toBe(201);
+  });
+
   it('returns 500 on failed connection of seal to seal impression', async () => {
     sl.set('ItemPropertiesDao', {
       ...mockItemPropertiesDao,

@@ -107,9 +107,30 @@ router
       const utils = sl.get('utils');
       const { sealUuid, textEpigraphyUuid } = req.body as AddSealLinkPayload;
 
-      const parentUuid: string = await SealDao.getSealLinkParentUuid(
+      let parentUuid: string | null = await SealDao.getSealLinkParentUuid(
         textEpigraphyUuid
       );
+
+      if (!parentUuid) {
+        try {
+          parentUuid = v4();
+          const parentItemProperty: InsertItemPropertyRow = {
+            uuid: parentUuid,
+            referenceUuid: textEpigraphyUuid,
+            objectUuid: null,
+            parentUuid: null,
+            variableUuid: '859939fd-bdf6-fa7b-fa93-3f42207e1005',
+            level: 1,
+            valueUuid: 'ec820e17-ecc7-492f-86a7-a01b379622e1',
+            value: 'Seal Impression',
+          };
+          await utils.createTransaction(async trx => {
+            await ItemPropertiesDao.addProperty(parentItemProperty, trx);
+          });
+        } catch (err) {
+          next(new HttpInternalError(err as string));
+        }
+      }
 
       const itemProperty: InsertItemPropertyRow = {
         uuid: v4(),
