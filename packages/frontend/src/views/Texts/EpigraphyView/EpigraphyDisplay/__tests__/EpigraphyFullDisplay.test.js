@@ -18,7 +18,7 @@ describe('EpigraphyFullDisplay View', () => {
       [
         'VIEW_TEXT_DISCOURSE',
         'CONNECT_SPELLING',
-        'DISCONNECT_SPELLING',
+        'DISCONNECT_OCCURRENCES',
       ].includes(name),
   };
 

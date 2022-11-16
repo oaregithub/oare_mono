@@ -129,11 +129,10 @@ class PermissionsDao {
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
-      name: 'DISCONNECT_SPELLING',
+      name: 'DISCONNECT_OCCURRENCES',
       type: 'dictionary',
-      description:
-        'Allow group users to disconnect spelling occurrences from words',
-      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+      description: 'Allow group users to disconnect occurrences',
+      dependencies: ['WORDS', 'NAMES', 'PLACES', 'PERSONS'],
     },
     {
       name: 'EDIT_TRANSLITERATION_STATUS',

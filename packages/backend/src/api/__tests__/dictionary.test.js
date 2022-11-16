@@ -72,7 +72,7 @@ describe('dictionary api test', () => {
         name: 'ADD_FORM',
       },
       {
-        name: 'DISCONNECT_SPELLING',
+        name: 'DISCONNECT_OCCURRENCES',
       },
       {
         name: 'EDIT_ITEM_PROPERTIES',

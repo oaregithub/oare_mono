@@ -3,8 +3,8 @@
     :value="value"
     :title="`Texts for ${title}`"
     submitText="Disconnect"
-    @submit="disconnectSpellings"
-    :showSubmit="canDisconnectSpellings"
+    @submit="disconnect"
+    :showSubmit="canDisconnect"
     :submitDisabled="disconnectSelections.length < 1"
     cancelText="Close"
     :persistent="false"
@@ -119,18 +119,17 @@ export default defineComponent({
   setup(props, { emit }) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
-    const server = sl.get('serverProxy');
     const store = sl.get('store');
 
     const search = ref('');
     const textOccurrencesLength = ref(props.totalTextOccurrences);
     const textOccurrences = ref<TextOccurrencesResponseRow[]>([]);
 
-    const canDisconnectSpellings = computed(() =>
-      store.hasPermission('DISCONNECT_SPELLING')
+    const canDisconnect = computed(() =>
+      store.hasPermission('DISCONNECT_OCCURRENCES')
     );
 
-    const headers: Ref<DataTableHeader[]> = canDisconnectSpellings.value
+    const headers: Ref<DataTableHeader[]> = canDisconnect.value
       ? ref([
           {
             text: 'Text Name',
@@ -159,16 +158,9 @@ export default defineComponent({
         ]);
     const disconnectSelections = ref<string[]>([]);
 
-    const disconnectSpellings = async () => {
-      try {
-        await server.disconnectSpellings(disconnectSelections.value);
-        emit('reload');
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error disconnecting spelling(s). Please try again.',
-          err as Error
-        );
-      }
+    const disconnect = () => {
+      emit('disconnect', disconnectSelections.value);
+      emit('reload');
     };
 
     const referencesLoading = ref(false);
@@ -233,8 +225,8 @@ export default defineComponent({
       referencesLoading,
       tableOptions,
       disconnectSelections,
-      disconnectSpellings,
-      canDisconnectSpellings,
+      disconnect,
+      canDisconnect,
     };
   },
 });

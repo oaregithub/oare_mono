@@ -19,7 +19,7 @@ describe('TextOccurrences test', () => {
   };
 
   const mockStore = {
-    hasPermission: name => ['DISCONNECT_SPELLING'].includes(name),
+    hasPermission: name => ['DISCONNECT_OCCURRENCES'].includes(name),
   };
 
   const mockServer = {
@@ -94,30 +94,6 @@ describe('TextOccurrences test', () => {
         .mockRejectedValue('Error, unable to retrieve text occurrences'),
     };
     createWrapper({ props });
-    await flushPromises();
-    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
-  it('disconnects spellings', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    await wrapper.get('.test-disconnect input').trigger('click');
-    await wrapper.get('.test-submit-btn').trigger('click');
-    await flushPromises();
-    expect(mockServer.disconnectSpellings).toHaveBeenCalled();
-  });
-
-  it('displays error on failed spelling disconnect', async () => {
-    sl.set('serverProxy', {
-      ...mockServer,
-      disconnectSpellings: jest
-        .fn()
-        .mockRejectedValue('failed to disconnect spelling'),
-    });
-    const wrapper = createWrapper();
-    await flushPromises();
-    await wrapper.get('.test-disconnect input').trigger('click');
-    await wrapper.get('.test-submit-btn').trigger('click');
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
