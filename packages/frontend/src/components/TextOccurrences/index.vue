@@ -115,6 +115,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    showDisconnect: {
+      type: Boolean,
+      default: true,
+    },
   },
   setup(props, { emit }) {
     const actions = sl.get('globalActions');
@@ -129,33 +133,34 @@ export default defineComponent({
       store.hasPermission('DISCONNECT_OCCURRENCES')
     );
 
-    const headers: Ref<DataTableHeader[]> = canDisconnect.value
-      ? ref([
-          {
-            text: 'Text Name',
-            value: 'text',
-          },
-          {
-            text: 'Context',
-            value: 'context',
-          },
-          {
-            text: 'Disconnect',
-            value: 'disconnect',
-            align: 'center',
-            sortable: false,
-          },
-        ])
-      : ref([
-          {
-            text: 'Text Name',
-            value: 'text',
-          },
-          {
-            text: 'Context',
-            value: 'context',
-          },
-        ]);
+    const headers: Ref<DataTableHeader[]> =
+      canDisconnect.value && props.showDisconnect
+        ? ref([
+            {
+              text: 'Text Name',
+              value: 'text',
+            },
+            {
+              text: 'Context',
+              value: 'context',
+            },
+            {
+              text: 'Disconnect',
+              value: 'disconnect',
+              align: 'center',
+              sortable: false,
+            },
+          ])
+        : ref([
+            {
+              text: 'Text Name',
+              value: 'text',
+            },
+            {
+              text: 'Context',
+              value: 'context',
+            },
+          ]);
     const disconnectSelections = ref<string[]>([]);
 
     const disconnect = () => {
