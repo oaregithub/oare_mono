@@ -36,6 +36,7 @@
       "
       :getTexts="server.getPersonsOccurrencesTexts"
       :getTextsCount="server.getPersonsOccurrencesCounts"
+      @disconnect="disconnectPersons($event)"
     />
   </OareContentView>
 </template>
@@ -143,6 +144,42 @@ export default defineComponent({
       textOccurrencesDialog.value = true;
     };
 
+    const disconnectPersons = async (discourseUuids: string[]) => {
+      try {
+        if (selectedPerson.value) {
+          textOccurrencesDialog.value = false;
+          await server.disconnectPersons(
+            discourseUuids,
+            selectedPerson.value.person.uuid
+          );
+
+          personsOccurrencesCounts.value = personsOccurrencesCounts.value.map(
+            item => {
+              if (
+                selectedPerson.value &&
+                item.uuid === selectedPerson.value.person.uuid
+              ) {
+                return {
+                  ...item,
+                  count: item.count - discourseUuids.length,
+                };
+              }
+              return item;
+            }
+          );
+
+          actions.showSnackbar('Person(s) successfully disconnected.');
+        } else {
+          throw new Error('No person selected. Cannot disconnect persons.');
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting persons. Please try again.',
+          err as Error
+        );
+      }
+    };
+
     return {
       filterPersons,
       searchFilter,
@@ -156,6 +193,7 @@ export default defineComponent({
       textOccurrencesDialog,
       selectedPerson,
       setupOccurrencesDialog,
+      disconnectPersons,
     };
   },
 });

@@ -1,4 +1,5 @@
 import {
+  DisconnectPersonsPayload,
   Pagination,
   PersonListItem,
   TextOccurrencesCountResponseItem,
@@ -36,8 +37,20 @@ async function getPersonsOccurrencesTexts(
   return data;
 }
 
+async function disconnectPersons(
+  discourseUuids: string[],
+  personUuid: string
+): Promise<void> {
+  const payload: DisconnectPersonsPayload = {
+    discourseUuids,
+    personUuid,
+  };
+  await axios.patch('/persons/disconnect', payload);
+}
+
 export default {
   getPersons,
   getPersonsOccurrencesCounts,
   getPersonsOccurrencesTexts,
+  disconnectPersons,
 };

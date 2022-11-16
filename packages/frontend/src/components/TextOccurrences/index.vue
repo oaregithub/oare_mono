@@ -161,6 +161,7 @@ export default defineComponent({
     const disconnect = () => {
       emit('disconnect', disconnectSelections.value);
       emit('reload');
+      disconnectSelections.value = [];
     };
 
     const referencesLoading = ref(false);

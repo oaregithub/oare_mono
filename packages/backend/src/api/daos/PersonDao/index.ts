@@ -1,4 +1,4 @@
-import { knexRead } from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import {
   PersonRow,
   Pagination,
@@ -9,8 +9,6 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
 class PersonDao {
-  public readonly PERSON_TYPE = 'person';
-
   async getPersonOccurrencesCount(
     uuid: string,
     userUuid: string | null,
@@ -134,6 +132,17 @@ class PersonDao {
     });
 
     return query;
+  }
+
+  async disconnectPerson(
+    discourseUuid: string,
+    personUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('item_properties')
+      .where({ reference_uuid: discourseUuid, object_uuid: personUuid })
+      .del();
   }
 }
 
