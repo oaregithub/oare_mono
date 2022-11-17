@@ -214,7 +214,7 @@ export default defineComponent({
     );
 
     const canDisconnectSpellings = computed(() =>
-      store.hasPermission('DISCONNECT_SPELLING')
+      store.hasPermission('DISCONNECT_OCCURRENCES')
     );
 
     const canConnectSealImpression = computed(() =>
@@ -273,13 +273,11 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-            discourseUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
-            spellingUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
         } else {
           discourseWordInfo.value = null;
         }
@@ -335,9 +333,8 @@ export default defineComponent({
     const openConnectSealImpressionDialog = async (lineNum: number) => {
       try {
         if (canConnectSealImpression.value) {
-          const region: EpigraphicUnit | null = renderer.value.getRegionUnitByLine(
-            lineNum
-          );
+          const region: EpigraphicUnit | null =
+            renderer.value.getRegionUnitByLine(lineNum);
           if (
             region &&
             region.uuid &&

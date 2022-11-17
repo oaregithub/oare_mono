@@ -57,6 +57,7 @@
       :getTexts="server.getSpellingOccurrencesTexts"
       :getTextsCount="server.getSpellingOccurrencesCounts"
       @reload="reload && reload()"
+      @disconnect="disconnectSpellings($event)"
     />
     <OareDialog
       v-model="deleteSpellingDialog"
@@ -160,6 +161,17 @@ export default defineComponent({
       });
     };
 
+    const disconnectSpellings = async (discourseUuids: string[]) => {
+      try {
+        await server.disconnectSpellings(discourseUuids);
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting spellings. Please try again.',
+          err as Error
+        );
+      }
+    };
+
     return {
       server,
       textOccurrenceDialog,
@@ -173,6 +185,7 @@ export default defineComponent({
       openComment,
       openEditDialog,
       reload,
+      disconnectSpellings,
     };
   },
 });

@@ -13,5 +13,9 @@ export interface PersonListItem {
   person: PersonRow;
   display: string;
   properties: ItemPropertyRow[];
-  occurrences: number | null;
+}
+
+export interface DisconnectPersonsPayload {
+  discourseUuids: string[];
+  personUuid: string;
 }
