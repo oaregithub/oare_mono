@@ -109,29 +109,31 @@ router
     }
   });
 
-router.route('/persons/occurrences/texts').get(async (req, res, next) => {
-  try {
-    const utils = sl.get('utils');
-    const PersonDao = sl.get('PersonDao');
+router
+  .route('/persons/occurrences/texts')
+  .get(permissionsRoute('PERSONS'), async (req, res, next) => {
+    try {
+      const utils = sl.get('utils');
+      const PersonDao = sl.get('PersonDao');
 
-    const userUuid = req.user ? req.user.uuid : null;
-    const pagination = utils.extractPagination(req.query);
+      const userUuid = req.user ? req.user.uuid : null;
+      const pagination = utils.extractPagination(req.query);
 
-    const personsUuids = (req.query.personsUuids as unknown) as string[];
+      const personsUuids = (req.query.personsUuids as unknown) as string[];
 
-    const rows = await PersonDao.getPersonOccurrencesTexts(
-      personsUuids,
-      userUuid,
-      pagination
-    );
+      const rows = await PersonDao.getPersonOccurrencesTexts(
+        personsUuids,
+        userUuid,
+        pagination
+      );
 
-    const response = await utils.getTextOccurrences(rows, req.locale);
+      const response = await utils.getTextOccurrences(rows, req.locale);
 
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 router
   .route('/persons/disconnect')
