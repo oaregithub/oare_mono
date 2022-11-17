@@ -47,7 +47,7 @@
             v-html="reading"
           />
         </div>
-        <span v-else>No Context</span>
+        <span v-else>Preview Unavailable</span>
       </template>
       <template #[`item.disconnect`]="{ item }">
         <div class="d-flex justify-center">
