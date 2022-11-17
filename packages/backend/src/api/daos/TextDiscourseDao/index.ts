@@ -348,15 +348,9 @@ class TextDiscourseDao {
       .distinct(
         'text_discourse.uuid AS discourseUuid',
         'display_name AS textName',
-        'te.line',
         'text_discourse.text_uuid AS textUuid'
       )
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
-      .innerJoin(
-        'text_epigraphy AS te',
-        'te.discourse_uuid',
-        'text_discourse.uuid'
-      )
       .whereIn('text_discourse.spelling_uuid', spellingUuids)
       .whereNotIn('text.uuid', textsToHide)
       .modify(qb => {
@@ -687,6 +681,39 @@ class TextDiscourseDao {
 
       numDiscourseRows -= rowsToDelete.length;
     }
+  }
+
+  async getSubwordsByDiscourseUuid(
+    discourseUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knexRead();
+
+    const type: DiscourseUnitType = await k('text_discourse')
+      .select('type')
+      .where({ uuid: discourseUuid })
+      .first()
+      .then(row => row.type);
+
+    if (type === 'discourseUnit') {
+      return [];
+    }
+
+    if (type === 'word' || type === 'number') {
+      return [discourseUuid];
+    }
+
+    const subwords: string[] = await k('text_discourse')
+      .pluck('uuid')
+      .where({ parent_uuid: discourseUuid });
+
+    const discourseUuids = (
+      await Promise.all(
+        subwords.map(uuid => this.getSubwordsByDiscourseUuid(uuid, trx))
+      )
+    ).flat();
+
+    return discourseUuids;
   }
 }
 

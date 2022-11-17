@@ -488,6 +488,21 @@ class TextEpigraphyDao {
       numEpigraphyRows -= rowsToDelete.length;
     }
   }
+
+  async getLineByDiscourseUuid(
+    discourseUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number | null> {
+    const k = trx || knexRead();
+
+    const line: number | null = await k('text_epigraphy')
+      .select('line')
+      .where({ discourse_uuid: discourseUuid })
+      .first()
+      .then(row => row.line);
+
+    return line;
+  }
 }
 
 export default new TextEpigraphyDao();

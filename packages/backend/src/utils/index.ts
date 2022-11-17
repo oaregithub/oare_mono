@@ -59,35 +59,69 @@ export const getTextOccurrences = async (
   locale: LocaleCode
 ): Promise<TextOccurrencesResponseRow[]> => {
   const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+  const TextDiscourseDao = sl.get('TextDiscourseDao');
   const epigraphicUnits = await Promise.all(
     rows.map(({ textUuid }) => TextEpigraphyDao.getEpigraphicUnits(textUuid))
   );
 
+  const subwordDiscourseUuids = await Promise.all(
+    rows.map(row =>
+      TextDiscourseDao.getSubwordsByDiscourseUuid(row.discourseUuid)
+    )
+  );
+
+  const lines = await Promise.all(
+    subwordDiscourseUuids.map(async uuids => {
+      const linesArray = (
+        await Promise.all(
+          uuids.map(uuid => TextEpigraphyDao.getLineByDiscourseUuid(uuid))
+        )
+      ).filter(line => line !== null) as number[];
+
+      return [...new Set(linesArray)];
+    })
+  );
+
   const readings = rows.map((row, index) => {
+    // Don't get renderings for full discourse units
+    if (
+      subwordDiscourseUuids[index].length === 0 ||
+      lines[index].length === 0
+    ) {
+      return null;
+    }
+
     const units = epigraphicUnits[index];
 
     const renderer = createTabletRenderer(units, locale, {
       lineNumbers: true,
       textFormat: 'html',
-      highlightDiscourses: [row.discourseUuid],
+      highlightDiscourses: [...subwordDiscourseUuids[index]],
     });
-    if (row.line) {
-      const linesList = renderer.lines;
-      const lineIdx = linesList.indexOf(row.line);
 
-      const startIdx = lineIdx - 1 < 0 ? 0 : lineIdx - 1;
-      const endIdx =
-        lineIdx + 1 >= linesList.length ? linesList.length - 1 : lineIdx + 1;
+    const linesList = renderer.lines;
 
-      return _.range(startIdx, endIdx + 1).map(idx =>
-        renderer.lineReading(linesList[idx])
-      );
-    }
-    return null;
+    const sortedLines = lines[index].sort((a, b) => a - b);
+
+    const firstLineIndex = linesList.indexOf(sortedLines[0]);
+    const lastLineIndex = linesList.indexOf(
+      sortedLines[sortedLines.length - 1]
+    );
+
+    const startIdx = firstLineIndex - 1 < 0 ? 0 : firstLineIndex - 1;
+    const endIdx =
+      lastLineIndex + 1 >= linesList.length
+        ? linesList.length - 1
+        : lastLineIndex + 1;
+
+    return _.range(startIdx, endIdx + 1).map(idx =>
+      renderer.lineReading(linesList[idx])
+    );
   });
 
   return rows.map((r, index) => ({
     ...r,
+    discourseUuidsToHighlight: [...subwordDiscourseUuids[index]],
     readings: readings[index],
   }));
 };

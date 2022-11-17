@@ -135,17 +135,14 @@ export interface DictionarySearchPayload {
   mode: string;
 }
 
-export interface TextOccurrencesRowWithoutLine {
+export interface TextOccurrencesRow {
   discourseUuid: string;
   textName: string;
   textUuid: string;
 }
 
-export interface TextOccurrencesRow extends TextOccurrencesRowWithoutLine {
-  line: number | null;
-}
-
 export interface TextOccurrencesResponseRow extends TextOccurrencesRow {
+  discourseUuidsToHighlight: string[];
   readings: string[] | null;
 }
 

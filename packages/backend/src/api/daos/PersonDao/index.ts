@@ -1,10 +1,5 @@
 import { knexRead, knexWrite } from '@/connection';
-import {
-  PersonRow,
-  Pagination,
-  TextOccurrencesRow,
-  TextOccurrencesRowWithoutLine,
-} from '@oare/types';
+import { PersonRow, Pagination, TextOccurrencesRow } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
@@ -19,20 +14,21 @@ class PersonDao {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
-    const subquery = k('text_discourse')
+    const discourseUuids = await k('item_properties')
+      .pluck('reference_uuid')
+      .where('object_uuid', uuid)
+      .whereIn('reference_uuid', k('text_discourse').select('uuid'));
+
+    const count = await k('text_discourse')
+      .countDistinct({ count: 'text_discourse.uuid' })
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
-      .select('text_discourse.uuid')
-      .whereNotIn('text_uuid', textsTohide)
+      .whereIn('text_discourse.uuid', discourseUuids)
+      .whereNotIn('text.uuid', textsTohide)
       .modify(qb => {
         if (pagination.filter) {
           qb.where('text.display_name', 'like', `%${pagination.filter}%`);
         }
-      });
-
-    const count = await k('item_properties')
-      .count({ count: 'uuid' })
-      .whereIn('reference_uuid', subquery)
-      .andWhere('object_uuid', uuid)
+      })
       .first();
 
     return count ? Number(count.count) : 0;
@@ -54,7 +50,7 @@ class PersonDao {
       .whereIn('object_uuid', personUuids)
       .whereIn('reference_uuid', k('text_discourse').select('uuid'));
 
-    const rows: TextOccurrencesRowWithoutLine[] = await k('text_discourse')
+    const rows: TextOccurrencesRow[] = await k('text_discourse')
       .distinct(
         'text_discourse.uuid AS discourseUuid',
         'display_name AS textName',
@@ -72,11 +68,7 @@ class PersonDao {
       .limit(limit)
       .offset((page - 1) * limit);
 
-    const rowsWithLine: TextOccurrencesRow[] = rows.map(row => ({
-      ...row,
-      line: null,
-    }));
-    return rowsWithLine;
+    return rows;
   }
 
   async getPersonsRowsByLetter(

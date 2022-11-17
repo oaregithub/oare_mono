@@ -30,9 +30,9 @@
     >
       <template #[`item.text`]="{ item }">
         <router-link
-          :to="`/epigraphies/${item.textUuid}/${
-            item.discoursesToHighlight || item.discourseUuid
-          }`"
+          :to="`/epigraphies/${item.textUuid}/${encodeURIComponent(
+            item.discourseUuidsToHighlight
+          )}`"
           class="test-text"
           target="_blank"
           >{{ item.textName }}</router-link

@@ -916,10 +916,12 @@ describe('dictionary api test', () => {
 
     const TextDiscourseDao = {
       getSpellingOccurrencesTexts: jest.fn().mockResolvedValue(mockResponse),
+      getSubwordsByDiscourseUuid: jest.fn().mockResolvedValue([]),
     };
 
     const TextEpigraphyDao = {
       getEpigraphicUnits: jest.fn().mockResolvedValue([]),
+      getLineByDiscourseUuid: jest.fn().mockResolvedValue(1),
     };
 
     const spelllingOccurrencesSetup = () => {

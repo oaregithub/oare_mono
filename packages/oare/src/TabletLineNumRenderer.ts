@@ -20,6 +20,12 @@ export default class TabletLineNumRenderer extends TabletRenderer {
     if (this.renderer) {
       const reading = this.renderer.lineReading(lineNum);
 
+      const isRegion = this.renderer.isRegion(lineNum);
+      const isUndetermined = this.renderer.isUndetermined(lineNum);
+      if (isRegion || isUndetermined) {
+        return reading;
+      }
+
       const lineNumber = formatLineNumber(lineNum);
       return reading
         ? localizeString(`${lineNumber} ${reading}`, this.locale)
