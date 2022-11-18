@@ -114,10 +114,9 @@ export default defineComponent({
       if (personList.value.length > 0) {
         try {
           personsOccurrencesCountsLoading.value = true;
-          personsOccurrencesCounts.value =
-            await server.getPersonsOccurrencesCounts(
-              personList.value.map(person => person.person.uuid)
-            );
+          personsOccurrencesCounts.value = await server.getPersonsOccurrencesCounts(
+            personList.value.map(person => person.person.uuid)
+          );
         } catch (err) {
           actions.showErrorSnackbar(
             'Failed to retrieve persons occurrences counts. Please try again.',
@@ -147,10 +146,10 @@ export default defineComponent({
     const disconnectPersons = async (discourseUuids: string[]) => {
       try {
         if (selectedPerson.value) {
-          textOccurrencesDialog.value = false;
-          await server.disconnectPersons(
-            discourseUuids,
-            selectedPerson.value.person.uuid
+          await Promise.all(
+            discourseUuids.map(uuid =>
+              server.disconnectPersons(uuid, selectedPerson.value!.person.uuid)
+            )
           );
 
           personsOccurrencesCounts.value = personsOccurrencesCounts.value.map(
@@ -167,7 +166,7 @@ export default defineComponent({
               return item;
             }
           );
-
+          textOccurrencesDialog.value = false;
           actions.showSnackbar('Person(s) successfully disconnected.');
         } else {
           throw new Error('No person selected. Cannot disconnect persons.');

@@ -1,5 +1,4 @@
 import {
-  DisconnectPersonsPayload,
   Pagination,
   PersonListItem,
   TextOccurrencesCountResponseItem,
@@ -38,14 +37,10 @@ async function getPersonsOccurrencesTexts(
 }
 
 async function disconnectPersons(
-  discourseUuids: string[],
+  discourseUuid: string,
   personUuid: string
 ): Promise<void> {
-  const payload: DisconnectPersonsPayload = {
-    discourseUuids,
-    personUuid,
-  };
-  await axios.patch('/persons/disconnect', payload);
+  await axios.delete(`/persons/disconnect/${personUuid}/${discourseUuid}`);
 }
 
 export default {
