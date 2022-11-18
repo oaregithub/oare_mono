@@ -54,6 +54,13 @@ class PermissionsDao {
         'Allow group users to view "Periods" page and associated data',
     },
     {
+      name: 'ADD_SEAL_LINK',
+      type: 'seals',
+      description:
+        'Allow group users to connect a seal impression in a text to a seal',
+      dependencies: ['SEALS'],
+    },
+    {
       name: 'UPDATE_FORM',
       type: 'dictionary',
       description: 'Allow group users to make changes to form(s) of words',
@@ -128,11 +135,10 @@ class PermissionsDao {
       dependencies: ['WORDS', 'NAMES', 'PLACES'],
     },
     {
-      name: 'DISCONNECT_SPELLING',
+      name: 'DISCONNECT_OCCURRENCES',
       type: 'dictionary',
-      description:
-        'Allow group users to disconnect spelling occurrences from words',
-      dependencies: ['WORDS', 'NAMES', 'PLACES'],
+      description: 'Allow group users to disconnect occurrences',
+      dependencies: ['WORDS', 'NAMES', 'PLACES', 'PERSONS'],
     },
     {
       name: 'EDIT_TRANSLITERATION_STATUS',

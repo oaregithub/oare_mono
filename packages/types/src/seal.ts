@@ -24,3 +24,8 @@ export interface SealImpression {
   side: number;
   user: string;
 }
+
+export interface AddSealLinkPayload {
+  textEpigraphyUuid: string;
+  sealUuid: string;
+}

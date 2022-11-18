@@ -90,6 +90,7 @@
           :getTexts="server.getSpellingOccurrencesTexts"
           :getTextsCount="server.getSpellingOccurrencesCounts"
           @reload="reload && reload()"
+          @disconnect="disconnectSpellings($event)"
         />
       </span>
 
@@ -280,6 +281,17 @@ export default defineComponent({
       return item ? item.count : 0;
     };
 
+    const disconnectSpellings = async (discourseUuids: string[]) => {
+      try {
+        await server.disconnectSpellings(discourseUuids);
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting spellings. Please try again.',
+          err as Error
+        );
+      }
+    };
+
     return {
       isCommenting,
       editing,
@@ -298,6 +310,7 @@ export default defineComponent({
       getSpellingOccurrencesByUuid,
       formTotalOccurrences,
       reload,
+      disconnectSpellings,
     };
   },
 });

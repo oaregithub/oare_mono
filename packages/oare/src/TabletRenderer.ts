@@ -132,11 +132,11 @@ export default class TabletRenderer {
 
   // An ordered list of lines on the tablet
   get lines(): number[] {
-    const lineSet = this.epigraphicUnits.reduce(
-      (curSet, unit) => curSet.add(unit.line),
-      new Set<number>()
-    );
-    return Array.from(lineSet).sort((a, b) => a - b);
+    const orderedLines = this.epigraphicUnits
+      .sort((a, b) => a.objOnTablet - b.objOnTablet)
+      .map(unit => unit.line);
+
+    return Array.from(new Set(orderedLines));
   }
 
   public sideReading(side: EpigraphicUnitSide): string {
@@ -146,6 +146,14 @@ export default class TabletRenderer {
     });
     const sideReading = lineReadings.join('\n');
     return localizeString(sideReading, this.locale);
+  }
+
+  public getRegionUnitByLine(lineNum: number): EpigraphicUnit | null {
+    if (this.isRegion(lineNum)) {
+      const unitsOnLine = this.getUnitsOnLine(lineNum);
+      return unitsOnLine[0];
+    }
+    return null;
   }
 
   public isRegion(lineNum: number): boolean {

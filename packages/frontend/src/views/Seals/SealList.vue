@@ -1,7 +1,7 @@
 <template>
   <OareContentView title="Seals" :loading="loading">
     <v-row>
-      <v-col cols="3">
+      <v-col :cols="showRadioBtns ? 5 : 3">
         <div>
           <v-text-field
             v-model="search"
@@ -13,22 +13,79 @@
         </div>
       </v-col>
     </v-row>
-    <div v-for="(seal, idx) in filteredSeals" :key="idx">
-      <span
-        ><router-link :to="`/seals/${seal.uuid}`">{{ seal.name }}</router-link>
-        ({{ seal.count }})</span
-      >
-      <div class="ml-5">
-        <v-img
-          position="center left"
-          v-if="seal.imageLinks.length > 0"
-          max-height="80px"
-          max-width="300px"
-          :src="seal.imageLinks[0]"
-          contain
-        ></v-img>
+    <div v-if="showRadioBtns">
+      <v-row>
+        <v-col cols="8">
+          <v-radio-group v-model="selectedSeal" hide-details>
+            <v-radio
+              v-for="(seal, idx) in filteredSeals"
+              :key="idx"
+              :value="seal"
+              :class="`radio-${idx}`"
+            >
+              <template #label>
+                <span
+                  ><router-link :to="`/seals/${seal.uuid}`">{{
+                    seal.name
+                  }}</router-link>
+                  ({{ seal.count }})</span
+                >
+              </template></v-radio
+            >
+          </v-radio-group>
+        </v-col>
+        <v-col
+          class="d-flex justify-end"
+          v-if="canConnectSealImpression && showConnectSeal"
+          cols="4"
+        >
+          <div>
+            <v-btn
+              color="primary"
+              class="test-connect-seal"
+              :disabled="!selectedSeal"
+              @click="confirmConnectDialog = true"
+            >
+              Connect Seal
+            </v-btn>
+          </div>
+        </v-col>
+      </v-row>
+    </div>
+    <div v-else>
+      <div v-for="(seal, idx) in filteredSeals" :key="idx">
+        <div>
+          <span
+            ><router-link :to="`/seals/${seal.uuid}`">{{
+              seal.name
+            }}</router-link>
+            ({{ seal.count }})</span
+          >
+        </div>
+        <div v-if="!hideImages" class="ml-5 test-image">
+          <v-img
+            position="center left"
+            v-if="seal.imageLinks.length > 0"
+            max-height="80px"
+            max-width="300px"
+            :src="seal.imageLinks[0]"
+            contain
+          ></v-img>
+        </div>
       </div>
     </div>
+    <oare-dialog
+      v-if="selectedSeal"
+      v-model="confirmConnectDialog"
+      title="Confirm Seal Connection"
+      submitText="Yes"
+      cancelText="Cancel"
+      @submit="connectSeal"
+      closeOnSubmit
+    >
+      Are you sure you want to connect {{ selectedSeal.name }} to this seal
+      impression?
+    </oare-dialog>
   </OareContentView>
 </template>
 
@@ -47,14 +104,63 @@ import useQueryParam from '@/hooks/useQueryParam';
 export default defineComponent({
   name: 'SealsView',
   components: {},
-  setup() {
+  props: {
+    showRadioBtns: {
+      type: Boolean,
+      default: false,
+    },
+    hideImages: {
+      type: Boolean,
+      default: false,
+    },
+    textEpigraphyUuid: {
+      type: String,
+    },
+    showConnectSeal: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props, { emit }) {
     const loading = ref(false);
     const seals: Ref<SealInfo[]> = ref([]);
     const sortedSeals: Ref<SealInfo[]> = ref([]);
     const search = useQueryParam('filter', '', true);
+    const selectedSeal: Ref<SealInfo | null> = ref(null);
+    const confirmConnectDialog: Ref<Boolean> = ref(false);
 
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
+
+    const canConnectSealImpression = computed(() =>
+      store.hasPermission('ADD_SEAL_LINK')
+    );
+
+    const connectSeal = async () => {
+      try {
+        if (
+          selectedSeal.value &&
+          selectedSeal.value.uuid &&
+          props.textEpigraphyUuid
+        ) {
+          await server.addSealLink({
+            sealUuid: selectedSeal.value.uuid,
+            textEpigraphyUuid: props.textEpigraphyUuid,
+          });
+          actions.showSnackbar(
+            'Successfully connected seal to seal impression'
+          );
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Unable to connect seal to seal impression',
+          err as Error
+        );
+      } finally {
+        emit('finish');
+      }
+    };
 
     const sortSeals = () => {
       sortedSeals.value = seals.value.sort((a, b) => {
@@ -104,6 +210,10 @@ export default defineComponent({
       loading,
       filteredSeals,
       search,
+      selectedSeal,
+      canConnectSealImpression,
+      confirmConnectDialog,
+      connectSeal,
     };
   },
 });

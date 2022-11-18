@@ -6,7 +6,6 @@ import {
   EpigraphyResponse,
   Seal,
   SealInfo,
-  PersonListItem,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -165,40 +164,16 @@ export const SealListFilter = async (
   const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
   const filteredSealList = await Promise.all(
-    sealList.map(async s => {
-      if (s.count > 0) {
-        return {
-          ...s,
-          count: await SealDao.getSealImpressionCountBySealUuid(
-            s.uuid,
-            textsToHide
-          ),
-        };
-      }
-      return s;
-    })
-  );
-
-  return filteredSealList;
-};
-
-export const personTextFilter = async (
-  personList: PersonListItem[],
-  user: User | null
-): Promise<PersonListItem[]> => {
-  const PersonDao = sl.get('PersonDao');
-
-  const responseList: PersonListItem[] = await Promise.all(
-    personList.map(async person => ({
-      ...person,
-      occurrences: await PersonDao.getPersonTextOccurrences(
-        person.person.uuid,
-        user ? user.uuid : null
+    sealList.map(async s => ({
+      ...s,
+      count: await SealDao.getSealImpressionCountBySealUuid(
+        s.uuid,
+        textsToHide
       ),
     }))
   );
 
-  return responseList;
+  return filteredSealList;
 };
 
 export const noFilter = async (items: any, _user: User | null) => items;

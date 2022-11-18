@@ -139,12 +139,11 @@ export interface TextOccurrencesRow {
   discourseUuid: string;
   textName: string;
   textUuid: string;
-  line: number;
-  wordOnTablet: number;
 }
 
 export interface TextOccurrencesResponseRow extends TextOccurrencesRow {
-  readings: string[];
+  discourseUuidsToHighlight: string[];
+  readings: string[] | null;
 }
 
 export type DictionaryWordTypes = 'word' | 'GN' | 'PN';

@@ -35,8 +35,7 @@ class SealDao {
     const imageLinkRows: { link: string; container: string }[] = await k(
       'spatial_unit as su'
     )
-      .join('text_markup as tm', 'tm.obj_uuid', 'su.uuid')
-      .join('link as l', 'l.reference_uuid', 'tm.reference_uuid')
+      .join('link as l', 'l.reference_uuid', 'su.uuid')
       .join('resource as re', 'l.obj_uuid', 're.uuid')
       .where('su.tree_abb', 'Seal_Cat')
       .andWhere('su.uuid', sealUuid)
@@ -192,6 +191,35 @@ class SealDao {
   ): Promise<void> {
     const k = trx || knexWrite();
     await k('alias').update({ name: sealName }).where({ reference_uuid: uuid });
+  }
+
+  async getLinkedSealUuid(
+    textEpigraphyUuid: string,
+    trx?: Knex
+  ): Promise<string | null> {
+    const k = trx || knexRead();
+    const linkedSealUuid: string | null = await k('item_properties as ip')
+      .where('ip.reference_uuid', textEpigraphyUuid)
+      .andWhere('ip.variable_uuid', 'f32e6903-67c9-41d8-840a-d933b8b3e719')
+      .whereNotNull('ip.object_uuid')
+      .select('ip.object_uuid')
+      .first()
+      .then((val: { object_uuid: string | null }) => val?.object_uuid || null);
+    return linkedSealUuid;
+  }
+
+  async getSealLinkParentUuid(
+    textEpigraphyUuid: string,
+    trx?: Knex
+  ): Promise<string> {
+    const k = trx || knexRead();
+    const sealLinkParentUuid: string = await k('item_properties as ip')
+      .where('ip.reference_uuid', textEpigraphyUuid)
+      .andWhere('ip.value_uuid', 'ec820e17-ecc7-492f-86a7-a01b379622e1')
+      .select('ip.object_uuid')
+      .first()
+      .then((val: { uuid: string }) => val.uuid);
+    return sealLinkParentUuid;
   }
 }
 
