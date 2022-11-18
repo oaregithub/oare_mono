@@ -180,6 +180,15 @@ export default defineComponent({
       }
     };
 
+    watch(
+      () => textOccurrencesDialog.value,
+      () => {
+        if (!textOccurrencesDialog.value) {
+          selectedPerson.value = null;
+        }
+      }
+    );
+
     return {
       filterPersons,
       searchFilter,
