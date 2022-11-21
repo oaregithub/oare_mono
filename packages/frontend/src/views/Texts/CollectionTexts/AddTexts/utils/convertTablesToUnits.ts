@@ -97,6 +97,10 @@ export const convertTablesToUnits = (
       readingUuid: epigraphy.readingUuid || '',
       signUuid: epigraphy.signUuid || '',
       spellingUuid: getSpellingUuid(tables.discourses, epigraphy.discourseUuid),
+      word: null,
+      form: null,
+      translation: null,
+      parseInfo: null,
     };
     return unit;
   });

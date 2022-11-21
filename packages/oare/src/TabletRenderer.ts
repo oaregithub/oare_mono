@@ -268,6 +268,10 @@ export default class TabletRenderer {
       signUuid: unit.signUuid,
       markups: unit.markups,
       spellingUuid: unit.spellingUuid,
+      word: unit.word,
+      form: unit.form,
+      translation: unit.translation,
+      parseInfo: unit.parseInfo,
     }));
   }
 

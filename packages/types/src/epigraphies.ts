@@ -4,6 +4,7 @@ import { Collection } from './collection';
 import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 import { TreeRow } from './tree';
+import { ItemPropertyRow } from './words';
 
 export interface Text {
   uuid: string;
@@ -106,6 +107,10 @@ export interface EpigraphicUnit {
   value: null | string;
   markups: MarkupUnit[];
   readingUuid: string;
+  word: string | null;
+  form: string | null;
+  translation: string | null;
+  parseInfo: ItemPropertyRow[] | null;
   signUuid: string;
   spellingUuid: string | null;
 }
@@ -159,7 +164,14 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
 export interface EpigraphicUnitWithMarkup
   extends Pick<
     EpigraphicUnit,
-    'readingUuid' | 'signUuid' | 'markups' | 'spellingUuid'
+    | 'readingUuid'
+    | 'signUuid'
+    | 'markups'
+    | 'spellingUuid'
+    | 'word'
+    | 'form'
+    | 'translation'
+    | 'parseInfo'
   > {
   type: EpigraphicUnitType | null;
   reading: string;
@@ -170,9 +182,13 @@ export interface EpigraphicSign
   extends Pick<EpigraphicUnit, 'signUuid' | 'readingUuid' | 'reading'> {}
 
 export interface EpigraphicWord
-  extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
+  extends Pick<
+    EpigraphicUnit,
+    'discourseUuid' | 'reading' | 'word' | 'form' | 'translation' | 'parseInfo'
+  > {
   signs: EpigraphicSign[];
   isContraction: boolean;
+  isNumber: boolean;
 }
 
 export interface TranslitOption {

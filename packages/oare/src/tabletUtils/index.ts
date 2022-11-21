@@ -270,6 +270,11 @@ export function convertMarkedUpUnitsToEpigraphicWords(
         reading,
       })),
       isContraction,
+      word: word[0].word || null,
+      form: word[0].form || null,
+      translation: word[0].translation || null,
+      parseInfo: word[0].parseInfo || null,
+      isNumber: /[0-9]/g.test(word[0].word ?? ''),
     };
   });
 }

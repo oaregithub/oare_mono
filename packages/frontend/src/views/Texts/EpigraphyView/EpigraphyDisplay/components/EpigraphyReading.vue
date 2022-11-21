@@ -1,5 +1,12 @@
 <template>
   <div v-if="renderer" class="mr-10">
+    <div>
+      <v-switch
+        v-model="interLinearView"
+        class="test-interlinear-switch"
+        label="Interlinear View"
+      ></v-switch>
+    </div>
     <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
       <div class="side-name oare-title mr-4" v-html="formatSide(sideName)" />
       <div>
@@ -8,6 +15,7 @@
             v-for="lineNum in renderer.linesOnSide(sideName)"
             :key="lineNum"
             class="oare-title d-flex"
+            :class="{ 'mb-3': interLinearView }"
           >
             <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
             <span
@@ -21,14 +29,67 @@
               v-html="renderer.lineReading(lineNum)"
             />
             <span v-else>
-              <span
-                v-for="(word, index) in renderer.getLineWords(lineNum)"
-                :key="index"
-                v-html="formatWord(word)"
-                class="cursor-display test-rendered-word"
-                :class="{ 'mr-1': !word.isContraction }"
-                @click="openDialog(word.discourseUuid)"
-              />
+              <span v-show="!interLinearView">
+                <span
+                  v-for="(word, index) in renderer.getLineWords(lineNum)"
+                  :key="index"
+                  v-html="formatWord(word)"
+                  class="cursor-display test-rendered-word"
+                  :class="{ 'mr-1': !word.isContraction }"
+                  @click="openDialog(word.discourseUuid)"
+                />
+              </span>
+              <div class="test-interlinear-view" v-show="interLinearView">
+                <v-row>
+                  <v-col
+                    v-for="(word, index) in renderer.getLineWords(lineNum)"
+                    :key="index"
+                  >
+                    <div>
+                      <span
+                        v-html="formatWord(word)"
+                        class="cursor-display test-rendered-word"
+                        @click="openDialog(word.discourseUuid)"
+                      >
+                      </span>
+                    </div>
+                    <div v-if="word.word && !word.isNumber">
+                      <span
+                        v-html="`<em>${word.word}</em>`"
+                        class="cursor-display test-rendered-word"
+                        @click="openDialog(word.discourseUuid)"
+                      ></span>
+                    </div>
+                    <div v-if="word.translation">
+                      <span
+                        v-html="formatTranslation(word.translation)"
+                        class="cursor-display test-rendered-word"
+                        @click="openDialog(word.discourseUuid)"
+                      ></span>
+                    </div>
+                    <div v-if="word.form">
+                      <span
+                        v-html="`<em>${word.form}</em>`"
+                        class="cursor-display test-rendered-word"
+                        @click="openDialog(word.discourseUuid)"
+                      ></span>
+                    </div>
+                    <div v-if="word.parseInfo && word.parseInfo.length > 0">
+                      <span
+                        v-html="
+                          formGrammarString({
+                            uuid: '',
+                            form: '',
+                            properties: word.parseInfo,
+                          })
+                        "
+                        class="cursor-display test-rendered-word"
+                        @click="openDialog(word.discourseUuid)"
+                      ></span>
+                    </div>
+                  </v-col>
+                </v-row>
+              </div>
             </span>
           </div>
         </div>
@@ -45,6 +106,7 @@
               v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
               :key="lineNum"
               class="oare-title d-flex"
+              :class="{ 'mb-3': interLinearView }"
             >
               <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
               <span
@@ -54,14 +116,67 @@
                 class="cursor-display"
               />
               <span v-else>
-                <span
-                  v-for="(word, index) in renderer.getLineWords(lineNum)"
-                  :key="index"
-                  v-html="formatWord(word)"
-                  class="cursor-display test-rendered-word"
-                  :class="{ 'mr-1': !word.isContraction }"
-                  @click="openDialog(word.discourseUuid)"
-                />
+                <span v-show="!interLinearView">
+                  <span
+                    v-for="(word, index) in renderer.getLineWords(lineNum)"
+                    :key="index"
+                    v-html="formatWord(word)"
+                    class="cursor-display test-rendered-word"
+                    :class="{ 'mr-1': !word.isContraction }"
+                    @click="openDialog(word.discourseUuid)"
+                  />
+                </span>
+                <div class="test-interlinear-view" v-show="interLinearView">
+                  <v-row>
+                    <v-col
+                      v-for="(word, index) in renderer.getLineWords(lineNum)"
+                      :key="index"
+                    >
+                      <div>
+                        <span
+                          v-html="formatWord(word)"
+                          class="cursor-display test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        >
+                        </span>
+                      </div>
+                      <div v-if="word.word && !word.isNumber">
+                        <span
+                          v-html="formatDictionaryWord(word.word)"
+                          class="cursor-display test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                      <div v-if="word.translation">
+                        <span
+                          v-html="formatTranslation(word.translation)"
+                          class="cursor-display test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                      <div v-if="word.form">
+                        <span
+                          v-html="formatForm(word.form)"
+                          class="cursor-display test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                      <div v-if="word.parseInfo && word.parseInfo.length > 0">
+                        <span
+                          v-html="
+                            formGrammarString({
+                              uuid: '',
+                              form: '',
+                              properties: word.parseInfo,
+                            })
+                          "
+                          class="cursor-display test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
               </span>
             </div>
           </div>
@@ -168,6 +283,7 @@ import SingleSeal from '@/views/Seals/SingleSeal.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';
+import utils from '@/utils';
 
 export interface EpigraphySealLink {
   textEpigraphyUuid: string;
@@ -208,6 +324,7 @@ export default defineComponent({
     const connectSpellingDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
     const sealLink = ref<EpigraphySealLink | null>(null);
+    const interLinearView = ref(false);
 
     const canConnectSpellings = computed(() =>
       store.hasPermission('CONNECT_SPELLING')
@@ -373,6 +490,24 @@ export default defineComponent({
       return side.replace('!', '<sup>!</sup>');
     };
 
+    const formatTranslation = (translation: string) => {
+      return translation.length > 25
+        ? `&quot;${translation.slice(0, 22)}...&quot;`
+        : `${
+            translation !== 'PN' && translation !== 'GN' ? '&quot;' : ''
+          }${translation}${
+            translation !== 'PN' && translation !== 'GN' ? '&quot;' : ''
+          }`;
+    };
+
+    const formatForm = (form: string) => {
+      return `<em>${form}</em>`;
+    };
+
+    const formatDictionaryWord = (dictionaryWord: string) => {
+      return `<em>${dictionaryWord}</em>`;
+    };
+
     return {
       renderer,
       lineNumber,
@@ -388,7 +523,11 @@ export default defineComponent({
       closeConnectSpellingDialog,
       formatWord,
       formatSide,
+      formatTranslation,
+      formatDictionaryWord,
+      formatForm,
       romanNumeral,
+      formGrammarString: utils.formGrammarString,
       canDisconnectSpellings,
       canConnectSealImpression,
       confirmDisconnectDialog,
@@ -396,6 +535,7 @@ export default defineComponent({
       selectedDiscourseUuid,
       server,
       sealLink,
+      interLinearView,
     };
   },
 });
