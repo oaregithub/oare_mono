@@ -14,8 +14,3 @@ export interface PersonListItem {
   display: string;
   properties: ItemPropertyRow[];
 }
-
-export interface DisconnectPersonsPayload {
-  discourseUuids: string[];
-  personUuid: string;
-}
