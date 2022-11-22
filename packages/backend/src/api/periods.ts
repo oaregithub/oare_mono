@@ -32,11 +32,15 @@ router
           'OA hamuštum'
         );
 
-        const periods: PeriodResponse = await PeriodsDao.getYears(
+        const years: Year[] = await PeriodsDao.getYears(
           yearRows,
           monthRows,
           weekRows
         );
+
+        const periods: PeriodResponse = {
+          years,
+        };
 
         const response = await cache.insert<PeriodResponse>(
           { req },
@@ -51,5 +55,4 @@ router
     }
   );
 
-router.route('/periods').get();
 export default router;

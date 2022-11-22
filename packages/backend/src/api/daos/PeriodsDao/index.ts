@@ -9,7 +9,7 @@ class PeriodsDao {
     trx?: Knex.Transaction
   ): Promise<PeriodRow[]> {
     const k = trx || knexRead();
-    const rows: PeriodRow[] = await k
+    const rows: PeriodRow[] = await k('period')
       .select(
         'uuid',
         'type',
@@ -32,7 +32,6 @@ class PeriodsDao {
         'period_type as periodType',
         'order'
       )
-      .from('period')
       .where('tree_uuid', treeUuid)
       .andWhere('period_type', type);
 
@@ -44,16 +43,14 @@ class PeriodsDao {
     monthRows: PeriodRow[],
     weekRows: PeriodRow[],
     trx?: Knex.Transaction
-  ): Promise<PeriodResponse> {
+  ): Promise<Year[]> {
     const k = trx || knexRead();
 
     const years: Year[] = await Promise.all(
       yearRows.map(row => this.yearMaker(row, monthRows, weekRows))
     );
 
-    return {
-      years,
-    };
+    return years;
   }
 
   async yearMaker(
@@ -65,12 +62,12 @@ class PeriodsDao {
     const k = trx || knexRead();
 
     const { uuid } = period;
-    let yearNumber: string | null = '';
+    let yearNumber: string = '';
 
     if (period.abbreviation != null) {
       yearNumber = period.abbreviation;
     } else {
-      yearNumber = 'none';
+      yearNumber = '';
     }
 
     let yearName: string = '';
@@ -79,21 +76,18 @@ class PeriodsDao {
       period.official1Uuid != null &&
       period.official1FatherNameUuid != null
     ) {
-      const yearOfficialName = await k
+      const yearOfficialName = await k('dictionary_word')
         .select('word')
-        .from('dictionary_word')
-        .innerJoin('person', 'person.name_uuid', '=', 'dictionary_word.uuid')
+        .innerJoin('person', 'person.name_uuid', 'dictionary_word.uuid')
         .where('person.uuid', period.official1Uuid)
         .first();
 
-      const yearOfficialRelation = await k
+      const yearOfficialRelation = await k('person')
         .select('relation')
-        .from('person')
         .where('uuid', period.official1Uuid)
         .first();
-      const yearOfficialRelationName = await k
+      const yearOfficialRelationName = await k('dictionary_word')
         .select('word')
-        .from('dictionary_word')
         .innerJoin(
           'person',
           'person.relation_name_uuid',
@@ -102,44 +96,40 @@ class PeriodsDao {
         )
         .where('person.uuid', period.official1Uuid)
         .first();
-      yearName = `${yearOfficialName.word}, , ${yearOfficialRelation.relation}, , ${yearOfficialRelationName.word}`;
+      yearName = `${yearOfficialName.word} ${yearOfficialRelation.relation} ${yearOfficialRelationName.word}`;
     } else if (
       period.official1Uuid != null &&
       period.official1FatherNameUuid == null
     ) {
-      const yearOfficialName = await k
+      const yearOfficialName = await k('dictionary_word')
         .select('word')
-        .from('dictionary_word')
         .innerJoin('person', 'person.name_uuid', '=', 'dictionary_word.uuid')
         .where('person.uuid', period.official1Uuid)
         .first();
 
-      const yearOfficialLabel = await k
+      const yearOfficialLabel = await k('person')
         .select('label')
-        .from('person')
         .where('person.uuid', period.official1Uuid)
         .first();
 
       if (yearOfficialLabel != null) {
-        yearName = `${yearOfficialName.word}, , ${yearOfficialLabel.label}`;
+        yearName = `${yearOfficialName.word} ${yearOfficialLabel.label}`;
       } else {
-        yearName = String(yearOfficialName.word);
+        yearName = yearOfficialName.word;
       }
     } else if (period.official1NameUuid !== null) {
-      const yearOfficialName = await k
+      const yearOfficialName = await k('dictionary_word')
         .select('word')
-        .from('dictionary_word')
         .where('uuid', period.official1NameUuid)
         .first();
 
       if (period.official1FatherNameUuid !== null) {
-        const yearOfficialFatherName = await k
+        const yearOfficialFatherName = await k('dictionary_word')
           .select('word')
-          .from('dictionary_word')
           .where('uuid', period.official1FatherNameUuid)
           .first();
 
-        yearName = `${yearOfficialName.word}, s. , ${yearOfficialFatherName.word}`;
+        yearName = `${yearOfficialName.word} s. ${yearOfficialFatherName.word}`;
       } else {
         yearName = `${yearOfficialName.word}`;
       }
@@ -147,16 +137,14 @@ class PeriodsDao {
       yearName = period.name;
     }
 
-    const countRow = await k
-      .select()
-      .from('item_properties')
+    const countRow = await k('item_properties')
       .where('object_uuid', period.uuid)
       .andWhere('variable_uuid', 'cd76438c-3a82-11ed-b9d7-0282f921eac9')
       .count({ count: 'uuid' })
       .first();
 
     const yearOccurrences = countRow && countRow.count ? countRow.count : 0;
-    const months = await this.getMonths(monthRows, weekRows, period.uuid);
+    const months = await this.getMonths(period, monthRows, weekRows);
 
     return {
       uuid,
@@ -168,15 +156,12 @@ class PeriodsDao {
   }
 
   async getMonths(
+    yearRow: PeriodRow,
     monthRows: PeriodRow[],
-    weekRows: PeriodRow[],
-    periodUuid: string,
-    trx?: Knex.Transaction
+    weekRows: PeriodRow[]
   ): Promise<Month[]> {
-    const k = trx || knexRead();
-
     const matchingMonths = monthRows.filter(
-      month => month.parentUuid === periodUuid
+      month => month.parentUuid === yearRow.uuid
     );
 
     const months = await Promise.all(
@@ -187,10 +172,9 @@ class PeriodsDao {
   }
 
   async monthMaker(monthRow: PeriodRow, weekRows: PeriodRow[]): Promise<Month> {
-    const { uuid } = monthRow;
-    const { abbreviation } = monthRow;
+    const { uuid, abbreviation } = monthRow;
 
-    const monthName: string = `${abbreviation}, . ,${monthRow.name}`;
+    const monthName: string = `${abbreviation} . ${monthRow.name}`;
 
     const weeks = await this.getWeeks(monthRow, weekRows);
 
