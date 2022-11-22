@@ -8,7 +8,6 @@ import {
   PersonListItem,
   ItemPropertyRow,
   TextOccurrencesCountResponseItem,
-  DisconnectPersonsPayload,
 } from '@oare/types';
 import { noFilter } from '@/cache/filters';
 
@@ -136,19 +135,21 @@ router
   });
 
 router
-  .route('/persons/disconnect')
-  .patch(permissionsRoute('DISCONNECT_OCCURRENCES'), async (req, res, next) => {
-    try {
-      const PersonDao = sl.get('PersonDao');
-      const { discourseUuids, personUuid }: DisconnectPersonsPayload = req.body;
+  .route('/persons/disconnect/:personUuid/:discourseUuid')
+  .delete(
+    permissionsRoute('DISCONNECT_OCCURRENCES'),
+    async (req, res, next) => {
+      try {
+        const PersonDao = sl.get('PersonDao');
+        const { personUuid, discourseUuid } = req.params;
 
-      await Promise.all(
-        discourseUuids.map(uuid => PersonDao.disconnectPerson(uuid, personUuid))
-      );
-      res.status(204).end();
-    } catch (err) {
-      next(new HttpInternalError(err as string));
+        await PersonDao.disconnectPerson(discourseUuid, personUuid);
+
+        res.status(204).end();
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
     }
-  });
+  );
 
 export default router;
