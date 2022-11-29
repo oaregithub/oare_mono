@@ -283,6 +283,7 @@ export default defineComponent({
     const mode: Ref<string> = ref(sequenced.value);
 
     const wordsBetween = ref([
+      { name: '0', value: 0 },
       { name: '<= 1', value: 1 },
       { name: '<= 2', value: 2 },
       { name: '<= 3', value: 3 },
@@ -317,6 +318,7 @@ export default defineComponent({
         if (
           sequenced.value === 'true' &&
           !searchItems.value[i].numWordsBefore &&
+          searchItems.value[i].numWordsBefore !== 0 &&
           i > 0
         ) {
           allowSearch = false;

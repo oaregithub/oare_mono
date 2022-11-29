@@ -91,7 +91,9 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
             if (currentNumWordsBetween > -1) {
               this.andOn(
                 k.raw(
-                  `td${i}.word_on_tablet <= (td${i - 1}.word_on_tablet + ?)`,
+                  `td${i}.word_on_tablet <= (td${
+                    i - 1
+                  }.word_on_tablet + ? + 1)`,
                   [currentNumWordsBetween]
                 )
               ).andOn(
@@ -105,7 +107,9 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
           } else if (currentNumWordsBetween > -1) {
             this.andOn(
               k.raw(
-                `ABS(td${i}.word_on_tablet - td${i - 1}.word_on_tablet) <= ?`,
+                `ABS(td${i}.word_on_tablet - td${
+                  i - 1
+                }.word_on_tablet) <= (? + 1)`,
                 [currentNumWordsBetween]
               )
             );
