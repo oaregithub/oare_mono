@@ -66,8 +66,6 @@ class PeriodsDao {
 
     if (period.abbreviation != null) {
       yearNumber = period.abbreviation;
-    } else {
-      yearNumber = '';
     }
 
     let yearName: string = '';
@@ -174,7 +172,7 @@ class PeriodsDao {
   async monthMaker(monthRow: PeriodRow, weekRows: PeriodRow[]): Promise<Month> {
     const { uuid, abbreviation } = monthRow;
 
-    const monthName: string = `${abbreviation} . ${monthRow.name}`;
+    const monthName: string = `${abbreviation}. ${monthRow.name}`;
 
     const weeks = await this.getWeeks(monthRow, weekRows);
 
