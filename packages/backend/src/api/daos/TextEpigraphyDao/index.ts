@@ -77,7 +77,7 @@ class TextEpigraphyDao {
       .select(
         'text_epigraphy.uuid',
         'text_epigraphy.side',
-        'text_epigraphy.column',
+        'text_epigraphy.col',
         'text_epigraphy.line',
         'text_epigraphy.reading AS epigReading',
         'text_epigraphy.char_on_line AS charOnLine',
