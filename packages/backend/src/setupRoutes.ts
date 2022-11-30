@@ -37,6 +37,7 @@ import text from './api/text';
 import bibliography from './api/bibliography';
 import quarantine from './api/quarantine';
 import field from './api/field';
+import periods from './api/periods';
 import seals from './api/seals';
 
 export const API_PATH = '/api/v2';
@@ -81,6 +82,7 @@ export default (app: Express) => {
     bibliography,
     quarantine,
     field,
+    periods,
     seals,
   ].forEach(route => {
     app.use(API_PATH, route);

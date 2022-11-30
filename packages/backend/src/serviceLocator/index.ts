@@ -38,6 +38,7 @@ import QuarantineTextDao from '@/api/daos/QuarantineTextDao';
 import * as utils from '@/utils';
 import BibliographyUtils from '@/api/daos/BibliographyUtils';
 import SealDao from '@/api/daos/SealDao';
+import PeriodsDao from '@/api/daos/PeriodsDao';
 
 const instances: { [key: string]: any } = {};
 
@@ -82,6 +83,7 @@ export type ServiceTypes = {
   TreeDao: typeof TreeDao;
   QuarantineTextDao: typeof QuarantineTextDao;
   SealDao: typeof SealDao;
+  PeriodsDao: typeof PeriodsDao;
 };
 
 export default {

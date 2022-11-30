@@ -48,6 +48,12 @@ class PermissionsDao {
       dependencies: ['SEALS'],
     },
     {
+      name: 'PERIODS',
+      type: 'pages',
+      description:
+        'Allow group users to view "Periods" page and associated data',
+    },
+    {
       name: 'ADD_SEAL_LINK',
       type: 'seals',
       description:
