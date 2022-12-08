@@ -20006,9 +20006,9 @@ vue-i18n@^8.17.0:
   resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-8.22.4.tgz#255cbdab4ffa7337c5819b82dd171208af74e385"
   integrity sha512-XLI5s0AdqMP2Lf4I4CmdmOq8kjb5DDFGR77wAuxCfpEuYSfhTRyyx6MetgZMiL6Lxa0DasjBOiOcciU3NkL3/Q==
 
-"vue-inner-image-zoom@git+https://github.com/oaregithub/vue-inner-image-zoom.git":
+vue-inner-image-zoom@oaregithub/vue-inner-image-zoom:
   version "1.2.0"
-  resolved "git+https://github.com/oaregithub/vue-inner-image-zoom.git#bbc0eba16e276e3caa00953e5e71bf7b79968b38"
+  resolved "https://codeload.github.com/oaregithub/vue-inner-image-zoom/tar.gz/c711befd5dcf6fdc27e966fef0032251a6178c4e"
   dependencies:
     portal-vue "^2.1.7"
 
