@@ -480,3 +480,8 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>
