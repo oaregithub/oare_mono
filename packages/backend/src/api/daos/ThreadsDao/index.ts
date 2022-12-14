@@ -94,7 +94,6 @@ class ThreadsDao {
     });
   }
 
-  // gonna need to add joins for tables we add to this
   async getAll(
     request: AllCommentsRequest,
     userUuid: string | null,
