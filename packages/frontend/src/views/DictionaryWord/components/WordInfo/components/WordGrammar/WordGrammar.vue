@@ -104,8 +104,33 @@
                   class="mb-0"
                 >
                   <span v-if="word.translationsForDefinition.length >= 1">
-                    <b>{{ 1 }}</b>
-                    . {{ word.translationsForDefinition[0].val }}
+                    <UtilList
+                      @comment-clicked="
+                        openComment(
+                          word.translationsForDefinition[0].uuid,
+                          word.translationsForDefinition[0].val
+                            ? word.translationsForDefinition[0].val
+                            : ''
+                        )
+                      "
+                      :hasEdit="false"
+                      :hasDelete="false"
+                      :hideMenu="!allowCommenting && !allowEditing"
+                    >
+                      <template #activator="{ on, attrs }">
+                        <div
+                          class="test-defintion-util-list"
+                          :class="{
+                            'cursor-display': allowCommenting || allowEditing,
+                          }"
+                          v-on="on"
+                          v-bind="attrs"
+                        >
+                          <b>{{ 1 }}</b>
+                          . {{ word.translationsForDefinition[0].val }}
+                        </div>
+                      </template>
+                    </UtilList>
                   </span>
                 </p>
                 <p
@@ -118,8 +143,28 @@
                     v-for="(tr, idx) in word.translationsForDefinition"
                     :key="tr.uuid"
                   >
-                    <b>{{ idx + 1 }}</b
-                    >. {{ tr.val }}
+                    <UtilList
+                      @comment-clicked="
+                        openComment(tr.uuid, tr.val ? tr.val : '')
+                      "
+                      :hasEdit="false"
+                      :hasDelete="false"
+                      :hideMenu="!allowCommenting && !allowEditing"
+                    >
+                      <template #activator="{ on, attrs }">
+                        <div
+                          class="test-defintion-util-list"
+                          :class="{
+                            'cursor-display': allowCommenting || allowEditing,
+                          }"
+                          v-on="on"
+                          v-bind="attrs"
+                        >
+                          <b>{{ idx + 1 }}</b
+                          >. {{ tr.val }}
+                        </div>
+                      </template>
+                    </UtilList>
                   </span>
                 </p>
               </div>
@@ -218,6 +263,16 @@
         :key="addPropertiesKey"
       />
     </oare-dialog>
+    <component
+      v-if="allowCommenting"
+      :is="commentComponent"
+      v-model="isCommenting"
+      :item="`${word.word}: '${commentDialogItem}'`"
+      :uuid="commentDialogUuid"
+      :key="commentDialogUuid"
+      :route="`/threads/${commentDialogUuid}`"
+      >{{ word.word }}: "{{ commentDialogItem }}"</component
+    >
   </div>
 </template>
 
@@ -238,6 +293,7 @@ import {
 import { ReloadKey } from '../../../../index.vue';
 import AddProperties from '@/components/Properties/AddProperties.vue';
 import EditTranslations from './components/EditTranslations.vue';
+import UtilList from '@/components/UtilList/index.vue';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -255,6 +311,10 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
+    allowCommenting: {
+      type: Boolean,
+      default: true,
+    },
     updateWordInfo: {
       type: Function as PropType<(newWord: Word) => void>,
       required: false,
@@ -263,8 +323,9 @@ export default defineComponent({
   components: {
     AddProperties,
     EditTranslations,
+    UtilList,
   },
-  setup({ word, updateWordInfo }) {
+  setup({ word, updateWordInfo, allowCommenting }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
@@ -273,6 +334,9 @@ export default defineComponent({
     const isEditingLemmaProperties = ref(false);
     const isEditingDefinitionTranslations = ref(false);
     const isEditingLemmaTranslations = ref(false);
+    const isCommenting = ref(false);
+    const commentDialogUuid = ref('');
+    const commentDialogItem = ref('');
 
     const partsOfSpeech = computed(() =>
       word.properties.filter(prop => prop.variableName === 'Part of Speech')
@@ -375,6 +439,18 @@ export default defineComponent({
       }
     };
 
+    const openComment = (uuid: string, item: string) => {
+      commentDialogUuid.value = uuid;
+      commentDialogItem.value = item;
+      isCommenting.value = true;
+    };
+
+    // To avoid circular dependencies
+    const commentComponent = computed(() =>
+      allowCommenting
+        ? () => import('@/components/CommentItemDisplay/index.vue')
+        : null
+    );
     return {
       partsOfSpeech,
       partsOfSpeechString,
@@ -393,6 +469,11 @@ export default defineComponent({
       isEditingLemmaProperties,
       isEditingDefinitionTranslations,
       isEditingLemmaTranslations,
+      isCommenting,
+      commentDialogItem,
+      commentDialogUuid,
+      commentComponent,
+      openComment,
       updateDefinitionTranslations,
       updateDiscussionLemma,
     };
