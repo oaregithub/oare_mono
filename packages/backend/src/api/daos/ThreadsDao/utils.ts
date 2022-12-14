@@ -13,6 +13,8 @@ export function determineThreadItem(
       item = tr.spelling;
     } else if (tr.definition) {
       item = tr.definition;
+    } else if (tr.collectionName) {
+      item = tr.collectionName;
     }
 
     const { word, form, spelling, definition, ...threadRow } = tr;
