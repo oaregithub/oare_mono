@@ -115,13 +115,16 @@
                       "
                       :hasEdit="false"
                       :hasDelete="false"
-                      :hideMenu="!allowCommenting && !allowEditing"
+                      :hideMenu="
+                        (!allowCommenting || !canComment) && !allowEditing
+                      "
                     >
                       <template #activator="{ on, attrs }">
                         <div
                           class="test-defintion-util-list"
                           :class="{
-                            'cursor-display': allowCommenting || allowEditing,
+                            'cursor-display':
+                              (allowCommenting && canComment) || allowEditing,
                           }"
                           v-on="on"
                           v-bind="attrs"
@@ -149,13 +152,16 @@
                       "
                       :hasEdit="false"
                       :hasDelete="false"
-                      :hideMenu="!allowCommenting && !allowEditing"
+                      :hideMenu="
+                        (!allowCommenting || !canComment) && !allowEditing
+                      "
                     >
                       <template #activator="{ on, attrs }">
                         <div
                           class="test-defintion-util-list"
                           :class="{
-                            'cursor-display': allowCommenting || allowEditing,
+                            'cursor-display':
+                              (allowCommenting && canComment) || allowEditing,
                           }"
                           v-on="on"
                           v-bind="attrs"
@@ -264,7 +270,7 @@
       />
     </oare-dialog>
     <component
-      v-if="allowCommenting"
+      v-if="allowCommenting && canComment"
       :is="commentComponent"
       v-model="isCommenting"
       :item="`${word.word}: '${commentDialogItem}'`"
@@ -417,6 +423,8 @@ export default defineComponent({
       store.hasPermission('UPDATE_TRANSLATION')
     );
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
     const updateDefinitionTranslations = (
       newTranslations: DictionaryWordTranslation[]
     ) => {
@@ -473,6 +481,7 @@ export default defineComponent({
       commentDialogItem,
       commentDialogUuid,
       commentComponent,
+      canComment,
       openComment,
       updateDefinitionTranslations,
       updateDiscussionLemma,
