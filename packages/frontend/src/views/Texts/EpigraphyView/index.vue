@@ -21,9 +21,16 @@
       <v-btn
         v-if="!isEditing && textInfo.canWrite"
         color="primary"
-        :to="`/epigraphies/${textUuid}/edit`"
-        class="mx-2"
+        :to="`/edit_text/${textUuid}`"
+        class="ml-10 mr-2"
         >Edit</v-btn
+      >
+      <v-btn
+        v-if="!isEditing && textInfo.canWrite"
+        color="primary"
+        :to="`/epigraphies/${textUuid}/draft`"
+        class="mx-2"
+        >Draft</v-btn
       >
       <v-btn
         v-if="canAddPictures"

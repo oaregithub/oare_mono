@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { SideOption, RowContent, ColumnContent } from '@oare/types';
+import { EpigraphicUnitSide, RowContent, ColumnContent } from '@oare/types';
 import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
 import { v4 } from 'uuid';
 import Column from './Column.vue';
@@ -43,7 +43,7 @@ export interface Column {
 export default defineComponent({
   props: {
     side: {
-      type: String as PropType<SideOption>,
+      type: String as PropType<EpigraphicUnitSide>,
       required: true,
     },
     startingLine: {

@@ -24,50 +24,62 @@
         </div>
         <div>
           <div
-            v-for="lineNum in renderer.linesOnSide(sideName)"
-            :key="lineNum"
-            class="oare-title d-flex my-3 mb-6"
+            v-for="colNum in renderer.columnsOnSide(sideName)"
+            :key="colNum"
+            class="pa-1"
           >
-            <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
-            <span
-              v-if="
-                renderer.isRegion(lineNum) || renderer.isUndetermined(lineNum)
-              "
-              v-html="renderer.lineReading(lineNum)"
-            />
-            <v-row v-else class="pa-0 ma-0">
-              <div
-                v-for="(word, index) in renderer.getLineWords(lineNum)"
-                :key="index"
-                class="px-1 cursor-display d-inline-block"
-                @click="openDiscourseDialog(word)"
-              >
-                <v-row class="pa-0 ma-0" justify="center">
-                  <span v-html="word.reading" />
-                </v-row>
-                <v-row
-                  class="pa-0 text-body-2 ma-0 grey--text"
-                  justify="center"
+            <div
+              v-if="renderer.columnsOnSide(sideName).length > 1"
+              class="oare-title mr-1 pb-1"
+            >
+              col. {{ romanNumeral(colNum) }}
+            </div>
+            <div
+              v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
+              :key="lineNum"
+              class="oare-title d-flex my-3 mb-6"
+            >
+              <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
+              <span
+                v-if="
+                  renderer.isRegion(lineNum) || renderer.isUndetermined(lineNum)
+                "
+                v-html="renderer.lineReading(lineNum)"
+              />
+              <v-row v-else class="pa-0 ma-0">
+                <div
+                  v-for="(word, index) in renderer.getLineWords(lineNum)"
+                  :key="index"
+                  class="px-1 cursor-display d-inline-block"
+                  @click="openDiscourseDialog(word)"
                 >
-                  <v-chip
-                    v-if="
-                      word.discourseUuid
-                        ? !isNumber(word.discourseUuid) &&
-                          !isUndetermined(word.reading || '') &&
-                          !isSeparator(word.reading || '')
-                        : false
-                    "
-                    :color="getColor(word.discourseUuid)"
-                    small
-                    >{{
-                      word.discourseUuid
-                        ? getSelectedForm(word.discourseUuid)
-                        : '--'
-                    }}</v-chip
+                  <v-row class="pa-0 ma-0" justify="center">
+                    <span v-html="word.reading" />
+                  </v-row>
+                  <v-row
+                    class="pa-0 text-body-2 ma-0 grey--text"
+                    justify="center"
                   >
-                </v-row>
-              </div>
-            </v-row>
+                    <v-chip
+                      v-if="
+                        word.discourseUuid
+                          ? !isNumber(word.discourseUuid) &&
+                            !isUndetermined(word.reading || '') &&
+                            !isSeparator(word.reading || '')
+                          : false
+                      "
+                      :color="getColor(word.discourseUuid)"
+                      small
+                      >{{
+                        word.discourseUuid
+                          ? getSelectedForm(word.discourseUuid)
+                          : '--'
+                      }}</v-chip
+                    >
+                  </v-row>
+                </div>
+              </v-row>
+            </div>
           </div>
         </div>
       </div>
@@ -98,7 +110,7 @@ import {
   SearchSpellingResultRow,
   LocaleCode,
 } from '@oare/types';
-import { formatLineNumber } from '@oare/oare/src/tabletUtils';
+import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import ConnectDiscourseDialog from './components/ConnectDiscourseDialog.vue';
 import sl from '@/serviceLocator';
 import i18n from '@/i18n';
@@ -277,6 +289,7 @@ export default defineComponent({
       isNumber,
       isUndetermined,
       isSeparator,
+      romanNumeral,
     };
   },
 });

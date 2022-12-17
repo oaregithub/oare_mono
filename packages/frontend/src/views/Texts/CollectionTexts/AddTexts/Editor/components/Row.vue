@@ -68,6 +68,7 @@
               rows="1"
               class="mx-1 mt-0 mb-n5 hide-line test-line-text"
               :autofocus="autofocus"
+              :outlined="outlined"
               @keydown.enter.prevent
               @keyup.enter="$emit('add-row-after')"
               @input="updateText($event)"
@@ -150,7 +151,7 @@
         </v-row>
         <span v-else class="my-1">{{ row.type }}</span>
       </v-col>
-      <v-col cols="1" class="pa-0" align="right">
+      <v-col v-if="showDeleteButton" cols="1" class="pa-0" align="right">
         <v-btn @click="$emit('remove-row')" icon x-small class="ma-1">
           <v-icon :color="hover ? 'red' : 'transparent'">mdi-delete</v-icon>
         </v-btn>
@@ -199,6 +200,14 @@ export default defineComponent({
       default: false,
     },
     isCurrentRow: {
+      type: Boolean,
+      default: false,
+    },
+    showDeleteButton: {
+      type: Boolean,
+      default: true,
+    },
+    outlined: {
       type: Boolean,
       default: false,
     },

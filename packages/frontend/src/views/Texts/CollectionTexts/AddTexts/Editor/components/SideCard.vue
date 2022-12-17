@@ -1,12 +1,15 @@
 <template>
   <v-card
-    elevation="0"
+    flat
+    outlined
     @click="$emit('set-side')"
     :color="selected ? 'grey lighten-2' : null"
+    class="my-2"
   >
-    <v-row class="mx-4 my-2" justify="space-between">
+    <v-row class="mx-4 my-1" justify="space-between">
       <h2 class="py-4">{{ side }}</h2>
       <v-speed-dial
+        v-if="showEditButton"
         v-model="sideEditMenu"
         direction="left"
         :open-on-hover="true"
@@ -57,18 +60,22 @@
 </template>
 
 <script lang="ts">
-import { SideOption } from '@oare/types';
+import { EpigraphicUnitSide } from '@oare/types';
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 
 export default defineComponent({
   props: {
     side: {
-      type: String as PropType<SideOption>,
+      type: String as PropType<EpigraphicUnitSide>,
       required: true,
     },
     selected: {
       type: Boolean,
       required: true,
+    },
+    showEditButton: {
+      type: Boolean,
+      default: true,
     },
   },
   setup() {

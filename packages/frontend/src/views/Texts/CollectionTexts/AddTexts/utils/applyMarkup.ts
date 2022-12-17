@@ -306,6 +306,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
       };
     }
     if (matches) {
+      // FIXME all of these are failing when opening and closing brackets appear on the same sign....not good at all
       phoneticComplementStatus = !phoneticComplementStatus;
     }
   });

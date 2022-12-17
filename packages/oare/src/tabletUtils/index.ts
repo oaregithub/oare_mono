@@ -132,28 +132,31 @@ export function separateEpigraphicUnitsByWord(
 }
 
 export function getEpigraphicSeparator(
-  type1: EpigraphicUnitType | null,
-  unit1Markups: MarkupUnit[],
-  type2: EpigraphicUnitType | null,
-  unit2Markups: MarkupUnit[]
+  sign1: EpigraphicUnitWithMarkup,
+  sign2: EpigraphicUnitWithMarkup | null,
+  isContraction: boolean
 ): string {
-  if (
-    !unit1Markups.map(unit => unit.type).includes('phoneticComplement') &&
-    unit2Markups.map(unit => unit.type).includes('phoneticComplement')
-  ) {
-    return '';
-  }
-  if (type1 === 'determinative' || type2 === 'determinative') {
-    return '';
-  }
-  if (type1 === 'phonogram' || type2 === 'phonogram') {
+  if (sign2) {
+    if (
+      !sign1.markups.map(unit => unit.type).includes('phoneticComplement') &&
+      sign2.markups.map(unit => unit.type).includes('phoneticComplement')
+    ) {
+      return '';
+    }
+    if (sign1.type === 'determinative' || sign2.type === 'determinative') {
+      return '';
+    }
+    if (sign1.type === 'phonogram' || sign2.type === 'phonogram') {
+      return '-';
+    }
+    if (sign1.type === 'number' && sign2.type === 'number') {
+      return '+';
+    }
+    if (sign1.type === 'logogram' || sign2.type === 'logogram') {
+      return '.';
+    }
+  } else if (isContraction) {
     return '-';
-  }
-  if (type1 === 'number' && type2 === 'number') {
-    return '+';
-  }
-  if (type1 === 'logogram' || type2 === 'logogram') {
-    return '.';
   }
   return '';
 }
@@ -165,16 +168,13 @@ export function epigraphicWordWithSeparators(
   let wordWithSeparators = '';
   characters.forEach((character, index) => {
     wordWithSeparators += character.reading;
-    if (index !== characters.length - 1) {
-      wordWithSeparators += getEpigraphicSeparator(
-        character.type,
-        character.markups,
-        characters[index + 1].type,
-        characters[index + 1].markups
-      );
-    } else if (isContraction) {
-      wordWithSeparators += '-';
-    }
+    const nextSign =
+      index !== characters.length - 1 ? characters[index + 1] : null;
+    wordWithSeparators += getEpigraphicSeparator(
+      character,
+      nextSign,
+      isContraction
+    );
   });
   return wordWithSeparators;
 }
@@ -259,17 +259,28 @@ export function convertMarkedUpUnitsToEpigraphicWords(
   characters: EpigraphicUnitWithMarkup[]
 ): EpigraphicWord[] {
   const epigraphicWords = separateEpigraphicUnitsByWord(characters);
-  return epigraphicWords.map(word => {
-    const isContraction = getContractionStatus(word);
+  return epigraphicWords.map(signs => {
+    const isContraction = getContractionStatus(signs);
     return {
-      reading: epigraphicWordWithSeparators(word, isContraction),
-      discourseUuid: word[0].discourseUuid,
-      signs: word.map(({ signUuid, readingUuid, reading }) => ({
-        signUuid,
-        readingUuid,
-        reading,
+      uuids: signs.map(unit => unit.uuid),
+      reading: epigraphicWordWithSeparators(signs, isContraction),
+      discourseUuid: signs[0].discourseUuid,
+      signs: signs.map((sign, idx) => ({
+        uuid: sign.uuid,
+        epigType: sign.epigType,
+        type: sign.type,
+        signUuid: sign.signUuid,
+        readingUuid: sign.readingUuid,
+        reading: sign.reading,
+        separator: getEpigraphicSeparator(
+          sign,
+          idx !== signs.length - 1 ? signs[idx + 1] : null,
+          isContraction
+        ),
+        markups: sign.markups,
       })),
       isContraction,
+      isDivider: signs.map(unit => unit.epigType).includes('separator'),
     };
   });
 }

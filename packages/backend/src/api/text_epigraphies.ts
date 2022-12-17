@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError, HttpBadRequest } from '@/exceptions';
+import { HttpInternalError, HttpBadRequest, HttpForbidden } from '@/exceptions';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
 import {
@@ -12,15 +12,17 @@ import {
   TextEpigraphyRow,
   ResourceRow,
   LinkRow,
-  EpigraphyLabelLink,
   ZoteroData,
+  EditTextPayload,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import authenticatedRoute from '@/middlewares/authenticatedRoute';
 import cacheMiddleware from '@/middlewares/cache';
 import textMiddleware from '@/middlewares/text';
 import fileUpload from 'express-fileupload';
 import { noFilter, textFilter } from '@/cache/filters';
 import { concatLocation } from './daos/ResourceDao/utils';
+import { cleanLines } from './daos/EditTextUtils/utils';
 
 const router = express.Router();
 
@@ -609,6 +611,83 @@ router
       );
 
       res.json(linkedSealUuid);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/text_epigraphies/edit_text')
+  .post(authenticatedRoute, async (req, res, next) => {
+    try {
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
+      const EditTextUtils = sl.get('EditTextUtils');
+      const cache = sl.get('cache');
+      const utils = sl.get('utils');
+
+      const userUuid = req.user!.uuid;
+
+      const payload: EditTextPayload = req.body;
+
+      console.log(payload); // eslint-disable-line no-console
+
+      const canEditText = await CollectionTextUtils.canEditText(
+        payload.textUuid,
+        userUuid
+      );
+      if (!canEditText) {
+        next(new HttpForbidden('You do not have permission to edit this text'));
+        return;
+      }
+
+      await utils.createTransaction(async trx => {
+        if (payload.type === 'addSide') {
+          await EditTextUtils.addSide(payload, trx);
+        } else if (payload.type === 'addColumn') {
+          await EditTextUtils.addColumn(payload, trx);
+        } else if (payload.type === 'addRegion') {
+          await EditTextUtils.addRegion(payload, trx);
+        } else if (payload.type === 'addLine') {
+          await EditTextUtils.addLine(payload, trx);
+        } else if (payload.type === 'editSide') {
+          await EditTextUtils.editSide(payload, trx);
+        } else if (payload.type === 'editColumn') {
+          await EditTextUtils.editColumn(payload, trx);
+        } else if (payload.type === 'mergeLine') {
+          await EditTextUtils.mergeLines(payload, trx);
+        } else if (payload.type === 'removeSide') {
+          await EditTextUtils.removeSide(payload, trx);
+        } else if (payload.type === 'removeColumn') {
+          await EditTextUtils.removeColumn(payload, trx);
+        } else if (payload.type === 'removeRegion') {
+          await EditTextUtils.removeRegion(payload, trx);
+        } else if (payload.type === 'removeLine') {
+          await EditTextUtils.removeLine(payload, trx);
+        } else if (payload.type === 'removeUndeterminedLines') {
+          await EditTextUtils.removeUndeterminedLines(payload, trx);
+        } else if (payload.type === 'removeWord') {
+          await EditTextUtils.removeWord(payload, trx);
+        } else if (payload.type === 'removeDivider') {
+          await EditTextUtils.removeDivider(payload, trx);
+        } else if (
+          payload.type === 'removeSign' ||
+          payload.type === 'removeUndeterminedSigns'
+        ) {
+          await EditTextUtils.removeSign(payload, trx);
+        }
+
+        await cleanLines(payload.textUuid, trx);
+      });
+
+      await cache.clear(
+        `/text_epigraphies/text/${payload.textUuid}`,
+        {
+          level: 'startsWith',
+        },
+        req
+      );
+
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

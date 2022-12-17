@@ -42,7 +42,9 @@ export default defineComponent({
       i18n.locale as LocaleCode
     );
 
-    const getSideByNumber = (number: number | null): EpigraphicUnitSide => {
+    const getSideByNumber = (
+      number: number | null
+    ): EpigraphicUnitSide | null => {
       switch (number) {
         case 1:
           return 'obv.';
@@ -54,8 +56,16 @@ export default defineComponent({
           return 'u.e.';
         case 5:
           return 'le.e.';
-        default:
+        case 6:
           return 'r.e.';
+        case 7:
+          return 'mirror text';
+        case 8:
+          return 'legend';
+        case 9:
+          return 'suppl. tablet';
+        default:
+          return null;
       }
     };
 

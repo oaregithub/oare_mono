@@ -57,13 +57,14 @@
           <add-side
             v-if="addingSide"
             :usableSides="usableSides"
+            action="add"
             @side-selected="addSide"
             @cancel-add-side="addingSide = false"
           />
           <add-side
             v-if="changingSide"
             :usableSides="usableSides"
-            changing
+            action="change"
             @side-selected="changeSide"
             @cancel-add-side="changingSide = false"
           />
@@ -83,7 +84,7 @@ import {
 } from '@vue/composition-api';
 import { v4 } from 'uuid';
 import {
-  SideOption,
+  EpigraphicUnitSide,
   ColumnContent,
   SideContent,
   AddTextEditorContent,
@@ -94,7 +95,7 @@ import SideCard from './components/SideCard.vue';
 
 export interface Side {
   uuid: string;
-  side: SideOption;
+  side: EpigraphicUnitSide;
   lastLine: number;
   breaks: number;
   endsBroken: boolean;
@@ -111,19 +112,22 @@ export default defineComponent({
   setup(_, { emit }) {
     const indexToChange = ref(0);
     const sides = ref<Side[]>([]);
-    const selectedSide = ref<SideOption>();
+    const selectedSide = ref<EpigraphicUnitSide>();
 
     const addingSide = ref(false);
     const changingSide = ref(false);
     const removingSide = ref(false);
 
-    const sideTypes: ComputedRef<SideOption[]> = computed(() => [
+    const sideTypes: ComputedRef<EpigraphicUnitSide[]> = computed(() => [
       'obv.',
       'lo.e.',
       'rev.',
       'u.e.',
       'le.e.',
       'r.e.',
+      'mirror text',
+      'legend',
+      'suppl. tablet',
     ]);
 
     const usableSides = computed(() =>
@@ -149,18 +153,45 @@ export default defineComponent({
         return -1;
       }
       if (a.side === 'u.e.') {
-        if (b.side === 'le.e.' || b.side === 'r.e.') {
-          return -1;
+        if (b.side === 'obv.' || b.side === 'lo.e.' || b.side === 'rev.') {
+          return 1;
         }
-        return 1;
+        return -1;
       }
       if (a.side === 'le.e.') {
-        if (b.side === 'r.e.') {
+        if (
+          b.side === 'obv.' ||
+          b.side === 'lo.e.' ||
+          b.side === 'rev.' ||
+          b.side === 'u.e.'
+        ) {
+          return 1;
+        }
+        return -1;
+      }
+      if (a.side === 'r.e.') {
+        if (
+          b.side === 'mirror text' ||
+          b.side === 'legend' ||
+          b.side === 'suppl. tablet'
+        ) {
           return -1;
         }
         return 1;
       }
-      if (a.side === 'r.e.') {
+      if (a.side === 'mirror text') {
+        if (b.side === 'legend' || b.side === 'suppl. tablet') {
+          return -1;
+        }
+        return 1;
+      }
+      if (a.side === 'legend') {
+        if (b.side === 'suppl. tablet') {
+          return -1;
+        }
+        return 1;
+      }
+      if (a.side === 'suppl. tablet') {
         return 1;
       }
       return 0;
@@ -175,7 +206,7 @@ export default defineComponent({
       selectedSide.value = undefined;
     };
 
-    const addSide = (side: SideOption) => {
+    const addSide = (side: EpigraphicUnitSide) => {
       sides.value.push({
         uuid: v4(),
         side,
@@ -199,7 +230,7 @@ export default defineComponent({
       }
     };
 
-    const setSide = (side: SideOption) => {
+    const setSide = (side: EpigraphicUnitSide) => {
       if (!changingSide.value && !removingSide.value) {
         addingSide.value = false;
         selectedSide.value = side;
@@ -272,7 +303,7 @@ export default defineComponent({
       indexToChange.value = index;
     };
 
-    const changeSide = (side: SideOption) => {
+    const changeSide = (side: EpigraphicUnitSide) => {
       sides.value[indexToChange.value].side = side;
       changingSide.value = false;
       selectedSide.value = side;
@@ -285,7 +316,7 @@ export default defineComponent({
       });
     };
 
-    const getSideNumber = (side: SideOption) => {
+    const getSideNumber = (side: EpigraphicUnitSide) => {
       switch (side) {
         case 'obv.':
           return 1;
@@ -299,8 +330,14 @@ export default defineComponent({
           return 5;
         case 'r.e.':
           return 6;
+        case 'mirror text':
+          return 7;
+        case 'legend':
+          return 8;
+        case 'suppl. tablet':
+          return 9;
         default:
-          return 0;
+          return 1;
       }
     };
 

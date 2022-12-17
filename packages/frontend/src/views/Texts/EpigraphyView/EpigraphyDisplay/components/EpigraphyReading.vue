@@ -3,9 +3,19 @@
     <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
       <div class="side-name oare-title mr-4" v-html="formatSide(sideName)" />
       <div>
-        <div v-if="renderer.columnsOnSide(sideName).length === 1">
+        <div
+          v-for="colNum in renderer.columnsOnSide(sideName)"
+          :key="colNum"
+          class="pa-1"
+        >
           <div
-            v-for="lineNum in renderer.linesOnSide(sideName)"
+            v-if="renderer.columnsOnSide(sideName).length > 1"
+            class="oare-title mr-1 pb-1"
+          >
+            col. {{ romanNumeral(colNum) }}
+          </div>
+          <div
+            v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
             :key="lineNum"
             class="oare-title d-flex"
           >
@@ -15,10 +25,6 @@
               v-html="renderer.lineReading(lineNum)"
               @click="openConnectSealImpressionDialog(lineNum)"
               class="cursor-display"
-            />
-            <span
-              v-else-if="renderer.isUndetermined(lineNum)"
-              v-html="renderer.lineReading(lineNum)"
             />
             <span v-else>
               <span
@@ -30,40 +36,6 @@
                 @click="openDialog(word.discourseUuid)"
               />
             </span>
-          </div>
-        </div>
-        <div v-else>
-          <div
-            v-for="colNum in renderer.columnsOnSide(sideName)"
-            :key="colNum"
-            class="pa-1"
-          >
-            <div class="oare-title mr-1 pb-1">
-              col. {{ romanNumeral(colNum) }}
-            </div>
-            <div
-              v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
-              :key="lineNum"
-              class="oare-title d-flex"
-            >
-              <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
-              <span
-                v-if="renderer.isRegion(lineNum)"
-                v-html="renderer.lineReading(lineNum)"
-                @click="openConnectSealImpressionDialog(lineNum)"
-                class="cursor-display"
-              />
-              <span v-else>
-                <span
-                  v-for="(word, index) in renderer.getLineWords(lineNum)"
-                  :key="index"
-                  v-html="formatWord(word)"
-                  class="cursor-display test-rendered-word"
-                  :class="{ 'mr-1': !word.isContraction }"
-                  @click="openDialog(word.discourseUuid)"
-                />
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -367,6 +339,7 @@ export default defineComponent({
     };
 
     const formatSide = (side: EpigraphicUnitSide) => {
+      // FIXME BROKEN
       return side.replace('!', '<sup>!</sup>');
     };
 
