@@ -36,7 +36,7 @@
         <v-list-item @click="$emit('add-undetermined-lines')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-text-box-remove-outline</v-icon>
-            Undetermined Line(s)*</v-list-item-title
+            Undetermined Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-word')">

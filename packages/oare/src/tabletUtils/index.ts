@@ -221,6 +221,15 @@ export function regionReading(unit: EpigraphicUnit): string {
     }
 
     if (markupType === 'ruling') {
+      if (markupValue === 1) {
+        return '---- Single Ruling ----';
+      }
+      if (markupValue === 2) {
+        return '---- Double Ruling ----';
+      }
+      if (markupValue === 3) {
+        return '---- Triple Ruling ----';
+      }
       return '-'.repeat(12);
     }
 

@@ -84,10 +84,11 @@ describe('region reading test', () => {
         markups: [
           {
             type: 'ruling',
+            value: 1,
           },
         ],
       })
-    ).toBe('-'.repeat(12));
+    ).toBe('---- Single Ruling ----');
   });
 
   it('displays stamp seal impression', () => {

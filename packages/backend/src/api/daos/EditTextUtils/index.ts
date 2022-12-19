@@ -21,6 +21,7 @@ import {
   EpigraphicUnitType,
   EpigraphyType,
   MergeLinePayload,
+  AddUndeterminedLinesPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -574,6 +575,85 @@ class EditTextUtils {
         })
       );
     }
+  }
+
+  async addUndeterminedLines(
+    payload: AddUndeterminedLinesPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const TextMarkupDao = sl.get('TextMarkupDao');
+
+    const sideNumber = this.getSideNumber(payload.side);
+
+    // If undefined, it will be the first object on tablet in the column
+    const newObjectOnTablet = payload.previousObjectOnTablet
+      ? payload.previousObjectOnTablet + 1
+      : await k('text_epigraphy')
+          .select('object_on_tablet')
+          .first()
+          .where({
+            text_uuid: payload.textUuid,
+            side: sideNumber,
+            column: payload.column,
+          })
+          .orderBy('object_on_tablet', 'asc')
+          .then(row => row.object_on_tablet + 1);
+
+    const treeUuid: string = await k('text_epigraphy')
+      .select('tree_uuid')
+      .first()
+      .where({ text_uuid: payload.textUuid })
+      .then(row => row.tree_uuid);
+
+    const parentUuid: string = await k('text_epigraphy')
+      .select('uuid')
+      .first()
+      .where({ text_uuid: payload.textUuid, type: 'column', side: sideNumber })
+      .then(row => row.uuid);
+
+    const epigraphyRow: TextEpigraphyRow = {
+      uuid: v4(),
+      type: 'undeterminedLines',
+      textUuid: payload.textUuid,
+      treeUuid,
+      parentUuid,
+      objectOnTablet: newObjectOnTablet,
+      side: sideNumber,
+      column: payload.column,
+      line: null, // Fixed in clean up
+      charOnLine: null,
+      charOnTablet: null,
+      signUuid: null,
+      sign: null,
+      readingUuid: null,
+      reading: null,
+      discourseUuid: null,
+    };
+
+    await TextEpigraphyDao.incrementObjectOnTablet(
+      payload.textUuid,
+      newObjectOnTablet,
+      1,
+      trx
+    );
+
+    await TextEpigraphyDao.insertEpigraphyRow(epigraphyRow, trx);
+
+    const markupRow: TextMarkupRow = {
+      uuid: v4(),
+      referenceUuid: epigraphyRow.uuid,
+      type: 'undeterminedLines',
+      numValue: payload.number,
+      altReadingUuid: null,
+      altReading: null,
+      startChar: null,
+      endChar: null,
+      objectUuid: null,
+    };
+
+    await TextMarkupDao.insertMarkupRow(markupRow, trx);
   }
 
   async editSide(

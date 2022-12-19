@@ -486,6 +486,14 @@ export interface AddLinePayload extends EditTextPayloadBase {
   discourseSpellings: DiscourseSpelling[];
 }
 
+export interface AddUndeterminedLinesPayload extends EditTextPayloadBase {
+  type: 'addUndeterminedLines';
+  side: EpigraphicUnitSide;
+  column: number;
+  number: number;
+  previousObjectOnTablet?: number;
+}
+
 export interface EditSidePayload extends EditTextPayloadBase {
   type: 'editSide';
   originalSide: EpigraphicUnitSide;
@@ -560,6 +568,7 @@ export type EditTextPayload =
   | AddColumnPayload
   | AddRegionPayload
   | AddLinePayload
+  | AddUndeterminedLinesPayload
   | EditSidePayload
   | EditColumnPayload
   | MergeLinePayload

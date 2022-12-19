@@ -26,6 +26,10 @@
               @click="openConnectSealImpressionDialog(lineNum)"
               class="cursor-display"
             />
+            <span
+              v-else-if="renderer.isUndetermined(lineNum)"
+              v-html="renderer.lineReading(lineNum)"
+            />
             <span v-else>
               <span
                 v-for="(word, index) in renderer.getLineWords(lineNum)"

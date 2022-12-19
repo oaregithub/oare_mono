@@ -68,7 +68,9 @@
     <v-card flat outlined min-height="675px">
       <v-row
         v-if="
-          currentEditAction === 'addRegion' || currentEditAction === 'addLine'
+          currentEditAction === 'addRegion' ||
+          currentEditAction === 'addLine' ||
+          currentEditAction === 'addUndeterminedLines'
         "
         class="ma-0 mb-n6 ml-n3"
       >
@@ -92,7 +94,9 @@
         />
         <v-row
           v-if="
-            currentEditAction === 'addRegion' || currentEditAction === 'addLine'
+            currentEditAction === 'addRegion' ||
+            currentEditAction === 'addLine' ||
+            currentEditAction === 'addUndeterminedLines'
           "
           class="ma-0 mb-n6 mt-n8 ml-n3"
         >
@@ -108,6 +112,18 @@
       :column="column"
       :previousLineNumber="addRegionPreviousLineNumber"
       :key="addRegionPreviousLineNumber"
+      :textUuid="textUuid"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+      :renderer="renderer"
+    />
+
+    <add-undetermined-lines-dialog
+      v-model="addUndeterminedLinesDialog"
+      :side="side"
+      :column="column"
+      :previousLineNumber="addUndeterminedLinesPreviousLineNumber"
+      :key="addUndeterminedLinesPreviousLineNumber"
       :textUuid="textUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
@@ -168,6 +184,7 @@ import InsertButton from './InsertButton.vue';
 import AddRegionDialog from './AddRegionDialog.vue';
 import sl from '@/serviceLocator';
 import AddLineDialog from './AddLineDialog.vue';
+import AddUndeterminedLinesDialog from './AddUndeterminedLinesDialog.vue';
 
 export default defineComponent({
   props: {
@@ -201,6 +218,7 @@ export default defineComponent({
     InsertButton,
     AddRegionDialog,
     AddLineDialog,
+    AddUndeterminedLinesDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -293,6 +311,8 @@ export default defineComponent({
         setupAddRegionDialog(previousLine);
       } else if (props.currentEditAction === 'addLine') {
         setupAddLineDialog(previousLine);
+      } else if (props.currentEditAction === 'addUndeterminedLines') {
+        setupAddUndeterminedLinesDialog(previousLine);
       }
     };
 
@@ -307,6 +327,22 @@ export default defineComponent({
       // Can be undefined if first line
       addLinePreviousLineNumber.value = previousLine;
       addLineDialog.value = true;
+    };
+
+    const addUndeterminedLinesDialog = ref(false);
+    watch(addUndeterminedLinesDialog, () => {
+      if (!addUndeterminedLinesDialog.value) {
+        addUndeterminedLinesPreviousLineNumber.value = undefined;
+        resetCurrentEditAction();
+      }
+    });
+    const addUndeterminedLinesPreviousLineNumber = ref<number>();
+    const setupAddUndeterminedLinesDialog = (
+      previousLine: number | undefined
+    ) => {
+      // Can be undefined if first line
+      addUndeterminedLinesPreviousLineNumber.value = previousLine;
+      addUndeterminedLinesDialog.value = true;
     };
 
     return {
@@ -326,6 +362,9 @@ export default defineComponent({
       addLineDialog,
       addLinePreviousLineNumber,
       setupAddLineDialog,
+      addUndeterminedLinesDialog,
+      addUndeterminedLinesPreviousLineNumber,
+      setupAddUndeterminedLinesDialog,
     };
   },
 });
