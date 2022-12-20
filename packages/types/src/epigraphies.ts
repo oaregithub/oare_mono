@@ -507,6 +507,21 @@ export interface EditColumnPayload extends EditTextPayloadBase {
   direction: 'left' | 'right';
 }
 
+export interface EditRegionPayload extends EditTextPayloadBase {
+  type: 'editRegion';
+  uuid: string;
+  regionType: MarkupType;
+  regionValue?: number;
+  regionLabel?: string;
+}
+
+export interface EditUndeterminedLinesPayload extends EditTextPayloadBase {
+  type: 'editUndeterminedLines';
+  uuid: string;
+  number?: number;
+  convertToBrokenArea: boolean;
+}
+
 export interface MergeLinePayload extends EditTextPayloadBase {
   type: 'mergeLine';
   firstLine: number;
@@ -571,6 +586,8 @@ export type EditTextPayload =
   | AddUndeterminedLinesPayload
   | EditSidePayload
   | EditColumnPayload
+  | EditRegionPayload
+  | EditUndeterminedLinesPayload
   | MergeLinePayload
   | CleanLinesPayload
   | RemoveSidePayload

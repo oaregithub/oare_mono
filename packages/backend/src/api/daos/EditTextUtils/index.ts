@@ -22,6 +22,8 @@ import {
   EpigraphyType,
   MergeLinePayload,
   AddUndeterminedLinesPayload,
+  EditRegionPayload,
+  EditUndeterminedLinesPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -784,6 +786,65 @@ class EditTextUtils {
           })
       )
     );
+  }
+
+  async editRegion(
+    payload: EditRegionPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    if (
+      payload.regionType === 'ruling' ||
+      payload.regionType === 'uninscribed' ||
+      payload.regionType === 'broken'
+    ) {
+      if (payload.regionValue === undefined) {
+        throw new Error(
+          `Region value is required for region type ${payload.regionType}`
+        );
+      }
+    }
+
+    if (payload.regionType === 'isSealImpression') {
+      await k('text_epigraphy')
+        .where({ uuid: payload.uuid })
+        .update({ reading: payload.regionLabel || null });
+    } else if (
+      payload.regionType === 'ruling' ||
+      payload.regionType === 'uninscribed'
+    ) {
+      await k('text_markup')
+        .where({ reference_uuid: payload.uuid })
+        .update({ num_value: payload.regionValue! });
+    } else if (payload.regionType === 'broken') {
+      await k('text_markup')
+        .where({ reference_uuid: payload.uuid, type: 'broken' })
+        .update({ type: 'undeterminedLines', num_value: payload.regionValue! });
+      await k('text_epigraphy')
+        .where({ uuid: payload.uuid })
+        .update({ type: 'undeterminedLines' });
+    }
+  }
+
+  async editUndeterminedLines(
+    payload: EditUndeterminedLinesPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    if (!payload.convertToBrokenArea) {
+      await k('text_markup')
+        .where({ reference_uuid: payload.uuid, type: 'undeterminedLines' })
+        .update({ num_value: payload.number });
+    } else {
+      await k('text_markup')
+        .where({ reference_uuid: payload.uuid, type: 'undeterminedLines' })
+        .update({ type: 'broken', num_value: null });
+      await k('text_epigraphy')
+        .where({ uuid: payload.uuid })
+        .update({ type: 'region' });
+    }
   }
 
   async mergeLines(

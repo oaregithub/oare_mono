@@ -54,10 +54,22 @@
       />
 
       <sup class="line-num pt-3 mr-2">{{ lineNumber(line) }}</sup>
-      <span
-        v-if="renderer.isRegion(line) || renderer.isUndetermined(line)"
-        v-html="renderer.lineReading(line)"
-      />
+      <span v-if="renderer.isRegion(line) || renderer.isUndetermined(line)">
+        <v-hover v-slot="{ hover }">
+          <span
+            v-html="renderer.lineReading(line)"
+            :class="{
+              'blue-line-under cursor-display':
+                hover &&
+                ((currentEditAction === 'editRegion' &&
+                  renderer.isRegion(line)) ||
+                  (currentEditAction === 'editUndeterminedLines' &&
+                    renderer.isUndetermined(line))),
+            }"
+            @click="handleRegionClick(line)"
+          />
+        </v-hover>
+      </span>
       <span v-else>
         <span
           v-for="(word, index) in renderer.getLineWords(line)"
@@ -170,6 +182,26 @@
       <b>WARNING: </b>If the divider you are removing is the only unit on its
       line, the line will also be removed.</oare-dialog
     >
+
+    <edit-region-dialog
+      v-if="regionLineToEdit"
+      v-model="editRegionDialog"
+      :line="regionLineToEdit"
+      :textUuid="textUuid"
+      :renderer="renderer"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
+
+    <edit-undetermined-lines-dialog
+      v-if="undeterminedLinesToEdit"
+      v-model="editUndeterminedLinesDialog"
+      :line="undeterminedLinesToEdit"
+      :textUuid="textUuid"
+      :renderer="renderer"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
   </div>
 </template>
 
@@ -195,6 +227,8 @@ import {
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import RemoveSignDialog from './RemoveSignDialog.vue';
+import EditRegionDialog from './EditRegionDialog.vue';
+import EditUndeterminedLinesDialog from './EditUndeterminedLinesDialog.vue';
 
 export default defineComponent({
   props: {
@@ -225,6 +259,8 @@ export default defineComponent({
   },
   components: {
     RemoveSignDialog,
+    EditRegionDialog,
+    EditUndeterminedLinesDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -448,6 +484,34 @@ export default defineComponent({
       }
     };
 
+    const handleRegionClick = (line: number) => {
+      if (props.currentEditAction === 'editRegion') {
+        regionLineToEdit.value = line;
+        editRegionDialog.value = true;
+      } else if (props.currentEditAction === 'editUndeterminedLines') {
+        undeterminedLinesToEdit.value = line;
+        editUndeterminedLinesDialog.value = true;
+      }
+    };
+
+    const editRegionDialog = ref(false);
+    const regionLineToEdit = ref<number>();
+    watch(editRegionDialog, () => {
+      if (!editRegionDialog.value) {
+        regionLineToEdit.value = undefined;
+        resetCurrentEditAction();
+      }
+    });
+
+    const editUndeterminedLinesDialog = ref(false);
+    const undeterminedLinesToEdit = ref<number>();
+    watch(editUndeterminedLinesDialog, () => {
+      if (!editUndeterminedLinesDialog.value) {
+        undeterminedLinesToEdit.value = undefined;
+        resetCurrentEditAction();
+      }
+    });
+
     const removeSignDialog = ref(false);
     const wordBeingRemovedFrom = ref<EpigraphicWord>();
     const signToRemove = ref<EpigraphicSign>();
@@ -517,6 +581,11 @@ export default defineComponent({
       handleSignClick,
       wordBeingRemovedFrom,
       lineCanBeSelected,
+      handleRegionClick,
+      editRegionDialog,
+      regionLineToEdit,
+      editUndeterminedLinesDialog,
+      undeterminedLinesToEdit,
     };
   },
 });
@@ -530,6 +599,11 @@ export default defineComponent({
 .red-line-through {
   text-decoration: line-through;
   text-decoration-color: #f44336;
+}
+
+.blue-line-under {
+  text-decoration: underline;
+  text-decoration-color: #2196f3;
 }
 
 .cursor-display {

@@ -89,13 +89,13 @@
         <v-list-item @click="$emit('edit-region')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-page-break</v-icon>
-            Edit Region*</v-list-item-title
+            Edit Region</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-undetermined-lines')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-text-box-remove-outline</v-icon>
-            Edit Undetermined Line(s)*</v-list-item-title
+            Edit Undetermined Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-sign')">
