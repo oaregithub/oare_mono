@@ -99,6 +99,8 @@ import {
 } from '@vue/composition-api';
 import PageContent from '@/components/base/OarePageContent.vue';
 import TextCollectionList from '@/views/Admin/components/TextCollectionList.vue';
+import UtilList from '@/components/UtilList/index.vue';
+import CommentItemDisplay from '@/components/CommentItemDisplay/index.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
 import { BibliographyResponse } from '@oare/types';
@@ -109,6 +111,8 @@ export default defineComponent({
   components: {
     TextCollectionList,
     PageContent,
+    UtilList,
+    CommentItemDisplay,
   },
   setup() {
     const server = sl.get('serverProxy');
