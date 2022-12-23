@@ -115,16 +115,13 @@
                       "
                       :hasEdit="false"
                       :hasDelete="false"
-                      :hideMenu="
-                        (!allowCommenting || !canComment) && !allowEditing
-                      "
+                      :hideMenu="!canComment || !allowEditing"
                     >
                       <template #activator="{ on, attrs }">
                         <div
                           class="test-defintion-util-list"
                           :class="{
-                            'cursor-display':
-                              (allowCommenting && canComment) || allowEditing,
+                            'cursor-display': canComment && allowEditing,
                           }"
                           v-on="on"
                           v-bind="attrs"
@@ -152,16 +149,13 @@
                       "
                       :hasEdit="false"
                       :hasDelete="false"
-                      :hideMenu="
-                        (!allowCommenting || !canComment) && !allowEditing
-                      "
+                      :hideMenu="!canComment || !allowEditing"
                     >
                       <template #activator="{ on, attrs }">
                         <div
                           class="test-defintion-util-list"
                           :class="{
-                            'cursor-display':
-                              (allowCommenting && canComment) || allowEditing,
+                            'cursor-display': canComment && allowEditing,
                           }"
                           v-on="on"
                           v-bind="attrs"
@@ -270,7 +264,7 @@
       />
     </oare-dialog>
     <component
-      v-if="allowCommenting && canComment"
+      v-if="canComment"
       :is="commentComponent"
       v-model="isCommenting"
       :item="`${word.word}: '${commentDialogItem}'`"
@@ -317,10 +311,6 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
-    allowCommenting: {
-      type: Boolean,
-      default: true,
-    },
     updateWordInfo: {
       type: Function as PropType<(newWord: Word) => void>,
       required: false,
@@ -331,7 +321,7 @@ export default defineComponent({
     EditTranslations,
     UtilList,
   },
-  setup({ word, updateWordInfo, allowCommenting }) {
+  setup({ word, updateWordInfo }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
@@ -455,7 +445,7 @@ export default defineComponent({
 
     // To avoid circular dependencies
     const commentComponent = computed(() =>
-      allowCommenting
+      canComment.value
         ? () => import('@/components/CommentItemDisplay/index.vue')
         : null
     );
