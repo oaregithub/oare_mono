@@ -115,16 +115,13 @@
                       "
                       :hasEdit="false"
                       :hasDelete="false"
-                      :hideMenu="
-                        (!allowCommenting || !canComment) && !allowEditing
-                      "
+                      :hideMenu="!canComment || !allowEditing"
                     >
                       <template #activator="{ on, attrs }">
                         <div
                           class="test-defintion-util-list"
                           :class="{
-                            'cursor-display':
-                              (allowCommenting && canComment) || allowEditing,
+                            'cursor-display': canComment && allowEditing,
                           }"
                           v-on="on"
                           v-bind="attrs"
@@ -152,16 +149,13 @@
                       "
                       :hasEdit="false"
                       :hasDelete="false"
-                      :hideMenu="
-                        (!allowCommenting || !canComment) && !allowEditing
-                      "
+                      :hideMenu="!canComment || !allowEditing"
                     >
                       <template #activator="{ on, attrs }">
                         <div
                           class="test-defintion-util-list"
                           :class="{
-                            'cursor-display':
-                              (allowCommenting && canComment) || allowEditing,
+                            'cursor-display': canComment && allowEditing,
                           }"
                           v-on="on"
                           v-bind="attrs"
@@ -270,7 +264,7 @@
       />
     </oare-dialog>
     <component
-      v-if="allowCommenting && canComment"
+      v-if="canComment"
       :is="commentComponent"
       v-model="isCommenting"
       :item="`${word.word}: '${commentDialogItem}'`"
@@ -455,7 +449,7 @@ export default defineComponent({
 
     // To avoid circular dependencies
     const commentComponent = computed(() =>
-      allowCommenting
+      canComment.value
         ? () => import('@/components/CommentItemDisplay/index.vue')
         : null
     );
