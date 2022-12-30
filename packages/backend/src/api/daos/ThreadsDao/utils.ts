@@ -15,6 +15,8 @@ export function determineThreadItem(
       item = tr.definition;
     } else if (tr.collectionName) {
       item = tr.collectionName;
+    } else if (tr.bibliography) {
+      item = tr.bibliography;
     }
 
     const { word, form, spelling, definition, ...threadRow } = tr;

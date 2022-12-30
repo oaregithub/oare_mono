@@ -52,19 +52,40 @@
           <template #[`item.bibliography`]="{ item }">
             <v-row>
               <v-col cols="8">
-                <span v-if="!item.bibliography.bib">No Bibliography Data</span>
-                <span
-                  class="test-bib"
-                  v-else-if="!item.bibliography.url"
-                  v-html="item.bibliography.bib"
+                <UtilList
+                  @comment-clicked="openComment(item.uuid, item)"
+                  :hasEdit="false"
+                  :hasDelete="false"
+                  :hideMenu="!canComment"
                 >
-                </span>
-                <a
-                  v-else
-                  :href="item.bibliography.url"
-                  target="_blank"
-                  v-html="item.bibliography.bib"
-                ></a>
+                  <template #activator="{ on, attrs }">
+                    <div
+                      class="test-word-util-list"
+                      :class="{
+                        'cursor-display': canComment,
+                      }"
+                      v-on="on"
+                      v-bind="attrs"
+                    >
+                      <span class="test-bib" v-if="!item.bibliography.bib"
+                        >No Bibliography Data</span
+                      >
+                      <span
+                        class="test-bib"
+                        v-else-if="!item.bibliography.url"
+                        v-html="item.bibliography.bib"
+                      >
+                      </span>
+                      <a
+                        v-else
+                        class="test-bib"
+                        :href="item.bibliography.url"
+                        target="_blank"
+                        v-html="item.bibliography.bib"
+                      ></a>
+                    </div>
+                  </template>
+                </UtilList>
               </v-col>
             </v-row>
           </template>
@@ -86,11 +107,21 @@
           </v-radio-group></div
       ></v-col>
     </v-row>
+    <comment-item-display
+      v-if="canComment"
+      v-model="isCommenting"
+      :item="commentDialogItem"
+      :uuid="commentDialogUuid"
+      :key="commentDialogUuid"
+      route="/bibliographies"
+      >{{ commentDialogItem }}</comment-item-display
+    >
   </OareContentView>
 </template>
 
 <script lang="ts">
 import {
+  computed,
   defineComponent,
   onMounted,
   ref,
@@ -117,6 +148,7 @@ export default defineComponent({
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
     const types = ref([
       { name: 'Chicago Author Date', value: 'chicago-author-date' },
       { name: 'Chicago Note Bibliography', value: 'chicago-note-bibliography' },
@@ -126,6 +158,9 @@ export default defineComponent({
     const search = useQueryParam('query', '', true);
     const showItemType = useQueryParam('showItemType', 'all', true);
     const itemType: Ref<string[]> = ref(['all']);
+    const isCommenting = ref(false);
+    const commentDialogUuid = ref('');
+    const commentDialogItem = ref('');
 
     const loading = ref(false);
 
@@ -157,6 +192,18 @@ export default defineComponent({
         loading.value = false;
       }
     });
+
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
+    const openComment = (uuid: string, item: BibliographyResponse) => {
+      commentDialogUuid.value = uuid;
+      commentDialogItem.value = `${
+        item.authors.length > 0 ? item.authors.join(', ') + ',' : ''
+      }${item.title ? ' ' + item.title : ''}${
+        item.date ? ' ' + item.date : ''
+      }`;
+      isCommenting.value = true;
+    };
 
     const updateBibliography = async () => {
       bibliographyResponse.value = [];
@@ -309,6 +356,11 @@ export default defineComponent({
       sortByItems,
       itemType,
       showItemType,
+      isCommenting,
+      commentDialogUuid,
+      commentDialogItem,
+      canComment,
+      openComment,
     };
   },
 });
@@ -317,5 +369,8 @@ export default defineComponent({
 .sticky {
   position: sticky;
   top: 1.2in;
+}
+.cursor-display {
+  cursor: pointer;
 }
 </style>
