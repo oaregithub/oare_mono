@@ -37,9 +37,16 @@ export interface WordWithoutForms extends DictionaryWordParseInfo {
   word: string;
 }
 
-export interface WordFormAutocompleteDisplay {
-  info: { uuid: string; wordUuid: string; name: string };
-  wordDisplay: string;
+export interface DictItemAutocompleteDisplay {
+  info: DictItemAutocompleteInfo;
+  display: string;
+}
+
+export interface DictItemAutocompleteInfo {
+  uuid: string;
+  referenceUuid: string;
+  name: string;
+  type: 'word' | 'form' | 'spelling';
 }
 
 export interface WordsInTextSearchPayload {
@@ -51,7 +58,7 @@ export interface WordsInTextSearchPayload {
 
 export interface WordsInTextSearchPayloadItem {
   uuids: ParseTreePropertyUuids[][] | string[];
-  type: 'parse' | 'form';
+  type: 'parse' | 'form/spelling';
   numWordsBefore: number | null;
 }
 

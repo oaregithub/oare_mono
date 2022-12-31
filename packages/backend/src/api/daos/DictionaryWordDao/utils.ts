@@ -1,5 +1,13 @@
-import { DictionarySearchRow, WordFormAutocompleteDisplay } from '@oare/types';
-import { DictSpellEpigRowDictSearch, SearchWordsQueryRow } from './index';
+import { DictionarySearchRow, DictItemAutocompleteDisplay } from '@oare/types';
+import {
+  DictSpellEpigRowDictSearch,
+  SearchWordsQueryRow,
+  WordFormSpellingRow,
+} from './index';
+
+export interface WordFormSpellingType extends WordFormSpellingRow {
+  type: 'word' | 'form' | 'spelling';
+}
 
 function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   const wordMap: { [key: string]: SearchWordsQueryRow[] } = {};
@@ -12,19 +20,27 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   return wordMap;
 }
 
-export async function assembleAutocompleteDisplay(row: {
-  name: string;
-  uuid: string;
-  type: string;
-  wordUuid: string;
-}): Promise<WordFormAutocompleteDisplay> {
-  const wordFormAutocompleteDisplay: WordFormAutocompleteDisplay = {
-    info: { uuid: row.uuid, wordUuid: row.wordUuid, name: row.name },
-    wordDisplay: `${
-      row.type === 'form' ? `${row.name} - Form` : `${row.name} - Word`
-    }`,
+export async function assembleAutocompleteDisplay(
+  row: WordFormSpellingType
+): Promise<DictItemAutocompleteDisplay> {
+  let display = '';
+  if (row.type === 'form') {
+    display = `${row.name} - Form`;
+  } else if (row.type === 'spelling') {
+    display = `${row.name} - Spelling`;
+  } else if (row.type === 'word') {
+    display = `${row.name} - Word`;
+  }
+  const dictItemAutocompleteDisplay: DictItemAutocompleteDisplay = {
+    info: {
+      uuid: row.uuid,
+      referenceUuid: row.referenceUuid,
+      name: row.name,
+      type: row.type,
+    },
+    display,
   };
-  return wordFormAutocompleteDisplay;
+  return dictItemAutocompleteDisplay;
 }
 
 export function assembleSearchResult(

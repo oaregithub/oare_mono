@@ -165,12 +165,13 @@ class TextDiscourseDao {
             )
           ).flat();
         }
-        if (payloadObject.type === 'form') {
+        if (payloadObject.type === 'form/spelling') {
           formUuids = payloadObject.uuids as string[];
         }
         const spellingUuidsArray = await k('dictionary_spelling as ds')
           .pluck('ds.uuid')
-          .whereIn('ds.reference_uuid', formUuids);
+          .whereIn('ds.reference_uuid', formUuids)
+          .orWhereIn('ds.uuid', formUuids);
         return spellingUuidsArray;
       })
     );
