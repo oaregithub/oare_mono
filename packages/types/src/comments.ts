@@ -70,3 +70,25 @@ export interface AllCommentsResponse {
   threads: ThreadDisplay[];
   count: number;
 }
+
+export interface AllThreadRow extends Thread {
+  comment: string;
+  userUuid: string;
+  timestamp: string;
+  item: string | null;
+}
+
+export interface AllThreadResponse {
+  threads: AllThreadRow[];
+  count: number;
+}
+
+export interface AllThreadRowUndeterminedItem extends Thread {
+  comment: string;
+  userUuid: string;
+  timestamp: string;
+  word: string | null;
+  form: string | null;
+  spelling: string | null;
+  definition: string | null;
+}

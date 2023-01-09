@@ -55,13 +55,7 @@
           />
         </template>
         <div
-          class="
-            flex-column
-            d-flex
-            justify-center
-            align-center
-            no-thread-selected-display
-          "
+          class="flex-column d-flex justify-center align-center no-thread-selected-display"
           v-else
         >
           <h1>
@@ -103,15 +97,12 @@
       </v-col>
     </v-row>
 
-    <div
-      v-if="initialThreadUuid && dictionaryWordUuid"
-      class="test-comment-footer"
-    >
+    <div v-if="initialThreadUuid && itemUuid" class="test-comment-footer">
       <v-divider class="mt-3 mb-3" />
       <component
         v-if="showDictionary"
         :is="dictionaryWordComponent"
-        :uuid="dictionaryWordUuid"
+        :uuid="itemUuid"
         :uuid-to-highlight="
           selectedThread ? selectedThread.referenceUuid : null
         "
@@ -140,13 +131,13 @@ import CommentItem from './CommentItem.vue';
 import ThreadListItem from './ThreadListItem.vue';
 
 export default defineComponent({
-  name: 'CommentWordDisplay',
+  name: 'CommentItemDisplay',
   components: {
     CommentItem,
     ThreadListItem,
   },
   props: {
-    word: {
+    item: {
       type: String,
       required: true,
     },
@@ -172,7 +163,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const dictionaryWordUuid = ref('');
+    const itemUuid = ref('');
     const loading = ref(false);
     const threadsWithComments: Ref<ThreadWithComments[]> = ref([]);
     const selectedThreadIndex = ref(-1);
@@ -270,7 +261,7 @@ export default defineComponent({
         await getThreadsWithComments();
 
         actions.showSnackbar(
-          `Successfully added the comment for ${props.word}`
+          `Successfully added the comment for ${props.item}`
         );
         userComment.value = '';
 
@@ -307,7 +298,7 @@ export default defineComponent({
       selectedThread,
       () => {
         if (selectedThread.value) {
-          dictionaryWordUuid.value = selectedThread.value.route.substr(
+          itemUuid.value = selectedThread.value.route.substr(
             selectedThread.value.route.indexOf('/', 2) + 1
           );
         }
@@ -325,7 +316,7 @@ export default defineComponent({
     );
 
     return {
-      dictionaryWordUuid,
+      itemUuid,
       selectedThread,
       loading,
       loggedInUser,
