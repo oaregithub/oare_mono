@@ -311,10 +311,6 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
-    allowCommenting: {
-      type: Boolean,
-      default: true,
-    },
     updateWordInfo: {
       type: Function as PropType<(newWord: Word) => void>,
       required: false,
@@ -325,7 +321,7 @@ export default defineComponent({
     EditTranslations,
     UtilList,
   },
-  setup({ word, updateWordInfo, allowCommenting }) {
+  setup({ word, updateWordInfo }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
