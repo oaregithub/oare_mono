@@ -2,7 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
-import CommentWordDisplay from '../index.vue';
+import CommentItemDisplay from '../index.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
@@ -93,13 +93,13 @@ beforeEach(setup);
 const propsWord = 'testWord';
 const propsRoute = '/dictionaryWord/uuid';
 const propsUuid = 'testUuid';
-describe('CommentWordDisplay test', () => {
+describe('CommentItemDisplay test', () => {
   const createWrapper = () =>
-    mount(CommentWordDisplay, {
+    mount(CommentItemDisplay, {
       vuetify,
       localVue,
       propsData: {
-        word: propsWord,
+        item: propsWord,
         route: propsRoute,
         uuid: propsUuid,
         initialThreadUuid: testThread.uuid,

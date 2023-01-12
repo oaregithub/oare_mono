@@ -1,4 +1,5 @@
-i<template>
+i
+<template>
   <OareContentView title="Comments">
     <v-container class="pa-0">
       <v-row>
@@ -120,11 +121,11 @@ i<template>
         {{ formatCommentText(idx, comment.text, true) }}
       </div>
     </oare-dialog>
-    <comment-word-display
+    <comment-item-display
       v-if="isViewingThread"
       :route="selectedThreadDisplay.thread.route"
       :uuid="selectedThreadDisplay.thread.referenceUuid"
-      :word="selectedThreadDisplay.word"
+      :item="selectedThreadDisplay.word"
       :initial-thread-uuid="selectedThreadDisplay.thread.uuid"
       showDictionary
       @submit="isViewingThread = false"
@@ -132,7 +133,7 @@ i<template>
       class="test-comment-word-display"
     >
       {{ selectedThreadDisplay.word }}
-    </comment-word-display>
+    </comment-item-display>
   </OareContentView>
 </template>
 
@@ -148,13 +149,13 @@ import {
 import sl from '@/serviceLocator';
 import { DataTableHeader } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import CommentItemDisplay from '@/components/CommentItemDisplay/index.vue';
 import { formatTimestamp } from '@/utils';
 import { OareDataTableOptions } from '@/components/base/OareDataTable.vue';
 
 export default defineComponent({
   name: 'CommentView',
-  components: { CommentWordDisplay },
+  components: { CommentItemDisplay },
   props: {
     isUserComments: {
       type: Boolean,
