@@ -74,6 +74,7 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
   numWordsBetween: (number | null)[],
   textsToHide: string[],
   sequenced: boolean,
+  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly',
   trx?: Knex.Transaction
 ) {
   const k = trx || knexRead();
@@ -116,6 +117,28 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
           }
         }).whereIn(`td${i}.spelling_uuid`, spellingUuids[i]);
       }
+    });
+  }
+
+  if (sortBy === 'precedingFirstMatch') {
+    query.leftJoin('text_discourse as td_orderBy', function () {
+      this.on('td0.text_uuid', 'td_orderBy.text_uuid').andOn(
+        k.raw('td_orderBy.word_on_tablet = (td0.word_on_tablet - 1)')
+      );
+    });
+  }
+  if (sortBy === 'followingLastMatch') {
+    query.leftJoin('text_discourse as td_orderBy', function () {
+      this.on(
+        `td${spellingUuids.length - 1}.text_uuid`,
+        'td_orderBy.text_uuid'
+      ).andOn(
+        k.raw(
+          `td_orderBy.word_on_tablet = (td${
+            spellingUuids.length - 1
+          }.word_on_tablet + 1)`
+        )
+      );
     });
   }
   return query.whereNotIn('td0.text_uuid', textsToHide);
