@@ -494,6 +494,16 @@ export interface AddUndeterminedLinesPayload extends EditTextPayloadBase {
   previousObjectOnTablet?: number;
 }
 
+export interface AddWordEditPayload extends EditTextPayloadBase {
+  type: 'addWord';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  previousWord?: EpigraphicWord;
+  row: RowContent;
+  spellingUuid?: string;
+}
+
 export interface EditSidePayload extends EditTextPayloadBase {
   type: 'editSide';
   originalSide: EpigraphicUnitSide;
@@ -584,6 +594,7 @@ export type EditTextPayload =
   | AddRegionPayload
   | AddLinePayload
   | AddUndeterminedLinesPayload
+  | AddWordEditPayload
   | EditSidePayload
   | EditColumnPayload
   | EditRegionPayload

@@ -42,7 +42,7 @@
         <v-list-item @click="$emit('add-word')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
-            Word / Number*</v-list-item-title
+            Word / Number</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-sign')">

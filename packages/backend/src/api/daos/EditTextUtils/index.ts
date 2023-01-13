@@ -24,6 +24,7 @@ import {
   AddUndeterminedLinesPayload,
   EditRegionPayload,
   EditUndeterminedLinesPayload,
+  AddWordEditPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -658,6 +659,272 @@ class EditTextUtils {
     await TextMarkupDao.insertMarkupRow(markupRow, trx);
   }
 
+  async addWord(
+    payload: AddWordEditPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const SignReadingDao = sl.get('SignReadingDao');
+    const TextMarkupDao = sl.get('TextMarkupDao');
+
+    const sideNumber = this.getSideNumber(payload.side);
+
+    if (!payload.row.words || payload.row.words.length !== 1) {
+      throw new Error('Invalid word arguments.');
+    }
+
+    const word = payload.row.words[0];
+
+    const newObjectOnTablet = payload.previousWord
+      ? await k('text_epigraphy')
+          .select('object_on_tablet')
+          .first()
+          .where({
+            text_uuid: payload.textUuid,
+            side: sideNumber,
+            column: payload.column,
+            line: payload.line,
+            discourse_uuid: payload.previousWord.discourseUuid,
+          })
+          .orderBy('object_on_tablet', 'desc')
+          .then(row => row.object_on_tablet + 1)
+      : await k('text_epigraphy')
+          .select('object_on_tablet')
+          .first()
+          .where({
+            text_uuid: payload.textUuid,
+            side: sideNumber,
+            column: payload.column,
+            line: payload.line,
+          })
+          .whereNot('type', 'line')
+          .orderBy('object_on_tablet', 'asc')
+          .then(row => row.object_on_tablet);
+
+    // DISCOURSE
+    const discourseUnitRow: { uuid: string; treeUuid: string } = await k(
+      'text_discourse'
+    )
+      .select('uuid', 'tree_uuid as treeUuid')
+      .where({ text_uuid: payload.textUuid, type: 'discourseUnit' })
+      .first();
+
+    const previousDiscourseUuid: string | null = await k('text_epigraphy')
+      .select('discourse_uuid')
+      .first()
+      .orderBy('object_on_tablet', 'desc')
+      .where({ text_uuid: payload.textUuid })
+      .where('object_on_tablet', '<', newObjectOnTablet)
+      .then(row => (row ? row.discourse_uuid : null));
+
+    const previousDiscourseRow: TextDiscourseRow = await k('text_discourse')
+      .select(
+        'uuid',
+        'type',
+        'obj_in_text as objInText',
+        'word_on_tablet as wordOnTablet',
+        'child_num as childNum',
+        'text_uuid as textUuid',
+        'tree_uuid as treeUuid',
+        'parent_uuid as parentUuid',
+        'spelling_uuid as spellingUuid',
+        'spelling',
+        'explicit_spelling as explicitSpelling',
+        'transcription'
+      )
+      .first()
+      .modify(qb => {
+        if (previousDiscourseUuid) {
+          qb.where({ uuid: previousDiscourseUuid });
+        } else {
+          qb.where({ uuid: discourseUnitRow.uuid });
+        }
+      });
+
+    const lastChildBefore: number = await k('text_discourse')
+      .select('child_num')
+      .first()
+      .where({ parent_uuid: discourseUnitRow.uuid })
+      .where('obj_in_text', '<=', previousDiscourseRow.objInText)
+      .orderBy('child_num', 'desc')
+      .then(row => (row ? row.child_num : 0));
+
+    await TextDiscourseDao.incrementObjInText(
+      payload.textUuid,
+      previousDiscourseRow.objInText! + 1,
+      1,
+      trx
+    );
+
+    await TextDiscourseDao.incrementWordOnTablet(
+      payload.textUuid,
+      previousDiscourseRow.wordOnTablet
+        ? previousDiscourseRow.wordOnTablet + 1
+        : 1,
+      1,
+      trx
+    );
+
+    await TextDiscourseDao.incrementChildNum(
+      payload.textUuid,
+      discourseUnitRow.uuid,
+      lastChildBefore + 1,
+      1,
+      trx
+    );
+
+    const type =
+      payload.row.signs &&
+      payload.row.signs
+        .filter(sign => sign.discourseUuid === word.discourseUuid)
+        .every(sign => sign.readingType === 'number')
+        ? 'number'
+        : 'word';
+
+    const discourseRow: TextDiscourseRow = {
+      uuid: word.discourseUuid!,
+      type,
+      objInText: previousDiscourseRow.objInText
+        ? previousDiscourseRow.objInText + 1
+        : 1,
+      wordOnTablet: previousDiscourseRow.wordOnTablet
+        ? previousDiscourseRow.wordOnTablet + 1
+        : 1,
+      childNum: lastChildBefore + 1,
+      textUuid: payload.textUuid,
+      treeUuid: discourseUnitRow.treeUuid,
+      parentUuid: discourseUnitRow.uuid,
+      spelling: word.spelling,
+      explicitSpelling: word.spelling,
+      spellingUuid: payload.spellingUuid || null,
+      transcription: null,
+    };
+
+    await TextDiscourseDao.insertDiscourseRow(discourseRow, trx);
+
+    // EPIGRAPHY
+    const treeUuid: string = await k('text_epigraphy')
+      .select('tree_uuid')
+      .first()
+      .where({ text_uuid: payload.textUuid })
+      .then(row => row.tree_uuid);
+
+    const lineUuid: string = await k('text_epigraphy')
+      .select('uuid')
+      .first()
+      .where({
+        text_uuid: payload.textUuid,
+        type: 'line',
+        side: sideNumber,
+        column: payload.column,
+        line: payload.line,
+      })
+      .then(row => row.uuid);
+
+    await TextEpigraphyDao.incrementObjectOnTablet(
+      payload.textUuid,
+      newObjectOnTablet,
+      payload.row.signs ? payload.row.signs.length : 0, // +1 for the line itself
+      trx
+    );
+
+    const getEpigraphyType = (
+      readingType: EpigraphicUnitType | undefined
+    ): EpigraphyType => {
+      if (readingType) {
+        switch (readingType) {
+          case 'number':
+            return 'number';
+          case 'punctuation':
+            return 'separator';
+          default:
+            return 'sign';
+        }
+      }
+      return 'undeterminedSigns';
+    };
+
+    if (payload.row.signs) {
+      await Promise.all(
+        payload.row.signs.map(async (sign, idx) => {
+          const discourseUuid =
+            sign.markup &&
+            sign.markup.markup.some(
+              markup =>
+                markup.type === 'superfluous' || markup.type === 'erasure'
+            )
+              ? null
+              : sign.discourseUuid;
+
+          const signRow: TextEpigraphyRow = {
+            uuid: sign.uuid,
+            type: getEpigraphyType(sign.readingType),
+            textUuid: payload.textUuid,
+            treeUuid,
+            parentUuid: lineUuid,
+            objectOnTablet: newObjectOnTablet + idx,
+            side: sideNumber,
+            column: payload.column,
+            line: payload.line,
+            charOnLine: null, // Will be fixed in clean up
+            charOnTablet: null, // Will be fixed in clean up
+            signUuid: sign.signUuid,
+            sign: sign.sign || null,
+            readingUuid: sign.readingUuid,
+            reading: sign.value || null,
+            discourseUuid,
+          };
+
+          await TextEpigraphyDao.insertEpigraphyRow(signRow, trx);
+
+          // MARKUP
+          if (sign.markup) {
+            await Promise.all(
+              sign.markup.markup.map(async markup => {
+                const formattedAltReading = markup.altReading
+                  ? (
+                      await SignReadingDao.getFormattedSign(markup.altReading)
+                    ).join('')
+                  : undefined;
+
+                let altReadingUuid;
+                if (
+                  markup.altReading &&
+                  markup.altReading !== '@' &&
+                  !markup.altReading.includes('x')
+                ) {
+                  const signCode = await SignReadingDao.getSignCode(
+                    markup.altReading,
+                    markup.isDeterminative || false
+                  );
+                  altReadingUuid = signCode.readingUuid;
+                }
+
+                const markupRow: TextMarkupRow = {
+                  uuid: v4(),
+                  referenceUuid: signRow.uuid,
+                  type: markup.type,
+                  numValue: markup.numValue || null,
+                  altReadingUuid: altReadingUuid || null,
+                  altReading: formattedAltReading || null,
+                  startChar:
+                    markup.startChar !== undefined ? markup.startChar : null,
+                  endChar: markup.endChar !== undefined ? markup.endChar : null,
+                  objectUuid: null,
+                };
+
+                await TextMarkupDao.insertMarkupRow(markupRow, trx);
+              })
+            );
+          }
+        })
+      );
+    }
+  }
+
   async editSide(
     payload: EditSidePayload,
     trx?: Knex.Transaction
@@ -952,7 +1219,7 @@ class EditTextUtils {
     // Prevents FK constraint violation
     await k('text_epigraphy')
       .where({ text_uuid: payload.textUuid, line: payload.line })
-      .update({ parent_uuid: null });
+      .update({ parent_uuid: null, discourse_uuid: null });
 
     await k('text_epigraphy')
       .where({ text_uuid: payload.textUuid, line: payload.line })

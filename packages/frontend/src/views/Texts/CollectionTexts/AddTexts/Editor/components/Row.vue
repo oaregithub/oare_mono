@@ -93,6 +93,20 @@
               </span>
             </v-row>
           </v-container>
+          <v-container v-if="hasWordRestrictionError" class="pa-0 ma-0 my-2">
+            <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
+            <span class="red--text"
+              >Only one word can be entered. Please remove all whitespace
+              characters and try again.
+            </span>
+          </v-container>
+          <v-container v-if="hasSignRestrictionError" class="pa-0 ma-0 my-2">
+            <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
+            <span class="red--text"
+              >Only one sign can be entered. Please remove all separator
+              characters and try again.
+            </span>
+          </v-container>
         </v-container>
         <v-row
           class="pa-0 ma-0"
@@ -211,6 +225,14 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    restrictToWord: {
+      type: Boolean,
+      default: false,
+    },
+    restrictToSign: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: { SpecialChars },
   setup(props, { emit }) {
@@ -220,6 +242,8 @@ export default defineComponent({
     const textareaRef = ref();
 
     const markupErrors = ref<EditorMarkupError[]>([]);
+    const hasWordRestrictionError = ref(false);
+    const hasSignRestrictionError = ref(false);
 
     const formatLineNumber = (row: RowWithLine) => {
       if ((!row.lineValue && row.line) || (row.line && row.lineValue === 1)) {
@@ -302,6 +326,21 @@ export default defineComponent({
     };
 
     const updateText = async (text: string) => {
+      if (props.restrictToWord && text.match(/\s/)) {
+        hasWordRestrictionError.value = true;
+      } else {
+        hasWordRestrictionError.value = false;
+      }
+
+      if (
+        props.restrictToSign &&
+        (text.match(/\s/) || text.match(/[\-.\+%]+/))
+      ) {
+        hasSignRestrictionError.value = true;
+      } else {
+        hasSignRestrictionError.value = false;
+      }
+
       const newRows = text.split('\n');
       emit('update-row-content', {
         ...props.row,
@@ -457,7 +496,10 @@ export default defineComponent({
         }
       );
 
-      const hasErrors = markupErrors.value.length > 0;
+      const hasErrors =
+        markupErrors.value.length > 0 ||
+        hasWordRestrictionError.value === true ||
+        hasSignRestrictionError.value === true;
 
       emit('update-row-content', {
         ...props.row,
@@ -562,6 +604,8 @@ export default defineComponent({
       setFocused,
       setSealImpressionReading,
       markupErrors,
+      hasWordRestrictionError,
+      hasSignRestrictionError,
     };
   },
 });

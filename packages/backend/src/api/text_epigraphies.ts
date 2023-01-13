@@ -651,6 +651,8 @@ router
           await EditTextUtils.addLine(payload, trx);
         } else if (payload.type === 'addUndeterminedLines') {
           await EditTextUtils.addUndeterminedLines(payload, trx);
+        } else if (payload.type === 'addWord') {
+          await EditTextUtils.addWord(payload, trx);
         } else if (payload.type === 'editSide') {
           await EditTextUtils.editSide(payload, trx);
         } else if (payload.type === 'editColumn') {

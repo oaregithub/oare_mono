@@ -88,6 +88,7 @@
           :textUuid="textUuid"
           :selectedLines="selectedLines"
           :column="column"
+          :side="side"
           @reset-renderer="resetRenderer"
           @reset-current-edit-action="resetCurrentEditAction"
           @toggle-select-line="$emit('toggle-select-line', $event)"

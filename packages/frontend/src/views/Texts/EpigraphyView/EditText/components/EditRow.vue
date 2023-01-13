@@ -71,6 +71,11 @@
         </v-hover>
       </span>
       <span v-else>
+        <insert-button
+          v-if="currentEditAction === 'addWord'"
+          class="ml-4 mr-2"
+          @insert="handleInsertWord(undefined)"
+        />
         <span
           v-for="(word, index) in renderer.getLineWords(line)"
           :key="index"
@@ -105,6 +110,11 @@
               </span>
             </span>
           </v-hover>
+          <insert-button
+            v-if="currentEditAction === 'addWord'"
+            class="ml-2"
+            @insert="handleInsertWord(word)"
+          />
         </span>
       </span>
     </v-row>
@@ -202,6 +212,19 @@
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
+
+    <add-word-dialog
+      v-model="addWordDialog"
+      :key="addWordPreviousWord"
+      :previousWord="addWordPreviousWord"
+      :textUuid="textUuid"
+      :renderer="renderer"
+      :column="column"
+      :side="side"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+      :line="line"
+    />
   </div>
 </template>
 
@@ -224,11 +247,14 @@ import {
   RemoveUndeterminedLinesPayload,
   RemoveWordPayload,
   RemoveDividerPayload,
+  EpigraphicUnitSide,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import RemoveSignDialog from './RemoveSignDialog.vue';
 import EditRegionDialog from './EditRegionDialog.vue';
 import EditUndeterminedLinesDialog from './EditUndeterminedLinesDialog.vue';
+import InsertButton from './InsertButton.vue';
+import AddWordDialog from './AddWordDialog.vue';
 
 export default defineComponent({
   props: {
@@ -256,11 +282,17 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+    side: {
+      type: String as PropType<EpigraphicUnitSide>,
+      required: true,
+    },
   },
   components: {
     RemoveSignDialog,
     EditRegionDialog,
     EditUndeterminedLinesDialog,
+    InsertButton,
+    AddWordDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -558,6 +590,25 @@ export default defineComponent({
       return false;
     });
 
+    const handleInsertWord = (word: EpigraphicWord | undefined) => {
+      if (props.currentEditAction === 'addWord') {
+        setupAddWordDialog(word);
+      }
+    };
+
+    const addWordDialog = ref(false);
+    watch(addWordDialog, () => {
+      if (!addWordDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const addWordPreviousWord = ref<EpigraphicWord>();
+    const setupAddWordDialog = (previousWord: EpigraphicWord | undefined) => {
+      // Can be undefined if first word
+      addWordPreviousWord.value = previousWord;
+      addWordDialog.value = true;
+    };
+
     return {
       lineNumber,
       resetRenderer,
@@ -586,6 +637,10 @@ export default defineComponent({
       regionLineToEdit,
       editUndeterminedLinesDialog,
       undeterminedLinesToEdit,
+      handleInsertWord,
+      addWordDialog,
+      addWordPreviousWord,
+      setupAddWordDialog,
     };
   },
 });
