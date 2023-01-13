@@ -182,16 +182,37 @@ class TextDiscourseDao {
       wordsBetween,
       textsToHide,
       sequenced,
-      sortBy,
       trx
     )
       .join('text', 'text.uuid', 'td0.text_uuid')
+
       .select({
         textName: 'text.display_name',
         textUuid: 'td0.text_uuid',
       })
       .modify(qb => {
         if (sortBy !== 'textNameOnly') {
+          if (sortBy === 'precedingFirstMatch') {
+            qb.leftJoin('text_discourse as td_orderBy', function () {
+              this.on('td0.text_uuid', 'td_orderBy.text_uuid').andOn(
+                k.raw('td_orderBy.word_on_tablet = (td0.word_on_tablet - 1)')
+              );
+            });
+          }
+          if (sortBy === 'followingLastMatch') {
+            qb.leftJoin('text_discourse as td_orderBy', function () {
+              this.on(
+                `td${spellingUuids.length - 1}.text_uuid`,
+                'td_orderBy.text_uuid'
+              ).andOn(
+                k.raw(
+                  `td_orderBy.word_on_tablet = (td${
+                    spellingUuids.length - 1
+                  }.word_on_tablet + 1)`
+                )
+              );
+            });
+          }
           qb.select({
             transcription: 'td_orderBy.transcription',
             wordOnTablet: 'td_orderBy.word_on_tablet',
@@ -284,7 +305,6 @@ class TextDiscourseDao {
       wordsBetween,
       textsToHide,
       sequenced,
-      sortBy,
       trx
     )
       .whereIn(
@@ -312,7 +332,6 @@ class TextDiscourseDao {
       wordsBetween,
       textsToHide,
       sequenced,
-      sortBy,
       trx
     )
       .select(k.raw('count(distinct td0.text_uuid) as count'))
