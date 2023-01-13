@@ -118,7 +118,8 @@ class ThreadsDao {
           'dictionary_word.word as word',
           'dictionary_form.form as form',
           'dictionary_spelling.spelling as spelling',
-          'field.field as definition'
+          'field.field as definition',
+          'collection.name as collectionName'
         )
         .innerJoin('comments', 'threads.uuid', 'comments.thread_uuid')
         .leftJoin(
@@ -137,6 +138,7 @@ class ThreadsDao {
           'dictionary_spelling.uuid'
         )
         .leftJoin('field', 'threads.reference_uuid', 'field.uuid')
+        .leftJoin('collection', 'threads.reference_uuid', 'collection.uuid')
         .modify(qb => {
           if (request.filters.status !== ('All' as ThreadStatus)) {
             qb.where('threads.status', request.filters.status);
@@ -168,7 +170,12 @@ class ThreadsDao {
                   'like',
                   `%${request.filters.item}%`
                 )
-                .orWhere('field.field', 'like', `%${request.filters.item}%`);
+                .orWhere('field.field', 'like', `%${request.filters.item}%`)
+                .orWhere(
+                  'collection.name',
+                  'like',
+                  `%${request.filters.item}%`
+                );
             });
           }
 
