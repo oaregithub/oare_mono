@@ -1,6 +1,25 @@
 <template>
   <v-progress-linear v-if="loading" indeterminate />
   <OareContentView v-else :title="collectionName">
+    <template #title>
+      <UtilList
+        @comment-clicked="openComment"
+        :hasEdit="false"
+        :hasDelete="false"
+        :hideMenu="!canComment"
+      >
+        <template #activator="{ on, attrs }">
+          <strong
+            class="test-word-util-list"
+            :class="{ 'cursor-display': canComment }"
+            v-on="on"
+            v-bind="attrs"
+          >
+            <span>{{ collectionName }}</span>
+          </strong>
+        </template>
+      </UtilList>
+    </template>
     <template #header v-if="!hideDetails">
       <OareBreadcrumbs :items="breadcrumbItems" />
     </template>
@@ -27,6 +46,15 @@
         :collectionUuid="collectionUuid"
       />
     </v-container>
+    <comment-item-display
+      v-if="canComment"
+      v-model="isCommenting"
+      :item="collectionName"
+      :uuid="collectionUuid"
+      :key="collectionUuid"
+      :route="`/collections/name/${collectionUuid}`"
+      >{{ collectionName }}</comment-item-display
+    >
   </OareContentView>
 </template>
 
@@ -41,6 +69,8 @@ import {
 } from '@vue/composition-api';
 import { CollectionText } from '@oare/types';
 import TextsTable from './TextsTable.vue';
+import UtilList from '@/components/UtilList/index.vue';
+import CommentItemDisplay from '@/components/CommentItemDisplay/index.vue';
 import { getLetterGroup } from '../CollectionsView/utils';
 import _ from 'underscore';
 import useQueryParam from '@/hooks/useQueryParam';
@@ -50,6 +80,8 @@ export default defineComponent({
   name: 'CollectionTexts',
   components: {
     TextsTable,
+    CommentItemDisplay,
+    UtilList,
   },
   props: {
     collectionUuid: {
@@ -73,6 +105,7 @@ export default defineComponent({
 
     const collectionName = ref('');
     const loading = ref(false);
+    const isCommenting = ref(false);
     const letterGroup = computed(() =>
       collectionName.value ? getLetterGroup(collectionName.value) : ''
     );
@@ -100,6 +133,8 @@ export default defineComponent({
       () => store.hasPermission('ADD_NEW_TEXTS') && hasBetaAccess.value
     );
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
     const getCollectionTexts = async () => {
       if (textsLoading.value) {
         return;
@@ -117,6 +152,10 @@ export default defineComponent({
       } finally {
         textsLoading.value = false;
       }
+    };
+
+    const openComment = () => {
+      isCommenting.value = true;
     };
 
     onMounted(async () => {
@@ -167,7 +206,16 @@ export default defineComponent({
       addText,
       canAddNewTexts,
       visibleTexts,
+      isCommenting,
+      canComment,
+      openComment,
     };
   },
 });
 </script>
+
+<style scoped>
+.cursor-display {
+  cursor: pointer;
+}
+</style>
