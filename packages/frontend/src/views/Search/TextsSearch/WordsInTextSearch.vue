@@ -180,6 +180,15 @@
               ></v-fade-transition
             >
           </div>
+          <div class="pt-4 pb-2">
+            <v-select
+              v-model="sortBy"
+              :items="sortByItems"
+              item-text="text"
+              item-value="value"
+              label="Sort Results By"
+            ></v-select>
+          </div>
         </v-col>
         <v-col>
           <v-radio-group
@@ -314,6 +323,23 @@ export default defineComponent({
       },
     ]);
 
+    const sortByItems = ref([
+      {
+        text: 'Text Name Only',
+        value: 'textNameOnly',
+      },
+      {
+        text: 'Word Preceding First Word Match',
+        value: 'precedingFirstMatch',
+      },
+      {
+        text: 'Word Following Last Word Match',
+        value: 'followingLastMatch',
+      },
+    ]);
+
+    const sortBy: Ref<string> = ref(sortByItems.value[0].value);
+
     const canPerformSearch = computed(() => {
       let allowSearch = true;
       for (let i = 0; i < numOptionsUsing.value; i += 1) {
@@ -385,6 +411,10 @@ export default defineComponent({
             page: JSON.stringify(pageNum),
             rows: JSON.stringify(rows),
             sequenced: mode.value,
+            sortBy: sortBy.value as
+              | 'precedingFirstMatch'
+              | 'followingLastMatch'
+              | 'textNameOnly',
           }
         );
         results.value = response.results;
@@ -644,6 +674,8 @@ export default defineComponent({
     return {
       items,
       searchItems,
+      sortByItems,
+      sortBy,
       useParse,
       setProperties,
       dictItemSelectionUuids,

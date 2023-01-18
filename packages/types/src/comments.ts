@@ -91,4 +91,5 @@ export interface AllThreadRowUndeterminedItem extends Thread {
   form: string | null;
   spelling: string | null;
   definition: string | null;
+  collectionName: string | null;
 }

@@ -21,12 +21,13 @@ router.route('/dictItems').get(async (_req, res, next) => {
 
 router.route('/searchWordsInTexts').post(async (req, res, next) => {
   try {
-    const { items, page, rows, sequenced } = req.body;
+    const { items, page, rows, sequenced, sortBy } = req.body;
     const payload: WordsInTextSearchPayload = {
       items: JSON.parse(items),
       page: Number(page),
       rows: Number(rows),
       sequenced: sequenced === 'true',
+      sortBy,
     };
     const userUuid: string | null = req.user ? req.user.uuid : null;
     const TextDiscourseDao = sl.get('TextDiscourseDao');
