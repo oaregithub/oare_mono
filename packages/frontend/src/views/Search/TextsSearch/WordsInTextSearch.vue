@@ -611,7 +611,7 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       try {
-        items.value = await server.getWordsAndForms();
+        items.value = await server.getDictItems();
         for (let i = 0; i < maxOptions; i += 1) {
           expand.value.push(false);
           useParse.value[i] = false;

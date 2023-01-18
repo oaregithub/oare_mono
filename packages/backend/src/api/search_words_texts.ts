@@ -9,7 +9,7 @@ import {
 
 const router = express.Router();
 
-router.route('/wordsAndForms').get(async (_req, res, next) => {
+router.route('/dictItems').get(async (_req, res, next) => {
   try {
     const DictionaryWordDao = sl.get('DictionaryWordDao');
     const results: DictItemAutocompleteDisplay[] = await DictionaryWordDao.getDictItemsForWordsInTexts();

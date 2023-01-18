@@ -89,8 +89,8 @@ describe('words in texts search test', () => {
       expect(JSON.parse(response.text)).toEqual(wordsInTextsSearchResponse);
     });
   });
-  describe('GET /wordsAndForms', () => {
-    const PATH = `${API_PATH}/wordsAndForms`;
+  describe('GET /dictItems', () => {
+    const PATH = `${API_PATH}/dictItems`;
 
     const dictItemAutoCompleteDisplay = [
       {
