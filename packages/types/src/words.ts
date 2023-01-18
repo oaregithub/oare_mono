@@ -47,6 +47,7 @@ export interface WordsInTextSearchPayload {
   page: number;
   rows: number;
   sequenced: boolean;
+  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly';
 }
 
 export interface WordsInTextSearchPayloadItem {
@@ -60,6 +61,7 @@ export interface WordsInTextSearchPayloadUnparsed {
   page: string;
   rows: string;
   sequenced: string;
+  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly';
 }
 
 export interface AddWordCheckPayload {
