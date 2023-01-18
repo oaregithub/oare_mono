@@ -7,14 +7,15 @@
     :submitLoading="addWordLoading"
     @submit="addWord"
     :submitDisabled="!stepTwoComplete"
-    :width="800"
+    :width="600"
   >
     <div v-show="step === 1">
-      <v-row class="ma-0 mx-12">
-        <special-chars />
+      <v-row justify="center" class="ma-0 mt-2">
+        <span>Enter the new word below without markup.</span>
       </v-row>
+
       <row
-        class="mt-12"
+        class="mt-6"
         :autofocus="true"
         :isCurrentRow="true"
         :row="row"
@@ -117,7 +118,6 @@ import sl from '@/serviceLocator';
 import { TabletRenderer } from '@oare/oare';
 import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vue';
 import { RowWithLine } from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Column.vue';
-import SpecialChars from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/SpecialChars.vue';
 import { v4 } from 'uuid';
 import GrammarDisplay from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/GrammarDisplay.vue';
 
@@ -154,7 +154,6 @@ export default defineComponent({
   },
   components: {
     Row,
-    SpecialChars,
     GrammarDisplay,
   },
   setup(props, { emit }) {

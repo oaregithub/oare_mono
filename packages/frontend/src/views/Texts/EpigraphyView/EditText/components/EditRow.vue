@@ -88,6 +88,8 @@
                   hover &&
                   ((currentEditAction === 'removeWord' && !word.isDivider) ||
                     (currentEditAction === 'removeDivider' && word.isDivider)),
+                'blue-line-under cursor-display':
+                  hover && currentEditAction === 'addSign',
               }"
               @click="handleWordClick(word)"
             >
@@ -225,6 +227,20 @@
       @reset-current-edit-action="resetCurrentEditAction"
       :line="line"
     />
+
+    <add-sign-dialog
+      v-if="wordToAddSignTo"
+      v-model="addSignDialog"
+      :key="wordToAddSignTo"
+      :wordToAddSignTo="wordToAddSignTo"
+      :textUuid="textUuid"
+      :renderer="renderer"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+      :line="line"
+      :side="side"
+      :column="column"
+    />
   </div>
 </template>
 
@@ -255,6 +271,7 @@ import EditRegionDialog from './EditRegionDialog.vue';
 import EditUndeterminedLinesDialog from './EditUndeterminedLinesDialog.vue';
 import InsertButton from './InsertButton.vue';
 import AddWordDialog from './AddWordDialog.vue';
+import AddSignDialog from './AddSignDialog.vue';
 
 export default defineComponent({
   props: {
@@ -293,6 +310,7 @@ export default defineComponent({
     EditUndeterminedLinesDialog,
     InsertButton,
     AddWordDialog,
+    AddSignDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -423,8 +441,20 @@ export default defineComponent({
       } else if (props.currentEditAction === 'removeDivider') {
         removeDividerDialog.value = true;
         dividerToRemove.value = word;
+      } else if (props.currentEditAction === 'addSign') {
+        addSignDialog.value = true;
+        wordToAddSignTo.value = word;
       }
     };
+
+    const addSignDialog = ref(false);
+    const wordToAddSignTo = ref<EpigraphicWord>();
+    watch(addSignDialog, () => {
+      if (!addSignDialog.value) {
+        wordToAddSignTo.value = undefined;
+        resetCurrentEditAction();
+      }
+    });
 
     const removeWordDialog = ref(false);
     const wordToRemove = ref<EpigraphicWord>();
@@ -641,6 +671,8 @@ export default defineComponent({
       addWordDialog,
       addWordPreviousWord,
       setupAddWordDialog,
+      addSignDialog,
+      wordToAddSignTo,
     };
   },
 });

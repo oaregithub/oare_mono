@@ -504,6 +504,18 @@ export interface AddWordEditPayload extends EditTextPayloadBase {
   spellingUuid?: string;
 }
 
+export interface AddSignPayload extends EditTextPayloadBase {
+  type: 'addSign';
+  sign: SignCodeWithDiscourseUuid;
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  signUuidBefore: string | null;
+  spellingUuid: string | null;
+  spelling: string;
+  discourseUuid: string | null;
+}
+
 export interface EditSidePayload extends EditTextPayloadBase {
   type: 'editSide';
   originalSide: EpigraphicUnitSide;
@@ -595,6 +607,7 @@ export type EditTextPayload =
   | AddLinePayload
   | AddUndeterminedLinesPayload
   | AddWordEditPayload
+  | AddSignPayload
   | EditSidePayload
   | EditColumnPayload
   | EditRegionPayload

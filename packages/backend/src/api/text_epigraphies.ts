@@ -653,6 +653,8 @@ router
           await EditTextUtils.addUndeterminedLines(payload, trx);
         } else if (payload.type === 'addWord') {
           await EditTextUtils.addWord(payload, trx);
+        } else if (payload.type === 'addSign') {
+          await EditTextUtils.addSign(payload, trx);
         } else if (payload.type === 'editSide') {
           await EditTextUtils.editSide(payload, trx);
         } else if (payload.type === 'editColumn') {

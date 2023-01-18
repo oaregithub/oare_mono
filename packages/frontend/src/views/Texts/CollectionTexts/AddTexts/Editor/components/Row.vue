@@ -62,7 +62,7 @@
           </v-row>
           <v-row class="pa-0 ma-0">
             <v-textarea
-              placeholder="Enter line text here"
+              placeholder="Enter text here"
               auto-grow
               dense
               rows="1"
@@ -80,7 +80,10 @@
               ref="textareaRef"
             />
           </v-row>
-          <v-container v-if="markupErrors.length > 0" class="pa-0 ma-0 my-2">
+          <v-container
+            v-if="markupErrors.length > 0 && !restrictToSign && !restrictToWord"
+            class="pa-0 ma-0 my-2"
+          >
             <v-row
               v-for="(error, idx) in markupErrors"
               :key="idx"
@@ -96,15 +99,15 @@
           <v-container v-if="hasWordRestrictionError" class="pa-0 ma-0 my-2">
             <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
             <span class="red--text"
-              >Only one word can be entered. Please remove all whitespace
-              characters and try again.
+              >Only one word can be entered with no markup. Please remove all
+              whitespace and markup characters and try again.
             </span>
           </v-container>
           <v-container v-if="hasSignRestrictionError" class="pa-0 ma-0 my-2">
             <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
             <span class="red--text"
-              >Only one sign can be entered. Please remove all separator
-              characters and try again.
+              >Only one sign can be entered with no markup. Please remove all
+              separator and markup characters and try again.
             </span>
           </v-container>
         </v-container>
@@ -326,7 +329,11 @@ export default defineComponent({
     };
 
     const updateText = async (text: string) => {
-      if (props.restrictToWord && text.match(/\s/)) {
+      if (
+        props.restrictToWord &&
+        (text.match(/\s/) ||
+          text.match(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/))
+      ) {
         hasWordRestrictionError.value = true;
       } else {
         hasWordRestrictionError.value = false;
@@ -334,7 +341,9 @@ export default defineComponent({
 
       if (
         props.restrictToSign &&
-        (text.match(/\s/) || text.match(/[\-.\+%]+/))
+        (text.match(/\s/) ||
+          text.match(/[\-.\+%]+/) ||
+          text.match(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/))
       ) {
         hasSignRestrictionError.value = true;
       } else {

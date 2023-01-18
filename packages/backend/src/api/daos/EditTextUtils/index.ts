@@ -25,6 +25,8 @@ import {
   EditRegionPayload,
   EditUndeterminedLinesPayload,
   AddWordEditPayload,
+  AddSignPayload,
+  MarkupType,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -667,7 +669,6 @@ class EditTextUtils {
 
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const SignReadingDao = sl.get('SignReadingDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
 
     const sideNumber = this.getSideNumber(payload.side);
@@ -827,7 +828,7 @@ class EditTextUtils {
     await TextEpigraphyDao.incrementObjectOnTablet(
       payload.textUuid,
       newObjectOnTablet,
-      payload.row.signs ? payload.row.signs.length : 0, // +1 for the line itself
+      payload.row.signs ? payload.row.signs.length : 0,
       trx
     );
 
@@ -848,6 +849,60 @@ class EditTextUtils {
     };
 
     if (payload.row.signs) {
+      const uuidBefore: string | null = await k('text_epigraphy')
+        .where({
+          text_uuid: payload.textUuid,
+          object_on_tablet: newObjectOnTablet - 1,
+          type: 'sign',
+          line: payload.line,
+        })
+        .first()
+        .then(row => (row ? row.uuid : null));
+
+      const uuidAfter: string | null = await k('text_epigraphy')
+        .where({
+          text_uuid: payload.textUuid,
+          object_on_tablet: newObjectOnTablet + payload.row.signs.length,
+          type: 'sign',
+          line: payload.line,
+        })
+        .first()
+        .then(row => (row ? row.uuid : null));
+
+      const markupBefore: MarkupType[] | null = uuidBefore
+        ? await k('text_markup')
+            .pluck('type')
+            .where({ reference_uuid: uuidBefore, end_char: null })
+        : null;
+
+      const markupAfter: MarkupType[] | null = uuidAfter
+        ? await k('text_markup')
+            .pluck('type')
+            .where({ reference_uuid: uuidAfter, start_char: null })
+        : null;
+
+      const markupToAdd: MarkupType[] = [];
+
+      if (markupBefore && markupAfter) {
+        const markupOnBothSides = markupBefore.filter(
+          markup =>
+            markupAfter.includes(markup) &&
+            markup !== 'uncertain' &&
+            markup !== 'isEmendedReading' &&
+            markup !== 'isCollatedReading' &&
+            markup !== 'originalSign' &&
+            markup !== 'alternateSign' &&
+            markup !== 'undeterminedSigns'
+        );
+        markupToAdd.push(...markupOnBothSides);
+      } else if (markupBefore) {
+        if (markupBefore.includes('isWrittenAboveTheLine')) {
+          markupToAdd.push('isWrittenAboveTheLine');
+        } else if (markupBefore.includes('isWrittenBelowTheLine')) {
+          markupToAdd.push('isWrittenBelowTheLine');
+        }
+      }
+
       await Promise.all(
         payload.row.signs.map(async (sign, idx) => {
           const discourseUuid =
@@ -880,48 +935,220 @@ class EditTextUtils {
 
           await TextEpigraphyDao.insertEpigraphyRow(signRow, trx);
 
-          // MARKUP
-          if (sign.markup) {
-            await Promise.all(
-              sign.markup.markup.map(async markup => {
-                const formattedAltReading = markup.altReading
-                  ? (
-                      await SignReadingDao.getFormattedSign(markup.altReading)
-                    ).join('')
-                  : undefined;
-
-                let altReadingUuid;
-                if (
-                  markup.altReading &&
-                  markup.altReading !== '@' &&
-                  !markup.altReading.includes('x')
-                ) {
-                  const signCode = await SignReadingDao.getSignCode(
-                    markup.altReading,
-                    markup.isDeterminative || false
-                  );
-                  altReadingUuid = signCode.readingUuid;
-                }
-
-                const markupRow: TextMarkupRow = {
+          await Promise.all(
+            markupToAdd.map(markupType =>
+              TextMarkupDao.insertMarkupRow(
+                {
                   uuid: v4(),
                   referenceUuid: signRow.uuid,
-                  type: markup.type,
-                  numValue: markup.numValue || null,
-                  altReadingUuid: altReadingUuid || null,
-                  altReading: formattedAltReading || null,
-                  startChar:
-                    markup.startChar !== undefined ? markup.startChar : null,
-                  endChar: markup.endChar !== undefined ? markup.endChar : null,
+                  type: markupType,
+                  numValue: null,
+                  altReadingUuid: null,
+                  altReading: null,
+                  startChar: null,
+                  endChar: null,
                   objectUuid: null,
-                };
-
-                await TextMarkupDao.insertMarkupRow(markupRow, trx);
-              })
-            );
-          }
+                },
+                trx
+              )
+            )
+          );
         })
       );
+    }
+  }
+
+  async addSign(
+    payload: AddSignPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const TextMarkupDao = sl.get('TextMarkupDao');
+
+    const sideNumber = this.getSideNumber(payload.side);
+
+    const newObjectOnTablet = payload.signUuidBefore
+      ? await k('text_epigraphy')
+          .select('object_on_tablet')
+          .first()
+          .where({ text_uuid: payload.textUuid, uuid: payload.signUuidBefore })
+          .then(row => row.object_on_tablet + 1)
+      : await k('text_epigraphy')
+          .select('object_on_tablet')
+          .first()
+          .where({
+            text_uuid: payload.textUuid,
+            line: payload.line,
+            discourse_uuid: payload.discourseUuid,
+          })
+          .orderBy('object_on_tablet')
+          .then(row => row.object_on_tablet);
+
+    const treeUuid: string = await k('text_epigraphy')
+      .select('tree_uuid')
+      .first()
+      .where({ text_uuid: payload.textUuid })
+      .then(row => row.tree_uuid);
+
+    const lineUuid: string = await k('text_epigraphy')
+      .select('uuid')
+      .first()
+      .where({
+        text_uuid: payload.textUuid,
+        type: 'line',
+        side: sideNumber,
+        column: payload.column,
+        line: payload.line,
+      })
+      .then(row => row.uuid);
+
+    await TextEpigraphyDao.incrementObjectOnTablet(
+      payload.textUuid,
+      newObjectOnTablet,
+      1,
+      trx
+    );
+
+    const getEpigraphyType = (
+      readingType: EpigraphicUnitType | undefined
+    ): EpigraphyType => {
+      if (readingType) {
+        switch (readingType) {
+          case 'number':
+            return 'number';
+          case 'punctuation':
+            return 'separator';
+          default:
+            return 'sign';
+        }
+      }
+      return 'undeterminedSigns';
+    };
+
+    // FIXME set discourseUuid to null if superfluous or erasure
+
+    const signRow: TextEpigraphyRow = {
+      uuid: payload.sign.uuid,
+      type: getEpigraphyType(payload.sign.readingType),
+      textUuid: payload.textUuid,
+      treeUuid,
+      parentUuid: lineUuid,
+      objectOnTablet: newObjectOnTablet,
+      side: sideNumber,
+      column: payload.column,
+      line: payload.line,
+      charOnLine: null, // Will be fixed in clean up
+      charOnTablet: null, // Will be fixed in clean up
+      signUuid: payload.sign.signUuid,
+      sign: payload.sign.sign || null,
+      readingUuid: payload.sign.readingUuid,
+      reading: payload.sign.value || null,
+      discourseUuid: payload.discourseUuid,
+    };
+
+    await TextEpigraphyDao.insertEpigraphyRow(signRow, trx);
+
+    if (payload.discourseUuid) {
+      await k('text_discourse').where({ uuid: payload.discourseUuid }).update({
+        spelling: payload.spelling,
+        spelling_uuid: payload.spellingUuid,
+        explicit_spelling: payload.spelling,
+      });
+    }
+
+    const uuidBefore: string | null = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        object_on_tablet: newObjectOnTablet - 1,
+        type: 'sign',
+        line: payload.line,
+      })
+      .first()
+      .then(row => (row ? row.uuid : null));
+
+    const uuidAfter: string | null = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        object_on_tablet: newObjectOnTablet + 1,
+        type: 'sign',
+        line: payload.line,
+      })
+      .first()
+      .then(row => (row ? row.uuid : null));
+
+    const markupBefore: MarkupType[] | null = uuidBefore
+      ? await k('text_markup')
+          .pluck('type')
+          .where({ reference_uuid: uuidBefore, end_char: null })
+      : null;
+
+    const markupAfter: MarkupType[] | null = uuidAfter
+      ? await k('text_markup')
+          .pluck('type')
+          .where({ reference_uuid: uuidAfter, start_char: null })
+      : null;
+
+    if (markupBefore && markupAfter) {
+      const markupOnBothSides = markupBefore.filter(
+        markup =>
+          markupAfter.includes(markup) &&
+          markup !== 'uncertain' &&
+          markup !== 'isEmendedReading' &&
+          markup !== 'isCollatedReading' &&
+          markup !== 'originalSign' &&
+          markup !== 'alternateSign' &&
+          markup !== 'undeterminedSigns'
+      );
+
+      await Promise.all(
+        markupOnBothSides.map(async type => {
+          const markupRow: TextMarkupRow = {
+            uuid: v4(),
+            referenceUuid: signRow.uuid,
+            type,
+            numValue: null,
+            altReadingUuid: null,
+            altReading: null,
+            startChar: null,
+            endChar: null,
+            objectUuid: null,
+          };
+
+          await TextMarkupDao.insertMarkupRow(markupRow, trx);
+        })
+      );
+    } else if (markupBefore) {
+      if (markupBefore.includes('isWrittenAboveTheLine')) {
+        const markupRow: TextMarkupRow = {
+          uuid: v4(),
+          referenceUuid: signRow.uuid,
+          type: 'isWrittenAboveTheLine',
+          numValue: null,
+          altReadingUuid: null,
+          altReading: null,
+          startChar: null,
+          endChar: null,
+          objectUuid: null,
+        };
+
+        await TextMarkupDao.insertMarkupRow(markupRow, trx);
+      } else if (markupBefore.includes('isWrittenBelowTheLine')) {
+        const markupRow: TextMarkupRow = {
+          uuid: v4(),
+          referenceUuid: signRow.uuid,
+          type: 'isWrittenBelowTheLine',
+          numValue: null,
+          altReadingUuid: null,
+          altReading: null,
+          startChar: null,
+          endChar: null,
+          objectUuid: null,
+        };
+
+        await TextMarkupDao.insertMarkupRow(markupRow, trx);
+      }
     }
   }
 
@@ -1285,6 +1512,10 @@ class EditTextUtils {
       .first()
       .where({ uuid: payload.uuid })
       .then(row => (row ? row.discourse_uuid : null));
+
+    await k('text_epigraphy')
+      .where({ uuid: payload.uuid })
+      .update({ discourse_uuid: null });
 
     await k('text_epigraphy')
       .where({
