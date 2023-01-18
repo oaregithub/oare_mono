@@ -197,11 +197,7 @@ export default defineComponent({
 
     const openComment = (uuid: string, item: BibliographyResponse) => {
       commentDialogUuid.value = uuid;
-      commentDialogItem.value = `${
-        item.authors.length > 0 ? item.authors.join(', ') + ',' : ''
-      }${item.title ? ' ' + item.title : ''}${
-        item.date ? ' ' + item.date : ''
-      }`;
+      commentDialogItem.value = item.title ? item.title : 'Title not available';
       isCommenting.value = true;
     };
 

@@ -120,7 +120,7 @@ class ThreadsDao {
           'dictionary_spelling.spelling as spelling',
           'field.field as definition',
           'collection.name as collectionName',
-          'bibliography.short_cit as bibliography'
+          'bibliography.zot_item_key as bibliography'
         )
         .innerJoin('comments', 'threads.uuid', 'comments.thread_uuid')
         .leftJoin(
