@@ -4,15 +4,15 @@ import sl from '@/serviceLocator';
 import {
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
-  WordFormAutocompleteDisplay,
+  DictItemAutocompleteDisplay,
 } from '@oare/types';
 
 const router = express.Router();
 
-router.route('/wordsAndForms').get(async (_req, res, next) => {
+router.route('/dictItems').get(async (_req, res, next) => {
   try {
     const DictionaryWordDao = sl.get('DictionaryWordDao');
-    const results: WordFormAutocompleteDisplay[] = await DictionaryWordDao.getWordsAndFormsForWordsInTexts();
+    const results: DictItemAutocompleteDisplay[] = await DictionaryWordDao.getDictItemsForWordsInTexts();
     res.json(results);
   } catch (err) {
     next(new HttpInternalError(err as string));
