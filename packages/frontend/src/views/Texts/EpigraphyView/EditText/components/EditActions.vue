@@ -48,13 +48,13 @@
         <v-list-item @click="$emit('add-sign')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Sign*</v-list-item-title
+            Sign</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-undetermined-signs')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Undetermined Signs*</v-list-item-title
+            Undetermined Signs</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-divider')">

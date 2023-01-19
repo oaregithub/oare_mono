@@ -516,6 +516,17 @@ export interface AddSignPayload extends EditTextPayloadBase {
   discourseUuid: string | null;
 }
 
+export interface AddUndeterminedSignsPayload extends EditTextPayloadBase {
+  type: 'addUndeterminedSigns';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  number: number;
+  signUuidBefore: string | null;
+  spelling: string;
+  discourseUuid: string | null;
+}
+
 export interface EditSidePayload extends EditTextPayloadBase {
   type: 'editSide';
   originalSide: EpigraphicUnitSide;
@@ -608,6 +619,7 @@ export type EditTextPayload =
   | AddUndeterminedLinesPayload
   | AddWordEditPayload
   | AddSignPayload
+  | AddUndeterminedSignsPayload
   | EditSidePayload
   | EditColumnPayload
   | EditRegionPayload

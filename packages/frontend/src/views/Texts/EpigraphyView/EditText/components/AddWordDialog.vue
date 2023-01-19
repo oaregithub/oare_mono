@@ -24,6 +24,15 @@
         @update-row-content="row = $event"
         :restrictToWord="true"
       />
+
+      <v-row justify="center" class="ma-0 mt-2">
+        Markup will automatically be applied according to the surrounding signs.
+      </v-row>
+
+      <v-row justify="center" class="ma-0 mb-2">
+        As needed, this can be edited manually later.
+      </v-row>
+
       <v-row class="ma-0 mt-8" justify="center">
         <v-btn color="primary" :disabled="!stepOneComplete" @click="step = 2"
           >Next Step</v-btn

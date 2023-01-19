@@ -59,7 +59,7 @@
         justify="center"
         class="ma-0 my-2"
       >
-        Type the new sign below.
+        Type the new sign below without markup.
       </v-row>
 
       <row
@@ -73,6 +73,22 @@
         @update-row-content="row = $event"
         :restrictToSign="true"
       />
+
+      <v-row
+        v-if="insertIndex !== undefined"
+        justify="center"
+        class="ma-0 mt-2"
+      >
+        Markup will automatically be applied according to the surrounding signs.
+      </v-row>
+
+      <v-row
+        v-if="insertIndex !== undefined"
+        justify="center"
+        class="ma-0 mb-2"
+      >
+        As needed, this can be edited manually later.
+      </v-row>
 
       <v-row class="ma-0 mt-8" justify="center">
         <v-btn color="primary" :disabled="!stepOneComplete" @click="step = 2"

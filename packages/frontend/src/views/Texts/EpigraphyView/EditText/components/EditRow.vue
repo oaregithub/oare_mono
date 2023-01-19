@@ -89,7 +89,9 @@
                   ((currentEditAction === 'removeWord' && !word.isDivider) ||
                     (currentEditAction === 'removeDivider' && word.isDivider)),
                 'blue-line-under cursor-display':
-                  hover && currentEditAction === 'addSign',
+                  hover &&
+                  (currentEditAction === 'addSign' ||
+                    currentEditAction === 'addUndeterminedSigns'),
               }"
               @click="handleWordClick(word)"
             >
@@ -241,6 +243,19 @@
       :side="side"
       :column="column"
     />
+
+    <add-undetermined-signs-dialog
+      v-model="addUndeterminedSignsDialog"
+      :side="side"
+      :column="column"
+      :wordToAddUndeterminedSignsTo="wordToAddUndeterminedSignsTo"
+      :key="wordToAddUndeterminedSignsTo"
+      :textUuid="textUuid"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+      :renderer="renderer"
+      :line="line"
+    />
   </div>
 </template>
 
@@ -272,6 +287,7 @@ import EditUndeterminedLinesDialog from './EditUndeterminedLinesDialog.vue';
 import InsertButton from './InsertButton.vue';
 import AddWordDialog from './AddWordDialog.vue';
 import AddSignDialog from './AddSignDialog.vue';
+import AddUndeterminedSignsDialog from './AddUndeterminedSignsDialog.vue';
 
 export default defineComponent({
   props: {
@@ -311,6 +327,7 @@ export default defineComponent({
     InsertButton,
     AddWordDialog,
     AddSignDialog,
+    AddUndeterminedSignsDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -444,6 +461,9 @@ export default defineComponent({
       } else if (props.currentEditAction === 'addSign') {
         addSignDialog.value = true;
         wordToAddSignTo.value = word;
+      } else if (props.currentEditAction === 'addUndeterminedSigns') {
+        addUndeterminedSignsDialog.value = true;
+        wordToAddUndeterminedSignsTo.value = word;
       }
     };
 
@@ -452,6 +472,15 @@ export default defineComponent({
     watch(addSignDialog, () => {
       if (!addSignDialog.value) {
         wordToAddSignTo.value = undefined;
+        resetCurrentEditAction();
+      }
+    });
+
+    const addUndeterminedSignsDialog = ref(false);
+    const wordToAddUndeterminedSignsTo = ref<EpigraphicWord>();
+    watch(addUndeterminedSignsDialog, () => {
+      if (!addUndeterminedSignsDialog.value) {
+        wordToAddUndeterminedSignsTo.value = undefined;
         resetCurrentEditAction();
       }
     });
@@ -673,6 +702,8 @@ export default defineComponent({
       setupAddWordDialog,
       addSignDialog,
       wordToAddSignTo,
+      addUndeterminedSignsDialog,
+      wordToAddUndeterminedSignsTo,
     };
   },
 });
