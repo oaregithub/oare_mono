@@ -60,7 +60,7 @@
         <v-list-item @click="$emit('add-divider')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Divider*</v-list-item-title
+            Divider</v-list-item-title
           >
         </v-list-item>
       </v-list>

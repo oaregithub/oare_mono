@@ -527,6 +527,14 @@ export interface AddUndeterminedSignsPayload extends EditTextPayloadBase {
   discourseUuid: string | null;
 }
 
+export interface AddDividerPayload extends EditTextPayloadBase {
+  type: 'addDivider';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  signUuidBefore: string | null;
+}
+
 export interface EditSidePayload extends EditTextPayloadBase {
   type: 'editSide';
   originalSide: EpigraphicUnitSide;
@@ -620,6 +628,7 @@ export type EditTextPayload =
   | AddWordEditPayload
   | AddSignPayload
   | AddUndeterminedSignsPayload
+  | AddDividerPayload
   | EditSidePayload
   | EditColumnPayload
   | EditRegionPayload

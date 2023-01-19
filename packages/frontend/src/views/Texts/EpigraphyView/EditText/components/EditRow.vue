@@ -72,7 +72,10 @@
       </span>
       <span v-else>
         <insert-button
-          v-if="currentEditAction === 'addWord'"
+          v-if="
+            currentEditAction === 'addWord' ||
+            currentEditAction === 'addDivider'
+          "
           class="ml-4 mr-2"
           @insert="handleInsertWord(undefined)"
         />
@@ -115,7 +118,10 @@
             </span>
           </v-hover>
           <insert-button
-            v-if="currentEditAction === 'addWord'"
+            v-if="
+              currentEditAction === 'addWord' ||
+              currentEditAction === 'addDivider'
+            "
             class="ml-2"
             @insert="handleInsertWord(word)"
           />
@@ -256,6 +262,25 @@
       :renderer="renderer"
       :line="line"
     />
+
+    <oare-dialog
+      v-model="addDividerDialog"
+      title="Add Divider?"
+      submitText="Yes"
+      cancelText="No"
+      :persistent="false"
+      @submit="addDivider"
+      :submitLoading="editTextLoading"
+    >
+      <span v-if="addDividerPreviousWord"
+        >Are you sure you want to add a divider to line {{ line }} after the
+        word <b v-html="addDividerPreviousWord.reading" />?</span
+      >
+      <span v-else
+        >Are you sure you want to add a divider to the beginning of line
+        {{ line }}?</span
+      >
+    </oare-dialog>
   </div>
 </template>
 
@@ -279,6 +304,7 @@ import {
   RemoveWordPayload,
   RemoveDividerPayload,
   EpigraphicUnitSide,
+  AddDividerPayload,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import RemoveSignDialog from './RemoveSignDialog.vue';
@@ -652,6 +678,9 @@ export default defineComponent({
     const handleInsertWord = (word: EpigraphicWord | undefined) => {
       if (props.currentEditAction === 'addWord') {
         setupAddWordDialog(word);
+      } else if (props.currentEditAction === 'addDivider') {
+        addDividerPreviousWord.value = word;
+        addDividerDialog.value = true;
       }
     };
 
@@ -666,6 +695,45 @@ export default defineComponent({
       // Can be undefined if first word
       addWordPreviousWord.value = previousWord;
       addWordDialog.value = true;
+    };
+
+    const addDividerDialog = ref(false);
+    watch(addDividerDialog, () => {
+      if (!addDividerDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const addDividerPreviousWord = ref<EpigraphicWord>();
+
+    const addDivider = async () => {
+      try {
+        editTextLoading.value = true;
+
+        const payload: AddDividerPayload = {
+          type: 'addDivider',
+          textUuid: props.textUuid,
+          side: props.side,
+          column: props.column,
+          line: props.line,
+          signUuidBefore: addDividerPreviousWord.value
+            ? addDividerPreviousWord.value.signs[
+                addDividerPreviousWord.value.signs.length - 1
+              ].uuid
+            : null,
+        };
+        await server.editText(payload);
+        resetRenderer();
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error adding divider. Please try again.',
+          err as Error
+        );
+      } finally {
+        addDividerDialog.value = false;
+        resetCurrentEditAction();
+        editTextLoading.value = false;
+        addDividerPreviousWord.value = undefined;
+      }
     };
 
     return {
@@ -704,6 +772,9 @@ export default defineComponent({
       wordToAddSignTo,
       addUndeterminedSignsDialog,
       wordToAddUndeterminedSignsTo,
+      addDividerDialog,
+      addDividerPreviousWord,
+      addDivider,
     };
   },
 });
