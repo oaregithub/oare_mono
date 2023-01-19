@@ -16,11 +16,11 @@ class ResourceDao {
   async getImageLinksByTextUuid(
     userUuid: string | null,
     textUuid: string,
-    cdliNum: string,
+    cdliNum: string | null,
     trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
     const s3Links = await this.getValidS3ImageLinks(textUuid, userUuid, trx);
-    const cdliLinks = await this.getValidCdliImageLinks(cdliNum, trx);
+    const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
     const metLinks = await this.getValidMetImageLinks(textUuid, trx);
 
     const response = [...s3Links, ...cdliLinks, ...metLinks];
@@ -222,9 +222,12 @@ class ResourceDao {
   }
 
   async getValidCdliImageLinks(
-    cdliNum: string,
-    trx?: Knex.Transaction
+    cdliNum: string | null
   ): Promise<EpigraphyLabelLink[]> {
+    if (!cdliNum) {
+      return [];
+    }
+
     const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
     const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
 
