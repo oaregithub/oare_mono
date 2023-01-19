@@ -251,6 +251,7 @@
     />
 
     <add-undetermined-signs-dialog
+      v-if="wordToAddUndeterminedSignsTo"
       v-model="addUndeterminedSignsDialog"
       :side="side"
       :column="column"
