@@ -23,17 +23,13 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
   );
 
   let damageStatus = false;
-  let pieceWithStart: number;
-  let currentStartValue = 0;
   editorMarkup.forEach((piece, idx) => {
     let startChar: number | undefined;
     let endChar: number | undefined;
     const prefixMatches = piece.text.match(/\[/g);
     if (prefixMatches) {
       startChar = piece.text.indexOf('[');
-      currentStartValue = startChar;
       damageStatus = true;
-      pieceWithStart = idx;
     }
 
     if (damageStatus) {
@@ -49,7 +45,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
       damageStatus = false;
     }
 
-    if (startChar) {
+    if (startChar && startChar !== 0) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [
@@ -64,9 +60,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
 
     if (
       endChar &&
-      ((endChar !== piece.text.replace('[', '').replace(']', '').length &&
-        currentStartValue === 0) ||
-        currentStartValue > 0)
+      endChar !== piece.text.replace('[', '').replace(']', '').length
     ) {
       const originalStartDamageRow = editorMarkup[idx].markup.filter(
         mark => mark.type === 'damage'
@@ -81,36 +75,17 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
           },
         ],
       };
-      const originalEndDamageRow = editorMarkup[pieceWithStart].markup.filter(
-        mark => mark.type === 'damage'
-      )[0];
-      editorMarkup[pieceWithStart] = {
-        ...editorMarkup[pieceWithStart],
-        markup: [
-          ...editorMarkup[pieceWithStart].markup.filter(
-            mark => mark.type !== 'damage'
-          ),
-          {
-            ...originalEndDamageRow,
-            startChar: currentStartValue,
-          },
-        ],
-      };
     }
   });
 
   let partialDamageStatus = false;
-  let partialPieceWithStart: number;
-  let currentPartialStartValue = 0;
   editorMarkup.forEach((piece, idx) => {
     let startChar: number | undefined;
     let endChar: number | undefined;
     const prefixMatches = piece.text.match(/⸢/g);
     if (prefixMatches) {
       startChar = piece.text.indexOf('⸢');
-      currentPartialStartValue = startChar;
       partialDamageStatus = true;
-      partialPieceWithStart = idx;
     }
 
     if (partialDamageStatus) {
@@ -126,7 +101,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
       partialDamageStatus = false;
     }
 
-    if (startChar) {
+    if (startChar && startChar !== 0) {
       editorMarkup[idx] = {
         ...editorMarkup[idx],
         markup: [
@@ -143,9 +118,7 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
 
     if (
       endChar &&
-      ((endChar !== piece.text.replace('⸢', '').replace('⸣', '').length &&
-        currentPartialStartValue === 0) ||
-        currentPartialStartValue > 0)
+      endChar !== piece.text.replace('⸢', '').replace('⸣', '').length
     ) {
       const originalStartDamageRow = editorMarkup[idx].markup.filter(
         mark => mark.type === 'partialDamage'
@@ -159,21 +132,6 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
           {
             ...originalStartDamageRow,
             endChar,
-          },
-        ],
-      };
-      const originalEndDamageRow = editorMarkup[
-        partialPieceWithStart
-      ].markup.filter(mark => mark.type === 'partialDamage')[0];
-      editorMarkup[partialPieceWithStart] = {
-        ...editorMarkup[partialPieceWithStart],
-        markup: [
-          ...editorMarkup[partialPieceWithStart].markup.filter(
-            mark => mark.type !== 'partialDamage'
-          ),
-          {
-            ...originalEndDamageRow,
-            startChar: currentPartialStartValue,
           },
         ],
       };
@@ -277,7 +235,8 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
         markup: [...editorMarkup[idx].markup, { type: 'isUninterpreted' }],
       };
     }
-    if (matches) {
+    const doubleMatches = piece.text.match(/:.+:/); // Prevents errors when markup opens and closes on same sign
+    if (matches && !doubleMatches) {
       isUninterpretedStatus = !isUninterpretedStatus;
     }
   });
@@ -291,7 +250,8 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
         markup: [...editorMarkup[idx].markup, { type: 'isWrittenOverErasure' }],
       };
     }
-    if (matches) {
+    const doubleMatches = piece.text.match(/\*.+\*/); // Prevents errors when markup opens and closes on same sign
+    if (matches && !doubleMatches) {
       isWrittenOverErasureStatus = !isWrittenOverErasureStatus;
     }
   });
@@ -305,8 +265,8 @@ export const applyMarkup = async (rowText: string): Promise<EditorMarkup[]> => {
         markup: [...editorMarkup[idx].markup, { type: 'phoneticComplement' }],
       };
     }
-    if (matches) {
-      // FIXME all of these are failing when opening and closing brackets appear on the same sign....not good at all
+    const doubleMatches = piece.text.match(/;.+;/); // Prevents errors when markup opens and closes on same sign
+    if (matches && !doubleMatches) {
       phoneticComplementStatus = !phoneticComplementStatus;
     }
   });
