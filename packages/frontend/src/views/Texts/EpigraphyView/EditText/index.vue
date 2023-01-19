@@ -22,12 +22,14 @@
         @edit-undetermined-lines="currentEditAction = 'editUndeterminedLines'"
         @edit-sign="currentEditAction = 'editSign'"
         @edit-undetermined-signs="currentEditAction = 'editUndeterminedSigns'"
+        @edit-divider="currentEditAction = 'editDivider'"
         @split-line="currentEditAction = 'splitLine'"
         @split-word="currentEditAction = 'splitWord'"
         @split-sign="currentEditAction = 'splitSign'"
         @merge-line="currentEditAction = 'mergeLine'"
         @merge-word="currentEditAction = 'mergeWord'"
         @merge-sign="currentEditAction = 'mergeSign'"
+        @reorder-sign="currentEditAction = 'reorderSign'"
         @clean-line="currentEditAction = 'cleanLine'"
         @remove-side="currentEditAction = 'removeSide'"
         @remove-column="currentEditAction = 'removeColumn'"
@@ -255,6 +257,7 @@ export default defineComponent({
       'mirror text',
       'legend',
       'suppl. tablet',
+      'obv. ii',
     ]);
     const usableSides = computed(() => {
       if (!renderer.value) {

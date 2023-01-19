@@ -1,37 +1,10 @@
 import {
   CreateTextTables,
   EpigraphicUnit,
-  EpigraphicUnitSide,
   TextDiscourseRow,
   MarkupUnit,
 } from '@oare/types';
-
-export const getSideNumber = (
-  number: number | null
-): EpigraphicUnitSide | null => {
-  switch (number) {
-    case 1:
-      return 'obv.';
-    case 2:
-      return 'lo.e.';
-    case 3:
-      return 'rev.';
-    case 4:
-      return 'u.e.';
-    case 5:
-      return 'le.e.';
-    case 6:
-      return 'r.e.';
-    case 7:
-      return 'mirror text';
-    case 8:
-      return 'legend';
-    case 9:
-      return 'suppl. tablet';
-    default:
-      return null;
-  }
-};
+import { convertSideNumberToSide } from '@oare/oare';
 
 export const convertTablesToUnits = (
   tables: CreateTextTables
@@ -84,7 +57,7 @@ export const convertTablesToUnits = (
 
     const unit: EpigraphicUnit = {
       uuid: epigraphy.uuid,
-      side: getSideNumber(epigraphy.side),
+      side: epigraphy.side ? convertSideNumberToSide(epigraphy.side) : null,
       column: epigraphy.column,
       line: epigraphy.line,
       charOnLine: epigraphy.charOnLine,

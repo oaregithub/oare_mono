@@ -53,7 +53,8 @@ export type EpigraphicUnitSide =
   | 'r.e.'
   | 'mirror text'
   | 'legend'
-  | 'suppl. tablet';
+  | 'suppl. tablet'
+  | 'obv. ii';
 
 export type EpigraphyType =
   | 'column'
@@ -434,12 +435,15 @@ export type EditTextAction =
   | 'editUndeterminedLines'
   | 'editSign'
   | 'editUndeterminedSigns'
+  | 'editDivider'
   | 'splitLine'
   | 'splitWord'
   | 'splitSign'
   | 'mergeLine'
   | 'mergeWord'
   | 'mergeSign'
+  | 'reorderSign'
+  | 'cleanLine'
   | 'removeSide'
   | 'removeColumn'
   | 'removeRegion'
@@ -448,8 +452,7 @@ export type EditTextAction =
   | 'removeWord'
   | 'removeSign'
   | 'removeUndeterminedSigns'
-  | 'removeDivider'
-  | 'cleanLine';
+  | 'removeDivider';
 
 export interface EditTextPayloadBase {
   type: EditTextAction;

@@ -3,9 +3,9 @@ import {
   MarkupType,
   EpigraphicUnit,
   EpigraphicUnitWithMarkup,
-  EpigraphicUnitType,
   EpigraphicWord,
   LocaleCode,
+  EpigraphicUnitSide,
 } from '@oare/types';
 
 const superscriptChars = {
@@ -401,4 +401,31 @@ export const localizeString = (string: string, locale: LocaleCode): string => {
   }
 
   return string;
+};
+
+const sideNumbers: Record<number, EpigraphicUnitSide> = {
+  1: 'obv.',
+  2: 'lo.e.',
+  3: 'rev.',
+  4: 'u.e.',
+  5: 'le.e.',
+  6: 'r.e.',
+  7: 'mirror text',
+  8: 'legend',
+  9: 'suppl. tablet',
+  10: 'obv. ii',
+};
+
+export const convertSideNumberToSide = (
+  sideNum: number
+): EpigraphicUnitSide | null => {
+  const sideName = sideNumbers[sideNum] || null;
+  return sideName;
+};
+
+export const convertSideToSideNumber = (side: EpigraphicUnitSide): number => {
+  const sideNum = Object.keys(sideNumbers).find(
+    key => sideNumbers[Number(key)] === side
+  );
+  return Number(sideNum);
 };

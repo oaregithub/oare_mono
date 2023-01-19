@@ -22,17 +22,24 @@
       v-model="addColumnDialog"
       :title="`Add Column to ${side}`"
       :persistent="false"
-      :showSubmit="false"
       :submitLoading="editTextLoading"
+      :submitDisabled="columnToAdd === undefined"
+      @submit="addColumn"
     >
       <v-row class="ma-0"
         >Select where you would like to add a new column.</v-row
       >
       <v-row justify="center" align="center" class="mt-8 mb-6">
-        <insert-button @insert="addColumn(1)" />
+        <insert-button
+          @insert="columnToAdd = 1"
+          :showCheck="columnToAdd === 1"
+        />
         <span v-for="(col, idx) in renderer.columnsOnSide(side)" :key="idx">
           <v-icon size="80" class="mx-2">mdi-text-long</v-icon>
-          <insert-button @insert="addColumn(idx + 2)" />
+          <insert-button
+            @insert="columnToAdd = idx + 2"
+            :showCheck="columnToAdd === idx + 2"
+          />
         </span>
       </v-row>
     </oare-dialog>
@@ -96,14 +103,20 @@ export default defineComponent({
     const editTextLoading = ref(false);
 
     const addColumnDialog = ref(false);
-    const addColumn = async (column: number) => {
+    const columnToAdd = ref<number>();
+    const addColumn = async () => {
       try {
         editTextLoading.value = true;
+
+        if (columnToAdd.value === undefined) {
+          throw new Error('No column selected');
+        }
+
         const payload: AddColumnPayload = {
           type: 'addColumn',
           textUuid: props.textUuid,
           side: props.side,
-          column,
+          column: columnToAdd.value,
         };
         await server.editText(payload);
         resetRenderer();
@@ -116,10 +129,12 @@ export default defineComponent({
         addColumnDialog.value = false;
         resetCurrentEditAction();
         editTextLoading.value = false;
+        columnToAdd.value = undefined;
       }
     };
     watch(addColumnDialog, () => {
       if (!addColumnDialog.value) {
+        columnToAdd.value = undefined;
         resetCurrentEditAction();
       }
     });
@@ -195,6 +210,7 @@ export default defineComponent({
       handleSelectLine,
       mergeLineDialog,
       mergeLines,
+      columnToAdd,
     };
   },
 });

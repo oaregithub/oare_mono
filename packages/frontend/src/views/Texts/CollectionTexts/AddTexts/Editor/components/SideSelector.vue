@@ -29,7 +29,7 @@
               width="20px"
               rounded
               :color="
-                side === 'obv.' || side === 'mirror text'
+                side === 'obv.' || side === 'mirror text' || side === 'obv. ii'
                   ? getObverseColor()
                   : null
               "
@@ -60,27 +60,17 @@
             <v-spacer />
             <v-card
               height="20px"
-              width="7px"
-              rounded
-              flat
-              color="transparent"
-              class="mt-1"
-            />
-            <v-spacer />
-            <v-card
-              height="20px"
               width="20px"
               rounded
               :color="side === 'rev.' ? 'primary' : null"
               class="mt-1"
             />
-            <v-spacer />
             <v-card
               height="20px"
-              width="7px"
-              rounded
+              width="20px"
               :color="side === 'suppl. tablet' ? 'primary' : 'transparent'"
-              class="mt-1"
+              class="mt-1 ml-n5 rounded-circle"
+              :flat="side !== 'suppl. tablet'"
             />
             <v-spacer />
           </v-row>
@@ -118,6 +108,20 @@
     </v-card>
     <v-row justify="center" class="mt-1">
       {{ side }}
+
+      <v-menu v-if="side === 'obv. ii'" offset-y open-on-hover bottom>
+        <template #activator="{ on, attrs }">
+          <v-icon v-bind="attrs" v-on="on" small class="ml-1 mr-n2">
+            mdi-information-outline
+          </v-icon>
+        </template>
+        <v-card class="pa-3">
+          <span>
+            For use only when writer continues from u.e. onto obv. near end of
+            text.
+          </span>
+        </v-card>
+      </v-menu>
     </v-row>
   </div>
 </template>
@@ -135,7 +139,7 @@ export default defineComponent({
   },
   setup(props) {
     const getObverseColor = () => {
-      if (props.side === 'obv.') {
+      if (props.side === 'obv.' || props.side === 'obv. ii') {
         return 'primary';
       } else if (props.side === 'mirror text') {
         return 'grey darken-1';

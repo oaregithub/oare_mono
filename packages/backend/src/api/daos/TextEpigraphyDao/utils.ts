@@ -1,14 +1,13 @@
 import { Knex } from 'knex';
 import { knexRead } from '@/connection';
+import { EpigraphicUnit, MarkupUnit, SearchCooccurrence } from '@oare/types';
 import {
-  EpigraphicUnit,
-  EpigraphicUnitSide,
-  MarkupUnit,
-  SearchCooccurrence,
-} from '@oare/types';
-import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
+  normalizeFraction,
+  normalizeSign,
+  normalizeNumber,
+  convertSideNumberToSide,
+} from '@oare/oare';
 import { EpigraphicQueryRow } from './index';
-import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
   cooccurrences: SearchCooccurrence[],
@@ -199,11 +198,6 @@ export function getSearchQuery(
   return query;
 }
 
-function mapSideNumberToSideName(side: number): EpigraphicUnitSide | null {
-  const sideName = sideNumbers[side] || null;
-  return sideName;
-}
-
 export function convertEpigraphicUnitRows(
   units: EpigraphicQueryRow[],
   markupUnits: MarkupUnit[]
@@ -215,7 +209,7 @@ export function convertEpigraphicUnitRows(
 
     const mappedUnit: EpigraphicUnit = {
       ...unit,
-      side: mapSideNumberToSideName(unit.side),
+      side: convertSideNumberToSide(unit.side),
       markups: unitMarkups,
     };
 

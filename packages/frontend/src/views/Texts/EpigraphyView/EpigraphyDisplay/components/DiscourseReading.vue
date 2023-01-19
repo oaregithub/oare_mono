@@ -2,7 +2,7 @@
   <div>
     <p class="mt-5 oare-title font-weight-regular">
       <span v-for="side in discourseRenderer.sides" :key="side">
-        <span class="mr-1">({{ getSideByNumber(side) }})</span>
+        <span class="mr-1">({{ convertSideNumberToSide(side) }})</span>
         <span
           v-for="line in discourseRenderer.linesOnSide(side)"
           :key="line"
@@ -182,13 +182,8 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import {
-  DiscourseUnit,
-  EpigraphicUnitSide,
-  Word,
-  LocaleCode,
-} from '@oare/types';
-import { DiscourseHtmlRenderer } from '@oare/oare';
+import { DiscourseUnit, Word, LocaleCode } from '@oare/types';
+import { DiscourseHtmlRenderer, convertSideNumberToSide } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
@@ -324,33 +319,6 @@ export default defineComponent({
       }
     };
 
-    const getSideByNumber = (
-      number: number | null
-    ): EpigraphicUnitSide | null => {
-      switch (number) {
-        case 1:
-          return 'obv.';
-        case 2:
-          return 'lo.e.';
-        case 3:
-          return 'rev.';
-        case 4:
-          return 'u.e.';
-        case 5:
-          return 'le.e.';
-        case 6:
-          return 'r.e.';
-        case 7:
-          return 'mirror text';
-        case 8:
-          return 'legend';
-        case 9:
-          return 'suppl. tablet';
-        default:
-          return null;
-      }
-    };
-
     const articulateDiscourseHierarchy = ref(false);
 
     const discourseSelections = ref<DiscourseUnit[]>([]);
@@ -481,7 +449,6 @@ export default defineComponent({
       inputTranslation,
       allowEditing,
       editLoading,
-      getSideByNumber,
       articulateDiscourseHierarchy,
       discourseSelections,
       canSelectDiscourseUnit,
@@ -497,6 +464,7 @@ export default defineComponent({
       connectSpellingDialogSpelling,
       connectSpellingDialogDiscourseUuid,
       closeConnectSpellingDialog,
+      convertSideNumberToSide,
       server,
     };
   },

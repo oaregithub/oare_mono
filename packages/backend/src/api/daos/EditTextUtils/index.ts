@@ -8,7 +8,6 @@ import {
   RemoveRegionPayload,
   RemoveSidePayload,
   RemoveUndeterminedLinesPayload,
-  EpigraphicUnitSide,
   TextEpigraphyRow,
   TextMarkupRow,
   EditSidePayload,
@@ -33,33 +32,9 @@ import {
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { v4 } from 'uuid';
+import { convertSideToSideNumber } from '@oare/oare';
 
 class EditTextUtils {
-  private getSideNumber(side: EpigraphicUnitSide) {
-    switch (side) {
-      case 'obv.':
-        return 1;
-      case 'lo.e.':
-        return 2;
-      case 'rev.':
-        return 3;
-      case 'u.e.':
-        return 4;
-      case 'le.e.':
-        return 5;
-      case 'r.e.':
-        return 6;
-      case 'mirror text':
-        return 7;
-      case 'legend':
-        return 8;
-      case 'suppl. tablet':
-        return 9;
-      default:
-        return 1;
-    }
-  }
-
   async addSide(
     payload: AddSidePayload,
     trx?: Knex.Transaction
@@ -67,7 +42,7 @@ class EditTextUtils {
     const k = trx || knexWrite();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
     const sideBefore: number | null =
       sideNumber !== 1
         ? await k('text_epigraphy')
@@ -148,7 +123,7 @@ class EditTextUtils {
 
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     await k('text_epigraphy')
       .where({ text_uuid: payload.textUuid, side: sideNumber })
@@ -226,7 +201,7 @@ class EditTextUtils {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     // If undefined, it will be the first object on tablet in the column
     const newObjectOnTablet = payload.previousObjectOnTablet
@@ -307,7 +282,7 @@ class EditTextUtils {
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const SignReadingDao = sl.get('SignReadingDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     // If undefined, it will be the first object on tablet in the column
     const newObjectOnTablet = payload.previousObjectOnTablet
@@ -592,7 +567,7 @@ class EditTextUtils {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     // If undefined, it will be the first object on tablet in the column
     const newObjectOnTablet = payload.previousObjectOnTablet
@@ -673,7 +648,7 @@ class EditTextUtils {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     if (!payload.row.words || payload.row.words.length !== 1) {
       throw new Error('Invalid word arguments.');
@@ -969,7 +944,7 @@ class EditTextUtils {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     const newObjectOnTablet = payload.signUuidBefore
       ? await k('text_epigraphy')
@@ -1163,7 +1138,7 @@ class EditTextUtils {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     // EPIGRAPHY
     const newObjectOnTablet = payload.signUuidBefore
@@ -1357,7 +1332,7 @@ class EditTextUtils {
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     // FIXME lots of duplicated code
     const newObjectOnTablet = payload.signUuidBefore
@@ -1525,8 +1500,8 @@ class EditTextUtils {
     const k = trx || knexWrite();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-    const originalSideNumber = this.getSideNumber(payload.originalSide);
-    const newSideNumber = this.getSideNumber(payload.newSide);
+    const originalSideNumber = convertSideToSideNumber(payload.originalSide);
+    const newSideNumber = convertSideToSideNumber(payload.newSide);
 
     const sideBefore: number | null =
       newSideNumber !== 1
@@ -1580,7 +1555,7 @@ class EditTextUtils {
     const k = trx || knexWrite();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     const numberOfColumns: number = await k('text_epigraphy')
       .count({ count: 'uuid' })
@@ -1745,7 +1720,7 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     // Prevents FK constraint violation
     await k('text_epigraphy')
@@ -1769,7 +1744,7 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
 
-    const sideNumber = this.getSideNumber(payload.side);
+    const sideNumber = convertSideToSideNumber(payload.side);
 
     // Prevents FK constraint violation
     await k('text_epigraphy')
@@ -1778,7 +1753,7 @@ class EditTextUtils {
         side: sideNumber,
         column: payload.column,
       })
-      .update({ parent_uuid: null });
+      .update({ parent_uuid: null, discourse_uuid: null });
 
     await k('text_epigraphy')
       .where({

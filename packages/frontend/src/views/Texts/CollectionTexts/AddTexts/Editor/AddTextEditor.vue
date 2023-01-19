@@ -128,6 +128,7 @@ export default defineComponent({
       'mirror text',
       'legend',
       'suppl. tablet',
+      'obv. ii',
     ]);
 
     const usableSides = computed(() =>
@@ -173,25 +174,36 @@ export default defineComponent({
         if (
           b.side === 'mirror text' ||
           b.side === 'legend' ||
-          b.side === 'suppl. tablet'
+          b.side === 'suppl. tablet' ||
+          b.side === 'obv. ii'
         ) {
           return -1;
         }
         return 1;
       }
       if (a.side === 'mirror text') {
-        if (b.side === 'legend' || b.side === 'suppl. tablet') {
+        if (
+          b.side === 'legend' ||
+          b.side === 'suppl. tablet' ||
+          b.side === 'obv. ii'
+        ) {
           return -1;
         }
         return 1;
       }
       if (a.side === 'legend') {
-        if (b.side === 'suppl. tablet') {
+        if (b.side === 'suppl. tablet' || b.side === 'obv. ii') {
           return -1;
         }
         return 1;
       }
       if (a.side === 'suppl. tablet') {
+        if (b.side === 'obv. ii') {
+          return -1;
+        }
+        return 1;
+      }
+      if (a.side === 'obv. ii') {
         return 1;
       }
       return 0;

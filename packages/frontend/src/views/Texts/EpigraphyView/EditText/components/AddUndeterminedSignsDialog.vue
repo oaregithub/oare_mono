@@ -16,40 +16,16 @@
     </v-row>
 
     <v-row justify="center" align="center" class="mt-6 mb-6 oare-title">
-      <insert-button v-if="insertIndex !== 0" @insert="insertIndex = 0" />
-      <v-btn
-        v-else
-        fab
-        x-small
-        dark
-        color="info"
-        width="25px"
-        height="25px"
-        elevation="0"
-      >
-        <v-icon> mdi-check </v-icon>
-      </v-btn>
+      <insert-button @insert="insertIndex = 0" :showCheck="insertIndex === 0" />
       <span
         v-for="(sign, signIdx) in wordToAddUndeterminedSignsTo.signs"
         :key="signIdx"
       >
         <span class="mx-2" v-html="sign.reading" />
         <insert-button
-          v-if="insertIndex !== signIdx + 1"
           @insert="insertIndex = signIdx + 1"
+          :showCheck="insertIndex === signIdx + 1"
         />
-        <v-btn
-          v-else
-          fab
-          x-small
-          dark
-          color="info"
-          width="25px"
-          height="25px"
-          elevation="0"
-        >
-          <v-icon> mdi-check </v-icon>
-        </v-btn>
       </span>
     </v-row>
 

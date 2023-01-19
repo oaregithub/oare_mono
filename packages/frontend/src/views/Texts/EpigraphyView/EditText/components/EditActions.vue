@@ -98,16 +98,22 @@
             Edit Undetermined Line(s)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-sign')">
+        <v-list-item @click="$emit('edit-sign')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Edit Sign*</v-list-item-title
+            Edit Sign Markup (Coming Soon)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-undetermined-signs')">
+        <v-list-item @click="$emit('edit-undetermined-signs')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Edit Undetermined Signs*</v-list-item-title
+            Edit Undetermined Signs (Coming Soon)</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('edit-divider')" disabled>
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
+            Edit Divider Markup (Coming Soon)</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -121,22 +127,22 @@
         >
       </template>
       <v-list dense>
-        <v-list-item @click="$emit('split-line')">
+        <v-list-item @click="$emit('split-line')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-view-headline</v-icon>
-            Line*</v-list-item-title
+            Line (Coming Soon)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('split-word')">
+        <v-list-item @click="$emit('split-word')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
-            Word / Number*</v-list-item-title
+            Word / Number (Coming Soon)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('split-sign')">
+        <v-list-item @click="$emit('split-sign')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Sign*</v-list-item-title
+            Sign (Coming Soon)</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -156,16 +162,33 @@
             Lines</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('merge-word')">
+        <v-list-item @click="$emit('merge-word')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
-            Words / Numbers*</v-list-item-title
+            Words / Numbers (Coming Soon)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('merge-sign')">
+        <v-list-item @click="$emit('merge-sign')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Signs*</v-list-item-title
+            Signs (Coming Soon)</v-list-item-title
+          >
+        </v-list-item>
+      </v-list>
+    </v-menu>
+
+    <v-menu offset-y>
+      <template #activator="{ on, attrs }">
+        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+          <v-icon small class="mr-1">mdi-swap-horizontal</v-icon>
+          Reorder</v-btn
+        >
+      </template>
+      <v-list dense>
+        <v-list-item @click="$emit('reorder-sign')" disabled>
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
+            Reorder Signs (Coming Soon)</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -314,6 +337,8 @@ export default defineComponent({
           return 'Click on the sign that you would like to edit.';
         case 'editUndeterminedSigns': // FIXME REVIEW
           return 'Click on the undetermined sign(s) that you would like to edit.';
+        case 'editDivider': // FIXME REVIEW
+          return 'Click on the divider that you would like to edit.';
         case 'splitLine': // FIXME REVIEW
           return 'Click on the line that you would like to split.';
         case 'splitWord': // FIXME REVIEW
@@ -326,6 +351,8 @@ export default defineComponent({
           return 'Use the checkboxes that appear to select two consecutive words/numbers that you would like to merge.';
         case 'mergeSign': // FIXME REVIEW
           return 'Use the checkboxes that appear to select two consecutive signs that you would like to merge.';
+        case 'reorderSign': // FIXME REVIEW
+          return 'Click on the word that contains the two signs that you would like to reorder.';
         case 'cleanLine':
           return 'Confirm clean up in the dialog.';
         case 'removeSide':
