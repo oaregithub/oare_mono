@@ -1,21 +1,21 @@
 <template>
   <div v-if="renderer" class="mr-10">
-    <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
-      <div class="side-name oare-title mr-4" v-html="formatSide(sideName)" />
+    <div v-for="side in renderer.sides" :key="side.side" class="d-flex">
+      <div class="side-name oare-title mr-4" v-html="formatSide(side)" />
       <div>
         <div
-          v-for="colNum in renderer.columnsOnSide(sideName)"
+          v-for="colNum in renderer.columnsOnSide(side.side)"
           :key="colNum"
           class="pa-1"
         >
           <div
-            v-if="renderer.columnsOnSide(sideName).length > 1"
+            v-if="renderer.columnsOnSide(side.side).length > 1"
             class="oare-title mr-1 pb-1"
           >
             col. {{ romanNumeral(colNum) }}
           </div>
           <div
-            v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
+            v-for="lineNum in renderer.linesInColumn(colNum, side.side)"
             :key="lineNum"
             class="oare-title d-flex"
           >
@@ -342,9 +342,15 @@ export default defineComponent({
       return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
     };
 
-    const formatSide = (side: EpigraphicUnitSide) => {
-      // FIXME BROKEN
-      return side.replace('!', '<sup>!</sup>');
+    const formatSide = (side: EpigraphicUnit) => {
+      if (side.markups.map(markup => markup.type).includes('uncertain')) {
+        return `${side.side}<sup>?</sup>`;
+      } else if (
+        side.markups.map(markup => markup.type).includes('isEmendedReading')
+      ) {
+        return `${side.side}<sup>!</sup>`;
+      }
+      return side.side;
     };
 
     return {

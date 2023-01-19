@@ -51,10 +51,11 @@
           <side-card
             v-for="(side, idx) in renderer.sides"
             :key="idx"
-            :side="side"
-            :selected="selectedSide === side"
+            :side="side.side"
+            :sideMarkup="side.markups"
+            :selected="selectedSide === side.side"
             :showEditButton="false"
-            @set-side="setSide(side)"
+            @set-side="setSide(side.side)"
             class="ml-2"
           />
         </v-col>
@@ -240,7 +241,7 @@ export default defineComponent({
 
     onMounted(async () => {
       await resetRenderer();
-      selectedSide.value = renderer.value!.sides[0] || 'obv.';
+      selectedSide.value = renderer.value!.sides[0].side || 'obv.';
     });
 
     const selectedSide = ref<EpigraphicUnitSide>();
@@ -264,7 +265,7 @@ export default defineComponent({
         return [];
       }
       return sideTypes.value.filter(
-        type => !renderer.value!.sides.includes(type)
+        type => !renderer.value!.sides.map(side => side.side).includes(type)
       );
     });
     const alreadyUsedSides = computed(() => {
@@ -272,7 +273,7 @@ export default defineComponent({
         return [];
       }
       return sideTypes.value.filter(type =>
-        renderer.value!.sides.includes(type)
+        renderer.value!.sides.map(side => side.side).includes(type)
       );
     });
 
@@ -346,7 +347,7 @@ export default defineComponent({
         await resetRenderer();
         if (selectedSide.value === sideToRemove.value) {
           selectedSide.value =
-            renderer.value!.sides[renderer.value!.sides.length - 1] ||
+            renderer.value!.sides[renderer.value!.sides.length - 1].side ||
             undefined;
         }
       } catch (err) {

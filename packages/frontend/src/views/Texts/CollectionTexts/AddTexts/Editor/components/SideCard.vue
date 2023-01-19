@@ -7,7 +7,7 @@
     class="my-2"
   >
     <v-row class="mx-4 my-1" justify="space-between">
-      <h2 class="py-4">{{ side }}</h2>
+      <h2 class="py-4" v-html="formatSide" />
       <v-speed-dial
         v-if="showEditButton"
         v-model="sideEditMenu"
@@ -60,14 +60,18 @@
 </template>
 
 <script lang="ts">
-import { EpigraphicUnitSide } from '@oare/types';
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { EpigraphicUnitSide, MarkupUnit } from '@oare/types';
+import { defineComponent, PropType, ref, computed } from '@vue/composition-api';
 
 export default defineComponent({
   props: {
     side: {
       type: String as PropType<EpigraphicUnitSide>,
       required: true,
+    },
+    sideMarkup: {
+      type: Object as PropType<MarkupUnit[]>,
+      required: false,
     },
     selected: {
       type: Boolean,
@@ -78,10 +82,28 @@ export default defineComponent({
       default: true,
     },
   },
-  setup() {
+  setup(props) {
     const sideEditMenu = ref(false);
+
+    const formatSide = computed(() => {
+      if (props.sideMarkup) {
+        if (props.sideMarkup.map(markup => markup.type).includes('uncertain')) {
+          return `${props.side}<sup>?</sup>`;
+        } else if (
+          props.sideMarkup
+            .map(markup => markup.type)
+            .includes('isEmendedReading')
+        ) {
+          return `${props.side}<sup>!</sup>`;
+        }
+        return props.side;
+      }
+      return props.side;
+    });
+
     return {
       sideEditMenu,
+      formatSide,
     };
   },
 });

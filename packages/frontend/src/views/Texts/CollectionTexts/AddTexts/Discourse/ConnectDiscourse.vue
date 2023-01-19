@@ -18,24 +18,24 @@
       </v-col>
     </v-row>
     <div v-if="renderer" class="mr-10">
-      <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
+      <div v-for="side in renderer.sides" :key="side.side" class="d-flex">
         <div class="side-name oare-title mr-4">
-          {{ sideName }}
+          {{ side.side }}
         </div>
         <div>
           <div
-            v-for="colNum in renderer.columnsOnSide(sideName)"
+            v-for="colNum in renderer.columnsOnSide(side.side)"
             :key="colNum"
             class="pa-1"
           >
             <div
-              v-if="renderer.columnsOnSide(sideName).length > 1"
+              v-if="renderer.columnsOnSide(side.side).length > 1"
               class="oare-title mr-1 pb-1"
             >
               col. {{ romanNumeral(colNum) }}
             </div>
             <div
-              v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
+              v-for="lineNum in renderer.linesInColumn(colNum, side.side)"
               :key="lineNum"
               class="oare-title d-flex my-3 mb-6"
             >

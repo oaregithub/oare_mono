@@ -114,16 +114,14 @@ export default class TabletRenderer {
 
   public tabletReading(): string {
     const tabletReading = this.sides
-      .map(side => `${side}\n${this.sideReading(side)}`)
+      .map(side => `${side.side!}\n${this.sideReading(side.side!)}`)
       .join('\n')
       .trim();
     return localizeString(tabletReading, this.locale);
   }
 
-  get sides(): EpigraphicUnitSide[] {
-    return this.epigraphicUnits
-      .filter(unit => unit.epigType === 'section')
-      .map(unit => unit.side!);
+  get sides(): EpigraphicUnit[] {
+    return this.epigraphicUnits.filter(unit => unit.epigType === 'section');
   }
 
   // An ordered list of lines on the tablet
@@ -471,12 +469,12 @@ export default class TabletRenderer {
 
     this.sides.forEach(side => {
       if (transliterationString === '') {
-        transliterationString = `${side}\n`;
+        transliterationString = `${side.side!}\n`;
       } else {
-        transliterationString = `${transliterationString}\n${side}\n`;
+        transliterationString = `${transliterationString}\n${side.side!}\n`;
       }
 
-      const columns = this.columnsOnSide(side);
+      const columns = this.columnsOnSide(side.side!);
 
       columns.forEach(column => {
         if (columns.length > 1) {
@@ -485,7 +483,7 @@ export default class TabletRenderer {
           )}\n`;
         }
 
-        const lines = this.linesInColumn(column, side);
+        const lines = this.linesInColumn(column, side.side!);
 
         lines.forEach(line => {
           const lineReading = this.lineReading(line);

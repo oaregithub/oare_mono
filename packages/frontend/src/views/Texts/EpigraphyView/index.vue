@@ -489,8 +489,8 @@ export default defineComponent({
       return {
         uuid: null,
         content: draftRenderer.sides.map(side => ({
-          side,
-          text: draftRenderer.sideReading(side),
+          side: side.side!,
+          text: draftRenderer.sideReading(side.side!),
         })),
         notes: '',
       };
