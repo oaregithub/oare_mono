@@ -154,10 +154,10 @@ class TextDiscourseDao {
 
     const spellingUuids: string[][] = await Promise.all(
       items.map(async payloadObject => {
-        let formUuids: string[] = [];
+        let dictItemSearchUuids: string[] = [];
         if (payloadObject.type === 'parse') {
           const parseProperties = payloadObject.uuids as ParseTreePropertyUuids[][];
-          formUuids = (
+          dictItemSearchUuids = (
             await Promise.all(
               parseProperties.map(parsePropArray =>
                 ItemPropertiesDao.getFormsByProperties(parsePropArray)
@@ -165,12 +165,13 @@ class TextDiscourseDao {
             )
           ).flat();
         }
-        if (payloadObject.type === 'form') {
-          formUuids = payloadObject.uuids as string[];
+        if (payloadObject.type === 'form/spelling') {
+          dictItemSearchUuids = payloadObject.uuids as string[];
         }
         const spellingUuidsArray = await k('dictionary_spelling as ds')
           .pluck('ds.uuid')
-          .whereIn('ds.reference_uuid', formUuids);
+          .whereIn('ds.reference_uuid', dictItemSearchUuids)
+          .orWhereIn('ds.uuid', dictItemSearchUuids);
         return spellingUuidsArray;
       })
     );
