@@ -258,7 +258,11 @@
         v-if="canViewEpigraphyImages"
         class="relative test-cdli-image"
       >
-        <EpigraphyImage :imageLinks="imageUrls" :sticky="!disableEditing" />
+        <EpigraphyImage
+          :loading="imagesLoading"
+          :imageLinks="imageUrls"
+          :sticky="!disableEditing"
+        />
       </v-col>
     </v-row>
   </OareContentView>
@@ -379,6 +383,8 @@ export default defineComponent({
     );
 
     const loading = ref(false);
+    const imagesLoading = ref(false);
+
     const draft = ref<DraftContent | null>(null);
     const hasPicture = computed(() => imageUrls.value.length > 0);
     const textInfo = ref<EpigraphyResponse>({
@@ -537,13 +543,41 @@ export default defineComponent({
     };
 
     const getTextInfo = async () => {
-      if (localEpigraphyUnits) {
-        textInfo.value = localEpigraphyUnits;
-      } else if (textUuid) {
-        textInfo.value = await server.getEpigraphicInfo(
-          textUuid,
-          forceAllowAdminView
+      try {
+        loading.value = true;
+        if (localEpigraphyUnits) {
+          textInfo.value = localEpigraphyUnits;
+        } else if (textUuid) {
+          textInfo.value = await server.getEpigraphicInfo(
+            textUuid,
+            forceAllowAdminView
+          );
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error getting text epigraphy information. Please try again.',
+          err as Error
         );
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const getImageUrls = async () => {
+      try {
+        imagesLoading.value = true;
+        if (localImageUrls) {
+          imageUrls.value = localImageUrls;
+        } else if (textUuid) {
+          imageUrls.value = await server.getImageLinks(
+            textUuid,
+            textInfo.value.cdliNum
+          );
+        }
+      } catch (err) {
+        actions.showErrorSnackbar('Error getting image urls.', err as Error);
+      } finally {
+        imagesLoading.value = false;
       }
     };
 
@@ -572,27 +606,10 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      try {
-        loading.value = true;
-        await getTextInfo();
-        draft.value = textInfo.value.draft || null;
-        if (localImageUrls) {
-          imageUrls.value = localImageUrls;
-        } else if (textUuid) {
-          imageUrls.value = await server.getImageLinks(
-            textUuid,
-            textInfo.value.cdliNum
-          );
-        }
-        zoteroDataList.value = textInfo.value.zoteroData;
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error getting text epigraphy information. Please try again.',
-          err as Error
-        );
-      } finally {
-        loading.value = false;
-      }
+      await getTextInfo();
+      draft.value = textInfo.value.draft || null;
+      zoteroDataList.value = textInfo.value.zoteroData;
+      await getImageUrls();
     });
 
     const transliteration: ComputedRef<TranslitOption> = computed(() => ({
@@ -738,6 +755,7 @@ export default defineComponent({
       hasCopyPermission,
       seeMoreZotero,
       seeMoreSwitch,
+      imagesLoading,
     };
   },
 });
