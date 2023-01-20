@@ -1,5 +1,5 @@
 <template>
-  <v-menu offset-y v-if="!hideMenu">
+  <v-menu offset-y v-if="!hideMenu && canViewMenu">
     <template v-slot:activator="{ on }">
       <slot name="activator" :on="on"></slot>
     </template>
@@ -75,7 +75,11 @@ export default defineComponent({
     const hasCommentPermission = computed(() =>
       store.hasPermission('ADD_COMMENTS')
     );
-    return { hasCommentPermission };
+
+    const canViewMenu = computed(
+      () => hasCommentPermission.value || props.hasEdit || props.hasDelete
+    );
+    return { hasCommentPermission, canViewMenu };
   },
 });
 </script>
