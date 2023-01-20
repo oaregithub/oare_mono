@@ -64,6 +64,7 @@ router
               },
               itemType:
                 zot && zot.data && zot.data.itemType ? zot.data.itemType : null,
+              uuid: bibliographies[index].uuid,
             } as BibliographyResponse)
         );
 
