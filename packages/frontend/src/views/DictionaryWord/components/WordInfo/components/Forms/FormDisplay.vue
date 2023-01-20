@@ -32,7 +32,7 @@
         <template #activator="{ on, attrs }">
           <strong
             class="mr-1 test-form-util-list"
-            :class="{ 'cursor-display': allowEditing }"
+            :class="{ 'cursor-display': canComment && allowEditing }"
             v-on="on"
             v-bind="attrs"
           >
@@ -233,6 +233,8 @@ export default defineComponent({
 
     const canAddSpelling = computed(() => store.hasPermission('ADD_SPELLING'));
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
     const saveFormEdit = async (): Promise<void> => {
       loading.value = true;
       try {
@@ -297,6 +299,7 @@ export default defineComponent({
       editing,
       canEdit,
       canAddSpelling,
+      canComment,
       editForm,
       loading,
       saveFormEdit,

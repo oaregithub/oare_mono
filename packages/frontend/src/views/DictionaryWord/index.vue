@@ -27,7 +27,10 @@
           <template #activator="{ on, attrs }">
             <strong
               class="test-word-util-list"
-              :class="{ 'cursor-display': allowCommenting || allowEditing }"
+              :class="{
+                'cursor-display':
+                  (allowCommenting || allowEditing) && canComment,
+              }"
               v-on="on"
               v-bind="attrs"
             >
@@ -156,6 +159,8 @@ export default defineComponent({
       store.hasPermission('UPDATE_WORD_SPELLING')
     );
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
     const updateWordInfo = (newWordInfo: Word) => {
       wordInfo.value = newWordInfo;
     };
@@ -250,6 +255,7 @@ export default defineComponent({
       breadcrumbItems,
       title,
       isCommenting,
+      canComment,
       isEditing,
       canUpdateWordSpelling,
       updateWordInfo,

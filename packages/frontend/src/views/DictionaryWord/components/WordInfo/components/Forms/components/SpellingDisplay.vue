@@ -15,7 +15,9 @@
             v-bind="attrs"
             v-on="on"
             class="test-spelling"
-            :class="{ 'cursor-display': allowEditing }"
+            :class="{
+              'cursor-display': allowEditing && (canComment || canEdit),
+            }"
           ></span
         ></mark>
         <span
@@ -26,7 +28,9 @@
           v-bind="attrs"
           v-on="on"
           class="test-spelling"
-          :class="{ 'cursor-display': allowEditing }"
+          :class="{
+            'cursor-display': allowEditing && (canComment || canEdit),
+          }"
         ></span>
         <span
           v-else
@@ -34,7 +38,9 @@
           v-bind="attrs"
           v-on="on"
           class="test-spelling"
-          :class="{ 'cursor-display': allowEditing }"
+          :class="{
+            'cursor-display': allowEditing && (canComment || canEdit),
+          }"
         ></span>
       </template>
     </UtilList>
@@ -134,6 +140,8 @@ export default defineComponent({
 
     const canEdit = computed(() => store.hasPermission('UPDATE_FORM'));
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
     const deleteSpelling = async () => {
       try {
         await server.removeSpelling(props.spelling.uuid);
@@ -178,6 +186,7 @@ export default defineComponent({
       deleteLoading,
       canEdit,
       isEditing,
+      canComment,
       isCommenting,
       deleteSpellingDialog,
       deleteSpelling,
