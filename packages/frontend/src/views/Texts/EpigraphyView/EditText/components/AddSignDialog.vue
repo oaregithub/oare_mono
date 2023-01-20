@@ -150,6 +150,7 @@ import {
   SearchSpellingResultRow,
   AddSignPayload,
   EpigraphicUnitSide,
+  MarkupType,
 } from '@oare/types';
 import InsertButton from './InsertButton.vue';
 import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vue';
@@ -297,9 +298,11 @@ export default defineComponent({
       const pieces: {
         reading: string;
         type: EpigraphicUnitType | null;
+        markup: MarkupType[];
       }[] = props.wordToAddSignTo.signs.map(sign => ({
         reading: sign.reading || '',
         type: sign.type,
+        markup: sign.markups.map(unit => unit.type),
       }));
 
       const newSign = row.value.signs![0];
@@ -309,6 +312,9 @@ export default defineComponent({
         {
           reading: newSign.reading || '',
           type: newSign.readingType || null,
+          markup: newSign.markup
+            ? newSign.markup.markup.map(unit => unit.type)
+            : [],
         },
         ...pieces.slice(insertIndex.value),
       ];
@@ -319,17 +325,12 @@ export default defineComponent({
 
         let newSeparator = '';
         if (nextSign) {
-          // FIXME support for PC
-          /* if (
-            !sign.markups
-              .map(unit => unit.type)
-              .includes('phoneticComplement') &&
-            nextSign.markups
-              .map(unit => unit.type)
-              .includes('phoneticComplement')
+          if (
+            !sign.markup.includes('phoneticComplement') &&
+            nextSign.markup.includes('phoneticComplement')
           ) {
             newSeparator = '';
-          } */
+          }
           if (
             sign.type === 'determinative' ||
             nextSign.type === 'determinative'

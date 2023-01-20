@@ -1004,8 +1004,6 @@ class EditTextUtils {
       return 'undeterminedSigns';
     };
 
-    // FIXME set discourseUuid to null if superfluous or erasure
-
     const signRow: TextEpigraphyRow = {
       uuid: payload.sign.uuid,
       type: getEpigraphyType(payload.sign.readingType),

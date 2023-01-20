@@ -65,6 +65,7 @@ import {
   EpigraphicUnitSide,
   EpigraphicWord,
   EpigraphicUnitType,
+  MarkupType,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { TabletRenderer } from '@oare/oare';
@@ -179,13 +180,16 @@ export default defineComponent({
       }
     });
 
+    // FIXME Duplicated code (ish)
     const getUpdatedSignsWithSeparators = () => {
       const pieces: {
         reading: string;
         type: EpigraphicUnitType | null;
+        markup: MarkupType[];
       }[] = props.wordToAddUndeterminedSignsTo.signs.map(sign => ({
         reading: sign.reading || '',
         type: sign.type,
+        markup: sign.markups.map(unit => unit.type),
       }));
 
       const newSign = {
@@ -200,6 +204,7 @@ export default defineComponent({
         {
           reading: newSign.reading || '',
           type: newSign.readingType || null,
+          markup: [],
         },
         ...pieces.slice(insertIndex.value),
       ];
@@ -210,17 +215,12 @@ export default defineComponent({
 
         let newSeparator = '';
         if (nextSign) {
-          // FIXME support for PC
-          /* if (
-            !sign.markups
-              .map(unit => unit.type)
-              .includes('phoneticComplement') &&
-            nextSign.markups
-              .map(unit => unit.type)
-              .includes('phoneticComplement')
+          if (
+            !sign.markup.includes('phoneticComplement') &&
+            nextSign.markup.includes('phoneticComplement')
           ) {
             newSeparator = '';
-          } */
+          }
           if (
             sign.type === 'determinative' ||
             nextSign.type === 'determinative'
