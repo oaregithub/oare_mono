@@ -3,10 +3,10 @@ import sl from '@/serviceLocator';
 import BibliographyDao from '../BibliographyDao';
 
 export async function determineThreadItem(
-  undertimendItemThreadRows: AllThreadRowUndeterminedItem[]
+  undeterminedThreadRows: AllThreadRowUndeterminedItem[]
 ): Promise<AllThreadRow[]> {
   const threadRows: AllThreadRow[] = await Promise.all(
-    undertimendItemThreadRows.map(async tr => {
+    undeterminedThreadRows.map(async tr => {
       let item: string | null = null;
       if (tr.word) {
         item = tr.word;
