@@ -137,7 +137,7 @@ class TextDiscourseDao {
   }
 
   async wordsInTextsSearch(
-    { items, sequenced, page, rows }: WordsInTextSearchPayload,
+    { items, sequenced, page, rows, sortBy }: WordsInTextSearchPayload,
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<WordsInTextsSearchResponse> {
@@ -154,10 +154,10 @@ class TextDiscourseDao {
 
     const spellingUuids: string[][] = await Promise.all(
       items.map(async payloadObject => {
-        let formUuids: string[] = [];
+        let dictItemSearchUuids: string[] = [];
         if (payloadObject.type === 'parse') {
           const parseProperties = payloadObject.uuids as ParseTreePropertyUuids[][];
-          formUuids = (
+          dictItemSearchUuids = (
             await Promise.all(
               parseProperties.map(parsePropArray =>
                 ItemPropertiesDao.getFormsByProperties(parsePropArray)
@@ -165,12 +165,13 @@ class TextDiscourseDao {
             )
           ).flat();
         }
-        if (payloadObject.type === 'form') {
-          formUuids = payloadObject.uuids as string[];
+        if (payloadObject.type === 'form/spelling') {
+          dictItemSearchUuids = payloadObject.uuids as string[];
         }
         const spellingUuidsArray = await k('dictionary_spelling as ds')
           .pluck('ds.uuid')
-          .whereIn('ds.reference_uuid', formUuids);
+          .whereIn('ds.reference_uuid', dictItemSearchUuids)
+          .orWhereIn('ds.uuid', dictItemSearchUuids);
         return spellingUuidsArray;
       })
     );
@@ -182,19 +183,109 @@ class TextDiscourseDao {
       wordsBetween,
       textsToHide,
       sequenced,
+      sortBy,
       trx
     )
       .join('text', 'text.uuid', 'td0.text_uuid')
-      .orderBy('text.display_name')
-      .distinct({ textUuid: 'td0.text_uuid' })
-      .offset((page - 1) * rows)
-      .limit(rows);
+      .select({
+        textName: 'text.display_name',
+        textUuid: 'td0.text_uuid',
+      })
+      .modify(qb => {
+        if (sortBy !== 'textNameOnly') {
+          qb.select({
+            transcription: 'td_orderBy.transcription',
+            wordOnTablet: 'td_orderBy.word_on_tablet',
+          });
+        }
+      })
+      .then(
+        (
+          textRows: Array<{
+            textName: string;
+            textUuid: string;
+            transcription: string | null | undefined;
+            wordOnTablet: number | null | undefined;
+          }>
+        ) => {
+          if (sortBy === 'textNameOnly') {
+            return [
+              ...new Set(
+                textRows
+                  .sort((a, b) => a.textName.localeCompare(b.textName))
+                  .slice((page - 1) * rows, (page - 1) * rows + rows)
+                  .map(({ textUuid }) => ({ textUuid }))
+              ),
+            ];
+          }
+          const uniqueTexts: {
+            textName: string;
+            textUuid: string;
+            transcription: string | null | undefined;
+            wordOnTablet: number | null | undefined;
+          }[] = [];
+          textRows.forEach(tr => {
+            const compareTextRow = uniqueTexts.find(
+              uniqueText => uniqueText.textUuid === tr.textUuid
+            );
+            if (
+              compareTextRow &&
+              ((sortBy === 'followingLastMatch' &&
+                Number(tr.wordOnTablet) >
+                  Number(compareTextRow.wordOnTablet)) ||
+                (sortBy === 'precedingFirstMatch' &&
+                  Number(tr.wordOnTablet) <
+                    Number(compareTextRow.wordOnTablet)))
+            ) {
+              uniqueTexts.find((uniqueText, idx) => {
+                if (compareTextRow === uniqueText) {
+                  uniqueTexts[idx] = tr;
+                }
+                return true;
+              });
+            } else if (!compareTextRow) {
+              uniqueTexts.push(tr);
+            }
+          });
+          const sortedTextRows = uniqueTexts.sort((a, b) => {
+            if (a.textUuid === b.textUuid) {
+              if (sortBy === 'followingLastMatch') {
+                return Number(b.wordOnTablet) - Number(a.wordOnTablet);
+              }
+              if (sortBy === 'precedingFirstMatch') {
+                return Number(a.wordOnTablet) - Number(b.wordOnTablet);
+              }
+            }
+            if (
+              a.transcription &&
+              (!b.transcription || b.transcription.includes('...'))
+            ) {
+              return -1;
+            }
+            if (
+              (!a.transcription || a.transcription.includes('...')) &&
+              b.transcription
+            ) {
+              return 1;
+            }
+            if (a.transcription && b.transcription) {
+              return a.transcription.localeCompare(b.transcription);
+            }
+
+            return a.textName.localeCompare(b.textName);
+          });
+          return sortedTextRows
+            .map(({ textUuid }) => ({ textUuid }))
+            .slice((page - 1) * rows, (page - 1) * rows + rows);
+        }
+      );
 
     const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
       spellingUuids,
       wordsBetween,
       textsToHide,
       sequenced,
+      sortBy,
       trx
     )
       .whereIn(
@@ -222,6 +313,7 @@ class TextDiscourseDao {
       wordsBetween,
       textsToHide,
       sequenced,
+      sortBy,
       trx
     )
       .select(k.raw('count(distinct td0.text_uuid) as count'))
