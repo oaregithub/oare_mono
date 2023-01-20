@@ -5,7 +5,7 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
-  WordFormAutocompleteDisplay,
+  DictItemAutocompleteDisplay,
   DictionaryWordRow,
   DictionarySearchRow,
 } from '@oare/types';
@@ -13,7 +13,11 @@ import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
-import { assembleSearchResult, assembleAutocompleteDisplay } from './utils';
+import {
+  assembleSearchResult,
+  assembleAutocompleteDisplay,
+  WordFormSpellingType,
+} from './utils';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
 import ItemPropertiesDao from '../ItemPropertiesDao';
@@ -48,6 +52,12 @@ export interface TranslationRow {
   fieldUuid: string;
   field: string;
   primacy: number | null;
+}
+
+export interface WordFormSpellingRow {
+  name: string;
+  uuid: string;
+  referenceUuid: string;
 }
 
 class DictionaryWordDao {
@@ -466,41 +476,48 @@ class DictionaryWordDao {
     return refUuids;
   }
 
-  async getWordsAndFormsForWordsInTexts(trx?: Knex.Transaction) {
+  async getDictItemsForWordsInTexts(trx?: Knex.Transaction) {
     const k = trx || knexRead();
-    const forms: Array<{
-      name: string;
-      uuid: string;
-      wordUuid: string;
-    }> = await k
+    const forms: WordFormSpellingRow[] = await k
       .from('dictionary_form AS df')
-      .select('df.form as name', 'df.uuid', 'df.reference_uuid as wordUuid');
-    const words: Array<{
-      name: string;
-      uuid: string;
-      wordUuid: string;
-    }> = await k('dictionary_word as dw').select(
-      'dw.word as name',
-      'dw.uuid',
-      'dw.uuid as wordUuid'
-    );
+      .select(
+        'df.form as name',
+        'df.uuid',
+        'df.reference_uuid as referenceUuid'
+      );
+    const spellings: WordFormSpellingRow[] = await k
+      .from('dictionary_spelling AS ds')
+      .select(
+        'ds.explicit_spelling as name',
+        'ds.uuid',
+        'ds.reference_uuid as referenceUuid'
+      );
+    const words: WordFormSpellingRow[] = await k(
+      'dictionary_word as dw'
+    ).select('dw.word as name', 'dw.uuid', 'dw.uuid as referenceUuid');
 
-    const wordAndFormArray = [
+    const wordFormSpellingArray: WordFormSpellingType[] = [
       ...forms.map(form => ({
         name: form.name,
         uuid: form.uuid,
         type: 'form',
-        wordUuid: form.wordUuid,
+        referenceUuid: form.referenceUuid,
       })),
       ...words.map(word => ({
         name: word.name,
         uuid: word.uuid,
         type: 'word',
-        wordUuid: word.wordUuid,
+        referenceUuid: word.referenceUuid,
       })),
-    ];
-    const results: WordFormAutocompleteDisplay[] = await Promise.all(
-      wordAndFormArray.map(item => assembleAutocompleteDisplay(item))
+      ...spellings.map(spelling => ({
+        name: spelling.name,
+        uuid: spelling.uuid,
+        type: 'spelling',
+        referenceUuid: spelling.referenceUuid,
+      })),
+    ] as WordFormSpellingType[];
+    const results: DictItemAutocompleteDisplay[] = await Promise.all(
+      wordFormSpellingArray.map(item => assembleAutocompleteDisplay(item))
     );
     return results;
   }

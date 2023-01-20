@@ -14,7 +14,7 @@ describe('WordsInTextSearch', () => {
     getWordsInTextSearchResults: jest
       .fn()
       .mockResolvedValue({ total: 0, results: [] }),
-    getWordsAndForms: jest.fn().mockResolvedValue([
+    getDictItems: jest.fn().mockResolvedValue([
       {
         info: { uuid: 'uuid', wordUuid: 'wordUuid', name: 'name' },
         wordDisplay: 'qibima',
@@ -129,7 +129,7 @@ describe('WordsInTextSearch', () => {
   it('gets words and forms on mount', async () => {
     createWrapper();
     await flushPromises();
-    expect(mockServer.getWordsAndForms).toHaveBeenCalled();
+    expect(mockServer.getDictItems).toHaveBeenCalled();
     expect(mockServer.getTaxonomyTree).toHaveBeenCalled();
   });
 
