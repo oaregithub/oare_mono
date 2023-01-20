@@ -77,7 +77,10 @@ export default defineComponent({
     );
 
     const canViewMenu = computed(
-      () => hasCommentPermission.value || props.hasEdit || props.hasDelete
+      () =>
+        (hasCommentPermission.value && props.hasComment) ||
+        props.hasEdit ||
+        props.hasDelete
     );
     return { hasCommentPermission, canViewMenu };
   },
