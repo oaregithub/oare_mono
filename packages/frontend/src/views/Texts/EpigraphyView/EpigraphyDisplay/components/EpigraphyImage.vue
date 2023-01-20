@@ -1,5 +1,6 @@
 <template>
-  <v-container :class="{ sticky: sticky }">
+  <v-progress-linear v-if="loading" indeterminate />
+  <v-container v-else :class="{ sticky: sticky }">
     <v-row align="center" justify="center">
       <v-slide-group
         :value="selectedImages"
@@ -132,6 +133,10 @@ export default defineComponent({
     imageLinks: {
       type: Array as PropType<EpigraphyLabelLink[]>,
       required: true,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
     },
     maxSelect: {
       type: Number,
