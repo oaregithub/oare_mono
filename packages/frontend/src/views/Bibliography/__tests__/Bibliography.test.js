@@ -41,11 +41,12 @@ describe('Bibliography test', () => {
   };
   const mockStore = {
     getters: { isAdmin: false },
+    hasPermission: () => false,
   };
-  const createWrapper = ({ server, actions } = {}) => {
+  const createWrapper = ({ server, actions, store } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
-    sl.set('store', mockStore);
+    sl.set('store', store || mockStore);
 
     return mount(BibliographyView, {
       vuetify,
@@ -79,5 +80,17 @@ describe('Bibliography test', () => {
     await bibType.trigger('click');
     await flushPromises();
     expect(mockServer.getBibliographies).toBeCalledTimes(3);
+  });
+
+  it('allows commenting when user has permission', async () => {
+    const wrapper = createWrapper({
+      server: mockServer,
+      actions: mockActions,
+      store: { ...mockStore, hasPermission: () => true },
+    });
+    await flushPromises();
+    wrapper.findAll('.test-bib').at(0).trigger('click');
+    await flushPromises();
+    expect(wrapper.findAll('.test-comment').at(0).exists()).toBe(true);
   });
 });

@@ -12,7 +12,6 @@ import {
   TextEpigraphyRow,
   ResourceRow,
   LinkRow,
-  EpigraphyLabelLink,
   ZoteroData,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
@@ -32,10 +31,12 @@ router
       const ResourceDao = sl.get('ResourceDao');
       const userUuid = req.user ? req.user.uuid : null;
 
+      const cleanCdliNum = cdliNum && cdliNum !== 'null' ? cdliNum : null;
+
       const response = await ResourceDao.getImageLinksByTextUuid(
         userUuid,
         textUuid,
-        cdliNum
+        cleanCdliNum
       );
 
       res.json(response);

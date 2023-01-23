@@ -52,6 +52,7 @@ export interface ZoteroResponseData {
 
 export interface BibliographyResponse {
   title: string | null;
+  uuid: string;
   authors: string[];
   date: string | null;
   bibliography: {
