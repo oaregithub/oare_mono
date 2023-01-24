@@ -2,7 +2,7 @@
   <oare-dialog
     :value="value"
     @input="$emit('input', $event)"
-    title="Add Undetermined Signs"
+    title="Add Broken Signs"
     :persistent="false"
     :submitLoading="addUndeterminedSignsLoading"
     :submitDisabled="!formComplete"
@@ -10,7 +10,7 @@
   >
     <v-row justify="center" class="ma-0 mt-2">
       <span
-        >Select the position where you would like to add the undetermined
+        >Select the position where you would like to add the broken
         sign(s).</span
       >
     </v-row>
@@ -30,7 +30,7 @@
     </v-row>
 
     <div v-if="insertIndex !== undefined">
-      <v-row class="ma-0">Number of Undetermined Sign(s)</v-row>
+      <v-row class="ma-0">Number of Broken Sign(s)</v-row>
       <v-row class="ma-0">
         <v-select
           outlined
@@ -45,7 +45,7 @@
           hide-details
           dense
           v-model="unknownNumUndeterminedSigns"
-          label="Unknown Number of Undetermined Sign(s)"
+          label="Unknown Number of Broken Sign(s)"
         ></v-checkbox>
       </v-row>
     </div>
@@ -125,7 +125,6 @@ export default defineComponent({
       return true;
     });
 
-    // FIXME lots of duplicated code
     const addUndeterminedSigns = async () => {
       try {
         addUndeterminedSignsLoading.value = true;
@@ -134,7 +133,7 @@ export default defineComponent({
           (!selectedNumber.value && !unknownNumUndeterminedSigns.value) ||
           insertIndex.value === undefined
         ) {
-          throw new Error('No number of undetermined signs selected');
+          throw new Error('No number of broken signs selected');
         }
 
         const newSpelling = getUpdatedSignsWithSeparators().replace(
@@ -163,7 +162,7 @@ export default defineComponent({
         emit('reset-renderer');
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error adding undetermined signs. Please try again.',
+          'Error adding broken signs. Please try again.',
           err as Error
         );
       } finally {

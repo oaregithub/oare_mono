@@ -36,7 +36,7 @@
         <v-list-item @click="$emit('add-undetermined-lines')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-text-box-remove-outline</v-icon>
-            Undetermined Line(s)</v-list-item-title
+            Broken Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-word')">
@@ -54,7 +54,7 @@
         <v-list-item @click="$emit('add-undetermined-signs')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Undetermined Signs</v-list-item-title
+            Broken Signs</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-divider')">
@@ -95,7 +95,7 @@
         <v-list-item @click="$emit('edit-undetermined-lines')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-text-box-remove-outline</v-icon>
-            Edit Undetermined Line(s)</v-list-item-title
+            Edit Broken Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-sign')" disabled>
@@ -107,7 +107,7 @@
         <v-list-item @click="$emit('edit-undetermined-signs')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Edit Undetermined Signs (Coming Soon)</v-list-item-title
+            Edit Broken Signs (Coming Soon)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-divider')" disabled>
@@ -246,7 +246,7 @@
         <v-list-item @click="$emit('remove-undetermined-lines')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-text-box-remove-outline</v-icon>
-            Undetermined Line(s)</v-list-item-title
+            Broken Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('remove-word')">
@@ -264,7 +264,7 @@
         <v-list-item @click="$emit('remove-undetermined-signs')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Undetermined Signs</v-list-item-title
+            Broken Signs</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('remove-divider')">
@@ -316,13 +316,13 @@ export default defineComponent({
         case 'addLine':
           return 'Use the plus buttons between each line to select where you would like to add a new line.';
         case 'addUndeterminedLines':
-          return 'Use the plus buttons between each line to select where you would like to add new undetermined line(s).';
+          return 'Use the plus buttons between each line to select where you would like to add new broken line(s).';
         case 'addWord':
           return 'Use the plus buttons between each word to select where you would like to add a new word/number.';
         case 'addSign':
           return 'Click on the word that you would like to add a sign to.';
         case 'addUndeterminedSigns':
-          return 'Click on the word that you would like to add undetermined signs to.';
+          return 'Click on the word that you would like to add broken signs to.';
         case 'addDivider':
           return 'Use the plus buttons between each word to select where you would like to add a new divider.';
         case 'editSide':
@@ -332,11 +332,11 @@ export default defineComponent({
         case 'editRegion':
           return 'Click on the region that you would like to edit.';
         case 'editUndeterminedLines':
-          return 'Click on the undetermined (broken) line(s) that you would like to edit.';
+          return 'Click on the broken line(s) that you would like to edit.';
         case 'editSign': // FIXME REVIEW
           return 'Click on the sign that you would like to edit.';
         case 'editUndeterminedSigns': // FIXME REVIEW
-          return 'Click on the undetermined sign(s) that you would like to edit.';
+          return 'Click on the broken sign(s) that you would like to edit.';
         case 'editDivider': // FIXME REVIEW
           return 'Click on the divider that you would like to edit.';
         case 'splitLine': // FIXME REVIEW
@@ -364,13 +364,13 @@ export default defineComponent({
         case 'removeLine':
           return 'Use the red trash cans that appear next to each line to remove it.';
         case 'removeUndeterminedLines':
-          return 'Use the red trash cans that appear next to each undetermined line to remove it.';
+          return 'Use the red trash cans that appear next to each broken line to remove it.';
         case 'removeWord':
           return 'Click on the word that you would like to remove.';
         case 'removeSign':
           return 'Click on the sign that you would like to remove.';
         case 'removeUndeterminedSigns':
-          return 'Click on the undetermined sign(s) that you would like to remove.';
+          return 'Click on the broken sign(s) that you would like to remove.';
         case 'removeDivider':
           return 'Use the red trash cans that appear next to each divider to remove it.';
       }

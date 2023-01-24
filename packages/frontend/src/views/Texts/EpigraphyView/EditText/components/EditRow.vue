@@ -154,13 +154,13 @@
 
     <oare-dialog
       v-model="removeUndeterminedLinesDialog"
-      :title="`Remove undetermined lines?`"
+      title="Remove broken lines?"
       submitText="Yes"
       cancelText="No"
       :persistent="false"
       @submit="removeUndeterminedLines"
       :submitLoading="editTextLoading"
-      >Are you sure you want to remove these undetermined lines?</oare-dialog
+      >Are you sure you want to remove these broken lines?</oare-dialog
     >
 
     <oare-dialog
@@ -451,7 +451,7 @@ export default defineComponent({
         const unitsOnLine = props.renderer.getUnitsOnLine(props.line);
         if (unitsOnLine.length !== 1) {
           throw new Error(
-            'Cannot remove undetermined lines with more than one unit on line.'
+            'Cannot remove broken lines with more than one unit on line.'
           );
         }
         const payload: RemoveUndeterminedLinesPayload = {
@@ -463,7 +463,7 @@ export default defineComponent({
         resetRenderer();
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error removing undetermined lines. Please try again.',
+          'Error removing broken lines. Please try again.',
           err as Error
         );
       } finally {

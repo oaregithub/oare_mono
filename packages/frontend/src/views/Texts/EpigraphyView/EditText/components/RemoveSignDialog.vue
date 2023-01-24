@@ -3,7 +3,7 @@
     :value="value"
     @input="$emit('input', $event)"
     :title="`Remove ${
-      currentEditAction === 'removeSign' ? 'Sign' : 'Undetermined Signs'
+      currentEditAction === 'removeSign' ? 'Sign' : 'Broken Signs'
     }?`"
     :persistent="false"
     @submit="removeSign"

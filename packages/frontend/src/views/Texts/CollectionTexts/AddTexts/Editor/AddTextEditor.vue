@@ -92,6 +92,7 @@ import {
 import Side from './components/Side.vue';
 import AddSide from './components/AddSide.vue';
 import SideCard from './components/SideCard.vue';
+import { convertSideToSideNumber } from '@oare/oare';
 
 export interface Side {
   uuid: string;
@@ -328,38 +329,13 @@ export default defineComponent({
       });
     };
 
-    const getSideNumber = (side: EpigraphicUnitSide) => {
-      switch (side) {
-        case 'obv.':
-          return 1;
-        case 'lo.e.':
-          return 2;
-        case 'rev.':
-          return 3;
-        case 'u.e.':
-          return 4;
-        case 'le.e.':
-          return 5;
-        case 'r.e.':
-          return 6;
-        case 'mirror text':
-          return 7;
-        case 'legend':
-          return 8;
-        case 'suppl. tablet':
-          return 9;
-        default:
-          return 1;
-      }
-    };
-
     watch(
       sides,
       () => {
         const sideContent: SideContent[] = sides.value.map(side => ({
           uuid: side.uuid,
           type: side.side,
-          number: getSideNumber(side.side),
+          number: convertSideToSideNumber(side.side),
           columns: side.columns,
         }));
         const editorContent: AddTextEditorContent = {

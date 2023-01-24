@@ -34,6 +34,88 @@ import sl from '@/serviceLocator';
 import { v4 } from 'uuid';
 import { convertSideToSideNumber } from '@oare/oare';
 
+const getEpigraphyType = (
+  readingType: EpigraphicUnitType | undefined
+): EpigraphyType => {
+  if (readingType) {
+    switch (readingType) {
+      case 'number':
+        return 'number';
+      case 'punctuation':
+        return 'separator';
+      default:
+        return 'sign';
+    }
+  }
+  return 'undeterminedSigns';
+};
+
+const getMarkupToAutoAdd = async (
+  textUuid: string,
+  newObjectOnTablet: number,
+  line: number,
+  numSigns: number,
+  trx?: Knex.Transaction
+): Promise<MarkupType[]> => {
+  const k = trx || knexWrite();
+
+  const uuidBefore: string | null = await k('text_epigraphy')
+    .where({
+      text_uuid: textUuid,
+      object_on_tablet: newObjectOnTablet - 1,
+      line,
+    })
+    .whereIn('type', ['sign', 'undeterminedSigns'])
+    .first()
+    .then(row => (row ? row.uuid : null));
+
+  const uuidAfter: string | null = await k('text_epigraphy')
+    .where({
+      text_uuid: textUuid,
+      object_on_tablet: newObjectOnTablet + numSigns,
+      line,
+    })
+    .whereIn('type', ['sign', 'undeterminedSigns'])
+    .first()
+    .then(row => (row ? row.uuid : null));
+
+  const markupBefore: MarkupType[] | null = uuidBefore
+    ? await k('text_markup')
+        .pluck('type')
+        .where({ reference_uuid: uuidBefore, end_char: null })
+    : null;
+
+  const markupAfter: MarkupType[] | null = uuidAfter
+    ? await k('text_markup')
+        .pluck('type')
+        .where({ reference_uuid: uuidAfter, start_char: null })
+    : null;
+
+  const markupToAdd: MarkupType[] = [];
+
+  if (markupBefore && markupAfter) {
+    const markupOnBothSides = markupBefore.filter(
+      markup =>
+        markupAfter.includes(markup) &&
+        markup !== 'uncertain' &&
+        markup !== 'isEmendedReading' &&
+        markup !== 'isCollatedReading' &&
+        markup !== 'originalSign' &&
+        markup !== 'alternateSign' &&
+        markup !== 'undeterminedSigns'
+    );
+    markupToAdd.push(...markupOnBothSides);
+  } else if (markupBefore) {
+    if (markupBefore.includes('isWrittenAboveTheLine')) {
+      markupToAdd.push('isWrittenAboveTheLine');
+    } else if (markupBefore.includes('isWrittenBelowTheLine')) {
+      markupToAdd.push('isWrittenBelowTheLine');
+    }
+  }
+
+  return markupToAdd;
+};
+
 class EditTextUtils {
   async addSide(
     payload: AddSidePayload,
@@ -465,22 +547,6 @@ class EditTextUtils {
 
     await TextEpigraphyDao.insertEpigraphyRow(lineRow, trx);
 
-    const getEpigraphyType = (
-      readingType: EpigraphicUnitType | undefined
-    ): EpigraphyType => {
-      if (readingType) {
-        switch (readingType) {
-          case 'number':
-            return 'number';
-          case 'punctuation':
-            return 'separator';
-          default:
-            return 'sign';
-        }
-      }
-      return 'undeterminedSigns';
-    };
-
     if (payload.row.signs) {
       await Promise.all(
         payload.row.signs.map(async (sign, idx) => {
@@ -809,76 +875,14 @@ class EditTextUtils {
       trx
     );
 
-    const getEpigraphyType = (
-      readingType: EpigraphicUnitType | undefined
-    ): EpigraphyType => {
-      if (readingType) {
-        switch (readingType) {
-          case 'number':
-            return 'number';
-          case 'punctuation':
-            return 'separator';
-          default:
-            return 'sign';
-        }
-      }
-      return 'undeterminedSigns';
-    };
-
     if (payload.row.signs) {
-      const uuidBefore: string | null = await k('text_epigraphy')
-        .where({
-          text_uuid: payload.textUuid,
-          object_on_tablet: newObjectOnTablet - 1,
-          line: payload.line,
-        })
-        .whereIn('type', ['sign', 'undeterminedSigns'])
-        .first()
-        .then(row => (row ? row.uuid : null));
-
-      const uuidAfter: string | null = await k('text_epigraphy')
-        .where({
-          text_uuid: payload.textUuid,
-          object_on_tablet: newObjectOnTablet + payload.row.signs.length,
-          line: payload.line,
-        })
-        .whereIn('type', ['sign', 'undeterminedSigns'])
-        .first()
-        .then(row => (row ? row.uuid : null));
-
-      const markupBefore: MarkupType[] | null = uuidBefore
-        ? await k('text_markup')
-            .pluck('type')
-            .where({ reference_uuid: uuidBefore, end_char: null })
-        : null;
-
-      const markupAfter: MarkupType[] | null = uuidAfter
-        ? await k('text_markup')
-            .pluck('type')
-            .where({ reference_uuid: uuidAfter, start_char: null })
-        : null;
-
-      const markupToAdd: MarkupType[] = [];
-
-      if (markupBefore && markupAfter) {
-        const markupOnBothSides = markupBefore.filter(
-          markup =>
-            markupAfter.includes(markup) &&
-            markup !== 'uncertain' &&
-            markup !== 'isEmendedReading' &&
-            markup !== 'isCollatedReading' &&
-            markup !== 'originalSign' &&
-            markup !== 'alternateSign' &&
-            markup !== 'undeterminedSigns'
-        );
-        markupToAdd.push(...markupOnBothSides);
-      } else if (markupBefore) {
-        if (markupBefore.includes('isWrittenAboveTheLine')) {
-          markupToAdd.push('isWrittenAboveTheLine');
-        } else if (markupBefore.includes('isWrittenBelowTheLine')) {
-          markupToAdd.push('isWrittenBelowTheLine');
-        }
-      }
+      const markupToAdd = await getMarkupToAutoAdd(
+        payload.textUuid,
+        newObjectOnTablet,
+        payload.line,
+        payload.row.signs.length,
+        trx
+      );
 
       await Promise.all(
         payload.row.signs.map(async (sign, idx) => {
@@ -988,22 +992,6 @@ class EditTextUtils {
       trx
     );
 
-    const getEpigraphyType = (
-      readingType: EpigraphicUnitType | undefined
-    ): EpigraphyType => {
-      if (readingType) {
-        switch (readingType) {
-          case 'number':
-            return 'number';
-          case 'punctuation':
-            return 'separator';
-          default:
-            return 'sign';
-        }
-      }
-      return 'undeterminedSigns';
-    };
-
     const signRow: TextEpigraphyRow = {
       uuid: payload.sign.uuid,
       type: getEpigraphyType(payload.sign.readingType),
@@ -1033,73 +1021,20 @@ class EditTextUtils {
       });
     }
 
-    const uuidBefore: string | null = await k('text_epigraphy')
-      .where({
-        text_uuid: payload.textUuid,
-        object_on_tablet: newObjectOnTablet - 1,
-        line: payload.line,
-      })
-      .whereIn('type', ['sign', 'undeterminedSigns'])
-      .first()
-      .then(row => (row ? row.uuid : null));
+    const markupToAdd = await getMarkupToAutoAdd(
+      payload.textUuid,
+      newObjectOnTablet,
+      payload.line,
+      1,
+      trx
+    );
 
-    const uuidAfter: string | null = await k('text_epigraphy')
-      .where({
-        text_uuid: payload.textUuid,
-        object_on_tablet: newObjectOnTablet + 1,
-        line: payload.line,
-      })
-      .whereIn('type', ['sign', 'undeterminedSigns'])
-      .first()
-      .then(row => (row ? row.uuid : null));
-
-    const markupBefore: MarkupType[] | null = uuidBefore
-      ? await k('text_markup')
-          .pluck('type')
-          .where({ reference_uuid: uuidBefore, end_char: null })
-      : null;
-
-    const markupAfter: MarkupType[] | null = uuidAfter
-      ? await k('text_markup')
-          .pluck('type')
-          .where({ reference_uuid: uuidAfter, start_char: null })
-      : null;
-
-    if (markupBefore && markupAfter) {
-      const markupOnBothSides = markupBefore.filter(
-        markup =>
-          markupAfter.includes(markup) &&
-          markup !== 'uncertain' &&
-          markup !== 'isEmendedReading' &&
-          markup !== 'isCollatedReading' &&
-          markup !== 'originalSign' &&
-          markup !== 'alternateSign' &&
-          markup !== 'undeterminedSigns'
-      );
-
-      await Promise.all(
-        markupOnBothSides.map(async type => {
-          const markupRow: TextMarkupRow = {
-            uuid: v4(),
-            referenceUuid: signRow.uuid,
-            type,
-            numValue: null,
-            altReadingUuid: null,
-            altReading: null,
-            startChar: null,
-            endChar: null,
-            objectUuid: null,
-          };
-
-          await TextMarkupDao.insertMarkupRow(markupRow, trx);
-        })
-      );
-    } else if (markupBefore) {
-      if (markupBefore.includes('isWrittenAboveTheLine')) {
+    await Promise.all(
+      markupToAdd.map(async type => {
         const markupRow: TextMarkupRow = {
           uuid: v4(),
           referenceUuid: signRow.uuid,
-          type: 'isWrittenAboveTheLine',
+          type,
           numValue: null,
           altReadingUuid: null,
           altReading: null,
@@ -1109,22 +1044,8 @@ class EditTextUtils {
         };
 
         await TextMarkupDao.insertMarkupRow(markupRow, trx);
-      } else if (markupBefore.includes('isWrittenBelowTheLine')) {
-        const markupRow: TextMarkupRow = {
-          uuid: v4(),
-          referenceUuid: signRow.uuid,
-          type: 'isWrittenBelowTheLine',
-          numValue: null,
-          altReadingUuid: null,
-          altReading: null,
-          startChar: null,
-          endChar: null,
-          objectUuid: null,
-        };
-
-        await TextMarkupDao.insertMarkupRow(markupRow, trx);
-      }
-    }
+      })
+    );
   }
 
   async addUndeterminedSigns(
@@ -1226,74 +1147,20 @@ class EditTextUtils {
 
     await TextMarkupDao.insertMarkupRow(undeterminedMarkupRow, trx);
 
-    // FIXME lots of duplicated code
-    const uuidBefore: string | null = await k('text_epigraphy')
-      .where({
-        text_uuid: payload.textUuid,
-        object_on_tablet: newObjectOnTablet - 1,
-        line: payload.line,
-      })
-      .whereIn('type', ['sign', 'undeterminedSigns'])
-      .first()
-      .then(row => (row ? row.uuid : null));
+    const markupToAdd = await getMarkupToAutoAdd(
+      payload.textUuid,
+      newObjectOnTablet,
+      payload.line,
+      1,
+      trx
+    );
 
-    const uuidAfter: string | null = await k('text_epigraphy')
-      .where({
-        text_uuid: payload.textUuid,
-        object_on_tablet: newObjectOnTablet + 1,
-        line: payload.line,
-      })
-      .whereIn('type', ['sign', 'undeterminedSigns'])
-      .first()
-      .then(row => (row ? row.uuid : null));
-
-    const markupBefore: MarkupType[] | null = uuidBefore
-      ? await k('text_markup')
-          .pluck('type')
-          .where({ reference_uuid: uuidBefore, end_char: null })
-      : null;
-
-    const markupAfter: MarkupType[] | null = uuidAfter
-      ? await k('text_markup')
-          .pluck('type')
-          .where({ reference_uuid: uuidAfter, start_char: null })
-      : null;
-
-    if (markupBefore && markupAfter) {
-      const markupOnBothSides = markupBefore.filter(
-        markup =>
-          markupAfter.includes(markup) &&
-          markup !== 'uncertain' &&
-          markup !== 'isEmendedReading' &&
-          markup !== 'isCollatedReading' &&
-          markup !== 'originalSign' &&
-          markup !== 'alternateSign' &&
-          markup !== 'undeterminedSigns'
-      );
-
-      await Promise.all(
-        markupOnBothSides.map(async type => {
-          const markupRow: TextMarkupRow = {
-            uuid: v4(),
-            referenceUuid: signRow.uuid,
-            type,
-            numValue: null,
-            altReadingUuid: null,
-            altReading: null,
-            startChar: null,
-            endChar: null,
-            objectUuid: null,
-          };
-
-          await TextMarkupDao.insertMarkupRow(markupRow, trx);
-        })
-      );
-    } else if (markupBefore) {
-      if (markupBefore.includes('isWrittenAboveTheLine')) {
+    await Promise.all(
+      markupToAdd.map(async type => {
         const markupRow: TextMarkupRow = {
           uuid: v4(),
           referenceUuid: signRow.uuid,
-          type: 'isWrittenAboveTheLine',
+          type,
           numValue: null,
           altReadingUuid: null,
           altReading: null,
@@ -1303,22 +1170,8 @@ class EditTextUtils {
         };
 
         await TextMarkupDao.insertMarkupRow(markupRow, trx);
-      } else if (markupBefore.includes('isWrittenBelowTheLine')) {
-        const markupRow: TextMarkupRow = {
-          uuid: v4(),
-          referenceUuid: signRow.uuid,
-          type: 'isWrittenBelowTheLine',
-          numValue: null,
-          altReadingUuid: null,
-          altReading: null,
-          startChar: null,
-          endChar: null,
-          objectUuid: null,
-        };
-
-        await TextMarkupDao.insertMarkupRow(markupRow, trx);
-      }
-    }
+      })
+    );
   }
 
   async addDivider(
@@ -1332,7 +1185,6 @@ class EditTextUtils {
 
     const sideNumber = convertSideToSideNumber(payload.side);
 
-    // FIXME lots of duplicated code
     const newObjectOnTablet = payload.signUuidBefore
       ? await k('text_epigraphy')
           .select('object_on_tablet')
@@ -1396,74 +1248,20 @@ class EditTextUtils {
 
     await TextEpigraphyDao.insertEpigraphyRow(signRow, trx);
 
-    // FIXME lots of duplicated code
-    const uuidBefore: string | null = await k('text_epigraphy')
-      .where({
-        text_uuid: payload.textUuid,
-        object_on_tablet: newObjectOnTablet - 1,
-        line: payload.line,
-      })
-      .whereIn('type', ['sign', 'undeterminedSigns'])
-      .first()
-      .then(row => (row ? row.uuid : null));
+    const markupToAdd = await getMarkupToAutoAdd(
+      payload.textUuid,
+      newObjectOnTablet,
+      payload.line,
+      1,
+      trx
+    );
 
-    const uuidAfter: string | null = await k('text_epigraphy')
-      .where({
-        text_uuid: payload.textUuid,
-        object_on_tablet: newObjectOnTablet + 1,
-        line: payload.line,
-      })
-      .whereIn('type', ['sign', 'undeterminedSigns'])
-      .first()
-      .then(row => (row ? row.uuid : null));
-
-    const markupBefore: MarkupType[] | null = uuidBefore
-      ? await k('text_markup')
-          .pluck('type')
-          .where({ reference_uuid: uuidBefore, end_char: null })
-      : null;
-
-    const markupAfter: MarkupType[] | null = uuidAfter
-      ? await k('text_markup')
-          .pluck('type')
-          .where({ reference_uuid: uuidAfter, start_char: null })
-      : null;
-
-    if (markupBefore && markupAfter) {
-      const markupOnBothSides = markupBefore.filter(
-        markup =>
-          markupAfter.includes(markup) &&
-          markup !== 'uncertain' &&
-          markup !== 'isEmendedReading' &&
-          markup !== 'isCollatedReading' &&
-          markup !== 'originalSign' &&
-          markup !== 'alternateSign' &&
-          markup !== 'undeterminedSigns'
-      );
-
-      await Promise.all(
-        markupOnBothSides.map(async type => {
-          const markupRow: TextMarkupRow = {
-            uuid: v4(),
-            referenceUuid: signRow.uuid,
-            type,
-            numValue: null,
-            altReadingUuid: null,
-            altReading: null,
-            startChar: null,
-            endChar: null,
-            objectUuid: null,
-          };
-
-          await TextMarkupDao.insertMarkupRow(markupRow, trx);
-        })
-      );
-    } else if (markupBefore) {
-      if (markupBefore.includes('isWrittenAboveTheLine')) {
+    await Promise.all(
+      markupToAdd.map(async type => {
         const markupRow: TextMarkupRow = {
           uuid: v4(),
           referenceUuid: signRow.uuid,
-          type: 'isWrittenAboveTheLine',
+          type,
           numValue: null,
           altReadingUuid: null,
           altReading: null,
@@ -1473,22 +1271,8 @@ class EditTextUtils {
         };
 
         await TextMarkupDao.insertMarkupRow(markupRow, trx);
-      } else if (markupBefore.includes('isWrittenBelowTheLine')) {
-        const markupRow: TextMarkupRow = {
-          uuid: v4(),
-          referenceUuid: signRow.uuid,
-          type: 'isWrittenBelowTheLine',
-          numValue: null,
-          altReadingUuid: null,
-          altReading: null,
-          startChar: null,
-          endChar: null,
-          objectUuid: null,
-        };
-
-        await TextMarkupDao.insertMarkupRow(markupRow, trx);
-      }
-    }
+      })
+    );
   }
 
   async editSide(

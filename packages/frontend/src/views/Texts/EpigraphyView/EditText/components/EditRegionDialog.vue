@@ -11,9 +11,9 @@
     <div v-if="regionType === 'broken'">
       <v-row class="ma-0 mb-4"
         >If desired, you can choose to convert the broken area to a specified
-        number of undetermined lines.</v-row
+        number of broken lines.</v-row
       >
-      <v-row class="ma-0">Number of Undetermined Lines (Optional)</v-row>
+      <v-row class="ma-0">Number of Broken Lines (Optional)</v-row>
       <v-row class="ma-0">
         <v-select
           outlined

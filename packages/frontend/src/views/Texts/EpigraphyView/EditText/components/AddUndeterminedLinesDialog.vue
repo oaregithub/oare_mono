@@ -2,13 +2,13 @@
   <oare-dialog
     :value="value"
     @input="$emit('input', $event)"
-    title="Add Undetermined Lines"
+    title="Add Broken Lines"
     :persistent="false"
     :submitLoading="addUndeterminedLinesLoading"
     :submitDisabled="!formComplete"
     @submit="addUndeterminedLines"
   >
-    <v-row class="ma-0">Number of Undetermined Line(s)</v-row>
+    <v-row class="ma-0">Number of Broken Line(s)</v-row>
     <v-row class="ma-0">
       <v-select
         outlined
@@ -74,7 +74,7 @@ export default defineComponent({
         addUndeterminedLinesLoading.value = true;
 
         if (!selectedNumber.value) {
-          throw new Error('No number of undetermined lines selected');
+          throw new Error('No number of broken lines selected');
         }
 
         let previousObjectOnTablet: number | undefined = undefined;
@@ -98,7 +98,7 @@ export default defineComponent({
         emit('reset-renderer');
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error adding undetermined lines. Please try again.',
+          'Error adding broken lines. Please try again.',
           err as Error
         );
       } finally {

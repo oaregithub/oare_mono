@@ -2,17 +2,17 @@
   <oare-dialog
     :value="value"
     @input="$emit('input', $event)"
-    title="Edit Undetermined Line(s)"
+    title="Edit Broken Line(s)"
     :persistent="false"
     :submitLoading="editUndeterminedLinesLoading"
     :submitDisabled="!formComplete"
     @submit="editUndeterminedLines"
   >
     <v-row class="ma-0"
-      >If desired, you can choose to convert the undetermined lines to a broken
-      area. This means that there will not be a specific number of lines tied to
-      the break. Otherwise, you can simply edit the number of specified
-      undetermined lines.</v-row
+      >If desired, you can choose to convert the broken lines to a broken area.
+      This means that there will not be a specific number of lines tied to the
+      break. Otherwise, you can simply edit the number of specified broken
+      lines.</v-row
     >
     <v-row class="ma-0 mb-4">
       <v-checkbox
@@ -23,7 +23,7 @@
       ></v-checkbox>
     </v-row>
     <v-row v-if="!convertToBrokenArea" class="ma-0"
-      >Number of Undetermined Line(s)</v-row
+      >Number of Broken Line(s)</v-row
     >
     <v-row v-if="!convertToBrokenArea" class="ma-0">
       <v-select
@@ -99,14 +99,14 @@ export default defineComponent({
           .find(unit => unit.epigType === 'undeterminedLines');
 
         if (!unitOnLine) {
-          throw new Error('No undetermined lines found');
+          throw new Error('No broken lines found');
         }
 
         originalSelectedNumber.value = unitOnLine.markups[0].value || undefined;
         selectedNumber.value = unitOnLine.markups[0].value || undefined;
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error preparing edit undetermined lines. Please try again.',
+          'Error preparing edit broken lines. Please try again.',
           err as Error
         );
       }
@@ -118,7 +118,7 @@ export default defineComponent({
 
         if (!convertToBrokenArea.value && !selectedNumber.value) {
           throw new Error(
-            'No number of undetermined lines selected. This is required unless converting to a broken area.'
+            'No number of broken lines selected. This is required unless converting to a broken area.'
           );
         }
 
@@ -127,7 +127,7 @@ export default defineComponent({
           .find(unit => unit.epigType === 'undeterminedLines');
 
         if (!unitOnLine) {
-          throw new Error('No undetermined lines found');
+          throw new Error('No broken lines found');
         }
 
         const payload: EditUndeterminedLinesPayload = {
@@ -142,7 +142,7 @@ export default defineComponent({
         emit('reset-renderer');
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error editing undetermined lines. Please try again.',
+          'Error editing broken lines. Please try again.',
           err as Error
         );
       } finally {
