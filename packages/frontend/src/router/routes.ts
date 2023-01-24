@@ -66,6 +66,7 @@ import SignListView from '../views/Signs/index.vue';
 import AnalyticsView from '../views/Admin/Analytics/Analytics.vue';
 import SealsView from '../views/Seals/SealList.vue';
 import SealView from '../views/Seals/SingleSeal.vue';
+import PeriodsView from '../views/Periods/Periods.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -477,6 +478,12 @@ const routes: RouteConfig[] = [
     component: SealView,
     props: true,
     beforeEnter: permissionGuard('SEALS'),
+  },
+  {
+    path: '/periods',
+    name: 'periods',
+    component: PeriodsView,
+    beforeEnter: permissionGuard('PERIODS'),
   },
   // Defaults to 404 Not Found view if no route matches. This MUST be the last route.
   {
