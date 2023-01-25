@@ -18,53 +18,55 @@
     </template>
 
     <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
-      <v-btn
-        v-if="!isEditing && textInfo.canWrite"
-        color="primary"
-        :to="`/edit_text/${textUuid}`"
-        class="ml-10 mr-2"
-        >Edit</v-btn
-      >
-      <v-btn
-        v-if="!isEditing && textInfo.canWrite"
-        color="primary"
-        :to="`/epigraphies/${textUuid}/draft`"
-        class="mx-2"
-        >Draft</v-btn
-      >
-      <v-btn
-        v-if="canAddPictures"
-        color="primary"
-        @click="photosDialogOpen = true"
-        class="mx-2"
-        >Add Images</v-btn
-      >
-      <oare-dialog
-        v-if="isAdmin && textUuid"
-        v-model="quarantineDialog"
-        title="Quarantine Text"
-        submitText="Yes"
-        cancelText="Cancel"
-        @submit="quarantineText"
-        :submitLoading="quarantineLoading"
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn color="primary" class="mx-2 test-quarantine-button" v-on="on"
-            ><v-icon>mdi-biohazard</v-icon></v-btn
-          >
-        </template>
-        Are you sure you want to quarantine this text? If you continue, this
-        text will no longer appear in text lists or search results and its
-        contents will not count toward any item totals.
-      </oare-dialog>
-      <v-btn
-        v-if="hasCopyPermission"
-        color="primary"
-        class="mx-2 test-copy-button"
-        @click="copyTransliteration"
-      >
-        <v-icon small>mdi-content-copy</v-icon>
-      </v-btn>
+      <div class="ml-8">
+        <v-btn
+          v-if="!isEditing && textInfo.canWrite && hasBetaAccess"
+          color="primary"
+          :to="`/edit_text/${textUuid}`"
+          class="mx-2"
+          >Edit (BETA)</v-btn
+        >
+        <v-btn
+          v-if="!isEditing && textInfo.canWrite"
+          color="primary"
+          :to="`/epigraphies/${textUuid}/draft`"
+          class="mx-2"
+          >Draft</v-btn
+        >
+        <v-btn
+          v-if="canAddPictures"
+          color="primary"
+          @click="photosDialogOpen = true"
+          class="mx-2"
+          >Add Images</v-btn
+        >
+        <oare-dialog
+          v-if="isAdmin && textUuid"
+          v-model="quarantineDialog"
+          title="Quarantine Text"
+          submitText="Yes"
+          cancelText="Cancel"
+          @submit="quarantineText"
+          :submitLoading="quarantineLoading"
+        >
+          <template v-slot:activator="{ on }">
+            <v-btn color="primary" class="mx-2 test-quarantine-button" v-on="on"
+              ><v-icon>mdi-biohazard</v-icon></v-btn
+            >
+          </template>
+          Are you sure you want to quarantine this text? If you continue, this
+          text will no longer appear in text lists or search results and its
+          contents will not count toward any item totals.
+        </oare-dialog>
+        <v-btn
+          v-if="hasCopyPermission"
+          color="primary"
+          class="mx-2 test-copy-button"
+          @click="copyTransliteration"
+        >
+          <v-icon small>mdi-content-copy</v-icon>
+        </v-btn>
+      </div>
     </template>
     <v-row>
       <v-col
@@ -380,6 +382,10 @@ export default defineComponent({
 
     const canAddPictures = computed(() =>
       store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
+    );
+
+    const hasBetaAccess = computed(() =>
+      store.getters.user ? store.getters.user.betaAccess : false
     );
 
     const loading = ref(false);
@@ -756,6 +762,7 @@ export default defineComponent({
       seeMoreZotero,
       seeMoreSwitch,
       imagesLoading,
+      hasBetaAccess,
     };
   },
 });
