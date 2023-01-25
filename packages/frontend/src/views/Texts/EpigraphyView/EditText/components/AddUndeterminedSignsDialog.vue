@@ -179,7 +179,6 @@ export default defineComponent({
       }
     });
 
-    // FIXME Duplicated code (ish)
     const getUpdatedSignsWithSeparators = () => {
       const pieces: {
         reading: string;

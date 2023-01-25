@@ -631,8 +631,6 @@ router
 
       const payload: EditTextPayload = req.body;
 
-      console.log(payload); // eslint-disable-line no-console
-
       const canEditText = await CollectionTextUtils.canEditText(
         payload.textUuid,
         userUuid
