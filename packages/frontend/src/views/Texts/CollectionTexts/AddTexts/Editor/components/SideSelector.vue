@@ -29,7 +29,7 @@
               width="20px"
               rounded
               :color="
-                side === 'obv.' || side === 'mirror text' || side === 'obv. ii'
+                side === 'obv.' || side === 'mirror text'
                   ? getObverseColor()
                   : null
               "
@@ -71,6 +71,13 @@
               :color="side === 'suppl. tablet' ? 'primary' : 'transparent'"
               class="mt-1 ml-n5 rounded-circle"
               :flat="side !== 'suppl. tablet'"
+            />
+            <v-card
+              height="7px"
+              width="20px"
+              :color="side === 'obv. ii' ? 'primary' : 'transparent'"
+              class="mt-1 ml-n5 rounded-pill"
+              :flat="side !== 'obv. ii'"
             />
             <v-spacer />
           </v-row>
@@ -139,7 +146,7 @@ export default defineComponent({
   },
   setup(props) {
     const getObverseColor = () => {
-      if (props.side === 'obv.' || props.side === 'obv. ii') {
+      if (props.side === 'obv.') {
         return 'primary';
       } else if (props.side === 'mirror text') {
         return 'grey darken-1';
