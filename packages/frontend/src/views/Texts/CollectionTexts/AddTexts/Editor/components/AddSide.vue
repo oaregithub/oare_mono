@@ -12,11 +12,7 @@
       >
     </v-row>
     <v-row justify="center" class="mt-7">
-      {{
-        `Choose a side to ${changing ? 'change to' : 'add'}. ${
-          changing ? '' : `Additional sides can be added later.`
-        }`
-      }}
+      {{ `Choose a side to ${action}.` }}
     </v-row>
     <v-row justify="center" class="mb-12">
       <side-selector
@@ -24,26 +20,26 @@
         :key="idx"
         :side="side"
         @selected="$emit('side-selected', side)"
-        class="ma-2 cursor-display test-side-option"
+        class="my-2 mx-3 cursor-display test-side-option"
       />
     </v-row>
   </v-card>
 </template>
 
 <script lang="ts">
-import { SideOption } from '@oare/types';
+import { EpigraphicUnitSide } from '@oare/types';
 import { defineComponent, PropType } from '@vue/composition-api';
 import SideSelector from './SideSelector.vue';
 
 export default defineComponent({
   props: {
     usableSides: {
-      type: Array as PropType<SideOption[]>,
+      type: Array as PropType<EpigraphicUnitSide[]>,
       required: true,
     },
-    changing: {
-      type: Boolean,
-      default: false,
+    action: {
+      type: String,
+      required: true,
     },
   },
   components: {

@@ -26,7 +26,11 @@ export {
   subscriptNumber,
 } from './signNormalizer';
 
-export { formatLineNumber } from './tabletUtils';
+export {
+  formatLineNumber,
+  convertSideNumberToSide,
+  convertSideToSideNumber,
+} from './tabletUtils';
 
 export { convertParsePropsToItemProps } from './parseTreeUtils';
 

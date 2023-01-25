@@ -567,10 +567,11 @@ class TextDiscourseDao {
       textUuid,
       parentUuid,
       anchorInfo.childNum,
+      1,
       trx
     );
-    await this.incrementObjInText(textUuid, anchorInfo.objInText, trx);
-    await this.incrementWordOnTablet(textUuid, anchorInfo.wordOnTablet, trx);
+    await this.incrementObjInText(textUuid, anchorInfo.objInText, 1, trx);
+    await this.incrementWordOnTablet(textUuid, anchorInfo.wordOnTablet, 1, trx);
 
     await k('text_discourse').insert({
       uuid: discourseUuid,
@@ -657,6 +658,7 @@ class TextDiscourseDao {
     textUuid: string,
     parentUuid: string,
     childNum: number | null,
+    amount: number,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
@@ -667,13 +669,14 @@ class TextDiscourseDao {
           parent_uuid: parentUuid,
         })
         .andWhere('child_num', '>=', childNum)
-        .increment('child_num', 1);
+        .increment('child_num', amount);
     }
   }
 
   async incrementWordOnTablet(
     textUuid: string,
     wordOnTablet: number | null,
+    amount: number,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
@@ -683,13 +686,14 @@ class TextDiscourseDao {
           text_uuid: textUuid,
         })
         .andWhere('word_on_tablet', '>=', wordOnTablet)
-        .increment('word_on_tablet', 1);
+        .increment('word_on_tablet', amount);
     }
   }
 
   async incrementObjInText(
     textUuid: string,
     objInText: number | null,
+    amount: number,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
@@ -699,7 +703,7 @@ class TextDiscourseDao {
           text_uuid: textUuid,
         })
         .andWhere('obj_in_text', '>=', objInText)
-        .increment('obj_in_text', 1);
+        .increment('obj_in_text', amount);
     }
   }
 

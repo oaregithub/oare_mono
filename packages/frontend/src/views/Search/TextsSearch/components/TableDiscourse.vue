@@ -1,7 +1,7 @@
 <template>
   <p>
     <span v-for="side in discourseRenderer.sides" :key="side">
-      <span class="mr-1">({{ getSideByNumber(side) }})</span>
+      <span class="mr-1">({{ convertSideNumberToSide(side) }})</span>
       <span
         v-for="line in discourseRenderer.linesOnSide(side)"
         :key="line"
@@ -20,8 +20,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
-import { DiscourseUnit, EpigraphicUnitSide, LocaleCode } from '@oare/types';
-import { DiscourseHtmlRenderer } from '@oare/oare';
+import { DiscourseUnit, LocaleCode } from '@oare/types';
+import { DiscourseHtmlRenderer, convertSideNumberToSide } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';
 
@@ -42,27 +42,10 @@ export default defineComponent({
       i18n.locale as LocaleCode
     );
 
-    const getSideByNumber = (number: number | null): EpigraphicUnitSide => {
-      switch (number) {
-        case 1:
-          return 'obv.';
-        case 2:
-          return 'lo.e.';
-        case 3:
-          return 'rev.';
-        case 4:
-          return 'u.e.';
-        case 5:
-          return 'le.e.';
-        default:
-          return 'r.e.';
-      }
-    };
-
     return {
       discourseRenderer,
       formatLineNumber,
-      getSideByNumber,
+      convertSideNumberToSide,
     };
   },
 });
