@@ -192,15 +192,15 @@
 
     <oare-dialog
       v-model="removeDividerDialog"
-      :title="`Remove Divider?`"
+      :title="`Remove Word Divider?`"
       submitText="Yes"
       cancelText="No"
       :persistent="false"
       @submit="removeDivider"
       :submitLoading="editTextLoading"
-      >Are you sure you want to remove this divider from line {{ line }}?
-      <b>WARNING: </b>If the divider you are removing is the only unit on its
-      line, the line will also be removed.</oare-dialog
+      >Are you sure you want to remove this word divider from line {{ line }}?
+      <b>WARNING: </b>If the word divider you are removing is the only unit on
+      its line, the line will also be removed.</oare-dialog
     >
 
     <edit-region-dialog
@@ -266,7 +266,7 @@
 
     <oare-dialog
       v-model="addDividerDialog"
-      title="Add Divider?"
+      title="Add Word Divider?"
       submitText="Yes"
       cancelText="No"
       :persistent="false"
@@ -274,11 +274,11 @@
       :submitLoading="editTextLoading"
     >
       <span v-if="addDividerPreviousWord"
-        >Are you sure you want to add a divider to line {{ line }} after the
-        word <b v-html="addDividerPreviousWord.reading" />?</span
+        >Are you sure you want to add a word divider to line {{ line }} after
+        the word <b v-html="addDividerPreviousWord.reading" />?</span
       >
       <span v-else
-        >Are you sure you want to add a divider to the beginning of line
+        >Are you sure you want to add a word divider to the beginning of line
         {{ line }}?</span
       >
     </oare-dialog>
@@ -554,9 +554,11 @@ export default defineComponent({
       try {
         editTextLoading.value = true;
         if (!dividerToRemove.value) {
-          throw new Error('No divider selected for removal.');
+          throw new Error('No word divider selected for removal.');
         } else if (dividerToRemove.value.uuids.length > 1) {
-          throw new Error('Cannot remove divider with more than one UUID.');
+          throw new Error(
+            'Cannot remove word divider with more than one UUID.'
+          );
         }
         const payload: RemoveDividerPayload = {
           type: 'removeDivider',
@@ -568,7 +570,7 @@ export default defineComponent({
         resetRenderer();
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error removing divider. Please try again.',
+          'Error removing word divider. Please try again.',
           err as Error
         );
       } finally {
@@ -726,7 +728,7 @@ export default defineComponent({
         resetRenderer();
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error adding divider. Please try again.',
+          'Error adding word divider. Please try again.',
           err as Error
         );
       } finally {

@@ -60,7 +60,7 @@
         <v-list-item @click="$emit('add-divider')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Divider</v-list-item-title
+            Word Divider</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -101,7 +101,7 @@
         <v-list-item @click="$emit('edit-sign')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Edit Sign Markup (Coming Soon)</v-list-item-title
+            Edit Sign (Coming Soon)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-undetermined-signs')" disabled>
@@ -113,7 +113,7 @@
         <v-list-item @click="$emit('edit-divider')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Edit Divider Markup (Coming Soon)</v-list-item-title
+            Edit Word Divider Markup (Coming Soon)</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -270,7 +270,7 @@
         <v-list-item @click="$emit('remove-divider')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Divider</v-list-item-title
+            Word Divider</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -324,7 +324,7 @@ export default defineComponent({
         case 'addUndeterminedSigns':
           return 'Click on the word that you would like to add broken signs to.';
         case 'addDivider':
-          return 'Use the plus buttons between each word to select where you would like to add a new divider.';
+          return 'Use the plus buttons between each word to select where you would like to add a new word divider.';
         case 'editSide':
           return 'In the dialog that appears, follow the instructions to change the side designation.';
         case 'editColumn':
@@ -338,7 +338,7 @@ export default defineComponent({
         case 'editUndeterminedSigns': // FIXME REVIEW
           return 'Click on the broken sign(s) that you would like to edit.';
         case 'editDivider': // FIXME REVIEW
-          return 'Click on the divider that you would like to edit.';
+          return 'Click on the word divider that you would like to edit.';
         case 'splitLine': // FIXME REVIEW
           return 'Click on the line that you would like to split.';
         case 'splitWord': // FIXME REVIEW
@@ -372,7 +372,7 @@ export default defineComponent({
         case 'removeUndeterminedSigns':
           return 'Click on the broken sign(s) that you would like to remove.';
         case 'removeDivider':
-          return 'Use the red trash cans that appear next to each divider to remove it.';
+          return 'Click on the word divider that you would like to remove.';
       }
     });
 
