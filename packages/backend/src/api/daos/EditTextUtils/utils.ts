@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 import { knexWrite } from '@/connection';
-import { EpigraphyType } from '@oare/types';
+import { EpigraphyType, DiscourseUnitType } from '@oare/types';
 
 interface CleanEpigraphyLine extends CleanIterators {
   uuid: string;
@@ -12,6 +12,18 @@ interface CleanIterators {
   objectOnTablet: number | null;
   charOnTablet: number | null;
   charOnLine: number | null;
+}
+
+interface CleanDiscourseLine extends CleanDiscourseIterators {
+  uuid: string;
+  parentUuid: string;
+  type: DiscourseUnitType;
+}
+
+interface CleanDiscourseIterators {
+  objectInText: number;
+  wordOnTablet: number | null;
+  childNum: number | null;
 }
 
 export async function cleanLines(
@@ -34,6 +46,20 @@ export async function cleanLines(
 
   await cleanIterators(rows, trx);
   await cleanLineNumbers(rows, trx);
+
+  const discourseRows: CleanDiscourseLine[] = await k('text_discourse')
+    .select(
+      'uuid',
+      'parent_uuid as parentUuid',
+      'type',
+      'obj_in_text as objectInText',
+      'word_on_tablet as wordOnTablet',
+      'child_num as childNum'
+    )
+    .where({ text_uuid: textUuid })
+    .orderBy('obj_in_text', 'asc');
+
+  await cleanDiscourseIterators(discourseRows, trx);
 }
 
 async function cleanLineNumbers(
@@ -169,6 +195,65 @@ async function cleanIterators(
         object_on_tablet: newIterators[uuid].objectOnTablet,
         char_on_tablet: newIterators[uuid].charOnTablet,
         char_on_line: newIterators[uuid].charOnLine,
+      })
+    )
+  );
+}
+
+async function cleanDiscourseIterators(
+  rows: CleanDiscourseLine[],
+  trx?: Knex.Transaction
+): Promise<void> {
+  const k = trx || knexWrite();
+
+  let wordOnTablet = 0;
+
+  const newIterators: { [key: string]: CleanDiscourseIterators } = {};
+
+  for (let i = 0; i < rows.length; i += 1) {
+    let childNum: number | null = null;
+    if (rows[i].type !== 'discourseUnit') {
+      // eslint-disable-next-line no-await-in-loop
+      const siblings: string[] = await k('text_discourse')
+        .pluck('uuid')
+        .where({ parent_uuid: rows[i].parentUuid })
+        .orderBy('obj_in_text');
+      childNum = siblings.indexOf(rows[i].uuid) + 1;
+    }
+
+    if (rows[i].type === 'word' || rows[i].type === 'number') {
+      wordOnTablet += 1;
+
+      newIterators[rows[i].uuid] = {
+        objectInText: i + 1,
+        wordOnTablet,
+        childNum,
+      };
+    } else {
+      newIterators[rows[i].uuid] = {
+        objectInText: i + 1,
+        wordOnTablet: null,
+        childNum,
+      };
+    }
+  }
+
+  const changedRows = Object.keys(newIterators).filter((row, idx) => {
+    if (newIterators[row].objectInText !== rows[idx].objectInText) {
+      return true;
+    }
+    if (newIterators[row].wordOnTablet !== rows[idx].wordOnTablet) {
+      return true;
+    }
+    return newIterators[row].childNum !== rows[idx].childNum;
+  });
+
+  await Promise.all(
+    changedRows.map(uuid =>
+      k('text_discourse').where({ uuid }).update({
+        obj_in_text: newIterators[uuid].objectInText,
+        word_on_tablet: newIterators[uuid].wordOnTablet,
+        child_num: newIterators[uuid].childNum,
       })
     )
   );

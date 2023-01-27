@@ -12,6 +12,7 @@ export default class DiscourseRenderer {
 
   constructor(discourseUnits: DiscourseUnit[], locale: LocaleCode) {
     this.discourseUnits = discourseUnits;
+    this.discourseUnits.sort((a, b) => a.objInText - b.objInText);
     this.locale = locale;
     this.renderClass = DiscourseRenderer;
   }
@@ -22,10 +23,6 @@ export default class DiscourseRenderer {
 
   public linesOnSide(side: number): number[] {
     return getSideLines(side, this.discourseUnits);
-  }
-
-  get lines(): number[] {
-    return getLineNums(this.discourseUnits);
   }
 
   public wordsOnLine(line: number): DiscourseDisplayUnit[] {
@@ -44,18 +41,6 @@ export default class DiscourseRenderer {
       .map(word => localizeString(word.display, this.locale))
       .join(' ');
   }
-}
-
-function getLineNums(units: DiscourseUnit[]): number[] {
-  const lines: Set<number> = new Set();
-  units.forEach(unit => {
-    if (unit.line) {
-      lines.add(unit.line);
-    }
-    const childrenLines = getLineNums(unit.units);
-    childrenLines.forEach(line => lines.add(line));
-  });
-  return Array.from(lines);
 }
 
 function getSides(units: DiscourseUnit[]): number[] {

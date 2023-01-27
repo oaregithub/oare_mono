@@ -63,7 +63,9 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
   // eslint-disable-next-line
   discourse.explicitSpelling = discourse.units
     .map(u => {
-      if (u.transcription) return u.transcription;
+      if (u.transcription) {
+        return u.transcription;
+      }
       return u.explicitSpelling || '';
     })
     .join(' ');

@@ -50,6 +50,153 @@ const getEpigraphyType = (
   return 'undeterminedSigns';
 };
 
+interface UpdatedDiscourseStarter {
+  treeUuid: string;
+  parentUuid: string;
+  objInText: number;
+  wordOnTablet: number;
+  childNum: number;
+}
+
+const getParentUuidPath = async (
+  uuid: string,
+  trx?: Knex.Transaction
+): Promise<string[]> => {
+  const k = trx || knexWrite();
+  const parentUuid: string | null = await k('text_discourse')
+    .select('parent_uuid')
+    .first()
+    .where({ uuid })
+    .then(row => row.parent_uuid);
+  if (parentUuid) {
+    const parentUuidPath = await getParentUuidPath(parentUuid);
+    return [parentUuid, ...parentUuidPath];
+  }
+  return [];
+};
+
+const getUpdatedDiscourse = async (
+  textUuid: string,
+  newObjectOnTablet: number,
+  trx?: Knex.Transaction
+): Promise<UpdatedDiscourseStarter> => {
+  const k = trx || knexWrite();
+
+  const discourseTreeUuid: string = await k('text_discourse')
+    .select('tree_uuid')
+    .where({ text_uuid: textUuid, type: 'discourseUnit' })
+    .first()
+    .then(row => row.tree_uuid);
+
+  const discourseWordBefore: string | null = await k('text_epigraphy')
+    .select('discourse_uuid')
+    .first()
+    .orderBy('object_on_tablet', 'desc')
+    .where({ text_uuid: textUuid })
+    .where('object_on_tablet', '<', newObjectOnTablet)
+    .whereNotNull('discourse_uuid')
+    .then(row => (row ? row.discourse_uuid : null));
+
+  const discourseWordAfter: string | null = await k('text_epigraphy')
+    .select('discourse_uuid')
+    .first()
+    .orderBy('object_on_tablet', 'asc')
+    .where({ text_uuid: textUuid })
+    .where('object_on_tablet', '>=', newObjectOnTablet)
+    .whereNotNull('discourse_uuid')
+    .then(row => (row ? row.discourse_uuid : null));
+
+  const discourseBeforePath: string[] | null = discourseWordBefore
+    ? await getParentUuidPath(discourseWordBefore, trx)
+    : null;
+  const discourseAfterPath: string[] | null = discourseWordAfter
+    ? await getParentUuidPath(discourseWordAfter, trx)
+    : null;
+
+  let newParentUuid: string;
+  if (discourseBeforePath && discourseAfterPath) {
+    // eslint-disable-next-line prefer-destructuring
+    newParentUuid = discourseBeforePath.filter(uuid =>
+      discourseAfterPath.includes(uuid)
+    )[0];
+  } else if (discourseBeforePath) {
+    newParentUuid = discourseBeforePath[discourseBeforePath.length - 1];
+  } else if (discourseAfterPath) {
+    newParentUuid = discourseAfterPath[discourseAfterPath.length - 1];
+  } else {
+    newParentUuid = await k('text_discourse')
+      .select('uuid')
+      .first()
+      .where({ text_uuid: textUuid, type: 'discourseUnit' })
+      .then(row => row.uuid);
+  }
+
+  const newObjectInText = discourseWordBefore
+    ? await k('text_discourse')
+        .select('obj_in_text')
+        .first()
+        .where({ uuid: discourseWordBefore })
+        .then(row => row.obj_in_text + 1)
+    : 2; // 1 is the discourseUnit
+
+  const newWordOnTablet = discourseWordBefore
+    ? await k('text_discourse')
+        .select('word_on_tablet')
+        .first()
+        .where({ uuid: discourseWordBefore })
+        .then(row => row.word_on_tablet + 1)
+    : 1;
+
+  const newChildNum = discourseWordBefore
+    ? await k('text_discourse')
+        .select('child_num')
+        .first()
+        .where({ parent_uuid: newParentUuid })
+        .where('obj_in_text', '<', newObjectInText)
+        .orderBy('child_num', 'desc')
+        .then(row => row.child_num + 1)
+    : 1;
+
+  return {
+    treeUuid: discourseTreeUuid,
+    parentUuid: newParentUuid,
+    objInText: newObjectInText,
+    wordOnTablet: newWordOnTablet,
+    childNum: newChildNum,
+  };
+};
+
+const recursivelyCleanDiscourseUuids = async (
+  discourseUuidsToDelete: string[],
+  textUuid: string,
+  trx?: Knex.Transaction
+): Promise<void> => {
+  const k = trx || knexWrite();
+
+  await k('text_discourse').whereIn('uuid', discourseUuidsToDelete).del();
+
+  const parentUuids: string[] = await k('text_discourse')
+    .pluck('parent_uuid')
+    .whereNotNull('parent_uuid')
+    .where({ text_uuid: textUuid });
+
+  const discourseUuidsToDeleteNext: string[] = await k('text_discourse')
+    .pluck('uuid')
+    .where({ text_uuid: textUuid })
+    .whereNot('type', 'word')
+    .whereNot('type', 'number')
+    .whereNot('type', 'discourseUnit')
+    .whereNotIn('uuid', parentUuids);
+
+  if (discourseUuidsToDeleteNext.length > 0) {
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDeleteNext,
+      textUuid,
+      trx
+    );
+  }
+};
+
 const getMarkupToAutoAdd = async (
   textUuid: string,
   newObjectOnTablet: number,
@@ -381,56 +528,15 @@ class EditTextUtils {
           .then(row => row.object_on_tablet + 1);
 
     // DISCOURSE
-    const discourseUnitRow: { uuid: string; treeUuid: string } = await k(
-      'text_discourse'
-    )
-      .select('uuid', 'tree_uuid as treeUuid')
-      .where({ text_uuid: payload.textUuid, type: 'discourseUnit' })
-      .first();
-
-    const previousDiscourseUuid: string | null = await k('text_epigraphy')
-      .select('discourse_uuid')
-      .first()
-      .orderBy('object_on_tablet', 'desc')
-      .where({ text_uuid: payload.textUuid })
-      .where('object_on_tablet', '<', newObjectOnTablet)
-      .then(row => (row ? row.discourse_uuid : null));
-
-    const previousDiscourseRow: TextDiscourseRow = await k('text_discourse')
-      .select(
-        'uuid',
-        'type',
-        'obj_in_text as objInText',
-        'word_on_tablet as wordOnTablet',
-        'child_num as childNum',
-        'text_uuid as textUuid',
-        'tree_uuid as treeUuid',
-        'parent_uuid as parentUuid',
-        'spelling_uuid as spellingUuid',
-        'spelling',
-        'explicit_spelling as explicitSpelling',
-        'transcription'
-      )
-      .first()
-      .modify(qb => {
-        if (previousDiscourseUuid) {
-          qb.where({ uuid: previousDiscourseUuid });
-        } else {
-          qb.where({ uuid: discourseUnitRow.uuid });
-        }
-      });
-
-    const lastChildBefore: number = await k('text_discourse')
-      .select('child_num')
-      .first()
-      .where({ parent_uuid: discourseUnitRow.uuid })
-      .where('obj_in_text', '<=', previousDiscourseRow.objInText)
-      .orderBy('child_num', 'desc')
-      .then(row => (row ? row.child_num : 0));
+    const newDiscourseStarter = await getUpdatedDiscourse(
+      payload.textUuid,
+      newObjectOnTablet,
+      trx
+    );
 
     await TextDiscourseDao.incrementObjInText(
       payload.textUuid,
-      previousDiscourseRow.objInText! + 1,
+      newDiscourseStarter.objInText,
       payload.row.words
         ? payload.row.words.filter(word => !!word.discourseUuid).length
         : 0,
@@ -439,9 +545,7 @@ class EditTextUtils {
 
     await TextDiscourseDao.incrementWordOnTablet(
       payload.textUuid,
-      previousDiscourseRow.wordOnTablet
-        ? previousDiscourseRow.wordOnTablet + 1
-        : 1,
+      newDiscourseStarter.wordOnTablet,
       payload.row.words
         ? payload.row.words.filter(word => !!word.discourseUuid).length
         : 0,
@@ -450,8 +554,8 @@ class EditTextUtils {
 
     await TextDiscourseDao.incrementChildNum(
       payload.textUuid,
-      discourseUnitRow.uuid,
-      lastChildBefore + 1,
+      newDiscourseStarter.parentUuid,
+      newDiscourseStarter.childNum,
       payload.row.words
         ? payload.row.words.filter(word => !!word.discourseUuid).length
         : 0,
@@ -485,16 +589,12 @@ class EditTextUtils {
             const discourseRow: TextDiscourseRow = {
               uuid: word.discourseUuid!,
               type,
-              objInText: previousDiscourseRow.objInText
-                ? previousDiscourseRow.objInText + 1 + idx
-                : 1 + idx,
-              wordOnTablet: previousDiscourseRow.wordOnTablet
-                ? previousDiscourseRow.wordOnTablet + 1 + idx
-                : 1 + idx,
-              childNum: lastChildBefore + 1 + idx,
+              objInText: newDiscourseStarter.objInText + idx,
+              wordOnTablet: newDiscourseStarter.wordOnTablet + idx,
+              childNum: newDiscourseStarter.childNum + idx,
               textUuid: payload.textUuid,
-              treeUuid: discourseUnitRow.treeUuid,
-              parentUuid: discourseUnitRow.uuid,
+              treeUuid: newDiscourseStarter.treeUuid,
+              parentUuid: newDiscourseStarter.parentUuid,
               spelling: word.spelling,
               explicitSpelling: word.spelling,
               spellingUuid,
@@ -749,73 +849,30 @@ class EditTextUtils {
           .then(row => row.object_on_tablet);
 
     // DISCOURSE
-    const discourseUnitRow: { uuid: string; treeUuid: string } = await k(
-      'text_discourse'
-    )
-      .select('uuid', 'tree_uuid as treeUuid')
-      .where({ text_uuid: payload.textUuid, type: 'discourseUnit' })
-      .first();
-
-    const previousDiscourseUuid: string | null = await k('text_epigraphy')
-      .select('discourse_uuid')
-      .first()
-      .orderBy('object_on_tablet', 'desc')
-      .where({ text_uuid: payload.textUuid })
-      .where('object_on_tablet', '<', newObjectOnTablet)
-      .then(row => (row ? row.discourse_uuid : null));
-
-    const previousDiscourseRow: TextDiscourseRow = await k('text_discourse')
-      .select(
-        'uuid',
-        'type',
-        'obj_in_text as objInText',
-        'word_on_tablet as wordOnTablet',
-        'child_num as childNum',
-        'text_uuid as textUuid',
-        'tree_uuid as treeUuid',
-        'parent_uuid as parentUuid',
-        'spelling_uuid as spellingUuid',
-        'spelling',
-        'explicit_spelling as explicitSpelling',
-        'transcription'
-      )
-      .first()
-      .modify(qb => {
-        if (previousDiscourseUuid) {
-          qb.where({ uuid: previousDiscourseUuid });
-        } else {
-          qb.where({ uuid: discourseUnitRow.uuid });
-        }
-      });
-
-    const lastChildBefore: number = await k('text_discourse')
-      .select('child_num')
-      .first()
-      .where({ parent_uuid: discourseUnitRow.uuid })
-      .where('obj_in_text', '<=', previousDiscourseRow.objInText)
-      .orderBy('child_num', 'desc')
-      .then(row => (row ? row.child_num : 0));
+    const newDiscourseStarter = await getUpdatedDiscourse(
+      payload.textUuid,
+      newObjectOnTablet,
+      trx
+    );
 
     await TextDiscourseDao.incrementObjInText(
       payload.textUuid,
-      previousDiscourseRow.objInText! + 1,
+      newDiscourseStarter.objInText,
       1,
       trx
     );
 
     await TextDiscourseDao.incrementWordOnTablet(
       payload.textUuid,
-      previousDiscourseRow.wordOnTablet
-        ? previousDiscourseRow.wordOnTablet + 1
-        : 1,
+      newDiscourseStarter.wordOnTablet,
       1,
       trx
     );
 
     await TextDiscourseDao.incrementChildNum(
       payload.textUuid,
-      discourseUnitRow.uuid,
-      lastChildBefore + 1,
+      newDiscourseStarter.parentUuid,
+      newDiscourseStarter.childNum,
       1,
       trx
     );
@@ -831,16 +888,12 @@ class EditTextUtils {
     const discourseRow: TextDiscourseRow = {
       uuid: word.discourseUuid!,
       type,
-      objInText: previousDiscourseRow.objInText
-        ? previousDiscourseRow.objInText + 1
-        : 1,
-      wordOnTablet: previousDiscourseRow.wordOnTablet
-        ? previousDiscourseRow.wordOnTablet + 1
-        : 1,
-      childNum: lastChildBefore + 1,
+      objInText: newDiscourseStarter.objInText,
+      wordOnTablet: newDiscourseStarter.wordOnTablet,
+      childNum: newDiscourseStarter.childNum,
       textUuid: payload.textUuid,
-      treeUuid: discourseUnitRow.treeUuid,
-      parentUuid: discourseUnitRow.uuid,
+      treeUuid: newDiscourseStarter.treeUuid,
+      parentUuid: newDiscourseStarter.parentUuid,
       spelling: word.spelling,
       explicitSpelling: word.spelling,
       spellingUuid: payload.spellingUuid || null,
@@ -1504,13 +1557,19 @@ class EditTextUtils {
 
     const sideNumber = convertSideToSideNumber(payload.side);
 
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .where({ text_uuid: payload.textUuid, side: sideNumber })
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
+
     // Prevents FK constraint violation
     await k('text_epigraphy')
       .where({
         text_uuid: payload.textUuid,
         side: sideNumber,
       })
-      .update({ parent_uuid: null });
+      .update({ parent_uuid: null, discourse_uuid: null });
 
     await k('text_epigraphy')
       .where({
@@ -1518,6 +1577,12 @@ class EditTextUtils {
         side: sideNumber,
       })
       .del();
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
   }
 
   async removeColumn(
@@ -1527,6 +1592,16 @@ class EditTextUtils {
     const k = trx || knexWrite();
 
     const sideNumber = convertSideToSideNumber(payload.side);
+
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        side: sideNumber,
+        column: payload.column,
+      })
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
 
     // Prevents FK constraint violation
     await k('text_epigraphy')
@@ -1549,6 +1624,12 @@ class EditTextUtils {
       .decrement('column', 1)
       .where({ text_uuid: payload.textUuid, side: sideNumber })
       .where('column', '>', payload.column);
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
   }
 
   async removeRegion(
@@ -1566,6 +1647,12 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
 
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .where({ text_uuid: payload.textUuid, line: payload.line })
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
+
     // Prevents FK constraint violation
     await k('text_epigraphy')
       .where({ text_uuid: payload.textUuid, line: payload.line })
@@ -1574,6 +1661,12 @@ class EditTextUtils {
     await k('text_epigraphy')
       .where({ text_uuid: payload.textUuid, line: payload.line })
       .del();
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
   }
 
   async removeUndeterminedLines(
@@ -1596,6 +1689,12 @@ class EditTextUtils {
       discourse_uuid: payload.discourseUuid,
     });
 
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .whereIn('uuid', uuidsToRemove)
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
+
     await k('text_epigraphy')
       .whereIn('uuid', uuidsToRemove)
       .update({ discourse_uuid: null });
@@ -1608,6 +1707,12 @@ class EditTextUtils {
         discourse_uuid: payload.discourseUuid,
       })
       .del();
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
 
     const numUnitsOnLine = await k('text_epigraphy')
       .count({ count: 'uuid' })
@@ -1635,6 +1740,25 @@ class EditTextUtils {
       .first()
       .where({ uuid: payload.uuid })
       .then(row => (row ? row.discourse_uuid : null));
+
+    const signsInWord: string[] = discourseUuid
+      ? await k('text_epigraphy')
+          .pluck('uuid')
+          .where({ discourse_uuid: discourseUuid })
+      : [];
+
+    if (signsInWord.length === 1 && discourseUuid) {
+      await this.removeWord(
+        {
+          type: 'removeWord',
+          textUuid: payload.textUuid,
+          discourseUuid,
+          line: payload.line,
+        },
+        trx
+      );
+      return;
+    }
 
     await k('text_epigraphy')
       .where({ uuid: payload.uuid })
