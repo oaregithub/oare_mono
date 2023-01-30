@@ -288,7 +288,6 @@ const createEpigraphyRows = async (
     textUuid,
     treeUuid,
     objectOnTablet: 1,
-    column: 0,
   });
 
   const sideRows: TextEpigraphyRow[] = await createSideRows(
@@ -317,7 +316,6 @@ const createSideRows = async (
           treeUuid,
           parentUuid,
           side: side.number,
-          column: 0,
         });
 
         const columnRows: TextEpigraphyRow[] = await createColumnRows(
@@ -344,36 +342,26 @@ const createColumnRows = async (
   const columnRows: TextEpigraphyRow[] = (
     await Promise.all(
       columns.map(async (column, idx) => {
-        let columnRow: TextEpigraphyRow | null = null;
-        if (columns.length > 1) {
-          columnRow = await createTextEpigraphyRow({
-            uuid: column.uuid,
-            type: 'column',
-            textUuid,
-            treeUuid,
-            parentUuid,
-            side: sideNumber,
-            column: idx + 1,
-          });
-        }
-
-        const parentUuidForChildren =
-          columns.length > 1 ? column.uuid : parentUuid;
-        const columnNumber = columns.length > 1 ? idx + 1 : 0;
+        const columnRow = await createTextEpigraphyRow({
+          uuid: column.uuid,
+          type: 'column',
+          textUuid,
+          treeUuid,
+          parentUuid,
+          side: sideNumber,
+          column: idx + 1,
+        });
 
         const editorRows: TextEpigraphyRow[] = await createEditorRows(
           textUuid,
           treeUuid,
-          parentUuidForChildren,
+          column.uuid,
           sideNumber,
-          columnNumber,
+          idx + 1,
           column.rows
         );
 
-        if (columnRow) {
-          return [columnRow, ...editorRows];
-        }
-        return [...editorRows];
+        return [columnRow, ...editorRows];
       })
     )
   ).flat();

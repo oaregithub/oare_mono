@@ -68,12 +68,6 @@ class TextEpigraphyDao {
         'text_discourse.uuid'
       )
       .where('text_epigraphy.text_uuid', textUuid)
-      .andWhere(function () {
-        this.whereNot('text_epigraphy.char_on_tablet', null);
-        this.orWhere('text_epigraphy.type', 'region');
-        this.orWhere('text_epigraphy.type', 'section');
-        this.orWhere('text_epigraphy.type', 'undeterminedLines');
-      })
       .select(
         'text_epigraphy.uuid',
         'text_epigraphy.side',
@@ -109,13 +103,8 @@ class TextEpigraphyDao {
       trx
     );
 
-    const epigraphicUnitRowsWithSections = convertEpigraphicUnitRows(
-      units,
-      markupUnits
-    );
-    const epigraphicUnits = epigraphicUnitRowsWithSections.filter(
-      unit => unit.epigType !== 'section'
-    );
+    const epigraphicUnits = convertEpigraphicUnitRows(units, markupUnits);
+
     return epigraphicUnits;
   }
 
@@ -502,6 +491,23 @@ class TextEpigraphyDao {
       .then(row => row.line);
 
     return line;
+  }
+
+  async incrementObjectOnTablet(
+    textUuid: string,
+    objectOnTablet: number | null,
+    amount: number,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    if (objectOnTablet) {
+      await k('text_epigraphy')
+        .where({
+          text_uuid: textUuid,
+        })
+        .andWhere('object_on_tablet', '>=', objectOnTablet)
+        .increment('object_on_tablet', amount);
+    }
   }
 }
 

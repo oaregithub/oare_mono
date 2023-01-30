@@ -9,6 +9,7 @@ import {
   LinkRow,
   EpigraphyLabelLink,
   InsertItemPropertyRow,
+  EditTextPayload,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -130,6 +131,10 @@ async function getLinkedSeal(
   return data;
 }
 
+async function editText(payload: EditTextPayload): Promise<void> {
+  await axios.post('/text_epigraphies/edit_text', payload);
+}
+
 export default {
   getEpigraphicInfo,
   getImageLinks,
@@ -144,4 +149,5 @@ export default {
   getResourceObject,
   hasEpigraphy,
   getLinkedSeal,
+  editText,
 };

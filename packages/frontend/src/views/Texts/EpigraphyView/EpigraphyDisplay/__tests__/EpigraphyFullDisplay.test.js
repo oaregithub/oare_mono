@@ -47,15 +47,53 @@ describe('EpigraphyFullDisplay View', () => {
 
   const mostEpigraphicUnits = [
     {
-      charOnLine: 4,
-      charOnTablet: 4,
-      column: 0,
+      charOnLine: null,
+      charOnTablet: null,
+      column: null,
+      discourseUuid: null,
+      epigReading: null,
+      epigType: 'section',
+      line: null,
+      markups: [],
+      objOnTablet: 1,
+      reading: null,
+      readingUuid: null,
+      side: 'obv.',
+      signUuid: null,
+      type: null,
+      uuid: 'test-uuid',
+      value: null,
+      spellingUuid: null,
+    },
+    {
+      charOnLine: null,
+      charOnTablet: null,
+      column: 1,
+      discourseUuid: null,
+      epigReading: null,
+      epigType: 'column',
+      line: null,
+      markups: [],
+      objOnTablet: 2,
+      reading: null,
+      readingUuid: null,
+      side: 'obv.',
+      signUuid: null,
+      type: null,
+      uuid: 'test-uuid',
+      value: null,
+      spellingUuid: null,
+    },
+    {
+      charOnLine: 1,
+      charOnTablet: 1,
+      column: 1,
       discourseUuid: 'test-discourse-uuid',
       epigReading: 'GIN',
       epigType: 'sign',
       line: 1,
       markups: [],
-      objOnTablet: null,
+      objOnTablet: 3,
       reading: 'GIN',
       readingUuid: 'test-reading-uuid',
       side: 'obv.',
@@ -63,6 +101,7 @@ describe('EpigraphyFullDisplay View', () => {
       type: 'logogram',
       uuid: 'test-uuid',
       value: 'GIN',
+      spellingUuid: 'test-spelling-uuid',
     },
   ];
 
@@ -114,18 +153,16 @@ describe('EpigraphyFullDisplay View', () => {
   it('display epigraphy reading dialog when word is selected', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    const readings = await wrapper.get('.test-epigraphies');
+    const readings = wrapper.get('.test-epigraphies');
     expect(readings.html()).toContain('GIN');
     expect(mockActions.showSnackbar).not.toHaveBeenCalled();
 
-    let dialogExists = await wrapper
-      .find('.test-rendering-word-dialog')
-      .exists();
+    let dialogExists = wrapper.find('.test-rendering-word-dialog').exists();
     expect(dialogExists).toBe(false);
     await readings.findAll('.test-rendered-word').at(0).trigger('click');
     await flushPromises();
 
-    dialogExists = await wrapper.find('.test-rendering-word-dialog').exists();
+    dialogExists = wrapper.find('.test-rendering-word-dialog').exists();
     expect(dialogExists).toBe(true);
   });
 
@@ -243,6 +280,12 @@ describe('EpigraphyFullDisplay View', () => {
       epigraphicUnits: [
         {
           ...mostEpigraphicUnits[0],
+        },
+        {
+          ...mostEpigraphicUnits[1],
+        },
+        {
+          ...mostEpigraphicUnits[2],
           discourseUuid: null,
         },
       ],
