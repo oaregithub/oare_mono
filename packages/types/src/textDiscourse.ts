@@ -10,11 +10,7 @@ export type DiscourseUnitType =
   | 'number'
   | 'word'
   | 'paragraph'
-  | 'clause'
-  | 'heading'
-  | 'stitch'
-  | 'morpheme'
-  | null;
+  | 'clause';
 
 export interface DiscourseUnit {
   uuid: string;

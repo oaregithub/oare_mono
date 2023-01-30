@@ -47,8 +47,8 @@ async function indexText(knex: Knex, { textUuid, textName }: TextRow) {
   renderer.lines.forEach(line => {
     const lineReading = renderer.lineReading(line);
     const signReadingUuids = units
-      .filter(unit => unit.line === line)
-      .map(unit => unit.readingUuid);
+      .filter(unit => unit.line === line && unit.readingUuid)
+      .map(unit => unit.readingUuid!);
 
     const lineIndexes = getLineIndexes(signReadingUuids);
     rows = rows.concat(

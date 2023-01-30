@@ -66,6 +66,7 @@ import SignListView from '../views/Signs/index.vue';
 import AnalyticsView from '../views/Admin/Analytics/Analytics.vue';
 import SealsView from '../views/Seals/SealList.vue';
 import SealView from '../views/Seals/SingleSeal.vue';
+import EditText from '../views/Texts/EpigraphyView/EditText/index.vue';
 import PeriodsView from '../views/Periods/Periods.vue';
 
 const routes: RouteConfig[] = [
@@ -185,7 +186,7 @@ const routes: RouteConfig[] = [
     children: [
       {
         name: 'epigraphyEditor',
-        path: 'edit',
+        path: 'draft',
         component: EpigraphyEditor,
         props: true,
       },
@@ -478,6 +479,12 @@ const routes: RouteConfig[] = [
     component: SealView,
     props: true,
     beforeEnter: permissionGuard('SEALS'),
+  },
+  {
+    path: '/edit_text/:textUuid',
+    name: 'editText',
+    component: EditText,
+    props: true,
   },
   {
     path: '/periods',

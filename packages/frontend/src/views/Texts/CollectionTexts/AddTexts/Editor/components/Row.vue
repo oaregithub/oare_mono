@@ -62,12 +62,13 @@
           </v-row>
           <v-row class="pa-0 ma-0">
             <v-textarea
-              placeholder="Enter line text here"
+              placeholder="Enter text here"
               auto-grow
               dense
               rows="1"
               class="mx-1 mt-0 mb-n5 hide-line test-line-text"
               :autofocus="autofocus"
+              :outlined="outlined"
               @keydown.enter.prevent
               @keyup.enter="$emit('add-row-after')"
               @input="updateText($event)"
@@ -79,7 +80,10 @@
               ref="textareaRef"
             />
           </v-row>
-          <v-container v-if="markupErrors.length > 0" class="pa-0 ma-0 my-2">
+          <v-container
+            v-if="markupErrors.length > 0 && !restrictToSign && !restrictToWord"
+            class="pa-0 ma-0 my-2"
+          >
             <v-row
               v-for="(error, idx) in markupErrors"
               :key="idx"
@@ -91,6 +95,20 @@
                 <b v-if="error.text">{{ error.text }}</b>
               </span>
             </v-row>
+          </v-container>
+          <v-container v-if="hasWordRestrictionError" class="pa-0 ma-0 my-2">
+            <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
+            <span class="red--text"
+              >Only one word can be entered with no markup. Please remove all
+              whitespace and markup characters and try again.
+            </span>
+          </v-container>
+          <v-container v-if="hasSignRestrictionError" class="pa-0 ma-0 my-2">
+            <v-icon small color="red" class="ma-1">mdi-block-helper</v-icon>
+            <span class="red--text"
+              >Only one sign can be entered with no markup. Please remove all
+              separator and markup characters and try again.
+            </span>
           </v-container>
         </v-container>
         <v-row
@@ -150,7 +168,7 @@
         </v-row>
         <span v-else class="my-1">{{ row.type }}</span>
       </v-col>
-      <v-col cols="1" class="pa-0" align="right">
+      <v-col v-if="showDeleteButton" cols="1" class="pa-0" align="right">
         <v-btn @click="$emit('remove-row')" icon x-small class="ma-1">
           <v-icon :color="hover ? 'red' : 'transparent'">mdi-delete</v-icon>
         </v-btn>
@@ -202,6 +220,22 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    showDeleteButton: {
+      type: Boolean,
+      default: true,
+    },
+    outlined: {
+      type: Boolean,
+      default: false,
+    },
+    restrictToWord: {
+      type: Boolean,
+      default: false,
+    },
+    restrictToSign: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: { SpecialChars },
   setup(props, { emit }) {
@@ -211,6 +245,8 @@ export default defineComponent({
     const textareaRef = ref();
 
     const markupErrors = ref<EditorMarkupError[]>([]);
+    const hasWordRestrictionError = ref(false);
+    const hasSignRestrictionError = ref(false);
 
     const formatLineNumber = (row: RowWithLine) => {
       if ((!row.lineValue && row.line) || (row.line && row.lineValue === 1)) {
@@ -293,6 +329,27 @@ export default defineComponent({
     };
 
     const updateText = async (text: string) => {
+      if (
+        props.restrictToWord &&
+        (text.match(/\s/) ||
+          text.match(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/))
+      ) {
+        hasWordRestrictionError.value = true;
+      } else {
+        hasWordRestrictionError.value = false;
+      }
+
+      if (
+        props.restrictToSign &&
+        (text.match(/\s/) ||
+          text.match(/[\-.\+%]+/) ||
+          text.match(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/))
+      ) {
+        hasSignRestrictionError.value = true;
+      } else {
+        hasSignRestrictionError.value = false;
+      }
+
       const newRows = text.split('\n');
       emit('update-row-content', {
         ...props.row,
@@ -448,7 +505,10 @@ export default defineComponent({
         }
       );
 
-      const hasErrors = markupErrors.value.length > 0;
+      const hasErrors =
+        markupErrors.value.length > 0 ||
+        hasWordRestrictionError.value === true ||
+        hasSignRestrictionError.value === true;
 
       emit('update-row-content', {
         ...props.row,
@@ -553,6 +613,8 @@ export default defineComponent({
       setFocused,
       setSealImpressionReading,
       markupErrors,
+      hasWordRestrictionError,
+      hasSignRestrictionError,
     };
   },
 });

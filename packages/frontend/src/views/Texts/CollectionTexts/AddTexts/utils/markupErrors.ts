@@ -434,7 +434,7 @@ export const getMarkupContextErrors = async (
     errors.push({
       text: word,
       error:
-        'Undetermined signs of an unknown quantity can only be found within areas marked as damaged, partially damaged, or erasures: ',
+        'Broken signs of an unknown quantity can only be found within areas marked as damaged, partially damaged, or erasures: ',
     })
   );
 

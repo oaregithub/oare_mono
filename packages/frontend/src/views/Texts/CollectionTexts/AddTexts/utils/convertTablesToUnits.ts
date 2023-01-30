@@ -1,27 +1,10 @@
 import {
   CreateTextTables,
   EpigraphicUnit,
-  EpigraphicUnitSide,
   TextDiscourseRow,
   MarkupUnit,
 } from '@oare/types';
-
-export const getSideNumber = (number: number | null): EpigraphicUnitSide => {
-  switch (number) {
-    case 1:
-      return 'obv.';
-    case 2:
-      return 'lo.e.';
-    case 3:
-      return 'rev.';
-    case 4:
-      return 'u.e.';
-    case 5:
-      return 'le.e.';
-    default:
-      return 'r.e.';
-  }
-};
+import { convertSideNumberToSide } from '@oare/oare';
 
 export const convertTablesToUnits = (
   tables: CreateTextTables
@@ -65,26 +48,20 @@ export const convertTablesToUnits = (
     altReadingUuid: markup.altReadingUuid,
   }));
 
-  const relevantEpigraphyRows = tables.epigraphies.filter(
-    epigraphy =>
-      epigraphy.charOnTablet ||
-      epigraphy.type === 'region' ||
-      epigraphy.type === 'undeterminedLines'
-  );
-
-  const initalUnits: EpigraphicUnit[] = relevantEpigraphyRows.map(epigraphy => {
+  const initalUnits: EpigraphicUnit[] = tables.epigraphies.map(epigraphy => {
     const relevantSignInfo = tables.signInfo.filter(
       sign => sign.referenceUuid === epigraphy.uuid
     );
     const relevantSign =
       relevantSignInfo.length > 0 ? relevantSignInfo[0] : null;
+
     const unit: EpigraphicUnit = {
       uuid: epigraphy.uuid,
-      side: getSideNumber(epigraphy.side),
-      column: epigraphy.column || 0,
-      line: epigraphy.line || 0,
-      charOnLine: epigraphy.charOnLine || 0,
-      charOnTablet: epigraphy.charOnTablet || 0,
+      side: epigraphy.side ? convertSideNumberToSide(epigraphy.side) : null,
+      column: epigraphy.column,
+      line: epigraphy.line,
+      charOnLine: epigraphy.charOnLine,
+      charOnTablet: epigraphy.charOnTablet,
       objOnTablet: epigraphy.objectOnTablet || 0,
       discourseUuid: epigraphy.discourseUuid,
       reading: epigraphy.reading,
@@ -94,8 +71,8 @@ export const convertTablesToUnits = (
       markups: markupUnits.filter(
         markup => markup.referenceUuid === epigraphy.uuid
       ),
-      readingUuid: epigraphy.readingUuid || '',
-      signUuid: epigraphy.signUuid || '',
+      readingUuid: epigraphy.readingUuid,
+      signUuid: epigraphy.signUuid,
       spellingUuid: getSpellingUuid(tables.discourses, epigraphy.discourseUuid),
     };
     return unit;
