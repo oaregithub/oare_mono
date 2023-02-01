@@ -2,7 +2,7 @@
   <oare-dialog
     :value="value"
     @input="$emit('input', $event)"
-    title="Edit Region"
+    :title="dialogTitle"
     :persistent="false"
     :submitLoading="editRegionLoading"
     :submitDisabled="!formComplete"
@@ -79,7 +79,7 @@ import {
 } from '@vue/composition-api';
 import { TabletRenderer } from '@oare/oare';
 import sl from '@/serviceLocator';
-import { EditRegionPayload, MarkupType } from '@oare/types';
+import { EditRegionPayload, MarkupType, EditTextAction } from '@oare/types';
 
 export default defineComponent({
   props: {
@@ -99,6 +99,10 @@ export default defineComponent({
       type: Object as PropType<TabletRenderer>,
       required: true,
     },
+    regionType: {
+      type: String as PropType<MarkupType>,
+      required: true,
+    },
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -110,7 +114,7 @@ export default defineComponent({
       try {
         editRegionLoading.value = true;
 
-        if (!formComplete.value || !regionType.value) {
+        if (!formComplete.value) {
           throw new Error('Edit region form is not complete.');
         }
 
@@ -119,11 +123,27 @@ export default defineComponent({
           throw new Error('No region unit found for line.');
         }
 
+        let type: EditTextAction;
+        switch (props.regionType) {
+          case 'broken':
+            type = 'editRegionBroken';
+            break;
+          case 'ruling':
+            type = 'editRegionRuling';
+            break;
+          case 'isSealImpression':
+            type = 'editRegionSealImpression';
+            break;
+          default:
+            type = 'editRegionUninscribed';
+            break;
+        }
+
         const payload: EditRegionPayload = {
-          type: 'editRegion',
+          type,
           textUuid: props.textUuid,
           uuid: regionUnit.uuid,
-          regionType: regionType.value,
+          regionType: props.regionType,
           regionValue: regionValue.value,
           regionLabel: regionLabel.value,
         };
@@ -144,21 +164,20 @@ export default defineComponent({
 
     const formComplete = computed(() => {
       if (
-        regionType.value === 'ruling' ||
-        regionType.value === 'uninscribed' ||
-        regionType.value === 'broken'
+        props.regionType === 'ruling' ||
+        props.regionType === 'uninscribed' ||
+        props.regionType === 'broken'
       ) {
         return (
           !!regionValue.value && regionValue.value !== originalRegionValue.value
         );
       }
-      if (regionType.value === 'isSealImpression') {
+      if (props.regionType === 'isSealImpression') {
         return regionLabel.value !== originalRegionLabel.value;
       }
       return false;
     });
 
-    const regionType = ref<MarkupType>();
     const originalRegionValue = ref<number>();
     const regionValue = ref<number>();
     const originalRegionLabel = ref<string>();
@@ -172,15 +191,13 @@ export default defineComponent({
           throw new Error('No region unit found for line.');
         }
 
-        regionType.value = regionUnit.markups[0].type;
-
         if (
-          regionType.value === 'ruling' ||
-          regionType.value === 'uninscribed'
+          props.regionType === 'ruling' ||
+          props.regionType === 'uninscribed'
         ) {
           originalRegionValue.value = regionUnit.markups[0].value || undefined;
           regionValue.value = regionUnit.markups[0].value || undefined;
-        } else if (regionType.value === 'isSealImpression') {
+        } else if (props.regionType === 'isSealImpression') {
           originalRegionLabel.value = regionUnit.reading || undefined;
           regionLabel.value = regionUnit.reading || undefined;
         }
@@ -209,17 +226,30 @@ export default defineComponent({
 
     const numberedOptions = ref([1, 2, 3, 4, 5, 6, 7, 8]);
 
+    const dialogTitle = computed(() => {
+      switch (props.regionType) {
+        case 'broken':
+          return 'Convert Broken Area To Broken Line(s)';
+        case 'ruling':
+          return 'Edit Ruling';
+        case 'isSealImpression':
+          return 'Edit Seal Impression';
+        default:
+          return 'Edit Uninscribed Line(s)';
+      }
+    });
+
     return {
       editRegionLoading,
       editRegion,
       formComplete,
-      regionType,
       rulingOptions,
       regionValue,
       regionLabel,
       numberedOptions,
       originalRegionValue,
       originalRegionLabel,
+      dialogTitle,
     };
   },
 });

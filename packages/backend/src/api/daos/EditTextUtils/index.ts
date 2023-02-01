@@ -486,10 +486,26 @@ class EditTextUtils {
 
     await TextEpigraphyDao.insertEpigraphyRow(epigraphyRow, trx);
 
+    let regionType: MarkupType;
+    switch (payload.type) {
+      case 'addRegionBroken':
+        regionType = 'broken';
+        break;
+      case 'addRegionRuling':
+        regionType = 'ruling';
+        break;
+      case 'addRegionSealImpression':
+        regionType = 'isSealImpression';
+        break;
+      default:
+        regionType = 'uninscribed';
+        break;
+    }
+
     const markupRow: TextMarkupRow = {
       uuid: v4(),
       referenceUuid: epigraphyRow.uuid,
-      type: payload.regionType,
+      type: regionType,
       numValue: payload.regionValue || null,
       altReadingUuid: null,
       altReading: null,

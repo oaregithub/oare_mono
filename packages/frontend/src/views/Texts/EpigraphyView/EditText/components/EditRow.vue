@@ -16,7 +16,16 @@
       >
 
       <v-btn
-        v-if="currentEditAction === 'removeRegion' && renderer.isRegion(line)"
+        v-if="
+          (currentEditAction === 'removeRegionBroken' &&
+            renderer.isRegionType(line, 'broken')) ||
+          (currentEditAction === 'removeRegionRuling' &&
+            renderer.isRegionType(line, 'ruling')) ||
+          (currentEditAction === 'removeRegionSealImpression' &&
+            renderer.isRegionType(line, 'isSealImpression')) ||
+          (currentEditAction === 'removeRegionUninscribed' &&
+            renderer.isRegionType(line, 'uninscribed'))
+        "
         icon
         color="red"
         small
@@ -61,8 +70,14 @@
             :class="{
               'blue-line-under cursor-display':
                 hover &&
-                ((currentEditAction === 'editRegion' &&
-                  renderer.isRegion(line)) ||
+                ((currentEditAction === 'editRegionBroken' &&
+                  renderer.isRegionType(line, 'broken')) ||
+                  (currentEditAction === 'editRegionRuling' &&
+                    renderer.isRegionType(line, 'ruling')) ||
+                  (currentEditAction === 'editRegionSealImpression' &&
+                    renderer.isRegionType(line, 'isSealImpression')) ||
+                  (currentEditAction === 'editRegionUninscribed' &&
+                    renderer.isRegionType(line, 'uninscribed')) ||
                   (currentEditAction === 'editUndeterminedLines' &&
                     renderer.isUndetermined(line))),
             }"
@@ -143,13 +158,15 @@
 
     <oare-dialog
       v-model="removeRegionDialog"
-      :title="`Remove region?`"
+      :title="removeRegionDialogText.title"
       submitText="Yes"
       cancelText="No"
       :persistent="false"
       @submit="removeRegion"
       :submitLoading="editTextLoading"
-      >Are you sure you want to remove this region?</oare-dialog
+      >{{
+        `Are you sure you want to remove this ${removeRegionDialogText.item}?`
+      }}</oare-dialog
     >
 
     <oare-dialog
@@ -209,6 +226,7 @@
       :line="regionLineToEdit"
       :textUuid="textUuid"
       :renderer="renderer"
+      :regionType="regionType"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -292,6 +310,7 @@ import {
   ref,
   watch,
   computed,
+  ComputedRef,
 } from '@vue/composition-api';
 import { TabletRenderer } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
@@ -306,6 +325,7 @@ import {
   RemoveDividerPayload,
   EpigraphicUnitSide,
   AddDividerPayload,
+  MarkupType,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import RemoveSignDialog from './RemoveSignDialog.vue';
@@ -410,6 +430,30 @@ export default defineComponent({
       }
     });
 
+    const removeRegionDialogText: ComputedRef<{ title: string; item: string }> =
+      computed(() => {
+        if (props.currentEditAction === 'removeRegionBroken') {
+          return {
+            title: 'Remove Broken Area?',
+            item: 'broken area',
+          };
+        } else if (props.currentEditAction === 'removeRegionRuling') {
+          return {
+            title: 'Remove Ruling?',
+            item: 'ruling',
+          };
+        } else if (props.currentEditAction === 'removeRegionSealImpression') {
+          return {
+            title: 'Remove Seal Impression?',
+            item: 'seal impression',
+          };
+        } else {
+          return {
+            title: 'Remove Uninscribed Line(s)?',
+            item: 'uninscribed line(s)',
+          };
+        }
+      });
     const removeRegionDialog = ref(false);
     const removeRegion = async () => {
       try {
@@ -420,8 +464,17 @@ export default defineComponent({
             'Cannot remove region with more than one unit on line.'
           );
         }
+        if (
+          props.currentEditAction !== 'removeRegionBroken' &&
+          props.currentEditAction !== 'removeRegionRuling' &&
+          props.currentEditAction !== 'removeRegionSealImpression' &&
+          props.currentEditAction !== 'removeRegionUninscribed'
+        ) {
+          throw new Error('Cannot remove region with invalid action.');
+        }
+
         const payload: RemoveRegionPayload = {
-          type: 'removeRegion',
+          type: props.currentEditAction,
           textUuid: props.textUuid,
           uuid: unitsOnLine[0].uuid,
         };
@@ -604,14 +657,25 @@ export default defineComponent({
       }
     };
 
+    const regionType = ref<MarkupType>();
     const handleRegionClick = (line: number) => {
-      if (props.currentEditAction === 'editRegion') {
-        regionLineToEdit.value = line;
-        editRegionDialog.value = true;
+      if (props.currentEditAction === 'editRegionBroken') {
+        setupEditRegionDialog(line, 'broken');
+      } else if (props.currentEditAction === 'editRegionRuling') {
+        setupEditRegionDialog(line, 'ruling');
+      } else if (props.currentEditAction === 'editRegionSealImpression') {
+        setupEditRegionDialog(line, 'isSealImpression');
+      } else if (props.currentEditAction === 'editRegionUninscribed') {
+        setupEditRegionDialog(line, 'uninscribed');
       } else if (props.currentEditAction === 'editUndeterminedLines') {
         undeterminedLinesToEdit.value = line;
         editUndeterminedLinesDialog.value = true;
       }
+    };
+    const setupEditRegionDialog = (line: number, type: MarkupType) => {
+      regionLineToEdit.value = line;
+      regionType.value = type;
+      editRegionDialog.value = true;
     };
 
     const editRegionDialog = ref(false);
@@ -619,6 +683,7 @@ export default defineComponent({
     watch(editRegionDialog, () => {
       if (!editRegionDialog.value) {
         regionLineToEdit.value = undefined;
+        regionType.value = undefined;
         resetCurrentEditAction();
       }
     });
@@ -778,6 +843,8 @@ export default defineComponent({
       addDividerDialog,
       addDividerPreviousWord,
       addDivider,
+      removeRegionDialogText,
+      regionType,
     };
   },
 });
