@@ -422,7 +422,10 @@ export interface DiscourseSpelling {
 export type EditTextAction =
   | 'addSide'
   | 'addColumn'
-  | 'addRegion'
+  | 'addRegionBroken'
+  | 'addRegionRuling'
+  | 'addRegionSealImpression'
+  | 'addRegionUninscribed'
   | 'addLine'
   | 'addUndeterminedLines'
   | 'addWord'
@@ -431,22 +434,26 @@ export type EditTextAction =
   | 'addDivider'
   | 'editSide'
   | 'editColumn'
-  | 'editRegion'
+  | 'editRegionBroken'
+  | 'editRegionRuling'
+  | 'editRegionSealImpression'
+  | 'editRegionUninscribed'
   | 'editUndeterminedLines'
   | 'editSign'
   | 'editUndeterminedSigns'
   | 'editDivider'
   | 'splitLine'
   | 'splitWord'
-  | 'splitSign'
   | 'mergeLine'
   | 'mergeWord'
-  | 'mergeSign'
   | 'reorderSign'
   | 'cleanLine'
   | 'removeSide'
   | 'removeColumn'
-  | 'removeRegion'
+  | 'removeRegionBroken'
+  | 'removeRegionRuling'
+  | 'removeRegionSealImpression'
+  | 'removeRegionUninscribed'
   | 'removeLine'
   | 'removeUndeterminedLines'
   | 'removeWord'
@@ -471,10 +478,13 @@ export interface AddColumnPayload extends EditTextPayloadBase {
 }
 
 export interface AddRegionPayload extends EditTextPayloadBase {
-  type: 'addRegion';
+  type:
+    | 'addRegionBroken'
+    | 'addRegionRuling'
+    | 'addRegionSealImpression'
+    | 'addRegionUninscribed';
   side: EpigraphicUnitSide;
   column: number;
-  regionType: MarkupType;
   regionValue?: number;
   regionLabel?: string;
   previousObjectOnTablet?: number;
@@ -552,7 +562,11 @@ export interface EditColumnPayload extends EditTextPayloadBase {
 }
 
 export interface EditRegionPayload extends EditTextPayloadBase {
-  type: 'editRegion';
+  type:
+    | 'editRegionBroken'
+    | 'editRegionRuling'
+    | 'editRegionSealImpression'
+    | 'editRegionUninscribed';
   uuid: string;
   regionType: MarkupType;
   regionValue?: number;
@@ -588,7 +602,11 @@ export interface RemoveColumnPayload extends EditTextPayloadBase {
 }
 
 export interface RemoveRegionPayload extends EditTextPayloadBase {
-  type: 'removeRegion';
+  type:
+    | 'removeRegionBroken'
+    | 'removeRegionRuling'
+    | 'removeRegionSealImpression'
+    | 'removeRegionUninscribed';
   uuid: string;
 }
 

@@ -645,7 +645,12 @@ router
           await EditTextUtils.addSide(payload, trx);
         } else if (payload.type === 'addColumn') {
           await EditTextUtils.addColumn(payload, trx);
-        } else if (payload.type === 'addRegion') {
+        } else if (
+          payload.type === 'addRegionBroken' ||
+          payload.type === 'addRegionRuling' ||
+          payload.type === 'addRegionSealImpression' ||
+          payload.type === 'addRegionUninscribed'
+        ) {
           await EditTextUtils.addRegion(payload, trx);
         } else if (payload.type === 'addLine') {
           await EditTextUtils.addLine(payload, trx);
@@ -663,7 +668,12 @@ router
           await EditTextUtils.editSide(payload, trx);
         } else if (payload.type === 'editColumn') {
           await EditTextUtils.editColumn(payload, trx);
-        } else if (payload.type === 'editRegion') {
+        } else if (
+          payload.type === 'editRegionBroken' ||
+          payload.type === 'editRegionRuling' ||
+          payload.type === 'editRegionSealImpression' ||
+          payload.type === 'editRegionUninscribed'
+        ) {
           await EditTextUtils.editRegion(payload, trx);
         } else if (payload.type === 'editUndeterminedLines') {
           await EditTextUtils.editUndeterminedLines(payload, trx);
@@ -673,7 +683,12 @@ router
           await EditTextUtils.removeSide(payload, trx);
         } else if (payload.type === 'removeColumn') {
           await EditTextUtils.removeColumn(payload, trx);
-        } else if (payload.type === 'removeRegion') {
+        } else if (
+          payload.type === 'removeRegionBroken' ||
+          payload.type === 'removeRegionRuling' ||
+          payload.type === 'removeRegionSealImpression' ||
+          payload.type === 'removeRegionUninscribed'
+        ) {
           await EditTextUtils.removeRegion(payload, trx);
         } else if (payload.type === 'removeLine') {
           await EditTextUtils.removeLine(payload, trx);

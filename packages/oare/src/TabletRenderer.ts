@@ -158,6 +158,14 @@ export default class TabletRenderer {
     return unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region';
   }
 
+  public isRegionType(lineNum: number, type: MarkupType): boolean {
+    if (!this.isRegion(lineNum)) {
+      return false;
+    }
+    const unitsOnLine = this.getUnitsOnLine(lineNum);
+    return unitsOnLine[0].markups.some(unit => unit.type === type);
+  }
+
   public isUndetermined(lineNum: number): boolean {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
     return (
