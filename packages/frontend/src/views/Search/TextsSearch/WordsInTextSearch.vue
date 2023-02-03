@@ -34,21 +34,18 @@
                 </h4>
                 <v-autocomplete
                   v-model="dictItemSelectionUuids[index - 1]"
-                  :items="items"
+                  :items="getAutocompleteItems(index)"
                   item-text="display"
-                  item-value="info"
+                  return-object
                   clearable
                   deletable-chips
                   chips
                   multiple
-                  :filter="filter"
+                  no-filter
                   hide-selected
-                  @change="
-                    getDictItems(dictItemSelectionUuids[index - 1], index - 1);
-                    dictItemSelectionUuids[index - 1].length < 1
-                      ? expand.splice(index - 1, 1, false)
-                      : expand.splice(index - 1, 1, true);
-                  "
+                  :search-input.sync="queryText[`queryText${index}`]"
+                  @change="updateAutocomplete(index)"
+                  @focus="setActiveIndex(index)"
                   item-color="primary"
                   :label="`word/form/spelling #${index}`"
                 >
@@ -235,6 +232,7 @@ import {
   onMounted,
   watch,
   computed,
+  reactive,
 } from '@vue/composition-api';
 import {
   DictItemAutocompleteInfo,
@@ -250,6 +248,7 @@ import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vu
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
 import AddProperties from '@/components/Properties/AddProperties.vue';
+import _ from 'lodash';
 
 export interface DictItemWordsInTextSearch {
   name: string;
@@ -272,6 +271,7 @@ export default defineComponent({
   },
   setup() {
     const items: Ref<DictItemAutocompleteDisplay[]> = ref([]);
+    const filteredItems: Ref<DictItemAutocompleteDisplay[]> = ref([]);
     const searchItems: Ref<WordsInTextSearchPayloadItem[]> = ref([
       {
         uuids: [],
@@ -290,12 +290,22 @@ export default defineComponent({
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
     const total = ref(0);
     const checkboxAll: Ref<{ [uuid: string]: boolean }> = ref({});
-    const dictItemSelectionUuids: Ref<DictItemAutocompleteInfo[][]> = ref([]);
+    const dictItemSelectionUuids: Ref<DictItemAutocompleteDisplay[][]> = ref(
+      []
+    );
     const expand: Ref<Boolean[]> = ref([]);
     const useParse: Ref<{ [index: number]: boolean }> = ref({});
     const dictItems: Ref<DictItemWordsInTextSearch[][]> = ref([]);
     const sequenced = useQueryParam('sequenced', 'true', true);
     const mode: Ref<string> = ref(sequenced.value);
+    const queryText: { [key: string]: string | null } = reactive({
+      ['queryText1']: '',
+      ['queryText2']: '',
+      ['queryText3']: '',
+      ['queryText4']: '',
+      ['queryText5']: '',
+    });
+    const activeIndex = ref(0);
 
     const wordsBetween = ref([
       { name: '0', value: 0 },
@@ -393,6 +403,60 @@ export default defineComponent({
       }
     };
 
+    const filterItems = (
+      item: DictItemAutocompleteDisplay,
+      queryText: string
+    ) => {
+      let itemTextClean = item.info.name.toLocaleLowerCase();
+      const queryTextClean = queryText.toLocaleLowerCase();
+      if (
+        itemTextClean.includes(queryTextClean) &&
+        Math.abs(itemTextClean.length - queryTextClean.length) < 3
+      ) {
+        return item;
+      }
+      const track = Array(itemTextClean.length + 1)
+        .fill(null)
+        .map(() => Array(queryTextClean.length + 1).fill(null));
+      for (let i = 0; i <= queryTextClean.length; i += 1) {
+        track[0][i] = i;
+      }
+      for (let j = 0; j <= itemTextClean.length; j += 1) {
+        track[j][0] = j;
+      }
+      for (let j = 1; j <= itemTextClean.length; j += 1) {
+        for (let i = 1; i <= queryTextClean.length; i += 1) {
+          const indicator =
+            queryTextClean[i - 1] === itemTextClean[j - 1] ? 0 : 1;
+          track[j][i] = Math.min(
+            track[j][i - 1] + 1,
+            track[j - 1][i] + 1,
+            track[j - 1][i - 1] + indicator
+          );
+        }
+      }
+      if (track[itemTextClean.length][queryTextClean.length] < 3) {
+        return item;
+      }
+    };
+
+    const sortItems = (
+      a: DictItemAutocompleteDisplay,
+      b: DictItemAutocompleteDisplay,
+      queryText: string
+    ) => {
+      const aName = a.info.name.toLocaleLowerCase();
+      const bName = b.info.name.toLocaleLowerCase();
+      const cleanQueryText = queryText.toLocaleLowerCase();
+      if (aName === cleanQueryText) {
+        return -1;
+      }
+      if (bName === cleanQueryText) {
+        return 1;
+      }
+      return aName.localeCompare(bName);
+    };
+
     const performSearch = async (
       pageNum: number,
       rows: number,
@@ -430,6 +494,21 @@ export default defineComponent({
       } finally {
         searchLoading.value = false;
       }
+    };
+
+    const setActiveIndex = (index: number) => {
+      activeIndex.value = index;
+    };
+
+    const updateAutocomplete = (index: number) => {
+      getDictItems(
+        dictItemSelectionUuids.value[index - 1].map(({ info }) => info),
+        index - 1
+      );
+      dictItemSelectionUuids.value[index - 1].length < 1
+        ? expand.value.splice(index - 1, 1, false)
+        : expand.value.splice(index - 1, 1, true);
+      filteredItems.value = items.value;
     };
 
     const updateNumOptionsUsing = async (increase: boolean) => {
@@ -489,11 +568,24 @@ export default defineComponent({
         const uuid: string = uuidKey.slice(0, -1);
         const selectionUuids: string[] = dictItemSelectionUuids.value[
           index
-        ].map(({ uuid }) => uuid);
+        ].map(({ info }) => info.uuid);
         if (position === index && !selectionUuids.includes(uuid)) {
           dict[uuidKey] = false;
         }
       });
+    };
+
+    const getAutocompleteItems = (index: number) => {
+      if (
+        dictItemSelectionUuids.value[index - 1] &&
+        dictItemSelectionUuids.value[index - 1].length > 0
+      ) {
+        return [
+          ...filteredItems.value.slice(0, 50),
+          ...dictItemSelectionUuids.value[index - 1],
+        ];
+      }
+      return filteredItems.value.slice(0, 50);
     };
 
     const getDictItems = (
@@ -638,10 +730,28 @@ export default defineComponent({
       ).size;
     };
 
+    watch(
+      queryText,
+      _.debounce(async () => {
+        if (queryText[`queryText${activeIndex.value}`]) {
+          filteredItems.value = items.value
+            .filter(item =>
+              filterItems(item, queryText[`queryText${activeIndex.value}`]!!)
+            )
+            .sort((a, b) =>
+              sortItems(a, b, queryText[`queryText${activeIndex.value}`]!!)
+            );
+        } else {
+          filteredItems.value = items.value;
+        }
+      }, 1000)
+    );
+
     onMounted(async () => {
       loading.value = true;
       try {
         items.value = await server.getDictItems();
+        filteredItems.value = items.value;
         for (let i = 0; i < maxOptions; i += 1) {
           expand.value.push(false);
           useParse.value[i] = false;
@@ -673,6 +783,8 @@ export default defineComponent({
 
     return {
       items,
+      filteredItems,
+      activeIndex,
       searchItems,
       sortByItems,
       sortBy,
@@ -682,6 +794,7 @@ export default defineComponent({
       wordsBetween,
       numOptionsUsing,
       updateNumOptionsUsing,
+      updateAutocomplete,
       canPerformSearch,
       performSearch,
       selectAll,
@@ -689,6 +802,7 @@ export default defineComponent({
       dictItems,
       getDictItems,
       getNumDictItemsSelected,
+      getAutocompleteItems,
       searchLoading,
       filter,
       headers,
@@ -698,9 +812,11 @@ export default defineComponent({
       page,
       rows,
       sequenced,
+      queryText,
       loading,
       maxOptions,
       updateUseParse,
+      setActiveIndex,
     };
   },
 });
