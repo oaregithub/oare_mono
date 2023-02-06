@@ -27,7 +27,10 @@
           <template #activator="{ on, attrs }">
             <strong
               class="test-word-util-list"
-              :class="{ 'cursor-display': allowCommenting || allowEditing }"
+              :class="{
+                'cursor-display':
+                  (allowCommenting || allowEditing) && canComment,
+              }"
               v-on="on"
               v-bind="attrs"
             >
@@ -68,7 +71,7 @@
       v-if="allowCommenting"
       :is="commentComponent"
       v-model="isCommenting"
-      :word="commentDialogWord"
+      :item="commentDialogWord"
       :uuid="commentDialogUuid"
       :key="commentDialogUuid"
       :route="`/${routeName}/${uuid}`"
@@ -95,7 +98,7 @@ import WordInfo from './components/WordInfo/WordInfo.vue';
 import WordNameEdit from './components/WordNameEdit.vue';
 import sl from '@/serviceLocator';
 import UtilList from '@/components/UtilList/index.vue';
-import CommentWordDisplay from '@/components/CommentWordDisplay/index.vue';
+import CommentItemDisplay from '@/components/CommentItemDisplay/index.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 
 export const ReloadKey: InjectionKey<() => Promise<void>> = Symbol();
@@ -106,7 +109,7 @@ export default defineComponent({
     WordInfo,
     WordNameEdit,
     UtilList,
-    CommentWordDisplay,
+    CommentItemDisplay,
   },
   props: {
     uuid: {
@@ -155,6 +158,8 @@ export default defineComponent({
     const canUpdateWordSpelling = computed(() =>
       store.hasPermission('UPDATE_WORD_SPELLING')
     );
+
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
 
     const updateWordInfo = (newWordInfo: Word) => {
       wordInfo.value = newWordInfo;
@@ -222,7 +227,7 @@ export default defineComponent({
     // To avoid circular dependencies
     const commentComponent = computed(() =>
       props.allowCommenting
-        ? () => import('@/components/CommentWordDisplay/index.vue')
+        ? () => import('@/components/CommentItemDisplay/index.vue')
         : null
     );
 
@@ -250,6 +255,7 @@ export default defineComponent({
       breadcrumbItems,
       title,
       isCommenting,
+      canComment,
       isEditing,
       canUpdateWordSpelling,
       updateWordInfo,

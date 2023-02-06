@@ -3,9 +3,9 @@ import {
   MarkupType,
   EpigraphicUnit,
   EpigraphicUnitWithMarkup,
-  EpigraphicUnitType,
   EpigraphicWord,
   LocaleCode,
+  EpigraphicUnitSide,
 } from '@oare/types';
 
 const superscriptChars = {
@@ -132,28 +132,31 @@ export function separateEpigraphicUnitsByWord(
 }
 
 export function getEpigraphicSeparator(
-  type1: EpigraphicUnitType | null,
-  unit1Markups: MarkupUnit[],
-  type2: EpigraphicUnitType | null,
-  unit2Markups: MarkupUnit[]
+  sign1: EpigraphicUnitWithMarkup,
+  sign2: EpigraphicUnitWithMarkup | null,
+  isContraction: boolean
 ): string {
-  if (
-    !unit1Markups.map(unit => unit.type).includes('phoneticComplement') &&
-    unit2Markups.map(unit => unit.type).includes('phoneticComplement')
-  ) {
-    return '';
-  }
-  if (type1 === 'determinative' || type2 === 'determinative') {
-    return '';
-  }
-  if (type1 === 'phonogram' || type2 === 'phonogram') {
+  if (sign2) {
+    if (
+      !sign1.markups.map(unit => unit.type).includes('phoneticComplement') &&
+      sign2.markups.map(unit => unit.type).includes('phoneticComplement')
+    ) {
+      return '';
+    }
+    if (sign1.type === 'determinative' || sign2.type === 'determinative') {
+      return '';
+    }
+    if (sign1.type === 'phonogram' || sign2.type === 'phonogram') {
+      return '-';
+    }
+    if (sign1.type === 'number' && sign2.type === 'number') {
+      return '+';
+    }
+    if (sign1.type === 'logogram' || sign2.type === 'logogram') {
+      return '.';
+    }
+  } else if (isContraction) {
     return '-';
-  }
-  if (type1 === 'number' && type2 === 'number') {
-    return '+';
-  }
-  if (type1 === 'logogram' || type2 === 'logogram') {
-    return '.';
   }
   return '';
 }
@@ -165,16 +168,13 @@ export function epigraphicWordWithSeparators(
   let wordWithSeparators = '';
   characters.forEach((character, index) => {
     wordWithSeparators += character.reading;
-    if (index !== characters.length - 1) {
-      wordWithSeparators += getEpigraphicSeparator(
-        character.type,
-        character.markups,
-        characters[index + 1].type,
-        characters[index + 1].markups
-      );
-    } else if (isContraction) {
-      wordWithSeparators += '-';
-    }
+    const nextSign =
+      index !== characters.length - 1 ? characters[index + 1] : null;
+    wordWithSeparators += getEpigraphicSeparator(
+      character,
+      nextSign,
+      isContraction
+    );
   });
   return wordWithSeparators;
 }
@@ -221,6 +221,15 @@ export function regionReading(unit: EpigraphicUnit): string {
     }
 
     if (markupType === 'ruling') {
+      if (markupValue === 1) {
+        return '---- Single Ruling ----';
+      }
+      if (markupValue === 2) {
+        return '---- Double Ruling ----';
+      }
+      if (markupValue === 3) {
+        return '---- Triple Ruling ----';
+      }
       return '-'.repeat(12);
     }
 
@@ -259,22 +268,33 @@ export function convertMarkedUpUnitsToEpigraphicWords(
   characters: EpigraphicUnitWithMarkup[]
 ): EpigraphicWord[] {
   const epigraphicWords = separateEpigraphicUnitsByWord(characters);
-  return epigraphicWords.map(word => {
-    const isContraction = getContractionStatus(word);
+  return epigraphicWords.map(signs => {
+    const isContraction = getContractionStatus(signs);
     return {
-      reading: epigraphicWordWithSeparators(word, isContraction),
-      discourseUuid: word[0].discourseUuid,
-      signs: word.map(({ signUuid, readingUuid, reading }) => ({
-        signUuid,
-        readingUuid,
-        reading,
+      uuids: signs.map(unit => unit.uuid),
+      reading: epigraphicWordWithSeparators(signs, isContraction),
+      discourseUuid: signs[0].discourseUuid,
+      signs: signs.map((sign, idx) => ({
+        uuid: sign.uuid,
+        epigType: sign.epigType,
+        type: sign.type,
+        signUuid: sign.signUuid,
+        readingUuid: sign.readingUuid,
+        reading: sign.reading,
+        separator: getEpigraphicSeparator(
+          sign,
+          idx !== signs.length - 1 ? signs[idx + 1] : null,
+          isContraction
+        ),
+        markups: sign.markups,
       })),
       isContraction,
-      word: word[0].word || null,
-      form: word[0].form || null,
-      translation: word[0].translation || null,
-      parseInfo: word[0].parseInfo || null,
-      isNumber: /[0-9]/g.test(word[0].word ?? ''),
+      word: signs[0].word || null,
+      form: signs[0].form || null,
+      translation: signs[0].translation || null,
+      parseInfo: signs[0].parseInfo || null,
+      isNumber: /[0-9]/g.test(signs[0].word ?? ''),
+      isDivider: signs.map(unit => unit.epigType).includes('separator'),
     };
   });
 }
@@ -386,4 +406,31 @@ export const localizeString = (string: string, locale: LocaleCode): string => {
   }
 
   return string;
+};
+
+const sideNumbers: Record<number, EpigraphicUnitSide> = {
+  1: 'obv.',
+  2: 'lo.e.',
+  3: 'rev.',
+  4: 'u.e.',
+  5: 'le.e.',
+  6: 'r.e.',
+  7: 'mirror text',
+  8: 'legend',
+  9: 'suppl. tablet',
+  10: 'obv. ii',
+};
+
+export const convertSideNumberToSide = (
+  sideNum: number
+): EpigraphicUnitSide | null => {
+  const sideName = sideNumbers[sideNum] || null;
+  return sideName;
+};
+
+export const convertSideToSideNumber = (side: EpigraphicUnitSide): number => {
+  const sideNum = Object.keys(sideNumbers).find(
+    key => sideNumbers[Number(key)] === side
+  );
+  return Number(sideNum);
 };

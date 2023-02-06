@@ -13,5 +13,4 @@ export interface PersonListItem {
   person: PersonRow;
   display: string;
   properties: ItemPropertyRow[];
-  occurrences: number | null;
 }

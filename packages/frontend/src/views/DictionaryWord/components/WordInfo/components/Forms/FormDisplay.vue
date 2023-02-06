@@ -32,7 +32,7 @@
         <template #activator="{ on, attrs }">
           <strong
             class="mr-1 test-form-util-list"
-            :class="{ 'cursor-display': allowEditing }"
+            :class="{ 'cursor-display': canComment && allowEditing }"
             v-on="on"
             v-bind="attrs"
           >
@@ -90,6 +90,7 @@
           :getTexts="server.getSpellingOccurrencesTexts"
           :getTextsCount="server.getSpellingOccurrencesCounts"
           @reload="reload && reload()"
+          @disconnect="disconnectSpellings($event)"
         />
       </span>
 
@@ -232,6 +233,8 @@ export default defineComponent({
 
     const canAddSpelling = computed(() => store.hasPermission('ADD_SPELLING'));
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
     const saveFormEdit = async (): Promise<void> => {
       loading.value = true;
       try {
@@ -280,11 +283,23 @@ export default defineComponent({
       return item ? item.count : 0;
     };
 
+    const disconnectSpellings = async (discourseUuids: string[]) => {
+      try {
+        await server.disconnectSpellings(discourseUuids);
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting spellings. Please try again.',
+          err as Error
+        );
+      }
+    };
+
     return {
       isCommenting,
       editing,
       canEdit,
       canAddSpelling,
+      canComment,
       editForm,
       loading,
       saveFormEdit,
@@ -298,6 +313,7 @@ export default defineComponent({
       getSpellingOccurrencesByUuid,
       formTotalOccurrences,
       reload,
+      disconnectSpellings,
     };
   },
 });

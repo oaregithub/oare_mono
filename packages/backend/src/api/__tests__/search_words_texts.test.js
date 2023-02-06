@@ -89,20 +89,25 @@ describe('words in texts search test', () => {
       expect(JSON.parse(response.text)).toEqual(wordsInTextsSearchResponse);
     });
   });
-  describe('GET /wordsAndForms', () => {
-    const PATH = `${API_PATH}/wordsAndForms`;
+  describe('GET /dictItems', () => {
+    const PATH = `${API_PATH}/dictItems`;
 
-    const wordFormAutoCompleteDisplay = [
+    const dictItemAutoCompleteDisplay = [
       {
-        info: { uuid: 'uuid', name: 'name', wordUuid: 'wordUuid' },
-        wordDisplay: 'wordDisplay',
+        info: {
+          uuid: 'uuid',
+          name: 'name',
+          referenceUuid: 'referenceUuid',
+          type: 'form',
+        },
+        display: 'display',
       },
     ];
 
     const DictionaryWordDao = {
-      getWordsAndFormsForWordsInTexts: jest
+      getDictItemsForWordsInTexts: jest
         .fn()
-        .mockResolvedValue(wordFormAutoCompleteDisplay),
+        .mockResolvedValue(dictItemAutoCompleteDisplay),
     };
 
     beforeEach(() => {
@@ -113,11 +118,9 @@ describe('words in texts search test', () => {
 
     it('returns words and forms', async () => {
       const response = await sendRequest();
-      expect(
-        DictionaryWordDao.getWordsAndFormsForWordsInTexts
-      ).toHaveBeenCalled();
+      expect(DictionaryWordDao.getDictItemsForWordsInTexts).toHaveBeenCalled();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual(wordFormAutoCompleteDisplay);
+      expect(JSON.parse(response.text)).toEqual(dictItemAutoCompleteDisplay);
     });
   });
 });

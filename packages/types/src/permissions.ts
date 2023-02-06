@@ -19,7 +19,7 @@ export interface DictionaryPermission extends PermissionTemplate {
     | 'UPDATE_FORM'
     | 'ADD_SPELLING'
     | 'ADD_FORM'
-    | 'DISCONNECT_SPELLING'
+    | 'DISCONNECT_OCCURRENCES'
     | 'CONNECT_SPELLING'
     | 'EDIT_TRANSLITERATION_STATUS'
     | 'ADD_LEMMA';

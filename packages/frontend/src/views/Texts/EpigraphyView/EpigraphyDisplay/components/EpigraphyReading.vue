@@ -7,12 +7,22 @@
         label="Interlinear View"
       ></v-switch>
     </div>
-    <div v-for="sideName in renderer.sides" :key="sideName" class="d-flex">
-      <div class="side-name oare-title mr-4" v-html="formatSide(sideName)" />
+    <div v-for="side in renderer.sides" :key="side.side" class="d-flex">
+      <div class="side-name oare-title mr-4" v-html="formatSide(side)" />
       <div>
-        <div v-if="renderer.columnsOnSide(sideName).length === 1">
+        <div
+          v-for="colNum in renderer.columnsOnSide(side.side)"
+          :key="colNum"
+          class="pa-1"
+        >
           <div
-            v-for="lineNum in renderer.linesOnSide(sideName)"
+            v-if="renderer.columnsOnSide(side.side).length > 1"
+            class="oare-title mr-1 pb-1"
+          >
+            col. {{ romanNumeral(colNum) }}
+          </div>
+          <div
+            v-for="lineNum in renderer.linesInColumn(colNum, side.side)"
             :key="lineNum"
             class="oare-title d-flex"
             :class="{ 'mb-3': interLinearView }"
@@ -91,94 +101,6 @@
                 </v-row>
               </div>
             </span>
-          </div>
-        </div>
-        <div v-else>
-          <div
-            v-for="colNum in renderer.columnsOnSide(sideName)"
-            :key="colNum"
-            class="pa-1"
-          >
-            <div class="oare-title mr-1 pb-1">
-              col. {{ romanNumeral(colNum) }}
-            </div>
-            <div
-              v-for="lineNum in renderer.linesInColumn(colNum, sideName)"
-              :key="lineNum"
-              class="oare-title d-flex"
-              :class="{ 'mb-3': interLinearView }"
-            >
-              <sup class="line-num pt-3 mr-2">{{ lineNumber(lineNum) }}</sup>
-              <span
-                v-if="renderer.isRegion(lineNum)"
-                v-html="renderer.lineReading(lineNum)"
-                @click="openConnectSealImpressionDialog(lineNum)"
-                class="cursor-display"
-              />
-              <span v-else>
-                <span v-show="!interLinearView">
-                  <span
-                    v-for="(word, index) in renderer.getLineWords(lineNum)"
-                    :key="index"
-                    v-html="formatWord(word)"
-                    class="cursor-display test-rendered-word"
-                    :class="{ 'mr-1': !word.isContraction }"
-                    @click="openDialog(word.discourseUuid)"
-                  />
-                </span>
-                <div class="test-interlinear-view" v-show="interLinearView">
-                  <v-row>
-                    <v-col
-                      v-for="(word, index) in renderer.getLineWords(lineNum)"
-                      :key="index"
-                    >
-                      <div>
-                        <span
-                          v-html="formatWord(word)"
-                          class="cursor-display test-rendered-word"
-                          @click="openDialog(word.discourseUuid)"
-                        >
-                        </span>
-                      </div>
-                      <div v-if="word.word && !word.isNumber">
-                        <span
-                          v-html="formatDictionaryWord(word.word)"
-                          class="cursor-display test-rendered-word"
-                          @click="openDialog(word.discourseUuid)"
-                        ></span>
-                      </div>
-                      <div v-if="word.translation">
-                        <span
-                          v-html="formatTranslation(word.translation)"
-                          class="cursor-display test-rendered-word"
-                          @click="openDialog(word.discourseUuid)"
-                        ></span>
-                      </div>
-                      <div v-if="word.form">
-                        <span
-                          v-html="formatForm(word.form)"
-                          class="cursor-display test-rendered-word"
-                          @click="openDialog(word.discourseUuid)"
-                        ></span>
-                      </div>
-                      <div v-if="word.parseInfo && word.parseInfo.length > 0">
-                        <span
-                          v-html="
-                            formGrammarString({
-                              uuid: '',
-                              form: '',
-                              properties: word.parseInfo,
-                            })
-                          "
-                          class="cursor-display test-rendered-word"
-                          @click="openDialog(word.discourseUuid)"
-                        ></span>
-                      </div>
-                    </v-col>
-                  </v-row>
-                </div>
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -331,7 +253,7 @@ export default defineComponent({
     );
 
     const canDisconnectSpellings = computed(() =>
-      store.hasPermission('DISCONNECT_SPELLING')
+      store.hasPermission('DISCONNECT_OCCURRENCES')
     );
 
     const canConnectSealImpression = computed(() =>
@@ -486,8 +408,15 @@ export default defineComponent({
       return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
     };
 
-    const formatSide = (side: EpigraphicUnitSide) => {
-      return side.replace('!', '<sup>!</sup>');
+    const formatSide = (side: EpigraphicUnit) => {
+      if (side.markups.map(markup => markup.type).includes('uncertain')) {
+        return `${side.side}<sup>?</sup>`;
+      } else if (
+        side.markups.map(markup => markup.type).includes('isEmendedReading')
+      ) {
+        return `${side.side}<sup>!</sup>`;
+      }
+      return side.side;
     };
 
     const formatTranslation = (translation: string) => {

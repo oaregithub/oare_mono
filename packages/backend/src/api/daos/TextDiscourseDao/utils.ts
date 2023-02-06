@@ -63,7 +63,9 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
   // eslint-disable-next-line
   discourse.explicitSpelling = discourse.units
     .map(u => {
-      if (u.transcription) return u.transcription;
+      if (u.transcription) {
+        return u.transcription;
+      }
       return u.explicitSpelling || '';
     })
     .join(' ');
@@ -74,6 +76,7 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
   numWordsBetween: (number | null)[],
   textsToHide: string[],
   sequenced: boolean,
+  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly',
   trx?: Knex.Transaction
 ) {
   const k = trx || knexRead();
@@ -91,7 +94,9 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
             if (currentNumWordsBetween > -1) {
               this.andOn(
                 k.raw(
-                  `td${i}.word_on_tablet <= (td${i - 1}.word_on_tablet + ?)`,
+                  `td${i}.word_on_tablet <= (td${
+                    i - 1
+                  }.word_on_tablet + ? + 1)`,
                   [currentNumWordsBetween]
                 )
               ).andOn(
@@ -105,7 +110,9 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
           } else if (currentNumWordsBetween > -1) {
             this.andOn(
               k.raw(
-                `ABS(td${i}.word_on_tablet - td${i - 1}.word_on_tablet) <= ?`,
+                `ABS(td${i}.word_on_tablet - td${
+                  i - 1
+                }.word_on_tablet) <= (? + 1)`,
                 [currentNumWordsBetween]
               )
             );
@@ -115,6 +122,27 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
     });
   }
 
+  if (sortBy === 'precedingFirstMatch') {
+    query.leftJoin('text_discourse as td_orderBy', function () {
+      this.on('td0.text_uuid', 'td_orderBy.text_uuid').andOn(
+        k.raw('td_orderBy.word_on_tablet = (td0.word_on_tablet - 1)')
+      );
+    });
+  }
+  if (sortBy === 'followingLastMatch') {
+    query.leftJoin('text_discourse as td_orderBy', function () {
+      this.on(
+        `td${spellingUuids.length - 1}.text_uuid`,
+        'td_orderBy.text_uuid'
+      ).andOn(
+        k.raw(
+          `td_orderBy.word_on_tablet = (td${
+            spellingUuids.length - 1
+          }.word_on_tablet + 1)`
+        )
+      );
+    });
+  }
   return query.whereNotIn('td0.text_uuid', textsToHide);
 }
 

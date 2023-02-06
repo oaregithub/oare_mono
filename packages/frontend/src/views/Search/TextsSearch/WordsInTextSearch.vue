@@ -33,9 +33,9 @@
                   >{{ `Search Item #${index}` }}
                 </h4>
                 <v-autocomplete
-                  v-model="wordAndFormSelectionUuids[index - 1]"
+                  v-model="dictItemSelectionUuids[index - 1]"
                   :items="items"
-                  item-text="wordDisplay"
+                  item-text="display"
                   item-value="info"
                   clearable
                   deletable-chips
@@ -44,16 +44,13 @@
                   :filter="filter"
                   hide-selected
                   @change="
-                    getWordForms(
-                      wordAndFormSelectionUuids[index - 1],
-                      index - 1
-                    );
-                    wordAndFormSelectionUuids[index - 1].length < 1
+                    getDictItems(dictItemSelectionUuids[index - 1], index - 1);
+                    dictItemSelectionUuids[index - 1].length < 1
                       ? expand.splice(index - 1, 1, false)
                       : expand.splice(index - 1, 1, true);
                   "
                   item-color="primary"
-                  :label="`word/form #${index}`"
+                  :label="`word/form/spelling #${index}`"
                 >
                   <template slot="append-outer">
                     <v-btn
@@ -66,20 +63,24 @@
                 <v-expand-transition>
                   <v-card
                     v-show="
-                      wordForms && index <= numOptionsUsing && expand[index - 1]
+                      dictItems && index <= numOptionsUsing && expand[index - 1]
                     "
                   >
                     <v-expansion-panels>
                       <v-expansion-panel
-                        v-for="(word, i) in wordForms[index - 1]"
-                        :key="`${word.name}${index}${i}`"
+                        v-for="(dictItem, i) in dictItems[index - 1]"
+                        :key="`${dictItem.name}${index}${i}`"
                       >
                         <v-expansion-panel-header>{{
-                          `${word.name} -- ${getNumFormsSelected(
+                          `${dictItem.name} -- ${getNumDictItemsSelected(
                             index - 1,
-                            word
-                          )}/${word.forms.length} form${
-                            word.forms.length > 1 ? 's' : ''
+                            dictItem
+                          )}/${dictItem.childDictItems.length} ${
+                            dictItem.childDictItems[0].type === 'form'
+                              ? 'form'
+                              : 'spelling'
+                          }${
+                            dictItem.childDictItems.length > 1 ? 's' : ''
                           } selected`
                         }}</v-expansion-panel-header>
                         <v-expansion-panel-content>
@@ -89,26 +90,30 @@
                                 ><v-checkbox
                                   @click="
                                     selectAll(
-                                      checkboxAll[`${word.uuid}${index - 1}`],
+                                      checkboxAll[
+                                        `${dictItem.uuid}${index - 1}`
+                                      ],
                                       index - 1,
                                       i
                                     )
                                   "
                                   v-model="
-                                    checkboxAll[`${word.uuid}${index - 1}`]
+                                    checkboxAll[`${dictItem.uuid}${index - 1}`]
                                   "
                                   label="Select All"
                                 ></v-checkbox
                               ></v-list-item-action>
                             </v-list-item>
                             <v-list-item
-                              v-for="(form, j) in word.forms"
-                              :key="`${form.uuid}${index}${i}${j}`"
+                              v-for="(
+                                childDictItem, j
+                              ) in dictItem.childDictItems"
+                              :key="`${childDictItem.uuid}${index}${i}${j}`"
                             >
                               <v-list-item-action>
                                 <v-checkbox
-                                  :label="form.name"
-                                  :value="form.uuid"
+                                  :label="childDictItem.name"
+                                  :value="childDictItem.uuid"
                                   v-model="searchItems[index - 1].uuids"
                                 ></v-checkbox>
                               </v-list-item-action>
@@ -142,7 +147,7 @@
                     <v-btn
                       class="test-autocomplete-btn-parse-props"
                       @click="updateUseParse(index - 1)"
-                      >Change To Word Forms</v-btn
+                      >Change To Words, Forms, and Spellings</v-btn
                     >
                   </span>
                 </div>
@@ -174,6 +179,15 @@
                 ></span
               ></v-fade-transition
             >
+          </div>
+          <div class="pt-4 pb-2">
+            <v-select
+              v-model="sortBy"
+              :items="sortByItems"
+              item-text="text"
+              item-value="value"
+              label="Sort Results By"
+            ></v-select>
           </div>
         </v-col>
         <v-col>
@@ -223,7 +237,8 @@ import {
   computed,
 } from '@vue/composition-api';
 import {
-  WordFormAutocompleteDisplay,
+  DictItemAutocompleteInfo,
+  DictItemAutocompleteDisplay,
   WordsInTextsSearchResultRow,
   WordsInTextsSearchResponse,
   ParseTreePropertyUuids,
@@ -236,10 +251,16 @@ import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
 import AddProperties from '@/components/Properties/AddProperties.vue';
 
-export interface WordForWordsInTextSearch {
+export interface DictItemWordsInTextSearch {
   name: string;
   uuid: string;
-  forms: Array<{ name: string; uuid: string }>;
+  childDictItems: ChildDictItem[];
+}
+
+export interface ChildDictItem {
+  name: string;
+  uuid: string;
+  type: 'form' | 'spelling';
 }
 
 export default defineComponent({
@@ -250,11 +271,11 @@ export default defineComponent({
     AddProperties,
   },
   setup() {
-    const items: Ref<WordFormAutocompleteDisplay[]> = ref([]);
+    const items: Ref<DictItemAutocompleteDisplay[]> = ref([]);
     const searchItems: Ref<WordsInTextSearchPayloadItem[]> = ref([
       {
         uuids: [],
-        type: 'form' as 'form' | 'parse',
+        type: 'form/spelling' as 'form/spelling' | 'parse',
         numWordsBefore: null,
       },
     ]);
@@ -269,20 +290,15 @@ export default defineComponent({
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
     const total = ref(0);
     const checkboxAll: Ref<{ [uuid: string]: boolean }> = ref({});
-    const wordAndFormSelectionUuids: Ref<
-      {
-        uuid: string;
-        wordUuid: string;
-        name: string;
-      }[][]
-    > = ref([]);
+    const dictItemSelectionUuids: Ref<DictItemAutocompleteInfo[][]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
     const useParse: Ref<{ [index: number]: boolean }> = ref({});
-    const wordForms: Ref<WordForWordsInTextSearch[][]> = ref([]);
+    const dictItems: Ref<DictItemWordsInTextSearch[][]> = ref([]);
     const sequenced = useQueryParam('sequenced', 'true', true);
     const mode: Ref<string> = ref(sequenced.value);
 
     const wordsBetween = ref([
+      { name: '0', value: 0 },
       { name: '<= 1', value: 1 },
       { name: '<= 2', value: 2 },
       { name: '<= 3', value: 3 },
@@ -307,6 +323,23 @@ export default defineComponent({
       },
     ]);
 
+    const sortByItems = ref([
+      {
+        text: 'Text Name Only',
+        value: 'textNameOnly',
+      },
+      {
+        text: 'Word Preceding First Word Match',
+        value: 'precedingFirstMatch',
+      },
+      {
+        text: 'Word Following Last Word Match',
+        value: 'followingLastMatch',
+      },
+    ]);
+
+    const sortBy: Ref<string> = ref(sortByItems.value[0].value);
+
     const canPerformSearch = computed(() => {
       let allowSearch = true;
       for (let i = 0; i < numOptionsUsing.value; i += 1) {
@@ -317,6 +350,7 @@ export default defineComponent({
         if (
           sequenced.value === 'true' &&
           !searchItems.value[i].numWordsBefore &&
+          searchItems.value[i].numWordsBefore !== 0 &&
           i > 0
         ) {
           allowSearch = false;
@@ -327,7 +361,12 @@ export default defineComponent({
     });
 
     const filter = (item: any, queryText: string, itemText: string) => {
-      const itemTextClean = itemText.slice(0, -6).toLocaleLowerCase();
+      let itemTextClean = itemText;
+      if (!itemText.includes('Spelling')) {
+        itemTextClean = itemText.slice(0, -7).toLocaleLowerCase();
+      } else {
+        itemTextClean = itemText.slice(0, -11).toLocaleLowerCase();
+      }
       const queryTextClean = queryText.toLocaleLowerCase();
       const track = Array(itemTextClean.length + 1)
         .fill(null)
@@ -372,6 +411,10 @@ export default defineComponent({
             page: JSON.stringify(pageNum),
             rows: JSON.stringify(rows),
             sequenced: mode.value,
+            sortBy: sortBy.value as
+              | 'precedingFirstMatch'
+              | 'followingLastMatch'
+              | 'textNameOnly',
           }
         );
         results.value = response.results;
@@ -397,7 +440,7 @@ export default defineComponent({
         if (numOptionsUsing.value > 1 && !increase) {
           searchItems.value.splice(numOptionsUsing.value - 1, 1, {
             uuids: [],
-            type: 'form' as 'form' | 'parse',
+            type: 'form/spelling' as 'form/spelling' | 'parse',
             numWordsBefore: null,
           });
           numOptionsUsing.value -= 1;
@@ -412,10 +455,10 @@ export default defineComponent({
 
     const updateUseParse = async (index: number) => {
       useParse.value = { ...useParse.value, [index]: !useParse.value[index] };
-      if (searchItems.value[index].type === 'form') {
+      if (searchItems.value[index].type === 'form/spelling') {
         searchItems.value[index].type = 'parse';
       } else {
-        searchItems.value[index].type = 'form';
+        searchItems.value[index].type = 'form/spelling';
       }
       searchItems.value[index].uuids = [];
       searchItems.value.splice(index, 1, searchItems.value[index]);
@@ -425,12 +468,12 @@ export default defineComponent({
     const selectAll = (val: boolean | null, index: number, idx: number) => {
       let selectedUuids: string[] = (searchItems.value[index]
         .uuids as unknown) as string[];
-      wordForms.value[index][idx].forms.forEach(form => {
-        if (selectedUuids.includes(form.uuid) && !val) {
-          selectedUuids.splice(selectedUuids.indexOf(form.uuid), 1);
+      dictItems.value[index][idx].childDictItems.forEach(childDictItem => {
+        if (selectedUuids.includes(childDictItem.uuid) && !val) {
+          selectedUuids.splice(selectedUuids.indexOf(childDictItem.uuid), 1);
         }
-        if (!selectedUuids.includes(form.uuid) && val) {
-          selectedUuids.push(form.uuid);
+        if (!selectedUuids.includes(childDictItem.uuid) && val) {
+          selectedUuids.push(childDictItem.uuid);
         }
       });
       searchItems.value[index].uuids = selectedUuids;
@@ -444,7 +487,7 @@ export default defineComponent({
       Object.keys(dict).forEach((uuidKey: string) => {
         const position: number = Number(uuidKey.slice(-1));
         const uuid: string = uuidKey.slice(0, -1);
-        const selectionUuids: string[] = wordAndFormSelectionUuids.value[
+        const selectionUuids: string[] = dictItemSelectionUuids.value[
           index
         ].map(({ uuid }) => uuid);
         if (position === index && !selectionUuids.includes(uuid)) {
@@ -453,60 +496,66 @@ export default defineComponent({
       });
     };
 
-    const getWordForms = (
-      selectedItems: Array<{
-        uuid: string;
-        wordUuid: string;
-        name: string;
-      }>,
+    const getDictItems = (
+      selectedItems: DictItemAutocompleteInfo[],
       index: number
     ) => {
-      wordForms.value[index] = [];
+      dictItems.value[index] = [];
       searchItems.value[index].uuids = [];
       markSelectAllFalseOnRemoval(checkboxAll.value, index);
       selectedItems.forEach(selectedItem => {
-        if (selectedItem.uuid === selectedItem.wordUuid) {
-          const forms: Array<{ uuid: string; name: string }> = items.value
+        if (selectedItem.uuid === selectedItem.referenceUuid) {
+          const childDictItems: ChildDictItem[] = items.value
             .filter(item => {
               if (
-                item.info.wordUuid === selectedItem.uuid &&
-                item.info.uuid !== item.info.wordUuid
+                item.info.referenceUuid === selectedItem.uuid &&
+                item.info.uuid !== item.info.referenceUuid
               ) {
                 return item.info.uuid;
               }
             })
             .map(item => {
-              return { uuid: item.info.uuid, name: item.info.name };
+              return {
+                uuid: item.info.uuid,
+                name: item.info.name,
+                type: item.info.type as 'form' | 'spelling',
+              };
             });
-          const wordForWordsInTextSearch: WordForWordsInTextSearch = {
+          const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
             name: selectedItem.name,
             uuid: selectedItem.uuid,
-            forms: forms,
+            childDictItems,
           };
-          wordForms.value[index].push(wordForWordsInTextSearch);
-          searchItems.value[index].uuids = [...forms.map(({ uuid }) => uuid)];
+          dictItems.value[index].push(dictItemWordsInTextSearch);
+          searchItems.value[index].uuids = [
+            ...childDictItems.map(({ uuid }) => uuid),
+          ];
         } else {
-          const word = items.value.find(item => {
-            if (item.info.uuid === selectedItem.wordUuid) return item;
+          const parentDictItem = items.value.find(item => {
+            if (item.info.uuid === selectedItem.referenceUuid) return item;
           });
-          const formSiblings = items.value
+          const childDictItemSiblings: ChildDictItem[] = items.value
             .filter(item => {
               if (
-                item.info.wordUuid === selectedItem.wordUuid &&
-                item.info.wordUuid !== item.info.uuid
+                item.info.referenceUuid === selectedItem.referenceUuid &&
+                item.info.referenceUuid !== item.info.uuid
               )
                 return item;
             })
             .map(item => {
-              return { uuid: item.info.uuid, name: item.info.name };
+              return {
+                uuid: item.info.uuid,
+                name: item.info.name,
+                type: item.info.type as 'form' | 'spelling',
+              };
             });
-          if (word) {
-            const wordForWordsInTextSearch: WordForWordsInTextSearch = {
-              name: word.info.name,
-              uuid: word.info.uuid,
-              forms: formSiblings,
+          if (parentDictItem) {
+            const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
+              name: parentDictItem.info.name,
+              uuid: parentDictItem.info.uuid,
+              childDictItems: childDictItemSiblings,
             };
-            wordForms.value[index].push(wordForWordsInTextSearch);
+            dictItems.value[index].push(dictItemWordsInTextSearch);
             let searchItemUuids: string[] = searchItems.value[index]
               .uuids as string[];
             searchItems.value[index].uuids = [
@@ -576,13 +625,15 @@ export default defineComponent({
       searchItems.value.splice(index, 1, searchItems.value[index]);
     };
 
-    const getNumFormsSelected = (
+    const getNumDictItemsSelected = (
       index: number,
-      word: WordForWordsInTextSearch
+      dictItem: DictItemWordsInTextSearch
     ): number => {
       return new Set(
         (searchItems.value[index].uuids as string[]).filter(uuid => {
-          return word.forms.map(form => form.uuid).includes(uuid);
+          return dictItem.childDictItems
+            .map(childDictItem => childDictItem.uuid)
+            .includes(uuid);
         })
       ).size;
     };
@@ -590,13 +641,13 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       try {
-        items.value = await server.getWordsAndForms();
+        items.value = await server.getDictItems();
         for (let i = 0; i < maxOptions; i += 1) {
           expand.value.push(false);
           useParse.value[i] = false;
           searchItems.value.push({
             uuids: [],
-            type: 'form' as 'form' | 'parse',
+            type: 'form/spelling' as 'form/spelling' | 'parse',
             numWordsBefore: null,
           });
         }
@@ -623,9 +674,11 @@ export default defineComponent({
     return {
       items,
       searchItems,
+      sortByItems,
+      sortBy,
       useParse,
       setProperties,
-      wordAndFormSelectionUuids,
+      dictItemSelectionUuids,
       wordsBetween,
       numOptionsUsing,
       updateNumOptionsUsing,
@@ -633,9 +686,9 @@ export default defineComponent({
       performSearch,
       selectAll,
       expand,
-      wordForms,
-      getWordForms,
-      getNumFormsSelected,
+      dictItems,
+      getDictItems,
+      getNumDictItemsSelected,
       searchLoading,
       filter,
       headers,

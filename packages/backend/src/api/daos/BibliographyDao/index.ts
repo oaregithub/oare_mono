@@ -30,6 +30,18 @@ class BibliographyDao {
     const count = await k('bibliography').count('uuid as count').first();
     return count && count.count ? Number(count.count) : 0;
   }
+
+  async getBibliographyByZotItemKey(
+    zotItemKey: string,
+    trx?: Knex.Transaction
+  ): Promise<BibliographyItem> {
+    const k = trx || knexRead();
+    const bibliography: BibliographyItem = await k('bibliography')
+      .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
+      .where('zot_item_key', zotItemKey)
+      .first();
+    return bibliography;
+  }
 }
 
 export default new BibliographyDao();

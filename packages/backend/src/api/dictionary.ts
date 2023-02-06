@@ -392,7 +392,7 @@ router
 
 router
   .route('/disconnect/spellings')
-  .patch(permissionsRoute('DISCONNECT_SPELLING'), async (req, res, next) => {
+  .patch(permissionsRoute('DISCONNECT_OCCURRENCES'), async (req, res, next) => {
     try {
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const cache = sl.get('cache');

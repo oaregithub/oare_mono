@@ -55,29 +55,7 @@ export type EpigraphicUnitSide =
   | 'mirror text'
   | 'legend'
   | 'suppl. tablet'
-  | 'vs.!'
-  | 'near hilt'
-  | 'obv. col. i'
-  | 'obv. col. ii'
-  | 'le.e. col. i'
-  | 'le.e. col. ii'
-  | 'le.e. col. iii'
-  | 'col. i'
-  | 'col. ii'
-  | 'col. iii'
-  | 'col. iv'
-  | 'col. v'
-  | 'col. vi'
-  | "col. i'"
-  | "col. ii'"
-  | "col. iii'"
-  | "col. iv'"
-  | 'obv.!'
-  | 'lo.e.!'
-  | 'rev.!'
-  | 'u.e.!'
-  | 'le.e.!'
-  | 'r.e.!';
+  | 'obv. ii';
 
 export type EpigraphyType =
   | 'column'
@@ -94,11 +72,11 @@ export type EpigraphyType =
 
 export interface EpigraphicUnit {
   uuid: string;
-  side: EpigraphicUnitSide;
-  column: number;
-  line: number;
-  charOnLine: number;
-  charOnTablet: number;
+  side: EpigraphicUnitSide | null;
+  column: number | null;
+  line: number | null;
+  charOnLine: number | null;
+  charOnTablet: number | null;
   objOnTablet: number;
   discourseUuid: string | null;
   reading: string | null;
@@ -164,6 +142,8 @@ export interface CreateTabletRendererOptions extends TabletHtmlOptions {
 export interface EpigraphicUnitWithMarkup
   extends Pick<
     EpigraphicUnit,
+    | 'uuid'
+    | 'epigType'
     | 'readingUuid'
     | 'signUuid'
     | 'markups'
@@ -179,13 +159,26 @@ export interface EpigraphicUnitWithMarkup
 }
 
 export interface EpigraphicSign
-  extends Pick<EpigraphicUnit, 'signUuid' | 'readingUuid' | 'reading'> {}
+  extends Pick<
+    EpigraphicUnit,
+    | 'uuid'
+    | 'epigType'
+    | 'type'
+    | 'signUuid'
+    | 'readingUuid'
+    | 'reading'
+    | 'markups'
+  > {
+  separator: string;
+}
 
 export interface EpigraphicWord
   extends Pick<
     EpigraphicUnit,
     'discourseUuid' | 'reading' | 'word' | 'form' | 'translation' | 'parseInfo'
   > {
+  uuids: string[];
+  isDivider: boolean;
   signs: EpigraphicSign[];
   isContraction: boolean;
   isNumber: boolean;
@@ -200,8 +193,6 @@ export interface UpdateTranslitStatusPayload {
   textUuid: string;
   color: string;
 }
-
-export type SideOption = 'obv.' | 'lo.e.' | 'rev.' | 'u.e.' | 'le.e.' | 'r.e.';
 
 export interface AddTextInfo {
   textName: string | null;
@@ -221,7 +212,7 @@ export interface AddTextEditorContent {
 
 export interface SideContent {
   uuid: string;
-  type: SideOption;
+  type: EpigraphicUnitSide;
   number: number;
   columns: ColumnContent[];
 }
@@ -435,3 +426,254 @@ export interface QuarantineText {
   hasEpigraphy: boolean;
   timestamp: string;
 }
+
+export interface DiscourseSpelling {
+  discourseUuid: string;
+  spellingUuid: string;
+}
+
+export type EditTextAction =
+  | 'addSide'
+  | 'addColumn'
+  | 'addRegionBroken'
+  | 'addRegionRuling'
+  | 'addRegionSealImpression'
+  | 'addRegionUninscribed'
+  | 'addLine'
+  | 'addUndeterminedLines'
+  | 'addWord'
+  | 'addSign'
+  | 'addUndeterminedSigns'
+  | 'addDivider'
+  | 'editSide'
+  | 'editColumn'
+  | 'editRegionBroken'
+  | 'editRegionRuling'
+  | 'editRegionSealImpression'
+  | 'editRegionUninscribed'
+  | 'editUndeterminedLines'
+  | 'editSign'
+  | 'editUndeterminedSigns'
+  | 'editDivider'
+  | 'splitLine'
+  | 'splitWord'
+  | 'mergeLine'
+  | 'mergeWord'
+  | 'reorderSign'
+  | 'cleanLine'
+  | 'removeSide'
+  | 'removeColumn'
+  | 'removeRegionBroken'
+  | 'removeRegionRuling'
+  | 'removeRegionSealImpression'
+  | 'removeRegionUninscribed'
+  | 'removeLine'
+  | 'removeUndeterminedLines'
+  | 'removeWord'
+  | 'removeSign'
+  | 'removeUndeterminedSigns'
+  | 'removeDivider';
+
+export interface EditTextPayloadBase {
+  type: EditTextAction;
+  textUuid: string;
+}
+
+export interface AddSidePayload extends EditTextPayloadBase {
+  type: 'addSide';
+  side: EpigraphicUnitSide;
+}
+
+export interface AddColumnPayload extends EditTextPayloadBase {
+  type: 'addColumn';
+  side: EpigraphicUnitSide;
+  column: number;
+}
+
+export interface AddRegionPayload extends EditTextPayloadBase {
+  type:
+    | 'addRegionBroken'
+    | 'addRegionRuling'
+    | 'addRegionSealImpression'
+    | 'addRegionUninscribed';
+  side: EpigraphicUnitSide;
+  column: number;
+  regionValue?: number;
+  regionLabel?: string;
+  previousObjectOnTablet?: number;
+}
+
+export interface AddLinePayload extends EditTextPayloadBase {
+  type: 'addLine';
+  side: EpigraphicUnitSide;
+  column: number;
+  row: RowContent;
+  previousObjectOnTablet?: number;
+  discourseSpellings: DiscourseSpelling[];
+}
+
+export interface AddUndeterminedLinesPayload extends EditTextPayloadBase {
+  type: 'addUndeterminedLines';
+  side: EpigraphicUnitSide;
+  column: number;
+  number: number;
+  previousObjectOnTablet?: number;
+}
+
+export interface AddWordEditPayload extends EditTextPayloadBase {
+  type: 'addWord';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  previousWord?: EpigraphicWord;
+  row: RowContent;
+  spellingUuid?: string;
+}
+
+export interface AddSignPayload extends EditTextPayloadBase {
+  type: 'addSign';
+  sign: SignCodeWithDiscourseUuid;
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  signUuidBefore: string | null;
+  spellingUuid: string | null;
+  spelling: string;
+  discourseUuid: string | null;
+}
+
+export interface AddUndeterminedSignsPayload extends EditTextPayloadBase {
+  type: 'addUndeterminedSigns';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  number: number;
+  signUuidBefore: string | null;
+  spelling: string;
+  discourseUuid: string | null;
+}
+
+export interface AddDividerPayload extends EditTextPayloadBase {
+  type: 'addDivider';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  signUuidBefore: string | null;
+}
+
+export interface EditSidePayload extends EditTextPayloadBase {
+  type: 'editSide';
+  originalSide: EpigraphicUnitSide;
+  newSide: EpigraphicUnitSide;
+}
+
+export interface EditColumnPayload extends EditTextPayloadBase {
+  type: 'editColumn';
+  side: EpigraphicUnitSide;
+  column: number;
+  direction: 'left' | 'right';
+}
+
+export interface EditRegionPayload extends EditTextPayloadBase {
+  type:
+    | 'editRegionBroken'
+    | 'editRegionRuling'
+    | 'editRegionSealImpression'
+    | 'editRegionUninscribed';
+  uuid: string;
+  regionType: MarkupType;
+  regionValue?: number;
+  regionLabel?: string;
+}
+
+export interface EditUndeterminedLinesPayload extends EditTextPayloadBase {
+  type: 'editUndeterminedLines';
+  uuid: string;
+  number?: number;
+  convertToBrokenArea: boolean;
+}
+
+export interface MergeLinePayload extends EditTextPayloadBase {
+  type: 'mergeLine';
+  firstLine: number;
+  secondLine: number;
+}
+
+export interface CleanLinesPayload extends EditTextPayloadBase {
+  type: 'cleanLine';
+}
+
+export interface RemoveSidePayload extends EditTextPayloadBase {
+  type: 'removeSide';
+  side: EpigraphicUnitSide;
+}
+
+export interface RemoveColumnPayload extends EditTextPayloadBase {
+  type: 'removeColumn';
+  side: EpigraphicUnitSide;
+  column: number;
+}
+
+export interface RemoveRegionPayload extends EditTextPayloadBase {
+  type:
+    | 'removeRegionBroken'
+    | 'removeRegionRuling'
+    | 'removeRegionSealImpression'
+    | 'removeRegionUninscribed';
+  uuid: string;
+}
+
+export interface RemoveLinePayload extends EditTextPayloadBase {
+  type: 'removeLine';
+  line: number;
+}
+
+export interface RemoveUndeterminedLinesPayload extends EditTextPayloadBase {
+  type: 'removeUndeterminedLines';
+  uuid: string;
+}
+
+export interface RemoveWordPayload extends EditTextPayloadBase {
+  type: 'removeWord';
+  discourseUuid: string;
+  line: number;
+}
+
+export interface RemoveSignPayload extends EditTextPayloadBase {
+  type: 'removeSign' | 'removeUndeterminedSigns';
+  uuid: string;
+  spellingUuid: string | null;
+  spelling: string;
+  line: number;
+}
+
+export interface RemoveDividerPayload extends EditTextPayloadBase {
+  type: 'removeDivider';
+  uuid: string;
+  line: number;
+}
+
+export type EditTextPayload =
+  | AddSidePayload
+  | AddColumnPayload
+  | AddRegionPayload
+  | AddLinePayload
+  | AddUndeterminedLinesPayload
+  | AddWordEditPayload
+  | AddSignPayload
+  | AddUndeterminedSignsPayload
+  | AddDividerPayload
+  | EditSidePayload
+  | EditColumnPayload
+  | EditRegionPayload
+  | EditUndeterminedLinesPayload
+  | MergeLinePayload
+  | CleanLinesPayload
+  | RemoveSidePayload
+  | RemoveColumnPayload
+  | RemoveRegionPayload
+  | RemoveLinePayload
+  | RemoveUndeterminedLinesPayload
+  | RemoveWordPayload
+  | RemoveSignPayload
+  | RemoveDividerPayload;

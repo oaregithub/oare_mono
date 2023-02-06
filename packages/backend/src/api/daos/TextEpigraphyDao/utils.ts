@@ -2,15 +2,18 @@ import { Knex } from 'knex';
 import { knexRead } from '@/connection';
 import {
   EpigraphicUnit,
-  EpigraphicUnitSide,
   ItemPropertyRow,
   MarkupUnit,
   SearchCooccurrence,
 } from '@oare/types';
-import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
+import {
+  normalizeFraction,
+  normalizeSign,
+  normalizeNumber,
+  convertSideNumberToSide,
+} from '@oare/oare';
 import sl from '@/serviceLocator';
 import { EpigraphicQueryRow } from './index';
-import sideNumbers from './sideNumbers';
 
 export function getSequentialCharacterQuery(
   cooccurrences: SearchCooccurrence[],
@@ -201,42 +204,25 @@ export function getSearchQuery(
   return query;
 }
 
-function mapSideNumberToSideName(
-  side: number,
-  sideMarkup: MarkupUnit[]
-): EpigraphicUnitSide {
-  let sideName = sideNumbers[side] || 'obv.';
-  if (sideMarkup.map(markup => markup.type).includes('isEmendedReading')) {
-    sideName += '!';
-  }
-  return sideName as EpigraphicUnitSide;
-}
-
 export function convertEpigraphicUnitRows(
   units: EpigraphicQueryRow[],
   markupUnits: MarkupUnit[]
 ): EpigraphicUnit[] {
   return units.map(unit => {
-    const sideUnit = units.filter(
-      epigUnit => epigUnit.side === unit.side && epigUnit.epigType === 'section'
-    )[0];
-    const sideMarkup = sideUnit
-      ? markupUnits.filter(markup => markup.referenceUuid === sideUnit.uuid)
-      : [];
-
     const unitMarkups = markupUnits.filter(
       markup => markup.referenceUuid === unit.uuid
     );
 
     const mappedUnit: EpigraphicUnit = {
       ...unit,
-      side: mapSideNumberToSideName(unit.side, sideMarkup),
+      side: convertSideNumberToSide(unit.side),
       markups: unitMarkups,
       word: null,
       translation: null,
       parseInfo: null,
       form: null,
     };
+
     if (unit.reading === null) {
       mappedUnit.reading = unit.epigReading;
     } else if (mappedUnit.reading !== mappedUnit.value) {

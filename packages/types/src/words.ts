@@ -37,9 +37,16 @@ export interface WordWithoutForms extends DictionaryWordParseInfo {
   word: string;
 }
 
-export interface WordFormAutocompleteDisplay {
-  info: { uuid: string; wordUuid: string; name: string };
-  wordDisplay: string;
+export interface DictItemAutocompleteDisplay {
+  info: DictItemAutocompleteInfo;
+  display: string;
+}
+
+export interface DictItemAutocompleteInfo {
+  uuid: string;
+  referenceUuid: string;
+  name: string;
+  type: 'word' | 'form' | 'spelling';
 }
 
 export interface WordsInTextSearchPayload {
@@ -47,11 +54,12 @@ export interface WordsInTextSearchPayload {
   page: number;
   rows: number;
   sequenced: boolean;
+  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly';
 }
 
 export interface WordsInTextSearchPayloadItem {
   uuids: ParseTreePropertyUuids[][] | string[];
-  type: 'parse' | 'form';
+  type: 'parse' | 'form/spelling';
   numWordsBefore: number | null;
 }
 
@@ -60,6 +68,7 @@ export interface WordsInTextSearchPayloadUnparsed {
   page: string;
   rows: string;
   sequenced: string;
+  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly';
 }
 
 export interface AddWordCheckPayload {

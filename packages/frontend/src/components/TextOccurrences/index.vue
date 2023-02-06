@@ -3,8 +3,8 @@
     :value="value"
     :title="`Texts for ${title}`"
     submitText="Disconnect"
-    @submit="disconnectSpellings"
-    :showSubmit="canDisconnectSpellings"
+    @submit="disconnect"
+    :showSubmit="canDisconnect"
     :submitDisabled="disconnectSelections.length < 1"
     cancelText="Close"
     :persistent="false"
@@ -30,21 +30,24 @@
     >
       <template #[`item.text`]="{ item }">
         <router-link
-          :to="`/epigraphies/${item.textUuid}/${
-            item.discoursesToHighlight || item.discourseUuid
-          }`"
+          :to="`/epigraphies/${item.textUuid}/${encodeURIComponent(
+            item.discourseUuidsToHighlight
+          )}`"
           class="test-text"
           target="_blank"
           >{{ item.textName }}</router-link
         >
       </template>
       <template #[`item.context`]="{ item }">
-        <div
-          v-for="(reading, index) in item.readings"
-          class="test-reading"
-          :key="index"
-          v-html="reading"
-        />
+        <div v-if="item.readings">
+          <div
+            v-for="(reading, index) in item.readings"
+            class="test-reading"
+            :key="index"
+            v-html="reading"
+          />
+        </div>
+        <span v-else>Preview Unavailable</span>
       </template>
       <template #[`item.disconnect`]="{ item }">
         <div class="d-flex justify-center">
@@ -112,60 +115,58 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    showDisconnect: {
+      type: Boolean,
+      default: true,
+    },
   },
   setup(props, { emit }) {
     const actions = sl.get('globalActions');
     const _ = sl.get('lodash');
-    const server = sl.get('serverProxy');
     const store = sl.get('store');
 
     const search = ref('');
     const textOccurrencesLength = ref(props.totalTextOccurrences);
     const textOccurrences = ref<TextOccurrencesResponseRow[]>([]);
 
-    const canDisconnectSpellings = computed(() =>
-      store.hasPermission('DISCONNECT_SPELLING')
+    const canDisconnect = computed(() =>
+      store.hasPermission('DISCONNECT_OCCURRENCES')
     );
 
-    const headers: Ref<DataTableHeader[]> = canDisconnectSpellings.value
-      ? ref([
-          {
-            text: 'Text Name',
-            value: 'text',
-          },
-          {
-            text: 'Context',
-            value: 'context',
-          },
-          {
-            text: 'Disconnect',
-            value: 'disconnect',
-            align: 'center',
-            sortable: false,
-          },
-        ])
-      : ref([
-          {
-            text: 'Text Name',
-            value: 'text',
-          },
-          {
-            text: 'Context',
-            value: 'context',
-          },
-        ]);
+    const headers: Ref<DataTableHeader[]> =
+      canDisconnect.value && props.showDisconnect
+        ? ref([
+            {
+              text: 'Text Name',
+              value: 'text',
+            },
+            {
+              text: 'Context',
+              value: 'context',
+            },
+            {
+              text: 'Disconnect',
+              value: 'disconnect',
+              align: 'center',
+              sortable: false,
+            },
+          ])
+        : ref([
+            {
+              text: 'Text Name',
+              value: 'text',
+            },
+            {
+              text: 'Context',
+              value: 'context',
+            },
+          ]);
     const disconnectSelections = ref<string[]>([]);
 
-    const disconnectSpellings = async () => {
-      try {
-        await server.disconnectSpellings(disconnectSelections.value);
-        emit('reload');
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error disconnecting spelling(s). Please try again.',
-          err as Error
-        );
-      }
+    const disconnect = () => {
+      emit('disconnect', disconnectSelections.value);
+      emit('reload');
+      disconnectSelections.value = [];
     };
 
     const referencesLoading = ref(false);
@@ -176,6 +177,7 @@ export default defineComponent({
 
     const getReferences = async () => {
       try {
+        textOccurrences.value = [];
         referencesLoading.value = true;
         textOccurrences.value = await props.getTexts(props.uuids, {
           page: tableOptions.value.page,
@@ -229,8 +231,8 @@ export default defineComponent({
       referencesLoading,
       tableOptions,
       disconnectSelections,
-      disconnectSpellings,
-      canDisconnectSpellings,
+      disconnect,
+      canDisconnect,
     };
   },
 });

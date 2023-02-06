@@ -1,5 +1,6 @@
 <template>
-  <v-container :class="{ sticky: sticky }">
+  <v-progress-linear v-if="loading" indeterminate />
+  <v-container v-else :class="{ sticky: sticky }">
     <v-row align="center" justify="center">
       <v-slide-group
         :value="selectedImages"
@@ -40,29 +41,87 @@
         </v-slide-item>
       </v-slide-group>
     </v-row>
-    <v-row align="center" justify="center">
-      <div v-for="(selection, idx) in selectedImages" :key="idx">
-        <v-row v-if="imageLinks.length > 0" justify="center">
-          <span><b>Side: </b>{{ parseSide(imageLinks[selection].side) }}</span>
+    <v-row align="start">
+      <v-col
+        v-for="(selection, idx) in selectedImages"
+        :key="idx"
+        :cols="selectedImages.length > 1 ? 12 / selectedImages.length : 12"
+      >
+        <v-row v-if="imageLinks.length > 0">
+          <v-col>
+            <v-row justify="center" align="center">
+              <div class="text-center">
+                <span
+                  ><b>Side: </b>{{ parseSide(imageLinks[selection].side) }}
+                  <br />
+                  <b>View: </b>{{ parseView(imageLinks[selection].view) }}</span
+                >
+              </div>
+              <div class="mr-n6">
+                <v-btn
+                  v-if="compressedImages.includes(selection)"
+                  fab
+                  icon
+                  height="40px"
+                  right
+                  width="40px"
+                  :key="`expand-${selection}`"
+                  @click="expandImage(selection)"
+                  ><v-icon>mdi-arrow-expand-horizontal</v-icon>
+                </v-btn>
+                <v-btn
+                  v-else
+                  fab
+                  icon
+                  height="40px"
+                  right
+                  width="40px"
+                  :key="`compress-${selection}`"
+                  @click="compressImage(selection)"
+                  ><v-icon>mdi-arrow-collapse-horizontal</v-icon>
+                </v-btn>
+              </div>
+            </v-row>
+          </v-col>
         </v-row>
-        <v-row v-if="imageLinks.length > 0" class="mb-1" justify="center">
-          <span><b>View: </b>{{ parseView(imageLinks[selection].view) }}</span>
+        <v-row justify="center">
+          <v-card
+            v-if="!compressedImages.includes(selection)"
+            outlined
+            class="overflow-auto"
+            max-height="55vh"
+          >
+            <v-row justify="center">
+              <inner-image-zoom
+                :src="imageLinks[selection].link"
+                moveType="drag"
+              />
+            </v-row>
+          </v-card>
+          <v-card
+            v-else
+            :img="imageLinks[selection].link"
+            :width="getWidth(imageLinks[selection].link)"
+            height="55vh"
+            outlined
+          >
+          </v-card>
         </v-row>
-        <inner-image-zoom :src="imageLinks[selection].link" moveType="drag" />
-        <div class="text-center">
-          <span>
-            Photo Source: {{ imageLinks[selection].label || 'Unavailable' }}
+        <v-row justify="center">
+          <span class="text-center">
+            Photo Source:
+            {{ imageLinks[selection].label || 'Unavailable' }}
             <br />
             For more information in photo, click (here).</span
           >
-        </div>
-      </div>
+        </v-row>
+      </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { defineComponent, PropType, Ref, ref } from '@vue/composition-api';
 import { EpigraphyLabelLink } from '@oare/types';
 import InnerImageZoom from 'vue-inner-image-zoom';
 
@@ -75,6 +134,10 @@ export default defineComponent({
       type: Array as PropType<EpigraphyLabelLink[]>,
       required: true,
     },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
     maxSelect: {
       type: Number,
       default: 2,
@@ -86,9 +149,28 @@ export default defineComponent({
   },
   setup(props) {
     const selectedImages = ref([0]);
+    const compressedImages: Ref<number[]> = ref([]);
+
+    const compressImage = (selection: number) => {
+      compressedImages.value.push(selection);
+    };
+
+    const expandImage = (selection: number) => {
+      const indexToRemove = compressedImages.value.indexOf(selection);
+      compressedImages.value.splice(indexToRemove, 1);
+    };
+
+    const getWidth = (src: string) => {
+      const image = new Image();
+      image.src = src;
+      const heightRatio = (window.innerHeight * 0.55) / image.height;
+
+      return (heightRatio * image.width + 1).toFixed(0);
+    };
 
     const updateSelected = (selection: number[]) => {
       selectedImages.value = selection;
+      compressedImages.value = [];
       if (selectedImages.value.length > props.maxSelect) {
         selectedImages.value.shift();
       }
@@ -172,9 +254,13 @@ export default defineComponent({
 
     return {
       selectedImages,
+      compressedImages,
       updateSelected,
       parseSide,
       parseView,
+      compressImage,
+      expandImage,
+      getWidth,
     };
   },
 });
@@ -183,9 +269,6 @@ export default defineComponent({
 <style scoped>
 .sticky {
   position: sticky;
-  top: 1.1in;
-}
-.zoom-container {
-  width: 36vw;
+  top: 0.9in;
 }
 </style>

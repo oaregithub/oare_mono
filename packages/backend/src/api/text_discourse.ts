@@ -88,6 +88,7 @@ router
           await TextDiscourseDao.incrementObjInText(
             textUuid,
             newRowObjInText,
+            1,
             trx
           );
           await Promise.all(

@@ -18,46 +18,55 @@
     </template>
 
     <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
-      <v-btn
-        v-if="!isEditing && textInfo.canWrite"
-        color="primary"
-        :to="`/epigraphies/${textUuid}/edit`"
-        class="mx-2"
-        >Edit</v-btn
-      >
-      <v-btn
-        v-if="canAddPictures"
-        color="primary"
-        @click="photosDialogOpen = true"
-        class="mx-2"
-        >Add Images</v-btn
-      >
-      <oare-dialog
-        v-if="isAdmin && textUuid"
-        v-model="quarantineDialog"
-        title="Quarantine Text"
-        submitText="Yes"
-        cancelText="Cancel"
-        @submit="quarantineText"
-        :submitLoading="quarantineLoading"
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn color="primary" class="mx-2 test-quarantine-button" v-on="on"
-            ><v-icon>mdi-biohazard</v-icon></v-btn
-          >
-        </template>
-        Are you sure you want to quarantine this text? If you continue, this
-        text will no longer appear in text lists or search results and its
-        contents will not count toward any item totals.
-      </oare-dialog>
-      <v-btn
-        v-if="hasCopyPermission"
-        color="primary"
-        class="mx-2 test-copy-button"
-        @click="copyTransliteration"
-      >
-        <v-icon small>mdi-content-copy</v-icon>
-      </v-btn>
+      <div class="ml-8">
+        <v-btn
+          v-if="!isEditing && textInfo.canWrite && hasBetaAccess"
+          color="primary"
+          :to="`/edit_text/${textUuid}`"
+          class="mx-2"
+          >Edit (BETA)</v-btn
+        >
+        <v-btn
+          v-if="!isEditing && textInfo.canWrite"
+          color="primary"
+          :to="`/epigraphies/${textUuid}/draft`"
+          class="mx-2"
+          >Draft</v-btn
+        >
+        <v-btn
+          v-if="canAddPictures"
+          color="primary"
+          @click="photosDialogOpen = true"
+          class="mx-2"
+          >Add Images</v-btn
+        >
+        <oare-dialog
+          v-if="isAdmin && textUuid"
+          v-model="quarantineDialog"
+          title="Quarantine Text"
+          submitText="Yes"
+          cancelText="Cancel"
+          @submit="quarantineText"
+          :submitLoading="quarantineLoading"
+        >
+          <template v-slot:activator="{ on }">
+            <v-btn color="primary" class="mx-2 test-quarantine-button" v-on="on"
+              ><v-icon>mdi-biohazard</v-icon></v-btn
+            >
+          </template>
+          Are you sure you want to quarantine this text? If you continue, this
+          text will no longer appear in text lists or search results and its
+          contents will not count toward any item totals.
+        </oare-dialog>
+        <v-btn
+          v-if="hasCopyPermission"
+          color="primary"
+          class="mx-2 test-copy-button"
+          @click="copyTransliteration"
+        >
+          <v-icon small>mdi-content-copy</v-icon>
+        </v-btn>
+      </div>
     </template>
     <v-row>
       <v-col
@@ -251,7 +260,11 @@
         v-if="canViewEpigraphyImages"
         class="relative test-cdli-image"
       >
-        <EpigraphyImage :imageLinks="imageUrls" :sticky="!disableEditing" />
+        <EpigraphyImage
+          :loading="imagesLoading"
+          :imageLinks="imageUrls"
+          :sticky="!disableEditing"
+        />
       </v-col>
     </v-row>
   </OareContentView>
@@ -371,7 +384,13 @@ export default defineComponent({
       store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
     );
 
+    const hasBetaAccess = computed(() =>
+      store.getters.user ? store.getters.user.betaAccess : false
+    );
+
     const loading = ref(false);
+    const imagesLoading = ref(false);
+
     const draft = ref<DraftContent | null>(null);
     const hasPicture = computed(() => imageUrls.value.length > 0);
     const textInfo = ref<EpigraphyResponse>({
@@ -482,8 +501,8 @@ export default defineComponent({
       return {
         uuid: null,
         content: draftRenderer.sides.map(side => ({
-          side,
-          text: draftRenderer.sideReading(side),
+          side: side.side!,
+          text: draftRenderer.sideReading(side.side!),
         })),
         notes: '',
       };
@@ -530,13 +549,41 @@ export default defineComponent({
     };
 
     const getTextInfo = async () => {
-      if (localEpigraphyUnits) {
-        textInfo.value = localEpigraphyUnits;
-      } else if (textUuid) {
-        textInfo.value = await server.getEpigraphicInfo(
-          textUuid,
-          forceAllowAdminView
+      try {
+        loading.value = true;
+        if (localEpigraphyUnits) {
+          textInfo.value = localEpigraphyUnits;
+        } else if (textUuid) {
+          textInfo.value = await server.getEpigraphicInfo(
+            textUuid,
+            forceAllowAdminView
+          );
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error getting text epigraphy information. Please try again.',
+          err as Error
         );
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const getImageUrls = async () => {
+      try {
+        imagesLoading.value = true;
+        if (localImageUrls) {
+          imageUrls.value = localImageUrls;
+        } else if (textUuid) {
+          imageUrls.value = await server.getImageLinks(
+            textUuid,
+            textInfo.value.cdliNum
+          );
+        }
+      } catch (err) {
+        actions.showErrorSnackbar('Error getting image urls.', err as Error);
+      } finally {
+        imagesLoading.value = false;
       }
     };
 
@@ -565,27 +612,10 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      try {
-        loading.value = true;
-        await getTextInfo();
-        draft.value = textInfo.value.draft || null;
-        if (localImageUrls) {
-          imageUrls.value = localImageUrls;
-        } else if (textUuid) {
-          imageUrls.value = await server.getImageLinks(
-            textUuid,
-            textInfo.value.cdliNum
-          );
-        }
-        zoteroDataList.value = textInfo.value.zoteroData;
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error getting text epigraphy information. Please try again.',
-          err as Error
-        );
-      } finally {
-        loading.value = false;
-      }
+      await getTextInfo();
+      draft.value = textInfo.value.draft || null;
+      zoteroDataList.value = textInfo.value.zoteroData;
+      await getImageUrls();
     });
 
     const transliteration: ComputedRef<TranslitOption> = computed(() => ({
@@ -731,6 +761,8 @@ export default defineComponent({
       hasCopyPermission,
       seeMoreZotero,
       seeMoreSwitch,
+      imagesLoading,
+      hasBetaAccess,
     };
   },
 });

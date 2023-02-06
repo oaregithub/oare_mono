@@ -1,32 +1,74 @@
-import { knexRead } from '@/connection';
-import { PersonRow } from '@oare/types';
+import { knexRead, knexWrite } from '@/connection';
+import { PersonRow, Pagination, TextOccurrencesRow } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
 class PersonDao {
-  public readonly PERSON_TYPE = 'person';
-
-  async getPersonTextOccurrences(
+  async getPersonOccurrencesCount(
     uuid: string,
     userUuid: string | null,
+    pagination: Partial<Pagination> = {},
     trx?: Knex.Transaction
   ): Promise<number> {
     const k = trx || knexRead();
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
-    const subquery = k
-      .select('uuid')
-      .from('text_discourse')
-      .whereNotIn('text_uuid', textsTohide);
+    const discourseUuids = await k('item_properties')
+      .pluck('reference_uuid')
+      .where('object_uuid', uuid)
+      .whereIn('reference_uuid', k('text_discourse').select('uuid'));
 
-    const count = await k('item_properties')
-      .count({ count: 'uuid' })
-      .whereIn('reference_uuid', subquery)
-      .andWhere('object_uuid', uuid)
+    const count = await k('text_discourse')
+      .countDistinct({ count: 'text_discourse.uuid' })
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .whereIn('text_discourse.uuid', discourseUuids)
+      .whereNotIn('text.uuid', textsTohide)
+      .modify(qb => {
+        if (pagination.filter) {
+          qb.where('text.display_name', 'like', `%${pagination.filter}%`);
+        }
+      })
       .first();
 
     return count ? Number(count.count) : 0;
+  }
+
+  async getPersonOccurrencesTexts(
+    personUuids: string[],
+    userUuid: string | null,
+    { limit, page, filter }: Pagination,
+    trx?: Knex.Transaction
+  ): Promise<TextOccurrencesRow[]> {
+    const k = trx || knexRead();
+
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
+
+    const discourseUuids = await k('item_properties')
+      .pluck('reference_uuid')
+      .whereIn('object_uuid', personUuids)
+      .whereIn('reference_uuid', k('text_discourse').select('uuid'));
+
+    const rows: TextOccurrencesRow[] = await k('text_discourse')
+      .distinct(
+        'text_discourse.uuid AS discourseUuid',
+        'display_name AS textName',
+        'text_discourse.text_uuid AS textUuid'
+      )
+      .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
+      .whereIn('text_discourse.uuid', discourseUuids)
+      .whereNotIn('text.uuid', textsTohide)
+      .modify(qb => {
+        if (filter) {
+          qb.andWhere('text.display_name', 'like', `%${filter}%`);
+        }
+      })
+      .orderBy('text.display_name')
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    return rows;
   }
 
   async getPersonsRowsByLetter(
@@ -82,6 +124,17 @@ class PersonDao {
     });
 
     return query;
+  }
+
+  async disconnectPerson(
+    discourseUuid: string,
+    personUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    await k('item_properties')
+      .where({ reference_uuid: discourseUuid, object_uuid: personUuid })
+      .del();
   }
 }
 

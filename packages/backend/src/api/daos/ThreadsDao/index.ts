@@ -3,23 +3,15 @@ import {
   Thread,
   ThreadStatus,
   CreateThreadPayload,
+  AllThreadRow,
+  AllThreadResponse,
+  AllThreadRowUndeterminedItem,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
-
-interface AllThreadRow extends Thread {
-  comment: string;
-  userUuid: string;
-  timestamp: string;
-  item: string | null;
-}
-
-interface AllThreadResponse {
-  threads: AllThreadRow[];
-  count: number;
-}
+import { determineThreadItem } from './utils';
 
 const NULL_THREAD_NAME = 'Untitled';
 
@@ -123,9 +115,12 @@ class ThreadsDao {
           'comments.user_uuid AS userUuid',
           'comments.created_at AS timestamp',
           k.raw('MAX(comments.created_at) AS timestamp'),
-          k.raw(
-            'IFNULL(dictionary_word.word, IFNULL(dictionary_form.form, IFNULL(dictionary_spelling.spelling, NULL))) AS item'
-          )
+          'dictionary_word.word as word',
+          'dictionary_form.form as form',
+          'dictionary_spelling.spelling as spelling',
+          'field.field as definition',
+          'collection.name as collectionName',
+          'bibliography.zot_item_key as bibliography'
         )
         .innerJoin('comments', 'threads.uuid', 'comments.thread_uuid')
         .leftJoin(
@@ -143,6 +138,9 @@ class ThreadsDao {
           'threads.reference_uuid',
           'dictionary_spelling.uuid'
         )
+        .leftJoin('field', 'threads.reference_uuid', 'field.uuid')
+        .leftJoin('collection', 'threads.reference_uuid', 'collection.uuid')
+        .leftJoin('bibliography', 'threads.reference_uuid', 'bibliography.uuid')
         .modify(qb => {
           if (request.filters.status !== ('All' as ThreadStatus)) {
             qb.where('threads.status', request.filters.status);
@@ -174,8 +172,10 @@ class ThreadsDao {
                   'like',
                   `%${request.filters.item}%`
                 )
+                .orWhere('field.field', 'like', `%${request.filters.item}%`)
+                .orWhere('collection.name', 'like', `%${request.filters.item}%`)
                 .orWhere(
-                  'dictionary_spelling.spelling',
+                  'bibliography.short_cit',
                   'like',
                   `%${request.filters.item}%`
                 );
@@ -196,7 +196,10 @@ class ThreadsDao {
     const threads: AllThreadRow[] = await baseQuery()
       .orderBy(request.sort.type, request.sort.desc ? 'desc' : 'asc')
       .limit(request.pagination.limit)
-      .offset((request.pagination.page - 1) * request.pagination.limit);
+      .offset((request.pagination.page - 1) * request.pagination.limit)
+      .then((undertiminedItemThreads: AllThreadRowUndeterminedItem[]) =>
+        determineThreadItem(undertiminedItemThreads)
+      );
 
     const count = (await baseQuery()).length;
 

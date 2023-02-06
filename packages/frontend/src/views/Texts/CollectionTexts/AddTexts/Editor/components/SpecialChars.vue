@@ -123,11 +123,11 @@ export default defineComponent({
       },
       {
         character: 'x',
-        label: 'Undetermined Sign',
+        label: 'Broken Sign',
       },
       {
         character: '...',
-        label: 'Undetermined Signs (Unknown number)',
+        label: 'Broken Signs (Unknown number)',
       },
       {
         character: '|',

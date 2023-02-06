@@ -16,6 +16,10 @@ describe('AddFormDialog test', () => {
     showSnackbar: jest.fn(),
   };
 
+  const mockStore = {
+    hasPermission: () => false,
+  };
+
   const mockServer = {
     addForm: jest.fn().mockResolvedValue(),
     getTaxonomyTree: jest.fn().mockResolvedValue({
@@ -66,6 +70,7 @@ describe('AddFormDialog test', () => {
   const createWrapper = ({ server } = {}) => {
     sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
+    sl.set('store', mockStore);
 
     return mount(AddFormDialog, {
       vuetify,
