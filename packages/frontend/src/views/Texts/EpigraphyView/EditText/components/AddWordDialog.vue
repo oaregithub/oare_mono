@@ -2,12 +2,16 @@
   <oare-dialog
     :value="value"
     @input="$emit('input', $event)"
-    title="Add Word"
+    title="Add Word / Number"
     :persistent="false"
     :submitLoading="addWordLoading"
-    @submit="addWord"
-    :submitDisabled="!stepTwoComplete"
+    @submit="step === 1 ? step++ : addWord()"
+    :submitDisabled="!stepOneComplete"
+    :submitText="step === 1 ? 'Next' : 'Submit'"
     :width="600"
+    :showActionButton="step === 2"
+    actionButtonText="Back"
+    @action="goBack"
   >
     <div v-show="step === 1">
       <v-row justify="center" class="ma-0 mt-2">
@@ -32,77 +36,50 @@
       <v-row justify="center" class="ma-0 mb-2">
         As needed, this can be edited manually later.
       </v-row>
+    </div>
 
-      <v-row class="ma-0 mt-8" justify="center">
-        <v-btn color="primary" :disabled="!stepOneComplete" @click="step = 2"
-          >Next Step</v-btn
-        >
+    <div
+      v-if="
+        step === 2 && editorDiscourseWord && editorDiscourseWord.type === 'word'
+      "
+    >
+      <v-row class="ma-0 pa-0 mb-4" justify="center">
+        Use the interface below to connect the new word to the correct
+        dictionary spelling.
+      </v-row>
+      <v-row class="ma-0 pa-0 mb-8" justify="center">
+        Click on the word to view the available options for selection. In some
+        cases, a selection will have been made automatically based on a
+        spelling's prevalence. The selection bubble appears red when there are
+        no matching options, yellow when there are available options but none
+        have been automatically selected, and green if an option has been
+        selected, whether automatically or manually. Automatic selections can
+        also be disconnected or changed by clicking on the word.
+      </v-row>
+      <v-row class="ma-0 pa-0 mb-8" justify="center">
+        <connect-discourse-item
+          :word="editorDiscourseWord"
+          @update-spelling-uuid="spellingUuid = $event"
+        />
       </v-row>
     </div>
-    <div v-if="row">
-      <div
-        v-for="(word, idx) in row.words"
-        :key="idx"
-        v-show="step === idx + 2"
-      >
-        <v-progress-linear class="mt-4" indeterminate v-if="formsLoading" />
 
-        <v-row v-else-if="forms.length > 0" class="ma-0 mt-4">
-          <span
-            ><b class="mr-1">{{ word.spelling }}</b> appears in the following
-            lexical form(s). Select the appropriate form to link this occurrence
-            to the dictionary. You may submit without selecting a lexical form,
-            but please note that the word will not be properly connected.</span
-          >
-        </v-row>
-        <v-row v-else class="ma-0 mt-4">
-          <span
-            ><b class="mr-1">{{ word.spelling }}</b> does not appear in any
-            forms. As such, it cannot be connected to the dictionary at this
-            time.</span
-          >
-        </v-row>
-        <div v-if="!formsLoading && forms.length > 0">
-          <v-row class="ma-0 mt-4">
-            <v-radio-group @change="spellingUuid = $event">
-              <v-radio
-                v-for="option in forms"
-                :key="option.spellingUuid"
-                :value="option.spellingUuid"
-              >
-                <template #label>
-                  <b class="mr-1">{{ option.word }} - </b>
-                  <b class="mr-1">
-                    <i>{{ option.form.form }}</i>
-                  </b>
-                  <grammar-display :form="option.form" :allowEditing="false" />
-                </template>
-              </v-radio>
-            </v-radio-group>
-          </v-row>
-          <v-row class="ma-0">
-            <v-btn
-              v-if="forms.length > 0"
-              @click="spellingUuid = null"
-              color="primary"
-            >
-              Disconnect
-            </v-btn>
-          </v-row>
-        </div>
+    <div
+      v-if="
+        step === 2 &&
+        editorDiscourseWord &&
+        editorDiscourseWord.type === 'number'
+      "
+    >
+      <v-row class="ma-0 pa-0 mb-4" justify="center">
+        Adding a number does not require any additional information.
+      </v-row>
 
-        <v-row class="ma-0 mt-8" justify="center">
-          <v-btn color="info" @click="step--" class="mr-1">Previous Step</v-btn>
-          <v-btn
-            v-if="idx !== row.words.length - 1"
-            color="primary"
-            :disabled="!stepOneComplete"
-            @click="step++"
-            class="ml-1"
-            >Next Step</v-btn
-          >
-        </v-row>
-      </div>
+      <v-row class="ma-0 pa-0 mb-4" justify="center">
+        Click submit to add the number
+        <b class="mx-1">{{ editorDiscourseWord.spelling }}</b>
+        to the text.
+      </v-row>
     </div>
   </oare-dialog>
 </template>
@@ -113,15 +90,15 @@ import {
   PropType,
   ref,
   computed,
-  watch,
+  ComputedRef,
 } from '@vue/composition-api';
 import {
   EpigraphicWord,
   EpigraphicUnitSide,
   RowTypes,
-  SearchSpellingResultRow,
   RowContent,
   AddWordEditPayload,
+  EditorDiscourseWord,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { TabletRenderer } from '@oare/oare';
@@ -129,6 +106,7 @@ import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vu
 import { RowWithLine } from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Column.vue';
 import { v4 } from 'uuid';
 import GrammarDisplay from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/GrammarDisplay.vue';
+import ConnectDiscourseItem from '../../../CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
 
 export default defineComponent({
   props: {
@@ -164,6 +142,7 @@ export default defineComponent({
   components: {
     Row,
     GrammarDisplay,
+    ConnectDiscourseItem,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -237,53 +216,40 @@ export default defineComponent({
       );
     });
 
-    const stepTwoComplete = computed(() => {
-      return row.value && row.value.words;
-    });
-
     const step = ref(1);
 
-    const forms = ref<SearchSpellingResultRow[]>([]);
-    const formsLoading = ref(false);
-    const getPossibleSpellings = async (spelling: string) => {
-      try {
-        formsLoading.value = true;
-        forms.value = await server.searchSpellings(spelling);
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error loading spelling options. Please try again.',
-          err as Error
-        );
-      } finally {
-        formsLoading.value = false;
-      }
-    };
-
-    watch(step, async () => {
-      if (step.value === 2) {
-        const spelling =
-          row.value && row.value.words
-            ? row.value.words[step.value - 2].spelling
-            : null;
-        if (spelling) {
-          await getPossibleSpellings(spelling);
-        }
-      }
-    });
-
     const spellingUuid = ref<string | null>(null);
+
+    const editorDiscourseWord: ComputedRef<EditorDiscourseWord | undefined> =
+      computed(() => {
+        if (row.value && row.value.words) {
+          return {
+            ...row.value.words[0],
+            type:
+              row.value.signs &&
+              row.value.signs.every(sign => sign.readingType === 'number')
+                ? 'number'
+                : 'word',
+          };
+        } else {
+          return undefined;
+        }
+      });
+
+    const goBack = () => {
+      step.value = 1;
+      spellingUuid.value = null;
+    };
 
     return {
       row,
       addWordLoading,
       addWord,
       stepOneComplete,
-      stepTwoComplete,
       step,
       spellingUuid,
-      forms,
-      formsLoading,
-      getPossibleSpellings,
+      editorDiscourseWord,
+      goBack,
     };
   },
 });

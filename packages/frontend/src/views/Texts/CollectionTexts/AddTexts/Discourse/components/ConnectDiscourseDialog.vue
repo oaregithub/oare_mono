@@ -5,9 +5,10 @@
     closeOnSubmit
     @submit="setSpellingUuid"
     :showSubmit="forms.length > 0"
+    submitText="OK"
   >
     <OareContentView title="Select Lexical Form">
-      <b class="mr-1">{{ word.explicitSpelling }}</b>
+      <b class="mr-1">{{ spelling }}</b>
       <span v-if="forms.length > 0"
         >appears in the following lexical form(s). Select the appropriate form
         to link this occurrence to the dictionary.</span
@@ -51,7 +52,7 @@ import {
   PropType,
   watch,
 } from '@vue/composition-api';
-import { SearchSpellingResultRow, TextDiscourseRow } from '@oare/types';
+import { SearchSpellingResultRow } from '@oare/types';
 import GrammarDisplay from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/GrammarDisplay.vue';
 
 export default defineComponent({
@@ -60,13 +61,17 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    word: {
-      type: Object as PropType<TextDiscourseRow>,
+    spelling: {
+      type: String,
       required: true,
     },
     forms: {
       type: Array as PropType<SearchSpellingResultRow[]>,
       required: true,
+    },
+    spellingUuid: {
+      type: String,
+      required: false,
     },
   },
   components: {
@@ -80,10 +85,8 @@ export default defineComponent({
     };
 
     const resetSelectedOption = () => {
-      if (props.word.spellingUuid) {
-        selectedOption.value = props.forms.filter(
-          form => form.spellingUuid === props.word.spellingUuid
-        )[0].spellingUuid;
+      if (props.spellingUuid) {
+        selectedOption.value = props.spellingUuid;
       }
     };
 

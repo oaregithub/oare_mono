@@ -47,6 +47,15 @@
             >{{ cancelText }}</v-btn
           >
 
+          <v-btn
+            v-if="showActionButton"
+            @click="$emit('action')"
+            color="primary"
+            text
+            :disabled="actionButtonDisabled"
+            >{{ actionButtonText }}</v-btn
+          >
+
           <slot v-if="showSubmit" name="submit-button" :on="{ click: submit }">
             <OareLoaderButton
               class="test-submit-btn"
@@ -133,6 +142,18 @@ export default defineComponent({
     showActionsBar: {
       type: Boolean,
       defaault: false,
+    },
+    showActionButton: {
+      type: Boolean,
+      default: false,
+    },
+    actionButtonText: {
+      type: String,
+      default: 'Action',
+    },
+    actionButtonDisabled: {
+      type: Boolean,
+      default: false,
     },
   },
   setup({ closeOnSubmit }, { emit }) {

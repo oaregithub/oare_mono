@@ -1,4 +1,8 @@
-import { DiscourseUnit, TextDiscourseRow } from './textDiscourse';
+import {
+  DiscourseUnit,
+  TextDiscourseRow,
+  DiscourseUnitType,
+} from './textDiscourse';
 import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
 import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
@@ -363,6 +367,10 @@ export interface CreateTextTables {
 export interface EditorWord {
   spelling: string;
   discourseUuid: string | null;
+}
+
+export interface EditorDiscourseWord extends EditorWord {
+  type: DiscourseUnitType;
 }
 
 export interface EditorMarkupPiece {
