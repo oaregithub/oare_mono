@@ -370,39 +370,6 @@ export default defineComponent({
       return allowSearch;
     });
 
-    const filter = (item: any, queryText: string, itemText: string) => {
-      let itemTextClean = itemText;
-      if (!itemText.includes('Spelling')) {
-        itemTextClean = itemText.slice(0, -7).toLocaleLowerCase();
-      } else {
-        itemTextClean = itemText.slice(0, -11).toLocaleLowerCase();
-      }
-      const queryTextClean = queryText.toLocaleLowerCase();
-      const track = Array(itemTextClean.length + 1)
-        .fill(null)
-        .map(() => Array(queryTextClean.length + 1).fill(null));
-      for (let i = 0; i <= queryTextClean.length; i += 1) {
-        track[0][i] = i;
-      }
-      for (let j = 0; j <= itemTextClean.length; j += 1) {
-        track[j][0] = j;
-      }
-      for (let j = 1; j <= itemTextClean.length; j += 1) {
-        for (let i = 1; i <= queryTextClean.length; i += 1) {
-          const indicator =
-            queryTextClean[i - 1] === itemTextClean[j - 1] ? 0 : 1;
-          track[j][i] = Math.min(
-            track[j][i - 1] + 1,
-            track[j - 1][i] + 1,
-            track[j - 1][i - 1] + indicator
-          );
-        }
-      }
-      if (track[itemTextClean.length][queryTextClean.length] < 3) {
-        return item;
-      }
-    };
-
     const filterItems = (
       item: DictItemAutocompleteDisplay,
       queryText: string
@@ -804,7 +771,6 @@ export default defineComponent({
       getNumDictItemsSelected,
       getAutocompleteItems,
       searchLoading,
-      filter,
       headers,
       total,
       results,
