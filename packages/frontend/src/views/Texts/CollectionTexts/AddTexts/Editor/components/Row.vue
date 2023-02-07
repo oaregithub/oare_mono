@@ -485,6 +485,12 @@ export default defineComponent({
             )
           ) {
             spelling += '';
+          } else if (sign.type === 'undetermined') {
+            if (sign.reading && sign.reading === '@') {
+              spelling += '...';
+            } else if (sign.reading && sign.reading.includes('x')) {
+              spelling += `${sign.reading || ''}${sign.post || ''}`;
+            }
           } else {
             spelling += `${sign.value || ''}${sign.post || ''}`;
           }

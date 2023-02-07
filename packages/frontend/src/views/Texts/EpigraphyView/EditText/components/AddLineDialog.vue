@@ -5,11 +5,15 @@
     title="Add Line"
     :persistent="false"
     :submitLoading="addLineLoading"
-    @submit="addLine"
-    :submitDisabled="!stepTwoComplete"
+    @submit="step === 1 ? step++ : addLine()"
+    :submitDisabled="!stepOneComplete"
     :width="800"
+    :submitText="step === 1 ? 'Next' : 'Submit'"
+    :showActionButton="step === 2"
+    actionButtonText="Back"
+    @action="goBack"
   >
-    <div v-show="step === 1">
+    <div v-if="step === 1">
       <v-row class="ma-0 mx-12">
         <special-chars />
       </v-row>
@@ -22,93 +26,32 @@
         :outlined="true"
         @update-row-content="row = $event"
       />
-      <v-row class="ma-0 mt-8" justify="center">
-        <v-btn color="primary" :disabled="!stepOneComplete" @click="step = 2"
-          >Next Step</v-btn
-        >
-      </v-row>
     </div>
-    <div v-show="step === 2">
-      <v-row class="ma-0 mt-4">
-        <span
-          >The next steps will walk you through each of the words that appear on
-          the new line. You will be asked to specify which spelling from the
-          dictionary you would like the word to be linked to. In some cases, the
-          spelling provided might not appear in the dictionary at all and can be
-          skipped.</span
-        >
+    <div v-else-if="step === 2">
+      <v-row class="ma-0 pa-0 mb-4" justify="center">
+        Use the interface below to connect the each word on the new line to the
+        correct dictionary spelling.
       </v-row>
-      <v-row class="ma-0 mt-8" justify="center">
-        <v-btn color="info" @click="step--" class="mr-1">Previous Step</v-btn>
-        <v-btn color="primary" @click="step = 3">Next Step</v-btn>
+      <v-row class="ma-0 pa-0 mb-8" justify="center">
+        Click on a word to view the available options for selection. In some
+        cases, a selection will have been made automatically based on a
+        spelling's prevalence. The selection bubble appears red when there are
+        no matching options, yellow when there are available options but none
+        have been automatically selected, and green if an option has been
+        selected, whether automatically or manually. Automatic selections can
+        also be disconnected or changed by clicking on the word.
       </v-row>
-    </div>
-    <div v-if="row">
-      <div
-        v-for="(word, idx) in row.words"
-        :key="idx"
-        v-show="step === idx + 3"
-      >
-        <v-progress-linear class="mt-4" indeterminate v-if="formsLoading" />
-
-        <v-row v-else-if="forms.length > 0" class="ma-0 mt-4">
-          <span
-            ><b class="mr-1">{{ word.spelling }}</b> appears in the following
-            lexical form(s). Select the appropriate form to link this occurrence
-            to the dictionary. You may submit without selecting a lexical form,
-            but please note that the word will not be properly connected.</span
-          >
-        </v-row>
-        <v-row v-else class="ma-0 mt-4">
-          <span
-            ><b class="mr-1">{{ word.spelling }}</b> does not appear in any
-            forms. As such, it cannot be connected to the dictionary at this
-            time.</span
-          >
-        </v-row>
-        <div v-if="!formsLoading && forms.length > 0">
-          <v-row class="ma-0 mt-4">
-            <v-radio-group
-              @change="setDiscourseSpelling(word.discourseUuid, $event)"
-            >
-              <v-radio
-                v-for="option in forms"
-                :key="option.spellingUuid"
-                :value="option.spellingUuid"
-              >
-                <template #label>
-                  <b class="mr-1">{{ option.word }} - </b>
-                  <b class="mr-1">
-                    <i>{{ option.form.form }}</i>
-                  </b>
-                  <grammar-display :form="option.form" :allowEditing="false" />
-                </template>
-              </v-radio>
-            </v-radio-group>
-          </v-row>
-          <v-row class="ma-0">
-            <v-btn
-              v-if="forms.length > 0"
-              @click="setDiscourseSpelling(word.discourseUuid, null)"
-              color="primary"
-            >
-              Disconnect
-            </v-btn>
-          </v-row>
-        </div>
-
-        <v-row class="ma-0 mt-8" justify="center">
-          <v-btn color="info" @click="step--" class="mr-1">Previous Step</v-btn>
-          <v-btn
-            v-if="idx !== row.words.length - 1"
-            color="primary"
-            :disabled="!stepOneComplete"
-            @click="step++"
-            class="ml-1"
-            >Next Step</v-btn
-          >
-        </v-row>
-      </div>
+      <v-row class="ma-0 pa-0 mb-8" justify="center">
+        <connect-discourse-item
+          v-for="(word, idx) in editorDiscourseWords"
+          :key="idx"
+          :word="word"
+          class="mx-1"
+          @update-spelling-uuid="
+            setDiscourseSpelling(word.discourseUuid, $event)
+          "
+        />
+      </v-row>
     </div>
   </oare-dialog>
 </template>
@@ -118,8 +61,8 @@ import {
   defineComponent,
   ref,
   PropType,
-  watch,
   computed,
+  ComputedRef,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { TabletRenderer } from '@oare/oare';
@@ -130,12 +73,12 @@ import {
   RowTypes,
   EpigraphicUnitSide,
   RowContent,
-  SearchSpellingResultRow,
   DiscourseSpelling,
+  EditorDiscourseWord,
 } from '@oare/types';
 import SpecialChars from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/SpecialChars.vue';
 import { v4 } from 'uuid';
-import GrammarDisplay from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/GrammarDisplay.vue';
+import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
 
 export default defineComponent({
   props: {
@@ -167,7 +110,7 @@ export default defineComponent({
   components: {
     Row,
     SpecialChars,
-    GrammarDisplay,
+    ConnectDiscourseItem,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -244,43 +187,7 @@ export default defineComponent({
       );
     });
 
-    const stepTwoComplete = computed(() => {
-      return (
-        row.value &&
-        row.value.words &&
-        step.value === 3 + row.value.words.length - 1
-      );
-    });
-
     const step = ref(1);
-
-    const forms = ref<SearchSpellingResultRow[]>([]);
-    const formsLoading = ref(false);
-    const getPossibleSpellings = async (spelling: string) => {
-      try {
-        formsLoading.value = true;
-        forms.value = await server.searchSpellings(spelling);
-      } catch (err) {
-        actions.showErrorSnackbar(
-          'Error loading spelling options. Please try again.',
-          err as Error
-        );
-      } finally {
-        formsLoading.value = false;
-      }
-    };
-
-    watch(step, async () => {
-      if (step.value >= 3) {
-        const spelling =
-          row.value && row.value.words
-            ? row.value.words[step.value - 3].spelling
-            : null;
-        if (spelling) {
-          await getPossibleSpellings(spelling);
-        }
-      }
-    });
 
     const discourseSpellings = ref<DiscourseSpelling[]>([]);
     const setDiscourseSpelling = (
@@ -298,18 +205,38 @@ export default defineComponent({
       }
     };
 
+    const editorDiscourseWords: ComputedRef<EditorDiscourseWord[]> = computed(
+      () => {
+        return row.value && row.value.words
+          ? row.value.words.map(word => ({
+              ...word,
+              type:
+                row.value.signs &&
+                row.value.signs
+                  .filter(sign => sign.discourseUuid === word.discourseUuid)
+                  .every(sign => sign.readingType === 'number')
+                  ? 'number'
+                  : 'word',
+            }))
+          : [];
+      }
+    );
+
+    const goBack = () => {
+      step.value = 1;
+      discourseSpellings.value = [];
+    };
+
     return {
       addLineLoading,
       addLine,
       row,
       stepOneComplete,
       step,
-      stepTwoComplete,
-      getPossibleSpellings,
-      forms,
-      formsLoading,
       discourseSpellings,
       setDiscourseSpelling,
+      editorDiscourseWords,
+      goBack,
     };
   },
 });

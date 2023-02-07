@@ -7,14 +7,12 @@
         status of the connected forms. The bubble appears green with the form
         spelling inside if it has already been connected to the word. This is
         done for you automatically if there is only one possible option in the
-        dictionary (though it can be disconnected if desired). The bubble
-        appears yellow if there are a number of lexical options available for
-        selection. In some instances, a yellow bubble will show a form spelling
-        selected automatically. When this occurs, the selected form was
-        automatically selected for you due to its common occurrence in other
-        texts, but can be adjusted if necessary. Finally, the bubble appears red
-        if there are no forms in the dictionary that match the provided
-        spelling.
+        dictionary or when one form occurs significantly more often than other
+        available options. The bubble appears yellow if there are a number of
+        lexical options available for selection and none have been selected.
+        Finally, the bubble appears red if there are no forms in the dictionary
+        that match the provided spelling. Automatic selections can be unselected
+        as needed.
       </v-col>
     </v-row>
     <div v-if="renderer" class="mr-10">
@@ -47,51 +45,20 @@
                 v-html="renderer.lineReading(lineNum)"
               />
               <v-row v-else class="pa-0 ma-0">
-                <div
+                <connect-discourse-item
                   v-for="(word, index) in renderer.getLineWords(lineNum)"
                   :key="index"
-                  class="px-1 cursor-display d-inline-block"
-                  @click="openDiscourseDialog(word)"
-                >
-                  <v-row class="pa-0 ma-0" justify="center">
-                    <span v-html="word.reading" />
-                  </v-row>
-                  <v-row
-                    class="pa-0 text-body-2 ma-0 grey--text"
-                    justify="center"
-                  >
-                    <v-chip
-                      v-if="
-                        word.discourseUuid
-                          ? !isNumber(word.discourseUuid) &&
-                            !isUndetermined(word.reading || '') &&
-                            !isSeparator(word.reading || '')
-                          : false
-                      "
-                      :color="getColor(word.discourseUuid)"
-                      small
-                      >{{
-                        word.discourseUuid
-                          ? getSelectedForm(word.discourseUuid)
-                          : '--'
-                      }}</v-chip
-                    >
-                  </v-row>
-                </div>
+                  :word="getDiscourseWord(word)"
+                  :reading="word.reading"
+                  class="px-1"
+                  @update-spelling-uuid="setSpellingUuid(word, $event)"
+                />
               </v-row>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <connect-discourse-dialog
-      v-if="selectedWord"
-      v-model="discourseDialog"
-      :word="selectedWord"
-      :forms="searchSpellingResults[selectedWord.uuid]"
-      :key="selectedWord.uuid"
-      @set-spelling-uuid="setSpellingUuid(selectedWord, $event)"
-    />
   </OareContentView>
 </template>
 
@@ -109,11 +76,12 @@ import {
   EpigraphicWord,
   SearchSpellingResultRow,
   LocaleCode,
+  EditorDiscourseWord,
 } from '@oare/types';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
-import ConnectDiscourseDialog from './components/ConnectDiscourseDialog.vue';
 import sl from '@/serviceLocator';
 import i18n from '@/i18n';
+import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
 
 export default defineComponent({
   props: {
@@ -131,7 +99,7 @@ export default defineComponent({
     },
   },
   components: {
-    ConnectDiscourseDialog,
+    ConnectDiscourseItem,
   },
   setup(props, { emit }) {
     const store = sl.get('store');
@@ -158,22 +126,12 @@ export default defineComponent({
       return lineNumber;
     };
 
-    const selectedWord = ref<TextDiscourseRow>();
-    const discourseDialog = ref(false);
-    const openDiscourseDialog = (word: EpigraphicWord) => {
-      const discourseRow = props.discourseRows.filter(
-        row => row.uuid === word.discourseUuid
-      )[0];
-      selectedWord.value = discourseRow;
-      discourseDialog.value = true;
-    };
-
     const setSpellingUuid = (
-      word: TextDiscourseRow | undefined,
+      word: EpigraphicWord,
       spellingUuid: string | undefined
     ) => {
       const newDiscourseRows = props.discourseRows.map(row => {
-        if (row !== word) {
+        if (row.uuid !== word.discourseUuid) {
           return row;
         }
         return {
@@ -182,9 +140,7 @@ export default defineComponent({
         };
       });
       emit('update-discourse-rows', newDiscourseRows);
-      if (word) {
-        emit('update-manual-selections', word.uuid);
-      }
+      emit('update-manual-selections', word.discourseUuid);
     };
 
     const searchSpellingResults = ref<{
@@ -275,12 +231,25 @@ export default defineComponent({
       return reading === '|';
     };
 
+    const getDiscourseWord = (word: EpigraphicWord): EditorDiscourseWord => {
+      return {
+        discourseUuid: word.discourseUuid,
+        spelling:
+          props.discourseRows.filter(row => row.uuid === word.discourseUuid)
+            .length > 0
+            ? props.discourseRows.filter(
+                row => row.uuid === word.discourseUuid
+              )[0].explicitSpelling || ''
+            : '',
+        type: word.signs.every(sign => sign.epigType === 'number')
+          ? 'number'
+          : 'word',
+      };
+    };
+
     return {
       renderer,
       lineNumber,
-      openDiscourseDialog,
-      discourseDialog,
-      selectedWord,
       setSpellingUuid,
       loading,
       searchSpellingResults,
@@ -290,6 +259,7 @@ export default defineComponent({
       isUndetermined,
       isSeparator,
       romanNumeral,
+      getDiscourseWord,
     };
   },
 });
