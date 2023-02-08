@@ -104,18 +104,8 @@ class TextEpigraphyDao {
       trx
     );
 
-    const epigraphicUnitRowsWithSections = convertEpigraphicUnitRows(
-      units,
-      markupUnits
-    );
-
-    const epigraphicUnitRowsFiltered = epigraphicUnitRowsWithSections.filter(
-      unit => unit.epigType !== 'section'
-    );
-
-    const epigraphicUnits = await getInterlinearInfo(
-      epigraphicUnitRowsFiltered
-    );
+    const epigraphicUnitRows = convertEpigraphicUnitRows(units, markupUnits);
+    const epigraphicUnits = await getInterlinearInfo(epigraphicUnitRows);
 
     return epigraphicUnits;
   }

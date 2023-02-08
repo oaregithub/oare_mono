@@ -84,12 +84,12 @@ export interface EpigraphicUnit {
   type: EpigraphicUnitType | null;
   value: null | string;
   markups: MarkupUnit[];
-  readingUuid: string;
+  readingUuid: string | null;
   word: string | null;
   form: string | null;
   translation: string | null;
   parseInfo: ItemPropertyRow[] | null;
-  signUuid: string;
+  signUuid: string | null;
   spellingUuid: string | null;
 }
 
