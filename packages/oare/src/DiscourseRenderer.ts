@@ -1,6 +1,11 @@
 /* eslint-disable max-classes-per-file */
 
-import { DiscourseUnit, DiscourseDisplayUnit, LocaleCode } from '@oare/types';
+import {
+  DiscourseUnit,
+  DiscourseDisplayUnit,
+  LocaleCode,
+  DiscourseUnitType,
+} from '@oare/types';
 import { localizeString } from './tabletUtils';
 
 export default class DiscourseRenderer {
@@ -41,6 +46,11 @@ export default class DiscourseRenderer {
       .map(word => localizeString(word.display, this.locale))
       .join(' ');
   }
+
+  public isRegion(lineNum: number): boolean {
+    const types = getLineTypes(lineNum, this.discourseUnits);
+    return types.includes('region');
+  }
 }
 
 function getSides(units: DiscourseUnit[]): number[] {
@@ -65,6 +75,21 @@ function getSideLines(side: number, units: DiscourseUnit[]): number[] {
     childrenLines.forEach(line => lines.add(line));
   });
   return Array.from(lines);
+}
+
+function getLineTypes(
+  line: number,
+  units: DiscourseUnit[]
+): DiscourseUnitType[] {
+  const types: Set<DiscourseUnitType> = new Set();
+  units.forEach(unit => {
+    if (unit.line === line) {
+      types.add(unit.type);
+    }
+    const childrenTypes = getLineTypes(line, unit.units);
+    childrenTypes.forEach(type => types.add(type));
+  });
+  return Array.from(types);
 }
 
 interface RenderFunc {

@@ -594,6 +594,17 @@ export default defineComponent({
       if (props.row.text) {
         updateText(props.row.text);
       }
+      if (
+        props.row.type === 'Broken Line(s)' ||
+        props.row.type === 'Broken Area' ||
+        props.row.type === 'Ruling(s)' ||
+        props.row.type === 'Uninscribed Line(s)'
+      ) {
+        emit('update-row-content', {
+          ...props.row,
+          regionDiscourseUuid: v4(),
+        });
+      }
       EventBus.$on(ACTIONS.SPECIAL_CHAR_INPUT, async (char: string) => {
         if (props.isCurrentRow) {
           await insertChar(char);

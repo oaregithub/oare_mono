@@ -8,7 +8,9 @@
           :key="line"
           class="mr-1"
         >
-          <sup>{{ formatLineNumber(line, false) }})</sup>
+          <sup v-if="!discourseRenderer.isRegion(line)"
+            >{{ formatLineNumber(line, false) }})</sup
+          >
           <span
             v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
             :key="idx"

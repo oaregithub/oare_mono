@@ -515,6 +515,8 @@ class EditTextUtils {
     };
 
     await TextMarkupDao.insertMarkupRow(markupRow, trx);
+
+    // FIXME add discourse support
   }
 
   async addLine(
@@ -818,6 +820,8 @@ class EditTextUtils {
     };
 
     await TextMarkupDao.insertMarkupRow(markupRow, trx);
+
+    // FIXME add discourse support
   }
 
   async addWord(
