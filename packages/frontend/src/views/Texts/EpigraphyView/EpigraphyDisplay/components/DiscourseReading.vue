@@ -64,6 +64,7 @@
             v-if="
               articulateDiscourseHierarchy &&
               item.type !== 'discourseUnit' &&
+              showCheckbox(item) &&
               !disableEditing
             "
             hide-details
@@ -94,7 +95,17 @@
             >
               <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="`${discourseColor(item.type)}--text`"
+                  :class="{
+                    'red--text': item.type === 'paragraph',
+                    'blue--text': item.type === 'sentence',
+                    'purple--text': item.type === 'clause',
+                    'green--text': item.type === 'phrase',
+                    'orange--text': item.type === 'region',
+                    'ml-10':
+                      !showCheckbox(item) &&
+                      articulateDiscourseHierarchy &&
+                      item.type !== 'discourseUnit',
+                  }"
                   style="white-space: normal"
                   v-html="discourseReading(item)"
                   v-bind="attrs"
@@ -238,21 +249,6 @@ export default defineComponent({
       store.hasPermission('CONNECT_SPELLING')
     );
 
-    const discourseColor = (discourseType: string) => {
-      switch (discourseType) {
-        case 'paragraph':
-          return 'red';
-        case 'sentence':
-          return 'blue';
-        case 'clause':
-          return 'purple';
-        case 'phrase':
-          return 'green';
-        default:
-          return 'black';
-      }
-    };
-
     const discourseReading = (discourse: DiscourseUnit) => {
       let reading;
       if (
@@ -346,6 +342,25 @@ export default defineComponent({
         return true;
       }
       return false;
+    };
+
+    const showCheckbox = (unit: DiscourseUnit): boolean => {
+      if (unit.type === 'discourseUnit') {
+        return false;
+      }
+
+      if (
+        unit.type === 'region' &&
+        unit.explicitSpelling?.includes('uninscribed')
+      ) {
+        return false;
+      }
+
+      if (unit.type === 'region' && unit.explicitSpelling?.includes('ruling')) {
+        return false;
+      }
+
+      return true;
     };
 
     watch(articulateDiscourseHierarchy, () => {
@@ -442,7 +457,6 @@ export default defineComponent({
 
     return {
       discourseRenderer,
-      discourseColor,
       discourseReading,
       startEdit,
       discourseEdit,
@@ -468,6 +482,7 @@ export default defineComponent({
       closeConnectSpellingDialog,
       convertSideNumberToSide,
       server,
+      showCheckbox,
     };
   },
 });

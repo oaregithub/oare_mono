@@ -1,6 +1,6 @@
 import express from 'express';
 import sl from '@/serviceLocator';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import {
   NewDiscourseRowPayload,
   DiscourseProperties,
@@ -68,6 +68,22 @@ router
           newContent,
           properties,
         }: InsertParentDiscourseRowPayload = req.body;
+
+        if (
+          discourseSelections.some(
+            unit =>
+              unit.type === 'region' &&
+              (unit.explicitSpelling?.includes('uninscribed') ||
+                unit.explicitSpelling?.includes('ruling'))
+          )
+        ) {
+          next(
+            new HttpBadRequest(
+              'Cannot insert a parent discourse row for an uninscribed or ruling region'
+            )
+          );
+          return;
+        }
 
         const sortedDiscourseSelections = discourseSelections.sort(
           (a, b) => a.objInText - b.objInText
