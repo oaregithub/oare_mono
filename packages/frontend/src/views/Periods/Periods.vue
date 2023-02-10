@@ -4,7 +4,7 @@
     informationCard="This is the list of periods."
     :loading="loading"
   >
-    <div v-if="finished">
+    <div v-if="!loading">
       <PeriodYear v-for="(year, idx) in periods.years" :key="idx" :year="year">
       </PeriodYear>
     </div>
@@ -20,13 +20,11 @@ import sl from '@/serviceLocator';
 export default defineComponent({
   name: 'PeriodsView',
   components: { PeriodYear },
-  props: {},
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const loading = ref(false);
-    const finished = ref(false);
-    const periods = ref<PeriodResponse[]>();
+    const loading = ref(true);
+    const periods = ref<PeriodResponse>();
 
     onMounted(async () => {
       try {
@@ -36,14 +34,12 @@ export default defineComponent({
         actions.showErrorSnackbar('Error retrieving periods', err as Error);
       } finally {
         loading.value = false;
-        finished.value = true;
       }
     });
 
     return {
       periods,
       loading,
-      finished,
     };
   },
 });

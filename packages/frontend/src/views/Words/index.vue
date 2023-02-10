@@ -32,7 +32,6 @@
         </router-link>
       </template>
       <template #translationsForDefinition="{ word }">
-        <p>{{ word.wordOccurrences }}</p>
         <div v-if="partsOfSpeech(word).length > 0" class="mr-1">
           {{ itemPropertyString(partsOfSpeech(word)) }}
         </div>

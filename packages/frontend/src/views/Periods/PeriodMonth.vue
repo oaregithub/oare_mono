@@ -1,12 +1,19 @@
 <template>
-  <v-card outlined>
-    <v-card-subtitle>{{ month.name }}</v-card-subtitle>
-    <div v-if="month.weeks.length > 0">
-      <v-card-text v-for="(week, idx) in getWeekNames(month.weeks)" :key="idx">
-        {{ week }}
-      </v-card-text>
-    </div>
-  </v-card>
+  <v-col :cols="dynamicCol(month.abbreviation)">
+    <v-card outlined class="pa-2 ml-3">
+      <v-card-subtitle
+        >{{ month.abbreviation }}. {{ month.name }}</v-card-subtitle
+      >
+      <div v-if="month.weeks.length > 0">
+        <v-card-text
+          v-for="(week, idx) in getWeekNames(month.weeks)"
+          :key="idx"
+        >
+          {{ week }}
+        </v-card-text>
+      </div>
+    </v-card>
+  </v-col>
 </template>
 
 <script lang="ts">
@@ -26,10 +33,19 @@ export default defineComponent({
     },
   },
   setup() {
+    const dynamicCol = (abbreviation: number) => {
+      if (abbreviation < 13) {
+        return 2;
+      } else {
+        return 10;
+      }
+    };
+
     const getWeekNames = (weeks: Week[]) => {
       return weeks.map(week => week.name);
     };
     return {
+      dynamicCol,
       getWeekNames,
     };
   },

@@ -36,11 +36,6 @@ describe('PeriodsView test', () => {
     return mount(PeriodsView, {
       vuetify,
       localVue,
-      propsData: {
-        actions: mockActions,
-        server: server || mockServer,
-      },
-      stubs: ['router-link'],
     });
   };
   it('gets periods on load', async () => {

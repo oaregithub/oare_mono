@@ -12,7 +12,7 @@ router
   .route('/periods')
   .get(
     permissionsRoute('PERIODS'),
-    cacheMiddleware<PeriodResponse[]>(noFilter),
+    cacheMiddleware<PeriodResponse>(noFilter),
     async (req, res, next) => {
       try {
         const cache = sl.get('cache');

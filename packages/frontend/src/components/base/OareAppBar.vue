@@ -178,21 +178,13 @@
             </v-btn>
           </template>
           <v-list dense>
-            <v-list-item>
-              <v-btn
-                class="test-places"
-                text
-                to="/persons/A"
-                v-if="canViewPersons"
+            <v-list-item v-if="canViewPersons" class="pa-0">
+              <v-btn class="test-places" text to="/persons/A" width="100%"
                 >Persons</v-btn
               >
             </v-list-item>
-            <v-list-item>
-              <v-btn
-                class="test-periods"
-                text
-                to="/periods"
-                v-if="canViewPeriods"
+            <v-list-item v-if="canViewPeriods" class="pa-0">
+              <v-btn class="test-periods" text to="/periods" width="100%"
                 >Periods</v-btn
               >
             </v-list-item>
