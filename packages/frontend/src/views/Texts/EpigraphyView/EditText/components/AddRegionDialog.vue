@@ -2,32 +2,19 @@
   <oare-dialog
     :value="value"
     @input="$emit('input', $event)"
-    title="Add Region"
+    :title="dialogTitle"
     :persistent="false"
     :submitLoading="addRegionLoading"
     :submitDisabled="!formComplete"
     @submit="addRegion"
+    :submitText="regionType !== 'broken' ? 'Submit' : 'Yes'"
   >
-    <v-row class="ma-0"
-      >Select the type of region you would like to add, then complete any
-      required details.</v-row
+    <v-row v-if="regionType === 'broken'" class="ma-0"
+      >Are you sure you want to add a broken area?</v-row
     >
-    <v-row class="ma-0 mt-4">Region Type</v-row>
-    <v-row class="ma-0">
-      <v-select
-        outlined
-        dense
-        :items="regionOptions"
-        item-text="text"
-        item-value="value"
-        v-model="selectedRegion"
-      />
-    </v-row>
 
-    <v-row v-if="selectedRegion === 'ruling'" class="ma-0"
-      >Ruling(s) Value</v-row
-    >
-    <v-row v-if="selectedRegion === 'ruling'" class="ma-0">
+    <v-row v-if="regionType === 'ruling'" class="ma-0">Ruling(s) Value</v-row>
+    <v-row v-if="regionType === 'ruling'" class="ma-0">
       <v-select
         outlined
         dense
@@ -38,17 +25,17 @@
       />
     </v-row>
 
-    <v-row v-if="selectedRegion === 'isSealImpression'" class="ma-0"
+    <v-row v-if="regionType === 'isSealImpression'" class="ma-0"
       >Seal Impression Label (Optional)</v-row
     >
-    <v-row v-if="selectedRegion === 'isSealImpression'" class="ma-0">
+    <v-row v-if="regionType === 'isSealImpression'" class="ma-0">
       <v-text-field outlined dense v-model="regionLabel" placeholder="Ex: A" />
     </v-row>
 
-    <v-row v-if="selectedRegion === 'uninscribed'" class="ma-0"
+    <v-row v-if="regionType === 'uninscribed'" class="ma-0"
       >Number of Uninscribed Line(s)</v-row
     >
-    <v-row v-if="selectedRegion === 'uninscribed'" class="ma-0">
+    <v-row v-if="regionType === 'uninscribed'" class="ma-0">
       <v-select
         outlined
         dense
@@ -56,18 +43,30 @@
         v-model="regionValue"
       />
     </v-row>
+
+    <v-row
+      v-if="regionType !== 'isSealImpression'"
+      class="ma-0 mt-4"
+      justify="center"
+    >
+      <b class="mr-1">NOTE</b>
+      In the event that this insertion is made between two units belonging to
+      the same parent (paragraph, clause, etc.), the parent unit will be "split"
+      and copied on either side of the insertion. This may result in some
+      discourse units having duplicate labels or translations, but this can be
+      edited later as needed.
+    </v-row>
   </oare-dialog>
 </template>
 
 <script lang="ts">
+import { defineComponent, ref, computed, PropType } from '@vue/composition-api';
 import {
-  defineComponent,
-  ref,
-  computed,
-  watch,
-  PropType,
-} from '@vue/composition-api';
-import { AddRegionPayload, MarkupType, EpigraphicUnitSide } from '@oare/types';
+  AddRegionPayload,
+  MarkupType,
+  EpigraphicUnitSide,
+  EditTextAction,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import { TabletRenderer } from '@oare/oare';
 
@@ -97,31 +96,16 @@ export default defineComponent({
       type: Object as PropType<TabletRenderer>,
       required: true,
     },
+    regionType: {
+      type: String as PropType<MarkupType>,
+      required: true,
+    },
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
     const addRegionLoading = ref(false);
-
-    const regionOptions = ref<{ text: string; value: MarkupType }[]>([
-      {
-        text: 'Broken Area',
-        value: 'broken',
-      },
-      {
-        text: 'Ruling(s)',
-        value: 'ruling',
-      },
-      {
-        text: 'Seal Impression',
-        value: 'isSealImpression',
-      },
-      {
-        text: 'Uninscribed Line(s)',
-        value: 'uninscribed',
-      },
-    ]);
 
     const rulingOptions = ref<{ text: string; value: number }[]>([
       {
@@ -140,17 +124,13 @@ export default defineComponent({
 
     const uninscribedOptions = ref([1, 2, 3, 4, 5, 6, 7, 8]);
 
-    const selectedRegion = ref<MarkupType>();
     const regionLabel = ref<string>();
     const regionValue = ref<number>();
 
     const formComplete = computed(() => {
-      if (!selectedRegion.value) {
-        return false;
-      }
       if (
-        selectedRegion.value === 'broken' ||
-        selectedRegion.value === 'isSealImpression'
+        props.regionType === 'broken' ||
+        props.regionType === 'isSealImpression'
       ) {
         return true;
       }
@@ -160,18 +140,9 @@ export default defineComponent({
       return false;
     });
 
-    watch(selectedRegion, () => {
-      regionLabel.value = undefined;
-      regionValue.value = undefined;
-    });
-
     const addRegion = async () => {
       try {
         addRegionLoading.value = true;
-
-        if (!selectedRegion.value) {
-          throw new Error('No region type selected');
-        }
 
         let previousObjectOnTablet: number | undefined = undefined;
         if (props.previousLineNumber) {
@@ -182,12 +153,27 @@ export default defineComponent({
             unitsOnPreviousLine[unitsOnPreviousLine.length - 1].objOnTablet;
         }
 
+        let type: EditTextAction;
+        switch (props.regionType) {
+          case 'broken':
+            type = 'addRegionBroken';
+            break;
+          case 'ruling':
+            type = 'addRegionRuling';
+            break;
+          case 'isSealImpression':
+            type = 'addRegionSealImpression';
+            break;
+          default:
+            type = 'addRegionUninscribed';
+            break;
+        }
+
         const payload: AddRegionPayload = {
-          type: 'addRegion',
+          type,
           textUuid: props.textUuid,
           side: props.side,
           column: props.column,
-          regionType: selectedRegion.value,
           regionValue: regionValue.value,
           regionLabel: regionLabel.value,
           previousObjectOnTablet,
@@ -206,16 +192,28 @@ export default defineComponent({
       }
     };
 
+    const dialogTitle = computed(() => {
+      switch (props.regionType) {
+        case 'broken':
+          return 'Add Broken Area';
+        case 'ruling':
+          return 'Add Ruling';
+        case 'isSealImpression':
+          return 'Add Seal Impression';
+        default:
+          return 'Add Uninscribed Line(s)';
+      }
+    });
+
     return {
       addRegionLoading,
-      regionOptions,
-      selectedRegion,
       regionValue,
       regionLabel,
       rulingOptions,
       uninscribedOptions,
       formComplete,
       addRegion,
+      dialogTitle,
     };
   },
 });

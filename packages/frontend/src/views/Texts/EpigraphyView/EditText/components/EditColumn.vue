@@ -68,7 +68,10 @@
     <v-card flat outlined min-height="675px">
       <v-row
         v-if="
-          currentEditAction === 'addRegion' ||
+          currentEditAction === 'addRegionBroken' ||
+          currentEditAction === 'addRegionRuling' ||
+          currentEditAction === 'addRegionSealImpression' ||
+          currentEditAction === 'addRegionUninscribed' ||
           currentEditAction === 'addLine' ||
           currentEditAction === 'addUndeterminedLines'
         "
@@ -95,7 +98,10 @@
         />
         <v-row
           v-if="
-            currentEditAction === 'addRegion' ||
+            currentEditAction === 'addRegionBroken' ||
+            currentEditAction === 'addRegionRuling' ||
+            currentEditAction === 'addRegionSealImpression' ||
+            currentEditAction === 'addRegionUninscribed' ||
             currentEditAction === 'addLine' ||
             currentEditAction === 'addUndeterminedLines'
           "
@@ -117,6 +123,7 @@
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
       :renderer="renderer"
+      :regionType="regionType"
     />
 
     <add-undetermined-lines-dialog
@@ -178,6 +185,7 @@ import {
   EpigraphicUnitSide,
   EditTextAction,
   EditColumnPayload,
+  MarkupType,
   RemoveColumnPayload,
 } from '@oare/types';
 import EditRow from './EditRow.vue';
@@ -242,10 +250,15 @@ export default defineComponent({
       }
     });
     const addRegionPreviousLineNumber = ref<number>();
-    const setupAddRegionDialog = (previousLine: number | undefined) => {
+    const regionType = ref<MarkupType>();
+    const setupAddRegionDialog = (
+      previousLine: number | undefined,
+      type: MarkupType
+    ) => {
       // Can be undefined if first line
       addRegionPreviousLineNumber.value = previousLine;
       addRegionDialog.value = true;
+      regionType.value = type;
     };
 
     const editColumnDialog = ref(false);
@@ -308,8 +321,14 @@ export default defineComponent({
     });
 
     const handleInsertLine = (previousLine: number | undefined) => {
-      if (props.currentEditAction === 'addRegion') {
-        setupAddRegionDialog(previousLine);
+      if (props.currentEditAction === 'addRegionBroken') {
+        setupAddRegionDialog(previousLine, 'broken');
+      } else if (props.currentEditAction === 'addRegionRuling') {
+        setupAddRegionDialog(previousLine, 'ruling');
+      } else if (props.currentEditAction === 'addRegionSealImpression') {
+        setupAddRegionDialog(previousLine, 'isSealImpression');
+      } else if (props.currentEditAction === 'addRegionUninscribed') {
+        setupAddRegionDialog(previousLine, 'uninscribed');
       } else if (props.currentEditAction === 'addLine') {
         setupAddLineDialog(previousLine);
       } else if (props.currentEditAction === 'addUndeterminedLines') {
@@ -366,6 +385,7 @@ export default defineComponent({
       addUndeterminedLinesDialog,
       addUndeterminedLinesPreviousLineNumber,
       setupAddUndeterminedLinesDialog,
+      regionType,
     };
   },
 });

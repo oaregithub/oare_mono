@@ -28,6 +28,7 @@ import {
   MarkupType,
   AddUndeterminedSignsPayload,
   AddDividerPayload,
+  DiscourseUnitType,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -186,6 +187,7 @@ const recursivelyCleanDiscourseUuids = async (
     .whereNot('type', 'word')
     .whereNot('type', 'number')
     .whereNot('type', 'discourseUnit')
+    .whereNot('type', 'region')
     .whereNotIn('uuid', parentUuids);
 
   if (discourseUuidsToDeleteNext.length > 0) {
@@ -195,6 +197,205 @@ const recursivelyCleanDiscourseUuids = async (
       trx
     );
   }
+};
+
+const addRegionDiscourse = async (
+  regionDiscourseUuid: string,
+  textUuid: string,
+  newObjectOnTablet: number,
+  transcription: string | null,
+  trx?: Knex.Transaction
+): Promise<void> => {
+  const k = trx || knexWrite();
+
+  const TextDiscourseDao = sl.get('TextDiscourseDao');
+  const AliasDao = sl.get('AliasDao');
+  const FieldDao = sl.get('FieldDao');
+
+  const discourseTreeUuid: string = await k('text_discourse')
+    .select('tree_uuid')
+    .where({ text_uuid: textUuid, type: 'discourseUnit' })
+    .first()
+    .then(row => row.tree_uuid);
+
+  const discourseUnitUuid: string = await k('text_discourse')
+    .select('uuid')
+    .where({ text_uuid: textUuid, type: 'discourseUnit' })
+    .first()
+    .then(row => row.uuid);
+
+  const discourseWordBefore: string | null = await k('text_epigraphy')
+    .select('discourse_uuid')
+    .first()
+    .orderBy('object_on_tablet', 'desc')
+    .where({ text_uuid: textUuid })
+    .where('object_on_tablet', '<', newObjectOnTablet)
+    .whereNotNull('discourse_uuid')
+    .then(row => (row ? row.discourse_uuid : null));
+
+  const discourseWordAfter: string | null = await k('text_epigraphy')
+    .select('discourse_uuid')
+    .first()
+    .orderBy('object_on_tablet', 'asc')
+    .where({ text_uuid: textUuid })
+    .where('object_on_tablet', '>=', newObjectOnTablet)
+    .whereNotNull('discourse_uuid')
+    .then(row => (row ? row.discourse_uuid : null));
+
+  const discourseBeforePath: string[] = discourseWordBefore
+    ? await getParentUuidPath(discourseWordBefore, trx)
+    : [discourseUnitUuid];
+  const discourseAfterPath: string[] = discourseWordAfter
+    ? await getParentUuidPath(discourseWordAfter, trx)
+    : [discourseUnitUuid];
+
+  const matchingNodes = discourseBeforePath.filter(node =>
+    discourseAfterPath.includes(node)
+  );
+
+  const newObjectInText = discourseWordBefore
+    ? await k('text_discourse')
+        .select('obj_in_text')
+        .first()
+        .where({ uuid: discourseWordBefore })
+        .then(row => row.obj_in_text + 1)
+    : 2; // 1 is discourseUnit
+
+  await TextDiscourseDao.incrementObjInText(
+    textUuid,
+    newObjectInText,
+    matchingNodes.length,
+    trx
+  );
+
+  const reversedMatches = matchingNodes.reverse();
+
+  const discourseUuidCopies: { [key: string]: string } = {};
+  let mostRecentDiscourseUuid: string | undefined;
+
+  for (let i = 0; i < reversedMatches.length; i += 1) {
+    const node = reversedMatches[i];
+
+    // eslint-disable-next-line no-await-in-loop
+    const type: DiscourseUnitType = await k('text_discourse')
+      .select('type')
+      .first()
+      .where({ uuid: node })
+      .then(row => row.type);
+
+    if (type !== 'discourseUnit') {
+      const newDiscourseUuid = v4();
+      discourseUuidCopies[node] = newDiscourseUuid;
+
+      const parentUuid =
+        mostRecentDiscourseUuid ||
+        // eslint-disable-next-line no-await-in-loop
+        (await k('text_discourse')
+          .select('uuid')
+          .where({ text_uuid: textUuid, type: 'discourseUnit' })
+          .first()
+          .then(row => row.uuid));
+
+      // eslint-disable-next-line no-await-in-loop
+      await TextDiscourseDao.insertDiscourseRow(
+        {
+          uuid: newDiscourseUuid,
+          type,
+          objInText: newObjectInText + i,
+          wordOnTablet: null,
+          childNum: null,
+          textUuid,
+          treeUuid: discourseTreeUuid,
+          parentUuid,
+          spellingUuid: null,
+          spelling: null,
+          explicitSpelling: null,
+          transcription: null,
+        },
+        trx
+      );
+
+      if (type === 'sentence') {
+        // eslint-disable-next-line no-await-in-loop
+        const originalTranslation = await k('field')
+          .select('field')
+          .where({
+            reference_uuid: node,
+            type: 'translation',
+            primacy: 0,
+            language: 'default',
+          })
+          .first()
+          .then(row => (row && row.field ? row.field : null));
+
+        // eslint-disable-next-line no-await-in-loop
+        await FieldDao.insertField(
+          newDiscourseUuid,
+          'translation',
+          originalTranslation,
+          0,
+          'default',
+          trx
+        );
+      } else if (type === 'paragraph') {
+        // eslint-disable-next-line no-await-in-loop
+        const originalLabel = await k('alias')
+          .select('name')
+          .where({ reference_uuid: node, type: 'label', primacy: 1 })
+          .first()
+          .then(row => (row && row.name ? row.name : null));
+
+        // eslint-disable-next-line no-await-in-loop
+        await AliasDao.insertAlias(
+          'label',
+          newDiscourseUuid,
+          originalLabel,
+          null,
+          null,
+          1,
+          trx
+        );
+      }
+
+      mostRecentDiscourseUuid = newDiscourseUuid;
+    }
+  }
+
+  const rowsNeedingParentUpdate: {
+    uuid: string;
+    parentUuid: string;
+  }[] = await k('text_discourse')
+    .select('uuid', 'parent_uuid as parentUuid')
+    .where({ text_uuid: textUuid })
+    .where('obj_in_text', '>', newObjectInText)
+    .whereNot({ parent_uuid: discourseUnitUuid })
+    .whereIn('parent_uuid', Object.keys(discourseUuidCopies));
+
+  await Promise.all(
+    rowsNeedingParentUpdate.map(row =>
+      k('text_discourse')
+        .where({ uuid: row.uuid })
+        .update({ parent_uuid: discourseUuidCopies[row.parentUuid] })
+    )
+  );
+
+  await TextDiscourseDao.insertDiscourseRow(
+    {
+      uuid: regionDiscourseUuid,
+      type: 'region',
+      objInText: newObjectInText,
+      wordOnTablet: null,
+      childNum: null,
+      textUuid,
+      treeUuid: discourseTreeUuid,
+      parentUuid: discourseUnitUuid,
+      spellingUuid: null,
+      spelling: null,
+      explicitSpelling: transcription,
+      transcription,
+    },
+    trx
+  );
 };
 
 const getMarkupToAutoAdd = async (
@@ -429,8 +630,14 @@ class EditTextUtils {
     const k = trx || knexWrite();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const AliasDao = sl.get('AliasDao');
+    const FieldDao = sl.get('FieldDao');
 
     const sideNumber = convertSideToSideNumber(payload.side);
+
+    const regionDiscourseUuid =
+      payload.type === 'addRegionSealImpression' ? null : v4();
 
     // If undefined, it will be the first object on tablet in the column
     const newObjectOnTablet = payload.previousObjectOnTablet
@@ -445,6 +652,50 @@ class EditTextUtils {
           })
           .orderBy('object_on_tablet', 'asc')
           .then(row => row.object_on_tablet + 1);
+
+    // DISCOURSE
+
+    if (payload.type !== 'addRegionSealImpression') {
+      let transcription: string | null = null;
+      switch (payload.type) {
+        case 'addRegionBroken':
+          transcription = '(large break)';
+          break;
+        case 'addRegionRuling':
+          if (payload.regionValue) {
+            if (payload.regionValue === 1) {
+              transcription = '(single ruling)';
+            } else if (payload.regionValue === 2) {
+              transcription = '(double ruling)';
+            } else if (payload.regionValue === 3) {
+              transcription = '(triple ruling)';
+            } else {
+              transcription = `(${payload.regionValue} rulings)`;
+            }
+          } else {
+            transcription = '(ruling)';
+          }
+          break;
+        case 'addRegionUninscribed':
+          transcription =
+            payload.regionValue && payload.regionValue > 1
+              ? `(${payload.regionValue} uninscribed lines)`
+              : '(uninscribed line)';
+          break;
+        default:
+          break;
+      }
+
+      await addRegionDiscourse(
+        regionDiscourseUuid!,
+        payload.textUuid,
+        newObjectOnTablet,
+        transcription,
+        trx
+      );
+    }
+
+    // EPIGRAPHY
 
     const treeUuid: string = await k('text_epigraphy')
       .select('tree_uuid')
@@ -474,7 +725,7 @@ class EditTextUtils {
       sign: null,
       readingUuid: null,
       reading: payload.regionLabel || null,
-      discourseUuid: null,
+      discourseUuid: regionDiscourseUuid,
     };
 
     await TextEpigraphyDao.incrementObjectOnTablet(
@@ -486,10 +737,28 @@ class EditTextUtils {
 
     await TextEpigraphyDao.insertEpigraphyRow(epigraphyRow, trx);
 
+    // MARKUP
+
+    let regionType: MarkupType;
+    switch (payload.type) {
+      case 'addRegionBroken':
+        regionType = 'broken';
+        break;
+      case 'addRegionRuling':
+        regionType = 'ruling';
+        break;
+      case 'addRegionSealImpression':
+        regionType = 'isSealImpression';
+        break;
+      default:
+        regionType = 'uninscribed';
+        break;
+    }
+
     const markupRow: TextMarkupRow = {
       uuid: v4(),
       referenceUuid: epigraphyRow.uuid,
-      type: payload.regionType,
+      type: regionType,
       numValue: payload.regionValue || null,
       altReadingUuid: null,
       altReading: null,
@@ -732,8 +1001,11 @@ class EditTextUtils {
     const k = trx || knexWrite();
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
 
     const sideNumber = convertSideToSideNumber(payload.side);
+
+    const regionDiscourseUuid = v4();
 
     // If undefined, it will be the first object on tablet in the column
     const newObjectOnTablet = payload.previousObjectOnTablet
@@ -748,6 +1020,54 @@ class EditTextUtils {
           })
           .orderBy('object_on_tablet', 'asc')
           .then(row => row.object_on_tablet + 1);
+
+    // DISCOURSE
+
+    const transcription =
+      payload.number > 1 ? `(${payload.number} broken lines)` : '(broken line)';
+
+    // If there are 2 or less broken lines, the discourse will simply be inserted within the existing hierarchy
+    if (payload.number > 2) {
+      await addRegionDiscourse(
+        regionDiscourseUuid,
+        payload.textUuid,
+        newObjectOnTablet,
+        transcription,
+        trx
+      );
+    } else {
+      const newDiscourseStarter = await getUpdatedDiscourse(
+        payload.textUuid,
+        newObjectOnTablet,
+        trx
+      );
+
+      await TextDiscourseDao.incrementObjInText(
+        payload.textUuid,
+        newDiscourseStarter.objInText,
+        1,
+        trx
+      );
+
+      const discourseRow: TextDiscourseRow = {
+        uuid: regionDiscourseUuid,
+        type: 'region',
+        objInText: newDiscourseStarter.objInText,
+        wordOnTablet: null,
+        childNum: null,
+        textUuid: payload.textUuid,
+        treeUuid: newDiscourseStarter.treeUuid,
+        parentUuid: newDiscourseStarter.parentUuid,
+        spelling: null,
+        spellingUuid: null,
+        explicitSpelling: transcription,
+        transcription,
+      };
+
+      await TextDiscourseDao.insertDiscourseRow(discourseRow, trx);
+    }
+
+    // EPIGRAPHY
 
     const treeUuid: string = await k('text_epigraphy')
       .select('tree_uuid')
@@ -777,7 +1097,7 @@ class EditTextUtils {
       sign: null,
       readingUuid: null,
       reading: null,
-      discourseUuid: null,
+      discourseUuid: regionDiscourseUuid,
     };
 
     await TextEpigraphyDao.incrementObjectOnTablet(
@@ -788,6 +1108,8 @@ class EditTextUtils {
     );
 
     await TextEpigraphyDao.insertEpigraphyRow(epigraphyRow, trx);
+
+    // MARKUP
 
     const markupRow: TextMarkupRow = {
       uuid: v4(),
@@ -1638,7 +1960,19 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
 
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .where({ uuid: payload.uuid })
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
+
     await k('text_epigraphy').where({ uuid: payload.uuid }).del();
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
   }
 
   async removeLine(
@@ -1675,7 +2009,19 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
 
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .where({ uuid: payload.uuid })
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
+
     await k('text_epigraphy').where({ uuid: payload.uuid }).del();
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
   }
 
   async removeWord(

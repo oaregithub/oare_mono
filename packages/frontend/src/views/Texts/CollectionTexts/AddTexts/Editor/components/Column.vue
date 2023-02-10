@@ -113,6 +113,7 @@ export interface Row {
   words?: EditorWord[];
   reading?: string;
   hasErrors: boolean;
+  regionDiscourseUuid?: string;
 }
 
 export interface RowWithLine extends Row {
@@ -261,6 +262,7 @@ export default defineComponent({
             words: row.words,
             reading: row.reading,
             hasErrors: row.hasErrors,
+            regionDiscourseUuid: row.regionDiscourseUuid,
           };
         });
         emit('update-column-rows', rowContent);
