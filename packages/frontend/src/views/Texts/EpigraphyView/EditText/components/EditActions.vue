@@ -21,10 +21,28 @@
             Column</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('add-region')">
+        <v-list-item @click="$emit('add-region-broken')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-page-break</v-icon>
-            Region</v-list-item-title
+            Broken Area</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('add-region-ruling')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-minus-box-outline</v-icon>
+            Ruling</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('add-region-seal-impression')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-image-outline</v-icon>
+            Seal Impression</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('add-region-uninscribed')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-blur-linear</v-icon>
+            Uninscribed Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-line')">
@@ -54,13 +72,13 @@
         <v-list-item @click="$emit('add-undetermined-signs')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Broken Signs</v-list-item-title
+            Broken Sign(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('add-divider')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Divider</v-list-item-title
+            Word Divider</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -86,34 +104,52 @@
             Change Column Order</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-region')">
+        <v-list-item @click="$emit('edit-region-broken')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-page-break</v-icon>
-            Edit Region</v-list-item-title
+            Broken Area</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('edit-region-ruling')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-minus-box-outline</v-icon>
+            Ruling</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('edit-region-seal-impression')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-image-outline</v-icon>
+            Seal Impression</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('edit-region-uninscribed')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-blur-linear</v-icon>
+            Uninscribed Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-undetermined-lines')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-text-box-remove-outline</v-icon>
-            Edit Broken Line(s)</v-list-item-title
+            Broken Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-sign')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Edit Sign Markup (Coming Soon)</v-list-item-title
+            Sign (Coming Soon)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-undetermined-signs')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Edit Broken Signs (Coming Soon)</v-list-item-title
+            Broken Sign(s) (Coming Soon)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-divider')" disabled>
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Edit Divider Markup (Coming Soon)</v-list-item-title
+            Word Divider Markup (Coming Soon)</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -139,12 +175,6 @@
             Word / Number (Coming Soon)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('split-sign')" disabled>
-          <v-list-item-title>
-            <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Sign (Coming Soon)</v-list-item-title
-          >
-        </v-list-item>
       </v-list>
     </v-menu>
 
@@ -166,12 +196,6 @@
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
             Words / Numbers (Coming Soon)</v-list-item-title
-          >
-        </v-list-item>
-        <v-list-item @click="$emit('merge-sign')" disabled>
-          <v-list-item-title>
-            <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Signs (Coming Soon)</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -231,10 +255,28 @@
             Column</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('remove-region')">
+        <v-list-item @click="$emit('remove-region-broken')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-page-break</v-icon>
-            Region</v-list-item-title
+            Broken Area</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('remove-region-ruling')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-minus-box-outline</v-icon>
+            Ruling</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('remove-region-seal-impression')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-image-outline</v-icon>
+            Seal Impression</v-list-item-title
+          >
+        </v-list-item>
+        <v-list-item @click="$emit('remove-region-uninscribed')">
+          <v-list-item-title>
+            <v-icon small class="mr-1">mdi-blur-linear</v-icon>
+            Uninscribed Line(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('remove-line')">
@@ -264,13 +306,13 @@
         <v-list-item @click="$emit('remove-undetermined-signs')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Broken Signs</v-list-item-title
+            Broken Sign(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('remove-divider')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Divider</v-list-item-title
+            Word Divider</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -311,8 +353,14 @@ export default defineComponent({
           return 'Use the interface below to add a new side from the available options.';
         case 'addColumn':
           return 'In the dialog that appears, use the plus buttons to select where you would like to add a new column.';
-        case 'addRegion':
-          return 'Use the plus buttons between each line to select where you would like to add a new region.';
+        case 'addRegionBroken':
+          return 'Use the plus buttons between each line to select where you would like to add a new broken area.';
+        case 'addRegionRuling':
+          return 'Use the plus buttons between each line to select where you would like to add a new ruling.';
+        case 'addRegionSealImpression':
+          return 'Use the plus buttons between each line to select where you would like to add a new seal impression.';
+        case 'addRegionUninscribed':
+          return 'Use the plus buttons between each line to select where you would like to add a new uninscribed area.';
         case 'addLine':
           return 'Use the plus buttons between each line to select where you would like to add a new line.';
         case 'addUndeterminedLines':
@@ -324,13 +372,19 @@ export default defineComponent({
         case 'addUndeterminedSigns':
           return 'Click on the word that you would like to add broken signs to.';
         case 'addDivider':
-          return 'Use the plus buttons between each word to select where you would like to add a new divider.';
+          return 'Use the plus buttons between each word to select where you would like to add a new word divider.';
         case 'editSide':
           return 'In the dialog that appears, follow the instructions to change the side designation.';
         case 'editColumn':
           return 'Click the blue arrows that appear at the top right of each column to move it to the left or right.';
-        case 'editRegion':
-          return 'Click on the region that you would like to edit.';
+        case 'editRegionBroken':
+          return 'Click on the broken area that you would like to edit.';
+        case 'editRegionRuling':
+          return 'Click on the ruling that you would like to edit.';
+        case 'editRegionSealImpression':
+          return 'Click on the seal impression that you would like to edit.';
+        case 'editRegionUninscribed':
+          return 'Click on the uninscribed line(s) that you would like to edit.';
         case 'editUndeterminedLines':
           return 'Click on the broken line(s) that you would like to edit.';
         case 'editSign': // FIXME REVIEW
@@ -338,19 +392,15 @@ export default defineComponent({
         case 'editUndeterminedSigns': // FIXME REVIEW
           return 'Click on the broken sign(s) that you would like to edit.';
         case 'editDivider': // FIXME REVIEW
-          return 'Click on the divider that you would like to edit.';
+          return 'Click on the word divider that you would like to edit.';
         case 'splitLine': // FIXME REVIEW
           return 'Click on the line that you would like to split.';
         case 'splitWord': // FIXME REVIEW
           return 'Click on the word/number that you would like to split.';
-        case 'splitSign': // FIXME REVIEW
-          return 'Click on the sign that you would like to split.';
         case 'mergeLine':
           return 'Use the checkboxes that appear to select two consecutive lines that you would like to merge.';
         case 'mergeWord': // FIXME REVIEW
           return 'Use the checkboxes that appear to select two consecutive words/numbers that you would like to merge.';
-        case 'mergeSign': // FIXME REVIEW
-          return 'Use the checkboxes that appear to select two consecutive signs that you would like to merge.';
         case 'reorderSign': // FIXME REVIEW
           return 'Click on the word that contains the two signs that you would like to reorder.';
         case 'cleanLine':
@@ -359,8 +409,14 @@ export default defineComponent({
           return 'Use the interface below to remove a side.';
         case 'removeColumn':
           return 'Use the red trash cans that appear at the top right of each column to remove it.';
-        case 'removeRegion':
-          return 'Use the red trash cans that appear next to each region to remove it.';
+        case 'removeRegionBroken':
+          return 'Use the red trash cans that appear next to each broken area to remove it.';
+        case 'removeRegionRuling':
+          return 'Use the red trash cans that appear next to each ruling to remove it.';
+        case 'removeRegionSealImpression':
+          return 'Use the red trash cans that appear next to each seal impression to remove it.';
+        case 'removeRegionUninscribed':
+          return 'Use the red trash cans that appear next to each uninscribed line to remove it.';
         case 'removeLine':
           return 'Use the red trash cans that appear next to each line to remove it.';
         case 'removeUndeterminedLines':
@@ -372,7 +428,7 @@ export default defineComponent({
         case 'removeUndeterminedSigns':
           return 'Click on the broken sign(s) that you would like to remove.';
         case 'removeDivider':
-          return 'Use the red trash cans that appear next to each divider to remove it.';
+          return 'Click on the word divider that you would like to remove.';
       }
     });
 

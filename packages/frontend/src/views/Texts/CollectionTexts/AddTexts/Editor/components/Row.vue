@@ -485,6 +485,12 @@ export default defineComponent({
             )
           ) {
             spelling += '';
+          } else if (sign.type === 'undetermined') {
+            if (sign.reading && sign.reading === '@') {
+              spelling += '...';
+            } else if (sign.reading && sign.reading.includes('x')) {
+              spelling += `${sign.reading || ''}${sign.post || ''}`;
+            }
           } else {
             spelling += `${sign.value || ''}${sign.post || ''}`;
           }
@@ -587,6 +593,17 @@ export default defineComponent({
       emit('set-current-row');
       if (props.row.text) {
         updateText(props.row.text);
+      }
+      if (
+        props.row.type === 'Broken Line(s)' ||
+        props.row.type === 'Broken Area' ||
+        props.row.type === 'Ruling(s)' ||
+        props.row.type === 'Uninscribed Line(s)'
+      ) {
+        emit('update-row-content', {
+          ...props.row,
+          regionDiscourseUuid: v4(),
+        });
       }
       EventBus.$on(ACTIONS.SPECIAL_CHAR_INPUT, async (char: string) => {
         if (props.isCurrentRow) {

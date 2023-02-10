@@ -4,15 +4,19 @@
     @input="$emit('input', $event)"
     :persistent="false"
     :submitLoading="addSignLoading"
-    :submitDisabled="step !== 2 || formsLoading"
-    @submit="addSign"
+    :submitDisabled="!stepOneComplete"
+    @submit="step === 1 ? step++ : addSign()"
+    :submitText="step === 1 ? 'Next' : 'Submit'"
     :width="600"
+    :showActionButton="step === 2"
+    actionButtonText="Back"
+    @action="goBack"
   >
     <template #title>
       Add Sign to <span class="ml-1" v-html="wordToAddSignTo.reading" />
     </template>
 
-    <div v-show="step === 1">
+    <div v-if="step === 1">
       <v-row justify="center" class="ma-0 mt-2">
         <span
           >Select the position where you would like to add the new sign.</span
@@ -68,68 +72,33 @@
       >
         As needed, this can be edited manually later.
       </v-row>
-
-      <v-row class="ma-0 mt-8" justify="center">
-        <v-btn color="primary" :disabled="!stepOneComplete" @click="step = 2"
-          >Next Step</v-btn
-        >
-      </v-row>
     </div>
 
     <div v-if="step === 2">
-      <v-row class="ma-0 mt-4">
+      <v-row class="ma-0 my-4" justify="center">
         The word will be updated to become:
         <b class="ml-1" v-html="getUpdatedSignsWithSeparators()"
       /></v-row>
 
-      <v-progress-linear class="mt-4" indeterminate v-if="formsLoading" />
-
-      <v-row v-else-if="forms.length > 0" class="ma-0 mt-4">
-        <span
-          ><b class="mr-1" v-html="getUpdatedSignsWithSeparators()" />appears in
-          the following lexical form(s). Select the appropriate form to link
-          this occurrence to the dictionary. You may submit without selecting a
-          lexical form, but please note that the word will not be properly
-          connected.</span
-        >
+      <v-row class="ma-0 pa-0 mb-4" justify="center">
+        Use the interface below to connect the updated word to the correct
+        dictionary spelling.
       </v-row>
-      <v-row v-else class="ma-0 mt-4">
-        <span
-          ><b class="mr-1" v-html="getUpdatedSignsWithSeparators()" />does not
-          appear in any forms. As such, it cannot be connected to the dictionary
-          at this time.</span
-        >
+      <v-row class="ma-0 pa-0 mb-8" justify="center">
+        Click on the word to view the available options for selection. In some
+        cases, a selection will have been made automatically based on a
+        spelling's prevalence. The selection bubble appears red when there are
+        no matching options, yellow when there are available options but none
+        have been automatically selected, and green if an option has been
+        selected, whether automatically or manually. Automatic selections can
+        also be disconnected or changed by clicking on the word.
       </v-row>
-
-      <div v-if="!formsLoading && forms.length > 0">
-        <v-row class="ma-0 mt-4">
-          <v-radio-group v-model="selectedOption">
-            <v-radio
-              v-for="option in forms"
-              :key="option.spellingUuid"
-              :value="option.spellingUuid"
-            >
-              <template #label>
-                <b class="mr-1">{{ option.word }} - </b>
-                <b class="mr-1">
-                  <i>{{ option.form.form }}</i>
-                </b>
-                <grammar-display :form="option.form" :allowEditing="false" />
-              </template>
-            </v-radio>
-          </v-radio-group>
-        </v-row>
-        <v-row class="ma-0">
-          <v-btn
-            v-if="forms.length > 0"
-            @click="selectedOption = undefined"
-            color="primary"
-            :disabled="!selectedOption"
-          >
-            Disconnect
-          </v-btn>
-        </v-row>
-      </div>
+      <v-row class="ma-0 pa-0 mb-8" justify="center">
+        <connect-discourse-item
+          :word="editorDiscourseWord"
+          @update-spelling-uuid="spellingUuid = $event"
+        />
+      </v-row>
     </div>
   </oare-dialog>
 </template>
@@ -140,24 +109,24 @@ import {
   PropType,
   ref,
   computed,
-  watch,
+  ComputedRef,
 } from '@vue/composition-api';
 import { TabletRenderer } from '@oare/oare';
 import {
   EpigraphicUnitType,
   EpigraphicWord,
   RowTypes,
-  SearchSpellingResultRow,
   AddSignPayload,
   EpigraphicUnitSide,
   MarkupType,
+  EditorDiscourseWord,
 } from '@oare/types';
 import InsertButton from './InsertButton.vue';
 import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vue';
 import { RowWithLine } from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Column.vue';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
-import GrammarDisplay from '@/views/DictionaryWord/components/WordInfo/components/Forms/components/GrammarDisplay.vue';
+import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
 
 export default defineComponent({
   props: {
@@ -193,7 +162,7 @@ export default defineComponent({
   components: {
     InsertButton,
     Row,
-    GrammarDisplay,
+    ConnectDiscourseItem,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -249,7 +218,7 @@ export default defineComponent({
             insertIndex.value === 0
               ? null
               : props.wordToAddSignTo.signs[insertIndex.value - 1].uuid,
-          spellingUuid: selectedOption.value || null,
+          spellingUuid: spellingUuid.value || null,
           spelling: newSpelling,
           side: props.side,
           column: props.column,
@@ -270,29 +239,7 @@ export default defineComponent({
       }
     };
 
-    const forms = ref<SearchSpellingResultRow[]>([]);
-    const selectedOption = ref<string>();
-    const formsLoading = ref(false);
-
-    watch(step, async () => {
-      if (step.value === 2) {
-        try {
-          formsLoading.value = true;
-          const searchString = getUpdatedSignsWithSeparators().replace(
-            /<[^>]*>/g,
-            ''
-          );
-          forms.value = await server.searchSpellings(searchString);
-        } catch (err) {
-          actions.showErrorSnackbar(
-            'Error loading spelling options. Please try again.',
-            err as Error
-          );
-        } finally {
-          formsLoading.value = false;
-        }
-      }
-    });
+    const spellingUuid = ref<string>();
 
     const getUpdatedSignsWithSeparators = () => {
       const pieces: {
@@ -364,6 +311,22 @@ export default defineComponent({
       return newWordReading;
     };
 
+    const editorDiscourseWord: ComputedRef<EditorDiscourseWord> = computed(
+      () => {
+        const newWord = getUpdatedSignsWithSeparators().replace(/<[^>]*>/g, '');
+        return {
+          discourseUuid: props.wordToAddSignTo.discourseUuid,
+          spelling: newWord,
+          type: 'word',
+        };
+      }
+    );
+
+    const goBack = () => {
+      step.value = 1;
+      spellingUuid.value = undefined;
+    };
+
     return {
       addSignLoading,
       addSign,
@@ -371,10 +334,10 @@ export default defineComponent({
       row,
       step,
       stepOneComplete,
-      forms,
-      formsLoading,
-      selectedOption,
+      spellingUuid,
       getUpdatedSignsWithSeparators,
+      editorDiscourseWord,
+      goBack,
     };
   },
 });
