@@ -206,12 +206,20 @@ export const createNewTextTables = async (
     content,
     persistentDiscourseStorage
   );
-  const discourseRows = discourseRowsWithoutIterators.map((row, idx) => ({
-    ...row,
-    objInText: idx + 1,
-    wordOnTablet: row.type === 'discourseUnit' ? null : idx,
-    childNum: row.type === 'discourseUnit' ? null : idx,
-  }));
+
+  let wordOnTablet = 0;
+  const discourseRows = discourseRowsWithoutIterators.map((row, idx) => {
+    if (row.type === 'word' || row.type === 'number') {
+      wordOnTablet += 1;
+    }
+    return {
+      ...row,
+      objInText: idx + 1,
+      wordOnTablet:
+        row.type === 'word' || row.type === 'number' ? wordOnTablet : null,
+      childNum: row.type === 'discourseUnit' ? null : idx,
+    };
+  });
   const signInformation = await createSignInformation(content);
 
   const resourceRows: ResourceRow[] = photos.map(photo => ({
@@ -418,6 +426,7 @@ const createEditorRows = async (
             side: sideNumber,
             column: columnNumber,
             reading: row.reading,
+            discourseUuid: row.regionDiscourseUuid,
           });
 
           return [regionRow];
@@ -433,6 +442,7 @@ const createEditorRows = async (
               side: sideNumber,
               column: columnNumber,
               line: row.lines[0],
+              discourseUuid: row.regionDiscourseUuid,
             }
           );
           return [brokenLinesRow];
@@ -647,71 +657,154 @@ const createDiscourseRows = async (
               const columnRows = (
                 await Promise.all(
                   column.rows.map(async row => {
-                    const words = row.words || [];
-                    const wordRows = (
-                      await Promise.all(
-                        words
-                          .filter(word => !!word.discourseUuid)
-                          .map(async word => {
-                            const type =
-                              row.signs &&
-                              row.signs
-                                .filter(
-                                  sign =>
-                                    sign.discourseUuid === word.discourseUuid
-                                )
-                                .every(sign => sign.readingType === 'number')
-                                ? 'number'
-                                : 'word';
-                            let spellingUuid: string | undefined;
-                            const forms = await server.searchSpellings(
-                              word.spelling
-                            );
-                            if (
-                              persistentDiscourseStorage[
-                                word.discourseUuid!
-                              ] !== undefined
-                            ) {
-                              spellingUuid =
+                    if (row.type === 'Line') {
+                      const words = row.words || [];
+                      const wordRows = (
+                        await Promise.all(
+                          words
+                            .filter(word => !!word.discourseUuid)
+                            .map(async word => {
+                              const type =
+                                row.signs &&
+                                row.signs
+                                  .filter(
+                                    sign =>
+                                      sign.discourseUuid === word.discourseUuid
+                                  )
+                                  .every(sign => sign.readingType === 'number')
+                                  ? 'number'
+                                  : 'word';
+                              let spellingUuid: string | undefined;
+                              const forms = await server.searchSpellings(
+                                word.spelling
+                              );
+                              if (
                                 persistentDiscourseStorage[
                                   word.discourseUuid!
-                                ] || undefined;
-                            } else if (forms.length === 1) {
-                              spellingUuid = forms[0].spellingUuid;
-                            } else if (forms.length >= 2) {
-                              const sortedFormsByNumOccurrences = forms.sort(
-                                (a, b) => {
-                                  if (a.occurrences >= b.occurrences) {
-                                    return -1;
+                                ] !== undefined
+                              ) {
+                                spellingUuid =
+                                  persistentDiscourseStorage[
+                                    word.discourseUuid!
+                                  ] || undefined;
+                              } else if (forms.length === 1) {
+                                spellingUuid = forms[0].spellingUuid;
+                              } else if (forms.length >= 2) {
+                                const sortedFormsByNumOccurrences = forms.sort(
+                                  (a, b) => {
+                                    if (a.occurrences >= b.occurrences) {
+                                      return -1;
+                                    }
+                                    return 1;
                                   }
-                                  return 1;
+                                );
+                                const occurrenceRatio =
+                                  sortedFormsByNumOccurrences[0].occurrences /
+                                  sortedFormsByNumOccurrences[1].occurrences;
+                                if (occurrenceRatio >= 2) {
+                                  spellingUuid =
+                                    sortedFormsByNumOccurrences[0].spellingUuid;
+                                }
+                              }
+                              const newDiscourseRow = await createTextDiscourseRow(
+                                {
+                                  uuid: word.discourseUuid!,
+                                  type,
+                                  textUuid,
+                                  treeUuid,
+                                  parentUuid: discourseUnitRow.uuid,
+                                  spelling: word.spelling,
+                                  explicitSpelling: word.spelling,
+                                  spellingUuid,
                                 }
                               );
-                              const occurrenceRatio =
-                                sortedFormsByNumOccurrences[0].occurrences /
-                                sortedFormsByNumOccurrences[1].occurrences;
-                              if (occurrenceRatio >= 2) {
-                                spellingUuid =
-                                  sortedFormsByNumOccurrences[0].spellingUuid;
-                              }
-                            }
-                            const newDiscourseRow = await createTextDiscourseRow(
-                              {
-                                uuid: word.discourseUuid!,
-                                type,
-                                textUuid,
-                                treeUuid,
-                                parentUuid: discourseUnitRow.uuid,
-                                spelling: word.spelling,
-                                explicitSpelling: word.spelling,
-                                spellingUuid,
-                              }
-                            );
-                            return newDiscourseRow;
-                          })
-                      )
-                    ).flat();
-                    return wordRows;
+                              return newDiscourseRow;
+                            })
+                        )
+                      ).flat();
+                      return wordRows;
+                    }
+
+                    if (row.type === 'Broken Area') {
+                      const newDiscourseRow = await createTextDiscourseRow({
+                        uuid: row.regionDiscourseUuid!,
+                        type: 'region',
+                        textUuid,
+                        treeUuid,
+                        parentUuid: discourseUnitRow.uuid,
+                        explicitSpelling: '(large break)',
+                        transcription: '(large break)',
+                      });
+                      return newDiscourseRow;
+                    }
+
+                    if (row.type === 'Broken Line(s)') {
+                      const newDiscourseRow = await createTextDiscourseRow({
+                        uuid: row.regionDiscourseUuid!,
+                        type: 'region',
+                        textUuid,
+                        treeUuid,
+                        parentUuid: discourseUnitRow.uuid,
+                        explicitSpelling:
+                          row.value && row.value > 1
+                            ? `(${row.value} broken lines)`
+                            : '(broken line)',
+                        transcription:
+                          row.value && row.value > 1
+                            ? `(${row.value} broken lines)`
+                            : '(broken line)',
+                      });
+                      return newDiscourseRow;
+                    }
+
+                    if (row.type === 'Ruling(s)') {
+                      let transcription = '';
+                      if (row.value) {
+                        if (row.value === 1) {
+                          transcription = '(single ruling)';
+                        } else if (row.value === 2) {
+                          transcription = '(double ruling)';
+                        } else if (row.value === 3) {
+                          transcription = '(triple ruling)';
+                        } else {
+                          transcription = `(${row.value} rulings)`;
+                        }
+                      } else {
+                        transcription = '(ruling)';
+                      }
+
+                      const newDiscourseRow = await createTextDiscourseRow({
+                        uuid: row.regionDiscourseUuid!,
+                        type: 'region',
+                        textUuid,
+                        treeUuid,
+                        parentUuid: discourseUnitRow.uuid,
+                        explicitSpelling: transcription,
+                        transcription,
+                      });
+                      return newDiscourseRow;
+                    }
+
+                    if (row.type === 'Uninscribed Line(s)') {
+                      const newDiscourseRow = await createTextDiscourseRow({
+                        uuid: row.regionDiscourseUuid!,
+                        type: 'region',
+                        textUuid,
+                        treeUuid,
+                        parentUuid: discourseUnitRow.uuid,
+                        explicitSpelling:
+                          row.value && row.value > 1
+                            ? `(${row.value} uninscribed lines)`
+                            : '(uninscribed line)',
+                        transcription:
+                          row.value && row.value > 1
+                            ? `(${row.value} uninscribed lines)`
+                            : '(uninscribed line)',
+                      });
+                      return newDiscourseRow;
+                    }
+
+                    return [];
                   })
                 )
               ).flat();

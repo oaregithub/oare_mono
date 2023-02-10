@@ -14,6 +14,7 @@ import {
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
+import _ from 'lodash';
 import {
   createNestedDiscourses,
   setDiscourseReading,
@@ -393,10 +394,37 @@ class TextDiscourseDao {
       .leftJoin('field', 'field.reference_uuid', 'text_discourse.uuid')
       .where('text_discourse.text_uuid', textUuid)
       .groupBy('text_discourse.uuid')
-      .orderBy('text_discourse.word_on_tablet');
+      .orderBy('text_discourse.obj_in_text');
     const discourseRows: DiscourseRow[] = await discourseQuery;
 
-    const nestedDiscourses = createNestedDiscourses(discourseRows, null);
+    const discourseRowsWithRegionLineNumbers = discourseRows.reduce<
+      DiscourseRow[]
+    >((newUnits, unit) => {
+      if (unit.type === 'region') {
+        const { objInText } = unit;
+
+        const prevUnitIdx = _.findLastIndex(
+          newUnits,
+          backUnit => backUnit.line !== null && backUnit.objInText < objInText
+        );
+
+        let objLine: number | null = null;
+        if (prevUnitIdx === -1) {
+          objLine = 0.1;
+        } else if (newUnits[prevUnitIdx].line !== null) {
+          objLine = newUnits[prevUnitIdx].line! + 0.1;
+        }
+
+        return [...newUnits, { ...unit, line: objLine }];
+      }
+
+      return [...newUnits, unit];
+    }, []);
+
+    const nestedDiscourses = createNestedDiscourses(
+      discourseRowsWithRegionLineNumbers,
+      null
+    );
     nestedDiscourses.forEach(nestedDiscourse =>
       setDiscourseReading(nestedDiscourse)
     );
@@ -795,7 +823,7 @@ class TextDiscourseDao {
       return [];
     }
 
-    if (type === 'word' || type === 'number') {
+    if (type === 'word' || type === 'number' || type === 'region') {
       return [discourseUuid];
     }
 

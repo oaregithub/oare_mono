@@ -10,7 +10,8 @@ export type DiscourseUnitType =
   | 'number'
   | 'word'
   | 'paragraph'
-  | 'clause';
+  | 'clause'
+  | 'region';
 
 export interface DiscourseUnit {
   uuid: string;

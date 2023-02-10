@@ -43,6 +43,19 @@
         v-model="regionValue"
       />
     </v-row>
+
+    <v-row
+      v-if="regionType !== 'isSealImpression'"
+      class="ma-0 mt-4"
+      justify="center"
+    >
+      <b class="mr-1">NOTE</b>
+      In the event that this insertion is made between two units belonging to
+      the same parent (paragraph, clause, etc.), the parent unit will be "split"
+      and copied on either side of the insertion. This may result in some
+      discourse units having duplicate labels or translations, but this can be
+      edited later as needed.
+    </v-row>
   </oare-dialog>
 </template>
 

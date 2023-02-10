@@ -223,6 +223,7 @@ export interface RowContent {
   words?: EditorWord[];
   reading?: string;
   hasErrors: boolean;
+  regionDiscourseUuid?: string;
 }
 
 export interface TextPhoto {
