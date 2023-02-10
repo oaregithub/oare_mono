@@ -187,6 +187,7 @@ const recursivelyCleanDiscourseUuids = async (
     .whereNot('type', 'word')
     .whereNot('type', 'number')
     .whereNot('type', 'discourseUnit')
+    .whereNot('type', 'region')
     .whereNotIn('uuid', parentUuids);
 
   if (discourseUuidsToDeleteNext.length > 0) {
@@ -1959,7 +1960,19 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
 
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .where({ uuid: payload.uuid })
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
+
     await k('text_epigraphy').where({ uuid: payload.uuid }).del();
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
   }
 
   async removeLine(
@@ -1996,7 +2009,19 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
 
+    const discourseUuidsToDelete: string[] = await k('text_epigraphy')
+      .where({ uuid: payload.uuid })
+      .whereNotNull('discourse_uuid')
+      .distinct('discourse_uuid')
+      .then(rows => rows.map(r => r.discourse_uuid));
+
     await k('text_epigraphy').where({ uuid: payload.uuid }).del();
+
+    await recursivelyCleanDiscourseUuids(
+      discourseUuidsToDelete,
+      payload.textUuid,
+      trx
+    );
   }
 
   async removeWord(
