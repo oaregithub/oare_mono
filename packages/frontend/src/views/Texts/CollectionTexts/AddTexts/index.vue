@@ -77,8 +77,13 @@
             :manualDiscourseSelections="manuallySelectedDiscourses"
             @update-discourse-rows="updateDiscourseRows($event)"
             @update-manual-selections="updateManualSelections($event)"
+            @step-complete="stepFourComplete = $event"
           />
-          <stepper-button @next="next" @previous="previous" />
+          <stepper-button
+            @next="next"
+            @previous="previous"
+            :blockContinue="!stepFourComplete"
+          />
         </v-stepper-content>
 
         <v-stepper-content step="5">
@@ -175,6 +180,7 @@ export default defineComponent({
     const stepOneComplete = ref(false);
     const stepTwoComplete = ref(false);
     const stepThreeComplete = ref(false);
+    const stepFourComplete = ref(false);
 
     const next = () => (step.value += 1);
     const previous = () => (step.value -= 1);
@@ -412,6 +418,7 @@ export default defineComponent({
       isDirty,
       existingTextRow,
       epigraphyLabelLinks,
+      stepFourComplete,
     };
   },
 });

@@ -677,6 +677,8 @@ router
           await EditTextUtils.editRegion(payload, trx);
         } else if (payload.type === 'editUndeterminedLines') {
           await EditTextUtils.editUndeterminedLines(payload, trx);
+        } else if (payload.type === 'editSign') {
+          await EditTextUtils.editSign(payload, trx);
         } else if (payload.type === 'mergeLine') {
           await EditTextUtils.mergeLines(payload, trx);
         } else if (payload.type === 'removeSide') {
