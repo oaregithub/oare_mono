@@ -33,9 +33,7 @@
                   >{{ `Search Item #${index}` }}
                 </h4>
                 <v-autocomplete
-                  v-model="dictItemSelectionUuids[index - 1]"
                   :items="getAutocompleteItems(index)"
-                  item-text="display"
                   return-object
                   clearable
                   deletable-chips
@@ -44,11 +42,28 @@
                   no-filter
                   hide-selected
                   :search-input.sync="queryText[`queryText${index}`]"
+                  @input="dictItemSelectionUuids[index - 1] = $event"
                   @change="updateAutocomplete(index)"
                   @focus="setActiveIndex(index)"
                   item-color="primary"
                   :label="`word/form/spelling #${index}`"
                 >
+                  <template v-slot:selection="data">
+                    <v-chip close @click:close="removeChip(data.item, index)">
+                      <words-in-text-search-autocomplete-item
+                        :item="data.item"
+                        :key="`${data.item.uuid}-${index}-chip`"
+                      />
+                    </v-chip>
+                  </template>
+                  <template #item="{ attrs, item, on }">
+                    <words-in-text-search-autocomplete-item
+                      :key="`${item.uuid}-${index}-select`"
+                      v-bind="attrs"
+                      v-on="on"
+                      :item="item"
+                    />
+                  </template>
                   <template slot="append-outer">
                     <v-btn
                       class="test-autocomplete-btn-word-forms"
@@ -235,7 +250,6 @@ import {
   reactive,
 } from '@vue/composition-api';
 import {
-  DictItemAutocompleteInfo,
   DictItemAutocompleteDisplay,
   WordsInTextsSearchResultRow,
   WordsInTextsSearchResponse,
@@ -248,7 +262,9 @@ import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vu
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
 import AddProperties from '@/components/Properties/AddProperties.vue';
+import WordsInTextSearchAutocompleteItem from './components/WordsInTextSearchAutocompleteItem.vue';
 import _ from 'lodash';
+import WordGrammar from '@/views/DictionaryWord/components/WordInfo/components/WordGrammar/WordGrammar.vue';
 
 export interface DictItemWordsInTextSearch {
   name: string;
@@ -268,6 +284,8 @@ export default defineComponent({
     WordsInTextsSearchTable,
     WordsInTextSearchInfoCard,
     AddProperties,
+    WordsInTextSearchAutocompleteItem,
+    WordGrammar,
   },
   setup() {
     const items: Ref<DictItemAutocompleteDisplay[]> = ref([]);
@@ -374,7 +392,7 @@ export default defineComponent({
       item: DictItemAutocompleteDisplay,
       queryText: string
     ) => {
-      let itemTextClean = item.info.name.toLocaleLowerCase();
+      let itemTextClean = item.name.toLocaleLowerCase();
       const queryTextClean = queryText.toLocaleLowerCase();
       if (
         itemTextClean.includes(queryTextClean) &&
@@ -412,8 +430,8 @@ export default defineComponent({
       b: DictItemAutocompleteDisplay,
       queryText: string
     ) => {
-      const aName = a.info.name.toLocaleLowerCase();
-      const bName = b.info.name.toLocaleLowerCase();
+      const aName = a.name.toLocaleLowerCase();
+      const bName = b.name.toLocaleLowerCase();
       const cleanQueryText = queryText.toLocaleLowerCase();
       if (aName === cleanQueryText) {
         return -1;
@@ -468,14 +486,10 @@ export default defineComponent({
     };
 
     const updateAutocomplete = (index: number) => {
-      getDictItems(
-        dictItemSelectionUuids.value[index - 1].map(({ info }) => info),
-        index - 1
-      );
+      getDictItems(dictItemSelectionUuids.value[index - 1], index - 1);
       dictItemSelectionUuids.value[index - 1].length < 1
         ? expand.value.splice(index - 1, 1, false)
         : expand.value.splice(index - 1, 1, true);
-      filteredItems.value = items.value;
     };
 
     const updateNumOptionsUsing = async (increase: boolean) => {
@@ -511,6 +525,14 @@ export default defineComponent({
       expand.value.splice(index, 1, false);
     };
 
+    const removeChip = (item: DictItemAutocompleteDisplay, idx: number) => {
+      const index = dictItemSelectionUuids.value[idx - 1].indexOf(item);
+      if (index >= 0) {
+        dictItemSelectionUuids.value[idx - 1].splice(index, 1);
+      }
+      updateAutocomplete(idx);
+    };
+
     const selectAll = (val: boolean | null, index: number, idx: number) => {
       let selectedUuids: string[] = (searchItems.value[index]
         .uuids as unknown) as string[];
@@ -535,7 +557,7 @@ export default defineComponent({
         const uuid: string = uuidKey.slice(0, -1);
         const selectionUuids: string[] = dictItemSelectionUuids.value[
           index
-        ].map(({ info }) => info.uuid);
+        ].map(({ uuid }) => uuid);
         if (position === index && !selectionUuids.includes(uuid)) {
           dict[uuidKey] = false;
         }
@@ -556,7 +578,7 @@ export default defineComponent({
     };
 
     const getDictItems = (
-      selectedItems: DictItemAutocompleteInfo[],
+      selectedItems: DictItemAutocompleteDisplay[],
       index: number
     ) => {
       dictItems.value[index] = [];
@@ -567,17 +589,17 @@ export default defineComponent({
           const childDictItems: ChildDictItem[] = items.value
             .filter(item => {
               if (
-                item.info.referenceUuid === selectedItem.uuid &&
-                item.info.uuid !== item.info.referenceUuid
+                item.referenceUuid === selectedItem.uuid &&
+                item.uuid !== item.referenceUuid
               ) {
-                return item.info.uuid;
+                return item.uuid;
               }
             })
             .map(item => {
               return {
-                uuid: item.info.uuid,
-                name: item.info.name,
-                type: item.info.type as 'form' | 'spelling',
+                uuid: item.uuid,
+                name: item.name,
+                type: item.type as 'form' | 'spelling',
               };
             });
           const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
@@ -591,27 +613,27 @@ export default defineComponent({
           ];
         } else {
           const parentDictItem = items.value.find(item => {
-            if (item.info.uuid === selectedItem.referenceUuid) return item;
+            if (item.uuid === selectedItem.referenceUuid) return item;
           });
           const childDictItemSiblings: ChildDictItem[] = items.value
             .filter(item => {
               if (
-                item.info.referenceUuid === selectedItem.referenceUuid &&
-                item.info.referenceUuid !== item.info.uuid
+                item.referenceUuid === selectedItem.referenceUuid &&
+                item.referenceUuid !== item.uuid
               )
                 return item;
             })
             .map(item => {
               return {
-                uuid: item.info.uuid,
-                name: item.info.name,
-                type: item.info.type as 'form' | 'spelling',
+                uuid: item.uuid,
+                name: item.name,
+                type: item.type as 'form' | 'spelling',
               };
             });
           if (parentDictItem) {
             const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
-              name: parentDictItem.info.name,
-              uuid: parentDictItem.info.uuid,
+              name: parentDictItem.name,
+              uuid: parentDictItem.uuid,
               childDictItems: childDictItemSiblings,
             };
             dictItems.value[index].push(dictItemWordsInTextSearch);
@@ -783,6 +805,7 @@ export default defineComponent({
       maxOptions,
       updateUseParse,
       setActiveIndex,
+      removeChip,
     };
   },
 });

@@ -1,4 +1,9 @@
-import { DictionarySearchRow, DictItemAutocompleteDisplay } from '@oare/types';
+import {
+  DictionaryForm,
+  DictionarySearchRow,
+  DictItemAutocompleteDisplay,
+  ItemPropertyRow,
+} from '@oare/types';
 import {
   DictSpellEpigRowDictSearch,
   SearchWordsQueryRow,
@@ -23,22 +28,30 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
 export async function assembleAutocompleteDisplay(
   row: WordFormSpellingType
 ): Promise<DictItemAutocompleteDisplay> {
-  let display = '';
+  let formInfo: Omit<DictionaryForm, 'spellings'> | null = null;
+  const properties: ItemPropertyRow[] = [];
   if (row.type === 'form') {
-    display = `${row.name} - Form`;
+    formInfo = {
+      uuid: row.uuid,
+      form: row.name,
+      properties,
+    };
   } else if (row.type === 'spelling') {
-    display = `${row.name} - Spelling`;
-  } else if (row.type === 'word') {
-    display = `${row.name} - Word`;
+    formInfo = {
+      uuid: '',
+      form: '',
+      properties,
+    };
   }
   const dictItemAutocompleteDisplay: DictItemAutocompleteDisplay = {
-    info: {
-      uuid: row.uuid,
-      referenceUuid: row.referenceUuid,
-      name: row.name,
-      type: row.type,
-    },
-    display,
+    uuid: row.uuid,
+    referenceUuid: row.referenceUuid,
+    name: row.name,
+    type: row.type,
+    formInfo,
+    translations: null,
+    wordName: row.wordName,
+    wordUuid: row.wordUuid,
   };
   return dictItemAutocompleteDisplay;
 }

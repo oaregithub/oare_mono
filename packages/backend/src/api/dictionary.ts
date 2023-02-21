@@ -16,6 +16,7 @@ import {
   ItemPropertyRow,
   AddWordCheckPayload,
   TextOccurrencesCountResponseItem,
+  DictionaryWordTranslation,
 } from '@oare/types';
 import {
   tokenizeExplicitSpelling,
@@ -238,6 +239,18 @@ router
 
 router
   .route('/dictionary/translations/:uuid')
+  .get(async (req, res, next) => {
+    try {
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const { uuid } = req.params;
+      const response: DictionaryWordTranslation[] = await DictionaryWordDao.getWordTranslationsForDefinition(
+        uuid
+      );
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  })
   .patch(permissionsRoute('UPDATE_TRANSLATION'), async (req, res, next) => {
     try {
       const cache = sl.get('cache');

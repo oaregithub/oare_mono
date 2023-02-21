@@ -16,6 +16,7 @@ import {
   AddWordCheckPayload,
   ConnectSpellingDiscoursePayload,
   TextOccurrencesCountResponseItem,
+  DictionaryWordTranslation,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
@@ -40,6 +41,13 @@ async function editTranslations(
   payload: UpdateDictionaryTranslationPayload
 ): Promise<void> {
   await axios.patch(`/dictionary/translations/${uuid}`, payload);
+}
+
+async function getTranslationsByWordUuid(
+  wordUuid: string
+): Promise<DictionaryWordTranslation[]> {
+  const { data } = await axios.get(`/dictionary/translations/${wordUuid}`);
+  return data;
 }
 
 async function updateForm(
@@ -170,6 +178,7 @@ export default {
   updateForm,
   getDictionaryInfo,
   editTranslations,
+  getTranslationsByWordUuid,
   editWord,
   updateSpelling,
   removeSpelling,

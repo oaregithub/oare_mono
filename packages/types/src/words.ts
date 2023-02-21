@@ -36,16 +36,14 @@ export interface WordWithoutForms extends DictionaryWordParseInfo {
   uuid: string;
   word: string;
 }
-
 export interface DictItemAutocompleteDisplay {
-  info: DictItemAutocompleteInfo;
-  display: string;
-}
-
-export interface DictItemAutocompleteInfo {
   uuid: string;
   referenceUuid: string;
   name: string;
+  wordName: string;
+  wordUuid: string;
+  translations: DictionaryWordTranslation[] | null;
+  formInfo: Omit<DictionaryForm, 'spellings'> | null;
   type: 'word' | 'form' | 'spelling';
 }
 
