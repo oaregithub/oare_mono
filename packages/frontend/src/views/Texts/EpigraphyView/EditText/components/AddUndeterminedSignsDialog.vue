@@ -249,7 +249,10 @@ export default defineComponent({
           newWordReading += sign.separator;
         }
       });
-      return newWordReading;
+      return newWordReading
+        .replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\([^()]*\)/g, '');
     };
 
     return {

@@ -29,6 +29,7 @@ import {
   AddUndeterminedSignsPayload,
   AddDividerPayload,
   DiscourseUnitType,
+  EditSignPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -1837,6 +1838,83 @@ class EditTextUtils {
         .where({ uuid: payload.uuid })
         .update({ type: 'region' });
     }
+  }
+
+  async editSign(
+    payload: EditSignPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextMarkupDao = sl.get('TextMarkupDao');
+
+    // EPIGRAPHY
+    await k('text_epigraphy')
+      .where({
+        uuid: payload.uuid,
+        text_uuid: payload.textUuid,
+      })
+      .update({
+        type: getEpigraphyType(payload.sign.readingType),
+        sign_uuid: payload.sign.signUuid,
+        sign: payload.sign.sign || null,
+        reading_uuid: payload.sign.readingUuid,
+        reading: payload.sign.value || null,
+      });
+
+    // DISCOURSE
+    if (payload.discourseUuid) {
+      await k('text_discourse').where({ uuid: payload.discourseUuid }).update({
+        spelling: payload.spelling,
+        spelling_uuid: payload.spellingUuid,
+        explicit_spelling: payload.spelling,
+      });
+    }
+
+    // MARKUP
+    const existingMarkup = await TextMarkupDao.getMarkups(
+      payload.textUuid,
+      undefined,
+      payload.uuid,
+      trx
+    );
+
+    const removedMarkup = existingMarkup
+      .map(m => m.type)
+      .filter(m => !payload.markup.map(mark => mark.type).includes(m));
+
+    await Promise.all(
+      removedMarkup.map(type =>
+        k('text_markup').del().where({ reference_uuid: payload.uuid, type })
+      )
+    );
+    await Promise.all(
+      payload.markup.map(markup => {
+        if (existingMarkup.map(m => m.type).includes(markup.type)) {
+          return k('text_markup')
+            .where({ reference_uuid: payload.uuid, type: markup.type })
+            .update({
+              start_char: markup.startChar,
+              end_char: markup.endChar,
+              alt_reading: markup.altReading,
+              alt_reading_uuid: markup.altReadingUuid,
+            });
+        }
+
+        const markupRow: TextMarkupRow = {
+          uuid: v4(),
+          referenceUuid: markup.referenceUuid,
+          type: markup.type,
+          numValue: null,
+          altReadingUuid: markup.altReadingUuid,
+          altReading: markup.altReading,
+          startChar: markup.startChar,
+          endChar: markup.endChar,
+          objectUuid: null,
+        };
+
+        return TextMarkupDao.insertMarkupRow(markupRow, trx);
+      })
+    );
   }
 
   async mergeLines(

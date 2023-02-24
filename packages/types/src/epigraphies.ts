@@ -589,6 +589,16 @@ export interface EditUndeterminedLinesPayload extends EditTextPayloadBase {
   convertToBrokenArea: boolean;
 }
 
+export interface EditSignPayload extends EditTextPayloadBase {
+  type: 'editSign';
+  uuid: string;
+  spelling: string;
+  spellingUuid: string | null;
+  discourseUuid: string | null;
+  markup: MarkupUnit[];
+  sign: SignCodeWithDiscourseUuid;
+}
+
 export interface MergeLinePayload extends EditTextPayloadBase {
   type: 'mergeLine';
   firstLine: number;
@@ -663,6 +673,7 @@ export type EditTextPayload =
   | EditColumnPayload
   | EditRegionPayload
   | EditUndeterminedLinesPayload
+  | EditSignPayload
   | MergeLinePayload
   | CleanLinesPayload
   | RemoveSidePayload

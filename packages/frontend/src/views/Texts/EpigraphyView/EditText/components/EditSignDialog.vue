@@ -2,52 +2,23 @@
   <oare-dialog
     :value="value"
     @input="$emit('input', $event)"
+    title="Edit Sign"
     :persistent="false"
-    :submitLoading="addSignLoading"
+    :submitLoading="editSignLoading"
     :submitDisabled="step === 1 ? !stepOneComplete : !formsLoaded"
-    @submit="step === 1 ? step++ : addSign()"
+    @submit="step === 1 ? step++ : editSign()"
     :submitText="step === 1 ? 'Next' : 'Submit'"
     :width="600"
     :showActionButton="step === 2"
     actionButtonText="Back"
     @action="goBack"
   >
-    <template #title>
-      Add Sign to <span class="ml-1" v-html="wordToAddSignTo.reading" />
-    </template>
-
     <div v-if="step === 1">
-      <v-row justify="center" class="ma-0 mt-2">
-        <span
-          >Select the position where you would like to add the new sign.</span
-        >
+      <v-row justify="center" class="ma-0 my-2">
+        Type the updated sign below without markup.
       </v-row>
-
-      <v-row justify="center" align="center" class="mt-6 mb-6 oare-title">
-        <insert-button
-          @insert="insertIndex = 0"
-          :showCheck="insertIndex === 0"
-        />
-        <span v-for="(sign, signIdx) in wordToAddSignTo.signs" :key="signIdx">
-          <span class="mx-2" v-html="sign.reading" />
-          <insert-button
-            @insert="insertIndex = signIdx + 1"
-            :showCheck="insertIndex === signIdx + 1"
-          />
-        </span>
-      </v-row>
-
-      <v-row
-        v-if="insertIndex !== undefined"
-        justify="center"
-        class="ma-0 my-2"
-      >
-        Type the new sign below without markup.
-      </v-row>
-
       <row
-        v-if="insertIndex !== undefined"
-        class="mt-10 mx-12"
+        class="mt-4 mx-12"
         :autofocus="true"
         :isCurrentRow="true"
         :row="row"
@@ -56,21 +27,8 @@
         @update-row-content="row = $event"
         :restrictToSign="true"
       />
-
-      <v-row
-        v-if="insertIndex !== undefined"
-        justify="center"
-        class="ma-0 mt-2"
-      >
-        Markup will automatically be applied according to the surrounding signs.
-      </v-row>
-
-      <v-row
-        v-if="insertIndex !== undefined"
-        justify="center"
-        class="ma-0 mb-2"
-      >
-        As needed, this can be edited manually later.
+      <v-row justify="center" class="mt-6 mb-4">
+        <v-btn color="info" @click="markupDialog = true">Edit Markup</v-btn>
       </v-row>
     </div>
 
@@ -101,6 +59,29 @@
         />
       </v-row>
     </div>
+
+    <oare-dialog
+      v-model="markupDialog"
+      title="Edit Sign Markup"
+      :persistent="false"
+      :showSubmit="false"
+      :showCancel="false"
+    >
+      <v-row justify="center" class="ma-0">
+        Select or unselect markup options.
+      </v-row>
+      <v-row justify="center" class="ma-0 mb-6">
+        Some options have additional optional inputs.
+      </v-row>
+      <markup-selector
+        v-if="row.signs && row.signs.length === 1"
+        :newSign="row.signs[0]"
+        :referenceUuid="sign.uuid"
+        :existingMarkup="sign.markups"
+        class="mx-4 mb-4"
+        @update-markup="updateMarkup"
+      />
+    </oare-dialog>
   </oare-dialog>
 </template>
 
@@ -114,25 +95,35 @@ import {
 } from '@vue/composition-api';
 import { TabletRenderer } from '@oare/oare';
 import {
-  EpigraphicUnitType,
   EpigraphicWord,
-  RowTypes,
-  AddSignPayload,
   EpigraphicUnitSide,
-  MarkupType,
+  EpigraphicSign,
+  RowTypes,
   EditorDiscourseWord,
+  EpigraphicUnitType,
+  MarkupType,
+  MarkupUnit,
+  EditSignPayload,
 } from '@oare/types';
-import InsertButton from './InsertButton.vue';
-import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vue';
+import sl from '@/serviceLocator';
 import { RowWithLine } from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Column.vue';
 import { v4 } from 'uuid';
-import sl from '@/serviceLocator';
+import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vue';
 import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
+import MarkupSelector from './MarkupSelector.vue';
 
 export default defineComponent({
   props: {
     value: {
       type: Boolean,
+      required: true,
+    },
+    sign: {
+      type: Object as PropType<EpigraphicSign>,
+      required: true,
+    },
+    word: {
+      type: Object as PropType<EpigraphicWord>,
       required: true,
     },
     renderer: {
@@ -141,10 +132,6 @@ export default defineComponent({
     },
     textUuid: {
       type: String,
-      required: true,
-    },
-    wordToAddSignTo: {
-      type: Object as PropType<EpigraphicWord>,
       required: true,
     },
     column: {
@@ -161,9 +148,9 @@ export default defineComponent({
     },
   },
   components: {
-    InsertButton,
     Row,
     ConnectDiscourseItem,
+    MarkupSelector,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -174,13 +161,15 @@ export default defineComponent({
       uuid: v4(),
       isEditing: false,
       hasErrors: false,
-      text: '',
+      text:
+        props.sign.reading
+          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
+          .replace(/<[^>]*>/g, '')
+          .replace(/\([^()]*\)/g, '') || undefined,
       line: 0,
     });
 
-    const addSignLoading = ref(false);
-
-    const insertIndex = ref<number>();
+    const editSignLoading = ref(false);
 
     const step = ref(1);
 
@@ -194,46 +183,37 @@ export default defineComponent({
       );
     });
 
-    const addSign = async () => {
+    const editSign = async () => {
       try {
-        addSignLoading.value = true;
+        editSignLoading.value = true;
 
         const newSpelling = getUpdatedSignsWithSeparators();
 
-        if (
-          !row.value.signs ||
-          row.value.signs.length !== 1 ||
-          insertIndex.value === undefined
-        ) {
-          throw new Error('Incorrect signs value. Cannot add at this time.');
+        if (!row.value.signs || row.value.signs.length !== 1) {
+          throw new Error('Incorrect signs value. Cannot edit at this time.');
         }
 
-        const payload: AddSignPayload = {
-          type: 'addSign',
+        const payload: EditSignPayload = {
+          type: 'editSign',
           textUuid: props.textUuid,
-          sign: row.value.signs[0],
-          signUuidBefore:
-            insertIndex.value === 0
-              ? null
-              : props.wordToAddSignTo.signs[insertIndex.value - 1].uuid,
-          spellingUuid: spellingUuid.value || null,
+          uuid: props.sign.uuid,
           spelling: newSpelling,
-          side: props.side,
-          column: props.column,
-          line: props.line,
-          discourseUuid: props.wordToAddSignTo.discourseUuid,
+          spellingUuid: spellingUuid.value || null,
+          discourseUuid: props.word.discourseUuid,
+          markup: markupUnits.value,
+          sign: row.value.signs[0],
         };
         await server.editText(payload);
         emit('reset-renderer');
       } catch (err) {
         actions.showErrorSnackbar(
-          'Error adding sign. Please try again.',
+          'Error editing sign. Please try again.',
           err as Error
         );
       } finally {
         emit('input', false);
         emit('reset-current-edit-action');
-        addSignLoading.value = false;
+        editSignLoading.value = false;
       }
     };
 
@@ -244,7 +224,7 @@ export default defineComponent({
         reading: string;
         type: EpigraphicUnitType | null;
         markup: MarkupType[];
-      }[] = props.wordToAddSignTo.signs.map(sign => ({
+      }[] = props.word.signs.map(sign => ({
         reading: sign.reading || '',
         type: sign.type,
         markup: sign.markups.map(unit => unit.type),
@@ -252,8 +232,12 @@ export default defineComponent({
 
       const newSign = row.value.signs![0];
 
+      const indexOfSign = props.word.signs.findIndex(
+        sign => sign.uuid === props.sign.uuid
+      );
+
       const newPieces = [
-        ...pieces.slice(0, insertIndex.value!),
+        ...pieces.slice(0, indexOfSign),
         {
           reading: newSign.reading || '',
           type: newSign.readingType || null,
@@ -261,7 +245,7 @@ export default defineComponent({
             ? newSign.markup.markup.map(unit => unit.type)
             : [],
         },
-        ...pieces.slice(insertIndex.value),
+        ...pieces.slice(indexOfSign + 1),
       ];
 
       const newWord = newPieces.map((sign, index) => {
@@ -316,7 +300,7 @@ export default defineComponent({
       () => {
         const newWord = getUpdatedSignsWithSeparators();
         return {
-          discourseUuid: props.wordToAddSignTo.discourseUuid,
+          discourseUuid: props.word.discourseUuid,
           spelling: newWord,
           type: 'word',
         };
@@ -328,12 +312,18 @@ export default defineComponent({
       spellingUuid.value = undefined;
     };
 
+    const markupUnits = ref<MarkupUnit[]>(props.sign.markups);
+    const updateMarkup = (markup: MarkupUnit[]) => {
+      markupUnits.value = markup;
+    };
+
+    const markupDialog = ref(false);
+
     const formsLoaded = ref(false);
 
     return {
-      addSignLoading,
-      addSign,
-      insertIndex,
+      editSignLoading,
+      editSign,
       row,
       step,
       stepOneComplete,
@@ -341,6 +331,9 @@ export default defineComponent({
       getUpdatedSignsWithSeparators,
       editorDiscourseWord,
       goBack,
+      markupUnits,
+      updateMarkup,
+      markupDialog,
       formsLoaded,
     };
   },

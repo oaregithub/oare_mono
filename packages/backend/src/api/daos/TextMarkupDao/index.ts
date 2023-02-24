@@ -6,6 +6,7 @@ class TextMarkupDao {
   async getMarkups(
     textUuid: string,
     line?: number,
+    epigraphyUuid?: string,
     trx?: Knex.Transaction
   ): Promise<MarkupUnit[]> {
     const k = trx || knexRead();
@@ -30,6 +31,10 @@ class TextMarkupDao {
       query = query.andWhere('text_epigraphy.line', line);
     }
 
+    if (epigraphyUuid) {
+      query = query.andWhere('text_epigraphy.uuid', epigraphyUuid);
+    }
+
     let markups: MarkupUnit[] = await query;
     const refTypes: { [key: string]: Set<string> } = {};
     markups = markups.filter(markup => {
@@ -45,10 +50,9 @@ class TextMarkupDao {
       return true;
     });
     markups.sort(a => {
-      if (a.type === 'damage' || a.type === 'partialDamage') {
-        return -1;
-      }
       if (
+        a.type === 'damage' ||
+        a.type === 'partialDamage' ||
         a.type === 'isCollatedReading' ||
         a.type === 'isEmendedReading' ||
         a.type === 'uncertain'
