@@ -1894,7 +1894,7 @@ class EditTextUtils {
             .where({ reference_uuid: payload.uuid, type: markup.type })
             .update({
               start_char: markup.startChar,
-              end_char: markup.endChar, // FIXME
+              end_char: markup.endChar,
               alt_reading: markup.altReading,
               alt_reading_uuid: markup.altReadingUuid,
             });
@@ -1908,7 +1908,7 @@ class EditTextUtils {
           altReadingUuid: markup.altReadingUuid,
           altReading: markup.altReading,
           startChar: markup.startChar,
-          endChar: markup.endChar, // FIXME
+          endChar: markup.endChar,
           objectUuid: null,
         };
 
