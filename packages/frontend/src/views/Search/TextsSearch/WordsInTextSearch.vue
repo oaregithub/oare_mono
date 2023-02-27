@@ -33,7 +33,9 @@
                   >{{ `Search Item #${index}` }}
                 </h4>
                 <v-autocomplete
+                  v-model="dictItemSelectionUuids[index - 1]"
                   :items="getAutocompleteItems(index)"
+                  item-text="name"
                   return-object
                   clearable
                   deletable-chips
@@ -42,7 +44,6 @@
                   no-filter
                   hide-selected
                   :search-input.sync="queryText[`queryText${index}`]"
-                  @input="dictItemSelectionUuids[index - 1] = $event"
                   @change="updateAutocomplete(index)"
                   @focus="setActiveIndex(index)"
                   item-color="primary"
