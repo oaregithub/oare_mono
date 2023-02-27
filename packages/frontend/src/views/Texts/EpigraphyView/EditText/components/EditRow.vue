@@ -124,6 +124,10 @@
                           sign.epigType === 'sign') ||
                           (currentEditAction === 'removeUndeterminedSigns' &&
                             sign.epigType === 'undeterminedSigns')),
+                      'blue-line-under cursor-display':
+                        hover2 &&
+                        currentEditAction === 'editSign' &&
+                        sign.epigType === 'sign',
                     }"
                     @click="handleSignClick(word, sign)"
                   />
@@ -282,6 +286,21 @@
       :line="line"
     />
 
+    <edit-sign-dialog
+      v-if="signToEdit && wordBeingEdited"
+      v-model="editSignDialog"
+      :sign="signToEdit"
+      :renderer="renderer"
+      :textUuid="textUuid"
+      :line="line"
+      :side="side"
+      :column="column"
+      :word="wordBeingEdited"
+      :key="signToEdit"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
+
     <oare-dialog
       v-model="addDividerDialog"
       title="Add Word Divider?"
@@ -335,6 +354,7 @@ import InsertButton from './InsertButton.vue';
 import AddWordDialog from './AddWordDialog.vue';
 import AddSignDialog from './AddSignDialog.vue';
 import AddUndeterminedSignsDialog from './AddUndeterminedSignsDialog.vue';
+import EditSignDialog from './EditSignDialog.vue';
 
 export default defineComponent({
   props: {
@@ -375,6 +395,7 @@ export default defineComponent({
     AddWordDialog,
     AddSignDialog,
     AddUndeterminedSignsDialog,
+    EditSignDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -654,6 +675,13 @@ export default defineComponent({
         wordBeingRemovedFrom.value = word;
         signToRemove.value = sign;
         removeSignDialog.value = true;
+      } else if (
+        props.currentEditAction === 'editSign' &&
+        sign.epigType === 'sign'
+      ) {
+        wordBeingEdited.value = word;
+        signToEdit.value = sign;
+        editSignDialog.value = true;
       }
     };
 
@@ -804,6 +832,15 @@ export default defineComponent({
       }
     };
 
+    const editSignDialog = ref(false);
+    watch(editSignDialog, () => {
+      if (!editSignDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const signToEdit = ref<EpigraphicSign>();
+    const wordBeingEdited = ref<EpigraphicWord>();
+
     return {
       lineNumber,
       resetRenderer,
@@ -845,6 +882,9 @@ export default defineComponent({
       addDivider,
       removeRegionDialogText,
       regionType,
+      editSignDialog,
+      signToEdit,
+      wordBeingEdited,
     };
   },
 });

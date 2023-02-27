@@ -134,10 +134,10 @@
             Broken Line(s)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-sign')" disabled>
+        <v-list-item @click="$emit('edit-sign')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Sign (Coming Soon)</v-list-item-title
+            Sign</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-undetermined-signs')" disabled>

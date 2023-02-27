@@ -6,7 +6,7 @@
     :persistent="false"
     :submitLoading="addLineLoading"
     @submit="step === 1 ? step++ : addLine()"
-    :submitDisabled="!stepOneComplete"
+    :submitDisabled="step === 1 ? !stepOneComplete : !stepTwoComplete"
     :width="800"
     :submitText="step === 1 ? 'Next' : 'Submit'"
     :showActionButton="step === 2"
@@ -50,6 +50,7 @@
           @update-spelling-uuid="
             setDiscourseSpelling(word.discourseUuid, $event)
           "
+          @loaded-forms="numFormsLoaded += 1"
         />
       </v-row>
     </div>
@@ -222,6 +223,11 @@ export default defineComponent({
       }
     );
 
+    const numFormsLoaded = ref(0);
+    const stepTwoComplete = computed(
+      () => editorDiscourseWords.value.length === numFormsLoaded.value
+    );
+
     const goBack = () => {
       step.value = 1;
       discourseSpellings.value = [];
@@ -237,6 +243,8 @@ export default defineComponent({
       setDiscourseSpelling,
       editorDiscourseWords,
       goBack,
+      numFormsLoaded,
+      stepTwoComplete,
     };
   },
 });

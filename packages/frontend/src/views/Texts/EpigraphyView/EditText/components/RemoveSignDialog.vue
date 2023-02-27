@@ -8,6 +8,7 @@
     :persistent="false"
     @submit="removeSign"
     :submitLoading="removeSignLoading"
+    :submitDisabled="!formsLoaded"
   >
     <span v-if="word && word.signs.length === 1">
       Are you sure you want to remove the sign
@@ -46,6 +47,7 @@
         <connect-discourse-item
           :word="editorDiscourseWord"
           @update-spelling-uuid="spellingUuid = $event"
+          @loaded-forms="formsLoaded = true"
         />
       </v-row>
     </div>
@@ -154,7 +156,10 @@ export default defineComponent({
           newWordReading += sign.separator;
         }
       });
-      return newWordReading;
+      return newWordReading
+        .replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\([^()]*\)/g, '');
     };
 
     const removeSignLoading = ref(false);
@@ -196,7 +201,7 @@ export default defineComponent({
 
     const editorDiscourseWord: ComputedRef<EditorDiscourseWord> = computed(
       () => {
-        const newWord = getUpdatedSignsWithSeparators().replace(/<[^>]*>/g, '');
+        const newWord = getUpdatedSignsWithSeparators();
         return {
           discourseUuid: props.word.discourseUuid,
           spelling: newWord,
@@ -205,12 +210,15 @@ export default defineComponent({
       }
     );
 
+    const formsLoaded = ref(false);
+
     return {
       getUpdatedSignsWithSeparators,
       removeSign,
       removeSignLoading,
       spellingUuid,
       editorDiscourseWord,
+      formsLoaded,
     };
   },
 });
