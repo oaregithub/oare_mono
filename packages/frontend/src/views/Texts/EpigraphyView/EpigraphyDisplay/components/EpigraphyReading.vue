@@ -50,53 +50,56 @@
                 />
               </span>
               <div class="test-interlinear-view" v-show="interLinearView">
-                <v-row>
+                <v-row class="pb-4">
                   <v-col
                     v-for="(word, index) in renderer.getLineWords(lineNum)"
                     :key="index"
+                    class="pr-4"
                   >
-                    <div>
-                      <span
-                        v-html="formatWord(word)"
-                        class="cursor-display test-rendered-word"
-                        @click="openDialog(word.discourseUuid)"
-                      >
-                      </span>
-                    </div>
-                    <div v-if="word.word && !word.isNumber">
-                      <span
-                        v-html="`<em>${word.word}</em>`"
-                        class="cursor-display test-rendered-word"
-                        @click="openDialog(word.discourseUuid)"
-                      ></span>
-                    </div>
-                    <div v-if="word.translation">
-                      <span
-                        v-html="formatTranslation(word.translation)"
-                        class="cursor-display test-rendered-word"
-                        @click="openDialog(word.discourseUuid)"
-                      ></span>
-                    </div>
-                    <div v-if="word.form">
-                      <span
-                        v-html="`<em>${word.form}</em>`"
-                        class="cursor-display test-rendered-word"
-                        @click="openDialog(word.discourseUuid)"
-                      ></span>
-                    </div>
-                    <div v-if="word.parseInfo && word.parseInfo.length > 0">
-                      <span
-                        v-html="
-                          formGrammarString({
-                            uuid: '',
-                            form: '',
-                            properties: word.parseInfo,
-                          })
-                        "
-                        class="cursor-display test-rendered-word"
-                        @click="openDialog(word.discourseUuid)"
-                      ></span>
-                    </div>
+                    <v-card min-width="70" tile flat>
+                      <div>
+                        <span
+                          v-html="formatWord(word)"
+                          class="cursor-display text-no-wrap test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        >
+                        </span>
+                      </div>
+                      <div v-if="word.word && !word.isNumber">
+                        <span
+                          v-html="`<b>${word.word}</b>`"
+                          class="cursor-display text-no-wrap test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                      <div v-if="word.translation">
+                        <span
+                          v-html="formatTranslation(word.translation)"
+                          class="cursor-display text-no-wrap test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                      <div v-if="word.form">
+                        <span
+                          v-html="`<em>${word.form}</em>`"
+                          class="cursor-display text-no-wrap test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                      <div v-if="word.parseInfo && word.parseInfo.length > 0">
+                        <span
+                          v-html="
+                            formGrammarString({
+                              uuid: '',
+                              form: '',
+                              properties: word.parseInfo,
+                            })
+                          "
+                          class="cursor-display text-no-wrap test-rendered-word"
+                          @click="openDialog(word.discourseUuid)"
+                        ></span>
+                      </div>
+                    </v-card>
                   </v-col>
                 </v-row>
               </div>

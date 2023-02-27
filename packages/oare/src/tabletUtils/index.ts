@@ -293,7 +293,7 @@ export function convertMarkedUpUnitsToEpigraphicWords(
       form: signs[0].form || null,
       translation: signs[0].translation || null,
       parseInfo: signs[0].parseInfo || null,
-      isNumber: /[0-9]/g.test(signs[0].word ?? ''),
+      isNumber: signs[0].epigType === 'number',
       isDivider: signs.map(unit => unit.epigType).includes('separator'),
     };
   });
