@@ -52,6 +52,8 @@
                   :reading="word.reading"
                   class="px-1"
                   @update-spelling-uuid="setSpellingUuid(word, $event)"
+                  @loading-forms="loadingForms(word)"
+                  @loaded-forms="loadedForms(word)"
                 />
               </v-row>
             </div>
@@ -68,6 +70,7 @@ import {
   PropType,
   ref,
   onMounted,
+  watch,
 } from '@vue/composition-api';
 import { createTabletRenderer, TabletRenderer } from '@oare/oare';
 import {
@@ -247,6 +250,27 @@ export default defineComponent({
       };
     };
 
+    const formsLoading = ref<string[]>([]);
+    const loadingForms = (word: EpigraphicWord) => {
+      if (word.discourseUuid) {
+        formsLoading.value = formsLoading.value.filter(
+          uuid => uuid != word.discourseUuid
+        );
+        formsLoading.value = [...formsLoading.value, word.discourseUuid];
+      }
+    };
+    const loadedForms = (word: EpigraphicWord) => {
+      formsLoading.value = formsLoading.value.filter(
+        uuid => uuid != word.discourseUuid
+      );
+    };
+    watch(formsLoading, () => {
+      if (formsLoading.value.length === 0) {
+        emit('step-complete', true);
+      } else {
+      }
+    });
+
     return {
       renderer,
       lineNumber,
@@ -260,6 +284,9 @@ export default defineComponent({
       isSeparator,
       romanNumeral,
       getDiscourseWord,
+      formsLoading,
+      loadingForms,
+      loadedForms,
     };
   },
 });

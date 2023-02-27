@@ -6,7 +6,7 @@
     :persistent="false"
     :submitLoading="addWordLoading"
     @submit="step === 1 ? step++ : addWord()"
-    :submitDisabled="!stepOneComplete"
+    :submitDisabled="step === 1 ? !stepOneComplete : !formsLoaded"
     :submitText="step === 1 ? 'Next' : 'Submit'"
     :width="600"
     :showActionButton="step === 2"
@@ -60,6 +60,7 @@
         <connect-discourse-item
           :word="editorDiscourseWord"
           @update-spelling-uuid="spellingUuid = $event"
+          @loaded-forms="formsLoaded = true"
         />
       </v-row>
     </div>
@@ -241,6 +242,8 @@ export default defineComponent({
       spellingUuid.value = null;
     };
 
+    const formsLoaded = ref(false);
+
     return {
       row,
       addWordLoading,
@@ -250,6 +253,7 @@ export default defineComponent({
       spellingUuid,
       editorDiscourseWord,
       goBack,
+      formsLoaded,
     };
   },
 });

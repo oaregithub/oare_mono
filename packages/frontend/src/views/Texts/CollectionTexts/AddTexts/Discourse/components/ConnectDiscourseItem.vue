@@ -101,6 +101,7 @@ export default defineComponent({
     onMounted(async () => {
       try {
         formsLoading.value = true;
+        emit('loading-forms');
         forms.value = await server.searchSpellings(props.word.spelling);
         if (forms.value.length === 1) {
           selectedSpellingUuid.value = forms.value[0].spellingUuid;
@@ -121,6 +122,7 @@ export default defineComponent({
         );
       } finally {
         formsLoading.value = false;
+        emit('loaded-forms');
       }
     });
 

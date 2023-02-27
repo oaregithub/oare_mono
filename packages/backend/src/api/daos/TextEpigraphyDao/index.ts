@@ -100,6 +100,7 @@ class TextEpigraphyDao {
     const markupUnits = await TextMarkupDao.getMarkups(
       textUuid,
       undefined,
+      undefined,
       trx
     );
 
