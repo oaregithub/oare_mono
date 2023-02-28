@@ -166,19 +166,21 @@ class PeriodsDao {
       matchingMonths.map(row => this.monthMaker(row, weekRows))
     );
 
-    return months;
+    return months.sort((a, b) => a.abbreviation - b.abbreviation);
   }
 
   async monthMaker(monthRow: PeriodRow, weekRows: PeriodRow[]): Promise<Month> {
-    const { uuid, abbreviation } = monthRow;
+    const { uuid } = monthRow;
 
-    const monthName: string = `${abbreviation}. ${monthRow.name}`;
+    const monthAbbreviation: number = Number(monthRow.abbreviation);
+
+    const monthName: string = monthRow.name;
 
     const weeks = await this.getWeeks(monthRow, weekRows);
 
     return {
       uuid,
-      abbreviation,
+      abbreviation: monthAbbreviation,
       name: monthName,
       weeks,
     };

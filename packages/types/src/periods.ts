@@ -5,7 +5,7 @@ export interface Week {
 
 export interface Month {
   uuid: string;
-  abbreviation: string | null;
+  abbreviation: number;
   name: string;
   weeks: Week[];
 }

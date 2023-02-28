@@ -120,6 +120,28 @@
 
     <template #extension>
       <v-row class="d-flex justify-center my-1">
+        <v-menu offset-y open-on-hover>
+          <template #activator="{ on, attrs }">
+            <v-btn class="test-texts" text dark v-bind="attrs" v-on="on"
+              >Texts</v-btn
+            >
+          </template>
+          <v-list dense>
+            <v-list-item class="pa-0">
+              <v-btn text to="/collections/A-J" width="100%"
+                >By Collection</v-btn
+              >
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/publications/A" width="100%"
+                >By Publication</v-btn
+              >
+            </v-list-item>
+            <v-list-item class="pa-0">
+              <v-btn text to="/archives" width="100%">By Archive</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
         <v-menu
           offset-y
           open-on-hover
@@ -148,29 +170,23 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn class="test-places" text to="/persons/A" v-if="canViewPersons"
-          >Persons</v-btn
-        >
 
-        <v-menu offset-y open-on-hover>
+        <v-menu offset-y open-on-hover v-if="canViewPeriods || canViewPersons">
           <template #activator="{ on, attrs }">
-            <v-btn class="test-texts" text dark v-bind="attrs" v-on="on"
-              >Texts</v-btn
-            >
+            <v-btn class="test-realia" text dark v-bind="attrs" v-on="on">
+              Realia
+            </v-btn>
           </template>
           <v-list dense>
-            <v-list-item class="pa-0">
-              <v-btn text to="/collections/A-J" width="100%"
-                >By Collection</v-btn
+            <v-list-item v-if="canViewPersons" class="pa-0">
+              <v-btn class="test-places" text to="/persons/A" width="100%"
+                >Persons</v-btn
               >
             </v-list-item>
-            <v-list-item class="pa-0">
-              <v-btn text to="/publications/A" width="100%"
-                >By Publication</v-btn
+            <v-list-item v-if="canViewPeriods" class="pa-0">
+              <v-btn class="test-periods" text to="/periods" width="100%"
+                >Periods</v-btn
               >
-            </v-list-item>
-            <v-list-item class="pa-0">
-              <v-btn text to="/archives" width="100%">By Archive</v-btn>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -247,6 +263,7 @@ export default defineComponent({
       store.hasPermission('BIBLIOGRAPHY')
     );
     const canViewSeals = computed(() => store.hasPermission('SEALS'));
+    const canViewPeriods = computed(() => store.hasPermission('PERIODS'));
 
     const logout = () => {
       store.logout();
@@ -284,6 +301,7 @@ export default defineComponent({
       canViewPersons,
       canViewBibliography,
       canViewSeals,
+      canViewPeriods,
       i18n,
       locales,
       selectedLocale,

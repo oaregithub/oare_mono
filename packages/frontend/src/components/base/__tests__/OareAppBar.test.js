@@ -55,7 +55,9 @@ describe('OareAppBar.vue', () => {
         isAuthenticated,
       },
       hasPermission: name =>
-        isAdmin ? ['WORDS', 'NAMES', 'PLACES'].includes(name) : false,
+        isAdmin
+          ? ['WORDS', 'NAMES', 'PLACES', 'PERIODS'].includes(name)
+          : false,
     });
     sl.set('serverProxy', server);
     sl.set('router', mockRouter);
@@ -88,12 +90,12 @@ describe('OareAppBar.vue', () => {
     expect(wrapper.find('.test-login-btn').exists()).toBe(true);
   });
 
-  it('shows Words, Names, and Places when an admin', async () => {
+  it('shows Texts, Lexica, Realia, Search, and Misc when an admin', async () => {
     const wrapper = await createWrapper({
       isAdmin: true,
       isAuthenticated: true,
     });
-    ['texts', 'search', 'misc', 'lexica'].forEach(link => {
+    ['texts', 'lexica', 'realia', 'search', 'misc'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
   });
@@ -105,7 +107,7 @@ describe('OareAppBar.vue', () => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(true);
     });
 
-    ['lexica'].forEach(link => {
+    ['lexica', 'realia'].forEach(link => {
       expect(wrapper.find(`.test-${link}`).exists()).toBe(false);
     });
   });

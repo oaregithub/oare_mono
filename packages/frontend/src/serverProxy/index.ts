@@ -39,6 +39,7 @@ import quarantine from './quarantine';
 import field from './field';
 import bibliography from './bibliography';
 import seals from './seals';
+import periods from './periods';
 
 const serverProxy = {
   ...groups,
@@ -82,6 +83,7 @@ const serverProxy = {
   ...field,
   ...bibliography,
   ...seals,
+  ...periods,
 };
 
 export type ServerProxyType = typeof serverProxy;
