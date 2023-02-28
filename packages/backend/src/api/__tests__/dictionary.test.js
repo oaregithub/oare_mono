@@ -31,6 +31,9 @@ describe('dictionary api test', () => {
       word: 'test-word',
       type: 'word',
     }),
+    getWordTranslationsForDefinition: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'uuid1', val: 'val1' }]),
   };
   const MockUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
@@ -374,6 +377,49 @@ describe('dictionary api test', () => {
         UserDao: AdminUserDao,
         WordDao: {
           updateTranslations: jest.fn().mockRejectedValue('Word dao failed'),
+        },
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /dictionary/translations/:uuid', () => {
+    const testUuid = 'test-uuid';
+    const PATH = `${API_PATH}/dictionary/translations/${testUuid}`;
+
+    beforeEach(() => {
+      setup({
+        UserDao: AdminUserDao,
+      });
+    });
+
+    const sendRequest = () => {
+      const req = request(app).get(PATH);
+      return req;
+    };
+
+    it('returns 200', async () => {
+      const response = await sendRequest();
+
+      expect(response.status).toBe(200);
+    });
+
+    it('receives translationa', async () => {
+      await sendRequest();
+
+      expect(
+        MockDictionaryWordDao.getWordTranslationsForDefinition
+      ).toHaveBeenCalled();
+    });
+
+    it("throws 500 if update translations doesn't work", async () => {
+      setup({
+        WordDao: {
+          getWordTranslationsForDefinition: jest
+            .fn()
+            .mockRejectedValue('Word dao failed'),
         },
       });
 

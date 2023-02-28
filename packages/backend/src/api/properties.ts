@@ -1,5 +1,9 @@
 import express from 'express';
-import { InsertItemPropertyRow, EditPropertiesPayload } from '@oare/types';
+import {
+  InsertItemPropertyRow,
+  EditPropertiesPayload,
+  ItemPropertyRow,
+} from '@oare/types';
 import { convertParsePropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
@@ -64,5 +68,19 @@ router
       next(new HttpInternalError(err as string));
     }
   });
+
+router.route('/properties/:referenceUuid').get(async (req, res, next) => {
+  try {
+    const { referenceUuid } = req.params;
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+
+    const response: ItemPropertyRow[] = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+      referenceUuid
+    );
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 export default router;
