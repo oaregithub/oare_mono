@@ -228,8 +228,8 @@ class ResourceDao {
       return [];
     }
 
-    const photoUrl = `https://www.cdli.ucla.edu/dl/photo/${cdliNum}.jpg`;
-    const lineArtUrl = `https://www.cdli.ucla.edu/dl/lineart/${cdliNum}_l.jpg`;
+    const photoUrl = `https://cdli.mpiwg-berlin.mpg.de/dl/photo/${cdliNum}.jpg`;
+    const lineArtUrl = `https://cdli.mpiwg-berlin.mpg.de/dl/lineart/${cdliNum}.jpg`;
 
     const cdliLinks: string[] = [];
 
