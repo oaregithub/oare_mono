@@ -10,16 +10,8 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('PeriodsView test', () => {
-  const mockStore = {
-    hasPermission: () => false,
-  };
-
   const mockActions = {
     showErrorSnackbar: jest.fn(),
-  };
-
-  const mockLodash = {
-    debounce: cb => cb,
   };
 
   const mockServer = {
@@ -27,22 +19,23 @@ describe('PeriodsView test', () => {
       years: [],
     }),
   };
-  const createWrapper = ({ store, server } = {}) => {
-    sl.set('store', store || mockStore);
+
+  const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
-    sl.set('lodash', mockLodash);
 
     return mount(PeriodsView, {
       vuetify,
       localVue,
     });
   };
+
   it('gets periods on load', async () => {
     createWrapper();
     await flushPromises();
     expect(mockServer.getPeriods).toHaveBeenCalled();
   });
+
   it('shows snackbar when periods retrieval fails', async () => {
     createWrapper({
       server: {

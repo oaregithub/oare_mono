@@ -1,6 +1,6 @@
 <template>
-  <v-col :cols="dynamicCol(month.abbreviation)">
-    <v-card outlined class="pa-2 ml-3">
+  <v-col :cols="dynamicCol(month.abbreviation)" class="pa-2">
+    <v-card outlined min-height="150">
       <v-card-subtitle
         >{{ month.abbreviation }}. {{ month.name }}</v-card-subtitle
       >

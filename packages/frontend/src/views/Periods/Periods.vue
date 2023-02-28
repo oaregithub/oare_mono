@@ -4,7 +4,7 @@
     informationCard="This is the list of periods."
     :loading="loading"
   >
-    <div v-if="!loading">
+    <div v-if="!loading && periods">
       <PeriodYear v-for="(year, idx) in periods.years" :key="idx" :year="year">
       </PeriodYear>
     </div>
@@ -23,7 +23,7 @@ export default defineComponent({
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
-    const loading = ref(true);
+    const loading = ref(false);
     const periods = ref<PeriodResponse>();
 
     onMounted(async () => {

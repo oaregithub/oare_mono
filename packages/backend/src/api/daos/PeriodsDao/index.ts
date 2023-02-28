@@ -172,9 +172,9 @@ class PeriodsDao {
   async monthMaker(monthRow: PeriodRow, weekRows: PeriodRow[]): Promise<Month> {
     const { uuid } = monthRow;
 
-    const monthAbbreviation: number = Number(`${monthRow.abbreviation}`);
+    const monthAbbreviation: number = Number(monthRow.abbreviation);
 
-    const monthName: string = `${monthRow.name}`;
+    const monthName: string = monthRow.name;
 
     const weeks = await this.getWeeks(monthRow, weekRows);
 
