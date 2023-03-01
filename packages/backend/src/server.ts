@@ -42,6 +42,7 @@ import BibliographyUtils from './api/daos/BibliographyUtils';
 import TreeDao from './api/daos/TreeDao';
 import QuarantineTextDao from './api/daos/QuarantineTextDao';
 import SealDao from './api/daos/SealDao';
+import PeriodsDao from './api/daos/PeriodsDao';
 import EditTextUtils from './api/daos/EditTextUtils';
 
 declare global {
@@ -93,6 +94,7 @@ sl.set('BibliographyUtils', BibliographyUtils);
 sl.set('TreeDao', TreeDao);
 sl.set('QuarantineTextDao', QuarantineTextDao);
 sl.set('SealDao', SealDao);
+sl.set('PeriodsDao', PeriodsDao);
 sl.set('EditTextUtils', EditTextUtils);
 
 initializeFirebase(err => {
