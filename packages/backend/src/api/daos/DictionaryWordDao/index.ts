@@ -340,21 +340,41 @@ class DictionaryWordDao {
     page: number,
     numRows: number,
     mode: string,
+    types: string[],
     trx?: Knex.Transaction
   ) {
     const k = trx || knexRead();
     const lowerSearch = search.toLowerCase();
+    let spellEpigRow: DictSpellEpigRowDictSearch[] | null = null;
+    const charUuids: string[][] = await prepareIndividualSearchCharacters(
+      search
+    );
+    if (charUuids.length > 0) {
+      spellEpigRow = await this.getSpellingUuidsForDictionarySearch(
+        charUuids,
+        mode
+      );
+    }
     const query = k
       .from('dictionary_word AS dw')
       .leftJoin('field', 'field.reference_uuid', 'dw.uuid')
       .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
       .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
-      .where(k.raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(k.raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(k.raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
-      .orWhere(
-        k.raw('LOWER(ds.explicit_spelling) LIKE ?', [`%${lowerSearch}%`])
-      )
+      .whereIn('dw.type', types)
+      .where(qb => {
+        qb.where(k.raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
+          .orWhere(k.raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`]))
+          .orWhere(k.raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
+          .orWhere(
+            k.raw('LOWER(ds.explicit_spelling) LIKE ?', [`%${lowerSearch}%`])
+          );
+        if (spellEpigRow) {
+          qb.orWhereIn(
+            'ds.uuid',
+            spellEpigRow.map(({ referenceUuid }) => referenceUuid)
+          );
+        }
+      })
       .select(
         'dw.uuid',
         'dw.type',
@@ -369,24 +389,7 @@ class DictionaryWordDao {
         k.raw("GROUP_CONCAT(DISTINCT ds.uuid SEPARATOR ', ') AS spellingUuids")
       )
       .groupBy('df.uuid');
-    let spellEpigRow: DictSpellEpigRowDictSearch[] | null = null;
-    const charUuids: string[][] = await prepareIndividualSearchCharacters(
-      search
-    );
-    if (charUuids.length > 0) {
-      spellEpigRow = await this.getSpellingUuidsForDictionarySearch(
-        charUuids,
-        mode
-      );
-      query.modify(q => {
-        if (spellEpigRow) {
-          q.orWhereIn(
-            'ds.uuid',
-            spellEpigRow.map(({ referenceUuid }) => referenceUuid)
-          );
-        }
-      });
-    }
+
     const rows: SearchWordsQueryRow[] = await query;
     const resultRows: DictionarySearchRow[] = assembleSearchResult(
       rows,

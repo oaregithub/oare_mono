@@ -20,10 +20,23 @@
         >
       </v-col>
       <v-col cols="4">
-        <v-radio-group label="Respect Character Boundaries" v-model="useMode">
+        <v-radio-group v-model="useMode">
+          <template #label>
+            <v-label>Respect Character Boundaries</v-label>
+          </template>
           <v-radio label="Yes" value="respectCharBoundaries"></v-radio>
           <v-radio label="No" value="respectNoBoundaries"></v-radio>
         </v-radio-group>
+        <div><v-label class="label">Dictionary to Search</v-label></div>
+        <v-checkbox
+          v-for="(item, index) in typeLabels"
+          :key="item.label"
+          v-model="types"
+          :value="item.value"
+          :label="item.label"
+          :class="{ 'mt-n3': index !== 0, 'mt-1': index === 0 }"
+          dense
+        ></v-checkbox>
       </v-col>
     </v-row>
 
@@ -100,6 +113,12 @@ export default defineComponent({
     const page = useQueryParam('page', '1', false);
     const rows = useQueryParam('rows', '25', true);
     const mode = useQueryParam('mode', 'respectCharBoundaries', true);
+    const types = ref(['word', 'PN', 'GN']);
+    const typeLabels = [
+      { label: 'Words', value: 'word' },
+      { label: 'People', value: 'PN' },
+      { label: 'Places', value: 'GN' },
+    ];
     const useMode = ref(mode.value);
     const lastSearch = ref('');
     const canSearch = computed(() => {
@@ -130,6 +149,7 @@ export default defineComponent({
             page: Number(page.value),
             rows: Number(rows.value),
             mode: useMode.value,
+            types: types.value,
           });
           totalResults.value = searchResult.totalRows;
           searchResults.value = searchResult.results;
@@ -194,7 +214,15 @@ export default defineComponent({
       getItemMatches,
       enableModeSelection,
       useMode,
+      types,
+      typeLabels,
     };
   },
 });
 </script>
+<style>
+.label {
+  cursor: text;
+  font-size: 8px;
+}
+</style>
