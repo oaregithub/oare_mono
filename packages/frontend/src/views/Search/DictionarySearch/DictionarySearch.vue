@@ -220,9 +220,3 @@ export default defineComponent({
   },
 });
 </script>
-<style>
-.label {
-  cursor: text;
-  font-size: 8px;
-}
-</style>
