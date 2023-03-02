@@ -331,7 +331,7 @@ export async function getInterlinearInfo(
           }
           word = await DictionaryWordDao.getWordName(wordUuid);
           parseInfo = await ItemPropertiesDao.getPropertiesByReferenceUuid(
-            wordUuid
+            formUuid
           );
         }
 
