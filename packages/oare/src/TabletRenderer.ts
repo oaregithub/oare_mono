@@ -393,10 +393,27 @@ export default class TabletRenderer {
         formattedReading = bracket + formattedReading;
       }
     } else {
+      let { startChar } = markup;
+
+      const originalStartChar = startChar;
+      let charCounter = 0;
+      for (let i = 0; i < formattedReading.length; i += 1) {
+        if (charCounter === originalStartChar) {
+          break;
+        } else if (
+          formattedReading[i].match(
+            /([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g
+          )
+        ) {
+          startChar += 1;
+        } else {
+          charCounter += 1;
+        }
+      }
       formattedReading =
-        formattedReading.slice(0, markup.startChar) +
+        formattedReading.slice(0, startChar) +
         bracket +
-        formattedReading.slice(markup.startChar);
+        formattedReading.slice(startChar);
     }
     return formattedReading;
   }
@@ -412,9 +429,23 @@ export default class TabletRenderer {
     } else {
       // Shift bracket over by 1 if a start character was added
       let { endChar } = markup;
-      if (this.shouldAddStartBracket(markup)) {
-        endChar += 1;
+
+      const originalEndChar = endChar;
+      let charCounter = 0;
+      for (let i = 0; i < formattedReading.length; i += 1) {
+        if (charCounter === originalEndChar) {
+          break;
+        } else if (
+          formattedReading[i].match(
+            /([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g
+          )
+        ) {
+          endChar += 1;
+        } else {
+          charCounter += 1;
+        }
       }
+
       formattedReading =
         formattedReading.slice(0, endChar) +
         bracket +
