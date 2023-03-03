@@ -60,34 +60,58 @@
       <v-checkbox v-model="partialDamage" hide-details>
         <template #label>Partial Damage</template>
       </v-checkbox>
-      <v-row v-if="partialDamage" justify="center" class="ma-0">
-        <v-col cols="6" class="px-0">
-          <v-autocomplete
-            outlined
-            dense
-            hide-details
-            class="mt-n1 mb-n4 mr-2"
-            v-model="partialDamageStartChar"
-            :items="partialDamageStartCharOptions"
-            label="Start Character"
-            clearable
-            :disabled="partialDamageStartCharOptions.length === 0"
-          />
-        </v-col>
-        <v-col cols="6" class="px-0">
-          <v-autocomplete
-            outlined
-            dense
-            hide-details
-            class="mt-n1 mb-n4"
-            v-model="partialDamageEndChar"
-            :items="partialDamageEndCharOptions"
-            label="End Character"
-            clearable
-            :disabled="partialDamageEndCharOptions.length === 0"
-          />
-        </v-col>
-      </v-row>
+      <div v-if="partialDamage">
+        <v-row
+          v-for="(char, index) in partialDamageChars"
+          :key="index"
+          justify="center"
+          class="ma-0"
+        >
+          <v-col cols="5" class="px-0">
+            <v-autocomplete
+              outlined
+              dense
+              hide-details
+              class="mt-n1 mb-n4 mr-2"
+              v-model="char.startChar"
+              :items="partialDamageStartCharOptions[index]"
+              label="Start Character"
+              clearable
+              :disabled="partialDamageStartCharOptions[index].length === 0"
+            />
+          </v-col>
+          <v-col cols="5" class="px-0">
+            <v-autocomplete
+              outlined
+              dense
+              hide-details
+              class="mt-n1 mb-n4"
+              v-model="char.endChar"
+              :items="partialDamageEndCharOptions[index]"
+              label="End Character"
+              clearable
+              :disabled="partialDamageEndCharOptions[index].length === 0"
+            />
+          </v-col>
+          <v-col cols="1">
+            <v-btn
+              @click="removePartialDamage(index)"
+              icon
+              small
+              color="red"
+              class="ma-1"
+            >
+              <v-icon small color="red">mdi-delete</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row justify="center" class="ma-0 mt-2">
+          <v-btn color="info" text @click="addPartialDamage">
+            <v-icon small class="mr-1">mdi-plus</v-icon>Add More Partial
+            Damage</v-btn
+          >
+        </v-row>
+      </div>
     </div>
     <v-checkbox v-model="superfluous" hide-details>
       <template #label>Superfluous</template>
@@ -246,13 +270,20 @@ export default defineComponent({
     const partialDamage = ref(
       props.existingMarkup.map(m => m.type).includes('partialDamage')
     );
-    const partialDamageStartChar = ref(
-      props.existingMarkup.find(m => m.type === 'partialDamage')?.startChar ||
-        null
-    );
-    const partialDamageEndChar = ref(
-      props.existingMarkup.find(m => m.type === 'partialDamage')?.endChar ||
-        null
+
+    const partialDamageChars = ref<StartEndChar[]>(
+      props.existingMarkup
+        .filter(m => m.type === 'partialDamage')
+        .map(m => ({ startChar: m.startChar, endChar: m.endChar }))
+        .sort((a, b) => {
+          if (a.startChar === null) {
+            return -1;
+          }
+          if (b.startChar === null) {
+            return 1;
+          }
+          return a.startChar - b.startChar;
+        })
     );
 
     const superfluous = ref(
@@ -330,14 +361,16 @@ export default defineComponent({
       }
 
       if (partialDamage.value) {
-        markupUnits.push({
-          referenceUuid: props.referenceUuid,
-          type: 'partialDamage',
-          startChar: partialDamageStartChar.value,
-          endChar: partialDamageEndChar.value,
-          altReading: null,
-          altReadingUuid: null,
-          value: null,
+        partialDamageChars.value.forEach(partialDamageChar => {
+          markupUnits.push({
+            referenceUuid: props.referenceUuid,
+            type: 'partialDamage',
+            startChar: partialDamageChar.startChar,
+            endChar: partialDamageChar.endChar,
+            altReading: null,
+            altReadingUuid: null,
+            value: null,
+          });
         });
       }
 
@@ -545,6 +578,7 @@ export default defineComponent({
 
       return optionArray;
     });
+
     const partialDamageStartCharOptions = computed(() => {
       const signLength =
         props.newSign.reading
@@ -552,15 +586,22 @@ export default defineComponent({
           .replace(/<[^>]*>/g, '')
           .replace(/\([^()]*\)/g, '').length || 0;
 
-      const options: number[] = [];
-      for (let i = 1; i < signLength; i++) {
-        options.push(i);
-      }
-      if (partialDamageEndChar.value) {
-        return options.filter(option => option < partialDamageEndChar.value!);
-      }
-      return options;
+      const optionArray: number[][] = [];
+
+      partialDamageChars.value.forEach(char => {
+        let options: number[] = [];
+        for (let i = 1; i < signLength; i++) {
+          options.push(i);
+        }
+        if (char.endChar) {
+          options = options.filter(option => option < char.endChar!);
+        }
+        optionArray.push(options);
+      });
+
+      return optionArray;
     });
+
     const damageEndCharOptions = computed(() => {
       const signLength =
         props.newSign.reading
@@ -583,6 +624,7 @@ export default defineComponent({
 
       return optionArray;
     });
+
     const partialDamageEndCharOptions = computed(() => {
       const signLength =
         props.newSign.reading
@@ -590,15 +632,20 @@ export default defineComponent({
           .replace(/<[^>]*>/g, '')
           .replace(/\([^()]*\)/g, '').length || 0;
 
-      const options: number[] = [];
-      for (let i = 1; i < signLength; i++) {
-        options.push(i);
-      }
+      const optionArray: number[][] = [];
 
-      if (partialDamageStartChar.value) {
-        return options.filter(option => option > partialDamageStartChar.value!);
-      }
-      return options;
+      partialDamageChars.value.forEach(char => {
+        let options: number[] = [];
+        for (let i = 1; i < signLength; i++) {
+          options.push(i);
+        }
+        if (char.startChar) {
+          options = options.filter(option => option > char.startChar!);
+        }
+        optionArray.push(options);
+      });
+
+      return optionArray;
     });
 
     watch(damage, () => {
@@ -612,6 +659,17 @@ export default defineComponent({
       }
     });
 
+    watch(partialDamage, () => {
+      if (partialDamage.value) {
+        partialDamageChars.value.push({
+          startChar: null,
+          endChar: null,
+        });
+      } else {
+        partialDamageChars.value = [];
+      }
+    });
+
     const addDamage = () => {
       damageChars.value.push({
         startChar: null,
@@ -621,6 +679,17 @@ export default defineComponent({
 
     const removeDamage = (index: number) => {
       damageChars.value.splice(index, 1);
+    };
+
+    const addPartialDamage = () => {
+      partialDamageChars.value.push({
+        startChar: null,
+        endChar: null,
+      });
+    };
+
+    const removePartialDamage = (index: number) => {
+      partialDamageChars.value.splice(index, 1);
     };
 
     return {
@@ -637,8 +706,6 @@ export default defineComponent({
       writtenAboveTheLine,
       emended,
       collated,
-      partialDamageStartChar,
-      partialDamageEndChar,
       originalSignRow,
       alternateSignRow,
       damageStartCharOptions,
@@ -648,6 +715,9 @@ export default defineComponent({
       damageChars,
       addDamage,
       removeDamage,
+      partialDamageChars,
+      addPartialDamage,
+      removePartialDamage,
     };
   },
 });
