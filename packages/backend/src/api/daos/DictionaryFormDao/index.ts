@@ -1,6 +1,6 @@
 import { knexRead, knexWrite } from '@/connection';
 import { v4 } from 'uuid';
-import { DictionaryForm } from '@oare/types';
+import { DictionaryForm, DictionaryFormRow } from '@oare/types';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import DictionarySpellingDao from '../DictionarySpellingDao';
@@ -99,6 +99,23 @@ class DictionaryFormDao {
       form: formSpelling,
     });
     return newFormUuid;
+  }
+
+  async getFormByUuid(
+    formUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<DictionaryFormRow> {
+    const k = trx || knexRead();
+    const row: DictionaryFormRow = await k('dictionary_form')
+      .where('uuid', formUuid)
+      .select('uuid', 'reference_uuid as referenceUuid', 'form', 'mash')
+      .first();
+
+    if (!row) {
+      throw new Error(`Form with UUID ${formUuid} does not exist`);
+    }
+
+    return row;
   }
 }
 

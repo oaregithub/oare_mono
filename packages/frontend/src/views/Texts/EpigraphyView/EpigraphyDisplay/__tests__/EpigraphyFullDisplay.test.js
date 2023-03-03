@@ -101,6 +101,10 @@ describe('EpigraphyFullDisplay View', () => {
       type: 'logogram',
       uuid: 'test-uuid',
       value: 'GIN',
+      word: 'word',
+      form: 'form',
+      translation: 'translation',
+      parseInfo: [],
       spellingUuid: 'test-spelling-uuid',
     },
   ];
@@ -137,6 +141,20 @@ describe('EpigraphyFullDisplay View', () => {
     const wrapper = createWrapper();
     await flushPromises();
     expect(wrapper.find('.test-discourses').exists()).toBe(true);
+  });
+
+  it('does not display interlinear view when that option is not selected', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('.test-interlinear-view').isVisible()).toBe(false);
+  });
+
+  it('displays interlinear view when that option is selected', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    const interlinearSwitch = wrapper.get('.test-interlinear-switch input');
+    await interlinearSwitch.trigger('click');
+    expect(wrapper.find('.test-interlinear-view').isVisible()).toBe(true);
   });
 
   it('does not display discourses when user does not have permission', async () => {

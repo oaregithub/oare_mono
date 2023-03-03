@@ -8,6 +8,7 @@ import { Collection } from './collection';
 import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 import { TreeRow } from './tree';
+import { ItemPropertyRow } from './words';
 
 export interface Text {
   uuid: string;
@@ -88,6 +89,10 @@ export interface EpigraphicUnit {
   value: null | string;
   markups: MarkupUnit[];
   readingUuid: string | null;
+  word: string | null;
+  form: string | null;
+  translation: string | null;
+  parseInfo: ItemPropertyRow[] | null;
   signUuid: string | null;
   spellingUuid: string | null;
 }
@@ -147,6 +152,10 @@ export interface EpigraphicUnitWithMarkup
     | 'signUuid'
     | 'markups'
     | 'spellingUuid'
+    | 'word'
+    | 'form'
+    | 'translation'
+    | 'parseInfo'
   > {
   type: EpigraphicUnitType | null;
   reading: string;
@@ -168,11 +177,15 @@ export interface EpigraphicSign
 }
 
 export interface EpigraphicWord
-  extends Pick<EpigraphicUnit, 'discourseUuid' | 'reading'> {
+  extends Pick<
+    EpigraphicUnit,
+    'discourseUuid' | 'reading' | 'word' | 'form' | 'translation' | 'parseInfo'
+  > {
   uuids: string[];
   isDivider: boolean;
   signs: EpigraphicSign[];
   isContraction: boolean;
+  isNumber: boolean;
 }
 
 export interface TranslitOption {

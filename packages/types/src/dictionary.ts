@@ -48,6 +48,13 @@ export interface DictionaryForm extends DictionaryFormInfo {
   properties: ItemPropertyRow[];
 }
 
+export interface DictionaryFormRow {
+  uuid: string;
+  referenceUuid: string;
+  form: string;
+  mash: string;
+}
+
 export interface UpdateFormPayload {
   newForm: string;
 }

@@ -289,6 +289,11 @@ export function convertMarkedUpUnitsToEpigraphicWords(
         markups: sign.markups,
       })),
       isContraction,
+      word: signs[0].word || null,
+      form: signs[0].form || null,
+      translation: signs[0].translation || null,
+      parseInfo: signs[0].parseInfo || null,
+      isNumber: signs[0].epigType === 'number',
       isDivider: signs.map(unit => unit.epigType).includes('separator'),
     };
   });

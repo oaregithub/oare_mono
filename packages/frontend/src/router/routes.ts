@@ -67,6 +67,7 @@ import AnalyticsView from '../views/Admin/Analytics/Analytics.vue';
 import SealsView from '../views/Seals/SealList.vue';
 import SealView from '../views/Seals/SingleSeal.vue';
 import EditText from '../views/Texts/EpigraphyView/EditText/index.vue';
+import PeriodsView from '../views/Periods/Periods.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -484,6 +485,12 @@ const routes: RouteConfig[] = [
     name: 'editText',
     component: EditText,
     props: true,
+  },
+  {
+    path: '/periods',
+    name: 'periods',
+    component: PeriodsView,
+    beforeEnter: permissionGuard('PERIODS'),
   },
   // Defaults to 404 Not Found view if no route matches. This MUST be the last route.
   {
