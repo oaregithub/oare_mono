@@ -63,9 +63,9 @@
     <oare-dialog
       v-model="markupDialog"
       title="Edit Sign Markup"
-      :persistent="false"
-      :showSubmit="false"
       :showCancel="false"
+      submitText="OK"
+      closeOnSubmit
     >
       <v-row justify="center" class="ma-0">
         Select or unselect markup options.
@@ -179,7 +179,12 @@ export default defineComponent({
         row.value.signs &&
         row.value.signs.length > 0 &&
         row.value.signs.every(sign => sign.type) &&
-        !row.value.hasErrors
+        !row.value.hasErrors &&
+        (props.sign.reading
+          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
+          .replace(/<[^>]*>/g, '')
+          .replace(/\([^()]*\)/g, '') !== row.value.text ||
+          markupIsDifferent.value)
       );
     });
 
@@ -316,6 +321,22 @@ export default defineComponent({
     const updateMarkup = (markup: MarkupUnit[]) => {
       markupUnits.value = markup;
     };
+    const markupIsDifferent = computed(() => {
+      if (markupUnits.value.length !== props.sign.markups.length) {
+        return true;
+      }
+      for (let i = 0; i < markupUnits.value.length; i++) {
+        if (
+          markupUnits.value[i].type !== props.sign.markups[i].type ||
+          markupUnits.value[i].startChar !== props.sign.markups[i].startChar ||
+          markupUnits.value[i].endChar !== props.sign.markups[i].endChar ||
+          markupUnits.value[i].altReading !== props.sign.markups[i].altReading
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
 
     const markupDialog = ref(false);
 
@@ -335,6 +356,7 @@ export default defineComponent({
       updateMarkup,
       markupDialog,
       formsLoaded,
+      markupIsDifferent,
     };
   },
 });

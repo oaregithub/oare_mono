@@ -30,6 +30,7 @@ import {
   AddDividerPayload,
   DiscourseUnitType,
   EditSignPayload,
+  MarkupUnit,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -463,6 +464,80 @@ const getMarkupToAutoAdd = async (
   }
 
   return markupToAdd;
+};
+
+const editDamageBrackets = async (
+  type: 'damage' | 'partialDamage',
+  referenceUuid: string,
+  existingMarkup: MarkupUnit[],
+  payloadMarkup: MarkupUnit[],
+  trx?: Knex.Transaction
+) => {
+  const k = trx || knexWrite();
+  const TextMarkupDao = sl.get('TextMarkupDao');
+
+  const existingDamage = existingMarkup.filter(m => m.type === type);
+  const payloadDamage = payloadMarkup.filter(m => m.type === type);
+
+  if (existingDamage.length >= payloadDamage.length) {
+    const numberToRemove = existingDamage.length - payloadDamage.length;
+    const uuidsToRemove = await k('text_markup')
+      .pluck('uuid')
+      .where({ reference_uuid: referenceUuid, type })
+      .limit(numberToRemove);
+
+    await k('text_markup').del().whereIn('uuid', uuidsToRemove);
+
+    await Promise.all(
+      payloadDamage.map((markup, idx) =>
+        k('text_markup')
+          .where({ reference_uuid: referenceUuid, type })
+          .update({
+            start_char: markup.startChar,
+            end_char: markup.endChar,
+            alt_reading: markup.altReading,
+            alt_reading_uuid: markup.altReadingUuid,
+          })
+          .limit(1)
+          .offset(idx)
+      )
+    );
+  } else {
+    const originalDamage = payloadDamage.slice(0, existingDamage.length);
+    await Promise.all(
+      originalDamage.map((markup, idx) =>
+        k('text_markup')
+          .where({ reference_uuid: referenceUuid, type })
+          .update({
+            start_char: markup.startChar,
+            end_char: markup.endChar,
+            alt_reading: markup.altReading,
+            alt_reading_uuid: markup.altReadingUuid,
+          })
+          .limit(1)
+          .offset(idx)
+      )
+    );
+
+    const newDamage = payloadDamage.slice(existingDamage.length);
+    await Promise.all(
+      newDamage.map(markup => {
+        const markupRow: TextMarkupRow = {
+          uuid: v4(),
+          referenceUuid: markup.referenceUuid,
+          type: markup.type,
+          numValue: null,
+          altReadingUuid: markup.altReadingUuid,
+          altReading: markup.altReading,
+          startChar: markup.startChar,
+          endChar: markup.endChar,
+          objectUuid: null,
+        };
+
+        return TextMarkupDao.insertMarkupRow(markupRow, trx);
+      })
+    );
+  }
 };
 
 class EditTextUtils {
@@ -1878,9 +1953,33 @@ class EditTextUtils {
       trx
     );
 
+    // DAMAGE
+    await editDamageBrackets(
+      'damage',
+      payload.uuid,
+      existingMarkup,
+      payload.markup,
+      trx
+    );
+
+    // PARTIAL DAMAGE
+    await editDamageBrackets(
+      'partialDamage',
+      payload.uuid,
+      existingMarkup,
+      payload.markup,
+      trx
+    );
+
+    // NON-DAMAGE
     const removedMarkup = existingMarkup
       .map(m => m.type)
-      .filter(m => !payload.markup.map(mark => mark.type).includes(m));
+      .filter(
+        m =>
+          m !== 'damage' &&
+          m !== 'partialDamage' &&
+          !payload.markup.map(mark => mark.type).includes(m)
+      );
 
     await Promise.all(
       removedMarkup.map(type =>
@@ -1888,32 +1987,34 @@ class EditTextUtils {
       )
     );
     await Promise.all(
-      payload.markup.map(markup => {
-        if (existingMarkup.map(m => m.type).includes(markup.type)) {
-          return k('text_markup')
-            .where({ reference_uuid: payload.uuid, type: markup.type })
-            .update({
-              start_char: markup.startChar,
-              end_char: markup.endChar,
-              alt_reading: markup.altReading,
-              alt_reading_uuid: markup.altReadingUuid,
-            });
-        }
+      payload.markup
+        .filter(m => m.type !== 'damage' && m.type !== 'partialDamage')
+        .map(markup => {
+          if (existingMarkup.map(m => m.type).includes(markup.type)) {
+            return k('text_markup')
+              .where({ reference_uuid: payload.uuid, type: markup.type })
+              .update({
+                start_char: markup.startChar,
+                end_char: markup.endChar,
+                alt_reading: markup.altReading,
+                alt_reading_uuid: markup.altReadingUuid,
+              });
+          }
 
-        const markupRow: TextMarkupRow = {
-          uuid: v4(),
-          referenceUuid: markup.referenceUuid,
-          type: markup.type,
-          numValue: null,
-          altReadingUuid: markup.altReadingUuid,
-          altReading: markup.altReading,
-          startChar: markup.startChar,
-          endChar: markup.endChar,
-          objectUuid: null,
-        };
+          const markupRow: TextMarkupRow = {
+            uuid: v4(),
+            referenceUuid: markup.referenceUuid,
+            type: markup.type,
+            numValue: null,
+            altReadingUuid: markup.altReadingUuid,
+            altReading: markup.altReading,
+            startChar: markup.startChar,
+            endChar: markup.endChar,
+            objectUuid: null,
+          };
 
-        return TextMarkupDao.insertMarkupRow(markupRow, trx);
-      })
+          return TextMarkupDao.insertMarkupRow(markupRow, trx);
+        })
     );
   }
 
