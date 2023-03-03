@@ -140,6 +140,7 @@ export interface DictionarySearchPayload {
   page: number;
   rows: number;
   mode: string;
+  types: string[];
 }
 
 export interface TextOccurrencesRow {

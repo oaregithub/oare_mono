@@ -13,6 +13,7 @@ router.route('/search_dictionary').get(async (req, res, next) => {
       page,
       rows,
       mode,
+      types,
     } = (req.query as unknown) as DictionarySearchPayload;
     const userUuid = req.user ? req.user.uuid : null;
 
@@ -20,7 +21,8 @@ router.route('/search_dictionary').get(async (req, res, next) => {
       search,
       page,
       rows,
-      mode
+      mode,
+      types
     );
 
     if (results.results.length === 0) {
