@@ -119,6 +119,23 @@ router.route('/search').get(async (req, res, next) => {
       mode,
     } = (req.query as unknown) as SearchTextsPayload;
 
+    // Allows for text search by UUID
+    const textByUuid = await TextDao.getTextByUuid(title);
+    if (textByUuid) {
+      const response: SearchTextsResponse = {
+        results: [
+          {
+            uuid: textByUuid.uuid,
+            name: textByUuid.name,
+            matches: [],
+            discourseUuids: [],
+          },
+        ],
+      };
+      res.json(response);
+      return;
+    }
+
     const characterUuids = await prepareCharactersForSearch(charsPayload);
     const user = req.user || null;
 
