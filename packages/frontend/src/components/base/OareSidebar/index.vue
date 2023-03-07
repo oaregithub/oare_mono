@@ -26,7 +26,7 @@
       v-model="word"
       @keyup.enter.native="performSearch"
       :disabled="dictionaryDisabled"
-      v-if="isAdmin"
+      v-if="canDictionarySearch"
     />
     <v-btn color="error" class="mb-3 test-clear-btn" @click="clearSearch"
       >Clear</v-btn
@@ -86,7 +86,12 @@ export default defineComponent({
       window.location.href = newUrl;
     };
 
-    const isAdmin = computed(() => store.getters.isAdmin);
+    const canDictionarySearch = computed(
+      () =>
+        store.hasPermission('WORDS') ||
+        store.hasPermission('NAMES') ||
+        store.hasPermission('PLACES')
+    );
 
     const canSearch = computed(
       () => text.value || translit.value || word.value
@@ -107,7 +112,7 @@ export default defineComponent({
       dictionaryDisabled,
       clearSearch,
       canSearch,
-      isAdmin,
+      canDictionarySearch,
     };
   },
 });

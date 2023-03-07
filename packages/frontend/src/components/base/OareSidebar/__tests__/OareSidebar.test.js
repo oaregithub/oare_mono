@@ -9,11 +9,9 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('OareSidebar test', () => {
-  const createWrapper = (isAdmin = true) => {
+  const createWrapper = (hasPermission = true) => {
     sl.set('store', {
-      getters: {
-        isAdmin,
-      },
+      hasPermission: () => hasPermission,
     });
     return mount(OareSidebar, {
       localVue,
@@ -123,7 +121,7 @@ describe('OareSidebar test', () => {
     expect(searchButton.element).not.toHaveClass('v-btn--disabled');
   });
 
-  it('does not show words input if not an admin', () => {
+  it('does not show words input if does not have dictionary permission', () => {
     const wrapper = createWrapper(false);
     expect(wrapper.find('.test-words-input').exists()).toBe(false);
   });
