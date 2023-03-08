@@ -541,6 +541,88 @@ const editDamageBrackets = async (
   }
 };
 
+const editMarkupSelection = async (
+  uuid: string,
+  textUuid: string,
+  payloadMarkup: MarkupUnit[],
+  trx?: Knex.Transaction
+): Promise<void> => {
+  const k = trx || knexWrite();
+  const TextMarkupDao = sl.get('TextMarkupDao');
+
+  // MARKUP
+  const existingMarkup = await TextMarkupDao.getMarkups(
+    textUuid,
+    undefined,
+    uuid,
+    trx
+  );
+
+  // DAMAGE
+  await editDamageBrackets('damage', uuid, existingMarkup, payloadMarkup, trx);
+
+  // PARTIAL DAMAGE
+  await editDamageBrackets(
+    'partialDamage',
+    uuid,
+    existingMarkup,
+    payloadMarkup,
+    trx
+  );
+
+  // NON-DAMAGE
+  const removedMarkup = existingMarkup
+    .map(m => m.type)
+    .filter(
+      m =>
+        m !== 'damage' &&
+        m !== 'partialDamage' &&
+        m !== 'undeterminedSigns' &&
+        !payloadMarkup.map(mark => mark.type).includes(m)
+    );
+
+  await Promise.all(
+    removedMarkup.map(type =>
+      k('text_markup').del().where({ reference_uuid: uuid, type })
+    )
+  );
+  await Promise.all(
+    payloadMarkup
+      .filter(
+        m =>
+          m.type !== 'damage' &&
+          m.type !== 'partialDamage' &&
+          m.type !== 'undeterminedSigns'
+      )
+      .map(markup => {
+        if (existingMarkup.map(m => m.type).includes(markup.type)) {
+          return k('text_markup')
+            .where({ reference_uuid: uuid, type: markup.type })
+            .update({
+              start_char: markup.startChar,
+              end_char: markup.endChar,
+              alt_reading: markup.altReading,
+              alt_reading_uuid: markup.altReadingUuid,
+            });
+        }
+
+        const markupRow: TextMarkupRow = {
+          uuid: v4(),
+          referenceUuid: markup.referenceUuid,
+          type: markup.type,
+          numValue: null,
+          altReadingUuid: markup.altReadingUuid,
+          altReading: markup.altReading,
+          startChar: markup.startChar,
+          endChar: markup.endChar,
+          objectUuid: null,
+        };
+
+        return TextMarkupDao.insertMarkupRow(markupRow, trx);
+      })
+  );
+};
+
 class EditTextUtils {
   async addSide(
     payload: AddSidePayload,
@@ -1921,7 +2003,6 @@ class EditTextUtils {
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
-    const TextMarkupDao = sl.get('TextMarkupDao');
 
     // EPIGRAPHY
     await k('text_epigraphy')
@@ -1947,75 +2028,11 @@ class EditTextUtils {
     }
 
     // MARKUP
-    const existingMarkup = await TextMarkupDao.getMarkups(
+    await editMarkupSelection(
+      payload.uuid,
       payload.textUuid,
-      undefined,
-      payload.uuid,
-      trx
-    );
-
-    // DAMAGE
-    await editDamageBrackets(
-      'damage',
-      payload.uuid,
-      existingMarkup,
       payload.markup,
       trx
-    );
-
-    // PARTIAL DAMAGE
-    await editDamageBrackets(
-      'partialDamage',
-      payload.uuid,
-      existingMarkup,
-      payload.markup,
-      trx
-    );
-
-    // NON-DAMAGE
-    const removedMarkup = existingMarkup
-      .map(m => m.type)
-      .filter(
-        m =>
-          m !== 'damage' &&
-          m !== 'partialDamage' &&
-          !payload.markup.map(mark => mark.type).includes(m)
-      );
-
-    await Promise.all(
-      removedMarkup.map(type =>
-        k('text_markup').del().where({ reference_uuid: payload.uuid, type })
-      )
-    );
-    await Promise.all(
-      payload.markup
-        .filter(m => m.type !== 'damage' && m.type !== 'partialDamage')
-        .map(markup => {
-          if (existingMarkup.map(m => m.type).includes(markup.type)) {
-            return k('text_markup')
-              .where({ reference_uuid: payload.uuid, type: markup.type })
-              .update({
-                start_char: markup.startChar,
-                end_char: markup.endChar,
-                alt_reading: markup.altReading,
-                alt_reading_uuid: markup.altReadingUuid,
-              });
-          }
-
-          const markupRow: TextMarkupRow = {
-            uuid: v4(),
-            referenceUuid: markup.referenceUuid,
-            type: markup.type,
-            numValue: null,
-            altReadingUuid: markup.altReadingUuid,
-            altReading: markup.altReading,
-            startChar: markup.startChar,
-            endChar: markup.endChar,
-            objectUuid: null,
-          };
-
-          return TextMarkupDao.insertMarkupRow(markupRow, trx);
-        })
     );
   }
 
@@ -2028,6 +2045,14 @@ class EditTextUtils {
     await k('text_markup')
       .where({ reference_uuid: payload.uuid, type: 'undeterminedSigns' })
       .update({ num_value: payload.number });
+
+    // MARKUP
+    await editMarkupSelection(
+      payload.uuid,
+      payload.textUuid,
+      payload.markup,
+      trx
+    );
   }
 
   async mergeLines(

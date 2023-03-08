@@ -26,11 +26,40 @@
         label="Unknown Number of Broken Sign(s)"
       ></v-checkbox>
     </v-row>
+    <v-row justify="center" class="mt-6 mb-4">
+      <v-btn color="info" @click="markupDialog = true">Edit Markup</v-btn>
+    </v-row>
+
+    <oare-dialog
+      v-model="markupDialog"
+      title="Edit Sign Markup"
+      :showCancel="false"
+      submitText="OK"
+      closeOnSubmit
+    >
+      <v-row justify="center" class="ma-0">
+        Select or unselect markup options.
+      </v-row>
+      <v-row justify="center" class="ma-0 mb-6">
+        Some options have additional optional inputs.
+      </v-row>
+      <markup-selector
+        :newSign="newSign"
+        :referenceUuid="undeterminedSigns.uuid"
+        :existingMarkup="undeterminedSigns.markups"
+        class="mx-4 mb-4"
+        @update-markup="updateMarkup"
+      />
+    </oare-dialog>
   </oare-dialog>
 </template>
 
 <script lang="ts">
-import { EpigraphicSign, EditUndeterminedSignsPayload } from '@oare/types';
+import {
+  EpigraphicSign,
+  EditUndeterminedSignsPayload,
+  MarkupUnit,
+} from '@oare/types';
 import {
   defineComponent,
   PropType,
@@ -40,6 +69,7 @@ import {
   computed,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
+import MarkupSelector from './MarkupSelector.vue';
 
 export default defineComponent({
   props: {
@@ -55,6 +85,9 @@ export default defineComponent({
       type: Object as PropType<EpigraphicSign>,
       required: true,
     },
+  },
+  components: {
+    MarkupSelector,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -98,6 +131,7 @@ export default defineComponent({
           number: unknownNumUndeterminedSigns.value
             ? -1
             : selectedNumber.value || 0,
+          markup: markupUnits.value,
         };
 
         await server.editText(payload);
@@ -122,17 +156,55 @@ export default defineComponent({
 
       if (originalUndeterminedValue === -1) {
         return (
-          !unknownNumUndeterminedSigns.value &&
-          selectedNumber.value &&
-          selectedNumber.value > 0
+          (!unknownNumUndeterminedSigns.value &&
+            selectedNumber.value &&
+            selectedNumber.value > 0) ||
+          markupIsDifferent.value
         );
       } else {
         return (
           unknownNumUndeterminedSigns.value ||
           (selectedNumber.value &&
-            selectedNumber.value !== originalUndeterminedValue)
+            selectedNumber.value !== originalUndeterminedValue) ||
+          markupIsDifferent.value
         );
       }
+    });
+
+    const markupDialog = ref(false);
+    const newSign = computed(() => {
+      if (unknownNumUndeterminedSigns.value) {
+        return '...';
+      } else {
+        return 'x'.repeat(selectedNumber.value || 0);
+      }
+    });
+    const markupUnits = ref<MarkupUnit[]>(props.undeterminedSigns.markups);
+    const updateMarkup = (markup: MarkupUnit[]) => {
+      markupUnits.value = markup;
+    };
+    const markupIsDifferent = computed(() => {
+      const originalMarkup = props.undeterminedSigns.markups
+        .filter(m => m.type !== 'undeterminedSigns')
+        .sort((a, b) => a.type.localeCompare(b.type));
+      const newMarkup = markupUnits.value
+        .filter(m => m.type !== 'undeterminedSigns')
+        .sort((a, b) => a.type.localeCompare(b.type));
+
+      if (originalMarkup.length !== newMarkup.length) {
+        return true;
+      }
+      for (let i = 0; i < newMarkup.length; i++) {
+        if (
+          newMarkup[i].type !== originalMarkup[i].type ||
+          newMarkup[i].startChar !== originalMarkup[i].startChar ||
+          newMarkup[i].endChar !== originalMarkup[i].endChar ||
+          newMarkup[i].altReading !== originalMarkup[i].altReading
+        ) {
+          return true;
+        }
+      }
+      return false;
     });
 
     return {
@@ -142,6 +214,11 @@ export default defineComponent({
       editUndeterminedSignsLoading,
       canSubmit,
       editUndeterminedSigns,
+      markupDialog,
+      newSign,
+      markupUnits,
+      updateMarkup,
+      markupIsDifferent,
     };
   },
 });

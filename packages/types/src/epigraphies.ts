@@ -616,6 +616,7 @@ export interface EditUndeterminedSignsPayload extends EditTextPayloadBase {
   type: 'editUndeterminedSigns';
   uuid: string;
   number: number;
+  markup: MarkupUnit[];
 }
 
 export interface MergeLinePayload extends EditTextPayloadBase {
