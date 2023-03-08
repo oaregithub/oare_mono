@@ -28,7 +28,7 @@
           width="2"
           v-if="loading"
         />
-        <div v-else>
+        <div v-else-if="item.type !== 'anyNumber'">
           <span class="pr-1">-</span
           ><span class="pr-1" v-if="grammarString">({{ grammarString }})</span
           ><span class="pr-1"
@@ -64,7 +64,7 @@
 <script lang="ts">
 import {
   DictionaryWordTranslation,
-  DictItemAutocompleteDisplay,
+  DictItemComboboxDisplay,
   ItemPropertyRow,
 } from '@oare/types';
 import {
@@ -77,10 +77,10 @@ import sl from '@/serviceLocator';
 import utils from '@/utils';
 
 export default defineComponent({
-  name: 'WordsInTextSearchAutocompleteItem',
+  name: 'WordsInTextSearchComboboxItem',
   props: {
     item: {
-      type: Object as PropType<DictItemAutocompleteDisplay>,
+      type: Object as PropType<DictItemComboboxDisplay>,
       required: true,
     },
   },

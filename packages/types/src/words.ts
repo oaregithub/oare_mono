@@ -36,7 +36,7 @@ export interface WordWithoutForms extends DictionaryWordParseInfo {
   uuid: string;
   word: string;
 }
-export interface DictItemAutocompleteDisplay {
+export interface DictItemComboboxDisplay {
   uuid: string;
   referenceUuid: string;
   name: string;
@@ -44,7 +44,7 @@ export interface DictItemAutocompleteDisplay {
   wordUuid: string;
   translations: DictionaryWordTranslation[] | null;
   formInfo: Omit<DictionaryForm, 'spellings'> | null;
-  type: 'word' | 'form' | 'spelling';
+  type: 'word' | 'form' | 'spelling' | 'anyNumber';
 }
 
 export interface WordsInTextSearchPayload {
@@ -52,12 +52,17 @@ export interface WordsInTextSearchPayload {
   page: number;
   rows: number;
   sequenced: boolean;
-  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly';
+  sortBy:
+    | 'precedingFirstMatch'
+    | 'followingLastMatch'
+    | 'textNameOnly'
+    | 'ascendingNum'
+    | 'descendingNum';
 }
 
 export interface WordsInTextSearchPayloadItem {
   uuids: ParseTreePropertyUuids[][] | string[];
-  type: 'parse' | 'form/spelling';
+  type: 'parse' | 'form/spelling/number';
   numWordsBefore: number | null;
 }
 
@@ -66,7 +71,12 @@ export interface WordsInTextSearchPayloadUnparsed {
   page: string;
   rows: string;
   sequenced: string;
-  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly';
+  sortBy:
+    | 'precedingFirstMatch'
+    | 'followingLastMatch'
+    | 'textNameOnly'
+    | 'ascendingNum'
+    | 'descendingNum';
 }
 
 export interface AddWordCheckPayload {

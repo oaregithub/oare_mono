@@ -18,9 +18,9 @@ import _ from 'lodash';
 import {
   createNestedDiscourses,
   setDiscourseReading,
-  getDiscourseAndTextUuidsByWordOrFormUuidsQuery,
   createTextWithDiscourseUuidsArray,
   getTextDiscourseForWordsInTextsSearch,
+  getDiscourseAndTextUuidsQuery,
 } from './utils';
 
 export interface DiscourseRow {
@@ -153,7 +153,7 @@ class TextDiscourseDao {
       item => item.numWordsBefore
     );
 
-    const spellingUuids: string[][] = await Promise.all(
+    const searchItems: string[][] = await Promise.all(
       items.map(async payloadObject => {
         let dictItemSearchUuids: string[] = [];
         if (payloadObject.type === 'parse') {
@@ -166,21 +166,38 @@ class TextDiscourseDao {
             )
           ).flat();
         }
-        if (payloadObject.type === 'form/spelling') {
+        if (payloadObject.type === 'form/spelling/number') {
           dictItemSearchUuids = payloadObject.uuids as string[];
         }
-        const spellingUuidsArray = await k('dictionary_spelling as ds')
+        const spellingOrDiscourseUuidsArray = await k(
+          'dictionary_spelling as ds'
+        )
           .pluck('ds.uuid')
           .whereIn('ds.reference_uuid', dictItemSearchUuids)
-          .orWhereIn('ds.uuid', dictItemSearchUuids);
-        return spellingUuidsArray;
+          .orWhereIn('ds.uuid', dictItemSearchUuids)
+          .union(function () {
+            this.select('td.uuid')
+              .from('text_discourse as td')
+              .whereIn('td.explicit_spelling', dictItemSearchUuids);
+          })
+          .modify(qb => {
+            if (dictItemSearchUuids.includes('-1')) {
+              qb.union(function () {
+                this.select('td.uuid')
+                  .from('text_discourse as td')
+                  .where('td.type', 'number')
+                  .andWhere('td.explicit_spelling', '<>', 'LÁ');
+              });
+            }
+          });
+        return spellingOrDiscourseUuidsArray;
       })
     );
 
     const textUuids: Array<{
       textUuid: string;
-    }> = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
-      spellingUuids,
+    }> = await getDiscourseAndTextUuidsQuery(
+      searchItems,
       wordsBetween,
       textsToHide,
       sequenced,
@@ -194,10 +211,23 @@ class TextDiscourseDao {
       })
       .modify(qb => {
         if (sortBy !== 'textNameOnly') {
-          qb.select({
-            transcription: 'td_orderBy.transcription',
-            wordOnTablet: 'td_orderBy.word_on_tablet',
-          });
+          if (
+            sortBy === 'followingLastMatch' ||
+            sortBy === 'precedingFirstMatch'
+          ) {
+            qb.select({
+              transcription: 'td_orderBy.transcription',
+              wordOnTablet: 'td_orderBy.word_on_tablet',
+            });
+          }
+          if (sortBy === 'ascendingNum' || sortBy === 'descendingNum') {
+            const numSelectArray = searchItems.map(
+              (_s, idx) => `td${idx}.explicit_spelling`
+            );
+            qb.select(
+              k.raw(`CONCAT(${numSelectArray.join(', ",", ')}) as numberString`)
+            );
+          }
         }
       })
       .then(
@@ -207,6 +237,7 @@ class TextDiscourseDao {
             textUuid: string;
             transcription: string | null | undefined;
             wordOnTablet: number | null | undefined;
+            numberString: string | null | undefined;
           }>
         ) => {
           if (sortBy === 'textNameOnly') {
@@ -224,6 +255,7 @@ class TextDiscourseDao {
             textUuid: string;
             transcription: string | null | undefined;
             wordOnTablet: number | null | undefined;
+            numberArray: number[] | null | undefined;
           }[] = [];
           textRows.forEach(tr => {
             const compareTextRow = uniqueTexts.find(
@@ -240,15 +272,53 @@ class TextDiscourseDao {
             ) {
               uniqueTexts.find((uniqueText, idx) => {
                 if (compareTextRow === uniqueText) {
-                  uniqueTexts[idx] = tr;
+                  uniqueTexts[idx] = {
+                    ...tr,
+                    numberArray: tr.numberString
+                      ?.split(',')
+                      .map(n => Number(n))
+                      .filter(n => !isNaN(n)),
+                  };
                 }
                 return true;
               });
             } else if (!compareTextRow) {
-              uniqueTexts.push(tr);
+              uniqueTexts.push({
+                ...tr,
+                numberArray: tr.numberString
+                  ?.split(',')
+                  .map(n => Number(n))
+                  .filter(n => !isNaN(n)),
+              });
             }
           });
           const sortedTextRows = uniqueTexts.sort((a, b) => {
+            if (
+              (sortBy === 'ascendingNum' || sortBy === 'descendingNum') &&
+              a.numberArray &&
+              b.numberArray
+            ) {
+              const aNumArraySorted =
+                sortBy === 'ascendingNum'
+                  ? a.numberArray.sort()
+                  : a.numberArray.sort((x, y) => x - y);
+              const bNumArraySorted =
+                sortBy === 'ascendingNum'
+                  ? b.numberArray.sort()
+                  : b.numberArray.sort((x, y) => y - x);
+              const smallestArray =
+                aNumArraySorted.length <= bNumArraySorted.length
+                  ? aNumArraySorted.length
+                  : bNumArraySorted.length;
+              for (let i = 0; i < smallestArray; i += 1) {
+                if (aNumArraySorted[i] !== bNumArraySorted[i]) {
+                  if (sortBy === 'ascendingNum') {
+                    return aNumArraySorted[i] - bNumArraySorted[i];
+                  }
+                  return bNumArraySorted[i] - aNumArraySorted[i];
+                }
+              }
+            }
             if (a.textUuid === b.textUuid) {
               if (sortBy === 'followingLastMatch') {
                 return Number(b.wordOnTablet) - Number(a.wordOnTablet);
@@ -281,8 +351,8 @@ class TextDiscourseDao {
         }
       );
 
-    const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
-      spellingUuids,
+    const textWithDiscourseUuidsArray: TextWithDiscourseUuids[] = await getDiscourseAndTextUuidsQuery(
+      searchItems,
       wordsBetween,
       textsToHide,
       sequenced,
@@ -307,10 +377,8 @@ class TextDiscourseDao {
         return textAndDiscourseUuids;
       });
 
-    const {
-      count,
-    }: { count: number } = await getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
-      spellingUuids,
+    const { count }: { count: number } = await getDiscourseAndTextUuidsQuery(
+      searchItems,
       wordsBetween,
       textsToHide,
       sequenced,

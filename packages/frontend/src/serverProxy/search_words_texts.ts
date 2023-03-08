@@ -1,5 +1,5 @@
 import {
-  DictItemAutocompleteDisplay,
+  DictItemComboboxDisplay,
   WordsInTextsSearchResponse,
   WordsInTextSearchPayloadUnparsed,
 } from '@oare/types';
@@ -12,7 +12,7 @@ async function getWordsInTextSearchResults(
   return data;
 }
 
-async function getDictItems(): Promise<DictItemAutocompleteDisplay[]> {
+async function getDictItems(): Promise<DictItemComboboxDisplay[]> {
   const { data } = await axios.get('/dictItems');
   return data;
 }
