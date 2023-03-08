@@ -232,8 +232,8 @@ interface StartEndChar {
 export default defineComponent({
   props: {
     newSign: {
-      type: Object as PropType<EpigraphicSign>,
-      required: true,
+      type: String,
+      required: false,
     },
     existingMarkup: {
       type: Array as PropType<MarkupUnit[]>,
@@ -558,7 +558,7 @@ export default defineComponent({
 
     const damageStartCharOptions = computed(() => {
       const signLength =
-        props.newSign.reading
+        props.newSign
           ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
           .replace(/<[^>]*>/g, '')
           .replace(/\([^()]*\)/g, '').length || 0;
@@ -581,7 +581,7 @@ export default defineComponent({
 
     const partialDamageStartCharOptions = computed(() => {
       const signLength =
-        props.newSign.reading
+        props.newSign
           ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
           .replace(/<[^>]*>/g, '')
           .replace(/\([^()]*\)/g, '').length || 0;
@@ -604,7 +604,7 @@ export default defineComponent({
 
     const damageEndCharOptions = computed(() => {
       const signLength =
-        props.newSign.reading
+        props.newSign
           ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
           .replace(/<[^>]*>/g, '')
           .replace(/\([^()]*\)/g, '').length || 0;
@@ -627,7 +627,7 @@ export default defineComponent({
 
     const partialDamageEndCharOptions = computed(() => {
       const signLength =
-        props.newSign.reading
+        props.newSign
           ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
           .replace(/<[^>]*>/g, '')
           .replace(/\([^()]*\)/g, '').length || 0;

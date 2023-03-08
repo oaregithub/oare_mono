@@ -612,6 +612,13 @@ export interface EditSignPayload extends EditTextPayloadBase {
   sign: SignCodeWithDiscourseUuid;
 }
 
+export interface EditUndeterminedSignsPayload extends EditTextPayloadBase {
+  type: 'editUndeterminedSigns';
+  uuid: string;
+  number: number;
+  markup: MarkupUnit[];
+}
+
 export interface MergeLinePayload extends EditTextPayloadBase {
   type: 'mergeLine';
   firstLine: number;
@@ -687,6 +694,7 @@ export type EditTextPayload =
   | EditRegionPayload
   | EditUndeterminedLinesPayload
   | EditSignPayload
+  | EditUndeterminedSignsPayload
   | MergeLinePayload
   | CleanLinesPayload
   | RemoveSidePayload
