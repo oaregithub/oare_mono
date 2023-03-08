@@ -619,6 +619,12 @@ export interface EditUndeterminedSignsPayload extends EditTextPayloadBase {
   markup: MarkupUnit[];
 }
 
+export interface EditDividerPayload extends EditTextPayloadBase {
+  type: 'editDivider';
+  uuid: string;
+  markup: MarkupUnit[];
+}
+
 export interface MergeLinePayload extends EditTextPayloadBase {
   type: 'mergeLine';
   firstLine: number;
@@ -695,6 +701,7 @@ export type EditTextPayload =
   | EditUndeterminedLinesPayload
   | EditSignPayload
   | EditUndeterminedSignsPayload
+  | EditDividerPayload
   | MergeLinePayload
   | CleanLinesPayload
   | RemoveSidePayload

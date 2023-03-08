@@ -108,8 +108,9 @@
                     (currentEditAction === 'removeDivider' && word.isDivider)),
                 'blue-line-under cursor-display':
                   hover &&
-                  (currentEditAction === 'addSign' ||
-                    currentEditAction === 'addUndeterminedSigns'),
+                  ((currentEditAction === 'addSign' && !word.isDivider) ||
+                    (currentEditAction === 'addUndeterminedSigns' &&
+                      !word.isDivider)),
               }"
               @click="handleWordClick(word)"
             >
@@ -129,7 +130,9 @@
                         ((currentEditAction === 'editSign' &&
                           sign.epigType === 'sign') ||
                           (currentEditAction === 'editUndeterminedSigns' &&
-                            sign.epigType === 'undeterminedSigns')),
+                            sign.epigType === 'undeterminedSigns') ||
+                          (currentEditAction === 'editDivider' &&
+                            word.isDivider)),
                     }"
                     @click="handleSignClick(word, sign)"
                   />
@@ -331,6 +334,28 @@
         {{ line }}?</span
       >
     </oare-dialog>
+
+    <oare-dialog
+      v-if="dividerToEdit"
+      v-model="editDividerDialog"
+      title="Edit Divider Markup"
+      :submitLoading="editDividerLoading"
+      @submit="editDivider"
+    >
+      <v-row justify="center" class="ma-0">
+        Select or unselect markup options.
+      </v-row>
+      <v-row justify="center" class="ma-0 mb-6">
+        Some options have additional optional inputs.
+      </v-row>
+      <markup-selector
+        :newSign="dividerToEdit.reading"
+        :referenceUuid="dividerToEdit.uuid"
+        :existingMarkup="dividerToEdit.markups"
+        class="mx-4 mb-4"
+        @update-markup="updateDividerMarkup"
+      />
+    </oare-dialog>
   </div>
 </template>
 
@@ -357,6 +382,8 @@ import {
   EpigraphicUnitSide,
   AddDividerPayload,
   MarkupType,
+  MarkupUnit,
+  EditDividerPayload,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import RemoveSignDialog from './RemoveSignDialog.vue';
@@ -368,6 +395,7 @@ import AddSignDialog from './AddSignDialog.vue';
 import AddUndeterminedSignsDialog from './AddUndeterminedSignsDialog.vue';
 import EditSignDialog from './EditSignDialog.vue';
 import EditUndeterminedSignsDialog from './EditUndeterminedSignsDialog.vue';
+import MarkupSelector from './MarkupSelector.vue';
 
 export default defineComponent({
   props: {
@@ -410,6 +438,7 @@ export default defineComponent({
     AddUndeterminedSignsDialog,
     EditSignDialog,
     EditUndeterminedSignsDialog,
+    MarkupSelector,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -702,6 +731,10 @@ export default defineComponent({
       ) {
         undeterminedSignToEdit.value = sign;
         editUndeterminedSignsDialog.value = true;
+      } else if (props.currentEditAction === 'editDivider') {
+        editDividerDialog.value = true;
+        dividerToEdit.value = sign;
+        dividerMarkupUnits.value = sign.markups;
       }
     };
 
@@ -869,6 +902,76 @@ export default defineComponent({
     });
     const undeterminedSignToEdit = ref<EpigraphicSign>();
 
+    const editDividerDialog = ref(false);
+    watch(editDividerDialog, () => {
+      if (!editDividerDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const dividerToEdit = ref<EpigraphicSign>();
+
+    const editDividerLoading = ref(false);
+    const editDivider = async () => {
+      try {
+        editDividerLoading.value = true;
+
+        if (!dividerToEdit.value) {
+          throw new Error('No divider to edit');
+        }
+
+        const payload: EditDividerPayload = {
+          type: 'editDivider',
+          textUuid: props.textUuid,
+          uuid: dividerToEdit.value.uuid,
+          markup: dividerMarkupUnits.value,
+        };
+
+        await server.editText(payload);
+        resetRenderer();
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error editing divider. Please try again.',
+          err as Error
+        );
+      } finally {
+        editDividerDialog.value = false;
+        resetCurrentEditAction();
+        editDividerLoading.value = false;
+        dividerToEdit.value = undefined;
+        dividerMarkupUnits.value = [];
+      }
+    };
+    const dividerMarkupUnits = ref<MarkupUnit[]>([]);
+    const updateDividerMarkup = (markup: MarkupUnit[]) => {
+      dividerMarkupUnits.value = markup;
+    };
+    const markupIsDifferent = computed(() => {
+      if (!dividerToEdit.value) {
+        return false;
+      }
+      const originalMarkup = dividerToEdit.value.markups.sort((a, b) =>
+        a.type.localeCompare(b.type)
+      );
+      const newMarkup = dividerMarkupUnits.value.sort((a, b) =>
+        a.type.localeCompare(b.type)
+      );
+
+      if (originalMarkup.length !== newMarkup.length) {
+        return true;
+      }
+      for (let i = 0; i < newMarkup.length; i++) {
+        if (
+          newMarkup[i].type !== originalMarkup[i].type ||
+          newMarkup[i].startChar !== originalMarkup[i].startChar ||
+          newMarkup[i].endChar !== originalMarkup[i].endChar ||
+          newMarkup[i].altReading !== originalMarkup[i].altReading
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
+
     return {
       lineNumber,
       resetRenderer,
@@ -915,6 +1018,13 @@ export default defineComponent({
       wordBeingEdited,
       editUndeterminedSignsDialog,
       undeterminedSignToEdit,
+      editDividerDialog,
+      dividerToEdit,
+      editDividerLoading,
+      editDivider,
+      dividerMarkupUnits,
+      updateDividerMarkup,
+      markupIsDifferent,
     };
   },
 });

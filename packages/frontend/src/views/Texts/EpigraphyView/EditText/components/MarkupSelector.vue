@@ -4,7 +4,7 @@
       <v-checkbox v-model="damage" hide-details>
         <template #label>Damage</template>
       </v-checkbox>
-      <div v-if="damage">
+      <div v-if="damage && signLength > 1">
         <v-row
           v-for="(char, index) in damageChars"
           :key="index"
@@ -60,7 +60,7 @@
       <v-checkbox v-model="partialDamage" hide-details>
         <template #label>Partial Damage</template>
       </v-checkbox>
-      <div v-if="partialDamage">
+      <div v-if="partialDamage && signLength > 1">
         <v-row
           v-for="(char, index) in partialDamageChars"
           :key="index"
@@ -557,17 +557,11 @@ export default defineComponent({
     watch(markupUnits, () => emit('update-markup', markupUnits.value));
 
     const damageStartCharOptions = computed(() => {
-      const signLength =
-        props.newSign
-          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-          .replace(/<[^>]*>/g, '')
-          .replace(/\([^()]*\)/g, '').length || 0;
-
       const optionArray: number[][] = [];
 
       damageChars.value.forEach(char => {
         let options: number[] = [];
-        for (let i = 1; i < signLength; i++) {
+        for (let i = 1; i < signLength.value; i++) {
           options.push(i);
         }
         if (char.endChar) {
@@ -580,17 +574,11 @@ export default defineComponent({
     });
 
     const partialDamageStartCharOptions = computed(() => {
-      const signLength =
-        props.newSign
-          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-          .replace(/<[^>]*>/g, '')
-          .replace(/\([^()]*\)/g, '').length || 0;
-
       const optionArray: number[][] = [];
 
       partialDamageChars.value.forEach(char => {
         let options: number[] = [];
-        for (let i = 1; i < signLength; i++) {
+        for (let i = 1; i < signLength.value; i++) {
           options.push(i);
         }
         if (char.endChar) {
@@ -603,17 +591,11 @@ export default defineComponent({
     });
 
     const damageEndCharOptions = computed(() => {
-      const signLength =
-        props.newSign
-          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-          .replace(/<[^>]*>/g, '')
-          .replace(/\([^()]*\)/g, '').length || 0;
-
       const optionArray: number[][] = [];
 
       damageChars.value.forEach(char => {
         let options: number[] = [];
-        for (let i = 1; i < signLength; i++) {
+        for (let i = 1; i < signLength.value; i++) {
           options.push(i);
         }
         if (char.startChar) {
@@ -626,17 +608,11 @@ export default defineComponent({
     });
 
     const partialDamageEndCharOptions = computed(() => {
-      const signLength =
-        props.newSign
-          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-          .replace(/<[^>]*>/g, '')
-          .replace(/\([^()]*\)/g, '').length || 0;
-
       const optionArray: number[][] = [];
 
       partialDamageChars.value.forEach(char => {
         let options: number[] = [];
-        for (let i = 1; i < signLength; i++) {
+        for (let i = 1; i < signLength.value; i++) {
           options.push(i);
         }
         if (char.startChar) {
@@ -692,6 +668,14 @@ export default defineComponent({
       partialDamageChars.value.splice(index, 1);
     };
 
+    const signLength = computed(
+      () =>
+        props.newSign
+          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
+          .replace(/<[^>]*>/g, '')
+          .replace(/\([^()]*\)/g, '').length || 0
+    );
+
     return {
       damage,
       partialDamage,
@@ -718,6 +702,7 @@ export default defineComponent({
       partialDamageChars,
       addPartialDamage,
       removePartialDamage,
+      signLength,
     };
   },
 });
