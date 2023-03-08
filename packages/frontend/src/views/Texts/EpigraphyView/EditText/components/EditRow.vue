@@ -126,8 +126,10 @@
                             sign.epigType === 'undeterminedSigns')),
                       'blue-line-under cursor-display':
                         hover2 &&
-                        currentEditAction === 'editSign' &&
-                        sign.epigType === 'sign',
+                        ((currentEditAction === 'editSign' &&
+                          sign.epigType === 'sign') ||
+                          (currentEditAction === 'editUndeterminedSigns' &&
+                            sign.epigType === 'undeterminedSigns')),
                     }"
                     @click="handleSignClick(word, sign)"
                   />
@@ -301,6 +303,16 @@
       @reset-current-edit-action="resetCurrentEditAction"
     />
 
+    <edit-undetermined-signs-dialog
+      v-if="undeterminedSignToEdit"
+      v-model="editUndeterminedSignsDialog"
+      :textUuid="textUuid"
+      :undeterminedSigns="undeterminedSignToEdit"
+      :key="undeterminedSignToEdit"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
+
     <oare-dialog
       v-model="addDividerDialog"
       title="Add Word Divider?"
@@ -355,6 +367,7 @@ import AddWordDialog from './AddWordDialog.vue';
 import AddSignDialog from './AddSignDialog.vue';
 import AddUndeterminedSignsDialog from './AddUndeterminedSignsDialog.vue';
 import EditSignDialog from './EditSignDialog.vue';
+import EditUndeterminedSignsDialog from './EditUndeterminedSignsDialog.vue';
 
 export default defineComponent({
   props: {
@@ -396,6 +409,7 @@ export default defineComponent({
     AddSignDialog,
     AddUndeterminedSignsDialog,
     EditSignDialog,
+    EditUndeterminedSignsDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -682,6 +696,12 @@ export default defineComponent({
         wordBeingEdited.value = word;
         signToEdit.value = sign;
         editSignDialog.value = true;
+      } else if (
+        props.currentEditAction === 'editUndeterminedSigns' &&
+        sign.epigType === 'undeterminedSigns'
+      ) {
+        undeterminedSignToEdit.value = sign;
+        editUndeterminedSignsDialog.value = true;
       }
     };
 
@@ -841,6 +861,14 @@ export default defineComponent({
     const signToEdit = ref<EpigraphicSign>();
     const wordBeingEdited = ref<EpigraphicWord>();
 
+    const editUndeterminedSignsDialog = ref(false);
+    watch(editUndeterminedSignsDialog, () => {
+      if (!editUndeterminedSignsDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const undeterminedSignToEdit = ref<EpigraphicSign>();
+
     return {
       lineNumber,
       resetRenderer,
@@ -885,6 +913,8 @@ export default defineComponent({
       editSignDialog,
       signToEdit,
       wordBeingEdited,
+      editUndeterminedSignsDialog,
+      undeterminedSignToEdit,
     };
   },
 });

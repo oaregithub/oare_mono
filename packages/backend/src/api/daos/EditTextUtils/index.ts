@@ -31,6 +31,7 @@ import {
   DiscourseUnitType,
   EditSignPayload,
   MarkupUnit,
+  EditUndeterminedSignsPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2016,6 +2017,17 @@ class EditTextUtils {
           return TextMarkupDao.insertMarkupRow(markupRow, trx);
         })
     );
+  }
+
+  async editUndeterminedSigns(
+    payload: EditUndeterminedSignsPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    await k('text_markup')
+      .where({ reference_uuid: payload.uuid, type: 'undeterminedSigns' })
+      .update({ num_value: payload.number });
   }
 
   async mergeLines(

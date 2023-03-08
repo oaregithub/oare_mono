@@ -140,10 +140,10 @@
             Sign</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-undetermined-signs')" disabled>
+        <v-list-item @click="$emit('edit-undetermined-signs')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Broken Sign(s) (Coming Soon)</v-list-item-title
+            Broken Sign(s)</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('edit-divider')" disabled>
@@ -387,9 +387,9 @@ export default defineComponent({
           return 'Click on the uninscribed line(s) that you would like to edit.';
         case 'editUndeterminedLines':
           return 'Click on the broken line(s) that you would like to edit.';
-        case 'editSign': // FIXME REVIEW
+        case 'editSign':
           return 'Click on the sign that you would like to edit.';
-        case 'editUndeterminedSigns': // FIXME REVIEW
+        case 'editUndeterminedSigns':
           return 'Click on the broken sign(s) that you would like to edit.';
         case 'editDivider': // FIXME REVIEW
           return 'Click on the word divider that you would like to edit.';
