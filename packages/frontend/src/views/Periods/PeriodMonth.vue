@@ -2,14 +2,16 @@
   <v-col :cols="dynamicCol(month.abbreviation)" class="pa-2">
     <v-card outlined min-height="150">
       <v-card-subtitle
-        >{{ month.abbreviation }}. {{ month.name }}</v-card-subtitle
+        >{{ month.abbreviation }}. {{ month.name }} ({{
+          month.occurrences
+        }})</v-card-subtitle
       >
       <div v-if="month.weeks.length > 0">
         <v-card-text
-          v-for="(week, idx) in getWeekNames(month.weeks)"
+          v-for="(week, idx) in getWeeks(month.weeks)"
           :key="idx"
         >
-          {{ week }}
+          {{ week.name }} ({{ week.occurrences }})
         </v-card-text>
       </div>
     </v-card>
@@ -44,9 +46,18 @@ export default defineComponent({
     const getWeekNames = (weeks: Week[]) => {
       return weeks.map(week => week.name);
     };
+
+    const getWeeks = (weeks: Week[]) => {
+      weeks.map(week => week.name);
+      weeks.map(week => week.occurrences)
+      return weeks;
+    };
+
     return {
       dynamicCol,
       getWeekNames,
+      getWeeks
+      
     };
   },
 });
