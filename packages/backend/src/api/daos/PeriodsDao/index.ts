@@ -41,9 +41,8 @@ class PeriodsDao {
   async getYears(
     yearRows: PeriodRow[],
     monthRows: PeriodRow[],
-    weekRows: PeriodRow[],
+    weekRows: PeriodRow[]
   ): Promise<Year[]> {
-
     const years: Year[] = await Promise.all(
       yearRows.map(row => this.yearMaker(row, monthRows, weekRows))
     );
@@ -190,7 +189,6 @@ class PeriodsDao {
   }
 
   async weekMaker(weekRow: PeriodRow) {
-
     const weekOccurrences = await this.getOccurrences(weekRow.uuid);
 
     return {
@@ -200,7 +198,7 @@ class PeriodsDao {
     };
   }
 
-  async getOccurrences(uuid: string, trx ?: Knex.Transaction) {
+  async getOccurrences(uuid: string, trx?: Knex.Transaction) {
     const k = trx || knexRead();
 
     const countRow = await k('item_properties')
@@ -208,12 +206,10 @@ class PeriodsDao {
       .andWhere('variable_uuid', 'cd76438c-3a82-11ed-b9d7-0282f921eac9')
       .count({ count: 'uuid' })
       .first();
-    
-    const occurrences = countRow && countRow.count ? countRow.count : 0;
 
+    const occurrences = countRow && countRow.count ? countRow.count : 0;
     return Number(occurrences);
   }
 }
-
 
 export default new PeriodsDao();
