@@ -287,6 +287,8 @@ export function convertMarkedUpUnitsToEpigraphicWords(
           isContraction
         ),
         markups: sign.markups,
+        objOnTablet: sign.objOnTablet,
+        discourseUuid: sign.discourseUuid,
       })),
       isContraction,
       word: signs[0].word || null,

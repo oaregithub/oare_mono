@@ -685,6 +685,8 @@ router
           await EditTextUtils.editDivider(payload, trx);
         } else if (payload.type === 'mergeLine') {
           await EditTextUtils.mergeLines(payload, trx);
+        } else if (payload.type === 'reorderSign') {
+          await EditTextUtils.reorderSign(payload, trx);
         } else if (payload.type === 'removeSide') {
           await EditTextUtils.removeSide(payload, trx);
         } else if (payload.type === 'removeColumn') {

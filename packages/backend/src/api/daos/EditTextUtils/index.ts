@@ -33,6 +33,7 @@ import {
   MarkupUnit,
   EditUndeterminedSignsPayload,
   EditDividerPayload,
+  ReorderSignPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2098,6 +2099,47 @@ class EditTextUtils {
         line: payload.secondLine,
       })
       .del();
+  }
+
+  async reorderSign(
+    payload: ReorderSignPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    const firstObjOnTablet: number = await k('text_epigraphy')
+      .where({ text_uuid: payload.textUuid, uuid: payload.signUuids[0] })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet);
+
+    const secondObjOnTablet: number = await k('text_epigraphy')
+      .where({ text_uuid: payload.textUuid, uuid: payload.signUuids[1] })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet);
+
+    // Swap obect_on_tablet
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        uuid: payload.signUuids[0],
+      })
+      .update({ object_on_tablet: secondObjOnTablet });
+
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        uuid: payload.signUuids[1],
+      })
+      .update({ object_on_tablet: firstObjOnTablet });
+
+    // DISCOURSE
+    await k('text_discourse').where({ uuid: payload.discourseUuid }).update({
+      spelling: payload.spelling,
+      spelling_uuid: payload.spellingUuid,
+      explicit_spelling: payload.spelling,
+    });
   }
 
   async removeSide(

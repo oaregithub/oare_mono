@@ -209,10 +209,10 @@
         >
       </template>
       <v-list dense>
-        <v-list-item @click="$emit('reorder-sign')" disabled>
+        <v-list-item @click="$emit('reorder-sign')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Reorder Signs (Coming Soon)</v-list-item-title
+            Reorder Signs</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -401,7 +401,7 @@ export default defineComponent({
           return 'Use the checkboxes that appear to select two consecutive lines that you would like to merge.';
         case 'mergeWord': // FIXME REVIEW
           return 'Use the checkboxes that appear to select two consecutive words/numbers that you would like to merge.';
-        case 'reorderSign': // FIXME REVIEW
+        case 'reorderSign':
           return 'Click on the word that contains the two signs that you would like to reorder.';
         case 'cleanLine':
           return 'Confirm clean up in the dialog.';
