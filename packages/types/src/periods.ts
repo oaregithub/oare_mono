@@ -1,12 +1,14 @@
 export interface Week {
   uuid: string;
   name: string;
+  occurrences: number;
 }
 
 export interface Month {
   uuid: string;
   abbreviation: number;
   name: string;
+  occurrences: number;
   weeks: Week[];
 }
 

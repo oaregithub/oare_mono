@@ -20,6 +20,7 @@ import sl from '@/serviceLocator';
 export default defineComponent({
   name: 'PeriodsView',
   components: { PeriodYear },
+  
   setup() {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
