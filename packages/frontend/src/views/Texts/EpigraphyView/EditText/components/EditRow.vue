@@ -110,7 +110,8 @@
                   hover &&
                   ((currentEditAction === 'addSign' && !word.isDivider) ||
                     (currentEditAction === 'addUndeterminedSigns' &&
-                      !word.isDivider)),
+                      !word.isDivider) ||
+                    (currentEditAction === 'reorderSign' && !word.isDivider)),
               }"
               @click="handleWordClick(word)"
             >
@@ -356,6 +357,16 @@
         @update-markup="updateDividerMarkup"
       />
     </oare-dialog>
+
+    <reorder-signs-dialog
+      v-if="wordToReorderSignsIn"
+      v-model="reorderSignsDialog"
+      :word="wordToReorderSignsIn"
+      :textUuid="textUuid"
+      :key="wordToReorderSignsIn"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
   </div>
 </template>
 
@@ -396,6 +407,7 @@ import AddUndeterminedSignsDialog from './AddUndeterminedSignsDialog.vue';
 import EditSignDialog from './EditSignDialog.vue';
 import EditUndeterminedSignsDialog from './EditUndeterminedSignsDialog.vue';
 import MarkupSelector from './MarkupSelector.vue';
+import ReorderSignsDialog from './ReorderSignsDialog.vue';
 
 export default defineComponent({
   props: {
@@ -439,6 +451,7 @@ export default defineComponent({
     EditSignDialog,
     EditUndeterminedSignsDialog,
     MarkupSelector,
+    ReorderSignsDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -608,6 +621,9 @@ export default defineComponent({
       } else if (props.currentEditAction === 'addUndeterminedSigns') {
         addUndeterminedSignsDialog.value = true;
         wordToAddUndeterminedSignsTo.value = word;
+      } else if (props.currentEditAction === 'reorderSign') {
+        reorderSignsDialog.value = true;
+        wordToReorderSignsIn.value = word;
       }
     };
 
@@ -972,6 +988,14 @@ export default defineComponent({
       return false;
     });
 
+    const reorderSignsDialog = ref(false);
+    watch(reorderSignsDialog, () => {
+      if (!reorderSignsDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const wordToReorderSignsIn = ref<EpigraphicWord>();
+
     return {
       lineNumber,
       resetRenderer,
@@ -1025,6 +1049,8 @@ export default defineComponent({
       dividerMarkupUnits,
       updateDividerMarkup,
       markupIsDifferent,
+      reorderSignsDialog,
+      wordToReorderSignsIn,
     };
   },
 });

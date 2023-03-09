@@ -156,6 +156,8 @@ export interface EpigraphicUnitWithMarkup
     | 'form'
     | 'translation'
     | 'parseInfo'
+    | 'objOnTablet'
+    | 'discourseUuid'
   > {
   type: EpigraphicUnitType | null;
   reading: string;
@@ -172,6 +174,8 @@ export interface EpigraphicSign
     | 'readingUuid'
     | 'reading'
     | 'markups'
+    | 'objOnTablet'
+    | 'discourseUuid'
   > {
   separator: string;
 }
@@ -631,6 +635,14 @@ export interface MergeLinePayload extends EditTextPayloadBase {
   secondLine: number;
 }
 
+export interface ReorderSignPayload extends EditTextPayloadBase {
+  type: 'reorderSign';
+  spelling: string;
+  spellingUuid: string | null;
+  signUuids: string[];
+  discourseUuid: string | null;
+}
+
 export interface CleanLinesPayload extends EditTextPayloadBase {
   type: 'cleanLine';
 }
@@ -703,6 +715,7 @@ export type EditTextPayload =
   | EditUndeterminedSignsPayload
   | EditDividerPayload
   | MergeLinePayload
+  | ReorderSignPayload
   | CleanLinesPayload
   | RemoveSidePayload
   | RemoveColumnPayload
