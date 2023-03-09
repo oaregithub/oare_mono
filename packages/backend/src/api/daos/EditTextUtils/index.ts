@@ -32,6 +32,7 @@ import {
   EditSignPayload,
   MarkupUnit,
   EditUndeterminedSignsPayload,
+  EditDividerPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2047,6 +2048,18 @@ class EditTextUtils {
       .update({ num_value: payload.number });
 
     // MARKUP
+    await editMarkupSelection(
+      payload.uuid,
+      payload.textUuid,
+      payload.markup,
+      trx
+    );
+  }
+
+  async editDivider(
+    payload: EditDividerPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
     await editMarkupSelection(
       payload.uuid,
       payload.textUuid,

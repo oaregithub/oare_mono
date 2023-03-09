@@ -146,10 +146,10 @@
             Broken Sign(s)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-divider')" disabled>
+        <v-list-item @click="$emit('edit-divider')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Word Divider Markup (Coming Soon)</v-list-item-title
+            Word Divider Markup</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -391,7 +391,7 @@ export default defineComponent({
           return 'Click on the sign that you would like to edit.';
         case 'editUndeterminedSigns':
           return 'Click on the broken sign(s) that you would like to edit.';
-        case 'editDivider': // FIXME REVIEW
+        case 'editDivider':
           return 'Click on the word divider that you would like to edit.';
         case 'splitLine': // FIXME REVIEW
           return 'Click on the line that you would like to split.';
