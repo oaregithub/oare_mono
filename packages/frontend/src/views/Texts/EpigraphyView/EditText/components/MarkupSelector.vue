@@ -220,7 +220,7 @@ import {
   ComputedRef,
   watch,
 } from '@vue/composition-api';
-import { MarkupUnit, EpigraphicSign, RowTypes } from '@oare/types';
+import { MarkupUnit, RowTypes } from '@oare/types';
 import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vue';
 import { RowWithLine } from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Column.vue';
 
