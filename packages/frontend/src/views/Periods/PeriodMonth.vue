@@ -8,7 +8,7 @@
       >
       <div v-if="month.weeks.length > 0">
         <v-card-text
-          v-for="(week, idx) in getWeeks(month.weeks)"
+          v-for="(week, idx) in month.weeks"
           :key="idx"
         >
           {{ week.name }} ({{ week.occurrences }})
@@ -34,6 +34,7 @@ export default defineComponent({
       required: true,
     },
   },
+  
   setup() {
     const dynamicCol = (abbreviation: number) => {
       if (abbreviation < 13) {
@@ -43,21 +44,8 @@ export default defineComponent({
       }
     };
 
-    const getWeekNames = (weeks: Week[]) => {
-      return weeks.map(week => week.name);
-    };
-
-    const getWeeks = (weeks: Week[]) => {
-      weeks.map(week => week.name);
-      weeks.map(week => week.occurrences)
-      return weeks;
-    };
-
     return {
       dynamicCol,
-      getWeekNames,
-      getWeeks
-      
     };
   },
 });
