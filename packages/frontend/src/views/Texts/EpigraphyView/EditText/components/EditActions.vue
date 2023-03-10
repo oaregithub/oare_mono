@@ -192,10 +192,10 @@
             Lines</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('merge-word')" disabled>
+        <v-list-item @click="$emit('merge-word')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
-            Words / Numbers (Coming Soon)</v-list-item-title
+            Words / Numbers</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -399,7 +399,7 @@ export default defineComponent({
           return 'Click on the word/number that you would like to split.';
         case 'mergeLine':
           return 'Use the checkboxes that appear to select two consecutive lines that you would like to merge.';
-        case 'mergeWord': // FIXME REVIEW
+        case 'mergeWord':
           return 'Use the checkboxes that appear to select two consecutive words/numbers that you would like to merge.';
         case 'reorderSign':
           return 'Click on the word that contains the two signs that you would like to reorder.';
