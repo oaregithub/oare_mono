@@ -34,6 +34,7 @@ import {
   EditUndeterminedSignsPayload,
   EditDividerPayload,
   ReorderSignPayload,
+  MergeWordPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2099,6 +2100,43 @@ class EditTextUtils {
         line: payload.secondLine,
       })
       .del();
+  }
+
+  async mergeWords(
+    payload: MergeWordPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    if (payload.discourseUuids.length !== 2) {
+      throw new Error('Two discourse uuids are required');
+    }
+
+    const discourseUuidToKeep = payload.discourseUuids[0];
+    const discourseUuidToDelete = payload.discourseUuids[1];
+
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        discourse_uuid: discourseUuidToDelete,
+      })
+      .update({ discourse_uuid: discourseUuidToKeep });
+
+    await k('item_properties')
+      .where({ reference_uuid: discourseUuidToDelete })
+      .update({ reference_uuid: discourseUuidToKeep });
+
+    await k('item_properties')
+      .where({ object_uuid: discourseUuidToDelete })
+      .update({ object_uuid: discourseUuidToKeep });
+
+    await k('text_discourse').where({ uuid: discourseUuidToKeep }).update({
+      spelling: payload.spelling,
+      explicit_spelling: payload.spelling,
+      spelling_uuid: payload.spellingUuid,
+    });
+
+    await k('text_discourse').where({ uuid: discourseUuidToDelete }).del();
   }
 
   async reorderSign(

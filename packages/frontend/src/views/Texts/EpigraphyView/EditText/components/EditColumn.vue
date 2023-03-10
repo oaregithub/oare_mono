@@ -95,6 +95,8 @@
           @reset-renderer="resetRenderer"
           @reset-current-edit-action="resetCurrentEditAction"
           @toggle-select-line="$emit('toggle-select-line', $event)"
+          :selectedWords="selectedWords"
+          @toggle-select-word="$emit('toggle-select-word', $event)"
         />
         <v-row
           v-if="
@@ -187,6 +189,7 @@ import {
   EditColumnPayload,
   MarkupType,
   RemoveColumnPayload,
+  EpigraphicWord,
 } from '@oare/types';
 import EditRow from './EditRow.vue';
 import InsertButton from './InsertButton.vue';
@@ -219,6 +222,10 @@ export default defineComponent({
     },
     selectedLines: {
       type: Array as PropType<number[]>,
+      required: true,
+    },
+    selectedWords: {
+      type: Array as PropType<EpigraphicWord[]>,
       required: true,
     },
   },

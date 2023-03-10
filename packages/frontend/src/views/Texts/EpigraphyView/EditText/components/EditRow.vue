@@ -99,49 +99,73 @@
           :key="index"
           :class="{ 'mr-2': !word.isContraction }"
         >
-          <v-hover v-slot="{ hover }">
-            <span
-              :class="{
-                'red-line-through cursor-display':
-                  hover &&
-                  ((currentEditAction === 'removeWord' && !word.isDivider) ||
-                    (currentEditAction === 'removeDivider' && word.isDivider)),
-                'blue-line-under cursor-display':
-                  hover &&
-                  ((currentEditAction === 'addSign' && !word.isDivider) ||
-                    (currentEditAction === 'addUndeterminedSigns' &&
-                      !word.isDivider) ||
-                    (currentEditAction === 'reorderSign' && !word.isDivider)),
-              }"
-              @click="handleWordClick(word)"
-            >
-              <span v-for="(sign, signIdx) in word.signs" :key="signIdx">
-                <v-hover v-slot="{ hover: hover2 }">
-                  <span
-                    v-html="sign.reading"
-                    :class="{
-                      'red-line-through cursor-display':
-                        hover2 &&
-                        ((currentEditAction === 'removeSign' &&
-                          sign.epigType === 'sign') ||
-                          (currentEditAction === 'removeUndeterminedSigns' &&
-                            sign.epigType === 'undeterminedSigns')),
-                      'blue-line-under cursor-display':
-                        hover2 &&
-                        ((currentEditAction === 'editSign' &&
-                          sign.epigType === 'sign') ||
-                          (currentEditAction === 'editUndeterminedSigns' &&
-                            sign.epigType === 'undeterminedSigns') ||
-                          (currentEditAction === 'editDivider' &&
-                            word.isDivider)),
-                    }"
-                    @click="handleSignClick(word, sign)"
-                  />
-                </v-hover>
-                <span>{{ sign.separator }}</span>
-              </span>
-            </span>
-          </v-hover>
+          <div class="d-inline-block">
+            <v-row class="ma-0" justify="center">
+              <v-hover v-slot="{ hover }">
+                <span
+                  :class="{
+                    'red-line-through cursor-display':
+                      hover &&
+                      ((currentEditAction === 'removeWord' &&
+                        !word.isDivider) ||
+                        (currentEditAction === 'removeDivider' &&
+                          word.isDivider)),
+                    'blue-line-under cursor-display':
+                      hover &&
+                      ((currentEditAction === 'addSign' && !word.isDivider) ||
+                        (currentEditAction === 'addUndeterminedSigns' &&
+                          !word.isDivider) ||
+                        (currentEditAction === 'reorderSign' &&
+                          !word.isDivider)),
+                  }"
+                  @click="handleWordClick(word)"
+                >
+                  <span v-for="(sign, signIdx) in word.signs" :key="signIdx">
+                    <v-hover v-slot="{ hover: hover2 }">
+                      <span
+                        v-html="sign.reading"
+                        :class="{
+                          'red-line-through cursor-display':
+                            hover2 &&
+                            ((currentEditAction === 'removeSign' &&
+                              sign.epigType === 'sign') ||
+                              (currentEditAction ===
+                                'removeUndeterminedSigns' &&
+                                sign.epigType === 'undeterminedSigns')),
+                          'blue-line-under cursor-display':
+                            hover2 &&
+                            ((currentEditAction === 'editSign' &&
+                              sign.epigType === 'sign') ||
+                              (currentEditAction === 'editUndeterminedSigns' &&
+                                sign.epigType === 'undeterminedSigns') ||
+                              (currentEditAction === 'editDivider' &&
+                                word.isDivider)),
+                        }"
+                        @click="handleSignClick(word, sign)"
+                      />
+                    </v-hover>
+                    <span>{{ sign.separator }}</span>
+                  </span>
+                </span>
+              </v-hover>
+            </v-row>
+            <v-row class="ma-0" justify="center">
+              <v-checkbox
+                v-if="
+                  currentEditAction === 'mergeWord' &&
+                  !word.isDivider &&
+                  word.discourseUuid
+                "
+                dense
+                hide-details
+                class="mt-n1 mr-n1"
+                :value="word"
+                :input-value="selectedWords"
+                @change="$emit('toggle-select-word', word)"
+                :disabled="!wordCanBeSelected(word)"
+              />
+            </v-row>
+          </div>
           <insert-button
             v-if="
               currentEditAction === 'addWord' ||
@@ -437,6 +461,10 @@ export default defineComponent({
     },
     side: {
       type: String as PropType<EpigraphicUnitSide>,
+      required: true,
+    },
+    selectedWords: {
+      type: Array as PropType<EpigraphicWord[]>,
       required: true,
     },
   },
@@ -996,6 +1024,44 @@ export default defineComponent({
     });
     const wordToReorderSignsIn = ref<EpigraphicWord>();
 
+    const wordCanBeSelected = (word: EpigraphicWord) => {
+      if (
+        props.selectedWords
+          .map(w => w.discourseUuid)
+          .includes(word.discourseUuid)
+      ) {
+        return true;
+      }
+
+      if (props.selectedWords.length === 0) {
+        return true;
+      }
+
+      if (props.selectedWords.length >= 2) {
+        return false;
+      }
+
+      if (props.selectedWords.length === 1) {
+        const selectedWord = props.selectedWords[0];
+        const minObjOnTablet = Math.min(
+          ...selectedWord.signs.map(s => s.objOnTablet)
+        );
+        const maxObjOnTablet = Math.max(
+          ...selectedWord.signs.map(s => s.objOnTablet)
+        );
+
+        if (word.signs.map(s => s.objOnTablet).includes(minObjOnTablet - 1)) {
+          return true;
+        }
+
+        if (word.signs.map(s => s.objOnTablet).includes(maxObjOnTablet + 1)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
     return {
       lineNumber,
       resetRenderer,
@@ -1051,6 +1117,7 @@ export default defineComponent({
       markupIsDifferent,
       reorderSignsDialog,
       wordToReorderSignsIn,
+      wordCanBeSelected,
     };
   },
 });

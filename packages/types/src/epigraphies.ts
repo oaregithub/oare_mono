@@ -635,6 +635,13 @@ export interface MergeLinePayload extends EditTextPayloadBase {
   secondLine: number;
 }
 
+export interface MergeWordPayload extends EditTextPayloadBase {
+  type: 'mergeWord';
+  discourseUuids: string[];
+  spelling: string;
+  spellingUuid: string | null;
+}
+
 export interface ReorderSignPayload extends EditTextPayloadBase {
   type: 'reorderSign';
   spelling: string;
@@ -715,6 +722,7 @@ export type EditTextPayload =
   | EditUndeterminedSignsPayload
   | EditDividerPayload
   | MergeLinePayload
+  | MergeWordPayload
   | ReorderSignPayload
   | CleanLinesPayload
   | RemoveSidePayload
