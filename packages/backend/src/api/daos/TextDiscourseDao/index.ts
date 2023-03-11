@@ -224,9 +224,7 @@ class TextDiscourseDao {
             const numSelectArray = searchItems.map(
               (_s, idx) => `td${idx}.explicit_spelling`
             );
-            qb.select(
-              k.raw(`CONCAT(${numSelectArray.join(', ",", ')}) as numberString`)
-            );
+            qb.select([numSelectArray]);
           }
         }
       })
@@ -237,7 +235,6 @@ class TextDiscourseDao {
             textUuid: string;
             transcription: string | null | undefined;
             wordOnTablet: number | null | undefined;
-            numberString: string | null | undefined;
           }>
         ) => {
           if (sortBy === 'textNameOnly') {
@@ -274,21 +271,24 @@ class TextDiscourseDao {
                 if (compareTextRow === uniqueText) {
                   uniqueTexts[idx] = {
                     ...tr,
-                    numberArray: tr.numberString
-                      ?.split(',')
-                      .map(n => Number(n))
-                      .filter(n => !isNaN(n)),
+                    numberArray: null,
                   };
                 }
                 return true;
               });
             } else if (!compareTextRow) {
+              const numberArray: number[] = [];
+              Object.entries(tr).forEach(entry => {
+                if (
+                  (Number(entry[0]) || Number(entry[0]) === 0) &&
+                  Number(entry[1])
+                ) {
+                  numberArray.push(Number(entry[1]));
+                }
+              });
               uniqueTexts.push({
                 ...tr,
-                numberArray: tr.numberString
-                  ?.split(',')
-                  .map(n => Number(n))
-                  .filter(n => !isNaN(n)),
+                numberArray,
               });
             }
           });

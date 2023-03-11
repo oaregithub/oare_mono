@@ -70,11 +70,21 @@
                     />
                   </template>
                   <template slot="append-outer">
-                    <v-btn
-                      class="test-combobox-btn-word-forms"
-                      @click="updateUseParse(index - 1)"
-                      >Change To Parse Properties</v-btn
-                    >
+                    <span class="mr-2">
+                      <v-btn
+                        class="test-combobox-btn-any-number"
+                        @click="addAnyNumber(index)"
+                        >Any Number</v-btn
+                      >
+                    </span>
+                    <span>
+                      <v-btn
+                        class="test-combobox-btn-word-forms"
+                        color="primary"
+                        @click="updateUseParse(index - 1)"
+                        >Change To Parse Properties</v-btn
+                      >
+                    </span>
                   </template>
                 </v-combobox>
                 <v-expand-transition>
@@ -228,6 +238,7 @@
           @click="performSearch(1, Number(rows), true)"
           class="test-submit"
           :disabled="!canPerformSearch"
+          color="primary"
           >Search</v-btn
         >
       </div>
@@ -555,6 +566,34 @@ export default defineComponent({
       expand.value.splice(index, 1, false);
     };
 
+    const addAnyNumber = (index: number) => {
+      if (!dictItemSelectionUuids.value[index - 1]) {
+        dictItemSelectionUuids.value[index - 1] = [];
+        dictItemSelectionUuids.value.splice(1, 1, []);
+      }
+      dictItemSelectionUuids.value[index - 1].push({
+        uuid: '-1',
+        referenceUuid: '-1',
+        name: 'Any Number',
+        wordName: 'Any Number',
+        wordUuid: '-1',
+        translations: null,
+        formInfo: null,
+        type: 'number',
+      });
+      dictItemSelectionUuids.value[index - 1].splice(-1, 1, {
+        uuid: '-1',
+        referenceUuid: '-1',
+        name: 'Any Number',
+        wordName: 'Any Number',
+        wordUuid: '-1',
+        translations: null,
+        formInfo: null,
+        type: 'number',
+      });
+      updateCombobox(index);
+    };
+
     const removeChip = (item: DictItemComboboxDisplay, idx: number) => {
       const index = dictItemSelectionUuids.value[idx - 1].indexOf(item);
       if (index >= 0) {
@@ -632,7 +671,7 @@ export default defineComponent({
             ...(searchItems.value[index].uuids as string[]),
             selectedItem,
           ];
-        } else if (selectedItem.type === 'anyNumber') {
+        } else if (selectedItem.type === 'number') {
           const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
             name: selectedItem.name,
             uuid: selectedItem.uuid,
@@ -804,19 +843,7 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       try {
-        items.value = [
-          ...(await server.getDictItems()),
-          {
-            uuid: '-1',
-            referenceUuid: '-1',
-            name: 'Any Number',
-            wordName: 'Any Number',
-            wordUuid: '-1',
-            translations: null,
-            formInfo: null,
-            type: 'anyNumber',
-          },
-        ];
+        items.value = await server.getDictItems();
         filteredItems.value = items.value;
         for (let i = 0; i < maxOptions; i += 1) {
           expand.value.push(false);
@@ -884,6 +911,7 @@ export default defineComponent({
       setActiveIndex,
       removeChip,
       rules,
+      addAnyNumber,
     };
   },
 });

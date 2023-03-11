@@ -28,7 +28,7 @@
           width="2"
           v-if="loading"
         />
-        <div v-else-if="item.type !== 'anyNumber'">
+        <div v-else-if="item.type !== 'number'">
           <span class="pr-1">-</span
           ><span class="pr-1" v-if="grammarString">({{ grammarString }})</span
           ><span class="pr-1"

@@ -44,7 +44,7 @@ export interface DictItemComboboxDisplay {
   wordUuid: string;
   translations: DictionaryWordTranslation[] | null;
   formInfo: Omit<DictionaryForm, 'spellings'> | null;
-  type: 'word' | 'form' | 'spelling' | 'anyNumber';
+  type: 'word' | 'form' | 'spelling' | 'number';
 }
 
 export interface WordsInTextSearchPayload {

@@ -25,7 +25,7 @@
     <div v-for="(sideData, idx) in localDraft.content" :key="idx">
       <div class="d-flex justify-space-between align-baseline">
         <v-col cols="6">
-          <v-combobox
+          <v-autocomplete
             :value="sideData.side"
             @input="
               sideData.side = $event;
