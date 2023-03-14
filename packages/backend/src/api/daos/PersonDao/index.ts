@@ -381,7 +381,6 @@ class PersonDao {
     trx?: Knex.Transaction
   ): Promise<PersonInfo> {
     const k = trx || knexRead();
-    const DictionaryWordDao = sl.get('DictionaryWordDao');
     const FieldDao = sl.get('FieldDao');
     const mainPerson: PersonRow = await k('person AS p1')
       .select(
