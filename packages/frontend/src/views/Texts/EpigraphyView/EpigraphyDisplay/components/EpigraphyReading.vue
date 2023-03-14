@@ -40,15 +40,52 @@
             />
             <span v-else>
               <span v-show="!interLinearView">
-                <span
-                  v-for="(word, index) in renderer.getLineWords(lineNum)"
-                  :key="index"
-                  v-html="formatWord(word)"
-                  class="cursor-display test-rendered-word"
-                  :class="{ 'mr-1': !word.isContraction }"
-                  @click="openDialog(word.discourseUuid)"
-                />
+                <span v-show="!commentMode">
+                  <span
+                    v-for="(word, index) in renderer.getLineWords(lineNum)"
+                    :key="index"
+                    v-html="formatWord(word)"
+                    class="cursor-display test-rendered-word"
+                    :class="{ 'mr-1': !word.isContraction }"
+                    @click="openDialog(word.discourseUuid)"
+                  />
+                </span>
+                <span v-show="commentMode">
+                  <span
+                    v-for="(word, index) in renderer.getLineWords(lineNum)"
+                    :key="index"
+                    class="test-rendered-word"
+                    :class="{
+                      'mr-1': !word.isContraction,
+                      'cursor-display': canComment,
+                    }"
+                  >
+                    <span v-for="(sign, index) in word.signs" :key="index">
+                      <UtilList
+                        @comment-clicked="
+                          openComment(
+                            sign.uuid,
+                            sign.reading ? sign.reading : '',
+                            word.reading
+                          )
+                        "
+                        :hasEdit="false"
+                        :hasDelete="false"
+                        :hideMenu="!canComment"
+                      >
+                        <template #activator="{ on, attrs }">
+                          <span
+                            v-html="`${sign.reading}${sign.separator}`"
+                            v-on="on"
+                            v-bind="attrs"
+                          />
+                        </template>
+                      </UtilList>
+                    </span>
+                  </span>
+                </span>
               </span>
+
               <div class="test-interlinear-view" v-show="interLinearView">
                 <v-row class="pb-4">
                   <v-col
@@ -108,6 +145,19 @@
         </div>
       </div>
     </div>
+    <component
+      v-if="canComment"
+      :is="commentComponent"
+      v-model="isCommenting"
+      :item="`'${commentDialogItem.replace(
+        /<[em/]{2,3}>/gi,
+        ''
+      )}' of ${commentDialogParent.replace(/<[em/]{2,3}>/gi, '')}`"
+      :uuid="commentDialogUuid"
+      :key="commentDialogUuid"
+      :route="`/threads/${commentDialogUuid}`"
+      ><span v-html="`${commentDialogItem} of ${commentDialogParent}`"></span
+    ></component>
     <connect-spelling-occurrence
       v-if="viewingConnectSpellingDialog"
       :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
@@ -206,6 +256,7 @@ import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import SealList from '@/views/Seals/SealList.vue';
 import SingleSeal from '@/views/Seals/SingleSeal.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
+import UtilList from '@/components/UtilList/index.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';
 import utils from '@/utils';
@@ -222,6 +273,7 @@ export default defineComponent({
     ConnectSpellingOccurrence,
     SealList,
     SingleSeal,
+    UtilList,
   },
   props: {
     epigraphicUnits: {
@@ -236,6 +288,10 @@ export default defineComponent({
       type: Array as PropType<TextDiscourseRow[]>,
       required: false,
     },
+    commentMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props) {
     const store = sl.get('store');
@@ -245,6 +301,10 @@ export default defineComponent({
     const viewingDialog = ref(false);
     const viewingConnectSpellingDialog = ref(false);
     const viewingConnectSealDialog = ref(false);
+    const isCommenting = ref(false);
+    const commentDialogUuid = ref('');
+    const commentDialogItem = ref('');
+    const commentDialogParent = ref('');
     const connectSpellingDialogSpelling = ref('');
     const connectSpellingDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
@@ -440,6 +500,22 @@ export default defineComponent({
       return `<em>${dictionaryWord}</em>`;
     };
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
+    const openComment = (uuid: string, item: string, parent: string) => {
+      commentDialogUuid.value = uuid;
+      commentDialogItem.value = item;
+      commentDialogParent.value = parent;
+      isCommenting.value = true;
+    };
+
+    // To avoid circular dependencies
+    const commentComponent = computed(() =>
+      canComment.value
+        ? () => import('@/components/CommentItemDisplay/index.vue')
+        : null
+    );
+
     return {
       renderer,
       lineNumber,
@@ -468,6 +544,13 @@ export default defineComponent({
       server,
       sealLink,
       interLinearView,
+      commentDialogUuid,
+      commentComponent,
+      commentDialogItem,
+      commentDialogParent,
+      isCommenting,
+      canComment,
+      openComment,
     };
   },
 });

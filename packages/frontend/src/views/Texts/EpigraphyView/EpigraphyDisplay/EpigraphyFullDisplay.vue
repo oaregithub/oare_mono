@@ -5,12 +5,14 @@
       :epigraphicUnits="epigraphicUnits"
       :discourseToHighlight="discourseToHighlight"
       :localDiscourseInfo="localDiscourseInfo"
+      :commentMode="commentMode"
     />
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"
       :textUuid="textUuid"
       :disableEditing="disableEditing"
+      :commentMode="commentMode"
       class="test-discourses"
     />
     <TextSourceReading
@@ -55,13 +57,17 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    commentMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: {
     EpigraphyReading,
     DiscourseReading,
     TextSourceReading,
   },
-  setup() {
+  setup(props) {
     const store = sl.get('store');
 
     const canViewDiscourses = computed(() =>

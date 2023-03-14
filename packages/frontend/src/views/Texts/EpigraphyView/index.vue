@@ -66,6 +66,13 @@
         >
           <v-icon small>mdi-content-copy</v-icon>
         </v-btn>
+        <v-btn
+          v-if="canComment"
+          color="primary"
+          @click="toggleCommentMode"
+          class="mx-2"
+          >Commenting: {{ commentMode ? 'on' : 'off' }}</v-btn
+        >
       </div>
     </template>
     <v-row>
@@ -384,12 +391,16 @@ export default defineComponent({
       store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
     );
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
     const hasBetaAccess = computed(() =>
       store.getters.user ? store.getters.user.betaAccess : false
     );
 
     const loading = ref(false);
     const imagesLoading = ref(false);
+
+    const commentMode = ref(false);
 
     const draft = ref<DraftContent | null>(null);
     const hasPicture = computed(() => imageUrls.value.length > 0);
@@ -473,6 +484,7 @@ export default defineComponent({
         epigraphicUnits: textInfo.value.units,
         discourseUnits: textInfo.value.discourseUnits,
         discourseToHighlight,
+        commentMode: commentMode.value,
       };
     });
 
@@ -727,6 +739,10 @@ export default defineComponent({
       seeMoreZotero.value = !seeMoreZotero.value;
     };
 
+    const toggleCommentMode = () => {
+      commentMode.value = !commentMode.value;
+    };
+
     return {
       textInfo,
       isEditing,
@@ -763,6 +779,9 @@ export default defineComponent({
       seeMoreSwitch,
       imagesLoading,
       hasBetaAccess,
+      canComment,
+      commentMode,
+      toggleCommentMode,
     };
   },
 });
