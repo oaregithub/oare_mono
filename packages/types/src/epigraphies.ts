@@ -629,6 +629,14 @@ export interface EditDividerPayload extends EditTextPayloadBase {
   markup: MarkupUnit[];
 }
 
+export interface SplitLinePayload extends EditTextPayloadBase {
+  type: 'splitLine';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  previousUuid: string;
+}
+
 export interface MergeLinePayload extends EditTextPayloadBase {
   type: 'mergeLine';
   firstLine: number;
@@ -721,6 +729,7 @@ export type EditTextPayload =
   | EditSignPayload
   | EditUndeterminedSignsPayload
   | EditDividerPayload
+  | SplitLinePayload
   | MergeLinePayload
   | MergeWordPayload
   | ReorderSignPayload

@@ -163,10 +163,10 @@
         >
       </template>
       <v-list dense>
-        <v-list-item @click="$emit('split-line')" disabled>
+        <v-list-item @click="$emit('split-line')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-view-headline</v-icon>
-            Line (Coming Soon)</v-list-item-title
+            Line</v-list-item-title
           >
         </v-list-item>
         <v-list-item @click="$emit('split-word')" disabled>
@@ -393,8 +393,8 @@ export default defineComponent({
           return 'Click on the broken sign(s) that you would like to edit.';
         case 'editDivider':
           return 'Click on the word divider that you would like to edit.';
-        case 'splitLine': // FIXME REVIEW
-          return 'Click on the line that you would like to split.';
+        case 'splitLine':
+          return 'Use the buttons that appear between words to select where you would like to split a line';
         case 'splitWord': // FIXME REVIEW
           return 'Click on the word/number that you would like to split.';
         case 'mergeLine':

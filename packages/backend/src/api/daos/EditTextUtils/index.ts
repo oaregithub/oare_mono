@@ -35,6 +35,7 @@ import {
   EditDividerPayload,
   ReorderSignPayload,
   MergeWordPayload,
+  SplitLinePayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2068,6 +2069,77 @@ class EditTextUtils {
       payload.markup,
       trx
     );
+  }
+
+  async splitLine(
+    payload: SplitLinePayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
+    const sideNumber = convertSideToSideNumber(payload.side);
+
+    const lineParentUuid = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        line: payload.line,
+        side: sideNumber,
+        column: payload.column,
+      })
+      .select('parent_uuid')
+      .first()
+      .then(row => row.parent_uuid);
+
+    const treeUuid = await k('text_epigraphy')
+      .where({ uuid: lineParentUuid })
+      .select('tree_uuid')
+      .first()
+      .then(row => row.tree_uuid);
+
+    const newObjectOnTablet = await k('text_epigraphy')
+      .where({ uuid: payload.previousUuid, text_uuid: payload.textUuid })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet + 1);
+
+    await TextEpigraphyDao.incrementObjectOnTablet(
+      payload.textUuid,
+      newObjectOnTablet,
+      1,
+      trx
+    );
+
+    const lineRow: TextEpigraphyRow = {
+      uuid: v4(),
+      type: 'line',
+      textUuid: payload.textUuid,
+      treeUuid,
+      parentUuid: lineParentUuid,
+      objectOnTablet: newObjectOnTablet,
+      side: sideNumber,
+      column: payload.column,
+      line: null, // Will be fixed in clean up
+      charOnLine: null,
+      charOnTablet: null,
+      signUuid: null,
+      sign: null,
+      readingUuid: null,
+      reading: null,
+      discourseUuid: null,
+    };
+
+    await TextEpigraphyDao.insertEpigraphyRow(lineRow, trx);
+
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        line: payload.line,
+        side: sideNumber,
+        column: payload.column,
+      })
+      .where('object_on_tablet', '>', newObjectOnTablet)
+      .update({ parent_uuid: lineRow.uuid });
   }
 
   async mergeLines(
