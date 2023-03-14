@@ -92,7 +92,8 @@ class PersonDao {
         'relation',
         'relation_name_uuid AS relationNameUuid',
         'label',
-        'person.type'
+        'person.type',
+        'descriptor'
       )
       .leftJoin('dictionary_word', 'person.name_uuid', 'dictionary_word.uuid')
       .where('person.type', 'person');
@@ -340,7 +341,6 @@ class PersonDao {
     const k = trx || knexRead();
     const husbands: PersonRow[] = await k('item_properties AS ip')
       .select(
-        'ip.reference_uuid AS uuid',
         'p.name_uuid AS nameUuid',
         'p.relation AS relation',
         'p.relation_name_uuid AS relationNameUuid',
