@@ -637,6 +637,16 @@ export interface SplitLinePayload extends EditTextPayloadBase {
   previousUuid: string;
 }
 
+export interface SplitWordPayload extends EditTextPayloadBase {
+  type: 'splitWord';
+  previousUuid: string;
+  discourseUuid: string;
+  firstSpelling: string;
+  firstSpellingUuid: string | null;
+  secondSpelling: string;
+  secondSpellingUuid: string | null;
+}
+
 export interface MergeLinePayload extends EditTextPayloadBase {
   type: 'mergeLine';
   firstLine: number;
@@ -730,6 +740,7 @@ export type EditTextPayload =
   | EditUndeterminedSignsPayload
   | EditDividerPayload
   | SplitLinePayload
+  | SplitWordPayload
   | MergeLinePayload
   | MergeWordPayload
   | ReorderSignPayload
