@@ -299,7 +299,8 @@
 
     <add-word-dialog
       v-model="addWordDialog"
-      :key="addWordPreviousWord"
+      v-if="addWordPreviousWord"
+      :key="addWordPreviousWord.discourseUuid"
       :previousWord="addWordPreviousWord"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -313,7 +314,7 @@
     <add-sign-dialog
       v-if="wordToAddSignTo"
       v-model="addSignDialog"
-      :key="wordToAddSignTo"
+      :key="wordToAddSignTo.discourseUuid"
       :wordToAddSignTo="wordToAddSignTo"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -330,7 +331,7 @@
       :side="side"
       :column="column"
       :wordToAddUndeterminedSignsTo="wordToAddUndeterminedSignsTo"
-      :key="wordToAddUndeterminedSignsTo"
+      :key="wordToAddUndeterminedSignsTo.discourseUuid"
       :textUuid="textUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
@@ -348,7 +349,7 @@
       :side="side"
       :column="column"
       :word="wordBeingEdited"
-      :key="signToEdit"
+      :key="signToEdit.uuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -358,7 +359,7 @@
       v-model="editUndeterminedSignsDialog"
       :textUuid="textUuid"
       :undeterminedSigns="undeterminedSignToEdit"
-      :key="undeterminedSignToEdit"
+      :key="undeterminedSignToEdit.uuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -409,7 +410,7 @@
       v-model="reorderSignsDialog"
       :word="wordToReorderSignsIn"
       :textUuid="textUuid"
-      :key="wordToReorderSignsIn"
+      :key="wordToReorderSignsIn.discourseUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -430,7 +431,7 @@
       v-model="splitWordDialog"
       :word="wordToSplit"
       :textUuid="textUuid"
-      :key="wordToSplit"
+      :key="wordToSplit.discourseUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />

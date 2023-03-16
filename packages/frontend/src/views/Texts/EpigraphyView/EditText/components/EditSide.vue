@@ -68,7 +68,7 @@
       @submit="mergeWords"
       :submitDisabled="!mergeWordsFormsLoaded"
       :width="600"
-      :key="selectedWords"
+      :key="selectedWords.map(w => w.discourseUuid).join(',')"
       ><v-row class="ma-0 my-4" justify="center">
         The new word will become:
         <b class="ml-1" v-html="getUpdatedSignsWithSeparators()"
