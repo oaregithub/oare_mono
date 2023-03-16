@@ -116,6 +116,7 @@
     </v-card>
 
     <add-region-dialog
+      v-if="regionType"
       v-model="addRegionDialog"
       :side="side"
       :column="column"
