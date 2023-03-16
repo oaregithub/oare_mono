@@ -116,7 +116,8 @@
                         (currentEditAction === 'addUndeterminedSigns' &&
                           !word.isDivider) ||
                         (currentEditAction === 'reorderSign' &&
-                          !word.isDivider)),
+                          !word.isDivider) ||
+                        (currentEditAction === 'splitWord' && !word.isDivider)),
                   }"
                   @click="handleWordClick(word)"
                 >
@@ -423,6 +424,16 @@
       :submitLoading="splitLineLoading"
       >Are you sure you want to split this line?</oare-dialog
     >
+
+    <split-word-dialog
+      v-if="wordToSplit"
+      v-model="splitWordDialog"
+      :word="wordToSplit"
+      :textUuid="textUuid"
+      :key="wordToSplit"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
   </div>
 </template>
 
@@ -465,6 +476,7 @@ import EditSignDialog from './EditSignDialog.vue';
 import EditUndeterminedSignsDialog from './EditUndeterminedSignsDialog.vue';
 import MarkupSelector from './MarkupSelector.vue';
 import ReorderSignsDialog from './ReorderSignsDialog.vue';
+import SplitWordDialog from './SplitWordDialog.vue';
 
 export default defineComponent({
   props: {
@@ -513,6 +525,7 @@ export default defineComponent({
     EditUndeterminedSignsDialog,
     MarkupSelector,
     ReorderSignsDialog,
+    SplitWordDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -685,6 +698,9 @@ export default defineComponent({
       } else if (props.currentEditAction === 'reorderSign') {
         reorderSignsDialog.value = true;
         wordToReorderSignsIn.value = word;
+      } else if (props.currentEditAction === 'splitWord') {
+        splitWordDialog.value = true;
+        wordToSplit.value = word;
       }
     };
 
@@ -1142,6 +1158,14 @@ export default defineComponent({
       }
     };
 
+    const splitWordDialog = ref(false);
+    watch(splitWordDialog, () => {
+      if (!splitWordDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const wordToSplit = ref<EpigraphicWord>();
+
     return {
       lineNumber,
       resetRenderer,
@@ -1203,6 +1227,8 @@ export default defineComponent({
       splitLineSignBefore,
       splitLineLoading,
       splitLine,
+      splitWordDialog,
+      wordToSplit,
     };
   },
 });

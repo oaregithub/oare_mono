@@ -169,10 +169,10 @@
             Line</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('split-word')" disabled>
+        <v-list-item @click="$emit('split-word')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
-            Word / Number (Coming Soon)</v-list-item-title
+            Word / Number</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -395,7 +395,7 @@ export default defineComponent({
           return 'Click on the word divider that you would like to edit.';
         case 'splitLine':
           return 'Use the buttons that appear between words to select where you would like to split a line';
-        case 'splitWord': // FIXME REVIEW
+        case 'splitWord':
           return 'Click on the word/number that you would like to split.';
         case 'mergeLine':
           return 'Use the checkboxes that appear to select two consecutive lines that you would like to merge.';
