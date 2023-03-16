@@ -87,7 +87,7 @@
         selected, whether automatically or manually. Automatic selections can
         also be disconnected or changed by clicking on the word.
       </v-row>
-      <v-row class="ma-0 pa-0 mb-8" justify="center">
+      <v-row v-if="editorDiscourseWord" class="ma-0 pa-0 mb-8" justify="center">
         <connect-discourse-item
           :word="editorDiscourseWord"
           @update-spelling-uuid="mergeWordsSpellingUuid = $event"
@@ -305,16 +305,18 @@ export default defineComponent({
     };
     const mergeWordsFormsLoaded = ref(false);
     const mergeWordsSpellingUuid = ref<string>();
-    const editorDiscourseWord: ComputedRef<EditorDiscourseWord> = computed(
-      () => {
+    const editorDiscourseWord: ComputedRef<EditorDiscourseWord | undefined> =
+      computed(() => {
+        if (selectedWords.value.length === 0) {
+          return undefined;
+        }
         const newWord = getUpdatedSignsWithSeparators();
         return {
-          discourseUuid: 'test-uuid', // FIXME
+          discourseUuid: selectedWords.value[0].discourseUuid,
           spelling: newWord,
           type: 'word',
         };
-      }
-    );
+      });
 
     const getUpdatedSignsWithSeparators = () => {
       if (selectedWords.value.length !== 2) {
