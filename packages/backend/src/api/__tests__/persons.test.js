@@ -345,3 +345,113 @@ describe('DELETE /persons/disconnect', () => {
     expect(response.status).toBe(500);
   });
 });
+
+describe('GET /person/:uuid', () => {
+  const uuid = 'test-uuid';
+  const PATH = `${API_PATH}/person/${uuid}`;
+
+  const testPersonRow = {
+    uuid: 'test-uuid',
+    nameUuid: 'test-name-uuid',
+    relation: 's.',
+    relationNameUuid: 'test-rel-name-uuid',
+    label: 'test-label',
+    type: 'test-type',
+  };
+
+  const testPersonCore = {
+    display: 'test-display',
+    nameUuid: 'test-name-uuid',
+    relation: 's.',
+    relationNameUuid: 'test-rel-name-uuid',
+    uuid: 'test-uuid',
+    descriptor: 'test-descriptor',
+  };
+
+  const testPersonRole = {
+    role: 'test-role',
+    roleUuid: 'test-role-uuid',
+  };
+
+  const testFieldRow = {
+    id: 42,
+    uuid: 'test-uuid',
+    reference_uuid: 'test-reference-uuid',
+    type: 'test-type',
+    language: 'test-language',
+    primary: 1,
+    field: 'test-field',
+  };
+
+  const PersonInfo = {
+    person: testPersonRow,
+    display: 'test-display',
+    father: testPersonCore,
+    mother: testPersonCore,
+    asshatumWives: testPersonCore,
+    amtumWives: testPersonCore,
+    husbands: testPersonCore,
+    siblings: testPersonCore,
+    children: testPersonCore,
+    durableRoles: testPersonRole,
+    temporaryRoles: testPersonRole,
+    discussion: testFieldRow,
+  };
+
+  const mockPersonDao = {
+    getPersonInfo: jest.fn().mockResolvedValue(PersonInfo),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn((_key, response, _filter) => response),
+  };
+
+  const setup = () => {
+    sl.set('PersonDao', mockPersonDao);
+    sl.set('UserDao', mockUserDao);
+    sl.set('cache', mockCache);
+    sl.set('PermissionsDao', mockPermissionsDao);
+  };
+  beforeEach(setup);
+
+  const sendRequest = (auth = true) => {
+    const req = request(app).get(PATH);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
+
+  it('Returns 200 in successful retrieval', async () => {
+    const response = await sendRequest();
+    expect(mockPersonDao.getPersonInfo).toHaveBeenCalled();
+    expect(mockCache.insert).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+  });
+
+  it('Returns 401 if user not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(mockPersonDao.getPersonInfo).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
+  });
+
+  it('Returns 403 if user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(mockPersonDao.getPersonInfo).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
+  });
+
+  it('Returns 500 in a failed retrieval', async () => {
+    sl.set('PersonDao', {
+      ...mockPersonDao,
+      getPersonInfo: jest.fn().mockRejectedValue('Failed content retrieval'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});

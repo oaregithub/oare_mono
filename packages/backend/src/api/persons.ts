@@ -8,6 +8,7 @@ import {
   PersonListItem,
   ItemPropertyRow,
   TextOccurrencesCountResponseItem,
+  PersonInfo,
 } from '@oare/types';
 import { noFilter } from '@/cache/filters';
 
@@ -40,7 +41,7 @@ router
           personRows.map(async person => {
             if (person.nameUuid && person.relation && person.relationNameUuid) {
               const nameRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
-                person.uuid
+                person.nameUuid
               );
               const relationNameRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
                 person.relationNameUuid
@@ -49,7 +50,7 @@ router
                 return person.label;
               }
               const name = nameRow.word;
-              const relationName = nameRow.word;
+              const relationName = relationNameRow.word;
               return `${name} ${person.relation} ${relationName}`;
             }
             return person.label;
@@ -146,6 +147,31 @@ router
         await PersonDao.disconnectPerson(discourseUuid, personUuid);
 
         res.status(204).end();
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
+    }
+  );
+
+router
+  .route('/person/:uuid')
+  .get(
+    permissionsRoute('PERSONS'),
+    cacheMiddleware<PersonInfo>(noFilter),
+    async (req, res, next) => {
+      try {
+        const PersonDao = sl.get('PersonDao');
+        const cache = sl.get('cache');
+        const { uuid } = req.params;
+        const person = await PersonDao.getPersonInfo(uuid);
+        const response = await cache.insert<PersonInfo>(
+          {
+            req,
+          },
+          person,
+          noFilter
+        );
+        res.json(response);
       } catch (err) {
         next(new HttpInternalError(err as string));
       }
