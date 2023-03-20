@@ -48,13 +48,13 @@ describe('IndivPersonView test', () => {
     });
   };
 
-  it('gets periods on load', async () => {
+  it('gets person info on load', async () => {
     createWrapper();
     await flushPromises();
     expect(mockServer.getPersonInfo).toHaveBeenCalled();
   });
 
-  it('shows snackbar when periods retrieval fails', async () => {
+  it('shows snackbar when person info retrieval fails', async () => {
     createWrapper({
       server: {
         ...mockServer,
