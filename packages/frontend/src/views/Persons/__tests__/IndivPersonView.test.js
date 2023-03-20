@@ -2,7 +2,7 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
-import IndivPersonView from '../indivPerson.vue';
+import IndivPersonView from '../IndivPerson.vue';
 import sl from '../../../serviceLocator';
 
 const vuetify = new Vuetify();
@@ -15,8 +15,26 @@ describe('IndivPersonView test', () => {
   };
 
   const mockServer = {
-    getIndivPerson: jest.fn().mockResolvedValue({
-      years: [],
+    getPersonInfo: jest.fn().mockResolvedValue({
+      person: {
+        uuid: 'string',
+        nameUuid: null,
+        relation: null,
+        relationNameUuid: null,
+        label: 'string',
+        descriptor: null,
+      },
+      display: 'string',
+      father: null,
+      mother: null,
+      asshatumWives: [],
+      amtumWives: [],
+      husbands: [],
+      siblings: [],
+      children: [],
+      durableRoles: [],
+      discussion: [],
+      temporaryRoles: [],
     }),
   };
 
@@ -33,7 +51,7 @@ describe('IndivPersonView test', () => {
   it('gets periods on load', async () => {
     createWrapper();
     await flushPromises();
-    expect(mockServer.getIndivPerson).toHaveBeenCalled();
+    expect(mockServer.getPersonInfo).toHaveBeenCalled();
   });
 
   it('shows snackbar when periods retrieval fails', async () => {
