@@ -1,5 +1,6 @@
 import {
   Pagination,
+  PersonInfo,
   PersonListItem,
   TextOccurrencesCountResponseItem,
   TextOccurrencesResponseRow,
@@ -43,9 +44,15 @@ async function disconnectPersons(
   await axios.delete(`/persons/disconnect/${personUuid}/${discourseUuid}`);
 }
 
+async function getPersonInfo(uuid: string): Promise<PersonInfo> {
+  const { data } = await axios.get(`/person/${uuid}`);
+  return data;
+}
+
 export default {
   getPersons,
   getPersonsOccurrencesCounts,
   getPersonsOccurrencesTexts,
   disconnectPersons,
+  getPersonInfo,
 };
