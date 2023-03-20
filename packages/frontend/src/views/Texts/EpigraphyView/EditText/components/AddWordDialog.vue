@@ -6,7 +6,11 @@
     :persistent="false"
     :submitLoading="addWordLoading"
     @submit="step === 1 ? step++ : addWord()"
-    :submitDisabled="step === 1 ? !stepOneComplete : !formsLoaded"
+    :submitDisabled="
+      step === 1
+        ? !stepOneComplete
+        : !formsLoaded && !editorDiscourseWord.type === 'number'
+    "
     :submitText="step === 1 ? 'Next' : 'Submit'"
     :width="600"
     :showActionButton="step === 2"

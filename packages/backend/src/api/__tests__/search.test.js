@@ -21,9 +21,7 @@ describe('search test', () => {
     };
 
     const TextDao = {
-      getTextByUuid: jest.fn().mockResolvedValue({
-        name: 'Test Text',
-      }),
+      getTextByUuid: jest.fn().mockResolvedValue(null),
     };
 
     const SignReadingDao = {
@@ -55,7 +53,7 @@ describe('search test', () => {
       expect(JSON.parse(response.text)).toEqual({
         results: matchingTexts.map(text => ({
           ...text,
-          name: 'Test Text',
+          name: '',
           matches: [''],
         })),
       });

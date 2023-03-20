@@ -41,11 +41,8 @@ class PeriodsDao {
   async getYears(
     yearRows: PeriodRow[],
     monthRows: PeriodRow[],
-    weekRows: PeriodRow[],
-    trx?: Knex.Transaction
+    weekRows: PeriodRow[]
   ): Promise<Year[]> {
-    const k = trx || knexRead();
-
     const years: Year[] = await Promise.all(
       yearRows.map(row => this.yearMaker(row, monthRows, weekRows))
     );
@@ -135,20 +132,14 @@ class PeriodsDao {
       yearName = period.name;
     }
 
-    const countRow = await k('item_properties')
-      .where('object_uuid', period.uuid)
-      .andWhere('variable_uuid', 'cd76438c-3a82-11ed-b9d7-0282f921eac9')
-      .count({ count: 'uuid' })
-      .first();
-
-    const yearOccurrences = countRow && countRow.count ? countRow.count : 0;
+    const yearOccurrences = await this.getOccurrences(period.uuid);
     const months = await this.getMonths(period, monthRows, weekRows);
 
     return {
       uuid,
       number: yearNumber,
       name: yearName,
-      occurrences: Number(yearOccurrences),
+      occurrences: yearOccurrences,
       months,
     };
   }
@@ -171,17 +162,16 @@ class PeriodsDao {
 
   async monthMaker(monthRow: PeriodRow, weekRows: PeriodRow[]): Promise<Month> {
     const { uuid } = monthRow;
-
     const monthAbbreviation: number = Number(monthRow.abbreviation);
-
     const monthName: string = monthRow.name;
-
+    const monthOccurrences = await this.getOccurrences(uuid);
     const weeks = await this.getWeeks(monthRow, weekRows);
 
     return {
       uuid,
       abbreviation: monthAbbreviation,
       name: monthName,
+      occurrences: monthOccurrences,
       weeks,
     };
   }
@@ -199,10 +189,27 @@ class PeriodsDao {
   }
 
   async weekMaker(weekRow: PeriodRow) {
+    const weekOccurrences = await this.getOccurrences(weekRow.uuid);
+
     return {
       uuid: weekRow.uuid,
       name: weekRow.name,
+      occurrences: weekOccurrences,
     };
   }
+
+  async getOccurrences(uuid: string, trx?: Knex.Transaction) {
+    const k = trx || knexRead();
+
+    const countRow = await k('item_properties')
+      .where('object_uuid', uuid)
+      .andWhere('variable_uuid', 'cd76438c-3a82-11ed-b9d7-0282f921eac9')
+      .count({ count: 'uuid' })
+      .first();
+
+    const occurrences = countRow && countRow.count ? countRow.count : 0;
+    return Number(occurrences);
+  }
 }
+
 export default new PeriodsDao();

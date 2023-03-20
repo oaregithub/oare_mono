@@ -263,6 +263,7 @@ export default class TabletRenderer {
       form: unit.form,
       translation: unit.translation,
       parseInfo: unit.parseInfo,
+      objOnTablet: unit.objOnTablet,
     }));
   }
 

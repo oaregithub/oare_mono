@@ -31,6 +31,12 @@ import {
   DiscourseUnitType,
   EditSignPayload,
   MarkupUnit,
+  EditUndeterminedSignsPayload,
+  EditDividerPayload,
+  ReorderSignPayload,
+  MergeWordPayload,
+  SplitLinePayload,
+  SplitWordPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -538,6 +544,88 @@ const editDamageBrackets = async (
       })
     );
   }
+};
+
+const editMarkupSelection = async (
+  uuid: string,
+  textUuid: string,
+  payloadMarkup: MarkupUnit[],
+  trx?: Knex.Transaction
+): Promise<void> => {
+  const k = trx || knexWrite();
+  const TextMarkupDao = sl.get('TextMarkupDao');
+
+  // MARKUP
+  const existingMarkup = await TextMarkupDao.getMarkups(
+    textUuid,
+    undefined,
+    uuid,
+    trx
+  );
+
+  // DAMAGE
+  await editDamageBrackets('damage', uuid, existingMarkup, payloadMarkup, trx);
+
+  // PARTIAL DAMAGE
+  await editDamageBrackets(
+    'partialDamage',
+    uuid,
+    existingMarkup,
+    payloadMarkup,
+    trx
+  );
+
+  // NON-DAMAGE
+  const removedMarkup = existingMarkup
+    .map(m => m.type)
+    .filter(
+      m =>
+        m !== 'damage' &&
+        m !== 'partialDamage' &&
+        m !== 'undeterminedSigns' &&
+        !payloadMarkup.map(mark => mark.type).includes(m)
+    );
+
+  await Promise.all(
+    removedMarkup.map(type =>
+      k('text_markup').del().where({ reference_uuid: uuid, type })
+    )
+  );
+  await Promise.all(
+    payloadMarkup
+      .filter(
+        m =>
+          m.type !== 'damage' &&
+          m.type !== 'partialDamage' &&
+          m.type !== 'undeterminedSigns'
+      )
+      .map(markup => {
+        if (existingMarkup.map(m => m.type).includes(markup.type)) {
+          return k('text_markup')
+            .where({ reference_uuid: uuid, type: markup.type })
+            .update({
+              start_char: markup.startChar,
+              end_char: markup.endChar,
+              alt_reading: markup.altReading,
+              alt_reading_uuid: markup.altReadingUuid,
+            });
+        }
+
+        const markupRow: TextMarkupRow = {
+          uuid: v4(),
+          referenceUuid: markup.referenceUuid,
+          type: markup.type,
+          numValue: null,
+          altReadingUuid: markup.altReadingUuid,
+          altReading: markup.altReading,
+          startChar: markup.startChar,
+          endChar: markup.endChar,
+          objectUuid: null,
+        };
+
+        return TextMarkupDao.insertMarkupRow(markupRow, trx);
+      })
+  );
 };
 
 class EditTextUtils {
@@ -1920,7 +2008,6 @@ class EditTextUtils {
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
-    const TextMarkupDao = sl.get('TextMarkupDao');
 
     // EPIGRAPHY
     await k('text_epigraphy')
@@ -1946,76 +2033,178 @@ class EditTextUtils {
     }
 
     // MARKUP
-    const existingMarkup = await TextMarkupDao.getMarkups(
+    await editMarkupSelection(
+      payload.uuid,
       payload.textUuid,
-      undefined,
-      payload.uuid,
-      trx
-    );
-
-    // DAMAGE
-    await editDamageBrackets(
-      'damage',
-      payload.uuid,
-      existingMarkup,
       payload.markup,
       trx
     );
+  }
 
-    // PARTIAL DAMAGE
-    await editDamageBrackets(
-      'partialDamage',
+  async editUndeterminedSigns(
+    payload: EditUndeterminedSignsPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    await k('text_markup')
+      .where({ reference_uuid: payload.uuid, type: 'undeterminedSigns' })
+      .update({ num_value: payload.number });
+
+    // MARKUP
+    await editMarkupSelection(
       payload.uuid,
-      existingMarkup,
+      payload.textUuid,
       payload.markup,
       trx
     );
+  }
 
-    // NON-DAMAGE
-    const removedMarkup = existingMarkup
-      .map(m => m.type)
-      .filter(
-        m =>
-          m !== 'damage' &&
-          m !== 'partialDamage' &&
-          !payload.markup.map(mark => mark.type).includes(m)
-      );
-
-    await Promise.all(
-      removedMarkup.map(type =>
-        k('text_markup').del().where({ reference_uuid: payload.uuid, type })
-      )
+  async editDivider(
+    payload: EditDividerPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    await editMarkupSelection(
+      payload.uuid,
+      payload.textUuid,
+      payload.markup,
+      trx
     );
-    await Promise.all(
-      payload.markup
-        .filter(m => m.type !== 'damage' && m.type !== 'partialDamage')
-        .map(markup => {
-          if (existingMarkup.map(m => m.type).includes(markup.type)) {
-            return k('text_markup')
-              .where({ reference_uuid: payload.uuid, type: markup.type })
-              .update({
-                start_char: markup.startChar,
-                end_char: markup.endChar,
-                alt_reading: markup.altReading,
-                alt_reading_uuid: markup.altReadingUuid,
-              });
-          }
+  }
 
-          const markupRow: TextMarkupRow = {
-            uuid: v4(),
-            referenceUuid: markup.referenceUuid,
-            type: markup.type,
-            numValue: null,
-            altReadingUuid: markup.altReadingUuid,
-            altReading: markup.altReading,
-            startChar: markup.startChar,
-            endChar: markup.endChar,
-            objectUuid: null,
-          };
+  async splitLine(
+    payload: SplitLinePayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-          return TextMarkupDao.insertMarkupRow(markupRow, trx);
-        })
+    const sideNumber = convertSideToSideNumber(payload.side);
+
+    const lineParentUuid = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        line: payload.line,
+        side: sideNumber,
+        column: payload.column,
+      })
+      .select('parent_uuid')
+      .first()
+      .then(row => row.parent_uuid);
+
+    const treeUuid = await k('text_epigraphy')
+      .where({ uuid: lineParentUuid })
+      .select('tree_uuid')
+      .first()
+      .then(row => row.tree_uuid);
+
+    const newObjectOnTablet = await k('text_epigraphy')
+      .where({ uuid: payload.previousUuid, text_uuid: payload.textUuid })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet + 1);
+
+    await TextEpigraphyDao.incrementObjectOnTablet(
+      payload.textUuid,
+      newObjectOnTablet,
+      1,
+      trx
     );
+
+    const lineRow: TextEpigraphyRow = {
+      uuid: v4(),
+      type: 'line',
+      textUuid: payload.textUuid,
+      treeUuid,
+      parentUuid: lineParentUuid,
+      objectOnTablet: newObjectOnTablet,
+      side: sideNumber,
+      column: payload.column,
+      line: null, // Will be fixed in clean up
+      charOnLine: null,
+      charOnTablet: null,
+      signUuid: null,
+      sign: null,
+      readingUuid: null,
+      reading: null,
+      discourseUuid: null,
+    };
+
+    await TextEpigraphyDao.insertEpigraphyRow(lineRow, trx);
+
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        line: payload.line,
+        side: sideNumber,
+        column: payload.column,
+      })
+      .where('object_on_tablet', '>', newObjectOnTablet)
+      .update({ parent_uuid: lineRow.uuid });
+  }
+
+  async splitWord(
+    payload: SplitWordPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+    const discourseRow = await TextDiscourseDao.getDiscourseRowByUuid(
+      payload.discourseUuid,
+      trx
+    );
+
+    if (discourseRow.objInText === null) {
+      throw new Error('Discourse row has no objInText');
+    }
+
+    await TextDiscourseDao.incrementObjInText(
+      payload.textUuid,
+      discourseRow.objInText + 1,
+      1,
+      trx
+    );
+
+    await k('text_discourse').where({ uuid: payload.discourseUuid }).update({
+      spelling_uuid: payload.firstSpellingUuid,
+      spelling: payload.firstSpelling,
+      explicit_spelling: payload.firstSpelling,
+    });
+
+    const newDiscourseRow: TextDiscourseRow = {
+      uuid: v4(),
+      type: 'word',
+      objInText: discourseRow.objInText + 1,
+      wordOnTablet: null,
+      childNum: null,
+      textUuid: payload.textUuid,
+      treeUuid: discourseRow.treeUuid,
+      parentUuid: discourseRow.parentUuid,
+      spellingUuid: payload.secondSpellingUuid,
+      spelling: payload.secondSpelling,
+      explicitSpelling: payload.secondSpelling,
+      transcription: null,
+    };
+
+    await TextDiscourseDao.insertDiscourseRow(newDiscourseRow, trx);
+
+    const previousObjectOnTablet: number = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        uuid: payload.previousUuid,
+      })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet);
+
+    await k('text_epigraphy')
+      .where({
+        discourse_uuid: payload.discourseUuid,
+        text_uuid: payload.textUuid,
+      })
+      .where('object_on_tablet', '>', previousObjectOnTablet)
+      .update({ discourse_uuid: newDiscourseRow.uuid });
   }
 
   async mergeLines(
@@ -2048,6 +2237,84 @@ class EditTextUtils {
         line: payload.secondLine,
       })
       .del();
+  }
+
+  async mergeWords(
+    payload: MergeWordPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    if (payload.discourseUuids.length !== 2) {
+      throw new Error('Two discourse uuids are required');
+    }
+
+    const discourseUuidToKeep = payload.discourseUuids[0];
+    const discourseUuidToDelete = payload.discourseUuids[1];
+
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        discourse_uuid: discourseUuidToDelete,
+      })
+      .update({ discourse_uuid: discourseUuidToKeep });
+
+    await k('item_properties')
+      .where({ reference_uuid: discourseUuidToDelete })
+      .update({ reference_uuid: discourseUuidToKeep });
+
+    await k('item_properties')
+      .where({ object_uuid: discourseUuidToDelete })
+      .update({ object_uuid: discourseUuidToKeep });
+
+    await k('text_discourse').where({ uuid: discourseUuidToKeep }).update({
+      spelling: payload.spelling,
+      explicit_spelling: payload.spelling,
+      spelling_uuid: payload.spellingUuid,
+    });
+
+    await k('text_discourse').where({ uuid: discourseUuidToDelete }).del();
+  }
+
+  async reorderSign(
+    payload: ReorderSignPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+
+    const firstObjOnTablet: number = await k('text_epigraphy')
+      .where({ text_uuid: payload.textUuid, uuid: payload.signUuids[0] })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet);
+
+    const secondObjOnTablet: number = await k('text_epigraphy')
+      .where({ text_uuid: payload.textUuid, uuid: payload.signUuids[1] })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet);
+
+    // Swap obect_on_tablet
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        uuid: payload.signUuids[0],
+      })
+      .update({ object_on_tablet: secondObjOnTablet });
+
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        uuid: payload.signUuids[1],
+      })
+      .update({ object_on_tablet: firstObjOnTablet });
+
+    // DISCOURSE
+    await k('text_discourse').where({ uuid: payload.discourseUuid }).update({
+      spelling: payload.spelling,
+      spelling_uuid: payload.spellingUuid,
+      explicit_spelling: payload.spelling,
+    });
   }
 
   async removeSide(

@@ -14,6 +14,8 @@
           @reset-current-edit-action="resetCurrentEditAction"
           @reset-renderer="resetRenderer"
           @toggle-select-line="handleSelectLine($event)"
+          :selectedWords="selectedWords"
+          @toggle-select-word="handleSelectWord($event)"
         />
       </v-row>
     </v-card>
@@ -57,21 +59,69 @@
       subsequently all appear on line
       {{ Math.min(...selectedLines) }}.</oare-dialog
     >
+
+    <oare-dialog
+      v-model="mergeWordsDialog"
+      title="Merge Words/Numbers"
+      :persistent="false"
+      :submitLoading="editTextLoading"
+      @submit="mergeWords"
+      :submitDisabled="!mergeWordsFormsLoaded"
+      :width="600"
+      :key="selectedWords.map(w => w.discourseUuid).join(',')"
+      ><v-row class="ma-0 my-4" justify="center">
+        The new word will become:
+        <b class="ml-1" v-html="getUpdatedSignsWithSeparators()"
+      /></v-row>
+
+      <v-row class="ma-0 pa-0 mb-4" justify="center">
+        Use the interface below to connect the updated word to the correct
+        dictionary spelling.
+      </v-row>
+      <v-row class="ma-0 pa-0 mb-8" justify="center">
+        Click on the word to view the available options for selection. In some
+        cases, a selection will have been made automatically based on a
+        spelling's prevalence. The selection bubble appears red when there are
+        no matching options, yellow when there are available options but none
+        have been automatically selected, and green if an option has been
+        selected, whether automatically or manually. Automatic selections can
+        also be disconnected or changed by clicking on the word.
+      </v-row>
+      <v-row v-if="editorDiscourseWord" class="ma-0 pa-0 mb-8" justify="center">
+        <connect-discourse-item
+          :word="editorDiscourseWord"
+          @update-spelling-uuid="mergeWordsSpellingUuid = $event"
+          @loaded-forms="mergeWordsFormsLoaded = true"
+        /> </v-row
+    ></oare-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
+import {
+  defineComponent,
+  PropType,
+  ref,
+  watch,
+  computed,
+  ComputedRef,
+} from '@vue/composition-api';
 import { TabletRenderer } from '@oare/oare';
 import {
   EpigraphicUnitSide,
   EditTextAction,
   AddColumnPayload,
   MergeLinePayload,
+  MergeWordPayload,
+  EpigraphicWord,
+  EditorDiscourseWord,
+  EpigraphicUnitType,
+  MarkupType,
 } from '@oare/types';
 import EditColumn from './EditColumn.vue';
 import sl from '@/serviceLocator';
 import InsertButton from './InsertButton.vue';
+import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
 
 export default defineComponent({
   props: {
@@ -95,6 +145,7 @@ export default defineComponent({
   components: {
     EditColumn,
     InsertButton,
+    ConnectDiscourseItem,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -200,6 +251,161 @@ export default defineComponent({
       }
     };
 
+    const mergeWordsDialog = ref(false);
+    const selectedWords = ref<EpigraphicWord[]>([]);
+    const handleSelectWord = (word: EpigraphicWord) => {
+      if (
+        selectedWords.value
+          .map(w => w.discourseUuid!)
+          .includes(word.discourseUuid!)
+      ) {
+        selectedWords.value = selectedWords.value.filter(
+          w => w.discourseUuid! !== word.discourseUuid!
+        );
+      } else {
+        selectedWords.value.push(word);
+      }
+    };
+    watch(selectedWords, () => {
+      if (selectedWords.value.length === 2) {
+        mergeWordsDialog.value = true;
+      }
+    });
+    watch(mergeWordsDialog, () => {
+      if (!mergeWordsDialog.value) {
+        selectedWords.value = [];
+        mergeWordsFormsLoaded.value = false;
+        mergeWordsSpellingUuid.value = undefined;
+        resetCurrentEditAction();
+      }
+    });
+    const mergeWords = async () => {
+      try {
+        editTextLoading.value = true;
+        if (selectedWords.value.length !== 2) {
+          throw new Error('Two words must be selected in order to merge.');
+        }
+        const payload: MergeWordPayload = {
+          type: 'mergeWord',
+          textUuid: props.textUuid,
+          discourseUuids: selectedWords.value.map(w => w.discourseUuid!),
+          spelling: getUpdatedSignsWithSeparators(),
+          spellingUuid: mergeWordsSpellingUuid.value || null,
+        };
+        await server.editText(payload);
+        resetRenderer();
+      } catch (err) {
+        actions.showErrorSnackbar('Error merging words. Please try again.');
+      } finally {
+        selectedWords.value = [];
+        mergeWordsDialog.value = false;
+        resetCurrentEditAction();
+        editTextLoading.value = false;
+      }
+    };
+    const mergeWordsFormsLoaded = ref(false);
+    const mergeWordsSpellingUuid = ref<string>();
+    const editorDiscourseWord: ComputedRef<EditorDiscourseWord | undefined> =
+      computed(() => {
+        if (selectedWords.value.length === 0) {
+          return undefined;
+        }
+        const newWord = getUpdatedSignsWithSeparators();
+        return {
+          discourseUuid: selectedWords.value[0].discourseUuid,
+          spelling: newWord,
+          type: 'word',
+        };
+      });
+
+    const getUpdatedSignsWithSeparators = () => {
+      if (selectedWords.value.length !== 2) {
+        return '';
+      }
+
+      const firstMin = Math.min(
+        ...selectedWords.value[0].signs.map(sign => sign.objOnTablet)
+      );
+      const secondMin = Math.min(
+        ...selectedWords.value[1].signs.map(sign => sign.objOnTablet)
+      );
+
+      const firstIndexIsFirstPiece = firstMin < secondMin;
+
+      const firstPieces: {
+        reading: string;
+        type: EpigraphicUnitType | null;
+        markup: MarkupType[];
+      }[] = selectedWords.value[firstIndexIsFirstPiece ? 0 : 1].signs.map(
+        sign => ({
+          reading: sign.reading || '',
+          type: sign.type,
+          markup: sign.markups.map(unit => unit.type),
+        })
+      );
+
+      const secondPieces: {
+        reading: string;
+        type: EpigraphicUnitType | null;
+        markup: MarkupType[];
+      }[] = selectedWords.value[firstIndexIsFirstPiece ? 1 : 0].signs.map(
+        sign => ({
+          reading: sign.reading || '',
+          type: sign.type,
+          markup: sign.markups.map(unit => unit.type),
+        })
+      );
+
+      const newPieces = [...firstPieces, ...secondPieces];
+
+      const newWord = newPieces.map((sign, index) => {
+        const nextSign =
+          index !== newPieces.length - 1 ? newPieces[index + 1] : null;
+
+        let newSeparator = '';
+        if (nextSign) {
+          if (
+            !sign.markup.includes('phoneticComplement') &&
+            nextSign.markup.includes('phoneticComplement')
+          ) {
+            newSeparator = '';
+          }
+          if (
+            sign.type === 'determinative' ||
+            nextSign.type === 'determinative'
+          ) {
+            newSeparator = '';
+          }
+          if (sign.type === 'phonogram' || nextSign.type === 'phonogram') {
+            newSeparator = '-';
+          }
+          if (sign.type === 'number' && nextSign.type === 'number') {
+            newSeparator = '+';
+          }
+          if (sign.type === 'logogram' || nextSign.type === 'logogram') {
+            newSeparator = '.';
+          }
+        }
+
+        return {
+          ...sign,
+          separator: newSeparator,
+        };
+      });
+
+      let newWordReading = '';
+      newWord.forEach(sign => {
+        newWordReading += sign.reading;
+        if (sign.separator) {
+          newWordReading += sign.separator;
+        }
+      });
+      return newWordReading
+        .replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\([^()]*\)/g, '');
+    };
+
     return {
       editTextLoading,
       addColumnDialog,
@@ -211,6 +417,14 @@ export default defineComponent({
       mergeLineDialog,
       mergeLines,
       columnToAdd,
+      mergeWordsDialog,
+      selectedWords,
+      handleSelectWord,
+      mergeWords,
+      mergeWordsFormsLoaded,
+      mergeWordsSpellingUuid,
+      editorDiscourseWord,
+      getUpdatedSignsWithSeparators,
     };
   },
 });

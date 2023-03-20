@@ -75,7 +75,7 @@
       </v-row>
       <markup-selector
         v-if="row.signs && row.signs.length === 1"
-        :newSign="row.signs[0]"
+        :newSign="row.signs[0].reading"
         :referenceUuid="sign.uuid"
         :existingMarkup="sign.markups"
         class="mx-4 mb-4"
@@ -321,16 +321,24 @@ export default defineComponent({
     const updateMarkup = (markup: MarkupUnit[]) => {
       markupUnits.value = markup;
     };
+
     const markupIsDifferent = computed(() => {
-      if (markupUnits.value.length !== props.sign.markups.length) {
+      const originalMarkup = props.sign.markups.sort((a, b) =>
+        a.type.localeCompare(b.type)
+      );
+      const newMarkup = markupUnits.value.sort((a, b) =>
+        a.type.localeCompare(b.type)
+      );
+
+      if (originalMarkup.length !== newMarkup.length) {
         return true;
       }
-      for (let i = 0; i < markupUnits.value.length; i++) {
+      for (let i = 0; i < newMarkup.length; i++) {
         if (
-          markupUnits.value[i].type !== props.sign.markups[i].type ||
-          markupUnits.value[i].startChar !== props.sign.markups[i].startChar ||
-          markupUnits.value[i].endChar !== props.sign.markups[i].endChar ||
-          markupUnits.value[i].altReading !== props.sign.markups[i].altReading
+          newMarkup[i].type !== originalMarkup[i].type ||
+          newMarkup[i].startChar !== originalMarkup[i].startChar ||
+          newMarkup[i].endChar !== originalMarkup[i].endChar ||
+          newMarkup[i].altReading !== originalMarkup[i].altReading
         ) {
           return true;
         }

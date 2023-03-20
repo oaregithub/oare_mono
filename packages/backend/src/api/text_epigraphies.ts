@@ -679,8 +679,20 @@ router
           await EditTextUtils.editUndeterminedLines(payload, trx);
         } else if (payload.type === 'editSign') {
           await EditTextUtils.editSign(payload, trx);
+        } else if (payload.type === 'editUndeterminedSigns') {
+          await EditTextUtils.editUndeterminedSigns(payload, trx);
+        } else if (payload.type === 'editDivider') {
+          await EditTextUtils.editDivider(payload, trx);
+        } else if (payload.type === 'splitLine') {
+          await EditTextUtils.splitLine(payload, trx);
+        } else if (payload.type === 'splitWord') {
+          await EditTextUtils.splitWord(payload, trx);
         } else if (payload.type === 'mergeLine') {
           await EditTextUtils.mergeLines(payload, trx);
+        } else if (payload.type === 'mergeWord') {
+          await EditTextUtils.mergeWords(payload, trx);
+        } else if (payload.type === 'reorderSign') {
+          await EditTextUtils.reorderSign(payload, trx);
         } else if (payload.type === 'removeSide') {
           await EditTextUtils.removeSide(payload, trx);
         } else if (payload.type === 'removeColumn') {

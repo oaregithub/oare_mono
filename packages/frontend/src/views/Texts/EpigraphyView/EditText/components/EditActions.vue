@@ -140,16 +140,16 @@
             Sign</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-undetermined-signs')" disabled>
+        <v-list-item @click="$emit('edit-undetermined-signs')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-dots-horizontal</v-icon>
-            Broken Sign(s) (Coming Soon)</v-list-item-title
+            Broken Sign(s)</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('edit-divider')" disabled>
+        <v-list-item @click="$emit('edit-divider')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-drag-vertical-variant</v-icon>
-            Word Divider Markup (Coming Soon)</v-list-item-title
+            Word Divider Markup</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -163,16 +163,16 @@
         >
       </template>
       <v-list dense>
-        <v-list-item @click="$emit('split-line')" disabled>
+        <v-list-item @click="$emit('split-line')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-view-headline</v-icon>
-            Line (Coming Soon)</v-list-item-title
+            Line</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('split-word')" disabled>
+        <v-list-item @click="$emit('split-word')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
-            Word / Number (Coming Soon)</v-list-item-title
+            Word / Number</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -192,10 +192,10 @@
             Lines</v-list-item-title
           >
         </v-list-item>
-        <v-list-item @click="$emit('merge-word')" disabled>
+        <v-list-item @click="$emit('merge-word')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-form-textbox-password</v-icon>
-            Words / Numbers (Coming Soon)</v-list-item-title
+            Words / Numbers</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -209,10 +209,10 @@
         >
       </template>
       <v-list dense>
-        <v-list-item @click="$emit('reorder-sign')" disabled>
+        <v-list-item @click="$emit('reorder-sign')">
           <v-list-item-title>
             <v-icon small class="mr-1">mdi-format-text-rotation-none</v-icon>
-            Reorder Signs (Coming Soon)</v-list-item-title
+            Reorder Signs</v-list-item-title
           >
         </v-list-item>
       </v-list>
@@ -387,21 +387,21 @@ export default defineComponent({
           return 'Click on the uninscribed line(s) that you would like to edit.';
         case 'editUndeterminedLines':
           return 'Click on the broken line(s) that you would like to edit.';
-        case 'editSign': // FIXME REVIEW
+        case 'editSign':
           return 'Click on the sign that you would like to edit.';
-        case 'editUndeterminedSigns': // FIXME REVIEW
+        case 'editUndeterminedSigns':
           return 'Click on the broken sign(s) that you would like to edit.';
-        case 'editDivider': // FIXME REVIEW
+        case 'editDivider':
           return 'Click on the word divider that you would like to edit.';
-        case 'splitLine': // FIXME REVIEW
-          return 'Click on the line that you would like to split.';
-        case 'splitWord': // FIXME REVIEW
+        case 'splitLine':
+          return 'Use the buttons that appear between words to select where you would like to split a line';
+        case 'splitWord':
           return 'Click on the word/number that you would like to split.';
         case 'mergeLine':
           return 'Use the checkboxes that appear to select two consecutive lines that you would like to merge.';
-        case 'mergeWord': // FIXME REVIEW
+        case 'mergeWord':
           return 'Use the checkboxes that appear to select two consecutive words/numbers that you would like to merge.';
-        case 'reorderSign': // FIXME REVIEW
+        case 'reorderSign':
           return 'Click on the word that contains the two signs that you would like to reorder.';
         case 'cleanLine':
           return 'Confirm clean up in the dialog.';

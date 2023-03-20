@@ -156,6 +156,8 @@ export interface EpigraphicUnitWithMarkup
     | 'form'
     | 'translation'
     | 'parseInfo'
+    | 'objOnTablet'
+    | 'discourseUuid'
   > {
   type: EpigraphicUnitType | null;
   reading: string;
@@ -172,6 +174,8 @@ export interface EpigraphicSign
     | 'readingUuid'
     | 'reading'
     | 'markups'
+    | 'objOnTablet'
+    | 'discourseUuid'
   > {
   separator: string;
 }
@@ -612,10 +616,56 @@ export interface EditSignPayload extends EditTextPayloadBase {
   sign: SignCodeWithDiscourseUuid;
 }
 
+export interface EditUndeterminedSignsPayload extends EditTextPayloadBase {
+  type: 'editUndeterminedSigns';
+  uuid: string;
+  number: number;
+  markup: MarkupUnit[];
+}
+
+export interface EditDividerPayload extends EditTextPayloadBase {
+  type: 'editDivider';
+  uuid: string;
+  markup: MarkupUnit[];
+}
+
+export interface SplitLinePayload extends EditTextPayloadBase {
+  type: 'splitLine';
+  side: EpigraphicUnitSide;
+  column: number;
+  line: number;
+  previousUuid: string;
+}
+
+export interface SplitWordPayload extends EditTextPayloadBase {
+  type: 'splitWord';
+  previousUuid: string;
+  discourseUuid: string;
+  firstSpelling: string;
+  firstSpellingUuid: string | null;
+  secondSpelling: string;
+  secondSpellingUuid: string | null;
+}
+
 export interface MergeLinePayload extends EditTextPayloadBase {
   type: 'mergeLine';
   firstLine: number;
   secondLine: number;
+}
+
+export interface MergeWordPayload extends EditTextPayloadBase {
+  type: 'mergeWord';
+  discourseUuids: string[];
+  spelling: string;
+  spellingUuid: string | null;
+}
+
+export interface ReorderSignPayload extends EditTextPayloadBase {
+  type: 'reorderSign';
+  spelling: string;
+  spellingUuid: string | null;
+  signUuids: string[];
+  discourseUuid: string | null;
 }
 
 export interface CleanLinesPayload extends EditTextPayloadBase {
@@ -687,7 +737,13 @@ export type EditTextPayload =
   | EditRegionPayload
   | EditUndeterminedLinesPayload
   | EditSignPayload
+  | EditUndeterminedSignsPayload
+  | EditDividerPayload
+  | SplitLinePayload
+  | SplitWordPayload
   | MergeLinePayload
+  | MergeWordPayload
+  | ReorderSignPayload
   | CleanLinesPayload
   | RemoveSidePayload
   | RemoveColumnPayload

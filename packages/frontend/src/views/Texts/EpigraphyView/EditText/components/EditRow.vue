@@ -99,43 +99,74 @@
           :key="index"
           :class="{ 'mr-2': !word.isContraction }"
         >
-          <v-hover v-slot="{ hover }">
-            <span
-              :class="{
-                'red-line-through cursor-display':
-                  hover &&
-                  ((currentEditAction === 'removeWord' && !word.isDivider) ||
-                    (currentEditAction === 'removeDivider' && word.isDivider)),
-                'blue-line-under cursor-display':
-                  hover &&
-                  (currentEditAction === 'addSign' ||
-                    currentEditAction === 'addUndeterminedSigns'),
-              }"
-              @click="handleWordClick(word)"
-            >
-              <span v-for="(sign, signIdx) in word.signs" :key="signIdx">
-                <v-hover v-slot="{ hover: hover2 }">
-                  <span
-                    v-html="sign.reading"
-                    :class="{
-                      'red-line-through cursor-display':
-                        hover2 &&
-                        ((currentEditAction === 'removeSign' &&
-                          sign.epigType === 'sign') ||
-                          (currentEditAction === 'removeUndeterminedSigns' &&
-                            sign.epigType === 'undeterminedSigns')),
-                      'blue-line-under cursor-display':
-                        hover2 &&
-                        currentEditAction === 'editSign' &&
-                        sign.epigType === 'sign',
-                    }"
-                    @click="handleSignClick(word, sign)"
-                  />
-                </v-hover>
-                <span>{{ sign.separator }}</span>
-              </span>
-            </span>
-          </v-hover>
+          <div class="d-inline-block">
+            <v-row class="ma-0" justify="center">
+              <v-hover v-slot="{ hover }">
+                <span
+                  :class="{
+                    'red-line-through cursor-display':
+                      hover &&
+                      ((currentEditAction === 'removeWord' &&
+                        !word.isDivider) ||
+                        (currentEditAction === 'removeDivider' &&
+                          word.isDivider)),
+                    'blue-line-under cursor-display':
+                      hover &&
+                      ((currentEditAction === 'addSign' && !word.isDivider) ||
+                        (currentEditAction === 'addUndeterminedSigns' &&
+                          !word.isDivider) ||
+                        (currentEditAction === 'reorderSign' &&
+                          !word.isDivider) ||
+                        (currentEditAction === 'splitWord' && !word.isDivider)),
+                  }"
+                  @click="handleWordClick(word)"
+                >
+                  <span v-for="(sign, signIdx) in word.signs" :key="signIdx">
+                    <v-hover v-slot="{ hover: hover2 }">
+                      <span
+                        v-html="sign.reading"
+                        :class="{
+                          'red-line-through cursor-display':
+                            hover2 &&
+                            ((currentEditAction === 'removeSign' &&
+                              sign.epigType === 'sign') ||
+                              (currentEditAction ===
+                                'removeUndeterminedSigns' &&
+                                sign.epigType === 'undeterminedSigns')),
+                          'blue-line-under cursor-display':
+                            hover2 &&
+                            ((currentEditAction === 'editSign' &&
+                              sign.epigType === 'sign') ||
+                              (currentEditAction === 'editUndeterminedSigns' &&
+                                sign.epigType === 'undeterminedSigns') ||
+                              (currentEditAction === 'editDivider' &&
+                                word.isDivider)),
+                        }"
+                        @click="handleSignClick(word, sign)"
+                      />
+                    </v-hover>
+                    <span>{{ sign.separator }}</span>
+                  </span>
+                </span>
+              </v-hover>
+            </v-row>
+            <v-row class="ma-0" justify="center">
+              <v-checkbox
+                v-if="
+                  currentEditAction === 'mergeWord' &&
+                  !word.isDivider &&
+                  word.discourseUuid
+                "
+                dense
+                hide-details
+                class="mt-n1 mr-n1"
+                :value="word"
+                :input-value="selectedWords"
+                @change="$emit('toggle-select-word', word)"
+                :disabled="!wordCanBeSelected(word)"
+              />
+            </v-row>
+          </div>
           <insert-button
             v-if="
               currentEditAction === 'addWord' ||
@@ -144,6 +175,27 @@
             class="ml-2"
             @insert="handleInsertWord(word)"
           />
+          <v-hover
+            v-if="
+              currentEditAction === 'splitLine' &&
+              index < renderer.getLineWords(line).length - 1
+            "
+            class="ml-2"
+            v-slot="{ hover }"
+          >
+            <v-btn
+              fab
+              x-small
+              dark
+              :elevation="hover ? 5 : 0"
+              :color="hover ? 'grey darken-3' : 'grey lighten-2'"
+              width="25px"
+              height="25px"
+              @click="handleSplitLine(word)"
+            >
+              <v-icon x-small> mdi-content-cut </v-icon>
+            </v-btn>
+          </v-hover>
         </span>
       </span>
     </v-row>
@@ -247,7 +299,8 @@
 
     <add-word-dialog
       v-model="addWordDialog"
-      :key="addWordPreviousWord"
+      v-if="addWordPreviousWord"
+      :key="addWordPreviousWord.discourseUuid"
       :previousWord="addWordPreviousWord"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -261,7 +314,7 @@
     <add-sign-dialog
       v-if="wordToAddSignTo"
       v-model="addSignDialog"
-      :key="wordToAddSignTo"
+      :key="wordToAddSignTo.discourseUuid"
       :wordToAddSignTo="wordToAddSignTo"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -278,7 +331,7 @@
       :side="side"
       :column="column"
       :wordToAddUndeterminedSignsTo="wordToAddUndeterminedSignsTo"
-      :key="wordToAddUndeterminedSignsTo"
+      :key="wordToAddUndeterminedSignsTo.discourseUuid"
       :textUuid="textUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
@@ -296,7 +349,17 @@
       :side="side"
       :column="column"
       :word="wordBeingEdited"
-      :key="signToEdit"
+      :key="signToEdit.uuid"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
+
+    <edit-undetermined-signs-dialog
+      v-if="undeterminedSignToEdit"
+      v-model="editUndeterminedSignsDialog"
+      :textUuid="textUuid"
+      :undeterminedSigns="undeterminedSignToEdit"
+      :key="undeterminedSignToEdit.uuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -319,6 +382,59 @@
         {{ line }}?</span
       >
     </oare-dialog>
+
+    <oare-dialog
+      v-if="dividerToEdit"
+      v-model="editDividerDialog"
+      title="Edit Divider Markup"
+      :submitLoading="editDividerLoading"
+      @submit="editDivider"
+    >
+      <v-row justify="center" class="ma-0">
+        Select or unselect markup options.
+      </v-row>
+      <v-row justify="center" class="ma-0 mb-6">
+        Some options have additional optional inputs.
+      </v-row>
+      <markup-selector
+        :newSign="dividerToEdit.reading"
+        :referenceUuid="dividerToEdit.uuid"
+        :existingMarkup="dividerToEdit.markups"
+        class="mx-4 mb-4"
+        @update-markup="updateDividerMarkup"
+      />
+    </oare-dialog>
+
+    <reorder-signs-dialog
+      v-if="wordToReorderSignsIn"
+      v-model="reorderSignsDialog"
+      :word="wordToReorderSignsIn"
+      :textUuid="textUuid"
+      :key="wordToReorderSignsIn.discourseUuid"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
+
+    <oare-dialog
+      v-model="splitLineDialog"
+      :title="`Split line ${line}?`"
+      submitText="Yes"
+      cancelText="No"
+      :persistent="false"
+      @submit="splitLine"
+      :submitLoading="splitLineLoading"
+      >Are you sure you want to split this line?</oare-dialog
+    >
+
+    <split-word-dialog
+      v-if="wordToSplit"
+      v-model="splitWordDialog"
+      :word="wordToSplit"
+      :textUuid="textUuid"
+      :key="wordToSplit.discourseUuid"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
   </div>
 </template>
 
@@ -345,6 +461,9 @@ import {
   EpigraphicUnitSide,
   AddDividerPayload,
   MarkupType,
+  MarkupUnit,
+  EditDividerPayload,
+  SplitLinePayload,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import RemoveSignDialog from './RemoveSignDialog.vue';
@@ -355,6 +474,10 @@ import AddWordDialog from './AddWordDialog.vue';
 import AddSignDialog from './AddSignDialog.vue';
 import AddUndeterminedSignsDialog from './AddUndeterminedSignsDialog.vue';
 import EditSignDialog from './EditSignDialog.vue';
+import EditUndeterminedSignsDialog from './EditUndeterminedSignsDialog.vue';
+import MarkupSelector from './MarkupSelector.vue';
+import ReorderSignsDialog from './ReorderSignsDialog.vue';
+import SplitWordDialog from './SplitWordDialog.vue';
 
 export default defineComponent({
   props: {
@@ -386,6 +509,10 @@ export default defineComponent({
       type: String as PropType<EpigraphicUnitSide>,
       required: true,
     },
+    selectedWords: {
+      type: Array as PropType<EpigraphicWord[]>,
+      required: true,
+    },
   },
   components: {
     RemoveSignDialog,
@@ -396,6 +523,10 @@ export default defineComponent({
     AddSignDialog,
     AddUndeterminedSignsDialog,
     EditSignDialog,
+    EditUndeterminedSignsDialog,
+    MarkupSelector,
+    ReorderSignsDialog,
+    SplitWordDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -565,6 +696,12 @@ export default defineComponent({
       } else if (props.currentEditAction === 'addUndeterminedSigns') {
         addUndeterminedSignsDialog.value = true;
         wordToAddUndeterminedSignsTo.value = word;
+      } else if (props.currentEditAction === 'reorderSign') {
+        reorderSignsDialog.value = true;
+        wordToReorderSignsIn.value = word;
+      } else if (props.currentEditAction === 'splitWord') {
+        splitWordDialog.value = true;
+        wordToSplit.value = word;
       }
     };
 
@@ -682,6 +819,16 @@ export default defineComponent({
         wordBeingEdited.value = word;
         signToEdit.value = sign;
         editSignDialog.value = true;
+      } else if (
+        props.currentEditAction === 'editUndeterminedSigns' &&
+        sign.epigType === 'undeterminedSigns'
+      ) {
+        undeterminedSignToEdit.value = sign;
+        editUndeterminedSignsDialog.value = true;
+      } else if (props.currentEditAction === 'editDivider') {
+        editDividerDialog.value = true;
+        dividerToEdit.value = sign;
+        dividerMarkupUnits.value = sign.markups;
       }
     };
 
@@ -841,6 +988,185 @@ export default defineComponent({
     const signToEdit = ref<EpigraphicSign>();
     const wordBeingEdited = ref<EpigraphicWord>();
 
+    const editUndeterminedSignsDialog = ref(false);
+    watch(editUndeterminedSignsDialog, () => {
+      if (!editUndeterminedSignsDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const undeterminedSignToEdit = ref<EpigraphicSign>();
+
+    const editDividerDialog = ref(false);
+    watch(editDividerDialog, () => {
+      if (!editDividerDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const dividerToEdit = ref<EpigraphicSign>();
+
+    const editDividerLoading = ref(false);
+    const editDivider = async () => {
+      try {
+        editDividerLoading.value = true;
+
+        if (!dividerToEdit.value) {
+          throw new Error('No divider to edit');
+        }
+
+        const payload: EditDividerPayload = {
+          type: 'editDivider',
+          textUuid: props.textUuid,
+          uuid: dividerToEdit.value.uuid,
+          markup: dividerMarkupUnits.value,
+        };
+
+        await server.editText(payload);
+        resetRenderer();
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error editing divider. Please try again.',
+          err as Error
+        );
+      } finally {
+        editDividerDialog.value = false;
+        resetCurrentEditAction();
+        editDividerLoading.value = false;
+        dividerToEdit.value = undefined;
+        dividerMarkupUnits.value = [];
+      }
+    };
+    const dividerMarkupUnits = ref<MarkupUnit[]>([]);
+    const updateDividerMarkup = (markup: MarkupUnit[]) => {
+      dividerMarkupUnits.value = markup;
+    };
+    const markupIsDifferent = computed(() => {
+      if (!dividerToEdit.value) {
+        return false;
+      }
+      const originalMarkup = dividerToEdit.value.markups.sort((a, b) =>
+        a.type.localeCompare(b.type)
+      );
+      const newMarkup = dividerMarkupUnits.value.sort((a, b) =>
+        a.type.localeCompare(b.type)
+      );
+
+      if (originalMarkup.length !== newMarkup.length) {
+        return true;
+      }
+      for (let i = 0; i < newMarkup.length; i++) {
+        if (
+          newMarkup[i].type !== originalMarkup[i].type ||
+          newMarkup[i].startChar !== originalMarkup[i].startChar ||
+          newMarkup[i].endChar !== originalMarkup[i].endChar ||
+          newMarkup[i].altReading !== originalMarkup[i].altReading
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    const reorderSignsDialog = ref(false);
+    watch(reorderSignsDialog, () => {
+      if (!reorderSignsDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const wordToReorderSignsIn = ref<EpigraphicWord>();
+
+    const wordCanBeSelected = (word: EpigraphicWord) => {
+      if (
+        props.selectedWords
+          .map(w => w.discourseUuid)
+          .includes(word.discourseUuid)
+      ) {
+        return true;
+      }
+
+      if (props.selectedWords.length === 0) {
+        return true;
+      }
+
+      if (props.selectedWords.length >= 2) {
+        return false;
+      }
+
+      if (props.selectedWords.length === 1) {
+        const selectedWord = props.selectedWords[0];
+        const minObjOnTablet = Math.min(
+          ...selectedWord.signs.map(s => s.objOnTablet)
+        );
+        const maxObjOnTablet = Math.max(
+          ...selectedWord.signs.map(s => s.objOnTablet)
+        );
+
+        if (word.signs.map(s => s.objOnTablet).includes(minObjOnTablet - 1)) {
+          return true;
+        }
+
+        if (word.signs.map(s => s.objOnTablet).includes(maxObjOnTablet + 1)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    const handleSplitLine = (wordBefore: EpigraphicWord) => {
+      const lastSign = wordBefore.signs[wordBefore.signs.length - 1];
+      splitLineSignBefore.value = lastSign.uuid;
+      splitLineDialog.value = true;
+    };
+    const splitLineDialog = ref(false);
+    watch(splitLineDialog, () => {
+      if (!splitLineDialog.value) {
+        resetCurrentEditAction();
+        splitLineSignBefore.value = undefined;
+      }
+    });
+    const splitLineSignBefore = ref<string>();
+
+    const splitLineLoading = ref(false);
+    const splitLine = async () => {
+      try {
+        splitLineLoading.value = true;
+
+        if (!splitLineSignBefore.value) {
+          throw new Error('No sign before split line');
+        }
+
+        const payload: SplitLinePayload = {
+          type: 'splitLine',
+          textUuid: props.textUuid,
+          side: props.side,
+          column: props.column,
+          line: props.line,
+          previousUuid: splitLineSignBefore.value,
+        };
+
+        await server.editText(payload);
+        resetRenderer();
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error splitting line. Please try again.',
+          err as Error
+        );
+      } finally {
+        splitLineDialog.value = false;
+        resetCurrentEditAction();
+        splitLineLoading.value = false;
+        splitLineSignBefore.value = undefined;
+      }
+    };
+
+    const splitWordDialog = ref(false);
+    watch(splitWordDialog, () => {
+      if (!splitWordDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const wordToSplit = ref<EpigraphicWord>();
+
     return {
       lineNumber,
       resetRenderer,
@@ -885,6 +1211,25 @@ export default defineComponent({
       editSignDialog,
       signToEdit,
       wordBeingEdited,
+      editUndeterminedSignsDialog,
+      undeterminedSignToEdit,
+      editDividerDialog,
+      dividerToEdit,
+      editDividerLoading,
+      editDivider,
+      dividerMarkupUnits,
+      updateDividerMarkup,
+      markupIsDifferent,
+      reorderSignsDialog,
+      wordToReorderSignsIn,
+      wordCanBeSelected,
+      handleSplitLine,
+      splitLineDialog,
+      splitLineSignBefore,
+      splitLineLoading,
+      splitLine,
+      splitWordDialog,
+      wordToSplit,
     };
   },
 });
