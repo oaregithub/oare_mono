@@ -1,7 +1,7 @@
 import {
   DictionaryForm,
   DictionarySearchRow,
-  DictItemAutocompleteDisplay,
+  DictItemComboboxDisplay,
   ItemPropertyRow,
 } from '@oare/types';
 import {
@@ -25,9 +25,9 @@ function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {
   return wordMap;
 }
 
-export async function assembleAutocompleteDisplay(
+export async function assembleComboboxDisplay(
   row: WordFormSpellingType
-): Promise<DictItemAutocompleteDisplay> {
+): Promise<DictItemComboboxDisplay> {
   let formInfo: Omit<DictionaryForm, 'spellings'> | null = null;
   const properties: ItemPropertyRow[] = [];
   if (row.type === 'form') {
@@ -43,7 +43,7 @@ export async function assembleAutocompleteDisplay(
       properties,
     };
   }
-  const dictItemAutocompleteDisplay: DictItemAutocompleteDisplay = {
+  const dictItemComboboxDisplay: DictItemComboboxDisplay = {
     uuid: row.uuid,
     referenceUuid: row.referenceUuid,
     name: row.name,
@@ -53,7 +53,7 @@ export async function assembleAutocompleteDisplay(
     wordName: row.wordName,
     wordUuid: row.wordUuid,
   };
-  return dictItemAutocompleteDisplay;
+  return dictItemComboboxDisplay;
 }
 
 export function assembleSearchResult(
