@@ -45,6 +45,9 @@ describe('IndivPersonView test', () => {
     return mount(IndivPersonView, {
       vuetify,
       localVue,
+      propsData: {
+        uuid: 'testUuid',
+      },
     });
   };
 
@@ -58,7 +61,7 @@ describe('IndivPersonView test', () => {
     createWrapper({
       server: {
         ...mockServer,
-        getIndivPerson: jest.fn().mockRejectedValue(null),
+        getPersonInfo: jest.fn().mockRejectedValue(null),
       },
     });
     await flushPromises();

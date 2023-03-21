@@ -102,7 +102,27 @@ export default defineComponent({
     const actions = sl.get('globalActions');
 
     const loading = ref(false);
-    const person = ref<PersonInfo>();
+    const person = ref<PersonInfo>({
+      person: {
+        uuid: 'uuid',
+        nameUuid: null,
+        relation: null,
+        relationNameUuid: null,
+        label: '',
+        descriptor: null,
+      },
+      display: '',
+      father: null,
+      mother: null,
+      asshatumWives: [],
+      amtumWives: [],
+      husbands: [],
+      siblings: [],
+      children: [],
+      durableRoles: [],
+      discussion: [],
+      temporaryRoles: [],
+    });
 
     onMounted(async () => {
       try {
