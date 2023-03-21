@@ -12,7 +12,7 @@
       >Select the side you would like to edit and then select the side
       designation you would like to change it to.</v-row
     >
-    <v-row class="ma-0 mt-4">Current Side Designation</v-row>
+    <v-row class="ma-0 mt-4">Side You Want to Edit</v-row>
     <v-row class="ma-0">
       <v-select
         outlined
@@ -22,7 +22,7 @@
       />
     </v-row>
 
-    <v-row class="ma-0">New Side Designation</v-row>
+    <v-row class="ma-0">New Designation for Side</v-row>
     <v-row class="ma-0">
       <v-select outlined dense :items="usableSides" v-model="newSide" />
     </v-row>
