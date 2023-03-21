@@ -61,6 +61,7 @@ import {
   PropType,
   computed,
   ComputedRef,
+  onMounted,
 } from '@vue/composition-api';
 import {
   EpigraphicSign,
@@ -211,6 +212,11 @@ export default defineComponent({
     );
 
     const formsLoaded = ref(false);
+    onMounted(() => {
+      if (props.word.signs.length === 1) {
+        formsLoaded.value = true;
+      }
+    });
 
     return {
       getUpdatedSignsWithSeparators,
