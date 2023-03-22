@@ -11,7 +11,7 @@
       This search function allows users to search for words and forms of words
       in texts.
       <ol>
-        <li>Start by searching for a word or form in the autocomplete area.</li>
+        <li>Start by searching for a word or form in the search area.</li>
         <li>Select the word or form you are searching for.</li>
         <li>
           Then, check any other forms in relation to that word or form that you

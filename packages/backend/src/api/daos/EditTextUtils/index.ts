@@ -35,6 +35,8 @@ import {
   EditDividerPayload,
   ReorderSignPayload,
   MergeWordPayload,
+  SplitLinePayload,
+  SplitWordPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2068,6 +2070,141 @@ class EditTextUtils {
       payload.markup,
       trx
     );
+  }
+
+  async splitLine(
+    payload: SplitLinePayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
+    const sideNumber = convertSideToSideNumber(payload.side);
+
+    const lineParentUuid = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        line: payload.line,
+        side: sideNumber,
+        column: payload.column,
+      })
+      .select('parent_uuid')
+      .first()
+      .then(row => row.parent_uuid);
+
+    const treeUuid = await k('text_epigraphy')
+      .where({ uuid: lineParentUuid })
+      .select('tree_uuid')
+      .first()
+      .then(row => row.tree_uuid);
+
+    const newObjectOnTablet = await k('text_epigraphy')
+      .where({ uuid: payload.previousUuid, text_uuid: payload.textUuid })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet + 1);
+
+    await TextEpigraphyDao.incrementObjectOnTablet(
+      payload.textUuid,
+      newObjectOnTablet,
+      1,
+      trx
+    );
+
+    const lineRow: TextEpigraphyRow = {
+      uuid: v4(),
+      type: 'line',
+      textUuid: payload.textUuid,
+      treeUuid,
+      parentUuid: lineParentUuid,
+      objectOnTablet: newObjectOnTablet,
+      side: sideNumber,
+      column: payload.column,
+      line: null, // Will be fixed in clean up
+      charOnLine: null,
+      charOnTablet: null,
+      signUuid: null,
+      sign: null,
+      readingUuid: null,
+      reading: null,
+      discourseUuid: null,
+    };
+
+    await TextEpigraphyDao.insertEpigraphyRow(lineRow, trx);
+
+    await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        line: payload.line,
+        side: sideNumber,
+        column: payload.column,
+      })
+      .where('object_on_tablet', '>', newObjectOnTablet)
+      .update({ parent_uuid: lineRow.uuid });
+  }
+
+  async splitWord(
+    payload: SplitWordPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+    const discourseRow = await TextDiscourseDao.getDiscourseRowByUuid(
+      payload.discourseUuid,
+      trx
+    );
+
+    if (discourseRow.objInText === null) {
+      throw new Error('Discourse row has no objInText');
+    }
+
+    await TextDiscourseDao.incrementObjInText(
+      payload.textUuid,
+      discourseRow.objInText + 1,
+      1,
+      trx
+    );
+
+    await k('text_discourse').where({ uuid: payload.discourseUuid }).update({
+      spelling_uuid: payload.firstSpellingUuid,
+      spelling: payload.firstSpelling,
+      explicit_spelling: payload.firstSpelling,
+    });
+
+    const newDiscourseRow: TextDiscourseRow = {
+      uuid: v4(),
+      type: 'word',
+      objInText: discourseRow.objInText + 1,
+      wordOnTablet: null,
+      childNum: null,
+      textUuid: payload.textUuid,
+      treeUuid: discourseRow.treeUuid,
+      parentUuid: discourseRow.parentUuid,
+      spellingUuid: payload.secondSpellingUuid,
+      spelling: payload.secondSpelling,
+      explicitSpelling: payload.secondSpelling,
+      transcription: null,
+    };
+
+    await TextDiscourseDao.insertDiscourseRow(newDiscourseRow, trx);
+
+    const previousObjectOnTablet: number = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        uuid: payload.previousUuid,
+      })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet);
+
+    await k('text_epigraphy')
+      .where({
+        discourse_uuid: payload.discourseUuid,
+        text_uuid: payload.textUuid,
+      })
+      .where('object_on_tablet', '>', previousObjectOnTablet)
+      .update({ discourse_uuid: newDiscourseRow.uuid });
   }
 
   async mergeLines(

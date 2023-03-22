@@ -18,3 +18,13 @@ export interface EditFieldPayload {
   description: string;
   primacy: number;
 }
+
+export interface FieldRow {
+  id: number;
+  uuid: string;
+  reference_uuid: string;
+  type: string | null;
+  language: string | null;
+  primary: number | null;
+  field: string | null;
+}

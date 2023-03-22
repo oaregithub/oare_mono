@@ -116,7 +116,8 @@
                         (currentEditAction === 'addUndeterminedSigns' &&
                           !word.isDivider) ||
                         (currentEditAction === 'reorderSign' &&
-                          !word.isDivider)),
+                          !word.isDivider) ||
+                        (currentEditAction === 'splitWord' && !word.isDivider)),
                   }"
                   @click="handleWordClick(word)"
                 >
@@ -174,6 +175,27 @@
             class="ml-2"
             @insert="handleInsertWord(word)"
           />
+          <v-hover
+            v-if="
+              currentEditAction === 'splitLine' &&
+              index < renderer.getLineWords(line).length - 1
+            "
+            class="ml-2"
+            v-slot="{ hover }"
+          >
+            <v-btn
+              fab
+              x-small
+              dark
+              :elevation="hover ? 5 : 0"
+              :color="hover ? 'grey darken-3' : 'grey lighten-2'"
+              width="25px"
+              height="25px"
+              @click="handleSplitLine(word)"
+            >
+              <v-icon x-small> mdi-content-cut </v-icon>
+            </v-btn>
+          </v-hover>
         </span>
       </span>
     </v-row>
@@ -277,7 +299,8 @@
 
     <add-word-dialog
       v-model="addWordDialog"
-      :key="addWordPreviousWord"
+      v-if="addWordPreviousWord"
+      :key="addWordPreviousWord.discourseUuid"
       :previousWord="addWordPreviousWord"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -291,7 +314,7 @@
     <add-sign-dialog
       v-if="wordToAddSignTo"
       v-model="addSignDialog"
-      :key="wordToAddSignTo"
+      :key="wordToAddSignTo.discourseUuid"
       :wordToAddSignTo="wordToAddSignTo"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -308,7 +331,7 @@
       :side="side"
       :column="column"
       :wordToAddUndeterminedSignsTo="wordToAddUndeterminedSignsTo"
-      :key="wordToAddUndeterminedSignsTo"
+      :key="wordToAddUndeterminedSignsTo.discourseUuid"
       :textUuid="textUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
@@ -326,7 +349,7 @@
       :side="side"
       :column="column"
       :word="wordBeingEdited"
-      :key="signToEdit"
+      :key="signToEdit.uuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -336,7 +359,7 @@
       v-model="editUndeterminedSignsDialog"
       :textUuid="textUuid"
       :undeterminedSigns="undeterminedSignToEdit"
-      :key="undeterminedSignToEdit"
+      :key="undeterminedSignToEdit.uuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -387,7 +410,28 @@
       v-model="reorderSignsDialog"
       :word="wordToReorderSignsIn"
       :textUuid="textUuid"
-      :key="wordToReorderSignsIn"
+      :key="wordToReorderSignsIn.discourseUuid"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
+
+    <oare-dialog
+      v-model="splitLineDialog"
+      :title="`Split line ${line}?`"
+      submitText="Yes"
+      cancelText="No"
+      :persistent="false"
+      @submit="splitLine"
+      :submitLoading="splitLineLoading"
+      >Are you sure you want to split this line?</oare-dialog
+    >
+
+    <split-word-dialog
+      v-if="wordToSplit"
+      v-model="splitWordDialog"
+      :word="wordToSplit"
+      :textUuid="textUuid"
+      :key="wordToSplit.discourseUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -419,6 +463,7 @@ import {
   MarkupType,
   MarkupUnit,
   EditDividerPayload,
+  SplitLinePayload,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import RemoveSignDialog from './RemoveSignDialog.vue';
@@ -432,6 +477,7 @@ import EditSignDialog from './EditSignDialog.vue';
 import EditUndeterminedSignsDialog from './EditUndeterminedSignsDialog.vue';
 import MarkupSelector from './MarkupSelector.vue';
 import ReorderSignsDialog from './ReorderSignsDialog.vue';
+import SplitWordDialog from './SplitWordDialog.vue';
 
 export default defineComponent({
   props: {
@@ -480,6 +526,7 @@ export default defineComponent({
     EditUndeterminedSignsDialog,
     MarkupSelector,
     ReorderSignsDialog,
+    SplitWordDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -652,6 +699,9 @@ export default defineComponent({
       } else if (props.currentEditAction === 'reorderSign') {
         reorderSignsDialog.value = true;
         wordToReorderSignsIn.value = word;
+      } else if (props.currentEditAction === 'splitWord') {
+        splitWordDialog.value = true;
+        wordToSplit.value = word;
       }
     };
 
@@ -1062,6 +1112,61 @@ export default defineComponent({
       return false;
     };
 
+    const handleSplitLine = (wordBefore: EpigraphicWord) => {
+      const lastSign = wordBefore.signs[wordBefore.signs.length - 1];
+      splitLineSignBefore.value = lastSign.uuid;
+      splitLineDialog.value = true;
+    };
+    const splitLineDialog = ref(false);
+    watch(splitLineDialog, () => {
+      if (!splitLineDialog.value) {
+        resetCurrentEditAction();
+        splitLineSignBefore.value = undefined;
+      }
+    });
+    const splitLineSignBefore = ref<string>();
+
+    const splitLineLoading = ref(false);
+    const splitLine = async () => {
+      try {
+        splitLineLoading.value = true;
+
+        if (!splitLineSignBefore.value) {
+          throw new Error('No sign before split line');
+        }
+
+        const payload: SplitLinePayload = {
+          type: 'splitLine',
+          textUuid: props.textUuid,
+          side: props.side,
+          column: props.column,
+          line: props.line,
+          previousUuid: splitLineSignBefore.value,
+        };
+
+        await server.editText(payload);
+        resetRenderer();
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error splitting line. Please try again.',
+          err as Error
+        );
+      } finally {
+        splitLineDialog.value = false;
+        resetCurrentEditAction();
+        splitLineLoading.value = false;
+        splitLineSignBefore.value = undefined;
+      }
+    };
+
+    const splitWordDialog = ref(false);
+    watch(splitWordDialog, () => {
+      if (!splitWordDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const wordToSplit = ref<EpigraphicWord>();
+
     return {
       lineNumber,
       resetRenderer,
@@ -1118,6 +1223,13 @@ export default defineComponent({
       reorderSignsDialog,
       wordToReorderSignsIn,
       wordCanBeSelected,
+      handleSplitLine,
+      splitLineDialog,
+      splitLineSignBefore,
+      splitLineLoading,
+      splitLine,
+      splitWordDialog,
+      wordToSplit,
     };
   },
 });

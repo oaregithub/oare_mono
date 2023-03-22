@@ -22,6 +22,7 @@
       light
       dense
       :disabled="disabled"
+      type="text"
     />
   </div>
 </template>
