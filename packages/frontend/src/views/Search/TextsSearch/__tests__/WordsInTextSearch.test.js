@@ -136,60 +136,60 @@ describe('WordsInTextSearch', () => {
   it('changes to parse properties and back', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-1').isVisible()).toBe(true);
+    expect(wrapper.find('.test-combobox-1').isVisible()).toBe(true);
     expect(wrapper.find('.test-parse-tree-1').isVisible()).toBe(false);
-    expect(wrapper.find('.test-autocomplete-btn-word-forms').isVisible()).toBe(
+    expect(wrapper.find('.test-combobox-btn-word-forms').isVisible()).toBe(
       true
     );
-    await wrapper.find('.test-autocomplete-btn-word-forms').trigger('click');
-    expect(wrapper.find('.test-autocomplete-1').isVisible()).toBe(false);
+    await wrapper.find('.test-combobox-btn-word-forms').trigger('click');
+    expect(wrapper.find('.test-combobox-1').isVisible()).toBe(false);
     expect(wrapper.find('.test-parse-tree-1').isVisible()).toBe(true);
-    await wrapper.find('.test-autocomplete-btn-parse-props').trigger('click');
-    expect(wrapper.find('.test-autocomplete-1').isVisible()).toBe(true);
+    await wrapper.find('.test-combobox-btn-parse-props').trigger('click');
+    expect(wrapper.find('.test-combobox-1').isVisible()).toBe(true);
     expect(wrapper.find('.test-parse-tree-1').isVisible()).toBe(false);
   });
 
-  it('increases and decreases autocomplete options', async () => {
+  it('increases and decreases combobox options', async () => {
     const wrapper = createWrapper();
     expect(wrapper.find('.test-increase-button').isVisible()).toBe(true);
     expect(wrapper.find('.test-decrease-button').isVisible()).toBe(false);
     expect(wrapper.find('.test-numWordsBefore-1').isVisible()).toBe(false);
-    expect(wrapper.find('.test-autocomplete-1').isVisible()).toBe(true);
+    expect(wrapper.find('.test-combobox-1').isVisible()).toBe(true);
     expect(wrapper.find('.test-parse-tree-1').isVisible()).toBe(false);
     await wrapper.find('.test-increase-button').trigger('click');
     await flushPromises();
     expect(wrapper.find('.test-numWordsBefore-1').isVisible()).toBe(false);
     expect(wrapper.find('.test-numWordsBefore-2').isVisible()).toBe(true);
-    expect(wrapper.find('.test-autocomplete-2').isVisible()).toBe(true);
+    expect(wrapper.find('.test-combobox-2').isVisible()).toBe(true);
     await wrapper.find('.test-increase-button').trigger('click');
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-3').isVisible()).toBe(true);
+    expect(wrapper.find('.test-combobox-3').isVisible()).toBe(true);
     expect(wrapper.find('.test-numWordsBefore-3').isVisible()).toBe(true);
     await wrapper.find('.test-increase-button').trigger('click');
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-4').isVisible()).toBe(true);
+    expect(wrapper.find('.test-combobox-4').isVisible()).toBe(true);
     expect(wrapper.find('.test-numWordsBefore-4').isVisible()).toBe(true);
     await wrapper.find('.test-increase-button').trigger('click');
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-5').isVisible()).toBe(true);
+    expect(wrapper.find('.test-combobox-5').isVisible()).toBe(true);
     expect(wrapper.find('.test-numWordsBefore-5').isVisible()).toBe(true);
     expect(wrapper.find('.test-increase-button').isVisible()).toBe(false);
     expect(wrapper.find('.test-decrease-button').isVisible()).toBe(true);
     await wrapper.find('.test-decrease-button').trigger('click');
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-5').exists()).toBe(false);
+    expect(wrapper.find('.test-combobox-5').exists()).toBe(false);
     expect(wrapper.find('.test-numWordsBefore-5').exists()).toBe(false);
     await wrapper.find('.test-decrease-button').trigger('click');
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-4').exists()).toBe(false);
+    expect(wrapper.find('.test-combobox-4').exists()).toBe(false);
     expect(wrapper.find('.test-numWordsBefore-4').exists()).toBe(false);
     await wrapper.find('.test-decrease-button').trigger('click');
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-3').exists()).toBe(false);
+    expect(wrapper.find('.test-combobox-3').exists()).toBe(false);
     expect(wrapper.find('.test-numWordsBefore-3').exists()).toBe(false);
     await wrapper.find('.test-decrease-button').trigger('click');
     await flushPromises();
-    expect(wrapper.find('.test-autocomplete-2').exists()).toBe(false);
+    expect(wrapper.find('.test-combobox-2').exists()).toBe(false);
     expect(wrapper.find('.test-numWordsBefore-2').exists()).toBe(false);
   });
 });

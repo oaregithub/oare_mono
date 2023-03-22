@@ -116,7 +116,8 @@
                         (currentEditAction === 'addUndeterminedSigns' &&
                           !word.isDivider) ||
                         (currentEditAction === 'reorderSign' &&
-                          !word.isDivider)),
+                          !word.isDivider) ||
+                        (currentEditAction === 'splitWord' && !word.isDivider)),
                   }"
                   @click="handleWordClick(word)"
                 >
@@ -298,7 +299,8 @@
 
     <add-word-dialog
       v-model="addWordDialog"
-      :key="addWordPreviousWord"
+      v-if="addWordPreviousWord"
+      :key="addWordPreviousWord.discourseUuid"
       :previousWord="addWordPreviousWord"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -312,7 +314,7 @@
     <add-sign-dialog
       v-if="wordToAddSignTo"
       v-model="addSignDialog"
-      :key="wordToAddSignTo"
+      :key="wordToAddSignTo.discourseUuid"
       :wordToAddSignTo="wordToAddSignTo"
       :textUuid="textUuid"
       :renderer="renderer"
@@ -329,7 +331,7 @@
       :side="side"
       :column="column"
       :wordToAddUndeterminedSignsTo="wordToAddUndeterminedSignsTo"
-      :key="wordToAddUndeterminedSignsTo"
+      :key="wordToAddUndeterminedSignsTo.discourseUuid"
       :textUuid="textUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
@@ -347,7 +349,7 @@
       :side="side"
       :column="column"
       :word="wordBeingEdited"
-      :key="signToEdit"
+      :key="signToEdit.uuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -357,7 +359,7 @@
       v-model="editUndeterminedSignsDialog"
       :textUuid="textUuid"
       :undeterminedSigns="undeterminedSignToEdit"
-      :key="undeterminedSignToEdit"
+      :key="undeterminedSignToEdit.uuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -408,7 +410,7 @@
       v-model="reorderSignsDialog"
       :word="wordToReorderSignsIn"
       :textUuid="textUuid"
-      :key="wordToReorderSignsIn"
+      :key="wordToReorderSignsIn.discourseUuid"
       @reset-renderer="resetRenderer"
       @reset-current-edit-action="resetCurrentEditAction"
     />
@@ -423,6 +425,16 @@
       :submitLoading="splitLineLoading"
       >Are you sure you want to split this line?</oare-dialog
     >
+
+    <split-word-dialog
+      v-if="wordToSplit"
+      v-model="splitWordDialog"
+      :word="wordToSplit"
+      :textUuid="textUuid"
+      :key="wordToSplit.discourseUuid"
+      @reset-renderer="resetRenderer"
+      @reset-current-edit-action="resetCurrentEditAction"
+    />
   </div>
 </template>
 
@@ -465,6 +477,7 @@ import EditSignDialog from './EditSignDialog.vue';
 import EditUndeterminedSignsDialog from './EditUndeterminedSignsDialog.vue';
 import MarkupSelector from './MarkupSelector.vue';
 import ReorderSignsDialog from './ReorderSignsDialog.vue';
+import SplitWordDialog from './SplitWordDialog.vue';
 
 export default defineComponent({
   props: {
@@ -513,6 +526,7 @@ export default defineComponent({
     EditUndeterminedSignsDialog,
     MarkupSelector,
     ReorderSignsDialog,
+    SplitWordDialog,
   },
   setup(props, { emit }) {
     const server = sl.get('serverProxy');
@@ -685,6 +699,9 @@ export default defineComponent({
       } else if (props.currentEditAction === 'reorderSign') {
         reorderSignsDialog.value = true;
         wordToReorderSignsIn.value = word;
+      } else if (props.currentEditAction === 'splitWord') {
+        splitWordDialog.value = true;
+        wordToSplit.value = word;
       }
     };
 
@@ -1142,6 +1159,14 @@ export default defineComponent({
       }
     };
 
+    const splitWordDialog = ref(false);
+    watch(splitWordDialog, () => {
+      if (!splitWordDialog.value) {
+        resetCurrentEditAction();
+      }
+    });
+    const wordToSplit = ref<EpigraphicWord>();
+
     return {
       lineNumber,
       resetRenderer,
@@ -1203,6 +1228,8 @@ export default defineComponent({
       splitLineSignBefore,
       splitLineLoading,
       splitLine,
+      splitWordDialog,
+      wordToSplit,
     };
   },
 });

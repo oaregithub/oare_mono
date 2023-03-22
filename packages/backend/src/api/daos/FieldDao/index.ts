@@ -1,20 +1,10 @@
 import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
 import { Knex } from 'knex';
-import { FieldInfo } from '@oare/types';
+import { FieldInfo, FieldRow } from '@oare/types';
 import DetectLanguage, { DetectionResult } from 'detectlanguage';
 import { getDetectLanguageAPIKEY } from '@/utils';
 import { languages } from './utils';
-
-interface FieldRow {
-  id: number;
-  uuid: string;
-  reference_uuid: string;
-  type: string | null;
-  language: string | null;
-  primary: number | null;
-  field: string | null;
-}
 
 interface FieldOptions {
   primacy?: number;

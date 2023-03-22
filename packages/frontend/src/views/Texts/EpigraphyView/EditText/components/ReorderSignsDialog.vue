@@ -257,7 +257,6 @@ export default defineComponent({
           newWordReading += sign.separator;
         }
       });
-      console.log(newWordReading);
       return newWordReading
         .replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
         .replace(/<[^>]*>/g, '')

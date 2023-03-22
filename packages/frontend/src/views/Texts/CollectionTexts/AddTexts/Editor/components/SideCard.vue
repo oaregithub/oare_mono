@@ -70,7 +70,7 @@ export default defineComponent({
       required: true,
     },
     sideMarkup: {
-      type: Object as PropType<MarkupUnit[]>,
+      type: Array as PropType<MarkupUnit[]>,
       required: false,
     },
     selected: {

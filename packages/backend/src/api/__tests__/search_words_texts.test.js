@@ -92,7 +92,7 @@ describe('words in texts search test', () => {
   describe('GET /dictItems', () => {
     const PATH = `${API_PATH}/dictItems`;
 
-    const dictItemAutoCompleteDisplay = [
+    const dictItemComboboxDisplay = [
       {
         info: {
           uuid: 'uuid',
@@ -107,7 +107,7 @@ describe('words in texts search test', () => {
     const DictionaryWordDao = {
       getDictItemsForWordsInTexts: jest
         .fn()
-        .mockResolvedValue(dictItemAutoCompleteDisplay),
+        .mockResolvedValue(dictItemComboboxDisplay),
     };
 
     beforeEach(() => {
@@ -120,7 +120,7 @@ describe('words in texts search test', () => {
       const response = await sendRequest();
       expect(DictionaryWordDao.getDictItemsForWordsInTexts).toHaveBeenCalled();
       expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual(dictItemAutoCompleteDisplay);
+      expect(JSON.parse(response.text)).toEqual(dictItemComboboxDisplay);
     });
   });
 });

@@ -25,16 +25,16 @@
               </div>
               <div
                 v-show="!useParse[index - 1]"
-                :class="`test-autocomplete-${index} py-2`"
+                :class="`test-combobox-${index} py-2`"
               >
                 <h4>
                   <template v-if="index === 1">
                     <words-in-text-search-info-card></words-in-text-search-info-card> </template
                   >{{ `Search Item #${index}` }}
                 </h4>
-                <v-autocomplete
+                <v-combobox
                   v-model="dictItemSelectionUuids[index - 1]"
-                  :items="getAutocompleteItems(index)"
+                  :items="getComboboxItems(index)"
                   item-text="name"
                   return-object
                   clearable
@@ -44,21 +44,25 @@
                   no-filter
                   hide-selected
                   :search-input.sync="queryText[`queryText${index}`]"
-                  @change="updateAutocomplete(index)"
+                  @change="updateCombobox(index)"
+                  @blur="queryText[`queryText${index}`] = null"
                   @focus="setActiveIndex(index)"
                   item-color="primary"
                   :label="`word/form/spelling #${index}`"
+                  :rules="[rules]"
                 >
                   <template v-slot:selection="data">
                     <v-chip close @click:close="removeChip(data.item, index)">
-                      <words-in-text-search-autocomplete-item
+                      <words-in-text-search-combobox-item
+                        v-if="typeof data.item === 'object'"
                         :item="data.item"
                         :key="`${data.item.uuid}-${index}-chip`"
                       />
+                      <span v-else>{{ data.item }}</span>
                     </v-chip>
                   </template>
                   <template #item="{ attrs, item, on }">
-                    <words-in-text-search-autocomplete-item
+                    <words-in-text-search-combobox-item
                       :key="`${item.uuid}-${index}-select`"
                       v-bind="attrs"
                       v-on="on"
@@ -66,13 +70,23 @@
                     />
                   </template>
                   <template slot="append-outer">
-                    <v-btn
-                      class="test-autocomplete-btn-word-forms"
-                      @click="updateUseParse(index - 1)"
-                      >Change To Parse Properties</v-btn
-                    >
+                    <span class="mr-2">
+                      <v-btn
+                        class="test-combobox-btn-any-number"
+                        @click="addAnyNumber(index)"
+                        >Any Number</v-btn
+                      >
+                    </span>
+                    <span>
+                      <v-btn
+                        class="test-combobox-btn-word-forms"
+                        color="primary"
+                        @click="updateUseParse(index - 1)"
+                        >Change To Parse Properties</v-btn
+                      >
+                    </span>
                   </template>
-                </v-autocomplete>
+                </v-combobox>
                 <v-expand-transition>
                   <v-card
                     v-show="
@@ -91,7 +105,11 @@
                           )}/${dictItem.childDictItems.length} ${
                             dictItem.childDictItems[0].type === 'form'
                               ? 'form'
-                              : 'spelling'
+                              : `${
+                                  dictItem.childDictItems[0].type === 'number'
+                                    ? 'number'
+                                    : 'spelling'
+                                }`
                           }${
                             dictItem.childDictItems.length > 1 ? 's' : ''
                           } selected`
@@ -158,7 +176,7 @@
                   ></add-properties>
                   <span class="pt-4">
                     <v-btn
-                      class="test-autocomplete-btn-parse-props"
+                      class="test-combobox-btn-parse-props"
                       @click="updateUseParse(index - 1)"
                       >Change To Words, Forms, and Spellings</v-btn
                     >
@@ -220,6 +238,7 @@
           @click="performSearch(1, Number(rows), true)"
           class="test-submit"
           :disabled="!canPerformSearch"
+          color="primary"
           >Search</v-btn
         >
       </div>
@@ -251,7 +270,7 @@ import {
   reactive,
 } from '@vue/composition-api';
 import {
-  DictItemAutocompleteDisplay,
+  DictItemComboboxDisplay,
   WordsInTextsSearchResultRow,
   WordsInTextsSearchResponse,
   ParseTreePropertyUuids,
@@ -263,7 +282,7 @@ import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vu
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
 import AddProperties from '@/components/Properties/AddProperties.vue';
-import WordsInTextSearchAutocompleteItem from './components/WordsInTextSearchAutocompleteItem.vue';
+import WordsInTextSearchComboboxItem from './components/WordsInTextSearchComboboxItem.vue';
 import _ from 'lodash';
 import WordGrammar from '@/views/DictionaryWord/components/WordInfo/components/WordGrammar/WordGrammar.vue';
 
@@ -276,7 +295,7 @@ export interface DictItemWordsInTextSearch {
 export interface ChildDictItem {
   name: string;
   uuid: string;
-  type: 'form' | 'spelling';
+  type: 'form' | 'spelling' | 'number';
 }
 
 export default defineComponent({
@@ -285,16 +304,16 @@ export default defineComponent({
     WordsInTextsSearchTable,
     WordsInTextSearchInfoCard,
     AddProperties,
-    WordsInTextSearchAutocompleteItem,
+    WordsInTextSearchComboboxItem,
     WordGrammar,
   },
   setup() {
-    const items: Ref<DictItemAutocompleteDisplay[]> = ref([]);
-    const filteredItems: Ref<DictItemAutocompleteDisplay[]> = ref([]);
+    const items: Ref<DictItemComboboxDisplay[]> = ref([]);
+    const filteredItems: Ref<DictItemComboboxDisplay[]> = ref([]);
     const searchItems: Ref<WordsInTextSearchPayloadItem[]> = ref([
       {
         uuids: [],
-        type: 'form/spelling' as 'form/spelling' | 'parse',
+        type: 'form/spelling/number' as 'form/spelling/number' | 'parse',
         numWordsBefore: null,
       },
     ]);
@@ -309,14 +328,13 @@ export default defineComponent({
     const results: Ref<WordsInTextsSearchResultRow[]> = ref([]);
     const total = ref(0);
     const checkboxAll: Ref<{ [uuid: string]: boolean }> = ref({});
-    const dictItemSelectionUuids: Ref<DictItemAutocompleteDisplay[][]> = ref(
-      []
-    );
+    const dictItemSelectionUuids: Ref<DictItemComboboxDisplay[][]> = ref([]);
     const expand: Ref<Boolean[]> = ref([]);
     const useParse: Ref<{ [index: number]: boolean }> = ref({});
     const dictItems: Ref<DictItemWordsInTextSearch[][]> = ref([]);
     const sequenced = useQueryParam('sequenced', 'true', true);
     const mode: Ref<string> = ref(sequenced.value);
+    const meetsRules: Ref<boolean> = ref(true);
     const queryText: { [key: string]: string | null } = reactive({
       ['queryText1']: '',
       ['queryText2']: '',
@@ -325,6 +343,7 @@ export default defineComponent({
       ['queryText5']: '',
     });
     const activeIndex = ref(0);
+    const numberRegex = new RegExp('^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$');
 
     const wordsBetween = ref([
       { name: '0', value: 0 },
@@ -365,9 +384,28 @@ export default defineComponent({
         text: 'Word Following Last Word Match',
         value: 'followingLastMatch',
       },
+      { text: 'Ascending Numbers', value: 'ascendingNum' },
+      { text: 'Descending Numbers', value: 'descendingNum' },
     ]);
 
     const sortBy: Ref<string> = ref(sortByItems.value[0].value);
+
+    const checkComboboxEntry = (item: any): boolean => {
+      if (item && typeof item === 'object' && Object.keys(item).length === 8) {
+        return true;
+      }
+      return false;
+    };
+
+    const rules = (items: any[]): boolean => {
+      meetsRules.value = true;
+      items.forEach(item => {
+        if (!numberRegex.test(item) && !checkComboboxEntry(item)) {
+          meetsRules.value = false;
+        }
+      });
+      return meetsRules.value;
+    };
 
     const canPerformSearch = computed(() => {
       let allowSearch = true;
@@ -386,13 +424,13 @@ export default defineComponent({
           break;
         }
       }
+      if (!meetsRules.value) {
+        allowSearch = false;
+      }
       return allowSearch;
     });
 
-    const filterItems = (
-      item: DictItemAutocompleteDisplay,
-      queryText: string
-    ) => {
+    const filterItems = (item: DictItemComboboxDisplay, queryText: string) => {
       let itemTextClean = item.name.toLocaleLowerCase();
       const queryTextClean = queryText.toLocaleLowerCase();
       if (
@@ -427,8 +465,8 @@ export default defineComponent({
     };
 
     const sortItems = (
-      a: DictItemAutocompleteDisplay,
-      b: DictItemAutocompleteDisplay,
+      a: DictItemComboboxDisplay,
+      b: DictItemComboboxDisplay,
       queryText: string
     ) => {
       const aName = a.name.toLocaleLowerCase();
@@ -464,7 +502,9 @@ export default defineComponent({
             sortBy: sortBy.value as
               | 'precedingFirstMatch'
               | 'followingLastMatch'
-              | 'textNameOnly',
+              | 'textNameOnly'
+              | 'ascendingNum'
+              | 'descendingNum',
           }
         );
         results.value = response.results;
@@ -486,7 +526,7 @@ export default defineComponent({
       activeIndex.value = index;
     };
 
-    const updateAutocomplete = (index: number) => {
+    const updateCombobox = (index: number) => {
       getDictItems(dictItemSelectionUuids.value[index - 1], index - 1);
       dictItemSelectionUuids.value[index - 1].length < 1
         ? expand.value.splice(index - 1, 1, false)
@@ -501,7 +541,7 @@ export default defineComponent({
         if (numOptionsUsing.value > 1 && !increase) {
           searchItems.value.splice(numOptionsUsing.value - 1, 1, {
             uuids: [],
-            type: 'form/spelling' as 'form/spelling' | 'parse',
+            type: 'form/spelling/number' as 'form/spelling/number' | 'parse',
             numWordsBefore: null,
           });
           numOptionsUsing.value -= 1;
@@ -516,22 +556,50 @@ export default defineComponent({
 
     const updateUseParse = async (index: number) => {
       useParse.value = { ...useParse.value, [index]: !useParse.value[index] };
-      if (searchItems.value[index].type === 'form/spelling') {
+      if (searchItems.value[index].type === 'form/spelling/number') {
         searchItems.value[index].type = 'parse';
       } else {
-        searchItems.value[index].type = 'form/spelling';
+        searchItems.value[index].type = 'form/spelling/number';
       }
       searchItems.value[index].uuids = [];
       searchItems.value.splice(index, 1, searchItems.value[index]);
       expand.value.splice(index, 1, false);
     };
 
-    const removeChip = (item: DictItemAutocompleteDisplay, idx: number) => {
+    const addAnyNumber = (index: number) => {
+      if (!dictItemSelectionUuids.value[index - 1]) {
+        dictItemSelectionUuids.value[index - 1] = [];
+        dictItemSelectionUuids.value.splice(1, 1, []);
+      }
+      dictItemSelectionUuids.value[index - 1].push({
+        uuid: '-1',
+        referenceUuid: '-1',
+        name: 'Any Number',
+        wordName: 'Any Number',
+        wordUuid: '-1',
+        translations: null,
+        formInfo: null,
+        type: 'number',
+      });
+      dictItemSelectionUuids.value[index - 1].splice(-1, 1, {
+        uuid: '-1',
+        referenceUuid: '-1',
+        name: 'Any Number',
+        wordName: 'Any Number',
+        wordUuid: '-1',
+        translations: null,
+        formInfo: null,
+        type: 'number',
+      });
+      updateCombobox(index);
+    };
+
+    const removeChip = (item: DictItemComboboxDisplay, idx: number) => {
       const index = dictItemSelectionUuids.value[idx - 1].indexOf(item);
       if (index >= 0) {
         dictItemSelectionUuids.value[idx - 1].splice(index, 1);
       }
-      updateAutocomplete(idx);
+      updateCombobox(idx);
     };
 
     const selectAll = (val: boolean | null, index: number, idx: number) => {
@@ -565,7 +633,7 @@ export default defineComponent({
       });
     };
 
-    const getAutocompleteItems = (index: number) => {
+    const getComboboxItems = (index: number) => {
       if (
         dictItemSelectionUuids.value[index - 1] &&
         dictItemSelectionUuids.value[index - 1].length > 0
@@ -579,14 +647,48 @@ export default defineComponent({
     };
 
     const getDictItems = (
-      selectedItems: DictItemAutocompleteDisplay[],
+      selectedItems: (DictItemComboboxDisplay | string)[],
       index: number
     ) => {
       dictItems.value[index] = [];
       searchItems.value[index].uuids = [];
       markSelectAllFalseOnRemoval(checkboxAll.value, index);
       selectedItems.forEach(selectedItem => {
-        if (selectedItem.uuid === selectedItem.referenceUuid) {
+        if (typeof selectedItem !== 'object') {
+          const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
+            name: selectedItem,
+            uuid: selectedItem,
+            childDictItems: [
+              {
+                uuid: selectedItem,
+                name: selectedItem,
+                type: 'number' as 'form' | 'spelling' | 'number',
+              },
+            ],
+          };
+          dictItems.value[index].push(dictItemWordsInTextSearch);
+          searchItems.value[index].uuids = [
+            ...(searchItems.value[index].uuids as string[]),
+            selectedItem,
+          ];
+        } else if (selectedItem.type === 'number') {
+          const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
+            name: selectedItem.name,
+            uuid: selectedItem.uuid,
+            childDictItems: [
+              {
+                uuid: selectedItem.uuid,
+                name: selectedItem.name,
+                type: 'number' as 'form' | 'spelling' | 'number',
+              },
+            ],
+          };
+          dictItems.value[index].push(dictItemWordsInTextSearch);
+          searchItems.value[index].uuids = [
+            ...(searchItems.value[index].uuids as string[]),
+            selectedItem.uuid,
+          ];
+        } else if (selectedItem.uuid === selectedItem.referenceUuid) {
           const childDictItems: ChildDictItem[] = items.value
             .filter(item => {
               if (
@@ -600,7 +702,7 @@ export default defineComponent({
               return {
                 uuid: item.uuid,
                 name: item.name,
-                type: item.type as 'form' | 'spelling',
+                type: item.type as 'form' | 'spelling' | 'number',
               };
             });
           const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
@@ -610,6 +712,7 @@ export default defineComponent({
           };
           dictItems.value[index].push(dictItemWordsInTextSearch);
           searchItems.value[index].uuids = [
+            ...(searchItems.value[index].uuids as string[]),
             ...childDictItems.map(({ uuid }) => uuid),
           ];
         } else {
@@ -628,7 +731,7 @@ export default defineComponent({
               return {
                 uuid: item.uuid,
                 name: item.name,
-                type: item.type as 'form' | 'spelling',
+                type: item.type as 'form' | 'spelling' | 'number',
               };
             });
           if (parentDictItem) {
@@ -747,7 +850,7 @@ export default defineComponent({
           useParse.value[i] = false;
           searchItems.value.push({
             uuids: [],
-            type: 'form/spelling' as 'form/spelling' | 'parse',
+            type: 'form/spelling/number' as 'form/spelling/number' | 'parse',
             numWordsBefore: null,
           });
         }
@@ -784,7 +887,7 @@ export default defineComponent({
       wordsBetween,
       numOptionsUsing,
       updateNumOptionsUsing,
-      updateAutocomplete,
+      updateCombobox,
       canPerformSearch,
       performSearch,
       selectAll,
@@ -792,7 +895,7 @@ export default defineComponent({
       dictItems,
       getDictItems,
       getNumDictItemsSelected,
-      getAutocompleteItems,
+      getComboboxItems,
       searchLoading,
       headers,
       total,
@@ -807,6 +910,8 @@ export default defineComponent({
       updateUseParse,
       setActiveIndex,
       removeChip,
+      rules,
+      addAnyNumber,
     };
   },
 });

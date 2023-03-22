@@ -36,6 +36,7 @@ import {
   ReorderSignPayload,
   MergeWordPayload,
   SplitLinePayload,
+  SplitWordPayload,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2140,6 +2141,70 @@ class EditTextUtils {
       })
       .where('object_on_tablet', '>', newObjectOnTablet)
       .update({ parent_uuid: lineRow.uuid });
+  }
+
+  async splitWord(
+    payload: SplitWordPayload,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knexWrite();
+    const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+    const discourseRow = await TextDiscourseDao.getDiscourseRowByUuid(
+      payload.discourseUuid,
+      trx
+    );
+
+    if (discourseRow.objInText === null) {
+      throw new Error('Discourse row has no objInText');
+    }
+
+    await TextDiscourseDao.incrementObjInText(
+      payload.textUuid,
+      discourseRow.objInText + 1,
+      1,
+      trx
+    );
+
+    await k('text_discourse').where({ uuid: payload.discourseUuid }).update({
+      spelling_uuid: payload.firstSpellingUuid,
+      spelling: payload.firstSpelling,
+      explicit_spelling: payload.firstSpelling,
+    });
+
+    const newDiscourseRow: TextDiscourseRow = {
+      uuid: v4(),
+      type: 'word',
+      objInText: discourseRow.objInText + 1,
+      wordOnTablet: null,
+      childNum: null,
+      textUuid: payload.textUuid,
+      treeUuid: discourseRow.treeUuid,
+      parentUuid: discourseRow.parentUuid,
+      spellingUuid: payload.secondSpellingUuid,
+      spelling: payload.secondSpelling,
+      explicitSpelling: payload.secondSpelling,
+      transcription: null,
+    };
+
+    await TextDiscourseDao.insertDiscourseRow(newDiscourseRow, trx);
+
+    const previousObjectOnTablet: number = await k('text_epigraphy')
+      .where({
+        text_uuid: payload.textUuid,
+        uuid: payload.previousUuid,
+      })
+      .select('object_on_tablet')
+      .first()
+      .then(row => row.object_on_tablet);
+
+    await k('text_epigraphy')
+      .where({
+        discourse_uuid: payload.discourseUuid,
+        text_uuid: payload.textUuid,
+      })
+      .where('object_on_tablet', '>', previousObjectOnTablet)
+      .update({ discourse_uuid: newDiscourseRow.uuid });
   }
 
   async mergeLines(
