@@ -67,7 +67,7 @@ export default defineComponent({
     DiscourseReading,
     TextSourceReading,
   },
-  setup(props) {
+  setup() {
     const store = sl.get('store');
 
     const canViewDiscourses = computed(() =>
