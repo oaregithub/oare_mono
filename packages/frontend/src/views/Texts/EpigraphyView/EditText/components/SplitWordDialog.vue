@@ -4,13 +4,11 @@
     @input="$emit('input', $event)"
     :persistent="false"
     :submitLoading="splitWordLoading"
-    :submitDisabled="
-      step === 1 ? splitIndex === undefined : !formsLoaded || !formsLoaded2
-    "
-    @submit="step === 1 ? step++ : splitWord()"
-    :submitText="step === 1 ? 'Next' : 'Submit'"
+    :submitDisabled="submitDisabled"
+    @submit="step === 1 || step === 2 ? step++ : splitWord()"
+    :submitText="step === 1 || step === 2 ? 'Next' : 'Submit'"
     :width="600"
-    :showActionButton="step === 2"
+    :showActionButton="step === 2 || step === 3"
     actionButtonText="Back"
     @action="goBack"
     title="Split Word/Number"
@@ -104,6 +102,48 @@
         </v-row>
       </div>
     </div>
+
+    <div v-if="step === 3">
+      <v-row class="ma-0" justify="center">
+        Select the new word(s) where existing properties should be transferred
+        to.
+      </v-row>
+
+      <v-row class="ma-0" justify="center">
+        You may select one, both, or none of the new words.
+      </v-row>
+
+      <v-row class="ma-0 mx-10" justify="center">
+        <v-col cols="3" />
+        <v-col cols="3">
+          <v-row class="ma-0" justify="center">
+            <b v-html="getUpdatedSignsWithSeparators()[0]" />
+          </v-row>
+          <v-row class="ma-0" justify="center">
+            <v-checkbox
+              hide-details
+              v-model="propertySelections"
+              :value="0"
+              multiple
+            />
+          </v-row>
+        </v-col>
+        <v-col cols="3">
+          <v-row class="ma-0" justify="center">
+            <b v-html="getUpdatedSignsWithSeparators()[1]" />
+          </v-row>
+          <v-row class="ma-0" justify="center">
+            <v-checkbox
+              hide-details
+              v-model="propertySelections"
+              :value="1"
+              multiple
+            />
+          </v-row>
+        </v-col>
+        <v-col cols="3" />
+      </v-row>
+    </div>
   </oare-dialog>
 </template>
 
@@ -171,6 +211,10 @@ export default defineComponent({
           throw new Error('No discourse UUID');
         }
 
+        if (propertySelections.value.length > 2) {
+          throw new Error('Too many property selections');
+        }
+
         const previousUuid = props.word.signs[splitIndex.value].uuid;
 
         const payload: SplitWordPayload = {
@@ -182,6 +226,7 @@ export default defineComponent({
           secondSpelling: newSpellings[1],
           secondSpellingUuid: spellingUuid2.value || null,
           previousUuid,
+          propertySelections: propertySelections.value,
         };
 
         await server.editText(payload);
@@ -199,9 +244,15 @@ export default defineComponent({
     };
 
     const goBack = () => {
-      step.value = 1;
-      spellingUuid.value = undefined;
-      spellingUuid2.value = undefined;
+      step.value -= 1;
+      if (step.value === 1) {
+        spellingUuid.value = undefined;
+        spellingUuid2.value = undefined;
+        formsLoaded.value = false;
+        formsLoaded2.value = false;
+      } else if (step.value === 2) {
+        propertySelections.value = [0];
+      }
     };
 
     const spellingUuid = ref<string>();
@@ -309,6 +360,18 @@ export default defineComponent({
         };
       });
 
+    const submitDisabled = computed(() => {
+      if (step.value === 1) {
+        return splitIndex.value === undefined;
+      }
+      if (step.value === 2) {
+        return !formsLoaded.value || !formsLoaded2.value;
+      }
+      return false;
+    });
+
+    const propertySelections = ref<number[]>([0]);
+
     return {
       splitWordLoading,
       step,
@@ -322,6 +385,8 @@ export default defineComponent({
       getUpdatedSignsWithSeparators,
       editorDiscourseWord1,
       editorDiscourseWord2,
+      submitDisabled,
+      propertySelections,
     };
   },
 });

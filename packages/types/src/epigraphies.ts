@@ -645,6 +645,7 @@ export interface SplitWordPayload extends EditTextPayloadBase {
   firstSpellingUuid: string | null;
   secondSpelling: string;
   secondSpellingUuid: string | null;
+  propertySelections: number[];
 }
 
 export interface MergeLinePayload extends EditTextPayloadBase {

@@ -37,6 +37,7 @@ import {
   MergeWordPayload,
   SplitLinePayload,
   SplitWordPayload,
+  InsertItemPropertyRow,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2149,6 +2150,7 @@ class EditTextUtils {
   ): Promise<void> {
     const k = trx || knexWrite();
     const TextDiscourseDao = sl.get('TextDiscourseDao');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
     const discourseRow = await TextDiscourseDao.getDiscourseRowByUuid(
       payload.discourseUuid,
@@ -2205,6 +2207,66 @@ class EditTextUtils {
       })
       .where('object_on_tablet', '>', previousObjectOnTablet)
       .update({ discourse_uuid: newDiscourseRow.uuid });
+
+    if (payload.propertySelections.length === 0) {
+      await k('item_properties')
+        .where({ reference_uuid: payload.discourseUuid })
+        .del();
+    } else if (payload.propertySelections.length === 1) {
+      if (payload.propertySelections[0] === 1) {
+        await k('item_properties')
+          .where({ reference_uuid: payload.discourseUuid })
+          .update({ reference_uuid: newDiscourseRow.uuid });
+      }
+    } else if (payload.propertySelections.length === 2) {
+      const existingProperties = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+        payload.discourseUuid,
+        trx
+      );
+
+      const newRowsWithUuids: InsertItemPropertyRow[] = existingProperties.map(
+        row => ({
+          uuid: v4(),
+          referenceUuid: newDiscourseRow.uuid,
+          parentUuid: null,
+          level: row.level,
+          variableUuid: row.variableUuid,
+          valueUuid: row.valueUuid,
+          objectUuid: row.objectUuid,
+          value: row.value,
+        })
+      );
+
+      const newRowsWithParentUuids: InsertItemPropertyRow[] = newRowsWithUuids.map(
+        (row, idx) => {
+          const originalParentUuid = existingProperties[idx].parentUuid;
+          const parentIndex = existingProperties.findIndex(
+            prop => prop.uuid === originalParentUuid
+          );
+          const parentUuid =
+            parentIndex === -1 ? null : newRowsWithUuids[parentIndex].uuid;
+
+          return {
+            ...row,
+            parentUuid: parentUuid || null,
+          };
+        }
+      );
+
+      const itemPropertyRowLevels = [
+        ...new Set(newRowsWithParentUuids.map(row => row.level)),
+      ];
+      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+        level => newRowsWithParentUuids.filter(row => row.level === level)
+      );
+
+      for (let i = 0; i < rowsByLevel.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all(
+          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
+        );
+      }
+    }
   }
 
   async mergeLines(
