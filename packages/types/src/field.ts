@@ -11,10 +11,19 @@ export interface NewFieldPayload {
   referenceUuid: string;
   description: string;
   primacy: number;
+  location?: 'taxonomyTree' | 'archive';
 }
 
 export interface EditFieldPayload {
   uuid: string;
   description: string;
   primacy: number;
+  location?: 'taxonomyTree' | 'archive';
+}
+
+export interface DeleteFieldPayload {
+  uuid: string;
+  referenceUuid: string;
+  primacy: number;
+  location?: 'taxonomyTree' | 'archive';
 }

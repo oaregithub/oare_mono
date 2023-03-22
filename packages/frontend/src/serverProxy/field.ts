@@ -1,5 +1,10 @@
 import axios from '@/axiosInstance';
-import { EditFieldPayload, FieldInfo, NewFieldPayload } from '@oare/types';
+import {
+  DeleteFieldPayload,
+  EditFieldPayload,
+  FieldInfo,
+  NewFieldPayload,
+} from '@oare/types';
 
 async function updatePropertyDescriptionField(
   payload: EditFieldPayload
@@ -17,6 +22,12 @@ async function createNewPropertyDescriptionField(
   });
 }
 
+async function deletePropertyDescriptionField(
+  payload: DeleteFieldPayload
+): Promise<void> {
+  await axios.delete('/update_field_description', { data: payload });
+}
+
 async function getFieldInfo(referenceUuid: string): Promise<FieldInfo> {
   const { data } = await axios.get(`/field_description/${referenceUuid}`);
   return data;
@@ -25,5 +36,6 @@ async function getFieldInfo(referenceUuid: string): Promise<FieldInfo> {
 export default {
   updatePropertyDescriptionField,
   createNewPropertyDescriptionField,
+  deletePropertyDescriptionField,
   getFieldInfo,
 };

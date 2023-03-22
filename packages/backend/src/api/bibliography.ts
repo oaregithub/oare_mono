@@ -94,4 +94,75 @@ router
     }
   });
 
+router
+  .route('/bibliography/:uuid')
+  .get(
+    permissionsRoute('BIBLIOGRAPHY'),
+    cacheMiddleware<BibliographyResponse>(noFilter),
+    async (req, res, next) => {
+      try {
+        const uuid = req.params.uuid as string;
+        const BibliographyDao = sl.get('BibliographyDao');
+        const BibliographyUtils = sl.get('BibliographyUtils');
+        const ResourceDao = sl.get('ResourceDao');
+        const cache = sl.get('cache');
+
+        const citationStyle = 'chicago-author-date';
+
+        const bibliography = await BibliographyDao.getBibliographyByUuid(uuid);
+
+        const zoteroResponse = await BibliographyUtils.getZoteroReferences(
+          bibliography,
+          citationStyle,
+          ['bib', 'data']
+        );
+        const { fileUrl } = await ResourceDao.getPDFUrlByBibliographyUuid(
+          bibliography.uuid
+        );
+
+        const biblioResponse: BibliographyResponse = {
+          title:
+            zoteroResponse && zoteroResponse.data && zoteroResponse.data.title
+              ? zoteroResponse.data.title
+              : null,
+          authors:
+            zoteroResponse &&
+            zoteroResponse.data &&
+            zoteroResponse.data.creators
+              ? zoteroResponse.data.creators
+                  .filter(creator => creator.creatorType === 'author')
+                  .map(creator => `${creator.firstName} ${creator.lastName}`)
+              : [],
+          date:
+            zoteroResponse && zoteroResponse.data && zoteroResponse.data.date
+              ? zoteroResponse.data.date
+              : null,
+          bibliography: {
+            bib:
+              zoteroResponse && zoteroResponse.bib ? zoteroResponse.bib : null,
+            url: fileUrl || null,
+          },
+          itemType:
+            zoteroResponse &&
+            zoteroResponse.data &&
+            zoteroResponse.data.itemType
+              ? zoteroResponse.data.itemType
+              : null,
+          uuid: bibliography.uuid,
+        } as BibliographyResponse;
+
+        const response = await cache.insert<BibliographyResponse>(
+          { req },
+          biblioResponse,
+          noFilter,
+          60 * 60 * 24 * 30 * 6
+        );
+
+        res.json(response);
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
+    }
+  );
+
 export default router;

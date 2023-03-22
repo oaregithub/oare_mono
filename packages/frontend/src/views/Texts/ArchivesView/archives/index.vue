@@ -5,12 +5,27 @@
         <router-link to="/archives">Back to Archive List</router-link>
       </v-row>
       <v-row class="ma-0">
+        <archive-info-component
+          :archive="{
+            name: archiveName,
+            uuid: archiveUuid,
+            descriptions,
+            totalDossiers,
+            totalTexts,
+            bibliographyUuid,
+          }"
+          :showRouterLink="false"
+          :allowCUD="isAdmin"
+          @refresh-page="getArchive"
+        />
+      </v-row>
+      <v-row class="ma-0">
         <v-radio-group v-model="DossiersOrTexts" row>
           <v-radio label="Dossiers" value="Dossiers"></v-radio>
           <v-radio label="Texts" value="Texts"></v-radio>
         </v-radio-group>
       </v-row>
-      <v-row class="ma-0">
+      <v-row>
         <v-col cols="4">
           <v-text-field
             v-model="search"
@@ -39,10 +54,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, watch } from '@vue/composition-api';
+import {
+  computed,
+  defineComponent,
+  ref,
+  Ref,
+  watch,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { Text, DossierInfo } from '@oare/types';
+import { Text, DossierInfo, FieldInfo } from '@oare/types';
 import ArchiveTextsDossiers from './ArchiveTextsDossiers.vue';
+import ArchiveInfoComponent from './ArchiveInfo.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import _ from 'underscore';
 
@@ -50,6 +72,7 @@ export default defineComponent({
   name: 'ArchiveView',
   components: {
     ArchiveTextsDossiers,
+    ArchiveInfoComponent,
   },
   props: {
     archiveUuid: {
@@ -62,6 +85,7 @@ export default defineComponent({
     const loading = ref(false);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
+    const store = sl.get('store');
     const DossiersOrTexts = ref('Dossiers');
     const archive = ref();
     const archiveName = ref('');
@@ -69,9 +93,20 @@ export default defineComponent({
     const dossiersInfo: Ref<DossierInfo[] | null> = ref([]);
     const totalTexts = ref(0);
     const totalDossiers = ref(0);
+    const bibliography: Ref<string | null> = ref(null);
+    const bibliographyUuid: Ref<string> = ref('');
+    const descriptions: Ref<FieldInfo[]> = ref([]);
     const page = useQueryParam('page', '1', false);
     const rows = useQueryParam('rows', '10', true);
     const search = useQueryParam('query', '', true);
+
+    const canViewBibliography = computed(() =>
+      store.hasPermission('BIBLIOGRAPHY')
+    );
+
+    const isAdmin = computed(() => {
+      store.getters.isAdmin;
+    });
 
     const getArchive = async () => {
       if (loading.value) {
@@ -89,6 +124,14 @@ export default defineComponent({
         dossiersInfo.value = archive.value.dossiersInfo;
         totalTexts.value = archive.value.totalTexts;
         totalDossiers.value = archive.value.totalDossiers;
+        descriptions.value = archive.value.descriptions;
+        bibliographyUuid.value = archive.value.bibliographyUuid;
+        if (canViewBibliography.value) {
+          bibliography.value = bibliographyUuid.value
+            ? (await server.getBibliography(archive.value.bibliographyUuid))
+                .bibliography.bib
+            : null;
+        }
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading archive dossiers and texts. Please try again.',
@@ -133,6 +176,12 @@ export default defineComponent({
       search,
       totalTexts,
       totalDossiers,
+      bibliography,
+      bibliographyUuid,
+      canViewBibliography,
+      descriptions,
+      getArchive,
+      isAdmin,
     };
   },
 });
