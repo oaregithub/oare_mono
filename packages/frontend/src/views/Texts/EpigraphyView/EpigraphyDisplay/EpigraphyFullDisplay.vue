@@ -1,7 +1,7 @@
 <template>
   <div>
     <EpigraphyReading
-      class="test-epigraphies"
+      class="test-epigraphies mt-n8"
       :epigraphicUnits="epigraphicUnits"
       :discourseToHighlight="discourseToHighlight"
       :localDiscourseInfo="localDiscourseInfo"

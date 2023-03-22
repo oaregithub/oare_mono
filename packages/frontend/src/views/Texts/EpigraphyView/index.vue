@@ -66,13 +66,6 @@
         >
           <v-icon small>mdi-content-copy</v-icon>
         </v-btn>
-        <v-btn
-          v-if="canComment"
-          color="primary"
-          @click="toggleCommentMode"
-          class="mx-2"
-          >Commenting: {{ commentMode ? 'on' : 'off' }}</v-btn
-        >
       </div>
     </template>
     <v-row>
@@ -81,7 +74,7 @@
         :sm="canViewEpigraphyImages ? 7 : 12"
         :md="canViewEpigraphyImages ? 5 : 12"
       >
-        <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
+        <v-row class="ma-0" v-if="textInfo.hasEpigraphy">
           <v-icon
             v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
@@ -190,6 +183,15 @@
             </div>
           </div>
         </v-row>
+        <v-row v-if="textInfo.hasEpigraphy"
+          ><v-switch
+            v-if="canComment"
+            color="primary"
+            v-model="commentMode"
+            class="ml-3"
+            label="Comment Mode"
+          ></v-switch
+        ></v-row>
         <div v-if="allowViewCitations && zoteroDataList.length">
           <div v-for="(zotero, idx) in zoteroDataList" :key="idx">
             <div v-if="idx <= 1 || seeMoreZotero">
@@ -230,7 +232,6 @@
             </v-btn>
           </div>
         </div>
-        <br />
 
         <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
@@ -739,10 +740,6 @@ export default defineComponent({
       seeMoreZotero.value = !seeMoreZotero.value;
     };
 
-    const toggleCommentMode = () => {
-      commentMode.value = !commentMode.value;
-    };
-
     return {
       textInfo,
       isEditing,
@@ -781,7 +778,6 @@ export default defineComponent({
       hasBetaAccess,
       canComment,
       commentMode,
-      toggleCommentMode,
     };
   },
 });
