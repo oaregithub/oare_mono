@@ -15,9 +15,7 @@ describe('PersonsView test', () => {
   };
 
   const mockServer = {
-    getPersons: jest.fn().mockResolvedValue({
-      years: [],
-    }),
+    getPersons: jest.fn().mockResolvedValue([]),
   };
 
   const createWrapper = ({ server } = {}) => {
@@ -27,6 +25,10 @@ describe('PersonsView test', () => {
     return mount(PersonsView, {
       vuetify,
       localVue,
+      stubs: ['router-link'],
+      propsData: {
+        letter: 'A',
+      },
     });
   };
 

@@ -5,7 +5,7 @@ import {
   DictionaryWordTypes,
   Word,
   DisplayableWord,
-  DictItemAutocompleteDisplay,
+  DictItemComboboxDisplay,
   DictionaryWordRow,
   DictionarySearchRow,
 } from '@oare/types';
@@ -15,7 +15,7 @@ import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import {
   assembleSearchResult,
-  assembleAutocompleteDisplay,
+  assembleComboboxDisplay,
   WordFormSpellingType,
 } from './utils';
 import FieldDao from '../FieldDao';
@@ -540,8 +540,8 @@ class DictionaryWordDao {
         wordUuid: spelling.wordUuid,
       })),
     ] as WordFormSpellingType[];
-    const results: DictItemAutocompleteDisplay[] = await Promise.all(
-      wordFormSpellingArray.map(item => assembleAutocompleteDisplay(item))
+    const results: DictItemComboboxDisplay[] = await Promise.all(
+      wordFormSpellingArray.map(item => assembleComboboxDisplay(item))
     );
     return results;
   }

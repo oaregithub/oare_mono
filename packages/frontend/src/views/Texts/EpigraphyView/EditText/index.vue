@@ -6,60 +6,10 @@
     <v-card min-height="800px" class="pt-6" v-if="renderer" flat outlined>
       <edit-actions
         :currentEditAction="currentEditAction"
+        :renderer="renderer"
+        :currentSide="selectedSide"
         @reset-current-edit-action="currentEditAction = undefined"
-        @add-side="currentEditAction = 'addSide'"
-        @add-column="currentEditAction = 'addColumn'"
-        @add-region="currentEditAction = 'addRegion'"
-        @add-region-broken="currentEditAction = 'addRegionBroken'"
-        @add-region-ruling="currentEditAction = 'addRegionRuling'"
-        @add-region-seal-impression="
-          currentEditAction = 'addRegionSealImpression'
-        "
-        @add-region-uninscribed="currentEditAction = 'addRegionUninscribed'"
-        @add-line="currentEditAction = 'addLine'"
-        @add-undetermined-lines="currentEditAction = 'addUndeterminedLines'"
-        @add-word="currentEditAction = 'addWord'"
-        @add-sign="currentEditAction = 'addSign'"
-        @add-undetermined-signs="currentEditAction = 'addUndeterminedSigns'"
-        @add-divider="currentEditAction = 'addDivider'"
-        @edit-side="currentEditAction = 'editSide'"
-        @edit-column="currentEditAction = 'editColumn'"
-        @edit-region-broken="currentEditAction = 'editRegionBroken'"
-        @edit-region-ruling="currentEditAction = 'editRegionRuling'"
-        @edit-region-seal-impression="
-          currentEditAction = 'editRegionSealImpression'
-        "
-        @edit-region-uninscribed="currentEditAction = 'editRegionUninscribed'"
-        @edit-undetermined-lines="currentEditAction = 'editUndeterminedLines'"
-        @edit-sign="currentEditAction = 'editSign'"
-        @edit-undetermined-signs="currentEditAction = 'editUndeterminedSigns'"
-        @edit-divider="currentEditAction = 'editDivider'"
-        @split-line="currentEditAction = 'splitLine'"
-        @split-word="currentEditAction = 'splitWord'"
-        @merge-line="currentEditAction = 'mergeLine'"
-        @merge-word="currentEditAction = 'mergeWord'"
-        @reorder-sign="currentEditAction = 'reorderSign'"
-        @clean-line="currentEditAction = 'cleanLine'"
-        @remove-side="currentEditAction = 'removeSide'"
-        @remove-column="currentEditAction = 'removeColumn'"
-        @remove-region-broken="currentEditAction = 'removeRegionBroken'"
-        @remove-region-ruling="currentEditAction = 'removeRegionRuling'"
-        @remove-region-seal-impression="
-          currentEditAction = 'removeRegionSealImpression'
-        "
-        @remove-region-uninscribed="
-          currentEditAction = 'removeRegionUninscribed'
-        "
-        @remove-line="currentEditAction = 'removeLine'"
-        @remove-undetermined-lines="
-          currentEditAction = 'removeUndeterminedLines'
-        "
-        @remove-word="currentEditAction = 'removeWord'"
-        @remove-sign="currentEditAction = 'removeSign'"
-        @remove-undetermined-signs="
-          currentEditAction = 'removeUndeterminedSigns'
-        "
-        @remove-divider="currentEditAction = 'removeDivider'"
+        @set-action="currentEditAction = $event"
         @close-editor="closeEditor"
       />
       <v-row class="ma-0">
@@ -291,6 +241,11 @@ export default defineComponent({
       return sideTypes.value.filter(type =>
         renderer.value!.sides.map(side => side.side).includes(type)
       );
+    });
+    watch(selectedSide, () => {
+      if (currentEditAction.value) {
+        currentEditAction.value = undefined;
+      }
     });
 
     const currentEditAction = ref<EditTextAction>();

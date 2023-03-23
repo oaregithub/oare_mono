@@ -71,22 +71,29 @@ export function setDiscourseReading(discourse: DiscourseUnit): void {
     .join(' ');
 }
 
-export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
-  spellingUuids: string[][],
+export function getDiscourseAndTextUuidsQuery(
+  searchItems: string[][],
   numWordsBetween: (number | null)[],
   textsToHide: string[],
   sequenced: boolean,
-  sortBy: 'precedingFirstMatch' | 'followingLastMatch' | 'textNameOnly',
+  sortBy:
+    | 'precedingFirstMatch'
+    | 'followingLastMatch'
+    | 'textNameOnly'
+    | 'ascendingNum'
+    | 'descendingNum',
   trx?: Knex.Transaction
 ) {
   const k = trx || knexRead();
-  let query = k('text_discourse as td0').whereIn(
-    'td0.spelling_uuid',
-    spellingUuids[0]
-  );
-  if (spellingUuids.length > 1) {
+  let query = k('text_discourse as td0').where(qb => {
+    qb.whereIn('td0.spelling_uuid', searchItems[0]).orWhereIn(
+      'td0.uuid',
+      searchItems[0]
+    );
+  });
+  if (searchItems.length > 1) {
     query = query.modify(qb => {
-      for (let i = 1; i < spellingUuids.length; i += 1) {
+      for (let i = 1; i < searchItems.length; i += 1) {
         qb.join(`text_discourse as td${i}`, function () {
           this.on(`td${i}.text_uuid`, `td${sequenced ? i - 1 : 0}.text_uuid`);
           const currentNumWordsBetween: number = numWordsBetween[i] ?? -1;
@@ -117,7 +124,12 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
               )
             );
           }
-        }).whereIn(`td${i}.spelling_uuid`, spellingUuids[i]);
+        }).where(function () {
+          this.whereIn(`td${i}.spelling_uuid`, searchItems[i]).orWhereIn(
+            `td${i}.uuid`,
+            searchItems[i]
+          );
+        });
       }
     });
   }
@@ -132,12 +144,12 @@ export function getDiscourseAndTextUuidsByWordOrFormUuidsQuery(
   if (sortBy === 'followingLastMatch') {
     query.leftJoin('text_discourse as td_orderBy', function () {
       this.on(
-        `td${spellingUuids.length - 1}.text_uuid`,
+        `td${searchItems.length - 1}.text_uuid`,
         'td_orderBy.text_uuid'
       ).andOn(
         k.raw(
           `td_orderBy.word_on_tablet = (td${
-            spellingUuids.length - 1
+            searchItems.length - 1
           }.word_on_tablet + 1)`
         )
       );

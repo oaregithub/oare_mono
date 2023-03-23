@@ -12,19 +12,60 @@
       >Select the side you would like to edit and then select the side
       designation you would like to change it to.</v-row
     >
-    <v-row class="ma-0 mt-4">Current Side Designation</v-row>
+    <v-row class="ma-0 mt-4">Side You Want to Edit</v-row>
     <v-row class="ma-0">
-      <v-select
-        outlined
-        dense
-        :items="alreadyUsedSides"
-        v-model="originalSide"
-      />
+      <v-select outlined dense :items="alreadyUsedSides" v-model="originalSide">
+        <template #item="{ item, attrs, on }">
+          <v-list-item v-bind="attrs" v-on="on">
+            <v-list-item-content>
+              <v-list-item-title
+                >{{ item }}
+                <v-menu v-if="item === 'obv. ii'" offset-y open-on-hover bottom>
+                  <template #activator="{ on, attrs }">
+                    <v-icon v-bind="attrs" v-on="on" small class="ml-1 mr-n2">
+                      mdi-information-outline
+                    </v-icon>
+                  </template>
+                  <v-card class="pa-3">
+                    <span>
+                      For use only when writer continues from u.e. onto obv.
+                      near end of text.
+                    </span>
+                  </v-card>
+                </v-menu>
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template></v-select
+      >
     </v-row>
 
-    <v-row class="ma-0">New Side Designation</v-row>
+    <v-row class="ma-0">New Designation for Side</v-row>
     <v-row class="ma-0">
-      <v-select outlined dense :items="usableSides" v-model="newSide" />
+      <v-select outlined dense :items="usableSides" v-model="newSide">
+        <template #item="{ item, attrs, on }">
+          <v-list-item v-bind="attrs" v-on="on">
+            <v-list-item-content>
+              <v-list-item-title
+                >{{ item }}
+                <v-menu v-if="item === 'obv. ii'" offset-y open-on-hover bottom>
+                  <template #activator="{ on, attrs }">
+                    <v-icon v-bind="attrs" v-on="on" small class="ml-1 mr-n2">
+                      mdi-information-outline
+                    </v-icon>
+                  </template>
+                  <v-card class="pa-3">
+                    <span>
+                      For use only when writer continues from u.e. onto obv.
+                      near end of text.
+                    </span>
+                  </v-card>
+                </v-menu>
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+      </v-select>
     </v-row>
   </oare-dialog>
 </template>
