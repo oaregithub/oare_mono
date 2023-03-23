@@ -68,6 +68,7 @@ import SealsView from '../views/Seals/SealList.vue';
 import SealView from '../views/Seals/SingleSeal.vue';
 import EditText from '../views/Texts/EpigraphyView/EditText/index.vue';
 import PeriodsView from '../views/Periods/Periods.vue';
+import IndivPerson from '../views/Persons/IndivPerson.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -491,6 +492,13 @@ const routes: RouteConfig[] = [
     name: 'periods',
     component: PeriodsView,
     beforeEnter: permissionGuard('PERIODS'),
+  },
+  {
+    path: '/person/:uuid',
+    name: 'person',
+    component: IndivPerson,
+    props: true,
+    beforeEnter: permissionGuard('PERSONS'),
   },
   // Defaults to 404 Not Found view if no route matches. This MUST be the last route.
   {

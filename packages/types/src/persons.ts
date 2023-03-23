@@ -1,5 +1,4 @@
 import { ItemPropertyRow } from './words';
-import { SearchTextsResultRow } from './search';
 import { FieldRow } from './field';
 
 export interface PersonRow {
