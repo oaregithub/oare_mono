@@ -2,6 +2,7 @@ import {
   Pagination,
   PersonInfo,
   PersonListItem,
+  PersonRoleResponse,
   TextOccurrencesCountResponseItem,
   TextOccurrencesResponseRow,
 } from '@oare/types';
@@ -49,10 +50,16 @@ async function getPersonInfo(uuid: string): Promise<PersonInfo> {
   return data;
 }
 
+async function getPersonRoles(personUuid: string): Promise<PersonRoleResponse> {
+  const { data } = await axios.get(`/person/role/${personUuid}`);
+  return data;
+}
+
 export default {
   getPersons,
   getPersonsOccurrencesCounts,
   getPersonsOccurrencesTexts,
   disconnectPersons,
   getPersonInfo,
+  getPersonRoles,
 };

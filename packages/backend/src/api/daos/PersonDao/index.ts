@@ -16,22 +16,35 @@ class PersonDao {
     uuid: string,
     userUuid: string | null,
     pagination: Partial<Pagination> = {},
+    roleUuid?: string,
     trx?: Knex.Transaction
   ): Promise<number> {
     const k = trx || knexRead();
     const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
     const discourseUuids = await k('item_properties')
-      .pluck('reference_uuid')
-      .where('object_uuid', uuid)
-      .whereIn('reference_uuid', k('text_discourse').select('uuid'));
+      .pluck('item_properties.reference_uuid')
+      .where('item_properties.object_uuid', uuid)
+      .whereIn(
+        'item_properties.reference_uuid',
+        k('text_discourse').select('uuid')
+      )
+      .modify(qb => {
+        if (roleUuid) {
+          qb.innerJoin(
+            'item_properties AS ip2',
+            'item_properties.reference_uuid',
+            'ip2.reference_uuid'
+          ).where('ip2.value_uuid', roleUuid);
+        }
+      });
 
     const count = await k('text_discourse')
       .countDistinct({ count: 'text_discourse.uuid' })
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
       .whereIn('text_discourse.uuid', discourseUuids)
-      .whereNotIn('text.uuid', textsTohide)
+      .whereNotIn('text.uuid', textsToHide)
       .modify(qb => {
         if (pagination.filter) {
           qb.where('text.display_name', 'like', `%${pagination.filter}%`);
@@ -218,12 +231,16 @@ class PersonDao {
   async getPersonRoles(
     personUuid: string,
     type: 'temporary' | 'durable',
+    userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<PersonRole[]> {
     const k = trx || knexRead();
     const rolesList = await this.getRolesList(type, trx);
-    const roles = await k('item_properties AS ip1')
-      .select('ip1.value_uuid AS roleUuid', 'a1.name AS role')
+    const roles: {
+      role: string;
+      roleUuid: string;
+    }[] = await k('item_properties AS ip1')
+      .distinct('ip1.value_uuid AS roleUuid', 'a1.name AS role')
       .innerJoin('alias AS a1', 'ip1.value_uuid', 'a1.reference_uuid')
       .innerJoin(
         'item_properties AS ip2',
@@ -234,7 +251,22 @@ class PersonDao {
       .where('a1.type', 'label')
       .where('ip2.object_uuid', personUuid)
       .whereIn('ip1.value_uuid', rolesList);
-    return roles;
+    const occurrences = await Promise.all(
+      roles.map(role =>
+        this.getPersonOccurrencesCount(
+          personUuid,
+          userUuid,
+          undefined,
+          role.roleUuid,
+          trx
+        )
+      )
+    );
+    const rolesWithOccurrences = roles.map((role, idx) => ({
+      ...role,
+      occurrences: occurrences[idx],
+    }));
+    return rolesWithOccurrences.filter(role => role.occurrences > 0);
   }
 
   async getPersonsByRelation(
@@ -444,12 +476,6 @@ class PersonDao {
       '6fb177f5-dfb5-0eb8-c288-b62b367ea360',
       trx
     );
-    const durableRoles = await this.getPersonRoles(personUuid, 'durable', trx);
-    const temporaryRoles = await this.getPersonRoles(
-      personUuid,
-      'temporary',
-      trx
-    );
 
     const discussion = await FieldDao.getByReferenceUuid(personUuid, trx);
 
@@ -463,8 +489,6 @@ class PersonDao {
       husbands,
       siblings,
       children,
-      durableRoles,
-      temporaryRoles,
       discussion,
     };
   }

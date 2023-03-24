@@ -28,6 +28,12 @@ export interface PersonCore {
 export interface PersonRole {
   role: string;
   roleUuid: string;
+  occurrences: number;
+}
+
+export interface PersonRoleResponse {
+  temporaryRoles: PersonRole[];
+  durableRoles: PersonRole[];
 }
 
 export interface PersonInfo {
@@ -40,7 +46,5 @@ export interface PersonInfo {
   husbands: PersonCore[];
   siblings: PersonCore[];
   children: PersonCore[];
-  durableRoles: PersonRole[];
   discussion: FieldRow[];
-  temporaryRoles: PersonRole[];
 }

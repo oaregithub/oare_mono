@@ -9,6 +9,7 @@ import {
   ItemPropertyRow,
   TextOccurrencesCountResponseItem,
   PersonInfo,
+  PersonRoleResponse,
 } from '@oare/types';
 import { noFilter } from '@/cache/filters';
 
@@ -177,5 +178,33 @@ router
       }
     }
   );
+
+router
+  .route('/person/role/:uuid')
+  .get(permissionsRoute('PERSONS'), async (req, res, next) => {
+    try {
+      const PersonDao = sl.get('PersonDao');
+      const { uuid } = req.params;
+      const userUuid = req.user ? req.user.uuid : null;
+
+      const temporaryRoles = await PersonDao.getPersonRoles(
+        uuid,
+        'temporary',
+        userUuid
+      );
+      const durableRoles = await PersonDao.getPersonRoles(
+        uuid,
+        'durable',
+        userUuid
+      );
+      const response: PersonRoleResponse = {
+        temporaryRoles,
+        durableRoles,
+      };
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 export default router;
