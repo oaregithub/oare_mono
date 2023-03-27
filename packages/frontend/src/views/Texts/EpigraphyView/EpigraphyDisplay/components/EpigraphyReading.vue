@@ -96,18 +96,70 @@
                     <v-card min-width="70" tile flat>
                       <div>
                         <span
+                          v-show="!commentMode"
                           v-html="formatWord(word)"
                           class="cursor-display text-no-wrap test-rendered-word"
                           @click="openDialog(word.discourseUuid)"
-                        >
+                        ></span>
+                        <span v-show="commentMode">
+                          <span
+                            v-for="(sign, index) in word.signs"
+                            :key="index"
+                          >
+                            <UtilList
+                              @comment-clicked="
+                                openComment(
+                                  sign.uuid,
+                                  sign.reading ? sign.reading : '',
+                                  word.reading
+                                )
+                              "
+                              :hasEdit="false"
+                              :hasDelete="false"
+                              :hideMenu="!canComment"
+                            >
+                              <template #activator="{ on, attrs }">
+                                <span
+                                  v-html="`${sign.reading}${sign.separator}`"
+                                  v-on="on"
+                                  v-bind="attrs"
+                                  class="cursor-display"
+                                />
+                              </template>
+                            </UtilList>
+                          </span>
                         </span>
                       </div>
                       <div v-if="word.word && !word.isNumber">
                         <span
+                          v-show="!commentMode"
                           v-html="`<b>${word.word}</b>`"
                           class="cursor-display text-no-wrap test-rendered-word"
                           @click="openDialog(word.discourseUuid)"
                         ></span>
+                        <span v-show="commentMode">
+                          <UtilList
+                            @comment-clicked="
+                              openComment(
+                                word.discourseUuid,
+                                word.word,
+                                word.word
+                              )
+                            "
+                            :hasEdit="false"
+                            :hasDelete="false"
+                            :hideMenu="!canComment"
+                          >
+                            <template #activator="{ on, attrs }">
+                              <span
+                                v-html="`<b>${word.word}</b>`"
+                                class="cursor-display"
+                                v-on="on"
+                                v-bind="attrs"
+                              />
+                            </template>
+                          </UtilList>
+                        </span>
                       </div>
                       <div v-if="word.translation">
                         <span
@@ -118,10 +170,34 @@
                       </div>
                       <div v-if="word.form">
                         <span
+                          v-show="!commentMode"
                           v-html="`<em>${word.form}</em>`"
                           class="cursor-display text-no-wrap test-rendered-word"
                           @click="openDialog(word.discourseUuid)"
                         ></span>
+                        <span v-show="commentMode">
+                          <UtilList
+                            @comment-clicked="
+                              openComment(
+                                word.discourseUuid,
+                                word.form,
+                                word.form
+                              )
+                            "
+                            :hasEdit="false"
+                            :hasDelete="false"
+                            :hideMenu="!canComment"
+                          >
+                            <template #activator="{ on, attrs }">
+                              <span
+                                v-html="`<em>${word.form}</em>`"
+                                class="cursor-display"
+                                v-on="on"
+                                v-bind="attrs"
+                              />
+                            </template>
+                          </UtilList>
+                        </span>
                       </div>
                       <div v-if="word.parseInfo && word.parseInfo.length > 0">
                         <span
@@ -149,14 +225,23 @@
       v-if="canComment"
       :is="commentComponent"
       v-model="isCommenting"
-      :item="`'${commentDialogItem.replace(
-        /<[em/]{2,3}>/gi,
-        ''
-      )}' of ${commentDialogParent.replace(/<[em/]{2,3}>/gi, '')}`"
+      :item="`${commentDialogItem.replace(/<[em/]{2,3}>/gi, '')}${
+        commentDialogItem === commentDialogParent
+          ? ''
+          : ` of ${commentDialogParent.replace(/<[em/]{2,3}>/gi, '')}`
+      }`"
       :uuid="commentDialogUuid"
       :key="commentDialogUuid"
       :route="`/threads/${commentDialogUuid}`"
-      ><span v-html="`${commentDialogItem} of ${commentDialogParent}`"></span
+      ><span
+        v-html="
+          `'${commentDialogItem.replace(/<[em/]{2,3}>/gi, '')}'${
+            commentDialogItem == commentDialogParent
+              ? ''
+              : ` of ${commentDialogParent.replace(/<[em/]{2,3}>/gi, '')}`
+          }`
+        "
+      ></span
     ></component>
     <connect-spelling-occurrence
       v-if="viewingConnectSpellingDialog"
