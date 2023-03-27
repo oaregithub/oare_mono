@@ -9,61 +9,67 @@
       >
 
       <div v-if="person.father">
-        <b>Father: </b><span>{{ person.father.display }}</span>
+        <b>Father: </b
+        ><router-link :to="`/person/${person.father.uuid}`">{{
+          person.father.display
+        }}</router-link>
       </div>
 
       <div v-if="person.mother">
-        <b>Mother: </b><span>{{ person.mother.display }}</span>
+        <b>Mother: </b
+        ><router-link :to="`/person/${person.mother.uuid}`">{{
+          person.mother.display
+        }}</router-link>
       </div>
 
       <div v-if="person.asshatumWives.length > 0">
-        <b>Aššutum Wife/Wives: </b
-        ><span v-for="(wife, idx) in person.asshatumWives" :key="idx"
-          >{{ wife.display }}
-          <span v-if="idx < person.asshatumWives.length - 1" class="ml-n1"
-            >,
-          </span></span
-        >
+        <b>Aššutum Wife/Wives: </b>
+        <span v-for="(wife, idx) in person.asshatumWives" :key="idx">
+          <router-link :to="`/person/${wife.uuid}`">{{
+            wife.display
+          }}</router-link>
+          <span v-if="idx < person.asshatumWives.length - 1">{{ ', ' }}</span>
+        </span>
       </div>
 
       <div v-if="person.amtumWives.length > 0">
-        <b>Amtum Wife/Wives: </b
-        ><span v-for="(wife, idx) in person.amtumWives" :key="idx"
-          >{{ wife.display }}
-          <span v-if="idx < person.amtumWives.length - 1" class="ml-n1"
-            >,
-          </span></span
-        >
+        <b>Amtum Wife/Wives: </b>
+        <span v-for="(wife, idx) in person.amtumWives" :key="idx">
+          <router-link :to="`/person/${wife.uuid}`">{{
+            wife.display
+          }}</router-link>
+          <span v-if="idx < person.amtumWives.length - 1">{{ ', ' }}</span>
+        </span>
       </div>
 
       <div v-if="person.husbands.length > 0">
-        <b>Husband(s): </b
-        ><span v-for="(husband, idx) in person.husbands" :key="idx"
-          >{{ husband.display }}
-          <span v-if="idx < person.husbands.length - 1" class="ml-n1"
-            >,
-          </span></span
-        >
+        <b>Husband(s): </b>
+        <span v-for="(husband, idx) in person.husbands" :key="idx">
+          <router-link :to="`/person/${husband.uuid}`">{{
+            husband.display
+          }}</router-link>
+          <span v-if="idx < person.husbands.length - 1">{{ ', ' }}</span>
+        </span>
       </div>
 
       <div v-if="person.siblings.length > 0">
-        <b>Sibling(s): </b
-        ><span v-for="(sibling, idx) in person.siblings" :key="idx"
-          >{{ sibling.display }}
-          <span v-if="idx < person.siblings.length - 1" class="ml-n1"
-            >,
-          </span></span
-        >
+        <b>Sibling(s): </b>
+        <span v-for="(sibling, idx) in person.siblings" :key="idx">
+          <router-link :to="`/person/${sibling.uuid}`">{{
+            sibling.display
+          }}</router-link>
+          <span v-if="idx < person.siblings.length - 1">{{ ', ' }}</span>
+        </span>
       </div>
 
       <div v-if="person.children.length > 0">
-        <b>Children: </b
-        ><span v-for="(child, idx) in person.children" :key="idx"
-          >{{ child.display }}
-          <span v-if="idx < person.children.length - 1" class="ml-n1"
-            >,
-          </span></span
-        >
+        <b>Children: </b>
+        <span v-for="(child, idx) in person.children" :key="idx">
+          <router-link :to="`/person/${child.uuid}`">{{
+            child.display
+          }}</router-link>
+          <span v-if="idx < person.children.length - 1">{{ ', ' }}</span>
+        </span>
       </div>
 
       <div v-if="personRoles.durableRoles.length > 0">
@@ -96,6 +102,7 @@ import {
   onMounted,
   ref,
   computed,
+  watch,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { PersonInfo, PersonRoleResponse } from '@oare/types';
@@ -137,7 +144,7 @@ export default defineComponent({
       temporaryRoles: [],
     });
 
-    onMounted(async () => {
+    const getPerson = async () => {
       try {
         loading.value = true;
         person.value = await server.getPersonInfo(props.uuid);
@@ -150,7 +157,14 @@ export default defineComponent({
       } finally {
         loading.value = false;
       }
-    });
+    };
+
+    onMounted(async () => await getPerson());
+
+    watch(
+      () => props.uuid,
+      async () => await getPerson()
+    );
 
     const personHasData = computed(() => {
       return (
