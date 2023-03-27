@@ -72,21 +72,21 @@
         </span>
       </div>
 
-      <div v-if="personRoles.durableRoles.length > 0">
+      <div v-if="person.durableRoles.length > 0">
         <b>Durable Roles: </b
-        ><span v-for="(role, idx) in personRoles.durableRoles" :key="idx"
+        ><span v-for="(role, idx) in person.durableRoles" :key="idx"
           >{{ role.role }} ({{ role.occurrences }})
-          <span v-if="idx < personRoles.durableRoles.length - 1" class="ml-n1"
+          <span v-if="idx < person.durableRoles.length - 1" class="ml-n1"
             >,
           </span></span
         >
       </div>
 
-      <div v-if="personRoles.temporaryRoles.length > 0">
+      <div v-if="person.temporaryRoles.length > 0">
         <b>Temporary Roles: </b
-        ><span v-for="(role, idx) in personRoles.temporaryRoles" :key="idx"
+        ><span v-for="(role, idx) in person.temporaryRoles" :key="idx"
           >{{ role.role }} ({{ role.occurrences }})
-          <span v-if="idx < personRoles.temporaryRoles.length - 1" class="ml-n1"
+          <span v-if="idx < person.temporaryRoles.length - 1" class="ml-n1"
             >,
           </span></span
         >
@@ -105,7 +105,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { PersonInfo, PersonRoleResponse } from '@oare/types';
+import { PersonInfo } from '@oare/types';
 
 export default defineComponent({
   props: {
@@ -137,18 +137,15 @@ export default defineComponent({
       husbands: [],
       siblings: [],
       children: [],
-      discussion: [],
-    });
-    const personRoles = ref<PersonRoleResponse>({
-      durableRoles: [],
       temporaryRoles: [],
+      durableRoles: [],
+      discussion: [],
     });
 
     const getPerson = async () => {
       try {
         loading.value = true;
         person.value = await server.getPersonInfo(props.uuid);
-        personRoles.value = await server.getPersonRoles(props.uuid);
       } catch (err) {
         actions.showErrorSnackbar(
           'Error retrieving person info. Please try again.',
@@ -176,15 +173,14 @@ export default defineComponent({
         person.value.siblings.length > 0 ||
         person.value.children.length > 0 ||
         person.value.discussion.length > 0 ||
-        personRoles.value.durableRoles.length > 0 ||
-        personRoles.value.temporaryRoles.length > 0
+        person.value.durableRoles.length > 0 ||
+        person.value.temporaryRoles.length > 0
       );
     });
 
     return {
       loading,
       person,
-      personRoles,
       personHasData,
     };
   },

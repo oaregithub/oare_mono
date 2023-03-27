@@ -490,6 +490,8 @@ class PersonDao {
       siblings,
       children,
       discussion,
+      temporaryRoles: [],
+      durableRoles: [],
     };
   }
 }
