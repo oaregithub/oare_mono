@@ -130,11 +130,12 @@ router
         location,
         primacy,
         referenceUuid,
+        type,
       }: DeleteFieldPayload = req.body as DeleteFieldPayload;
 
       try {
         await FieldDao.deleteField(uuid);
-        await FieldDao.decrementPrimacy(primacy, referenceUuid);
+        await FieldDao.decrementPrimacy(primacy, referenceUuid, type);
 
         if (location === 'taxonomyTree') {
           cache.clear(

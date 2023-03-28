@@ -198,6 +198,7 @@ export default defineComponent({
           uuid: updateOrDeleteUuid.value,
           referenceUuid: archive.uuid,
           primacy: updateOrDeletePrimacy.value,
+          type: 'description',
         });
       } catch (err) {
         actions.showErrorSnackbar(

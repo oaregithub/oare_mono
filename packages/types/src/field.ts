@@ -26,6 +26,7 @@ export interface DeleteFieldPayload {
   referenceUuid: string;
   primacy: number;
   location?: 'taxonomyTree' | 'archive';
+  type: string;
 }
 
 export interface FieldRow {

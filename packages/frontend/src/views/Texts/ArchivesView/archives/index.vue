@@ -93,7 +93,6 @@ export default defineComponent({
     const dossiersInfo: Ref<DossierInfo[] | null> = ref([]);
     const totalTexts = ref(0);
     const totalDossiers = ref(0);
-    const bibliography: Ref<string | null> = ref(null);
     const bibliographyUuid: Ref<string> = ref('');
     const descriptions: Ref<FieldInfo[]> = ref([]);
     const page = useQueryParam('page', '1', false);
@@ -104,9 +103,7 @@ export default defineComponent({
       store.hasPermission('BIBLIOGRAPHY')
     );
 
-    const isAdmin = computed(() => {
-      store.getters.isAdmin;
-    });
+    const isAdmin = computed(() => store.getters.isAdmin);
 
     const getArchive = async () => {
       if (loading.value) {
@@ -126,12 +123,6 @@ export default defineComponent({
         totalDossiers.value = archive.value.totalDossiers;
         descriptions.value = archive.value.descriptions;
         bibliographyUuid.value = archive.value.bibliographyUuid;
-        if (canViewBibliography.value) {
-          bibliography.value = bibliographyUuid.value
-            ? (await server.getBibliography(archive.value.bibliographyUuid))
-                .bibliography.bib
-            : null;
-        }
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading archive dossiers and texts. Please try again.',
@@ -176,7 +167,6 @@ export default defineComponent({
       search,
       totalTexts,
       totalDossiers,
-      bibliography,
       bibliographyUuid,
       canViewBibliography,
       descriptions,
