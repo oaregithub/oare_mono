@@ -1,5 +1,8 @@
 <template>
   <OareContentView :loading="loading" :title="person.display">
+    <template #title:post
+      >({{ occurrencesLoading ? 'Loading...' : occurrencesCount }})</template
+    >
     <div v-if="personHasData">
       <v-row
         v-for="(field, idx) in person.discussion"
@@ -178,10 +181,32 @@ export default defineComponent({
       );
     });
 
+    const occurrencesLoading = ref(false);
+    const occurrencesCount = ref(0);
+
+    watch(person, async () => {
+      try {
+        occurrencesLoading.value = true;
+        const response = await server.getPersonsOccurrencesCounts([props.uuid]);
+        if (response.length > 0) {
+          occurrencesCount.value = response[0].count;
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error retrieving person occurrences. Please try again.',
+          err as Error
+        );
+      } finally {
+        occurrencesLoading.value = false;
+      }
+    });
+
     return {
       loading,
       person,
       personHasData,
+      occurrencesLoading,
+      occurrencesCount,
     };
   },
 });
