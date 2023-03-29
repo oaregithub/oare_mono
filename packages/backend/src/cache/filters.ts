@@ -6,6 +6,7 @@ import {
   EpigraphyResponse,
   Seal,
   SealInfo,
+  PersonInfo,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -174,6 +175,29 @@ export const SealListFilter = async (
   );
 
   return filteredSealList;
+};
+
+export const personFilter = async (
+  person: PersonInfo,
+  user: User | null
+): Promise<PersonInfo> => {
+  const PersonDao = sl.get('PersonDao');
+
+  const temporaryRoles = await PersonDao.getPersonRoles(
+    person.person.uuid,
+    'temporary',
+    user ? user.uuid : null
+  );
+  const durableRoles = await PersonDao.getPersonRoles(
+    person.person.uuid,
+    'durable',
+    user ? user.uuid : null
+  );
+  return {
+    ...person,
+    temporaryRoles,
+    durableRoles,
+  };
 };
 
 export const noFilter = async (items: any, _user: User | null) => items;

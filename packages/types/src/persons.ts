@@ -31,11 +31,6 @@ export interface PersonRole {
   occurrences: number;
 }
 
-export interface PersonRoleResponse {
-  temporaryRoles: PersonRole[];
-  durableRoles: PersonRole[];
-}
-
 export interface PersonInfo {
   person: PersonRow;
   display: string;
@@ -46,5 +41,7 @@ export interface PersonInfo {
   husbands: PersonCore[];
   siblings: PersonCore[];
   children: PersonCore[];
+  temporaryRoles: PersonRole[];
+  durableRoles: PersonRole[];
   discussion: FieldRow[];
 }
