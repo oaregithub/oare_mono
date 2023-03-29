@@ -10,6 +10,11 @@ async function getBibliographies(params: {
   return data;
 }
 
+async function getBibliography(uuid: string): Promise<BibliographyResponse> {
+  const { data } = await axios.get(`/bibliography/${uuid}`);
+  return data;
+}
+
 async function getBibliographiesCount(): Promise<number> {
   const { data } = await axios.get('/bibliographies_count');
   return data;
@@ -17,5 +22,6 @@ async function getBibliographiesCount(): Promise<number> {
 
 export default {
   getBibliographies,
+  getBibliography,
   getBibliographiesCount,
 };

@@ -1,4 +1,5 @@
 import { Text } from './epigraphies';
+import { FieldInfo } from './field';
 
 export interface Archive {
   id: string;
@@ -11,6 +12,8 @@ export interface Archive {
   texts: Text[] | null;
   totalTexts: number;
   totalDossiers: number;
+  descriptions: FieldInfo[];
+  bibliographyUuid: string | null;
 }
 
 export interface Dossier {
@@ -29,6 +32,8 @@ export interface ArchiveInfo {
   uuid: string;
   totalTexts: number;
   totalDossiers: number;
+  descriptions: FieldInfo[];
+  bibliographyUuid: string | null;
 }
 
 export interface DossierInfo {

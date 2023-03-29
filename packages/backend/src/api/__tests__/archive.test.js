@@ -34,6 +34,8 @@ const archive = {
   ],
   totalTexts: 2,
   totalDossiers: 1,
+  bibliographyUuid: 'bibUuid',
+  descriptions: [],
 };
 
 const dossier = {
@@ -71,6 +73,8 @@ describe('GET /archives', () => {
     uuid: archiveUuid,
     totalTexts: 1,
     totalDossiers: 1,
+    descriptions: [],
+    bibliographyUuid: 'bibUuid',
   };
 
   const mockCollectionTextUtils = {

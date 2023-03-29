@@ -1,5 +1,12 @@
 import { knexRead } from '@/connection';
-import { Archive, Dossier, Text, ArchiveInfo, DossierInfo } from '@oare/types';
+import {
+  Archive,
+  Dossier,
+  Text,
+  ArchiveInfo,
+  DossierInfo,
+  FieldInfo,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import { ignorePunctuation } from '../TextEpigraphyDao/utils';
@@ -21,6 +28,7 @@ class ArchiveDao {
     trx?: Knex.Transaction
   ): Promise<Archive> {
     const k = trx || knexRead();
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const archive: Archive = await k('archive')
       .select(
         'archive.id as id',
@@ -59,6 +67,14 @@ class ArchiveDao {
     );
     archive.totalTexts = await this.getTotalTexts(uuid, userUuid, trx);
     archive.totalDossiers = await this.getTotalDossiers(uuid, trx);
+    archive.descriptions = await this.getArchiveDescriptions(uuid, trx);
+    archive.bibliographyUuid =
+      (
+        await ItemPropertiesDao.getObjectUuidsByReferenceAndVariable(
+          uuid,
+          'b3938276-173b-11ec-8b77-024de1c1cc1d'
+        )
+      )[0] ?? null;
     return archive;
   }
 
@@ -88,6 +104,7 @@ class ArchiveDao {
     trx?: Knex.Transaction
   ): Promise<ArchiveInfo> {
     const k = trx || knexRead();
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const archive: Archive = await k('archive')
       .select(
         'archive.id as id',
@@ -100,13 +117,34 @@ class ArchiveDao {
       .where('archive.uuid', uuid)
       .first();
 
+    const bibliographyUuid: string | null =
+      (
+        await ItemPropertiesDao.getObjectUuidsByReferenceAndVariable(
+          uuid,
+          'b3938276-173b-11ec-8b77-024de1c1cc1d'
+        )
+      )[0] ?? null;
+
     const archiveInfo: ArchiveInfo = {
       name: archive.name,
       uuid: archive.uuid,
       totalTexts: await this.getTotalTexts(uuid, userUuid, trx),
       totalDossiers: await this.getTotalDossiers(uuid, trx),
+      descriptions: await this.getArchiveDescriptions(uuid),
+      bibliographyUuid,
     };
     return archiveInfo;
+  }
+
+  async getArchiveDescriptions(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<FieldInfo[]> {
+    const k = trx || knexRead();
+    const descriptions: FieldInfo[] = await k('field as f')
+      .where('f.reference_uuid', uuid)
+      .orderBy('f.primacy');
+    return descriptions;
   }
 
   async getArchiveTexts(

@@ -152,6 +152,20 @@ class FieldDao {
       );
     return language?.name ?? 'unknown';
   }
+
+  async decrementPrimacy(
+    deletedPrimacy: number,
+    referenceUuid: string,
+    type: string,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('field')
+      .decrement('primacy', 1)
+      .where({ reference_uuid: referenceUuid })
+      .andWhere('primacy', '>=', deletedPrimacy)
+      .andWhere({ type });
+  }
 }
 
 export default new FieldDao();

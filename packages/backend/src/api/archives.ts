@@ -14,7 +14,11 @@ router.route('/archives').get(async (req, res, next) => {
       archiveUuids.map(uuid => ArchiveDao.getArchiveInfo(uuid, userUuid))
     );
 
-    res.json(archives);
+    const archivesSorted = archives.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    res.json(archivesSorted);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
