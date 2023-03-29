@@ -362,11 +362,34 @@ class DictionaryWordDao {
       .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
       .whereIn('dw.type', types)
       .where(qb => {
-        qb.where(k.raw('LOWER(dw.word) LIKE ?', [`%${lowerSearch}%`]))
-          .orWhere(k.raw('LOWER(field.field) LIKE ?', [`%${lowerSearch}%`]))
-          .orWhere(k.raw('LOWER(df.form) LIKE ?', [`%${lowerSearch}%`]))
+        qb.where(
+          k.raw('LOWER(dw.word) LIKE ?', [
+            `${mode === 'matchSubstring' ? `%${lowerSearch}%` : lowerSearch}`,
+          ])
+        )
           .orWhere(
-            k.raw('LOWER(ds.explicit_spelling) LIKE ?', [`%${lowerSearch}%`])
+            k.raw(
+              `LOWER(field.field) ${
+                mode === 'matchSubstring' ? 'LIKE' : 'REGEXP'
+              } ?`,
+              [
+                `${
+                  mode === 'matchSubstring'
+                    ? `%${lowerSearch}%`
+                    : `\\b${lowerSearch}\\b`
+                }`,
+              ]
+            )
+          )
+          .orWhere(
+            k.raw('LOWER(df.form) LIKE ?', [
+              `${mode === 'matchSubstring' ? `%${lowerSearch}%` : lowerSearch}`,
+            ])
+          )
+          .orWhere(
+            k.raw('LOWER(ds.explicit_spelling) LIKE ?', [
+              `${mode === 'matchSubstring' ? `%${lowerSearch}%` : lowerSearch}`,
+            ])
           );
         if (spellEpigRow) {
           qb.orWhereIn(
@@ -394,7 +417,8 @@ class DictionaryWordDao {
     const resultRows: DictionarySearchRow[] = assembleSearchResult(
       rows,
       search,
-      spellEpigRow
+      spellEpigRow,
+      mode
     );
     const offset = (page - 1) * numRows;
     const results = resultRows.slice(offset, offset + numRows);
@@ -413,7 +437,7 @@ class DictionaryWordDao {
     const k = trx || knexRead();
     let firstCharReadings: string[] = [];
     let lastCharReadings: string[] | null = null;
-    if (mode === 'respectNoBoundaries') {
+    if (mode === 'matchSubstring') {
       firstCharReadings = await k('sign_reading as sr')
         .pluck('sr.reading')
         .whereIn('sr.uuid', searchCharUuids[0]);
@@ -424,7 +448,6 @@ class DictionaryWordDao {
               .whereIn('sr.uuid', searchCharUuids[searchCharUuids.length - 1])
           : null;
     }
-
     const refUuids: DictSpellEpigRowDictSearch[] = await k
       .from('dictionary_spelling_epigraphy as dse')
       .select(
@@ -447,7 +470,7 @@ class DictionaryWordDao {
                     if (
                       idx === searchCharUuids.length - 1 &&
                       lastCharReadings &&
-                      mode === 'respectNoBoundaries'
+                      mode === 'matchSubstring'
                     ) {
                       lastCharReadings.forEach(charReading => {
                         this.orOn(
@@ -471,13 +494,29 @@ class DictionaryWordDao {
       })
       .whereIn('dse.reading_uuid', searchCharUuids[0])
       .modify(qb => {
-        if (mode === 'respectNoBoundaries') {
+        if (mode === 'matchSubstring') {
           firstCharReadings.forEach(reading => {
             qb.orWhereLike('dse.reading', `%${reading}`);
           });
         }
       })
-      .groupBy('dse.reference_uuid');
+      .groupBy('dse.reference_uuid')
+      .modify(qb => {
+        if (mode === 'matchWholeWords') {
+          qb.leftJoin('dictionary_spelling_epigraphy as dseMAX', function () {
+            this.on('dseMAX.reference_uuid', 'dse.reference_uuid').andOn(
+              k.raw(
+                `dse.sign_spell_num + ${
+                  searchCharUuids.length - 1
+                } < dseMAX.sign_spell_num`
+              )
+            );
+          })
+            .whereNull('dseMAX.uuid')
+            .andWhere('dse.sign_spell_num', 1);
+        }
+      });
+
     return refUuids;
   }
 

@@ -59,7 +59,8 @@ export async function assembleComboboxDisplay(
 export function assembleSearchResult(
   rows: SearchWordsQueryRow[],
   search: string,
-  spellEpigRow: DictSpellEpigRowDictSearch[] | null
+  spellEpigRow: DictSpellEpigRowDictSearch[] | null,
+  mode: string
 ): DictionarySearchRow[] {
   const lowerSearch = search.toLowerCase();
   const wordMap = mapWordsToRows(rows);
@@ -80,8 +81,12 @@ export function assembleSearchResult(
       const spellingsList = spellings ? spellings.split(', ') : [];
       const spellingUuidsList = spellingUuids ? spellingUuids.split(', ') : [];
       if (
-        (form && form.toLowerCase().includes(lowerSearch)) ||
-        spellingsList.some(s => s.toLowerCase().includes(lowerSearch))
+        (((form && form.toLowerCase().includes(lowerSearch)) ||
+          spellingsList.some(s => s.toLowerCase().includes(lowerSearch))) &&
+          mode === 'matchSubstring') ||
+        (form && form.toLowerCase() === lowerSearch) ||
+        (spellingsList.some(s => s.toLowerCase() === lowerSearch) &&
+          mode === 'matchWholeWords')
       ) {
         const spelling = spellings ? `: ${spellings}` : '';
         matches.push(`${form}: ${spelling}`);
