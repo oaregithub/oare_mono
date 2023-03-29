@@ -1,7 +1,9 @@
 <template>
   <OareContentView :loading="loading" :title="person.display">
     <template #title:post
-      >({{ occurrencesLoading ? 'Loading...' : occurrencesCount }})</template
+      ><a class="ml-1" @click="textOccurrencesDialog = true"
+        >({{ occurrencesLoading ? 'Loading...' : occurrencesCount }})</a
+      ></template
     >
     <div v-if="personHasData">
       <v-row
@@ -96,6 +98,15 @@
       </div>
     </div>
     <span v-else>There is not yet information for this person.</span>
+    <text-occurrences
+      v-model="textOccurrencesDialog"
+      :title="person.display"
+      :uuids="[uuid]"
+      :totalTextOccurrences="occurrencesCount"
+      :getTexts="server.getPersonsOccurrencesTexts"
+      :getTextsCount="server.getPersonsOccurrencesCounts"
+      @disconnect="disconnectPerson($event)"
+    />
   </OareContentView>
 </template>
 
@@ -109,6 +120,7 @@ import {
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { PersonInfo } from '@oare/types';
+import TextOccurrences from '@/components/TextOccurrences/index.vue';
 
 export default defineComponent({
   props: {
@@ -117,7 +129,9 @@ export default defineComponent({
       required: true,
     },
   },
-
+  components: {
+    TextOccurrences,
+  },
   setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -201,12 +215,34 @@ export default defineComponent({
       }
     });
 
+    const textOccurrencesDialog = ref(false);
+
+    const disconnectPerson = async (discourseUuids: string[]) => {
+      try {
+        await Promise.all(
+          discourseUuids.map(discourseUuid =>
+            server.disconnectPersons(discourseUuid, props.uuid)
+          )
+        );
+        occurrencesCount.value -= discourseUuids.length;
+        actions.showSnackbar('Person occurrence(s) successfully disconnected');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting person from occurrences. Please try again.',
+          err as Error
+        );
+      }
+    };
+
     return {
       loading,
       person,
       personHasData,
       occurrencesLoading,
       occurrencesCount,
+      textOccurrencesDialog,
+      server,
+      disconnectPerson,
     };
   },
 });
