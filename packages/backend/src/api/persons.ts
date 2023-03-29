@@ -85,6 +85,8 @@ router
       const PersonDao = sl.get('PersonDao');
       const utils = sl.get('utils');
 
+      const roleUuid = (req.query.roleUuid as string) || undefined;
+
       const personUuids: string[] = req.body;
       const userUuid = req.user ? req.user.uuid : null;
 
@@ -92,7 +94,12 @@ router
 
       const occurrences = await Promise.all(
         personUuids.map(uuid =>
-          PersonDao.getPersonOccurrencesCount(uuid, userUuid, { filter })
+          PersonDao.getPersonOccurrencesCount(
+            uuid,
+            userUuid,
+            { filter },
+            roleUuid
+          )
         )
       );
 
@@ -116,6 +123,8 @@ router
       const utils = sl.get('utils');
       const PersonDao = sl.get('PersonDao');
 
+      const roleUuid = (req.query.roleUuid as string) || undefined;
+
       const userUuid = req.user ? req.user.uuid : null;
       const pagination = utils.extractPagination(req.query);
 
@@ -124,7 +133,8 @@ router
       const rows = await PersonDao.getPersonOccurrencesTexts(
         personsUuids,
         userUuid,
-        pagination
+        pagination,
+        roleUuid
       );
 
       const response = await utils.getTextOccurrences(rows, req.locale);

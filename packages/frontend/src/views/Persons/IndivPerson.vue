@@ -1,7 +1,7 @@
 <template>
   <OareContentView :loading="loading" :title="person.display">
     <template #title:post
-      ><a class="ml-1" @click="textOccurrencesDialog = true"
+      ><a class="ml-1" @click="handleSelectOccurrences(undefined)"
         >({{ occurrencesLoading ? 'Loading...' : occurrencesCount }})</a
       ></template
     >
@@ -80,7 +80,10 @@
       <div v-if="person.durableRoles.length > 0">
         <b>Durable Roles: </b
         ><span v-for="(role, idx) in person.durableRoles" :key="idx"
-          >{{ role.role }} ({{ role.occurrences }})
+          >{{ role.role }}
+          <a @click="handleSelectOccurrences(role.roleUuid)"
+            >({{ role.occurrences }})</a
+          >
           <span v-if="idx < person.durableRoles.length - 1" class="ml-n1"
             >,
           </span></span
@@ -90,7 +93,10 @@
       <div v-if="person.temporaryRoles.length > 0">
         <b>Temporary Roles: </b
         ><span v-for="(role, idx) in person.temporaryRoles" :key="idx"
-          >{{ role.role }} ({{ role.occurrences }})
+          >{{ role.role }}
+          <a @click="handleSelectOccurrences(role.roleUuid)"
+            >({{ role.occurrences }})</a
+          >
           <span v-if="idx < person.temporaryRoles.length - 1" class="ml-n1"
             >,
           </span></span
@@ -106,6 +112,7 @@
       :getTexts="server.getPersonsOccurrencesTexts"
       :getTextsCount="server.getPersonsOccurrencesCounts"
       @disconnect="disconnectPerson($event)"
+      :filterUuid="selectedRoleUuid"
     />
   </OareContentView>
 </template>
@@ -234,6 +241,13 @@ export default defineComponent({
       }
     };
 
+    const selectedRoleUuid = ref<string>();
+
+    const handleSelectOccurrences = (roleUuid: string | undefined) => {
+      selectedRoleUuid.value = roleUuid;
+      textOccurrencesDialog.value = true;
+    };
+
     return {
       loading,
       person,
@@ -243,6 +257,8 @@ export default defineComponent({
       textOccurrencesDialog,
       server,
       disconnectPerson,
+      selectedRoleUuid,
+      handleSelectOccurrences,
     };
   },
 });
