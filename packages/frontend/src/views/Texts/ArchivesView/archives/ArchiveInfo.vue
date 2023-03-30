@@ -80,7 +80,6 @@
         :class="{ 'ml-5': !allowCUD }"
         v-if="archive.bibliographyUuid && canViewBibliography"
       >
-        <!-- <div><b>Bibliography:</b></div> -->
         <span v-show="!loading" v-html="bibliography"></span>
         <v-progress-circular v-show="loading" indeterminate />
       </div>
