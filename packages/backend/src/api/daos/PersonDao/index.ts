@@ -59,6 +59,7 @@ class PersonDao {
     personUuids: string[],
     userUuid: string | null,
     { limit, page, filter }: Pagination,
+    roleUuid?: string,
     trx?: Knex.Transaction
   ): Promise<TextOccurrencesRow[]> {
     const k = trx || knexRead();
@@ -67,9 +68,21 @@ class PersonDao {
     const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
     const discourseUuids = await k('item_properties')
-      .pluck('reference_uuid')
-      .whereIn('object_uuid', personUuids)
-      .whereIn('reference_uuid', k('text_discourse').select('uuid'));
+      .pluck('item_properties.reference_uuid')
+      .whereIn('item_properties.object_uuid', personUuids)
+      .whereIn(
+        'item_properties.reference_uuid',
+        k('text_discourse').select('uuid')
+      )
+      .modify(qb => {
+        if (roleUuid) {
+          qb.innerJoin(
+            'item_properties AS ip2',
+            'item_properties.reference_uuid',
+            'ip2.reference_uuid'
+          ).where('ip2.value_uuid', roleUuid);
+        }
+      });
 
     const rows: TextOccurrencesRow[] = await k('text_discourse')
       .distinct(

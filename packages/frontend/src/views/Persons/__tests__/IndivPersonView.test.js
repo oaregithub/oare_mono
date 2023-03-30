@@ -36,11 +36,23 @@ describe('IndivPersonView test', () => {
       discussion: [],
       temporaryRoles: [],
     }),
+    getPersonsOccurrencesTexts: jest.fn().mockResolvedValue([]),
+    getPersonsOccurrencesCounts: jest.fn().mockResolvedValue([]),
+  };
+
+  const mockStore = {
+    hasPermission: name => true,
+  };
+
+  const mockLodash = {
+    debounce: cb => cb,
   };
 
   const createWrapper = ({ server } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', mockActions);
+    sl.set('store', mockStore);
+    sl.set('lodash', mockLodash);
 
     return mount(IndivPersonView, {
       vuetify,

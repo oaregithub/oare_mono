@@ -14,11 +14,13 @@ async function getPersons(letter: string): Promise<PersonListItem[]> {
 
 async function getPersonsOccurrencesCounts(
   personUuids: string[],
-  pagination?: Partial<Pagination>
+  pagination?: Partial<Pagination>,
+  roleUuid?: string
 ): Promise<TextOccurrencesCountResponseItem[]> {
   const { data } = await axios.post('/persons/occurrences/count', personUuids, {
     params: {
       ...pagination,
+      roleUuid,
     },
   });
   return data;
@@ -26,12 +28,14 @@ async function getPersonsOccurrencesCounts(
 
 async function getPersonsOccurrencesTexts(
   personsUuids: string[],
-  pagination: Pagination
+  pagination: Pagination,
+  roleUuid?: string
 ): Promise<TextOccurrencesResponseRow[]> {
   const { data } = await axios.get('/persons/occurrences/texts', {
     params: {
       ...pagination,
       personsUuids,
+      roleUuid,
     },
   });
   return data;

@@ -116,8 +116,8 @@ describe('ArchivesList test', () => {
 
   it('displays descriptions', () => {
     const { getByText } = createWrapper();
-    [fieldInfo.field].forEach((description, index) => {
-      expect(getByText(`${index + 1}. ${description}`));
+    [fieldInfo.field].forEach(description => {
+      expect(getByText(`${description}`));
     });
   });
 

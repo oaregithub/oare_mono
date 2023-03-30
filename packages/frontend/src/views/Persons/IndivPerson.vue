@@ -1,5 +1,10 @@
 <template>
   <OareContentView :loading="loading" :title="person.display">
+    <template #title:post
+      ><a class="ml-1" @click="handleSelectOccurrences(undefined)"
+        >({{ occurrencesLoading ? 'Loading...' : occurrencesCount }})</a
+      ></template
+    >
     <div v-if="personHasData">
       <v-row
         v-for="(field, idx) in person.discussion"
@@ -75,9 +80,10 @@
       <div v-if="person.durableRoles.length > 0">
         <b>Durable Roles: </b
         ><span v-for="(role, idx) in person.durableRoles" :key="idx"
-          >{{ role.role }} ({{ role.occurrences }})
-          <span v-if="idx < person.durableRoles.length - 1" class="ml-n1"
-            >,
+          >{{ role.role }}
+          <a @click="handleSelectOccurrences(role)">({{ role.occurrences }})</a>
+          <span v-if="idx < person.durableRoles.length - 1"
+            >{{ ', ' }}
           </span></span
         >
       </div>
@@ -85,14 +91,31 @@
       <div v-if="person.temporaryRoles.length > 0">
         <b>Temporary Roles: </b
         ><span v-for="(role, idx) in person.temporaryRoles" :key="idx"
-          >{{ role.role }} ({{ role.occurrences }})
-          <span v-if="idx < person.temporaryRoles.length - 1" class="ml-n1"
-            >,
+          >{{ role.role }}
+          <a @click="handleSelectOccurrences(role)">({{ role.occurrences }})</a>
+          <span v-if="idx < person.temporaryRoles.length - 1"
+            >{{ ', ' }}
           </span></span
         >
       </div>
     </div>
     <span v-else>There is not yet information for this person.</span>
+    <text-occurrences
+      v-model="textOccurrencesDialog"
+      :title="
+        selectedRole
+          ? `${person.display} as ${selectedRole.role}`
+          : person.display
+      "
+      :uuids="[uuid]"
+      :totalTextOccurrences="
+        selectedRole ? selectedRole.occurrences : occurrencesCount
+      "
+      :getTexts="server.getPersonsOccurrencesTexts"
+      :getTextsCount="server.getPersonsOccurrencesCounts"
+      @disconnect="disconnectPerson($event)"
+      :filterUuid="selectedRole ? selectedRole.roleUuid : undefined"
+    />
   </OareContentView>
 </template>
 
@@ -105,7 +128,8 @@ import {
   watch,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { PersonInfo } from '@oare/types';
+import { PersonInfo, PersonRole } from '@oare/types';
+import TextOccurrences from '@/components/TextOccurrences/index.vue';
 
 export default defineComponent({
   props: {
@@ -114,7 +138,9 @@ export default defineComponent({
       required: true,
     },
   },
-
+  components: {
+    TextOccurrences,
+  },
   setup(props) {
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -178,10 +204,63 @@ export default defineComponent({
       );
     });
 
+    const occurrencesLoading = ref(false);
+    const occurrencesCount = ref(0);
+
+    watch(person, async () => {
+      try {
+        occurrencesLoading.value = true;
+        const response = await server.getPersonsOccurrencesCounts([props.uuid]);
+        if (response.length > 0) {
+          occurrencesCount.value = response[0].count;
+        }
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error retrieving person occurrences. Please try again.',
+          err as Error
+        );
+      } finally {
+        occurrencesLoading.value = false;
+      }
+    });
+
+    const textOccurrencesDialog = ref(false);
+
+    const disconnectPerson = async (discourseUuids: string[]) => {
+      try {
+        await Promise.all(
+          discourseUuids.map(discourseUuid =>
+            server.disconnectPersons(discourseUuid, props.uuid)
+          )
+        );
+        occurrencesCount.value -= discourseUuids.length;
+        actions.showSnackbar('Person occurrence(s) successfully disconnected');
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error disconnecting person from occurrences. Please try again.',
+          err as Error
+        );
+      }
+    };
+
+    const selectedRole = ref<PersonRole>();
+
+    const handleSelectOccurrences = (role: PersonRole | undefined) => {
+      selectedRole.value = role;
+      textOccurrencesDialog.value = true;
+    };
+
     return {
       loading,
       person,
       personHasData,
+      occurrencesLoading,
+      occurrencesCount,
+      textOccurrencesDialog,
+      server,
+      disconnectPerson,
+      selectedRole,
+      handleSelectOccurrences,
     };
   },
 });
