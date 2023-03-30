@@ -81,11 +81,9 @@
         <b>Durable Roles: </b
         ><span v-for="(role, idx) in person.durableRoles" :key="idx"
           >{{ role.role }}
-          <a @click="handleSelectOccurrences(role.roleUuid)"
-            >({{ role.occurrences }})</a
-          >
-          <span v-if="idx < person.durableRoles.length - 1" class="ml-n1"
-            >,
+          <a @click="handleSelectOccurrences(role)">({{ role.occurrences }})</a>
+          <span v-if="idx < person.durableRoles.length - 1"
+            >{{ ', ' }}
           </span></span
         >
       </div>
@@ -94,11 +92,9 @@
         <b>Temporary Roles: </b
         ><span v-for="(role, idx) in person.temporaryRoles" :key="idx"
           >{{ role.role }}
-          <a @click="handleSelectOccurrences(role.roleUuid)"
-            >({{ role.occurrences }})</a
-          >
-          <span v-if="idx < person.temporaryRoles.length - 1" class="ml-n1"
-            >,
+          <a @click="handleSelectOccurrences(role)">({{ role.occurrences }})</a>
+          <span v-if="idx < person.temporaryRoles.length - 1"
+            >{{ ', ' }}
           </span></span
         >
       </div>
@@ -106,13 +102,19 @@
     <span v-else>There is not yet information for this person.</span>
     <text-occurrences
       v-model="textOccurrencesDialog"
-      :title="person.display"
+      :title="
+        selectedRole
+          ? `${person.display} as ${selectedRole.role}`
+          : person.display
+      "
       :uuids="[uuid]"
-      :totalTextOccurrences="occurrencesCount"
+      :totalTextOccurrences="
+        selectedRole ? selectedRole.occurrences : occurrencesCount
+      "
       :getTexts="server.getPersonsOccurrencesTexts"
       :getTextsCount="server.getPersonsOccurrencesCounts"
       @disconnect="disconnectPerson($event)"
-      :filterUuid="selectedRoleUuid"
+      :filterUuid="selectedRole ? selectedRole.roleUuid : undefined"
     />
   </OareContentView>
 </template>
@@ -126,7 +128,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { PersonInfo } from '@oare/types';
+import { PersonInfo, PersonRole } from '@oare/types';
 import TextOccurrences from '@/components/TextOccurrences/index.vue';
 
 export default defineComponent({
@@ -241,10 +243,10 @@ export default defineComponent({
       }
     };
 
-    const selectedRoleUuid = ref<string>();
+    const selectedRole = ref<PersonRole>();
 
-    const handleSelectOccurrences = (roleUuid: string | undefined) => {
-      selectedRoleUuid.value = roleUuid;
+    const handleSelectOccurrences = (role: PersonRole | undefined) => {
+      selectedRole.value = role;
       textOccurrencesDialog.value = true;
     };
 
@@ -257,7 +259,7 @@ export default defineComponent({
       textOccurrencesDialog,
       server,
       disconnectPerson,
-      selectedRoleUuid,
+      selectedRole,
       handleSelectOccurrences,
     };
   },

@@ -11,15 +11,6 @@
         v-if="archive.descriptions.length > 0"
         :class="{ 'ml-5': !allowCUD }"
       >
-        <div>
-          <b>
-            {{
-              `${
-                archive.descriptions.length > 1 ? 'Descriptions' : 'Description'
-              }:`
-            }}</b
-          >
-        </div>
         <div
           v-for="(description, index) in archive.descriptions"
           :key="`description-${index}`"
@@ -41,9 +32,9 @@
                 <v-icon>mdi-pencil</v-icon>
               </v-btn></span
             >
-            <span v-if="!(index === editingIndex && isEditing)"
-              >{{ index + 1 }}. {{ description.field }}</span
-            >
+            <span v-if="!(index === editingIndex && isEditing)">{{
+              description.field
+            }}</span>
             <span v-if="!isAdding && !isDeleting && !isEditing && allowCUD"
               ><v-btn
                 @click="
@@ -89,7 +80,7 @@
         :class="{ 'ml-5': !allowCUD }"
         v-if="archive.bibliographyUuid && canViewBibliography"
       >
-        <div><b>Bibliography:</b></div>
+        <!-- <div><b>Bibliography:</b></div> -->
         <span v-show="!loading" v-html="bibliography"></span>
         <v-progress-circular v-show="loading" indeterminate />
       </div>

@@ -68,9 +68,12 @@ class PersonDao {
     const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
     const discourseUuids = await k('item_properties')
-      .pluck('reference_uuid')
-      .whereIn('object_uuid', personUuids)
-      .whereIn('reference_uuid', k('text_discourse').select('uuid'))
+      .pluck('item_properties.reference_uuid')
+      .whereIn('item_properties.object_uuid', personUuids)
+      .whereIn(
+        'item_properties.reference_uuid',
+        k('text_discourse').select('uuid')
+      )
       .modify(qb => {
         if (roleUuid) {
           qb.innerJoin(
