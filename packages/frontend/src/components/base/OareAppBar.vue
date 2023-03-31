@@ -51,17 +51,46 @@
           </v-list>
         </v-menu>
         <div v-if="isDevelopmentEnvironment" class="mr-5 test-dev-indicator">
-          <v-menu offset-y :nudge-left="66" open-on-hover>
+          <v-menu offset-y open-on-hover>
             <template v-slot:activator="{ on }">
               <v-btn v-on="on" color="info" outlined>DEVELOPMENT</v-btn>
             </template>
-            <v-card class="pa-5" width="270">
+            <v-card class="pa-5" width="290">
               <v-row class="text-center ma-0" justify="center">
                 <span
                   >The website is currently running in a development
                   environment. Changes made will not affect data in the
                   production database. This environment is meant only for web
                   developers who are currently building the site.
+                </span>
+                <span class="mt-4"
+                  >If you are not an OARE developer or this appears when
+                  visiting the production website, please contact us immediately
+                  at</span
+                >
+                <a href="mailto:oarefeedback@byu.edu">oarefeedback@byu.edu</a>
+              </v-row>
+            </v-card>
+          </v-menu>
+        </div>
+        <div v-if="isReadOnlyEnvironment" class="mr-5">
+          <v-menu offset-y open-on-hover>
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" color="red" outlined
+                >READ-ONLY PRODUCTION DATABASE</v-btn
+              >
+            </template>
+            <v-card class="pa-5" width="290">
+              <v-row class="text-center ma-0" justify="center">
+                <span
+                  >The website is currently running in a development
+                  environment, but is connected to the production read-only
+                  database. Any attempted edits will throw errors and will not
+                  affect production data. While in this mode, the cache is
+                  disabled for all routes in order to prevent stale data
+                  inconsistencies. This environment is meant only for web
+                  developers who are currently building the site and need to
+                  test it with production data.
                 </span>
                 <span class="mt-4"
                   >If you are not an OARE developer or this appears when
@@ -223,7 +252,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref } from '@vue/composition-api';
+import {
+  defineComponent,
+  computed,
+  ref,
+  onMounted,
+} from '@vue/composition-api';
 import i18n from '@/i18n';
 import sl from '@/serviceLocator';
 import { Locale } from '@oare/types';
@@ -231,9 +265,10 @@ import { Locale } from '@oare/types';
 export default defineComponent({
   name: 'OareAppBar',
   setup(_, context) {
+    const actions = sl.get('globalActions');
     const router = sl.get('router');
     const store = sl.get('store');
-    const serverProxy = sl.get('serverProxy');
+    const server = sl.get('serverProxy');
 
     const title = computed(() => {
       if (context.root.$vuetify.breakpoint.smAndDown) {
@@ -254,6 +289,7 @@ export default defineComponent({
     const isDevelopmentEnvironment = computed(
       () => process.env.NODE_ENV === 'development'
     );
+    const isReadOnlyEnvironment = ref(false);
 
     const canViewWords = computed(() => store.hasPermission('WORDS'));
     const canViewNames = computed(() => store.hasPermission('NAMES'));
@@ -268,7 +304,7 @@ export default defineComponent({
     const logout = () => {
       store.logout();
       router.push('/login');
-      serverProxy.logout();
+      server.logout();
     };
 
     const locales = ref<Locale[]>([
@@ -287,6 +323,18 @@ export default defineComponent({
       router.go(0);
     };
 
+    onMounted(async () => {
+      try {
+        const environmentInfo = await server.getEnvironmentInfo();
+        isReadOnlyEnvironment.value = environmentInfo.databaseReadOnly;
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error loading environment info',
+          err as Error
+        );
+      }
+    });
+
     return {
       title,
       logout,
@@ -295,6 +343,7 @@ export default defineComponent({
       firstName,
       displayAdminBadge,
       isDevelopmentEnvironment,
+      isReadOnlyEnvironment,
       canViewWords,
       canViewNames,
       canViewPlaces,

@@ -212,3 +212,39 @@ export const getDetectLanguageAPIKEY = async (): Promise<string> => {
 
   return apiKey;
 };
+
+export const getElasticBeanstalkRegion = (): string => {
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      process.env.CURRENT_EB_REGION ||
+      'Unknown Production Region (No Environment Variable Set)'
+    );
+  }
+  return 'Development (localhost)';
+};
+
+export const getDatabaseReadRegion = (): string => {
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      process.env.DB_READ_REGION ||
+      'Unknown Production Read Region (No Environment Variable Set)'
+    );
+  }
+  if (process.env.DB_SOURCE === 'readonly') {
+    return 'Read-Only Production (us-west-2)';
+  }
+  return 'Development (Docker)';
+};
+
+export const getDatabaseWriteRegion = (): string => {
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      process.env.DB_WRITE_REGION ||
+      'Unknown Production Write Region (No Environment Variable Set)'
+    );
+  }
+  if (process.env.DB_SOURCE === 'readonly') {
+    return 'Write Access Restricted';
+  }
+  return 'Development (Docker)';
+};
