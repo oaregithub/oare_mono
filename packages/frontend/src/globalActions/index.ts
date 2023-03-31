@@ -21,17 +21,26 @@ const showErrorSnackbar = async (
   const server = sl.get('serverProxy');
   const description = devErrorText || text;
 
-  await server.logError({
-    description,
-    stacktrace: error && error.stack ? error.stack : null,
-    status: 'New',
-  });
-
   EventBus.$emit(ACTIONS.TOAST, {
     text,
     error: true,
     errorMessage: error ? error.message : undefined,
   });
+
+  try {
+    await server.logError({
+      description,
+      stacktrace: error && error.stack ? error.stack : null,
+      status: 'New',
+    });
+  } catch {
+    // eslint-disable-next-line no-console
+    console.error('Error logging error', {
+      description,
+      stacktrace: error && error.stack ? error.stack : null,
+      status: 'New',
+    });
+  }
 };
 
 const inputSpecialChar = async (char: string) => {

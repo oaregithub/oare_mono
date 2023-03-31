@@ -2,15 +2,18 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/adminRoute';
 import { EnvironmentInfo } from '@oare/types';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
 router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
   try {
+    const utils = sl.get('utils');
     const environmentInfo: EnvironmentInfo = {
-      elasticBeanstalkRegion: process.env.CURRENT_EB_REGION,
-      databaseReadRegion: process.env.DB_READ_REGION,
-      databaseWriteRegion: process.env.DB_WRITE_REGION,
+      elasticBeanstalkRegion: utils.getElasticBeanstalkRegion(),
+      databaseReadRegion: utils.getDatabaseReadRegion(),
+      databaseWriteRegion: utils.getDatabaseWriteRegion(),
+      databaseReadOnly: process.env.DB_SOURCE === 'readonly',
     };
     res.json(environmentInfo);
   } catch (err) {

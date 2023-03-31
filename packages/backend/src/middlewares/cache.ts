@@ -12,7 +12,8 @@ const cacheMiddleware = <T>(
     const cache = sl.get('cache');
     const cacheIsEnabled =
       process.env.NODE_ENV === 'test' ||
-      (await CacheStatusDao.cacheIsEnabled());
+      ((await CacheStatusDao.cacheIsEnabled()) &&
+        process.env.DB_SOURCE !== 'readonly');
 
     const key: CacheKey = { req };
 

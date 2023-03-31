@@ -145,28 +145,22 @@
       <v-list-item class="ma-2">
         <v-list-item-content>
           <v-list-item-title>Environment Info</v-list-item-title>
-          <v-list-item-subtitle>
-            Elastic Beanstalk Region:
-            {{
-              environmentInfo && environmentInfo.elasticBeanstalkRegion
-                ? environmentInfo.elasticBeanstalkRegion
-                : 'Development (localhost)'
-            }}
+          <v-list-item-subtitle v-if="environmentInfo">
+            <b>Elastic Beanstalk Region:</b>
+            {{ environmentInfo.elasticBeanstalkRegion }}
           </v-list-item-subtitle>
-          <v-list-item-subtitle>
-            Database Read Region:
-            {{
-              environmentInfo && environmentInfo.databaseReadRegion
-                ? environmentInfo.databaseReadRegion
-                : 'Development (Docker)'
-            }}</v-list-item-subtitle
+          <v-list-item-subtitle v-if="environmentInfo">
+            <b>Database Read Region:</b>
+            {{ environmentInfo.databaseReadRegion }}</v-list-item-subtitle
           >
-          <v-list-item-subtitle>
-            Database Write Region:
+          <v-list-item-subtitle v-if="environmentInfo">
+            <b>Database Write Region:</b>
+            {{ environmentInfo.databaseWriteRegion }}</v-list-item-subtitle
+          >
+          <v-list-item-subtitle v-if="environmentInfo">
+            <b>Database Connection Type:</b>
             {{
-              environmentInfo && environmentInfo.databaseWriteRegion
-                ? environmentInfo.databaseWriteRegion
-                : 'Development (Docker)'
+              environmentInfo.databaseReadOnly ? 'Read-Only' : 'Read/Write'
             }}</v-list-item-subtitle
           >
         </v-list-item-content>
