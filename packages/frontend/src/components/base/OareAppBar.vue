@@ -325,8 +325,7 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        const environmentInfo = await server.getEnvironmentInfo();
-        isReadOnlyEnvironment.value = environmentInfo.databaseReadOnly;
+        isReadOnlyEnvironment.value = await server.getReadOnlyStatus();
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading environment info',
