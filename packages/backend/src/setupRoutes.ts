@@ -26,7 +26,6 @@ import profile from './api/profile';
 import groupAllowlist from './api/group_allowlist';
 import groupEditPermissions from './api/group_edit_permissions';
 import signReading from './api/sign_reading';
-import betaAccess from './api/beta_access';
 import publications from './api/publications';
 import archives from './api/archives';
 import pageContent from './api/page_content';
@@ -71,7 +70,6 @@ export default (app: Express) => {
     groupAllowlist,
     groupEditPermissions,
     signReading,
-    betaAccess,
     publications,
     archives,
     pageContent,
