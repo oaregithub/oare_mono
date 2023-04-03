@@ -30,8 +30,19 @@ class PersonDao {
         'item_properties.reference_uuid',
         k('text_discourse').select('uuid')
       )
-      .modify(qb => {
-        if (roleUuid) {
+      .modify(async qb => {
+        if (roleUuid === 'noRole') {
+          const temporaryRoles = await this.getRolesList('temporary');
+          const durableRoles = await this.getRolesList('durable');
+          const rolesList = [...temporaryRoles, ...durableRoles];
+          qb.leftJoin('item_properties AS ip2', function () {
+            this.on(
+              'item_properties.reference_uuid',
+              '=',
+              'ip2.reference_uuid'
+            ).andOnIn('ip2.value_uuid', rolesList);
+          }).whereNull('ip2.id');
+        } else if (roleUuid) {
           qb.innerJoin(
             'item_properties AS ip2',
             'item_properties.reference_uuid',
@@ -39,6 +50,38 @@ class PersonDao {
           ).where('ip2.value_uuid', roleUuid);
         }
       });
+    if (roleUuid === 'noRole') {
+      console.log(
+        k('item_properties')
+          .pluck('item_properties.reference_uuid')
+          .where('item_properties.object_uuid', uuid)
+          .whereIn(
+            'item_properties.reference_uuid',
+            k('text_discourse').select('uuid')
+          )
+          .modify(async qb => {
+            if (roleUuid === 'noRole') {
+              const temporaryRoles = await this.getRolesList('temporary');
+              const durableRoles = await this.getRolesList('durable');
+              const rolesList = [...temporaryRoles, ...durableRoles];
+              qb.leftJoin('item_properties AS ip2', function () {
+                this.on(
+                  'item_properties.reference_uuid',
+                  '=',
+                  'ip2.reference_uuid'
+                ).andOnIn('ip2.value_uuid', rolesList);
+              }).whereNull('ip2.id');
+            } else if (roleUuid) {
+              qb.innerJoin(
+                'item_properties AS ip2',
+                'item_properties.reference_uuid',
+                'ip2.reference_uuid'
+              ).where('ip2.value_uuid', roleUuid);
+            }
+          })
+          .toString()
+      );
+    }
 
     const count = await k('text_discourse')
       .countDistinct({ count: 'text_discourse.uuid' })
@@ -74,8 +117,19 @@ class PersonDao {
         'item_properties.reference_uuid',
         k('text_discourse').select('uuid')
       )
-      .modify(qb => {
-        if (roleUuid) {
+      .modify(async qb => {
+        if (roleUuid === 'noRole') {
+          const temporaryRoles = await this.getRolesList('temporary');
+          const durableRoles = await this.getRolesList('durable');
+          const rolesList = [...temporaryRoles, ...durableRoles];
+          qb.leftJoin('item_properties AS ip2', function () {
+            this.on(
+              'item_properties.reference_uuid',
+              '=',
+              'ip2.reference_uuid'
+            ).andOnIn('ip2.value_uuid', rolesList);
+          }).whereNull('ip2.id');
+        } else if (roleUuid) {
           qb.innerJoin(
             'item_properties AS ip2',
             'item_properties.reference_uuid',
@@ -505,6 +559,7 @@ class PersonDao {
       discussion,
       temporaryRoles: [],
       durableRoles: [],
+      roleNotYetAssigned: 0,
     };
   }
 }
