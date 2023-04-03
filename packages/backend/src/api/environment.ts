@@ -21,4 +21,13 @@ router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
   }
 });
 
+router.route('/environment_readonly').get(async (_req, res, next) => {
+  try {
+    const databaseReadOnly = process.env.DB_SOURCE === 'readonly';
+    res.json(databaseReadOnly);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
 export default router;
