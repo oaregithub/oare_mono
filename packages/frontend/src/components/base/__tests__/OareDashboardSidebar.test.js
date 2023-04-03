@@ -46,7 +46,7 @@ describe('OareDashboardSidebar with permissions', () => {
   });
 
   it('contains expected sidebar links', () => {
-    ['Profile', 'Drafts', 'Comments', 'Preferences'].forEach(link => {
+    ['Profile', 'Drafts', 'Comments'].forEach(link => {
       const linkItem = wrapper.find(`[data-testid="${link}"]`);
       expect(linkItem.text()).toBe(link);
     });

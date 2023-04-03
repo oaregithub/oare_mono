@@ -150,8 +150,7 @@ class PermissionsDao {
     {
       name: 'ADD_NEW_TEXTS',
       type: 'text',
-      description:
-        'Allow group users to add new texts to a collection. Currently requires user to have beta access',
+      description: 'Allow group users to add new texts to a collection.',
     },
     {
       name: 'EDIT_TEXT_INFO',
