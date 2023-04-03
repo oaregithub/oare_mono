@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="ma-10 pa-2 pl-3 pb-3">
+  <v-card outlined class="mr-10 my-10 pa-2 pl-3 pb-3">
     <v-card-title
       >{{ year.number }} - {{ year.name }} ({{
         year.occurrences
@@ -19,11 +19,7 @@
       </v-col>
       <v-col cols="3" class="d-flex justify-center align-center">
         <v-row class="ml-14" v-if="intercalaryMonth">
-          <PeriodMonth
-            :year="year"
-            :month="intercalaryMonth"
-          >
-          </PeriodMonth>
+          <PeriodMonth :year="year" :month="intercalaryMonth"> </PeriodMonth>
         </v-row>
       </v-col>
     </v-row>
@@ -49,7 +45,7 @@ export default defineComponent({
     const standardMonths = computed(() =>
       props.year.months.filter(month => month.abbreviation < 13)
     );
-    const intercalaryMonth  = computed(() =>
+    const intercalaryMonth = computed(() =>
       props.year.months.find(month => month.abbreviation > 12)
     );
     return {
