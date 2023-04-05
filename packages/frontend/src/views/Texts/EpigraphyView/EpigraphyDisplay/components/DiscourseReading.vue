@@ -15,7 +15,7 @@
             <span
               v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
               :key="idx"
-              v-html="` ${word.display}`"
+              v-html="formatWord(word)"
               class="cursor-display"
               @click="openDialog(word.uuid, word.type)"
             />
@@ -33,7 +33,7 @@
               >
                 <template #activator="{ on, attrs }">
                   <span
-                    v-html="` ${word.display}`"
+                    v-html="formatWord(word)"
                     class="cursor-display"
                     v-on="on"
                     v-bind="attrs"
@@ -182,7 +182,7 @@
       :item="`${commentDialogItem.replace(/<[em/]{2,3}>/gi, '')}`"
       :uuid="commentDialogUuid"
       :key="commentDialogUuid"
-      :route="`/threads/${commentDialogUuid}`"
+      :route="`/epigraphies/${textUuid}/${commentDialogUuid}`"
       ><span v-html="commentDialogItem"></span
     ></component>
     <connect-spelling-occurrence
@@ -229,7 +229,12 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import { DiscourseUnit, Word, LocaleCode } from '@oare/types';
+import {
+  DiscourseUnit,
+  Word,
+  LocaleCode,
+  DiscourseDisplayUnit,
+} from '@oare/types';
 import { DiscourseHtmlRenderer, convertSideNumberToSide } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DictionaryWord from '@/views/DictionaryWord/index.vue';
@@ -257,6 +262,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    discourseToHighlight: {
+      type: String,
+      required: false,
+    },
   },
   components: {
     DiscoursePropertiesCard,
@@ -264,7 +273,7 @@ export default defineComponent({
     ConnectSpellingOccurrence,
     UtilList,
   },
-  setup({ discourseUnits, textUuid, disableEditing }) {
+  setup({ discourseUnits, textUuid, disableEditing, discourseToHighlight }) {
     const discourseRenderer = new DiscourseHtmlRenderer(
       discourseUnits,
       i18n.locale as LocaleCode
@@ -404,6 +413,16 @@ export default defineComponent({
       }
 
       return true;
+    };
+
+    const formatWord = (word: DiscourseDisplayUnit) => {
+      const isWordToHighlight =
+        discourseToHighlight && word.uuid
+          ? discourseToHighlight.includes(word.uuid)
+          : false;
+      return isWordToHighlight
+        ? ` <mark>${word.display}</mark>`
+        : ` ${word.display}`;
     };
 
     watch(articulateDiscourseHierarchy, () => {
@@ -548,6 +567,7 @@ export default defineComponent({
       commentDialogUuid,
       commentComponent,
       isCommenting,
+      formatWord,
     };
   },
 });

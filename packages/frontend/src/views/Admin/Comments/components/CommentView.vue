@@ -127,7 +127,14 @@ i
       :uuid="selectedThreadDisplay.thread.referenceUuid"
       :item="selectedThreadDisplay.word"
       :initial-thread-uuid="selectedThreadDisplay.thread.uuid"
-      showDictionary
+      :showDictionary="
+        selectedThreadDisplay.thread.route &&
+        selectedThreadDisplay.thread.route.includes('dictionaryWord')
+      "
+      :showEpigraphy="
+        selectedThreadDisplay.thread.route &&
+        selectedThreadDisplay.thread.route.includes('epigraphies')
+      "
       @submit="isViewingThread = false"
       @input="isViewingThread = false"
       class="test-comment-word-display"

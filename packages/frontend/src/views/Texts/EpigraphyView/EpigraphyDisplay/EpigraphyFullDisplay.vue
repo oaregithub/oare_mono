@@ -3,8 +3,11 @@
     <EpigraphyReading
       class="test-epigraphies mt-n8"
       :epigraphicUnits="epigraphicUnits"
-      :discourseToHighlight="discourseToHighlight"
+      :epigraphyDiscourseToHighlight="
+        highlightEpigraphyDiscourse ? discourseToHighlight : ''
+      "
       :localDiscourseInfo="localDiscourseInfo"
+      :textUuid="textUuid"
       :commentMode="commentMode"
     />
     <DiscourseReading
@@ -12,6 +15,7 @@
       :discourseUnits="discourseUnits"
       :textUuid="textUuid"
       :disableEditing="disableEditing"
+      :discourseToHighlight="highlightDiscourse ? discourseToHighlight : ''"
       :commentMode="commentMode"
       class="test-discourses"
     />
@@ -58,6 +62,14 @@ export default defineComponent({
       default: false,
     },
     commentMode: {
+      type: Boolean,
+      default: false,
+    },
+    highlightEpigraphyDiscourse: {
+      type: Boolean,
+      default: true,
+    },
+    highlightDiscourse: {
       type: Boolean,
       default: false,
     },

@@ -350,6 +350,14 @@ export default defineComponent({
       type: String,
       required: false,
     },
+    highlightEpigraphyDiscourse: {
+      type: Boolean,
+      default: true,
+    },
+    highlightDiscourse: {
+      type: Boolean,
+      default: true,
+    },
     disableEditing: {
       type: Boolean,
       default: false,
@@ -378,6 +386,8 @@ export default defineComponent({
     localEpigraphyUnits,
     localImageUrls,
     forceAllowAdminView,
+    highlightDiscourse,
+    highlightEpigraphyDiscourse,
   }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
@@ -486,6 +496,9 @@ export default defineComponent({
         discourseUnits: textInfo.value.discourseUnits,
         discourseToHighlight,
         commentMode: commentMode.value,
+        textUuid,
+        highlightEpigraphyDiscourse,
+        highlightDiscourse,
       };
     });
 

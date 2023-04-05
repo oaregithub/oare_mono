@@ -66,7 +66,8 @@
                           openComment(
                             sign.uuid,
                             sign.reading ? sign.reading : '',
-                            word.reading
+                            word.reading,
+                            word.discourseUuid
                           )
                         "
                         :hasEdit="false"
@@ -111,7 +112,8 @@
                                 openComment(
                                   sign.uuid,
                                   sign.reading ? sign.reading : '',
-                                  word.reading
+                                  word.reading,
+                                  word.discourseUuid
                                 )
                               "
                               :hasEdit="false"
@@ -143,7 +145,8 @@
                               openComment(
                                 word.discourseUuid,
                                 word.word,
-                                word.word
+                                word.word,
+                                word.discourseUuid
                               )
                             "
                             :hasEdit="false"
@@ -181,7 +184,8 @@
                               openComment(
                                 word.discourseUuid,
                                 word.form,
-                                word.form
+                                word.form,
+                                word.discourseUuid
                               )
                             "
                             :hasEdit="false"
@@ -232,7 +236,7 @@
       }`"
       :uuid="commentDialogUuid"
       :key="commentDialogUuid"
-      :route="`/threads/${commentDialogUuid}`"
+      :route="`/epigraphies/${textUuid}/${commentDiscourseUuid}`"
       ><span
         v-html="
           `'${commentDialogItem.replace(/<[em/]{2,3}>/gi, '')}'${
@@ -361,11 +365,15 @@ export default defineComponent({
     UtilList,
   },
   props: {
+    textUuid: {
+      type: String,
+      required: false,
+    },
     epigraphicUnits: {
       type: Array as PropType<EpigraphicUnit[]>,
       required: true,
     },
-    discourseToHighlight: {
+    epigraphyDiscourseToHighlight: {
       type: String,
       required: false,
     },
@@ -390,6 +398,7 @@ export default defineComponent({
     const commentDialogUuid = ref('');
     const commentDialogItem = ref('');
     const commentDialogParent = ref('');
+    const commentDiscourseUuid = ref('');
     const connectSpellingDialogSpelling = ref('');
     const connectSpellingDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
@@ -550,8 +559,8 @@ export default defineComponent({
 
     const formatWord = (word: EpigraphicWord) => {
       const isWordToHighlight =
-        props.discourseToHighlight && word.discourseUuid
-          ? props.discourseToHighlight.includes(word.discourseUuid)
+        props.epigraphyDiscourseToHighlight && word.discourseUuid
+          ? props.epigraphyDiscourseToHighlight.includes(word.discourseUuid)
           : false;
       return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
     };
@@ -587,10 +596,16 @@ export default defineComponent({
 
     const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
 
-    const openComment = (uuid: string, item: string, parent: string) => {
+    const openComment = (
+      uuid: string,
+      item: string,
+      parent: string,
+      discourseUuid: string
+    ) => {
       commentDialogUuid.value = uuid;
       commentDialogItem.value = item;
       commentDialogParent.value = parent;
+      commentDiscourseUuid.value = discourseUuid;
       isCommenting.value = true;
     };
 
@@ -633,6 +648,7 @@ export default defineComponent({
       commentComponent,
       commentDialogItem,
       commentDialogParent,
+      commentDiscourseUuid,
       isCommenting,
       canComment,
       openComment,
