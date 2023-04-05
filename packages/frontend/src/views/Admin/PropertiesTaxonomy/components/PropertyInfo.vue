@@ -168,6 +168,7 @@ export default defineComponent({
             uuid: reactiveFieldUuid.value,
             description: newDescription.value,
             primacy: newPrimacy.value,
+            location: 'taxonomyTree',
           });
 
           await assignNewValues();

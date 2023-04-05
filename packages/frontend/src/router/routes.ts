@@ -52,7 +52,6 @@ import ManageEdits from '../views/Admin/Groups/Edits/ManageEdits.vue';
 import AddEditTexts from '../views/Admin/Groups/Edits/Texts/AddEditTexts.vue';
 import AddEditCollections from '../views/Admin/Groups/Edits/Collections/AddEditCollections.vue';
 import AddNewTexts from '../views/Texts/CollectionTexts/AddTexts/index.vue';
-import UserPreferences from '../views/Dashboard/UserPreferences.vue';
 import BibliographyView from '../views/Bibliography/index.vue';
 import AboutView from '../views/About/index.vue';
 import TutorialView from '../views/Tutorial/index.vue';
@@ -68,6 +67,7 @@ import SealsView from '../views/Seals/SealList.vue';
 import SealView from '../views/Seals/SingleSeal.vue';
 import EditText from '../views/Texts/EpigraphyView/EditText/index.vue';
 import PeriodsView from '../views/Periods/Periods.vue';
+import IndivPerson from '../views/Persons/IndivPerson.vue';
 
 const routes: RouteConfig[] = [
   {
@@ -355,12 +355,6 @@ const routes: RouteConfig[] = [
     beforeEnter: permissionGuard('ADD_COMMENTS'),
   },
   {
-    path: '/dashboard/preferences',
-    name: 'dashboardPreferences',
-    component: UserPreferences,
-    beforeEnter: authenticatedGuard,
-  },
-  {
     path: '/words/:letter',
     name: 'words',
     component: WordsView,
@@ -491,6 +485,13 @@ const routes: RouteConfig[] = [
     name: 'periods',
     component: PeriodsView,
     beforeEnter: permissionGuard('PERIODS'),
+  },
+  {
+    path: '/person/:uuid',
+    name: 'person',
+    component: IndivPerson,
+    props: true,
+    beforeEnter: permissionGuard('PERSONS'),
   },
   // Defaults to 404 Not Found view if no route matches. This MUST be the last route.
   {

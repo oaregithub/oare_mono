@@ -15,7 +15,10 @@ describe('ArchivesView', () => {
     uuid: 'mockUuid',
     totalTexts: 1,
     totalDossiers: 1,
+    bibliographyUuid: 'bibUuid',
+    descriptions: [],
   };
+
   const mockServer = {
     getAllArchives: jest.fn().mockResolvedValue([archiveInfo]),
   };
@@ -24,9 +27,14 @@ describe('ArchivesView', () => {
     showErrorSnackbar: jest.fn(),
   };
 
-  const createWrapper = ({ server, actions } = {}) => {
+  const mockStore = {
+    hasPermission: () => true,
+  };
+
+  const createWrapper = ({ server, actions, store } = {}) => {
     sl.set('serverProxy', server || mockServer);
     sl.set('globalActions', actions || mockActions);
+    sl.set('store', store || mockStore);
 
     return mount(ArchivesView, {
       vuetify,

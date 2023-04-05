@@ -93,7 +93,8 @@ export default defineComponent({
       type: Function as PropType<
         (
           uuid: string[],
-          request: Pagination
+          request: Pagination,
+          filterUuid?: string
         ) => Promise<TextOccurrencesResponseRow[]>
       >,
       required: true,
@@ -102,7 +103,8 @@ export default defineComponent({
       type: Function as PropType<
         (
           uuid: string[],
-          filter: Partial<Pagination>
+          filter: Partial<Pagination>,
+          filterUuid?: string
         ) => Promise<TextOccurrencesCountResponseItem[]>
       >,
       required: true,
@@ -118,6 +120,10 @@ export default defineComponent({
     showDisconnect: {
       type: Boolean,
       default: true,
+    },
+    filterUuid: {
+      type: String,
+      required: false,
     },
   },
   setup(props, { emit }) {
@@ -179,11 +185,15 @@ export default defineComponent({
       try {
         textOccurrences.value = [];
         referencesLoading.value = true;
-        textOccurrences.value = await props.getTexts(props.uuids, {
-          page: tableOptions.value.page,
-          limit: tableOptions.value.itemsPerPage,
-          ...(search.value ? { filter: search.value } : null),
-        });
+        textOccurrences.value = await props.getTexts(
+          props.uuids,
+          {
+            page: tableOptions.value.page,
+            limit: tableOptions.value.itemsPerPage,
+            ...(search.value ? { filter: search.value } : null),
+          },
+          props.filterUuid
+        );
       } catch (err) {
         actions.showErrorSnackbar(
           'Failed to load text occurrences',
@@ -195,21 +205,28 @@ export default defineComponent({
     };
 
     watch(
-      () => props.uuids,
+      [() => props.value, () => props.filterUuid, () => props.uuids],
       async () => {
-        await getReferences();
+        if (props.value) {
+          tableOptions.value.page = 1;
+          await getReferences();
+        }
       }
     );
 
-    watch(tableOptions, getReferences);
+    watch(tableOptions, async () => await getReferences());
 
     watch(
       search,
       _.debounce(async () => {
         textOccurrencesLength.value = (
-          await props.getTextsCount(props.uuids, {
-            filter: search.value,
-          })
+          await props.getTextsCount(
+            props.uuids,
+            {
+              filter: search.value,
+            },
+            props.filterUuid
+          )
         ).reduce((sum, current) => sum + current.count, 0);
         tableOptions.value.page = 1;
         await getReferences();

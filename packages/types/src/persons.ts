@@ -1,5 +1,4 @@
 import { ItemPropertyRow } from './words';
-import { SearchTextsResultRow } from './search';
 import { FieldRow } from './field';
 
 export interface PersonRow {
@@ -29,6 +28,7 @@ export interface PersonCore {
 export interface PersonRole {
   role: string;
   roleUuid: string;
+  occurrences: number;
 }
 
 export interface PersonInfo {
@@ -41,7 +41,7 @@ export interface PersonInfo {
   husbands: PersonCore[];
   siblings: PersonCore[];
   children: PersonCore[];
+  temporaryRoles: PersonRole[];
   durableRoles: PersonRole[];
   discussion: FieldRow[];
-  temporaryRoles: PersonRole[];
 }

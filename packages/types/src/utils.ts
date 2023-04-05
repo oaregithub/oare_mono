@@ -12,9 +12,10 @@ export interface AdminBadgeOptions {
 }
 
 export interface EnvironmentInfo {
-  elasticBeanstalkRegion?: string;
-  databaseReadRegion?: string;
-  databaseWriteRegion?: string;
+  elasticBeanstalkRegion: string;
+  databaseReadRegion: string;
+  databaseWriteRegion: string;
+  databaseReadOnly: boolean;
 }
 
 export interface Locale {

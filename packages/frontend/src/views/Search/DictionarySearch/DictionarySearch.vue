@@ -22,10 +22,10 @@
       <v-col cols="4">
         <v-radio-group v-model="useMode">
           <template #label>
-            <v-label>Respect Character Boundaries</v-label>
+            <v-label>Match Whole Words</v-label>
           </template>
-          <v-radio label="Yes" value="respectCharBoundaries"></v-radio>
-          <v-radio label="No" value="respectNoBoundaries"></v-radio>
+          <v-radio label="Yes" value="matchWholeWords"></v-radio>
+          <v-radio label="No" value="matchSubstring"></v-radio>
         </v-radio-group>
         <div><v-label class="label">Dictionary to Search</v-label></div>
         <v-checkbox
@@ -112,11 +112,11 @@ export default defineComponent({
     const dictionarySearch = useQueryParam('dictionary', '', true);
     const page = useQueryParam('page', '1', false);
     const rows = useQueryParam('rows', '25', true);
-    const mode = useQueryParam('mode', 'respectCharBoundaries', true);
+    const mode = useQueryParam('mode', 'matchWholeWords', true);
     const types = ref(['word', 'PN', 'GN']);
     const typeLabels = [
       { label: 'Words', value: 'word' },
-      { label: 'People', value: 'PN' },
+      { label: 'Names', value: 'PN' },
       { label: 'Places', value: 'GN' },
     ];
     const useMode = ref(mode.value);

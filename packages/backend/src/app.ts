@@ -2,7 +2,6 @@ import express from 'express';
 import history from 'connect-history-api-fallback';
 import path from 'path';
 import errorMiddleware from '@/middlewares/error';
-import '../envConfig';
 import fileupload from 'express-fileupload';
 import setupRoutes from './setupRoutes';
 import userMiddleware from './middlewares/user';

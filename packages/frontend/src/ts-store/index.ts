@@ -50,14 +50,6 @@ export default {
   setAdminBadge: (status: AdminBadgeOptions) => {
     state.displayAdminBadge = status;
   },
-  setBetaAccess: (status: boolean) => {
-    if (state.user) {
-      state.user = {
-        ...state.user,
-        betaAccess: status,
-      };
-    }
-  },
   hasPermission(name: PermissionName) {
     return state.permissions.map(perm => perm.name).includes(name);
   },

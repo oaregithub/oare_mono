@@ -14,7 +14,11 @@ const errorMiddleware = async (
   const message =
     typeof error.message === 'string' ? error.message : String(error);
 
-  if (!error.preventLog && process.env.NODE_ENV !== 'test') {
+  if (
+    !error.preventLog &&
+    process.env.NODE_ENV !== 'test' &&
+    process.env.DB_SOURCE !== 'readonly'
+  ) {
     const userUuid = request.user ? request.user.uuid : null;
     const stacktrace = error.stack || null;
 
@@ -25,7 +29,11 @@ const errorMiddleware = async (
       status: 'New',
     };
 
-    await ErrorsDao.logError(insertRow);
+    try {
+      await ErrorsDao.logError(insertRow);
+    } catch (err) {
+      console.error('Error logging error', insertRow); // eslint-disable-line no-console
+    }
   }
 
   if (process.env.NODE_ENV !== 'test' || process.env.TEST_LOG === 'on') {

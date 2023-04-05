@@ -356,7 +356,7 @@ export default defineComponent({
     },
     highlightDiscourse: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     disableEditing: {
       type: Boolean,
@@ -403,10 +403,6 @@ export default defineComponent({
     );
 
     const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
-
-    const hasBetaAccess = computed(() =>
-      store.getters.user ? store.getters.user.betaAccess : false
-    );
 
     const loading = ref(false);
     const imagesLoading = ref(false);
@@ -788,7 +784,6 @@ export default defineComponent({
       seeMoreZotero,
       seeMoreSwitch,
       imagesLoading,
-      hasBetaAccess,
       canComment,
       commentMode,
     };
