@@ -176,31 +176,31 @@ router
           referenceLocations.map(location => concatLocation(location))
         );
 
-        const fileURLs = await Promise.all(
-          bibliographyUuids.map((uuid, idx) =>
-            ResourceDao.getPDFUrlByBibliographyUuid(
-              uuid,
-              referenceLocations[idx]
-            )
-          )
-        );
-
         const rawZoteroData = zoteroCitations.map((cit, idx) => ({
           citation: cit
             ? `${cit.replace(/<[span/]{4,5}>/gi, '')}${
                 referenceLocationsStrings[idx]
               }`
             : null,
-          links: fileURLs[idx],
+          links: { fileUrl: '', pageLink: '', plateLink: '' },
+          uuid: bibliographyUuids[idx],
+          referringLocationInfo: referenceLocations[idx],
         }));
 
         const zoteroData: ZoteroData[] = rawZoteroData
-          .filter(item => item.citation !== null && item.links.fileUrl !== null)
+          .filter(
+            item =>
+              item.uuid !== null &&
+              item.citation !== null &&
+              item.links.fileUrl !== null
+          )
           .map(item => ({
             citation: item.citation!,
             link: item.links.fileUrl!,
             pageLink: item.links.pageLink,
             plateLink: item.links.plateLink,
+            uuid: item.uuid,
+            referringLocationInfo: item.referringLocationInfo,
           }));
 
         const epigraphy: EpigraphyResponse = {

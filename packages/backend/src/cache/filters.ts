@@ -7,6 +7,8 @@ import {
   Seal,
   SealInfo,
   PersonInfo,
+  BibliographyResponse,
+  ZoteroData,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -111,6 +113,7 @@ export const textFilter = async (
   user: User | null
 ): Promise<EpigraphyResponse> => {
   const CollectionTextUtils = sl.get('CollectionTextUtils');
+  const ResourceDao = sl.get('ResourceDao');
 
   const userUuid = user ? user.uuid : null;
 
@@ -119,9 +122,20 @@ export const textFilter = async (
     userUuid
   );
 
+  const zoteroData: ZoteroData[] = await Promise.all(
+    epigraphy.zoteroData.map(zd => {
+      const links = ResourceDao.getPDFUrlByBibliographyUuid(
+        zd.uuid,
+        zd.referringLocationInfo
+      );
+      return { ...zd, links };
+    })
+  );
+
   return {
     ...epigraphy,
     canWrite,
+    zoteroData,
   };
 };
 
@@ -198,6 +212,31 @@ export const personFilter = async (
     temporaryRoles,
     durableRoles,
   };
+};
+
+export const bibliographyFilter = async (
+  bibliography: BibliographyResponse
+): Promise<BibliographyResponse> => {
+  const ResourceDao = sl.get('ResourceDao');
+  const { fileUrl } = await ResourceDao.getPDFUrlByBibliographyUuid(
+    bibliography.uuid
+  );
+  const bibliographyResponse = {
+    ...bibliography,
+    bibliography: { ...bibliography.bibliography, url: fileUrl },
+  };
+  return bibliographyResponse;
+};
+
+export const bibliographiesFilter = async (
+  bibliographies: BibliographyResponse[]
+): Promise<BibliographyResponse[]> => {
+  const bibliographyResponse = await Promise.all(
+    bibliographies.map(async bibliography => {
+      return bibliographyFilter(bibliography);
+    })
+  );
+  return bibliographyResponse;
 };
 
 export const noFilter = async (items: any, _user: User | null) => items;
