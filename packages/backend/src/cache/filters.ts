@@ -232,9 +232,7 @@ export const bibliographiesFilter = async (
   bibliographies: BibliographyResponse[]
 ): Promise<BibliographyResponse[]> => {
   const bibliographyResponse = await Promise.all(
-    bibliographies.map(async bibliography => {
-      return bibliographyFilter(bibliography);
-    })
+    bibliographies.map(async bibliography => bibliographyFilter(bibliography))
   );
   return bibliographyResponse;
 };
