@@ -22,7 +22,6 @@ import textMiddleware from '@/middlewares/text';
 import fileUpload from 'express-fileupload';
 import { noFilter, textFilter } from '@/cache/filters';
 import { concatLocation } from './daos/ResourceDao/utils';
-import { cleanLines } from './daos/EditTextUtils/utils';
 
 const router = express.Router();
 
@@ -719,7 +718,7 @@ router
           await EditTextUtils.removeSign(payload, trx);
         }
 
-        await cleanLines(payload.textUuid, trx);
+        await EditTextUtils.cleanLines(payload.textUuid, trx);
       });
 
       await cache.clear(
