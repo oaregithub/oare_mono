@@ -20,11 +20,11 @@
     <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
       <div class="ml-8">
         <v-btn
-          v-if="!isEditing && textInfo.canWrite && hasBetaAccess"
+          v-if="!isEditing && textInfo.canWrite"
           color="primary"
           :to="`/edit_text/${textUuid}`"
           class="mx-2"
-          >Edit (BETA)</v-btn
+          >Edit</v-btn
         >
         <v-btn
           v-if="!isEditing && textInfo.canWrite"
@@ -382,10 +382,6 @@ export default defineComponent({
 
     const canAddPictures = computed(() =>
       store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
-    );
-
-    const hasBetaAccess = computed(() =>
-      store.getters.user ? store.getters.user.betaAccess : false
     );
 
     const loading = ref(false);
@@ -762,7 +758,6 @@ export default defineComponent({
       seeMoreZotero,
       seeMoreSwitch,
       imagesLoading,
-      hasBetaAccess,
     };
   },
 });
