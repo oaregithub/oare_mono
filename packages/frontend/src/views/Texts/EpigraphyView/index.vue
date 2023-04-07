@@ -20,11 +20,11 @@
     <template #title:post v-if="!disableEditing && textInfo.hasEpigraphy">
       <div class="ml-8">
         <v-btn
-          v-if="!isEditing && textInfo.canWrite && hasBetaAccess"
+          v-if="!isEditing && textInfo.canWrite"
           color="primary"
           :to="`/edit_text/${textUuid}`"
           class="mx-2"
-          >Edit (BETA)</v-btn
+          >Edit</v-btn
         >
         <v-btn
           v-if="!isEditing && textInfo.canWrite"
@@ -388,6 +388,7 @@ export default defineComponent({
     forceAllowAdminView,
     highlightDiscourse,
     highlightEpigraphyDiscourse,
+    disableEditing,
   }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
@@ -402,7 +403,9 @@ export default defineComponent({
       store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
     );
 
-    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+    const canComment = computed(
+      () => store.hasPermission('ADD_COMMENTS') && !disableEditing
+    );
 
     const loading = ref(false);
     const imagesLoading = ref(false);

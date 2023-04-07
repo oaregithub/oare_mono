@@ -205,8 +205,6 @@ export default defineComponent({
       threadsWithComments.value[index].name = newThreadName;
     };
 
-    selectedThread.value?.referenceUuid;
-
     const getThreadsWithComments = async () => {
       try {
         if (props.uuid) {
