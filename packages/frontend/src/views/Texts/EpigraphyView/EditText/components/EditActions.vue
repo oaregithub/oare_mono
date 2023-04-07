@@ -3,7 +3,12 @@
     <v-spacer />
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
-        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+        <v-btn
+          color="primary"
+          class="mx-1 mb-6 test-add-button"
+          v-on="on"
+          v-bind="attrs"
+        >
           <v-icon small class="mr-1">mdi-plus</v-icon>
           Add</v-btn
         >
@@ -110,7 +115,12 @@
 
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
-        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+        <v-btn
+          color="primary"
+          class="mx-1 mb-6 test-edit-button"
+          v-on="on"
+          v-bind="attrs"
+        >
           <v-icon small class="mr-1">mdi-pencil</v-icon>
           Edit</v-btn
         >
@@ -201,7 +211,12 @@
 
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
-        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+        <v-btn
+          color="primary"
+          class="mx-1 mb-6 test-split-button"
+          v-on="on"
+          v-bind="attrs"
+        >
           <v-icon small class="mr-1">mdi-content-cut</v-icon>
           Split</v-btn
         >
@@ -228,7 +243,12 @@
 
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
-        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+        <v-btn
+          color="primary"
+          class="mx-1 mb-6 test-merge-button"
+          v-on="on"
+          v-bind="attrs"
+        >
           <v-icon small class="mr-1">mdi-merge</v-icon>
           Merge</v-btn
         >
@@ -255,7 +275,12 @@
 
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
-        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+        <v-btn
+          color="primary"
+          class="mx-1 mb-6 test-reorder-button"
+          v-on="on"
+          v-bind="attrs"
+        >
           <v-icon small class="mr-1">mdi-swap-horizontal</v-icon>
           Reorder</v-btn
         >
@@ -274,7 +299,12 @@
 
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
-        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+        <v-btn
+          color="primary"
+          class="mx-1 mb-6 test-clean-button"
+          v-on="on"
+          v-bind="attrs"
+        >
           <v-icon small class="mr-1">mdi-auto-fix</v-icon>
           Clean Up</v-btn
         >
@@ -292,7 +322,12 @@
 
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
-        <v-btn color="primary" class="mx-1 mb-6" v-on="on" v-bind="attrs">
+        <v-btn
+          color="primary"
+          class="mx-1 mb-6 test-remove-button"
+          v-on="on"
+          v-bind="attrs"
+        >
           <v-icon small class="mr-1">mdi-delete</v-icon>
           Remove</v-btn
         >

@@ -10,7 +10,7 @@
         icon
         color="red"
         small
-        class="mr-2"
+        class="mr-2 test-remove-line"
         @click="removeLineDialog = true"
         ><v-icon small>mdi-delete</v-icon></v-btn
       >
@@ -29,7 +29,7 @@
         icon
         color="red"
         small
-        class="mr-2"
+        class="mr-2 test-remove-region"
         @click="removeRegionDialog = true"
         ><v-icon small>mdi-delete</v-icon></v-btn
       >
@@ -42,7 +42,7 @@
         icon
         color="red"
         small
-        class="mr-2"
+        class="mr-2 test-remove-undetermined-lines"
         @click="removeUndeterminedLinesDialog = true"
         ><v-icon small>mdi-delete</v-icon></v-btn
       >
@@ -55,7 +55,7 @@
         "
         dense
         hide-details
-        class="mt-n1"
+        class="mt-n1 test-merge-line"
         :value="line"
         :input-value="selectedLines"
         @change="$emit('toggle-select-line', line)"
@@ -82,6 +82,7 @@
                     renderer.isUndetermined(line))),
             }"
             @click="handleRegionClick(line)"
+            class="test-editor-region"
           />
         </v-hover>
       </span>
@@ -119,6 +120,7 @@
                           !word.isDivider) ||
                         (currentEditAction === 'splitWord' && !word.isDivider)),
                   }"
+                  class="test-editor-word"
                   @click="handleWordClick(word)"
                 >
                   <span v-for="(sign, signIdx) in word.signs" :key="signIdx">
@@ -143,6 +145,7 @@
                                 word.isDivider)),
                         }"
                         @click="handleSignClick(word, sign)"
+                        class="test-editor-sign"
                       />
                     </v-hover>
                     <span>{{ sign.separator }}</span>
@@ -159,7 +162,7 @@
                 "
                 dense
                 hide-details
-                class="mt-n1 mr-n1"
+                class="mt-n1 mr-n1 test-merge-word-check"
                 :value="word"
                 :input-value="selectedWords"
                 @change="$emit('toggle-select-word', word)"
@@ -191,6 +194,7 @@
               :color="hover ? 'grey darken-3' : 'grey lighten-2'"
               width="25px"
               height="25px"
+              class="test-split-button"
               @click="handleSplitLine(word)"
             >
               <v-icon x-small> mdi-content-cut </v-icon>
@@ -299,8 +303,9 @@
 
     <add-word-dialog
       v-model="addWordDialog"
-      v-if="addWordPreviousWord"
-      :key="addWordPreviousWord.discourseUuid"
+      :key="
+        addWordPreviousWord ? addWordPreviousWord.discourseUuid : 'undefined'
+      "
       :previousWord="addWordPreviousWord"
       :textUuid="textUuid"
       :renderer="renderer"

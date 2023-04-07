@@ -33,7 +33,7 @@
                 v-model="selectedSigns"
                 dense
                 hide-details
-                class="mt-n1"
+                class="mt-n1 test-reorder-sign-check"
                 :value="sign"
                 :disabled="!signCanBeSelected(sign)"
               ></v-checkbox>

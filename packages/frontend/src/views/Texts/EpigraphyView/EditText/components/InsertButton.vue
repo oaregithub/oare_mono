@@ -10,6 +10,7 @@
       width="25px"
       height="25px"
       @click="$emit('insert')"
+      class="test-insert-button"
     >
       <v-icon> mdi-plus </v-icon>
     </v-btn>
@@ -22,6 +23,7 @@
       width="25px"
       height="25px"
       elevation="0"
+      class="test-insert-button"
     >
       <v-icon> mdi-check </v-icon>
     </v-btn>

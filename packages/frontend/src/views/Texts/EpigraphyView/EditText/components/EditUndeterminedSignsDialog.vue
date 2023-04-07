@@ -27,7 +27,9 @@
       ></v-checkbox>
     </v-row>
     <v-row justify="center" class="mt-6 mb-4">
-      <v-btn color="info" @click="markupDialog = true">Edit Markup</v-btn>
+      <v-btn color="info" @click="markupDialog = true" class="test-edit-markup"
+        >Edit Markup</v-btn
+      >
     </v-row>
 
     <oare-dialog
