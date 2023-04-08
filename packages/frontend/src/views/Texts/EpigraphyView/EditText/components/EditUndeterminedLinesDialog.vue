@@ -20,6 +20,7 @@
         dense
         v-model="convertToBrokenArea"
         label="Convert to Broken Area"
+        class="test-convert-to-broken-area"
       ></v-checkbox>
     </v-row>
     <v-row v-if="!convertToBrokenArea" class="ma-0"

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <v-checkbox v-model="damage" hide-details>
+      <v-checkbox v-model="damage" hide-details class="test-damage-check">
         <template #label>Damage</template>
       </v-checkbox>
       <div v-if="damage && signLength > 1">

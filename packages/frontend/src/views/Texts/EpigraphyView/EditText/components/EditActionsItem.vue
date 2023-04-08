@@ -4,9 +4,7 @@
       <v-list-item
         @click="canPerformAction ? $emit('set-action', action) : undefined"
         :inactive="!canPerformAction"
-        :class="{
-          'cursor-display': !canPerformAction,
-        }"
+        :class="`test-${action}`"
         :ripple="canPerformAction"
         v-bind="attrs"
         v-on="on"
@@ -56,10 +54,3 @@ export default defineComponent({
   },
 });
 </script>
-
-
-<style scoped>
-.cursor-display {
-  cursor: default;
-}
-</style>

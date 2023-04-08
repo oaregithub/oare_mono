@@ -43,6 +43,7 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { v4 } from 'uuid';
 import { convertSideToSideNumber } from '@oare/oare';
+import { cleanLines } from './utils';
 
 const getEpigraphyType = (
   readingType: EpigraphicUnitType | undefined
@@ -2672,6 +2673,10 @@ class EditTextUtils {
         trx
       );
     }
+  }
+
+  async cleanLines(textUuid: string, trx?: Knex.Transaction): Promise<void> {
+    await cleanLines(textUuid, trx);
   }
 }
 
