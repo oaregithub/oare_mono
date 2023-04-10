@@ -27,7 +27,6 @@ import profile from './profile';
 import groupAllowlist from './group_allowlist';
 import groupEditPermissions from './group_edit_permissions';
 import signReading from './sign_reading';
-import betaAccess from './beta_access';
 import publications from './publications';
 import archives from './archives';
 import pageContent from './page_content';
@@ -71,7 +70,6 @@ const serverProxy = {
   ...groupAllowlist,
   ...groupEditPermissions,
   ...signReading,
-  ...betaAccess,
   ...publications,
   ...archives,
   ...pageContent,

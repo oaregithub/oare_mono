@@ -38,7 +38,7 @@
         </v-col>
       </v-row>
       <v-btn v-if="canAddNewTexts" @click="addText" color="primary"
-        >Add Text (BETA)</v-btn
+        >Add Text</v-btn
       >
       <TextsTable
         :texts="visibleTexts"
@@ -99,9 +99,6 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const router = sl.get('router');
     const store = sl.get('store');
-    const hasBetaAccess = computed(() =>
-      store.getters.user ? store.getters.user.betaAccess : false
-    );
 
     const collectionName = ref('');
     const loading = ref(false);
@@ -129,9 +126,7 @@ export default defineComponent({
       router.push(`/add_collection_text/${collectionUuid}`);
     };
 
-    const canAddNewTexts = computed(
-      () => store.hasPermission('ADD_NEW_TEXTS') && hasBetaAccess.value
-    );
+    const canAddNewTexts = computed(() => store.hasPermission('ADD_NEW_TEXTS'));
 
     const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
 

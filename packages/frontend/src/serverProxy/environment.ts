@@ -6,6 +6,12 @@ async function getEnvironmentInfo(): Promise<EnvironmentInfo> {
   return data;
 }
 
+async function getReadOnlyStatus(): Promise<boolean> {
+  const { data } = await axios.get('/environment_readonly');
+  return data;
+}
+
 export default {
   getEnvironmentInfo,
+  getReadOnlyStatus,
 };

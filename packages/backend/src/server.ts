@@ -1,4 +1,5 @@
 import sl from '@/serviceLocator';
+import '../envConfig';
 import { LocaleCode, User } from '@oare/types';
 import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
 import DictionaryWordDao from '@/api/daos/DictionaryWordDao';

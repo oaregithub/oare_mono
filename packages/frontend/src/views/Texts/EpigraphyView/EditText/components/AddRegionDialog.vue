@@ -29,7 +29,13 @@
       >Seal Impression Label (Optional)</v-row
     >
     <v-row v-if="regionType === 'isSealImpression'" class="ma-0">
-      <v-text-field outlined dense v-model="regionLabel" placeholder="Ex: A" />
+      <v-text-field
+        outlined
+        dense
+        v-model="regionLabel"
+        placeholder="Ex: A"
+        class="test-region-label"
+      />
     </v-row>
 
     <v-row v-if="regionType === 'uninscribed'" class="ma-0"

@@ -205,13 +205,16 @@ export default defineComponent({
     };
 
     watch(
-      () => props.uuids,
+      [() => props.value, () => props.filterUuid, () => props.uuids],
       async () => {
-        await getReferences();
+        if (props.value) {
+          tableOptions.value.page = 1;
+          await getReferences();
+        }
       }
     );
 
-    watch(tableOptions, getReferences);
+    watch(tableOptions, async () => await getReferences());
 
     watch(
       search,
