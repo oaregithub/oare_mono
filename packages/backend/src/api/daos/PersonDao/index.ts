@@ -22,6 +22,13 @@ class PersonDao {
     const k = trx || knexRead();
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    let rolesList: string[] = [];
+
+    if (roleUuid === 'noRole') {
+      const temporaryRoles = await this.getRolesList('temporary');
+      const durableRoles = await this.getRolesList('durable');
+      rolesList = [...temporaryRoles, ...durableRoles];
+    }
 
     const discourseUuids = await k('item_properties')
       .pluck('item_properties.reference_uuid')
@@ -30,8 +37,16 @@ class PersonDao {
         'item_properties.reference_uuid',
         k('text_discourse').select('uuid')
       )
-      .modify(qb => {
-        if (roleUuid) {
+      .modify(async qb => {
+        if (roleUuid === 'noRole') {
+          qb.leftJoin('item_properties AS ip2', function () {
+            this.on(
+              'item_properties.reference_uuid',
+              '=',
+              'ip2.reference_uuid'
+            ).andOnIn('ip2.value_uuid', rolesList);
+          }).whereNull('ip2.id');
+        } else if (roleUuid) {
           qb.innerJoin(
             'item_properties AS ip2',
             'item_properties.reference_uuid',
@@ -66,6 +81,13 @@ class PersonDao {
 
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    let rolesList: string[] = [];
+
+    if (roleUuid === 'noRole') {
+      const temporaryRoles = await this.getRolesList('temporary');
+      const durableRoles = await this.getRolesList('durable');
+      rolesList = [...temporaryRoles, ...durableRoles];
+    }
 
     const discourseUuids = await k('item_properties')
       .pluck('item_properties.reference_uuid')
@@ -74,8 +96,16 @@ class PersonDao {
         'item_properties.reference_uuid',
         k('text_discourse').select('uuid')
       )
-      .modify(qb => {
-        if (roleUuid) {
+      .modify(async qb => {
+        if (roleUuid === 'noRole') {
+          qb.leftJoin('item_properties AS ip2', function () {
+            this.on(
+              'item_properties.reference_uuid',
+              '=',
+              'ip2.reference_uuid'
+            ).andOnIn('ip2.value_uuid', rolesList);
+          }).whereNull('ip2.id');
+        } else if (roleUuid) {
           qb.innerJoin(
             'item_properties AS ip2',
             'item_properties.reference_uuid',
@@ -505,6 +535,7 @@ class PersonDao {
       discussion,
       temporaryRoles: [],
       durableRoles: [],
+      roleNotYetAssigned: 0,
     };
   }
 }

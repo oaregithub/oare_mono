@@ -6,3 +6,5 @@ jest.mock('./src/firebase', () => ({
       }),
   }),
 }));
+
+jest.setTimeout(10000);

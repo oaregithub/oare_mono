@@ -98,6 +98,15 @@
           </span></span
         >
       </div>
+
+      <div v-if="person.roleNotYetAssigned > 0">
+        <b
+          >Occurrences of the person where a role has not yet been assigned:
+        </b>
+        <a @click="handleSelectOccurrences(roleNotYetAssignedPlaceHolder)"
+          >({{ person.roleNotYetAssigned }})</a
+        >
+      </div>
     </div>
     <span v-else>There is not yet information for this person.</span>
     <text-occurrences
@@ -126,6 +135,7 @@ import {
   ref,
   computed,
   watch,
+  ComputedRef,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { PersonInfo, PersonRole } from '@oare/types';
@@ -166,6 +176,7 @@ export default defineComponent({
       temporaryRoles: [],
       durableRoles: [],
       discussion: [],
+      roleNotYetAssigned: 0,
     });
 
     const getPerson = async () => {
@@ -244,6 +255,13 @@ export default defineComponent({
     };
 
     const selectedRole = ref<PersonRole>();
+    const roleNotYetAssignedPlaceHolder: ComputedRef<PersonRole> = computed(
+      () => ({
+        role: 'occuring in texts where a role has not yet been assigned',
+        roleUuid: 'noRole',
+        occurrences: person.value.roleNotYetAssigned,
+      })
+    );
 
     const handleSelectOccurrences = (role: PersonRole | undefined) => {
       selectedRole.value = role;
@@ -261,6 +279,7 @@ export default defineComponent({
       disconnectPerson,
       selectedRole,
       handleSelectOccurrences,
+      roleNotYetAssignedPlaceHolder,
     };
   },
 });
