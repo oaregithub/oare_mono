@@ -6,19 +6,16 @@
   >
     <v-switch
       color="primary"
-      v-model="model"
-      @click="filterPeriods(activeFilter == false)"
-      :class="{ active: activeFilter }"
+      v-model="fliterSwitch"
       label="Show All Known Periods"
-      inset
     >
     </v-switch>
-    <span v-show="model">
+    <span v-show="fliterSwitch">
       This draws all periods known from year lists, regardless of whether the
       year, month, or week shows up in practical documents.
     </span>
 
-    <span v-show="!model">
+    <span v-show="!fliterSwitch">
       This filter shows only years that are mentioned in practical documents or
       have a month or week from that year mentioned in a practical document.
     </span>
@@ -38,7 +35,6 @@ import {
   defineComponent,
   ref,
   onMounted,
-  watch,
   computed,
 } from '@vue/composition-api';
 import { PeriodResponse } from '@oare/types';
@@ -54,8 +50,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const periods = ref<PeriodResponse>({ years: [] });
-    const model = ref(false);
-    const activeFilter = ref(true);
+    const fliterSwitch = ref(false);
 
     onMounted(async () => {
       try {
@@ -69,7 +64,7 @@ export default defineComponent({
     });
 
     const getPeriods = computed(() => {
-      if (activeFilter.value && periods.value.years) {
+      if (fliterSwitch.value && periods.value.years) {
         const filteredPeriods: PeriodResponse = {
           years: periods.value.years.filter(
             year =>
@@ -87,15 +82,14 @@ export default defineComponent({
     });
 
     function filterPeriods(value: boolean) {
-      activeFilter.value = value;
+      fliterSwitch.value = value;
     }
 
     return {
       periods,
       loading,
-      model,
+      fliterSwitch,
       getPeriods,
-      activeFilter,
       filterPeriods,
     };
   },
