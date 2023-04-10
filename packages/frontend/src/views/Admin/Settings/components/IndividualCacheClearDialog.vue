@@ -178,13 +178,14 @@ type CacheRouteType =
   | 'Words'
   | 'Names'
   | 'Places'
-  | 'Sign Readings'
+  | 'Signs'
   | 'Taxonomy Tree'
   | 'Dictionary'
   | 'Page Content'
   | 'Bibliography'
   | 'Seal'
-  | 'Persons';
+  | 'Persons'
+  | 'Periods';
 
 interface RoutePiece {
   type: 'static' | 'param' | 'separator';
@@ -256,13 +257,14 @@ export default defineComponent({
       'Words',
       'Names',
       'Places',
-      'Sign Readings',
+      'Signs',
       'Taxonomy Tree',
       'Dictionary',
       'Page Content',
       'Bibliography',
       'Seal',
       'Persons',
+      'Periods',
     ]);
 
     const individualClearTemplates = ref<IndividualClearTemplate[]>([
@@ -465,6 +467,21 @@ export default defineComponent({
         type: 'Page Content',
       },
       {
+        name: 'Sign List',
+        type: 'Signs',
+        level: 'startsWith',
+        routePieces: [
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'static',
+            label: 'signList',
+          },
+        ],
+      },
+      {
         name: 'Sign Readings',
         routePieces: [
           { type: 'separator', label: '/' },
@@ -474,7 +491,7 @@ export default defineComponent({
           },
         ],
         level: 'startsWith',
-        type: 'Sign Readings',
+        type: 'Signs',
       },
       {
         name: 'Text Epigraphies - All',
@@ -557,15 +574,57 @@ export default defineComponent({
         type: 'Text Epigraphies',
       },
       {
-        name: 'Bibliographies - All',
+        name: 'Bibliographies List',
+        level: 'startsWith',
+        type: 'Bibliography',
         routePieces: [
-          { type: 'separator', label: '/' },
+          {
+            type: 'separator',
+            label: '/',
+          },
           {
             type: 'static',
             label: 'bibliographies',
           },
         ],
+      },
+      {
+        name: 'Bibliographies - All',
+        routePieces: [
+          { type: 'separator', label: '/' },
+          {
+            type: 'static',
+            label: 'bibliography',
+          },
+          {
+            type: 'separator',
+            label: '/',
+          },
+        ],
         level: 'startsWith',
+        type: 'Bibliography',
+      },
+      {
+        name: 'Bibliography - Specific',
+        routePieces: [
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'static',
+            label: 'bibliography',
+          },
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'param',
+            label: 'Bibliography UUID',
+          },
+        ],
+        level: 'exact',
         type: 'Bibliography',
       },
       {
@@ -651,6 +710,63 @@ export default defineComponent({
         ],
         level: 'exact',
         type: 'Persons',
+      },
+      {
+        name: 'Individual Persons - All',
+        type: 'Persons',
+        level: 'startsWith',
+        routePieces: [
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'static',
+            label: 'person',
+          },
+          {
+            type: 'separator',
+            label: '/',
+          },
+        ],
+      },
+      {
+        name: 'Individual Person - Specific',
+        type: 'Persons',
+        level: 'exact',
+        routePieces: [
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'static',
+            label: 'person',
+          },
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'param',
+            label: 'Person UUID',
+          },
+        ],
+      },
+      {
+        name: 'Periods List',
+        level: 'exact',
+        type: 'Periods',
+        routePieces: [
+          {
+            type: 'separator',
+            label: '/',
+          },
+          {
+            type: 'static',
+            label: 'periods',
+          },
+        ],
       },
     ]);
 
