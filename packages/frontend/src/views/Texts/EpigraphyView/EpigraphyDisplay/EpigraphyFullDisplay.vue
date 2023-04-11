@@ -1,16 +1,22 @@
 <template>
   <div>
     <EpigraphyReading
-      class="test-epigraphies"
+      class="test-epigraphies mt-n8"
       :epigraphicUnits="epigraphicUnits"
-      :discourseToHighlight="discourseToHighlight"
+      :epigraphyDiscourseToHighlight="
+        highlightEpigraphyDiscourse ? discourseToHighlight : ''
+      "
       :localDiscourseInfo="localDiscourseInfo"
+      :textUuid="textUuid"
+      :commentMode="commentMode"
     />
     <DiscourseReading
       v-if="canViewDiscourses"
       :discourseUnits="discourseUnits"
       :textUuid="textUuid"
       :disableEditing="disableEditing"
+      :discourseToHighlight="highlightDiscourse ? discourseToHighlight : ''"
+      :commentMode="commentMode"
       class="test-discourses"
     />
     <TextSourceReading
@@ -52,6 +58,18 @@ export default defineComponent({
       required: false,
     },
     disableEditing: {
+      type: Boolean,
+      default: false,
+    },
+    commentMode: {
+      type: Boolean,
+      default: false,
+    },
+    highlightEpigraphyDiscourse: {
+      type: Boolean,
+      default: true,
+    },
+    highlightDiscourse: {
       type: Boolean,
       default: false,
     },

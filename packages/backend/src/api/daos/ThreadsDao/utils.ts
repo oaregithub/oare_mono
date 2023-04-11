@@ -29,6 +29,10 @@ export async function determineThreadItem(
           ['data']
         );
         item = zoteroData?.data ? zoteroData.data.title : 'Title not available';
+      } else if (tr.epigraphyReading) {
+        item = tr.epigraphyReading;
+      } else if (tr.discourseSpelling) {
+        item = tr.discourseSpelling;
       }
 
       const { word, form, spelling, definition, ...threadRow } = tr;

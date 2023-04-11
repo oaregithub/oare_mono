@@ -74,7 +74,7 @@
         :sm="canViewEpigraphyImages ? 7 : 12"
         :md="canViewEpigraphyImages ? 5 : 12"
       >
-        <v-row class="ma-0 mb-6" v-if="textInfo.hasEpigraphy">
+        <v-row class="ma-0" v-if="textInfo.hasEpigraphy">
           <v-icon
             v-if="!editText && !disableEditing"
             @click="toggleTextInfo"
@@ -183,6 +183,15 @@
             </div>
           </div>
         </v-row>
+        <v-row v-if="textInfo.hasEpigraphy"
+          ><v-switch
+            v-if="canComment"
+            color="primary"
+            v-model="commentMode"
+            class="ml-3"
+            label="Comment Mode"
+          ></v-switch
+        ></v-row>
         <div v-if="allowViewCitations && zoteroDataList.length">
           <div v-for="(zotero, idx) in zoteroDataList" :key="idx">
             <div v-if="idx <= 1 || seeMoreZotero">
@@ -223,7 +232,6 @@
             </v-btn>
           </div>
         </div>
-        <br />
 
         <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
@@ -342,6 +350,14 @@ export default defineComponent({
       type: String,
       required: false,
     },
+    highlightEpigraphyDiscourse: {
+      type: Boolean,
+      default: true,
+    },
+    highlightDiscourse: {
+      type: Boolean,
+      default: false,
+    },
     disableEditing: {
       type: Boolean,
       default: false,
@@ -370,6 +386,9 @@ export default defineComponent({
     localEpigraphyUnits,
     localImageUrls,
     forceAllowAdminView,
+    highlightDiscourse,
+    highlightEpigraphyDiscourse,
+    disableEditing,
   }) {
     const store = sl.get('store');
     const server = sl.get('serverProxy');
@@ -384,8 +403,14 @@ export default defineComponent({
       store.hasPermission('UPLOAD_EPIGRAPHY_IMAGES')
     );
 
+    const canComment = computed(
+      () => store.hasPermission('ADD_COMMENTS') && !disableEditing
+    );
+
     const loading = ref(false);
     const imagesLoading = ref(false);
+
+    const commentMode = ref(false);
 
     const draft = ref<DraftContent | null>(null);
     const hasPicture = computed(() => imageUrls.value.length > 0);
@@ -469,6 +494,10 @@ export default defineComponent({
         epigraphicUnits: textInfo.value.units,
         discourseUnits: textInfo.value.discourseUnits,
         discourseToHighlight,
+        commentMode: commentMode.value,
+        textUuid,
+        highlightEpigraphyDiscourse,
+        highlightDiscourse,
       };
     });
 
@@ -758,6 +787,8 @@ export default defineComponent({
       seeMoreZotero,
       seeMoreSwitch,
       imagesLoading,
+      canComment,
+      commentMode,
     };
   },
 });

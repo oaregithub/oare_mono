@@ -20,6 +20,12 @@ describe('AddFormDialog test', () => {
     hasPermission: () => false,
   };
 
+  const mockRouter = {
+    currentRoute: {
+      name: 'testName',
+    },
+  };
+
   const mockServer = {
     addForm: jest.fn().mockResolvedValue(),
     getTaxonomyTree: jest.fn().mockResolvedValue({
@@ -71,6 +77,7 @@ describe('AddFormDialog test', () => {
     sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
     sl.set('store', mockStore);
+    sl.set('router', mockRouter);
 
     return mount(AddFormDialog, {
       vuetify,

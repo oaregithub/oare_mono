@@ -40,15 +40,53 @@
             />
             <span v-else>
               <span v-show="!interLinearView">
-                <span
-                  v-for="(word, index) in renderer.getLineWords(lineNum)"
-                  :key="index"
-                  v-html="formatWord(word)"
-                  class="cursor-display test-rendered-word"
-                  :class="{ 'mr-1': !word.isContraction }"
-                  @click="openDialog(word.discourseUuid)"
-                />
+                <span v-show="!commentMode">
+                  <span
+                    v-for="(word, index) in renderer.getLineWords(lineNum)"
+                    :key="index"
+                    v-html="formatWord(word)"
+                    class="cursor-display test-rendered-word"
+                    :class="{ 'mr-1': !word.isContraction }"
+                    @click="openDialog(word.discourseUuid)"
+                  />
+                </span>
+                <span v-show="commentMode">
+                  <span
+                    v-for="(word, index) in renderer.getLineWords(lineNum)"
+                    :key="index"
+                    class="test-rendered-word"
+                    :class="{
+                      'mr-1': !word.isContraction,
+                      'cursor-display': canComment,
+                    }"
+                  >
+                    <span v-for="(sign, index) in word.signs" :key="index">
+                      <UtilList
+                        @comment-clicked="
+                          openComment(
+                            sign.uuid,
+                            sign.reading ? sign.reading : '',
+                            word.reading,
+                            word.discourseUuid
+                          )
+                        "
+                        :hasEdit="false"
+                        :hasDelete="false"
+                        :hideMenu="!canComment"
+                      >
+                        <template #activator="{ on, attrs }">
+                          <span
+                            v-html="`${sign.reading}${sign.separator}`"
+                            v-on="on"
+                            v-bind="attrs"
+                          />
+                        </template>
+                      </UtilList>
+                    </span>
+                  </span>
+                </span>
               </span>
+
               <div class="test-interlinear-view" v-show="interLinearView">
                 <v-row class="pb-4">
                   <v-col
@@ -59,18 +97,72 @@
                     <v-card min-width="70" tile flat>
                       <div>
                         <span
+                          v-show="!commentMode"
                           v-html="formatWord(word)"
                           class="cursor-display text-no-wrap test-rendered-word"
                           @click="openDialog(word.discourseUuid)"
-                        >
+                        ></span>
+                        <span v-show="commentMode">
+                          <span
+                            v-for="(sign, index) in word.signs"
+                            :key="index"
+                          >
+                            <UtilList
+                              @comment-clicked="
+                                openComment(
+                                  sign.uuid,
+                                  sign.reading ? sign.reading : '',
+                                  word.reading,
+                                  word.discourseUuid
+                                )
+                              "
+                              :hasEdit="false"
+                              :hasDelete="false"
+                              :hideMenu="!canComment"
+                            >
+                              <template #activator="{ on, attrs }">
+                                <span
+                                  v-html="`${sign.reading}${sign.separator}`"
+                                  v-on="on"
+                                  v-bind="attrs"
+                                  class="cursor-display"
+                                />
+                              </template>
+                            </UtilList>
+                          </span>
                         </span>
                       </div>
                       <div v-if="word.word && !word.isNumber">
                         <span
+                          v-show="!commentMode"
                           v-html="`<b>${word.word}</b>`"
                           class="cursor-display text-no-wrap test-rendered-word"
                           @click="openDialog(word.discourseUuid)"
                         ></span>
+                        <span v-show="commentMode">
+                          <UtilList
+                            @comment-clicked="
+                              openComment(
+                                word.discourseUuid,
+                                word.word,
+                                word.word,
+                                word.discourseUuid
+                              )
+                            "
+                            :hasEdit="false"
+                            :hasDelete="false"
+                            :hideMenu="!canComment"
+                          >
+                            <template #activator="{ on, attrs }">
+                              <span
+                                v-html="`<b>${word.word}</b>`"
+                                class="cursor-display"
+                                v-on="on"
+                                v-bind="attrs"
+                              />
+                            </template>
+                          </UtilList>
+                        </span>
                       </div>
                       <div v-if="word.translation">
                         <span
@@ -81,10 +173,35 @@
                       </div>
                       <div v-if="word.form">
                         <span
+                          v-show="!commentMode"
                           v-html="`<em>${word.form}</em>`"
                           class="cursor-display text-no-wrap test-rendered-word"
                           @click="openDialog(word.discourseUuid)"
                         ></span>
+                        <span v-show="commentMode">
+                          <UtilList
+                            @comment-clicked="
+                              openComment(
+                                word.discourseUuid,
+                                word.form,
+                                word.form,
+                                word.discourseUuid
+                              )
+                            "
+                            :hasEdit="false"
+                            :hasDelete="false"
+                            :hideMenu="!canComment"
+                          >
+                            <template #activator="{ on, attrs }">
+                              <span
+                                v-html="`<em>${word.form}</em>`"
+                                class="cursor-display"
+                                v-on="on"
+                                v-bind="attrs"
+                              />
+                            </template>
+                          </UtilList>
+                        </span>
                       </div>
                       <div v-if="word.parseInfo && word.parseInfo.length > 0">
                         <span
@@ -108,6 +225,28 @@
         </div>
       </div>
     </div>
+    <component
+      v-if="canComment"
+      :is="commentComponent"
+      v-model="isCommenting"
+      :item="`${commentDialogItem.replace(/<[em/]{2,3}>/gi, '')}${
+        commentDialogItem === commentDialogParent
+          ? ''
+          : ` of ${commentDialogParent.replace(/<[em/]{2,3}>/gi, '')}`
+      }`"
+      :uuid="commentDialogUuid"
+      :key="commentDialogUuid"
+      :route="`/epigraphies/${textUuid}/${commentDiscourseUuid}`"
+      ><span
+        v-html="
+          `'${commentDialogItem.replace(/<[em/]{2,3}>/gi, '')}'${
+            commentDialogItem == commentDialogParent
+              ? ''
+              : ` of ${commentDialogParent.replace(/<[em/]{2,3}>/gi, '')}`
+          }`
+        "
+      ></span
+    ></component>
     <connect-spelling-occurrence
       v-if="viewingConnectSpellingDialog"
       :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
@@ -206,6 +345,7 @@ import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import SealList from '@/views/Seals/SealList.vue';
 import SingleSeal from '@/views/Seals/SingleSeal.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
+import UtilList from '@/components/UtilList/index.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';
 import utils from '@/utils';
@@ -222,19 +362,28 @@ export default defineComponent({
     ConnectSpellingOccurrence,
     SealList,
     SingleSeal,
+    UtilList,
   },
   props: {
+    textUuid: {
+      type: String,
+      required: false,
+    },
     epigraphicUnits: {
       type: Array as PropType<EpigraphicUnit[]>,
       required: true,
     },
-    discourseToHighlight: {
+    epigraphyDiscourseToHighlight: {
       type: String,
       required: false,
     },
     localDiscourseInfo: {
       type: Array as PropType<TextDiscourseRow[]>,
       required: false,
+    },
+    commentMode: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {
@@ -245,6 +394,11 @@ export default defineComponent({
     const viewingDialog = ref(false);
     const viewingConnectSpellingDialog = ref(false);
     const viewingConnectSealDialog = ref(false);
+    const isCommenting = ref(false);
+    const commentDialogUuid = ref('');
+    const commentDialogItem = ref('');
+    const commentDialogParent = ref('');
+    const commentDiscourseUuid = ref('');
     const connectSpellingDialogSpelling = ref('');
     const connectSpellingDialogDiscourseUuid = ref('');
     const discourseWordInfo = ref<Word | null>(null);
@@ -405,8 +559,8 @@ export default defineComponent({
 
     const formatWord = (word: EpigraphicWord) => {
       const isWordToHighlight =
-        props.discourseToHighlight && word.discourseUuid
-          ? props.discourseToHighlight.includes(word.discourseUuid)
+        props.epigraphyDiscourseToHighlight && word.discourseUuid
+          ? props.epigraphyDiscourseToHighlight.includes(word.discourseUuid)
           : false;
       return isWordToHighlight ? `<mark>${word.reading}</mark>` : word.reading;
     };
@@ -440,6 +594,28 @@ export default defineComponent({
       return `<em>${dictionaryWord}</em>`;
     };
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
+    const openComment = (
+      uuid: string,
+      item: string,
+      parent: string,
+      discourseUuid: string
+    ) => {
+      commentDialogUuid.value = uuid;
+      commentDialogItem.value = item;
+      commentDialogParent.value = parent;
+      commentDiscourseUuid.value = discourseUuid;
+      isCommenting.value = true;
+    };
+
+    // To avoid circular dependencies
+    const commentComponent = computed(() =>
+      canComment.value
+        ? () => import('@/components/CommentItemDisplay/index.vue')
+        : null
+    );
+
     return {
       renderer,
       lineNumber,
@@ -468,6 +644,14 @@ export default defineComponent({
       server,
       sealLink,
       interLinearView,
+      commentDialogUuid,
+      commentComponent,
+      commentDialogItem,
+      commentDialogParent,
+      commentDiscourseUuid,
+      isCommenting,
+      canComment,
+      openComment,
     };
   },
 });
