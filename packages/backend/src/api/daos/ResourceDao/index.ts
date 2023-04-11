@@ -200,7 +200,7 @@ class ResourceDao {
       fileUrl = await s3.getSignedUrlPromise('getObject', {
         Bucket: resourceRow.container,
         Key: resourceRow.link,
-        Expires: 15778800,
+        Expires: 60 * 60 * 2,
       });
     } catch {
       fileUrl = null;

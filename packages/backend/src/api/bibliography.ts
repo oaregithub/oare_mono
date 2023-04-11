@@ -5,7 +5,7 @@ import { extractPagination } from '@/utils';
 import { BibliographyResponse } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
-import { noFilter } from '@/cache/filters';
+import { bibliographiesFilter, noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -13,19 +13,17 @@ router
   .route('/bibliographies')
   .get(
     permissionsRoute('BIBLIOGRAPHY'),
-    cacheMiddleware<BibliographyResponse[]>(noFilter),
+    cacheMiddleware<BibliographyResponse[]>(bibliographiesFilter),
     async (req, res, next) => {
       try {
         const BibliographyDao = sl.get('BibliographyDao');
         const BibliographyUtils = sl.get('BibliographyUtils');
-        const ResourceDao = sl.get('ResourceDao');
         const cache = sl.get('cache');
 
         const citationStyle = (req.query.citationStyle ||
           'chicago-author-date') as string;
 
         const bibliographies = await BibliographyDao.getBibliographies();
-        const totalBibs = bibliographies.length;
 
         const zoteroResponse = await Promise.all(
           bibliographies.map(async bibliography =>
@@ -34,15 +32,6 @@ router
               'data',
             ])
           )
-        );
-
-        const fileURL = await Promise.all(
-          bibliographies.map(async item => {
-            const { fileUrl } = await ResourceDao.getPDFUrlByBibliographyUuid(
-              item.uuid
-            );
-            return fileUrl;
-          })
         );
 
         const biblioResponse: BibliographyResponse[] = zoteroResponse.map(
@@ -60,7 +49,7 @@ router
               date: zot && zot.data && zot.data.date ? zot.data.date : null,
               bibliography: {
                 bib: zot && zot.bib ? zot.bib : null,
-                url: fileURL[index] ? fileURL[index] : null,
+                url: '',
               },
               itemType:
                 zot && zot.data && zot.data.itemType ? zot.data.itemType : null,
@@ -71,7 +60,7 @@ router
         const response = await cache.insert<BibliographyResponse[]>(
           { req },
           biblioResponse,
-          noFilter,
+          bibliographiesFilter,
           60 * 60 * 24 * 30 * 6
         );
 
