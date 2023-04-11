@@ -284,8 +284,9 @@ export default defineComponent({
         const spellingUuids = props.wordInfo.forms.flatMap(form =>
           form.spellings.map(spelling => spelling.uuid)
         );
-        spellingOccurrencesCounts.value =
-          await server.getSpellingOccurrencesCounts(spellingUuids);
+        spellingOccurrencesCounts.value = await server.getSpellingOccurrencesCounts(
+          spellingUuids
+        );
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading spelling occurrence counts. Please try again.',

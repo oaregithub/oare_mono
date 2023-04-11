@@ -15,6 +15,7 @@
             v-on="on"
             v-bind="attrs"
             @click="removeColumnDialog = true"
+            class="test-remove-column"
           >
             <v-icon small>mdi-delete</v-icon>
           </v-btn>
@@ -57,6 +58,7 @@
             v-on="on"
             v-bind="attrs"
             @click="promptEditColumn('right')"
+            class="test-move-column-right"
           >
             <v-icon small>mdi-arrow-right</v-icon>
           </v-btn>
@@ -109,7 +111,10 @@
           "
           class="ma-0 mb-n6 mt-n8 ml-n3"
         >
-          <insert-button @insert="handleInsertLine(line)" />
+          <insert-button
+            @insert="handleInsertLine(line)"
+            class="test-insert-line-button"
+          />
           <v-divider class="mt-3" />
         </v-row>
       </div>

@@ -48,6 +48,7 @@
                 "
                 width="25px"
                 height="25px"
+                class="test-split-button"
                 @click="splitIndex = signIdx"
               >
                 <v-icon v-if="splitIndex === signIdx" small> mdi-check </v-icon>

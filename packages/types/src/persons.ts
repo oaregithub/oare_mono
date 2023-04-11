@@ -43,5 +43,6 @@ export interface PersonInfo {
   children: PersonCore[];
   temporaryRoles: PersonRole[];
   durableRoles: PersonRole[];
+  roleNotYetAssigned: number;
   discussion: FieldRow[];
 }

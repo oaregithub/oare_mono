@@ -120,7 +120,9 @@ class ThreadsDao {
           'dictionary_spelling.spelling as spelling',
           'field.field as definition',
           'collection.name as collectionName',
-          'bibliography.zot_item_key as bibliography'
+          'bibliography.zot_item_key as bibliography',
+          'text_epigraphy.reading as epigraphyReading',
+          'text_discourse.explicit_spelling as discourseSpelling'
         )
         .innerJoin('comments', 'threads.uuid', 'comments.thread_uuid')
         .leftJoin(
@@ -141,6 +143,16 @@ class ThreadsDao {
         .leftJoin('field', 'threads.reference_uuid', 'field.uuid')
         .leftJoin('collection', 'threads.reference_uuid', 'collection.uuid')
         .leftJoin('bibliography', 'threads.reference_uuid', 'bibliography.uuid')
+        .leftJoin(
+          'text_epigraphy',
+          'threads.reference_uuid',
+          'text_epigraphy.uuid'
+        )
+        .leftJoin(
+          'text_discourse',
+          'threads.reference_uuid',
+          'text_discourse.uuid'
+        )
         .modify(qb => {
           if (request.filters.status !== ('All' as ThreadStatus)) {
             qb.where('threads.status', request.filters.status);

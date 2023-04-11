@@ -207,10 +207,17 @@ export const personFilter = async (
     'durable',
     user ? user.uuid : null
   );
+  const roleNotYetAssigned = await PersonDao.getPersonOccurrencesCount(
+    person.person.uuid,
+    user ? user.uuid : null,
+    undefined,
+    'noRole'
+  );
   return {
     ...person,
     temporaryRoles,
     durableRoles,
+    roleNotYetAssigned,
   };
 };
 

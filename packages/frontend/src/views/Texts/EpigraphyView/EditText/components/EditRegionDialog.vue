@@ -46,6 +46,7 @@
           dense
           v-model="regionLabel"
           placeholder="Ex: A"
+          class="test-edit-region-label"
         />
       </v-row>
     </div>

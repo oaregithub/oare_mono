@@ -93,4 +93,6 @@ export interface AllThreadRowUndeterminedItem extends Thread {
   definition: string | null;
   collectionName: string | null;
   bibliography: string | null;
+  epigraphyReading: string | null;
+  discourseSpelling: string | null;
 }

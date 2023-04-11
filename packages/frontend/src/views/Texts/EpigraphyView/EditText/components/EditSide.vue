@@ -35,6 +35,7 @@
         <insert-button
           @insert="columnToAdd = 1"
           :showCheck="columnToAdd === 1"
+          class="test-insert-column-button"
         />
         <span v-for="(col, idx) in renderer.columnsOnSide(side)" :key="idx">
           <v-icon size="80" class="mx-2">mdi-text-long</v-icon>
