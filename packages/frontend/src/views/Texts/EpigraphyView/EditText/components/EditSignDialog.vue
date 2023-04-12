@@ -161,16 +161,23 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
 
+    const originalText = computed(() => {
+      let newReading =
+        props.sign.reading
+          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
+          .replace(/<[^>]*>/g, '') || '';
+      if (props.sign.type === 'determinative') {
+        newReading = `(${newReading})`;
+      }
+      return newReading;
+    });
+
     const row = ref<RowWithLine>({
       type: 'Line' as RowTypes,
       uuid: v4(),
       isEditing: false,
       hasErrors: false,
-      text:
-        props.sign.reading
-          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-          .replace(/<[^>]*>/g, '')
-          .replace(/\([^()]*\)/g, '') || undefined,
+      text: originalText.value || undefined,
       line: 0,
     });
 
@@ -185,11 +192,7 @@ export default defineComponent({
         row.value.signs.length > 0 &&
         row.value.signs.every(sign => sign.type) &&
         !row.value.hasErrors &&
-        (props.sign.reading
-          ?.replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-          .replace(/<[^>]*>/g, '')
-          .replace(/\([^()]*\)/g, '') !== row.value.text ||
-          markupIsDifferent.value)
+        (originalText.value !== row.value.text || markupIsDifferent.value)
       );
     });
 
@@ -269,26 +272,31 @@ export default defineComponent({
             nextSign.markup.includes('phoneticComplement')
           ) {
             newSeparator = '';
-          }
-          if (
+          } else if (
             sign.type === 'determinative' ||
             nextSign.type === 'determinative'
           ) {
             newSeparator = '';
-          }
-          if (sign.type === 'phonogram' || nextSign.type === 'phonogram') {
+          } else if (
+            sign.type === 'phonogram' ||
+            nextSign.type === 'phonogram'
+          ) {
             newSeparator = '-';
-          }
-          if (sign.type === 'number' && nextSign.type === 'number') {
+          } else if (sign.type === 'number' && nextSign.type === 'number') {
             newSeparator = '+';
-          }
-          if (sign.type === 'logogram' || nextSign.type === 'logogram') {
+          } else if (sign.type === 'logogram' || nextSign.type === 'logogram') {
             newSeparator = '.';
           }
         }
 
+        let newReading = sign.reading;
+        if (sign.type === 'determinative') {
+          newReading = `(${newReading})`;
+        }
+
         return {
           ...sign,
+          reading: newReading,
           separator: newSeparator,
         };
       });
@@ -302,8 +310,7 @@ export default defineComponent({
       });
       return newWordReading
         .replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-        .replace(/<[^>]*>/g, '')
-        .replace(/\([^()]*\)/g, '');
+        .replace(/<[^>]*>/g, '');
     };
 
     const editorDiscourseWord: ComputedRef<EditorDiscourseWord> = computed(

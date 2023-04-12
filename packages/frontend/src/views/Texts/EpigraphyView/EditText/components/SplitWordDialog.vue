@@ -293,26 +293,34 @@ export default defineComponent({
               nextSign.markup.includes('phoneticComplement')
             ) {
               newSeparator = '';
-            }
-            if (
+            } else if (
               sign.type === 'determinative' ||
               nextSign.type === 'determinative'
             ) {
               newSeparator = '';
-            }
-            if (sign.type === 'phonogram' || nextSign.type === 'phonogram') {
+            } else if (
+              sign.type === 'phonogram' ||
+              nextSign.type === 'phonogram'
+            ) {
               newSeparator = '-';
-            }
-            if (sign.type === 'number' && nextSign.type === 'number') {
+            } else if (sign.type === 'number' && nextSign.type === 'number') {
               newSeparator = '+';
-            }
-            if (sign.type === 'logogram' || nextSign.type === 'logogram') {
+            } else if (
+              sign.type === 'logogram' ||
+              nextSign.type === 'logogram'
+            ) {
               newSeparator = '.';
             }
           }
 
+          let newReading = sign.reading;
+          if (sign.type === 'determinative') {
+            newReading = `(${newReading})`;
+          }
+
           return {
             ...sign,
+            reading: newReading,
             separator: newSeparator,
           };
         })
@@ -328,8 +336,7 @@ export default defineComponent({
         });
         return newWordReading
           .replace(/([[\]{}⸢⸣«»‹›:;*?\\!])|(".+")|('.+')|(^\/)+/g, '')
-          .replace(/<[^>]*>/g, '')
-          .replace(/\([^()]*\)/g, '');
+          .replace(/<[^>]*>/g, '');
       });
 
       return newWordsReading;
