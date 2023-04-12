@@ -69,8 +69,8 @@ import {
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
 import { Text, DossierInfo, FieldInfo } from '@oare/types';
-import ArchiveTextsDossiers from './ArchiveTextsDossiers.vue';
-import ArchiveInfoComponent from './ArchiveInfo.vue';
+import ArchiveTextsDossiers from './components/ArchiveTextsDossiers.vue';
+import ArchiveInfoComponent from './components/ArchiveInfo.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import _ from 'underscore';
 

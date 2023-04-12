@@ -2,8 +2,8 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue } from '@vue/test-utils';
 import { render } from '@testing-library/vue';
-import ArchivesList from '../archives/ArchivesList.vue';
-import sl from '../../../../serviceLocator';
+import sl from '@/serviceLocator';
+import ArchivesList from '../archives/components/ArchivesList.vue';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
