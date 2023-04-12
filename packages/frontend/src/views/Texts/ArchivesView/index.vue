@@ -8,7 +8,7 @@
 import { defineComponent, onMounted, ref, Ref } from '@vue/composition-api';
 import { ArchiveInfo } from '@oare/types';
 import sl from '@/serviceLocator';
-import ArchivesList from './archives/ArchivesList.vue';
+import ArchivesList from './archives/components/ArchivesList.vue';
 
 export default defineComponent({
   name: 'ArchivesView',
