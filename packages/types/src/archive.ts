@@ -41,3 +41,8 @@ export interface DossierInfo {
   uuid: string;
   totalTexts: number;
 }
+
+export interface DisconnectTextPayload {
+  referenceUuid: string;
+  objUuid: string;
+}

@@ -30,6 +30,8 @@
         :rows="Number(rows)"
         @update:rows="rows = `${$event}`"
         :totalTexts="totalTexts"
+        :dossierUuid="dossierUuid"
+        @refresh-page="getDossier"
       ></dossier-texts>
     </oare-content-view>
   </div>
@@ -117,6 +119,7 @@ export default defineComponent({
       totalTexts,
       rows,
       search,
+      getDossier,
     };
   },
 });

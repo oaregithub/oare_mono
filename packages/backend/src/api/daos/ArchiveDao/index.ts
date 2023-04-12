@@ -1,4 +1,4 @@
-import { knexRead } from '@/connection';
+import { knexRead, knexWrite } from '@/connection';
 import {
   Archive,
   Dossier,
@@ -162,7 +162,7 @@ class ArchiveDao {
     const finalSearch: string = ignorePunctuation(search);
     const texts: Text[] = await k('link')
       .select(
-        'text.uuid as textUuid',
+        'text.uuid',
         'text.type as type',
         'text.display_name as name',
         'text.excavation_prfx as excavationPrefix',
@@ -266,7 +266,7 @@ class ArchiveDao {
     const finalSearch: string = ignorePunctuation(search);
     const texts: Text[] = await k('link')
       .select(
-        'text.uuid as textUuid',
+        'text.uuid',
         'text.type as type',
         'text.display_name as name',
         'text.excavation_prfx as excavationPrefix',
@@ -336,6 +336,18 @@ class ArchiveDao {
       .first();
     const total: number = Number(totalTexts.total);
     return total;
+  }
+
+  async disconnectText(
+    referenceUuid: string,
+    objUuid: string,
+    trx?: Knex.Transaction
+  ) {
+    const k = trx || knexWrite();
+    await k('link')
+      .del()
+      .where('reference_uuid', referenceUuid)
+      .andWhere('obj_uuid', objUuid);
   }
 }
 export default new ArchiveDao();

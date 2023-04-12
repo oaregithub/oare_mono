@@ -203,3 +203,68 @@ describe('GET /dossier/:uuid', () => {
     expect(response.status).toBe(500);
   });
 });
+
+describe('DELETE /archive_dossier/disconnect_text', () => {
+  const AdminUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      isAdmin: true,
+    }),
+  };
+
+  const mockArchiveDao = {
+    disconnectText: jest.fn().mockResolvedValue(),
+  };
+
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
+  };
+
+  const authorize = () => {
+    sl.set('UserDao', AdminUserDao);
+  };
+
+  const setup = () => {
+    authorize();
+    sl.set('ArchiveDao', mockArchiveDao);
+    sl.set('utils', mockUtils);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app)
+      .delete(`${API_PATH}/archive_dossier/disconnect_text`)
+      .set('Authorization', 'token')
+      .send({
+        referenceUuid: 'reference_uuid',
+        objUuid: 'obj_uuid',
+      });
+
+  it('returns 204 on successful disconnection', async () => {
+    const response = await sendRequest();
+    expect(mockArchiveDao.disconnectText).toHaveBeenCalled();
+    expect(response.status).toBe(204);
+  });
+
+  it('returns 500 on failed disconnection', async () => {
+    sl.set('ArchiveDao', {
+      disconnectText: jest
+        .fn()
+        .mockRejectedValue('failed archive texts retrieval'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+
+  it('returns 403 when user is not admin', async () => {
+    sl.set('UserDao', {
+      getUserByUuid: jest.fn().mockResolvedValue({
+        isAdmin: false,
+      }),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+});

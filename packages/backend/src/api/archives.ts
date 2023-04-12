@@ -1,7 +1,8 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import { Archive, Dossier } from '@oare/types';
+import { Archive, Dossier, DisconnectTextPayload } from '@oare/types';
 import sl from '@/serviceLocator';
+import adminRoute from '@/middlewares/adminRoute';
 
 const router = express.Router();
 
@@ -74,5 +75,25 @@ router.route('/dossier/:uuid').get(async (req, res, next) => {
     next(new HttpInternalError(err as string));
   }
 });
+
+router
+  .route('/archive_dossier/disconnect_text')
+  .delete(adminRoute, async (req, res, next) => {
+    try {
+      const ArchiveDao = sl.get('ArchiveDao');
+      const utils = sl.get('utils');
+      const {
+        referenceUuid,
+        objUuid,
+      }: DisconnectTextPayload = req.body as DisconnectTextPayload;
+
+      await utils.createTransaction(async trx => {
+        await ArchiveDao.disconnectText(referenceUuid, objUuid, trx);
+      });
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 export default router;
