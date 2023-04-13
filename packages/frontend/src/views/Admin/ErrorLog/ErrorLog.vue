@@ -227,8 +227,9 @@ export default defineComponent({
       showErrorDetails.value = true;
     };
 
-    const updateStatus = (status: ErrorStatus) => {
+    const updateStatus = async (status: ErrorStatus) => {
       dialogError.value.status = status;
+      await getErrorLog();
     };
 
     const updateMultipleStatus = async (status: ErrorStatus) => {
