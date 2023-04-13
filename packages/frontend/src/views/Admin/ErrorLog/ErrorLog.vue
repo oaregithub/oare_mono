@@ -154,10 +154,10 @@ export default defineComponent({
     const serverCount = ref(0);
 
     const page = useQueryParam('page', '1', false);
-    const limit = useQueryParam('rows', '10', true);
+    const limit = useQueryParam('rows', '25', true);
     const sort = useQueryParam('sort', 'timestamp', true);
     const desc = useQueryParam('desc', 'true', true);
-    const status = useQueryParam('status', '', true);
+    const status = useQueryParam('status', 'New', true);
     const user = useQueryParam('user', '', true);
     const description = useQueryParam('description', '', true);
     const stacktrace = useQueryParam('stacktrace', '', true);
@@ -237,16 +237,7 @@ export default defineComponent({
           error => error.uuid
         );
         await server.updateErrorStatus(selectedErrorUuids, status);
-        errorList.value = errorList.value.map(error => {
-          if (selectedErrors.value.includes(error)) {
-            return {
-              ...error,
-              status,
-            };
-          } else {
-            return error;
-          }
-        });
+        await getErrorLog();
         selectedErrors.value = [];
         await resetAdminBadge();
       } catch (err) {
