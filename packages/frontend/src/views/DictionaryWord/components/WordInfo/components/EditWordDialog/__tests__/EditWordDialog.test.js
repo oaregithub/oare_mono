@@ -16,6 +16,12 @@ describe('EditWordDialog test', () => {
     showSnackbar: jest.fn(),
   };
 
+  const mockRouter = {
+    currentRoute: {
+      name: 'testName',
+    },
+  };
+
   const mockLodash = {
     debounce: cb => cb,
   };
@@ -99,6 +105,7 @@ describe('EditWordDialog test', () => {
     sl.set('serverProxy', server || mockServer);
     sl.set('lodash', mockLodash);
     sl.set('store', store || mockStore);
+    sl.set('router', mockRouter);
 
     return mount(EditWordDialog, {
       vuetify,
