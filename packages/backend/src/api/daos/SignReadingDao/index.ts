@@ -220,6 +220,16 @@ class SignReadingDao {
     }
     return count;
   }
+
+  async getAllSignReadings(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knexRead();
+    const signs: string[] = await k('sign_reading as sr')
+      .distinct('sr.reading')
+      .then((result: { reading: string }[]) =>
+        result.map(({ reading }) => reading)
+      );
+    return signs;
+  }
 }
 
 export default new SignReadingDao();

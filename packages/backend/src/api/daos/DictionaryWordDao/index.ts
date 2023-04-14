@@ -79,6 +79,16 @@ class DictionaryWordDao {
 
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const SignReadingDao = sl.get('SignReadingDao');
+    let spellingsArray: string[] = [spelling];
+    if (spelling.includes('x') && spelling.split('-').length > 1) {
+      const allSigns = await SignReadingDao.getAllSignReadings();
+      const possibleSpellings: string[] = allSigns.map(sign => {
+        const cleanSpelling = spelling.replace(/x{1,}/gi, sign);
+        return cleanSpelling;
+      });
+      spellingsArray = [...spellingsArray, ...possibleSpellings];
+    }
 
     const rows: SearchSpellingRow[] = await k
       .select(
@@ -91,7 +101,7 @@ class DictionaryWordDao {
       .from('dictionary_word AS dw')
       .innerJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
       .innerJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
-      .where('ds.explicit_spelling', spelling);
+      .whereIn('ds.explicit_spelling', spellingsArray);
 
     const formProperties = await Promise.all(
       rows.map(r =>
