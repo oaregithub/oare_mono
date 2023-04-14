@@ -11,13 +11,37 @@
           <sup v-if="!discourseRenderer.isRegion(line)"
             >{{ formatLineNumber(line, false) }})</sup
           >
-          <span
-            v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
-            :key="idx"
-            v-html="` ${word.display}`"
-            class="cursor-display"
-            @click="openDialog(word.uuid, word.type)"
-          />
+          <span v-if="!commentMode">
+            <span
+              v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
+              :key="idx"
+              v-html="formatWord(word)"
+              class="cursor-display"
+              @click="openDialog(word.uuid, word.type)"
+            />
+          </span>
+          <span v-else>
+            <span
+              v-for="(word, idx) in discourseRenderer.wordsOnLine(line)"
+              :key="idx"
+            >
+              <UtilList
+                @comment-clicked="openComment(word.uuid, word.display)"
+                :hasEdit="false"
+                :hasDelete="false"
+                :hideMenu="!canComment"
+              >
+                <template #activator="{ on, attrs }">
+                  <span
+                    v-html="formatWord(word)"
+                    class="cursor-display"
+                    v-on="on"
+                    v-bind="attrs"
+                  />
+                </template>
+              </UtilList>
+            </span>
+          </span>
         </span>
       </span>
     </p>
@@ -151,6 +175,16 @@
         </v-row>
       </template>
     </v-treeview>
+    <component
+      v-if="canComment"
+      :is="commentComponent"
+      v-model="isCommenting"
+      :item="`${commentDialogItem.replace(/<[em/]{2,3}>/gi, '')}`"
+      :uuid="commentDialogUuid"
+      :key="commentDialogUuid"
+      :route="`/epigraphies/${textUuid}/${commentDialogUuid}`"
+      ><span v-html="commentDialogItem"></span
+    ></component>
     <connect-spelling-occurrence
       v-if="viewingConnectSpellingDialog"
       :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
@@ -195,12 +229,18 @@ import {
   computed,
   watch,
 } from '@vue/composition-api';
-import { DiscourseUnit, Word, LocaleCode } from '@oare/types';
+import {
+  DiscourseUnit,
+  Word,
+  LocaleCode,
+  DiscourseDisplayUnit,
+} from '@oare/types';
 import { DiscourseHtmlRenderer, convertSideNumberToSide } from '@oare/oare';
 import { formatLineNumber } from '@oare/oare/src/tabletUtils';
 import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
 import DiscoursePropertiesCard from './DiscoursePropertiesCard.vue';
+import UtilList from '@/components/UtilList/index.vue';
 import sl from '@/serviceLocator';
 import i18n from '@/i18n';
 
@@ -218,13 +258,22 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    commentMode: {
+      type: Boolean,
+      default: false,
+    },
+    discourseToHighlight: {
+      type: String,
+      required: false,
+    },
   },
   components: {
     DiscoursePropertiesCard,
     DictionaryWord,
     ConnectSpellingOccurrence,
+    UtilList,
   },
-  setup({ discourseUnits, textUuid, disableEditing }) {
+  setup({ discourseUnits, textUuid, disableEditing, discourseToHighlight }) {
     const discourseRenderer = new DiscourseHtmlRenderer(
       discourseUnits,
       i18n.locale as LocaleCode
@@ -240,6 +289,9 @@ export default defineComponent({
     const viewingConnectSpellingDialog = ref(false);
     const connectSpellingDialogSpelling = ref('');
     const connectSpellingDialogDiscourseUuid = ref('');
+    const isCommenting = ref(false);
+    const commentDialogUuid = ref('');
+    const commentDialogItem = ref('');
 
     const allowEditing = computed(
       () => !disableEditing && store.hasPermission('EDIT_TRANSLATION')
@@ -363,6 +415,16 @@ export default defineComponent({
       return true;
     };
 
+    const formatWord = (word: DiscourseDisplayUnit) => {
+      const isWordToHighlight =
+        discourseToHighlight && word.uuid
+          ? discourseToHighlight.includes(word.uuid)
+          : false;
+      return isWordToHighlight
+        ? ` <mark>${word.display}</mark>`
+        : ` ${word.display}`;
+    };
+
     watch(articulateDiscourseHierarchy, () => {
       if (!articulateDiscourseHierarchy.value) {
         discourseSelections.value = [];
@@ -400,8 +462,9 @@ export default defineComponent({
           actions.showSnackbar('Fetching discourse information...');
 
           if (discourseUuid) {
-            discourseWordInfo.value =
-              await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
+            discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
+              discourseUuid
+            );
           } else {
             discourseWordInfo.value = null;
           }
@@ -455,6 +518,21 @@ export default defineComponent({
       }
     };
 
+    const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
+
+    const openComment = (uuid: string, item: string) => {
+      commentDialogUuid.value = uuid;
+      commentDialogItem.value = item;
+      isCommenting.value = true;
+    };
+
+    // To avoid circular dependencies
+    const commentComponent = computed(() =>
+      canComment.value
+        ? () => import('@/components/CommentItemDisplay/index.vue')
+        : null
+    );
+
     return {
       discourseRenderer,
       discourseReading,
@@ -483,6 +561,13 @@ export default defineComponent({
       convertSideNumberToSide,
       server,
       showCheckbox,
+      canComment,
+      openComment,
+      commentDialogItem,
+      commentDialogUuid,
+      commentComponent,
+      isCommenting,
+      formatWord,
     };
   },
 });

@@ -270,7 +270,7 @@
       :item="`${word.word}: '${commentDialogItem}'`"
       :uuid="commentDialogUuid"
       :key="commentDialogUuid"
-      :route="`/threads/${commentDialogUuid}`"
+      :route="`/${routeName}/${word.uuid}`"
       >{{ word.word }}: "{{ commentDialogItem }}"</component
     >
   </div>
@@ -325,6 +325,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
     const store = sl.get('store');
+    const router = sl.get('router');
     const reload = inject(ReloadKey);
 
     const isEditingLemmaProperties = ref(false);
@@ -333,6 +334,7 @@ export default defineComponent({
     const isCommenting = ref(false);
     const commentDialogUuid = ref('');
     const commentDialogItem = ref('');
+    const routeName = router.currentRoute.name;
 
     const partsOfSpeech = computed(() =>
       word.properties.filter(prop => prop.variableName === 'Part of Speech')
@@ -475,6 +477,7 @@ export default defineComponent({
       openComment,
       updateDefinitionTranslations,
       updateDiscussionLemma,
+      routeName,
     };
   },
 });

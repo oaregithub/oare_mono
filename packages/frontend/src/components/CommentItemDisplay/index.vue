@@ -111,6 +111,20 @@
         :allow-breadcrumbs="false"
       >
       </component>
+      <component
+        v-if="showEpigraphy"
+        :is="epigraphyComponent"
+        :textUuid="route.split('/')[2]"
+        :discourseToHighlight="route.split('/')[3]"
+        :disableEditing="true"
+        :highlightEpigraphyDiscourse="
+          selectedThread.referenceUuid === route.split('/')[3] ? false : true
+        "
+        :highlightDiscourse="
+          selectedThread.referenceUuid === route.split('/')[3] ? true : false
+        "
+      >
+      </component>
     </div>
   </oare-dialog>
 </template>
@@ -158,6 +172,10 @@ export default defineComponent({
       default: null,
     },
     showDictionary: {
+      type: Boolean,
+      default: false,
+    },
+    showEpigraphy: {
       type: Boolean,
       default: false,
     },
@@ -315,6 +333,12 @@ export default defineComponent({
         : null
     );
 
+    const epigraphyComponent = computed(() =>
+      props.showEpigraphy
+        ? () => import('@/views/Texts/EpigraphyView/index.vue')
+        : null
+    );
+
     return {
       itemUuid,
       selectedThread,
@@ -324,6 +348,7 @@ export default defineComponent({
       insertComment,
       userComment,
       dictionaryWordComponent,
+      epigraphyComponent,
       selectedThreadIndex,
       console,
       setSelectedThread,

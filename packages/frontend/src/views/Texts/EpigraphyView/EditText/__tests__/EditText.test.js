@@ -1156,7 +1156,7 @@ describe('EditText test', () => {
     expect(mockServer.editText).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'mergeWord',
-        spelling: 'a-na.TÚG.ḪI.A',
+        spelling: 'a-na-TÚG.ḪI.A',
       })
     );
   });

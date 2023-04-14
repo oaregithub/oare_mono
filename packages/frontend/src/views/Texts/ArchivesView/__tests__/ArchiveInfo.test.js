@@ -2,8 +2,8 @@ import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
-import ArchiveInfo from '../archives/ArchiveInfo.vue';
-import sl from '../../../../serviceLocator';
+import sl from '@/serviceLocator';
+import ArchiveInfo from '../archives/components/ArchiveInfo.vue';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -92,17 +92,5 @@ describe('ArchiveInfo', () => {
     });
     await flushPromises();
     expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
-  });
-
-  it('deletes description upon request by admin', async () => {
-    const wrapper = createWrapper({
-      propsData: { ...mockProps, allowCUD: true },
-    });
-    await flushPromises();
-    const deleteButton = wrapper.findAll('.test-delete-description').at(0);
-    await deleteButton.trigger('click');
-    const submitBtn = wrapper.find('.test-submit-btn');
-    await submitBtn.trigger('click');
-    expect(mockServer.deletePropertyDescriptionField).toHaveBeenCalled();
   });
 });

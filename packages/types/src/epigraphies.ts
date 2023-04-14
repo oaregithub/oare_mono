@@ -9,6 +9,7 @@ import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 import { TreeRow } from './tree';
 import { ItemPropertyRow } from './words';
+import { ReferringLocationInfo } from './bibliography';
 
 export interface Text {
   uuid: string;
@@ -36,6 +37,8 @@ export interface EpigraphyResponse {
   zoteroData: ZoteroData[];
 }
 export interface ZoteroData {
+  uuid: string;
+  referringLocationInfo: ReferringLocationInfo;
   citation: string;
   link: string | null;
   pageLink: string | null;

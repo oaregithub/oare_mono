@@ -55,7 +55,9 @@ class ErrorsDao {
         .leftJoin('user', 'user.uuid', 'errors.user_uuid')
         .where('errors.status', 'like', `%${payload.filters.status}%`)
         .modify(qb => {
-          if (payload.filters.user !== '') {
+          if (payload.filters.user === 'No User') {
+            qb.whereNull('errors.user_uuid');
+          } else if (payload.filters.user !== '') {
             qb.where(
               k.raw('CONCAT(user.first_name, " ", user.last_name)'),
               'like',

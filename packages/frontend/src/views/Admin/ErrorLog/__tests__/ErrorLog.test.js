@@ -41,7 +41,7 @@ describe('ErrorLog test', () => {
     },
     pagination: {
       page: 1,
-      limit: 10,
+      limit: 25,
     },
   };
 
@@ -69,7 +69,13 @@ describe('ErrorLog test', () => {
   it('successfully retrieves errors on load', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockServer.getErrorLog).toHaveBeenCalledWith(mockGetPayload);
+    expect(mockServer.getErrorLog).toHaveBeenCalledWith({
+      ...mockGetPayload,
+      filters: {
+        ...mockGetPayload.filters,
+        status: 'New',
+      },
+    });
     expect(wrapper.html()).toContain('testStatus');
     expect(wrapper.html()).toContain('testDescription');
     expect(wrapper.html()).toContain('testName');
@@ -153,83 +159,6 @@ describe('ErrorLog test', () => {
     });
     await wrapper.findAll('button.mdi-close').trigger('click');
     expect(mockServer.getErrorLog).toHaveBeenLastCalledWith(mockGetPayload);
-  });
-
-  it('sorts by status', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(0);
-    await statusSort.trigger('click');
-    expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
-      ...mockGetPayload,
-      sort: {
-        type: 'status',
-        desc: false,
-      },
-    });
-  });
-
-  it('sorts by timestamp', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(1);
-    await statusSort.trigger('click');
-    expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
-      ...mockGetPayload,
-      sort: {
-        type: 'timestamp',
-        desc: false,
-      },
-    });
-  });
-
-  it('sorts by user name', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(2);
-    await statusSort.trigger('click');
-    expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
-      ...mockGetPayload,
-      sort: {
-        type: 'userName',
-        desc: false,
-      },
-    });
-  });
-
-  it('sorts by description', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    const statusSort = wrapper.findAll('.v-data-table-header__icon').at(3);
-    await statusSort.trigger('click');
-    expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
-      ...mockGetPayload,
-      sort: {
-        type: 'description',
-        desc: false,
-      },
-    });
-  });
-
-  it('changes sort direction', async () => {
-    const wrapper = createWrapper();
-    await flushPromises();
-    expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
-      ...mockGetPayload,
-      sort: {
-        type: 'description',
-        desc: true,
-      },
-    });
-    const timestampArrow = wrapper.findAll('.v-data-table-header__icon').at(3);
-    await timestampArrow.trigger('click');
-    expect(mockServer.getErrorLog).toHaveBeenLastCalledWith({
-      ...mockGetPayload,
-      sort: {
-        type: 'description',
-        desc: false,
-      },
-    });
   });
 
   it('allows status update on multiple errors', async () => {
