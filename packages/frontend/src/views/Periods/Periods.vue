@@ -6,16 +6,16 @@
   >
     <v-switch
       color="primary"
-      v-model="fliterSwitch"
+      v-model="filterSwitch"
       label="Show All Known Periods"
     >
     </v-switch>
-    <span v-show="fliterSwitch">
+    <span v-show="filterSwitch">
       This draws all periods known from year lists, regardless of whether the
       year, month, or week shows up in practical documents.
     </span>
 
-    <span v-show="!fliterSwitch">
+    <span v-show="!filterSwitch">
       This filter shows only years that are mentioned in practical documents or
       have a month or week from that year mentioned in a practical document.
     </span>
@@ -50,7 +50,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const periods = ref<PeriodResponse>({ years: [] });
-    const fliterSwitch = ref(false);
+    const filterSwitch = ref(false);
 
     onMounted(async () => {
       try {
@@ -64,7 +64,7 @@ export default defineComponent({
     });
 
     const getPeriods = computed(() => {
-      if (fliterSwitch.value && periods.value.years) {
+      if (!filterSwitch.value && periods.value.years) {
         const filteredPeriods: PeriodResponse = {
           years: periods.value.years.filter(
             year =>
@@ -82,13 +82,13 @@ export default defineComponent({
     });
 
     function filterPeriods(value: boolean) {
-      fliterSwitch.value = value;
+      filterSwitch.value = value;
     }
 
     return {
       periods,
       loading,
-      fliterSwitch,
+      filterSwitch,
       getPeriods,
       filterPeriods,
     };
