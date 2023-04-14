@@ -339,15 +339,15 @@ class ArchiveDao {
   }
 
   async disconnectText(
-    referenceUuid: string,
-    objUuid: string,
+    textUuid: string,
+    archiveOrDossierUuid: string,
     trx?: Knex.Transaction
   ) {
     const k = trx || knexWrite();
     await k('link')
       .del()
-      .where('reference_uuid', referenceUuid)
-      .andWhere('obj_uuid', objUuid);
+      .where('reference_uuid', textUuid)
+      .andWhere('obj_uuid', archiveOrDossierUuid);
   }
 }
 export default new ArchiveDao();

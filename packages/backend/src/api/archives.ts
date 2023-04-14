@@ -83,12 +83,12 @@ router
       const ArchiveDao = sl.get('ArchiveDao');
       const utils = sl.get('utils');
       const {
-        referenceUuid,
-        objUuid,
+        textUuid,
+        archiveOrDossierUuid,
       }: DisconnectTextPayload = req.body as DisconnectTextPayload;
 
       await utils.createTransaction(async trx => {
-        await ArchiveDao.disconnectText(referenceUuid, objUuid, trx);
+        await ArchiveDao.disconnectText(textUuid, archiveOrDossierUuid, trx);
       });
       res.status(204).end();
     } catch (err) {

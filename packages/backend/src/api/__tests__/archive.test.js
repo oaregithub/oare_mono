@@ -238,8 +238,8 @@ describe('DELETE /archive_dossier/disconnect_text', () => {
       .delete(`${API_PATH}/archive_dossier/disconnect_text`)
       .set('Authorization', 'token')
       .send({
-        referenceUuid: 'reference_uuid',
-        objUuid: 'obj_uuid',
+        textUuid: 'text_uuid',
+        archiveOrDossierUuid: 'archive_or_dossier_uuid',
       });
 
   it('returns 204 on successful disconnection', async () => {

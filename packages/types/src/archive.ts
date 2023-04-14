@@ -43,6 +43,6 @@ export interface DossierInfo {
 }
 
 export interface DisconnectTextPayload {
-  referenceUuid: string;
-  objUuid: string;
+  textUuid: string;
+  archiveOrDossierUuid: string;
 }

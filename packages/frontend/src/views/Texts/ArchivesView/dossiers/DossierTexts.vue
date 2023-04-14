@@ -11,9 +11,7 @@
         }"
       >
         <template v-slot:[`item.name`]="{ item }">
-          <router-link
-            v-if="item.textUuid"
-            :to="`/epigraphies/${item.textUuid}`"
+          <router-link v-if="item.uuid" :to="`/epigraphies/${item.uuid}`"
             >{{ item.name }}
           </router-link>
           <span v-else>{{ item.name }}</span>
@@ -31,11 +29,9 @@
           {{ item.publicationPrefix }} {{ item.publicationNumber }}
         </template>
 
-        <template v-if="isAdmin" v-slot:[`item.actions`]="{ item }">
-          <v-btn
-            class="primary disconnect-btn"
-            @click="selectItemForRemoval(item)"
-            >disconnect text</v-btn
+        <template v-if="isAdmin" v-slot:[`item.removeText`]="{ item }">
+          <v-btn class="disconnect-btn" @click="selectItemForRemoval(item)" icon
+            ><v-icon>mdi-note-remove-outline</v-icon></v-btn
           >
         </template>
       </v-data-table>
@@ -106,30 +102,39 @@ export default defineComponent({
     });
     const isRemoving = ref(false);
 
-    const textHeaders = ref<DataTableHeader[]>([]);
-    textHeaders.value = [
-      {
-        text: 'Text Name',
-        value: 'name',
-        width: '30%',
-      },
-      {
-        text: 'Excavation Info',
-        value: 'excavation',
-        width: '25%',
-      },
-      {
-        text: 'Museum Info',
-        value: 'museum',
-        width: '20%',
-      },
-      {
-        text: 'Primary Publication Info',
-        value: 'publication',
-        width: '25%',
-      },
-      { text: 'Actions', value: 'actions', sortable: false, width: '10%' },
-    ];
+    const textHeaders = computed(() => {
+      const headers: DataTableHeader[] = [
+        {
+          text: 'Text Name',
+          value: 'name',
+          width: '30%',
+        },
+        {
+          text: 'Excavation Info',
+          value: 'excavation',
+          width: '25%',
+        },
+        {
+          text: 'Museum Info',
+          value: 'museum',
+          width: '20%',
+        },
+        {
+          text: 'Primary Publication Info',
+          value: 'publication',
+          width: '25%',
+        },
+      ];
+      if (isAdmin.value) {
+        headers.push({
+          text: 'Remove Text',
+          value: 'removeText',
+          sortable: false,
+          width: '10%',
+        });
+      }
+      return headers;
+    });
 
     const searchOptions = ref({
       page: props.page,
@@ -146,8 +151,8 @@ export default defineComponent({
     const disconnectText = async () => {
       try {
         await server.disconnectText({
-          referenceUuid: itemToDisconnect.value.uuid,
-          objUuid: props.dossierUuid,
+          textUuid: itemToDisconnect.value.uuid,
+          archiveOrDossierUuid: props.dossierUuid,
         });
         actions.showSnackbar(
           `Successfully disconnected ${itemToDisconnect.value.name} from dossier.`
