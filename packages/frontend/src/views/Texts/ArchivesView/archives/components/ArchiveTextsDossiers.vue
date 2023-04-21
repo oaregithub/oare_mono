@@ -23,7 +23,7 @@
     </div>
     <div v-else>
       <v-data-table
-        :headers="textHeaders"
+        :headers="isAdmin ? textHeaders : textHeaders.slice(0, -1)"
         :items="texts"
         :server-items-length="totalTexts"
         :options.sync="searchOptions"
@@ -32,9 +32,7 @@
         }"
       >
         <template v-slot:[`item.name`]="{ item }">
-          <router-link
-            v-if="item.textUuid"
-            :to="`/epigraphies/${item.textUuid}`"
+          <router-link v-if="item.uuid" :to="`/epigraphies/${item.uuid}`"
             >{{ item.name }}
           </router-link>
           <span v-else>{{ item.name }}</span>
@@ -51,15 +49,37 @@
         <template v-slot:[`item.publication`]="{ item }">
           {{ item.publicationPrefix }} {{ item.publicationNumber }}
         </template>
+
+        <template v-if="isAdmin" v-slot:[`item.removeText`]="{ item }">
+          <v-btn class="disconnect-btn" @click="selectItemForRemoval(item)" icon
+            ><v-icon>mdi-note-remove-outline</v-icon></v-btn
+          >
+        </template>
       </v-data-table>
     </div>
+    <oare-dialog
+      v-model="isRemoving"
+      title="Disconnect text"
+      submitText="Yes"
+      cancelText="No"
+      :persistent="false"
+      @submit="disconnectText"
+      >Disconnect text {{ itemToDisconnect.name }} from archive?</oare-dialog
+    >
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, watch } from '@vue/composition-api';
+import {
+  computed,
+  defineComponent,
+  PropType,
+  ref,
+  watch,
+} from '@vue/composition-api';
 import { Text, DossierInfo } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'ArchiveTextsDossiers',
@@ -92,33 +112,63 @@ export default defineComponent({
       type: Number,
       default: 10,
     },
+    archiveUuid: {
+      type: String,
+      required: true,
+    },
   },
   setup(props, { emit }) {
-    const textHeaders = ref<DataTableHeader[]>([]);
-    const dossierHeaders = ref<DataTableHeader[]>([]);
+    const server = sl.get('serverProxy');
+    const actions = sl.get('globalActions');
+    const store = sl.get('store');
 
-    textHeaders.value = [
-      {
-        text: 'Text Name',
-        value: 'name',
-        width: '30%',
-      },
-      {
-        text: 'Excavation Info',
-        value: 'excavation',
-        width: '25%',
-      },
-      {
-        text: 'Museum Info',
-        value: 'museum',
-        width: '20%',
-      },
-      {
-        text: 'Primary Publication Info',
-        value: 'publication',
-        width: '25%',
-      },
-    ];
+    const dossierHeaders = ref<DataTableHeader[]>([]);
+    const itemToDisconnect = ref<Text>({
+      uuid: '',
+      type: '',
+      name: '',
+      excavationPrefix: '',
+      excavationNumber: '',
+      museumPrefix: '',
+      museumNumber: '',
+      publicationPrefix: '',
+      publicationNumber: '',
+    });
+    const isRemoving = ref(false);
+
+    const textHeaders = computed(() => {
+      const headers: DataTableHeader[] = [
+        {
+          text: 'Text Name',
+          value: 'name',
+          width: '30%',
+        },
+        {
+          text: 'Excavation Info',
+          value: 'excavation',
+          width: '20%',
+        },
+        {
+          text: 'Museum Info',
+          value: 'museum',
+          width: '20%',
+        },
+        {
+          text: 'Primary Publication Info',
+          value: 'publication',
+          width: '20%',
+        },
+      ];
+      if (isAdmin.value) {
+        headers.push({
+          text: 'Remove Text',
+          value: 'removeText',
+          sortable: false,
+          width: '10%',
+        });
+      }
+      return headers;
+    });
 
     dossierHeaders.value = [
       {
@@ -137,6 +187,44 @@ export default defineComponent({
       page: props.page,
       itemsPerPage: props.rows,
     });
+
+    const isAdmin = computed(() => store.getters.isAdmin);
+
+    const selectItemForRemoval = (item: Text) => {
+      itemToDisconnect.value = item;
+      isRemoving.value = true;
+    };
+
+    const disconnectText = async () => {
+      try {
+        await server.disconnectText({
+          textUuid: itemToDisconnect.value.uuid,
+          archiveOrDossierUuid: props.archiveUuid,
+        });
+        actions.showSnackbar(
+          `Successfully disconnected ${itemToDisconnect.value.name} from archive.`
+        );
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Error removing text. Please try again.',
+          err as Error
+        );
+      } finally {
+        isRemoving.value = false;
+        itemToDisconnect.value = {
+          uuid: '',
+          type: '',
+          name: '',
+          excavationPrefix: '',
+          excavationNumber: '',
+          museumPrefix: '',
+          museumNumber: '',
+          publicationPrefix: '',
+          publicationNumber: '',
+        };
+        emit('refresh-page');
+      }
+    };
 
     watch(
       () => props.page,
@@ -160,6 +248,11 @@ export default defineComponent({
       textHeaders,
       dossierHeaders,
       searchOptions,
+      selectItemForRemoval,
+      disconnectText,
+      isRemoving,
+      itemToDisconnect,
+      isAdmin,
     };
   },
 });
