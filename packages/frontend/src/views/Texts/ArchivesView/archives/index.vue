@@ -21,8 +21,12 @@
       </v-row>
       <v-row class="ma-0">
         <v-radio-group v-model="DossiersOrTexts" row>
-          <v-radio label="Dossiers" value="Dossiers"></v-radio>
-          <v-radio label="Texts" value="Texts"></v-radio>
+          <v-radio
+            class="radio-dossiers"
+            label="Dossiers"
+            value="Dossiers"
+          ></v-radio>
+          <v-radio class="radio-texts" label="Texts" value="Texts"></v-radio>
         </v-radio-group>
       </v-row>
       <v-row>
@@ -39,6 +43,7 @@
         </v-col>
       </v-row>
       <archive-texts-dossiers
+        :archiveUuid="archiveUuid"
         :texts="texts"
         :dossiersInfo="dossiersInfo"
         :DossiersOrTexts="DossiersOrTexts"
@@ -48,6 +53,7 @@
         @update:page="page = `${$event}`"
         :rows="Number(rows)"
         @update:rows="rows = `${$event}`"
+        @refresh-page="getArchive"
       ></archive-texts-dossiers>
     </oare-content-view>
   </div>
