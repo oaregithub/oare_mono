@@ -1,6 +1,7 @@
 import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
 import { FieldInfo } from './field';
+import { PossibleSign } from './sign_reading';
 
 export interface DisplayableWord {
   uuid: string;
@@ -110,6 +111,23 @@ export interface SearchSpellingResultRow {
   spellingUuid: string;
   occurrences: number;
   wordInfo: Word;
+}
+
+export interface SearchPossibleSpellingResultRow {
+  wordUuid: string;
+  word: string;
+  form: Omit<DictionaryForm, 'spellings'>;
+  spellingUuid: string;
+  possibleSigns: PossibleSign[];
+}
+
+export interface SearchPossibleSpellingRow {
+  wordUuid: string;
+  word: string;
+  formUuid: string;
+  form: string;
+  spellingUuid: string;
+  explicitSpelling: string;
 }
 
 export interface SearchSpellingPayload {

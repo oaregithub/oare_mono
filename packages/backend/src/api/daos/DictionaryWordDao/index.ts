@@ -8,6 +8,7 @@ import {
   DictItemComboboxDisplay,
   DictionaryWordRow,
   DictionarySearchRow,
+  SearchPossibleSpellingRow,
 } from '@oare/types';
 import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';
@@ -17,6 +18,7 @@ import {
   assembleSearchResult,
   assembleComboboxDisplay,
   WordFormSpellingType,
+  sortRows,
 } from './utils';
 import FieldDao from '../FieldDao';
 import DictionaryFormDao from '../DictionaryFormDao';
@@ -79,16 +81,6 @@ class DictionaryWordDao {
 
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const SignReadingDao = sl.get('SignReadingDao');
-    let spellingsArray: string[] = [spelling];
-    if (spelling.includes('x') && spelling.split('-').length > 1) {
-      const allSigns = await SignReadingDao.getAllSignReadings();
-      const possibleSpellings: string[] = allSigns.map(sign => {
-        const cleanSpelling = spelling.replace(/x{1,}/gi, sign);
-        return cleanSpelling;
-      });
-      spellingsArray = [...spellingsArray, ...possibleSpellings];
-    }
 
     const rows: SearchSpellingRow[] = await k
       .select(
@@ -101,7 +93,7 @@ class DictionaryWordDao {
       .from('dictionary_word AS dw')
       .innerJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
       .innerJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
-      .whereIn('ds.explicit_spelling', spellingsArray);
+      .where('ds.explicit_spelling', spelling);
 
     const formProperties = await Promise.all(
       rows.map(r =>
@@ -142,6 +134,31 @@ class DictionaryWordDao {
       occurrences: occurrences[i],
       wordInfo: words[i],
     }));
+  }
+
+  async searchPossibleSpellings(
+    regexString: string,
+    trx?: Knex.Transaction
+  ): Promise<SearchPossibleSpellingRow[]> {
+    const k = trx || knexRead();
+
+    const rows: SearchPossibleSpellingRow[] = await k
+      .select(
+        'dw.uuid AS wordUuid',
+        'dw.word',
+        'df.uuid AS formUuid',
+        'df.form',
+        'ds.uuid AS spellingUuid',
+        'ds.explicit_spelling as explicitSpelling'
+      )
+      .from('dictionary_word AS dw')
+      .innerJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
+      .innerJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
+      .whereRaw('ds.explicit_spelling REGEXP ?', regexString);
+
+    const sortedRows = await sortRows(rows);
+
+    return sortedRows;
   }
 
   async getWords(

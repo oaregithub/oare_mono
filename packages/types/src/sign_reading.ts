@@ -49,3 +49,13 @@ export interface SignListPayload {
   sortBy: string;
   allSigns: string;
 }
+
+export interface PossibleSign {
+  signUuid: string;
+  reading: string;
+  name: string;
+  signSpellNum: number;
+  code: string | null;
+  hasPng: number;
+  mzl: string;
+}

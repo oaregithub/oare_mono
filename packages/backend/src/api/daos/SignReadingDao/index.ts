@@ -1,5 +1,11 @@
 import { knexRead } from '@/connection';
-import { UuidRow, SignCode, SignList, SignListReading } from '@oare/types';
+import {
+  UuidRow,
+  SignCode,
+  SignList,
+  SignListReading,
+  PossibleSign,
+} from '@oare/types';
 import { formattedSearchCharacter } from '@/api/daos/TextEpigraphyDao/utils';
 import { Knex } from 'knex';
 
@@ -229,6 +235,43 @@ class SignReadingDao {
         result.map(({ reading }) => reading)
       );
     return signs;
+  }
+
+  async getPossibleSigns(
+    spellingUuid: string,
+    missingSignPositions: number[],
+    trx?: Knex.Transaction
+  ): Promise<PossibleSign[]> {
+    const k = trx || knexRead();
+    const possibleSigns = await k('dictionary_spelling_epigraphy as dse')
+      .join('sign as s', 's.uuid', 'dse.sign_uuid')
+      .leftJoin('sign_org as so', function () {
+        this.on('so.reference_uuid', 's.uuid').andOn(
+          k.raw('so.type = ?', ['ABZ'])
+        );
+      })
+      .leftJoin('sign_org as so1', function () {
+        this.on('so1.reference_uuid', 's.uuid').andOn(
+          k.raw('so1.type = ?', ['MZL'])
+        );
+      })
+      .where('dse.reference_uuid', spellingUuid)
+      .whereIn('dse.sign_spell_num', missingSignPositions)
+      .select(
+        's.uuid as signUuid',
+        'dse.reading',
+        's.name',
+        'dse.sign_spell_num as signSpellNum',
+        's.font_code as code',
+        'so1.org_num as mzl'
+      )
+      .modify(qb => {
+        qb.select(
+          k.raw('IF(so1.has_png = 0, so.has_png, so1.has_png) as hasPng')
+        );
+      });
+
+    return possibleSigns;
   }
 }
 

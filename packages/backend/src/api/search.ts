@@ -9,12 +9,17 @@ import {
   SearchNullDiscourseResultRow,
   SearchNullDiscourseLine,
   SearchType,
+  SearchPossibleSpellingResultRow,
+  ItemPropertyRow,
+  SearchPossibleSpellingRow,
+  PossibleSign,
 } from '@oare/types';
 import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { prepareCharactersForSearch } from '@/api/daos/SignReadingDao/utils';
 import { parsedQuery, extractPagination } from '@/utils';
+import { stringToCharsArray } from './daos/TextEpigraphyDao/utils';
 
 const router = express.Router();
 
@@ -74,6 +79,70 @@ router.route('/search/spellings').get(async (req, res, next) => {
     const { spelling } = (req.query as unknown) as SearchSpellingPayload;
 
     const results = await dictionaryWordDao.searchSpellings(spelling, userUuid);
+    res.json(results);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
+router.route('/search/possible_spellings').get(async (req, res, next) => {
+  try {
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const SignReadingDao = sl.get('SignReadingDao');
+    const { spelling } = (req.query as unknown) as SearchSpellingPayload;
+
+    let regexString: string = spelling;
+    const charsArray: string[] = stringToCharsArray(spelling);
+    if (
+      spelling.includes('x') &&
+      charsArray.length > 1 &&
+      /[^x]/.test(spelling)
+    ) {
+      // prettier-ignore
+      regexString = regexString
+        .replace(/^(x+[\s\-.+=])/, '([^\\s\\-.+=]+?[\\s\\-.+=]+?){1,4}')
+        .replace(/([\s\-.+=]x+)$/, '([\\s\\-.+=]+?[^\\s\\-.+=]+?){1,4}')
+        .replace(/[\s\-.+=]?x+[\s\-.+]?/g, '([\\s\\-.+=]?[^\\s\\-.+=]+?[\\s\\-.+=]?){1,2}')
+    }
+    regexString = `^${regexString}$`;
+    const rows: SearchPossibleSpellingRow[] = await DictionaryWordDao.searchPossibleSpellings(
+      regexString
+    );
+
+    const formProperties: ItemPropertyRow[][] = await Promise.all(
+      rows.map(r => ItemPropertiesDao.getPropertiesByReferenceUuid(r.formUuid))
+    );
+    const missingSignPositions: number[] = charsArray
+      .map((char, idx) => {
+        if (char.includes('x')) {
+          return idx + 1;
+        }
+        return -1;
+      })
+      .filter(charIdx => charIdx !== -1);
+
+    const possibleSigns: PossibleSign[][] = await Promise.all(
+      rows.map(row => {
+        const signs = SignReadingDao.getPossibleSigns(
+          row.spellingUuid,
+          missingSignPositions
+        );
+        return signs;
+      })
+    );
+
+    const results: SearchPossibleSpellingResultRow[] = rows.map((row, i) => ({
+      word: row.word,
+      wordUuid: row.wordUuid,
+      form: {
+        form: row.form,
+        uuid: row.formUuid,
+        properties: formProperties[i],
+      },
+      spellingUuid: row.spellingUuid,
+      possibleSigns: possibleSigns[i],
+    }));
     res.json(results);
   } catch (err) {
     next(new HttpInternalError(err as string));

@@ -3,7 +3,9 @@ import {
   DictionarySearchRow,
   DictItemComboboxDisplay,
   ItemPropertyRow,
+  SearchPossibleSpellingRow,
 } from '@oare/types';
+import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 import {
   DictSpellEpigRowDictSearch,
   SearchWordsQueryRow,
@@ -153,4 +155,28 @@ export function assembleSearchResult(
     return 0;
   });
   return searchResults;
+}
+
+export async function sortRows(
+  rows: SearchPossibleSpellingRow[]
+): Promise<SearchPossibleSpellingRow[]> {
+  return rows.sort(
+    (a: SearchPossibleSpellingRow, b: SearchPossibleSpellingRow) => {
+      const aLength = stringToCharsArray(a.explicitSpelling).length;
+      const bLength = stringToCharsArray(b.explicitSpelling).length;
+      if (aLength !== bLength) {
+        return aLength - bLength;
+      }
+      const aCharsArray = stringToCharsArray(a.explicitSpelling);
+      const bCharsArray = stringToCharsArray(b.explicitSpelling);
+      for (let i = 0; i < aLength; i += 1) {
+        if (aCharsArray[i] !== bCharsArray[i]) {
+          return aCharsArray[i]
+            .replace(/(\(d\))|(\(m\))/g, '')
+            .localeCompare(bCharsArray[i].replace(/(\(d\))|(\(m\))/g, ''));
+        }
+      }
+      return a.explicitSpelling.length - b.explicitSpelling.length;
+    }
+  );
 }

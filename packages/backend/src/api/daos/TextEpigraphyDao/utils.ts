@@ -251,7 +251,7 @@ export const formattedSearchCharacter = (char: string): string[] => {
 export const stringToCharsArray = (search: string): string[] => {
   const chars = search
     .trim()
-    .split(/[\s\-.+]+/)
+    .split(/[\s\-.+=]+/)
     .flatMap(formattedSearchCharacter);
 
   if (chars.length === 1 && chars[0] === '') {

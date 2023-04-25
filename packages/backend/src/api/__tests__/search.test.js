@@ -481,6 +481,123 @@ describe('search test', () => {
     });
   });
 
+  describe('GET /search/possible_spellings', () => {
+    const PATH = `${API_PATH}/search/possible_spellings?spelling=x-x-ma`;
+    const possibleSpellingsRows = [
+      {
+        wordUuid: 'wordUuid',
+        word: 'word',
+        formUuid: 'formUuid',
+        form: 'form',
+        spellingUuid: 'spellingUuid',
+        explicitSpelling: 'explicitSpelling',
+      },
+    ];
+    const mockPropertyRow = {
+      uuid: 'uuid',
+      referenceUuid: 'refUuid',
+      parentUuid: 'parentUuid',
+      level: null,
+      variableUuid: null,
+      variableName: 'variableName',
+      varAbbrevation: null,
+      valueUuid: '',
+      valueName: 'valName',
+      valAbbreviation: null,
+      objectUuid: 'objUuid',
+      value: 'val',
+    };
+
+    const possibleSigns = [
+      [
+        {
+          signUuid: 'signUuid',
+          reading: 'reading',
+          name: 'name',
+          signSpellNum: 1,
+          code: 'code',
+          hasPng: 1,
+          mzl: '123',
+        },
+        {
+          signUuid: 'signUuid2',
+          reading: 'reading2',
+          name: 'name2',
+          signSpellNum: 2,
+          code: 'code2',
+          hasPng: 1,
+          mzl: '1234',
+        },
+      ],
+    ];
+
+    const DictionaryWordDao = {
+      searchPossibleSpellings: jest
+        .fn()
+        .mockResolvedValue(possibleSpellingsRows),
+    };
+
+    const ItemPropertiesDao = {
+      getPropertiesByReferenceUuid: jest
+        .fn()
+        .mockResolvedValue([mockPropertyRow]),
+    };
+
+    const SignReadingDao = {
+      getPossibleSigns: jest.fn().mockResolvedValue(possibleSigns),
+    };
+
+    const setup = () => {
+      sl.set('DictionaryWordDao', DictionaryWordDao);
+      sl.set('ItemPropertiesDao', ItemPropertiesDao);
+      sl.set('SignReadingDao', SignReadingDao);
+    };
+
+    const sendRequest = () => request(app).get(PATH);
+
+    it('returns search results', async () => {
+      setup();
+      const response = await sendRequest();
+
+      expect(DictionaryWordDao.searchPossibleSpellings).toHaveBeenCalled();
+      expect(ItemPropertiesDao.getPropertiesByReferenceUuid).toHaveBeenCalled();
+      expect(SignReadingDao.getPossibleSigns).toHaveBeenCalled();
+      expect(response.status).toBe(200);
+    });
+
+    it('returns 500 when ItemPropertiesDao fails', async () => {
+      setup();
+      sl.set('ItemPropertiesDao', {
+        getPropertiesByReferenceUuid: jest.fn().mockRejectedValue('failed'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when search DictionaryWordDao fails ', async () => {
+      setup();
+      sl.set('DictionaryWordDao', {
+        searchPossibleSpellings: jest
+          .fn()
+          .mockRejectedValue('Failed to search spellings'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+
+    it('returns 500 when SignReadingDao fails ', async () => {
+      setup();
+      sl.set('SignReadingDao', {
+        getPossibleSigns: jest.fn().mockRejectedValue('failed'),
+      });
+
+      const response = await sendRequest();
+      expect(response.status).toBe(500);
+    });
+  });
+
   describe('GET /search/spellings/discourse', () => {
     const spelling = 'fakeSpelling';
     const PATH = `${API_PATH}/search/spellings/discourse?spelling=${spelling}`;

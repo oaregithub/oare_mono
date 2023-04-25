@@ -7,6 +7,7 @@ import {
   SearchDiscourseSpellingResponse,
   Pagination,
   SearchNullDiscourseResultRow,
+  SearchPossibleSpellingResultRow,
 } from '@oare/types';
 
 async function searchTexts(
@@ -27,6 +28,18 @@ async function searchSpellings(
   spelling: string
 ): Promise<SearchSpellingResultRow[]> {
   const { data } = await axios.get('/search/spellings', {
+    params: {
+      spelling,
+    },
+  });
+
+  return data;
+}
+
+async function searchPossibleSpellings(
+  spelling: string
+): Promise<SearchPossibleSpellingResultRow[]> {
+  const { data } = await axios.get('/search/possible_spellings', {
     params: {
       spelling,
     },
@@ -82,6 +95,7 @@ async function searchNullDiscourseCount(
 
 export default {
   searchSpellings,
+  searchPossibleSpellings,
   searchSpellingDiscourse,
   searchTexts,
   searchTextsTotal,
