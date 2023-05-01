@@ -33,7 +33,10 @@
       <v-card-text>
         <slot></slot>
       </v-card-text>
-      <div v-if="showCancel || showSubmit">
+      <div
+        v-if="showCancel || showSubmit"
+        :class="{ 'sticky-submit': stickyAction }"
+      >
         <v-divider />
         <v-card-actions>
           <v-spacer />
@@ -155,6 +158,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    stickyAction: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup({ closeOnSubmit }, { emit }) {
     const submit = () => {
@@ -170,3 +177,10 @@ export default defineComponent({
   },
 });
 </script>
+<style>
+.sticky-submit {
+  position: sticky;
+  bottom: 0;
+  background: white;
+}
+</style>

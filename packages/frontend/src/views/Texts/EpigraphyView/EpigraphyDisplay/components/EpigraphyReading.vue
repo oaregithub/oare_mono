@@ -247,6 +247,16 @@
         "
       ></span
     ></component>
+    <connect-possible-spelling-occurrence
+      v-if="viewingConnectPossibleSpellingDialog"
+      :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
+      class="test-spelling-occurrence-display"
+      :discourseUuid="connectSpellingDialogDiscourseUuid"
+      :spelling="connectSpellingDialogSpelling"
+      :searchPossibleSpellings="server.searchPossibleSpellings"
+      @finish="closeConnectSpellingDialog"
+      v-model="viewingConnectPossibleSpellingDialog"
+    ></connect-possible-spelling-occurrence>
     <connect-spelling-occurrence
       v-if="viewingConnectSpellingDialog"
       :key="`${connectSpellingDialogSpelling}-${connectSpellingDialogDiscourseUuid}`"
@@ -345,6 +355,7 @@ import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import SealList from '@/views/Seals/SealList.vue';
 import SingleSeal from '@/views/Seals/SingleSeal.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
+import ConnectPossibleSpellingOccurrence from './ConnectPossibleSpellingOccurence.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';
@@ -360,6 +371,7 @@ export default defineComponent({
   components: {
     DictionaryWord,
     ConnectSpellingOccurrence,
+    ConnectPossibleSpellingOccurrence,
     SealList,
     SingleSeal,
     UtilList,
@@ -392,6 +404,7 @@ export default defineComponent({
     const actions = sl.get('globalActions');
     const loading = ref(false);
     const viewingDialog = ref(false);
+    const viewingConnectPossibleSpellingDialog = ref(false);
     const viewingConnectSpellingDialog = ref(false);
     const viewingConnectSealDialog = ref(false);
     const isCommenting = ref(false);
@@ -504,9 +517,19 @@ export default defineComponent({
         const { spelling } = await server.getSpellingByDiscourseUuid(
           discourseUuid
         );
-        viewingConnectSpellingDialog.value = true;
-        connectSpellingDialogSpelling.value = spelling;
-        connectSpellingDialogDiscourseUuid.value = discourseUuid;
+        if (!spelling.includes('x')) {
+          viewingConnectSpellingDialog.value = true;
+          connectSpellingDialogSpelling.value = spelling;
+          connectSpellingDialogDiscourseUuid.value = discourseUuid;
+        } else if (
+          spelling.includes('x') &&
+          spelling.split(/[\s\-.+=]+/).length > 1 &&
+          /[^x]/.test(spelling)
+        ) {
+          viewingConnectPossibleSpellingDialog.value = true;
+          connectSpellingDialogSpelling.value = spelling;
+          connectSpellingDialogDiscourseUuid.value = discourseUuid;
+        }
       } catch (err) {
         actions.showErrorSnackbar(
           'Failed to load connect spelling view',
@@ -518,6 +541,19 @@ export default defineComponent({
     const closeConnectSpellingDialog = async () => {
       try {
         viewingConnectSpellingDialog.value = false;
+        connectSpellingDialogSpelling.value = '';
+        connectSpellingDialogDiscourseUuid.value = '';
+      } catch (err) {
+        actions.showErrorSnackbar(
+          'Failed to close connect spelling view',
+          err as Error
+        );
+      }
+    };
+
+    const closeConnectPossibleSpellingDialog = async () => {
+      try {
+        viewingConnectPossibleSpellingDialog.value = false;
         connectSpellingDialogSpelling.value = '';
         connectSpellingDialogDiscourseUuid.value = '';
       } catch (err) {
@@ -624,11 +660,13 @@ export default defineComponent({
       loading,
       discourseWordInfo,
       viewingDialog,
+      viewingConnectPossibleSpellingDialog,
       viewingConnectSpellingDialog,
       viewingConnectSealDialog,
       connectSpellingDialogSpelling,
       connectSpellingDialogDiscourseUuid,
       closeConnectSpellingDialog,
+      closeConnectPossibleSpellingDialog,
       formatWord,
       formatSide,
       formatTranslation,

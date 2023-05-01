@@ -885,7 +885,7 @@ class TextDiscourseDao {
       .select('type')
       .where({ uuid: discourseUuid })
       .first()
-      .then(row => row.type);
+      .then(row => row?.type);
 
     if (type === 'discourseUnit') {
       return [];

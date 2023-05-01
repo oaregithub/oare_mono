@@ -39,11 +39,12 @@ class TextMarkupDao {
 
     markups.sort(a => {
       if (
-        a.type === 'damage' ||
-        a.type === 'partialDamage' ||
-        a.type === 'isCollatedReading' ||
-        a.type === 'isEmendedReading' ||
-        a.type === 'uncertain'
+        a &&
+        (a.type === 'damage' ||
+          a.type === 'partialDamage' ||
+          a.type === 'isCollatedReading' ||
+          a.type === 'isEmendedReading' ||
+          a.type === 'uncertain')
       ) {
         return -1;
       }

@@ -317,19 +317,25 @@ export async function getInterlinearInfo(
           wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
             formUuid
           );
-          const { type } = await DictionaryWordDao.getDictionaryWordRowByUuid(
-            wordUuid
-          );
-          if (type === 'GN') {
-            translation = 'GN';
-          } else if (type === 'PN') {
-            translation = 'PN';
-          } else {
-            translation = (
-              await DictionaryWordDao.getWordTranslationsForDefinition(wordUuid)
-            )[0].val;
+          if (wordUuid) {
+            const type = (
+              await DictionaryWordDao.getDictionaryWordRowByUuid(wordUuid)
+            )?.type;
+            if (type) {
+              if (type === 'GN') {
+                translation = 'GN';
+              } else if (type === 'PN') {
+                translation = 'PN';
+              } else {
+                translation = (
+                  await DictionaryWordDao.getWordTranslationsForDefinition(
+                    wordUuid
+                  )
+                )[0]?.val;
+              }
+              word = await DictionaryWordDao.getWordName(wordUuid);
+            }
           }
-          word = await DictionaryWordDao.getWordName(wordUuid);
           parseInfo = await ItemPropertiesDao.getPropertiesByReferenceUuid(
             formUuid
           );

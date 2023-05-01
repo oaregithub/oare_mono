@@ -47,6 +47,30 @@
         <template #[`item.context`]="{ item }">
           <epigraphy-context :spellingUuid="item.spellingUuid" />
         </template>
+        <template #[`item.possibleSigns`]="{ item }">
+          <span v-for="(sign, idx) in item.possibleSigns" :key="idx"
+            ><v-img
+              v-if="sign.hasPng === 1"
+              :src="
+                require(`@oare/frontend/src/assets/signVectors/${sign.mzl}.png`)
+              "
+              height="25px"
+              :width="
+                getWidth(
+                  require(`@oare/frontend/src/assets/signVectors/${sign.mzl}.png`)
+                ) || 30
+              "
+              contain
+              class="d-inline-block"
+            />
+            <span v-else-if="sign.fontCode" class="my-n1 mx-1 cuneiform">{{
+              getSignHTMLCode(sign.fontCode)
+            }}</span>
+            <v-icon v-else-if="!sign.fontCode" small color="red" class="ma-1"
+              >mdi-block-helper</v-icon
+            ></span
+          >
+        </template>
         <template #[`item.connect`]="{ item }">
           <div class="d-flex justify-center">
             <v-checkbox
@@ -89,7 +113,7 @@ import {
 } from '@vue/composition-api';
 import {
   ConnectSpellingDiscoursePayload,
-  SearchSpellingResultRow,
+  SearchPossibleSpellingResultRow,
 } from '@oare/types';
 import EpigraphyContext from './EpigraphyContext.vue';
 import { DataTableHeader } from 'vuetify';
@@ -98,9 +122,9 @@ import utils from '@/utils';
 
 export default defineComponent({
   props: {
-    searchSpellings: {
+    searchPossibleSpellings: {
       type: Function as PropType<
-        (spelling: string) => Promise<SearchSpellingResultRow[]>
+        (spelling: string) => Promise<SearchPossibleSpellingResultRow[]>
       >,
       required: true,
     },
@@ -123,7 +147,7 @@ export default defineComponent({
     const server = sl.get('serverProxy');
     const store = sl.get('store');
 
-    const dictionaryInfo = ref<SearchSpellingResultRow[]>([]);
+    const dictionaryInfo = ref<SearchPossibleSpellingResultRow[]>([]);
     const spellingOccurrencesLength = ref(0);
     const canConnectSpellings = computed(() =>
       store.hasPermission('CONNECT_SPELLING')
@@ -151,6 +175,7 @@ export default defineComponent({
         text: 'Context',
         value: 'context',
       },
+      { text: 'Possible Signs', value: 'possibleSigns' },
       { text: 'Connect', value: 'connect' },
     ]);
 
@@ -184,13 +209,42 @@ export default defineComponent({
     onMounted(async () => {
       try {
         loading.value = true;
-        dictionaryInfo.value = await props.searchSpellings(props.spelling);
+        dictionaryInfo.value = await props.searchPossibleSpellings(
+          props.spelling
+        );
         loading.value = false;
         spellingOccurrencesLength.value = dictionaryInfo.value.length;
       } catch (err) {
         actions.showErrorSnackbar('Failed on mount', err as Error);
       }
     });
+
+    const getWidth = (src: string) => {
+      const image = new Image();
+      image.src = src;
+      const heightRatio = 25 / image.height;
+      return heightRatio * image.width;
+    };
+
+    const getSignHTMLCode = (code: string) => {
+      const codeArray: string[] = code.split('+');
+      let finishedCodeArray: string[] = [];
+      codeArray.forEach(c => {
+        let codePt = Number(`0x${c}`);
+        if (codePt > 0xffff) {
+          codePt -= 0x10000;
+          finishedCodeArray.push(
+            String.fromCharCode(
+              0xd800 + (codePt >> 10),
+              0xdc00 + (codePt & 0x3ff)
+            )
+          );
+        } else {
+          finishedCodeArray.push(String.fromCharCode(codePt));
+        }
+      });
+      return finishedCodeArray.join('');
+    };
 
     return {
       utils,
@@ -206,7 +260,14 @@ export default defineComponent({
       closeConfirmationDialog,
       viewingConfirmationDialog,
       viewingMainDialog,
+      getWidth,
+      getSignHTMLCode,
     };
   },
 });
 </script>
+<style scoped>
+.cuneiform {
+  font-family: 'Santakku', 'CuneiformComposite';
+}
+</style>
