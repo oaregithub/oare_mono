@@ -91,7 +91,7 @@ describe('Connect Spelling Occurence test', () => {
 
     const word = await wrapper.findAll('.test-word').at(0);
     expect(word.exists()).toBe(true);
-    const reading = await wrapper.findAll('.test-reading').at(0);
+    const reading = await wrapper.findAll('.test-context').at(0);
     expect(reading.exists()).toBe(true);
   });
 
