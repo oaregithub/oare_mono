@@ -3,13 +3,13 @@ import VueCompositionApi from '@vue/composition-api';
 import { mount, createLocalVue } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import sl from '@/serviceLocator';
-import ConnectSpellingOccurrence from '../ConnectSpellingOccurrence.vue';
+import ConnectPossibleSpellingOccurrence from '../ConnectPossibleSpellingOccurrence.vue';
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
-describe('Connect Spelling Occurence test', () => {
+describe('Connect Possible Spelling Occurence test', () => {
   const mockForm = {
     uuid: 'uuid',
     form: 'form',
@@ -32,17 +32,29 @@ describe('Connect Spelling Occurence test', () => {
     readings: ['reading1', 'reading2'],
   };
 
+  const possibleSign = {
+    signUuid: 'signUuid',
+    reading: 'reading',
+    name: 'name',
+    signSpellNum: 2,
+    code: 'code',
+    hasPng: 1,
+    mzl: '809',
+  };
+
   const searchSpellingResultRow = {
     wordUuid: 'wordUuid',
     word: 'word',
     form: mockForm,
     spellingUuid: 'spellingUuid',
-    occurrences: 2,
+    possibleSigns: [possibleSign],
     wordInfo: mockWord,
   };
 
   const mockServer = {
-    searchSpellings: jest.fn().mockResolvedValue([searchSpellingResultRow]),
+    searchPossibleSpellings: jest
+      .fn()
+      .mockResolvedValue([searchSpellingResultRow]),
     getSpellingTextOccurrences: jest
       .fn()
       .mockResolvedValue([spellingOccurrenceRow]),
@@ -51,8 +63,8 @@ describe('Connect Spelling Occurence test', () => {
 
   const mockProps = {
     discourseUuid: spellingOccurrenceRow.discourseUuid,
-    spelling: 'spelling',
-    searchSpellings: mockServer.searchSpellings,
+    spelling: 'spelling-x',
+    searchPossibleSpellings: mockServer.searchPossibleSpellings,
   };
 
   const mockActions = {
@@ -76,7 +88,7 @@ describe('Connect Spelling Occurence test', () => {
   beforeEach(setup);
 
   const createWrapper = (props = mockProps) =>
-    mount(ConnectSpellingOccurrence, {
+    mount(ConnectPossibleSpellingOccurrence, {
       localVue,
       vuetify,
       propsData: props,
@@ -86,7 +98,9 @@ describe('Connect Spelling Occurence test', () => {
   it('gets dictionary info and text occurrences', async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(mockProps.searchSpellings).toHaveBeenCalledWith(mockProps.spelling);
+    expect(mockProps.searchPossibleSpellings).toHaveBeenCalledWith(
+      mockProps.spelling
+    );
 
     const word = await wrapper.findAll('.test-word').at(0);
     expect(word.exists()).toBe(true);
@@ -97,7 +111,7 @@ describe('Connect Spelling Occurence test', () => {
   it('shows error when mount fails', async () => {
     const props = {
       ...mockProps,
-      searchSpellings: jest
+      searchPossibleSpellings: jest
         .fn()
         .mockRejectedValue('Error, unable to retrieve text occurrences'),
     };

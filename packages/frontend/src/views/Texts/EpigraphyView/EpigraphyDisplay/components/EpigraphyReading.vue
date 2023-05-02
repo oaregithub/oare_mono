@@ -355,7 +355,7 @@ import DictionaryWord from '@/views/DictionaryWord/index.vue';
 import SealList from '@/views/Seals/SealList.vue';
 import SingleSeal from '@/views/Seals/SingleSeal.vue';
 import ConnectSpellingOccurrence from './ConnectSpellingOccurrence.vue';
-import ConnectPossibleSpellingOccurrence from './ConnectPossibleSpellingOccurence.vue';
+import ConnectPossibleSpellingOccurrence from './ConnectPossibleSpellingOccurrence.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import { formatLineNumber, romanNumeral } from '@oare/oare/src/tabletUtils';
 import i18n from '@/i18n';

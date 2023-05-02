@@ -45,7 +45,10 @@
           }}</span>
         </template>
         <template #[`item.context`]="{ item }">
-          <epigraphy-context :spellingUuid="item.spellingUuid" />
+          <epigraphy-context
+            class="test-context"
+            :spellingUuid="item.spellingUuid"
+          />
         </template>
         <template #[`item.possibleSigns`]="{ item }">
           <span v-for="(sign, idx) in item.possibleSigns" :key="idx"
