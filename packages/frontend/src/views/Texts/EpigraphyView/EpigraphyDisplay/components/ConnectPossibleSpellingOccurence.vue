@@ -17,7 +17,7 @@
       :width="1000"
     >
       <span class="test-one-or-more-results" v-if="dictionaryInfo.length > 0"
-        >This spelling occurs in the following forms</span
+        >This spelling could possibly occur in the following forms</span
       >
       <span class="test-results" v-else
         >This spelling has no matches in the dictionary</span
@@ -77,6 +77,8 @@
               :value="{
                 discourseUuid: discourseUuid,
                 spellingUuid: item.spellingUuid,
+                form: item.form,
+                explicitSpelling: item.explicitSpelling,
               }"
               v-model="connectSelections"
               class="test-connect"
@@ -96,8 +98,20 @@
       @submit="connectSpellings"
       @input="$emit('input', false)"
     >
-      Are you sure you want to connect the spelling '{{ spelling }}' to this
-      discourse unit?
+      Are you sure you want this discourse unit to
+      <em>{{ connectSelections ? connectSelections.form.form : '' }}</em> ({{
+        connectSelections
+          ? utils.formGrammarString(connectSelections.form)
+          : ''
+      }}) spelled:
+      <span
+        v-html="
+          spellingHtmlReading(
+            connectSelections ? connectSelections.explicitSpelling : ''
+          )
+        "
+        class="mr-1"
+      />?
     </OareDialog>
   </div>
 </template>
@@ -112,10 +126,11 @@ import {
   onMounted,
 } from '@vue/composition-api';
 import {
-  ConnectSpellingDiscoursePayload,
+  ConnectSpellingDiscourseSelection,
   SearchPossibleSpellingResultRow,
 } from '@oare/types';
 import EpigraphyContext from './EpigraphyContext.vue';
+import { spellingHtmlReading } from '@oare/oare';
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import utils from '@/utils';
@@ -152,7 +167,9 @@ export default defineComponent({
     const canConnectSpellings = computed(() =>
       store.hasPermission('CONNECT_SPELLING')
     );
-    const connectSelections = ref<ConnectSpellingDiscoursePayload | null>(null);
+    const connectSelections = ref<ConnectSpellingDiscourseSelection | null>(
+      null
+    );
     const viewingConfirmationDialog = ref(false);
     const viewingMainDialog = ref(true);
     const loading = ref(false);
@@ -182,7 +199,10 @@ export default defineComponent({
     const connectSpellings = async () => {
       try {
         if (connectSelections.value) {
-          await server.connectSpelling(connectSelections.value);
+          await server.connectSpelling({
+            discourseUuid: props.discourseUuid,
+            spellingUuid: connectSelections.value.spellingUuid,
+          });
         }
         actions.showSnackbar('Successfully connected spelling to discourse');
       } catch (err) {
@@ -262,6 +282,7 @@ export default defineComponent({
       viewingMainDialog,
       getWidth,
       getSignHTMLCode,
+      spellingHtmlReading,
     };
   },
 });

@@ -142,6 +142,7 @@ router.route('/search/possible_spellings').get(async (req, res, next) => {
       },
       spellingUuid: row.spellingUuid,
       possibleSigns: possibleSigns[i],
+      explicitSpelling: row.explicitSpelling,
     }));
     res.json(results);
   } catch (err) {

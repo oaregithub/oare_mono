@@ -119,6 +119,7 @@ export interface SearchPossibleSpellingResultRow {
   form: Omit<DictionaryForm, 'spellings'>;
   spellingUuid: string;
   possibleSigns: PossibleSign[];
+  explicitSpelling: string;
 }
 
 export interface SearchPossibleSpellingRow {
@@ -237,6 +238,13 @@ export interface EditPropertiesPayload {
 export interface ConnectSpellingDiscoursePayload {
   discourseUuid: string;
   spellingUuid: string;
+}
+
+export interface ConnectSpellingDiscourseSelection {
+  discourseUuid: string;
+  spellingUuid: string;
+  explicitSpelling: string;
+  form: Omit<DictionaryForm, 'spellings'>;
 }
 
 export interface TextOccurrencesCountResponseItem {
