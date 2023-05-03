@@ -118,6 +118,7 @@ describe('ArchiveView', () => {
         getters: {
           isAdmin: false,
         },
+        hasPermission: () => true,
       },
     });
     await flushPromises();
