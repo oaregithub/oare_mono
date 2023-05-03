@@ -183,15 +183,6 @@
             </div>
           </div>
         </v-row>
-        <v-row v-if="textInfo.hasEpigraphy"
-          ><v-switch
-            v-if="canComment"
-            color="primary"
-            v-model="commentMode"
-            class="ml-3"
-            label="Comment Mode"
-          ></v-switch
-        ></v-row>
         <div v-if="allowViewCitations && zoteroDataList.length">
           <div v-for="(zotero, idx) in zoteroDataList" :key="idx">
             <div v-if="idx <= 1 || seeMoreZotero">
@@ -232,6 +223,16 @@
             </v-btn>
           </div>
         </div>
+
+        <v-row v-if="textInfo.hasEpigraphy"
+          ><v-switch
+            v-if="canComment"
+            color="primary"
+            v-model="commentMode"
+            class="ml-3"
+            label="Comment Mode"
+          ></v-switch
+        ></v-row>
 
         <span v-if="!textInfo.hasEpigraphy">
           Apologies, we do not have a transliteration for this text at the
