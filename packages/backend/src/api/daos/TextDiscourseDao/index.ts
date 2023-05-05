@@ -180,6 +180,16 @@ class TextDiscourseDao {
               .from('text_discourse as td')
               .whereIn('td.explicit_spelling', dictItemSearchUuids);
           })
+          .union(function () {
+            this.select('td.uuid')
+              .from('text_discourse as td')
+              .innerJoin(
+                'item_properties as ip',
+                'ip.reference_uuid',
+                'td.uuid'
+              )
+              .whereIn('ip.object_uuid', dictItemSearchUuids);
+          })
           .modify(qb => {
             if (dictItemSearchUuids.includes('-1')) {
               qb.union(function () {

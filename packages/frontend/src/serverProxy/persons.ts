@@ -1,4 +1,5 @@
 import {
+  ChildDictItem,
   Pagination,
   PersonInfo,
   PersonListItem,
@@ -53,10 +54,16 @@ async function getPersonInfo(uuid: string): Promise<PersonInfo> {
   return data;
 }
 
+async function getPersonsByNameUuid(uuid: string): Promise<ChildDictItem[]> {
+  const { data } = await axios.get(`/persons/wordsInTexts/${uuid}`);
+  return data;
+}
+
 export default {
   getPersons,
   getPersonsOccurrencesCounts,
   getPersonsOccurrencesTexts,
   disconnectPersons,
   getPersonInfo,
+  getPersonsByNameUuid,
 };

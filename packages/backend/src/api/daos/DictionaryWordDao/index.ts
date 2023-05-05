@@ -522,7 +522,7 @@ class DictionaryWordDao {
 
   async getDictItemsForWordsInTexts(trx?: Knex.Transaction) {
     const k = trx || knexRead();
-    const forms: WordFormSpellingRow[] = await k('dictionary_form AS df')
+    const forms: WordFormSpellingRow[] = await k('dictionary_form as df')
       .join('dictionary_word as dw', 'dw.uuid', 'df.reference_uuid')
       .select(
         'df.form as name',
@@ -532,7 +532,7 @@ class DictionaryWordDao {
         'dw.uuid as wordUuid'
       );
     const spellings: WordFormSpellingRow[] = await k(
-      'dictionary_spelling AS ds'
+      'dictionary_spelling as ds'
     )
       .join('dictionary_form as df', 'df.uuid', 'ds.reference_uuid')
       .join('dictionary_word as dw', 'dw.uuid', 'df.reference_uuid')
@@ -543,15 +543,24 @@ class DictionaryWordDao {
         'dw.word as wordName',
         'dw.uuid as wordUuid'
       );
-    const words: WordFormSpellingRow[] = await k(
-      'dictionary_word as dw'
-    ).select(
-      'dw.word as name',
-      'dw.uuid',
-      'dw.uuid as referenceUuid',
-      'dw.word as wordName',
-      'dw.uuid as wordUuid'
-    );
+    const words: WordFormSpellingRow[] = await k('dictionary_word as dw')
+      .select(
+        'dw.word as name',
+        'dw.uuid',
+        'dw.uuid as referenceUuid',
+        'dw.word as wordName',
+        'dw.uuid as wordUuid'
+      )
+      .whereNot('dw.type', 'PN');
+    const personNames: WordFormSpellingRow[] = await k('dictionary_word as dw')
+      .select(
+        'dw.word as name',
+        'dw.uuid',
+        'dw.uuid as referenceUuid',
+        'dw.word as wordName',
+        'dw.uuid as wordUuid'
+      )
+      .where('dw.type', 'PN');
 
     const wordFormSpellingArray: WordFormSpellingType[] = [
       ...forms.map(form => ({
@@ -569,6 +578,14 @@ class DictionaryWordDao {
         referenceUuid: word.referenceUuid,
         wordName: word.wordName,
         wordUuid: word.wordUuid,
+      })),
+      ...personNames.map(pn => ({
+        name: pn.name,
+        uuid: pn.uuid,
+        type: 'person',
+        referenceUuid: pn.referenceUuid,
+        wordName: pn.wordName,
+        wordUuid: pn.wordUuid,
       })),
       ...spellings.map(spelling => ({
         name: spelling.name,

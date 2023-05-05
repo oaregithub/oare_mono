@@ -1,7 +1,7 @@
 <template>
   <v-list-item-content>
     <div class="d-inline-flex flex-row">
-      <span class="pr-1" v-if="item.type === 'word'"
+      <span class="pr-1" v-if="item.type === 'word' || item.type === 'person'"
         ><b>{{ item.name }}</b>
       </span>
       <span class="pr-1" v-else-if="item.type === 'form'"
@@ -20,6 +20,7 @@
           <span class="pr-1">{{ translationsString }}</span>
         </div>
       </div>
+      <div v-if="item.type === 'person'">(PN)</div>
       <div v-if="item.type === 'form'" class="d-inline-flex flex-row flex-wrap">
         <v-progress-circular
           indeterminate

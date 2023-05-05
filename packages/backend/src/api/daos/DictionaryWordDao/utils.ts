@@ -11,7 +11,7 @@ import {
 } from './index';
 
 export interface WordFormSpellingType extends WordFormSpellingRow {
-  type: 'word' | 'form' | 'spelling';
+  type: 'word' | 'form' | 'spelling' | 'person';
 }
 
 function mapWordsToRows(wordRows: SearchWordsQueryRow[]) {

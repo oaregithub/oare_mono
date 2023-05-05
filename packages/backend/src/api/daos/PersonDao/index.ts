@@ -538,6 +538,28 @@ class PersonDao {
       roleNotYetAssigned: 0,
     };
   }
+
+  async getPersonsByNameUuid(
+    nameUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<PersonRow[]> {
+    const k = trx || knexRead();
+    const query = k('person')
+      .select(
+        'person.uuid',
+        'name_uuid AS nameUuid',
+        'relation',
+        'relation_name_uuid AS relationNameUuid',
+        'label',
+        'person.type',
+        'descriptor'
+      )
+      .leftJoin('dictionary_word', 'person.name_uuid', 'dictionary_word.uuid')
+      .where('person.type', 'person')
+      .andWhere('person.name_uuid', nameUuid);
+
+    return query;
+  }
 }
 
 export default new PersonDao();

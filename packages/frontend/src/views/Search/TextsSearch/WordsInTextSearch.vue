@@ -48,7 +48,7 @@
                   @blur="queryText[`queryText${index}`] = null"
                   @focus="setActiveIndex(index)"
                   item-color="primary"
-                  :label="`word/form/spelling #${index}`"
+                  :label="`word/form/spelling/person #${index}`"
                   :rules="[rules]"
                 >
                   <template v-slot:selection="data">
@@ -108,7 +108,12 @@
                               : `${
                                   dictItem.childDictItems[0].type === 'number'
                                     ? 'number'
-                                    : 'spelling'
+                                    : `${
+                                        dictItem.childDictItems[0].type ===
+                                        'person'
+                                          ? 'person'
+                                          : 'spelling'
+                                      }`
                                 }`
                           }${
                             dictItem.childDictItems.length > 1 ? 's' : ''
@@ -276,6 +281,7 @@ import {
   ParseTreePropertyUuids,
   WordsInTextSearchPayloadItem,
   ParseTreeProperty,
+  ChildDictItem,
 } from '@oare/types';
 import WordsInTextsSearchTable from './components/WordsInTextSearchTable.vue';
 import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vue';
@@ -290,12 +296,6 @@ export interface DictItemWordsInTextSearch {
   name: string;
   uuid: string;
   childDictItems: ChildDictItem[];
-}
-
-export interface ChildDictItem {
-  name: string;
-  uuid: string;
-  type: 'form' | 'spelling' | 'number';
 }
 
 export default defineComponent({
@@ -430,55 +430,65 @@ export default defineComponent({
       return allowSearch;
     });
 
-    const filterItems = (item: DictItemComboboxDisplay, queryText: string) => {
-      let itemTextClean = item.name.toLocaleLowerCase();
-      const queryTextClean = queryText.toLocaleLowerCase();
-      if (
-        itemTextClean.includes(queryTextClean) &&
-        Math.abs(itemTextClean.length - queryTextClean.length) < 3
-      ) {
-        return item;
-      }
-      const track = Array(itemTextClean.length + 1)
-        .fill(null)
-        .map(() => Array(queryTextClean.length + 1).fill(null));
-      for (let i = 0; i <= queryTextClean.length; i += 1) {
-        track[0][i] = i;
-      }
-      for (let j = 0; j <= itemTextClean.length; j += 1) {
-        track[j][0] = j;
-      }
-      for (let j = 1; j <= itemTextClean.length; j += 1) {
-        for (let i = 1; i <= queryTextClean.length; i += 1) {
-          const indicator =
-            queryTextClean[i - 1] === itemTextClean[j - 1] ? 0 : 1;
-          track[j][i] = Math.min(
-            track[j][i - 1] + 1,
-            track[j - 1][i] + 1,
-            track[j - 1][i - 1] + indicator
-          );
-        }
-      }
-      if (track[itemTextClean.length][queryTextClean.length] < 3) {
-        return item;
-      }
-    };
-
-    const sortItems = (
-      a: DictItemComboboxDisplay,
-      b: DictItemComboboxDisplay,
+    const filterItems = async (
+      itemsToFilter: DictItemComboboxDisplay[],
       queryText: string
     ) => {
-      const aName = a.name.toLocaleLowerCase();
-      const bName = b.name.toLocaleLowerCase();
-      const cleanQueryText = queryText.toLocaleLowerCase();
-      if (aName === cleanQueryText) {
-        return -1;
-      }
-      if (bName === cleanQueryText) {
-        return 1;
-      }
-      return aName.localeCompare(bName);
+      const itemsToReturn = itemsToFilter.filter(item => {
+        let itemTextClean = item.name.toLocaleLowerCase();
+        const queryTextClean = queryText.toLocaleLowerCase();
+        if (
+          itemTextClean.includes(queryTextClean) &&
+          Math.abs(itemTextClean.length - queryTextClean.length) < 3
+        ) {
+          return item;
+        }
+        // const track = Array(itemTextClean.length + 1)
+        //   .fill(null)
+        //   .map(() => Array(queryTextClean.length + 1).fill(null));
+        // for (let i = 0; i <= queryTextClean.length; i += 1) {
+        //   track[0][i] = i;
+        // }
+        // for (let j = 0; j <= itemTextClean.length; j += 1) {
+        //   track[j][0] = j;
+        // }
+        // for (let j = 1; j <= itemTextClean.length; j += 1) {
+        //   for (let i = 1; i <= queryTextClean.length; i += 1) {
+        //     const indicator =
+        //       queryTextClean[i - 1] === itemTextClean[j - 1] ? 0 : 1;
+        //     track[j][i] = Math.min(
+        //       track[j][i - 1] + 1,
+        //       track[j - 1][i] + 1,
+        //       track[j - 1][i - 1] + indicator
+        //     );
+        //   }
+        // }
+        // if (track[itemTextClean.length][queryTextClean.length] < 3) {
+        //   return item;
+        // }
+      });
+      return itemsToReturn;
+    };
+
+    const sortItems = async (
+      itemsToSort: DictItemComboboxDisplay[],
+      queryText: string
+    ) => {
+      const itemsToReturn = itemsToSort.sort(
+        (a: DictItemComboboxDisplay, b: DictItemComboboxDisplay) => {
+          const aName = a.name.toLocaleLowerCase();
+          const bName = b.name.toLocaleLowerCase();
+          const cleanQueryText = queryText.toLocaleLowerCase();
+          if (aName === cleanQueryText) {
+            return -1;
+          }
+          if (bName === cleanQueryText) {
+            return 1;
+          }
+          return aName.localeCompare(bName);
+        }
+      );
+      return itemsToReturn;
     };
 
     const performSearch = async (
@@ -646,14 +656,14 @@ export default defineComponent({
       return filteredItems.value.slice(0, 50);
     };
 
-    const getDictItems = (
+    const getDictItems = async (
       selectedItems: (DictItemComboboxDisplay | string)[],
       index: number
     ) => {
       dictItems.value[index] = [];
       searchItems.value[index].uuids = [];
       markSelectAllFalseOnRemoval(checkboxAll.value, index);
-      selectedItems.forEach(selectedItem => {
+      selectedItems.map(async selectedItem => {
         if (typeof selectedItem !== 'object') {
           const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
             name: selectedItem,
@@ -662,7 +672,7 @@ export default defineComponent({
               {
                 uuid: selectedItem,
                 name: selectedItem,
-                type: 'number' as 'form' | 'spelling' | 'number',
+                type: 'number' as 'form' | 'spelling' | 'number' | 'person',
               },
             ],
           };
@@ -688,7 +698,24 @@ export default defineComponent({
             ...(searchItems.value[index].uuids as string[]),
             selectedItem.uuid,
           ];
-        } else if (selectedItem.uuid === selectedItem.referenceUuid) {
+        } else if (selectedItem.type === 'person') {
+          const childDictItems: ChildDictItem[] = await server.getPersonsByNameUuid(
+            selectedItem.uuid
+          );
+          const dictItemWordsInTextSearch: DictItemWordsInTextSearch = {
+            name: selectedItem.name,
+            uuid: selectedItem.uuid,
+            childDictItems,
+          };
+          dictItems.value[index].push(dictItemWordsInTextSearch);
+          searchItems.value[index].uuids = [
+            ...(searchItems.value[index].uuids as string[]),
+            ...childDictItems.map(({ uuid }) => uuid),
+          ];
+        } else if (
+          selectedItem.uuid === selectedItem.referenceUuid &&
+          selectedItem.type === 'word'
+        ) {
           const childDictItems: ChildDictItem[] = items.value
             .filter(item => {
               if (
@@ -827,13 +854,15 @@ export default defineComponent({
       queryText,
       _.debounce(async () => {
         if (queryText[`queryText${activeIndex.value}`]) {
-          filteredItems.value = items.value
-            .filter(item =>
-              filterItems(item, queryText[`queryText${activeIndex.value}`]!!)
-            )
-            .sort((a, b) =>
-              sortItems(a, b, queryText[`queryText${activeIndex.value}`]!!)
-            );
+          filteredItems.value = await filterItems(
+            items.value,
+            queryText[`queryText${activeIndex.value}`]!!
+          );
+
+          filteredItems.value = await sortItems(
+            filteredItems.value,
+            queryText[`queryText${activeIndex.value}`]!!
+          );
         } else {
           filteredItems.value = items.value;
         }

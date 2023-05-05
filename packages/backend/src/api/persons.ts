@@ -9,6 +9,8 @@ import {
   ItemPropertyRow,
   TextOccurrencesCountResponseItem,
   PersonInfo,
+  DictItemComboboxDisplay,
+  ChildDictItem,
 } from '@oare/types';
 import { noFilter, personFilter } from '@/cache/filters';
 
@@ -77,6 +79,46 @@ router
       }
     }
   );
+
+router.route('/persons/wordsInTexts/:uuid').get(async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const PersonDao = sl.get('PersonDao');
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+
+    const personRows: PersonRow[] = await PersonDao.getPersonsByNameUuid(uuid);
+
+    const displays: string[] = await Promise.all(
+      personRows.map(async person => {
+        if (person.nameUuid && person.relation && person.relationNameUuid) {
+          const nameRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+            person.nameUuid
+          );
+          const relationNameRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
+            person.relationNameUuid
+          );
+          if (!nameRow || !relationNameRow) {
+            return person.label;
+          }
+          const name = nameRow.word;
+          const relationName = relationNameRow.word;
+          return `${name} ${person.relation} ${relationName}`;
+        }
+        return person.label;
+      })
+    );
+
+    const response: ChildDictItem[] = personRows.map((person, idx) => ({
+      uuid: person.uuid,
+      name: displays[idx],
+      type: 'person',
+    }));
+
+    res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
 
 router
   .route('/persons/occurrences/count')

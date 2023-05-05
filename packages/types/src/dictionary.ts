@@ -225,3 +225,9 @@ export interface TextOccurrencesCountResponseItem {
   uuid: string;
   count: number;
 }
+
+export interface ChildDictItem {
+  name: string;
+  uuid: string;
+  type: 'form' | 'spelling' | 'number' | 'person';
+}
