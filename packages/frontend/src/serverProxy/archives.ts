@@ -1,4 +1,10 @@
-import { ArchiveInfo, Archive, Pagination, Dossier } from '@oare/types';
+import {
+  ArchiveInfo,
+  Archive,
+  Pagination,
+  Dossier,
+  DisconnectTextPayload,
+} from '@oare/types';
 import axios from '../axiosInstance';
 
 async function getAllArchives(): Promise<ArchiveInfo[]> {
@@ -26,8 +32,13 @@ async function getDossier(
 
   return data;
 }
+async function disconnectText(payload: DisconnectTextPayload): Promise<void> {
+  await axios.delete('/archive_dossier/disconnect_text', { data: payload });
+}
+
 export default {
   getAllArchives,
   getArchive,
   getDossier,
+  disconnectText,
 };
