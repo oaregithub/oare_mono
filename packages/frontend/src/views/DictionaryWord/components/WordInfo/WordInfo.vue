@@ -109,7 +109,7 @@
         :readonly="false"
         :overrideCustom="true"
         :showValidation="false"
-        :valuesToPreselect="[partOfSpeechPreselect]"
+        :valuesToPreselect="partOfSpeechPreselects"
         @set-properties="setProperties($event)"
       />
     </oare-dialog>
@@ -368,9 +368,9 @@ export default defineComponent({
       );
     };
 
-    const partOfSpeechPreselect: ComputedRef<PreselectionProperty> = computed(
-      () => {
-        const posProperty = props.wordInfo.properties
+    const partOfSpeechPreselects: ComputedRef<PreselectionProperty[]> =
+      computed(() => {
+        const posProperties = props.wordInfo.properties
           .filter(
             prop => prop.variableName === 'Part of Speech' && prop.valueUuid
           )
@@ -381,13 +381,12 @@ export default defineComponent({
               return 1;
             }
             return a.level - b.level;
-          })[0];
-        return {
-          valueUuid: posProperty.valueUuid!,
+          });
+        return posProperties.map(p => ({
+          valueUuid: p.valueUuid!,
           variableHierarchyUuid: 'b74c7814-55f2-11eb-bf9e-024de1c1cc1d',
-        };
-      }
-    );
+        }));
+      });
 
     return {
       updateForm,
@@ -410,7 +409,7 @@ export default defineComponent({
       spellingOccurrencesCounts,
       getSpellingOccurrencesByForm,
       spellingOccurrencesCountsLoading,
-      partOfSpeechPreselect,
+      partOfSpeechPreselects,
     };
   },
 });

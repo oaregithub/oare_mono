@@ -46,7 +46,7 @@
         >
       </v-row>
 
-      <v-expansion-panels :flat="!readonly" v-model="panel">
+      <v-expansion-panels :flat="!readonly" v-model="panel" class="test-tree">
         <v-expansion-panel readonly>
           <v-expansion-panel-header class="font-weight-bold" hide-actions>
             {{ treeTitle }}

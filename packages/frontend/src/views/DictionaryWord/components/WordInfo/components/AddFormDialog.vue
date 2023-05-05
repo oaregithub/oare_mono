@@ -38,7 +38,7 @@
           <properties-tree
             :readonly="false"
             startingValueHierarchyUuid="b745f8d1-55f2-11eb-bf9e-024de1c1cc1d"
-            :valuesToPreselect="[partOfSpeechPreselect]"
+            :valuesToPreselect="partOfSpeechPreselects"
             @set-properties="setProperties($event)"
             @set-complete="formComplete = $event"
           />
@@ -134,9 +134,9 @@ export default defineComponent({
       );
     };
 
-    const partOfSpeechPreselect: ComputedRef<PreselectionProperty> = computed(
-      () => {
-        const posProperty = word.properties
+    const partOfSpeechPreselects: ComputedRef<PreselectionProperty[]> =
+      computed(() => {
+        const posProperties = word.properties
           .filter(
             prop => prop.variableName === 'Part of Speech' && prop.valueUuid
           )
@@ -147,13 +147,12 @@ export default defineComponent({
               return 1;
             }
             return a.level - b.level;
-          })[0];
-        return {
-          valueUuid: posProperty.valueUuid!,
+          });
+        return posProperties.map(p => ({
+          valueUuid: p.valueUuid!,
           variableHierarchyUuid: 'b74c7814-55f2-11eb-bf9e-024de1c1cc1d',
-        };
-      }
-    );
+        }));
+      });
 
     const addForm = async () => {
       try {
@@ -184,7 +183,7 @@ export default defineComponent({
       addForm,
       addFormLoading,
       setProperties,
-      partOfSpeechPreselect,
+      partOfSpeechPreselects,
     };
   },
 });

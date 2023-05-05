@@ -24,88 +24,6 @@ describe('WordsInTextSearch', () => {
         wordDisplay: 'umma',
       },
     ]),
-    getTaxonomyTree: jest.fn().mockResolvedValue({
-      uuid: 'aa1e6d68-55f2-11eb-bf9e-024de1c1cc1d',
-      parentUuid: '07e0267a-55ee-11eb-bf9e-024de1c1cc1d',
-      type: 'taxonomy',
-      objectUuid: 'bb1245db-c638-888c-3ce1-93b6db77a6a7',
-      objParentUuid: '000000000000000000000000000000000008',
-      custom: null,
-      variableName: null,
-      valueName: null,
-      varAbbreviation: null,
-      valAbbreviation: null,
-      variableUuid: null,
-      valueUuid: null,
-      role: 'tree',
-      aliasName: 'OARE Project Taxonomies',
-      children: [
-        {
-          uuid: 'aa257e87-55f2-11eb-bf9e-024de1c1cc1d',
-          parentUuid: 'aa1e6d68-55f2-11eb-bf9e-024de1c1cc1d',
-          type: 'taxonomy',
-          objectUuid: '859939fd-bdf6-fa7b-fa93-3f42207e1005',
-          objParentUuid: 'bb1245db-c638-888c-3ce1-93b6db77a6a7',
-          custom: null,
-          variableName: 'Primary Classification',
-          valueName: null,
-          varAbbreviation: '.',
-          valAbbreviation: null,
-          variableUuid: '859939fd-bdf6-fa7b-fa93-3f42207e1005',
-          valueUuid: null,
-          role: 'child',
-          aliasName: 'Primary Classification',
-          level: null,
-          children: [
-            {
-              aliasName: 'Parse',
-              children: [
-                {
-                  aliasName: 'Morphological Form',
-                  children: [
-                    {
-                      uuid: 'aa257e87-55f2-11eb-bf9e-024de1c1cc1d',
-                      parentUuid: 'b74c7814-55f2-11eb-bf9e-024de1c1cc1d',
-                      type: 'taxonomy',
-                      objectUuid: '859939fd-bdf6-fa7b-fa93-3f42207e1005',
-                      objParentUuid: '5a27fd3a-7c58-7d0f-3acb-78a6ecd8b286',
-                    },
-                  ],
-                  custom: 1,
-                  level: 1,
-                  objParentUuid: '7ef55f42-4cfc-446f-6d47-f83b725b34d5',
-                  objectUuid: '5a27fd3a-7c58-7d0f-3acb-78a6ecd8b286',
-                  parentUuid: 'b745f8d1-55f2-11eb-bf9e-024de1c1cc1d',
-                  role: 'child',
-                  type: 'taxonomy',
-                  uuid: 'b74c7814-55f2-11eb-bf9e-024de1c1cc1d',
-                  valAbbreviation: null,
-                  valueName: null,
-                  valueUuid: null,
-                  varAbbreviation: null,
-                  variableName: 'Morphological Form',
-                  variableUuid: '5a27fd3a-7c58-7d0f-3acb-78a6ecd8b286',
-                },
-              ],
-              custom: null,
-              level: 0,
-              objParentUuid: '859939fd-bdf6-fa7b-fa93-3f42207e1005',
-              objectUuid: '7ef55f42-4cfc-446f-6d47-f83b725b34d5',
-              parentUuid: 'aa257e87-55f2-11eb-bf9e-024de1c1cc1d',
-              role: 'child',
-              type: 'taxonomy',
-              uuid: 'b745f8d1-55f2-11eb-bf9e-024de1c1cc1d',
-              valAbbreviation: null,
-              valueName: 'Parse',
-              valueUuid: '7ef55f42-4cfc-446f-6d47-f83b725b34d5',
-              varAbbreviation: null,
-              variableName: null,
-              variableUuid: null,
-            },
-          ],
-        },
-      ],
-    }),
   };
   const mockActions = {
     showErrorSnackbar: jest.fn(),
@@ -130,7 +48,6 @@ describe('WordsInTextSearch', () => {
     createWrapper();
     await flushPromises();
     expect(mockServer.getDictItems).toHaveBeenCalled();
-    expect(mockServer.getTaxonomyTree).toHaveBeenCalled();
   });
 
   it('changes to parse properties and back', async () => {
