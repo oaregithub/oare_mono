@@ -3,7 +3,7 @@
     :value="value"
     @input="$emit('input', $event)"
     title="Add Form"
-    :width="1150"
+    :width="1400"
     :persistent="false"
     :submitDisabled="!formComplete || !newFormSpelling || formAlreadyExists"
     :submitLoading="addFormLoading"
@@ -27,24 +27,23 @@
         >A form with this same spelling and matching parse properties already
         exists on this word</span
       >
-      <v-container>
-        <v-row>
-          <v-col cols="2">
-            <h3 class="primary--text mb-5">Existing Forms</h3>
-            <h4 v-for="(form, index) in word.forms" :key="index">
-              {{ form.form }}
-            </h4>
-          </v-col>
-          <v-col cols="10">
-            <add-properties
-              :startingUuid="partOfSpeechValueUuid"
-              requiredNodeValueName="Parse"
-              @export-properties="setProperties($event)"
-              @form-complete="formComplete = $event"
-            />
-          </v-col>
-        </v-row>
-      </v-container>
+      <v-row class="mt-4">
+        <v-col cols="2">
+          <h3 class="primary--text mb-5">Existing Forms</h3>
+          <h4 v-for="(form, index) in word.forms" :key="index">
+            {{ form.form }}
+          </h4>
+        </v-col>
+        <v-col cols="10">
+          <properties-tree
+            :readonly="false"
+            startingValueHierarchyUuid="b745f8d1-55f2-11eb-bf9e-024de1c1cc1d"
+            :valuesToPreselect="[partOfSpeechPreselect]"
+            @set-properties="setProperties($event)"
+            @set-complete="formComplete = $event"
+          />
+        </v-col>
+      </v-row>
     </OareContentView>
   </oare-dialog>
 </template>
@@ -56,24 +55,26 @@ import {
   ref,
   computed,
   inject,
+  ComputedRef,
 } from '@vue/composition-api';
 import {
   Word,
-  ParseTreeProperty,
   ItemPropertyRow,
   InsertItemPropertyRow,
+  AppliedProperty,
+  PreselectionProperty,
 } from '@oare/types';
 import WordGrammar from './WordGrammar/WordGrammar.vue';
 import { ReloadKey } from '../../../index.vue';
 import sl from '@/serviceLocator';
-import AddProperties from '@/components/Properties/AddProperties.vue';
-import { convertParsePropsToItemProps } from '@oare/oare';
+import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
+import { convertAppliedPropsToItemProps } from '@oare/oare';
 
 export default defineComponent({
   name: 'AddFormDialog',
   components: {
     WordGrammar,
-    AddProperties,
+    PropertiesTree,
   },
   props: {
     value: {
@@ -93,9 +94,9 @@ export default defineComponent({
     const addFormLoading = ref(false);
     const formComplete = ref(false);
     const newFormSpelling = ref('');
-    const properties = ref<ParseTreeProperty[]>([]);
+    const properties = ref<AppliedProperty[]>([]);
 
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
+    const setProperties = (propertyList: AppliedProperty[]) => {
       properties.value = propertyList;
     };
 
@@ -109,7 +110,7 @@ export default defineComponent({
       }
 
       const selectedItemProperties = formsWithSameSpelling.map(form =>
-        convertParsePropsToItemProps(properties.value, form.uuid)
+        convertAppliedPropsToItemProps(properties.value, form.uuid)
       );
 
       return formsWithSameSpelling.some(
@@ -133,12 +134,26 @@ export default defineComponent({
       );
     };
 
-    const partOfSpeechValueUuid = computed(() => {
-      const posProperties = word.properties.filter(
-        prop => prop.variableName === 'Part of Speech'
-      );
-      return posProperties.length > 0 ? posProperties[0].valueUuid : undefined;
-    });
+    const partOfSpeechPreselect: ComputedRef<PreselectionProperty> = computed(
+      () => {
+        const posProperty = word.properties
+          .filter(
+            prop => prop.variableName === 'Part of Speech' && prop.valueUuid
+          )
+          .sort((a, b) => {
+            if (!a.level) {
+              return -1;
+            } else if (!b.level) {
+              return 1;
+            }
+            return a.level - b.level;
+          })[0];
+        return {
+          valueUuid: posProperty.valueUuid!,
+          variableHierarchyUuid: 'b74c7814-55f2-11eb-bf9e-024de1c1cc1d',
+        };
+      }
+    );
 
     const addForm = async () => {
       try {
@@ -169,7 +184,7 @@ export default defineComponent({
       addForm,
       addFormLoading,
       setProperties,
-      partOfSpeechValueUuid,
+      partOfSpeechPreselect,
     };
   },
 });

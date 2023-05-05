@@ -55,16 +55,8 @@
           <span v-if="properties.length === 0"
             >No additional properties selected</span
           >
-          <v-chip
-            v-else
-            v-for="(property, idx) in properties"
-            :key="idx"
-            class="my-1 mr-2"
-            color="info"
-            outlined
-            :title="propertyText(property)"
-            >{{ propertyText(property) }}
-          </v-chip>
+
+          <properties-display v-else :properties="properties" />
         </v-row>
         <v-btn @click="selectPropertiesDialog = true" color="primary">
           Select Additional Properties
@@ -72,19 +64,19 @@
         <oare-dialog
           v-model="selectPropertiesDialog"
           title="Additional Text Properties"
-          :width="1000"
+          :width="1400"
           submitText="OK"
           closeOnSubmit
           eager
           :showCancel="false"
           :submitDisabled="!formComplete"
         >
-          <add-properties
+          <properties-tree
             :key="startingPoint"
-            :startingUuid="startingPoint.startingUuid"
-            :requiredNodeValueName="startingPoint.requiredNodeValueName"
-            @export-properties="setProperties($event)"
-            @form-complete="formComplete = $event"
+            :startingValueHierarchyUuid="startingPoint"
+            :readonly="false"
+            @set-properties="setProperties($event)"
+            @set-complete="formComplete = $event"
           />
         </oare-dialog>
       </v-col>
@@ -97,14 +89,14 @@ import {
   defineComponent,
   ref,
   computed,
-  ComputedRef,
   PropType,
   inject,
 } from '@vue/composition-api';
-import AddProperties from '@/components/Properties/AddProperties.vue';
-import { DiscourseUnit, ParseTreeProperty } from '@oare/types';
+import { AppliedProperty, DiscourseUnit } from '@oare/types';
 import sl from '@/serviceLocator';
 import { EpigraphyReloadKey } from '../../index.vue';
+import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
+import PropertiesDisplay from '@/views/Admin/Properties/components/PropertiesDisplay.vue';
 
 export default defineComponent({
   props: {
@@ -122,7 +114,8 @@ export default defineComponent({
     },
   },
   components: {
-    AddProperties,
+    PropertiesTree,
+    PropertiesDisplay,
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -138,43 +131,23 @@ export default defineComponent({
     const discourseType = ref('');
     const newContent = ref('');
 
-    const startingPoint: ComputedRef<
-      | {
-          startingUuid: string;
-          requiredNodeValueName: string | undefined;
-        }
-      | undefined
-    > = computed(() => {
+    const startingPoint = computed(() => {
       if (
         discourseType.value === 'Paragraph' ||
-        discourseType.value === 'Sentence'
+        discourseType.value === 'Sentence' ||
+        discourseType.value === 'Phrase'
       ) {
-        return {
-          startingUuid: 'ef87ffac-259c-810a-8870-ef7515bb93c2',
-          requiredNodeValueName: undefined,
-        };
+        return 'da64e98a-55f2-11eb-bf9e-024de1c1cc1d';
       } else if (discourseType.value === 'Clause') {
-        return {
-          startingUuid: '0f3b80be-a3d1-d630-ffaa-b86fb2031cab',
-          requiredNodeValueName: undefined,
-        };
-      } else if (discourseType.value === 'Phrase') {
-        return {
-          startingUuid: 'd4e822ea-7804-f9b6-d54f-9cd9aacf9860',
-          requiredNodeValueName: 'Syntactical Analysis',
-        };
+        return 'daaa2c61-55f2-11eb-bf9e-024de1c1cc1d';
       }
     });
 
     const selectPropertiesDialog = ref(false);
 
-    const propertyText = (property: ParseTreeProperty) => {
-      return `${property.variable.variableName} - ${property.value.valueName}`;
-    };
+    const properties = ref<AppliedProperty[]>([]);
 
-    const properties = ref<ParseTreeProperty[]>([]);
-
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
+    const setProperties = (propertyList: AppliedProperty[]) => {
       properties.value = propertyList;
     };
 
@@ -224,7 +197,6 @@ export default defineComponent({
       newContent,
       startingPoint,
       selectPropertiesDialog,
-      propertyText,
       properties,
       setProperties,
       formComplete,

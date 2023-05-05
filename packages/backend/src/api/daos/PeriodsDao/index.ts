@@ -1,4 +1,4 @@
-import { PeriodRow, Year, Month, PeriodResponse } from '@oare/types';
+import { PeriodRow, Year, Month, PeriodResponse, LinkItem } from '@oare/types';
 import { knexRead } from '@/connection';
 import { Knex } from 'knex';
 
@@ -209,6 +209,45 @@ class PeriodsDao {
 
     const occurrences = countRow && countRow.count ? countRow.count : 0;
     return Number(occurrences);
+  }
+
+  async searchPeriods(
+    search: string,
+    trx?: Knex.Transaction
+  ): Promise<LinkItem[]> {
+    const k = trx || knexRead();
+    const rows: LinkItem[] = await k('period')
+      .select(
+        'period.uuid as objectUuid',
+        k.raw(
+          `CASE WHEN period.period_type = "OA Calendar Year" 
+          THEN CONCAT(period.period_type, " - ", coalesce(period.abbreviation, " NONE "), " ", period.name)
+          WHEN period.period_type = "OA Month"
+          THEN CONCAT(period.period_type, " - ", parent.abbreviation, " ", parent.name, " - ", period.abbreviation, " ", period.name)
+          WHEN period.period_type = "OA hamuštum"
+          THEN CONCAT(period.period_type, " - ", grandparent.abbreviation, " ", grandparent.name, " - ", parent.abbreviation, " ", parent.name, " - ", period.name)
+          END
+          as objectDisplay`
+        )
+      )
+      .leftJoin('period as parent', 'period.parent_uuid', 'parent.uuid')
+      .leftJoin(
+        'period as grandparent',
+        'parent.parent_uuid',
+        'grandparent.uuid'
+      )
+      .where('period.tree_uuid', '01da4ab2-6ea0-49f3-8752-759ca4bd5cdc')
+      .where(k.raw('LOWER(period.name)'), 'like', `%${search.toLowerCase()}%`)
+      .orWhere('period.abbreviation', search)
+      .orWhere('parent.abbreviation', search)
+      .orWhere('grandparent.abbreviation', search)
+      .orWhereRaw('binary period.uuid = binary ?', search)
+      .orderByRaw(
+        `CASE WHEN LOWER(period.name) LIKE '${search.toLowerCase()}' THEN 1 WHEN LOWER(period.name) LIKE '${search.toLowerCase()}%' THEN 2 WHEN LOWER(period.name) LIKE '%${search.toLowerCase()}' THEN 4 ELSE 3 END`
+      )
+      .orderByRaw('LOWER(period.name)');
+
+    return rows;
   }
 }
 

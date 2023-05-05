@@ -43,7 +43,7 @@ import AdminCommentView from '../views/Admin/Comments/AdminCommentView.vue';
 import UserCommentView from '../views/Dashboard/UserCommentView.vue';
 import AdminSettings from '../views/Admin/Settings/AdminSettings.vue';
 import PersonsView from '../views/Persons/index.vue';
-import PropertiesTaxonomy from '../views/Admin/PropertiesTaxonomy/index.vue';
+import Properties from '../views/Admin/Properties/index.vue';
 import ManageAllowlist from '../views/Admin/Groups/Allowlist/ManageAllowlist.vue';
 import AddAllowlistTexts from '../views/Admin/Groups/Allowlist/Texts/AddAllowlistTexts.vue';
 import AddAllowlistCollections from '../views/Admin/Groups/Allowlist/Collections/AddAllowlistCollections.vue';
@@ -133,9 +133,9 @@ const routes: RouteConfig[] = [
     beforeEnter: adminGuard,
   },
   {
-    path: '/admin/propertiesTaxonomy',
-    name: 'adminPropertiesTaxonomy',
-    component: PropertiesTaxonomy,
+    path: '/admin/properties',
+    name: 'adminProperties',
+    component: Properties,
     beforeEnter: adminGuard,
   },
   {

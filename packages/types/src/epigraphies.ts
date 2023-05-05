@@ -5,11 +5,12 @@ import {
 } from './textDiscourse';
 import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
-import { ParseTreeProperty, InsertItemPropertyRow } from './dictionary';
+import { InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
 import { TreeRow } from './tree';
 import { ItemPropertyRow } from './words';
 import { ReferringLocationInfo } from './bibliography';
+import { AppliedProperty } from './properties';
 
 export interface Text {
   uuid: string;
@@ -214,7 +215,7 @@ export interface AddTextInfo {
   museumNumber: string | null;
   publicationPrefix: string | null;
   publicationNumber: string | null;
-  properties: ParseTreeProperty[];
+  properties: AppliedProperty[];
 }
 
 export interface AddTextEditorContent {
@@ -256,7 +257,7 @@ export interface TextPhoto {
 
 export interface TextPhotoWithDetails extends TextPhoto {
   name: string;
-  properties: ParseTreeProperty[];
+  properties: AppliedProperty[];
 }
 
 export interface TextEpigraphyRowPartial {

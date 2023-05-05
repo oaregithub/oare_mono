@@ -2,7 +2,6 @@ import { knexRead, knexWrite } from '@/connection';
 import {
   ItemPropertyRow,
   InsertItemPropertyRow,
-  ParseTreePropertyUuids,
   ImageResourcePropertyDetails,
 } from '@oare/types';
 import { Knex } from 'knex';
@@ -13,21 +12,35 @@ export interface GetItemPropertiesOptions {
 }
 
 class ItemPropertiesDao {
-  async addProperty(
-    property: InsertItemPropertyRow,
+  async addProperties(
+    properties: InsertItemPropertyRow[],
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
-    await k('item_properties').insert({
-      uuid: property.uuid,
-      reference_uuid: property.referenceUuid,
-      parent_uuid: property.parentUuid,
-      level: property.level,
-      variable_uuid: property.variableUuid,
-      value_uuid: property.valueUuid,
-      object_uuid: property.objectUuid,
-      value: property.value,
-    });
+    const itemPropertyRowLevels = [
+      ...new Set(properties.map(row => row.level)),
+    ];
+    const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
+      level => properties.filter(row => row.level === level)
+    );
+
+    for (let i = 0; i < rowsByLevel.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.all(
+        rowsByLevel[i].map(row =>
+          k('item_properties').insert({
+            uuid: row.uuid,
+            reference_uuid: row.referenceUuid,
+            parent_uuid: row.parentUuid,
+            level: row.level,
+            variable_uuid: row.variableUuid,
+            value_uuid: row.valueUuid,
+            object_uuid: row.objectUuid,
+            value: row.value,
+          })
+        )
+      );
+    }
   }
 
   async getPropertiesByReferenceUuid(
@@ -48,46 +61,12 @@ class ItemPropertiesDao {
         'value.name as valueName',
         'value.abbreviation as valAbbreviation',
         'ip.object_uuid as objectUuid',
-        'ip.value as value,'
+        'ip.value as value'
       )
-      .innerJoin('variable', 'variable.uuid', 'ip.variable_uuid')
-      .innerJoin('value', 'value.uuid', 'ip.value_uuid')
+      .leftJoin('variable', 'variable.uuid', 'ip.variable_uuid')
+      .leftJoin('value', 'value.uuid', 'ip.value_uuid')
       .where('ip.reference_uuid', referenceUuid);
     return rows;
-  }
-
-  async getFormsByProperties(
-    parseProperties: ParseTreePropertyUuids[],
-    trx?: Knex.Transaction
-  ): Promise<string[]> {
-    const k = trx || knexRead();
-    const possibleFormUuids: string[][] = (
-      await Promise.all(
-        parseProperties.map(p =>
-          k('item_properties')
-            .pluck('reference_uuid')
-            .where('variable_uuid', p.variable.variableUuid)
-            .andWhere('value_uuid', p.value.valueUuid)
-            .andWhere('level', p.variable.level)
-        )
-      )
-    ).map(p => [...new Set(p)]);
-    const returnUuids: string[] = [];
-    const firstArray: string[] = possibleFormUuids[0];
-    for (let i = 0; i < firstArray.length; i += 1) {
-      let commonUuid: boolean = true;
-      const currentUuid: string = firstArray[i];
-      for (let j = 1; j < possibleFormUuids.length; j += 1) {
-        if (!possibleFormUuids[j].includes(currentUuid)) {
-          commonUuid = false;
-          break;
-        }
-      }
-      if (commonUuid) {
-        returnUuids.push(currentUuid);
-      }
-    }
-    return returnUuids;
   }
 
   async deletePropertiesByReferenceUuid(

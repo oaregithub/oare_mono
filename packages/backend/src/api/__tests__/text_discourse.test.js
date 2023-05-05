@@ -215,7 +215,7 @@ describe('POST /text_discourse_parent', () => {
     insertAlias: jest.fn().mockResolvedValue(),
   };
   const mockItemPropertiesDao = {
-    addProperty: jest.fn().mockResolvedValue(),
+    addProperties: jest.fn().mockResolvedValue(),
   };
   const mockPermissionsDao = {
     getUserPermissions: jest
@@ -248,32 +248,31 @@ describe('POST /text_discourse_parent', () => {
     newContent: 'test-content',
     properties: [
       {
-        variable: {
+        variableRow: {
           uuid: 'test-uuid',
-          type: 'test-type',
-          parentUuid: 'test-parent',
-          objectUuid: 'test-obj',
-          objParentUuid: 'test-obj-parent',
-          variableName: 'test-var-name',
-          valueName: null,
-          variableUuid: 'test-var-uuid',
-          valueUuid: null,
+          name: 'test-name',
+          abbreviation: 'test-abb',
+          type: 'decimal',
+          tableReference: null,
+          hierarchy: {
+            uuid: 'test-hierarchy-1',
+            parentUuid: 'test-parent-uuid',
+            type: 'taxonomy',
+            role: 'child',
+            objectUuid: 'test-uuid',
+            objectParentUuid: 'test-parent-uuid',
+            objectGrandparentUuid: null,
+            custom: 1,
+          },
           level: 1,
-          children: [],
+          values: [],
+          fieldInfo: null,
         },
-        value: {
-          uuid: 'test-uuid',
-          type: 'test-type',
-          parentUuid: 'test-parent',
-          objectUuid: 'test-obj',
-          objParentUuid: 'test-obj-parent',
-          variableName: null,
-          valueName: 'test-val-name',
-          variableUuid: null,
-          valueUuid: 'test-val-uuid',
-          level: 1,
-          children: [],
-        },
+        valueRow: null,
+        value: 1,
+        sourceUuid: 'test-source-uuid',
+        objectUuid: null,
+        objectDisplay: null,
       },
     ],
   };
@@ -299,7 +298,7 @@ describe('POST /text_discourse_parent', () => {
     expect(mockTextDiscourseDao.updateChildNum).toHaveBeenCalled();
     expect(mockTextDiscourseDao.insertDiscourseRow).toHaveBeenCalled();
     expect(mockTextDiscourseDao.getChildrenUuids).toHaveBeenCalled();
-    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalledTimes(1);
+    expect(mockItemPropertiesDao.addProperties).toHaveBeenCalledTimes(1);
     expect(mockAliasDao.insertAlias).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });

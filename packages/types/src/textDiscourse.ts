@@ -1,7 +1,7 @@
 import { SearchNullDiscourseResultRow } from './search';
 import { ItemPropertyRow } from './words';
 import { DiscourseNote } from './notes';
-import { ParseTreeProperty } from './dictionary';
+import { AppliedProperty } from './properties';
 
 export type DiscourseUnitType =
   | 'discourseUnit'
@@ -80,7 +80,7 @@ export interface InsertParentDiscourseRowPayload {
   discourseSelections: DiscourseUnit[];
   discourseType: string;
   newContent: string;
-  properties: ParseTreeProperty[];
+  properties: AppliedProperty[];
 }
 
 export interface EditTranslationPayload {

@@ -1,8 +1,9 @@
 import {
-  ParseTreeProperty,
   TextPhoto,
   TextPhotoWithDetails,
-  TaxonomyTree,
+  PropertyValue,
+  PropertyVariable,
+  AppliedProperty,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 
@@ -30,7 +31,8 @@ export const addDetailsToTextPhotos = async (
       )
     )
   );
-  const taxonomyTree = await server.getTaxonomyTree();
+
+  const propertiesTree = await server.getTaxonomyPropertyTree();
 
   const photosWithNamesUncorrected: TextPhotoWithDetails[] = photos.map(
     (photo, idx) => {
@@ -38,37 +40,81 @@ export const addDetailsToTextPhotos = async (
       const viewAngleValueUuid = getViewAngleValueUuid(photo.view);
       const valueUuids = [...sideValueUuids, viewAngleValueUuid];
 
-      const properties: ParseTreeProperty[] = [];
+      const properties: AppliedProperty[] = [];
 
       const searchTree = (
-        node: TaxonomyTree,
-        startingUuid: string
-      ): TaxonomyTree | null => {
-        if (node.valueUuid === startingUuid) {
+        node: PropertyVariable | PropertyValue,
+        searchValue: string,
+        existingFinds: string[]
+      ): PropertyVariable | PropertyValue | null => {
+        if (node.uuid === searchValue) {
           return node;
         }
-        if (node.children !== null) {
-          let result: TaxonomyTree | null = null;
-
-          for (let i = 0; result === null && i < node.children.length; i += 1) {
-            result = searchTree(node.children[i], startingUuid);
-            if (result && node.children[i].valueUuid) {
-              properties.unshift({ variable: node, value: node.children[i] });
+        if (
+          (node as PropertyVariable).values &&
+          (node as PropertyVariable).values.length > 0
+        ) {
+          for (
+            let i = 0;
+            i < (node as PropertyVariable).values.length;
+            i += 1
+          ) {
+            const result = searchTree(
+              (node as PropertyVariable).values[i],
+              searchValue,
+              existingFinds
+            );
+            if (result) {
+              properties.unshift({
+                variableRow: node as PropertyVariable,
+                valueRow: (node as PropertyVariable).values[i],
+                value: null,
+                sourceUuid: '',
+                objectUuid: null,
+                objectDisplay: null,
+              });
+              return result;
             }
           }
-          return result;
+        } else if (
+          (node as PropertyValue).variables &&
+          (node as PropertyValue).variables.length > 0
+        ) {
+          for (
+            let i = 0;
+            i < (node as PropertyValue).variables.length;
+            i += 1
+          ) {
+            const result = searchTree(
+              (node as PropertyValue).variables[i],
+              searchValue,
+              existingFinds
+            );
+            if (result) {
+              return result;
+            }
+          }
         }
         return null;
       };
 
-      valueUuids.map(uuid => searchTree(taxonomyTree, uuid));
+      valueUuids.forEach(uuid => {
+        const existingFinds: string[] = [];
+        propertiesTree.tree.variables.map(v =>
+          searchTree(v, uuid, existingFinds)
+        );
+      });
 
-      const adjustedProperties: ParseTreeProperty[] = [];
+      const adjustedProperties: AppliedProperty[] = [];
       properties.forEach(prop => {
-        const propUuidString = `${prop.variable.uuid}-${prop.value.uuid}`;
+        const propUuidString = `${prop.variableRow.uuid}-${
+          prop.valueRow!.uuid
+        }`;
         if (
           !adjustedProperties
-            .map(adjProp => `${adjProp.variable.uuid}-${adjProp.value.uuid}`)
+            .map(
+              adjProp => `${adjProp.variableRow.uuid}-${adjProp.valueRow!.uuid}`
+            )
             .includes(propUuidString)
         ) {
           adjustedProperties.push(prop);

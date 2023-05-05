@@ -1,6 +1,7 @@
 import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
 import { FieldInfo } from './field';
+import { AppliedProperty } from './properties';
 
 export interface DisplayableWord {
   uuid: string;
@@ -156,42 +157,10 @@ export interface TextOccurrencesResponseRow extends TextOccurrencesRow {
 
 export type DictionaryWordTypes = 'word' | 'GN' | 'PN';
 
-export interface TaxonomyTree {
-  uuid: string;
-  type: string;
-  parentUuid: string;
-  objectUuid: string;
-  objParentUuid: string;
-  variableName: string | null;
-  valueName: string | null;
-  aliasName: string | null;
-  varAbbreviation: string | null;
-  valAbbreviation: string | null;
-  variableType: string | null;
-  variableTableReference: string | null;
-  variableUuid: string | null;
-  valueUuid: string | null;
-  level: number | null;
-  children: TaxonomyTree[] | null;
-  custom: number | null;
-  role: string | null;
-  fieldInfo: FieldInfo | null;
-}
-
-export interface ParseTreeProperty {
-  variable: TaxonomyTree;
-  value: TaxonomyTree;
-}
-
-export interface ParseTreePropertyRow extends ParseTreeProperty {
-  uuid: string;
-  parentUuid: string;
-}
-
 export interface AddFormPayload {
   wordUuid: string;
   formSpelling: string;
-  properties: ParseTreeProperty[];
+  properties: AppliedProperty[];
 }
 
 export interface InsertItemPropertyRow {
@@ -202,7 +171,7 @@ export interface InsertItemPropertyRow {
   variableUuid: string | null;
   valueUuid: string | null;
   objectUuid: string | null;
-  value: string | null;
+  value: string | null | boolean;
 }
 
 export interface DictionaryWordRow {
@@ -212,7 +181,7 @@ export interface DictionaryWordRow {
 }
 
 export interface EditPropertiesPayload {
-  properties: ParseTreeProperty[];
+  properties: AppliedProperty[];
   wordUuid?: string;
 }
 

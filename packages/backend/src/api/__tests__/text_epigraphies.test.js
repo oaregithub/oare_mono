@@ -320,7 +320,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   };
 
   const mockItemPropertiesDao = {
-    addProperty: jest.fn().mockResolvedValue(),
+    addProperties: jest.fn().mockResolvedValue(),
     getObjectUuidsByReferenceAndVariable: jest
       .fn()
       .mockResolvedValue(['test-variable-object-uuid']),
@@ -612,7 +612,7 @@ describe('POST /text_epigraphies/create', () => {
   };
 
   const mockItemPropertiesDao = {
-    addProperty: jest.fn().mockResolvedValue(),
+    addProperties: jest.fn().mockResolvedValue(),
     getVariableObjectByReference: jest
       .fn()
       .mockResolvedValue(['test-variable-object-uuid']),
@@ -683,8 +683,8 @@ describe('POST /text_epigraphies/create', () => {
       mockPayload.tables.hierarchy,
       undefined
     );
-    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalledWith(
-      mockPayload.tables.itemProperties[0],
+    expect(mockItemPropertiesDao.addProperties).toHaveBeenCalledWith(
+      mockPayload.tables.itemProperties,
       undefined
     );
     expect(mockResourceDao.insertResourceRow).toHaveBeenCalledWith(

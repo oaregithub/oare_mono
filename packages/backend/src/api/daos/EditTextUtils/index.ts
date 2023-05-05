@@ -2254,19 +2254,7 @@ class EditTextUtils {
         }
       );
 
-      const itemPropertyRowLevels = [
-        ...new Set(newRowsWithParentUuids.map(row => row.level)),
-      ];
-      const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-        level => newRowsWithParentUuids.filter(row => row.level === level)
-      );
-
-      for (let i = 0; i < rowsByLevel.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.all(
-          rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
-        );
-      }
+      await ItemPropertiesDao.addProperties(newRowsWithParentUuids, trx);
     }
   }
 

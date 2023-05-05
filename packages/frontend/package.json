@@ -22,6 +22,7 @@
     "lodash": "^4.17.15",
     "luxon": "^1.26.0",
     "moment": "^2.24.0",
+    "munsell": "^1.0.10",
     "underscore": "^1.10.2",
     "vue": "^2.6.10",
     "vue-code-diff": "^1.1.0",

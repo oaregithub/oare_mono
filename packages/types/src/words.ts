@@ -1,4 +1,5 @@
-import { DictionaryForm, ParseTreeProperty } from './dictionary';
+import { DictionaryForm } from './dictionary';
+import { AppliedProperty } from './properties';
 
 export interface ItemPropertyRow {
   uuid: string;
@@ -61,7 +62,7 @@ export interface WordsInTextSearchPayload {
 }
 
 export interface WordsInTextSearchPayloadItem {
-  uuids: ParseTreePropertyUuids[][] | string[];
+  uuids: string[];
   type: 'parse' | 'form/spelling/number';
   numWordsBefore: number | null;
 }
@@ -81,34 +82,11 @@ export interface WordsInTextSearchPayloadUnparsed {
 
 export interface AddWordCheckPayload {
   wordSpelling: string;
-  properties: ParseTreeProperty[];
+  properties: AppliedProperty[];
 }
 
 export interface AddWordPayload {
   wordSpelling: string;
   wordType: 'word' | 'PN' | 'GN';
-  properties: ParseTreeProperty[];
-}
-export interface ParsePropertiesDisplay {
-  display: string;
-  name: string;
-  partOfSpeech: string;
-  formUuids: string[];
-}
-
-export interface ParseTreePropertyUuids {
-  variable: {
-    uuid: string;
-    parentUuid: string;
-    variableName: string | null;
-    variableUuid: string | null;
-    level: number | null;
-  };
-  value: {
-    uuid: string;
-    parentUuid: string;
-    valueName: string | null;
-    valueUuid: string | null;
-    level: number | null;
-  };
+  properties: AppliedProperty[];
 }

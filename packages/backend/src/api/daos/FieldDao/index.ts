@@ -26,7 +26,7 @@ class FieldDao {
   async getFieldInfoByReferenceAndType(
     referenceUuid: string | null,
     trx?: Knex.Transaction
-  ): Promise<FieldInfo> {
+  ): Promise<FieldInfo | undefined> {
     const k = trx || knexRead();
     return k('field')
       .select(

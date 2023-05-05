@@ -290,7 +290,7 @@ describe('POST /connect/seal_impression', () => {
   };
 
   const mockItemPropertiesDao = {
-    addProperty: jest.fn().mockResolvedValue(),
+    addProperties: jest.fn().mockResolvedValue(),
   };
 
   const setup = () => {
@@ -320,14 +320,14 @@ describe('POST /connect/seal_impression', () => {
   it('returns 201 on successfully connect seal to seal impression', async () => {
     const response = await sendRequest();
     expect(mockSealDao.getSealLinkParentUuid).toHaveBeenCalled();
-    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+    expect(mockItemPropertiesDao.addProperties).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 
   it('returns 500 on failed connection of seal to seal impression', async () => {
     sl.set('ItemPropertiesDao', {
       ...mockItemPropertiesDao,
-      addProperty: jest.fn().mockRejectedValue('failed seal connection'),
+      addProperties: jest.fn().mockRejectedValue('failed seal connection'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

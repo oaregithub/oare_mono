@@ -55,7 +55,7 @@ describe('dictionary api test', () => {
     createTaxonomyTree: jest.fn().mockResolvedValue(),
   };
   const mockItemPropertiesDao = {
-    addProperty: jest.fn().mockResolvedValue(),
+    addProperties: jest.fn().mockResolvedValue(),
   };
   const MockPermissionsDao = {
     getUserPermissions: jest.fn().mockResolvedValue([
@@ -1222,31 +1222,6 @@ describe('dictionary api test', () => {
     });
   });
 
-  describe('GET /dictionary/tree/taxonomy', () => {
-    const PATH = `${API_PATH}/dictionary/tree/taxonomy`;
-
-    beforeEach(setup);
-
-    const sendRequest = () => request(app).get(PATH);
-
-    it('returns 200 on successful taxonomy tree retreival', async () => {
-      const response = await sendRequest();
-      expect(MockHierarchyDao.createTaxonomyTree).toHaveBeenCalled();
-      expect(mockCache.insert).toHaveBeenCalled();
-      expect(response.status).toBe(200);
-    });
-
-    it('returns 500 on failed taxonomy tree retreival', async () => {
-      sl.set('HierarchyDao', {
-        createTaxonomyTree: jest
-          .fn()
-          .mockRejectedValue('failed to retreive taxonomy tree'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-  });
-
   describe('POST /dictionary/addform', () => {
     const PATH = `${API_PATH}/dictionary/addform`;
     const mockPayload = {
@@ -1254,36 +1229,31 @@ describe('dictionary api test', () => {
       formSpelling: 'form-spelling',
       properties: [
         {
-          variable: {
-            objectUuid: 'test-uuid',
-            type: 'taxonomy',
-            objParentUuid: 'test-parent-uuid',
-            parentUuid: 'test-hierarchy-1',
-            uuid: 'test-hierarchy-2',
-            variableName: 'test-variable-name',
-            valueName: null,
-            varAbbreviation: 'test-var-abb',
-            valAbbreviation: null,
-            variableUuid: 'test-variable-uuid',
-            valueUuid: null,
-            level: null,
-            children: null,
-          },
-          value: {
-            objectUuid: 'test-uuid-2',
-            type: 'taxonomy',
-            objParentUuid: 'test-parent-uuid',
-            parentUuid: 'test-hierarchy-2',
-            uuid: 'test-hierarchy-3',
-            variableName: null,
-            valueName: 'test-value-name',
-            varAbbreviation: null,
-            valAbbreviation: 'test-val-abb',
-            variableUuid: null,
-            valueUuid: 'test-value-uuid',
+          variableRow: {
+            uuid: 'test-uuid',
+            name: 'test-name',
+            abbreviation: 'test-abb',
+            type: 'decimal',
+            tableReference: null,
+            hierarchy: {
+              uuid: 'test-hierarchy-1',
+              parentUuid: 'test-parent-uuid',
+              type: 'taxonomy',
+              role: 'child',
+              objectUuid: 'test-uuid',
+              objectParentUuid: 'test-parent-uuid',
+              objectGrandparentUuid: null,
+              custom: 1,
+            },
             level: 1,
-            children: null,
+            values: [],
+            fieldInfo: null,
           },
+          valueRow: null,
+          value: 1,
+          sourceUuid: 'test-source-uuid',
+          objectUuid: null,
+          objectDisplay: null,
         },
       ],
     };
@@ -1293,6 +1263,8 @@ describe('dictionary api test', () => {
       sl.set('PermissionsDao', MockPermissionsDao);
       sl.set('DictionaryFormDao', MockDictionaryFormDao);
       sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+      sl.set('DictionaryWordDao', MockDictionaryWordDao);
+      sl.set('cache', mockCache);
       sl.set('utils', mockUtils);
     };
 
@@ -1309,7 +1281,10 @@ describe('dictionary api test', () => {
     it('returns 201 on successfull form addition', async () => {
       const response = await sendRequest();
       expect(MockDictionaryFormDao.addForm).toHaveBeenCalled();
-      expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+      expect(mockItemPropertiesDao.addProperties).toHaveBeenCalled();
+      expect(
+        MockDictionaryWordDao.getDictionaryWordRowByUuid
+      ).toHaveBeenCalled();
       expect(response.status).toBe(201);
     });
 
@@ -1332,13 +1307,13 @@ describe('dictionary api test', () => {
         addForm: jest.fn().mockRejectedValue('failed to add form'),
       });
       const response = await sendRequest();
-      expect(mockItemPropertiesDao.addProperty).not.toHaveBeenCalled();
+      expect(mockItemPropertiesDao.addProperties).not.toHaveBeenCalled();
       expect(response.status).toBe(500);
     });
 
     it('returns 500 on failed form properties insertion', async () => {
       sl.set('ItemPropertiesDao', {
-        addProperty: jest
+        addProperties: jest
           .fn()
           .mockRejectedValue('failed to insert form properties'),
       });
@@ -1375,36 +1350,31 @@ describe('dictionary api test', () => {
         forms: [],
         properties: [
           {
-            variable: {
-              objectUuid: 'test-uuid',
-              type: 'taxonomy',
-              objParentUuid: 'test-parent-uuid',
-              parentUuid: 'test-hierarchy-1',
-              uuid: 'test-hierarchy-2',
-              variableName: 'test-variable-name',
-              valueName: null,
-              varAbbreviation: 'test-var-abb',
-              valAbbreviation: null,
-              variableUuid: 'test-variable-uuid',
-              valueUuid: null,
-              level: null,
-              children: null,
-            },
-            value: {
-              objectUuid: 'test-uuid-2',
-              type: 'taxonomy',
-              objParentUuid: 'test-parent-uuid',
-              parentUuid: 'test-hierarchy-2',
-              uuid: 'test-hierarchy-3',
-              variableName: null,
-              valueName: 'test-value-name',
-              varAbbreviation: null,
-              valAbbreviation: 'test-val-abb',
-              variableUuid: null,
-              valueUuid: 'test-value-uuid',
+            variableRow: {
+              uuid: 'test-uuid',
+              name: 'test-name',
+              abbreviation: 'test-abb',
+              type: 'decimal',
+              tableReference: null,
+              hierarchy: {
+                uuid: 'test-hierarchy-1',
+                parentUuid: 'test-parent-uuid',
+                type: 'taxonomy',
+                role: 'child',
+                objectUuid: 'test-uuid',
+                objectParentUuid: 'test-parent-uuid',
+                objectGrandparentUuid: null,
+                custom: 1,
+              },
               level: 1,
-              children: null,
+              values: [],
+              fieldInfo: null,
             },
+            valueRow: null,
+            value: 1,
+            sourceUuid: 'test-source-uuid',
+            objectUuid: null,
+            objectDisplay: null,
           },
         ],
       },
@@ -1461,36 +1431,31 @@ describe('dictionary api test', () => {
       wordSpelling: 'word-spelling',
       properties: [
         {
-          variable: {
-            objectUuid: 'test-uuid',
-            type: 'taxonomy',
-            objParentUuid: 'test-parent-uuid',
-            parentUuid: 'test-hierarchy-1',
-            uuid: 'test-hierarchy-2',
-            variableName: 'test-variable-name',
-            valueName: null,
-            varAbbreviation: 'test-var-abb',
-            valAbbreviation: null,
-            variableUuid: 'test-variable-uuid',
-            valueUuid: null,
-            level: null,
-            children: null,
-          },
-          value: {
-            objectUuid: 'test-uuid-2',
-            type: 'taxonomy',
-            objParentUuid: 'test-parent-uuid',
-            parentUuid: 'test-hierarchy-2',
-            uuid: 'test-hierarchy-3',
-            variableName: null,
-            valueName: 'test-value-name',
-            varAbbreviation: null,
-            valAbbreviation: 'test-val-abb',
-            variableUuid: null,
-            valueUuid: 'test-value-uuid',
+          variableRow: {
+            uuid: 'test-uuid',
+            name: 'test-name',
+            abbreviation: 'test-abb',
+            type: 'decimal',
+            tableReference: null,
+            hierarchy: {
+              uuid: 'test-hierarchy-1',
+              parentUuid: 'test-parent-uuid',
+              type: 'taxonomy',
+              role: 'child',
+              objectUuid: 'test-uuid',
+              objectParentUuid: 'test-parent-uuid',
+              objectGrandparentUuid: null,
+              custom: 1,
+            },
             level: 1,
-            children: null,
+            values: [],
+            fieldInfo: null,
           },
+          valueRow: null,
+          value: 1,
+          sourceUuid: 'test-source-uuid',
+          objectUuid: null,
+          objectDisplay: null,
         },
       ],
     };
@@ -1520,7 +1485,7 @@ describe('dictionary api test', () => {
     it('returns 201 on successfull lemma addition', async () => {
       const response = await sendRequest();
       expect(mockDictionaryWordDao.addWord).toHaveBeenCalled();
-      expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+      expect(mockItemPropertiesDao.addProperties).toHaveBeenCalled();
       expect(response.status).toBe(201);
     });
 
@@ -1543,13 +1508,13 @@ describe('dictionary api test', () => {
         addWord: jest.fn().mockRejectedValue('failed to add lemma'),
       });
       const response = await sendRequest();
-      expect(mockItemPropertiesDao.addProperty).not.toHaveBeenCalled();
+      expect(mockItemPropertiesDao.addProperties).not.toHaveBeenCalled();
       expect(response.status).toBe(500);
     });
 
     it('returns 500 on failed form properties insertion', async () => {
       sl.set('ItemPropertiesDao', {
-        addProperty: jest
+        addProperties: jest
           .fn()
           .mockRejectedValue('failed to insert form properties'),
       });

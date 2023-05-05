@@ -26,3 +26,4 @@ export * from './src/field';
 export * from './src/bibliography';
 export * from './src/periods';
 export * from './src/seal';
+export * from './src/properties';

@@ -1,13 +1,16 @@
 import express from 'express';
 import {
-  InsertItemPropertyRow,
   EditPropertiesPayload,
   ItemPropertyRow,
+  TaxonomyPropertyTree,
+  LinkPropertiesSearchPayload,
 } from '@oare/types';
-import { convertParsePropsToItemProps } from '@oare/oare';
+import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
+import cacheMiddleware from '@/middlewares/cache';
+import { noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -29,24 +32,12 @@ router
           trx
         );
 
-        const itemPropertyRows = convertParsePropsToItemProps(
+        const itemPropertyRows = convertAppliedPropsToItemProps(
           properties,
           referenceUuid
         );
 
-        const itemPropertyRowLevels = [
-          ...new Set(itemPropertyRows.map(row => row.level)),
-        ];
-        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-          level => itemPropertyRows.filter(row => row.level === level)
-        );
-
-        for (let i = 0; i < rowsByLevel.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
-          );
-        }
+        await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
       });
 
       if (wordUuid) {
@@ -78,6 +69,95 @@ router.route('/properties/:referenceUuid').get(async (req, res, next) => {
       referenceUuid
     );
     res.json(response);
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
+router
+  .route('/properties_taxonomy_tree')
+  .get(
+    cacheMiddleware<TaxonomyPropertyTree>(noFilter),
+    async (req, res, next) => {
+      try {
+        const HierarchyDao = sl.get('HierarchyDao');
+        const cache = sl.get('cache');
+
+        const tree = await HierarchyDao.createPropertiesTaxonomyTree();
+
+        const response = await cache.insert({ req }, tree, noFilter);
+
+        res.json(response);
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
+    }
+  );
+
+router.route('/properties_links').get(async (req, res, next) => {
+  try {
+    const {
+      tableReference,
+      search,
+    } = (req.query as unknown) as LinkPropertiesSearchPayload;
+
+    if (tableReference === 'dictionary_word') {
+      const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const response = await DictionaryWordDao.searchDictionaryWords(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'asset') {
+      const AssetDao = sl.get('AssetDao');
+      const response = await AssetDao.searchAssets(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'concept?') {
+      const ConceptDao = sl.get('ConceptDao');
+      const response = await ConceptDao.searchConcepts(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'event') {
+      const EventDao = sl.get('EventDao');
+      const response = await EventDao.searchEvents(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'spatial_unit') {
+      const SpatialUnitDao = sl.get('SpatialUnitDao');
+      const response = await SpatialUnitDao.searchSpatialUnits(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'text') {
+      const TextDao = sl.get('TextDao');
+      const response = await TextDao.searchTexts(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'period') {
+      const PeriodsDao = sl.get('PeriodsDao');
+      const response = await PeriodsDao.searchPeriods(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'person') {
+      const PersonDao = sl.get('PersonDao');
+      const response = await PersonDao.searchPersons(search);
+      res.json(response);
+      return;
+    }
+
+    res.json([]);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

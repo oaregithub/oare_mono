@@ -2,11 +2,11 @@ import axios from '@/axiosInstance';
 import {
   SearchNullDiscourseResultRow,
   DiscourseProperties,
-  ParseTreeProperty,
   DiscourseUnit,
   InsertParentDiscourseRowPayload,
   EditTranslationPayload,
   DiscourseSpellingResponse,
+  AppliedProperty,
 } from '@oare/types';
 
 async function insertDiscourseRow(
@@ -68,7 +68,7 @@ async function insertParentDiscourseRow(
   discourseSelections: DiscourseUnit[],
   discourseType: string,
   newContent: string,
-  properties: ParseTreeProperty[]
+  properties: AppliedProperty[]
 ) {
   const payload: InsertParentDiscourseRowPayload = {
     textUuid,

@@ -10,40 +10,31 @@ describe('PATCH /properties/edit/:referenceUuid', () => {
   const mockPayload = {
     properties: [
       {
-        variable: {
+        variableRow: {
           uuid: 'test-uuid',
-          type: 'test-type',
-          parentUuid: 'test-parent',
-          objectUuid: 'test-object',
-          objParentUuid: 'test-parent',
-          variableName: 'test-name',
-          valueName: 'test-name',
-          aliasName: 'test-name',
-          varAbbreviation: 'test-abb',
-          valAbbreviation: 'test-abb',
-          variableUuid: 'test-uuid',
-          valueUuid: 'test-uuid',
+          name: 'test-name',
+          abbreviation: 'test-abb',
+          type: 'decimal',
+          tableReference: null,
+          hierarchy: {
+            uuid: 'test-hierarchy-1',
+            parentUuid: 'test-parent-uuid',
+            type: 'taxonomy',
+            role: 'child',
+            objectUuid: 'test-uuid',
+            objectParentUuid: 'test-parent-uuid',
+            objectGrandparentUuid: null,
+            custom: 1,
+          },
           level: 1,
-          children: null,
-          custom: null,
+          values: [],
+          fieldInfo: null,
         },
-        value: {
-          uuid: 'test-uuid',
-          type: 'test-type',
-          parentUuid: 'test-parent',
-          objectUuid: 'test-object',
-          objParentUuid: 'test-parent',
-          variableName: 'test-name',
-          valueName: 'test-name',
-          aliasName: 'test-name',
-          varAbbreviation: 'test-abb',
-          valAbbreviation: 'test-abb',
-          variableUuid: 'test-uuid',
-          valueUuid: 'test-uuid',
-          level: 1,
-          children: null,
-          custom: null,
-        },
+        valueRow: null,
+        value: 1,
+        sourceUuid: 'test-source-uuid',
+        objectUuid: null,
+        objectDisplay: null,
       },
     ],
   };
@@ -78,7 +69,7 @@ describe('PATCH /properties/edit/:referenceUuid', () => {
   };
 
   const mockItemPropertiesDao = {
-    addProperty: jest.fn().mockResolvedValue(),
+    addProperties: jest.fn().mockResolvedValue(),
     deletePropertiesByReferenceUuid: jest.fn().mockResolvedValue(),
     getPropertiesByReferenceUuid: jest
       .fn()
@@ -113,7 +104,7 @@ describe('PATCH /properties/edit/:referenceUuid', () => {
     expect(
       mockItemPropertiesDao.deletePropertiesByReferenceUuid
     ).toHaveBeenCalled();
-    expect(mockItemPropertiesDao.addProperty).toHaveBeenCalled();
+    expect(mockItemPropertiesDao.addProperties).toHaveBeenCalled();
     expect(response.status).toBe(204);
   });
 
@@ -132,7 +123,7 @@ describe('PATCH /properties/edit/:referenceUuid', () => {
 
   it('returns 500 on failed form parse info edit', async () => {
     sl.set('ItemPropertiesDao', {
-      addProperty: jest
+      addProperties: jest
         .fn()
         .mockRejectedValue('failed to update form properties'),
     });
@@ -161,7 +152,7 @@ describe('GET /properties/:referenceUuid', () => {
   };
 
   const mockItemPropertiesDao = {
-    addProperty: jest.fn().mockResolvedValue(),
+    addProperties: jest.fn().mockResolvedValue(),
     deletePropertiesByReferenceUuid: jest.fn().mockResolvedValue(),
     getPropertiesByReferenceUuid: jest
       .fn()

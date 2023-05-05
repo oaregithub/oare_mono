@@ -3,14 +3,19 @@ import {
   SearchNamesResponse,
   SearchNamesResultRow,
   SearchNamesPayload,
-  TaxonomyTree,
   HierarchyRow,
-  FieldInfo,
+  TaxonomyPropertyTree,
+  HierarchyData,
+  HierarchyTopNode,
+  PropertyVariable,
+  VariableRow,
+  PropertyValue,
+  ValueRow,
 } from '@oare/types';
 import { knexRead, knexWrite } from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
-import { getTreeNodeQuery } from './utils';
+import { getHierarchyRowQuery } from './utils';
 
 class HierarchyDao {
   async getBySearchTerm(
@@ -194,64 +199,160 @@ class HierarchyDao {
     return false;
   }
 
-  async getChildren(
+  async createPropertiesTaxonomyTree(
+    trx?: Knex.Transaction
+  ): Promise<TaxonomyPropertyTree> {
+    const AliasDao = sl.get('AliasDao');
+    const FieldDao = sl.get('FieldDao');
+
+    const topNodeHierarchy: HierarchyData = await getHierarchyRowQuery(trx)
+      .where('hierarchy.type', 'taxonomy')
+      .where('hierarchy.role', 'tree')
+      .first();
+
+    const names = await AliasDao.getAliasNames(
+      topNodeHierarchy.objectUuid,
+      trx
+    );
+
+    const fieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
+      topNodeHierarchy.objectUuid,
+      trx
+    );
+
+    const topNode: HierarchyTopNode = {
+      hierarchy: topNodeHierarchy,
+      name: names[0] || null,
+      fieldInfo: fieldInfo || null,
+      variables: await this.getVariablesByParent(
+        topNodeHierarchy.uuid,
+        null,
+        trx
+      ),
+    };
+
+    return {
+      tree: topNode,
+    };
+  }
+
+  async getVariablesByParent(
     hierarchyUuid: string,
     level: number | null,
     trx?: Knex.Transaction
-  ): Promise<TaxonomyTree[] | null> {
-    const AliasDao = sl.get('AliasDao');
+  ): Promise<PropertyVariable[]> {
     const FieldDao = sl.get('FieldDao');
+
     const hasChild = await this.hasChild(hierarchyUuid, trx);
 
     if (hasChild) {
-      const rows: TaxonomyTree[] = await getTreeNodeQuery(trx).where(
-        'parent_uuid',
-        hierarchyUuid
-      );
-      if (rows.every(row => row.variableUuid) && level !== null) {
-        level += 1;
-      }
-      const results = await Promise.all(
-        rows.map(async row => {
-          const names = await AliasDao.getAliasNames(row.objectUuid, trx);
-          const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
-            row.variableUuid || row.valueUuid
-          );
+      const hierarchyRows: HierarchyData[] = await getHierarchyRowQuery(
+        trx
+      ).where('hierarchy.parent_uuid', hierarchyUuid);
 
-          return {
-            ...row,
-            aliasName: names[0] || null,
-            level,
-            children: await this.getChildren(row.uuid, level || 0, trx),
-            fieldInfo: fieldRow ?? {},
-          };
-        })
+      const variableRows = await Promise.all(
+        hierarchyRows.map(row => this.getVariableRowByUuid(row.objectUuid, trx))
       );
-      return results;
+
+      const fieldRows = await Promise.all(
+        hierarchyRows.map(row =>
+          FieldDao.getFieldInfoByReferenceAndType(row.objectUuid, trx)
+        )
+      );
+
+      const propertyVariables: PropertyVariable[] = await Promise.all(
+        variableRows.map(async (row, idx) => ({
+          ...row,
+          hierarchy: hierarchyRows[idx],
+          level,
+          fieldInfo: fieldRows[idx] || null,
+          values: await this.getValuesByParent(
+            hierarchyRows[idx].uuid,
+            level === null ? 1 : level + 1,
+            trx
+          ),
+        }))
+      );
+
+      return propertyVariables;
     }
-    return null;
+    return [];
   }
 
-  async createTaxonomyTree(trx?: Knex.Transaction): Promise<TaxonomyTree> {
-    const AliasDao = sl.get('AliasDao');
-    const FieldDao = sl.get('FieldDao');
+  async getVariableRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<VariableRow> {
+    const k = trx || knexRead();
 
-    const topNode: TaxonomyTree = await getTreeNodeQuery(trx)
-      .where('hierarchy.type', 'taxonomy')
-      .andWhere('hierarchy.role', 'tree')
+    const variable: VariableRow = await k('variable')
+      .select(
+        'uuid',
+        'name',
+        'abbreviation',
+        'type',
+        'table_reference as tableReference'
+      )
+      .where({ uuid })
       .first();
 
-    const names = await AliasDao.getAliasNames(topNode.objectUuid, trx);
-    const fieldRow: FieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
-      topNode.variableUuid || topNode.valueUuid
-    );
-    const tree: TaxonomyTree = {
-      ...topNode,
-      aliasName: names[0] || null,
-      children: await this.getChildren(topNode.uuid, null, trx),
-      fieldInfo: fieldRow ?? {},
-    };
-    return tree;
+    return variable;
+  }
+
+  async getValuesByParent(
+    hierarchyUuid: string,
+    level: number | null,
+    trx?: Knex.Transaction
+  ): Promise<PropertyValue[]> {
+    const FieldDao = sl.get('FieldDao');
+
+    const hasChild = await this.hasChild(hierarchyUuid, trx);
+
+    if (hasChild) {
+      const hierarchyRows: HierarchyData[] = await getHierarchyRowQuery(
+        trx
+      ).where('hierarchy.parent_uuid', hierarchyUuid);
+
+      const valueRows = await Promise.all(
+        hierarchyRows.map(row => this.getValueRowByUuid(row.objectUuid, trx))
+      );
+
+      const fieldRows = await Promise.all(
+        hierarchyRows.map(row =>
+          FieldDao.getFieldInfoByReferenceAndType(row.objectUuid, trx)
+        )
+      );
+
+      const propertyValues: PropertyValue[] = await Promise.all(
+        valueRows.map(async (row, idx) => ({
+          ...row,
+          hierarchy: hierarchyRows[idx],
+          fieldInfo: fieldRows[idx] || null,
+          variables: await this.getVariablesByParent(
+            hierarchyRows[idx].uuid,
+            level,
+            trx
+          ),
+        }))
+      );
+
+      return propertyValues;
+    }
+    return [];
+  }
+
+  async getValueRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<ValueRow> {
+    const k = trx || knexRead();
+
+    const value: ValueRow = await k('value')
+      .select('uuid', 'name', 'abbreviation')
+      .where({ uuid })
+      .first();
+
+    return value;
   }
 
   async getTextsInCollection(

@@ -9,7 +9,6 @@ import {
   TextDiscourseRow,
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
-  ParseTreePropertyUuids,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
@@ -156,16 +155,6 @@ class TextDiscourseDao {
     const searchItems: string[][] = await Promise.all(
       items.map(async payloadObject => {
         let dictItemSearchUuids: string[] = [];
-        if (payloadObject.type === 'parse') {
-          const parseProperties = payloadObject.uuids as ParseTreePropertyUuids[][];
-          dictItemSearchUuids = (
-            await Promise.all(
-              parseProperties.map(parsePropArray =>
-                ItemPropertiesDao.getFormsByProperties(parsePropArray)
-              )
-            )
-          ).flat();
-        }
         if (payloadObject.type === 'form/spelling/number') {
           dictItemSearchUuids = payloadObject.uuids as string[];
         }

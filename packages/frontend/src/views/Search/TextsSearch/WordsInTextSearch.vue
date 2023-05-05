@@ -166,21 +166,19 @@
                   >{{ `Search Item #${index}` }}
                 </h4>
                 <div class="d-flex align-start pa-2">
-                  <add-properties
-                    startingUuid="7ef55f42-4cfc-446f-6d47-f83b725b34d5"
-                    :disableMoveUpTree="true"
-                    :hideActions="true"
-                    :hideInfo="true"
-                    :selectMultiple="true"
-                    @export-properties="setProperties($event, index - 1)"
-                  ></add-properties>
-                  <span class="pt-4">
-                    <v-btn
-                      class="test-combobox-btn-parse-props"
-                      @click="updateUseParse(index - 1)"
-                      >Change To Words, Forms, and Spellings</v-btn
+                  <v-row class="ma-0">
+                    <span class="red--text"
+                      >Not yet supported. Coming soon.</span
                     >
-                  </span>
+                    <v-spacer />
+                    <span class="pt-4">
+                      <v-btn
+                        class="test-combobox-btn-parse-props"
+                        @click="updateUseParse(index - 1)"
+                        >Change To Words, Forms, and Spellings</v-btn
+                      >
+                    </span>
+                  </v-row>
                 </div>
               </div>
             </div>
@@ -273,15 +271,12 @@ import {
   DictItemComboboxDisplay,
   WordsInTextsSearchResultRow,
   WordsInTextsSearchResponse,
-  ParseTreePropertyUuids,
   WordsInTextSearchPayloadItem,
-  ParseTreeProperty,
 } from '@oare/types';
 import WordsInTextsSearchTable from './components/WordsInTextSearchTable.vue';
 import WordsInTextSearchInfoCard from './components/WordsInTextSearchInfoCard.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
-import AddProperties from '@/components/Properties/AddProperties.vue';
 import WordsInTextSearchComboboxItem from './components/WordsInTextSearchComboboxItem.vue';
 import _ from 'lodash';
 import WordGrammar from '@/views/DictionaryWord/components/WordInfo/components/WordGrammar/WordGrammar.vue';
@@ -303,7 +298,6 @@ export default defineComponent({
   components: {
     WordsInTextsSearchTable,
     WordsInTextSearchInfoCard,
-    AddProperties,
     WordsInTextSearchComboboxItem,
     WordGrammar,
   },
@@ -489,8 +483,8 @@ export default defineComponent({
       searchLoading.value = true;
       total.value = 0;
       try {
-        const response: WordsInTextsSearchResponse = await server.getWordsInTextSearchResults(
-          {
+        const response: WordsInTextsSearchResponse =
+          await server.getWordsInTextSearchResults({
             items: JSON.stringify(
               searchItems.value.filter(
                 (_val, index) => index < numOptionsUsing.value
@@ -505,8 +499,7 @@ export default defineComponent({
               | 'textNameOnly'
               | 'ascendingNum'
               | 'descendingNum',
-          }
-        );
+          });
         results.value = response.results;
         total.value = response.total;
         if (resetPage) {
@@ -603,8 +596,8 @@ export default defineComponent({
     };
 
     const selectAll = (val: boolean | null, index: number, idx: number) => {
-      let selectedUuids: string[] = (searchItems.value[index]
-        .uuids as unknown) as string[];
+      let selectedUuids: string[] = searchItems.value[index]
+        .uuids as unknown as string[];
       dictItems.value[index][idx].childDictItems.forEach(childDictItem => {
         if (selectedUuids.includes(childDictItem.uuid) && !val) {
           selectedUuids.splice(selectedUuids.indexOf(childDictItem.uuid), 1);
@@ -753,63 +746,6 @@ export default defineComponent({
       searchItems.value.splice(index, 1, searchItems.value[index]);
     };
 
-    const arrangeProperties = (
-      combinedProperties: ParseTreePropertyUuids[],
-      prop: ParseTreePropertyUuids
-    ) => {
-      let currentProp: ParseTreePropertyUuids = prop;
-      let parent: ParseTreePropertyUuids | undefined;
-      let propArray: ParseTreePropertyUuids[] = [];
-      do {
-        propArray.push(currentProp);
-        parent = combinedProperties.find(
-          par => par.value.uuid === currentProp.variable.parentUuid
-        );
-        if (parent) {
-          currentProp = parent;
-        }
-      } while (parent);
-      return propArray.reverse();
-    };
-
-    const setProperties = (
-      propertyList: ParseTreeProperty[],
-      index: number
-    ) => {
-      const neededProperties: ParseTreePropertyUuids[] = propertyList.map(
-        prop => ({
-          variable: {
-            uuid: prop.variable.uuid,
-            variableName: prop.variable.variableName,
-            parentUuid: prop.variable.parentUuid,
-            variableUuid: prop.variable.variableUuid,
-            level: prop.variable.level,
-          },
-          value: {
-            uuid: prop.value.uuid,
-            valueName: prop.value.valueName,
-            parentUuid: prop.value.parentUuid,
-            valueUuid: prop.value.valueUuid,
-            level: prop.value.level,
-          },
-        })
-      );
-      let arrangedProperties: ParseTreePropertyUuids[][] = [];
-      const parentUuids: string[] = neededProperties.map(
-        prop => prop.variable.parentUuid
-      );
-      neededProperties.forEach(prop => {
-        if (
-          !parentUuids.includes(prop.value.uuid) &&
-          prop.variable.variableName !== 'Primary Classification'
-        ) {
-          arrangedProperties.push(arrangeProperties(neededProperties, prop));
-        }
-      });
-      searchItems.value[index].uuids = arrangedProperties;
-      searchItems.value.splice(index, 1, searchItems.value[index]);
-    };
-
     const getNumDictItemsSelected = (
       index: number,
       dictItem: DictItemWordsInTextSearch
@@ -882,7 +818,6 @@ export default defineComponent({
       sortByItems,
       sortBy,
       useParse,
-      setProperties,
       dictItemSelectionUuids,
       wordsBetween,
       numOptionsUsing,

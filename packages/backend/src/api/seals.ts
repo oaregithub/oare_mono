@@ -123,7 +123,7 @@ router
       };
 
       await utils.createTransaction(async trx => {
-        await ItemPropertiesDao.addProperty(itemProperty, trx);
+        await ItemPropertiesDao.addProperties([itemProperty], trx);
       });
 
       await cache.clear('/seals', { level: 'exact' }, req);

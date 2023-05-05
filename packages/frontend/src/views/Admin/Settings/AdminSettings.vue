@@ -339,7 +339,7 @@ export default defineComponent({
         );
         actions.showSnackbar('Dictionary Entries Cached');
 
-        await server.getTaxonomyTree();
+        await server.getTaxonomyPropertyTree();
         actions.showSnackbar('Taxonomy Tree Cached');
       } catch (err) {
         actions.showErrorSnackbar(

@@ -1,25 +1,28 @@
 <template>
   <v-menu
-    v-if="(canView2 && primacy === 2) || primacy < 2"
+    v-if="(canView2 && newPrimacy === 2) || newPrimacy < 2"
     offset-y
     open-on-click
     :close-on-content-click="false"
     class="info-popover-test"
   >
     <template #activator="{ on, attrs }">
-      <v-icon v-bind="attrs" v-on="on" class="mb-1 ml-1 info-icon-test">
+      <v-icon v-bind="attrs" v-on="on" small class="info-icon-test">
         mdi-information-outline
       </v-icon>
     </template>
     <v-card class="pa-3 card-test">
       <span
-        ><h3>{{ name }}</h3></span
+        ><h3>{{ propertyItem.name }}</h3></span
       >
       <br />
-      <span v-if="type && ((canAddEdit1 && primacy < 2) || isAdmin)"
-        ><b>Var Type</b>: {{ type
+      <span
+        v-if="propertyItem.type && ((canAddEdit1 && newPrimacy < 2) || isAdmin)"
+        ><b>Variable Type</b>: {{ propertyItem.type
         }}{{
-          type === 'link' && tableReference ? ` > ${tableReference}` : ''
+          propertyItem.type === 'link' && propertyItem.tableReference
+            ? ` > ${propertyItem.tableReference}`
+            : ''
         }}</span
       >
       <div v-if="!isEditing && !isAdding">
@@ -30,7 +33,7 @@
         <span> <b>Primacy</b>: {{ newPrimacy }} </span>
         <br />
         <span><b>Language</b>: {{ newLanguage }}</span>
-        <div v-if="(canAddEdit1 && primacy < 2) || isAdmin" class="pt-2">
+        <div v-if="(canAddEdit1 && newPrimacy < 2) || isAdmin" class="pt-2">
           <v-btn
             v-if="reactiveFieldUuid"
             class="mr-1 edit-button-test"
@@ -49,7 +52,8 @@
       </div>
       <div
         v-if="
-          (isAdding || isEditing) && ((canAddEdit1 && primacy < 2) || isAdmin)
+          (isAdding || isEditing) &&
+          ((canAddEdit1 && newPrimacy < 2) || isAdmin)
         "
       >
         <span>
@@ -99,46 +103,22 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, Ref, ref } from '@vue/composition-api';
+import {
+  computed,
+  defineComponent,
+  Ref,
+  ref,
+  PropType,
+} from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import SpecialChars from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/SpecialChars.vue';
-import { FieldInfo } from '@oare/types';
+import { FieldInfo, PropertyValue, PropertyVariable } from '@oare/types';
 
 export default defineComponent({
-  components: { SpecialChars },
   name: 'PropertyInfo',
   props: {
-    variableOrValueUuid: {
-      type: String,
+    propertyItem: {
+      type: Object as PropType<PropertyVariable | PropertyValue>,
       required: true,
-    },
-    name: {
-      type: String,
-      default: 'No Name',
-    },
-    description: {
-      type: String,
-      default: '',
-    },
-    primacy: {
-      type: Number,
-      default: 0,
-    },
-    fieldUuid: {
-      type: String,
-      default: '',
-    },
-    language: {
-      type: String,
-      default: 'n/a',
-    },
-    type: {
-      type: String,
-      default: '',
-    },
-    tableReference: {
-      type: String,
-      default: '',
     },
   },
   setup(props) {
@@ -149,10 +129,26 @@ export default defineComponent({
     const isEditing: Ref<Boolean> = ref(false);
     const isAdding: Ref<Boolean> = ref(false);
     const isSaving: Ref<Boolean> = ref(false);
-    const newDescription: Ref<string> = ref(props.description);
-    const newPrimacy: Ref<number> = ref(props.primacy);
-    const newLanguage: Ref<string> = ref(props.language);
-    const reactiveFieldUuid: Ref<string> = ref(props.fieldUuid);
+    const newDescription: Ref<string> = ref(
+      props.propertyItem.fieldInfo
+        ? props.propertyItem.fieldInfo.field || ''
+        : ''
+    );
+    const newPrimacy: Ref<number> = ref(
+      props.propertyItem.fieldInfo
+        ? props.propertyItem.fieldInfo.primacy || 0
+        : 0
+    );
+    const newLanguage: Ref<string> = ref(
+      props.propertyItem.fieldInfo
+        ? props.propertyItem.fieldInfo.language || 'n/a'
+        : 'n/a'
+    );
+    const reactiveFieldUuid: Ref<string> = ref(
+      props.propertyItem.fieldInfo
+        ? props.propertyItem.fieldInfo.uuid || ''
+        : ''
+    );
 
     const closeInput = () => {
       isEditing.value = false;
@@ -188,7 +184,7 @@ export default defineComponent({
       try {
         isSaving.value = true;
         await server.createNewPropertyDescriptionField({
-          referenceUuid: props.variableOrValueUuid,
+          referenceUuid: props.propertyItem.uuid,
           description: newDescription.value,
           primacy: newPrimacy.value,
         });
@@ -207,7 +203,7 @@ export default defineComponent({
 
     const assignNewValues = async () => {
       const newProps: FieldInfo = await server.getFieldInfo(
-        props.variableOrValueUuid
+        props.propertyItem.uuid
       );
       newDescription.value = newProps.field ?? 'none';
       newPrimacy.value = newProps.primacy ?? 0;

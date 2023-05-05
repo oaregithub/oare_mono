@@ -32,7 +32,7 @@ export {
   convertSideToSideNumber,
 } from './tabletUtils';
 
-export { convertParsePropsToItemProps } from './parseTreeUtils';
+export { convertAppliedPropsToItemProps } from './parseTreeUtils';
 
 export const AkkadianAlphabetLower = 'ăaāâbdeēêgḫhiīîyklmnpqrsṣštṭuūûúwz';
 export const AkkadianAlphabetUpper = 'ĂAĀÂBDEĒÊGḪHIĪÎYKLMNPQRSṢŠTṬUŪÛÚWZ';
