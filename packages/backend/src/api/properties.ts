@@ -6,6 +6,7 @@ import {
   LinkPropertiesSearchPayload,
   LinkItem,
   DiscourseUnit,
+  BibliographyResponse,
 } from '@oare/types';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -14,6 +15,8 @@ import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
 import { noFilter } from '@/cache/filters';
 import { capitalize } from 'lodash';
+import axios from 'axios';
+import { API_PATH } from '@/setupRoutes';
 
 const router = express.Router();
 
@@ -219,6 +222,40 @@ router.route('/properties_links').get(async (req, res, next) => {
         };
       });
 
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'bibliography') {
+      const host =
+        process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
+      const {
+        data: bibliographies,
+      }: { data: BibliographyResponse[] } = await axios.get(
+        `${host}${API_PATH}/bibliographies`,
+        {
+          params: {
+            citationStyle: 'chicago-author-date',
+          },
+          headers: {
+            Authorization: req.headers.authorization || '',
+          },
+        }
+      );
+      const relevantBibliographies = bibliographies.filter(b => {
+        if (b.title && b.title.includes(search)) {
+          return true;
+        }
+        if (b.authors.filter(a => a.includes(search)).length > 0) {
+          return true;
+        }
+        return false;
+      });
+      const response: LinkItem[] = relevantBibliographies.map(b => ({
+        objectUuid: b.uuid,
+        objectDisplay: `${b.authors.join(', ')} - ${b.title || ''}`,
+        objectDropdownDisplay: b.bibliography.bib || undefined,
+      }));
       res.json(response);
       return;
     }
