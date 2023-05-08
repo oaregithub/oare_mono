@@ -896,6 +896,52 @@ class TextDiscourseDao {
 
     return discourseUuids;
   }
+
+  async searchDiscourse(
+    search: string,
+    textUuidFilter: string,
+    trx?: Knex.Transaction
+  ): Promise<DiscourseUnit[]> {
+    const k = trx || knexRead();
+
+    const matches: DiscourseUnit[] = [];
+
+    const discourseUnits = await this.getTextDiscourseUnits(
+      textUuidFilter,
+      trx
+    );
+
+    const searchDiscourseUnits = (units: DiscourseUnit[]) => {
+      units.forEach(unit => {
+        if (
+          unit.explicitSpelling &&
+          unit.explicitSpelling.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        } else if (
+          unit.transcription &&
+          unit.transcription.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        } else if (
+          unit.translation &&
+          unit.translation.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        } else if (
+          unit.paragraphLabel &&
+          unit.paragraphLabel.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        }
+        searchDiscourseUnits(unit.units);
+      });
+    };
+
+    searchDiscourseUnits(discourseUnits);
+
+    return matches;
+  }
 }
 
 export default new TextDiscourseDao();

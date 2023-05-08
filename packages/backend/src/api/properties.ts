@@ -4,6 +4,8 @@ import {
   ItemPropertyRow,
   TaxonomyPropertyTree,
   LinkPropertiesSearchPayload,
+  LinkItem,
+  DiscourseUnit,
 } from '@oare/types';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -11,6 +13,7 @@ import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
 import { noFilter } from '@/cache/filters';
+import { capitalize } from 'lodash';
 
 const router = express.Router();
 
@@ -99,11 +102,17 @@ router.route('/properties_links').get(async (req, res, next) => {
     const {
       tableReference,
       search,
+      textUuidFilter,
     } = (req.query as unknown) as LinkPropertiesSearchPayload;
 
     if (tableReference === 'dictionary_word') {
       const DictionaryWordDao = sl.get('DictionaryWordDao');
-      const response = await DictionaryWordDao.searchDictionaryWords(search);
+      const rows = await DictionaryWordDao.searchDictionaryWords(search);
+      const response: LinkItem[] = rows.map(row => ({
+        objectUuid: row.uuid,
+        objectDisplay: row.word,
+        objectDropdownDisplay: `<span>${row.word} <b>(${row.type})</b></span>`,
+      }));
       res.json(response);
       return;
     }
@@ -153,6 +162,63 @@ router.route('/properties_links').get(async (req, res, next) => {
     if (tableReference === 'person') {
       const PersonDao = sl.get('PersonDao');
       const response = await PersonDao.searchPersons(search);
+      res.json(response);
+      return;
+    }
+
+    if (tableReference === 'text_discourse') {
+      if (!textUuidFilter) {
+        throw new Error(
+          'Text UUID Filter is required for text discourse links'
+        );
+      }
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+
+      const rows = await TextDiscourseDao.searchDiscourse(
+        search,
+        textUuidFilter
+      );
+
+      const discourseReading = (discourse: DiscourseUnit) => {
+        let reading;
+        if (
+          (discourse.type === 'discourseUnit' ||
+            discourse.type === 'sentence') &&
+          discourse.translation
+        ) {
+          reading = discourse.translation;
+        } else if (discourse.type === 'paragraph' && discourse.paragraphLabel) {
+          reading = `<strong><em>${discourse.paragraphLabel}</em></strong>`;
+        } else if (
+          (discourse.type === 'clause' || discourse.type === 'phrase') &&
+          discourse.paragraphLabel
+        ) {
+          reading = `<em>${discourse.paragraphLabel}</em>`;
+        } else if (
+          (discourse.type === 'word' || discourse.type === 'number') &&
+          discourse.transcription &&
+          discourse.explicitSpelling
+        ) {
+          const line = discourse.line ? ` Line ${discourse.line}` : '';
+          reading = `${discourse.transcription} (${discourse.explicitSpelling})`;
+        } else {
+          reading = discourse.explicitSpelling;
+        }
+
+        return reading || '';
+      };
+
+      const response: LinkItem[] = rows.map(row => {
+        const line = row.line ? `<b> - Line ${row.line}</b>` : '';
+        return {
+          objectUuid: row.uuid,
+          objectDisplay: discourseReading(row),
+          objectDropdownDisplay: `<b>${capitalize(
+            row.type
+          )} - </b><span>${discourseReading(row)}${line}</span>`,
+        };
+      });
+
       res.json(response);
       return;
     }

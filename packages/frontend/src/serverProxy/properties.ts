@@ -35,11 +35,13 @@ async function getTaxonomyPropertyTree(): Promise<TaxonomyPropertyTree> {
 
 async function searchLinkProperties(
   search: string,
-  tableReference: TableReferenceType
+  tableReference: TableReferenceType,
+  textUuidFilter?: string
 ): Promise<LinkItem[]> {
   const params: LinkPropertiesSearchPayload = {
     search,
     tableReference,
+    textUuidFilter,
   };
   const { data } = await axios.get('properties_links', {
     params,

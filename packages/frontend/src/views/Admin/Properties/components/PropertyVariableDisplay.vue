@@ -221,6 +221,35 @@
 
           <span v-else-if="variable.type === 'link' && !readonly" class="mr-2">
             <v-autocomplete
+              v-if="linkRequiresTextFilter"
+              label="Text Filter"
+              outlined
+              dense
+              hide-details
+              hide-no-data
+              placeholder="Start typing to search for a text"
+              v-model="linkTextFilterInput"
+              :items="linkTextFilterItems"
+              :loading="linkTextFilterLoading"
+              :search-input.sync="linkTextFilterSearch"
+              item-text="objectDisplay"
+              item-value="objectUuid"
+              return-object
+              @click.native.stop
+              no-filter
+              clearable
+              :disabled="linkInput"
+            >
+              <template #item="{ item }">
+                <v-list-item-title>
+                  <span
+                    v-html="item.objectDropdownDisplay || item.objectDisplay"
+                  />
+                </v-list-item-title>
+              </template>
+            </v-autocomplete>
+
+            <v-autocomplete
               :label="linkLabel(variable.tableReference)"
               outlined
               dense
@@ -237,53 +266,54 @@
               @click.native.stop
               no-filter
               clearable
+              :disabled="linkRequiresTextFilter && !linkTextFilterInput"
             >
               <template #item="{ item }">
                 <v-list-item-title>
-                  <span>{{ item.objectDisplay }}</span>
-                  <b v-if="item.objectDisplaySuffix" class="ml-1"
-                    >({{ item.objectDisplaySuffix }})</b
-                  >
+                  <span
+                    v-html="item.objectDropdownDisplay || item.objectDisplay"
+                  />
                 </v-list-item-title>
               </template>
             </v-autocomplete>
           </span>
 
-          <v-checkbox
-            v-if="appliedProperties.length === 0 && !readonly && showValidation"
-            label="Ignore"
-            hide-details
-            class="mt-0 pt-0 mr-3 test-ignore"
-            dense
-            v-model="ignored"
-            @click.stop
-          />
+          <span v-else-if="variable.type === 'serial'" class="mx-1">
+            <v-icon x-small color="red" class="mr-1">mdi-block-helper</v-icon>
+            <span class="red--text">Not Supported</span>
+          </span>
 
-          <v-icon
-            v-if="showCheck && !readonly && showValidation"
-            color="green"
-            class="mx-1"
-            >mdi-check-circle-outline</v-icon
+          <template
+            v-if="!readonly && showValidation && variable.type !== 'serial'"
           >
-          <v-menu
-            v-else-if="!readonly && showValidation"
-            offset-y
-            open-on-hover
-          >
-            <template #activator="{ on, attrs }">
-              <v-icon color="orange" v-bind="attrs" v-on="on" class="mx-1"
-                >mdi-information-outline
-              </v-icon>
-            </template>
-            <v-card class="pa-2">This subtree has not been completed</v-card>
-          </v-menu>
-          <span
-            v-if="!readonly"
-            :class="{
-              'mx-1': variable.values.length !== 0,
-              'ml-1 mr-7': variable.values.length === 0,
-            }"
-          />
+            <v-checkbox
+              v-if="appliedProperties.length === 0"
+              label="Ignore"
+              hide-details
+              class="mt-0 pt-0 mr-3 test-ignore"
+              dense
+              v-model="ignored"
+              @click.stop
+            />
+
+            <v-icon v-if="showCheck" color="green" class="mx-1"
+              >mdi-check-circle-outline</v-icon
+            >
+            <v-menu v-else offset-y open-on-hover>
+              <template #activator="{ on, attrs }">
+                <v-icon color="orange" v-bind="attrs" v-on="on" class="mx-1"
+                  >mdi-information-outline
+                </v-icon>
+              </template>
+              <v-card class="pa-2">This subtree has not been completed</v-card>
+            </v-menu>
+            <span
+              :class="{
+                'mx-1': variable.values.length !== 0,
+                'ml-1 mr-7': variable.values.length === 0,
+              }"
+            />
+          </template>
         </v-row>
       </template>
     </v-expansion-panel-header>
@@ -717,6 +747,42 @@ export default defineComponent({
     const linkLoading = ref(false);
     const linkSearch = ref<string>();
     const linkItems = ref<LinkItem[]>([]);
+
+    const linkRequiresTextFilter = computed(() => {
+      return props.variable.tableReference === 'text_discourse';
+    });
+    const linkTextFilterInput = ref<LinkItem>();
+    const linkTextFilterLoading = ref(false);
+    const linkTextFilterSearch = ref<string>();
+    const linkTextFilterItems = ref<LinkItem[]>([]);
+    watch(
+      linkTextFilterSearch,
+      _.debounce(async () => {
+        try {
+          linkTextFilterLoading.value = true;
+          if (!linkTextFilterSearch.value) {
+            linkTextFilterItems.value = [];
+            linkTextFilterInput.value = undefined;
+            return;
+          }
+          if (linkTextFilterInput.value) {
+            return;
+          }
+          linkTextFilterItems.value = await server.searchLinkProperties(
+            linkTextFilterSearch.value,
+            'text'
+          );
+        } catch (err) {
+          actions.showErrorSnackbar(
+            'Error loading link options. Please try again.',
+            err as Error
+          );
+        } finally {
+          linkTextFilterLoading.value = false;
+        }
+      }, 500)
+    );
+
     const linkLabel = (tableReference: TableReferenceType | null) => {
       if (!tableReference) {
         return 'Link Unavailable';
@@ -738,7 +804,10 @@ export default defineComponent({
           }
           linkItems.value = await server.searchLinkProperties(
             linkSearch.value,
-            props.variable.tableReference
+            props.variable.tableReference,
+            linkTextFilterInput.value
+              ? linkTextFilterInput.value.objectUuid
+              : undefined
           );
         } catch (err) {
           actions.showErrorSnackbar(
@@ -760,7 +829,9 @@ export default defineComponent({
           valueRow: null,
           value: null,
           objectUuid: linkInput.value.objectUuid,
-          objectDisplay: linkInput.value.objectDisplay,
+          objectDisplay: linkTextFilterInput.value
+            ? `${linkTextFilterInput.value.objectDisplay} - ${linkInput.value.objectDisplay}`
+            : linkInput.value.objectDisplay,
           sourceUuid: props.variable.hierarchy.uuid,
         });
       }
@@ -930,6 +1001,11 @@ export default defineComponent({
       linkLabel,
       valuesToDisplay,
       handleIgnored,
+      linkRequiresTextFilter,
+      linkTextFilterInput,
+      linkTextFilterLoading,
+      linkTextFilterItems,
+      linkTextFilterSearch,
     };
   },
 });

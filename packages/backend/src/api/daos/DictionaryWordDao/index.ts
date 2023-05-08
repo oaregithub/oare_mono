@@ -689,14 +689,10 @@ class DictionaryWordDao {
   async searchDictionaryWords(
     search: string,
     trx?: Knex.Transaction
-  ): Promise<LinkItem[]> {
+  ): Promise<{ uuid: string; word: string; type: string }[]> {
     const k = trx || knexRead();
-    const rows: LinkItem[] = await k
-      .select(
-        'dw.uuid AS objectUuid',
-        'dw.word as objectDisplay',
-        'dw.type as objectDisplaySuffix'
-      )
+    const rows: { uuid: string; word: string; type: string }[] = await k
+      .select('dw.uuid AS uuid', 'dw.word as word', 'dw.type as type')
       .from('dictionary_word AS dw')
       .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
       .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')

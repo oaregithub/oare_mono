@@ -73,22 +73,25 @@ export type TableReferenceType =
   | 'text'
   | 'text_discourse';
 
-export interface AppliedProperty extends LinkItem {
+export interface AppliedProperty {
   variableRow: PropertyVariable;
   valueRow: PropertyValue | null;
   value: string | boolean | null;
   sourceUuid: string;
+  objectUuid: string | null;
+  objectDisplay: string | null;
 }
 
 export interface LinkItem {
-  objectUuid: string | null;
-  objectDisplay: string | null;
-  objectDisplaySuffix?: string | null;
+  objectUuid: string;
+  objectDisplay: string;
+  objectDropdownDisplay?: string;
 }
 
 export interface LinkPropertiesSearchPayload {
   tableReference: TableReferenceType;
   search: string;
+  textUuidFilter?: string;
 }
 
 export interface PreselectionProperty {

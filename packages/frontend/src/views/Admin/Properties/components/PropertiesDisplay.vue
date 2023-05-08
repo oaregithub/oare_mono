@@ -12,7 +12,7 @@
         outlined
         :title="property"
         :class="`${property.level === 0 ? 'mt-3' : ''}`"
-        >{{ property.display }}
+        ><span v-html="property.display" />
         <v-icon v-if="property.color" class="ml-1 mr-n2" :color="property.color"
           >mdi-circle</v-icon
         >

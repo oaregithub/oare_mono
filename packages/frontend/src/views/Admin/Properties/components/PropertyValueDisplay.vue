@@ -58,43 +58,33 @@
 
           <v-spacer />
 
-          <v-checkbox
-            v-if="
-              appliedProperties.length === 0 &&
-              value.variables.length > 0 &&
-              !readonly &&
-              showValidation
-            "
-            label="Ignore"
-            hide-details
-            class="mt-0 pt-0 mr-3 test-ignore"
-            dense
-            v-model="ignored"
-            @click.stop
-          />
+          <template v-if="!readonly && showValidation">
+            <v-checkbox
+              v-if="
+                appliedProperties.length === 0 && value.variables.length > 0
+              "
+              label="Ignore"
+              hide-details
+              class="mt-0 pt-0 mr-3 test-ignore"
+              dense
+              v-model="ignored"
+              @click.stop
+            />
 
-          <v-icon
-            v-if="value.variables.length === 0 && !readonly && showValidation"
-          />
-          <v-icon
-            v-else-if="showCheck && !readonly && showValidation"
-            color="green"
-            class="mx-1"
-            >mdi-check-circle-outline</v-icon
-          >
-          <v-menu
-            v-else-if="!readonly && showValidation"
-            offset-y
-            open-on-hover
-          >
-            <template #activator="{ on, attrs }">
-              <v-icon color="orange" v-bind="attrs" v-on="on" class="mx-1"
-                >mdi-information-outline
-              </v-icon>
-            </template>
-            <v-card class="pa-2">This subtree has not been completed</v-card>
-          </v-menu>
-          <span v-if="!readonly" class="mx-1" />
+            <v-icon v-if="value.variables.length === 0" />
+            <v-icon v-else-if="showCheck" color="green" class="mx-1"
+              >mdi-check-circle-outline</v-icon
+            >
+            <v-menu v-else offset-y open-on-hover>
+              <template #activator="{ on, attrs }">
+                <v-icon color="orange" v-bind="attrs" v-on="on" class="mx-1"
+                  >mdi-information-outline
+                </v-icon>
+              </template>
+              <v-card class="pa-2">This subtree has not been completed</v-card>
+            </v-menu>
+            <span class="mx-1" />
+          </template>
         </v-row>
       </template>
     </v-expansion-panel-header>
@@ -300,7 +290,7 @@ export default defineComponent({
         variable => variable.values.length > 0
       ).length;
       const numSubvariablesWithoutSubtrees = props.value.variables.filter(
-        variable => variable.values.length === 0
+        variable => variable.values.length === 0 && variable.type !== 'serial'
       ).length;
       return (
         numSubtrees + numSubvariablesWithoutSubtrees ===
