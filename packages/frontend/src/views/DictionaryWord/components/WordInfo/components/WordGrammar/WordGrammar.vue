@@ -291,7 +291,7 @@ import { ReloadKey } from '../../../../index.vue';
 import EditTranslations from './components/EditTranslations.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import sl from '@/serviceLocator';
-import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   name: 'WordGrammar',

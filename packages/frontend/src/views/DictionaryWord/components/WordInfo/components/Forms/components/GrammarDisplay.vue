@@ -55,7 +55,7 @@ import { AppliedProperty, DictionaryForm, Word } from '@oare/types';
 import utils from '@/utils';
 import { ReloadKey } from '../../../../../index.vue';
 import sl from '@/serviceLocator';
-import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   props: {

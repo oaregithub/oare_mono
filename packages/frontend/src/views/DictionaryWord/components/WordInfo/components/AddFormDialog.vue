@@ -67,7 +67,7 @@ import {
 import WordGrammar from './WordGrammar/WordGrammar.vue';
 import { ReloadKey } from '../../../index.vue';
 import sl from '@/serviceLocator';
-import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 
 export default defineComponent({

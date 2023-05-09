@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
-import PropertiesTree from './components/PropertiesTree.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   components: {

@@ -182,7 +182,7 @@ import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import { spellingHtmlReading } from '@oare/oare';
 import _ from 'lodash';
-import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   props: {

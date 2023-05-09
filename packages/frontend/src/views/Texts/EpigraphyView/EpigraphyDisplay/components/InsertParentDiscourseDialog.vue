@@ -95,8 +95,8 @@ import {
 import { AppliedProperty, DiscourseUnit } from '@oare/types';
 import sl from '@/serviceLocator';
 import { EpigraphyReloadKey } from '../../index.vue';
-import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
-import PropertiesDisplay from '@/views/Admin/Properties/components/PropertiesDisplay.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
+import PropertiesDisplay from '@/components/Properties/PropertiesDisplay.vue';
 
 export default defineComponent({
   props: {

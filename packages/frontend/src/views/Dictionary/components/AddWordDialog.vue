@@ -41,7 +41,7 @@ import { defineComponent, ref, watch } from '@vue/composition-api';
 import { AppliedProperty } from '@oare/types';
 import OareContentView from '@/components/base/OareContentView.vue';
 import sl from '@/serviceLocator';
-import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   name: 'AddWordDialog',

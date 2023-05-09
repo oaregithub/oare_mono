@@ -244,8 +244,8 @@ import {
   PropType,
 } from '@vue/composition-api';
 import { AddTextInfo, TextRow, AppliedProperty } from '@oare/types';
-import PropertiesTree from '@/views/Admin/Properties/components/PropertiesTree.vue';
-import PropertiesDisplay from '@/views/Admin/Properties/components/PropertiesDisplay.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
+import PropertiesDisplay from '@/components/Properties/PropertiesDisplay.vue';
 
 export default defineComponent({
   props: {
