@@ -179,7 +179,7 @@ type CacheRouteType =
   | 'Names'
   | 'Places'
   | 'Signs'
-  | 'Taxonomy Tree'
+  | 'Properties Taxonomy Tree'
   | 'Dictionary'
   | 'Page Content'
   | 'Bibliography'
@@ -258,7 +258,7 @@ export default defineComponent({
       'Names',
       'Places',
       'Signs',
-      'Taxonomy Tree',
+      'Properties Taxonomy Tree',
       'Dictionary',
       'Page Content',
       'Bibliography',
@@ -338,26 +338,16 @@ export default defineComponent({
         type: 'Dictionary',
       },
       {
-        name: 'Taxonomy Tree',
+        name: 'Properties Taxonomy Tree',
         routePieces: [
           { type: 'separator', label: '/' },
           {
             type: 'static',
-            label: 'dictionary',
-          },
-          { type: 'separator', label: '/' },
-          {
-            type: 'static',
-            label: 'tree',
-          },
-          { type: 'separator', label: '/' },
-          {
-            type: 'static',
-            label: 'taxonomy',
+            label: 'properties_taxonomy_tree',
           },
         ],
         level: 'exact',
-        type: 'Taxonomy Tree',
+        type: 'Properties Taxonomy Tree',
       },
       {
         name: 'Words Pages - All',
