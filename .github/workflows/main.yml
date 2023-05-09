@@ -65,7 +65,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
 
       - name: Deploy to EB - US West (Oregon)
-        uses: einaregilsson/beanstalk-deploy@v20
+        uses: einaregilsson/beanstalk-deploy@v21
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -78,7 +78,7 @@ jobs:
 
       # NOTE: Temporarily Disabled While International Server(s) Are Deprecated
       # - name: Deploy to EB - Europe (Paris)
-      #   uses: einaregilsson/beanstalk-deploy@v20
+      #   uses: einaregilsson/beanstalk-deploy@v21
       #   with:
       #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
       #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
