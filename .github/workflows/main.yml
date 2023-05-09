@@ -56,7 +56,7 @@ jobs:
         with:
           timeZone: 8
           format: 'YYYY-MM-DD-HH-mm-ss'
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
 
       - name: Deploy Serverless to Lambda
         run: |
