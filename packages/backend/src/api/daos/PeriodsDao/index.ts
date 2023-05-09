@@ -1,4 +1,4 @@
-import { PeriodRow, Year, Month, PeriodResponse, LinkItem } from '@oare/types';
+import { PeriodRow, Year, Month, LinkItem } from '@oare/types';
 import { knexRead } from '@/connection';
 import { Knex } from 'knex';
 

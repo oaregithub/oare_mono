@@ -53,6 +53,7 @@ export default defineComponent({
   setup(props) {
     const propertiesDisplay: ComputedRef<PropertyDisplay[]> = computed(() => {
       const sortedProperties: AppliedProperty[] = [];
+      // Converts to item property rows to allow for hierarchical indentation on display
       const itemProperties = convertAppliedPropsToItemProps(
         props.properties,
         'placeholder'

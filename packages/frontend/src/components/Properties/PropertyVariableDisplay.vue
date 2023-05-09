@@ -463,6 +463,7 @@ export default defineComponent({
       appliedProperties.value.push(...childProperties);
     };
 
+    // Determines which values to display below the variable. Essentially just hides additional values when the variable is custom (1) and has a value already selected
     const valuesToDisplay = computed(() => {
       const relevantProperties = appliedProperties.value.filter(
         p =>
@@ -499,6 +500,7 @@ export default defineComponent({
       }
     };
 
+    // Generates blue text displayed on closed panels to indicate what has been selected for that variable. Only applies to nominal and munsell variables
     const selectionDisplay = computed(() => {
       if (
         props.variable.type !== 'nominal' &&
@@ -837,6 +839,7 @@ export default defineComponent({
       }
     });
 
+    // Determines whether or not a green check should be displayed, indicating that the variable and any subtrees are complete
     const showCheck = computed(() => {
       if (ignored.value) {
         return true;
@@ -901,6 +904,7 @@ export default defineComponent({
     };
 
     onMounted(async () => {
+      // If existing properties are supplied, they will be automatically selected or applied on mount
       if (props.existingProperties) {
         const relevantProperties = props.existingProperties.filter(p => {
           const parentProperty = props.existingProperties!.find(

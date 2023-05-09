@@ -255,11 +255,13 @@ export default defineComponent({
         p => p.sourceUuid !== variable.hierarchy.uuid
       );
       appliedProperties.value.push(...childProperties);
+      // Automatically select property if a child has been selected
       if (childProperties.length > 0 && !selected.value) {
         selected.value = true;
       }
     };
 
+    // If there are already properties below the value that are selected, then you cannot unselect the current value
     const selectIsDisabled = computed(() => {
       if (selected.value) {
         return appliedProperties.value.length > 1;
@@ -328,6 +330,7 @@ export default defineComponent({
     });
 
     onMounted(() => {
+      // If existing properties are supplied, they will be automatically selected on mount
       if (props.existingProperties) {
         const relevantProperties = props.existingProperties.filter(p => {
           const parentProperty = props.existingProperties!.find(
@@ -356,6 +359,7 @@ export default defineComponent({
         selected.value = true;
       }
 
+      // If values are to be preselected (not the same as starting points or existing properties), then they will be selected here
       if (props.valuesToPreselect) {
         const valuesWithRelevantVariable = props.valuesToPreselect.filter(
           p => p.variableHierarchyUuid === props.parentVariable.hierarchy.uuid

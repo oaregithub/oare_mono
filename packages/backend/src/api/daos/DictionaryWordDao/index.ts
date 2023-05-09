@@ -8,7 +8,6 @@ import {
   DictItemComboboxDisplay,
   DictionaryWordRow,
   DictionarySearchRow,
-  LinkItem,
 } from '@oare/types';
 import { v4 } from 'uuid';
 import { knexRead, knexWrite } from '@/connection';

@@ -207,6 +207,7 @@ export default defineComponent({
       }, 500)
     );
 
+    // Recursively finds paths that include matching search results to allow for highlighting and panel opening
     const searchTree = (
       node: PropertyVariable | PropertyValue | HierarchyTopNode,
       searchValue: string,
@@ -266,6 +267,7 @@ export default defineComponent({
     const nodesToHighlight = computed(() =>
       searchPaths.value.flatMap(path => path)
     );
+    // Will only open panels automatically if there is only one matching path
     const openSearchResults = computed(() => searchPaths.value.length === 1);
 
     const openPanels = ref<number>();
@@ -311,6 +313,7 @@ export default defineComponent({
         );
       }
     };
+    // If variable is selected to be ignored and its panel is open, this will close the panel automatically
     const handleIgnored = (idx: number, isIgnored: boolean) => {
       if (isIgnored && idx === openPanels.value) {
         openPanels.value = undefined;
@@ -338,6 +341,7 @@ export default defineComponent({
     );
     watch(treeComplete, () => emit('set-complete', treeComplete.value));
 
+    // Determines what variables should be displayed at the top of the tree. Used for contextual trees
     const getStartingVariables = (
       tree: HierarchyTopNode,
       startingUuid?: string
@@ -352,6 +356,7 @@ export default defineComponent({
         : '';
       return matchingStartingValue ? matchingStartingValue.variables : [];
     };
+    // Recursively searches for a matching value if provided in order to find starting variables. Also automatically adds properties above that starting point.
     const searchForValue = (
       child: PropertyVariable | PropertyValue | HierarchyTopNode,
       valueHierarchyUuid: string
@@ -404,6 +409,7 @@ export default defineComponent({
       return null;
     };
 
+    // Admins can elect to show the whole tree instead of the contextual subtree. This function resets the starting variables to simply be the variables at the top of the tree
     const showWholeTree = () => {
       if (taxonomyTree.value) {
         appliedProperties.value = [];

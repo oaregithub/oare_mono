@@ -1,6 +1,5 @@
 import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
-import { FieldInfo } from './field';
 import { AppliedProperty } from './properties';
 
 export interface DisplayableWord {

@@ -17,6 +17,7 @@ class ItemPropertiesDao {
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knexWrite();
+    // Split by levels to prevent FK constraint errors
     const itemPropertyRowLevels = [
       ...new Set(properties.map(row => row.level)),
     ];
