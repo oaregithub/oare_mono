@@ -15,6 +15,10 @@ describe('AddWordDialog test', () => {
     showSnackbar: jest.fn(),
   };
 
+  const mockStore = {
+    getters: { isAdmin: true },
+  };
+
   const mockLodash = {
     debounce: cb => cb,
   };
@@ -22,46 +26,41 @@ describe('AddWordDialog test', () => {
   const mockServer = {
     addWord: jest.fn().mockResolvedValue(),
     checkNewWord: jest.fn().mockResolvedValue(true),
-    getTaxonomyTree: jest.fn().mockResolvedValue({
-      variableName: 'test-var-name',
-      varAbbreviation: 'test-var-abb',
-      variableUuid: '8a6062db-8a6b-f102-98aa-9fa5989bd0a5',
-      children: [
-        {
-          valueName: 'Parse',
-          valAbbreviation: 'test-var-abb',
-          valueUuid: 'test-value-uuid',
-          children: [
-            {
-              variableName: 'test-var-name-2',
-              varAbbreviation: 'test-var-abb-2',
-              variableUuid: 'test-variable-uuid-2',
-              children: [
-                {
-                  valueName: 'test-val-name-2',
-                  valAbbreviation: 'test-var-abb-2',
-                  valueUuid: 'test-value-uuid',
-                  children: [
-                    {
-                      variableName: 'test-var-name-3',
-                      varAbbreviation: 'test-var-abb-3',
-                      variableUuid: 'test-variable-uuid-3',
-                      children: [
-                        {
-                          valueName: 'test-val-name-3',
-                          valAbbreviation: 'test-var-abb-3',
-                          valueUuid: 'test-value-uuid-3',
-                          children: null,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+    getTaxonomyPropertyTree: jest.fn().mockResolvedValue({
+      tree: {
+        name: 'root',
+        fieldInfo: null,
+        hierarchy: {
+          uuid: 'aa2bf3ac-55f2-11eb-bf9e-024de1c1cc1d',
+          parentUuid: 'hierarchy-parent-1',
+          type: 'taxonomy',
+          role: 'tree',
+          objectUuid: 'object-1',
+          objectParentUuid: 'object-parent-1',
+          objectGrandparentUuid: null,
         },
-      ],
+        variables: [
+          {
+            uuid: 'variable-1',
+            name: 'variable-1',
+            abbreviation: '.',
+            type: 'nominal',
+            tableReference: null,
+            hierarchy: {
+              uuid: 'hierarchy-2',
+              parentUuid: 'aa2bf3ac-55f2-11eb-bf9e-024de1c1cc1d',
+              type: 'taxonomy',
+              role: 'child',
+              objectUuid: 'object-2',
+              objectParentUuid: 'object-1',
+              objectGrandparentUuid: 'object-parent-1',
+            },
+            level: null,
+            fieldInfo: null,
+            values: [],
+          },
+        ],
+      },
     }),
   };
 
@@ -69,6 +68,7 @@ describe('AddWordDialog test', () => {
     sl.set('globalActions', mockActions);
     sl.set('serverProxy', server || mockServer);
     sl.set('lodash', mockLodash);
+    sl.set('store', mockStore);
 
     return mount(AddWordDialog, {
       vuetify,
@@ -84,19 +84,20 @@ describe('AddWordDialog test', () => {
     const wrapper = createWrapper();
     await flushPromises();
     expect(wrapper.get('.test-tree').exists()).toBe(true);
+    expect(mockServer.getTaxonomyPropertyTree).toHaveBeenCalled();
   });
 
   it('displays error on failed parse tree load', async () => {
-    const wrapper = createWrapper({
+    createWrapper({
       server: {
         ...mockServer,
-        getTaxonomyTree: jest
+        getTaxonomyPropertyTree: jest
           .fn()
           .mockRejectedValue('failed to load parse tree'),
       },
     });
     await flushPromises();
-    expect(wrapper.find('.test-tree').exists()).toBe(false);
+    expect(mockActions.showErrorSnackbar).toHaveBeenCalled();
   });
 
   it('disables submit button if no input', async () => {

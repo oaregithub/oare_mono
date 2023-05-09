@@ -11,7 +11,6 @@ import {
   AddFormPayload,
   InsertItemPropertyRow,
   UpdateFormPayload,
-  TaxonomyTree,
   AddWordPayload,
   ItemPropertyRow,
   AddWordCheckPayload,
@@ -21,13 +20,13 @@ import {
 import {
   tokenizeExplicitSpelling,
   normalizeSign,
-  convertParsePropsToItemProps,
+  convertAppliedPropsToItemProps,
 } from '@oare/oare';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import cacheMiddleware from '@/middlewares/cache';
-import { dictionaryWordFilter, noFilter } from '@/cache/filters';
+import { dictionaryWordFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -663,22 +662,6 @@ router
   });
 
 router
-  .route('/dictionary/tree/taxonomy')
-  .get(cacheMiddleware<TaxonomyTree>(noFilter), async (req, res, next) => {
-    try {
-      const HierarchyDao = sl.get('HierarchyDao');
-      const cache = sl.get('cache');
-
-      const tree = await HierarchyDao.createTaxonomyTree();
-
-      const response = await cache.insert({ req }, tree, noFilter);
-      res.json(response);
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
-
-router
   .route('/dictionary/addform')
   .post(permissionsRoute('ADD_FORM'), async (req, res, next) => {
     try {
@@ -697,24 +680,12 @@ router
           trx
         );
 
-        const itemPropertyRows = convertParsePropsToItemProps(
+        const itemPropertyRows = convertAppliedPropsToItemProps(
           properties,
           newFormUuid
         );
 
-        const itemPropertyRowLevels = [
-          ...new Set(itemPropertyRows.map(row => row.level)),
-        ];
-        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-          level => itemPropertyRows.filter(row => row.level === level)
-        );
-
-        for (let i = 0; i < rowsByLevel.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
-          );
-        }
+        await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
       });
 
       const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
@@ -762,7 +733,7 @@ router.route('/dictionary/checknewword').post(async (req, res, next) => {
           prop.valueUuid === property.valueUuid &&
           prop.level === property.level
       );
-    const newWordProperties = convertParsePropsToItemProps(properties, '');
+    const newWordProperties = convertAppliedPropsToItemProps(properties, '');
 
     if (
       wordsSameSpelling.some(
@@ -802,24 +773,12 @@ router
           trx
         );
 
-        const itemPropertyRows = convertParsePropsToItemProps(
+        const itemPropertyRows = convertAppliedPropsToItemProps(
           properties,
           newWordUuid
         );
 
-        const itemPropertyRowLevels = [
-          ...new Set(itemPropertyRows.map(row => row.level)),
-        ];
-        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-          level => itemPropertyRows.filter(row => row.level === level)
-        );
-
-        for (let i = 0; i < rowsByLevel.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
-          );
-        }
+        await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
       });
 
       const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(

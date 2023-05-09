@@ -249,16 +249,17 @@
       v-if="allowEditing && canEditLemmaProperties"
       v-model="editLemmaPropertiesDialog"
       :title="`Edit Lemma Properties - ${word.word}`"
-      :width="1000"
+      :width="1400"
       :submitDisabled="!formComplete"
       submitText="Submit"
       closeOnSubmit
       @submit="updateLemmaProperties"
     >
-      <add-properties
-        startingUuid="8a6062db-8a6b-f102-98aa-9fa5989bd0a5"
-        @export-properties="setProperties($event)"
-        @form-complete="formComplete = $event"
+      <properties-tree
+        :readonly="false"
+        startingValueHierarchyUuid="aa2bf3ac-55f2-11eb-bf9e-024de1c1cc1d"
+        @set-properties="setProperties($event)"
+        @set-complete="formComplete = $event"
         :existingProperties="word.properties"
         :key="addPropertiesKey"
       />
@@ -285,16 +286,12 @@ import {
   watch,
   inject,
 } from '@vue/composition-api';
-import {
-  Word,
-  ParseTreeProperty,
-  DictionaryWordTranslation,
-} from '@oare/types';
+import { Word, DictionaryWordTranslation, AppliedProperty } from '@oare/types';
 import { ReloadKey } from '../../../../index.vue';
-import AddProperties from '@/components/Properties/AddProperties.vue';
 import EditTranslations from './components/EditTranslations.vue';
 import UtilList from '@/components/UtilList/index.vue';
 import sl from '@/serviceLocator';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   name: 'WordGrammar',
@@ -317,9 +314,9 @@ export default defineComponent({
     },
   },
   components: {
-    AddProperties,
     EditTranslations,
     UtilList,
+    PropertiesTree,
   },
   setup({ word, updateWordInfo }) {
     const server = sl.get('serverProxy');
@@ -373,8 +370,8 @@ export default defineComponent({
     const editLemmaPropertiesDialog = ref(false);
     const formComplete = ref(false);
 
-    const properties = ref<ParseTreeProperty[]>([]);
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
+    const properties = ref<AppliedProperty[]>([]);
+    const setProperties = (propertyList: AppliedProperty[]) => {
       properties.value = propertyList;
     };
 

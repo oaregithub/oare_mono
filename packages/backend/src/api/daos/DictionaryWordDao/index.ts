@@ -684,6 +684,38 @@ class DictionaryWordDao {
     });
     return newWordUuid;
   }
+
+  async searchDictionaryWords(
+    search: string,
+    trx?: Knex.Transaction
+  ): Promise<{ uuid: string; word: string; type: string }[]> {
+    const k = trx || knexRead();
+    const rows: { uuid: string; word: string; type: string }[] = await k
+      .select('dw.uuid AS uuid', 'dw.word as word', 'dw.type as type')
+      .from('dictionary_word AS dw')
+      .leftJoin('dictionary_form AS df', 'df.reference_uuid', 'dw.uuid')
+      .leftJoin('dictionary_spelling AS ds', 'ds.reference_uuid', 'df.uuid')
+      .where(k.raw('LOWER(dw.word)'), 'like', `%${search.toLowerCase()}%`)
+      .orWhere(k.raw('LOWER(df.form)'), 'like', `${search.toLowerCase()}`)
+      .orWhere(
+        k.raw('LOWER(ds.explicit_spelling)'),
+        'like',
+        `${search.toLowerCase()}`
+      )
+      .orWhereRaw('binary dw.uuid = binary ?', search)
+      .orderByRaw(
+        `CASE 
+		    WHEN LOWER(dw.word) LIKE '${search.toLowerCase()}' THEN 1 
+        WHEN LOWER(df.form) LIKE '${search.toLowerCase()}' THEN 2
+        WHEN LOWER(ds.explicit_spelling) LIKE '${search.toLowerCase()}' THEN 3
+        WHEN LOWER(dw.word) LIKE '${search.toLowerCase()}%' THEN 4
+        WHEN LOWER(dw.word) LIKE '%${search.toLowerCase()}' THEN 5
+        ELSE 5 END`
+      )
+      .orderByRaw('LOWER(dw.word)');
+
+    return rows;
+  }
 }
 
 export default new DictionaryWordDao();

@@ -72,18 +72,6 @@ router
   );
 
 router
-  .route('/bibliographies_count')
-  .get(permissionsRoute('BIBLIOGRAPHY'), async (req, res, next) => {
-    try {
-      const BibliographyDao = sl.get('BibliographyDao');
-      const count = await BibliographyDao.getBibliographiesCount();
-      res.json(count);
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
-
-router
   .route('/bibliography/:uuid')
   .get(
     permissionsRoute('BIBLIOGRAPHY'),

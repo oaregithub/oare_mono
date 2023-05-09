@@ -1,13 +1,17 @@
 import {
-  ParseTreeProperty,
   EditPropertiesPayload,
   ItemPropertyRow,
+  TaxonomyPropertyTree,
+  LinkItem,
+  TableReferenceType,
+  LinkPropertiesSearchPayload,
+  AppliedProperty,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
 async function editPropertiesByReferenceUuid(
   referenceUuid: string,
-  properties: ParseTreeProperty[],
+  properties: AppliedProperty[],
   wordUuid?: string
 ): Promise<void> {
   const payload: EditPropertiesPayload = {
@@ -24,7 +28,30 @@ async function getPropertiesByReferenceUuid(
   return data;
 }
 
+async function getTaxonomyPropertyTree(): Promise<TaxonomyPropertyTree> {
+  const { data } = await axios.get('properties_taxonomy_tree');
+  return data;
+}
+
+async function searchLinkProperties(
+  search: string,
+  tableReference: TableReferenceType,
+  textUuidFilter?: string
+): Promise<LinkItem[]> {
+  const params: LinkPropertiesSearchPayload = {
+    search,
+    tableReference,
+    textUuidFilter,
+  };
+  const { data } = await axios.get('properties_links', {
+    params,
+  });
+  return data;
+}
+
 export default {
   editPropertiesByReferenceUuid,
   getPropertiesByReferenceUuid,
+  getTaxonomyPropertyTree,
+  searchLinkProperties,
 };

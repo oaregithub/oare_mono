@@ -6,7 +6,9 @@ import {
   PersonInfo,
   PersonCore,
   PersonRole,
-  TaxonomyTree,
+  LinkItem,
+  PropertyVariable,
+  PropertyValue,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -230,17 +232,33 @@ class PersonDao {
     return label;
   }
 
-  getChildrenUuids(taxonomyTree: TaxonomyTree[]): string[] {
+  getChildrenUuids(items: PropertyVariable[] | PropertyValue[]): string[] {
     const childrenUuids: string[] = [];
-    taxonomyTree.forEach(node => {
-      if (
-        node.children === null &&
-        node.objParentUuid === 'aa76828a-355b-de16-0a41-671d7e45526c'
-      ) {
-        childrenUuids.push(node.objectUuid);
-      } else if (node.children) {
-        const uuids = this.getChildrenUuids(node.children);
-        uuids.forEach(uuid => childrenUuids.push(uuid));
+    items.forEach(node => {
+      if ((node as PropertyVariable).values) {
+        const typedNode = node as PropertyVariable;
+        if (
+          typedNode.values.length === 0 &&
+          typedNode.hierarchy.objectParentUuid ===
+            'aa76828a-355b-de16-0a41-671d7e45526c'
+        ) {
+          childrenUuids.push(typedNode.hierarchy.objectUuid);
+        } else if (typedNode.values.length > 0) {
+          const uuids = this.getChildrenUuids(typedNode.values);
+          uuids.forEach(uuid => childrenUuids.push(uuid));
+        }
+      } else if ((node as PropertyValue).variables) {
+        const typedNode = node as PropertyValue;
+        if (
+          typedNode.variables.length === 0 &&
+          typedNode.hierarchy.objectParentUuid ===
+            'aa76828a-355b-de16-0a41-671d7e45526c'
+        ) {
+          childrenUuids.push(typedNode.hierarchy.objectUuid);
+        } else if (typedNode.variables.length > 0) {
+          const uuids = this.getChildrenUuids(typedNode.variables);
+          uuids.forEach(uuid => childrenUuids.push(uuid));
+        }
       }
     });
     return childrenUuids;
@@ -262,12 +280,14 @@ class PersonDao {
       .where('type', 'taxonomy')
       .first()
       .then(row => row.uuid);
-    const taxonomy = await HierarchyDao.getChildren(hierarchyUuid, null, trx);
+    const variables = await HierarchyDao.getVariablesByParent(
+      hierarchyUuid,
+      null,
+      trx
+    );
     const rolesList: string[] = [];
-    if (taxonomy) {
-      const uuids = this.getChildrenUuids(taxonomy);
-      uuids.forEach(uuid => rolesList.push(uuid));
-    }
+    const uuids = this.getChildrenUuids(variables);
+    uuids.forEach(uuid => rolesList.push(uuid));
     return rolesList;
   }
 
@@ -537,6 +557,23 @@ class PersonDao {
       durableRoles: [],
       roleNotYetAssigned: 0,
     };
+  }
+
+  async searchPersons(
+    search: string,
+    trx?: Knex.Transaction
+  ): Promise<LinkItem[]> {
+    const k = trx || knexRead();
+    const rows: LinkItem[] = await k('person')
+      .select('person.uuid as objectUuid', 'person.label as objectDisplay')
+      .where(k.raw('LOWER(person.label)'), 'like', `%${search.toLowerCase()}%`)
+      .orWhereRaw('binary person.uuid = binary ?', search)
+      .orderByRaw(
+        `CASE WHEN LOWER(person.label) LIKE '${search.toLowerCase()}' THEN 1 WHEN LOWER(person.label) LIKE '${search.toLowerCase()}%' THEN 2 WHEN LOWER(person.label) LIKE '%${search.toLowerCase()}' THEN 4 ELSE 3 END`
+      )
+      .orderByRaw('LOWER(person.label)');
+
+    return rows;
   }
 }
 

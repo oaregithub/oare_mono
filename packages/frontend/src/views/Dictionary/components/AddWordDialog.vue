@@ -9,7 +9,7 @@
     :submitLoading="addWordLoading || outstandingCheck > 0"
     :value="value"
     :persistent="false"
-    :width="1150"
+    :width="1400"
     closeOnSubmit
   >
     <OareContentView>
@@ -24,11 +24,12 @@
         >A lemma with this same spelling and matching lemma properties already
         exists.
       </span>
-      <v-row class="ma-0">
-        <add-properties
-          startingUuid="8a6062db-8a6b-f102-98aa-9fa5989bd0a5"
-          @export-properties="setProperties($event)"
-          @form-complete="formComplete = $event"
+      <v-row class="ma-0 mt-4">
+        <properties-tree
+          :readonly="false"
+          startingValueHierarchyUuid="aa2bf3ac-55f2-11eb-bf9e-024de1c1cc1d"
+          @set-properties="setProperties($event)"
+          @set-complete="formComplete = $event"
         />
       </v-row>
     </OareContentView>
@@ -37,16 +38,16 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch } from '@vue/composition-api';
-import { ParseTreeProperty } from '@oare/types';
+import { AppliedProperty } from '@oare/types';
 import OareContentView from '@/components/base/OareContentView.vue';
 import sl from '@/serviceLocator';
-import AddProperties from '@/components/Properties/AddProperties.vue';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   name: 'AddWordDialog',
   components: {
     OareContentView,
-    AddProperties,
+    PropertiesTree,
   },
   props: {
     value: {
@@ -67,14 +68,14 @@ export default defineComponent({
     const addWordLoading = ref(false);
     const formComplete = ref(false);
     const newWordSpelling = ref('');
-    const properties = ref<ParseTreeProperty[]>([]);
+    const properties = ref<AppliedProperty[]>([]);
 
     const ifwordExists = ref(false);
     const outstandingCheck = ref(0);
 
     const newWord = ref('');
 
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
+    const setProperties = (propertyList: AppliedProperty[]) => {
       properties.value = propertyList;
     };
 

@@ -1,5 +1,5 @@
 import { knexRead, knexWrite } from '@/connection';
-import { TranslitOption, Text, TextRow } from '@oare/types';
+import { TranslitOption, Text, TextRow, LinkItem } from '@oare/types';
 import { Knex } from 'knex';
 
 interface TextUuid {
@@ -177,6 +177,47 @@ class TextDao {
   async removeTextByUuid(textUuid: string, trx?: Knex.Transaction) {
     const k = trx || knexWrite();
     await k('text').del().where({ uuid: textUuid });
+  }
+
+  async searchTexts(
+    search: string,
+    trx?: Knex.Transaction
+  ): Promise<LinkItem[]> {
+    const k = trx || knexRead();
+    const rows: LinkItem[] = await k('text')
+      .select('text.uuid as objectUuid', 'text.display_name as objectDisplay')
+      .where(
+        k.raw('LOWER(text.display_name)'),
+        'like',
+        `%${search.toLowerCase()}%`
+      )
+      .orWhere(k.raw('LOWER(text.name)'), 'like', `%${search.toLowerCase()}%`)
+      .orWhere(
+        k.raw(
+          'CONCAT(LOWER(text.excavation_prfx), " ", LOWER(text.excavation_no))'
+        ),
+        'like',
+        `%${search.toLowerCase()}%`
+      )
+      .orWhere(
+        k.raw('CONCAT(LOWER(text.museum_prfx), " ", LOWER(text.museum_no))'),
+        'like',
+        `%${search.toLowerCase()}%`
+      )
+      .orWhere(
+        k.raw(
+          'CONCAT(LOWER(text.publication_prfx), " ", LOWER(text.publication_no))'
+        ),
+        'like',
+        `%${search.toLowerCase()}%`
+      )
+      .orWhereRaw('binary text.uuid = binary ?', search)
+      .orderByRaw(
+        `CASE WHEN LOWER(text.display_name) LIKE '${search.toLowerCase()}' THEN 1 WHEN LOWER(text.display_name) LIKE '${search.toLowerCase()}%' THEN 2 WHEN LOWER(text.display_name) LIKE '%${search.toLowerCase()}' THEN 4 ELSE 3 END`
+      )
+      .orderByRaw('LOWER(text.display_name)');
+
+    return rows;
   }
 }
 

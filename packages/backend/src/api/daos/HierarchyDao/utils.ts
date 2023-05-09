@@ -1,26 +1,18 @@
 import { knexRead } from '@/connection';
 import { Knex } from 'knex';
 
-export const getTreeNodeQuery = (trx?: Knex.Transaction) => {
+export const getHierarchyRowQuery = (trx?: Knex.Transaction) => {
   const k = trx || knexRead();
   return k('hierarchy')
     .select(
       'hierarchy.uuid',
       'hierarchy.parent_uuid as parentUuid',
       'hierarchy.type',
+      'hierarchy.role',
       'hierarchy.object_uuid as objectUuid',
-      'hierarchy.obj_parent_uuid as objParentUuid',
+      'hierarchy.obj_parent_uuid as objectParentUuid',
       'hierarchy.custom',
-      'variable.name as variableName',
-      'value.name as valueName',
-      'variable.abbreviation as varAbbreviation',
-      'value.abbreviation as valAbbreviation',
-      'variable.uuid as variableUuid',
-      'value.uuid as valueUuid',
-      'variable.type as variableType',
-      'variable.table_reference as variableTableReference',
-      'hierarchy.role'
+      'h2.obj_parent_uuid as objectGrandparentUuid'
     )
-    .leftJoin('variable', 'variable.uuid', 'hierarchy.object_uuid')
-    .leftJoin('value', 'value.uuid', 'hierarchy.object_uuid');
+    .leftJoin('hierarchy as h2', 'hierarchy.parent_uuid', 'h2.uuid');
 };

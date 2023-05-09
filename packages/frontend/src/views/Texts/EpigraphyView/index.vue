@@ -280,7 +280,10 @@
 </template>
 
 <script lang="ts">
-import { createTabletRenderer } from '@oare/oare';
+import {
+  convertAppliedPropsToItemProps,
+  createTabletRenderer,
+} from '@oare/oare';
 import {
   LinkRow,
   ResourceRow,
@@ -313,7 +316,6 @@ import Stoplight from './EpigraphyDisplay/components/Stoplight.vue';
 import EpigraphyImage from './EpigraphyDisplay/components/EpigraphyImage.vue';
 import EpigraphyFullDisplay from './EpigraphyDisplay/EpigraphyFullDisplay.vue';
 import AddPhotos from '@/views/Texts/CollectionTexts/AddTexts/Photos/AddPhotos.vue';
-import { convertParsePropsToItemProps } from '@oare/oare';
 import { addDetailsToTextPhotos } from '../CollectionTexts/AddTexts/utils/photos';
 import { v4 } from 'uuid';
 import i18n from '@/i18n';
@@ -684,7 +686,10 @@ export default defineComponent({
         }));
 
         const itemPropertiesRows = photosWithDetails.flatMap((photo, idx) =>
-          convertParsePropsToItemProps(photo.properties, resourceRows[idx].uuid)
+          convertAppliedPropsToItemProps(
+            photo.properties,
+            resourceRows[idx].uuid
+          )
         );
 
         await server.addPhotosToText(

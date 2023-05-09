@@ -44,7 +44,11 @@ import TreeDao from './api/daos/TreeDao';
 import QuarantineTextDao from './api/daos/QuarantineTextDao';
 import SealDao from './api/daos/SealDao';
 import PeriodsDao from './api/daos/PeriodsDao';
+import AssetDao from './api/daos/AssetDao';
+import ConceptDao from './api/daos/ConceptDao';
 import EditTextUtils from './api/daos/EditTextUtils';
+import EventDao from './api/daos/EventDao';
+import SpatialUnitDao from './api/daos/SpatialUnitDao';
 
 declare global {
   namespace Express {
@@ -96,7 +100,11 @@ sl.set('TreeDao', TreeDao);
 sl.set('QuarantineTextDao', QuarantineTextDao);
 sl.set('SealDao', SealDao);
 sl.set('PeriodsDao', PeriodsDao);
+sl.set('AssetDao', AssetDao);
+sl.set('ConceptDao', ConceptDao);
 sl.set('EditTextUtils', EditTextUtils);
+sl.set('EventDao', EventDao);
+sl.set('SpatialUnitDao', SpatialUnitDao);
 
 initializeFirebase(err => {
   if (err) {

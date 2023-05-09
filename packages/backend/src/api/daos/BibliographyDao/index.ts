@@ -25,12 +25,6 @@ class BibliographyDao {
     return bibliographies;
   }
 
-  async getBibliographiesCount(trx?: Knex.Transaction): Promise<number> {
-    const k = trx || knexRead();
-    const count = await k('bibliography').count('uuid as count').first();
-    return count && count.count ? Number(count.count) : 0;
-  }
-
   async getBibliographyByZotItemKey(
     zotItemKey: string,
     trx?: Knex.Transaction

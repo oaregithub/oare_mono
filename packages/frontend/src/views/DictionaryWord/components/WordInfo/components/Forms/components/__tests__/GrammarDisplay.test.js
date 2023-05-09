@@ -13,46 +13,41 @@ localVue.use(VueCompositionApi);
 describe('GrammarDisplay test', () => {
   const mockServer = {
     editPropertiesByReferenceUuid: jest.fn().mockResolvedValue(),
-    getTaxonomyTree: jest.fn().mockResolvedValue({
-      variableName: 'test-var-name',
-      varAbbreviation: 'test-var-abb',
-      variableUuid: 'test-variable-uuid',
-      children: [
-        {
-          valueName: 'Parse',
-          valAbbreviation: 'test-var-abb',
-          valueUuid: 'test-value-uuid',
-          children: [
-            {
-              variableName: 'test-var-name-2',
-              varAbbreviation: 'test-var-abb-2',
-              variableUuid: 'test-variable-uuid-2',
-              children: [
-                {
-                  valueName: 'test-val-name-2',
-                  valAbbreviation: 'test-var-abb-2',
-                  valueUuid: 'test-value-uuid',
-                  children: [
-                    {
-                      variableName: 'test-var-name-3',
-                      varAbbreviation: 'test-var-abb-3',
-                      variableUuid: 'test-variable-uuid-3',
-                      children: [
-                        {
-                          valueName: 'test-val-name-3',
-                          valAbbreviation: 'test-var-abb-3',
-                          valueUuid: 'test-value-uuid-3',
-                          children: null,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+    getTaxonomyPropertyTree: jest.fn().mockResolvedValue({
+      tree: {
+        name: 'root',
+        fieldInfo: null,
+        hierarchy: {
+          uuid: 'b745f8d1-55f2-11eb-bf9e-024de1c1cc1d',
+          parentUuid: 'hierarchy-parent-1',
+          type: 'taxonomy',
+          role: 'tree',
+          objectUuid: 'object-1',
+          objectParentUuid: 'object-parent-1',
+          objectGrandparentUuid: null,
         },
-      ],
+        variables: [
+          {
+            uuid: 'variable-1',
+            name: 'variable-1',
+            abbreviation: '.',
+            type: 'nominal',
+            tableReference: null,
+            hierarchy: {
+              uuid: 'hierarchy-2',
+              parentUuid: 'b745f8d1-55f2-11eb-bf9e-024de1c1cc1d',
+              type: 'taxonomy',
+              role: 'child',
+              objectUuid: 'object-2',
+              objectParentUuid: 'object-1',
+              objectGrandparentUuid: 'object-parent-1',
+            },
+            level: null,
+            fieldInfo: null,
+            values: [],
+          },
+        ],
+      },
     }),
   };
 
@@ -62,13 +57,19 @@ describe('GrammarDisplay test', () => {
   };
 
   const mockStore = {
+    getters: { isAdmin: true },
     hasPermission: name => ['EDIT_ITEM_PROPERTIES'].includes(name),
+  };
+
+  const mockLodash = {
+    debounce: cb => cb,
   };
 
   const setup = () => {
     sl.set('serverProxy', mockServer);
     sl.set('globalActions', mockActions);
     sl.set('store', mockStore);
+    sl.set('lodash', mockLodash);
   };
 
   const mockProps = {
@@ -109,7 +110,7 @@ describe('GrammarDisplay test', () => {
     expect(editButton.exists()).toBe(true);
   });
 
-  it('does not show edit buttonw hen user does not have permission', async () => {
+  it('does not show edit button when user does not have permission', async () => {
     sl.set('store', {
       hasPermission: () => false,
     });

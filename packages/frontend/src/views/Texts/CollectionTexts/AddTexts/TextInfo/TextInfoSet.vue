@@ -204,16 +204,7 @@
           <span v-if="properties.length === 0"
             >No additional properties selected</span
           >
-          <v-chip
-            v-else
-            v-for="(property, idx) in properties"
-            :key="idx"
-            class="my-1 mr-2"
-            color="info"
-            outlined
-            :title="propertyText(property)"
-            >{{ propertyText(property) }}
-          </v-chip>
+          <properties-display v-else :properties="properties" />
         </v-row>
         <v-row class="px-3 mb-6">
           <v-btn @click="selectPropertiesDialog = true" color="primary">
@@ -223,17 +214,18 @@
         <oare-dialog
           v-model="selectPropertiesDialog"
           title="Additional Text Properties"
-          :width="1000"
+          :width="1400"
           :submitDisabled="!formComplete"
           submitText="OK"
           closeOnSubmit
           :showCancel="false"
           eager
         >
-          <add-properties
-            startingUuid="1e2e001d-73bd-b883-de04-9b33cd1dbcd2"
-            @export-properties="setProperties($event)"
-            @form-complete="formComplete = $event"
+          <properties-tree
+            :readonly="false"
+            startingValueHierarchyUuid="cdd5e5a9-55f2-11eb-bf9e-024de1c1cc1d"
+            @set-properties="setProperties($event)"
+            @set-complete="formComplete = $event"
           />
         </oare-dialog>
       </template>
@@ -251,8 +243,9 @@ import {
   onMounted,
   PropType,
 } from '@vue/composition-api';
-import AddProperties from '@/components/Properties/AddProperties.vue';
-import { ParseTreeProperty, AddTextInfo, TextRow } from '@oare/types';
+import { AddTextInfo, TextRow, AppliedProperty } from '@oare/types';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
+import PropertiesDisplay from '@/components/Properties/PropertiesDisplay.vue';
 
 export default defineComponent({
   props: {
@@ -262,7 +255,8 @@ export default defineComponent({
     },
   },
   components: {
-    AddProperties,
+    PropertiesTree,
+    PropertiesDisplay,
   },
   setup(props, { emit }) {
     const textName = ref('');
@@ -277,14 +271,10 @@ export default defineComponent({
     const selectPropertiesDialog = ref(false);
     const formComplete = ref(false);
 
-    const properties = ref<ParseTreeProperty[]>([]);
+    const properties = ref<AppliedProperty[]>([]);
 
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
+    const setProperties = (propertyList: AppliedProperty[]) => {
       properties.value = propertyList;
-    };
-
-    const propertyText = (property: ParseTreeProperty) => {
-      return `${property.variable.variableName} - ${property.value.valueName}`;
     };
 
     const textInfo: ComputedRef<AddTextInfo> = computed(() => ({
@@ -374,7 +364,6 @@ export default defineComponent({
       formComplete,
       properties,
       setProperties,
-      propertyText,
       textInfo,
       textNameRules,
     };

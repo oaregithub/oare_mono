@@ -1,6 +1,7 @@
 import Vuetify from 'vuetify';
 import VueCompositionApi from '@vue/composition-api';
 import { createLocalVue, mount } from '@vue/test-utils';
+import sl from '@/serviceLocator';
 import TextInfoSet from '../TextInfoSet.vue';
 
 const vuetify = new Vuetify();
@@ -8,6 +9,33 @@ const localVue = createLocalVue();
 localVue.use(VueCompositionApi);
 
 describe('TextInfoSet test', () => {
+  const mockServer = {
+    getTaxonomyPropertyTree: jest.fn().mockResolvedValue(),
+  };
+
+  const mockActions = {
+    showErrorSnackbar: jest.fn(),
+    showSnackbar: jest.fn(),
+  };
+
+  const mockStore = {
+    getters: { isAdmin: true },
+    hasPermission: name => ['EDIT_ITEM_PROPERTIES'].includes(name),
+  };
+
+  const mockLodash = {
+    debounce: cb => cb,
+  };
+
+  const setup = () => {
+    sl.set('serverProxy', mockServer);
+    sl.set('globalActions', mockActions);
+    sl.set('store', mockStore);
+    sl.set('lodash', mockLodash);
+  };
+
+  beforeEach(setup);
+
   const createWrapper = () =>
     mount(TextInfoSet, {
       vuetify,

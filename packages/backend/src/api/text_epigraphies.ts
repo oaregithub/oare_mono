@@ -335,18 +335,7 @@ router
           links.map(row => ResourceDao.insertLinkRow(row, trx))
         );
 
-        const itemPropertyRowLevels = [
-          ...new Set(itemProperties.map(row => row.level)),
-        ];
-        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-          level => itemProperties.filter(row => row.level === level)
-        );
-        for (let i = 0; i < rowsByLevel.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
-          );
-        }
+        await ItemPropertiesDao.addProperties(itemProperties, trx);
       });
 
       res.status(201).end();
@@ -457,18 +446,7 @@ router
         );
 
         // Item Properties
-        const itemPropertyRowLevels = [
-          ...new Set(tables.itemProperties.map(row => row.level)),
-        ];
-        const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-          level => tables.itemProperties.filter(row => row.level === level)
-        );
-        for (let i = 0; i < rowsByLevel.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
-          );
-        }
+        await ItemPropertiesDao.addProperties(tables.itemProperties, trx);
       });
 
       await cache.clear(

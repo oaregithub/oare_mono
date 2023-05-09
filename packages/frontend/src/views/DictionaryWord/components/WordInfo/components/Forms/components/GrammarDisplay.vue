@@ -24,17 +24,17 @@
       v-if="allowEditing && canEditParseInfo"
       v-model="editPropertiesDialog"
       :title="`Edit Form Parse Information - ${form.form}`"
-      :width="1000"
+      :width="1400"
       :submitDisabled="!formComplete"
       submitText="Submit"
       closeOnSubmit
       @submit="updateFormProperties"
     >
-      <add-properties
-        :startingUuid="partOfSpeechValueUuid"
-        requiredNodeValueName="Parse"
-        @export-properties="setProperties($event)"
-        @form-complete="formComplete = $event"
+      <properties-tree
+        :readonly="false"
+        startingValueHierarchyUuid="b745f8d1-55f2-11eb-bf9e-024de1c1cc1d"
+        @set-properties="setProperties($event)"
+        @set-complete="formComplete = $event"
         :existingProperties="form.properties"
         :key="addPropertiesKey"
       />
@@ -51,11 +51,11 @@ import {
   watch,
   inject,
 } from '@vue/composition-api';
-import { DictionaryForm, ParseTreeProperty, Word } from '@oare/types';
+import { AppliedProperty, DictionaryForm, Word } from '@oare/types';
 import utils from '@/utils';
-import AddProperties from '@/components/Properties/AddProperties.vue';
 import { ReloadKey } from '../../../../../index.vue';
 import sl from '@/serviceLocator';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   props: {
@@ -73,7 +73,7 @@ export default defineComponent({
     },
   },
   components: {
-    AddProperties,
+    PropertiesTree,
   },
   setup(props) {
     const server = sl.get('serverProxy');
@@ -86,21 +86,10 @@ export default defineComponent({
 
     const formGrammar = computed(() => utils.formGrammarString(props.form));
 
-    const properties = ref<ParseTreeProperty[]>([]);
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
+    const properties = ref<AppliedProperty[]>([]);
+    const setProperties = (propertyList: AppliedProperty[]) => {
       properties.value = propertyList;
     };
-
-    const partOfSpeechValueUuid = computed(() => {
-      if (props.word) {
-        const posProperties = props.word.properties.filter(
-          prop => prop.variableName === 'Part of Speech'
-        );
-        return posProperties.length > 0
-          ? posProperties[0].valueUuid
-          : undefined;
-      }
-    });
 
     const addPropertiesKey = ref(false);
     watch(editPropertiesDialog, () => {
@@ -141,7 +130,6 @@ export default defineComponent({
       formComplete,
       properties,
       setProperties,
-      partOfSpeechValueUuid,
       addPropertiesKey,
       updateFormProperties,
       canEditParseInfo,

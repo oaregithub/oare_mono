@@ -7,12 +7,11 @@ import {
   InsertParentDiscourseRowPayload,
   TextDiscourseRow,
   DiscourseUnitType,
-  InsertItemPropertyRow,
   EditTranslationPayload,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/permissionsRoute';
 import { v4 } from 'uuid';
-import { convertParsePropsToItemProps } from '@oare/oare';
+import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { nestProperties } from '../utils/index';
 
 const router = express.Router();
@@ -156,22 +155,11 @@ router
             )
           );
 
-          const itemProperties = convertParsePropsToItemProps(
+          const itemPropertyRows = convertAppliedPropsToItemProps(
             properties,
             newRowUuid
           );
-          const itemPropertyRowLevels = [
-            ...new Set(itemProperties.map(row => row.level)),
-          ];
-          const rowsByLevel: InsertItemPropertyRow[][] = itemPropertyRowLevels.map(
-            level => itemProperties.filter(row => row.level === level)
-          );
-          for (let i = 0; i < rowsByLevel.length; i += 1) {
-            // eslint-disable-next-line no-await-in-loop
-            await Promise.all(
-              rowsByLevel[i].map(row => ItemPropertiesDao.addProperty(row, trx))
-            );
-          }
+          await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
 
           if (discourseType === 'Sentence') {
             await FieldDao.insertField(

@@ -25,7 +25,7 @@ import {
 } from '@oare/types';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
-import { convertParsePropsToItemProps } from '@oare/oare';
+import { convertAppliedPropsToItemProps } from '@oare/oare';
 
 const regionMarkupType = (
   region:
@@ -237,12 +237,12 @@ export const createNewTextTables = async (
     objUuid: resource.uuid,
   }));
 
-  const textItemPropertiesRows = convertParsePropsToItemProps(
+  const textItemPropertiesRows = convertAppliedPropsToItemProps(
     textInfo.properties,
     textUuid
   );
   const photoItemPropertiesRows = photos.flatMap((photo, idx) =>
-    convertParsePropsToItemProps(photo.properties, resourceRows[idx].uuid)
+    convertAppliedPropsToItemProps(photo.properties, resourceRows[idx].uuid)
   );
 
   const itemPropertiesRows = [

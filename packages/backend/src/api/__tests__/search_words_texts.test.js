@@ -40,28 +40,7 @@ describe('words in texts search test', () => {
       sl.set('CollectionTextUtils', CollectionTextUtils);
       sl.set('TextDao', TextDao);
     });
-    const parseProperties = {
-      variable: {
-        uuid: 'varUuid',
-        parentUuid: 'varParentUuid',
-        variableName: 'variableName',
-        variableUuid: 'variableUuid',
-        level: '1',
-      },
-      value: {
-        uuid: 'valUuid',
-        parentUuid: 'valParentUuid',
-        valueName: 'valueName',
-        valueUuid: 'valueUuid',
-        level: '1',
-      },
-    };
     const searchItems = [
-      {
-        uuids: [[parseProperties]],
-        type: 'parse',
-        numWordsBefore: null,
-      },
       {
         uuids: ['uuid'],
         type: 'form',

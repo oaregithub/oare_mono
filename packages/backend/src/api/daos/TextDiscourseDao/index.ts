@@ -9,7 +9,6 @@ import {
   TextDiscourseRow,
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
-  ParseTreePropertyUuids,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
@@ -156,16 +155,6 @@ class TextDiscourseDao {
     const searchItems: string[][] = await Promise.all(
       items.map(async payloadObject => {
         let dictItemSearchUuids: string[] = [];
-        if (payloadObject.type === 'parse') {
-          const parseProperties = payloadObject.uuids as ParseTreePropertyUuids[][];
-          dictItemSearchUuids = (
-            await Promise.all(
-              parseProperties.map(parsePropArray =>
-                ItemPropertiesDao.getFormsByProperties(parsePropArray)
-              )
-            )
-          ).flat();
-        }
         if (payloadObject.type === 'form/spelling/number') {
           dictItemSearchUuids = payloadObject.uuids as string[];
         }
@@ -906,6 +895,52 @@ class TextDiscourseDao {
     ).flat();
 
     return discourseUuids;
+  }
+
+  async searchDiscourse(
+    search: string,
+    textUuidFilter: string,
+    trx?: Knex.Transaction
+  ): Promise<DiscourseUnit[]> {
+    const k = trx || knexRead();
+
+    const matches: DiscourseUnit[] = [];
+
+    const discourseUnits = await this.getTextDiscourseUnits(
+      textUuidFilter,
+      trx
+    );
+
+    const searchDiscourseUnits = (units: DiscourseUnit[]) => {
+      units.forEach(unit => {
+        if (
+          unit.explicitSpelling &&
+          unit.explicitSpelling.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        } else if (
+          unit.transcription &&
+          unit.transcription.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        } else if (
+          unit.translation &&
+          unit.translation.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        } else if (
+          unit.paragraphLabel &&
+          unit.paragraphLabel.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matches.push(unit);
+        }
+        searchDiscourseUnits(unit.units);
+      });
+    };
+
+    searchDiscourseUnits(discourseUnits);
+
+    return matches;
   }
 }
 

@@ -98,19 +98,19 @@
       v-if="wordInfo.forms.length > 1 && filterByProperties"
       v-model="editLemmaPropertiesDialog"
       title="Select Lemma Properties for filtering"
-      :width="1000"
+      :width="1400"
       submitText="Filter"
       @submit="filterWithProps"
       @input="filterByProperties = $event"
       closeOnSubmit
     >
-      <add-properties
-        :startingUuid="partOfSpeechValueUuid"
-        requiredNodeValueName="Parse"
-        :hideActions="true"
-        :selectMultiple="true"
-        @export-properties="setProperties($event)"
-        @form-complete="formComplete = $event"
+      <properties-tree
+        startingValueHierarchyUuid="b745f8d1-55f2-11eb-bf9e-024de1c1cc1d"
+        :readonly="false"
+        :overrideCustom="true"
+        :showValidation="false"
+        :valuesToPreselect="partOfSpeechPreselects"
+        @set-properties="setProperties($event)"
       />
     </oare-dialog>
     <form-display
@@ -163,24 +163,26 @@ import {
   ref,
   onMounted,
   watch,
+  ComputedRef,
 } from '@vue/composition-api';
 import {
   Word,
   DictionaryForm,
   FormSpelling,
-  ParseTreeProperty,
   TextOccurrencesCountResponseItem,
+  AppliedProperty,
+  PreselectionProperty,
 } from '@oare/types';
 import FormDisplay from './components/Forms/FormDisplay.vue';
 import EventBus, { ACTIONS } from '@/EventBus';
 import EditWordDialog from '@/views/DictionaryWord/components/WordInfo/components/EditWordDialog/EditWordDialog.vue';
 import AddFormDialog from './components/AddFormDialog.vue';
 import WordGrammar from './components/WordGrammar/WordGrammar.vue';
-import AddProperties from '@/components/Properties/AddProperties.vue';
 import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import { spellingHtmlReading } from '@oare/oare';
 import _ from 'lodash';
+import PropertiesTree from '@/components/Properties/PropertiesTree.vue';
 
 export default defineComponent({
   props: {
@@ -214,7 +216,7 @@ export default defineComponent({
     EditWordDialog,
     AddFormDialog,
     WordGrammar,
-    AddProperties,
+    PropertiesTree,
   },
   setup(props) {
     const store = sl.get('store');
@@ -249,20 +251,13 @@ export default defineComponent({
       });
     };
 
-    const properties = ref<ParseTreeProperty[]>([]);
-    const setProperties = (propertyList: ParseTreeProperty[]) => {
+    const properties = ref<AppliedProperty[]>([]);
+    const setProperties = (propertyList: AppliedProperty[]) => {
       properties.value = propertyList;
-      appliedPropertiesForFiltering.value = propertyList.map(
-        el => el.value.valueName
+      appliedPropertiesForFiltering.value = propertyList.map(prop =>
+        prop.valueRow ? prop.valueRow.name : null
       );
     };
-
-    const partOfSpeechValueUuid = computed(() => {
-      const posProperties = props.wordInfo.properties.filter(
-        prop => prop.variableName === 'Part of Speech'
-      );
-      return posProperties.length > 0 ? posProperties[0].valueUuid : undefined;
-    });
 
     onMounted(async () => {
       EventBus.$on(
@@ -284,9 +279,8 @@ export default defineComponent({
         const spellingUuids = props.wordInfo.forms.flatMap(form =>
           form.spellings.map(spelling => spelling.uuid)
         );
-        spellingOccurrencesCounts.value = await server.getSpellingOccurrencesCounts(
-          spellingUuids
-        );
+        spellingOccurrencesCounts.value =
+          await server.getSpellingOccurrencesCounts(spellingUuids);
       } catch (err) {
         actions.showErrorSnackbar(
           'Error loading spelling occurrence counts. Please try again.',
@@ -306,18 +300,18 @@ export default defineComponent({
       filteredForms.value = filteredForms.value.filter(form => {
         return (
           properties.value
-            .map(el => el.value.valueUuid)
+            .map(prop => (prop.valueRow ? prop.valueRow.uuid : null))
             .every(val =>
-              form.properties.map(el => el.valueUuid).includes(val)
+              form.properties.map(prop => prop.valueUuid).includes(val)
             ) &&
           properties.value
-            .map(el => el.variable.variableUuid)
+            .map(prop => prop.variableRow.uuid)
             .every(val =>
-              form.properties.map(el => el.variableUuid).includes(val)
+              form.properties.map(prop => prop.variableUuid).includes(val)
             ) &&
           properties.value
-            .map(el => el.variable.level)
-            .every(val => form.properties.map(el => el.level).includes(val))
+            .map(prop => prop.variableRow.level)
+            .every(val => form.properties.map(prop => prop.level).includes(val))
         );
       });
       filteredFormsByProperties.value = filteredForms.value;
@@ -374,10 +368,29 @@ export default defineComponent({
       );
     };
 
+    const partOfSpeechPreselects: ComputedRef<PreselectionProperty[]> =
+      computed(() => {
+        const posProperties = props.wordInfo.properties
+          .filter(
+            prop => prop.variableName === 'Part of Speech' && prop.valueUuid
+          )
+          .sort((a, b) => {
+            if (!a.level) {
+              return -1;
+            } else if (!b.level) {
+              return 1;
+            }
+            return a.level - b.level;
+          });
+        return posProperties.map(p => ({
+          valueUuid: p.valueUuid!,
+          variableHierarchyUuid: 'b74c7814-55f2-11eb-bf9e-024de1c1cc1d',
+        }));
+      });
+
     return {
       updateForm,
       editDialogForm,
-      partOfSpeechValueUuid,
       filterByProperties,
       editDialogSpelling,
       editDialogDiscourse,
@@ -396,6 +409,7 @@ export default defineComponent({
       spellingOccurrencesCounts,
       getSpellingOccurrencesByForm,
       spellingOccurrencesCountsLoading,
+      partOfSpeechPreselects,
     };
   },
 });

@@ -40,6 +40,10 @@ import BibliographyUtils from '@/api/daos/BibliographyUtils';
 import SealDao from '@/api/daos/SealDao';
 import EditTextUtils from '@/api/daos/EditTextUtils';
 import PeriodsDao from '@/api/daos/PeriodsDao';
+import AssetDao from '@/api/daos/AssetDao';
+import ConceptDao from '@/api/daos/ConceptDao';
+import EventDao from '@/api/daos/EventDao';
+import SpatialUnitDao from '@/api/daos/SpatialUnitDao';
 
 const instances: { [key: string]: any } = {};
 
@@ -86,6 +90,10 @@ export type ServiceTypes = {
   SealDao: typeof SealDao;
   EditTextUtils: typeof EditTextUtils;
   PeriodsDao: typeof PeriodsDao;
+  AssetDao: typeof AssetDao;
+  ConceptDao: typeof ConceptDao;
+  EventDao: typeof EventDao;
+  SpatialUnitDao: typeof SpatialUnitDao;
 };
 
 export default {
