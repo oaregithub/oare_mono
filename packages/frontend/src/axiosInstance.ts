@@ -7,7 +7,9 @@ import { FirebaseError } from '@firebase/util';
 import i18n from '@/i18n';
 
 const host =
-  process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
+  process.env.NODE_ENV === 'development'
+    ? `http://${window.location.hostname}:8081`
+    : '';
 
 const axiosInstance = axios.create({
   baseURL: `${host}/api/v2`,
