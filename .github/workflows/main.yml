@@ -52,7 +52,7 @@ jobs:
 
       - name: Get Time
         id: time
-        uses: hbludworth/get-time-action@v1.0
+        uses: oaregithub/get-time-action@v1.0
         with:
           timeZone: 8
           format: 'YYYY-MM-DD-HH-mm-ss'
