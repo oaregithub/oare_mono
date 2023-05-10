@@ -373,10 +373,10 @@ class HierarchyDao {
   ): Promise<string> {
     const k = trx || knexRead();
     const results = await k('hierarchy')
-      .select('parent_uuid AS parentUuid')
-      .where('obj_parent_uuid', collectionUuid)
+      .select('uuid')
+      .where({ object_uuid: collectionUuid, type: 'collection' })
       .first();
-    return results.parentUuid;
+    return results.uuid;
   }
 
   async insertHierarchyRow(row: HierarchyRow, trx?: Knex.Transaction) {
