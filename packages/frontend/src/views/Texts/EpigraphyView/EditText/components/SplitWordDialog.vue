@@ -83,7 +83,7 @@
         <v-row class="ma-0 pa-0 mb-8" justify="center">
           <connect-discourse-item
             :word="editorDiscourseWord1"
-            @update-spelling-uuid="spellingUuid = $event"
+            @update-spelling="form = $event"
             @loaded-forms="formsLoaded = true"
           />
         </v-row>
@@ -97,7 +97,7 @@
         <v-row class="ma-0 pa-0 mb-8" justify="center">
           <connect-discourse-item
             :word="editorDiscourseWord2"
-            @update-spelling-uuid="spellingUuid2 = $event"
+            @update-spelling="form2 = $event"
             @loaded-forms="formsLoaded2 = true"
           />
         </v-row>
@@ -162,6 +162,7 @@ import {
   MarkupType,
   EditorDiscourseWord,
   SplitWordPayload,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
 import sl from '@/serviceLocator';
@@ -223,9 +224,11 @@ export default defineComponent({
           textUuid: props.textUuid,
           discourseUuid: props.word.discourseUuid,
           firstSpelling: newSpellings[0],
-          firstSpellingUuid: spellingUuid.value || null,
+          firstSpellingUuid: form.value ? form.value.spellingUuid : null,
+          firstTranscription: form.value ? form.value.form.form : null,
           secondSpelling: newSpellings[1],
-          secondSpellingUuid: spellingUuid2.value || null,
+          secondSpellingUuid: form2.value ? form2.value.spellingUuid : null,
+          secondTranscription: form2.value ? form2.value.form.form : null,
           previousUuid,
           propertySelections: propertySelections.value,
         };
@@ -247,8 +250,8 @@ export default defineComponent({
     const goBack = () => {
       step.value -= 1;
       if (step.value === 1) {
-        spellingUuid.value = undefined;
-        spellingUuid2.value = undefined;
+        form.value = undefined;
+        form2.value = undefined;
         formsLoaded.value = false;
         formsLoaded2.value = false;
       } else if (step.value === 2) {
@@ -256,8 +259,8 @@ export default defineComponent({
       }
     };
 
-    const spellingUuid = ref<string>();
-    const spellingUuid2 = ref<string>();
+    const form = ref<SearchSpellingResultRow>();
+    const form2 = ref<SearchSpellingResultRow>();
 
     const splitIndex = ref<number>();
 
@@ -387,9 +390,9 @@ export default defineComponent({
       formsLoaded2,
       splitWord,
       goBack,
-      spellingUuid,
+      form,
       splitIndex,
-      spellingUuid2,
+      form2,
       getUpdatedSignsWithSeparators,
       editorDiscourseWord1,
       editorDiscourseWord2,

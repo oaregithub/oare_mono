@@ -447,6 +447,7 @@ export interface QuarantineText {
 export interface DiscourseSpelling {
   discourseUuid: string;
   spellingUuid: string;
+  transcription: string;
 }
 
 export type EditTextAction =
@@ -544,7 +545,8 @@ export interface AddWordEditPayload extends EditTextPayloadBase {
   line: number;
   previousWord?: EpigraphicWord;
   row: RowContent;
-  spellingUuid?: string;
+  spellingUuid: string | null;
+  transcription: string | null;
 }
 
 export interface AddSignPayload extends EditTextPayloadBase {
@@ -556,6 +558,7 @@ export interface AddSignPayload extends EditTextPayloadBase {
   signUuidBefore: string | null;
   spellingUuid: string | null;
   spelling: string;
+  transcription: string | null;
   discourseUuid: string | null;
 }
 
@@ -615,6 +618,7 @@ export interface EditSignPayload extends EditTextPayloadBase {
   uuid: string;
   spelling: string;
   spellingUuid: string | null;
+  transcription: string | null;
   discourseUuid: string | null;
   markup: MarkupUnit[];
   sign: SignCodeWithDiscourseUuid;
@@ -647,8 +651,10 @@ export interface SplitWordPayload extends EditTextPayloadBase {
   discourseUuid: string;
   firstSpelling: string;
   firstSpellingUuid: string | null;
+  firstTranscription: string | null;
   secondSpelling: string;
   secondSpellingUuid: string | null;
+  secondTranscription: string | null;
   propertySelections: number[];
 }
 
@@ -663,12 +669,14 @@ export interface MergeWordPayload extends EditTextPayloadBase {
   discourseUuids: string[];
   spelling: string;
   spellingUuid: string | null;
+  transcription: string | null;
 }
 
 export interface ReorderSignPayload extends EditTextPayloadBase {
   type: 'reorderSign';
   spelling: string;
   spellingUuid: string | null;
+  transcription: string | null;
   signUuids: string[];
   discourseUuid: string | null;
 }
@@ -717,6 +725,7 @@ export interface RemoveSignPayload extends EditTextPayloadBase {
   type: 'removeSign' | 'removeUndeterminedSigns';
   uuid: string;
   spellingUuid: string | null;
+  transcription: string | null;
   spelling: string;
   line: number;
 }

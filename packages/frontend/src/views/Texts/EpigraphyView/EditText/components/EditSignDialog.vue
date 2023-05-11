@@ -59,7 +59,7 @@
       <v-row class="ma-0 pa-0 mb-8" justify="center">
         <connect-discourse-item
           :word="editorDiscourseWord"
-          @update-spelling-uuid="spellingUuid = $event"
+          @update-spelling="form = $event"
           @loaded-forms="formsLoaded = true"
         />
       </v-row>
@@ -109,6 +109,7 @@ import {
   MarkupType,
   MarkupUnit,
   EditSignPayload,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { RowWithLine } from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Column.vue';
@@ -211,7 +212,8 @@ export default defineComponent({
           textUuid: props.textUuid,
           uuid: props.sign.uuid,
           spelling: newSpelling,
-          spellingUuid: spellingUuid.value || null,
+          spellingUuid: form.value ? form.value.spellingUuid : null,
+          transcription: form.value ? form.value.form.form : null,
           discourseUuid: props.word.discourseUuid,
           markup: markupUnits.value,
           sign: row.value.signs[0],
@@ -230,7 +232,7 @@ export default defineComponent({
       }
     };
 
-    const spellingUuid = ref<string>();
+    const form = ref<SearchSpellingResultRow>();
 
     const getUpdatedSignsWithSeparators = () => {
       const pieces: {
@@ -326,7 +328,7 @@ export default defineComponent({
 
     const goBack = () => {
       step.value = 1;
-      spellingUuid.value = undefined;
+      form.value = undefined;
     };
 
     const markupUnits = ref<MarkupUnit[]>(props.sign.markups);
@@ -368,7 +370,7 @@ export default defineComponent({
       row,
       step,
       stepOneComplete,
-      spellingUuid,
+      form,
       getUpdatedSignsWithSeparators,
       editorDiscourseWord,
       goBack,

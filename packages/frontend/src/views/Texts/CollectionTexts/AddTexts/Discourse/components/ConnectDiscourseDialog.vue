@@ -3,7 +3,7 @@
     :value="value"
     @input="$emit('input', $event)"
     closeOnSubmit
-    @submit="setSpellingUuid"
+    @submit="setSpelling"
     :showSubmit="forms.length > 0"
     submitText="OK"
   >
@@ -21,7 +21,7 @@
         <v-radio
           v-for="option in forms"
           :key="option.spellingUuid"
-          :value="option.spellingUuid"
+          :value="option"
         >
           <template #label>
             <b class="mr-1">{{ option.word }} - </b>
@@ -78,15 +78,18 @@ export default defineComponent({
     GrammarDisplay,
   },
   setup(props, { emit }) {
-    const selectedOption = ref();
+    const selectedOption = ref<SearchSpellingResultRow>();
 
-    const setSpellingUuid = () => {
-      emit('set-spelling-uuid', selectedOption.value);
+    const setSpelling = () => {
+      emit('set-spelling', selectedOption.value);
     };
 
     const resetSelectedOption = () => {
       if (props.spellingUuid) {
-        selectedOption.value = props.spellingUuid;
+        const relevantForm = props.forms.find(
+          form => form.spellingUuid === props.spellingUuid
+        );
+        selectedOption.value = relevantForm;
       }
     };
 
@@ -105,7 +108,7 @@ export default defineComponent({
 
     return {
       selectedOption,
-      setSpellingUuid,
+      setSpelling,
     };
   },
 });

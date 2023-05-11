@@ -271,8 +271,10 @@ export default defineComponent({
         );
 
         temporaryLocalTables.value.discourses.forEach(discourse => {
-          persistentDiscourseStorage.value[discourse.uuid] =
-            discourse.spellingUuid;
+          persistentDiscourseStorage.value[discourse.uuid] = {
+            spellingUuid: discourse.spellingUuid,
+            transcription: discourse.transcription,
+          };
         });
       }
     };
@@ -333,9 +335,12 @@ export default defineComponent({
       };
     });
 
-    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
-      {}
-    );
+    const persistentDiscourseStorage = ref<{
+      [uuid: string]: {
+        spellingUuid: string | null;
+        transcription: string | null;
+      };
+    }>({});
     const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
       if (temporaryLocalTables.value) {
         temporaryLocalTables.value = {
@@ -343,7 +348,10 @@ export default defineComponent({
           discourses,
         };
         temporaryLocalTables.value.discourses.forEach(row => {
-          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
+          persistentDiscourseStorage.value[row.uuid] = {
+            spellingUuid: row.spellingUuid,
+            transcription: row.transcription,
+          };
         });
       }
     };

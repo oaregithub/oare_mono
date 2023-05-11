@@ -22,8 +22,10 @@
       v-model="discourseDialog"
       :spelling="word.spelling"
       :forms="forms"
-      :spellingUuid="selectedSpellingUuid"
-      @set-spelling-uuid="setSpellingUuid"
+      :spellingUuid="
+        selectedSpelling ? selectedSpelling.spellingUuid : undefined
+      "
+      @set-spelling="setSpelling"
     />
   </div>
 </template>
@@ -88,7 +90,7 @@ export default defineComponent({
         return 'red';
       }
 
-      if (selectedSpellingUuid.value) {
+      if (selectedSpelling.value) {
         return 'green';
       }
 
@@ -104,7 +106,7 @@ export default defineComponent({
         emit('loading-forms');
         forms.value = await server.searchSpellings(props.word.spelling);
         if (forms.value.length === 1) {
-          selectedSpellingUuid.value = forms.value[0].spellingUuid;
+          selectedSpelling.value = forms.value[0];
         }
 
         if (forms.value.length >= 2) {
@@ -112,7 +114,7 @@ export default defineComponent({
             .sort((a, b) => b.occurrences - a.occurrences)
             .map(form => form.occurrences);
           if (formsByOccurrences[0] > formsByOccurrences[1] * 2) {
-            selectedSpellingUuid.value = forms.value[0].spellingUuid;
+            selectedSpelling.value = forms.value[0];
           }
         }
       } catch (err) {
@@ -127,9 +129,9 @@ export default defineComponent({
     });
 
     const getSelectedForm = () => {
-      if (selectedSpellingUuid.value) {
+      if (selectedSpelling.value) {
         return forms.value.filter(
-          form => form.spellingUuid === selectedSpellingUuid.value
+          form => form.spellingUuid === selectedSpelling.value?.spellingUuid
         )[0].form.form;
       } else {
         return '--';
@@ -141,13 +143,13 @@ export default defineComponent({
       discourseDialog.value = true;
     };
 
-    const selectedSpellingUuid = ref<string>();
-    const setSpellingUuid = (spellingUuid: string | null) => {
-      selectedSpellingUuid.value = spellingUuid || undefined;
+    const selectedSpelling = ref<SearchSpellingResultRow>();
+    const setSpelling = (spelling: SearchSpellingResultRow | undefined) => {
+      selectedSpelling.value = spelling || undefined;
     };
 
-    watch(selectedSpellingUuid, () =>
-      emit('update-spelling-uuid', selectedSpellingUuid.value)
+    watch(selectedSpelling, () =>
+      emit('update-spelling', selectedSpelling.value)
     );
 
     return {
@@ -160,8 +162,8 @@ export default defineComponent({
       formsLoading,
       discourseDialog,
       openDiscourseDialog,
-      setSpellingUuid,
-      selectedSpellingUuid,
+      setSpelling,
+      selectedSpelling,
     };
   },
 });

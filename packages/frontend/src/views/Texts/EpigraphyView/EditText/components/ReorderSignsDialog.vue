@@ -65,7 +65,7 @@
       <v-row class="ma-0 pa-0 mb-8" justify="center">
         <connect-discourse-item
           :word="editorDiscourseWord"
-          @update-spelling-uuid="spellingUuid = $event"
+          @update-spelling="form = $event"
           @loaded-forms="formsLoaded = true"
         />
       </v-row>
@@ -88,6 +88,7 @@ import {
   MarkupType,
   EditorDiscourseWord,
   ReorderSignPayload,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
 import sl from '@/serviceLocator';
@@ -136,7 +137,8 @@ export default defineComponent({
           type: 'reorderSign',
           textUuid: props.textUuid,
           spelling: newSpelling,
-          spellingUuid: spellingUuid.value || null,
+          spellingUuid: form.value ? form.value.spellingUuid : null,
+          transcription: form.value ? form.value.form.form : null,
           signUuids: selectedSigns.value.map(s => s.uuid),
           discourseUuid: props.word.discourseUuid,
         };
@@ -152,12 +154,12 @@ export default defineComponent({
       }
     };
 
-    const spellingUuid = ref<string>();
+    const form = ref<SearchSpellingResultRow>();
     const step = ref(1);
 
     const goBack = () => {
       step.value = 1;
-      spellingUuid.value = undefined;
+      form.value = undefined;
     };
 
     const selectedSigns = ref<EpigraphicSign[]>([]);
@@ -284,7 +286,7 @@ export default defineComponent({
       formsLoaded,
       reorderSigns,
       step,
-      spellingUuid,
+      form,
       goBack,
       selectedSigns,
       signCanBeSelected,

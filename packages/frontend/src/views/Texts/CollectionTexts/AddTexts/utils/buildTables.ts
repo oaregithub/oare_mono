@@ -160,7 +160,12 @@ const createTextRow = async (
 export const createNewTextTables = async (
   textInfo: AddTextInfo,
   content: AddTextEditorContent,
-  persistentDiscourseStorage: { [uuid: string]: string | null },
+  persistentDiscourseStorage: {
+    [uuid: string]: {
+      spellingUuid: string | null;
+      transcription: string | null;
+    };
+  },
   photos: TextPhotoWithDetails[],
   collectionUuid: string,
   existingTextRow: TextRow | undefined
@@ -635,7 +640,12 @@ const createMarkupRows = async (
 const createDiscourseRows = async (
   textUuid: string,
   content: AddTextEditorContent,
-  persistentDiscourseStorage: { [uuid: string]: string | null }
+  persistentDiscourseStorage: {
+    [uuid: string]: {
+      spellingUuid: string | null;
+      transcription: string | null;
+    };
+  }
 ): Promise<TextDiscourseRow[]> => {
   const server = sl.get('serverProxy');
 
@@ -675,20 +685,28 @@ const createDiscourseRows = async (
                                   ? 'number'
                                   : 'word';
                               let spellingUuid: string | undefined;
+                              let transcription: string | undefined;
                               const forms = await server.searchSpellings(
                                 word.spelling
                               );
                               if (
-                                persistentDiscourseStorage[
-                                  word.discourseUuid!
-                                ] !== undefined
+                                persistentDiscourseStorage[word.discourseUuid!]
+                                  ? persistentDiscourseStorage[
+                                      word.discourseUuid!
+                                    ].spellingUuid !== null
+                                  : false
                               ) {
                                 spellingUuid =
                                   persistentDiscourseStorage[
                                     word.discourseUuid!
-                                  ] || undefined;
+                                  ].spellingUuid || undefined;
+                                transcription =
+                                  persistentDiscourseStorage[
+                                    word.discourseUuid!
+                                  ].transcription || undefined;
                               } else if (forms.length === 1) {
                                 spellingUuid = forms[0].spellingUuid;
+                                transcription = forms[0].form.form;
                               } else if (forms.length >= 2) {
                                 const sortedFormsByNumOccurrences = forms.sort(
                                   (a, b) => {
@@ -704,6 +722,8 @@ const createDiscourseRows = async (
                                 if (occurrenceRatio >= 2) {
                                   spellingUuid =
                                     sortedFormsByNumOccurrences[0].spellingUuid;
+                                  transcription =
+                                    sortedFormsByNumOccurrences[0].form.form;
                                 }
                               }
                               const newDiscourseRow = await createTextDiscourseRow(
@@ -716,6 +736,7 @@ const createDiscourseRows = async (
                                   spelling: word.spelling,
                                   explicitSpelling: word.spelling,
                                   spellingUuid,
+                                  transcription,
                                 }
                               );
                               return newDiscourseRow;
