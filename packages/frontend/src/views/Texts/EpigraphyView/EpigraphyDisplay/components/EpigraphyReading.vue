@@ -1,6 +1,6 @@
 <template>
   <div v-if="renderer" class="mr-10">
-    <div>
+    <div v-if="!disableEditing">
       <v-switch
         v-model="interLinearView"
         class="test-interlinear-switch"
@@ -337,7 +337,6 @@ import {
   EpigraphicUnit,
   EpigraphicWord,
   TextDiscourseRow,
-  EpigraphicUnitSide,
   LocaleCode,
 } from '@oare/types';
 import sl from '@/serviceLocator';
@@ -382,6 +381,10 @@ export default defineComponent({
       required: false,
     },
     commentMode: {
+      type: Boolean,
+      default: false,
+    },
+    disableEditing: {
       type: Boolean,
       default: false,
     },
@@ -469,13 +472,11 @@ export default defineComponent({
           : null;
 
         if (discourseUuid && !props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoByDiscourseUuid(
-            discourseUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoByDiscourseUuid(discourseUuid);
         } else if (spellingUuid && props.localDiscourseInfo) {
-          discourseWordInfo.value = await server.getDictionaryInfoBySpellingUuid(
-            spellingUuid
-          );
+          discourseWordInfo.value =
+            await server.getDictionaryInfoBySpellingUuid(spellingUuid);
         } else {
           discourseWordInfo.value = null;
         }
@@ -531,9 +532,8 @@ export default defineComponent({
     const openConnectSealImpressionDialog = async (lineNum: number) => {
       try {
         if (canConnectSealImpression.value) {
-          const region: EpigraphicUnit | null = renderer.value.getRegionUnitByLine(
-            lineNum
-          );
+          const region: EpigraphicUnit | null =
+            renderer.value.getRegionUnitByLine(lineNum);
           if (
             region &&
             region.uuid &&

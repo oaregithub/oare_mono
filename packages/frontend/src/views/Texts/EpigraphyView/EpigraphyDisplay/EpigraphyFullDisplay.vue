@@ -9,6 +9,7 @@
       :localDiscourseInfo="localDiscourseInfo"
       :textUuid="textUuid"
       :commentMode="commentMode"
+      :disableEditing="disableEditing"
     />
     <DiscourseReading
       v-if="canViewDiscourses"

@@ -240,6 +240,7 @@
         </span>
 
         <epigraphy-full-display
+          class="mt-12"
           v-else-if="disableEditing"
           v-bind="routeProps"
           :disableEditing="true"

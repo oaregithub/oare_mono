@@ -136,7 +136,10 @@ import {
   TextRow,
   EpigraphyLabelLink,
 } from '@oare/types';
-import { convertTablesToUnits } from './utils/convertTablesToUnits';
+import {
+  convertTablesToDiscourseUnits,
+  convertTablesToUnits,
+} from './utils/convertTablesToUnits';
 import { createNewTextTables } from './utils/buildTables';
 import { addDetailsToTextPhotos } from './utils/photos';
 
@@ -329,7 +332,12 @@ export default defineComponent({
           : [],
         color: '',
         colorMeaning: '',
-        discourseUnits: [],
+        discourseUnits: temporaryLocalTables.value
+          ? convertTablesToDiscourseUnits(
+              temporaryLocalTables.value.epigraphies,
+              temporaryLocalTables.value.discourses
+            )
+          : [],
         hasEpigraphy: true,
         zoteroData: [],
       };

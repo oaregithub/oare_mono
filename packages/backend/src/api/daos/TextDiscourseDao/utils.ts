@@ -1,7 +1,7 @@
-import { DiscourseUnit } from '@oare/types';
+import { DiscourseUnit, DiscourseRow } from '@oare/types';
 import { knexRead } from '@/connection';
 import { Knex } from 'knex';
-import { DiscourseRow, TextWithDiscourseUuids } from './index';
+import { TextWithDiscourseUuids } from './index';
 
 export function createNestedDiscourses(
   discourseRows: DiscourseRow[],

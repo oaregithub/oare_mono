@@ -9,6 +9,7 @@ import {
   TextDiscourseRow,
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
+  DiscourseRow,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
@@ -21,22 +22,6 @@ import {
   getTextDiscourseForWordsInTextsSearch,
   getDiscourseAndTextUuidsQuery,
 } from './utils';
-
-export interface DiscourseRow {
-  uuid: string;
-  type: DiscourseUnitType;
-  wordOnTablet: number | null;
-  parentUuid: string | null;
-  spelling: string | null;
-  explicitSpelling: string | null;
-  transcription: string | null;
-  line: number | null;
-  paragraphLabel: string | null;
-  translation: string | null;
-  objInText: number;
-  side: number | null;
-  childNum: number | null;
-}
 
 export interface SearchDiscourseSpellingDaoResponse {
   totalResults: number;
