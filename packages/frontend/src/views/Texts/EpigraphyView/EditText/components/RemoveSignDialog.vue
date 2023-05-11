@@ -46,7 +46,7 @@
       <v-row class="ma-0 pa-0 mb-8" justify="center">
         <connect-discourse-item
           :word="editorDiscourseWord"
-          @update-spelling-uuid="spellingUuid = $event"
+          @update-spelling="form = $event"
           @loaded-forms="formsLoaded = true"
         />
       </v-row>
@@ -69,6 +69,7 @@ import {
   RemoveSignPayload,
   EditTextAction,
   EditorDiscourseWord,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import ConnectDiscourseItem from '@/views/Texts/CollectionTexts/AddTexts/Discourse/components/ConnectDiscourseItem.vue';
@@ -185,7 +186,8 @@ export default defineComponent({
           textUuid: props.textUuid,
           uuid: props.sign.uuid,
           line: props.line,
-          spellingUuid: spellingUuid.value || null,
+          spellingUuid: form.value ? form.value.spellingUuid : null,
+          transcription: form.value ? form.value.form.form : null,
           spelling: newSpelling,
         };
         await server.editText(payload);
@@ -202,7 +204,7 @@ export default defineComponent({
       }
     };
 
-    const spellingUuid = ref<string>();
+    const form = ref<SearchSpellingResultRow>();
 
     const editorDiscourseWord: ComputedRef<EditorDiscourseWord> = computed(
       () => {
@@ -226,7 +228,7 @@ export default defineComponent({
       getUpdatedSignsWithSeparators,
       removeSign,
       removeSignLoading,
-      spellingUuid,
+      form,
       editorDiscourseWord,
       formsLoaded,
     };

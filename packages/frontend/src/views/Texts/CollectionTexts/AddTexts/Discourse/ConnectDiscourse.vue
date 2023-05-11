@@ -51,7 +51,7 @@
                   :word="getDiscourseWord(word)"
                   :reading="word.reading"
                   class="px-1"
-                  @update-spelling-uuid="setSpellingUuid(word, $event)"
+                  @update-spelling="setSpelling(word, $event)"
                   @loading-forms="loadingForms(word)"
                   @loaded-forms="loadedForms(word)"
                 />
@@ -129,9 +129,9 @@ export default defineComponent({
       return lineNumber;
     };
 
-    const setSpellingUuid = (
+    const setSpelling = (
       word: EpigraphicWord,
-      spellingUuid: string | undefined
+      form: SearchSpellingResultRow | undefined
     ) => {
       const newDiscourseRows = props.discourseRows.map(row => {
         if (row.uuid !== word.discourseUuid) {
@@ -139,7 +139,8 @@ export default defineComponent({
         }
         return {
           ...row,
-          spellingUuid: spellingUuid || null,
+          spellingUuid: form ? form.spellingUuid : undefined,
+          transcription: form ? form.form.form : undefined,
         };
       });
       emit('update-discourse-rows', newDiscourseRows);
@@ -274,7 +275,7 @@ export default defineComponent({
     return {
       renderer,
       lineNumber,
-      setSpellingUuid,
+      setSpelling,
       loading,
       searchSpellingResults,
       getSelectedForm,

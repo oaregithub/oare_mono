@@ -96,7 +96,7 @@
       <v-row class="ma-0 pa-0 mb-8" justify="center">
         <connect-discourse-item
           :word="editorDiscourseWord"
-          @update-spelling-uuid="spellingUuid = $event"
+          @update-spelling="form = $event"
           @loaded-forms="formsLoaded = true"
         />
       </v-row>
@@ -121,6 +121,7 @@ import {
   EpigraphicUnitSide,
   MarkupType,
   EditorDiscourseWord,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import InsertButton from './InsertButton.vue';
 import Row from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/Row.vue';
@@ -216,8 +217,9 @@ export default defineComponent({
             insertIndex.value === 0
               ? null
               : props.wordToAddSignTo.signs[insertIndex.value - 1].uuid,
-          spellingUuid: spellingUuid.value || null,
+          spellingUuid: form.value ? form.value.spellingUuid : null,
           spelling: newSpelling,
+          transcription: form.value ? form.value.form.form : null,
           side: props.side,
           column: props.column,
           line: props.line,
@@ -237,7 +239,7 @@ export default defineComponent({
       }
     };
 
-    const spellingUuid = ref<string>();
+    const form = ref<SearchSpellingResultRow>();
 
     const getUpdatedSignsWithSeparators = () => {
       const pieces: {
@@ -329,7 +331,7 @@ export default defineComponent({
 
     const goBack = () => {
       step.value = 1;
-      spellingUuid.value = undefined;
+      form.value = undefined;
     };
 
     const formsLoaded = ref(false);
@@ -341,7 +343,7 @@ export default defineComponent({
       row,
       step,
       stepOneComplete,
-      spellingUuid,
+      form,
       getUpdatedSignsWithSeparators,
       editorDiscourseWord,
       goBack,

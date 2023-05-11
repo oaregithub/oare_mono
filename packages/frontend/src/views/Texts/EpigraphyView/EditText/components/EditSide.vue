@@ -91,7 +91,7 @@
       <v-row v-if="editorDiscourseWord" class="ma-0 pa-0 mb-8" justify="center">
         <connect-discourse-item
           :word="editorDiscourseWord"
-          @update-spelling-uuid="mergeWordsSpellingUuid = $event"
+          @update-spelling="mergeWordsForm = $event"
           @loaded-forms="mergeWordsFormsLoaded = true"
         /> </v-row
     ></oare-dialog>
@@ -118,6 +118,7 @@ import {
   EditorDiscourseWord,
   EpigraphicUnitType,
   MarkupType,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import EditColumn from './EditColumn.vue';
 import sl from '@/serviceLocator';
@@ -276,7 +277,7 @@ export default defineComponent({
       if (!mergeWordsDialog.value) {
         selectedWords.value = [];
         mergeWordsFormsLoaded.value = false;
-        mergeWordsSpellingUuid.value = undefined;
+        mergeWordsForm.value = undefined;
         resetCurrentEditAction();
       }
     });
@@ -291,7 +292,12 @@ export default defineComponent({
           textUuid: props.textUuid,
           discourseUuids: selectedWords.value.map(w => w.discourseUuid!),
           spelling: getUpdatedSignsWithSeparators(),
-          spellingUuid: mergeWordsSpellingUuid.value || null,
+          spellingUuid: mergeWordsForm.value
+            ? mergeWordsForm.value.spellingUuid
+            : null,
+          transcription: mergeWordsForm.value
+            ? mergeWordsForm.value.form.form
+            : null,
         };
         await server.editText(payload);
         resetRenderer();
@@ -305,7 +311,7 @@ export default defineComponent({
       }
     };
     const mergeWordsFormsLoaded = ref(false);
-    const mergeWordsSpellingUuid = ref<string>();
+    const mergeWordsForm = ref<SearchSpellingResultRow>();
     const editorDiscourseWord: ComputedRef<EditorDiscourseWord | undefined> =
       computed(() => {
         if (selectedWords.value.length === 0) {
@@ -427,7 +433,7 @@ export default defineComponent({
       handleSelectWord,
       mergeWords,
       mergeWordsFormsLoaded,
-      mergeWordsSpellingUuid,
+      mergeWordsForm,
       editorDiscourseWord,
       getUpdatedSignsWithSeparators,
     };

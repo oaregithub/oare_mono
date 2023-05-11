@@ -63,7 +63,7 @@
       <v-row class="ma-0 pa-0 mb-8" justify="center">
         <connect-discourse-item
           :word="editorDiscourseWord"
-          @update-spelling-uuid="spellingUuid = $event"
+          @update-spelling="form = $event"
           @loaded-forms="formsLoaded = true"
         />
       </v-row>
@@ -104,6 +104,7 @@ import {
   RowContent,
   AddWordEditPayload,
   EditorDiscourseWord,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { TabletRenderer } from '@oare/oare';
@@ -195,7 +196,8 @@ export default defineComponent({
           line: props.line,
           row: rowContent,
           previousWord: props.previousWord,
-          spellingUuid: spellingUuid.value || undefined,
+          spellingUuid: form.value ? form.value.spellingUuid : null,
+          transcription: form.value ? form.value.form.form : null,
         };
         await server.editText(payload);
         emit('reset-renderer');
@@ -223,7 +225,7 @@ export default defineComponent({
 
     const step = ref(1);
 
-    const spellingUuid = ref<string | null>(null);
+    const form = ref<SearchSpellingResultRow>();
 
     const editorDiscourseWord: ComputedRef<EditorDiscourseWord | undefined> =
       computed(() => {
@@ -243,7 +245,7 @@ export default defineComponent({
 
     const goBack = () => {
       step.value = 1;
-      spellingUuid.value = null;
+      form.value = undefined;
     };
 
     const formsLoaded = ref(false);
@@ -254,7 +256,7 @@ export default defineComponent({
       addWord,
       stepOneComplete,
       step,
-      spellingUuid,
+      form,
       editorDiscourseWord,
       goBack,
       formsLoaded,

@@ -47,9 +47,7 @@
           :key="idx"
           :word="word"
           class="mx-1"
-          @update-spelling-uuid="
-            setDiscourseSpelling(word.discourseUuid, $event)
-          "
+          @update-spelling="setDiscourseSpelling(word.discourseUuid, $event)"
           @loaded-forms="numFormsLoaded += 1"
         />
       </v-row>
@@ -76,6 +74,7 @@ import {
   RowContent,
   DiscourseSpelling,
   EditorDiscourseWord,
+  SearchSpellingResultRow,
 } from '@oare/types';
 import SpecialChars from '@/views/Texts/CollectionTexts/AddTexts/Editor/components/SpecialChars.vue';
 import { v4 } from 'uuid';
@@ -193,15 +192,16 @@ export default defineComponent({
     const discourseSpellings = ref<DiscourseSpelling[]>([]);
     const setDiscourseSpelling = (
       discourseUuid: string,
-      spellingUuid: string | null
+      form: SearchSpellingResultRow | undefined
     ) => {
       discourseSpellings.value = discourseSpellings.value.filter(
         item => item.discourseUuid !== discourseUuid
       );
-      if (spellingUuid) {
+      if (form) {
         discourseSpellings.value.push({
           discourseUuid,
-          spellingUuid,
+          spellingUuid: form.spellingUuid,
+          transcription: form.form.form,
         });
       }
     };

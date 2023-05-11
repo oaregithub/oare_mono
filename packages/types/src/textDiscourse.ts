@@ -97,3 +97,19 @@ export interface DiscourseDisplayUnit {
   type: DiscourseUnitType;
   display: string;
 }
+
+export interface DiscourseRow {
+  uuid: string;
+  type: DiscourseUnitType;
+  wordOnTablet: number | null;
+  parentUuid: string | null;
+  spelling: string | null;
+  explicitSpelling: string | null;
+  transcription: string | null;
+  line: number | null;
+  paragraphLabel: string | null;
+  translation: string | null;
+  objInText: number;
+  side: number | null;
+  childNum: number | null;
+}

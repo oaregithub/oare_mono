@@ -1011,6 +1011,7 @@ class EditTextUtils {
                 : 'word';
 
             let spellingUuid: string | null = null;
+            let transcription: string | null = null;
             if (
               payload.discourseSpellings.find(
                 item => item.discourseUuid === word.discourseUuid
@@ -1019,6 +1020,9 @@ class EditTextUtils {
               spellingUuid = payload.discourseSpellings.find(
                 item => item.discourseUuid === word.discourseUuid
               )!.spellingUuid;
+              transcription = payload.discourseSpellings.find(
+                item => item.discourseUuid === word.discourseUuid
+              )!.transcription;
             }
 
             const discourseRow: TextDiscourseRow = {
@@ -1033,7 +1037,7 @@ class EditTextUtils {
               spelling: word.spelling,
               explicitSpelling: word.spelling,
               spellingUuid,
-              transcription: null,
+              transcription,
             };
 
             await TextDiscourseDao.insertDiscourseRow(discourseRow, trx);
@@ -1384,8 +1388,8 @@ class EditTextUtils {
       parentUuid: newDiscourseStarter.parentUuid,
       spelling: word.spelling,
       explicitSpelling: word.spelling,
-      spellingUuid: payload.spellingUuid || null,
-      transcription: null,
+      spellingUuid: payload.spellingUuid,
+      transcription: payload.transcription,
     };
 
     await TextDiscourseDao.insertDiscourseRow(discourseRow, trx);
@@ -1559,6 +1563,7 @@ class EditTextUtils {
         spelling: payload.spelling,
         spelling_uuid: payload.spellingUuid,
         explicit_spelling: payload.spelling,
+        transcription: payload.transcription,
       });
     }
 
@@ -2031,6 +2036,7 @@ class EditTextUtils {
         spelling: payload.spelling,
         spelling_uuid: payload.spellingUuid,
         explicit_spelling: payload.spelling,
+        transcription: payload.transcription,
       });
     }
 
@@ -2173,6 +2179,7 @@ class EditTextUtils {
       spelling_uuid: payload.firstSpellingUuid,
       spelling: payload.firstSpelling,
       explicit_spelling: payload.firstSpelling,
+      transcription: payload.firstTranscription,
     });
 
     const newDiscourseRow: TextDiscourseRow = {
@@ -2187,7 +2194,7 @@ class EditTextUtils {
       spellingUuid: payload.secondSpellingUuid,
       spelling: payload.secondSpelling,
       explicitSpelling: payload.secondSpelling,
-      transcription: null,
+      transcription: payload.secondTranscription,
     };
 
     await TextDiscourseDao.insertDiscourseRow(newDiscourseRow, trx);
@@ -2322,6 +2329,7 @@ class EditTextUtils {
       spelling: payload.spelling,
       explicit_spelling: payload.spelling,
       spelling_uuid: payload.spellingUuid,
+      transcription: payload.transcription,
     });
 
     await k('text_discourse').where({ uuid: discourseUuidToDelete }).del();
@@ -2365,6 +2373,7 @@ class EditTextUtils {
       spelling: payload.spelling,
       spelling_uuid: payload.spellingUuid,
       explicit_spelling: payload.spelling,
+      transcription: payload.transcription,
     });
   }
 
@@ -2618,6 +2627,7 @@ class EditTextUtils {
         spelling_uuid: payload.spellingUuid,
         spelling: payload.spelling,
         explicit_spelling: payload.spelling,
+        transcription: payload.transcription,
       });
     }
 

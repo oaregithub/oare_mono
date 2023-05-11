@@ -136,7 +136,10 @@ import {
   TextRow,
   EpigraphyLabelLink,
 } from '@oare/types';
-import { convertTablesToUnits } from './utils/convertTablesToUnits';
+import {
+  convertTablesToDiscourseUnits,
+  convertTablesToUnits,
+} from './utils/convertTablesToUnits';
 import { createNewTextTables } from './utils/buildTables';
 import { addDetailsToTextPhotos } from './utils/photos';
 
@@ -271,8 +274,10 @@ export default defineComponent({
         );
 
         temporaryLocalTables.value.discourses.forEach(discourse => {
-          persistentDiscourseStorage.value[discourse.uuid] =
-            discourse.spellingUuid;
+          persistentDiscourseStorage.value[discourse.uuid] = {
+            spellingUuid: discourse.spellingUuid,
+            transcription: discourse.transcription,
+          };
         });
       }
     };
@@ -327,15 +332,23 @@ export default defineComponent({
           : [],
         color: '',
         colorMeaning: '',
-        discourseUnits: [],
+        discourseUnits: temporaryLocalTables.value
+          ? convertTablesToDiscourseUnits(
+              temporaryLocalTables.value.epigraphies,
+              temporaryLocalTables.value.discourses
+            )
+          : [],
         hasEpigraphy: true,
         zoteroData: [],
       };
     });
 
-    const persistentDiscourseStorage = ref<{ [uuid: string]: string | null }>(
-      {}
-    );
+    const persistentDiscourseStorage = ref<{
+      [uuid: string]: {
+        spellingUuid: string | null;
+        transcription: string | null;
+      };
+    }>({});
     const updateDiscourseRows = (discourses: TextDiscourseRow[]) => {
       if (temporaryLocalTables.value) {
         temporaryLocalTables.value = {
@@ -343,7 +356,10 @@ export default defineComponent({
           discourses,
         };
         temporaryLocalTables.value.discourses.forEach(row => {
-          persistentDiscourseStorage.value[row.uuid] = row.spellingUuid;
+          persistentDiscourseStorage.value[row.uuid] = {
+            spellingUuid: row.spellingUuid,
+            transcription: row.transcription,
+          };
         });
       }
     };
