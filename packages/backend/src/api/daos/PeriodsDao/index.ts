@@ -1,6 +1,7 @@
-import { PeriodRow, Year, Month, LinkItem } from '@oare/types';
+import { PeriodRow, Year, Month, LinkItem, FormSpelling } from '@oare/types';
 import { knexRead } from '@/connection';
 import { Knex } from 'knex';
+import DictionarySpellingDao from '../DictionarySpellingDao';
 
 class PeriodsDao {
   async getPeriodRows(
@@ -66,6 +67,7 @@ class PeriodsDao {
     }
 
     let yearName: string = '';
+    let yearSpelling: FormSpelling[] = [];
 
     if (
       period.official1Uuid != null &&
@@ -92,6 +94,10 @@ class PeriodsDao {
         .where('person.uuid', period.official1Uuid)
         .first();
       yearName = `${yearOfficialName.word} ${yearOfficialRelation.relation} ${yearOfficialRelationName.word}`;
+      yearSpelling = await DictionarySpellingDao.getFormSpellings(
+        period.official1Uuid,
+        true
+      );
     } else if (
       period.official1Uuid != null &&
       period.official1FatherNameUuid == null
@@ -112,6 +118,10 @@ class PeriodsDao {
       } else {
         yearName = yearOfficialName.word;
       }
+      yearSpelling = await DictionarySpellingDao.getFormSpellings(
+        period.official1Uuid,
+        true
+      );
     } else if (period.official1NameUuid !== null) {
       const yearOfficialName = await k('dictionary_word')
         .select('word')
@@ -125,6 +135,10 @@ class PeriodsDao {
           .first();
 
         yearName = `${yearOfficialName.word} s. ${yearOfficialFatherName.word}`;
+        yearSpelling = await DictionarySpellingDao.getFormSpellings(
+          period.official1NameUuid,
+          true
+        );
       } else {
         yearName = `${yearOfficialName.word}`;
       }
@@ -132,6 +146,7 @@ class PeriodsDao {
       yearName = period.name;
     }
 
+    // word, form, spelling
     const yearOccurrences = await this.getOccurrences(period.uuid);
     const months = await this.getMonths(period, monthRows, weekRows);
 
@@ -139,6 +154,7 @@ class PeriodsDao {
       uuid,
       number: yearNumber,
       name: yearName,
+      spelling: yearSpelling,
       occurrences: yearOccurrences,
       months,
     };
@@ -190,10 +206,15 @@ class PeriodsDao {
 
   async weekMaker(weekRow: PeriodRow) {
     const weekOccurrences = await this.getOccurrences(weekRow.uuid);
+    const weekSpelling = await DictionarySpellingDao.getFormSpellings(
+      weekRow.uuid,
+      true
+    );
 
     return {
       uuid: weekRow.uuid,
       name: weekRow.name,
+      spelling: weekSpelling,
       occurrences: weekOccurrences,
     };
   }

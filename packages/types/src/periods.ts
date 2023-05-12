@@ -1,6 +1,9 @@
+import { FormSpelling } from './dictionary';
+
 export interface Week {
   uuid: string;
   name: string;
+  spelling: FormSpelling[];
   occurrences: number;
 }
 
@@ -16,6 +19,7 @@ export interface Year {
   uuid: string;
   number: string;
   name: string;
+  spelling: FormSpelling[];
   occurrences: number;
   months: Month[];
 }
