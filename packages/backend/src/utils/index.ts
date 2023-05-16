@@ -14,6 +14,13 @@ import _ from 'lodash';
 import sl from '@/serviceLocator';
 import AWS from 'aws-sdk';
 
+/**
+ * Creates a SQL transaction and passes it to the callback function.
+ * If the callback function throws an error or returns a Promise that rejects, the transaction is rolled back.
+ * If the callback function returns a Promise that resolves, the transaction is committed.
+ * Should be used for all write queries.
+ * @param cb The callback function to wrap the transaction around. Includes the `trx` object to pass to queries.
+ */
 export const createTransaction = async (
   cb: (trx: Knex.Transaction) => Promise<void>
 ): Promise<void> => {
@@ -22,12 +29,21 @@ export const createTransaction = async (
   });
 };
 
+/**
+ * Optional parameters for the `extractPagination` function.
+ */
 export interface ExtractPaginationOptions {
   defaultPage?: number;
   defaultLimit?: number;
   defaultFilter?: string;
 }
 
+/**
+ * Extracts pagination query parameters from the request query string.
+ * @param query The request query string (`req.query`)
+ * @param options Optional default parameters for the function
+ * @returns
+ */
 export const extractPagination = (
   query: ParsedQs,
   { defaultPage, defaultLimit, defaultFilter }: ExtractPaginationOptions = {}
@@ -47,6 +63,11 @@ export const extractPagination = (
   };
 };
 
+/**
+ * Extracts query parameters from the request query string.
+ * @param url The original request URL (`req.originalUrl`)
+ * @returns URLSearchParams object with the query parameters
+ */
 export const parsedQuery = (url: string): URLSearchParams => {
   const queryIndex = url.indexOf('?');
   const queryString = queryIndex > 0 ? url.slice(queryIndex + 1) : '';
@@ -54,6 +75,7 @@ export const parsedQuery = (url: string): URLSearchParams => {
   return new URLSearchParams(queryString);
 };
 
+// FIXME move to other utils
 export const getTextOccurrences = async (
   rows: TextOccurrencesRow[],
   locale: LocaleCode
@@ -126,6 +148,7 @@ export const getTextOccurrences = async (
   }));
 };
 
+// FIXME - move to discourse utils
 export const nestProperties = (
   propertyRows: ItemPropertyRow[],
   parentUuid: string | null
@@ -145,6 +168,7 @@ export const nestProperties = (
   return props;
 };
 
+// FUXNE - move to DictionaryWordDao utils?
 const getDictionaryFirstLetter = (word: string): string => {
   const firstLetter = word.substring(0, 1).toUpperCase();
   switch (firstLetter) {
@@ -163,6 +187,7 @@ const getDictionaryFirstLetter = (word: string): string => {
   }
 };
 
+// FIXME move to DictionaryWordDao utils?
 export const getDictionaryCacheRouteToClear = (
   word: string,
   type: 'word' | 'PN' | 'GN'
@@ -188,6 +213,7 @@ export const getDictionaryCacheRouteToClear = (
   return cacheRouteToClear;
 };
 
+// FIXME - move to FieldDao utils
 export const getDetectLanguageAPIKEY = async (): Promise<string> => {
   const s3 = new AWS.S3();
 
@@ -211,40 +237,4 @@ export const getDetectLanguageAPIKEY = async (): Promise<string> => {
   }
 
   return apiKey;
-};
-
-export const getElasticBeanstalkRegion = (): string => {
-  if (process.env.NODE_ENV === 'production') {
-    return (
-      process.env.CURRENT_EB_REGION ||
-      'Unknown Production Region (No Environment Variable Set)'
-    );
-  }
-  return 'Development (localhost)';
-};
-
-export const getDatabaseReadRegion = (): string => {
-  if (process.env.NODE_ENV === 'production') {
-    return (
-      process.env.DB_READ_REGION ||
-      'Unknown Production Read Region (No Environment Variable Set)'
-    );
-  }
-  if (process.env.DB_SOURCE === 'readonly') {
-    return 'Read-Only Production (us-west-2)';
-  }
-  return 'Development (Docker)';
-};
-
-export const getDatabaseWriteRegion = (): string => {
-  if (process.env.NODE_ENV === 'production') {
-    return (
-      process.env.DB_WRITE_REGION ||
-      'Unknown Production Write Region (No Environment Variable Set)'
-    );
-  }
-  if (process.env.DB_SOURCE === 'readonly') {
-    return 'Write Access Restricted';
-  }
-  return 'Development (Docker)';
 };

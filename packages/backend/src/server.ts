@@ -54,8 +54,8 @@ import * as utils from '@/utils';
 declare global {
   namespace Express {
     interface Request {
-      user: User | null;
-      locale: LocaleCode;
+      user: User | null; // Allows for the user to be set on the request object
+      locale: LocaleCode; // Allows for the locale to be set on the request object
     }
   }
 }
