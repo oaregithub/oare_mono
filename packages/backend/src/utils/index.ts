@@ -1,4 +1,4 @@
-import { knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 import { ParsedQs } from 'qs';
 import {
@@ -17,7 +17,7 @@ import AWS from 'aws-sdk';
 export const createTransaction = async (
   cb: (trx: Knex.Transaction) => Promise<void>
 ): Promise<void> => {
-  await knexWrite().transaction(async trx => {
+  await knex.transaction(async trx => {
     await cb(trx);
   });
 };

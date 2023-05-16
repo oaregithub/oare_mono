@@ -1,5 +1,5 @@
 import { Group } from '@oare/types';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 
 class OareGroupDao {
@@ -7,7 +7,7 @@ class OareGroupDao {
     name: string,
     trx?: Knex.Transaction
   ): Promise<Group | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     return k('oare_group').first().where({ name });
   }
 
@@ -15,12 +15,12 @@ class OareGroupDao {
     id: number,
     trx?: Knex.Transaction
   ): Promise<Group | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     return k('oare_group').first().where({ id });
   }
 
   async getAllGroups(trx?: Knex.Transaction): Promise<Group[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     return k('oare_group')
       .select(
         'oare_group.id',
@@ -38,7 +38,7 @@ class OareGroupDao {
     description: string,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const ids: number[] = await k('oare_group').insert({
       name,
       description,
@@ -47,7 +47,7 @@ class OareGroupDao {
   }
 
   async deleteGroup(groupId: number, trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('oare_group').where('id', groupId).del();
   }
 
@@ -56,7 +56,7 @@ class OareGroupDao {
     description: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('oare_group').where('id', groupId).update({ description });
   }
 }

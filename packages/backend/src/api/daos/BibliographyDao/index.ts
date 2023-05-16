@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { BibliographyItem } from '@oare/types';
 
 class BibliographyDao {
@@ -7,7 +7,7 @@ class BibliographyDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<BibliographyItem> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const bibliography: BibliographyItem = await k('bibliography')
       .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
       .where('uuid', uuid)
@@ -16,7 +16,7 @@ class BibliographyDao {
   }
 
   async getBibliographies(trx?: Knex.Transaction): Promise<BibliographyItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const bibliographies: BibliographyItem[] = await k('bibliography').select(
       'uuid',
       'zot_item_key as zoteroKey',
@@ -29,7 +29,7 @@ class BibliographyDao {
     zotItemKey: string,
     trx?: Knex.Transaction
   ): Promise<BibliographyItem> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const bibliography: BibliographyItem = await k('bibliography')
       .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
       .where('zot_item_key', zotItemKey)

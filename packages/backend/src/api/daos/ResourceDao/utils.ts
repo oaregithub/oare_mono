@@ -1,4 +1,4 @@
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { ReferringLocationInfo } from '@oare/types';
 import { Knex } from 'knex';
 
@@ -55,7 +55,7 @@ export async function getReferringLocationInfoQuery(
   bibUuid: string,
   trx?: Knex.Transaction
 ) {
-  const k = trx || knexRead();
+  const k = trx || knex;
   const query = k('item_properties as ip')
     .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
     .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')

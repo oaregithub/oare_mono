@@ -1,13 +1,13 @@
 import { LinkItem } from '@oare/types';
 import { Knex } from 'knex';
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 
 class ConceptDao {
   async searchConcepts(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: LinkItem[] = await k('concept')
       .innerJoin('alias', 'alias.reference_uuid', 'concept.uuid')
       .select('concept.uuid as objectUuid', 'alias.name as objectDisplay')

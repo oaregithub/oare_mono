@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { knexWrite } from '@/connection';
+import knex from '@/connection';
 import { EpigraphyType, DiscourseUnitType } from '@oare/types';
 
 interface CleanEpigraphyLine extends CleanIterators {
@@ -30,7 +30,7 @@ export async function cleanLines(
   textUuid: string,
   trx?: Knex.Transaction
 ): Promise<void> {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   const rows: CleanEpigraphyLine[] = await k('text_epigraphy')
     .select(
@@ -66,7 +66,7 @@ async function cleanLineNumbers(
   rows: CleanEpigraphyLine[],
   trx?: Knex.Transaction
 ): Promise<void> {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   let currentLine = 0;
   let numBrokenAreas = 0;
@@ -144,7 +144,7 @@ async function cleanIterators(
   rows: CleanEpigraphyLine[],
   trx?: Knex.Transaction
 ): Promise<void> {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   let charOnTablet = 0;
   let charOnLine = 0;
@@ -204,7 +204,7 @@ async function cleanDiscourseIterators(
   rows: CleanDiscourseLine[],
   trx?: Knex.Transaction
 ): Promise<void> {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   let wordOnTablet = 0;
 

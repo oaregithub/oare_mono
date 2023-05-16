@@ -1,5 +1,5 @@
 import { DiscourseUnit, DiscourseRow } from '@oare/types';
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 import { TextWithDiscourseUuids } from './index';
 
@@ -84,7 +84,7 @@ export function getDiscourseAndTextUuidsQuery(
     | 'descendingNum',
   trx?: Knex.Transaction
 ) {
-  const k = trx || knexRead();
+  const k = trx || knex;
   let query = k('text_discourse as td0').where(qb => {
     qb.whereIn('td0.spelling_uuid', searchItems[0]).orWhereIn(
       'td0.uuid',
@@ -214,7 +214,7 @@ export async function getTextDiscourseForWordsInTextsSearch(
   discourseUuids: string[],
   trx?: Knex.Transaction
 ): Promise<DiscourseUnit[]> {
-  const k = trx || knexRead();
+  const k = trx || knex;
   const minMax = await k('text_discourse')
     .max({ max: 'word_on_tablet ' })
     .min({ min: 'word_on_tablet' })
@@ -241,7 +241,7 @@ export async function getTextDiscourseUnitsForWordsInTexts(
   max: number,
   trx?: Knex.Transaction
 ): Promise<DiscourseUnit[]> {
-  const k = trx || knexRead();
+  const k = trx || knex;
   const discourseQuery = k('text_discourse')
     .select(
       'text_discourse.uuid',

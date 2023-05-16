@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
@@ -8,7 +8,7 @@ class GroupEditPermissionsDao {
     type: 'text' | 'collection',
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const QuarantineTextDao = sl.get('QuarantineTextDao');
     const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
@@ -30,7 +30,7 @@ class GroupEditPermissionsDao {
     type: 'text' | 'collection',
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const rows = uuids.map(uuid => ({
       uuid,
       type,
@@ -44,7 +44,7 @@ class GroupEditPermissionsDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('group_edit_permissions')
       .where('group_id', groupId)
       .andWhere({ uuid })
@@ -55,7 +55,7 @@ class GroupEditPermissionsDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('group_edit_permissions').andWhere({ uuid }).del();
   }
 
@@ -64,7 +64,7 @@ class GroupEditPermissionsDao {
     groupId: number,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const containsAssociation = await k('group_edit_permissions')
       .where({ uuid })
       .andWhere('group_id', groupId)

@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import {
   DiscourseLineSpelling,
   Pagination,
@@ -39,7 +39,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_discourse')
       .update('spelling_uuid', spellingUuid)
       .where({ uuid });
@@ -50,7 +50,7 @@ class TextDiscourseDao {
     { page, limit }: Pagination,
     trx?: Knex.Transaction
   ): Promise<SearchDiscourseSpellingDaoResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const createBaseQuery = () =>
       k('text_discourse AS td')
         .where('explicit_spelling', spelling)
@@ -84,7 +84,7 @@ class TextDiscourseDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<DiscourseLineSpelling[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows = await k('text_discourse')
       .select(
         'word_on_tablet AS wordOnTablet',
@@ -109,7 +109,7 @@ class TextDiscourseDao {
     formUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: Record<'uuid', string>[] = await k('text_discourse')
       .select('text_discourse.uuid')
       .innerJoin(
@@ -126,7 +126,7 @@ class TextDiscourseDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<WordsInTextsSearchResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const TextDao = sl.get('TextDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
@@ -398,7 +398,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('text_discourse')
       .select()
       .where('spelling_uuid', spellingUuid)
@@ -410,7 +410,7 @@ class TextDiscourseDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<DiscourseUnit[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const discourseQuery = k('text_discourse')
       .select(
         'text_discourse.uuid',
@@ -479,7 +479,7 @@ class TextDiscourseDao {
     pagination: Partial<Pagination> = {},
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const count = await k('text_discourse')
       .innerJoin('text', 'text.uuid', 'text_discourse.text_uuid')
       .where('text_discourse.spelling_uuid', spellingUuid)
@@ -501,7 +501,7 @@ class TextDiscourseDao {
     { limit, page, filter }: Pagination,
     trx?: Knex.Transaction
   ): Promise<TextOccurrencesRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
@@ -531,7 +531,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: { uuid: string }[] = await k('text_discourse')
       .select('uuid')
       .where('spelling_uuid', spellingUuid);
@@ -542,7 +542,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_discourse')
       .update('spelling_uuid', null)
       .where('spelling_uuid', spellingUuid);
@@ -552,7 +552,7 @@ class TextDiscourseDao {
     discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const spelling = await k('text_discourse')
       .select('explicit_spelling as spelling')
       .where('uuid', discourseUuid)
@@ -564,7 +564,7 @@ class TextDiscourseDao {
     discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: { spellingUuid: string }[] = await k('text_discourse')
       .select('spelling_uuid AS spellingUuid')
       .where('uuid', discourseUuid);
@@ -577,7 +577,7 @@ class TextDiscourseDao {
     discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('text_discourse')
       .select()
       .where('uuid', discourseUuid)
@@ -589,7 +589,7 @@ class TextDiscourseDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row: { uuid: string } = await k('text_discourse')
       .where({
         text_uuid: textUuid,
@@ -607,7 +607,7 @@ class TextDiscourseDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const DictionarySpellingDao = sl.get('DictionarySpellingDao');
     const DictionaryFormDao = sl.get('DictionaryFormDao');
@@ -664,7 +664,7 @@ class TextDiscourseDao {
     spellingUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('text_discourse')
       .where('spelling_uuid', spellingUuid)
       .first();
@@ -675,14 +675,14 @@ class TextDiscourseDao {
     discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_discourse')
       .update('spelling_uuid', null)
       .where('uuid', discourseUuid);
   }
 
   async insertDiscourseRow(row: TextDiscourseRow, trx?: Knex.Transaction) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_discourse').insert({
       uuid: row.uuid,
       type: row.type,
@@ -703,7 +703,7 @@ class TextDiscourseDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<TextDiscourseRow> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row: TextDiscourseRow = await k('text_discourse')
       .select(
         'uuid',
@@ -731,7 +731,7 @@ class TextDiscourseDao {
     amount: number,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     if (childNum) {
       await k('text_discourse')
         .where({
@@ -749,7 +749,7 @@ class TextDiscourseDao {
     amount: number,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     if (wordOnTablet) {
       await k('text_discourse')
         .where({
@@ -766,7 +766,7 @@ class TextDiscourseDao {
     amount: number,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     if (objInText) {
       await k('text_discourse')
         .where({
@@ -782,7 +782,7 @@ class TextDiscourseDao {
     newChildUuids: string[],
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_discourse')
       .update('parent_uuid', newParentUuid)
       .whereIn('uuid', newChildUuids);
@@ -793,7 +793,7 @@ class TextDiscourseDao {
     newChildNum: number | null,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_discourse').update('child_num', newChildNum).where({ uuid });
   }
 
@@ -801,7 +801,7 @@ class TextDiscourseDao {
     parentUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows = await k('text_discourse')
       .pluck('uuid')
       .where('parent_uuid', parentUuid)
@@ -813,7 +813,7 @@ class TextDiscourseDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const countResult = await k('text_discourse')
       .where({ text_uuid: textUuid })
       .count({ count: 'text_discourse.uuid' })
@@ -825,7 +825,7 @@ class TextDiscourseDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     let numDiscourseRows = await this.getNumDiscourseRowsByTextUuid(
       textUuid,
@@ -853,7 +853,7 @@ class TextDiscourseDao {
     discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const type: DiscourseUnitType = await k('text_discourse')
       .select('type')
@@ -887,7 +887,7 @@ class TextDiscourseDao {
     textUuidFilter: string,
     trx?: Knex.Transaction
   ): Promise<DiscourseUnit[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const matches: DiscourseUnit[] = [];
 

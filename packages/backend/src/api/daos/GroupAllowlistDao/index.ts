@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import sl from '@/serviceLocator';
 import {
   SearchImagesResponse,
@@ -14,7 +14,7 @@ class GroupAllowlistDao {
     type: 'text' | 'img' | 'collection',
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const QuarantineTextDao = sl.get('QuarantineTextDao');
     const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
@@ -36,7 +36,7 @@ class GroupAllowlistDao {
     type: 'text' | 'img' | 'collection',
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const rows = uuids.map(uuid => ({
       uuid,
       type,
@@ -50,7 +50,7 @@ class GroupAllowlistDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('group_allowlist')
       .where('group_id', groupId)
       .andWhere({ uuid })
@@ -61,7 +61,7 @@ class GroupAllowlistDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('group_allowlist').where({ uuid }).del();
   }
 
@@ -106,7 +106,7 @@ class GroupAllowlistDao {
     { page, limit, filter, groupId }: SearchNamesPayload,
     trx?: Knex.Transaction
   ): Promise<SearchImagesResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const s3 = new AWS.S3();
 
     const createBaseQuery = () =>
@@ -208,7 +208,7 @@ class GroupAllowlistDao {
     groupId: number,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const containsAssociation = await k('group_allowlist')
       .where({ uuid })
       .andWhere('group_id', groupId)

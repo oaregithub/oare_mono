@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { PermissionItem, PermissionName } from '@oare/types';
 import { Knex } from 'knex';
 import UserDao from '../UserDao';
@@ -218,7 +218,7 @@ class PermissionsDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<PermissionItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
 
     if (user && user.isAdmin) {
@@ -245,7 +245,7 @@ class PermissionsDao {
     groupId: number,
     trx?: Knex.Transaction
   ): Promise<PermissionItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const permissions: string[] = (
       await k('permissions').select('permission').where('group_id', groupId)
     ).map(row => row.permission);
@@ -260,7 +260,7 @@ class PermissionsDao {
     { type, name }: PermissionItem,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('permissions').insert({
       group_id: groupId,
       type,
@@ -273,7 +273,7 @@ class PermissionsDao {
     permission: PermissionName,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('permissions')
       .where('group_id', groupId)
       .andWhere('permission', permission)

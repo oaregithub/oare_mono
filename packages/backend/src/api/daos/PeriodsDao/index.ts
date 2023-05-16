@@ -1,5 +1,5 @@
 import { PeriodRow, Year, Month, LinkItem } from '@oare/types';
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 
 class PeriodsDao {
@@ -8,7 +8,7 @@ class PeriodsDao {
     type: string,
     trx?: Knex.Transaction
   ): Promise<PeriodRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: PeriodRow[] = await k('period')
       .select(
         'uuid',
@@ -56,7 +56,7 @@ class PeriodsDao {
     weekRows: PeriodRow[],
     trx?: Knex.Transaction
   ): Promise<Year> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const { uuid } = period;
     let yearNumber: string = '';
@@ -199,7 +199,7 @@ class PeriodsDao {
   }
 
   async getOccurrences(uuid: string, trx?: Knex.Transaction) {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const countRow = await k('item_properties')
       .where('object_uuid', uuid)
@@ -215,7 +215,7 @@ class PeriodsDao {
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: LinkItem[] = await k('period')
       .select(
         'period.uuid as objectUuid',

@@ -1,8 +1,8 @@
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 
 export const getHierarchyRowQuery = (trx?: Knex.Transaction) => {
-  const k = trx || knexRead();
+  const k = trx || knex;
   return k('hierarchy')
     .select(
       'hierarchy.uuid',

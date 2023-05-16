@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import {
   ItemPropertyRow,
   InsertItemPropertyRow,
@@ -16,7 +16,7 @@ class ItemPropertiesDao {
     properties: InsertItemPropertyRow[],
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     // Split by levels to prevent FK constraint errors
     const itemPropertyRowLevels = [
       ...new Set(properties.map(row => row.level)),
@@ -48,7 +48,7 @@ class ItemPropertiesDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<ItemPropertyRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: ItemPropertyRow[] = await k('item_properties as ip')
       .select(
         'ip.uuid',
@@ -74,7 +74,7 @@ class ItemPropertiesDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const relevantRows: {
       uuid: string;
       level: number | null;
@@ -106,7 +106,7 @@ class ItemPropertiesDao {
     variableUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const objUuids: string[] = await k('item_properties')
       .pluck('object_uuid')
       .where('variable_uuid', variableUuid)
@@ -119,7 +119,7 @@ class ItemPropertiesDao {
     resourceUuid: string,
     trx?: Knex.Transaction
   ): Promise<ImageResourcePropertyDetails> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const sides: string[] = await k('item_properties')
       .pluck('value.name')
       .leftJoin('value', 'value.uuid', 'item_properties.value_uuid')

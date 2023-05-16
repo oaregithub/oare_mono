@@ -1,5 +1,5 @@
 import { Comment, CreateCommentPayload } from '@oare/types';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { v4 } from 'uuid';
 import { Knex } from 'knex';
 
@@ -9,7 +9,7 @@ class CommentsDao {
     { threadUuid, text }: CreateCommentPayload,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const newUuid: string = v4();
     await k('comments').insert({
       uuid: newUuid,
@@ -24,7 +24,7 @@ class CommentsDao {
   }
 
   async updateDelete(uuid: string, trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('comments').where({ uuid }).update({
       deleted: true,
     });
@@ -35,7 +35,7 @@ class CommentsDao {
     mostRecent = false,
     trx?: Knex.Transaction
   ): Promise<Comment[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const comments = await k('comments')
       .select(
         'comments.uuid',

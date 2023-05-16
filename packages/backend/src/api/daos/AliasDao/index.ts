@@ -1,10 +1,10 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
 
 class AliasDao {
   async getAliasNames(uuid: string, trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const names = await k('alias')
       .pluck('name')
       .where('alias.reference_uuid', uuid)
@@ -21,7 +21,7 @@ class AliasDao {
     primacy: number | null,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const uuid = v4();
     await k('alias').insert({
       uuid,
@@ -38,7 +38,7 @@ class AliasDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('alias').del().where({ reference_uuid: referenceUuid });
   }
 }

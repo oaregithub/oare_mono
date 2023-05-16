@@ -1,9 +1,9 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 
 class PageContentDao {
   async getContent(routeName: string, trx?: Knex.Transaction): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('page_content')
       .first('content')
       .where('page', routeName);
@@ -15,7 +15,7 @@ class PageContentDao {
     newContent: string,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('page_content')
       .update({
         content: newContent,

@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 
 export interface CacheStatusRow {
@@ -7,7 +7,7 @@ export interface CacheStatusRow {
 
 class CacheStatusDao {
   async cacheIsEnabled(trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row: CacheStatusRow = await k('cache_status')
       .select('disable_expires AS disableExpires')
       .first();
@@ -16,7 +16,7 @@ class CacheStatusDao {
   }
 
   async disableCache(trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const expires = new Date(Date.now() + 1000 * 60 * 10); // 10 mins
     const updateRow = {
       disable_expires: expires,
@@ -25,7 +25,7 @@ class CacheStatusDao {
   }
 
   async enableCache(trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const updateRow = {
       disable_expires: new Date(),
     };

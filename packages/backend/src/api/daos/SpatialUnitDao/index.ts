@@ -1,13 +1,13 @@
 import { LinkItem } from '@oare/types';
 import { Knex } from 'knex';
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 
 class SpatialUnitDao {
   async searchSpatialUnits(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: LinkItem[] = await k('spatial_unit')
       .innerJoin('alias', 'alias.reference_uuid', 'spatial_unit.uuid')
       .select('spatial_unit.uuid as objectUuid', 'alias.name as objectDisplay')

@@ -1,4 +1,4 @@
-import { knexWrite } from '@/connection';
+import knex from '@/connection';
 import {
   AddColumnPayload,
   AddRegionPayload,
@@ -73,7 +73,7 @@ const getParentUuidPath = async (
   uuid: string,
   trx?: Knex.Transaction
 ): Promise<string[]> => {
-  const k = trx || knexWrite();
+  const k = trx || knex;
   const parentUuid: string | null = await k('text_discourse')
     .select('parent_uuid')
     .first()
@@ -91,7 +91,7 @@ const getUpdatedDiscourse = async (
   newObjectOnTablet: number,
   trx?: Knex.Transaction
 ): Promise<UpdatedDiscourseStarter> => {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   const discourseTreeUuid: string = await k('text_discourse')
     .select('tree_uuid')
@@ -182,7 +182,7 @@ const recursivelyCleanDiscourseUuids = async (
   textUuid: string,
   trx?: Knex.Transaction
 ): Promise<void> => {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   await k('text_discourse').whereIn('uuid', discourseUuidsToDelete).del();
 
@@ -216,7 +216,7 @@ const addRegionDiscourse = async (
   transcription: string | null,
   trx?: Knex.Transaction
 ): Promise<void> => {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   const TextDiscourseDao = sl.get('TextDiscourseDao');
   const AliasDao = sl.get('AliasDao');
@@ -415,7 +415,7 @@ const getMarkupToAutoAdd = async (
   numSigns: number,
   trx?: Knex.Transaction
 ): Promise<MarkupType[]> => {
-  const k = trx || knexWrite();
+  const k = trx || knex;
 
   const uuidBefore: string | null = await k('text_epigraphy')
     .where({
@@ -481,7 +481,7 @@ const editDamageBrackets = async (
   payloadMarkup: MarkupUnit[],
   trx?: Knex.Transaction
 ) => {
-  const k = trx || knexWrite();
+  const k = trx || knex;
   const TextMarkupDao = sl.get('TextMarkupDao');
 
   const existingDamage = existingMarkup.filter(m => m.type === type);
@@ -554,7 +554,7 @@ const editMarkupSelection = async (
   payloadMarkup: MarkupUnit[],
   trx?: Knex.Transaction
 ): Promise<void> => {
-  const k = trx || knexWrite();
+  const k = trx || knex;
   const TextMarkupDao = sl.get('TextMarkupDao');
 
   // MARKUP
@@ -635,7 +635,7 @@ class EditTextUtils {
     payload: AddSidePayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     const sideNumber = convertSideToSideNumber(payload.side);
@@ -715,7 +715,7 @@ class EditTextUtils {
     payload: AddColumnPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
@@ -793,7 +793,7 @@ class EditTextUtils {
     payload: AddRegionPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
@@ -940,7 +940,7 @@ class EditTextUtils {
     payload: AddLinePayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
@@ -1168,7 +1168,7 @@ class EditTextUtils {
     payload: AddUndeterminedLinesPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
@@ -1300,7 +1300,7 @@ class EditTextUtils {
     payload: AddWordEditPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
@@ -1488,7 +1488,7 @@ class EditTextUtils {
     payload: AddSignPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
@@ -1598,7 +1598,7 @@ class EditTextUtils {
     payload: AddUndeterminedSignsPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
@@ -1724,7 +1724,7 @@ class EditTextUtils {
     payload: AddDividerPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const TextMarkupDao = sl.get('TextMarkupDao');
@@ -1825,7 +1825,7 @@ class EditTextUtils {
     payload: EditSidePayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     const originalSideNumber = convertSideToSideNumber(payload.originalSide);
@@ -1880,7 +1880,7 @@ class EditTextUtils {
     payload: EditColumnPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     const sideNumber = convertSideToSideNumber(payload.side);
@@ -1955,7 +1955,7 @@ class EditTextUtils {
     payload: EditRegionPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     if (
       payload.regionType === 'ruling' ||
@@ -1994,7 +1994,7 @@ class EditTextUtils {
     payload: EditUndeterminedLinesPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     if (!payload.convertToBrokenArea) {
       await k('text_markup')
@@ -2014,7 +2014,7 @@ class EditTextUtils {
     payload: EditSignPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     // EPIGRAPHY
     await k('text_epigraphy')
@@ -2053,7 +2053,7 @@ class EditTextUtils {
     payload: EditUndeterminedSignsPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     await k('text_markup')
       .where({ reference_uuid: payload.uuid, type: 'undeterminedSigns' })
@@ -2084,7 +2084,7 @@ class EditTextUtils {
     payload: SplitLinePayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     const sideNumber = convertSideToSideNumber(payload.side);
@@ -2155,7 +2155,7 @@ class EditTextUtils {
     payload: SplitWordPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
@@ -2269,7 +2269,7 @@ class EditTextUtils {
     payload: MergeLinePayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const newParentUuid = await k('text_epigraphy')
       .select('uuid')
@@ -2301,7 +2301,7 @@ class EditTextUtils {
     payload: MergeWordPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     if (payload.discourseUuids.length !== 2) {
       throw new Error('Two discourse uuids are required');
@@ -2339,7 +2339,7 @@ class EditTextUtils {
     payload: ReorderSignPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const firstObjOnTablet: number = await k('text_epigraphy')
       .where({ text_uuid: payload.textUuid, uuid: payload.signUuids[0] })
@@ -2381,7 +2381,7 @@ class EditTextUtils {
     payload: RemoveSidePayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const sideNumber = convertSideToSideNumber(payload.side);
 
@@ -2417,7 +2417,7 @@ class EditTextUtils {
     payload: RemoveColumnPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const sideNumber = convertSideToSideNumber(payload.side);
 
@@ -2464,7 +2464,7 @@ class EditTextUtils {
     payload: RemoveRegionPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const discourseUuidsToDelete: string[] = await k('text_epigraphy')
       .where({ uuid: payload.uuid })
@@ -2485,7 +2485,7 @@ class EditTextUtils {
     payload: RemoveLinePayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const discourseUuidsToDelete: string[] = await k('text_epigraphy')
       .where({ text_uuid: payload.textUuid, line: payload.line })
@@ -2513,7 +2513,7 @@ class EditTextUtils {
     payload: RemoveUndeterminedLinesPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const discourseUuidsToDelete: string[] = await k('text_epigraphy')
       .where({ uuid: payload.uuid })
@@ -2534,7 +2534,7 @@ class EditTextUtils {
     payload: RemoveWordPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const uuidsToRemove = await k('text_epigraphy').pluck('uuid').where({
       text_uuid: payload.textUuid,
@@ -2585,7 +2585,7 @@ class EditTextUtils {
     payload: RemoveSignPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     const discourseUuid: string | null = await k('text_epigraphy')
       .select('discourse_uuid')
@@ -2650,7 +2650,7 @@ class EditTextUtils {
     payload: RemoveDividerPayload,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     await k('text_epigraphy')
       .where({

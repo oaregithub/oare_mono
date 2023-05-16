@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import {
   EpigraphicUnit,
   ItemPropertyRow,
@@ -22,7 +22,7 @@ export function getSequentialCharacterQuery(
   baseQuery?: Knex.QueryBuilder,
   trx?: Knex.Transaction
 ): Knex.QueryBuilder {
-  const k = trx || knexRead();
+  const k = trx || knex;
   // Join text_epigraphy with itself so that characters can be searched
   // sequentially
   let query = baseQuery || k('text_epigraphy');
@@ -164,7 +164,7 @@ export function getSearchQuery(
   textTitle?: string,
   trx?: Knex.Transaction
 ) {
-  const k = trx || knexRead();
+  const k = trx || knex;
   // Join text table so text names can be returned
   let query = k('text_epigraphy')
     .join('text', 'text.uuid', 'text_epigraphy.text_uuid')

@@ -12,7 +12,7 @@ import {
   PropertyValue,
   ValueRow,
 } from '@oare/types';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import { getHierarchyRowQuery } from './utils';
@@ -22,7 +22,7 @@ class HierarchyDao {
     { page, limit, filter, type, groupId, showExcluded }: SearchNamesPayload,
     trx?: Knex.Transaction
   ): Promise<SearchNamesResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const CollectionDao = sl.get('CollectionDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const QuarantineTextDao = sl.get('QuarantineTextDao');
@@ -139,7 +139,7 @@ class HierarchyDao {
     collectionUuid: string,
     trx?: Knex.Transaction
   ): Promise<CollectionResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
@@ -183,7 +183,7 @@ class HierarchyDao {
     hierarchyUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row: { published: boolean } = await k('hierarchy')
       .first('published')
       .where('object_uuid', hierarchyUuid);
@@ -191,7 +191,7 @@ class HierarchyDao {
   }
 
   async hasChild(hierarchyUuid: string, trx?: Knex.Transaction) {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows = await k('hierarchy').where('parent_uuid', hierarchyUuid);
     if (rows && rows.length > 0) {
       return true;
@@ -283,7 +283,7 @@ class HierarchyDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<VariableRow> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const variable: VariableRow = await k('variable')
       .select(
@@ -345,7 +345,7 @@ class HierarchyDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<ValueRow> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const value: ValueRow = await k('value')
       .select('uuid', 'name', 'abbreviation')
@@ -359,7 +359,7 @@ class HierarchyDao {
     collectionUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows = await k('hierarchy')
       .pluck('object_uuid')
       .where('obj_parent_uuid', collectionUuid);
@@ -371,7 +371,7 @@ class HierarchyDao {
     collectionUuid: string,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const results = await k('hierarchy')
       .select('uuid')
       .where({ object_uuid: collectionUuid, type: 'collection' })
@@ -380,7 +380,7 @@ class HierarchyDao {
   }
 
   async insertHierarchyRow(row: HierarchyRow, trx?: Knex.Transaction) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('hierarchy').insert({
       uuid: row.uuid,
       parent_uuid: row.parentUuid,
@@ -396,7 +396,7 @@ class HierarchyDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('hierarchy').del().where({ object_uuid: textUuid, type: 'text' });
   }
 }

@@ -1,6 +1,10 @@
 import * as admin from 'firebase-admin';
 import AWS from 'aws-sdk';
 
+/**
+ * Initializes Firebase Admin SDK for authentication.
+ * @param cb Callback to be called when Firebase has been initialized. Used to delay app startup until Firebase is ready.
+ */
 export function initializeFirebase(cb: (err?: any) => void) {
   if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     const s3 = new AWS.S3();

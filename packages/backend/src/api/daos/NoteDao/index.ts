@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { DiscourseNote } from '@oare/types';
 import { Knex } from 'knex';
 
@@ -7,7 +7,7 @@ class NoteDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<DiscourseNote[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: DiscourseNote[] = await k('note')
       .select(
         'note.uuid',
@@ -29,7 +29,7 @@ class NoteDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('note').del().where({ reference_uuid: referenceUuid });
   }
 }

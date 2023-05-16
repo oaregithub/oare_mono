@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 
 export interface UserGroupRow {
@@ -10,7 +10,7 @@ class UserGroupDao {
     userUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const res = await k('user_group')
       .where('group_id', groupId)
       .andWhere('user_uuid', userUuid)
@@ -22,7 +22,7 @@ class UserGroupDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<number[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: UserGroupRow[] = await k('user_group')
       .select('group_id')
       .where('user_uuid', userUuid);
@@ -33,7 +33,7 @@ class UserGroupDao {
     groupId: number,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const userUuids: Array<{ uuid: string }> = await k('user')
       .innerJoin('user_group', 'user.uuid', 'user_group.user_uuid')
       .where('user_group.group_id', groupId)
@@ -47,7 +47,7 @@ class UserGroupDao {
     userUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('user_group').insert({
       group_id: groupId,
       user_uuid: userUuid,
@@ -59,7 +59,7 @@ class UserGroupDao {
     userUuid: string,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('user_group')
       .where('group_id', groupId)
       .andWhere('user_uuid', userUuid)

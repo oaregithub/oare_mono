@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import {
   ErrorsRow,
   ErrorStatus,
@@ -21,7 +21,7 @@ class ErrorsDao {
     { userUuid, description, stacktrace, status }: InsertErrorsRow,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const uuid = v4();
     const timestamp = new Date();
 
@@ -40,7 +40,7 @@ class ErrorsDao {
     payload: GetErrorsPayload,
     trx?: Knex.Transaction
   ): Promise<ErrorsResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     function baseQuery() {
       return k('errors')
         .select(
@@ -103,12 +103,12 @@ class ErrorsDao {
     status: ErrorStatus,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('errors').update({ status }).where({ uuid });
   }
 
   async newErrorsExist(trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const exists = await k('errors').first().where('status', 'New');
     return !!exists;
   }

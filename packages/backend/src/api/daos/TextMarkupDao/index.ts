@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { MarkupUnit, TextMarkupRow } from '@oare/types';
 import { Knex } from 'knex';
 
@@ -9,7 +9,7 @@ class TextMarkupDao {
     epigraphyUuid?: string,
     trx?: Knex.Transaction
   ): Promise<MarkupUnit[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     let query = k('text_markup')
       .select(
         'text_markup.reference_uuid AS referenceUuid',
@@ -53,7 +53,7 @@ class TextMarkupDao {
   }
 
   async insertMarkupRow(row: TextMarkupRow, trx?: Knex.Transaction) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_markup').insert({
       uuid: row.uuid,
       reference_uuid: row.referenceUuid,

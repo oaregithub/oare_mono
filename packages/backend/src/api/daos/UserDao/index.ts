@@ -1,11 +1,11 @@
 import { GetUserResponse, User, UpdateProfilePayload } from '@oare/types';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 import UserGroupDao from '../UserGroupDao';
 
 class UserDao {
   async emailExists(email: string, trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const user = await k('user').first().where({ email });
     return !!user;
   }
@@ -19,7 +19,7 @@ class UserDao {
   }
 
   async uuidExists(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const user = await k('user').first().where({ uuid });
     return !!user;
   }
@@ -38,7 +38,7 @@ class UserDao {
     value: string | number,
     trx?: Knex.Transaction
   ): Promise<User | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const user: User | null = await k('user')
       .first(
         'uuid',
@@ -60,7 +60,7 @@ class UserDao {
   }
 
   async createUser(user: User, trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('user').insert({
       uuid: user.uuid,
       first_name: user.firstName,
@@ -72,7 +72,7 @@ class UserDao {
   }
 
   async userIsAdmin(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const { isAdmin } = await k('user')
       .first('is_admin AS isAdmin')
       .where({ uuid });
@@ -80,7 +80,7 @@ class UserDao {
   }
 
   async getAllUsers(trx?: Knex.Transaction): Promise<GetUserResponse[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const users: Pick<
       User,
       'uuid' | 'firstName' | 'lastName' | 'email'
@@ -111,7 +111,7 @@ class UserDao {
     { email, firstName, lastName }: Required<UpdateProfilePayload>,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const displayName = `${firstName} ${lastName}`;
     await k('user')
       .update({

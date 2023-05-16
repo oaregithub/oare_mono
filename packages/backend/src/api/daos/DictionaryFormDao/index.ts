@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { v4 } from 'uuid';
 import { DictionaryForm, DictionaryFormRow } from '@oare/types';
 import sl from '@/serviceLocator';
@@ -19,7 +19,7 @@ class DictionaryFormDao {
     newForm: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('dictionary_form').update({ form: newForm }).where({ uuid });
   }
 
@@ -28,7 +28,7 @@ class DictionaryFormDao {
     htmlSpelling = false,
     trx?: Knex.Transaction
   ): Promise<DictionaryForm[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
     const forms: { uuid: string; form: string }[] = await k('dictionary_form')
@@ -60,7 +60,7 @@ class DictionaryFormDao {
     formUuid: string,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row: { referenceUuid: string } = await k('dictionary_form')
       .where('uuid', formUuid)
       .select('reference_uuid AS referenceUuid')
@@ -77,7 +77,7 @@ class DictionaryFormDao {
     spellingUuids: string[],
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row: { form: string } = await k('dictionary_form')
       .where('uuid', spellingUuids)
       .select('form')
@@ -91,7 +91,7 @@ class DictionaryFormDao {
     formSpelling: string,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const newFormUuid = v4();
     await k('dictionary_form').insert({
       uuid: newFormUuid,
@@ -105,7 +105,7 @@ class DictionaryFormDao {
     formUuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryFormRow> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row: DictionaryFormRow = await k('dictionary_form')
       .where('uuid', formUuid)
       .select('uuid', 'reference_uuid as referenceUuid', 'form', 'mash')

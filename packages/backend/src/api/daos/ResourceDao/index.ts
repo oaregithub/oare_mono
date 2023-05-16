@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
 import {
@@ -33,7 +33,7 @@ class ResourceDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const s3Links: EpigraphyLabelLink[] = [];
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
@@ -95,7 +95,7 @@ class ResourceDao {
   }
 
   async getTextFileByTextUuid(uuid: string, trx?: Knex.Transaction) {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const textLinks: string[] = await k('resource')
       .pluck('link')
       .where('container', 'oare-texttxt-bucket')
@@ -112,7 +112,7 @@ class ResourceDao {
     bibUuid: string,
     trx?: Knex.Transaction
   ): Promise<ReferringLocationInfo> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const beginPage: number | null = await getReferringLocationInfoQuery(
       '5ce1f5a2-b68f-11ec-bcc3-0282f921eac9',
       textUuid,
@@ -176,7 +176,7 @@ class ResourceDao {
     pageLink: string | null;
     plateLink: string | null;
   }> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const resourceRow: {
       link: string;
       container: string;
@@ -185,7 +185,7 @@ class ResourceDao {
       .select('link', 'container', 'format')
       .whereIn(
         'uuid',
-        knexRead()('link').select('obj_uuid').where('reference_uuid', uuid)
+        knex('link').select('obj_uuid').where('reference_uuid', uuid)
       )
       .where('type', 'pdf')
       .first();
@@ -261,7 +261,7 @@ class ResourceDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<EpigraphyLabelLink[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const imageLinks: EpigraphyLabelLink[] = [];
 
     try {
@@ -316,7 +316,7 @@ class ResourceDao {
     preText: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const results = await k('resource')
       .pluck('link')
       .where('link', 'like', `${preText}%`);
@@ -324,7 +324,7 @@ class ResourceDao {
   }
 
   async insertResourceRow(row: ResourceRow, trx?: Knex.Transaction) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('resource').insert({
       uuid: row.uuid,
       source_uuid: row.sourceUuid,
@@ -336,7 +336,7 @@ class ResourceDao {
   }
 
   async insertLinkRow(row: LinkRow, trx?: Knex.Transaction) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('link').insert({
       uuid: row.uuid,
       reference_uuid: row.referenceUuid,
@@ -348,7 +348,7 @@ class ResourceDao {
     tag: string,
     trx?: Knex.Transaction
   ): Promise<ResourceRow | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const tagList: { [key: string]: string } = {
       explanation: '3d4d9397-b6a8-11ec-bcc3-0282f921eac9',
     };
@@ -368,7 +368,7 @@ class ResourceDao {
     imageUuid: string,
     trx?: Knex.Transaction
   ): Promise<{ uuid: string; link: string } | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const image = await k('resource')
       .select('uuid', 'link')
       .where('uuid', imageUuid)
@@ -381,7 +381,7 @@ class ResourceDao {
     trx?: Knex.Transaction
   ): Promise<ImageResource | null> {
     const s3 = new AWS.S3();
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const textInfo: { display_name: string } = await k('text')
       .select('display_name')
@@ -415,7 +415,7 @@ class ResourceDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('link').del().where({ reference_uuid: referenceUuid });
   }
 }

@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import {
   PersonRow,
   Pagination,
@@ -21,7 +21,7 @@ class PersonDao {
     roleUuid?: string,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
     let rolesList: string[] = [];
@@ -79,7 +79,7 @@ class PersonDao {
     roleUuid?: string,
     trx?: Knex.Transaction
   ): Promise<TextOccurrencesRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsTohide = await CollectionTextUtils.textsToHide(userUuid, trx);
@@ -141,7 +141,7 @@ class PersonDao {
     letter: string,
     trx?: Knex.Transaction
   ): Promise<PersonRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const letters = letter.split('/');
     let query = k('person')
       .select(
@@ -198,7 +198,7 @@ class PersonDao {
     personUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('item_properties')
       .where({ reference_uuid: discourseUuid, object_uuid: personUuid })
       .del();
@@ -268,7 +268,7 @@ class PersonDao {
     type: 'temporary' | 'durable',
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const HierarchyDao = sl.get('HierarchyDao');
     const typeUuid =
       type === 'temporary'
@@ -297,7 +297,7 @@ class PersonDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<PersonRole[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rolesList = await this.getRolesList(type, trx);
     const roles: {
       role: string;
@@ -338,7 +338,7 @@ class PersonDao {
     variableUuid: string,
     trx?: Knex.Transaction
   ): Promise<PersonCore[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const relativeUuids: string[] = await k('item_properties AS ip')
       .pluck('ip.object_uuid')
       .innerJoin('person AS p', 'p.uuid', 'ip.reference_uuid')
@@ -385,7 +385,7 @@ class PersonDao {
     variableUuid: string,
     trx?: Knex.Transaction
   ): Promise<PersonCore | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const parent:
       | {
           uuid: string;
@@ -433,7 +433,7 @@ class PersonDao {
     variableUuids: string[],
     trx?: Knex.Transaction
   ): Promise<PersonCore[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const husbands: PersonRow[] = await k('item_properties AS ip')
       .select(
         'p.name_uuid AS nameUuid',
@@ -475,7 +475,7 @@ class PersonDao {
     personUuid: string,
     trx?: Knex.Transaction
   ): Promise<PersonInfo> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const FieldDao = sl.get('FieldDao');
     const mainPerson: PersonRow = await k('person AS p1')
       .select(
@@ -563,7 +563,7 @@ class PersonDao {
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: LinkItem[] = await k('person')
       .select('person.uuid as objectUuid', 'person.label as objectDisplay')
       .where(k.raw('LOWER(person.label)'), 'like', `%${search.toLowerCase()}%`)

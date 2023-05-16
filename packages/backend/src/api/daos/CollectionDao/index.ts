@@ -1,4 +1,4 @@
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { Collection } from '@oare/types';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
@@ -9,7 +9,7 @@ class CollectionDao {
     collectionUuid: string,
     trx?: Knex.Transaction
   ): Promise<Collection | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const collection = await k('collection')
       .select('uuid', 'name')
       .where('uuid', collectionUuid)
@@ -21,7 +21,7 @@ class CollectionDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<string | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const collection: { uuid: string } | null = await k('collection')
       .select('collection.uuid')
       .innerJoin('hierarchy', 'hierarchy.obj_parent_uuid', 'collection.uuid')
@@ -41,7 +41,7 @@ class CollectionDao {
   }
 
   async getAllCollections(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const collectionRows: Array<{ uuid: string }> = await k('collection')
       .select('collection.uuid')

@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { Knex } from 'knex';
 import { FieldInfo, FieldRow } from '@oare/types';
 import DetectLanguage, { DetectionResult } from 'detectlanguage';
@@ -14,7 +14,7 @@ class FieldDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     return k('field')
       .select()
       .where({
@@ -27,7 +27,7 @@ class FieldDao {
     referenceUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<FieldInfo | undefined> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     return k('field')
       .select(
         'field.field',
@@ -45,7 +45,7 @@ class FieldDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     return k('field')
       .select()
       .where({
@@ -59,7 +59,7 @@ class FieldDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     return k('field')
       .select()
       .where({
@@ -77,7 +77,7 @@ class FieldDao {
     language: string | null,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const uuid = v4();
     await k('field').insert({
       uuid,
@@ -96,7 +96,7 @@ class FieldDao {
     options?: FieldOptions,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('field')
       .update({
         field,
@@ -114,7 +114,7 @@ class FieldDao {
     options?: FieldOptions,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('field')
       .update({
         field,
@@ -127,7 +127,7 @@ class FieldDao {
   }
 
   async deleteField(uuid: string, trx?: Knex.Transaction) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('field').del().where({ uuid });
   }
 
@@ -135,7 +135,7 @@ class FieldDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('field').del().where({ reference_uuid: referenceUuid });
   }
 
@@ -159,7 +159,7 @@ class FieldDao {
     type: string,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('field')
       .decrement('primacy', 1)
       .where({ reference_uuid: referenceUuid })

@@ -6,7 +6,7 @@ import {
   SearchNullDiscourseLine,
   TextEpigraphyRow,
 } from '@oare/types';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import {
@@ -56,7 +56,7 @@ class TextEpigraphyDao {
     { maxLine, minLine }: GetEpigraphicUnitsOptions = {},
     trx?: Knex.Transaction
   ): Promise<EpigraphicUnit[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     let query = k('text_epigraphy')
       .leftJoin(
         'sign_reading',
@@ -229,7 +229,7 @@ class TextEpigraphyDao {
     }: Pick<SearchTextArgs, 'characters' | 'title' | 'userUuid' | 'mode'>,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
@@ -251,7 +251,7 @@ class TextEpigraphyDao {
     includeSuperfluous: boolean,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
@@ -287,7 +287,7 @@ class TextEpigraphyDao {
     includeSuperfluous: boolean,
     trx?: Knex.Transaction
   ): Promise<SearchNullDiscourseLine[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const CollectionTextUtils = sl.get('CollectionTextUtils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
@@ -342,7 +342,7 @@ class TextEpigraphyDao {
   }
 
   async hasEpigraphy(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const response = await k('text_epigraphy')
       .first('uuid')
       .where('text_uuid', uuid);
@@ -354,7 +354,7 @@ class TextEpigraphyDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<AnchorInfo> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const newWordCharOnTablet: number = (
       await k('text_epigraphy')
         .whereIn('uuid', epigraphyUuids)
@@ -413,14 +413,14 @@ class TextEpigraphyDao {
     discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_epigraphy')
       .update('discourse_uuid', discourseUuid)
       .whereIn('uuid', epigraphyUuids);
   }
 
   async insertEpigraphyRow(row: TextEpigraphyRow, trx?: Knex.Transaction) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_epigraphy').insert({
       uuid: row.uuid,
       type: row.type,
@@ -445,7 +445,7 @@ class TextEpigraphyDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const countResult = await k('text_epigraphy')
       .where({ text_uuid: textUuid })
       .count({ count: 'text_epigraphy.uuid' })
@@ -457,7 +457,7 @@ class TextEpigraphyDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
 
     let numEpigraphyRows = await this.getNumEpigraphyRowsByTextUuid(
       textUuid,
@@ -485,7 +485,7 @@ class TextEpigraphyDao {
     discourseUuid: string,
     trx?: Knex.Transaction
   ): Promise<number | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const line: number | null = await k('text_epigraphy')
       .select('line')
@@ -502,7 +502,7 @@ class TextEpigraphyDao {
     amount: number,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     if (objectOnTablet) {
       await k('text_epigraphy')
         .where({

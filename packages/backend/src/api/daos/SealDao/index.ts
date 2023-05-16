@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { SealImpression, SealNameUuid, SealProperty } from '@oare/types';
 import sl from '@/serviceLocator';
 import AWS from 'aws-sdk';
@@ -6,7 +6,7 @@ import { Knex } from 'knex';
 
 class SealDao {
   async getSeals(trx?: Knex): Promise<SealNameUuid[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const seals: SealNameUuid[] = await k('alias as a')
       .join('spatial_unit as su', 'su.uuid', 'a.reference_uuid')
       .where('su.tree_abb', 'Seal_Cat')
@@ -17,7 +17,7 @@ class SealDao {
   }
 
   async getSealByUuid(sealUuid: string, trx?: Knex): Promise<SealNameUuid> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const seals: SealNameUuid = await k('alias as a')
       .join('spatial_unit as su', 'su.uuid', 'a.reference_uuid')
       .where('su.tree_abb', 'Seal_Cat')
@@ -30,7 +30,7 @@ class SealDao {
   }
 
   async getImagesBySealUuid(sealUuid: string, trx?: Knex): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const imageLinkRows: { link: string; container: string }[] = await k(
       'spatial_unit as su'
@@ -65,7 +65,7 @@ class SealDao {
     textsToHide: string[],
     trx?: Knex
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const count: { count: number } = await k('spatial_unit as su')
       .leftJoin('item_properties as ip', 'ip.object_uuid', 'su.uuid')
@@ -90,7 +90,7 @@ class SealDao {
     textsToHide: string[],
     trx?: Knex
   ): Promise<SealImpression[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const TextDao = sl.get('TextDao');
 
     const sealImpressionRows: {
@@ -136,7 +136,7 @@ class SealDao {
     sealUuid: string,
     trx?: Knex
   ): Promise<SealProperty | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const sealOwner: { name: string } = await k('spatial_unit as su')
       .innerJoin('item_properties as ip', 'ip.reference_uuid', 'su.uuid')
       .innerJoin('person as p', 'p.uuid', 'ip.object_uuid')
@@ -158,7 +158,7 @@ class SealDao {
     sealUuid: string,
     trx?: Knex
   ): Promise<SealProperty[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const sealProperties: SealProperty[] = await k('spatial_unit as su')
       .leftJoin('item_properties as ip', 'ip.reference_uuid', 'su.uuid')
@@ -189,7 +189,7 @@ class SealDao {
     sealName: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('alias').update({ name: sealName }).where({ reference_uuid: uuid });
   }
 
@@ -197,7 +197,7 @@ class SealDao {
     textEpigraphyUuid: string,
     trx?: Knex
   ): Promise<string | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const linkedSealUuid: string | null = await k('item_properties as ip')
       .where('ip.reference_uuid', textEpigraphyUuid)
       .andWhere('ip.variable_uuid', 'f32e6903-67c9-41d8-840a-d933b8b3e719')
@@ -212,7 +212,7 @@ class SealDao {
     textEpigraphyUuid: string,
     trx?: Knex
   ): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const sealLinkParentUuid: string = await k('item_properties as ip')
       .where('ip.reference_uuid', textEpigraphyUuid)
       .andWhere('ip.value_uuid', 'ec820e17-ecc7-492f-86a7-a01b379622e1')

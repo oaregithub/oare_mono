@@ -1,11 +1,11 @@
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { UuidRow, SignCode, SignList, SignListReading } from '@oare/types';
 import { formattedSearchCharacter } from '@/api/daos/TextEpigraphyDao/utils';
 import { Knex } from 'knex';
 
 class SignReadingDao {
   async hasSign(sign: string, trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('sign_reading').where('reading', sign).first();
     return !!row;
   }
@@ -19,7 +19,7 @@ class SignReadingDao {
     signs: string[],
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: UuidRow[] = await k('sign_reading')
       .select('uuid')
       .whereIn('reading', signs);
@@ -30,7 +30,7 @@ class SignReadingDao {
     sign: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const matchingSigns = await k('sign_reading AS sr1')
       .select('sr2.reading')
       .innerJoin(
@@ -47,7 +47,7 @@ class SignReadingDao {
     isDeterminative: boolean,
     trx?: Knex.Transaction
   ): Promise<SignCode> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const imageCodeArray = await k('sign_reading')
       .select(
         'sign_org.org_num as signCode',
@@ -144,7 +144,7 @@ class SignReadingDao {
   }
 
   async getSignList(trx?: Knex.Transaction): Promise<SignList[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const signList: SignList[] = await k('sign_reading as sr')
       .join('sign as s', 's.uuid', 'sr.reference_uuid')
       .leftJoin('sign_org as so', function () {
@@ -176,7 +176,7 @@ class SignReadingDao {
     signUuid: string,
     trx?: Knex.Transaction
   ): Promise<SignListReading[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const signReadings: SignListReading[] = await k('sign_reading as sr')
       .where('sr.reference_uuid', signUuid)
       .select({ uuid: 'sr.uuid', value: 'sr.value', type: 'sr.type' });
@@ -193,7 +193,7 @@ class SignReadingDao {
     signUuid: string,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const signCount = await k('text_epigraphy as te')
       .count({ count: '*' })
       .where('te.sign_uuid', signUuid)
@@ -209,7 +209,7 @@ class SignReadingDao {
     readingUuid: string,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const signCount = await k('text_epigraphy as te')
       .count({ count: '*' })
       .where('te.reading_uuid', readingUuid)

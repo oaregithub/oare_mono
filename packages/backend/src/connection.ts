@@ -1,17 +1,11 @@
 import knex, { Knex } from 'knex';
 
-type ProductionUrlMode = 'read' | 'write' | 'migration';
-
-const getConnection = (
-  mode: ProductionUrlMode
-): string | Knex.StaticConnectionConfig | undefined => {
+/**
+ * Gets the appropriate connection URL or object based on the environment.
+ * @returns A SQL connection URL or object
+ */
+const getConnection = (): string | Knex.StaticConnectionConfig | undefined => {
   if (process.env.NODE_ENV === 'production') {
-    if (mode === 'read') {
-      return process.env.OARE_DB_URL_READ;
-    }
-    if (mode === 'write') {
-      return process.env.OARE_DB_URL_WRITE;
-    }
     return process.env.OARE_DB_URL;
   }
 
@@ -28,24 +22,19 @@ const getConnection = (
   };
 };
 
-export const knexConfig = (mode: ProductionUrlMode): Knex.Config => ({
+/**
+ * Creates a Knex configuration object based on the environment.
+ * @returns A Knex configuration object
+ */
+export const knexConfig = (): Knex.Config => ({
   client: 'mysql',
-  connection: getConnection(mode),
+  connection: getConnection(),
   pool: { min: 0, max: 10 },
 });
-const knexWriteInstance = knex(knexConfig('write'));
-const knexReadInstance = knex(knexConfig('read'));
 
-let lastWrite: number | null = null;
+/**
+ * Initialized Knex instance.
+ */
+const knexInstance = knex(knexConfig());
 
-export const knexWrite = () => {
-  lastWrite = Date.now();
-  return knexWriteInstance;
-};
-
-export const knexRead = () => {
-  if (lastWrite && Date.now() < lastWrite + 45000) {
-    return knexWriteInstance;
-  }
-  return knexReadInstance;
-};
+export default knexInstance;

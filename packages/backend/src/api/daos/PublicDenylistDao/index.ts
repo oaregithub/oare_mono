@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import sl from '@/serviceLocator';
 import {
   SearchImagesResponse,
@@ -10,7 +10,7 @@ import { Knex } from 'knex';
 
 class PublicDenylistDao {
   async getDenylistTextUuids(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const QuarantineTextDao = sl.get('QuarantineTextDao');
     const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
       trx
@@ -25,7 +25,7 @@ class PublicDenylistDao {
   }
 
   async getDenylistImageUuids(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: Array<{ uuid: string }> = await k('public_denylist')
       .select('uuid')
       .where('type', 'img');
@@ -38,7 +38,7 @@ class PublicDenylistDao {
   ): Promise<{ uuid: string; url: string; text: string }[]> {
     const promises = [];
     const s3 = new AWS.S3();
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const imgUUIDs: string[] = await k('public_denylist')
       .pluck('uuid')
@@ -89,7 +89,7 @@ class PublicDenylistDao {
     { page, limit, filter }: SearchNamesPayload,
     trx?: Knex.Transaction
   ): Promise<SearchImagesResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const s3 = new AWS.S3();
 
     const createBaseQuery = () =>
@@ -157,7 +157,7 @@ class PublicDenylistDao {
   }
 
   async getDenylistCollectionUuids(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: Array<{ uuid: string }> = await k('public_denylist')
       .select('uuid')
       .where('type', 'collection');
@@ -170,7 +170,7 @@ class PublicDenylistDao {
     type: 'text' | 'collection' | 'img',
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const insertRows = uuids.map(uuid => ({
       uuid,
       type,
@@ -182,7 +182,7 @@ class PublicDenylistDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('public_denylist').where({ uuid }).del();
   }
 

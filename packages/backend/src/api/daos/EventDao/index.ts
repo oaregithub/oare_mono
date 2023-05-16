@@ -1,13 +1,13 @@
 import { LinkItem } from '@oare/types';
 import { Knex } from 'knex';
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 
 class EventDao {
   async searchEvents(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: LinkItem[] = await k('event')
       .innerJoin('alias', 'alias.reference_uuid', 'event.uuid')
       .select('event.uuid as objectUuid', 'alias.name as objectDisplay')

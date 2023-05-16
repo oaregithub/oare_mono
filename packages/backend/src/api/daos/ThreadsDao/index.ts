@@ -7,7 +7,7 @@ import {
   AllThreadResponse,
   AllThreadRowUndeterminedItem,
 } from '@oare/types';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
@@ -24,7 +24,7 @@ class ThreadsDao {
     { referenceUuid, route }: CreateThreadPayload,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const newUuid: string = v4();
     const status: ThreadStatus = 'New';
     await k('threads').insert({
@@ -41,7 +41,7 @@ class ThreadsDao {
     { uuid, status }: Thread,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('threads').where('uuid', uuid).update({
       status,
     });
@@ -51,7 +51,7 @@ class ThreadsDao {
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<Thread[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const thread: Thread[] = await k('threads')
       .select(
         'threads.uuid AS uuid',
@@ -69,7 +69,7 @@ class ThreadsDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<Thread | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const thread: Thread | null = await k('threads')
       .first(
         'threads.uuid AS uuid',
@@ -88,7 +88,7 @@ class ThreadsDao {
     newName: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('threads').where({ uuid }).update({
       name: newName,
     });
@@ -99,7 +99,7 @@ class ThreadsDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<AllThreadResponse> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const userDao = sl.get('UserDao');
     const isAdmin = userUuid ? await userDao.userIsAdmin(userUuid, trx) : false;
 
@@ -222,7 +222,7 @@ class ThreadsDao {
   }
 
   async newThreadsExist(trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const exists = await k('threads').first().where('status', 'New');
     return !!exists;
   }

@@ -1,10 +1,10 @@
-import { knexWrite } from '@/connection';
+import knex from '@/connection';
 import { TreeRow } from '@oare/types';
 import { Knex } from 'knex';
 
 class TreeDao {
   async insertTreeRow(row: TreeRow, trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('tree').insert(row);
   }
 }

@@ -1,4 +1,4 @@
-import { knexRead } from '@/connection';
+import knex from '@/connection';
 import { PublicationResponse, PublicationText } from '@oare/types';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
@@ -9,7 +9,7 @@ class PublicationDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<PublicationResponse | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
       userUuid,
@@ -96,7 +96,7 @@ class PublicationDao {
   }
 
   async getAllPublications(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const publicationRows: Array<{ prefix: string }> = await k('text')
       .distinct('text.publication_prfx as prefix')
       .whereNotNull('text.publication_prfx');

@@ -1,4 +1,4 @@
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import {
   Archive,
   Dossier,
@@ -13,7 +13,7 @@ import { ignorePunctuation } from '../TextEpigraphyDao/utils';
 
 class ArchiveDao {
   async getAllArchives(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const uuids: string[] = await k('archive')
       .pluck('archive.uuid')
       .where('parent_uuid', 'b0fe5c7d-6c1c-11ec-bcc3-0282f921eac9');
@@ -27,7 +27,7 @@ class ArchiveDao {
     { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
   ): Promise<Archive> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const archive: Archive = await k('archive')
       .select(
@@ -83,7 +83,7 @@ class ArchiveDao {
     { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
   ): Promise<string[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
     const uuids: string[] = await k('archive')
       .pluck('archive.uuid')
@@ -103,7 +103,7 @@ class ArchiveDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<ArchiveInfo> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const archive: Archive = await k('archive')
       .select(
@@ -140,7 +140,7 @@ class ArchiveDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<FieldInfo[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const descriptions: FieldInfo[] = await k('field as f')
       .where('f.reference_uuid', uuid)
       .orderBy('f.primacy');
@@ -153,7 +153,7 @@ class ArchiveDao {
     { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
   ): Promise<Text[] | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
       userUuid,
@@ -204,7 +204,7 @@ class ArchiveDao {
     { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
   ): Promise<Dossier> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const dossier: Dossier = await k('archive')
       .select(
         'archive.id as id',
@@ -237,7 +237,7 @@ class ArchiveDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<DossierInfo> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const dossier: Dossier = await k('archive')
       .select('archive.uuid as uuid', 'archive.name as name')
       .where('archive.uuid', uuid)
@@ -257,7 +257,7 @@ class ArchiveDao {
     { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
   ): Promise<Text[] | null> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
       userUuid,
@@ -306,7 +306,7 @@ class ArchiveDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const totalDossiers = await k('archive')
       .select(k.raw('count(archive.uuid) as total'))
       .where('parent_uuid', uuid)
@@ -320,7 +320,7 @@ class ArchiveDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<number> {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const collectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide: string[] = await collectionTextUtils.textsToHide(
@@ -328,7 +328,7 @@ class ArchiveDao {
       trx
     );
     const totalTexts = await k('link')
-      .select(knexRead().raw('count(text.uuid) as total'))
+      .select(k.raw('count(text.uuid) as total'))
       .innerJoin('archive', 'link.obj_uuid', 'archive.uuid')
       .innerJoin('text', 'link.reference_uuid', 'text.uuid')
       .where('archive.uuid', uuid)
@@ -343,7 +343,7 @@ class ArchiveDao {
     archiveOrDossierUuid: string,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('link')
       .del()
       .where('reference_uuid', textUuid)

@@ -1,6 +1,6 @@
 import { TextDraft, UuidRow, DraftQueryOptions, LocaleCode } from '@oare/types';
 import { v4 } from 'uuid';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import { createTabletRenderer } from '@oare/oare';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -12,7 +12,7 @@ export interface TextDraftRow
 }
 
 function getBaseDraftQuery(userUuid: string, trx?: Knex.Transaction) {
-  const k = trx || knexRead();
+  const k = trx || knex;
   return k('text_drafts')
     .select(
       'text_drafts.created_at AS createdAt',
@@ -35,7 +35,7 @@ class TextDraftsDao {
     draftUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('text_drafts')
       .select()
       .where('uuid', draftUuid)
@@ -48,7 +48,7 @@ class TextDraftsDao {
     draftUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('text_drafts')
       .select()
       .where('user_uuid', userUuid)
@@ -59,7 +59,7 @@ class TextDraftsDao {
   }
 
   async deleteDraft(draftUuid: string, trx?: Knex.Transaction): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_drafts').del().where('uuid', draftUuid);
   }
 
@@ -68,7 +68,7 @@ class TextDraftsDao {
     locale: LocaleCode,
     trx?: Knex.Transaction
   ): Promise<TextDraft> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const exists = await this.draftExists(draftUuid, trx);
     if (!exists) {
       throw new Error(`Draft with UUID ${draftUuid} does not exist`);
@@ -143,7 +143,7 @@ class TextDraftsDao {
     notes: string,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const creation = new Date();
     const uuid = v4();
 
@@ -166,7 +166,7 @@ class TextDraftsDao {
     notes: string,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const updated = new Date();
     await k('text_drafts').where('uuid', draftUuid).update({
       content,
@@ -184,7 +184,7 @@ class TextDraftsDao {
       textUuid: string;
     }
 
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     const CollectionTextUtils = sl.get('CollectionTextUtils');
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
@@ -214,7 +214,7 @@ class TextDraftsDao {
     }: Pick<DraftQueryOptions, 'authorFilter' | 'textFilter'>,
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexRead();
+    const k = trx || knex;
 
     return k('text_drafts')
       .innerJoin('user', 'user.uuid', 'text_drafts.user_uuid')
@@ -288,7 +288,7 @@ class TextDraftsDao {
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('text_drafts').del().where({ text_uuid: textUuid });
   }
 }

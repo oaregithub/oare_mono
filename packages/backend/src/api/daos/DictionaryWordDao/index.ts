@@ -10,7 +10,7 @@ import {
   DictionarySearchRow,
 } from '@oare/types';
 import { v4 } from 'uuid';
-import { knexRead, knexWrite } from '@/connection';
+import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import {
@@ -68,7 +68,7 @@ class DictionaryWordDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<SearchSpellingResultRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     interface SearchSpellingRow {
       wordUuid: string;
       word: string;
@@ -139,7 +139,7 @@ class DictionaryWordDao {
     letter: string,
     trx?: Knex.Transaction
   ): Promise<Word[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const TextDiscourseDao = sl.get('TextDiscourseDao');
 
     const letters = letter.split('/');
@@ -260,7 +260,7 @@ class DictionaryWordDao {
     fieldType: string,
     trx?: Knex.Transaction
   ): Promise<TranslationRow[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: TranslationRow[] = await k('dictionary_word')
       .select(
         'dictionary_word.uuid AS dictionaryUuid',
@@ -302,7 +302,7 @@ class DictionaryWordDao {
   }
 
   async getWordName(wordUuid: string, trx?: Knex.Transaction): Promise<string> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const { word }: { word: string } = await k('dictionary_word')
       .select('word')
       .where('uuid', wordUuid)
@@ -343,7 +343,7 @@ class DictionaryWordDao {
     types: string[],
     trx?: Knex.Transaction
   ) {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const lowerSearch = search.toLowerCase();
     let spellEpigRow: DictSpellEpigRowDictSearch[] | null = null;
     const charUuids: string[][] = await prepareIndividualSearchCharacters(
@@ -434,7 +434,7 @@ class DictionaryWordDao {
     mode: string,
     trx?: Knex.Transaction
   ): Promise<DictSpellEpigRowDictSearch[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     let firstCharReadings: string[] = [];
     let lastCharReadings: string[] | null = null;
     if (mode === 'matchSubstring') {
@@ -521,7 +521,7 @@ class DictionaryWordDao {
   }
 
   async getDictItemsForWordsInTexts(trx?: Knex.Transaction) {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const forms: WordFormSpellingRow[] = await k('dictionary_form AS df')
       .join('dictionary_word as dw', 'dw.uuid', 'df.reference_uuid')
       .select(
@@ -590,7 +590,7 @@ class DictionaryWordDao {
     word: string,
     trx?: Knex.Transaction
   ): Promise<void> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     await k('dictionary_word').update({ word }).where({ uuid });
   }
 
@@ -662,7 +662,7 @@ class DictionaryWordDao {
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryWordRow> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const row = await k('dictionary_word')
       .select('uuid', 'word', 'type')
       .where({ uuid })
@@ -675,7 +675,7 @@ class DictionaryWordDao {
     wordType: string,
     trx?: Knex.Transaction
   ): Promise<string> {
-    const k = trx || knexWrite();
+    const k = trx || knex;
     const newWordUuid = v4();
     await k('dictionary_word').insert({
       uuid: newWordUuid,
@@ -689,7 +689,7 @@ class DictionaryWordDao {
     search: string,
     trx?: Knex.Transaction
   ): Promise<{ uuid: string; word: string; type: string }[]> {
-    const k = trx || knexRead();
+    const k = trx || knex;
     const rows: { uuid: string; word: string; type: string }[] = await k
       .select('dw.uuid AS uuid', 'dw.word as word', 'dw.type as type')
       .from('dictionary_word AS dw')
