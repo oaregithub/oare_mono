@@ -1,8 +1,8 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import permissionsRoute from '@/middlewares/permissionsRoute';
-import cacheMiddleware from '@/middlewares/cache';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import cacheMiddleware from '@/middlewares/router/cache';
 import {
   PersonRow,
   PersonListItem,

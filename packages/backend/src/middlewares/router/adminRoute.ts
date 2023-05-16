@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
-import authenticatedRoute from './authenticatedRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
 async function adminRoute(req: Request, res: Response, next: NextFunction) {
   try {

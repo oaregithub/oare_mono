@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import { PermissionName } from '@oare/types';
 import sl from '@/serviceLocator';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
 const permissionsRoute = (permission: PermissionName) => async (
   req: Request,

@@ -9,7 +9,7 @@ import {
   DiscourseUnitType,
   EditTranslationPayload,
 } from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { v4 } from 'uuid';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { nestProperties } from '../utils/index';

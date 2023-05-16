@@ -15,10 +15,10 @@ import {
   ZoteroData,
   EditTextPayload,
 } from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
-import cacheMiddleware from '@/middlewares/cache';
-import textMiddleware from '@/middlewares/text';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
+import cacheMiddleware from '@/middlewares/router/cache';
+import textMiddleware from '@/middlewares/router/text';
 import fileUpload from 'express-fileupload';
 import { noFilter, textFilter } from '@/cache/filters';
 import { concatLocation } from './daos/ResourceDao/utils';

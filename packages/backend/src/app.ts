@@ -1,11 +1,11 @@
 import express from 'express';
 import history from 'connect-history-api-fallback';
 import path from 'path';
-import errorMiddleware from '@/middlewares/error';
+import errorMiddleware from '@/middlewares/application/error';
 import fileupload from 'express-fileupload';
-import setupRoutes from './setupRoutes';
-import userMiddleware from './middlewares/user';
-import localeMiddleware from './middlewares/locale';
+import setupRoutes from '@/setupRoutes';
+import userMiddleware from '@/middlewares/application/user';
+import localeMiddleware from '@/middlewares/application/locale';
 
 /**
  * Initialized Express app.

@@ -14,8 +14,8 @@ import {
   ThreadStatus,
   CommentSortType,
 } from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
-import adminRoute from '@/middlewares/adminRoute';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import { toInteger } from 'lodash';
 
 const router = express.Router();

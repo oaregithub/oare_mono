@@ -2,7 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import { Archive, Dossier, DisconnectTextPayload } from '@oare/types';
 import sl from '@/serviceLocator';
-import adminRoute from '@/middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import { DenylistAllowlistPayload, DenylistAllowlistItem } from '@oare/types';
-import adminRoute from '@/middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 

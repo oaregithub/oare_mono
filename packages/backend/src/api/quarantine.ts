@@ -2,7 +2,7 @@ import express from 'express';
 import { QuarantineText } from '@oare/types';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import adminRoute from '../middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 
 const router = express.Router();
 

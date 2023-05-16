@@ -9,8 +9,8 @@ import {
   CreateDraftResponse,
 } from '@oare/types';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
-import adminRoute from '@/middlewares/adminRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
 import { parsedQuery, extractPagination } from '@/utils';
 

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '@/exceptions/HttpException';
-import { InsertErrorsRow } from '../api/daos/ErrorsDao';
-import sl from '../serviceLocator';
+import { InsertErrorsRow } from '@/api/daos/ErrorsDao';
+import sl from '@/serviceLocator';
 
 const errorMiddleware = async (
   error: HttpException,

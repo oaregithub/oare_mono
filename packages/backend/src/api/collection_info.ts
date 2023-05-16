@@ -1,6 +1,6 @@
 import express from 'express';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
-import collectionsMiddleware from '@/middlewares/collections';
+import collectionsMiddleware from '@/middlewares/router/collections';
 import sl from '@/serviceLocator';
 
 const router = express.Router();

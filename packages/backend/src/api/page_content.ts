@@ -1,8 +1,8 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import adminRoute from '@/middlewares/adminRoute';
-import cacheMiddleware from '@/middlewares/cache';
+import adminRoute from '@/middlewares/router/adminRoute';
+import cacheMiddleware from '@/middlewares/router/cache';
 import { noFilter } from '@/cache/filters';
 
 const router = express.Router();

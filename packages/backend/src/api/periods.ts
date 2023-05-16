@@ -1,7 +1,7 @@
 import express from 'express';
 import sl from '@/serviceLocator';
-import permissionsRoute from '@/middlewares/permissionsRoute';
-import cacheMiddleware from '@/middlewares/cache';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import cacheMiddleware from '@/middlewares/router/cache';
 import { HttpInternalError } from '@/exceptions';
 import { PeriodResponse, Year } from '@oare/types';
 import { noFilter } from '@/cache/filters';

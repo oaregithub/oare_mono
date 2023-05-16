@@ -1,10 +1,9 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { extractPagination } from '@/utils';
 import { BibliographyResponse } from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
-import cacheMiddleware from '@/middlewares/cache';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import cacheMiddleware from '@/middlewares/router/cache';
 import { bibliographiesFilter, noFilter } from '@/cache/filters';
 
 const router = express.Router();

@@ -7,7 +7,7 @@ import {
   SignListPayload,
   SignListResponse,
 } from '@oare/types';
-import cacheMiddleware from '@/middlewares/cache';
+import cacheMiddleware from '@/middlewares/router/cache';
 import { noFilter } from '@/cache/filters';
 import { concatenateReadings } from './daos/SignReadingDao/utils';
 

@@ -7,7 +7,7 @@ import {
   FieldInfo,
   NewFieldPayload,
 } from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
 
 const router = express.Router();
 

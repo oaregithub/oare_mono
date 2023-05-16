@@ -1,7 +1,7 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import cacheMiddleware from '@/middlewares/cache';
+import cacheMiddleware from '@/middlewares/router/cache';
 import {
   SealNameUuid,
   SealInfo,
@@ -10,7 +10,7 @@ import {
   AddSealLinkPayload,
 } from '@oare/types';
 import { SealFilter, SealListFilter } from '@/cache/filters';
-import permissionsRoute from '@/middlewares/permissionsRoute';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { v4 } from 'uuid';
 
 const router = express.Router();

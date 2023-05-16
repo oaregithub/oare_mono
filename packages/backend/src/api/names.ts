@@ -1,10 +1,10 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import cacheMiddleware from '@/middlewares/cache';
+import cacheMiddleware from '@/middlewares/router/cache';
 import { dictionaryFilter } from '@/cache/filters';
 import { Word } from '@oare/types';
-import permissionsRoute from '../middlewares/permissionsRoute';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
 
 const router = express.Router();
 

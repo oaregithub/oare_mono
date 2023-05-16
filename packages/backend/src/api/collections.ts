@@ -1,8 +1,8 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import collectionsMiddleware from '@/middlewares/collections';
+import collectionsMiddleware from '@/middlewares/router/collections';
 import sl from '@/serviceLocator';
-import cacheMiddleware from '@/middlewares/cache';
+import cacheMiddleware from '@/middlewares/router/cache';
 import { CollectionResponse, Collection } from '@oare/types';
 import { collectionTextsFilter, collectionFilter } from '@/cache/filters';
 

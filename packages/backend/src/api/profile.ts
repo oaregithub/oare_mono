@@ -2,7 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { UpdateProfilePayload } from '@oare/types';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
 const router = express.Router();
 

@@ -2,7 +2,7 @@ import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import { CreateCommentPayload } from '@oare/types';
-import permissionRoute from '@/middlewares/permissionsRoute';
+import permissionRoute from '@/middlewares/router/permissionsRoute';
 
 const router = express.Router();
 

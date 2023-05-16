@@ -1,8 +1,8 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import adminRoute from '@/middlewares/adminRoute';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import adminRoute from '@/middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import { EnvironmentInfo } from '@oare/types';
 
 const router = express.Router();

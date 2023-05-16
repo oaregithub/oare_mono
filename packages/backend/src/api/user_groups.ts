@@ -3,7 +3,7 @@ import {
   AddUsersToGroupPayload,
   RemoveUsersFromGroupPayload,
 } from '@oare/types';
-import adminRoute from '@/middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 

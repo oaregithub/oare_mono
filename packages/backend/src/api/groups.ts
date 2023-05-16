@@ -4,7 +4,7 @@ import {
   CreateGroupPayload,
   UpdateGroupDescriptionPayload,
 } from '@oare/types';
-import adminRoute from '@/middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
