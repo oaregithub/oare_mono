@@ -62,7 +62,7 @@ router
 
       await QuarantineTextDao.removeQuarantineTextRow(textUuid);
 
-      res.status(204).send();
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

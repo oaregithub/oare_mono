@@ -2,6 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { HttpForbidden, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
+/**
+ * Restricts access to collections to only users with permission to view them.
+ * Functions as a router-level middleware that can be applied in the route definition.
+ * Uses the required `uuid` parameter in the request to determine which collection to check.
+ */
 async function collectionsMiddleware(
   req: Request,
   _res: Response,

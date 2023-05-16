@@ -2,9 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { HttpInternalError, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
 
+/**
+ * Restricts access to texts to only users with permission to view them.
+ * Functions as a router-level middleware that can be applied in the route definition.
+ * Uses the required `uuid` parameter in the request to determine which text to check.
+ */
 const textMiddleware = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
@@ -13,6 +18,7 @@ const textMiddleware = async (
     const userUuid = req.user ? req.user.uuid : null;
     const textUuid = req.params.uuid;
 
+    // Allows for quarantined texts to be viewed by admins. They would otherwise by blocked.
     const forceAllowAdminView = req.query.forceAllowAdminView
       ? (req.query.forceAllowAdminView as string) === 'true'
       : false;

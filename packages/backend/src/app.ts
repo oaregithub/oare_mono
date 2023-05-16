@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 
   // Intercept OPTIONS requests
   if (req.method === 'OPTIONS') {
-    res.sendStatus(204);
+    res.status(204).end();
   } else {
     next();
   }
