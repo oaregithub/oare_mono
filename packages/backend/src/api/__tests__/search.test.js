@@ -2,7 +2,7 @@ import app from '@/app';
 import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
-import { getSubscriptVowelOptions } from '../daos/SignReadingDao/utils';
+import { getSubscriptVowelOptions } from '@/daos/SignReadingDao/utils';
 
 describe('search test', () => {
   describe('GET /search', () => {

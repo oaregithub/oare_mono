@@ -21,7 +21,7 @@ import cacheMiddleware from '@/middlewares/router/cache';
 import textMiddleware from '@/middlewares/router/text';
 import fileUpload from 'express-fileupload';
 import { textFilter } from '@/cache/filters';
-import { concatLocation } from './daos/ResourceDao/utils';
+import { concatLocation } from '@/daos/ResourceDao/utils';
 
 const router = express.Router();
 

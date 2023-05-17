@@ -1,6 +1,6 @@
 import knex from '@/connection';
 import { UuidRow, SignCode, SignList, SignListReading } from '@oare/types';
-import { formattedSearchCharacter } from '@/api/daos/TextEpigraphyDao/utils';
+import { formattedSearchCharacter } from '@/daos/TextEpigraphyDao/utils';
 import { Knex } from 'knex';
 
 class SignReadingDao {

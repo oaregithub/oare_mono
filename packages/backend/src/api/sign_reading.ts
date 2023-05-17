@@ -8,7 +8,7 @@ import {
   SignListResponse,
 } from '@oare/types';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { concatenateReadings } from './daos/SignReadingDao/utils';
+import { concatenateReadings } from '@/daos/SignReadingDao/utils';
 
 const router = express.Router();
 

@@ -2,12 +2,13 @@ import express from 'express';
 import { DictionarySearchPayload } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import dictionaryWordDao from './daos/DictionaryWordDao';
 
 const router = express.Router();
 
 router.route('/search_dictionary').get(async (req, res, next) => {
   try {
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+
     const {
       search,
       page,
@@ -17,7 +18,7 @@ router.route('/search_dictionary').get(async (req, res, next) => {
     } = (req.query as unknown) as DictionarySearchPayload;
     const userUuid = req.user ? req.user.uuid : null;
 
-    const results = await dictionaryWordDao.searchWords(
+    const results = await DictionaryWordDao.searchWords(
       search,
       page,
       rows,

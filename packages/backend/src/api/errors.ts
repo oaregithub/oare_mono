@@ -6,8 +6,8 @@ import {
 } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import adminRoute from '../middlewares/router/adminRoute';
-import { InsertErrorsRow } from './daos/ErrorsDao';
+import adminRoute from '@/middlewares/router/adminRoute';
+import { InsertErrorsRow } from '@/daos/ErrorsDao';
 
 const router = express.Router();
 

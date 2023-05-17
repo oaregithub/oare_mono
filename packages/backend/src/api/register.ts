@@ -4,12 +4,13 @@ import { RegisterPayload, RegisterResponse } from '@oare/types';
 import * as security from '@/security';
 import firebase from '@/firebase';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
-import UserDao from './daos/UserDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
 router.route('/register').post(async (req, res, next) => {
   try {
+    const UserDao = sl.get('UserDao');
     const { firstName, lastName, email, password }: RegisterPayload = req.body;
     const existingUser = await UserDao.emailExists(email);
     if (existingUser) {

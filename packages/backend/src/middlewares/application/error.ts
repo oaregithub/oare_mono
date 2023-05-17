@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '@/exceptions/HttpException';
-import { InsertErrorsRow } from '@/api/daos/ErrorsDao';
+import { InsertErrorsRow } from '@/daos/ErrorsDao';
 import sl from '@/serviceLocator';
 
 /**
