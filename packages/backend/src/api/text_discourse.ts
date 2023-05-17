@@ -171,7 +171,7 @@ router
               trx
             );
           } else if (discourseType === 'Paragraph') {
-            await AliasDao.insertAlias(
+            await AliasDao.insertAliasRow(
               'label',
               newRowUuid,
               newContent,

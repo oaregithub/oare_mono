@@ -212,7 +212,7 @@ describe('POST /text_discourse_parent', () => {
     insertField: jest.fn().mockResolvedValue(),
   };
   const mockAliasDao = {
-    insertAlias: jest.fn().mockResolvedValue(),
+    insertAliasRow: jest.fn().mockResolvedValue(),
   };
   const mockItemPropertiesDao = {
     addProperties: jest.fn().mockResolvedValue(),
@@ -299,7 +299,7 @@ describe('POST /text_discourse_parent', () => {
     expect(mockTextDiscourseDao.insertDiscourseRow).toHaveBeenCalled();
     expect(mockTextDiscourseDao.getChildrenUuids).toHaveBeenCalled();
     expect(mockItemPropertiesDao.addProperties).toHaveBeenCalledTimes(1);
-    expect(mockAliasDao.insertAlias).toHaveBeenCalled();
+    expect(mockAliasDao.insertAliasRow).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 

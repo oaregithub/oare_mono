@@ -210,7 +210,7 @@ class HierarchyDao {
       .where('hierarchy.role', 'tree')
       .first();
 
-    const names = await AliasDao.getAliasNames(
+    const names = await AliasDao.getAliasNamesByReferenceUuid(
       topNodeHierarchy.objectUuid,
       trx
     );

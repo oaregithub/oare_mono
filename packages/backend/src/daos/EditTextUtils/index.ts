@@ -356,7 +356,7 @@ const addRegionDiscourse = async (
           .then(row => (row && row.name ? row.name : null));
 
         // eslint-disable-next-line no-await-in-loop
-        await AliasDao.insertAlias(
+        await AliasDao.insertAliasRow(
           'label',
           newDiscourseUuid,
           originalLabel,

@@ -2,17 +2,40 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
 
+// VERIFIED COMPLETE
+
 class AliasDao {
-  async getAliasNames(uuid: string, trx?: Knex.Transaction): Promise<string[]> {
+  /**
+   * Retrieves a list of alias names for a given reference UUID.
+   * @param referenceUuid The reference UUID to retrieve alias names for.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of alias names.
+   */
+  async getAliasNamesByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
     const k = trx || knex;
-    const names = await k('alias')
+
+    const names: string[] = await k('alias')
       .pluck('name')
-      .where('alias.reference_uuid', uuid)
+      .where({ reference_uuid: referenceUuid })
       .orderBy('primacy');
+
     return names;
   }
 
-  async insertAlias(
+  /**
+   * Inserts new row into the `alias` table.
+   * @param type Alias type.
+   * @param referenceUuid UUID that the alias refers to.
+   * @param name Alias name.
+   * @param nameType Type of the alias name.
+   * @param language Language of the alias name.
+   * @param primacy Relative primacy of the alias name.
+   * @param trx Knex Transaction. Optional.
+   */
+  async insertAliasRow(
     type: string,
     referenceUuid: string,
     name: string,
@@ -22,7 +45,9 @@ class AliasDao {
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
+
     const uuid = v4();
+
     await k('alias').insert({
       uuid,
       type,
@@ -34,13 +59,23 @@ class AliasDao {
     });
   }
 
+  /**
+   * Removes all aliases for a given reference UUID.
+   * Use with caution, as this removes all aliases for a given reference UUID, instead of one at a time.
+   * @param referenceUuid The reference UUID to remove aliases for.
+   * @param trx Knex Transaction. Optional.
+   */
   async removeAliasByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
+
     await k('alias').del().where({ reference_uuid: referenceUuid });
   }
 }
 
+/**
+ * AliasDao instance as a singleton
+ */
 export default new AliasDao();
