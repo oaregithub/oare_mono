@@ -2,12 +2,21 @@ import { LinkItem } from '@oare/types';
 import { Knex } from 'knex';
 import knex from '@/connection';
 
+// VERIFIED COMPLETE
+
 class ConceptDao {
+  /**
+   * Searches for concepts by name or UUID. Used for autocomplete when connecting link properties.
+   * @param search The search string. Could be a UUID or a name.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of matching, ordered `LinkItem` objects.
+   */
   async searchConcepts(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
     const k = trx || knex;
+
     const rows: LinkItem[] = await k('concept')
       .innerJoin('alias', 'alias.reference_uuid', 'concept.uuid')
       .select('concept.uuid as objectUuid', 'alias.name as objectDisplay')
@@ -22,4 +31,7 @@ class ConceptDao {
   }
 }
 
+/**
+ * ConceptDao instance as a singleton
+ */
 export default new ConceptDao();

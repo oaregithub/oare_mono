@@ -562,11 +562,18 @@ class PersonDao {
     };
   }
 
+  /**
+   * Searches for persons by label or UUID. Used for autocomplete when connecting link properties.
+   * @param search The search string. Could be a UUID or a label.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of matching, ordered `LinkItem` objects.
+   */
   async searchPersons(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
     const k = trx || knex;
+
     const rows: LinkItem[] = await k('person')
       .select('person.uuid as objectUuid', 'person.label as objectDisplay')
       .where(k.raw('LOWER(person.label)'), 'like', `%${search.toLowerCase()}%`)
@@ -580,4 +587,7 @@ class PersonDao {
   }
 }
 
+/**
+ * PersonDao instance as a singleton
+ */
 export default new PersonDao();

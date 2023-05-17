@@ -211,11 +211,19 @@ class PeriodsDao {
     return Number(occurrences);
   }
 
+  /**
+   * Searches for periods by name or abbreviation or UUID. Used for autocomplete when connecting link properties.
+   * Result strings are dynamically constructed based on the period type.
+   * @param search The search string. Could be a UUID, name, or abbreviation.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of matching, ordered `LinkItem` objects.
+   */
   async searchPeriods(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {
     const k = trx || knex;
+
     const rows: LinkItem[] = await k('period')
       .select(
         'period.uuid as objectUuid',
@@ -251,4 +259,7 @@ class PeriodsDao {
   }
 }
 
+/**
+ * PeriodsDao instance as a singleton
+ */
 export default new PeriodsDao();
