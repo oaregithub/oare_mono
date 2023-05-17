@@ -14,11 +14,7 @@ async function disableCache(): Promise<void> {
 }
 
 async function flushCache(): Promise<void> {
-  await axios.delete('/cache/flush', {
-    params: {
-      propogate: 'true',
-    },
-  });
+  await axios.delete('/cache/flush');
 }
 
 async function clearCacheRoute(
@@ -29,7 +25,6 @@ async function clearCacheRoute(
     params: {
       url,
       level,
-      propogate: 'true',
     },
   });
 }
@@ -42,7 +37,6 @@ async function getNumKeys(
     params: {
       url,
       level,
-      propogate: 'true',
     },
   });
   return data;

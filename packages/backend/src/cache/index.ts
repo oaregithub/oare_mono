@@ -2,11 +2,6 @@ import { createClient } from 'redis';
 import { API_PATH } from '@/setupRoutes';
 import { User } from '@oare/types';
 import { Request } from 'express';
-import {
-  crossRegionCacheClear,
-  crossRegionCacheFlush,
-  crossRegionCacheKeys,
-} from './utils';
 
 const redis = createClient(
   process.env.NODE_ENV === 'production'
@@ -56,30 +51,18 @@ class Cache {
     return filter(JSON.parse(cachedValue), key.req.user);
   }
 
-  public async clear(
-    url: string,
-    options: ClearCacheOptions,
-    req: Request,
-    propogate: boolean = true
-  ) {
+  public async clear(url: string, options: ClearCacheOptions) {
     if (options.level === 'exact') {
       await redis.del(`${API_PATH}${url}`);
     } else if (options.level === 'startsWith') {
       const matchingKeys = await redis.keys(`${API_PATH}${url}*`);
       await Promise.all(matchingKeys.map(match => redis.del(match)));
     }
-
-    // NOTE: Temporarily Disabled While International Server(s) Are Deprecated
-    /* if (propogate) {
-      await crossRegionCacheClear(url, options, req);
-    } */
   }
 
   public async keys(
     url: string,
-    level: 'exact' | 'startsWith',
-    req: Request,
-    propogate: boolean = true
+    level: 'exact' | 'startsWith'
   ): Promise<number> {
     let numOriginKeys = 0;
     if (level === 'exact') {
@@ -90,24 +73,11 @@ class Cache {
       numOriginKeys = keys.length;
     }
 
-    // NOTE: Temporarily Disabled While International Server(s) Are Deprecated
-    /* let numRemoteKeys = 0;
-    if (propogate) {
-      numRemoteKeys = await crossRegionCacheKeys(url, level, req);
-    }
-
-    return numOriginKeys + numRemoteKeys; */
-
     return numOriginKeys;
   }
 
-  public async flush(req: Request, propogate: boolean = true) {
+  public async flush() {
     await redis.flushDb();
-
-    // NOTE: Temporarily Disabled While International Server(s) Are Deprecated
-    /* if (propogate) {
-      await crossRegionCacheFlush(req);
-    } */
   }
 }
 

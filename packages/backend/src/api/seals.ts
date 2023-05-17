@@ -89,8 +89,8 @@ router
         await SealDao.updateSealSpelling(uuid, name, trx);
       });
 
-      await cache.clear('/seals', { level: 'exact' }, req);
-      await cache.clear(`/seals/${uuid}`, { level: 'exact' }, req);
+      await cache.clear('/seals', { level: 'exact' });
+      await cache.clear(`/seals/${uuid}`, { level: 'exact' });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -126,8 +126,8 @@ router
         await ItemPropertiesDao.addProperties([itemProperty], trx);
       });
 
-      await cache.clear('/seals', { level: 'exact' }, req);
-      await cache.clear(`/seals/${sealUuid}`, { level: 'exact' }, req);
+      await cache.clear('/seals', { level: 'exact' });
+      await cache.clear(`/seals/${sealUuid}`, { level: 'exact' });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

@@ -92,8 +92,8 @@ router
         dictionaryRow.type
       );
 
-      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
-      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       const response: AddFormSpellingResponse = { uuid: spellingUuid };
       res.status(201).json(response);
@@ -217,19 +217,11 @@ router
       );
 
       // Updated word, cache must be cleared
-      await cache.clear(
-        originalDictionaryCacheRouteToClear,
-        {
-          level: 'exact',
-        },
-        req
-      );
-      await cache.clear(
-        newDictionaryCacheRouteToClear,
-        { level: 'exact' },
-        req
-      );
-      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' }, req);
+      await cache.clear(originalDictionaryCacheRouteToClear, {
+        level: 'exact',
+      });
+      await cache.clear(newDictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -282,14 +274,10 @@ router
       );
 
       // Updated word, cache must be cleared
-      await cache.clear(
-        dictionaryCacheRouteToClear,
-        {
-          level: 'exact',
-        },
-        req
-      );
-      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' }, req);
+      await cache.clear(dictionaryCacheRouteToClear, {
+        level: 'exact',
+      });
+      await cache.clear(`/dictionary/${uuid}`, { level: 'exact' });
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -312,11 +300,6 @@ router
 
       await utils.createTransaction(async trx => {
         await DictionaryFormDao.updateForm(formUuid, newForm, trx);
-
-        const discourseUuids = await TextDiscourseDao.getDiscourseUuidsByFormUuid(
-          formUuid,
-          trx
-        );
       });
 
       const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
@@ -331,8 +314,8 @@ router
         dictionaryRow.type
       );
 
-      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
-      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       res.status(201).end();
     } catch (err) {
@@ -420,13 +403,9 @@ router
 
       await Promise.all(
         discourseRows.map(row =>
-          cache.clear(
-            `/text_epigraphies/text/${row.textUuid}`,
-            {
-              level: 'startsWith',
-            },
-            req
-          )
+          cache.clear(`/text_epigraphies/text/${row.textUuid}`, {
+            level: 'startsWith',
+          })
         )
       );
       res.status(204).end();
@@ -452,7 +431,7 @@ router
       const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
         formUuid
       );
-      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -514,7 +493,7 @@ router
         formUuid
       );
 
-      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       res.status(201).end();
     } catch (err) {
@@ -546,11 +525,6 @@ router
       await utils.createTransaction(async trx => {
         await TextDiscourseDao.unsetSpellingUuid(uuid, trx);
         await DictionarySpellingDao.deleteSpelling(uuid, trx);
-
-        const discourseRowUuids = await TextDiscourseDao.uuidsBySpellingUuid(
-          uuid,
-          trx
-        );
       });
 
       const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
@@ -558,8 +532,8 @@ router
         dictionaryRow.type
       );
 
-      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
-      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       res.status(201).end();
     } catch (err) {
@@ -697,8 +671,8 @@ router
         dictionaryRow.type
       );
 
-      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
-      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' }, req);
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
+      await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
 
       res.status(201).end();
     } catch (err) {
@@ -786,7 +760,7 @@ router
         wordType
       );
 
-      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' }, req);
+      await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
 
       res.status(201).json(newWordUuid);
     } catch (err) {

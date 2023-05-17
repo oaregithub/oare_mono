@@ -72,13 +72,9 @@ router
 
         await TextDao.updateTranslitStatus(textUuid, color);
 
-        await cache.clear(
-          `/text_epigraphies/text/${textUuid}`,
-          {
-            level: 'startsWith',
-          },
-          req
-        );
+        await cache.clear(`/text_epigraphies/text/${textUuid}`, {
+          level: 'startsWith',
+        });
 
         res.status(204).end();
       } catch (err) {
@@ -449,13 +445,9 @@ router
         await ItemPropertiesDao.addProperties(tables.itemProperties, trx);
       });
 
-      await cache.clear(
-        `/collections/${tables.hierarchy.objectParentUuid}`,
-        {
-          level: 'exact',
-        },
-        req
-      );
+      await cache.clear(`/collections/${tables.hierarchy.objectParentUuid}`, {
+        level: 'exact',
+      });
 
       res.status(201).end();
     } catch (err) {
@@ -519,18 +511,10 @@ router
 
       const collectionUuid = await CollectionDao.getTextCollectionUuid(uuid);
 
-      await cache.clear(
-        `/text_epigraphies/text/${uuid}`,
-        {
-          level: 'startsWith',
-        },
-        req
-      );
-      await cache.clear(
-        `/collections/${collectionUuid}`,
-        { level: 'exact' },
-        req
-      );
+      await cache.clear(`/text_epigraphies/text/${uuid}`, {
+        level: 'startsWith',
+      });
+      await cache.clear(`/collections/${collectionUuid}`, { level: 'exact' });
 
       res.status(201).end();
     } catch (err) {
@@ -699,13 +683,9 @@ router
         await EditTextUtils.cleanLines(payload.textUuid, trx);
       });
 
-      await cache.clear(
-        `/text_epigraphies/text/${payload.textUuid}`,
-        {
-          level: 'startsWith',
-        },
-        req
-      );
+      await cache.clear(`/text_epigraphies/text/${payload.textUuid}`, {
+        level: 'startsWith',
+      });
 
       res.status(204).end();
     } catch (err) {

@@ -63,13 +63,9 @@ router
         );
 
         if (location === 'taxonomyTree') {
-          cache.clear(
-            '/dictionary/tree/taxonomy',
-            {
-              level: 'exact',
-            },
-            req
-          );
+          cache.clear('/dictionary/tree/taxonomy', {
+            level: 'exact',
+          });
         }
         res.status(201).end();
       } catch (err) {
@@ -108,13 +104,9 @@ router
             : language[0].toLocaleUpperCase() + language.substring(1)
         );
         if (location === 'taxonomyTree') {
-          cache.clear(
-            '/dictionary/tree/taxonomy',
-            {
-              level: 'exact',
-            },
-            req
-          );
+          cache.clear('/dictionary/tree/taxonomy', {
+            level: 'exact',
+          });
         }
         res.status(201).end();
       } catch (err) {
@@ -140,13 +132,9 @@ router
         await FieldDao.decrementPrimacy(primacy, referenceUuid, type);
 
         if (location === 'taxonomyTree') {
-          cache.clear(
-            '/dictionary/tree/taxonomy',
-            {
-              level: 'exact',
-            },
-            req
-          );
+          cache.clear('/dictionary/tree/taxonomy', {
+            level: 'exact',
+          });
         }
         res.status(204).end();
       } catch (err) {

@@ -431,9 +431,7 @@ describe('dictionary api test', () => {
   describe('PATCH /dictionary/forms/:uuid', () => {
     const testUuid = 'test-uuid';
     const PATH = `${API_PATH}/dictionary/forms/${testUuid}`;
-    const discourseUuids = ['uuid1', 'uuid2'];
     const DiscourseDao = {
-      getDiscourseUuidsByFormUuid: jest.fn().mockResolvedValue(discourseUuids),
       updateDiscourseTranscription: jest.fn().mockResolvedValue(null),
     };
 
@@ -486,20 +484,6 @@ describe('dictionary api test', () => {
         UserDao: AdminUserDao,
         FormDao: {
           updateForm: jest.fn().mockRejectedValue('Failed to update form'),
-        },
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if getting discourse uuids fails', async () => {
-      setup({
-        UserDao: AdminUserDao,
-        DiscourseDao: {
-          getDiscourseUuidsByFormUuid: jest
-            .fn()
-            .mockRejectedValue('Failed to get discourse uuids'),
         },
       });
 
@@ -775,7 +759,6 @@ describe('dictionary api test', () => {
     };
 
     const TextDiscourseDao = {
-      uuidsBySpellingUuid: jest.fn().mockResolvedValue(['uuid1']),
       unsetSpellingUuid: jest.fn().mockResolvedValue(),
     };
 
@@ -832,17 +815,6 @@ describe('dictionary api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(500);
       expect(DictionarySpellingDao.deleteSpelling).not.toHaveBeenCalled();
-    });
-
-    it('returns 500 when getting uuids fails', async () => {
-      setupDeleteSpelling();
-      sl.set('TextDiscourseDao', {
-        ...TextDiscourseDao,
-        uuidsBySpellingUuid: jest.fn().mockRejectedValue('Failed to get uuids'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
     });
 
     it('returns 500 when text discourse update fails', async () => {

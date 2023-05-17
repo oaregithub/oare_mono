@@ -36,14 +36,11 @@ router.route('/cache/disable').patch(adminRoute, async (_req, res, next) => {
   }
 });
 
-router.route('/cache/flush').delete(adminRoute, async (req, res, next) => {
+router.route('/cache/flush').delete(adminRoute, async (_req, res, next) => {
   try {
     const cache = sl.get('cache');
-    const { propogate } = (req.query as unknown) as {
-      propogate: 'true' | 'false';
-    };
 
-    await cache.flush(req, propogate === 'true');
+    await cache.flush();
     res.status(204).end();
   } catch (err) {
     next(new HttpInternalError(err as string));
@@ -55,13 +52,12 @@ router
   .delete(authenticatedRoute, async (req, res, next) => {
     try {
       const cache = sl.get('cache');
-      const { url, level, propogate } = (req.query as unknown) as {
+      const { url, level } = (req.query as unknown) as {
         url: string;
         level: 'exact' | 'startsWith';
-        propogate: 'true' | 'false';
       };
 
-      await cache.clear(url, { level }, req, propogate === 'true');
+      await cache.clear(url, { level });
 
       res.status(204).end();
     } catch (err) {
@@ -72,12 +68,11 @@ router
 router.route('/cache/keys').get(adminRoute, async (req, res, next) => {
   try {
     const cache = sl.get('cache');
-    const { url, level, propogate } = (req.query as unknown) as {
+    const { url, level } = (req.query as unknown) as {
       url: string;
       level: 'exact' | 'startsWith';
-      propogate: 'true' | 'false';
     };
-    const numKeys = await cache.keys(url, level, req, propogate === 'true');
+    const numKeys = await cache.keys(url, level);
     res.json(numKeys);
   } catch (err) {
     next(new HttpInternalError(err as string));
