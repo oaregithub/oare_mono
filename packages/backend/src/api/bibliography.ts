@@ -4,7 +4,7 @@ import { HttpInternalError } from '@/exceptions';
 import { BibliographyResponse } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { bibliographiesFilter, noFilter } from '@/cache/filters';
+import { bibliographiesFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -74,7 +74,7 @@ router
   .route('/bibliography/:uuid')
   .get(
     permissionsRoute('BIBLIOGRAPHY'),
-    cacheMiddleware<BibliographyResponse>(noFilter),
+    cacheMiddleware<BibliographyResponse>(null),
     async (req, res, next) => {
       try {
         const uuid = req.params.uuid as string;
@@ -130,7 +130,7 @@ router
         const response = await cache.insert<BibliographyResponse>(
           { req },
           biblioResponse,
-          noFilter,
+          null,
           60 * 60 * 24 * 30 * 6
         );
 

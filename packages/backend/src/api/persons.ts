@@ -10,7 +10,7 @@ import {
   TextOccurrencesCountResponseItem,
   PersonInfo,
 } from '@oare/types';
-import { noFilter, personFilter } from '@/cache/filters';
+import { personFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router
   .route('/persons/:letter')
   .get(
     permissionsRoute('PERSONS'),
-    cacheMiddleware<PersonListItem[]>(noFilter),
+    cacheMiddleware<PersonListItem[]>(null),
     async (req, res, next) => {
       try {
         const { letter } = req.params;
@@ -68,7 +68,7 @@ router
         const response = await cache.insert<PersonListItem[]>(
           { req },
           personListItem,
-          noFilter
+          null
         );
 
         res.json(response);

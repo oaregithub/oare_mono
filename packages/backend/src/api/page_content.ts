@@ -3,20 +3,19 @@ import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
 router
   .route('/page_content/:routeName')
-  .get(cacheMiddleware<string>(noFilter), async (req, res, next) => {
+  .get(cacheMiddleware<string>(null), async (req, res, next) => {
     try {
       const { routeName } = req.params;
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
       const content = await PageContentDao.getContent(routeName);
 
-      const response = await cache.insert<string>({ req }, content, noFilter);
+      const response = await cache.insert<string>({ req }, content, null);
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));

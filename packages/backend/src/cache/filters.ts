@@ -11,8 +11,17 @@ import {
   ZoteroData,
 } from '@oare/types';
 import sl from '@/serviceLocator';
+import { CacheFilter } from '@/cache';
 
-export const dictionaryWordFilter = async (
+/**
+ * Filters out forms/spellings of a word that have no occurrences if the user does not have the 'CONNECT_SPELLING' permission.
+ * Used when requesting data for a specific word.
+ * Prevents incomplete dictionary data from being displayed to most users.
+ * @param word The word to filter.
+ * @param user The requesting user.
+ * @returns The filtered word.
+ */
+export const dictionaryWordFilter: CacheFilter<Word> = async (
   word: Word,
   user: User | null
 ): Promise<Word> => {
@@ -36,7 +45,15 @@ export const dictionaryWordFilter = async (
   };
 };
 
-export const dictionaryFilter = async (
+/**
+ * Filters out words that have no forms/spellings with occurrences if the user does not have the 'CONNECT_SPELLING' permission.
+ * Used when requesting a list of words.
+ * Prevents incomplete dictionary data from being displayed to most users.
+ * @param words The list of words to filter.
+ * @param user The requesting user.
+ * @returns The filtered list of words.
+ */
+export const dictionaryFilter: CacheFilter<Word[]> = async (
   words: Word[],
   user: User | null
 ): Promise<Word[]> => {
@@ -57,7 +74,13 @@ export const dictionaryFilter = async (
   );
 };
 
-export const collectionTextsFilter = async (
+/**
+ * Filters a collection to exclude texts that the user does not have access to.
+ * @param collectionsResponse The collection response to filter.
+ * @param user The requesting user.
+ * @returns The filtered collection response.
+ */
+export const collectionTextsFilter: CacheFilter<CollectionResponse> = async (
   collectionsResponse: CollectionResponse,
   user: User | null
 ): Promise<CollectionResponse> => {
@@ -75,7 +98,13 @@ export const collectionTextsFilter = async (
   };
 };
 
-export const collectionFilter = async (
+/**
+ * Filters a list of collections to exclude collections that the user does not have access to.
+ * @param collections The list of collections to filter.
+ * @param user The requesting user.
+ * @returns The filtered list of collections.
+ */
+export const collectionFilter: CacheFilter<Collection[]> = async (
   collections: Collection[],
   user: User | null
 ): Promise<Collection[]> => {
@@ -108,7 +137,15 @@ export const collectionFilter = async (
   return viewableCollections;
 };
 
-export const textFilter = async (
+/**
+ * Used to add user-specific information to a epigraphy response.
+ * Also used to retrieve PDF links for zotero data. This is done in a cache filter
+ * to prevent expiring links.
+ * @param epigraphy The epigraphy response to add data to.
+ * @param user The requesting user.
+ * @returns The epigraphy response with added data.
+ */
+export const textFilter: CacheFilter<EpigraphyResponse> = async (
   epigraphy: EpigraphyResponse,
   user: User | null
 ): Promise<EpigraphyResponse> => {
@@ -139,7 +176,14 @@ export const textFilter = async (
   };
 };
 
-export const SealFilter = async (
+/**
+ * Used to add occurrences count to a seal response.
+ * Done in a cache filter to exclude occurrences that appear in texts that the user does not have access to.
+ * @param seal The seal response to add a count to.
+ * @param user The requesting user.
+ * @returns The seal response with added count.
+ */
+export const SealFilter: CacheFilter<Seal> = async (
   seal: Seal,
   user: User | null
 ): Promise<Seal> => {
@@ -167,7 +211,14 @@ export const SealFilter = async (
   };
 };
 
-export const SealListFilter = async (
+/**
+ * Used to add occurrences counts to a list of seals.
+ * Done in a cache filter to exclude occurrences that appear in texts that the user does not have access to.
+ * @param sealList The seal list to add counts to.
+ * @param user The requesting user.
+ * @returns The seal list with added counts.
+ */
+export const SealListFilter: CacheFilter<SealInfo[]> = async (
   sealList: SealInfo[],
   user: User | null
 ): Promise<SealInfo[]> => {
@@ -191,7 +242,14 @@ export const SealListFilter = async (
   return filteredSealList;
 };
 
-export const personFilter = async (
+/**
+ * Used to add roles data to a person response.
+ * Done in a cache filter to exclude occurrences that appear in texts that the user does not have access to.
+ * @param person The person response to add data to.
+ * @param user The requesting user.
+ * @returns The person response with added data.
+ */
+export const personFilter: CacheFilter<PersonInfo> = async (
   person: PersonInfo,
   user: User | null
 ): Promise<PersonInfo> => {
@@ -221,8 +279,16 @@ export const personFilter = async (
   };
 };
 
-export const bibliographyFilter = async (
-  bibliography: BibliographyResponse
+/**
+ * Used to add PDF link to a bibliography response.
+ * Done in a cache filter to prevent expiring links.
+ * @param bibliography The bibliography response to add a link to.
+ * @param _user The requesting user.
+ * @returns The bibliography response with added link.
+ */
+export const bibliographyFilter: CacheFilter<BibliographyResponse> = async (
+  bibliography: BibliographyResponse,
+  _user: User | null
 ): Promise<BibliographyResponse> => {
   const ResourceDao = sl.get('ResourceDao');
   const { fileUrl } = await ResourceDao.getPDFUrlByBibliographyUuid(
@@ -235,13 +301,21 @@ export const bibliographyFilter = async (
   return bibliographyResponse;
 };
 
-export const bibliographiesFilter = async (
-  bibliographies: BibliographyResponse[]
+/**
+ * Used to add PDF links to a list of bibliographies.
+ * Done in a cache filter to prevent expiring links.
+ * @param bibliographies The bibliographies list to add links to.
+ * @param user The requesting user.
+ * @returns The bibliography list with added links.
+ */
+export const bibliographiesFilter: CacheFilter<BibliographyResponse[]> = async (
+  bibliographies: BibliographyResponse[],
+  user: User | null
 ): Promise<BibliographyResponse[]> => {
   const bibliographyResponse = await Promise.all(
-    bibliographies.map(async bibliography => bibliographyFilter(bibliography))
+    bibliographies.map(async bibliography =>
+      bibliographyFilter(bibliography, user)
+    )
   );
   return bibliographyResponse;
 };
-
-export const noFilter = async (items: any, _user: User | null) => items;

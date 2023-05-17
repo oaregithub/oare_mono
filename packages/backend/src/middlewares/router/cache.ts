@@ -1,17 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
-import { CacheKey } from '@/cache';
+import { CacheKey, CacheFilter } from '@/cache';
 import sl from '@/serviceLocator';
-import { User } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 
 /**
  * Attempts to retrieve a value from the cache before proceeding to the API route.
  * Functions as a router-level middleware that can be applied in the route definition.
- * @param filter A function that filters the cached value. Allows for the cached value to be modified before being sent to the client, as needed. A type should be specified for the filter.
+ * @param filter A function that filters the cached value. Allows for the cached value to be modified before being sent to the client, as needed.
+ * A type should be specified for the filter. Can be `null`.
  */
-const cacheMiddleware = <T>(
-  filter: (value: T, user: User | null) => Promise<T>
-) => async (req: Request, res: Response, next: NextFunction) => {
+const cacheMiddleware = <T>(filter: CacheFilter<T> | null) => async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const CacheStatusDao = sl.get('CacheStatusDao');
     const cache = sl.get('cache');

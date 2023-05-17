@@ -8,14 +8,13 @@ import {
   SignListResponse,
 } from '@oare/types';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { noFilter } from '@/cache/filters';
 import { concatenateReadings } from './daos/SignReadingDao/utils';
 
 const router = express.Router();
 
 router
   .route('/sign_reading/code/:sign/:post')
-  .get(cacheMiddleware<SignCode>(noFilter), async (req, res, next) => {
+  .get(cacheMiddleware<SignCode>(null), async (req, res, next) => {
     try {
       const SignReadingDao = sl.get('SignReadingDao');
       const { sign, post } = req.params;
@@ -38,7 +37,7 @@ router
         const response = await cache.insert<SignCode>(
           { req },
           signCode,
-          noFilter,
+          null,
           24 * 7
         );
         res.json(response);
@@ -50,7 +49,7 @@ router
 
 router
   .route('/sign_reading/format/:sign')
-  .get(cacheMiddleware<string[]>(noFilter), async (req, res, next) => {
+  .get(cacheMiddleware<string[]>(null), async (req, res, next) => {
     try {
       const SignReadingDao = sl.get('SignReadingDao');
       const { sign } = req.params;
@@ -60,7 +59,7 @@ router
       const response = await cache.insert<string[]>(
         { req },
         formattedSign,
-        noFilter,
+        null,
         24 * 7
       );
       res.json(response);
@@ -71,7 +70,7 @@ router
 
 router
   .route('/signList')
-  .get(cacheMiddleware<SignListResponse>(noFilter), async (req, res, next) => {
+  .get(cacheMiddleware<SignListResponse>(null), async (req, res, next) => {
     try {
       const SignReadingDao = sl.get('SignReadingDao');
       const cache = sl.get('cache');
@@ -137,7 +136,7 @@ router
       const response = await cache.insert<SignListResponse>(
         { req },
         { result: sortedSignList },
-        noFilter,
+        null,
         24 * 30
       );
 

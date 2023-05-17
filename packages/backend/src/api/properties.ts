@@ -13,7 +13,6 @@ import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { noFilter } from '@/cache/filters';
 import { capitalize } from 'lodash';
 import axios from 'axios';
 import { API_PATH } from '@/setupRoutes';
@@ -82,23 +81,20 @@ router.route('/properties/:referenceUuid').get(async (req, res, next) => {
 
 router
   .route('/properties_taxonomy_tree')
-  .get(
-    cacheMiddleware<TaxonomyPropertyTree>(noFilter),
-    async (req, res, next) => {
-      try {
-        const HierarchyDao = sl.get('HierarchyDao');
-        const cache = sl.get('cache');
+  .get(cacheMiddleware<TaxonomyPropertyTree>(null), async (req, res, next) => {
+    try {
+      const HierarchyDao = sl.get('HierarchyDao');
+      const cache = sl.get('cache');
 
-        const tree = await HierarchyDao.createPropertiesTaxonomyTree();
+      const tree = await HierarchyDao.createPropertiesTaxonomyTree();
 
-        const response = await cache.insert({ req }, tree, noFilter);
+      const response = await cache.insert({ req }, tree, null);
 
-        res.json(response);
-      } catch (err) {
-        next(new HttpInternalError(err as string));
-      }
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
     }
-  );
+  });
 
 router.route('/properties_links').get(async (req, res, next) => {
   try {

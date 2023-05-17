@@ -20,7 +20,7 @@ import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import textMiddleware from '@/middlewares/router/text';
 import fileUpload from 'express-fileupload';
-import { noFilter, textFilter } from '@/cache/filters';
+import { textFilter } from '@/cache/filters';
 import { concatLocation } from './daos/ResourceDao/utils';
 
 const router = express.Router();
@@ -231,7 +231,7 @@ router
   .get(
     textMiddleware,
     permissionsRoute('VIEW_TEXT_FILE'),
-    cacheMiddleware<string | null>(noFilter),
+    cacheMiddleware<string | null>(null),
     async (req, res, next) => {
       try {
         const { uuid: textUuid } = req.params;
@@ -259,12 +259,12 @@ router
           const response = await cache.insert<string | null>(
             { req },
             textContent,
-            noFilter
+            null
           );
 
           res.json(response);
         } else {
-          const response = await cache.insert<null>({ req }, null, noFilter);
+          const response = await cache.insert<null>({ req }, null, null);
 
           res.json(response);
         }

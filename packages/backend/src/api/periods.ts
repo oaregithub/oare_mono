@@ -4,7 +4,6 @@ import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import { HttpInternalError } from '@/exceptions';
 import { PeriodResponse, Year } from '@oare/types';
-import { noFilter } from '@/cache/filters';
 
 const router = express.Router();
 
@@ -12,7 +11,7 @@ router
   .route('/periods')
   .get(
     permissionsRoute('PERIODS'),
-    cacheMiddleware<PeriodResponse>(noFilter),
+    cacheMiddleware<PeriodResponse>(null),
     async (req, res, next) => {
       try {
         const cache = sl.get('cache');
@@ -45,7 +44,7 @@ router
         const response = await cache.insert<PeriodResponse>(
           { req },
           periods,
-          noFilter
+          null
         );
 
         res.json(response);
