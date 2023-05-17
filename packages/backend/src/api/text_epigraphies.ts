@@ -139,9 +139,8 @@ router
 
         const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
 
-        const bibliographyUuids = await ItemPropertiesDao.getObjectUuidsByReferenceAndVariable(
-          textUuid,
-          'b3938276-173b-11ec-8b77-024de1c1cc1d'
+        const bibliographyUuids = await ItemPropertiesDao.getBibliographyUuidsByReference(
+          textUuid
         );
 
         const bibItems = await Promise.all(

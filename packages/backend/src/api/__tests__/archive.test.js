@@ -66,54 +66,37 @@ const dossier = {
 
 describe('GET /archives', () => {
   const PATH = `${API_PATH}/archives`;
-  const archiveUuid = 'mockUuid';
-  const textToHideUuid = 'textToHideUuid';
-  const archiveInfo = {
-    name: 'mockArchive',
-    uuid: archiveUuid,
-    totalTexts: 1,
-    totalDossiers: 1,
-    descriptions: [],
-    bibliographyUuid: 'bibUuid',
-  };
 
-  const mockCollectionTextUtils = {
-    textsToHide: jest.fn().mockResolvedValue([textToHideUuid]),
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
   };
 
   const mockArchiveDao = {
-    getAllArchives: jest.fn().mockResolvedValue([archiveUuid]),
-    getArchiveInfo: jest.fn().mockResolvedValue(archiveInfo),
-    getArchiveByUuid: jest.fn().mockResolvedValue(archive),
+    getAllArchiveUuids: jest.fn().mockResolvedValue(['test-uuid']),
+    getArchiveByUuid: jest.fn().mockResolvedValue({}),
   };
 
   const setup = () => {
     sl.set('ArchiveDao', mockArchiveDao);
-    sl.set('CollectionTextUtils', mockCollectionTextUtils);
-    sl.set('UserDao', {
-      getUserByUuid: jest.fn().mockResolvedValue({
-        uuid: 'test-user-uuid',
-        isAdmin: true,
-      }),
-    });
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
 
-  const sendRequest = () =>
-    request(app).get(PATH).set('Authorization', 'token');
+  const sendRequest = () => request(app).get(PATH);
 
   it('returns 200 on successful archives retrieval', async () => {
     const response = await sendRequest();
-    expect(mockArchiveDao.getAllArchives).toHaveBeenCalled();
-    expect(mockArchiveDao.getArchiveInfo).toHaveBeenCalled();
+    expect(mockArchiveDao.getAllArchiveUuids).toHaveBeenCalled();
+    expect(mockArchiveDao.getArchiveByUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
   it('returns 500 on failed archives retrieval', async () => {
     sl.set('ArchiveDao', {
       ...mockArchiveDao,
-      getArchiveInfo: jest
+      getAllArchiveUuids: jest
         .fn()
         .mockRejectedValue('failed on archives retrieval'),
     });
@@ -122,41 +105,37 @@ describe('GET /archives', () => {
   });
 });
 
-describe('GET /archives/:uuid', () => {
+describe('GET /archive/:uuid', () => {
   const uuid = 'mockUuid';
-  const PATH = `${API_PATH}/archives/${uuid}`;
+  const PATH = `${API_PATH}/archive/${uuid}`;
 
   const mockArchiveDao = {
-    getArchiveByUuid: jest.fn().mockResolvedValue(archive),
+    getArchiveByUuid: jest.fn().mockResolvedValue({}),
   };
 
-  const mockUtils = {
-    extractPagination: jest
-      .fn()
-      .mockReturnValue({ filter: '', limit: 10, page: 1 }),
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
   };
 
   const setup = () => {
     sl.set('ArchiveDao', mockArchiveDao);
-    sl.set('utils', mockUtils);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
 
-  const sendRequest = () =>
-    request(app).get(PATH).set('Authorization', 'token');
+  const sendRequest = () => request(app).get(PATH);
 
-  it('returns 200 on successful archive text retrieval', async () => {
+  it('returns 200 on successful archive retrieval', async () => {
     const response = await sendRequest();
     expect(mockArchiveDao.getArchiveByUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
-  it('returns 500 on failed archive texts retrieval', async () => {
+  it('returns 500 on failed archive retrieval', async () => {
     sl.set('ArchiveDao', {
-      getArchiveByUuid: jest
-        .fn()
-        .mockRejectedValue('failed archive texts retrieval'),
+      getArchiveByUuid: jest.fn().mockRejectedValue('failed archive retrieval'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
@@ -171,40 +150,40 @@ describe('GET /dossier/:uuid', () => {
     getDossierByUuid: jest.fn().mockResolvedValue(dossier),
   };
 
-  const mockUtils = {
-    extractPagination: jest
-      .fn()
-      .mockReturnValue({ filter: '', limit: 10, page: 1 }),
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
   };
 
   const setup = () => {
     sl.set('ArchiveDao', mockArchiveDao);
-    sl.set('utils', mockUtils);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
 
-  const sendRequest = () =>
-    request(app).get(PATH).set('Authorization', 'token');
+  const sendRequest = () => request(app).get(PATH);
 
-  it('returns 200 on successful archive text retrieval', async () => {
+  it('returns 200 on successful dossier retrieval', async () => {
     const response = await sendRequest();
     expect(mockArchiveDao.getDossierByUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
-  it('returns 500 on failed archive texts retrieval', async () => {
+  it('returns 500 on failed dossier retrieval', async () => {
     sl.set('ArchiveDao', {
-      getDossierByUuid: jest
-        .fn()
-        .mockRejectedValue('failed archive texts retrieval'),
+      getDossierByUuid: jest.fn().mockRejectedValue('failed dossier retrieval'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
   });
 });
 
-describe('DELETE /archive_dossier/disconnect_text', () => {
+describe('DELETE /archive/:archiveUuid/disconnect_text/:textUuid', () => {
+  const archiveUuid = 'mockUuid';
+  const textUuid = 'mockTextUuid';
+  const PATH = `${API_PATH}/archive/${archiveUuid}/disconnect_text/${textUuid}`;
+
   const AdminUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
@@ -221,26 +200,21 @@ describe('DELETE /archive_dossier/disconnect_text', () => {
     }),
   };
 
-  const authorize = () => {
-    sl.set('UserDao', AdminUserDao);
+  const mockCache = {
+    clear: jest.fn(),
   };
 
   const setup = () => {
-    authorize();
+    sl.set('UserDao', AdminUserDao);
     sl.set('ArchiveDao', mockArchiveDao);
     sl.set('utils', mockUtils);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
 
   const sendRequest = () =>
-    request(app)
-      .delete(`${API_PATH}/archive_dossier/disconnect_text`)
-      .set('Authorization', 'token')
-      .send({
-        textUuid: 'text_uuid',
-        archiveOrDossierUuid: 'archive_or_dossier_uuid',
-      });
+    request(app).delete(PATH).set('Authorization', 'token');
 
   it('returns 204 on successful disconnection', async () => {
     const response = await sendRequest();
@@ -252,7 +226,7 @@ describe('DELETE /archive_dossier/disconnect_text', () => {
     sl.set('ArchiveDao', {
       disconnectText: jest
         .fn()
-        .mockRejectedValue('failed archive texts retrieval'),
+        .mockRejectedValue('failed archive texts disconnect'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

@@ -101,18 +101,26 @@ class ItemPropertiesDao {
     }
   }
 
-  async getObjectUuidsByReferenceAndVariable(
+  /**
+   * Gets bibliography UUIDs by reference UUID
+   * @param referenceUuid The reference UUID
+   * @param trx Knex Transaction. Optional.
+   * @returns An array of bibliography UUIDs
+   */
+  async getBibliographyUuidsByReference(
     referenceUuid: string,
-    variableUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
-    const objUuids: string[] = await k('item_properties')
-      .pluck('object_uuid')
-      .where('variable_uuid', variableUuid)
-      .where('reference_uuid', referenceUuid);
 
-    return objUuids;
+    const bibliographyUuids: string[] = await k('item_properties')
+      .pluck('object_uuid')
+      .where({
+        variable_uuid: 'b3938276-173b-11ec-8b77-024de1c1cc1d',
+        reference_uuid: referenceUuid,
+      });
+
+    return bibliographyUuids;
   }
 
   async getImagePropertyDetails(

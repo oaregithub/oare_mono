@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import knex from '@/connection';
 import { Knex } from 'knex';
-import { FieldInfo, FieldRow } from '@oare/types';
+import { FieldRow } from '@oare/types';
 import DetectLanguage, { DetectionResult } from 'detectlanguage';
 import { getDetectLanguageAPIKEY } from '@/utils';
 import { languages } from './utils';
@@ -10,63 +10,48 @@ interface FieldOptions {
   primacy?: number;
 }
 class FieldDao {
-  async getByReferenceUuid(
+  async getFieldRowsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
-    const k = trx || knex;
-    return k('field')
-      .select()
-      .where({
-        reference_uuid: referenceUuid,
-      })
-      .orderBy('primacy');
-  }
-
-  async getFieldInfoByReferenceAndType(
-    referenceUuid: string | null,
-    trx?: Knex.Transaction
-  ): Promise<FieldInfo | undefined> {
     const k = trx || knex;
     return k('field')
       .select(
-        'field.field',
-        'field.uuid',
-        'field.primacy',
-        'field.language',
-        'field.reference_uuid as referenceUuid'
+        'uuid',
+        'reference_uuid as referenceUuid',
+        'type',
+        'language',
+        'primacy',
+        'field',
+        'source_uuid as sourceUuid'
       )
-      .where('field.reference_uuid', referenceUuid)
-      .andWhere('field.type', 'description')
-      .first();
-  }
-
-  async getDefinitionsByReferenceUuid(
-    referenceUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<FieldRow[]> {
-    const k = trx || knex;
-    return k('field')
-      .select()
       .where({
         reference_uuid: referenceUuid,
       })
-      .andWhere('type', 'definition')
       .orderBy('primacy');
   }
 
-  async getDiscussionLemmasByReferenceUuid(
+  async getFieldRowsByReferenceUuidAndType(
     referenceUuid: string,
+    type: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
     const k = trx || knex;
-    return k('field')
-      .select()
-      .where({
-        reference_uuid: referenceUuid,
-      })
-      .andWhere('type', 'discussionLemma')
+
+    const rows: FieldRow[] = await k('field')
+      .select(
+        'uuid',
+        'reference_uuid as referenceUuid',
+        'type',
+        'language',
+        'primacy',
+        'field',
+        'source_uuid as sourceUuid'
+      )
+      .where({ reference_uuid: referenceUuid, type })
       .orderBy('primacy');
+
+    return rows;
   }
 
   async insertField(

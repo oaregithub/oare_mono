@@ -1,4 +1,4 @@
-import { FieldInfo } from './field';
+import { FieldRow } from './field';
 
 export interface HierarchyData {
   uuid: string;
@@ -15,20 +15,20 @@ export interface HierarchyTopNode {
   hierarchy: HierarchyData;
   name: string | null;
   variables: PropertyVariable[];
-  fieldInfo: FieldInfo | null;
+  fieldInfo: FieldRow | null;
 }
 
 export interface PropertyVariable extends VariableRow {
   hierarchy: HierarchyData;
   level: number | null;
   values: PropertyValue[];
-  fieldInfo: FieldInfo | null;
+  fieldInfo: FieldRow | null;
 }
 
 export interface PropertyValue extends ValueRow {
   hierarchy: HierarchyData;
   variables: PropertyVariable[];
-  fieldInfo: FieldInfo | null;
+  fieldInfo: FieldRow | null;
 }
 
 export interface TaxonomyPropertyTree {

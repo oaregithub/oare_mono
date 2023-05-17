@@ -321,7 +321,7 @@ describe('GET /text_epigraphies/text/:uuid', () => {
 
   const mockItemPropertiesDao = {
     addProperties: jest.fn().mockResolvedValue(),
-    getObjectUuidsByReferenceAndVariable: jest
+    getBibliographyUuidsByReference: jest
       .fn()
       .mockResolvedValue(['test-variable-object-uuid']),
   };

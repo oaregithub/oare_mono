@@ -341,7 +341,9 @@ describe('PATCH /text_discourse/:uuid', () => {
   };
 
   const mockFieldDao = {
-    getByReferenceUuid: jest.fn().mockResolvedValue([{ uuid: 'test-uuid' }]),
+    getFieldRowsByReferenceUuid: jest
+      .fn()
+      .mockResolvedValue([{ uuid: 'test-uuid' }]),
     getDefinitionsByReferenceUuid: jest
       .fn()
       .mockResolvedValue([{ uuid: 'test-uuid' }]),
@@ -388,7 +390,7 @@ describe('PATCH /text_discourse/:uuid', () => {
 
   it('returns 201 on successful discourse translation update', async () => {
     const response = await sendRequest();
-    expect(mockFieldDao.getByReferenceUuid).toHaveBeenCalled();
+    expect(mockFieldDao.getFieldRowsByReferenceUuid).toHaveBeenCalled();
     expect(mockFieldDao.updateField).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
@@ -417,7 +419,7 @@ describe('PATCH /text_discourse/:uuid', () => {
   it('returns 500 on failed update', async () => {
     sl.set('FieldDao', {
       ...mockFieldDao,
-      getByReferenceUuid: jest
+      getFieldRowsByReferenceUuid: jest
         .fn()
         .mockRejectedValue('failed to get row by reference uuid'),
     });

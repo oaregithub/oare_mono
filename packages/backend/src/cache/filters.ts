@@ -9,6 +9,8 @@ import {
   PersonInfo,
   BibliographyResponse,
   ZoteroData,
+  Archive,
+  Dossier,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { CacheFilter } from '@/cache';
@@ -318,4 +320,71 @@ export const bibliographiesFilter: CacheFilter<BibliographyResponse[]> = async (
     )
   );
   return bibliographyResponse;
+};
+
+/**
+ * Used to filter out texts that the user does not have access to from an archive and its dossiers.
+ * @param archive The archive to filter.
+ * @param user The requesting user.
+ * @returns The archive with filtered texts.
+ */
+export const archiveFilter: CacheFilter<Archive> = async (
+  archive: Archive,
+  user: User | null
+): Promise<Archive> => {
+  const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+  const textsToHide = await CollectionTextUtils.textsToHide(
+    user ? user.uuid : null
+  );
+
+  const archiveResponse: Archive = {
+    ...archive,
+    texts: archive.texts.filter(text => !textsToHide.includes(text.uuid)),
+    dossiers: await Promise.all(
+      archive.dossiers.map(d => dossierFilter(d, user))
+    ),
+  };
+
+  return archiveResponse;
+};
+
+/**
+ * Used to filter out texts that the user does not have access to from a list of archives and their dossiers.
+ * @param archives The list of archives to filter.
+ * @param user The requesting user.
+ * @returns The list of archives with filtered texts.
+ */
+export const archivesFilter: CacheFilter<Archive[]> = async (
+  archives: Archive[],
+  user: User | null
+): Promise<Archive[]> => {
+  const archiveResponse = await Promise.all(
+    archives.map(async archive => archiveFilter(archive, user))
+  );
+  return archiveResponse;
+};
+
+/**
+ * Used to filter out texts that the user does not have access to from a dossier.
+ * @param dossier The dossier to filter.
+ * @param user The requesting user.
+ * @returns The dossier with filtered texts.
+ */
+export const dossierFilter: CacheFilter<Dossier> = async (
+  dossier: Dossier,
+  user: User | null
+): Promise<Dossier> => {
+  const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+  const textsToHide = await CollectionTextUtils.textsToHide(
+    user ? user.uuid : null
+  );
+
+  const dossierResponse: Dossier = {
+    ...dossier,
+    texts: dossier.texts.filter(text => !textsToHide.includes(text.uuid)),
+  };
+
+  return dossierResponse;
 };

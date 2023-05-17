@@ -1,95 +1,104 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import { Archive, Dossier, DisconnectTextPayload } from '@oare/types';
+import { Archive, Dossier } from '@oare/types';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
+import cacheMiddleware from '@/middlewares/router/cache';
+import { archiveFilter, archivesFilter, dossierFilter } from '@/cache/filters';
+
+// VERIFIED COMPLETE
 
 const router = express.Router();
 
-router.route('/archives').get(async (req, res, next) => {
-  try {
-    const userUuid = req.user ? req.user.uuid : null;
-    const ArchiveDao = sl.get('ArchiveDao');
-    const archiveUuids = await ArchiveDao.getAllArchives();
-    const archives = await Promise.all(
-      archiveUuids.map(uuid => ArchiveDao.getArchiveInfo(uuid, userUuid))
-    );
+router
+  .route('/archives')
+  .get(cacheMiddleware<Archive[]>(archivesFilter), async (req, res, next) => {
+    try {
+      const ArchiveDao = sl.get('ArchiveDao');
+      const cache = sl.get('cache');
 
-    const archivesSorted = archives.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+      const archiveUuids = await ArchiveDao.getAllArchiveUuids();
+      const archives = await Promise.all(
+        archiveUuids.map(uuid => ArchiveDao.getArchiveByUuid(uuid))
+      );
 
-    res.json(archivesSorted);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+      const response = await cache.insert<Archive[]>(
+        { req },
+        archives,
+        archivesFilter
+      );
 
-router.route('/archives/:uuid').get(async (req, res, next) => {
-  try {
-    const uuid = req.params.uuid as string;
-    const userUuid = req.user ? req.user.uuid : null;
-    const utils = sl.get('utils');
-    const ArchiveDao = sl.get('ArchiveDao');
-    const { filter: search, limit: rows, page } = utils.extractPagination(
-      req.query
-    );
-    const response: Archive = await ArchiveDao.getArchiveByUuid(
-      uuid,
-      userUuid,
-      {
-        page,
-        rows,
-        search,
-      }
-    );
-
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
-
-router.route('/dossier/:uuid').get(async (req, res, next) => {
-  try {
-    const uuid = req.params.uuid as string;
-    const userUuid = req.user ? req.user.uuid : null;
-    const ArchiveDao = sl.get('ArchiveDao');
-    const utils = sl.get('utils');
-    const { filter: search, limit: rows, page } = utils.extractPagination(
-      req.query
-    );
-
-    const response: Dossier = await ArchiveDao.getDossierByUuid(
-      uuid,
-      userUuid,
-      {
-        page,
-        rows,
-        search,
-      }
-    );
-
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
 
 router
-  .route('/archive_dossier/disconnect_text')
+  .route('/archive/:uuid')
+  .get(cacheMiddleware<Archive>(archiveFilter), async (req, res, next) => {
+    try {
+      const ArchiveDao = sl.get('ArchiveDao');
+      const cache = sl.get('cache');
+
+      const uuid = req.params.uuid as string;
+
+      const archive = await ArchiveDao.getArchiveByUuid(uuid);
+
+      const response = await cache.insert<Archive>(
+        { req },
+        archive,
+        archiveFilter
+      );
+
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/dossier/:uuid')
+  .get(cacheMiddleware<Dossier>(dossierFilter), async (req, res, next) => {
+    try {
+      const ArchiveDao = sl.get('ArchiveDao');
+      const cache = sl.get('cache');
+
+      const uuid = req.params.uuid as string;
+
+      const dossier = await ArchiveDao.getDossierByUuid(uuid);
+
+      const response = await cache.insert<Dossier>(
+        { req },
+        dossier,
+        dossierFilter
+      );
+
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/archive/:archiveUuid/disconnect_text/:textUuid')
   .delete(adminRoute, async (req, res, next) => {
     try {
       const ArchiveDao = sl.get('ArchiveDao');
       const utils = sl.get('utils');
-      const {
-        textUuid,
-        archiveOrDossierUuid,
-      }: DisconnectTextPayload = req.body as DisconnectTextPayload;
+      const cache = sl.get('cache');
+
+      const archiveUuid = req.params.archiveUuid as string;
+      const textUuid = req.params.textUuid as string;
 
       await utils.createTransaction(async trx => {
-        await ArchiveDao.disconnectText(textUuid, archiveOrDossierUuid, trx);
+        await ArchiveDao.disconnectText(textUuid, archiveUuid, trx);
       });
+
+      await cache.clear('/archives', { level: 'exact' });
+      await cache.clear('/archive/', { level: 'startsWith' });
+      await cache.clear('/dossier/', { level: 'startsWith' });
+
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

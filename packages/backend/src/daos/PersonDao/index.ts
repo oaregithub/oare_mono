@@ -540,7 +540,10 @@ class PersonDao {
       trx
     );
 
-    const discussion = await FieldDao.getByReferenceUuid(personUuid, trx);
+    const discussion = await FieldDao.getFieldRowsByReferenceUuid(
+      personUuid,
+      trx
+    );
 
     return {
       person: mainPerson,

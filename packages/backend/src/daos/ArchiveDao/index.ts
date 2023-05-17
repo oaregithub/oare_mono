@@ -1,353 +1,201 @@
 import knex from '@/connection';
-import {
-  Archive,
-  Dossier,
-  Text,
-  ArchiveInfo,
-  DossierInfo,
-  FieldInfo,
-} from '@oare/types';
-import sl from '@/serviceLocator';
+import { Archive, ArchiveRow, Dossier, Text } from '@oare/types';
 import { Knex } from 'knex';
-import { ignorePunctuation } from '../TextEpigraphyDao/utils';
+import sl from '@/serviceLocator';
+
+// VERIFIED COMPLETE
 
 class ArchiveDao {
-  async getAllArchives(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knex;
-    const uuids: string[] = await k('archive')
-      .pluck('archive.uuid')
-      .where('parent_uuid', 'b0fe5c7d-6c1c-11ec-bcc3-0282f921eac9');
-
-    return uuids;
-  }
-
-  async getArchiveByUuid(
+  /**
+   * Retrieves an archive row by its UUID.
+   * @param uuid The UUID of the archive row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Archive row.
+   */
+  private async getArchiveRowByUuid(
     uuid: string,
-    userUuid: string | null,
-    { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
-  ): Promise<Archive> {
+  ): Promise<ArchiveRow> {
     const k = trx || knex;
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-    const archive: Archive = await k('archive')
+
+    const archiveRow: ArchiveRow = await k('archive')
       .select(
-        'archive.id as id',
-        'archive.uuid as uuid',
-        'archive.parent_uuid as parentUuid',
-        'archive.name as name',
-        'archive.owner as owner',
-        'archive.arch_locus as archLocus'
+        'uuid',
+        'parent_uuid as parentUuid',
+        'name',
+        'owner',
+        'arch_locus as archLocus',
+        'current_editor as currentEditor',
+        'type'
       )
-      .where('archive.uuid', uuid)
+      .where({ uuid })
       .first();
 
-    const dossierUuids = await this.getArchiveDossiers(
-      uuid,
-      {
-        page,
-        rows,
-        search,
-      },
-      trx
-    );
-    archive.dossiersInfo = await Promise.all(
-      dossierUuids.map(dossierUuid =>
-        this.getDossierInfo(dossierUuid, userUuid, trx)
-      )
-    );
-    archive.texts = await this.getArchiveTexts(
-      uuid,
-      userUuid,
-      {
-        page,
-        rows,
-        search,
-      },
-      trx
-    );
-    archive.totalTexts = await this.getTotalTexts(uuid, userUuid, trx);
-    archive.totalDossiers = await this.getTotalDossiers(uuid, trx);
-    archive.descriptions = await this.getArchiveDescriptions(uuid, trx);
-    archive.bibliographyUuid =
-      (
-        await ItemPropertiesDao.getObjectUuidsByReferenceAndVariable(
-          uuid,
-          'b3938276-173b-11ec-8b77-024de1c1cc1d'
-        )
-      )[0] ?? null;
-    return archive;
+    return archiveRow;
   }
 
-  async getArchiveDossiers(
-    parentUuid: string,
-    { page = 1, rows = 10, search = '' },
+  /**
+   * Gets list of dossier UUIDs that are children of the given archive UUID.
+   * @param uuid The UUID of the archive whose dossier children to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of dossier UUIDs.
+   */
+  private async getDossierUuidsByArchiveUuid(
+    uuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
-    const finalSearch: string = `%${search.replace(/\W/g, '%').toLowerCase()}%`;
+
+    const dossierUuids: string[] = await k('archive')
+      .pluck('uuid')
+      .where({ parent_uuid: uuid })
+      .orderBy('name');
+
+    return dossierUuids;
+  }
+
+  /**
+   * Gets list of text UUIDs that are children of the given archive UUID.
+   * Can also be used to get text Uuids that are children of a dossier.
+   * @param uuid The UUID of the archive whose texts should be retrieved.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of text UUIDs.
+   */
+  private async getTextUuidsByArchiveUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knex;
+
+    const textUuids: string[] = await k('archive')
+      .pluck('text.uuid')
+      .innerJoin('link', 'link.obj_uuid', 'archive.uuid')
+      .innerJoin('text', 'text.uuid', 'link.reference_uuid')
+      .where('archive.uuid', uuid)
+      .orderBy('text.name');
+
+    return textUuids;
+  }
+
+  /**
+   * Removes the link between the given text and archive/dossier.
+   * Disconnect occurs in the `link` table.
+   * @param textUuid The UUID of the text to disconnect.
+   * @param archiveUuid The UUID of the archive or dossier to disconnect from.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async disconnectText(
+    textUuid: string,
+    archiveUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knex;
+
+    await k('link')
+      .del()
+      .where({ reference_uuid: textUuid, obj_uuid: archiveUuid });
+  }
+
+  /**
+   * Gets a list of all archive UUIDs.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of archive UUIDs.
+   */
+  public async getAllArchiveUuids(trx?: Knex.Transaction): Promise<string[]> {
+    const k = trx || knex;
+
     const uuids: string[] = await k('archive')
+      .innerJoin(
+        'archive as archive_parent',
+        'archive_parent.uuid',
+        'archive.parent_uuid'
+      )
       .pluck('archive.uuid')
-      .where('parent_uuid', parentUuid)
-      .andWhere(function () {
-        this.whereRaw('LOWER(archive.name) LIKE ?', [finalSearch]);
-      })
-      .orderBy('archive.name')
-      .limit(rows)
-      .offset((page - 1) * rows);
+      .where('archive_parent.type', 'hierarchy')
+      .andWhere('archive_parent.name', 'head_archive_unit')
+      .orderBy('archive.name');
 
     return uuids;
   }
 
-  async getArchiveInfo(
+  /**
+   * Constructs complete Dossier object for the given dossier UUID.
+   * @param uuid The UUID of the dossier to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Dossier object.
+   */
+  public async getDossierByUuid(
     uuid: string,
-    userUuid: string | null,
-    trx?: Knex.Transaction
-  ): Promise<ArchiveInfo> {
-    const k = trx || knex;
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-    const archive: Archive = await k('archive')
-      .select(
-        'archive.id as id',
-        'archive.uuid as uuid',
-        'archive.parent_uuid as parentUuid',
-        'archive.name as name',
-        'archive.owner as owner',
-        'archive.arch_locus as archLocus'
-      )
-      .where('archive.uuid', uuid)
-      .first();
-
-    const bibliographyUuid: string | null =
-      (
-        await ItemPropertiesDao.getObjectUuidsByReferenceAndVariable(
-          uuid,
-          'b3938276-173b-11ec-8b77-024de1c1cc1d'
-        )
-      )[0] ?? null;
-
-    const archiveInfo: ArchiveInfo = {
-      name: archive.name,
-      uuid: archive.uuid,
-      totalTexts: await this.getTotalTexts(uuid, userUuid, trx),
-      totalDossiers: await this.getTotalDossiers(uuid, trx),
-      descriptions: await this.getArchiveDescriptions(uuid),
-      bibliographyUuid,
-    };
-    return archiveInfo;
-  }
-
-  async getArchiveDescriptions(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<FieldInfo[]> {
-    const k = trx || knex;
-    const descriptions: FieldInfo[] = await k('field as f')
-      .where('f.reference_uuid', uuid)
-      .orderBy('f.primacy');
-    return descriptions;
-  }
-
-  async getArchiveTexts(
-    uuid: string,
-    userUuid: string | null,
-    { page = 1, rows = 10, search = '' },
-    trx?: Knex.Transaction
-  ): Promise<Text[] | null> {
-    const k = trx || knex;
-    const collectionTextUtils = sl.get('CollectionTextUtils');
-    const textsToHide: string[] = await collectionTextUtils.textsToHide(
-      userUuid,
-      trx
-    );
-    const finalSearch: string = ignorePunctuation(search);
-    const texts: Text[] = await k('link')
-      .select(
-        'text.uuid',
-        'text.type as type',
-        'text.display_name as name',
-        'text.excavation_prfx as excavationPrefix',
-        'text.excavation_no as excavationNumber',
-        'text.museum_prfx as museumPrefix',
-        'text.museum_no as museumNumber',
-        'text.publication_prfx as publicationPrefix',
-        'text.publication_no as publicationNumber'
-      )
-      .innerJoin('archive', 'link.obj_uuid', 'archive.uuid')
-      .innerJoin('text', 'link.reference_uuid', 'text.uuid')
-      .where('archive.uuid', uuid)
-      .whereNotIn('text.uuid', textsToHide)
-      .andWhere(function () {
-        this.whereRaw('LOWER(text.display_name) REGEXP ?', [finalSearch])
-          .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) REGEXP ?",
-            [finalSearch]
-          )
-          .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) REGEXP ?",
-            [finalSearch]
-          )
-          .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) REGEXP ?",
-            [finalSearch]
-          );
-      })
-      .orderBy('text.display_name')
-      .limit(rows)
-      .offset((page - 1) * rows);
-
-    return texts || null;
-  }
-
-  async getDossierByUuid(
-    uuid: string,
-    userUuid: string | null,
-    { page = 1, rows = 10, search = '' },
     trx?: Knex.Transaction
   ): Promise<Dossier> {
-    const k = trx || knex;
-    const dossier: Dossier = await k('archive')
-      .select(
-        'archive.id as id',
-        'archive.uuid as uuid',
-        'archive.parent_uuid as parentUuid',
-        'archive.name as name',
-        'archive.owner as owner'
+    const TextDao = sl.get('TextDao');
+
+    const dossierRow = await this.getArchiveRowByUuid(uuid, trx);
+    const textUuids = await this.getTextUuidsByArchiveUuid(uuid, trx);
+    const texts = (
+      await Promise.all(
+        textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
       )
-      .where('archive.uuid', uuid)
-      .first();
+    ).filter((text): text is Text => text !== null);
 
-    dossier.texts = await this.getDossierTexts(
-      uuid,
-      userUuid,
-      {
-        page,
-        rows,
-        search,
-      },
-      trx
-    );
-
-    dossier.totalTexts = await this.getTotalTexts(uuid, userUuid, trx);
+    const dossier: Dossier = {
+      ...dossierRow,
+      texts,
+    };
 
     return dossier;
   }
 
-  async getDossierInfo(
+  /**
+   * Constructs complete Archive object for the given archive UUID.
+   * @param uuid The UUID of the archive to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Archive object.
+   */
+  public async getArchiveByUuid(
     uuid: string,
-    userUuid: string | null,
     trx?: Knex.Transaction
-  ): Promise<DossierInfo> {
-    const k = trx || knex;
-    const dossier: Dossier = await k('archive')
-      .select('archive.uuid as uuid', 'archive.name as name')
-      .where('archive.uuid', uuid)
-      .first();
+  ): Promise<Archive> {
+    const TextDao = sl.get('TextDao');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const FieldDao = sl.get('FieldDao');
 
-    const dossierInfo: DossierInfo = {
-      name: dossier.name,
-      uuid: dossier.uuid,
-      totalTexts: await this.getTotalTexts(uuid, userUuid, trx),
-    };
-    return dossierInfo;
-  }
+    const archiveRow = await this.getArchiveRowByUuid(uuid, trx);
 
-  async getDossierTexts(
-    uuid: string,
-    userUuid: string | null,
-    { page = 1, rows = 10, search = '' },
-    trx?: Knex.Transaction
-  ): Promise<Text[] | null> {
-    const k = trx || knex;
-    const collectionTextUtils = sl.get('CollectionTextUtils');
-    const textsToHide: string[] = await collectionTextUtils.textsToHide(
-      userUuid,
-      trx
+    const dossierUuids = await this.getDossierUuidsByArchiveUuid(uuid, trx);
+    const dossiers = await Promise.all(
+      dossierUuids.map(dossierUuid => this.getDossierByUuid(dossierUuid, trx))
     );
-    const finalSearch: string = ignorePunctuation(search);
-    const texts: Text[] = await k('link')
-      .select(
-        'text.uuid',
-        'text.type as type',
-        'text.display_name as name',
-        'text.excavation_prfx as excavationPrefix',
-        'text.excavation_no as excavationNumber',
-        'text.museum_prfx as museumPrefix',
-        'text.museum_no as museumNumber',
-        'text.publication_prfx as publicationPrefix',
-        'text.publication_no as publicationNumber'
+
+    const textUuids = await this.getTextUuidsByArchiveUuid(uuid, trx);
+    const texts = (
+      await Promise.all(
+        textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
       )
-      .innerJoin('archive', 'link.obj_uuid', 'archive.uuid')
-      .innerJoin('text', 'link.reference_uuid', 'text.uuid')
-      .where('archive.uuid', uuid)
-      .whereNotIn('text.uuid', textsToHide)
-      .andWhere(function () {
-        this.whereRaw('LOWER(text.display_name) REGEXP ?', [finalSearch])
-          .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) REGEXP ?",
-            [finalSearch]
-          )
-          .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) REGEXP ?",
-            [finalSearch]
-          )
-          .orWhereRaw(
-            "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) REGEXP ?",
-            [finalSearch]
-          );
-      })
-      .orderBy('text.display_name')
-      .limit(rows)
-      .offset((page - 1) * rows);
+    ).filter((text): text is Text => text !== null);
 
-    return texts || null;
-  }
-
-  async getTotalDossiers(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<number> {
-    const k = trx || knex;
-    const totalDossiers = await k('archive')
-      .select(k.raw('count(archive.uuid) as total'))
-      .where('parent_uuid', uuid)
-      .first();
-    const total: number = Number(totalDossiers.total);
-    return total;
-  }
-
-  async getTotalTexts(
-    uuid: string,
-    userUuid: string | null,
-    trx?: Knex.Transaction
-  ): Promise<number> {
-    const k = trx || knex;
-
-    const collectionTextUtils = sl.get('CollectionTextUtils');
-    const textsToHide: string[] = await collectionTextUtils.textsToHide(
-      userUuid,
+    const descriptions = await FieldDao.getFieldRowsByReferenceUuidAndType(
+      uuid,
+      'description',
       trx
     );
-    const totalTexts = await k('link')
-      .select(k.raw('count(text.uuid) as total'))
-      .innerJoin('archive', 'link.obj_uuid', 'archive.uuid')
-      .innerJoin('text', 'link.reference_uuid', 'text.uuid')
-      .where('archive.uuid', uuid)
-      .whereNotIn('text.uuid', textsToHide)
-      .first();
-    const total: number = Number(totalTexts.total);
-    return total;
-  }
 
-  async disconnectText(
-    textUuid: string,
-    archiveOrDossierUuid: string,
-    trx?: Knex.Transaction
-  ) {
-    const k = trx || knex;
-    await k('link')
-      .del()
-      .where('reference_uuid', textUuid)
-      .andWhere('obj_uuid', archiveOrDossierUuid);
+    const bibliographyUuids = await ItemPropertiesDao.getBibliographyUuidsByReference(
+      uuid
+    );
+
+    const archive: Archive = {
+      ...archiveRow,
+      descriptions,
+      bibliographyUuids,
+      dossiers,
+      texts,
+    };
+    return archive;
   }
 }
+
+/**
+ * ArchiveDao instance as a singleton
+ */
 export default new ArchiveDao();

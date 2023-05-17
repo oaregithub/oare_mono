@@ -1,48 +1,23 @@
 import { Text } from './epigraphies';
-import { FieldInfo } from './field';
+import { FieldRow } from './field';
 
-export interface Archive {
-  id: string;
+export interface ArchiveRow {
   uuid: string;
   parentUuid: string;
   name: string;
-  owner: string;
-  archLocus: string;
-  dossiersInfo: DossierInfo[] | null;
-  texts: Text[] | null;
-  totalTexts: number;
-  totalDossiers: number;
-  descriptions: FieldInfo[];
-  bibliographyUuid: string | null;
+  owner: string | null;
+  archLocus: string | null;
+  currentEditor: string | null;
+  type: string;
 }
 
-export interface Dossier {
-  id: string;
-  uuid: string;
-  parentUuid: string;
-  name: string;
-  owner: string;
-  archLocus: string;
-  texts: Text[] | null;
-  totalTexts: number;
+export interface Archive extends ArchiveRow {
+  dossiers: Dossier[];
+  texts: Text[];
+  descriptions: FieldRow[];
+  bibliographyUuids: string[];
 }
 
-export interface ArchiveInfo {
-  name: string;
-  uuid: string;
-  totalTexts: number;
-  totalDossiers: number;
-  descriptions: FieldInfo[];
-  bibliographyUuid: string | null;
-}
-
-export interface DossierInfo {
-  name: string;
-  uuid: string;
-  totalTexts: number;
-}
-
-export interface DisconnectTextPayload {
-  textUuid: string;
-  archiveOrDossierUuid: string;
+export interface Dossier extends ArchiveRow {
+  texts: Text[];
 }

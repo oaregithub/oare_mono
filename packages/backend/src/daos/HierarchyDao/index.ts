@@ -215,15 +215,16 @@ class HierarchyDao {
       trx
     );
 
-    const fieldInfo = await FieldDao.getFieldInfoByReferenceAndType(
+    const fieldRows = await FieldDao.getFieldRowsByReferenceUuidAndType(
       topNodeHierarchy.objectUuid,
+      'description',
       trx
     );
 
     const topNode: HierarchyTopNode = {
       hierarchy: topNodeHierarchy,
-      name: names[0] || null,
-      fieldInfo: fieldInfo || null,
+      name: names[0] ?? null,
+      fieldInfo: fieldRows[0] ?? null,
       variables: await this.getVariablesByParent(
         topNodeHierarchy.uuid,
         null,
@@ -256,7 +257,11 @@ class HierarchyDao {
 
       const fieldRows = await Promise.all(
         hierarchyRows.map(row =>
-          FieldDao.getFieldInfoByReferenceAndType(row.objectUuid, trx)
+          FieldDao.getFieldRowsByReferenceUuidAndType(
+            row.objectUuid,
+            'description',
+            trx
+          )
         )
       );
 
@@ -265,7 +270,7 @@ class HierarchyDao {
           ...row,
           hierarchy: hierarchyRows[idx],
           level,
-          fieldInfo: fieldRows[idx] || null,
+          fieldInfo: fieldRows[idx][0] ?? null,
           values: await this.getValuesByParent(
             hierarchyRows[idx].uuid,
             level === null ? 1 : level + 1,
@@ -319,7 +324,11 @@ class HierarchyDao {
 
       const fieldRows = await Promise.all(
         hierarchyRows.map(row =>
-          FieldDao.getFieldInfoByReferenceAndType(row.objectUuid, trx)
+          FieldDao.getFieldRowsByReferenceUuidAndType(
+            row.objectUuid,
+            'description',
+            trx
+          )
         )
       );
 
@@ -327,7 +336,7 @@ class HierarchyDao {
         valueRows.map(async (row, idx) => ({
           ...row,
           hierarchy: hierarchyRows[idx],
-          fieldInfo: fieldRows[idx] || null,
+          fieldInfo: fieldRows[idx][0] ?? null,
           variables: await this.getVariablesByParent(
             hierarchyRows[idx].uuid,
             level,

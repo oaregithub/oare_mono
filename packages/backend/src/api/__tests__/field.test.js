@@ -28,7 +28,7 @@ describe('field api test', () => {
   const MockFieldDao = {
     updateAllFieldFields: jest.fn().mockResolvedValue(),
     insertField: jest.fn().mockResolvedValue(),
-    getFieldInfoByReferenceAndType: jest.fn().mockResolvedValue(fieldInfo),
+    getFieldRowsByReferenceUuidAndType: jest.fn().mockResolvedValue(fieldInfo),
     detectLanguage: jest.fn().mockResolvedValue('English'),
   };
 
@@ -69,7 +69,9 @@ describe('field api test', () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(fieldInfo);
-      expect(MockFieldDao.getFieldInfoByReferenceAndType).toHaveBeenCalled();
+      expect(
+        MockFieldDao.getFieldRowsByReferenceUuidAndType
+      ).toHaveBeenCalled();
     });
   });
 

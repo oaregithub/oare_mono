@@ -1,12 +1,3 @@
-export interface FieldInfo {
-  uuid: string | null;
-  referenceUuid: string | null;
-  field: string | null;
-  primacy: number | null;
-  language: string | null;
-  type: string | null;
-}
-
 export interface NewFieldPayload {
   referenceUuid: string;
   description: string;
@@ -30,11 +21,11 @@ export interface DeleteFieldPayload {
 }
 
 export interface FieldRow {
-  id: number;
   uuid: string;
-  reference_uuid: string;
+  referenceUuid: string;
   type: string | null;
   language: string | null;
-  primary: number | null;
+  primacy: number | null;
   field: string | null;
+  sourceUuid: string | null;
 }

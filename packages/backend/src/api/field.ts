@@ -4,7 +4,6 @@ import { HttpInternalError } from '@/exceptions';
 import {
   DeleteFieldPayload,
   EditFieldPayload,
-  FieldInfo,
   NewFieldPayload,
 } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
@@ -17,10 +16,9 @@ router
     try {
       const FieldDao = sl.get('FieldDao');
       const { referenceUuid } = req.params;
-      const response:
-        | FieldInfo
-        | undefined = await FieldDao.getFieldInfoByReferenceAndType(
-        referenceUuid
+      const response = await FieldDao.getFieldRowsByReferenceUuidAndType(
+        referenceUuid,
+        'description'
       );
       res.json(response);
     } catch (err) {

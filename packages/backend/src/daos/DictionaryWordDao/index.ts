@@ -278,7 +278,11 @@ class DictionaryWordDao {
     trx?: Knex.Transaction
   ): Promise<DictionaryWordTranslation[]> {
     const translations = (
-      await FieldDao.getDefinitionsByReferenceUuid(wordUuid, trx)
+      await FieldDao.getFieldRowsByReferenceUuidAndType(
+        wordUuid,
+        'definition',
+        trx
+      )
     ).map(({ uuid, field }) => ({
       uuid,
       val: field,
@@ -292,7 +296,11 @@ class DictionaryWordDao {
     trx?: Knex.Transaction
   ): Promise<DictionaryWordTranslation[]> {
     const discussionLemmas = (
-      await FieldDao.getDiscussionLemmasByReferenceUuid(wordUuid, trx)
+      await FieldDao.getFieldRowsByReferenceUuidAndType(
+        wordUuid,
+        'discoussionLemma',
+        trx
+      )
     ).map(({ uuid, field }) => ({
       uuid,
       val: field,
