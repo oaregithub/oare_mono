@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpInternalError, HttpInvalidToken } from '@/exceptions';
 import sl from '@/serviceLocator';
 import firebase from '@/firebase';
-import HttpException from '@/exceptions/HttpException';
 
 /**
  * Attaches the requesting user to the request object.
@@ -25,7 +24,7 @@ async function attachUser(req: Request, _res: Response, next: NextFunction) {
       } catch (err) {
         // If the token is invalid, it sends a 407 error. This often occurs when the token is expired.
         // Upon receiving this response, the frontend will request a new token and retry the request.
-        next(new HttpException(407, 'Invalid Firebase token', true));
+        next(new HttpInvalidToken());
         return;
       }
       const user = await UserDao.getUserByUuid(decodedToken.uid);
