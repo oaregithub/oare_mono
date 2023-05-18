@@ -2,7 +2,6 @@ import AliasDao from '@/daos/AliasDao';
 import ArchiveDao from '@/daos/ArchiveDao';
 import AssetDao from '@/daos/AssetDao';
 import BibliographyDao from '@/daos/BibliographyDao';
-import BibliographyUtils from '@/daos/BibliographyUtils';
 import cache from '@/cache';
 import CacheStatusDao from '@/daos/CacheStatusDao';
 import CollectionDao from '@/daos/CollectionDao';
@@ -58,7 +57,6 @@ export type ServiceTypes = {
   ArchiveDao: typeof ArchiveDao;
   AssetDao: typeof AssetDao;
   BibliographyDao: typeof BibliographyDao;
-  BibliographyUtils: typeof BibliographyUtils;
   cache: typeof cache;
   CacheStatusDao: typeof CacheStatusDao;
   CollectionDao: typeof CollectionDao;

@@ -101,8 +101,8 @@ router
         const ItemPropertiesDao = sl.get('ItemPropertiesDao');
         const BibliographyDao = sl.get('BibliographyDao');
         const ResourceDao = sl.get('ResourceDao');
-        const BibliographyUtils = sl.get('BibliographyUtils');
         const cache = sl.get('cache');
+        const utils = sl.get('utils');
 
         const text = await TextDao.getTextByUuid(textUuid);
 
@@ -145,18 +145,17 @@ router
 
         const bibItems = await Promise.all(
           bibliographyUuids.map(bibliography =>
-            BibliographyDao.getBibliographyByUuid(bibliography)
+            BibliographyDao.getBibliographyRowByUuid(bibliography)
           )
         );
 
         const zoteroCitations = await Promise.all(
           bibItems.map(async item => {
-            const cit = await BibliographyUtils.getZoteroReferences(
-              item,
-              'chicago-author-date',
-              ['citation']
+            const cit = await utils.getZoteroData(
+              item.zoteroKey,
+              'chicago-author-date'
             );
-            return cit && cit.citation ? cit.citation : null;
+            return cit?.citation ? cit.citation : null;
           })
         );
 

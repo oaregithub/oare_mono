@@ -6,7 +6,7 @@ import {
   LinkPropertiesSearchPayload,
   LinkItem,
   DiscourseUnit,
-  BibliographyResponse,
+  Bibliography,
 } from '@oare/types';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -223,11 +223,12 @@ router.route('/properties_links').get(async (req, res, next) => {
     }
 
     if (tableReference === 'bibliography') {
+      // FIXME - sending a request to itself is not ideal
       const host =
         process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
       const {
         data: bibliographies,
-      }: { data: BibliographyResponse[] } = await axios.get(
+      }: { data: Bibliography[] } = await axios.get(
         `${host}${API_PATH}/bibliographies`,
         {
           params: {

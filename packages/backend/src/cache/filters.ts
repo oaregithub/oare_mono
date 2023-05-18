@@ -7,7 +7,7 @@ import {
   Seal,
   SealInfo,
   PersonInfo,
-  BibliographyResponse,
+  Bibliography,
   ZoteroData,
   Archive,
   Dossier,
@@ -288,10 +288,10 @@ export const personFilter: CacheFilter<PersonInfo> = async (
  * @param _user The requesting user.
  * @returns The bibliography response with added link.
  */
-export const bibliographyFilter: CacheFilter<BibliographyResponse> = async (
-  bibliography: BibliographyResponse,
+export const bibliographyFilter: CacheFilter<Bibliography> = async (
+  bibliography: Bibliography,
   _user: User | null
-): Promise<BibliographyResponse> => {
+): Promise<Bibliography> => {
   const ResourceDao = sl.get('ResourceDao');
   const { fileUrl } = await ResourceDao.getPDFUrlByBibliographyUuid(
     bibliography.uuid
@@ -310,10 +310,10 @@ export const bibliographyFilter: CacheFilter<BibliographyResponse> = async (
  * @param user The requesting user.
  * @returns The bibliography list with added links.
  */
-export const bibliographiesFilter: CacheFilter<BibliographyResponse[]> = async (
-  bibliographies: BibliographyResponse[],
+export const bibliographiesFilter: CacheFilter<Bibliography[]> = async (
+  bibliographies: Bibliography[],
   user: User | null
-): Promise<BibliographyResponse[]> => {
+): Promise<Bibliography[]> => {
   const bibliographyResponse = await Promise.all(
     bibliographies.map(async bibliography =>
       bibliographyFilter(bibliography, user)

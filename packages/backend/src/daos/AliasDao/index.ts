@@ -11,7 +11,7 @@ class AliasDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of alias names.
    */
-  async getAliasNamesByReferenceUuid(
+  public async getAliasNamesByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -35,7 +35,7 @@ class AliasDao {
    * @param primacy Relative primacy of the alias name.
    * @param trx Knex Transaction. Optional.
    */
-  async insertAliasRow(
+  public async insertAliasRow(
     type: string,
     referenceUuid: string,
     name: string,
@@ -65,7 +65,7 @@ class AliasDao {
    * @param referenceUuid The reference UUID to remove aliases for.
    * @param trx Knex Transaction. Optional.
    */
-  async removeAliasByReferenceUuid(
+  public async removeAliasByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {

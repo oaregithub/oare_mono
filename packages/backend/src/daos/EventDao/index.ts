@@ -11,7 +11,7 @@ class EventDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of matching, ordered `LinkItem` objects.
    */
-  async searchEvents(
+  public async searchEvents(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

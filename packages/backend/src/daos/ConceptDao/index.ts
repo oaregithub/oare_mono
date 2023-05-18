@@ -11,7 +11,7 @@ class ConceptDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of matching, ordered `LinkItem` objects.
    */
-  async searchConcepts(
+  public async searchConcepts(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

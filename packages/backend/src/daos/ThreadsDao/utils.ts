@@ -1,6 +1,7 @@
 import { AllThreadRow, AllThreadRowUndeterminedItem } from '@oare/types';
 import sl from '@/serviceLocator';
-import BibliographyDao from '../BibliographyDao';
+
+// FIXME - what is going on here? Threads/comments needs a major revamp.
 
 export async function determineThreadItem(
   undeterminedThreadRows: AllThreadRowUndeterminedItem[]
@@ -19,14 +20,15 @@ export async function determineThreadItem(
       } else if (tr.collectionName) {
         item = tr.collectionName;
       } else if (tr.bibliography) {
-        const BibliographyUtils = sl.get('BibliographyUtils');
+        const BibliographyDao = sl.get('BibliographyDao');
+        const utils = sl.get('utils');
+
         const bibItem = await BibliographyDao.getBibliographyByZotItemKey(
           tr.bibliography
         );
-        const zoteroData = await BibliographyUtils.getZoteroReferences(
-          bibItem,
-          'chicago-author-date',
-          ['data']
+        const zoteroData = await utils.getZoteroData(
+          bibItem.zoteroKey,
+          'chicago-author-date'
         );
         item = zoteroData?.data ? zoteroData.data.title : 'Title not available';
       } else if (tr.epigraphyReading) {

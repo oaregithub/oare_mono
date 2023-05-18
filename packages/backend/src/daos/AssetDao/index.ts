@@ -11,7 +11,7 @@ class AssetDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of matching, ordered `LinkItem` objects.
    */
-  async searchAssets(
+  public async searchAssets(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

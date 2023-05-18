@@ -181,7 +181,7 @@ class PermissionsDao {
       description: 'Allow group users to edit item properties for a given item',
     },
     {
-      name: 'VIEW_TEXT_CITATIONS',
+      name: 'VIEW_TEXT_CITATIONS', // FIXME appears to only be used on the frontend
       type: 'text',
       description: 'Allow group users to view the citation(s) of text',
     },

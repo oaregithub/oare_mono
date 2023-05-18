@@ -1,22 +1,34 @@
-export interface BibliographyItem {
+export interface Bibliography {
+  uuid: string;
+  title: string | null;
+  authors: string[];
+  date: string | null;
+  bibliography: {
+    bib: string | null;
+    url: string | null;
+  };
+  itemType: string | null;
+}
+
+export interface BibliographyRow {
   uuid: string;
   zoteroKey: string;
   citation: string;
 }
 
 export interface ZoteroResponse {
-  bib?: string | null;
-  citation?: string | null;
-  data?: ZoteroResponseData | null;
+  bib: string | null;
+  citation: string | null;
+  data: ZoteroResponseData | null;
 }
 
-export interface ZoteroCreator {
+interface ZoteroCreator {
   creatorType: string;
   firstName: string;
   lastName: string;
 }
 
-export interface ZoteroResponseData {
+interface ZoteroResponseData {
   key: string;
   version: number;
   itemType: string;
@@ -49,20 +61,6 @@ export interface ZoteroResponseData {
   dateAdded: string;
   dateModified: string;
 }
-
-export interface BibliographyResponse {
-  title: string | null;
-  uuid: string;
-  authors: string[];
-  date: string | null;
-  bibliography: {
-    bib: string | null;
-    url: string | null;
-  };
-  itemType: string | null;
-}
-
-export type ZoteroRequestType = 'citation' | 'bib' | 'data';
 
 export interface ReferringLocationInfo {
   beginPage: number | null;

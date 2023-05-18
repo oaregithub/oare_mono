@@ -7,37 +7,9 @@ describe('GET /bibliographies', () => {
   const PATH = `${API_PATH}/bibliographies`;
 
   const mockBibliographyDao = {
-    getBibliographies: jest.fn().mockResolvedValue([
-      {
-        uuid: 'bib-test-uuid',
-      },
-    ]),
+    getAllBibliographyUuids: jest.fn().mockResolvedValue(['bib-test-uuid']),
+    getBibliographyByUuid: jest.fn().mockResolvedValue({}),
   };
-
-  const mockBibliographyUtils = {
-    getZoteroReferences: jest.fn().mockResolvedValue({
-      bib: 'mock-bib-3',
-      data: {
-        title: 'Hello',
-      },
-    }),
-  };
-
-  const mockResourceDao = {
-    getPDFUrlByBibliographyUuid: jest
-      .fn()
-      .mockResolvedValue(
-        'https://oare-unit-test.com/test-resource-link-def.pdf'
-      ),
-  };
-
-  const mockResponse = [
-    {
-      bib: 'mock-bib-3',
-      data: { title: 'Hello' },
-      url: 'https://oare-unit-test.com/test-resource-link-def.pdf',
-    },
-  ];
 
   const mockUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
@@ -50,15 +22,7 @@ describe('GET /bibliographies', () => {
       {
         name: 'BIBLIOGRAPHY',
       },
-      {
-        name: 'VIEW_TEXT_CITATIONS',
-      },
     ]),
-  };
-
-  const mockCollectionTextUtils = {
-    canViewText: jest.fn().mockResolvedValue(true),
-    canEditText: jest.fn().mockResolvedValue(false),
   };
 
   const mockCache = {
@@ -68,11 +32,8 @@ describe('GET /bibliographies', () => {
 
   const setup = () => {
     sl.set('BibliographyDao', mockBibliographyDao);
-    sl.set('BibliographyUtils', mockBibliographyUtils);
-    sl.set('ResourceDao', mockResourceDao);
     sl.set('UserDao', mockUserDao);
     sl.set('PermissionsDao', mockPermissionsDao);
-    sl.set('CollectionTextUtils', mockCollectionTextUtils);
     sl.set('cache', mockCache);
   };
 
@@ -103,9 +64,9 @@ describe('GET /bibliographies', () => {
   it('returns 500 on failed fetching bibliography', async () => {
     sl.set('BibliographyDao', {
       ...mockBibliographyDao,
-      getBibliographies: jest
+      getAllBibliographyUuids: jest
         .fn()
-        .mockRejectedValue('failed to retreive bibliography'),
+        .mockRejectedValue('failed to retreive bibliographies'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
