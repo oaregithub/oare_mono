@@ -9,8 +9,8 @@ const mockCacheStatusDao = {
   disableCache: jest.fn().mockResolvedValue(),
 };
 
-describe('GET /cache', () => {
-  const PATH = `${API_PATH}/cache`;
+describe('GET /cache_status', () => {
+  const PATH = `${API_PATH}/cache_status`;
 
   const setup = () => {
     sl.set('CacheStatusDao', mockCacheStatusDao);
