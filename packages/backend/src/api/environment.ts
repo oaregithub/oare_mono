@@ -5,6 +5,8 @@ import { EnvironmentInfo } from '@oare/types';
 
 const router = express.Router();
 
+// VERIFIED COMPLETE
+
 router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
   try {
     const elasticBeanstalkRegion = (() => {
@@ -51,6 +53,7 @@ router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
       databaseWriteRegion,
       databaseReadOnly,
     };
+
     res.json(environmentInfo);
   } catch (err) {
     next(new HttpInternalError(err as string));
@@ -60,6 +63,7 @@ router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
 router.route('/environment_readonly').get(async (_req, res, next) => {
   try {
     const databaseReadOnly = process.env.DB_SOURCE === 'readonly';
+
     res.json(databaseReadOnly);
   } catch (err) {
     next(new HttpInternalError(err as string));

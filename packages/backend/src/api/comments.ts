@@ -6,6 +6,8 @@ import permissionRoute from '@/middlewares/router/permissionsRoute';
 
 const router = express.Router();
 
+// FIXME coming back to comments/threads
+
 router
   .route('/comments')
   .post(permissionRoute('ADD_COMMENTS'), async (req, res, next) => {

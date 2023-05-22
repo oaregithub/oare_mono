@@ -307,12 +307,12 @@ export const getZoteroData = async (
     return data;
   } catch (err) {
     const ErrorsDao = sl.get('ErrorsDao');
-    await ErrorsDao.logError({
-      userUuid: null,
-      description: 'Error retrieving Zotero API data',
-      stacktrace: JSON.stringify(err),
-      status: 'New',
-    });
+    await ErrorsDao.logError(
+      null,
+      'Error retrieving Zotero API data',
+      JSON.stringify(err),
+      'New'
+    );
     return null;
   }
 };

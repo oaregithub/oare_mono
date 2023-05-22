@@ -30,6 +30,8 @@ import { dictionaryWordFilter } from '@/cache/filters';
 
 const router = express.Router();
 
+// FIXME - coming back to dictionary
+
 router
   .route('/dictionary/spellings')
   .post(permissionsRoute('ADD_SPELLING'), async (req, res, next) => {

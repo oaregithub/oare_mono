@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '@/exceptions/HttpException';
-import { InsertErrorsRow } from '@/daos/ErrorsDao';
 import sl from '@/serviceLocator';
 
 /**
@@ -27,18 +26,11 @@ const errorMiddleware = async (
     const userUuid = req.user ? req.user.uuid : null;
     const stacktrace = error.stack || null;
 
-    const insertRow: InsertErrorsRow = {
-      userUuid,
-      description: message,
-      stacktrace,
-      status: 'New',
-    };
-
     try {
-      await ErrorsDao.logError(insertRow);
+      await ErrorsDao.logError(userUuid, message, stacktrace, 'New');
     } catch (err) {
       // Logs error to console if database logging fails. Does not throw error because this is the error handler.
-      console.error('Error logging error', insertRow); // eslint-disable-line no-console
+      console.error('Error logging error', error); // eslint-disable-line no-console
     }
   }
 

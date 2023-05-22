@@ -8,11 +8,15 @@ export interface ErrorsPayload {
 
 export interface ErrorsRow {
   uuid: string;
-  user_uuid: string | null;
+  userUuid: string | null;
   description: string;
   stacktrace: string | null;
   timestamp: Date;
   status: ErrorStatus;
+}
+
+export interface ErrorsRowWithUser extends ErrorsRow {
+  userName: string;
 }
 
 export type ErrorStatus = 'New' | 'In Progress' | 'Resolved';
@@ -27,22 +31,4 @@ export interface ErrorsResponse {
   count: number;
 }
 
-export interface ErrorsRowWithUser extends ErrorsRow {
-  userName: string;
-}
-
 export type SortType = 'status' | 'timestamp' | 'description' | 'userName';
-
-export interface GetErrorsPayload {
-  filters: {
-    status: ErrorStatus | '';
-    user: string;
-    description: string;
-    stacktrace: string;
-  };
-  sort: {
-    type: SortType;
-    desc: boolean;
-  };
-  pagination: Pagination;
-}

@@ -81,12 +81,10 @@ class ResourceDao {
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
       await ErrorsDao.logError(
-        {
-          userUuid: null,
-          stacktrace: (err as Error).stack || null,
-          status: 'In Progress',
-          description: 'Error retrieving S3 images',
-        },
+        null,
+        'Error retrieving S3 images',
+        (err as Error).stack || null,
+        'In Progress',
         trx
       );
     }
@@ -300,12 +298,10 @@ class ResourceDao {
     } catch (err) {
       const ErrorsDao = sl.get('ErrorsDao');
       await ErrorsDao.logError(
-        {
-          userUuid: null,
-          stacktrace: (err as Error).stack || null,
-          status: 'New',
-          description: 'Error retrieving Metropolitan Museum images',
-        },
+        null,
+        'Error retrieving Metropolitan Museum images',
+        (err as Error).stack || null,
+        'In Progress',
         trx
       );
     }
