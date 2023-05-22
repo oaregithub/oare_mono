@@ -10,12 +10,15 @@ router
   .route('/page_content/:routeName')
   .get(cacheMiddleware<string>(null), async (req, res, next) => {
     try {
-      const { routeName } = req.params;
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
+
+      const { routeName } = req.params;
+
       const content = await PageContentDao.getContent(routeName);
 
       const response = await cache.insert<string>({ req }, content, null);
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -23,14 +26,18 @@ router
   })
   .patch(adminRoute, async (req, res, next) => {
     try {
-      const { routeName } = req.params;
-      const { content } = req.body;
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
+
+      const { routeName } = req.params;
+      const { content } = req.body;
+
       await PageContentDao.editContent(routeName, content);
+
       await cache.clear(`/page_content/${routeName}`, {
         level: 'exact',
       });
+
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

@@ -6,12 +6,16 @@ import firebase from '@/firebase';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 
+// VERIFIED COMPLETE
+
 const router = express.Router();
 
 router.route('/register').post(async (req, res, next) => {
   try {
     const UserDao = sl.get('UserDao');
+
     const { firstName, lastName, email, password }: RegisterPayload = req.body;
+
     const existingUser = await UserDao.emailExists(email);
     if (existingUser) {
       next(
@@ -43,6 +47,7 @@ router.route('/register').post(async (req, res, next) => {
       next(new HttpInternalError('Error creating user'));
       return;
     }
+
     req.user = user;
 
     const firebaseToken = await security.getFirebaseToken(user.uuid);

@@ -6,6 +6,8 @@ import { dictionaryFilter } from '@/cache/filters';
 import { Word } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 
+// VERIFIED COMPLETE - Dao function will need some work
+
 const router = express.Router();
 
 router
@@ -15,18 +17,22 @@ router
     cacheMiddleware<Word[]>(dictionaryFilter),
     async (req, res, next) => {
       try {
-        const { letter } = req.params;
         const cache = sl.get('cache');
         const DictionaryWordDao = sl.get('DictionaryWordDao');
+
+        const { letter } = req.params;
+
         const words = await DictionaryWordDao.getWords(
           'word',
           letter.toLowerCase()
         );
+
         const response = await cache.insert<Word[]>(
           { req },
           words,
           dictionaryFilter
         );
+
         res.json(response);
       } catch (err) {
         next(new HttpInternalError(err as string));

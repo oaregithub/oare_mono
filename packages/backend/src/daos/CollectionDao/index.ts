@@ -4,7 +4,7 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
 class CollectionDao {
-  async getCollectionRowByUuid(
+  private async getCollectionRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<CollectionRow> {
@@ -19,7 +19,7 @@ class CollectionDao {
   }
 
   // FIXME can hopefully deprecated once collectionUuid is added to Text object
-  async getCollectionUuidByTextUuid(
+  public async getCollectionUuidByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<string | null> {
@@ -35,7 +35,9 @@ class CollectionDao {
     return uuid;
   }
 
-  async getAllCollectionUuids(trx?: Knex.Transaction): Promise<string[]> {
+  public async getAllCollectionUuids(
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
     const k = trx || knex;
 
     const collectionUuids: string[] = await k('collection')
@@ -45,7 +47,7 @@ class CollectionDao {
     return collectionUuids;
   }
 
-  async getCollectionByUuid(
+  public async getCollectionByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<Collection> {
