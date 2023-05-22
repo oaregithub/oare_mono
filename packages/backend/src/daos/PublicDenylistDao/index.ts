@@ -196,7 +196,7 @@ class PublicDenylistDao {
     const textDenylist = await PDDao.getDenylistTextUuids(trx);
     const collectionDenylist = await PDDao.getDenylistCollectionUuids(trx);
 
-    const collectionUuidOfText = await CollectionDao.getTextCollectionUuid(
+    const collectionUuidOfText = await CollectionDao.getCollectionUuidByTextUuid(
       textUuid,
       trx
     );

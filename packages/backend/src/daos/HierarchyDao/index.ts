@@ -1,5 +1,4 @@
 import {
-  CollectionResponse,
   SearchNamesResponse,
   SearchNamesResultRow,
   SearchNamesPayload,
@@ -132,50 +131,6 @@ class HierarchyDao {
     return {
       items: matchingItems,
       count: totalItems,
-    };
-  }
-
-  async getCollectionTexts(
-    collectionUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<CollectionResponse> {
-    const k = trx || knex;
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-
-    const texts = await k('hierarchy')
-      .innerJoin('text', 'text.uuid', 'hierarchy.object_uuid')
-      .where('hierarchy.obj_parent_uuid', collectionUuid)
-      .distinct(
-        'hierarchy.id',
-        'hierarchy.object_uuid as uuid',
-        'hierarchy.type',
-        'text.display_name as name',
-        'text.excavation_prfx as excavationPrefix',
-        'text.excavation_no as excavationNumber',
-        'text.museum_prfx as museumPrefix',
-        'text.museum_no as museumNumber',
-        'text.publication_prfx as publicationPrefix',
-        'text.publication_no as publicationNumber'
-      )
-      .groupBy('hierarchy.object_uuid')
-      .orderBy('text.display_name');
-
-    const hasEpigraphies = await Promise.all(
-      texts.map(text => TextEpigraphyDao.hasEpigraphy(text.uuid, trx))
-    );
-
-    const hasEpigraphyAdded = texts.map((text, idx) => ({
-      ...text,
-      hasEpigraphy: hasEpigraphies[idx],
-    }));
-
-    const sortedTexts = await CollectionTextUtils.sortCollectionTexts(
-      hasEpigraphyAdded
-    );
-
-    return {
-      texts: sortedTexts,
     };
   }
 
@@ -364,11 +319,12 @@ class HierarchyDao {
     return value;
   }
 
-  async getTextsInCollection(
+  async getTextUuidsByCollectionUuid(
     collectionUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
+
     const rows = await k('hierarchy')
       .pluck('object_uuid')
       .where('obj_parent_uuid', collectionUuid);
@@ -398,6 +354,7 @@ class HierarchyDao {
       object_uuid: row.objectUuid,
       obj_parent_uuid: row.objectParentUuid,
       published: row.published,
+      custom: row.custom,
     });
   }
 
@@ -407,6 +364,28 @@ class HierarchyDao {
   ): Promise<void> {
     const k = trx || knex;
     await k('hierarchy').del().where({ object_uuid: textUuid, type: 'text' });
+  }
+
+  async getHierarchyRowsByObjectUuid(
+    objectUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<HierarchyRow[]> {
+    const k = trx || knex;
+
+    const rows = await k('hierarchy')
+      .select(
+        'uuid',
+        'parent_uuid as parentUuid',
+        'type',
+        'role',
+        'object_uuid as objectUuid',
+        'obj_parent_uuid as objectParentUuid',
+        'published',
+        'custom'
+      )
+      .where({ object_uuid: objectUuid });
+
+    return rows;
   }
 }
 

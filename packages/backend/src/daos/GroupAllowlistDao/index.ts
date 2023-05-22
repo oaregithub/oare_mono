@@ -73,7 +73,7 @@ class GroupAllowlistDao {
     const CollectionDao = sl.get('CollectionDao');
     const UserGroupDao = sl.get('UserGroupDao');
 
-    const collectionUuid = await CollectionDao.getTextCollectionUuid(
+    const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
       textUuid,
       trx
     );

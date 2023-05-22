@@ -1,5 +1,4 @@
 import sl from '@/serviceLocator';
-import { CollectionText } from '@oare/types';
 import { Knex } from 'knex';
 
 class CollectionTextUtils {
@@ -79,12 +78,12 @@ class CollectionTextUtils {
       return true;
     }
 
-    const textsInCollection = await HierarchyDao.getTextsInCollection(
+    const textsInCollection = await HierarchyDao.getTextUuidsByCollectionUuid(
       collectionUuid,
       trx
     );
     const subtextsViewable = await Promise.all(
-      textsInCollection.map(text => this.canViewText(text, userUuid, trx))
+      textsInCollection.map(uuid => this.canViewText(uuid, userUuid, trx))
     );
     if (subtextsViewable.includes(true)) {
       return true;
@@ -120,7 +119,7 @@ class CollectionTextUtils {
     const textsInDenylistCollections = (
       await Promise.all(
         publicDenylistCollections.map(collection =>
-          HierarchyDao.getTextsInCollection(collection, trx)
+          HierarchyDao.getTextUuidsByCollectionUuid(collection, trx)
         )
       )
     ).flat();
@@ -144,7 +143,7 @@ class CollectionTextUtils {
     const textsInAllowlistCollections = (
       await Promise.all(
         collectionAllowlist.map(collection =>
-          HierarchyDao.getTextsInCollection(collection, trx)
+          HierarchyDao.getTextUuidsByCollectionUuid(collection, trx)
         )
       )
     ).flat();
@@ -225,7 +224,7 @@ class CollectionTextUtils {
       return true;
     }
 
-    const collectionUuid = await CollectionDao.getTextCollectionUuid(
+    const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
       textUuid,
       trx
     );
@@ -250,7 +249,7 @@ class CollectionTextUtils {
     return false;
   }
 
-  async sortCollectionTexts(texts: CollectionText[]) {
+  /* async sortCollectionTexts(texts: CollectionText[]) {
     const sortedTexts = texts.sort((a, b) => {
       const textNameA: string = a.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
       const textNameB: string = b.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
@@ -286,7 +285,7 @@ class CollectionTextUtils {
       return nameArrayA.length - nameArrayB.length;
     });
     return sortedTexts;
-  }
+  } */
 }
 
 export default new CollectionTextUtils();

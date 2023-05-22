@@ -2,7 +2,6 @@ import { Express } from 'express';
 import archives from '@/api/archives';
 import bibliography from '@/api/bibliography';
 import cacheStatus from '@/api/cache_status';
-import collectionInfo from '@/api/collection_info';
 import collections from '@/api/collections';
 import comments from '@/api/comments';
 import dictionary from '@/api/dictionary';
@@ -53,7 +52,6 @@ export default (app: Express) => {
     archives,
     bibliography,
     cacheStatus,
-    collectionInfo,
     collections,
     comments,
     dictionary,

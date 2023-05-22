@@ -116,7 +116,20 @@ router
           return;
         }
 
-        const collection = await CollectionDao.getTextCollection(text.uuid);
+        const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
+          text.uuid
+        );
+
+        if (!collectionUuid) {
+          next(
+            new HttpBadRequest('Text does not belong to a valid collection')
+          );
+          return;
+        }
+
+        const collection = await CollectionDao.getCollectionByUuid(
+          collectionUuid
+        );
 
         if (!collection) {
           next(
@@ -507,7 +520,9 @@ router
         publicationNumber
       );
 
-      const collectionUuid = await CollectionDao.getTextCollectionUuid(uuid);
+      const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
+        uuid
+      );
 
       await cache.clear(`/text_epigraphies/text/${uuid}`, {
         level: 'startsWith',

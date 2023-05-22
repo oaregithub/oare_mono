@@ -1,7 +1,6 @@
 import {
   Word,
   User,
-  CollectionResponse,
   Collection,
   EpigraphyResponse,
   Seal,
@@ -78,14 +77,14 @@ export const dictionaryFilter: CacheFilter<Word[]> = async (
 
 /**
  * Filters a collection to exclude texts that the user does not have access to.
- * @param collectionsResponse The collection response to filter.
+ * @param collection The collection response to filter.
  * @param user The requesting user.
  * @returns The filtered collection response.
  */
-export const collectionTextsFilter: CacheFilter<CollectionResponse> = async (
-  collectionsResponse: CollectionResponse,
+export const collectionTextsFilter: CacheFilter<Collection> = async (
+  collection: Collection,
   user: User | null
-): Promise<CollectionResponse> => {
+): Promise<Collection> => {
   const CollectionTextUtils = sl.get('CollectionTextUtils');
 
   const userUuid = user ? user.uuid : null;
@@ -93,10 +92,8 @@ export const collectionTextsFilter: CacheFilter<CollectionResponse> = async (
   const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
   return {
-    ...collectionsResponse,
-    texts: collectionsResponse.texts.filter(
-      text => !textsToHide.includes(text.uuid)
-    ),
+    ...collection,
+    texts: collection.texts.filter(text => !textsToHide.includes(text.uuid)),
   };
 };
 
@@ -135,6 +132,8 @@ export const collectionFilter: CacheFilter<Collection[]> = async (
   const viewableCollections = publishedCollections.filter(
     (_, idx) => viewableCollectionsStatus[idx]
   );
+
+  // FIXME - should probably remove texts from collections that the user does not have access to here as well
 
   return viewableCollections;
 };

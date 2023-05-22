@@ -3,7 +3,7 @@ import { HttpInternalError } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/router/collections';
 import sl from '@/serviceLocator';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { CollectionResponse, Collection } from '@oare/types';
+import { Collection } from '@oare/types';
 import { collectionTextsFilter, collectionFilter } from '@/cache/filters';
 
 const router = express.Router();
@@ -17,14 +17,11 @@ router
         const CollectionDao = sl.get('CollectionDao');
         const cache = sl.get('cache');
 
-        const collectionUuids = await CollectionDao.getAllCollections();
-        const collections = (
-          await Promise.all(
-            collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-          )
-        )
-          .filter(collection => collection)
-          .map(collection => collection!);
+        const collectionUuids = await CollectionDao.getAllCollectionUuids();
+
+        const collections = await Promise.all(
+          collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
+        );
 
         const response = await cache.insert<Collection[]>(
           { req },
@@ -43,19 +40,19 @@ router
   .route('/collections/:uuid')
   .get(
     collectionsMiddleware,
-    cacheMiddleware<CollectionResponse>(collectionTextsFilter),
+    cacheMiddleware<Collection>(collectionTextsFilter),
     async (req, res, next) => {
       try {
+        const cache = sl.get('cache');
+        const CollectionDao = sl.get('CollectionDao');
+
         const uuid = req.params.uuid as string;
 
-        const cache = sl.get('cache');
-        const HierarchyDao = sl.get('HierarchyDao');
+        const collection = await CollectionDao.getCollectionByUuid(uuid);
 
-        const texts = await HierarchyDao.getCollectionTexts(uuid);
-
-        const response = await cache.insert<CollectionResponse>(
+        const response = await cache.insert<Collection>(
           { req },
-          texts,
+          collection,
           collectionTextsFilter
         );
 
@@ -65,22 +62,5 @@ router
       }
     }
   );
-
-router
-  .route('/collection_hierarchy/:collectionUuid')
-  .get(async (req, res, next) => {
-    try {
-      const HierarchyDao = sl.get('HierarchyDao');
-      const { collectionUuid } = req.params;
-
-      const parentUuid = await HierarchyDao.getParentUuidByCollection(
-        collectionUuid
-      );
-
-      res.json(parentUuid);
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
 
 export default router;

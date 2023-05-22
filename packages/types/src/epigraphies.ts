@@ -12,6 +12,7 @@ import { ItemPropertyRow } from './words';
 import { ReferringLocationInfo } from './bibliography';
 import { AppliedProperty } from './properties';
 
+// FXIME would be useful if this had collectionUuid too, also hasEpigraphy
 export interface Text {
   uuid: string;
   type: string;
@@ -371,6 +372,7 @@ export interface HierarchyRow {
   objectUuid: string;
   objectParentUuid: string | null;
   published: number;
+  custom: null;
 }
 
 export interface CreateTextTables {
