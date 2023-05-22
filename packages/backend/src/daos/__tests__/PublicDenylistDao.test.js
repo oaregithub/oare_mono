@@ -10,7 +10,7 @@ describe('PublicDenylistDao', () => {
 
     const collectionUuid = 'coll-uuid';
     const CollectionDao = {
-      getTextCollectionUuid: jest.fn().mockResolvedValue(collectionUuid),
+      getCollectionUuidByTextUuid: jest.fn().mockResolvedValue(collectionUuid),
     };
 
     beforeEach(() => {

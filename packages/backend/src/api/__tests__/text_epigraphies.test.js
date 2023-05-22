@@ -316,7 +316,10 @@ describe('GET /text_epigraphies/text/:uuid', () => {
   };
 
   const mockCollectionDao = {
-    getTextCollection: jest.fn().mockResolvedValue(mockResponse.collection),
+    getCollectionUuidByTextUuid: jest
+      .fn()
+      .mockResolvedValue(mockResponse.collection.uuid),
+    getCollectionByUuid: jest.fn().mockResolvedValue(mockResponse.collection),
   };
 
   const mockItemPropertiesDao = {
@@ -757,7 +760,7 @@ describe('PATCH /text_epigraphies/edit_text_info', () => {
   };
 
   const mockCollectionDao = {
-    getTextCollectionUuid: jest.fn().mockResolvedValue('test-uuid'),
+    getCollectionUuidByTextUuid: jest.fn().mockResolvedValue('test-uuid'),
   };
 
   const mockCache = {
