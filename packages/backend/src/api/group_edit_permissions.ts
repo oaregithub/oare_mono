@@ -5,7 +5,6 @@ import sl from '@/serviceLocator';
 import {
   GroupEditPermissionsPayload,
   GetGroupEditPermissionParameters,
-  DeleteDenylistAllowlistParameters,
   DenylistAllowlistItem,
 } from '@oare/types';
 
@@ -127,10 +126,9 @@ router
     try {
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
       const OareGroupDao = sl.get('OareGroupDao');
-      const {
-        groupId,
-        uuid,
-      } = (req.params as unknown) as DeleteDenylistAllowlistParameters;
+
+      const groupId = Number(req.params.groupId);
+      const uuid = req.params.uuid as string;
 
       // Make sure group ID exists
       const existingGroup = await OareGroupDao.getGroupById(groupId);

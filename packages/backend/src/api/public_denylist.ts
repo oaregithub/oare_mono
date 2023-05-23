@@ -1,5 +1,8 @@
 import express from 'express';
-import { DenylistAllowlistPayload, DenylistAllowlistItem } from '@oare/types';
+import {
+  AddDenylistAllowlistPayload,
+  DenylistAllowlistItem,
+} from '@oare/types';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
@@ -69,7 +72,7 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const PublicDenylistDao = sl.get('PublicDenylistDao');
-      const { uuids, type }: DenylistAllowlistPayload = req.body;
+      const { uuids, type }: AddDenylistAllowlistPayload = req.body;
 
       if (!(await canInsert(uuids))) {
         next(

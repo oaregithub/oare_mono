@@ -363,13 +363,19 @@ class ResourceDao {
   async getImageByUuid(
     imageUuid: string,
     trx?: Knex.Transaction
-  ): Promise<{ uuid: string; link: string } | null> {
+  ): Promise<{ uuid: string; link: string }> {
     const k = trx || knex;
+
     const image = await k('resource')
       .select('uuid', 'link')
       .where('uuid', imageUuid)
       .first();
-    return image || null;
+
+    if (!image) {
+      throw new Error(`Image with uuid ${imageUuid} does not exist`);
+    }
+
+    return image;
   }
 
   async getAllowListImageWithText(

@@ -7,11 +7,17 @@ interface TextUuid {
 }
 
 class TextDao {
-  async getTextByUuid(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<Text | null> {
+  /**
+   * Retrieves a text by its UUID
+   * @param uuid The UUID of the text to retrieve
+   * @param trx Knex Transaction. Optional.
+   * @returns A text object
+   */
+  async getTextByUuid(uuid: string, trx?: Knex.Transaction): Promise<Text> {
     const k = trx || knex;
+
+    // FIXME should probably combine with the text row function below
+
     const text: Text = await k('text')
       .select(
         'uuid',
@@ -26,6 +32,11 @@ class TextDao {
       )
       .first()
       .where({ uuid });
+
+    if (!text) {
+      throw new Error(`Text with uuid ${uuid} does not exist`);
+    }
+
     return text;
   }
 

@@ -136,7 +136,7 @@ describe('POST /group_allowlist/:groupId', () => {
 
   it('returns 400 if texts do not exist', async () => {
     sl.set('TextDao', {
-      getTextByUuid: jest.fn().mockResolvedValue(null),
+      getTextByUuid: jest.fn().mockRejectedValue(null),
     });
     const response = await sendRequest();
     expect(mockGroupAllowlistDao.addItemsToAllowlist).not.toHaveBeenCalled();

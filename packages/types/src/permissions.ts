@@ -73,7 +73,11 @@ export interface UpdatePermissionPayload {
 
 export type PermissionsListType = 'Text' | 'Collection' | 'Image';
 
-export interface DenylistAllowlistPayload {
+export type DenylistAllowlistType = 'text' | 'collection' | 'img';
+
+export type GroupEditPermissionsType = 'text' | 'collection';
+
+export interface AddDenylistAllowlistPayload {
   uuids: string[];
   type: 'text' | 'img' | 'collection';
 }
@@ -83,19 +87,9 @@ export interface GroupEditPermissionsPayload {
   type: 'text' | 'collection';
 }
 
-export interface GetDenylistAllowlistParameters {
-  groupId: number;
-  type: 'text' | 'collection' | 'img';
-}
-
 export interface GetGroupEditPermissionParameters {
   groupId: number;
   type: 'text' | 'collection';
-}
-
-export interface DeleteDenylistAllowlistParameters {
-  groupId: number;
-  uuid: string;
 }
 
 export interface DenylistAllowlistItem {

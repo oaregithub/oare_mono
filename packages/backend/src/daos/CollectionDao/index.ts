@@ -15,6 +15,10 @@ class CollectionDao {
       .where({ uuid })
       .first();
 
+    if (!collection) {
+      throw new Error(`Collection with uuid ${uuid} does not exist`);
+    }
+
     return collection;
   }
 

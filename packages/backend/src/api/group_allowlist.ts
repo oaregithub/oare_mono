@@ -3,10 +3,9 @@ import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
 import {
-  DenylistAllowlistPayload,
-  GetDenylistAllowlistParameters,
-  DeleteDenylistAllowlistParameters,
+  AddDenylistAllowlistPayload,
   DenylistAllowlistItem,
+  DenylistAllowlistType,
 } from '@oare/types';
 
 const router = express.Router();
@@ -20,17 +19,18 @@ router
       const TextDao = sl.get('TextDao');
       const CollectionDao = sl.get('CollectionDao');
       const ResourceDao = sl.get('ResourceDao');
-      const {
-        groupId,
-        type,
-      } = (req.params as unknown) as GetDenylistAllowlistParameters;
+
+      const groupId = Number(req.params.groupId);
+      const type = req.params.type as DenylistAllowlistType;
 
       const groupAllowlist = await GroupAllowlistDao.getGroupAllowlist(
         groupId,
         type
       );
+
       let names: (string | undefined)[];
       let urls: (string | undefined)[];
+
       if (type === 'text') {
         const results = await Promise.all(
           groupAllowlist.map(uuid => TextDao.getTextByUuid(uuid))
@@ -41,7 +41,7 @@ router
           groupAllowlist.map(uuid => CollectionDao.getCollectionByUuid(uuid))
         );
         names = results.map(row => (row ? row.name : undefined));
-      } else {
+      } else if (type === 'img') {
         const results = await Promise.all(
           groupAllowlist.map(uuid =>
             ResourceDao.getAllowListImageWithText(uuid)
@@ -68,6 +68,7 @@ router
           url: urls[index],
         }));
       }
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -78,16 +79,14 @@ router
   .route('/group_allowlist/:groupId')
   .post(adminRoute, async (req, res, next) => {
     try {
-      const { groupId } = (req.params as unknown) as {
-        groupId: number;
-      };
-      const { uuids, type }: DenylistAllowlistPayload = req.body;
-
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const OareGroupDao = sl.get('OareGroupDao');
       const TextDao = sl.get('TextDao');
       const CollectionDao = sl.get('CollectionDao');
       const ResourceDao = sl.get('ResourceDao');
+
+      const groupId = Number(req.params.groupId);
+      const { uuids, type }: AddDenylistAllowlistPayload = req.body;
 
       // Make sure that group ID exists
       const existingGroup = await OareGroupDao.getGroupById(groupId);
@@ -98,48 +97,40 @@ router
 
       // If texts, make sure all text UUIDs exist
       if (type === 'text') {
-        const texts = await Promise.all(
-          uuids.map(uuid => TextDao.getTextByUuid(uuid))
-        );
-        if (texts.some(text => !text)) {
-          next(
-            new HttpBadRequest('One or more of given text UUIDs does not exist')
-          );
+        try {
+          await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
+        } catch (err) {
+          next(new HttpBadRequest(err as string));
           return;
         }
       }
 
       // If collections, make sure all collection UUIDs exist
       if (type === 'collection') {
-        const collections = await Promise.all(
-          uuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-        );
-        if (collections.some(collection => !collection)) {
-          next(
-            new HttpBadRequest(
-              'One or more of given collection UUIDs does not exist'
-            )
+        try {
+          await Promise.all(
+            uuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
           );
+        } catch (err) {
+          next(new HttpBadRequest(err as string));
           return;
         }
       }
 
       // If images, make sure all images UUIDs exist
       if (type === 'img') {
-        const images = await Promise.all(
-          uuids.map(uuid => ResourceDao.getImageByUuid(uuid))
-        );
-        if (images.some(image => !image)) {
-          next(
-            new HttpBadRequest(
-              'One or more of given image UUIDs does not exist'
-            )
+        try {
+          await Promise.all(
+            uuids.map(uuid => ResourceDao.getImageByUuid(uuid))
           );
+        } catch (err) {
+          next(new HttpBadRequest(err as string));
           return;
         }
       }
 
       await GroupAllowlistDao.addItemsToAllowlist(groupId, uuids, type);
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -152,12 +143,12 @@ router
     try {
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const OareGroupDao = sl.get('OareGroupDao');
-      const {
-        groupId,
-        uuid,
-      } = (req.params as unknown) as DeleteDenylistAllowlistParameters;
+
+      const groupId = Number(req.params.groupId);
+      const { uuid } = req.params;
 
       // Make sure group ID exists
+      // FIXME should throw rather than return null. Should fix this all over the place
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
@@ -175,6 +166,7 @@ router
       }
 
       await GroupAllowlistDao.removeItemFromAllowlist(groupId, uuid);
+
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

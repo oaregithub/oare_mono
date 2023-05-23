@@ -1,5 +1,4 @@
-import { Text } from './epigraphies';
-import { HierarchyRow } from './epigraphies';
+import { Text, HierarchyRow } from './epigraphies';
 
 export interface Collection extends CollectionRow {
   hierarchy: HierarchyRow;
