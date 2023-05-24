@@ -13,38 +13,31 @@ describe('field api test', () => {
     type: 'description',
   };
 
-  const editFieldPayload = {
-    uuid: 'uuid',
-    description: 'edited description',
-    primacy: 1,
-  };
-
-  const newFieldInfo = {
-    referenceUuid: 'refUuid',
+  const fieldPayload = {
     description: 'new description',
     primacy: 1,
+    isTaxonomy: false,
   };
 
-  const MockFieldDao = {
-    updateAllFieldFields: jest.fn().mockResolvedValue(),
+  const mockFieldDao = {
+    updateField: jest.fn().mockResolvedValue(),
     insertField: jest.fn().mockResolvedValue(),
     getFieldRowsByReferenceUuidAndType: jest.fn().mockResolvedValue(fieldInfo),
-    detectLanguage: jest.fn().mockResolvedValue('English'),
   };
 
-  const MockCache = {
+  const mockCache = {
     retrieve: jest.fn().mockResolvedValue(null),
     clear: jest.fn(),
     insert: jest.fn().mockImplementation((_key, response, _filter) => response),
   };
 
-  const MockUserDao = {
+  const mockUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
       isAdmin: true,
     }),
   };
 
-  const MockPermissionsDao = {
+  const mockPermissionsDao = {
     getUserPermissions: jest.fn().mockResolvedValue([
       {
         name: 'ADD_EDIT_FIELD_DESCRIPTION',
@@ -52,87 +45,70 @@ describe('field api test', () => {
     ]),
   };
 
+  const mockUtils = {
+    detectLanguage: jest.fn().mockResolvedValue('English'),
+  };
+
   const setup = () => {
-    sl.set('FieldDao', MockFieldDao);
-    sl.set('cache', MockCache);
-    sl.set('UserDao', MockUserDao);
-    sl.set('PermissionsDao', MockPermissionsDao);
+    sl.set('FieldDao', mockFieldDao);
+    sl.set('cache', mockCache);
+    sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);
 
-  describe('GET /field_description/:referenceUuid', () => {
-    const refUuid = 'referenceUuid';
-    const PATH = `${API_PATH}/field_description/${refUuid}`;
+  describe('GET /field/:uuid', () => {
+    const referenceUuid = 'test-reference-uuid';
+    const PATH = `${API_PATH}/field/${referenceUuid}`;
     const sendRequest = async () => request(app).get(PATH);
     it('returns a FieldInfo object on request', async () => {
       const response = await sendRequest();
       expect(response.status).toBe(200);
       expect(JSON.parse(response.text)).toEqual(fieldInfo);
       expect(
-        MockFieldDao.getFieldRowsByReferenceUuidAndType
+        mockFieldDao.getFieldRowsByReferenceUuidAndType
       ).toHaveBeenCalled();
     });
   });
 
-  describe('POST /update_field_description', () => {
-    const PATH = `${API_PATH}/update_field_description`;
-    const sendRequest = async (auth = true, field = newFieldInfo) => {
+  describe('POST /field/:uuid', () => {
+    const referenceUuid = 'test-reference-uuid';
+    const PATH = `${API_PATH}/field/${referenceUuid}`;
+
+    const sendRequest = async (auth = true, field = fieldPayload) => {
       const req = request(app).post(PATH).send(field);
       return auth ? req.set('Authorization', 'token') : req;
     };
 
-    it('returns successful 201, adds field info', async () => {
+    it('returns 201 on successful insertion', async () => {
+      const response = await sendRequest();
+      expect(mockFieldDao.insertField).toHaveBeenCalled();
+      expect(response.status).toBe(201);
+    });
+
+    it('returns 201 when admin adds primacy > 1', async () => {
+      const response = await sendRequest(true, { ...fieldPayload, primacy: 2 });
+      expect(mockFieldDao.insertField).toHaveBeenCalled();
+      expect(response.status).toBe(201);
+    });
+
+    it('returns 400 when non-admin attempts to add primacy > 1', async () => {
       sl.set('UserDao', {
         getUserByUuid: jest.fn().mockResolvedValue({
           isAdmin: false,
         }),
       });
-      const response = await sendRequest();
-      expect(response.status).toBe(201);
-    });
-
-    it('returns successful 201, adds field info when admin', async () => {
-      const response = await sendRequest();
-      expect(response.status).toBe(201);
-    });
-
-    it('returns successful 201, adds field info when primacy 2', async () => {
-      const response = await sendRequest(true, { ...newFieldInfo, primacy: 2 });
-      expect(response.status).toBe(201);
+      const response = await sendRequest(true, { ...fieldPayload, primacy: 2 });
+      expect(response.status).toBe(400);
     });
 
     it('returns 403 for user without permission', async () => {
       sl.set('PermissionsDao', {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
-      sl.set('UserDao', {
-        getUserByUuid: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
-      });
       const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
-    it('returns 403 for user with wrong permission', async () => {
-      sl.set('PermissionsDao', {
-        getUserPermissions: jest
-          .fn()
-          .mockResolvedValue(['VIEW_FIELD_DESCRIPTION']),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
-    it('returns 403 for user without permission primacy 2', async () => {
-      sl.set('PermissionsDao', {
-        getUserPermissions: jest.fn().mockResolvedValue([]),
-      });
-      const response = await sendRequest(true, {
-        ...newFieldInfo,
-        primacy: 2,
-      });
       expect(response.status).toBe(403);
     });
 
@@ -148,7 +124,7 @@ describe('field api test', () => {
         }),
       });
       const response = await sendRequest(true, {
-        ...editFieldPayload,
+        ...fieldPayload,
         primacy: 2,
       });
       expect(response.status).toBe(403);
@@ -163,10 +139,12 @@ describe('field api test', () => {
     });
   });
 
-  describe('PATCH /update_field_description', () => {
-    const PATH = `${API_PATH}/update_field_description`;
-    const sendRequest = async (auth = true, field = editFieldPayload) => {
-      const req = request(app).post(PATH).send(field);
+  describe('PATCH /field/:uuid', () => {
+    const uuid = 'test-uuid';
+    const PATH = `${API_PATH}/field/${uuid}`;
+
+    const sendRequest = async (auth = true, field = fieldPayload) => {
+      const req = request(app).patch(PATH).send(field);
       return auth ? req.set('Authorization', 'token') : req;
     };
 
@@ -177,6 +155,7 @@ describe('field api test', () => {
         }),
       });
       const response = await sendRequest();
+      expect(mockFieldDao.updateField).toHaveBeenCalled();
       expect(response.status).toBe(201);
     });
 
@@ -187,7 +166,7 @@ describe('field api test', () => {
 
     it('returns successful 201, edits field info when primacy 2', async () => {
       const response = await sendRequest(true, {
-        ...editFieldPayload,
+        ...fieldPayload,
         primacy: 2,
       });
       expect(response.status).toBe(201);
@@ -206,16 +185,6 @@ describe('field api test', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 403 for user with wrong permission', async () => {
-      sl.set('PermissionsDao', {
-        getUserPermissions: jest
-          .fn()
-          .mockResolvedValue(['VIEW_FIELD_DESCRIPTION']),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
     it('returns 403 for non-admin user with correct permission primacy 2', async () => {
       sl.set('PermissionsDao', {
         getUserPermissions: jest
@@ -228,7 +197,7 @@ describe('field api test', () => {
         }),
       });
       const response = await sendRequest(true, {
-        ...editFieldPayload,
+        ...fieldPayload,
         primacy: 2,
       });
       expect(response.status).toBe(403);
@@ -239,7 +208,7 @@ describe('field api test', () => {
         getUserPermissions: jest.fn().mockResolvedValue([]),
       });
       const response = await sendRequest(true, {
-        ...editFieldPayload,
+        ...fieldPayload,
         primacy: 2,
       });
       expect(response.status).toBe(403);

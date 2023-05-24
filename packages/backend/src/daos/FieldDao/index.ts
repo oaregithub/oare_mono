@@ -2,20 +2,21 @@ import { v4 } from 'uuid';
 import knex from '@/connection';
 import { Knex } from 'knex';
 import { FieldRow } from '@oare/types';
-import DetectLanguage, { DetectionResult } from 'detectlanguage';
-import { getDetectLanguageAPIKEY } from '@/utils';
-import { languages } from './utils';
 
-interface FieldOptions {
-  primacy?: number;
-}
 class FieldDao {
-  async getFieldRowsByReferenceUuid(
-    referenceUuid: string,
+  /**
+   * Retreieves a singled field row by its UUID.
+   * @param uuid The UUID of the field row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns The single field row.
+   */
+  async getFieldRowByUuid(
+    uuid: string,
     trx?: Knex.Transaction
-  ): Promise<FieldRow[]> {
+  ): Promise<FieldRow> {
     const k = trx || knex;
-    return k('field')
+
+    const row: FieldRow = await k('field')
       .select(
         'uuid',
         'reference_uuid as referenceUuid',
@@ -25,12 +26,23 @@ class FieldDao {
         'field',
         'source_uuid as sourceUuid'
       )
-      .where({
-        reference_uuid: referenceUuid,
-      })
-      .orderBy('primacy');
+      .where({ uuid })
+      .first();
+
+    if (!row) {
+      throw new Error(`Field with uuid ${uuid} does not exist`);
+    }
+
+    return row;
   }
 
+  /**
+   * Retrieves all field rows with the given reference UUID and type.
+   * @param referenceUuid The reference UUID.
+   * @param type The field type.
+   * @param trx Knex Transaction. Optional.
+   * @returns An array of field rows with the given reference UUID and type.
+   */
   async getFieldRowsByReferenceUuidAndType(
     referenceUuid: string,
     type: string,
@@ -54,6 +66,16 @@ class FieldDao {
     return rows;
   }
 
+  /**
+   * Inserts a new field row.
+   * @param referenceUuid The reference UUID.
+   * @param type The field type.
+   * @param field The field value.
+   * @param primacy The field primacy.
+   * @param language The field language.
+   * @param trx Knex Transaction. Optional.
+   * @returns The UUID of the newly inserted field row.
+   */
   async insertField(
     referenceUuid: string,
     type: string,
@@ -63,7 +85,9 @@ class FieldDao {
     trx?: Knex.Transaction
   ): Promise<string> {
     const k = trx || knex;
+
     const uuid = v4();
+
     await k('field').insert({
       uuid,
       reference_uuid: referenceUuid,
@@ -72,31 +96,25 @@ class FieldDao {
       primacy,
       language,
     });
+
     return uuid;
   }
 
+  /**
+   * Updates a field row.
+   * @param uuid The UUID of the field row to update.
+   * @param field The field value.
+   * @param language The field language.
+   * @param type The field type.
+   * @param primacy The field primacy.
+   * @param trx Knex Transaction. Optional.
+   */
   async updateField(
-    uuid: string,
-    field: string,
-    options?: FieldOptions,
-    trx?: Knex.Transaction
-  ) {
-    const k = trx || knex;
-    await k('field')
-      .update({
-        field,
-        primacy:
-          options && options.primacy !== undefined ? options.primacy : null,
-      })
-      .where({ uuid });
-  }
-
-  async updateAllFieldFields(
     uuid: string,
     field: string,
     language: string | null,
     type: string | null,
-    options?: FieldOptions,
+    primacy: number | null,
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;
@@ -105,17 +123,27 @@ class FieldDao {
         field,
         language,
         type,
-        primacy:
-          options && options.primacy !== undefined ? options.primacy : null,
+        primacy,
       })
       .where({ uuid });
   }
 
+  /**
+   * Deletes a field row by its UUID.
+   * @param uuid The UUID of the field row to delete.
+   * @param trx Knex Transaction. Optional.
+   */
   async deleteField(uuid: string, trx?: Knex.Transaction) {
     const k = trx || knex;
+
     await k('field').del().where({ uuid });
   }
 
+  /**
+   * Removes all field rows with the given reference UUID. Used when permanently deleting a text.
+   * @param referenceUuid The reference UUID.
+   * @param trx Knex Transaction. Optional.
+   */
   async removeFieldRowsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
@@ -124,33 +152,29 @@ class FieldDao {
     await k('field').del().where({ reference_uuid: referenceUuid });
   }
 
-  async detectLanguage(text: string): Promise<string> {
-    const apiKey: string = await getDetectLanguageAPIKEY();
-    const detectLanguageAPI = new DetectLanguage(apiKey);
-
-    const language:
-      | { code: string; name: string }
-      | undefined = await detectLanguageAPI
-      .detect(text)
-      .then((results: DetectionResult[]) =>
-        languages.find(lang => lang.code === results[0].language)
-      );
-    return language?.name ?? 'unknown';
-  }
-
+  /**
+   * Deletes all field rows with the given reference UUID and type after a previously deleted field row. Used after deleting a field row to maintain primacy ordering.
+   * @param referenceUuid The reference UUID.
+   * @param deletedPrimacy The primacy of the deleted field row.
+   * @param type The field type.
+   * @param trx Knex Transaction. Optional.
+   */
   async decrementPrimacy(
-    deletedPrimacy: number,
     referenceUuid: string,
+    deletedPrimacy: number,
     type: string,
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;
+
     await k('field')
       .decrement('primacy', 1)
-      .where({ reference_uuid: referenceUuid })
-      .andWhere('primacy', '>=', deletedPrimacy)
-      .andWhere({ type });
+      .where({ reference_uuid: referenceUuid, type })
+      .andWhere('primacy', '>=', deletedPrimacy);
   }
 }
 
+/**
+ * FieldDao instance as a singleton.
+ */
 export default new FieldDao();

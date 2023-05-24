@@ -70,7 +70,7 @@ class ErrorsDao {
       return k('errors')
         .select(
           'errors.uuid',
-          'errors.userUuid as userUuid',
+          'errors.user_uuid as userUuid',
           'errors.description',
           'errors.stacktrace',
           'errors.timestamp',

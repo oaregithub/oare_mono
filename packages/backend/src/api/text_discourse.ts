@@ -221,16 +221,25 @@ router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
 router
   .route('/text_discourse/:uuid')
   .patch(permissionsRoute('EDIT_TRANSLATION'), async (req, res, next) => {
-    const FieldDao = sl.get('FieldDao');
-    const cache = sl.get('cache');
-    const { uuid } = req.params;
-    const { newTranslation, textUuid }: EditTranslationPayload = req.body;
-
     try {
-      const fieldRow = await FieldDao.getFieldRowsByReferenceUuid(uuid);
-      await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
-        primacy: 1,
-      });
+      const FieldDao = sl.get('FieldDao');
+      const cache = sl.get('cache');
+
+      const { uuid } = req.params;
+      const { newTranslation, textUuid }: EditTranslationPayload = req.body;
+
+      const existingTranslationRows = await FieldDao.getFieldRowsByReferenceUuidAndType(
+        uuid,
+        'translation'
+      );
+
+      await FieldDao.updateField(
+        uuid,
+        newTranslation,
+        existingTranslationRows[0].language,
+        'translation',
+        1
+      );
 
       await cache.clear(`/text_epigraphies/text/${textUuid}`, {
         level: 'startsWith',

@@ -609,6 +609,7 @@ class DictionaryWordDao {
     fieldType: string,
     trx?: Knex.Transaction
   ): Promise<void> {
+    // FIXME definition vs translation stuff is off
     let currentTranslations: DictionaryWordTranslation[] = [];
     if (fieldType === 'definition') {
       currentTranslations = await this.getWordTranslationsForDefinition(
@@ -646,9 +647,9 @@ class DictionaryWordDao {
         FieldDao.updateField(
           tr.uuid,
           tr.val,
-          {
-            primacy: tr.primacy,
-          },
+          'default',
+          fieldType,
+          tr.primacy,
           trx
         )
       )

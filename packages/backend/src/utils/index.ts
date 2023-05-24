@@ -16,6 +16,8 @@ import sl from '@/serviceLocator';
 import AWS from 'aws-sdk';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
+import DetectLanguage, { DetectionResult } from 'detectlanguage';
+import { languages } from './languages';
 
 // FIXME make this a class as a singleton
 // Perhaps this should be split into utils for various functions? Ex: Bib utils. Basically moving it out of dao stuff
@@ -219,7 +221,7 @@ export const getDictionaryCacheRouteToClear = (
   return cacheRouteToClear;
 };
 
-// FIXME - move to FieldDao utils
+// FIXME - move to separate file?
 export const getDetectLanguageAPIKEY = async (): Promise<string> => {
   const s3 = new AWS.S3();
 
@@ -245,6 +247,7 @@ export const getDetectLanguageAPIKEY = async (): Promise<string> => {
   return apiKey;
 };
 
+// FIXME could be private if this were a class
 /**
  * Retrieves the Zotero API key from the environment variables or from the S3 bucket.
  * If not previously set, it will be set in the environment variables for future use.
@@ -315,4 +318,18 @@ export const getZoteroData = async (
     );
     return null;
   }
+};
+
+export const detectLanguage = async (text: string): Promise<string> => {
+  const apiKey: string = await getDetectLanguageAPIKEY();
+  const detectLanguageAPI = new DetectLanguage(apiKey);
+
+  const language:
+    | { code: string; name: string }
+    | undefined = await detectLanguageAPI
+    .detect(text)
+    .then((results: DetectionResult[]) =>
+      languages.find(lang => lang.code === results[0].language)
+    );
+  return language?.name ?? 'unknown';
 };

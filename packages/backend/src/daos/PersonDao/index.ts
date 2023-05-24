@@ -540,8 +540,9 @@ class PersonDao {
       trx
     );
 
-    const discussion = await FieldDao.getFieldRowsByReferenceUuid(
+    const discussion = await FieldDao.getFieldRowsByReferenceUuidAndType(
       personUuid,
+      'description',
       trx
     );
 
