@@ -2,10 +2,6 @@ import knex from '@/connection';
 import { TranslitOption, Text, TextRow, LinkItem } from '@oare/types';
 import { Knex } from 'knex';
 
-interface TextUuid {
-  uuid: string;
-}
-
 class TextDao {
   /**
    * Retrieves a text by its UUID
@@ -34,6 +30,7 @@ class TextDao {
       .where({ uuid });
 
     if (!text) {
+      // FIXME is this the best way? Should it continue returning null and using HTTP bad request instead. I'd like some sort of in between
       throw new Error(`Text with uuid ${uuid} does not exist`);
     }
 
@@ -72,12 +69,13 @@ class TextDao {
 
   async getUnpublishedTextUuids(trx?: Knex.Transaction): Promise<string[]> {
     const k = trx || knex;
-    const texts: TextUuid[] = await k('text')
-      .select('text.uuid')
+
+    const uuids: string[] = await k('text')
+      .pluck('text.uuid')
       .innerJoin('hierarchy', 'hierarchy.object_uuid', 'text.uuid')
       .where('hierarchy.published', false);
 
-    return texts.map(text => text.uuid);
+    return uuids;
   }
 
   async getCdliNum(

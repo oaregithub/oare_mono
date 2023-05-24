@@ -10,7 +10,7 @@ class FieldDao {
    * @param trx Knex Transaction. Optional.
    * @returns The single field row.
    */
-  async getFieldRowByUuid(
+  public async getFieldRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow> {
@@ -43,7 +43,7 @@ class FieldDao {
    * @param trx Knex Transaction. Optional.
    * @returns An array of field rows with the given reference UUID and type.
    */
-  async getFieldRowsByReferenceUuidAndType(
+  public async getFieldRowsByReferenceUuidAndType(
     referenceUuid: string,
     type: string,
     trx?: Knex.Transaction
@@ -76,7 +76,7 @@ class FieldDao {
    * @param trx Knex Transaction. Optional.
    * @returns The UUID of the newly inserted field row.
    */
-  async insertField(
+  public async insertField(
     referenceUuid: string,
     type: string,
     field: string,
@@ -109,7 +109,7 @@ class FieldDao {
    * @param primacy The field primacy.
    * @param trx Knex Transaction. Optional.
    */
-  async updateField(
+  public async updateField(
     uuid: string,
     field: string,
     language: string | null,
@@ -133,7 +133,7 @@ class FieldDao {
    * @param uuid The UUID of the field row to delete.
    * @param trx Knex Transaction. Optional.
    */
-  async deleteField(uuid: string, trx?: Knex.Transaction) {
+  public async deleteField(uuid: string, trx?: Knex.Transaction) {
     const k = trx || knex;
 
     await k('field').del().where({ uuid });
@@ -144,7 +144,7 @@ class FieldDao {
    * @param referenceUuid The reference UUID.
    * @param trx Knex Transaction. Optional.
    */
-  async removeFieldRowsByReferenceUuid(
+  public async removeFieldRowsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
@@ -159,7 +159,7 @@ class FieldDao {
    * @param type The field type.
    * @param trx Knex Transaction. Optional.
    */
-  async decrementPrimacy(
+  public async decrementPrimacy(
     referenceUuid: string,
     deletedPrimacy: number,
     type: string,
