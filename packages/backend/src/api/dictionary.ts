@@ -442,6 +442,7 @@ router
 
 router
   .route('/dictionary/spellings/:uuid')
+  // FIXME replace with PATCH
   .put(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid: spellingUuid } = req.params;

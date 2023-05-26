@@ -71,6 +71,7 @@ router
     }
   });
 
+// FIXME change to PATCH
 router.route('/threads').put(adminRoute, async (req, res, next) => {
   try {
     const thread: Thread = req.body;
@@ -104,6 +105,7 @@ router.route('/threads').put(adminRoute, async (req, res, next) => {
 
 router
   .route('/threads/name')
+  // FIXME replace with PATCH
   .put(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const { threadUuid, newName }: UpdateThreadNameRequest = req.body;
