@@ -48,7 +48,7 @@ router
         const cache = sl.get('cache');
         const CollectionDao = sl.get('CollectionDao');
 
-        const uuid = req.params.uuid as string;
+        const { uuid } = req.params;
 
         const collection = await CollectionDao.getCollectionByUuid(uuid);
 

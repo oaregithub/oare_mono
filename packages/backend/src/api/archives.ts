@@ -41,7 +41,7 @@ router
       const ArchiveDao = sl.get('ArchiveDao');
       const cache = sl.get('cache');
 
-      const uuid = req.params.uuid as string;
+      const { uuid } = req.params;
 
       const archive = await ArchiveDao.getArchiveByUuid(uuid);
 
@@ -64,7 +64,7 @@ router
       const ArchiveDao = sl.get('ArchiveDao');
       const cache = sl.get('cache');
 
-      const uuid = req.params.uuid as string;
+      const { uuid } = req.params;
 
       const dossier = await ArchiveDao.getDossierByUuid(uuid);
 
@@ -88,8 +88,7 @@ router
       const utils = sl.get('utils');
       const cache = sl.get('cache');
 
-      const archiveUuid = req.params.archiveUuid as string;
-      const textUuid = req.params.textUuid as string;
+      const { archiveUuid, textUuid } = req.params;
 
       await utils.createTransaction(async trx => {
         await ArchiveDao.disconnectText(textUuid, archiveUuid, trx);

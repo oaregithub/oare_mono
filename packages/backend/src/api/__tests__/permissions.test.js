@@ -26,7 +26,7 @@ const mockPermissionsDao = {
   getGroupPermissions: jest.fn().mockResolvedValue(mockPermissions),
   addGroupPermission: jest.fn().mockResolvedValue(),
   removePermission: jest.fn().mockResolvedValue(),
-  getAllPermissions: jest.fn().mockResolvedValue(mockPermissions),
+  getAllPermissions: jest.fn().mockReturnValue(mockPermissions),
 };
 
 describe('GET /userpermissions', () => {
@@ -83,15 +83,6 @@ describe('GET /allpermissions', () => {
     expect(mockPermissionsDao.getAllPermissions).toHaveBeenCalled();
     expect(JSON.parse(response.text)).toEqual(mockPermissions);
     expect(response.status).toBe(200);
-  });
-
-  it('returns 500 on failed all permissions retrieval', async () => {
-    sl.set('PermissionsDao', {
-      ...mockPermissionsDao,
-      getAllPermissions: jest.fn().mockRejectedValue(null),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(500);
   });
 
   it('returns 401 if no user', async () => {
@@ -184,8 +175,9 @@ describe('POST /permissions/:groupId', () => {
   it('returns 201 on successful addition', async () => {
     const response = await sendRequest();
     expect(mockPermissionsDao.addGroupPermission).toHaveBeenCalledWith(
-      String(groupId),
-      mockPayload.permission
+      groupId,
+      mockPayload.permission.type,
+      mockPayload.permission.name
     );
     expect(response.status).toBe(201);
   });

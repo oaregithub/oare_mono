@@ -11,7 +11,7 @@ class OareGroupDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating whether or not a group with the given name already exists.
    */
-  async groupNameExists(
+  public async groupNameExists(
     name: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
@@ -30,7 +30,7 @@ class OareGroupDao {
    * @param trx Knex Transaction. Optional.
    * @returns The group object. Null if no group with the given ID exists.
    */
-  async getGroupById(
+  public async getGroupById(
     id: number,
     trx?: Knex.Transaction
   ): Promise<Group | null> {
@@ -49,7 +49,7 @@ class OareGroupDao {
    * @param trx Knex Transaction. Optional.
    * @returns An array of group IDs.
    */
-  async getAllGroupIds(trx?: Knex.Transaction): Promise<number[]> {
+  public async getAllGroupIds(trx?: Knex.Transaction): Promise<number[]> {
     const k = trx || knex;
 
     return k('oare_group').pluck('id');
@@ -62,7 +62,7 @@ class OareGroupDao {
    * @param trx Knex Transaction. Optional.
    * @returns The ID of the newly created group.
    */
-  async createGroup(
+  public async createGroup(
     name: string,
     description: string,
     trx?: Knex.Transaction
@@ -82,7 +82,7 @@ class OareGroupDao {
    * @param id The ID of the group to delete.
    * @param trx Knex Transaction. Optional.
    */
-  async deleteGroup(id: number, trx?: Knex.Transaction): Promise<void> {
+  public async deleteGroup(id: number, trx?: Knex.Transaction): Promise<void> {
     const k = trx || knex;
 
     await k('oare_group').where({ id }).del();
@@ -94,7 +94,7 @@ class OareGroupDao {
    * @param description The new description.
    * @param trx Knex Transaction. Optional.
    */
-  async updateGroupDescription(
+  public async updateGroupDescription(
     id: number,
     description: string,
     trx?: Knex.Transaction

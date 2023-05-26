@@ -55,7 +55,7 @@ router
         const BibliographyDao = sl.get('BibliographyDao');
         const cache = sl.get('cache');
 
-        const uuid = req.params.uuid as string;
+        const { uuid } = req.params;
 
         const bibliography = await BibliographyDao.getBibliographyByUuid(
           uuid,

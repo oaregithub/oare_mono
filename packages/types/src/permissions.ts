@@ -7,6 +7,8 @@ export type PermissionItem =
 
 export type PermissionName = PermissionItem['name'];
 
+export type PermissionType = PermissionItem['type'];
+
 export interface PermissionTemplate {
   description: string;
   dependencies?: PermissionName[];

@@ -1,11 +1,14 @@
 import knex from '@/connection';
-import { PermissionItem, PermissionName } from '@oare/types';
+import { PermissionItem, PermissionName, PermissionType } from '@oare/types';
 import { Knex } from 'knex';
 import UserDao from '../UserDao';
 import UserGroupDao from '../UserGroupDao';
 
 class PermissionsDao {
-  readonly ALL_PERMISSIONS: PermissionItem[] = [
+  /**
+   * All permissions in the system. This is the "source-of-truth" for permissions.
+   */
+  private ALL_PERMISSIONS: PermissionItem[] = [
     {
       name: 'WORDS',
       type: 'pages',
@@ -210,15 +213,26 @@ class PermissionsDao {
     },
   ];
 
-  getAllPermissions(): PermissionItem[] {
+  /**
+   * Retrieves a list of all permissions in the system.
+   * @returns Array of all permission objects.
+   */
+  public getAllPermissions(): PermissionItem[] {
     return this.ALL_PERMISSIONS;
   }
 
-  async getUserPermissions(
+  /**
+   * Retrieves a list of permissions that a given user has.
+   * @param userUuid The UUID of the user to retrieve permissions for. If null, returns an empty array.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of permissions that the user has.
+   */
+  public async getUserPermissions(
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<PermissionItem[]> {
     const k = trx || knex;
+
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
 
     if (user && user.isAdmin) {
@@ -228,11 +242,10 @@ class PermissionsDao {
     if (user) {
       const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid, trx);
 
-      const userPermissions: PermissionName[] = (
-        await k('permissions')
-          .select('permission')
-          .whereIn('group_id', groupIds)
-      ).map(row => row.permission);
+      const userPermissions: PermissionName[] = await k('permissions')
+        .pluck('permission')
+        .whereIn('group_id', groupIds);
+
       return this.ALL_PERMISSIONS.filter(permission =>
         userPermissions.includes(permission.name)
       );
@@ -241,26 +254,42 @@ class PermissionsDao {
     return [];
   }
 
-  async getGroupPermissions(
+  /**
+   * Retrieves a list of permissions that a given group has.
+   * @param groupId The ID of the group to retrieve permissions for.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of permissions that the group has.
+   */
+  public async getGroupPermissions(
     groupId: number,
     trx?: Knex.Transaction
   ): Promise<PermissionItem[]> {
     const k = trx || knex;
-    const permissions: string[] = (
-      await k('permissions').select('permission').where('group_id', groupId)
-    ).map(row => row.permission);
+
+    const permissions: string[] = await k('permissions')
+      .pluck('permission')
+      .where('group_id', groupId);
 
     return this.ALL_PERMISSIONS.filter(permission =>
       permissions.includes(permission.name)
     );
   }
 
-  async addGroupPermission(
+  /**
+   * Adds a permission to a group.
+   * @param groupId The ID of the group to add the permission to.
+   * @param type The type of the permission.
+   * @param name The name of the permission.
+   * @param trx Knex.Transaction. Optional.
+   */
+  public async addGroupPermission(
     groupId: number,
-    { type, name }: PermissionItem,
+    type: PermissionType,
+    name: PermissionName,
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;
+
     await k('permissions').insert({
       group_id: groupId,
       type,
@@ -268,17 +297,24 @@ class PermissionsDao {
     });
   }
 
-  async removePermission(
+  /**
+   * Removes a permission from a group.
+   * @param groupId The ID of the group to remove the permission from.
+   * @param permission The name of the permission to remove.
+   * @param trx Knex.Transaction. Optional.
+   */
+  public async removePermission(
     groupId: number,
     permission: PermissionName,
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;
-    await k('permissions')
-      .where('group_id', groupId)
-      .andWhere('permission', permission)
-      .del();
+
+    await k('permissions').where({ group_id: groupId, permission }).del();
   }
 }
 
+/**
+ * PermissionsDao instance as a singleton
+ */
 export default new PermissionsDao();
