@@ -4,6 +4,8 @@ import { HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 
+// VERIFIED COMPLETE
+
 const router = express.Router();
 
 router

@@ -2,6 +2,8 @@ import { createClient } from 'redis';
 import { API_PATH } from '@/setupRoutes';
 import { User } from '@oare/types';
 
+// FIXME - handle situation where redis client is down. Right now, the server will crash. It should just actually complete the routes as if nothing were cached.
+
 /**
  * Creates Redis client and stores it
  */
