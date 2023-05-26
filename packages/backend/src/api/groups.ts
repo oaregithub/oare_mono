@@ -1,12 +1,10 @@
 import express from 'express';
-import {
-  Group,
-  CreateGroupPayload,
-  UpdateGroupDescriptionPayload,
-} from '@oare/types';
+import { CreateGroupPayload, UpdateGroupDescriptionPayload } from '@oare/types';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
+
+// MOSTLY COMPLETE - debating whether or not to add UUID column instead of using ID
 
 const router = express.Router();
 
@@ -15,19 +13,16 @@ router
   .get(adminRoute, async (req, res, next) => {
     try {
       const OareGroupDao = sl.get('OareGroupDao');
+
       const groupId = Number(req.params.id);
 
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(
-          new HttpBadRequest(
-            `Cannot retrieve information on non existent group with ID ${groupId}`
-          )
-        );
+      const group = await OareGroupDao.getGroupById(groupId);
+      if (!group) {
+        next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
 
-      res.json(existingGroup);
+      res.json(group);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
@@ -35,9 +30,11 @@ router
   .delete(adminRoute, async (req, res, next) => {
     try {
       const OareGroupDao = sl.get('OareGroupDao');
+
       const groupId = Number(req.params.id);
 
       await OareGroupDao.deleteGroup(groupId);
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -46,6 +43,7 @@ router
   .patch(adminRoute, async (req, res, next) => {
     try {
       const OareGroupDao = sl.get('OareGroupDao');
+
       const groupId = Number(req.params.id);
       const { description }: UpdateGroupDescriptionPayload = req.body;
 
@@ -67,6 +65,7 @@ router
       }
 
       await OareGroupDao.updateGroupDescription(groupId, description);
+
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -78,7 +77,13 @@ router
   .get(adminRoute, async (_req, res, next) => {
     try {
       const OareGroupDao = sl.get('OareGroupDao');
-      const groups: Group[] = await OareGroupDao.getAllGroups();
+
+      const groupIds = await OareGroupDao.getAllGroupIds();
+
+      const groups = await Promise.all(
+        groupIds.map(id => OareGroupDao.getGroupById(id))
+      );
+
       res.json(groups);
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -87,16 +92,18 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const OareGroupDao = sl.get('OareGroupDao');
-      const { groupName, description }: CreateGroupPayload = req.body;
 
-      const existingGroup = await OareGroupDao.getGroupByName(groupName);
-      if (existingGroup) {
+      const { name, description }: CreateGroupPayload = req.body;
+
+      const groupNameExists = await OareGroupDao.groupNameExists(name);
+      if (groupNameExists) {
         next(new HttpBadRequest('Group name already exists'));
         return;
       }
 
-      const groupId = await OareGroupDao.createGroup(groupName, description);
-      res.json({
+      const groupId = await OareGroupDao.createGroup(name, description);
+
+      res.status(201).json({
         id: groupId,
       });
     } catch (err) {

@@ -15,6 +15,9 @@ class CollectionDao {
       .where({ uuid })
       .first();
 
+    // FIXME - need a better solution. I like the idea of throwing an error instead of returningi `null`, but this just ends up becoming a 500 internal error instead of a 400 Bad Request.
+    // Nested try/catch blocks would be a solution, but I don't like the idea of having to do that everywhere.
+    // I've done this same thing in a few other places, so I should probably come up with a better solution and fix all of them at once.
     if (!collection) {
       throw new Error(`Collection with uuid ${uuid} does not exist`);
     }

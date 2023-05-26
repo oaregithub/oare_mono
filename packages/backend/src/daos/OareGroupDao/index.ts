@@ -2,63 +2,110 @@ import { Group } from '@oare/types';
 import knex from '@/connection';
 import { Knex } from 'knex';
 
+// VERIFIED COMPLETE
+
 class OareGroupDao {
-  async getGroupByName(
+  /**
+   * Checks if a group with the given name exists.
+   * @param name The name to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether or not a group with the given name already exists.
+   */
+  async groupNameExists(
     name: string,
     trx?: Knex.Transaction
-  ): Promise<Group | null> {
+  ): Promise<boolean> {
     const k = trx || knex;
-    return k('oare_group').first().where({ name });
+
+    const group: Group | undefined = await k('oare_group')
+      .first()
+      .where({ name });
+
+    return !!group;
   }
 
+  /**
+   * Retrieves a group by its ID.
+   * @param id The ID of the group to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns The group object. Null if no group with the given ID exists.
+   */
   async getGroupById(
     id: number,
     trx?: Knex.Transaction
   ): Promise<Group | null> {
     const k = trx || knex;
-    return k('oare_group').first().where({ id });
+
+    const group: Group | undefined = await k('oare_group')
+      .select('id', 'name', 'created_on as createdOn', 'description')
+      .first()
+      .where({ id });
+
+    return group || null;
   }
 
-  async getAllGroups(trx?: Knex.Transaction): Promise<Group[]> {
+  /**
+   * Retrieves a list of all group IDs
+   * @param trx Knex Transaction. Optional.
+   * @returns An array of group IDs.
+   */
+  async getAllGroupIds(trx?: Knex.Transaction): Promise<number[]> {
     const k = trx || knex;
-    return k('oare_group')
-      .select(
-        'oare_group.id',
-        'oare_group.name',
-        'oare_group.created_on',
-        'oare_group.description',
-        k.raw('COUNT(user_group.id) AS num_users')
-      )
-      .leftJoin('user_group', 'user_group.group_id', 'oare_group.id')
-      .groupBy('oare_group.id');
+
+    return k('oare_group').pluck('id');
   }
 
+  /**
+   * Creates a new group.
+   * @param name The name of the group.
+   * @param description A description of the group.
+   * @param trx Knex Transaction. Optional.
+   * @returns The ID of the newly created group.
+   */
   async createGroup(
     name: string,
     description: string,
     trx?: Knex.Transaction
   ): Promise<number> {
     const k = trx || knex;
+
     const ids: number[] = await k('oare_group').insert({
       name,
       description,
     });
+
     return ids[0];
   }
 
-  async deleteGroup(groupId: number, trx?: Knex.Transaction): Promise<void> {
+  /**
+   * Deletes a group by its ID.
+   * @param id The ID of the group to delete.
+   * @param trx Knex Transaction. Optional.
+   */
+  async deleteGroup(id: number, trx?: Knex.Transaction): Promise<void> {
     const k = trx || knex;
-    await k('oare_group').where('id', groupId).del();
+
+    await k('oare_group').where({ id }).del();
   }
 
+  /**
+   * Updates a group's description.
+   * @param id The ID of the group to update.
+   * @param description The new description.
+   * @param trx Knex Transaction. Optional.
+   */
   async updateGroupDescription(
-    groupId: number,
+    id: number,
     description: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
-    await k('oare_group').where('id', groupId).update({ description });
+
+    await k('oare_group').where({ id }).update({ description });
   }
 }
 
+/**
+ * OareGroupDao instance as as singleton
+ */
 export default new OareGroupDao();

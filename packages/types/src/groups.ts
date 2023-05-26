@@ -1,15 +1,12 @@
-import { Collection } from './collection';
-
 export interface Group {
   id: number;
   name: string;
-  created_on: Date;
-  num_users: number;
+  createdOn: Date;
   description: string | null;
 }
 
 export interface CreateGroupPayload {
-  groupName: string;
+  name: string;
   description: string;
 }
 

@@ -139,10 +139,12 @@ class HierarchyDao {
     trx?: Knex.Transaction
   ): Promise<boolean> {
     const k = trx || knex;
-    const row: { published: boolean } = await k('hierarchy')
+
+    const row: { published: boolean } | undefined = await k('hierarchy')
       .first('published')
-      .where('object_uuid', hierarchyUuid);
-    return row.published;
+      .where({ object_uuid: hierarchyUuid });
+
+    return row ? row.published : false;
   }
 
   async hasChild(hierarchyUuid: string, trx?: Knex.Transaction) {
