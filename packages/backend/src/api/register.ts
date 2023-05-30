@@ -41,7 +41,7 @@ router.route('/register').post(async (req, res, next) => {
       email,
       isAdmin: false,
     });
-    const user = await UserDao.getUserByEmail(email);
+    const user = await UserDao.getUserByUuid(uuid);
 
     if (!user) {
       next(new HttpInternalError('Error creating user'));

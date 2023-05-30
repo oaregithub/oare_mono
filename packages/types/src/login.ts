@@ -16,7 +16,7 @@ export interface User {
   isAdmin: boolean;
 }
 
-export interface GetUserResponse extends User {
+export interface UserWithGroups extends User {
   groups: number[];
 }
 

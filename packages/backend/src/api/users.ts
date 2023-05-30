@@ -3,14 +3,31 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 import { HttpInternalError, HttpBadRequest, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
+import { User, UserWithGroups } from '@oare/types';
 
 const router = express.Router();
 
 router.route('/users').get(adminRoute, async (_req, res, next) => {
   try {
     const UserDao = sl.get('UserDao');
-    const users = await UserDao.getAllUsers();
-    res.json(users);
+    const UserGroupDao = sl.get('UserGroupDao');
+
+    const userUuids = await UserDao.getAllUserUuids();
+
+    const users = (
+      await Promise.all(userUuids.map(uuid => UserDao.getUserByUuid(uuid)))
+    ).filter((user): user is User => !!user);
+
+    const groups = await Promise.all(
+      users.map(user => UserGroupDao.getGroupsOfUser(user.uuid))
+    );
+
+    const response: UserWithGroups[] = users.map((user, idx) => ({
+      ...user,
+      groups: groups[idx],
+    }));
+
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
@@ -19,16 +36,14 @@ router.route('/users').get(adminRoute, async (_req, res, next) => {
 router.route('/users/:uuid').get(authenticatedRoute, async (req, res, next) => {
   try {
     const UserDao = sl.get('UserDao');
+
     const { uuid } = req.params;
 
     const userExists = await UserDao.uuidExists(uuid);
-
     if (!userExists) {
       next(new HttpBadRequest(`There is no user with UUID ${uuid}`));
       return;
     }
-
-    const user = await UserDao.getUserByUuid(uuid);
 
     if (!req.user!.isAdmin && uuid !== req.user!.uuid) {
       next(
@@ -38,6 +53,8 @@ router.route('/users/:uuid').get(authenticatedRoute, async (req, res, next) => {
       );
       return;
     }
+
+    const user = await UserDao.getUserByUuid(uuid);
 
     res.json(user);
   } catch (err) {

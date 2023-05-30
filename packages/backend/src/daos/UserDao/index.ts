@@ -1,66 +1,74 @@
-import { GetUserResponse, User, UpdateProfilePayload } from '@oare/types';
+import { User, UpdateProfilePayload } from '@oare/types';
 import knex from '@/connection';
 import { Knex } from 'knex';
-import UserGroupDao from '../UserGroupDao';
+
+// MOSTLY COMPLETE
 
 class UserDao {
+  /**
+   * Checks to see if a user with the given email exists.
+   * @param email The email to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the user exists.
+   */
   async emailExists(email: string, trx?: Knex.Transaction): Promise<boolean> {
     const k = trx || knex;
+
     const user = await k('user').first().where({ email });
+
     return !!user;
   }
 
-  async getUserByEmail(
-    email: string,
-    trx?: Knex.Transaction
-  ): Promise<User | null> {
-    const user = await this.getUserByColumn('email', email, trx);
-    return user;
-  }
-
+  /**
+   * Checks to see if a user with the given UUID exists.
+   * @param uuid The UUID to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the user exists.
+   */
   async uuidExists(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
     const k = trx || knex;
+
     const user = await k('user').first().where({ uuid });
+
     return !!user;
   }
 
-  async getUserByUuid(uuid: string, trx?: Knex.Transaction): Promise<User> {
-    const row = await this.getUserByColumn('uuid', uuid, trx);
-    if (!row) {
-      throw new Error(`User with UUID ${uuid} does not exist`);
-    }
-
-    return row;
-  }
-
-  private async getUserByColumn(
-    column: string,
-    value: string | number,
+  /**
+   * Retrieves a user by their UUID.
+   * @param uuid The UUID of the user to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns The user object. Null if no user found.
+   */
+  async getUserByUuid(
+    uuid: string,
     trx?: Knex.Transaction
   ): Promise<User | null> {
     const k = trx || knex;
-    const user: User | null = await k('user')
-      .first(
+
+    const row: User | undefined = await k('user')
+      .select(
         'uuid',
-        'first_name AS firstName',
-        'last_name AS lastName',
+        'first_name as firstName',
+        'last_name as lastName',
         'email',
-        'is_admin AS isAdmin'
+        'is_admin as isAdmin'
       )
-      .where(column, value);
+      .where({ uuid })
+      .first();
 
-    if (!user) {
-      return null;
-    }
-
-    return {
-      ...user,
-      isAdmin: !!user.isAdmin,
-    };
+    return row ? { ...row, isAdmin: !!row.isAdmin } : null;
   }
 
+  // FIXME should deprecate full_name column
+
+  /**
+   * Creates a new user.
+   * @param user The user object to create.
+   * @param trx Knex Transaction. Optional.
+   */
   async createUser(user: User, trx?: Knex.Transaction): Promise<void> {
     const k = trx || knex;
+
     await k('user').insert({
       uuid: user.uuid,
       first_name: user.firstName,
@@ -71,48 +79,54 @@ class UserDao {
     });
   }
 
+  // FIXME could probably deprecate this once removed from threads
+
+  /**
+   * Checks to see if a user is an admin.
+   * @param uuid The UUID of the user to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the user is an admin.
+   */
   async userIsAdmin(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
     const k = trx || knex;
-    const { isAdmin } = await k('user')
+
+    const { isAdmin }: { isAdmin: boolean } = await k('user')
       .first('is_admin AS isAdmin')
       .where({ uuid });
+
     return isAdmin;
   }
 
-  async getAllUsers(trx?: Knex.Transaction): Promise<GetUserResponse[]> {
+  /**
+   * Retrieves a list of all user UUIDs.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of user UUIDs.
+   */
+  async getAllUserUuids(trx?: Knex.Transaction): Promise<string[]> {
     const k = trx || knex;
-    const users: Pick<
-      User,
-      'uuid' | 'firstName' | 'lastName' | 'email'
-    >[] = await k('user').select(
-      'uuid',
-      'first_name AS firstName',
-      'last_name AS lastName',
-      'email'
-    );
-    const groupObjects = await Promise.all(
-      users.map(user => UserGroupDao.getGroupsOfUser(user.uuid, trx))
-    );
-    const adminStatus = await Promise.all(
-      users.map(user => this.userIsAdmin(user.uuid, trx))
-    );
-    return users.map(({ uuid, firstName, lastName, email }, index) => ({
-      uuid,
-      firstName,
-      lastName,
-      email,
-      groups: groupObjects[index],
-      isAdmin: adminStatus[index],
-    }));
+
+    const userUuids: string[] = await k('user').pluck('uuid');
+
+    return userUuids;
   }
 
+  // FIXME should deprecate full_name column. Only used by text drafts anyways
+
+  /**
+   * Updates a user's profile.
+   * @param uuid The UUID of the user to update.
+   * @param options The profile options to update.
+   * @param trx Knex Transaction. Optional.
+   */
   async updateProfile(
-    userUuid: string,
+    uuid: string,
     { email, firstName, lastName }: Required<UpdateProfilePayload>,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
+
     const displayName = `${firstName} ${lastName}`;
+
     await k('user')
       .update({
         email,
@@ -120,7 +134,7 @@ class UserDao {
         last_name: lastName,
         full_name: displayName,
       })
-      .where('uuid', userUuid);
+      .where({ uuid });
   }
 }
 

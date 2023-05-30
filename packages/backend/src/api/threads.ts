@@ -41,6 +41,10 @@ router
           comments.map(async (comment: Comment) => {
             const user = await userDao.getUserByUuid(comment.userUuid);
 
+            if (!user) {
+              throw new Error(`User with UUID ${comment.userUuid} not found`);
+            }
+
             return {
               uuid: comment.uuid,
               threadUuid: comment.threadUuid,

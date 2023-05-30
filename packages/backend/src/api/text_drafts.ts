@@ -7,6 +7,7 @@ import {
   SortOrder,
   TextDraftsResponse,
   CreateDraftResponse,
+  User,
 } from '@oare/types';
 import { HttpBadRequest, HttpInternalError, HttpForbidden } from '@/exceptions';
 import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
@@ -144,9 +145,11 @@ router
       const drafts = await Promise.all(
         draftUuids.map(uuid => TextDraftsDao.getDraftByUuid(uuid, req.locale))
       );
-      const users = await Promise.all(
-        drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
-      );
+      const users = (
+        await Promise.all(
+          drafts.map(({ userUuid }) => UserDao.getUserByUuid(userUuid))
+        )
+      ).filter((user): user is User => !!user);
 
       const draftsWithUser: TextDraftWithUser[] = drafts.map(
         (draft, index) => ({
