@@ -14,6 +14,8 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
 import { parsedQuery, extractPagination } from '@/utils';
 
+// FIXME deprecate in its entirety
+
 const router = express.Router();
 
 router

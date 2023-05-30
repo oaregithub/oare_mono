@@ -13,14 +13,14 @@ router
   .route('/user_groups/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const { groupId }: { groupId: number } = req.params as any;
-
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
       const UserDao = sl.get('UserDao');
 
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
+      const groupId = Number(req.params.groupId);
+
+      const group = await OareGroupDao.getGroupById(groupId);
+      if (!group) {
         next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
@@ -29,6 +29,8 @@ router
       const users = await Promise.all(
         userUuids.map(uuid => UserDao.getUserByUuid(uuid))
       );
+
+      // FIXME Filtering out here is dependent on how I adjust the getUserByUuid function for handling non existents
       res.json(users.filter(user => !!user));
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -36,21 +38,22 @@ router
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const { groupId }: { groupId: number } = req.params as any;
-      const { userUuids }: AddUsersToGroupPayload = req.body;
-
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
 
+      const groupId = Number(req.params.groupId);
+      const { userUuids }: AddUsersToGroupPayload = req.body;
+
       // Make sure that the group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
+      const group = await OareGroupDao.getGroupById(groupId);
+      if (!group) {
         next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
         return;
       }
 
       // Make sure users are not already in group
       const userInGroup = await Promise.all(
+        // FIXME can probably do this in a way that doesn't require this DAO function
         userUuids.map(uuid => UserGroupDao.userInGroup(groupId, uuid))
       );
       if (userInGroup.some(inGroup => inGroup)) {
@@ -73,15 +76,15 @@ router
   })
   .delete(adminRoute, async (req, res, next) => {
     try {
-      const { groupId }: { groupId: number } = req.params as any;
-      const { userUuids }: RemoveUsersFromGroupPayload = req.query as any;
-
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
 
+      const groupId = Number(req.params.groupId);
+      const { userUuids }: RemoveUsersFromGroupPayload = req.query as any;
+
       // Make sure that the group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
+      const group = await OareGroupDao.getGroupById(groupId);
+      if (!group) {
         next(new HttpInternalError(`Group ID ${groupId} does not exist`));
         return;
       }

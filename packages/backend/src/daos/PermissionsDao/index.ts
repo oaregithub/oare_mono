@@ -4,6 +4,8 @@ import { Knex } from 'knex';
 import UserDao from '../UserDao';
 import UserGroupDao from '../UserGroupDao';
 
+// VERIFIED COMPLETE ?
+
 class PermissionsDao {
   /**
    * All permissions in the system. This is the "source-of-truth" for permissions.

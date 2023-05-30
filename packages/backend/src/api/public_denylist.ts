@@ -7,6 +7,13 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
+// FIXME unrelated to this file, but some of the logic in the server start command could be moved into
+/// the build or zip sh files. Those both could be cleaned up.
+
+// FIXME the three GET routes can be combined into one with a :type parameter
+
+// FIXME this logic can simply be put in the route itself
+
 async function canInsert(uuids: string[]) {
   const PublicDenylistDao = sl.get('PublicDenylistDao');
   const denylistTextUuids = await PublicDenylistDao.getDenylistTextUuids();
@@ -21,6 +28,8 @@ async function canInsert(uuids: string[]) {
   }
   return true;
 }
+
+// FIXME this logic can simply be put in the route itself
 
 async function canRemove(uuid: string) {
   const PublicDenylistDao = sl.get('PublicDenylistDao');
