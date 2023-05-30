@@ -29,7 +29,6 @@ import searchDictionary from '@/api/search_dictionary';
 import searchNames from '@/api/search_names';
 import searchWordsTexts from '@/api/search_words_texts';
 import signReading from '@/api/sign_reading';
-import text from '@/api/text';
 import textDiscourse from '@/api/text_discourse';
 import textDrafts from '@/api/text_drafts';
 import textEpigraphies from '@/api/text_epigraphies';
@@ -79,7 +78,6 @@ export default (app: Express) => {
     searchNames,
     searchWordsTexts,
     signReading,
-    text,
     textDiscourse,
     textDrafts,
     textEpigraphies,

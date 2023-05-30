@@ -2,10 +2,13 @@ import express from 'express';
 import {
   AddUsersToGroupPayload,
   RemoveUsersFromGroupPayload,
+  User,
 } from '@oare/types';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
+
+// VERIFIED COMPLETE
 
 const router = express.Router();
 
@@ -26,12 +29,11 @@ router
       }
 
       const userUuids = await UserGroupDao.getUsersInGroup(groupId);
-      const users = await Promise.all(
-        userUuids.map(uuid => UserDao.getUserByUuid(uuid))
-      );
+      const users = (
+        await Promise.all(userUuids.map(uuid => UserDao.getUserByUuid(uuid)))
+      ).filter((user): user is User => !!user);
 
-      // FIXME Filtering out here is dependent on how I adjust the getUserByUuid function for handling non existents
-      res.json(users.filter(user => !!user));
+      res.json(users);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
@@ -53,7 +55,6 @@ router
 
       // Make sure users are not already in group
       const userInGroup = await Promise.all(
-        // FIXME can probably do this in a way that doesn't require this DAO function
         userUuids.map(uuid => UserGroupDao.userInGroup(groupId, uuid))
       );
       if (userInGroup.some(inGroup => inGroup)) {

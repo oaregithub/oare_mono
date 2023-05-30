@@ -5,6 +5,8 @@ import { HttpInternalError, HttpBadRequest, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { User, UserWithGroups } from '@oare/types';
 
+// MOSTLY COMPLETE
+
 const router = express.Router();
 
 router.route('/users').get(adminRoute, async (_req, res, next) => {
