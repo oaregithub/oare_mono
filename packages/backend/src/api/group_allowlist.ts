@@ -97,6 +97,7 @@ router
 
       // If texts, make sure all text UUIDs exist
       if (type === 'text') {
+        // FIXME not ideal setup for checking null status
         try {
           await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
         } catch (err) {
