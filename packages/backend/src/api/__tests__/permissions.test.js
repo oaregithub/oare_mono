@@ -29,8 +29,8 @@ const mockPermissionsDao = {
   getAllPermissions: jest.fn().mockReturnValue(mockPermissions),
 };
 
-describe('GET /userpermissions', () => {
-  const PATH = `${API_PATH}/userpermissions`;
+describe('GET /user_permissions', () => {
+  const PATH = `${API_PATH}/user_permissions`;
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {
@@ -62,8 +62,8 @@ describe('GET /userpermissions', () => {
   });
 });
 
-describe('GET /allpermissions', () => {
-  const PATH = `${API_PATH}/allpermissions`;
+describe('GET /all_permissions', () => {
+  const PATH = `${API_PATH}/all_permissions`;
   const setup = () => {
     sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', {

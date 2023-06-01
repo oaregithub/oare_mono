@@ -8,7 +8,7 @@ import { UpdatePermissionPayload, PermissionName } from '@oare/types';
 
 const router = express.Router();
 
-router.route('/userpermissions').get(async (req, res, next) => {
+router.route('/user_permissions').get(async (req, res, next) => {
   try {
     const PermissionsDao = sl.get('PermissionsDao');
 
@@ -75,7 +75,7 @@ router
     }
   });
 
-router.route('/allpermissions').get(adminRoute, async (_req, res, next) => {
+router.route('/all_permissions').get(adminRoute, async (_req, res, next) => {
   try {
     const PermissionsDao = sl.get('PermissionsDao');
 
