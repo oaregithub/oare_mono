@@ -1,5 +1,9 @@
 import express from 'express';
-import { CreateGroupPayload, UpdateGroupDescriptionPayload } from '@oare/types';
+import {
+  CreateGroupPayload,
+  Group,
+  UpdateGroupDescriptionPayload,
+} from '@oare/types';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
@@ -80,9 +84,9 @@ router
 
       const groupIds = await OareGroupDao.getAllGroupIds();
 
-      const groups = await Promise.all(
-        groupIds.map(id => OareGroupDao.getGroupById(id))
-      );
+      const groups = (
+        await Promise.all(groupIds.map(id => OareGroupDao.getGroupById(id)))
+      ).filter((group): group is Group => group !== null);
 
       res.json(groups);
     } catch (err) {

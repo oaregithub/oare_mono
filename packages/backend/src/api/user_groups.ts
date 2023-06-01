@@ -8,7 +8,7 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// VERIFIED COMPLETE
+// MOSTLY COMPLETE
 
 const router = express.Router();
 
@@ -75,6 +75,7 @@ router
       next(new HttpInternalError(err as string));
     }
   })
+  // This should only take one user uuid at a time
   .delete(adminRoute, async (req, res, next) => {
     try {
       const OareGroupDao = sl.get('OareGroupDao');

@@ -1,87 +1,85 @@
+import archives from '@/serverProxy/archives';
+import bibliography from '@/serverProxy/bibliography';
+import cacheStatus from '@/serverProxy/cache_status';
+import collections from '@/serverProxy/collections';
 import comments from '@/serverProxy/comments';
+import dictionary from '@/serverProxy/dictionary';
+import environment from '@/serverProxy/environment';
+import epigraphies from '@/serverProxy/epigraphies';
 import errors from '@/serverProxy/errors';
+import field from '@/serverProxy/field';
+import groupAllowlist from '@/serverProxy/group_allowlist';
+import groupEditPermissions from '@/serverProxy/group_edit_permissions';
+import groups from '@/serverProxy/groups';
+import login from '@/serverProxy/login';
+import logout from '@/serverProxy/logout';
+import names from '@/serverProxy/names';
+import pageContent from '@/serverProxy/page_content';
+import periods from '@/serverProxy/periods';
+import permissions from '@/serverProxy/permissions';
+import persons from '@/serverProxy/persons';
+import places from '@/serverProxy/places';
+import profile from '@/serverProxy/profile';
+import properties from '@/serverProxy/properties';
+import publications from '@/serverProxy/publications';
+import publicDenylist from '@/serverProxy/public_denylist';
+import quarantine from '@/serverProxy/quarantine';
+import register from '@/serverProxy/register';
+import resetPassword from '@/serverProxy/reset_password';
+import seals from '@/serverProxy/seals';
+import searchDictionary from '@/serverProxy/search_dictionary';
+import searchNames from '@/serverProxy/search_names';
+import searchTexts from '@/serverProxy/search';
+import signReading from '@/serverProxy/sign_reading';
+import textDiscourse from '@/serverProxy/text_discourse';
+import textDrafts from '@/serverProxy/text_drafts';
 import threads from '@/serverProxy/threads';
-import groups from './groups';
-import users from './users';
-import userGroups from './user_groups';
-import dictionary from './dictionary';
-import searchTexts from './search';
-import collections from './collections';
-import textDrafts from './text_drafts';
-import epigraphies from './epigraphies';
-import names from './names';
-import places from './places';
-import words from './words';
-import searchDictionary from './search_dictionary';
-import permissions from './permissions';
-import login from './login';
-import register from './register';
-import logout from './logout';
-import publicDenylist from './public_denylist';
-import searchNames from './search_names';
-import resetPassword from './reset_password';
-import cacheStatus from './cache_status';
-import persons from './persons';
-import textDiscourse from './text_discourse';
-import profile from './profile';
-import groupAllowlist from './group_allowlist';
-import groupEditPermissions from './group_edit_permissions';
-import signReading from './sign_reading';
-import publications from './publications';
-import archives from './archives';
-import pageContent from './page_content';
-import wordsInTextsSearch from './search_words_texts';
-import properties from './properties';
-import environment from './environment';
-import text from './text';
-import quarantine from './quarantine';
-import field from './field';
-import bibliography from './bibliography';
-import seals from './seals';
-import periods from './periods';
+import userGroups from '@/serverProxy/user_groups';
+import users from '@/serverProxy/users';
+import words from '@/serverProxy/words';
+import wordsInTextsSearch from '@/serverProxy/search_words_texts';
 
 const serverProxy = {
-  ...groups,
-  ...users,
-  ...userGroups,
-  ...dictionary,
-  ...searchTexts,
-  ...collections,
-  ...textDrafts,
-  ...epigraphies,
-  ...names,
-  ...places,
-  ...words,
-  ...searchDictionary,
-  ...permissions,
-  ...login,
-  ...register,
-  ...logout,
-  ...publicDenylist,
-  ...searchNames,
-  ...resetPassword,
-  ...comments,
-  ...errors,
-  ...threads,
+  ...archives,
+  ...bibliography,
   ...cacheStatus,
-  ...persons,
-  ...textDiscourse,
-  ...profile,
+  ...collections,
+  ...comments,
+  ...dictionary,
+  ...environment,
+  ...epigraphies,
+  ...errors,
+  ...field,
   ...groupAllowlist,
   ...groupEditPermissions,
-  ...signReading,
-  ...publications,
-  ...archives,
+  ...groups,
+  ...login,
+  ...logout,
+  ...names,
   ...pageContent,
-  ...wordsInTextsSearch,
-  ...properties,
-  ...environment,
-  ...text,
-  ...quarantine,
-  ...field,
-  ...bibliography,
-  ...seals,
   ...periods,
+  ...permissions,
+  ...persons,
+  ...places,
+  ...profile,
+  ...properties,
+  ...publications,
+  ...publicDenylist,
+  ...quarantine,
+  ...register,
+  ...resetPassword,
+  ...seals,
+  ...searchDictionary,
+  ...searchNames,
+  ...searchTexts,
+  ...signReading,
+  ...textDiscourse,
+  ...textDrafts,
+  ...threads,
+  ...userGroups,
+  ...users,
+  ...words,
+  ...wordsInTextsSearch,
 };
 
 export type ServerProxyType = typeof serverProxy;

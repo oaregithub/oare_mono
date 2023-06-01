@@ -5,38 +5,42 @@ import {
 } from '@oare/types';
 import axios from '../axiosInstance';
 
+async function getGroup(id: number): Promise<Group> {
+  const { data } = await axios.get(`/groups/${id}`);
+  return data;
+}
+
+async function deleteGroup(id: number): Promise<void> {
+  await axios.delete(`/groups/${id}`);
+}
+
+async function updateGroupDescription(
+  id: number,
+  description: string
+): Promise<void> {
+  const payload: UpdateGroupDescriptionPayload = {
+    description,
+  };
+  await axios.patch(`/groups/${id}`, payload);
+}
+
 async function getAllGroups(): Promise<Group[]> {
   const { data } = await axios.get('/groups');
   return data;
 }
 
-async function getGroupInfo(groupId: number): Promise<Group> {
-  const { data } = await axios.get(`/groups/${groupId}`);
-  return data;
-}
-
-async function deleteGroup(groupId: number): Promise<void> {
-  await axios.delete(`/groups/${groupId}`);
-}
-
-async function createGroup(payload: CreateGroupPayload): Promise<number> {
-  const {
-    data: { id },
-  } = await axios.post('/groups', payload);
-  return id;
-}
-
-async function updateGroupDescription(
-  groupId: number,
-  payload: UpdateGroupDescriptionPayload
-): Promise<void> {
-  await axios.patch(`/groups/${groupId}`, payload);
+async function createGroup(name: string, description: string): Promise<void> {
+  const payload: CreateGroupPayload = {
+    name,
+    description,
+  };
+  await axios.post('/groups', payload);
 }
 
 export default {
-  getGroupInfo,
+  getGroup,
   deleteGroup,
+  updateGroupDescription,
   getAllGroups,
   createGroup,
-  updateGroupDescription,
 };

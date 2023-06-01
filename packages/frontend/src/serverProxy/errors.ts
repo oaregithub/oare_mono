@@ -32,7 +32,14 @@ async function getErrorLog(
   return data;
 }
 
-async function logError(payload: LogErrorPayload): Promise<void> {
+async function logError(
+  description: string,
+  stacktrace: string | null
+): Promise<void> {
+  const payload: LogErrorPayload = {
+    description,
+    stacktrace,
+  };
   await axios.post('/errors', payload);
 }
 

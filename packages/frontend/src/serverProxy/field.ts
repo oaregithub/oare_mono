@@ -1,41 +1,48 @@
 import axios from '@/axiosInstance';
-import {
-  DeleteFieldPayload,
-  EditFieldPayload,
-  FieldInfo,
-  NewFieldPayload,
-} from '@oare/types';
+import { FieldPayload, FieldRow } from '@oare/types';
 
-async function updatePropertyDescriptionField(
-  payload: EditFieldPayload
-): Promise<void> {
-  await axios.patch('/update_field_description', {
-    ...payload,
-  });
-}
-
-async function createNewPropertyDescriptionField(
-  payload: NewFieldPayload
-): Promise<void> {
-  await axios.post('/update_field_description', {
-    ...payload,
-  });
-}
-
-async function deletePropertyDescriptionField(
-  payload: DeleteFieldPayload
-): Promise<void> {
-  await axios.delete('/update_field_description', { data: payload });
-}
-
-async function getFieldInfo(referenceUuid: string): Promise<FieldInfo> {
-  const { data } = await axios.get(`/field_description/${referenceUuid}`);
+async function getFieldDescriptions(
+  referenceUuid: string
+): Promise<FieldRow[]> {
+  const { data } = await axios.get(`/field/${referenceUuid}`);
   return data;
 }
 
+async function addFieldDescription(
+  uuid: string,
+  description: string,
+  primacy: number,
+  isTaxonomy: boolean
+): Promise<void> {
+  const payload: FieldPayload = {
+    description,
+    primacy,
+    isTaxonomy,
+  };
+  await axios.post(`/field/${uuid}`, payload);
+}
+
+async function updateFieldDescription(
+  uuid: string,
+  description: string,
+  primacy: number,
+  isTaxonomy: boolean
+): Promise<void> {
+  const payload: FieldPayload = {
+    description,
+    primacy,
+    isTaxonomy,
+  };
+  await axios.patch(`/field/${uuid}`, payload);
+}
+
+async function deleteField(uuid: string): Promise<void> {
+  await axios.delete(`/field/${uuid}`);
+}
+
 export default {
-  updatePropertyDescriptionField,
-  createNewPropertyDescriptionField,
-  deletePropertyDescriptionField,
-  getFieldInfo,
+  getFieldDescriptions,
+  addFieldDescription,
+  updateFieldDescription,
+  deleteField,
 };

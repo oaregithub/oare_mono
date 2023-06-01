@@ -361,8 +361,8 @@ describe('Text drafts test', () => {
       const query = {
         sortBy: 'author',
         sortOrder: 'asc',
-        page: '1',
-        limit: '10',
+        page: 1,
+        limit: 10,
         authorFilter: 'abc',
         textFilter: 'CCT',
       };

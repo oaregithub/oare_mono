@@ -3,9 +3,19 @@ import { UpdateProfilePayload } from '@oare/types';
 import firebase from '@/firebase';
 import store from '@/ts-store';
 
-const updateProfile = async (payload: UpdateProfilePayload): Promise<void> => {
+const updateProfile = async (
+  firstName?: string,
+  lastName?: string,
+  email?: string
+): Promise<void> => {
+  const payload: UpdateProfilePayload = {
+    firstName,
+    lastName,
+    email,
+  };
   await axios.patch('/profile', payload);
 
+  // FIXME this should probably be outsourced so that the SP function only handles the server call
   const { currentUser } = firebase.auth();
   if (currentUser && store.getters.user) {
     if (payload.firstName || payload.lastName) {
@@ -40,6 +50,7 @@ const updateProfile = async (payload: UpdateProfilePayload): Promise<void> => {
   }
 };
 
+// FIXME should probably be relocated to a more appropriate file
 const reauthenticateUser = async (password: string): Promise<void> => {
   const { currentUser } = firebase.auth();
   if (currentUser && currentUser.email) {

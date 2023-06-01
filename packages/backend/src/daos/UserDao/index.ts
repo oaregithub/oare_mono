@@ -56,6 +56,7 @@ class UserDao {
       .where({ uuid })
       .first();
 
+    // FIXME decide what to do about the null possibility
     return row ? { ...row, isAdmin: !!row.isAdmin } : null;
   }
 
