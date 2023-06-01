@@ -116,7 +116,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import { DataTableHeader, DataOptions } from 'vuetify';
-import { ErrorsRowWithUser, ErrorStatus, SortType } from '@oare/types';
+import { ErrorsRowWithUser, ErrorStatus, ErrorsSortType } from '@oare/types';
 import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import ErrorLogDialog from '@/views/Admin/ErrorLog/components/ErrorLogDialog.vue';
@@ -195,7 +195,7 @@ export default defineComponent({
             stacktrace: stacktrace.value,
           },
           sort: {
-            type: sort.value as SortType,
+            type: sort.value as ErrorsSortType,
             desc: desc.value === 'true',
           },
           pagination: {

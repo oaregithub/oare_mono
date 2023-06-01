@@ -56,11 +56,9 @@ export const extractPagination = (
   query: ParsedQs,
   { defaultPage, defaultLimit, defaultFilter }: ExtractPaginationOptions = {}
 ): Required<Pagination> => {
-  const page = query.page
-    ? ((query.page as unknown) as number)
-    : defaultPage || 1;
+  const page = query.page ? Number(query.page as string) : defaultPage || 1;
   const limit = query.limit
-    ? ((query.limit as unknown) as number)
+    ? Number(query.limit as string)
     : defaultLimit || 10;
   const filter = query.filter ? (query.filter as string) : defaultFilter || '';
 

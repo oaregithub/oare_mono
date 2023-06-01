@@ -1,9 +1,6 @@
-import { Pagination } from './dictionary';
-
-export interface ErrorsPayload {
+export interface LogErrorPayload {
   description: string;
   stacktrace: string | null;
-  status: ErrorStatus;
 }
 
 export interface ErrorsRow {
@@ -31,4 +28,9 @@ export interface ErrorsResponse {
   count: number;
 }
 
-export type SortType = 'status' | 'timestamp' | 'description' | 'userName';
+// FIXME should be renamed
+export type ErrorsSortType =
+  | 'status'
+  | 'timestamp'
+  | 'description'
+  | 'userName';

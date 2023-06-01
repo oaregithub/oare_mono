@@ -128,7 +128,7 @@ router
       const userUuid = req.user ? req.user.uuid : null;
       const pagination = utils.extractPagination(req.query);
 
-      const personsUuids = (req.query.personsUuids as unknown) as string[];
+      const personsUuids = req.query.personsUuids as string[];
 
       const rows = await PersonDao.getPersonOccurrencesTexts(
         personsUuids,

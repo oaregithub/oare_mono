@@ -7,7 +7,7 @@ const router = express.Router();
 
 // VERIFIED COMPLETE
 
-router.route('/cache_status').get(async (_req, res, next) => {
+router.route('/cache_status').get(adminRoute, async (_req, res, next) => {
   try {
     const CacheStatusDao = sl.get('CacheStatusDao');
 

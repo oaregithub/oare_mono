@@ -106,7 +106,7 @@ router
 
 router.route('/dictionary/spellings/check').get(async (req, res, next) => {
   try {
-    const spelling = (req.query.spelling as unknown) as string;
+    const spelling = req.query.spelling as string;
 
     let tokens: Token[];
 
@@ -373,7 +373,7 @@ router
 
       const userUuid = req.user ? req.user.uuid : null;
       const pagination = utils.extractPagination(req.query);
-      const spellingUuids = (req.query.spellingUuids as unknown) as string[];
+      const spellingUuids = req.query.spellingUuids as string[];
 
       const rows = await TextDiscourseDao.getSpellingOccurrencesTexts(
         spellingUuids,

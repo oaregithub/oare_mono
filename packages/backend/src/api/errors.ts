@@ -1,8 +1,8 @@
 import express from 'express';
 import {
   ErrorStatus,
-  ErrorsPayload,
-  SortType,
+  LogErrorPayload,
+  ErrorsSortType,
   UpdateErrorStatusPayload,
 } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
@@ -20,14 +20,14 @@ router
       const ErrorsDao = sl.get('ErrorsDao');
       const utils = sl.get('utils');
 
-      const status: ErrorStatus | '' = (req.query.status as unknown) as
+      const status: ErrorStatus | '' = (req.query.status as string) as
         | ErrorStatus
         | '';
-      const user: string = (req.query.user as unknown) as string;
-      const description: string = (req.query.description as unknown) as string;
-      const stacktrace: string = (req.query.stacktrace as unknown) as string;
-      const sort: SortType = (req.query.sort as unknown) as SortType;
-      const desc: boolean = (req.query.desc as unknown) === 'true';
+      const user: string = req.query.user as string;
+      const description: string = req.query.description as string;
+      const stacktrace: string = req.query.stacktrace as string;
+      const sort: ErrorsSortType = (req.query.sort as string) as ErrorsSortType;
+      const desc: boolean = (req.query.desc as string) === 'true';
       const { page, limit } = utils.extractPagination(req.query);
 
       const response = await ErrorsDao.getErrorLog(
@@ -53,9 +53,9 @@ router
 
       const user = req.user || null;
       const userUuid = user ? user.uuid : null;
-      const { description, stacktrace, status }: ErrorsPayload = req.body;
+      const { description, stacktrace }: LogErrorPayload = req.body;
 
-      await ErrorsDao.logError(userUuid, description, stacktrace, status);
+      await ErrorsDao.logError(userUuid, description, stacktrace, 'New');
 
       res.status(201).end();
     } catch (err) {

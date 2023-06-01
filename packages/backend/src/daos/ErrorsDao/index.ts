@@ -3,7 +3,7 @@ import {
   ErrorStatus,
   ErrorsResponse,
   ErrorsRowWithUser,
-  SortType,
+  ErrorsSortType,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
@@ -59,7 +59,7 @@ class ErrorsDao {
     user: string,
     description: string,
     stacktrace: string,
-    type: SortType,
+    type: ErrorsSortType,
     desc: boolean,
     page: number,
     limit: number,

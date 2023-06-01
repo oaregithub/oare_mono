@@ -1,7 +1,7 @@
 import axios from '@/axiosInstance';
 
 async function getCacheStatus(): Promise<boolean> {
-  const { data } = await axios.get('/cache');
+  const { data } = await axios.get('/cache_status');
   return data;
 }
 

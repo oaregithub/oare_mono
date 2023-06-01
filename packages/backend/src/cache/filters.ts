@@ -133,7 +133,7 @@ export const collectionFilter: CacheFilter<Collection[]> = async (
     (_, idx) => viewableCollectionsStatus[idx]
   );
 
-  // FIXME - should probably remove texts from collections that the user does not have access to here as well
+  // FIXME - should probably remove texts from collections that the user does not have access to here as well. Or perhaps just don't include texts in the first place using an `Omit` TS type.
 
   return viewableCollections;
 };

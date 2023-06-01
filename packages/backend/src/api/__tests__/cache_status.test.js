@@ -14,11 +14,17 @@ describe('GET /cache_status', () => {
 
   const setup = () => {
     sl.set('CacheStatusDao', mockCacheStatusDao);
+    sl.set('UserDao', {
+      getUserByUuid: jest.fn().mockResolvedValue({
+        isAdmin: true,
+      }),
+    });
   };
 
   beforeEach(setup);
 
-  const sendRequest = () => request(app).get(PATH);
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
   it('returns 200 on successful cache status retrieval', async () => {
     const response = await sendRequest();

@@ -1,23 +1,39 @@
 import {
-  ErrorsPayload,
+  LogErrorPayload,
   ErrorsResponse,
   ErrorStatus,
   UpdateErrorStatusPayload,
-  GetErrorsPayload,
+  ErrorsSortType,
 } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function logError(payload: ErrorsPayload): Promise<void> {
-  await axios.post('/errors', payload);
-}
-
-async function getErrorLog(payload: GetErrorsPayload): Promise<ErrorsResponse> {
+async function getErrorLog(
+  status: ErrorStatus | '',
+  user: string,
+  description: string,
+  stacktrace: string,
+  sort: ErrorsSortType,
+  desc: boolean,
+  page: number,
+  limit: number
+): Promise<ErrorsResponse> {
   const { data } = await axios.get('/errors', {
     params: {
-      payload,
+      status,
+      user,
+      description,
+      stacktrace,
+      sort,
+      desc,
+      page,
+      limit,
     },
   });
   return data;
+}
+
+async function logError(payload: LogErrorPayload): Promise<void> {
+  await axios.post('/errors', payload);
 }
 
 async function updateErrorStatus(

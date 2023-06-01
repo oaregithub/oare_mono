@@ -64,9 +64,7 @@ router
   .route('/group_edit_permissions/:groupId')
   .post(adminRoute, async (req, res, next) => {
     try {
-      const { groupId } = (req.params as unknown) as {
-        groupId: number;
-      };
+      const groupId = Number(req.params.groupId);
       const { uuids, type }: GroupEditPermissionsPayload = req.body;
 
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');

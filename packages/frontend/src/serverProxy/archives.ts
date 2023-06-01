@@ -1,39 +1,26 @@
-import {
-  ArchiveInfo,
-  Archive,
-  Pagination,
-  Dossier,
-  DisconnectTextPayload,
-} from '@oare/types';
+import { Archive, Dossier } from '@oare/types';
 import axios from '../axiosInstance';
 
-async function getAllArchives(): Promise<ArchiveInfo[]> {
+async function getAllArchives(): Promise<Archive[]> {
   const { data } = await axios.get('/archives');
   return data;
 }
 
-async function getArchive(
-  uuid: string,
-  pagination: Pagination
-): Promise<Archive> {
-  const { data } = await axios.get(`/archives/${uuid}`, {
-    params: pagination,
-  });
-
+async function getArchive(uuid: string): Promise<Archive> {
+  const { data } = await axios.get(`/archive/${uuid}`);
   return data;
 }
-async function getDossier(
-  uuid: string,
-  pagination: Pagination
-): Promise<Dossier> {
-  const { data } = await axios.get(`/dossier/${uuid}`, {
-    params: pagination,
-  });
 
+async function getDossier(uuid: string): Promise<Dossier> {
+  const { data } = await axios.get(`/dossier/${uuid}`);
   return data;
 }
-async function disconnectText(payload: DisconnectTextPayload): Promise<void> {
-  await axios.delete('/archive_dossier/disconnect_text', { data: payload });
+
+async function disconnectText(
+  archiveUuid: string,
+  textUuid: string
+): Promise<void> {
+  await axios.delete(`archive/${archiveUuid}/disconnect_text/${textUuid}`);
 }
 
 export default {
