@@ -56,7 +56,7 @@ import {
   onMounted,
   computed,
 } from '@vue/composition-api';
-import { GetUserResponse } from '@oare/types';
+import { UserWithGroups } from '@oare/types';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
 import { DataTableHeader } from 'vuetify';
@@ -79,7 +79,7 @@ export default defineComponent({
     const usersHeaders: Ref<DataTableHeader[]> = ref([
       { text: 'Name', value: 'name' },
     ]);
-    const allUsers: Ref<GetUserResponse[]> = ref([]);
+    const allUsers: Ref<UserWithGroups[]> = ref([]);
     const unaddedUsers = computed(() => {
       return allUsers.value
         .filter(user => !user.groups.includes(Number(groupId)) && !user.isAdmin)
@@ -87,7 +87,7 @@ export default defineComponent({
           return a.firstName.charCodeAt(0) - b.firstName.charCodeAt(0);
         });
     });
-    const selectedUsers: Ref<GetUserResponse[]> = ref([]);
+    const selectedUsers: Ref<UserWithGroups[]> = ref([]);
 
     const loading = ref(true);
     const addUsersLoading = ref(false);
@@ -97,9 +97,7 @@ export default defineComponent({
       const userUuids = selectedUsers.value.map(user => user.uuid);
       addUsersLoading.value = true;
       try {
-        await server.addUsersToGroup(Number(groupId), {
-          userUuids,
-        });
+        await server.addUsersToGroup(Number(groupId), userUuids);
         selectedUsers.value = [];
         addUsersDialog.value = false;
         actions.showSnackbar('Successfully added users to group.');
@@ -116,8 +114,8 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        const groupInfo = await server.getGroupInfo(Number(groupId));
-        groupName.value = groupInfo.name;
+        const group = await server.getGroup(Number(groupId));
+        groupName.value = group.name;
         allUsers.value = await server.getAllUsers();
       } catch (err) {
         actions.showErrorSnackbar(

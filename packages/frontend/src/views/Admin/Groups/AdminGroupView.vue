@@ -118,11 +118,6 @@ export default defineComponent({
         value: 'description',
         width: '60%',
       },
-      {
-        text: 'Users',
-        value: 'num_users',
-        width: '15%',
-      },
     ]);
     const groups: Ref<Group[]> = ref([]);
     const selectedGroups: Ref<Group[]> = ref([]);
@@ -159,16 +154,16 @@ export default defineComponent({
       }
       try {
         addGroupLoading.value = true;
-        const id = await server.createGroup({
-          groupName: groupName.value,
-          description: groupDescription.value,
-        });
+
+        const id = await server.createGroup(
+          groupName.value,
+          groupDescription.value
+        );
 
         groups.value.push({
           id,
           name: groupName.value,
-          created_on: new Date(),
-          num_users: 0,
+          createdOn: new Date(),
           description: groupDescription.value,
         });
         actions.showSnackbar('Successfully created group');

@@ -10,8 +10,8 @@
             @click="
               openEdit(
                 description.uuid,
-                description.field,
-                description.primacy,
+                description.field || '',
+                description.primacy || 1,
                 index
               )
             "
@@ -29,8 +29,8 @@
             @click="
               openDelete(
                 description.uuid,
-                description.field,
-                description.primacy
+                description.field || '',
+                description.primacy || 1
               )
             "
             class="test-delete-description"
@@ -79,14 +79,14 @@
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { FieldInfo } from '@oare/types';
+import { FieldRow } from '@oare/types';
 import AddDescription from '@/components/Description/components/AddDescription.vue';
 import EditDescription from '@/components/Description/components/EditDescription.vue';
 
 export default defineComponent({
   props: {
     descriptions: {
-      type: Array as PropType<FieldInfo[]>,
+      type: Array as PropType<FieldRow[]>,
       required: true,
     },
     referenceUuid: {
@@ -135,12 +135,7 @@ export default defineComponent({
 
     const deleteDescription = async () => {
       try {
-        await server.deletePropertyDescriptionField({
-          uuid: updateOrDeleteUuid.value,
-          referenceUuid: referenceUuid,
-          primacy: updateOrDeletePrimacy.value,
-          type: 'description',
-        });
+        await server.deleteField(updateOrDeleteUuid.value);
       } catch (err) {
         actions.showErrorSnackbar(
           'unable to delete selected description',

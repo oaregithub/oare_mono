@@ -20,6 +20,7 @@ const showErrorSnackbar = async (
 ): Promise<void> => {
   const server = sl.get('serverProxy');
   const description = devErrorText || text;
+  const stacktrace = error && error.stack ? error.stack : null;
 
   EventBus.$emit(ACTIONS.TOAST, {
     text,
@@ -28,17 +29,12 @@ const showErrorSnackbar = async (
   });
 
   try {
-    await server.logError({
-      description,
-      stacktrace: error && error.stack ? error.stack : null,
-      status: 'New',
-    });
+    await server.logError(description, stacktrace);
   } catch {
     // eslint-disable-next-line no-console
     console.error('Error logging error', {
       description,
-      stacktrace: error && error.stack ? error.stack : null,
-      status: 'New',
+      stacktrace,
     });
   }
 };
@@ -50,11 +46,7 @@ const inputSpecialChar = async (char: string) => {
 const logError = async (description: string, error?: Error): Promise<void> => {
   const server = sl.get('serverProxy');
   const stacktrace = error && error.stack ? error.stack : null;
-  await server.logError({
-    description,
-    stacktrace,
-    status: 'New',
-  });
+  await server.logError(description, stacktrace);
 };
 
 const showUnsavedChangesWarning = (next: Function): void => {

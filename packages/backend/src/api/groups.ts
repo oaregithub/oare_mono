@@ -107,9 +107,7 @@ router
 
       const groupId = await OareGroupDao.createGroup(name, description);
 
-      res.status(201).json({
-        id: groupId,
-      });
+      res.status(201).json(groupId);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

@@ -66,11 +66,10 @@ firebase.auth().onIdTokenChanged(async user => {
         await setupAdminBadge();
       }
     } catch (err) {
-      await server.logError({
-        description: 'Error initializing site',
-        stacktrace: (err as Error).stack || null,
-        status: 'New',
-      });
+      await server.logError(
+        'Error initializing site',
+        (err as Error).stack || null
+      );
     }
   }
   if (!app) {

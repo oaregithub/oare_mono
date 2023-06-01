@@ -29,12 +29,13 @@ async function getAllGroups(): Promise<Group[]> {
   return data;
 }
 
-async function createGroup(name: string, description: string): Promise<void> {
+async function createGroup(name: string, description: string): Promise<number> {
   const payload: CreateGroupPayload = {
     name,
     description,
   };
-  await axios.post('/groups', payload);
+  const { data } = await axios.post('/groups', payload);
+  return data;
 }
 
 export default {

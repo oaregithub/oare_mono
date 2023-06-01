@@ -91,9 +91,12 @@ export default defineComponent({
     const updateValue = async () => {
       loading.value = true;
       try {
-        await server.updateProfile({
-          [property]: editedValue.value,
-        });
+        const firstName =
+          property === 'firstName' ? editedValue.value : undefined;
+        const lastName =
+          property === 'lastName' ? editedValue.value : undefined;
+        const email = property === 'email' ? editedValue.value : undefined;
+        await server.updateProfile(firstName, lastName, email);
         actions.showSnackbar('Profile successfully updated');
         isEditing.value = false;
         emit('updated', editedValue.value);

@@ -77,9 +77,10 @@ export default defineComponent({
 
     const saveDescriptionEdit = async () => {
       try {
-        await server.updateGroupDescription(Number(groupId), {
-          description: editDescription.value,
-        });
+        await server.updateGroupDescription(
+          Number(groupId),
+          editDescription.value
+        );
         groupDescription.value = editDescription.value;
       } catch (err) {
         actions.showErrorSnackbar(
@@ -94,7 +95,7 @@ export default defineComponent({
     onMounted(async () => {
       loading.value = true;
       try {
-        const groupInfo = await server.getGroupInfo(Number(groupId));
+        const groupInfo = await server.getGroup(Number(groupId));
         groupName.value = groupInfo.name;
         groupDescription.value =
           groupInfo.description || 'No group description';

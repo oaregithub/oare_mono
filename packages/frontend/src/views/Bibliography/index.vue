@@ -134,7 +134,7 @@ import UtilList from '@/components/UtilList/index.vue';
 import CommentItemDisplay from '@/components/CommentItemDisplay/index.vue';
 import useQueryParam from '@/hooks/useQueryParam';
 import sl from '@/serviceLocator';
-import { BibliographyResponse } from '@oare/types';
+import { Bibliography } from '@oare/types';
 import { DataTableHeader } from 'vuetify';
 import _ from 'lodash';
 
@@ -176,8 +176,8 @@ export default defineComponent({
       { text: 'Author', value: 'author' },
       { text: 'Date', value: 'date' },
     ]);
-    const bibliographyResponse = ref<BibliographyResponse[]>([]);
-    const filteredBib = ref<BibliographyResponse[]>([]);
+    const bibliographyResponse = ref<Bibliography[]>([]);
+    const filteredBib = ref<Bibliography[]>([]);
 
     onMounted(async () => {
       try {
@@ -195,7 +195,7 @@ export default defineComponent({
 
     const canComment = computed(() => store.hasPermission('ADD_COMMENTS'));
 
-    const openComment = (uuid: string, item: BibliographyResponse) => {
+    const openComment = (uuid: string, item: Bibliography) => {
       commentDialogUuid.value = uuid;
       commentDialogItem.value = item.title ? item.title : 'Title not available';
       isCommenting.value = true;
@@ -206,9 +206,9 @@ export default defineComponent({
       filteredBib.value = [];
       itemType.value = ['all'];
       showItemType.value = 'all';
-      bibliographyResponse.value = await server.getBibliographies({
-        citationStyle: selectedType.value,
-      });
+      bibliographyResponse.value = await server.getAllBibliographies(
+        selectedType.value
+      );
       bibliographyResponse.value.forEach(bib => {
         const bibItemTypeClean = bib.itemType?.split(/(?=[A-Z])/g).join(' ');
         if (bibItemTypeClean && !itemType.value.includes(bibItemTypeClean)) {
