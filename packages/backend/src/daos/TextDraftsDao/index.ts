@@ -1,4 +1,4 @@
-import { TextDraft, UuidRow, DraftQueryOptions, LocaleCode } from '@oare/types';
+import { TextDraft, DraftQueryOptions, LocaleCode } from '@oare/types';
 import { v4 } from 'uuid';
 import knex from '@/connection';
 import { createTabletRenderer } from '@oare/oare';
@@ -255,14 +255,14 @@ class TextDraftsDao {
       trx
     );
 
-    const draftUuids: UuidRow[] = await this.baseDraftQuery(
+    const draftUuids: string[] = await this.baseDraftQuery(
       {
         authorFilter,
         textFilter,
       },
       trx
     )
-      .select('text_drafts.uuid')
+      .pluck('text_drafts.uuid')
       .whereNotIn('text.uuid', quarantinedTexts)
       .modify(qb => {
         if (sortBy === 'text') {
@@ -281,7 +281,7 @@ class TextDraftsDao {
       })
       .limit(limit)
       .offset((page - 1) * limit);
-    return draftUuids.map(({ uuid }) => uuid);
+    return draftUuids;
   }
 
   async removeDraftsByTextUuid(

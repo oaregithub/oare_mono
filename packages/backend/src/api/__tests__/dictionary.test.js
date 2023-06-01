@@ -834,7 +834,7 @@ describe('dictionary api test', () => {
     const checkSpelling = 'áb ša-ra-nim';
     const PATH = `${API_PATH}/dictionary/spellings/check`;
     const SignReadingDao = {
-      hasSign: jest.fn().mockResolvedValue(true),
+      isValidReading: jest.fn().mockResolvedValue(true),
     };
 
     const checkSpellingSetup = () => {
@@ -866,7 +866,7 @@ describe('dictionary api test', () => {
 
     it('returns errors when spelling contains signs that do not exist', async () => {
       sl.set('SignReadingDao', {
-        hasSign: jest.fn().mockResolvedValue(false),
+        isValidReading: jest.fn().mockResolvedValue(false),
       });
 
       const response = await sendRequest();
@@ -875,7 +875,7 @@ describe('dictionary api test', () => {
 
     it('returns 500 when sign reading dao fails', async () => {
       sl.set('SignReadingDao', {
-        hasSign: jest.fn().mockRejectedValue('sign reading dao failed'),
+        isValidReading: jest.fn().mockRejectedValue('sign reading dao failed'),
       });
 
       const response = await sendRequest();

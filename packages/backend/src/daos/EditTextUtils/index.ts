@@ -43,6 +43,7 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { v4 } from 'uuid';
 import { convertSideToSideNumber } from '@oare/oare';
+import { formattedSearchCharacter } from '@/daos/TextEpigraphyDao/utils';
 import { cleanLines } from './utils';
 
 const getEpigraphyType = (
@@ -1124,9 +1125,7 @@ class EditTextUtils {
             await Promise.all(
               sign.markup.markup.map(async markup => {
                 const formattedAltReading = markup.altReading
-                  ? (
-                      await SignReadingDao.getFormattedSign(markup.altReading)
-                    ).join('')
+                  ? formattedSearchCharacter(markup.altReading).join('')
                   : undefined;
 
                 let altReadingUuid;
@@ -1135,11 +1134,10 @@ class EditTextUtils {
                   markup.altReading !== '@' &&
                   !markup.altReading.includes('x')
                 ) {
-                  const signCode = await SignReadingDao.getSignCode(
+                  altReadingUuid = await SignReadingDao.getSignReadingUuidByReading(
                     markup.altReading,
                     markup.isDeterminative || false
                   );
-                  altReadingUuid = signCode.readingUuid;
                 }
 
                 const markupRow: TextMarkupRow = {

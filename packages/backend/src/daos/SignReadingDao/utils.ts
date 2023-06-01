@@ -1,6 +1,6 @@
 import { indexOfFirstVowel, subscriptNumber } from '@oare/oare';
 import sl from '@/serviceLocator';
-import { SearchCooccurrence, SignListReading } from '@oare/types';
+import { SearchCooccurrence } from '@oare/types';
 import { Knex } from 'knex';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
@@ -201,88 +201,3 @@ export const getSubscriptVowelOptions = (): string[] => {
   }
   return subscripts;
 };
-
-export const sortReadings = (
-  signListReading: SignListReading[]
-): SignListReading[] =>
-  signListReading.sort((a, b) => a.value.localeCompare(b.value));
-
-export async function concatenateReadings(
-  signReadingsWithCount: SignListReading[],
-  signCount: number,
-  allSigns: boolean
-): Promise<string> {
-  const determinatives = sortReadings(
-    signReadingsWithCount.filter(s => s.type === 'determinative')
-  )
-    .map(
-      s =>
-        `${
-          signCount
-            ? `<sup>${s.value}</sup> (${((s.count ?? 0) / signCount).toFixed(
-                2
-              )})`
-            : `${allSigns ? `<sup>${s.value}</sup> (0.0)` : ''}`
-        }`
-    )
-    .join(', ');
-  const logograms = sortReadings(
-    signReadingsWithCount.filter(s => s.type === 'logogram')
-  )
-    .map(
-      s =>
-        `${
-          signCount
-            ? `${s.value} (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `${allSigns ? `${s.value} (0.0)` : ''}`
-        }`
-    )
-    .join(', ');
-  const phonograms = sortReadings(
-    signReadingsWithCount.filter(s => s.type === 'phonogram')
-  )
-    .map(
-      s =>
-        `${
-          signCount
-            ? `<em>${s.value}</em> (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `${allSigns ? `<em>${s.value}</em> (0.0)` : ''}`
-        }`
-    )
-    .join(', ');
-  const punctuation = sortReadings(
-    signReadingsWithCount.filter(s => s.type === 'punctuation')
-  )
-    .map(
-      s =>
-        `${
-          signCount
-            ? `${s.value} (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `${allSigns ? `${s.value} (0.0)` : ''}`
-        }`
-    )
-    .join(', ');
-  const numbers = sortReadings(
-    signReadingsWithCount.filter(s => s.type === 'number')
-  )
-    .map(
-      s =>
-        `${
-          signCount
-            ? `${s.value} (${((s.count ?? 0) / signCount).toFixed(2)})`
-            : `${allSigns ? `${s.value} (0.0)` : ''}`
-        }`
-    )
-    .join(', ');
-
-  const signReadingsConcatenated: string = [
-    determinatives,
-    logograms,
-    phonograms,
-    punctuation,
-    numbers,
-  ]
-    .join('<br>')
-    .replace(/(<br>){2,}|^(<br>)|(<br>)$/g, '');
-  return signReadingsConcatenated;
-}

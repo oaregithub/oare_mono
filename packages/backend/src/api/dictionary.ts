@@ -140,7 +140,9 @@ router.route('/dictionary/spellings/check').get(async (req, res, next) => {
     const SignReadingDao = sl.get('SignReadingDao');
     const signs = tokens.filter(({ tokenType }) => tokenType === 'SIGN');
     const signExistences = await Promise.all(
-      signs.map(token => SignReadingDao.hasSign(normalizeSign(token.tokenText)))
+      signs.map(token =>
+        SignReadingDao.isValidReading(normalizeSign(token.tokenText))
+      )
     );
 
     if (signExistences.every(v => v)) {
