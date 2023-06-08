@@ -4,7 +4,7 @@ import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { UpdatePermissionPayload, PermissionName } from '@oare/types';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -67,7 +67,7 @@ router
       const groupId = Number(req.params.groupId);
       const permission = req.params.permission as PermissionName;
 
-      await PermissionsDao.removePermission(groupId, permission);
+      await PermissionsDao.removeGroupPermission(groupId, permission);
 
       res.status(204).end();
     } catch (err) {

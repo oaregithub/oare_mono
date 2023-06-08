@@ -2,7 +2,16 @@ import knex from '@/connection';
 import { SearchType } from '@oare/types';
 import { Knex } from 'knex';
 
+// COMPLETE
+
 class SearchFailureDao {
+  /**
+   * Inserts a new row into the `search_failure` table. Used to track searches that returned no results.
+   * @param type The type of the search.
+   * @param query The query that was searched for.
+   * @param userUuid The UUID of the user that performed the search.
+   * @param trx Knex Transaction. Optional.
+   */
   async insertSearchFailure(
     type: SearchType,
     query: string,
@@ -10,6 +19,7 @@ class SearchFailureDao {
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;
+
     const timestamp = new Date();
 
     await k('search_failure').insert({
@@ -21,4 +31,7 @@ class SearchFailureDao {
   }
 }
 
+/**
+ * SearchFailureDao instance as a singleton.
+ */
 export default new SearchFailureDao();

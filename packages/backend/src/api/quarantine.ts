@@ -4,15 +4,17 @@ import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
 
+// MOSTLY COMPLETE
+
 const router = express.Router();
 
 router
   .route('/quarantine/:textUuid')
   .post(adminRoute, async (req, res, next) => {
-    const QuarantineTextDao = sl.get('QuarantineTextDao');
-    const TextDao = sl.get('TextDao');
-
     try {
+      const QuarantineTextDao = sl.get('QuarantineTextDao');
+      const TextDao = sl.get('TextDao');
+
       const { textUuid } = req.params;
 
       const isAlreadyQuarantined = await QuarantineTextDao.textIsQuarantined(
@@ -37,7 +39,11 @@ router
         return;
       }
 
+      // FIXME perhaps upon quarantine, the text should be removed from denylist/allowlists/edit permissions?
+
       await QuarantineTextDao.quarantineText(textUuid);
+
+      // FIXME when quarantined, there are probably some cache routes that should be cleared
 
       res.status(201).end();
     } catch (err) {
@@ -45,9 +51,9 @@ router
     }
   })
   .delete(adminRoute, async (req, res, next) => {
-    const QuarantineTextDao = sl.get('QuarantineTextDao');
-
     try {
+      const QuarantineTextDao = sl.get('QuarantineTextDao');
+
       const { textUuid } = req.params;
 
       const isAlreadyQuarantined = await QuarantineTextDao.textIsQuarantined(
@@ -69,25 +75,25 @@ router
   });
 
 router.route('/quarantine').get(adminRoute, async (_req, res, next) => {
-  const QuarantineTextDao = sl.get('QuarantineTextDao');
-  const TextDao = sl.get('TextDao');
-  const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-
   try {
-    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextRows();
+    const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const TextDao = sl.get('TextDao');
 
-    const hasEpigraphy = await Promise.all(
-      quarantinedTexts.map(row => TextEpigraphyDao.hasEpigraphy(row.uuid))
+    const textUuids = await QuarantineTextDao.getAllQuarantinedTextUuids();
+
+    const quarantineTextRows = await Promise.all(
+      textUuids.map(uuid =>
+        QuarantineTextDao.getQuarantineTextRowByReferenceUuid(uuid)
+      )
     );
 
     const texts = await Promise.all(
-      quarantinedTexts.map(row => TextDao.getTextByUuid(row.uuid))
+      textUuids.map(uuid => TextDao.getTextByUuid(uuid))
     );
 
-    const response: QuarantineText[] = quarantinedTexts.map((text, idx) => ({
-      text: texts[idx]!,
-      hasEpigraphy: hasEpigraphy[idx],
-      timestamp: text.timestamp,
+    const response: QuarantineText[] = quarantineTextRows.map((row, idx) => ({
+      ...row,
+      text: texts[idx],
     }));
 
     res.json(response);
@@ -96,6 +102,7 @@ router.route('/quarantine').get(adminRoute, async (_req, res, next) => {
   }
 });
 
+// FIXME consider deprecating this route
 router
   .route('/quarantine/permanent_delete/:textUuid')
   .delete(adminRoute, async (req, res, next) => {
@@ -113,7 +120,6 @@ router
     const NoteDao = sl.get('NoteDao');
     const AliasDao = sl.get('AliasDao');
     const FieldDao = sl.get('FieldDao');
-    const TextDraftsDao = sl.get('TextDraftsDao');
 
     try {
       const { textUuid } = req.params;
@@ -134,7 +140,6 @@ router
         await NoteDao.removeNotesByReferenceUuid(textUuid, trx);
         await AliasDao.removeAliasByReferenceUuid(textUuid, trx);
         await FieldDao.removeFieldRowsByReferenceUuid(textUuid, trx);
-        await TextDraftsDao.removeDraftsByTextUuid(textUuid, trx);
         await TextDao.removeTextByUuid(textUuid, trx);
       });
 

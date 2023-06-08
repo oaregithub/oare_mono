@@ -6,7 +6,7 @@ import cacheMiddleware from '@/middlewares/router/cache';
 import { Collection } from '@oare/types';
 import { collectionTextsFilter, collectionFilter } from '@/cache/filters';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router
   );
 
 router
-  .route('/collections/:uuid')
+  .route('/collection/:uuid')
   .get(
     collectionsMiddleware,
     cacheMiddleware<Collection>(collectionTextsFilter),

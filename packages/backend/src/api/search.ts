@@ -16,9 +16,11 @@ import sl from '@/serviceLocator';
 import { prepareCharactersForSearch } from '@/daos/SignReadingDao/utils';
 import { parsedQuery, extractPagination } from '@/utils';
 
+// FIXME
+
 const router = express.Router();
 
-router.route('/search/spellings/discourse').get(async (req, res, next) => {
+/* router.route('/search/spellings/discourse').get(async (req, res, next) => {
   try {
     const textDiscourseDao = sl.get('TextDiscourseDao');
 
@@ -277,6 +279,6 @@ router.route('/search/discourse/null').get(async (req, res, next) => {
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
-});
+}); */
 
 export default router;

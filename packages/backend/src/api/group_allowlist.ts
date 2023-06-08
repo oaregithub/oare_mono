@@ -2,87 +2,55 @@ import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
-import {
-  AddDenylistAllowlistPayload,
-  DenylistAllowlistItem,
-  DenylistAllowlistType,
-} from '@oare/types';
+import { AddDenylistAllowlistPayload, DenylistAllowlist } from '@oare/types';
+
+// MOSTLY COMPLETE
 
 const router = express.Router();
 
+// FIXME migration to remove rows that had a type of collection
+
 router
-  .route('/group_allowlist/:groupId/:type')
+  .route('/group_allowlist/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const TextDao = sl.get('TextDao');
-      const CollectionDao = sl.get('CollectionDao');
       const ResourceDao = sl.get('ResourceDao');
 
       const groupId = Number(req.params.groupId);
-      const type = req.params.type as DenylistAllowlistType;
 
-      const groupAllowlist = await GroupAllowlistDao.getGroupAllowlist(
+      const allowlistTexts = await GroupAllowlistDao.getGroupAllowlist(
         groupId,
-        type
+        'text'
+      );
+      const allowlistImages = await GroupAllowlistDao.getGroupAllowlist(
+        groupId,
+        'img'
       );
 
-      let names: (string | undefined)[];
-      let urls: (string | undefined)[];
+      const texts = await Promise.all(
+        allowlistTexts.map(uuid => TextDao.getTextByUuid(uuid))
+      );
+      const images = await Promise.all(
+        allowlistImages.map(uuid => ResourceDao.getAllowListImageWithText(uuid))
+      );
 
-      if (type === 'text') {
-        const results = await Promise.all(
-          groupAllowlist.map(uuid => TextDao.getTextByUuid(uuid))
-        );
-        names = results.map(row => (row ? row.name : undefined));
-      } else if (type === 'collection') {
-        const results = await Promise.all(
-          groupAllowlist.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-        );
-        names = results.map(row => (row ? row.name : undefined));
-      } else if (type === 'img') {
-        const results = await Promise.all(
-          groupAllowlist.map(uuid =>
-            ResourceDao.getAllowListImageWithText(uuid)
-          )
-        );
-        names = results.map(row => (row ? row.label : undefined));
-        urls = results.map(row => (row ? row.link : undefined));
-      }
-
-      let response: DenylistAllowlistItem[];
-      if (type === 'text' || type === 'collection') {
-        const epigraphyStatus = await Promise.all(
-          groupAllowlist.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
-        );
-        response = groupAllowlist.map((uuid, index) => ({
-          uuid,
-          name: names[index],
-          hasEpigraphy: epigraphyStatus[index],
-        }));
-      } else {
-        response = groupAllowlist.map((uuid, index) => ({
-          uuid,
-          name: names[index],
-          url: urls[index],
-        }));
-      }
+      const response: DenylistAllowlist = {
+        texts,
+        images,
+      };
 
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
-  });
-
-router
-  .route('/group_allowlist/:groupId')
+  })
   .post(adminRoute, async (req, res, next) => {
     try {
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const OareGroupDao = sl.get('OareGroupDao');
       const TextDao = sl.get('TextDao');
-      const CollectionDao = sl.get('CollectionDao');
       const ResourceDao = sl.get('ResourceDao');
 
       const groupId = Number(req.params.groupId);
@@ -100,18 +68,6 @@ router
         // FIXME not ideal setup for checking null status
         try {
           await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
-        } catch (err) {
-          next(new HttpBadRequest(err as string));
-          return;
-        }
-      }
-
-      // If collections, make sure all collection UUIDs exist
-      if (type === 'collection') {
-        try {
-          await Promise.all(
-            uuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-          );
         } catch (err) {
           next(new HttpBadRequest(err as string));
           return;

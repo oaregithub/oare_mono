@@ -2,19 +2,20 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
+// FIXME
+
 const router = express.Router();
 
-router.route('/publications').get(async (req, res, next) => {
+// FIXME needs to be cached. A cache filter should be used to filter texts that the user cannot see.
+
+router.route('/publications').get(async (_req, res, next) => {
   try {
-    const userUuid = req.user ? req.user.uuid : null;
     const PublicationDao = sl.get('PublicationDao');
 
-    const publicationPrefixes = await PublicationDao.getAllPublications();
+    const prefixes = await PublicationDao.getAllPublicationPrefixes();
 
     const publications = await Promise.all(
-      publicationPrefixes.map(prefix =>
-        PublicationDao.getPublicationsByPrfx(prefix, userUuid)
-      )
+      prefixes.map(prefix => PublicationDao.getPublicationByPrefix(prefix))
     );
 
     res.json(publications);

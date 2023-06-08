@@ -1,13 +1,12 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
-import adminRoute from '@/middlewares/router/adminRoute';
 import { EnvironmentInfo } from '@oare/types';
+
+// COMPLETE
 
 const router = express.Router();
 
-// VERIFIED COMPLETE
-
-router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
+router.route('/environment').get(async (_req, res, next) => {
   try {
     const elasticBeanstalkRegion = (() => {
       if (process.env.NODE_ENV === 'production') {
@@ -55,16 +54,6 @@ router.route('/environment_info').get(adminRoute, async (_req, res, next) => {
     };
 
     res.json(environmentInfo);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
-
-router.route('/environment_readonly').get(async (_req, res, next) => {
-  try {
-    const databaseReadOnly = process.env.DB_SOURCE === 'readonly';
-
-    res.json(databaseReadOnly);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

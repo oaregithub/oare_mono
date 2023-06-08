@@ -4,7 +4,7 @@ import sl from '@/serviceLocator';
 import { UpdateProfilePayload } from '@oare/types';
 import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 const router = express.Router();
 

@@ -1,7 +1,8 @@
 export interface FieldPayload {
-  description: string;
+  field: string;
   primacy: number;
   isTaxonomy: boolean;
+  type: string;
 }
 
 export interface FieldRow {

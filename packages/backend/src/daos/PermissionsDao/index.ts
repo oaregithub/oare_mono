@@ -305,7 +305,7 @@ class PermissionsDao {
    * @param permission The name of the permission to remove.
    * @param trx Knex.Transaction. Optional.
    */
-  public async removePermission(
+  public async removeGroupPermission(
     groupId: number,
     permission: PermissionName,
     trx?: Knex.Transaction

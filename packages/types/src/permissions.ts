@@ -1,3 +1,5 @@
+import { Image, Text } from './epigraphies';
+
 export type PermissionItem =
   | DictionaryPermission
   | PagePermission
@@ -73,30 +75,18 @@ export interface UpdatePermissionPayload {
   permission: PermissionItem;
 }
 
-export type PermissionsListType = 'Text' | 'Collection' | 'Image';
+export type DenylistAllowlistType = 'text' | 'img';
 
-export type DenylistAllowlistType = 'text' | 'collection' | 'img';
-
-export type GroupEditPermissionsType = 'text' | 'collection';
+export interface DenylistAllowlist {
+  texts: Text[];
+  images: Image[];
+}
 
 export interface AddDenylistAllowlistPayload {
   uuids: string[];
-  type: 'text' | 'img' | 'collection';
+  type: DenylistAllowlistType;
 }
 
 export interface GroupEditPermissionsPayload {
   uuids: string[];
-  type: 'text' | 'collection';
-}
-
-export interface GetGroupEditPermissionParameters {
-  groupId: number;
-  type: 'text' | 'collection';
-}
-
-export interface DenylistAllowlistItem {
-  uuid: string;
-  name?: string;
-  url?: string;
-  hasEpigraphy?: boolean;
 }

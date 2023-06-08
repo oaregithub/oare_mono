@@ -1,11 +1,9 @@
 import knex from '@/connection';
 import { Knex } from 'knex';
 
-// MOSTLY COMPLETE - still need to decide whether or not to add UUIDs to groups
+// COMPLETE
 
 class UserGroupDao {
-  // FIXME can probably be deprecated? But perhaps not necessary
-
   /**
    * Checks if a user belongs to the specified group.
    * @param groupId The ID of the group to check.

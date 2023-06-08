@@ -13,6 +13,8 @@ import { SealFilter, SealListFilter } from '@/cache/filters';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { v4 } from 'uuid';
 
+// FIXME come back to this
+
 const router = express.Router();
 
 router

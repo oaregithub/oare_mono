@@ -1,20 +1,4 @@
-import { Pagination } from './dictionary';
-
-export interface Comment {
-  uuid: string;
-  threadUuid: string;
-  userUuid: string;
-  createdAt: Date;
-  deleted: boolean;
-  text: string;
-}
-
-export type CreateCommentPayload = Pick<Comment, 'threadUuid' | 'text'>;
-
-export interface CommentDisplay extends Comment {
-  userFirstName: string;
-  userLastName: string;
-}
+import { User } from './login';
 
 export type ThreadStatus =
   | 'All'
@@ -23,76 +7,48 @@ export type ThreadStatus =
   | 'In Progress'
   | 'Completed';
 
-export interface Thread {
+export interface ThreadsRow {
   uuid: string;
-  name: string | null;
   referenceUuid: string;
   status: ThreadStatus;
-  route: string;
+  tableReference: string;
+  name: string;
 }
 
-export type CreateThreadPayload = Pick<Thread, 'referenceUuid' | 'route'>;
-
-export interface UpdateThreadNameRequest {
+export interface CommentsRow {
+  uuid: string;
   threadUuid: string;
-  newName: string;
+  userUuid: string;
+  createdAt: Date;
+  deleted: boolean;
+  comment: string;
 }
 
-export interface ThreadWithComments extends Thread {
-  comments: CommentDisplay[];
+export interface Comment extends CommentsRow {
+  user: User;
 }
 
-export interface ThreadDisplay {
-  thread: Thread;
-  word: string;
-  latestCommentDate: Date;
+export interface Thread extends ThreadsRow {
   comments: Comment[];
 }
 
-export type CommentSortType = 'status' | 'thread' | 'item' | 'timestamp';
+export type ThreadsSortType = 'status' | 'name';
 
-export interface AllCommentsRequest {
-  filters: {
-    status: ThreadStatus;
-    thread: string;
-    item: string;
-    comment: string;
-  };
-  sort: {
-    type: CommentSortType;
-    desc: boolean;
-  };
-  pagination: Pagination;
-  isUserComments: boolean;
+export interface UpdateThreadStatusPayload {
+  status: ThreadStatus;
 }
 
-export interface AllCommentsResponse {
-  threads: ThreadDisplay[];
-  count: number;
+export interface UpdateThreadNamePayload {
+  name: string;
 }
 
-export interface AllThreadRow extends Thread {
+export interface CreateThreadPayload {
+  referenceUuid: string;
+  name: string;
+  tableReference: string;
+}
+
+export interface CreateCommentPayload {
+  threadUuid: string;
   comment: string;
-  userUuid: string;
-  timestamp: string;
-  item: string | null;
-}
-
-export interface AllThreadResponse {
-  threads: AllThreadRow[];
-  count: number;
-}
-
-export interface AllThreadRowUndeterminedItem extends Thread {
-  comment: string;
-  userUuid: string;
-  timestamp: string;
-  word: string | null;
-  form: string | null;
-  spelling: string | null;
-  definition: string | null;
-  collectionName: string | null;
-  bibliography: string | null;
-  epigraphyReading: string | null;
-  discourseSpelling: string | null;
 }

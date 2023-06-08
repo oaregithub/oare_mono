@@ -1,11 +1,13 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { PermissionsListType, SearchNamesPayload } from '@oare/types';
+import { SearchNamesPayload } from '@oare/types';
+
+// FIXME
 
 const router = express.Router();
 
-router.route('/search_names').get(async (req, res, next) => {
+/* router.route('/search_names').get(async (req, res, next) => {
   const HierarchyDao = sl.get('HierarchyDao');
   const PublicDenylistDao = sl.get('PublicDenylistDao');
   const GroupAllowlistDao = sl.get('GroupAllowlistDao');
@@ -32,6 +34,6 @@ router.route('/search_names').get(async (req, res, next) => {
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
-});
+}); */
 
 export default router;

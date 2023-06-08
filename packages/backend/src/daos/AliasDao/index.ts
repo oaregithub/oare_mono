@@ -2,7 +2,7 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 class AliasDao {
   /**

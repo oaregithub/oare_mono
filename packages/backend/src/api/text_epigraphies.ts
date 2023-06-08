@@ -23,6 +23,8 @@ import fileUpload from 'express-fileupload';
 import { textFilter } from '@/cache/filters';
 import { concatLocation } from '@/daos/ResourceDao/utils';
 
+// FIXME
+
 const router = express.Router();
 
 router
@@ -96,7 +98,6 @@ router
         const TextDao = sl.get('TextDao');
         const TextEpigraphyDao = sl.get('TextEpigraphyDao');
         const TextDiscourseDao = sl.get('TextDiscourseDao');
-        const TextDraftsDao = sl.get('TextDraftsDao');
         const CollectionDao = sl.get('CollectionDao');
         const ItemPropertiesDao = sl.get('ItemPropertiesDao');
         const BibliographyDao = sl.get('BibliographyDao');
@@ -146,9 +147,6 @@ router
         const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
           textUuid
         );
-        const draft = user
-          ? await TextDraftsDao.getDraftByTextUuid(user.uuid, textUuid, 'en')
-          : null;
 
         const hasEpigraphies = await TextEpigraphyDao.hasEpigraphy(textUuid);
 
@@ -218,7 +216,6 @@ router
           color,
           colorMeaning,
           discourseUnits,
-          ...(draft ? { draft } : {}),
           hasEpigraphy: hasEpigraphies,
           zoteroData,
         };

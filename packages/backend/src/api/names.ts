@@ -6,7 +6,7 @@ import { dictionaryFilter } from '@/cache/filters';
 import { Word } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 
-// VERIFIED COMPLETE - Dao function will need some work
+// COMPLETE
 
 const router = express.Router();
 

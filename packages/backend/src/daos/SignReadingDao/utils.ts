@@ -4,6 +4,8 @@ import { SearchCooccurrence } from '@oare/types';
 import { Knex } from 'knex';
 import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
+// FIXME should be moved
+
 export async function prepareIndividualSearchCharacters(
   charsPayload?: string,
   trx?: Knex.Transaction

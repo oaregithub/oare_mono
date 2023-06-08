@@ -1,231 +1,234 @@
 import {
-  AllCommentsRequest,
   Thread,
   ThreadStatus,
-  CreateThreadPayload,
-  AllThreadRow,
-  AllThreadResponse,
-  AllThreadRowUndeterminedItem,
+  ThreadsRow,
+  ThreadsSortType,
+  Comment,
 } from '@oare/types';
 import knex from '@/connection';
 import { v4 } from 'uuid';
-import sl from '@/serviceLocator';
 import { Knex } from 'knex';
-import { determineThreadItem } from './utils';
+import sl from '@/serviceLocator';
 
-const NULL_THREAD_NAME = 'Untitled';
-
-const isNullThreadName = (name: string): boolean =>
-  NULL_THREAD_NAME.includes(name) ||
-  NULL_THREAD_NAME.toLowerCase().includes(name);
+// COMPLETE
 
 class ThreadsDao {
-  async insert(
-    { referenceUuid, route }: CreateThreadPayload,
-    trx?: Knex.Transaction
-  ): Promise<string> {
-    const k = trx || knex;
-    const newUuid: string = v4();
-    const status: ThreadStatus = 'New';
-    await k('threads').insert({
-      uuid: newUuid,
-      reference_uuid: referenceUuid,
-      status,
-      route,
-    });
-
-    return newUuid;
-  }
-
-  async update(
-    { uuid, status }: Thread,
+  /**
+   * Creates a new comment thread.
+   * @param referenceUuid The UUID of the item that the thread is referencing.
+   * @param name The name of the thread.
+   * @param tableReference The table that the thread is referencing.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async createThread(
+    referenceUuid: string,
+    name: string,
+    tableReference: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
-    await k('threads').where('uuid', uuid).update({
-      status,
+
+    const uuid = v4();
+
+    await k('threads').insert({
+      uuid,
+      reference_uuid: referenceUuid,
+      status: 'New',
+      table_reference: tableReference,
+      name,
     });
   }
 
-  async getByReferenceUuid(
+  /**
+   * Updates the status of a thread.
+   * @param uuid The UUID of the thread to update.
+   * @param status The new status of the thread.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async updateThreadStatus(
+    uuid: string,
+    status: ThreadStatus,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knex;
+
+    await k('threads').where({ uuid }).update({ status });
+  }
+
+  /**
+   * Retrieves all thread rows for a given reference UUID.
+   * @param referenceUuid The reference UUID to retrieve thread rows for.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of thread rows.
+   */
+  private async getThreadsRowsByReferenceUuid(
+    referenceUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<ThreadsRow[]> {
+    const k = trx || knex;
+
+    const threadRows: ThreadsRow[] = await k('threads')
+      .select(
+        'uuid',
+        'reference_uuid as referenceUuid',
+        'status',
+        'table_reference as tableReference',
+        'name'
+      )
+      .where({ reference_uuid: referenceUuid });
+
+    return threadRows;
+  }
+
+  /**
+   * Constructs thread objects for a given reference UUID.
+   * @param referenceUuid The reference UUID to retrieve threads for.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of thread objects.
+   */
+  public async getThreadsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<Thread[]> {
-    const k = trx || knex;
-    const thread: Thread[] = await k('threads')
-      .select(
-        'threads.uuid AS uuid',
-        'threads.reference_uuid AS referenceUuid',
-        'threads.status AS status',
-        'threads.route AS route',
-        'threads.name AS name'
-      )
-      .where('reference_uuid', referenceUuid);
+    const CommentsDao = sl.get('CommentsDao');
 
-    return thread;
+    const threadRows: ThreadsRow[] = await this.getThreadsRowsByReferenceUuid(
+      referenceUuid,
+      trx
+    );
+
+    const comments: Comment[][] = await Promise.all(
+      threadRows.map(row => CommentsDao.getCommentsByThreadUuid(row.uuid, trx))
+    );
+
+    const threads: Thread[] = threadRows.map((row, idx) => ({
+      ...row,
+      comments: comments[idx],
+    }));
+
+    return threads;
   }
 
-  async getByUuid(
+  /**
+   * Retrieves a thread row by UUID.
+   * @param uuid The UUID of the thread row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single thread row.
+   */
+  private async getThreadRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
-  ): Promise<Thread | null> {
+  ): Promise<ThreadsRow> {
     const k = trx || knex;
-    const thread: Thread | null = await k('threads')
-      .first(
-        'threads.uuid AS uuid',
-        'threads.reference_uuid AS referenceUuid',
-        'threads.status AS status',
-        'threads.route AS route',
-        'threads.name AS name'
+
+    const row: ThreadsRow = await k('threads')
+      .select(
+        'uuid',
+        'reference_uuid as referenceUuid',
+        'status',
+        'table_reference as tableReference',
+        'name'
       )
-      .where('uuid', uuid);
+      .where({ uuid })
+      .first();
+
+    return row;
+  }
+
+  /**
+   * Constructs a thread object by UUID.
+   * @param uuid The UUID of the thread to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single thread object.
+   */
+  public async getThreadByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Thread> {
+    const CommentsDao = sl.get('CommentsDao');
+
+    const threadRow: ThreadsRow = await this.getThreadRowByUuid(uuid, trx);
+
+    const comments: Comment[] = await CommentsDao.getCommentsByThreadUuid(
+      threadRow.uuid
+    );
+
+    const thread: Thread = {
+      ...threadRow,
+      comments,
+    };
 
     return thread;
   }
 
-  async updateThreadName(
+  /**
+   * Updates the name of a thread.
+   * @param uuid The UUID of the thread to update.
+   * @param name The new name of the thread.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async updateThreadName(
     uuid: string,
-    newName: string,
+    name: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
-    await k('threads').where({ uuid }).update({
-      name: newName,
-    });
+
+    await k('threads').where({ uuid }).update({ name });
   }
 
-  async getAll(
-    request: AllCommentsRequest,
-    userUuid: string | null,
-    trx?: Knex.Transaction
-  ): Promise<AllThreadResponse> {
+  /**
+   * Checks if there are any new threads.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating if there are any new threads.
+   */
+  public async newThreadsExist(trx?: Knex.Transaction): Promise<boolean> {
     const k = trx || knex;
-    const userDao = sl.get('UserDao');
-    const isAdmin = userUuid ? await userDao.userIsAdmin(userUuid, trx) : false;
 
-    const baseQuery = () =>
-      k('threads')
-        .select(
-          'threads.uuid AS uuid',
-          'threads.name AS name',
-          'threads.reference_uuid AS referenceUuid',
-          'threads.status AS status',
-          'threads.route AS route',
-          'comments.comment AS comment',
-          'comments.user_uuid AS userUuid',
-          'comments.created_at AS timestamp',
-          k.raw('MAX(comments.created_at) AS timestamp'),
-          'dictionary_word.word as word',
-          'dictionary_form.form as form',
-          'dictionary_spelling.spelling as spelling',
-          'field.field as definition',
-          'collection.name as collectionName',
-          'bibliography.zot_item_key as bibliography',
-          'text_epigraphy.reading as epigraphyReading',
-          'text_discourse.explicit_spelling as discourseSpelling'
-        )
-        .innerJoin('comments', 'threads.uuid', 'comments.thread_uuid')
-        .leftJoin(
-          'dictionary_word',
-          'threads.reference_uuid',
-          'dictionary_word.uuid'
-        )
-        .leftJoin(
-          'dictionary_form',
-          'threads.reference_uuid',
-          'dictionary_form.uuid'
-        )
-        .leftJoin(
-          'dictionary_spelling',
-          'threads.reference_uuid',
-          'dictionary_spelling.uuid'
-        )
-        .leftJoin('field', 'threads.reference_uuid', 'field.uuid')
-        .leftJoin('collection', 'threads.reference_uuid', 'collection.uuid')
-        .leftJoin('bibliography', 'threads.reference_uuid', 'bibliography.uuid')
-        .leftJoin(
-          'text_epigraphy',
-          'threads.reference_uuid',
-          'text_epigraphy.uuid'
-        )
-        .leftJoin(
-          'text_discourse',
-          'threads.reference_uuid',
-          'text_discourse.uuid'
-        )
-        .modify(qb => {
-          if (request.filters.status !== ('All' as ThreadStatus)) {
-            qb.where('threads.status', request.filters.status);
-          }
-
-          if (request.filters.thread !== '') {
-            qb.andWhere(function () {
-              this.where(
-                'threads.name',
-                'like',
-                `%${request.filters.thread}%`
-              ).modify(qbInner => {
-                if (isNullThreadName(request.filters.thread)) {
-                  qbInner.orWhereNull('threads.name');
-                }
-              });
-            });
-          }
-
-          if (request.filters.item !== '') {
-            qb.andWhere(function () {
-              this.where(
-                'dictionary_word.word',
-                'like',
-                `%${request.filters.item}%`
-              )
-                .orWhere(
-                  'dictionary_form.form',
-                  'like',
-                  `%${request.filters.item}%`
-                )
-                .orWhere('field.field', 'like', `%${request.filters.item}%`)
-                .orWhere('collection.name', 'like', `%${request.filters.item}%`)
-                .orWhere(
-                  'bibliography.short_cit',
-                  'like',
-                  `%${request.filters.item}%`
-                );
-            });
-          }
-
-          if (request.filters.comment !== '') {
-            qb.andWhere('comment', 'like', `%${request.filters.comment}%`);
-          }
-
-          // Only display threads from user if not admin OR using the comments page from the user dashboard.
-          if (!isAdmin || request.isUserComments) {
-            qb.andWhere('comments.user_uuid', userUuid);
-          }
-        })
-        .groupBy('threads.uuid');
-
-    const threads: AllThreadRow[] = await baseQuery()
-      .orderBy(request.sort.type, request.sort.desc ? 'desc' : 'asc')
-      .limit(request.pagination.limit)
-      .offset((request.pagination.page - 1) * request.pagination.limit)
-      .then((undertiminedItemThreads: AllThreadRowUndeterminedItem[]) =>
-        determineThreadItem(undertiminedItemThreads)
-      );
-
-    const count = (await baseQuery()).length;
-
-    return {
-      threads,
-      count,
-    };
-  }
-
-  async newThreadsExist(trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knex;
     const exists = await k('threads').first().where('status', 'New');
+
     return !!exists;
+  }
+
+  /**
+   * Retrieves a paginated list of thread UUIDs based on the given parameters.
+   * @param status The status of the threads to retrieve.
+   * @param name The name of the threads to retrieve.
+   * @param sort The field to sort by.
+   * @param desc Whether to sort descending.
+   * @param page The page number.
+   * @param limit The number of threads to retrieve per page.
+   * @param trx Knex Transaction. Optional.
+   * @returns Paginated array of thread UUIDs.
+   */
+  public async getAllThreadUuids(
+    status: ThreadStatus | '',
+    name: string,
+    sort: ThreadsSortType,
+    desc: boolean,
+    page: number,
+    limit: number,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knex;
+
+    const uuids = await k('threads')
+      .pluck('uuid')
+      .modify(qb => {
+        if (status !== '') {
+          qb.where({ status });
+        }
+      })
+      .where('name', 'like', `%${name}%`)
+      .orderBy(sort, desc ? 'desc' : 'asc')
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    return uuids;
   }
 }
 
+/**
+ * ThreadsDao instance as a singleton.
+ */
 export default new ThreadsDao();

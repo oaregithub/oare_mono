@@ -66,6 +66,7 @@ class ErrorsDao {
     trx?: Knex.Transaction
   ): Promise<ErrorsResponse> {
     const k = trx || knex;
+
     function baseQuery() {
       return k('errors')
         .select(

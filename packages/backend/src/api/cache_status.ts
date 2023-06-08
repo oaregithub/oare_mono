@@ -3,9 +3,9 @@ import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
 
-const router = express.Router();
+// COMPLETE
 
-// VERIFIED COMPLETE
+const router = express.Router();
 
 router.route('/cache_status').get(adminRoute, async (_req, res, next) => {
   try {

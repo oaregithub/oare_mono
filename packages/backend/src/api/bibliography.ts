@@ -6,9 +6,9 @@ import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import { bibliographiesFilter, bibliographyFilter } from '@/cache/filters';
 
-const router = express.Router();
+// COMPLETE
 
-// VERIFIED COMPLETE
+const router = express.Router();
 
 router
   .route('/bibliographies')
@@ -57,9 +57,12 @@ router
 
         const { uuid } = req.params;
 
+        const citationStyle = (req.query.citationStyle ||
+          'chicago-author-date') as string;
+
         const bibliography = await BibliographyDao.getBibliographyByUuid(
           uuid,
-          'chicago-author-date'
+          citationStyle
         );
 
         const response = await cache.insert<Bibliography>(

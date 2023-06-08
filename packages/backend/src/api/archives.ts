@@ -6,7 +6,7 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import { archiveFilter, archivesFilter, dossierFilter } from '@/cache/filters';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -55,6 +55,28 @@ router
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
+  })
+  .delete(adminRoute, async (req, res, next) => {
+    try {
+      const ArchiveDao = sl.get('ArchiveDao');
+      const utils = sl.get('utils');
+      const cache = sl.get('cache');
+
+      const { uuid } = req.params;
+      const textUuid = req.params.textUuid as string;
+
+      await utils.createTransaction(async trx => {
+        await ArchiveDao.disconnectText(textUuid, uuid, trx);
+      });
+
+      await cache.clear('/archives', { level: 'exact' });
+      await cache.clear('/archive/', { level: 'startsWith' });
+      await cache.clear('/dossier/', { level: 'startsWith' });
+
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
   });
 
 router
@@ -75,30 +97,6 @@ router
       );
 
       res.json(response);
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
-
-router
-  .route('/archive/:archiveUuid/disconnect_text/:textUuid')
-  .delete(adminRoute, async (req, res, next) => {
-    try {
-      const ArchiveDao = sl.get('ArchiveDao');
-      const utils = sl.get('utils');
-      const cache = sl.get('cache');
-
-      const { archiveUuid, textUuid } = req.params;
-
-      await utils.createTransaction(async trx => {
-        await ArchiveDao.disconnectText(textUuid, archiveUuid, trx);
-      });
-
-      await cache.clear('/archives', { level: 'exact' });
-      await cache.clear('/archive/', { level: 'startsWith' });
-      await cache.clear('/dossier/', { level: 'startsWith' });
-
-      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

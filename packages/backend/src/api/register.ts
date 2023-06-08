@@ -6,7 +6,7 @@ import firebase from '@/firebase';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -16,8 +16,8 @@ router.route('/register').post(async (req, res, next) => {
 
     const { firstName, lastName, email, password }: RegisterPayload = req.body;
 
-    const existingUser = await UserDao.emailExists(email);
-    if (existingUser) {
+    const emailExists = await UserDao.emailExists(email);
+    if (emailExists) {
       next(
         new HttpBadRequest(
           `The email ${email} is already in use, please choose another.`
@@ -27,6 +27,7 @@ router.route('/register').post(async (req, res, next) => {
     }
 
     const uuid = v4();
+
     await firebase.auth().createUser({
       uid: uuid,
       email,
@@ -41,8 +42,8 @@ router.route('/register').post(async (req, res, next) => {
       email,
       isAdmin: false,
     });
-    const user = await UserDao.getUserByUuid(uuid);
 
+    const user = await UserDao.getUserByUuid(uuid);
     if (!user) {
       next(new HttpInternalError('Error creating user'));
       return;

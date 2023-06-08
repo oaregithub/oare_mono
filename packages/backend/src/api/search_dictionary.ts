@@ -3,9 +3,11 @@ import { DictionarySearchPayload } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
+// FIXME
+
 const router = express.Router();
 
-router.route('/search_dictionary').get(async (req, res, next) => {
+/* router.route('/search_dictionary').get(async (req, res, next) => {
   try {
     const DictionaryWordDao = sl.get('DictionaryWordDao');
 
@@ -35,6 +37,6 @@ router.route('/search_dictionary').get(async (req, res, next) => {
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
-});
+}); */
 
 export default router;

@@ -4,20 +4,20 @@ import { HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
 router
-  .route('/page_content/:routeName')
+  .route('/page_content/:name')
   .get(cacheMiddleware<string>(null), async (req, res, next) => {
     try {
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
 
-      const { routeName } = req.params;
+      const { name } = req.params;
 
-      const content = await PageContentDao.getContent(routeName);
+      const content = await PageContentDao.getContent(name);
 
       const response = await cache.insert<string>({ req }, content, null);
 
@@ -31,12 +31,12 @@ router
       const PageContentDao = sl.get('PageContentDao');
       const cache = sl.get('cache');
 
-      const { routeName } = req.params;
+      const { name } = req.params;
       const { content } = req.body;
 
-      await PageContentDao.editContent(routeName, content);
+      await PageContentDao.editContent(name, content);
 
-      await cache.clear(`/page_content/${routeName}`, {
+      await cache.clear(`/page_content/${name}`, {
         level: 'exact',
       });
 

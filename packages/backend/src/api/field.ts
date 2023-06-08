@@ -3,6 +3,7 @@ import sl from '@/serviceLocator';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { FieldPayload } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
 // MOSTLY COMPLETE
 
@@ -10,16 +11,16 @@ const router = express.Router();
 
 router
   .route('/field/:uuid')
-  .get(async (req, res, next) => {
-    // FIXME - there are probably a ton of routes that should be authenticated but aren't marked as such?
+  .get(authenticatedRoute, async (req, res, next) => {
     try {
       const FieldDao = sl.get('FieldDao');
 
       const { uuid: referenceUuid } = req.params;
+      const type = (req.params.type as string) || 'description';
 
       const response = await FieldDao.getFieldRowsByReferenceUuidAndType(
         referenceUuid,
-        'description'
+        type
       );
 
       res.json(response);
@@ -37,9 +38,10 @@ router
 
         const { uuid: referenceUuid } = req.params;
         const {
-          description,
+          field,
           primacy,
           isTaxonomy,
+          type,
         }: FieldPayload = req.body as FieldPayload;
 
         if (req.user && !req.user.isAdmin && primacy > 1) {
@@ -52,13 +54,13 @@ router
         }
 
         const language = (
-          await utils.detectLanguage(description)
+          await utils.detectLanguage(field)
         ).toLocaleLowerCase();
 
         await FieldDao.insertField(
           referenceUuid,
-          'description',
-          description,
+          type,
+          field,
           primacy,
           language === 'english'
             ? 'default'
@@ -87,9 +89,10 @@ router
 
         const { uuid } = req.params;
         const {
-          description,
+          field,
           primacy,
           isTaxonomy,
+          type,
         }: FieldPayload = req.body as FieldPayload;
 
         if (req.user && !req.user.isAdmin && primacy > 1) {
@@ -100,16 +103,16 @@ router
         }
 
         const language = (
-          await utils.detectLanguage(description)
+          await utils.detectLanguage(field)
         ).toLocaleLowerCase();
 
         await FieldDao.updateField(
           uuid,
-          description,
+          field,
           language === 'english'
             ? 'default'
             : language[0].toLocaleUpperCase() + language.substring(1),
-          'description',
+          type,
           primacy
         );
 
@@ -135,6 +138,7 @@ router
         const { uuid } = req.params;
 
         const fieldRow = await FieldDao.getFieldRowByUuid(uuid);
+
         await FieldDao.deleteField(uuid);
 
         if (fieldRow.primacy !== null && fieldRow.type !== null) {

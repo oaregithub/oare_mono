@@ -2,59 +2,32 @@ import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
-import {
-  GroupEditPermissionsPayload,
-  GetGroupEditPermissionParameters,
-  DenylistAllowlistItem,
-} from '@oare/types';
+import { GroupEditPermissionsPayload } from '@oare/types';
+
+// MOSTLY COMPLETE
 
 const router = express.Router();
 
+// FIXME migration to remove type column and delete all rows that had a type of collection
+
 router
-  .route('/group_edit_permissions/:groupId/:type')
+  .route('/group_edit_permissions/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
       const TextDao = sl.get('TextDao');
-      const CollectionDao = sl.get('CollectionDao');
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-      const {
-        groupId,
-        type,
-      } = (req.params as unknown) as GetGroupEditPermissionParameters;
+      const groupId = Number(req.params.groupId);
 
-      const groupEditPermissions = await GroupEditPermissionsDao.getGroupEditPermissions(
-        groupId,
-        type
+      const groupEditPermissionTextUuids = await GroupEditPermissionsDao.getGroupEditPermissions(
+        groupId
       );
 
-      let names: (string | undefined)[];
-      if (type === 'text') {
-        const results = await Promise.all(
-          groupEditPermissions.map(uuid => TextDao.getTextByUuid(uuid))
-        );
-        names = results.map(row => (row ? row.name : undefined));
-      } else {
-        const results = await Promise.all(
-          groupEditPermissions.map(uuid =>
-            CollectionDao.getCollectionByUuid(uuid)
-          )
-        );
-        names = results.map(row => (row ? row.name : undefined));
-      }
+      const texts = await Promise.all(
+        groupEditPermissionTextUuids.map(uuid => TextDao.getTextByUuid(uuid))
+      );
 
-      const epigraphyStatus = await Promise.all(
-        groupEditPermissions.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
-      );
-      const response: DenylistAllowlistItem[] = groupEditPermissions.map(
-        (uuid, index) => ({
-          uuid,
-          name: names[index],
-          hasEpigraphy: epigraphyStatus[index],
-        })
-      );
-      res.json(response);
+      res.json(texts);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
@@ -65,12 +38,11 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const groupId = Number(req.params.groupId);
-      const { uuids, type }: GroupEditPermissionsPayload = req.body;
+      const { uuids }: GroupEditPermissionsPayload = req.body;
 
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
       const OareGroupDao = sl.get('OareGroupDao');
       const TextDao = sl.get('TextDao');
-      const CollectionDao = sl.get('CollectionDao');
 
       // Make sure that group Id exists
       const existingGroup = await OareGroupDao.getGroupById(groupId);
@@ -79,39 +51,22 @@ router
         return;
       }
 
-      // If texts, make sure all text UUIDs exist
-      if (type === 'text') {
-        const texts = await Promise.all(
-          uuids.map(uuid => TextDao.getTextByUuid(uuid))
+      // FIXME
+      const texts = await Promise.all(
+        uuids.map(uuid => TextDao.getTextByUuid(uuid))
+      );
+      if (texts.some(text => !text)) {
+        next(
+          new HttpBadRequest('One or more of given text UUIDs does not exist')
         );
-        if (texts.some(text => !text)) {
-          next(
-            new HttpBadRequest('One or more of given text UUIDs does not exist')
-          );
-          return;
-        }
-      }
-
-      // If collections, make sure all collection UUIDs exist
-      if (type === 'collection') {
-        const collections = await Promise.all(
-          uuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-        );
-        if (collections.some(collection => !collection)) {
-          next(
-            new HttpBadRequest(
-              'One or more of given collection UUIDs does not exist'
-            )
-          );
-          return;
-        }
+        return;
       }
 
       await GroupEditPermissionsDao.addItemsToGroupEditPermissions(
         groupId,
-        uuids,
-        type
+        uuids
       );
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

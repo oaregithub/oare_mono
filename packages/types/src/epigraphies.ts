@@ -3,7 +3,6 @@ import {
   TextDiscourseRow,
   DiscourseUnitType,
 } from './textDiscourse';
-import { TextDraft, RowTypes } from './drafts';
 import { Collection } from './collection';
 import { InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './sign_reading';
@@ -11,6 +10,14 @@ import { TreeRow } from './tree';
 import { ItemPropertyRow } from './words';
 import { ReferringLocationInfo } from './bibliography';
 import { AppliedProperty } from './properties';
+
+export type RowTypes =
+  | 'Line'
+  | 'Broken Line(s)'
+  | 'Ruling(s)'
+  | 'Seal Impression'
+  | 'Broken Area'
+  | 'Uninscribed Line(s)';
 
 // FXIME would be useful if this had collectionUuid too, also hasEpigraphy
 export interface Text {
@@ -34,7 +41,6 @@ export interface EpigraphyResponse {
   color: string;
   colorMeaning: string;
   discourseUnits: DiscourseUnit[];
-  draft?: TextDraft;
   hasEpigraphy: boolean;
   zoteroData: ZoteroData[];
 }
@@ -429,21 +435,15 @@ export interface EpigraphyLabelLink {
   view: string | null;
 }
 
-export interface ImageResource {
-  label: string;
-  link: string;
+export interface Image {
   uuid: string;
+  label: string;
+  url: string;
 }
 
 export interface ImageResourcePropertyDetails {
   side: string | null;
   view: string | null;
-}
-
-export interface QuarantineText {
-  text: Text;
-  hasEpigraphy: boolean;
-  timestamp: string;
 }
 
 export interface DiscourseSpelling {

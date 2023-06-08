@@ -7,9 +7,11 @@ import {
   DictItemComboboxDisplay,
 } from '@oare/types';
 
+// FIXME
+
 const router = express.Router();
 
-router.route('/dictItems').get(async (_req, res, next) => {
+/* router.route('/dictItems').get(async (_req, res, next) => {
   try {
     const DictionaryWordDao = sl.get('DictionaryWordDao');
     const results: DictItemComboboxDisplay[] = await DictionaryWordDao.getDictItemsForWordsInTexts();
@@ -39,5 +41,6 @@ router.route('/searchWordsInTexts').post(async (req, res, next) => {
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
-});
+}); */
+
 export default router;

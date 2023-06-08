@@ -35,7 +35,6 @@ import SignReadingDao from '@/daos/SignReadingDao';
 import SpatialUnitDao from '@/daos/SpatialUnitDao';
 import TextDao from '@/daos/TextDao';
 import TextDiscourseDao from '@/daos/TextDiscourseDao';
-import TextDraftsDao from '@/daos/TextDraftsDao';
 import TextEpigraphyDao from '@/daos/TextEpigraphyDao';
 import TextMarkupDao from '@/daos/TextMarkupDao';
 import ThreadsDao from '@/daos/ThreadsDao';
@@ -90,7 +89,6 @@ export type ServiceTypes = {
   SpatialUnitDao: typeof SpatialUnitDao;
   TextDao: typeof TextDao;
   TextDiscourseDao: typeof TextDiscourseDao;
-  TextDraftsDao: typeof TextDraftsDao;
   TextEpigraphyDao: typeof TextEpigraphyDao;
   TextMarkupDao: typeof TextMarkupDao;
   ThreadsDao: typeof ThreadsDao;

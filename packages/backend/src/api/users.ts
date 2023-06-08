@@ -5,7 +5,7 @@ import { HttpInternalError, HttpBadRequest, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { User, UserWithGroups } from '@oare/types';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 

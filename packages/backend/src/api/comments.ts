@@ -1,24 +1,24 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpInternalError } from '@/exceptions';
-import { CreateCommentPayload } from '@oare/types';
 import permissionRoute from '@/middlewares/router/permissionsRoute';
+import { CreateCommentPayload } from '@oare/types';
+
+// COMPLETED
 
 const router = express.Router();
-
-// FIXME coming back to comments/threads
 
 router
   .route('/comments')
   .post(permissionRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
-      const comment: CreateCommentPayload = req.body;
-      const commentsDao = sl.get('CommentsDao');
+      const CommentsDao = sl.get('CommentsDao');
 
-      // Insert comment.
-      const newCommentUuid = await commentsDao.insert(req.user!.uuid, comment);
+      const { threadUuid, comment }: CreateCommentPayload = req.body;
 
-      res.status(201).json(newCommentUuid);
+      await CommentsDao.createComment(threadUuid, req.user!.uuid, comment);
+
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
@@ -28,9 +28,11 @@ router
   .route('/comments/:uuid')
   .delete(permissionRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
+      const CommentsDao = sl.get('CommentsDao');
+
       const { uuid } = req.params;
-      const commentsDao = sl.get('CommentsDao');
-      await commentsDao.updateDelete(uuid);
+
+      await CommentsDao.markAsDeleted(uuid);
 
       res.status(204).end();
     } catch (err) {

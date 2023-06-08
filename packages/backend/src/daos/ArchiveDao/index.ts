@@ -3,7 +3,7 @@ import { Archive, ArchiveRow, Dossier, Text } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 class ArchiveDao {
   /**

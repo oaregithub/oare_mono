@@ -46,7 +46,6 @@ router
       next(new HttpInternalError(err as string));
     }
   })
-  // FIXME - can't be admin route but having it open is a risk
   .post(async (req, res, next) => {
     try {
       const ErrorsDao = sl.get('ErrorsDao');
@@ -79,7 +78,7 @@ router
   });
 
 // FIXME - should probably use websockets rather than polling
-router.route('/newerrors').get(adminRoute, async (_req, res, next) => {
+router.route('/new_errors').get(adminRoute, async (_req, res, next) => {
   try {
     const ErrorsDao = sl.get('ErrorsDao');
 
