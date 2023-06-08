@@ -14,7 +14,7 @@ export * from './src/textDiscourse';
 export * from './src/errors';
 export * from './src/persons';
 export * from './src/profile';
-export * from './src/sign_reading';
+export * from './src/signReading';
 export * from './src/publication';
 export * from './src/archive';
 export * from './src/notes';

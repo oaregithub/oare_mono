@@ -1,3 +1,5 @@
+// COMPLETE
+
 export interface Locale {
   label: string;
   value: LocaleCode;

@@ -5,10 +5,10 @@ import {
 } from './textDiscourse';
 import { Collection } from './collection';
 import { InsertItemPropertyRow } from './dictionary';
-import { SignCodeWithDiscourseUuid } from './sign_reading';
+import { SignCodeWithDiscourseUuid } from './signReading';
 import { TreeRow } from './tree';
 import { ItemPropertyRow } from './words';
-import { ReferringLocationInfo } from './bibliography';
+import { ZoteroData } from './bibliography';
 import { AppliedProperty } from './properties';
 
 // FIXME
@@ -45,14 +45,6 @@ export interface EpigraphyResponse {
   discourseUnits: DiscourseUnit[];
   hasEpigraphy: boolean;
   zoteroData: ZoteroData[];
-}
-export interface ZoteroData {
-  uuid: string;
-  referringLocationInfo: ReferringLocationInfo;
-  citation: string;
-  link: string | null;
-  pageLink: string | null;
-  plateLink: string | null;
 }
 
 export type EpigraphicUnitType =

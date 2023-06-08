@@ -64,6 +64,15 @@ interface ZoteroResponseData {
   dateModified: string;
 }
 
+export interface ZoteroData {
+  uuid: string;
+  referringLocationInfo: ReferringLocationInfo;
+  citation: string;
+  link: string | null;
+  pageLink: string | null;
+  plateLink: string | null;
+}
+
 export interface ReferringLocationInfo {
   beginPage: number | null;
   endPage: number | null;

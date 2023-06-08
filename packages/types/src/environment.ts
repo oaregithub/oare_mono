@@ -1,3 +1,5 @@
+// COMPLETE
+
 export interface EnvironmentInfo {
   elasticBeanstalkRegion: string;
   databaseReadRegion: string;
