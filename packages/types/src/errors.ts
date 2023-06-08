@@ -1,3 +1,7 @@
+import { User } from './login';
+
+// COMPLETE
+
 export interface LogErrorPayload {
   description: string;
   stacktrace: string | null;
@@ -13,7 +17,7 @@ export interface ErrorsRow {
 }
 
 export interface ErrorsRowWithUser extends ErrorsRow {
-  userName: string;
+  user: User | null;
 }
 
 export type ErrorStatus = 'New' | 'In Progress' | 'Resolved';
@@ -28,7 +32,6 @@ export interface ErrorsResponse {
   count: number;
 }
 
-// FIXME should be renamed
 export type ErrorsSortType =
   | 'status'
   | 'timestamp'

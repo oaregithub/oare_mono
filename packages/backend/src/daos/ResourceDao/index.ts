@@ -5,7 +5,6 @@ import {
   ResourceRow,
   LinkRow,
   EpigraphyLabelLink,
-  ImageResource,
   ReferringLocationInfo,
 } from '@oare/types';
 import { Knex } from 'knex';

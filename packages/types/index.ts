@@ -27,3 +27,7 @@ export * from './src/periods';
 export * from './src/seal';
 export * from './src/properties';
 export * from './src/quarantine';
+export * from './src/environment';
+export * from './src/locale';
+
+// FIXME alphabetize

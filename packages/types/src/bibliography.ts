@@ -1,3 +1,5 @@
+// MOSTLY COMPLETE
+
 export interface Bibliography {
   uuid: string;
   title: string | null;

@@ -1,4 +1,6 @@
-import { PermissionsListType } from './permissions';
+import { PermissionType } from './permissions';
+
+// FIXME
 
 export interface SearchNamesResultRow {
   uuid: string;
@@ -17,7 +19,7 @@ export interface SearchNamesPayload {
   limit: number;
   filter: string;
   groupId?: string;
-  type: PermissionsListType;
+  type: PermissionType;
   showExcluded: boolean;
 }
 

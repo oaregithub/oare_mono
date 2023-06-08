@@ -1,3 +1,5 @@
+// FIXME
+
 export interface Image {
   uuid: string;
   name: string;

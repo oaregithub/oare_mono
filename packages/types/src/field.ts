@@ -1,3 +1,5 @@
+// MOSTLY COMPLETE
+
 export interface FieldPayload {
   field: string;
   primacy: number;
@@ -14,3 +16,5 @@ export interface FieldRow {
   field: string | null;
   sourceUuid: string | null;
 }
+
+// FIXME add field type?

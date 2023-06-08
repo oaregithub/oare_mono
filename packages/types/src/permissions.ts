@@ -1,4 +1,7 @@
-import { Image, Text } from './epigraphies';
+// MOSTLY COMPLETE
+
+import { Text } from './epigraphies';
+import { Image } from './resource';
 
 export type PermissionItem =
   | DictionaryPermission
@@ -12,6 +15,8 @@ export type PermissionName = PermissionItem['name'];
 export type PermissionType = PermissionItem['type'];
 
 export interface PermissionTemplate {
+  name: string;
+  type: string;
   description: string;
   dependencies?: PermissionName[];
 }
@@ -42,10 +47,6 @@ export interface PagePermission extends PermissionTemplate {
   type: 'pages';
 }
 
-export interface SealPermission extends PermissionTemplate {
-  name: 'EDIT_SEAL' | 'ADD_SEAL_LINK';
-  type: 'seals';
-}
 export interface TextPermission extends PermissionTemplate {
   name:
     | 'VIEW_EPIGRAPHY_IMAGES'
@@ -69,6 +70,11 @@ export interface GeneralPermission extends PermissionTemplate {
     | 'ADD_EDIT_FIELD_DESCRIPTION'
     | 'VIEW_FIELD_DESCRIPTION';
   type: 'general';
+}
+
+export interface SealPermission extends PermissionTemplate {
+  name: 'EDIT_SEAL' | 'ADD_SEAL_LINK';
+  type: 'seals';
 }
 
 export interface UpdatePermissionPayload {

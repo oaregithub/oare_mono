@@ -1,5 +1,7 @@
 import { Text } from './epigraphies';
 
+// COMPLETE
+
 export interface QuarantineTextRow {
   referenceUuid: string;
   timestamp: string;

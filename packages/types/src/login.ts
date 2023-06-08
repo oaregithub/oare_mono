@@ -1,3 +1,5 @@
+// FIXME
+
 export interface LoginPayload {
   email: string;
   password: string;
@@ -8,6 +10,7 @@ export interface RegisterPayload extends LoginPayload {
   lastName: string;
 }
 
+// FIXME update User object
 export interface User {
   uuid: string;
   firstName: string;
@@ -22,5 +25,5 @@ export interface UserWithGroups extends User {
 
 export interface RegisterResponse {
   user: User;
-  firebaseToken: string;
+  token: string;
 }

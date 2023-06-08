@@ -2,6 +2,8 @@ import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
 import { AppliedProperty } from './properties';
 
+// FIXME
+
 export interface DisplayableWord {
   uuid: string;
   word: string;

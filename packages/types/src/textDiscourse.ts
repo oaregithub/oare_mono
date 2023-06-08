@@ -3,6 +3,8 @@ import { ItemPropertyRow } from './words';
 import { DiscourseNote } from './notes';
 import { AppliedProperty } from './properties';
 
+// FIXME
+
 export type DiscourseUnitType =
   | 'discourseUnit'
   | 'sentence'

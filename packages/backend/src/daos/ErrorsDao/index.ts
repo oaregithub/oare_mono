@@ -3,10 +3,13 @@ import {
   ErrorStatus,
   ErrorsResponse,
   ErrorsRowWithUser,
+  ErrorsRow,
+  User,
   ErrorsSortType,
 } from '@oare/types';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
+import sl from '@/serviceLocator';
 
 class ErrorsDao {
   /**
@@ -67,6 +70,8 @@ class ErrorsDao {
   ): Promise<ErrorsResponse> {
     const k = trx || knex;
 
+    const UserDao = sl.get('UserDao');
+
     function baseQuery() {
       return k('errors')
         .select(
@@ -75,8 +80,7 @@ class ErrorsDao {
           'errors.description',
           'errors.stacktrace',
           'errors.timestamp',
-          'errors.status',
-          k.raw('CONCAT(user.first_name, " ", user.last_name) AS userName')
+          'errors.status'
         )
         .leftJoin('user', 'user.uuid', 'errors.user_uuid')
         .where('errors.status', 'like', `%${status}%`)
@@ -99,10 +103,23 @@ class ErrorsDao {
         });
     }
 
-    const errors: ErrorsRowWithUser[] = await baseQuery()
+    const errors: ErrorsRow[] = await baseQuery()
       .orderBy(type, desc ? 'desc' : 'asc')
       .limit(limit)
       .offset((page - 1) * limit);
+
+    const users: (User | null)[] = await Promise.all(
+      errors.map(error =>
+        error.userUuid ? UserDao.getUserByUuid(error.userUuid) : null
+      )
+    );
+
+    const errorsRowsWithUser: ErrorsRowWithUser[] = errors.map(
+      (error, idx) => ({
+        ...error,
+        user: users[idx],
+      })
+    );
 
     const totalItems = await baseQuery()
       .count({
@@ -115,7 +132,7 @@ class ErrorsDao {
     }
 
     return {
-      errors,
+      errors: errorsRowsWithUser,
       count,
     };
   }

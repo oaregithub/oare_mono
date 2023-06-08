@@ -11,6 +11,8 @@ import { ItemPropertyRow } from './words';
 import { ReferringLocationInfo } from './bibliography';
 import { AppliedProperty } from './properties';
 
+// FIXME
+
 export type RowTypes =
   | 'Line'
   | 'Broken Line(s)'
@@ -19,7 +21,7 @@ export type RowTypes =
   | 'Broken Area'
   | 'Uninscribed Line(s)';
 
-// FXIME would be useful if this had collectionUuid too, also hasEpigraphy
+// FIXME would be useful if this had collectionUuid too, also hasEpigraphy
 export interface Text {
   uuid: string;
   type: string;
@@ -433,12 +435,6 @@ export interface EpigraphyLabelLink {
   link: string;
   side: string | number | null;
   view: string | null;
-}
-
-export interface Image {
-  uuid: string;
-  label: string;
-  url: string;
 }
 
 export interface ImageResourcePropertyDetails {

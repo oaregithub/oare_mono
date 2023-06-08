@@ -1,4 +1,5 @@
 // FIXME should deprecate all sign code things. Still used to create/edit texts so need to replace that first.
+
 import { EpigraphicUnitType, EditorMarkup } from './epigraphies';
 
 export type SignCodeType = 'image' | 'utf8' | 'undetermined';

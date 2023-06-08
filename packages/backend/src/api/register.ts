@@ -51,11 +51,11 @@ router.route('/register').post(async (req, res, next) => {
 
     req.user = user;
 
-    const firebaseToken = await security.getFirebaseToken(user.uuid);
+    const token = await security.getFirebaseToken(user.uuid);
 
     const response: RegisterResponse = {
       user,
-      firebaseToken,
+      token,
     };
 
     res.status(201).json(response);

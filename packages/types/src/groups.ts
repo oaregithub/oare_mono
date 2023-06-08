@@ -1,3 +1,7 @@
+// MOSTLY COMPLETE
+
+// FIXME add back num_users?
+
 export interface Group {
   id: number;
   name: string;

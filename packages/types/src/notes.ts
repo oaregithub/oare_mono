@@ -1,3 +1,5 @@
+// FIXME distinguish between notesRows and notes. Shouldn't have discourse name
+
 export interface DiscourseNote {
   uuid: string;
   referenceUuid: string;

@@ -1,11 +1,6 @@
 import Vue from 'vue';
 import VueCompositionAPI, { reactive } from '@vue/composition-api';
-import {
-  User,
-  PermissionItem,
-  AdminBadgeOptions,
-  PermissionName,
-} from '@oare/types';
+import { User, PermissionItem, PermissionName } from '@oare/types';
 import firebase from '@/firebase';
 
 Vue.use(VueCompositionAPI);
@@ -16,6 +11,11 @@ export interface State {
   permissions: PermissionItem[];
   displayAdminBadge: AdminBadgeOptions;
   idToken: string | null;
+}
+
+interface AdminBadgeOptions {
+  error: boolean;
+  comments: boolean;
 }
 
 const state: State = reactive({

@@ -1,6 +1,8 @@
 import { DictionaryForm } from './dictionary';
 import { AppliedProperty } from './properties';
 
+// FIXME
+
 export interface ItemPropertyRow {
   uuid: string;
   referenceUuid: string;

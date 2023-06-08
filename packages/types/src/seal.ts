@@ -1,5 +1,7 @@
 import { Text } from './epigraphies';
 
+// FIXME
+
 export interface SealNameUuid {
   name: string;
   uuid: string;
