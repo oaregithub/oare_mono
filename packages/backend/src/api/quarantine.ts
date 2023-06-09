@@ -128,7 +128,7 @@ router
         await QuarantineTextDao.removeQuarantineTextRow(textUuid, trx);
         await PublicDenylistDao.removeItemFromDenylist(textUuid, trx);
         await GroupAllowlistDao.removeItemFromAllAllowlists(textUuid, trx);
-        await GroupEditPermissionsDao.removeItemFromAllEditPermissions(
+        await GroupEditPermissionsDao.removeTextFromAllEditPermissions(
           textUuid,
           trx
         );

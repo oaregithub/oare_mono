@@ -112,23 +112,13 @@ export const collectionFilter: CacheFilter<Collection[]> = async (
   const userUuid = user ? user.uuid : null;
   const isAdmin = !!user && user.isAdmin;
 
-  const publishedCollectionsStatus = await Promise.all(
-    collections.map(
-      collection => isAdmin || HierarchyDao.isPublished(collection.uuid)
-    )
-  );
-
-  const publishedCollections = collections.filter(
-    (_, idx) => publishedCollectionsStatus[idx]
-  );
-
   const viewableCollectionsStatus = await Promise.all(
-    publishedCollections.map(collection =>
+    collections.map(collection =>
       CollectionTextUtils.canViewCollection(collection.uuid, userUuid)
     )
   );
 
-  const viewableCollections = publishedCollections.filter(
+  const viewableCollections = collections.filter(
     (_, idx) => viewableCollectionsStatus[idx]
   );
 

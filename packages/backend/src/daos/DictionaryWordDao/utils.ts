@@ -10,6 +10,8 @@ import {
   WordFormSpellingRow,
 } from './index';
 
+// FIXME
+
 export interface WordFormSpellingType extends WordFormSpellingRow {
   type: 'word' | 'form' | 'spelling';
 }

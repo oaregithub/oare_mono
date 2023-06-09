@@ -4,6 +4,8 @@ import sl from '@/serviceLocator';
 import AWS from 'aws-sdk';
 import { Knex } from 'knex';
 
+// FIXME
+
 class SealDao {
   async getSeals(trx?: Knex): Promise<SealNameUuid[]> {
     const k = trx || knex;

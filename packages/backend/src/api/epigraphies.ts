@@ -14,7 +14,7 @@ import cacheMiddleware from '@/middlewares/router/cache';
 import textMiddleware from '@/middlewares/router/text';
 import { epigraphyFilter } from '@/cache/filters';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 

@@ -228,32 +228,32 @@ class PermissionsDao {
    * @param userUuid The UUID of the user to retrieve permissions for. If null, returns an empty array.
    * @param trx Knex Transaction. Optional.
    * @returns Array of permissions that the user has.
+   * @throws Error if the user does not exist.
    */
   public async getUserPermissions(
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<PermissionItem[]> {
-    const k = trx || knex;
-
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
+    if (!user) {
+      return [];
+    }
 
-    if (user && user.isAdmin) {
+    if (user.isAdmin) {
       return this.ALL_PERMISSIONS;
     }
 
-    if (user) {
-      const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid, trx);
+    const groupIds = await UserGroupDao.getGroupsOfUser(user.uuid, trx);
 
-      const userPermissions: PermissionName[] = await k('permissions')
-        .pluck('permission')
-        .whereIn('group_id', groupIds);
+    const userPermissions = (
+      await Promise.all(groupIds.map(id => this.getGroupPermissions(id, trx)))
+    )
+      .flat()
+      .map(p => p.name);
 
-      return this.ALL_PERMISSIONS.filter(permission =>
-        userPermissions.includes(permission.name)
-      );
-    }
-
-    return [];
+    return this.ALL_PERMISSIONS.filter(permission =>
+      userPermissions.includes(permission.name)
+    );
   }
 
   /**

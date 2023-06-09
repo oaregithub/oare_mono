@@ -85,6 +85,7 @@ class ThreadsDao {
    * @param referenceUuid The reference UUID to retrieve threads for.
    * @param trx Knex Transaction. Optional.
    * @returns Array of thread objects.
+   * @throws Error if one or more comments in any thread are attached to a non-existent user.
    */
   public async getThreadsByReferenceUuid(
     referenceUuid: string,
@@ -114,6 +115,7 @@ class ThreadsDao {
    * @param uuid The UUID of the thread row to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns A single thread row.
+   * @throws Error if the thread does not exist.
    */
   private async getThreadRowByUuid(
     uuid: string,
@@ -121,7 +123,7 @@ class ThreadsDao {
   ): Promise<ThreadsRow> {
     const k = trx || knex;
 
-    const row: ThreadsRow = await k('threads')
+    const row: ThreadsRow | undefined = await k('threads')
       .select(
         'uuid',
         'reference_uuid as referenceUuid',
@@ -132,6 +134,10 @@ class ThreadsDao {
       .where({ uuid })
       .first();
 
+    if (!row) {
+      throw new Error(`Thread with UUID ${uuid} does not exist.`);
+    }
+
     return row;
   }
 
@@ -140,6 +146,7 @@ class ThreadsDao {
    * @param uuid The UUID of the thread to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns A single thread object.
+   * @throws Error if the thread does not exist.
    */
   public async getThreadByUuid(
     uuid: string,

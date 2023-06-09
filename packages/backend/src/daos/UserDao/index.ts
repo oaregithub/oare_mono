@@ -38,11 +38,9 @@ class UserDao {
    * @param uuid The UUID of the user to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns The user object. Null if no user found.
+   * @throws Error if no user found.
    */
-  async getUserByUuid(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<User | null> {
+  async getUserByUuid(uuid: string, trx?: Knex.Transaction): Promise<User> {
     const k = trx || knex;
 
     const row: User | undefined = await k('user')
@@ -56,8 +54,11 @@ class UserDao {
       .where({ uuid })
       .first();
 
-    // FIXME decide what to do about the null possibility
-    return row ? { ...row, isAdmin: !!row.isAdmin } : null;
+    if (!row) {
+      throw new Error(`User with uuid ${uuid} does not exist`);
+    }
+
+    return { ...row, isAdmin: !!row.isAdmin };
   }
 
   // FIXME should deprecate full_name column
@@ -78,24 +79,6 @@ class UserDao {
       email: user.email,
       is_admin: user.isAdmin,
     });
-  }
-
-  // FIXME could probably deprecate this once removed from threads
-
-  /**
-   * Checks to see if a user is an admin.
-   * @param uuid The UUID of the user to check.
-   * @param trx Knex Transaction. Optional.
-   * @returns Boolean indicating whether the user is an admin.
-   */
-  async userIsAdmin(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
-    const k = trx || knex;
-
-    const { isAdmin }: { isAdmin: boolean } = await k('user')
-      .first('is_admin AS isAdmin')
-      .where({ uuid });
-
-    return isAdmin;
   }
 
   /**
@@ -139,4 +122,7 @@ class UserDao {
   }
 }
 
+/**
+ * UserDao instance as a singleton.
+ */
 export default new UserDao();

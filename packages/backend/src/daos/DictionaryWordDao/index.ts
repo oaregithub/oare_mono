@@ -23,6 +23,8 @@ import DictionaryFormDao from '../DictionaryFormDao';
 import ItemPropertiesDao from '../ItemPropertiesDao';
 import { prepareIndividualSearchCharacters } from '../SignReadingDao/utils';
 
+// FIXME
+
 export interface GrammarInfoRow {
   uuid: string;
   word: string;

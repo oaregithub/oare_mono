@@ -164,6 +164,7 @@ export interface AddFormPayload {
   properties: AppliedProperty[];
 }
 
+// FIXME why is this in dictionary? Should be a complete ItemPropertyRow probably. And the current ItemPropertyRow should just be ItemProperty
 export interface InsertItemPropertyRow {
   uuid: string;
   referenceUuid: string;

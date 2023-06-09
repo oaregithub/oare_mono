@@ -9,32 +9,23 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
 class TextDao {
-  // FIXME determine how to deal with nulls
-  async getTextByUuid(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<Text | null> {
-    const k = trx || knex;
-
+  /**
+   * Retrieves a text by its UUID.
+   * @param uuid The UUID of the text to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single text object.
+   * @throws Error if the text doesn't exist or does not belong to a valid collection.
+   */
+  async getTextByUuid(uuid: string, trx?: Knex.Transaction): Promise<Text> {
     const CollectionDao = sl.get('CollectionDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
     const textRow = await this.getTextRowByUuid(uuid, trx);
 
-    if (!textRow) {
-      // FIXME is this the best way? Should it continue returning null and using HTTP bad request instead. I'd like some sort of in between
-      return null;
-    }
-
     const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
       uuid,
       trx
     );
-
-    if (!collectionUuid) {
-      // FIXME is this the best way? Should it continue returning null and using HTTP bad request instead. I'd like some sort of in between
-      return null;
-    }
 
     const hasEpigraphy = await TextEpigraphyDao.hasEpigraphy(uuid, trx);
 
@@ -47,14 +38,20 @@ class TextDao {
     return text;
   }
 
-  // FIXME determine how to deal with non existents
+  /**
+   * Retrieves a text row by its UUID.
+   * @param uuid The UUID of the text row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single text row.
+   * @throws Error if no text row found.
+   */
   private async getTextRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
-  ): Promise<TextRow | null> {
+  ): Promise<TextRow> {
     const k = trx || knex;
 
-    const textRow: TextRow = await k('text')
+    const textRow: TextRow | undefined = await k('text')
       .select(
         'uuid',
         'type',
@@ -77,30 +74,11 @@ class TextDao {
       .first()
       .where({ uuid });
 
+    if (!textRow) {
+      throw new Error(`Text with uuid ${uuid} does not exist`);
+    }
+
     return textRow;
-  }
-
-  async getUnpublishedTextUuids(trx?: Knex.Transaction): Promise<string[]> {
-    const k = trx || knex;
-
-    const uuids: string[] = await k('text')
-      .pluck('text.uuid')
-      .innerJoin('hierarchy', 'hierarchy.object_uuid', 'text.uuid')
-      .where('hierarchy.published', false);
-
-    return uuids;
-  }
-
-  async getCdliNum(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<string | null> {
-    const k = trx || knex;
-    const { cdliNum } = await k('text')
-      .select('cdli_num AS cdliNum')
-      .where({ uuid })
-      .first();
-    return cdliNum;
   }
 
   // FIXME perhaps move to hierarchy dao?
@@ -150,6 +128,12 @@ class TextDao {
     return transliterationOption;
   }
 
+  /**
+   * Updates the transliteration status of a text.
+   * @param textUuid The UUID of the text to update.
+   * @param transliterationUuid The UUID of the transliteration status to set.
+   * @param trx Knex Transaction. Optional.
+   */
   async updateTransliterationStatus(
     textUuid: string,
     transliterationUuid: string,
@@ -162,6 +146,17 @@ class TextDao {
       .where({ uuid: textUuid });
   }
 
+  /**
+   * Updates the text info of a text.
+   * @param uuid The UUID of the text to update.
+   * @param newExcavationPrefix The new excavation prefix.
+   * @param newExcavationNumber The new excavation number.
+   * @param newMuseumPrefix The new museum prefix.
+   * @param newMuseumNumber The new museum number.
+   * @param newPrimaryPublicationPrefix The new primary publication prefix.
+   * @param newPrimaryPublicationNumber The new primary publication number.
+   * @param trx Knex Transaction. Optional.
+   */
   async updateTextInfo(
     uuid: string,
     newExcavationPrefix: string | null,
@@ -186,8 +181,14 @@ class TextDao {
       .where({ uuid });
   }
 
+  /**
+   * Inserts a new text row.
+   * @param row The text row to insert.
+   * @param trx Knex Transaction. Optional.
+   */
   async insertTextRow(row: TextRow, trx?: Knex.Transaction) {
     const k = trx || knex;
+
     await k('text').insert({
       uuid: row.uuid,
       type: row.type,
@@ -209,11 +210,23 @@ class TextDao {
     });
   }
 
+  /**
+   * Removes a text by its UUID. Used when permanently deleting a text.
+   * @param textUuid The UUID of the text to remove.
+   * @param trx Knex Transaction. Optional.
+   */
   async removeTextByUuid(textUuid: string, trx?: Knex.Transaction) {
     const k = trx || knex;
+
     await k('text').del().where({ uuid: textUuid });
   }
 
+  /**
+   * Searches texts. Used when searching for link property matches.
+   * @param search The search string.
+   * @param trx Knex Transaction. Optional.
+   * @returns A list of link items.
+   */
   async searchTexts(
     search: string,
     trx?: Knex.Transaction
@@ -256,4 +269,7 @@ class TextDao {
   }
 }
 
+/**
+ * TextDao instance as a singleton.
+ */
 export default new TextDao();

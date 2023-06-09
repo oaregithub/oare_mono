@@ -8,19 +8,23 @@ class BibliographyDao {
    * Retreives a bibliography row by UUID
    * @param uuid The UUID of the bibliography row
    * @param trx Knex Transaction. Optional.
-   * @returns The bibliography row
+   * @returns The bibliography row.
+   * @throws Error if no bibliography row found.
    */
-  public async getBibliographyRowByUuid(
-    // FIXME - could maybe be private with some updates
+  private async getBibliographyRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<BibliographyRow> {
     const k = trx || knex;
 
-    const bibliography: BibliographyRow = await k('bibliography')
+    const bibliography: BibliographyRow | undefined = await k('bibliography')
       .select('uuid', 'zot_item_key as zoteroKey', 'short_cit as citation')
       .where('uuid', uuid)
       .first();
+
+    if (!bibliography) {
+      throw new Error(`Bibliography with uuid ${uuid} does not exist`);
+    }
 
     return bibliography;
   }
@@ -46,6 +50,7 @@ class BibliographyDao {
    * @param citationStyle The citation style to use for Zotero
    * @param trx Knex Transaction. Optional.
    * @returns Bibliography object.
+   * @throws Error if no bibliography row found.
    */
   public async getBibliographyByUuid(
     uuid: string,
@@ -80,6 +85,13 @@ class BibliographyDao {
     return bibliography;
   }
 
+  /**
+   * Retrieves all citations for a given text UUID
+   * @param textUuid The UUID of the text whose citations to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of citations.
+   * @throws Error if one or more bibliography rows not found.
+   */
   public async getCitationsByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
@@ -174,8 +186,8 @@ class BibliographyDao {
       )
     );
 
-    const citations: Citation[] = bibliographyUuids.map((uuid, idx) => ({
-      bibliographyUuid: uuid,
+    const citations: Citation[] = bibliographyRows.map((row, idx) => ({
+      bibliographyUuid: row.uuid,
       citation: citationStrings[idx],
       beginPage: beginPages[idx] ? Number(beginPages[idx]) : null,
       endPage: endPages[idx] ? Number(endPages[idx]) : null,

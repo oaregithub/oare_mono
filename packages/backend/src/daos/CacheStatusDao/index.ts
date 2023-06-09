@@ -5,20 +5,23 @@ interface CacheStatusRow {
   disableExpires: Date;
 }
 
-// FIXME - probably a better way to accomplish this than this table
-
 class CacheStatusDao {
   /**
    * Checks if the cache is currently enabled
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating if the cache is enabled
+   * @throws Error if the cache status row does not exist
    */
   async cacheIsEnabled(trx?: Knex.Transaction): Promise<boolean> {
     const k = trx || knex;
 
-    const row: CacheStatusRow = await k('cache_status')
+    const row: CacheStatusRow | undefined = await k('cache_status')
       .select('disable_expires AS disableExpires')
       .first();
+
+    if (!row) {
+      throw new Error('Cache status row does not exist');
+    }
 
     const isEnabled = row.disableExpires < new Date();
 

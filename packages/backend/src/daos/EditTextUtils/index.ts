@@ -46,6 +46,8 @@ import { convertSideToSideNumber } from '@oare/oare';
 import { formattedSearchCharacter } from '@/daos/TextEpigraphyDao/utils';
 import { cleanLines } from './utils';
 
+// FIXME
+
 const getEpigraphyType = (
   readingType: EpigraphicUnitType | undefined
 ): EpigraphyType => {

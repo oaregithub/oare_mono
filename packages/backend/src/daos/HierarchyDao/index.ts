@@ -1,7 +1,4 @@
 import {
-  SearchNamesResponse,
-  SearchNamesResultRow,
-  SearchNamesPayload,
   HierarchyRow,
   TaxonomyPropertyTree,
   HierarchyData,
@@ -17,146 +14,24 @@ import { Knex } from 'knex';
 import { getHierarchyRowQuery } from './utils';
 
 class HierarchyDao {
-  async getBySearchTerm(
-    { page, limit, filter, type, groupId, showExcluded }: SearchNamesPayload,
-    trx?: Knex.Transaction
-  ): Promise<SearchNamesResponse> {
-    const k = trx || knex;
-    const CollectionDao = sl.get('CollectionDao');
-    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-    const QuarantineTextDao = sl.get('QuarantineTextDao');
-
-    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
-      trx
-    );
-
-    function createBaseQuery() {
-      const query = k('hierarchy')
-        .distinct('hierarchy.object_uuid as uuid')
-        .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
-        .where('hierarchy.type', type.toLowerCase())
-        .andWhere('alias.name', 'like', `%${filter}%`)
-        .whereNotIn('hierarchy.object_uuid', quarantinedTexts);
-      if (groupId && showExcluded) {
-        return query.whereNotIn(
-          'hierarchy.object_uuid',
-          k('group_edit_permissions').select('uuid').where('group_id', groupId)
-        );
-      }
-      if (groupId) {
-        return query
-          .whereIn(
-            'hierarchy.object_uuid',
-            k('public_denylist').select('uuid').where({ type })
-          )
-          .modify(qb => {
-            if (type === 'Text') {
-              qb.orWhereIn(
-                'hierarchy.object_uuid',
-                k('hierarchy')
-                  .select('object_uuid')
-                  .whereIn(
-                    'obj_parent_uuid',
-                    k('public_denylist')
-                      .select('uuid')
-                      .where('type', 'collection')
-                  )
-              );
-            }
-          })
-          .whereNotIn(
-            'hierarchy.object_uuid',
-            k('group_allowlist').select('uuid').where('group_id', groupId)
-          );
-      }
-      return query
-        .leftJoin(
-          'public_denylist',
-          'public_denylist.uuid',
-          'hierarchy.object_uuid'
-        )
-        .whereNull('public_denylist.uuid');
-    }
-
-    const searchResponse: Array<{ uuid: string }> = await createBaseQuery()
-      .orderBy('alias.name')
-      .limit(limit)
-      .offset((page - 1) * limit);
-
-    let names: string[];
-    if (type === 'Text') {
-      const TextDao = sl.get('TextDao');
-      names = (
-        await Promise.all(
-          searchResponse.map(text => TextDao.getTextByUuid(text.uuid, trx))
-        )
-      ).map(text => (text ? text.name : ''));
-    } else if (type === 'Collection') {
-      names = (
-        await Promise.all(
-          searchResponse.map(collection =>
-            CollectionDao.getCollectionByUuid(collection.uuid, trx)
-          )
-        )
-      ).map(collection => (collection ? collection.name : ''));
-    }
-
-    let epigraphyStatus: boolean[] = [];
-    if (type === 'Text') {
-      epigraphyStatus = await Promise.all(
-        searchResponse.map(item =>
-          TextEpigraphyDao.hasEpigraphy(item.uuid, trx)
-        )
-      );
-    }
-    const matchingItems: SearchNamesResultRow[] = searchResponse.map(
-      (item, index) => ({
-        ...item,
-        name: names[index],
-        hasEpigraphy: type === 'Text' ? epigraphyStatus[index] : false,
-      })
-    );
-
-    const count = await createBaseQuery()
-      .count({
-        count: k.raw('distinct hierarchy.object_uuid'),
-      })
-      .first();
-    let totalItems = 0;
-
-    if (count && count.count) {
-      totalItems = count.count as number;
-    }
-
-    return {
-      items: matchingItems,
-      count: totalItems,
-    };
-  }
-
-  async isPublished(
-    hierarchyUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<boolean> {
+  /**
+   * Checks if a hierarchy node has children.
+   * @param hierarchyUuid The UUID of the hierarchy node
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the hierarchy node has children.
+   */
+  private async hasChild(hierarchyUuid: string, trx?: Knex.Transaction) {
     const k = trx || knex;
 
-    const row: { published: boolean } | undefined = await k('hierarchy')
-      .first('published')
-      .where({ object_uuid: hierarchyUuid });
-
-    return row ? row.published : false;
-  }
-
-  async hasChild(hierarchyUuid: string, trx?: Knex.Transaction) {
-    const k = trx || knex;
     const rows = await k('hierarchy').where('parent_uuid', hierarchyUuid);
+
     if (rows && rows.length > 0) {
       return true;
     }
     return false;
   }
 
-  async createPropertiesTaxonomyTree(
+  public async createPropertiesTaxonomyTree(
     trx?: Knex.Transaction
   ): Promise<TaxonomyPropertyTree> {
     const AliasDao = sl.get('AliasDao');
@@ -194,7 +69,16 @@ class HierarchyDao {
     };
   }
 
-  async getVariablesByParent(
+  // FIXME should this be public?
+  /**
+   * Constructs variable child objects for a given hierarchy node.
+   * @param hierarchyUuid The UUID of the parent hierarchy node.
+   * @param level The level of the parent hierarchy node.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of variable child objects.
+   * @throws Error if one or more child variable rows are not found.
+   */
+  public async getVariablesByParent(
     hierarchyUuid: string,
     level: number | null,
     trx?: Knex.Transaction
@@ -241,13 +125,20 @@ class HierarchyDao {
     return [];
   }
 
-  async getVariableRowByUuid(
+  /**
+   * Retrieves a variable row by UUID.
+   * @param uuid The UUID of the variable row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single variable row.
+   * @throws Error if variable row is not found.
+   */
+  private async getVariableRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<VariableRow> {
     const k = trx || knex;
 
-    const variable: VariableRow = await k('variable')
+    const variableRow: VariableRow | undefined = await k('variable')
       .select(
         'uuid',
         'name',
@@ -258,10 +149,22 @@ class HierarchyDao {
       .where({ uuid })
       .first();
 
-    return variable;
+    if (!variableRow) {
+      throw new Error(`Variable with uuid ${uuid} not found`);
+    }
+
+    return variableRow;
   }
 
-  async getValuesByParent(
+  /**
+   * Constructs value child objects for a given hierarchy node.
+   * @param hierarchyUuid The UUID of the parent hierarchy node.
+   * @param level The level of the parent hierarchy node.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of value child objects.
+   * @throws Error if one or more child value rows are not found.
+   */
+  private async getValuesByParent(
     hierarchyUuid: string,
     level: number | null,
     trx?: Knex.Transaction
@@ -307,21 +210,38 @@ class HierarchyDao {
     return [];
   }
 
-  async getValueRowByUuid(
+  /**
+   * Retrieves a value row by UUID.
+   * @param uuid The UUID of the value row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single value row.
+   * @throws Error if value row is not found.
+   */
+  private async getValueRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<ValueRow> {
     const k = trx || knex;
 
-    const value: ValueRow = await k('value')
+    const valueRow: ValueRow | undefined = await k('value')
       .select('uuid', 'name', 'abbreviation')
       .where({ uuid })
       .first();
 
-    return value;
+    if (!valueRow) {
+      throw new Error(`Value with uuid ${uuid} not found`);
+    }
+
+    return valueRow;
   }
 
-  async getTextUuidsByCollectionUuid(
+  /**
+   * Retrieves a list of text UUIDs in a given collection.
+   * @param collectionUuid The UUID of the collection.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of text UUIDs.
+   */
+  public async getTextUuidsByCollectionUuid(
     collectionUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -334,20 +254,14 @@ class HierarchyDao {
     return rows;
   }
 
-  async getParentUuidByCollection(
-    collectionUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<string> {
+  /**
+   * Inserts a hierarchy row.
+   * @param row The hierarchy row to insert.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async insertHierarchyRow(row: HierarchyRow, trx?: Knex.Transaction) {
     const k = trx || knex;
-    const results = await k('hierarchy')
-      .select('uuid')
-      .where({ object_uuid: collectionUuid, type: 'collection' })
-      .first();
-    return results.uuid;
-  }
 
-  async insertHierarchyRow(row: HierarchyRow, trx?: Knex.Transaction) {
-    const k = trx || knex;
     await k('hierarchy').insert({
       uuid: row.uuid,
       parent_uuid: row.parentUuid,
@@ -360,21 +274,78 @@ class HierarchyDao {
     });
   }
 
-  async removeHierarchyTextRowsByTextUuid(
+  /**
+   * Removes all text hierarchy rows associated with a given text UUID. Used when a text is permanently deleted.
+   * @param textUuid The UUID of the text whose hierarchy rows should be removed.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async removeHierarchyTextRowsByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
+
     await k('hierarchy').del().where({ object_uuid: textUuid, type: 'text' });
   }
 
-  async getHierarchyRowsByObjectUuid(
+  /**
+   * Retrieves all hierarchy rows associated with a given object UUID.
+   * @param objectUuid The object UUID of the hierarchy rows to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of hierarchy rows.
+   * @throws Error if one or more hierarchy rows are not found.
+   */
+  public async getHierarchyRowsByObjectUuid(
     objectUuid: string,
     trx?: Knex.Transaction
   ): Promise<HierarchyRow[]> {
     const k = trx || knex;
 
+    const hierarchyUuids = await this.getHierarchyUuidsByObjectUuid(
+      objectUuid,
+      trx
+    );
+
+    const rows = await Promise.all(
+      hierarchyUuids.map(uuid => this.getHierarchyRowByUuid(uuid, trx))
+    );
+
+    return rows;
+  }
+
+  /**
+   * Retrieves list of all hierarchy rows associated with a given object UUID.
+   * @param objectUuid The object UUID of the hierarchy rows whose UUIDs to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of hierarchy UUIDs.
+   */
+  private async getHierarchyUuidsByObjectUuid(
+    objectUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knex;
+
     const rows = await k('hierarchy')
+      .pluck('uuid')
+      .where({ object_uuid: objectUuid });
+
+    return rows;
+  }
+
+  /**
+   * Retrieves a hierarchy row by UUID.
+   * @param uuid The UUID of the hierarchy row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single hierarchy row.
+   * @throws Error if hierarchy row is not found.
+   */
+  private async getHierarchyRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<HierarchyRow> {
+    const k = trx || knex;
+
+    const row: HierarchyRow | undefined = await k('hierarchy')
       .select(
         'uuid',
         'parent_uuid as parentUuid',
@@ -385,9 +356,14 @@ class HierarchyDao {
         'published',
         'custom'
       )
-      .where({ object_uuid: objectUuid });
+      .where({ uuid })
+      .first();
 
-    return rows;
+    if (!row) {
+      throw new Error(`Hierarchy row with uuid ${uuid} not found`);
+    }
+
+    return row;
   }
 }
 

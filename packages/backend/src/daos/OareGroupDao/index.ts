@@ -17,9 +17,7 @@ class OareGroupDao {
   ): Promise<boolean> {
     const k = trx || knex;
 
-    const group: Group | undefined = await k('oare_group')
-      .first()
-      .where({ name });
+    const group = await k('oare_group').first().where({ name });
 
     return !!group;
   }
@@ -28,12 +26,13 @@ class OareGroupDao {
    * Retrieves a group by its ID.
    * @param id The ID of the group to retrieve.
    * @param trx Knex Transaction. Optional.
-   * @returns The group object. Null if no group with the given ID exists.
+   * @returns The group object.
+   * @throws Error if no group found.
    */
   public async getGroupById(
     id: number,
     trx?: Knex.Transaction
-  ): Promise<Group | null> {
+  ): Promise<Group> {
     const k = trx || knex;
 
     const group: Group | undefined = await k('oare_group')
@@ -41,7 +40,11 @@ class OareGroupDao {
       .first()
       .where({ id });
 
-    return group || null;
+    if (!group) {
+      throw new Error(`Group with id ${id} does not exist`);
+    }
+
+    return group;
   }
 
   /**

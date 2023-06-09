@@ -20,14 +20,6 @@ async function collectionsMiddleware(
     const userUuid = req.user ? req.user.uuid : null;
     const uuid = req.params.uuid as string;
 
-    if (!user || !user.isAdmin) {
-      const isCollectionPublished = await HierarchyDao.isPublished(uuid);
-      if (!isCollectionPublished) {
-        next(new HttpForbidden('You do not have access to that collection.'));
-        return;
-      }
-    }
-
     const canViewCollection = await CollectionTextUtils.canViewCollection(
       uuid,
       userUuid

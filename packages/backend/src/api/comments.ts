@@ -4,7 +4,7 @@ import { HttpInternalError } from '@/exceptions';
 import permissionRoute from '@/middlewares/router/permissionsRoute';
 import { CreateCommentPayload } from '@oare/types';
 
-// COMPLETED
+// COMPLETE
 
 const router = express.Router();
 

@@ -9,6 +9,14 @@ import { calcPDFPageNum } from './utils';
 // FIXME much better, but still needs some work
 
 class ResourceDao {
+  /**
+   * Retrieves all images for a given text UUID.
+   * @param textUuid The UUID of the text whose images to retrieve.
+   * @param userUuid The UUID of the user making the request. Can be null if no authenticated user.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of images.
+   * @throws Error if the text doesn't exist or one or more of the images doesn't exist.
+   */
   public async getImagesByTextUuid(
     textUuid: string,
     userUuid: string | null,
@@ -23,6 +31,12 @@ class ResourceDao {
     return response;
   }
 
+  /**
+   * Retrieves the name of the text source file for a given text UUID.
+   * @param uuid The UUID of the text whose text file name to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Name of the text source file. Can be null if the text does not have a source file.
+   */
   private async getTextFileNameByTextUuid(
     uuid: string,
     trx?: Knex.Transaction
@@ -42,6 +56,12 @@ class ResourceDao {
     return fileName || null;
   }
 
+  /**
+   * Retrieves the text source file content string for a given text UUID.
+   * @param uuid The UUID of the text whose text file content to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Text source file content string. Can be null if the text does not have a source file.
+   */
   public async getTextFileByTextUuid(
     uuid: string,
     trx?: Knex.Transaction
@@ -55,9 +75,11 @@ class ResourceDao {
         'oare-texttxt-bucket',
         textSourceFileName
       );
+
       const textContent = textSourceFileBody
         ? textSourceFileBody.toString('utf-8')
         : null;
+
       if (textContent) {
         return textContent;
       }
@@ -66,6 +88,15 @@ class ResourceDao {
     return null;
   }
 
+  /**
+   * Retrieves a bibliography PDF URL for a given bibliography UUID.
+   * @param uuid The UUID of the bibliography whose PDF URL to retrieve.
+   * @param beginPage Optional beginning page number. If provided, one of the returned URLs will include a page number.
+   * @param beginPlate Optional beginning plate number. If provided, one of the returned URLs will include a plate number.
+   * @param trx Knex Transaction. Optional.
+   * @returns Citation URLs object. Includes general, page, and plate URLs.
+   * @throws Error if one or more of the resources doesn't exist.
+   */
   async getPDFUrlByBibliographyUuid(
     uuid: string,
     beginPage?: number,
@@ -75,11 +106,9 @@ class ResourceDao {
     const s3 = new AWS.S3();
 
     const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(uuid, trx);
-    const resourceRows = (
-      await Promise.all(
-        resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
-      )
-    ).filter((row): row is ResourceRow => !!row);
+    const resourceRows = await Promise.all(
+      resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+    );
 
     const relevantResourceRows = resourceRows.filter(row => row.type === 'pdf');
 
@@ -101,9 +130,17 @@ class ResourceDao {
       });
     } catch {
       generalUrl = null;
+
+      const citationurls: CitationUrls = {
+        general: null,
+        page: null,
+        plate: null,
+      };
+
+      return citationurls;
     }
 
-    if (resourceRow && resourceRow.format && beginPage && beginPlate) {
+    if (resourceRow.format && beginPage && beginPlate) {
       const pdfPageNumResponse = await calcPDFPageNum(
         resourceRow.format,
         beginPage,
@@ -125,12 +162,18 @@ class ResourceDao {
     return citationUrls;
   }
 
+  /**
+   * Retrieves a single S3 image for a given image UUID.
+   * @param uuid The UUID of the image to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single image.
+   * @throws Error if no image found for the given UUID.
+   */
   public async getS3ImageByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<Image> {
     const s3 = new AWS.S3();
-    const k = trx || knex;
 
     const PersonDao = sl.get('PersonDao');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
@@ -138,19 +181,9 @@ class ResourceDao {
 
     const resourceRow = await this.getResourceRowByUuid(uuid, trx);
 
-    if (!resourceRow) {
-      throw new Error(`Image with uuid ${uuid} does not exist`);
-    }
-
     const textUuid = await this.getLinkReferenceUuidByObjUuid(uuid, trx);
-    if (!textUuid) {
-      throw new Error(`Image with uuid ${uuid} does not have a text`);
-    }
 
     const text = await TextDao.getTextByUuid(textUuid, trx);
-    if (!text) {
-      throw new Error(`Text with uuid ${textUuid} does not exist`);
-    }
 
     const source = resourceRow.sourceUuid
       ? (await PersonDao.getPersonRowByUuid(resourceRow.sourceUuid, trx))
@@ -179,6 +212,13 @@ class ResourceDao {
     return image;
   }
 
+  /**
+   * Retrieves all Met Museum images for a given text UUID.
+   * @param textUuid The UUID of the text whose Met Museum images to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of Met Museum images.
+   * @throws Error if the text doesn't exist or the resource rows don't exist.
+   */
   private async getMetImagesByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
@@ -186,20 +226,15 @@ class ResourceDao {
     const TextDao = sl.get('TextDao');
 
     const text = await TextDao.getTextByUuid(textUuid, trx);
-    if (!text) {
-      throw new Error(`Text with uuid ${textUuid} does not exist`);
-    }
 
     const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
       textUuid,
       trx
     );
 
-    const resourceRows = (
-      await Promise.all(
-        resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
-      )
-    ).filter((row): row is ResourceRow => row !== null);
+    const resourceRows = await Promise.all(
+      resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+    );
 
     const relevantResourceRows = resourceRows.filter(
       row => row.container === 'metmuseum' && row.type === 'img'
@@ -238,6 +273,12 @@ class ResourceDao {
     return images;
   }
 
+  /**
+   * Retrieves all CDLI images for a given text UUID.
+   * @param textUuid The UUID of the text whose CDLI images to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of CDLI images.
+   */
   private async getCdliImagesByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
@@ -245,9 +286,6 @@ class ResourceDao {
     const TextDao = sl.get('TextDao');
 
     const text = await TextDao.getTextByUuid(textUuid, trx);
-    if (!text) {
-      throw new Error(`Text with uuid ${textUuid} does not exist`);
-    }
 
     if (!text.cdliNum) {
       return [];
@@ -284,6 +322,14 @@ class ResourceDao {
     return images;
   }
 
+  /**
+   * Retrieves all S3 images for a given text UUID.
+   * @param textUuid The UUID of the text whose S3 images to retrieve.
+   * @param userUuid The UUID of the user making the request. Can be null if no user is logged in.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of S3 images.
+   * @throws Error if the text doesn't exist or the resource rows don't exist.
+   */
   private async getS3ImagesByTextUuid(
     textUuid: string,
     userUuid: string | null,
@@ -299,20 +345,15 @@ class ResourceDao {
     const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
 
     const text = await TextDao.getTextByUuid(textUuid, trx);
-    if (!text) {
-      throw new Error(`Text with uuid ${textUuid} does not exist`);
-    }
 
     const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
       textUuid,
       trx
     );
 
-    const resourceRows = (
-      await Promise.all(
-        resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
-      )
-    ).filter((row): row is ResourceRow => row !== null);
+    const resourceRows = await Promise.all(
+      resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+    );
 
     const relevantResourceRows = resourceRows.filter(
       row =>
@@ -358,10 +399,17 @@ class ResourceDao {
     return images;
   }
 
+  /**
+   * Retrieves a single resource row by its UUID.
+   * @param uuid The UUID of the resource row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single resource row.
+   * @throws Error if no resource row with the given UUID exists.
+   */
   private async getResourceRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
-  ): Promise<ResourceRow | null> {
+  ): Promise<ResourceRow> {
     const k = trx || knex;
 
     const row: ResourceRow | undefined = await k('resource')
@@ -376,9 +424,19 @@ class ResourceDao {
       .where({ uuid })
       .first();
 
-    return row || null;
+    if (!row) {
+      throw new Error(`No resource row with uuid ${uuid}`);
+    }
+
+    return row;
   }
 
+  /**
+   * Retrieves all object UUIDs that are linked to a given reference UUID.
+   * @param referenceUuid The UUID of the reference.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of object UUIDs.
+   */
   private async getLinkObjUuidsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
@@ -392,21 +450,36 @@ class ResourceDao {
     return rows;
   }
 
+  /**
+   * Retrieves the reference UUID of a given object UUID.
+   * @param objUuid The UUID of the object.
+   * @param trx Knex Transaction. Optional.
+   * @returns Reference UUID.
+   * @throws Error if no link row with the given object UUID exists.
+   */
   private async getLinkReferenceUuidByObjUuid(
     objUuid: string,
     trx?: Knex.Transaction
-  ): Promise<string | null> {
+  ): Promise<string> {
     const k = trx || knex;
 
-    const referenceUuid: string | null = await k('link')
+    const row: { referenceUuid: string } | undefined = await k('link')
       .select('reference_uuid as referenceUuid')
       .where({ obj_uuid: objUuid })
-      .first()
-      .then(row => (row ? row.referenceUuid : null));
+      .first();
 
-    return referenceUuid;
+    if (!row) {
+      throw new Error(`No link row with object uuid ${objUuid}`);
+    }
+
+    return row.referenceUuid;
   }
 
+  /**
+   * Inserts a resource row.
+   * @param row The resource row to insert.
+   * @param trx Knex Transaction. Optional.
+   */
   public async insertResourceRow(row: ResourceRow, trx?: Knex.Transaction) {
     const k = trx || knex;
 
@@ -420,6 +493,11 @@ class ResourceDao {
     });
   }
 
+  /**
+   * Inserts a link row.
+   * @param row The link row to insert.
+   * @param trx Knex Transaction. Optional.
+   */
   public async insertLinkRow(row: LinkRow, trx?: Knex.Transaction) {
     const k = trx || knex;
 
@@ -430,6 +508,11 @@ class ResourceDao {
     });
   }
 
+  /**
+   * Removes a resource row by its reference UUID. Used when permanently deleting a text.
+   * @param referenceUuid The reference UUID of the resource row to remove.
+   * @param trx Knex Transaction. Optional.
+   */
   public async removeLinkRowByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction

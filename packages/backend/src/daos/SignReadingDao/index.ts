@@ -78,6 +78,7 @@ class SignReadingDao {
    * @param uuid The UUID of the sign to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns A row from the `sign` table.
+   * @throws Error if the sign row does not exist.
    */
   private async getSignRowByUuid(
     uuid: string,
@@ -85,10 +86,14 @@ class SignReadingDao {
   ): Promise<SignRow> {
     const k = trx || knex;
 
-    const row: SignRow = await k('sign')
+    const row: SignRow | undefined = await k('sign')
       .select('uuid', 'name', 'font_code as fontCode')
       .where({ uuid })
       .first();
+
+    if (!row) {
+      throw new Error(`Sign with uuid ${uuid} does not exist`);
+    }
 
     return row;
   }
@@ -193,6 +198,7 @@ class SignReadingDao {
    * @param uuid The UUID of the sign to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns A complete Sign object.
+   * @throws Error if the sign does not exist.
    */
   public async getSignByUuid(
     uuid: string,
@@ -229,6 +235,7 @@ class SignReadingDao {
    * @param reading The reading to retrieve the sign UUID for.
    * @param trx Knex Transaction. Optional.
    * @returns The UUID of the sign that the reading belongs to.
+   * @throws Error if the reading does not exist on any sign.
    */
   private async getSignUuidByReading(
     reading: string,
@@ -236,13 +243,16 @@ class SignReadingDao {
   ): Promise<string> {
     const k = trx || knex;
 
-    const uuid: string = await k('sign_reading')
+    const row: { referenceUuid: string } | undefined = await k('sign_reading')
       .select('reference_uuid as referenceUuid')
       .where({ reading })
-      .first()
-      .then(row => row.referenceUuid);
+      .first();
 
-    return uuid;
+    if (!row) {
+      throw new Error(`Reading ${reading} does not exist on any sign.`);
+    }
+
+    return row.referenceUuid;
   }
 
   /**
@@ -250,6 +260,7 @@ class SignReadingDao {
    * @param reading The reading to retrieve the sign for.
    * @param trx Knex Transaction. Optional.
    * @returns A complete Sign object.
+   * @throws Error if the reading does not exist on any sign or if the sign does not exist.
    */
   public async getSignByReading(
     reading: string,
@@ -268,6 +279,7 @@ class SignReadingDao {
    * @param isDeterminative Boolean indicating whether the reading is determinative.
    * @param trx Knex Transaction. Optional.
    * @returns The UUID of the sign reading.
+   * @throws Error if the reading does not exist.
    */
   public async getSignReadingUuidByReading(
     reading: string,
@@ -276,7 +288,7 @@ class SignReadingDao {
   ): Promise<string> {
     const k = trx || knex;
 
-    const uuid = await k('sign_reading')
+    const row: { uuid: string } | undefined = await k('sign_reading')
       .select('uuid')
       .where({ reading })
       .whereNot('type', 'uninterpreted')
@@ -287,10 +299,13 @@ class SignReadingDao {
           qb.whereNot('sign_reading.type', 'determinative');
         }
       })
-      .first()
-      .then(row => row.uuid);
+      .first();
 
-    return uuid;
+    if (!row) {
+      throw new Error(`Reading ${reading} does not exist`);
+    }
+
+    return row.uuid;
   }
 }
 

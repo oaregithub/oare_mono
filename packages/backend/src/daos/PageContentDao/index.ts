@@ -9,6 +9,7 @@ class PageContentDao {
    * @param routeName The route name to retrieve content for.
    * @param trx Knex Transaction. Optional.
    * @returns Content string.
+   * @throws Error if no page content found.
    */
   public async getContent(
     routeName: string,
@@ -16,9 +17,15 @@ class PageContentDao {
   ): Promise<string> {
     const k = trx || knex;
 
-    const row = await k('page_content')
+    const row: { content: string } | undefined = await k('page_content')
       .first('content')
       .where('page', routeName);
+
+    if (!row) {
+      throw new Error(
+        `Page content with route name ${routeName} does not exist`
+      );
+    }
 
     return row.content;
   }

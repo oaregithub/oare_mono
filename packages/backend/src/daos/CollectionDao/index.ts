@@ -4,20 +4,24 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
 class CollectionDao {
+  /**
+   * Retrieves a collection row by its UUID.
+   * @param uuid The UUID of the collection row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Single collection row.
+   * @throws Error if no collection row found.
+   */
   private async getCollectionRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<CollectionRow> {
     const k = trx || knex;
 
-    const collection = await k('collection')
+    const collection: CollectionRow | undefined = await k('collection')
       .select('uuid', 'name')
       .where({ uuid })
       .first();
 
-    // FIXME - need a better solution. I like the idea of throwing an error instead of returningi `null`, but this just ends up becoming a 500 internal error instead of a 400 Bad Request.
-    // Nested try/catch blocks would be a solution, but I don't like the idea of having to do that everywhere.
-    // I've done this same thing in a few other places, so I should probably come up with a better solution and fix all of them at once.
     if (!collection) {
       throw new Error(`Collection with uuid ${uuid} does not exist`);
     }
@@ -25,23 +29,39 @@ class CollectionDao {
     return collection;
   }
 
-  // FIXME can hopefully deprecated once collectionUuid is added to Text object
+  /**
+   * Retrieves the UUID of the collection that contains the given text.
+   * @param textUuid The UUID of the text whose containing collection to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns UUID of the collection that contains the given text.
+   * @throws Error if no collection found.
+   */
   public async getCollectionUuidByTextUuid(
     textUuid: string,
     trx?: Knex.Transaction
-  ): Promise<string | null> {
+  ): Promise<string> {
     const k = trx || knex;
 
-    const uuid: string | null = await k('collection')
+    const row: { uuid: string } | undefined = await k('collection')
       .select('collection.uuid')
       .innerJoin('hierarchy', 'hierarchy.obj_parent_uuid', 'collection.uuid')
       .where('hierarchy.object_uuid', textUuid)
-      .first()
-      .then(row => row.uuid || null);
+      .first();
 
-    return uuid;
+    if (!row) {
+      throw new Error(
+        `Collection containing text with uuid ${textUuid} does not exist`
+      );
+    }
+
+    return row.uuid;
   }
 
+  /**
+   * Retreives list of all collection UUIDs.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of collection UUIDs.
+   */
   public async getAllCollectionUuids(
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -54,6 +74,13 @@ class CollectionDao {
     return collectionUuids;
   }
 
+  /**
+   * Constructs a collection object for the given collection UUID.
+   * @param uuid The UUID of the collection to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Collection object.
+   * @throws Error if no collection found or if no hierarchy row found for the collection.
+   */
   public async getCollectionByUuid(
     uuid: string,
     trx?: Knex.Transaction
@@ -63,20 +90,24 @@ class CollectionDao {
 
     const collectionRow = await this.getCollectionRowByUuid(uuid, trx);
 
-    const hierarchyRow = (
-      await HierarchyDao.getHierarchyRowsByObjectUuid(uuid, trx)
-    )[0];
+    const hierarchyRows = await HierarchyDao.getHierarchyRowsByObjectUuid(
+      uuid,
+      trx
+    );
+    const hierarchyRow = hierarchyRows.length > 0 ? hierarchyRows[0] : null;
+    if (!hierarchyRow) {
+      throw new Error(
+        `No hierarchy row found for collection with uuid ${uuid}`
+      );
+    }
 
     const textUuids = await HierarchyDao.getTextUuidsByCollectionUuid(
       uuid,
       trx
     );
-
-    const texts = (
-      await Promise.all(
-        textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
-      )
-    ).filter((text): text is Text => text !== null);
+    const texts = await Promise.all(
+      textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
+    );
 
     const collection: Collection = {
       ...collectionRow,

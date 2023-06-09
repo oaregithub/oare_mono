@@ -6,6 +6,8 @@ import {
 } from '@oare/types';
 import { Knex } from 'knex';
 
+// FIXME
+
 export interface GetItemPropertiesOptions {
   abbreviation?: boolean;
   referenceUuid?: string;
@@ -17,6 +19,7 @@ class ItemPropertiesDao {
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
+
     // Split by levels to prevent FK constraint errors
     const itemPropertyRowLevels = [
       ...new Set(properties.map(row => row.level)),

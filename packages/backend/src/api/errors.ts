@@ -9,7 +9,7 @@ import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -77,7 +77,6 @@ router
     }
   });
 
-// FIXME - should probably use websockets rather than polling
 router.route('/new_errors').get(adminRoute, async (_req, res, next) => {
   try {
     const ErrorsDao = sl.get('ErrorsDao');

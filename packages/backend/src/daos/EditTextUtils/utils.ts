@@ -2,6 +2,8 @@ import { Knex } from 'knex';
 import knex from '@/connection';
 import { EpigraphyType, DiscourseUnitType } from '@oare/types';
 
+// FIXME
+
 interface CleanEpigraphyLine extends CleanIterators {
   uuid: string;
   type: EpigraphyType;

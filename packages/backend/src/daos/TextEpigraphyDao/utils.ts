@@ -15,6 +15,8 @@ import {
 import sl from '@/serviceLocator';
 import { EpigraphicQueryRow } from './index';
 
+// FIXME
+
 export function getSequentialCharacterQuery(
   cooccurrences: SearchCooccurrence[],
   includeSuperfluous: boolean,

@@ -13,6 +13,8 @@ import {
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
+// FIXME
+
 class PersonDao {
   async getPersonOccurrencesCount(
     uuid: string,

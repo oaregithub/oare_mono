@@ -18,6 +18,8 @@ import {
 } from './utils';
 import TextMarkupDao from '../TextMarkupDao';
 
+// FIXME
+
 export interface EpigraphicQueryRow
   extends Omit<EpigraphicUnit, 'side' | 'markups'> {
   side: number;

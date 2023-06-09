@@ -11,6 +11,7 @@ class ArchiveDao {
    * @param uuid The UUID of the archive row to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Archive row.
+   * @throws Error if no archive row found.
    */
   private async getArchiveRowByUuid(
     uuid: string,
@@ -18,7 +19,7 @@ class ArchiveDao {
   ): Promise<ArchiveRow> {
     const k = trx || knex;
 
-    const archiveRow: ArchiveRow = await k('archive')
+    const archiveRow: ArchiveRow | undefined = await k('archive')
       .select(
         'uuid',
         'parent_uuid as parentUuid',
@@ -30,6 +31,10 @@ class ArchiveDao {
       )
       .where({ uuid })
       .first();
+
+    if (!archiveRow) {
+      throw new Error(`Archive with uuid ${uuid} does not exist`);
+    }
 
     return archiveRow;
   }
@@ -123,6 +128,7 @@ class ArchiveDao {
    * @param uuid The UUID of the dossier to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Dossier object.
+   * @throws Error if no archive row found for the dossier or other dossier data is missing.
    */
   public async getDossierByUuid(
     uuid: string,
@@ -131,12 +137,11 @@ class ArchiveDao {
     const TextDao = sl.get('TextDao');
 
     const dossierRow = await this.getArchiveRowByUuid(uuid, trx);
+
     const textUuids = await this.getTextUuidsByArchiveUuid(uuid, trx);
-    const texts = (
-      await Promise.all(
-        textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
-      )
-    ).filter((text): text is Text => text !== null);
+    const texts = await Promise.all(
+      textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
+    );
 
     const dossier: Dossier = {
       ...dossierRow,
@@ -151,6 +156,7 @@ class ArchiveDao {
    * @param uuid The UUID of the archive to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Archive object.
+   * @throws Error if no archive row found or other archive data is missing.
    */
   public async getArchiveByUuid(
     uuid: string,
@@ -168,11 +174,9 @@ class ArchiveDao {
     );
 
     const textUuids = await this.getTextUuidsByArchiveUuid(uuid, trx);
-    const texts = (
-      await Promise.all(
-        textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
-      )
-    ).filter((text): text is Text => text !== null);
+    const texts = await Promise.all(
+      textUuids.map(textUuid => TextDao.getTextByUuid(textUuid, trx))
+    );
 
     const descriptions = await FieldDao.getFieldRowsByReferenceUuidAndType(
       uuid,

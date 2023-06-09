@@ -1,6 +1,8 @@
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
+// FIXME
+
 class CollectionTextUtils {
   async canViewText(
     textUuid: string,
@@ -199,6 +201,7 @@ class CollectionTextUtils {
     const CollectionDao = sl.get('CollectionDao');
     const UserGroupDao = sl.get('UserGroupDao');
     const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
+    const TextDao = sl.get('TextDao');
 
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
@@ -224,10 +227,11 @@ class CollectionTextUtils {
       return true;
     }
 
-    const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
-      textUuid,
-      trx
-    );
+    const text = await TextDao.getTextByUuid(textUuid, trx);
+    if (!text) {
+      return false;
+    }
+
     const collectionEditPermissions = (
       await Promise.all(
         groups.map(groupId =>
@@ -240,7 +244,8 @@ class CollectionTextUtils {
       )
     ).flat();
     const hasCollectionEditPermission =
-      collectionUuid && collectionEditPermissions.includes(collectionUuid);
+      text.collectionUuid &&
+      collectionEditPermissions.includes(text.collectionUuid);
 
     if (hasCollectionEditPermission) {
       return true;

@@ -53,9 +53,10 @@ class QuarantineTextDao {
 
   /**
    * Retrieves a single quarantined text row by reference UUID.
-   * @param referenceUuid
-   * @param trx
-   * @returns
+   * @param referenceUuid The reference UUID.
+   * @param trx Knex Transaction. Optional.
+   * @returns The quarantined text row.
+   * @throws Error if no quarantined text row is found with the given reference UUID.
    */
   public async getQuarantineTextRowByReferenceUuid(
     referenceUuid: string,
@@ -63,10 +64,16 @@ class QuarantineTextDao {
   ): Promise<QuarantineTextRow> {
     const k = trx || knex;
 
-    const row = await k('quarantine_text')
+    const row: QuarantineTextRow | undefined = await k('quarantine_text')
       .select('reference_uuid as referenceUuid', 'timestamp')
       .where({ reference_uuid: referenceUuid })
       .first();
+
+    if (!row) {
+      throw new Error(
+        `No quarantined text row found with reference UUID ${referenceUuid}.`
+      );
+    }
 
     return row;
   }

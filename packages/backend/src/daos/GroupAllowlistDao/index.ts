@@ -26,14 +26,15 @@ class GroupAllowlistDao {
 
     const QuarantineTextDao = sl.get('QuarantineTextDao');
 
-    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+    // FIXME should probably just remove from allowlist if quarantined
+    const quarantinedTextUuids = await QuarantineTextDao.getAllQuarantinedTextUuids(
       trx
     );
 
     const uuids = await k('group_allowlist')
       .pluck('uuid')
       .where({ group_id: groupId, type })
-      .whereNotIn('uuid', quarantinedTexts);
+      .whereNotIn('uuid', quarantinedTextUuids);
 
     return uuids;
   }
@@ -104,13 +105,8 @@ class GroupAllowlistDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const CollectionDao = sl.get('CollectionDao');
     const UserGroupDao = sl.get('UserGroupDao');
 
-    const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
-      textUuid,
-      trx
-    );
     const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
 
     const textAllowlist = (
@@ -119,129 +115,10 @@ class GroupAllowlistDao {
       )
     ).flat();
 
-    const collectionAllowlist = (
-      await Promise.all(
-        groups.map(groupId =>
-          this.getGroupAllowlist(groupId, 'collection', trx)
-        )
-      )
-    ).flat();
-
     if (textAllowlist.includes(textUuid)) {
       return true;
     }
-    if (collectionUuid && collectionAllowlist.includes(collectionUuid)) {
-      return true;
-    }
-    return false;
-  }
 
-  // FIXME - maybe simplify this one and clean up the parameters. Why are we using SearchNamesPayload?
-  async getImagesForAllowlist(
-    { page, limit, filter, groupId }: SearchNamesPayload,
-    trx?: Knex.Transaction
-  ): Promise<SearchImagesResponse> {
-    const k = trx || knex;
-    const s3 = new AWS.S3();
-
-    const createBaseQuery = () =>
-      k('link')
-        .innerJoin('resource', 'link.obj_uuid', 'resource.uuid')
-        .innerJoin('text', 'text.uuid', 'link.reference_uuid')
-        .where('resource.container', 'oare-image-bucket')
-        .andWhere('text.display_name', 'like', `%${filter}%`)
-        .whereIn(
-          'resource.uuid',
-          k('public_denylist').select('uuid').where('type', 'img')
-        )
-        .whereNotIn(
-          'resource.uuid',
-          k('group_allowlist')
-            .select('uuid')
-            .where('group_id', groupId)
-            .andWhere('type', 'img')
-        );
-
-    const totalNum = await createBaseQuery()
-      .count({
-        count: 'text.display_name',
-      })
-      .first();
-
-    const totalCount = totalNum ? Number(totalNum.count) : 0;
-
-    const imgUuidsAndLinks: {
-      uuid: string;
-      link: string;
-    }[] = await createBaseQuery()
-      .select('resource.uuid', 'resource.link')
-      .limit(limit)
-      .offset((page - 1) * limit);
-
-    const textNames = await Promise.all(
-      imgUuidsAndLinks.map(el =>
-        k('text')
-          .select('display_name')
-          .whereIn(
-            'uuid',
-            k('link').select('reference_uuid').where('obj_uuid', el.uuid)
-          )
-          .first()
-      )
-    );
-
-    const signedUrls = await Promise.all(
-      imgUuidsAndLinks.map(el => {
-        const params = {
-          Bucket: 'oare-image-bucket',
-          Key: el.link,
-        };
-        return s3.getSignedUrlPromise('getObject', params);
-      })
-    );
-
-    const result: SearchImagesResultRow[] = signedUrls.map((element, idx) => {
-      const imageInfo = {
-        uuid: imgUuidsAndLinks[idx].uuid,
-        name: textNames[idx].display_name,
-        imgUrl: element,
-      };
-      return imageInfo;
-    });
-
-    return {
-      items: result,
-      count: totalCount,
-    };
-  }
-
-  /**
-   * Checks if a collection is in the allowlist for a user
-   * @param collectionUuid The UUID of the collection
-   * @param userUuid The UUID of the user
-   * @param trx Knex Transaction. Optional.
-   * @returns Boolean indicating if the collection is in the allowlist
-   */
-  async collectionIsInAllowlist(
-    collectionUuid: string,
-    userUuid: string | null,
-    trx?: Knex.Transaction
-  ): Promise<boolean> {
-    const UserGroupDao = sl.get('UserGroupDao');
-
-    const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
-
-    const collectionAllowlist = (
-      await Promise.all(
-        groups.map(groupId =>
-          this.getGroupAllowlist(groupId, 'collection', trx)
-        )
-      )
-    ).flat();
-
-    if (collectionAllowlist.includes(collectionUuid)) {
-      return true;
-    }
     return false;
   }
 

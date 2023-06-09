@@ -78,6 +78,7 @@ class CommentsDao {
    * @param threadUuid The thread UUID to retrieve comments for.
    * @param trx Knex Transaction. Optional.
    * @returns Array of comments.
+   * @throws Error if one or more comments reference a non-existent user.
    */
   public async getCommentsByThreadUuid(
     threadUuid: string,
@@ -96,7 +97,7 @@ class CommentsDao {
 
     const comments: Comment[] = commentsRows.map((row, idx) => ({
       ...row,
-      user: users[idx]!,
+      user: users[idx],
     }));
 
     return comments;

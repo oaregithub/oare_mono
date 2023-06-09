@@ -62,7 +62,7 @@ router
         return;
       }
 
-      await GroupEditPermissionsDao.addItemsToGroupEditPermissions(
+      await GroupEditPermissionsDao.addTextsToGroupEditPermissions(
         groupId,
         uuids
       );
@@ -100,7 +100,7 @@ router
         return;
       }
 
-      await GroupEditPermissionsDao.removeItemFromGroupEditPermissions(
+      await GroupEditPermissionsDao.removeTextFromGroupEditPermissions(
         groupId,
         uuid
       );

@@ -9,6 +9,7 @@ class FieldDao {
    * @param uuid The UUID of the field row to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns The single field row.
+   * @throws Error if no field row found.
    */
   public async getFieldRowByUuid(
     uuid: string,
@@ -16,7 +17,7 @@ class FieldDao {
   ): Promise<FieldRow> {
     const k = trx || knex;
 
-    const row: FieldRow = await k('field')
+    const row: FieldRow | undefined = await k('field')
       .select(
         'uuid',
         'reference_uuid as referenceUuid',
@@ -42,28 +43,45 @@ class FieldDao {
    * @param type The field type.
    * @param trx Knex Transaction. Optional.
    * @returns An array of field rows with the given reference UUID and type.
+   * @throws Error if one or more referenced field rows don't exist.
    */
   public async getFieldRowsByReferenceUuidAndType(
     referenceUuid: string,
     type: string,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
+    const fieldUuids = await this.getFieldUuidsByReferenceUuidAndType(
+      referenceUuid,
+      type
+    );
+
+    const rows = await Promise.all(
+      fieldUuids.map(uuid => this.getFieldRowByUuid(uuid, trx))
+    );
+
+    return rows;
+  }
+
+  /**
+   * Retrieves a list of UUIDs of field rows with the given reference UUID and type.
+   * @param referenceUuid The reference UUID.
+   * @param type The field type.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of UUIDs of field rows with the given reference UUID and type.
+   */
+  private async getFieldUuidsByReferenceUuidAndType(
+    referenceUuid: string,
+    type: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
     const k = trx || knex;
 
-    const rows: FieldRow[] = await k('field')
-      .select(
-        'uuid',
-        'reference_uuid as referenceUuid',
-        'type',
-        'language',
-        'primacy',
-        'field',
-        'source_uuid as sourceUuid'
-      )
+    const uuids = await k('field')
+      .pluck('uuid')
       .where({ reference_uuid: referenceUuid, type })
       .orderBy('primacy');
 
-    return rows;
+    return uuids;
   }
 
   /**
@@ -149,6 +167,7 @@ class FieldDao {
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
+
     await k('field').del().where({ reference_uuid: referenceUuid });
   }
 

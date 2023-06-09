@@ -2,7 +2,12 @@ import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
-import { AddDenylistAllowlistPayload, DenylistAllowlist } from '@oare/types';
+import {
+  AddDenylistAllowlistPayload,
+  DenylistAllowlist,
+  Image,
+  Text,
+} from '@oare/types';
 
 // MOSTLY COMPLETE
 
@@ -29,12 +34,17 @@ router
         'img'
       );
 
-      const texts = await Promise.all(
-        allowlistTexts.map(uuid => TextDao.getTextByUuid(uuid))
-      );
-      const images = await Promise.all(
-        allowlistImages.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
-      );
+      const texts = (
+        await Promise.all(
+          allowlistTexts.map(uuid => TextDao.getTextByUuid(uuid))
+        )
+      ).filter((text): text is Text => !!text);
+
+      const images = (
+        await Promise.all(
+          allowlistImages.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
+        )
+      ).filter((image): image is Image => !!image);
 
       const response: DenylistAllowlist = {
         texts,
@@ -105,7 +115,6 @@ router
       const { uuid } = req.params;
 
       // Make sure group ID exists
-      // FIXME should throw rather than return null. Should fix this all over the place
       const existingGroup = await OareGroupDao.getGroupById(groupId);
       if (!existingGroup) {
         next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));

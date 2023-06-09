@@ -1,7 +1,7 @@
 import express from 'express';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import sl from '@/serviceLocator';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import {
   EditTextInfoPayload,
   TextTransliterationStatus,
@@ -72,6 +72,12 @@ router
         publicationNumber,
       }: EditTextInfoPayload = req.body;
 
+      const text = await TextDao.getTextByUuid(uuid);
+      if (!text) {
+        next(new HttpBadRequest(`Text with UUID ${uuid} does not exist.`));
+        return;
+      }
+
       await TextDao.updateTextInfo(
         uuid,
         excavationPrefix,
@@ -82,15 +88,11 @@ router
         publicationNumber
       );
 
-      const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
-        uuid
-      );
-
       // FIXME will need to revisit all cache clears to make sure they point to the right place now that changes have been made.
       await cache.clear(`/epigraphies/${uuid}`, {
         level: 'startsWith',
       });
-      await cache.clear(`/collection/${collectionUuid}`, {
+      await cache.clear(`/collection/${text.collectionUuid}`, {
         level: 'exact',
       });
 

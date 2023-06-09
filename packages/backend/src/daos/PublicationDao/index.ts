@@ -4,6 +4,12 @@ import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
 class PublicationDao {
+  /**
+   * Retrieves the UUIDs of all texts in a publication.
+   * @param prefix The prefix of the publication whose texts to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of text UUIDs.
+   */
   private async getTextUuidsByPublicationPrefix(
     prefix: string,
     trx?: Knex.Transaction
@@ -17,6 +23,11 @@ class PublicationDao {
     return textUuids;
   }
 
+  /**
+   * Retrieves all publication prefixes.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of publication prefixes.
+   */
   public async getAllPublicationPrefixes(
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -30,6 +41,13 @@ class PublicationDao {
     return publicationPrefixes;
   }
 
+  /**
+   * Retrieves a publication by its prefix.
+   * @param prefix The prefix of the publication to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single Publication object.
+   * @throws Error if one or more publication texts are not found.
+   */
   public async getPublicationByPrefix(
     prefix: string,
     trx?: Knex.Transaction
@@ -53,4 +71,7 @@ class PublicationDao {
   }
 }
 
+/**
+ * PublicationDao instance as a singleton.
+ */
 export default new PublicationDao();
