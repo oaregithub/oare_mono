@@ -331,3 +331,21 @@ export const detectLanguage = async (text: string): Promise<string> => {
     );
   return language?.name ?? 'unknown';
 };
+
+export const getS3ObjectBody = async (
+  bucket: string,
+  key: string
+): Promise<AWS.S3.Body | undefined> => {
+  const s3 = new AWS.S3();
+
+  const body = (
+    await s3
+      .getObject({
+        Bucket: bucket,
+        Key: key,
+      })
+      .promise()
+  ).Body;
+
+  return body;
+};

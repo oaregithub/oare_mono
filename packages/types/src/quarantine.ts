@@ -1,4 +1,4 @@
-import { Text } from './epigraphies';
+import { Text } from './text';
 
 // COMPLETE
 

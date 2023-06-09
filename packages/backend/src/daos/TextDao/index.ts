@@ -1,47 +1,59 @@
 import knex from '@/connection';
-import { TranslitOption, Text, TextRow, LinkItem } from '@oare/types';
+import {
+  Text,
+  TextRow,
+  LinkItem,
+  TextTransliterationStatus,
+} from '@oare/types';
 import { Knex } from 'knex';
+import sl from '@/serviceLocator';
 
 class TextDao {
-  /**
-   * Retrieves a text by its UUID
-   * @param uuid The UUID of the text to retrieve
-   * @param trx Knex Transaction. Optional.
-   * @returns A text object
-   */
-  async getTextByUuid(uuid: string, trx?: Knex.Transaction): Promise<Text> {
+  // FIXME determine how to deal with nulls
+  async getTextByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Text | null> {
     const k = trx || knex;
 
-    // FIXME should probably combine with the text row function below
+    const CollectionDao = sl.get('CollectionDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
-    const text: Text = await k('text')
-      .select(
-        'uuid',
-        'type',
-        'display_name as name',
-        'excavation_prfx AS excavationPrefix',
-        'excavation_no AS excavationNumber',
-        'museum_prfx AS museumPrefix',
-        'museum_no AS museumNumber',
-        'publication_prfx AS publicationPrefix',
-        'publication_no AS publicationNumber'
-      )
-      .first()
-      .where({ uuid });
+    const textRow = await this.getTextRowByUuid(uuid, trx);
 
-    if (!text) {
+    if (!textRow) {
       // FIXME is this the best way? Should it continue returning null and using HTTP bad request instead. I'd like some sort of in between
-      throw new Error(`Text with uuid ${uuid} does not exist`);
+      return null;
     }
+
+    const collectionUuid = await CollectionDao.getCollectionUuidByTextUuid(
+      uuid,
+      trx
+    );
+
+    if (!collectionUuid) {
+      // FIXME is this the best way? Should it continue returning null and using HTTP bad request instead. I'd like some sort of in between
+      return null;
+    }
+
+    const hasEpigraphy = await TextEpigraphyDao.hasEpigraphy(uuid, trx);
+
+    const text: Text = {
+      ...textRow,
+      collectionUuid,
+      hasEpigraphy,
+    };
 
     return text;
   }
 
-  async getTextRowByUuid(
+  // FIXME determine how to deal with non existents
+  private async getTextRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<TextRow | null> {
     const k = trx || knex;
+
     const textRow: TextRow = await k('text')
       .select(
         'uuid',
@@ -64,6 +76,7 @@ class TextDao {
       )
       .first()
       .where({ uuid });
+
     return textRow;
   }
 
@@ -90,25 +103,18 @@ class TextDao {
     return cdliNum;
   }
 
-  async getTranslitStatus(uuid: string, trx?: Knex.Transaction) {
+  // FIXME perhaps move to hierarchy dao?
+  async getTransliterationOptions(trx?: Knex.Transaction) {
     const k = trx || knex;
-    const { name: color, field: colorMeaning } = await k('text')
-      .select('alias.name', 'field.field')
-      .where({ 'text.uuid': uuid })
-      .innerJoin('alias', 'translit_status', 'alias.reference_uuid')
-      .leftJoin('field', 'field.reference_uuid', 'alias.reference_uuid')
-      .first();
 
-    return {
-      color,
-      colorMeaning,
-    };
-  }
-
-  async getTranslitOptions(trx?: Knex.Transaction) {
-    const k = trx || knex;
-    const stoplightOptions: TranslitOption[] = await k('hierarchy')
-      .select('a1.name as color', 'field.field as colorMeaning')
+    const transliterationOptions: TextTransliterationStatus[] = await k(
+      'hierarchy'
+    )
+      .select(
+        'hierarchy.object_uuid as uuid',
+        'a1.name as color',
+        'field.field as colorMeaning'
+      )
       .innerJoin('alias as a1', 'a1.reference_uuid', 'hierarchy.object_uuid')
       .innerJoin(
         'alias as a2',
@@ -118,27 +124,46 @@ class TextDao {
       .innerJoin('field', 'hierarchy.object_uuid', 'field.reference_uuid')
       .where('a2.name', 'transliteration status');
 
-    return stoplightOptions.reverse();
+    return transliterationOptions;
   }
 
-  async updateTranslitStatus(
+  // FIXME perhaps move to hierarchy dao?
+  async getTextTransliterationStatusByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<TextTransliterationStatus> {
+    const k = trx || knex;
+
+    const transliterationOption: TextTransliterationStatus = await k(
+      'hierarchy'
+    )
+      .select(
+        'hierarchy.object_uuid as uuid',
+        'alias.name as color',
+        'field.field as colorMeaning'
+      )
+      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
+      .innerJoin('field', 'field.reference_uuid', 'hierarchy.object_uuid')
+      .where({ 'hierarchy.object_uuid': uuid })
+      .first();
+
+    return transliterationOption;
+  }
+
+  async updateTransliterationStatus(
     textUuid: string,
-    color: string,
+    transliterationUuid: string,
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;
-    const statusRow = await k('hierarchy')
-      .select('hierarchy.object_uuid as translitUuid')
-      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
-      .where('name', color)
-      .first();
+
     await k('text')
-      .update('translit_status', statusRow.translitUuid)
-      .where('uuid', textUuid);
+      .update({ translit_status: transliterationUuid })
+      .where({ uuid: textUuid });
   }
 
   async updateTextInfo(
-    textUuid: string,
+    uuid: string,
     newExcavationPrefix: string | null,
     newExcavationNumber: string | null,
     newMuseumPrefix: string | null,
@@ -148,6 +173,7 @@ class TextDao {
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;
+
     await k('text')
       .update({
         excavation_prfx: newExcavationPrefix,
@@ -157,7 +183,7 @@ class TextDao {
         publication_prfx: newPrimaryPublicationPrefix,
         publication_no: newPrimaryPublicationNumber,
       })
-      .where('uuid', textUuid);
+      .where({ uuid });
   }
 
   async insertTextRow(row: TextRow, trx?: Knex.Transaction) {

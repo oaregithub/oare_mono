@@ -8,8 +8,10 @@ import { InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './signReading';
 import { TreeRow } from './tree';
 import { ItemPropertyRow } from './words';
-import { ZoteroData } from './bibliography';
 import { AppliedProperty } from './properties';
+import { TextTransliterationStatus, TextRow, Text } from './text';
+import { Citation } from './bibliography';
+import { Image, ResourceRow, LinkRow } from './resource';
 
 // FIXME
 
@@ -21,32 +23,19 @@ export type RowTypes =
   | 'Broken Area'
   | 'Uninscribed Line(s)';
 
-// FIXME would be useful if this had collectionUuid too, also hasEpigraphy
-export interface Text {
-  uuid: string;
-  type: string;
-  name: string;
-  excavationPrefix: string | null;
-  excavationNumber: string | null;
-  museumPrefix: string | null;
-  museumNumber: string | null;
-  publicationPrefix: string | null;
-  publicationNumber: string | null;
-}
-
-export interface EpigraphyResponse {
-  canWrite: boolean;
+export interface Epigraphy {
   text: Text;
   collection: Collection;
-  cdliNum: string | null;
+  transliteration: TextTransliterationStatus;
   units: EpigraphicUnit[];
-  color: string;
-  colorMeaning: string;
   discourseUnits: DiscourseUnit[];
-  hasEpigraphy: boolean;
-  zoteroData: ZoteroData[];
+  citations: Citation[];
+  sourceText: string | null;
+  images: Image[]; // FIXME
+  canEdit: boolean;
 }
 
+// FIXME should be sign reading typs
 export type EpigraphicUnitType =
   | 'phonogram'
   | 'logogram'
@@ -136,13 +125,16 @@ export interface MarkupUnit {
   altReadingUuid: string | null;
 }
 
+// FIXME should be in a renderer type thing
 export type TextFormatType = 'regular' | 'html';
 
+// FIXME should be in a renderer type thing
 export interface TabletHtmlOptions {
   showNullDiscourse?: boolean;
   highlightDiscourses?: string[];
 }
 
+// FIXME should be in a renderer type thing
 export interface CreateTabletRendererOptions extends TabletHtmlOptions {
   lineNumbers?: boolean;
   textFormat?: TextFormatType;
@@ -195,16 +187,6 @@ export interface EpigraphicWord
   signs: EpigraphicSign[];
   isContraction: boolean;
   isNumber: boolean;
-}
-
-export interface TranslitOption {
-  color: string;
-  colorMeaning: string;
-}
-
-export interface UpdateTranslitStatusPayload {
-  textUuid: string;
-  color: string;
 }
 
 export interface AddTextInfo {
@@ -323,45 +305,10 @@ export interface TextMarkupRow {
   objectUuid: string | null;
 }
 
-export interface TextRow {
-  uuid: string;
-  type: string;
-  language: string | null;
-  cdliNum: string | null;
-  translitStatus: string;
-  name: string | null;
-  displayName: string | null;
-  excavationPrefix: string | null;
-  excavationNumber: string | null;
-  museumPrefix: string | null;
-  museumNumber: string | null;
-  publicationPrefix: string | null;
-  publicationNumber: string | null;
-  objectType: string | null;
-  source: string | null;
-  genre: string | null;
-  subgenre: string | null;
-}
-
 export interface SignInfo {
   referenceUuid: string;
   type: EpigraphicUnitType | null;
   value: string | null;
-}
-
-export interface ResourceRow {
-  uuid: string;
-  sourceUuid: string | null;
-  type: string;
-  container: string;
-  format: string | null;
-  link: string;
-}
-
-export interface LinkRow {
-  uuid: string;
-  referenceUuid: string;
-  objUuid: string;
 }
 
 export interface HierarchyRow {
@@ -422,23 +369,13 @@ export interface CreateTextsPayload {
   tables: CreateTextTables;
 }
 
-export interface EpigraphyLabelLink {
-  label: string;
-  link: string;
-  side: string | number | null;
-  view: string | null;
-}
-
-export interface ImageResourcePropertyDetails {
-  side: string | null;
-  view: string | null;
-}
-
 export interface DiscourseSpelling {
   discourseUuid: string;
   spellingUuid: string;
   transcription: string;
 }
+
+// EDITS SHOULD BE GOOD FOR NOW DON'T TOUCH
 
 export type EditTextAction =
   | 'addSide'

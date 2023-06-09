@@ -29,9 +29,8 @@ router
       const texts = await Promise.all(
         denylistTexts.map(uuid => TextDao.getTextByUuid(uuid))
       );
-      // FIXME this function doesn't quite work right. Need to rework ResourceDao
       const images = await Promise.all(
-        denylistImages.map(uuid => ResourceDao.getAllowListImageWithText(uuid))
+        denylistImages.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
       );
 
       const response: DenylistAllowlist = {

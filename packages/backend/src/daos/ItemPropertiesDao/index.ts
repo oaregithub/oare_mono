@@ -2,7 +2,7 @@ import knex from '@/connection';
 import {
   ItemPropertyRow,
   InsertItemPropertyRow,
-  ImageResourcePropertyDetails,
+  ImageProperties,
 } from '@oare/types';
 import { Knex } from 'knex';
 
@@ -126,7 +126,7 @@ class ItemPropertiesDao {
   async getImagePropertyDetails(
     resourceUuid: string,
     trx?: Knex.Transaction
-  ): Promise<ImageResourcePropertyDetails> {
+  ): Promise<ImageProperties> {
     const k = trx || knex;
     const sides: string[] = await k('item_properties')
       .pluck('value.name')
@@ -144,6 +144,27 @@ class ItemPropertiesDao {
       side: sides.length > 0 ? sides.join(', ') : null,
       view: views.length > 0 ? views.join(', ') : null,
     };
+  }
+
+  async getCitationReferringLocation(
+    variableUuid: string,
+    textUuid: string,
+    bibliographyUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string | null> {
+    const k = trx || knex;
+
+    const location = await k('item_properties as ip')
+      .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
+      .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
+      .where('ip3.variable_uuid', variableUuid)
+      .andWhere('ip3.reference_uuid', textUuid)
+      .andWhere('ip.object_uuid', bibliographyUuid)
+      .select('ip3.value')
+      .first()
+      .then(row => row.value);
+
+    return location;
   }
 }
 

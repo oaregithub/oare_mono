@@ -2,12 +2,11 @@ import {
   Word,
   User,
   Collection,
-  EpigraphyResponse,
+  Epigraphy,
   Seal,
   SealInfo,
   PersonInfo,
   Bibliography,
-  ZoteroData,
   Archive,
   Dossier,
 } from '@oare/types';
@@ -146,34 +145,45 @@ export const collectionFilter: CacheFilter<Collection[]> = async (
  * @param user The requesting user.
  * @returns The epigraphy response with added data.
  */
-export const textFilter: CacheFilter<EpigraphyResponse> = async (
-  epigraphy: EpigraphyResponse,
+export const epigraphyFilter: CacheFilter<Epigraphy> = async (
+  epigraphy: Epigraphy,
   user: User | null
-): Promise<EpigraphyResponse> => {
+): Promise<Epigraphy> => {
   const CollectionTextUtils = sl.get('CollectionTextUtils');
   const ResourceDao = sl.get('ResourceDao');
 
   const userUuid = user ? user.uuid : null;
 
-  const canWrite = await CollectionTextUtils.canEditText(
+  const canEdit = await CollectionTextUtils.canEditText(
     epigraphy.text.uuid,
     userUuid
   );
 
-  const zoteroData: ZoteroData[] = await Promise.all(
-    epigraphy.zoteroData.map(zd => {
-      const links = ResourceDao.getPDFUrlByBibliographyUuid(
-        zd.uuid,
-        zd.referringLocationInfo
-      );
-      return { ...zd, links };
-    })
+  const images = await ResourceDao.getImagesByTextUuid(
+    epigraphy.text.uuid,
+    userUuid
   );
+
+  const pdfUrls = await Promise.all(
+    epigraphy.citations.map(citation =>
+      ResourceDao.getPDFUrlByBibliographyUuid(
+        citation.bibliographyUuid,
+        citation.beginPage || undefined,
+        citation.beginPlate || undefined
+      )
+    )
+  );
+
+  const citations = epigraphy.citations.map((citation, idx) => ({
+    ...citation,
+    urls: pdfUrls[idx],
+  }));
 
   return {
     ...epigraphy,
-    canWrite,
-    zoteroData,
+    citations,
+    images,
+    canEdit,
   };
 };
 
@@ -292,12 +302,12 @@ export const bibliographyFilter: CacheFilter<Bibliography> = async (
   _user: User | null
 ): Promise<Bibliography> => {
   const ResourceDao = sl.get('ResourceDao');
-  const { fileUrl } = await ResourceDao.getPDFUrlByBibliographyUuid(
+  const citationUrls = await ResourceDao.getPDFUrlByBibliographyUuid(
     bibliography.uuid
   );
   const bibliographyResponse = {
     ...bibliography,
-    bibliography: { ...bibliography.bibliography, url: fileUrl },
+    bibliography: { ...bibliography.bibliography, url: citationUrls.general },
   };
   return bibliographyResponse;
 };

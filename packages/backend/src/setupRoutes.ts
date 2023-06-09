@@ -6,6 +6,7 @@ import collections from '@/api/collections';
 import comments from '@/api/comments';
 import dictionary from '@/api/dictionary';
 import environment from '@/api/environment';
+import epigraphies from '@/api/epigraphies';
 import errors from '@/api/errors';
 import field from '@/api/field';
 import groupAllowlist from '@/api/group_allowlist';
@@ -29,8 +30,8 @@ import searchDictionary from '@/api/search_dictionary';
 import searchNames from '@/api/search_names';
 import searchWordsTexts from '@/api/search_words_texts';
 import signReading from '@/api/sign_reading';
+import text from '@/api/text';
 import textDiscourse from '@/api/text_discourse';
-import textEpigraphies from '@/api/text_epigraphies';
 import threads from '@/api/threads';
 import userGroups from '@/api/user_groups';
 import users from '@/api/users';
@@ -54,6 +55,7 @@ export default (app: Express) => {
     comments,
     dictionary,
     environment,
+    epigraphies,
     errors,
     field,
     groupAllowlist,
@@ -77,8 +79,8 @@ export default (app: Express) => {
     searchNames,
     searchWordsTexts,
     signReading,
+    text,
     textDiscourse,
-    textEpigraphies,
     threads,
     userGroups,
     users,

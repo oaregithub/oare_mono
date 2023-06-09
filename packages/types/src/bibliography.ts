@@ -1,4 +1,4 @@
-// MOSTLY COMPLETE
+// COMPLETE
 
 export interface Bibliography {
   uuid: string;
@@ -21,63 +21,59 @@ export interface BibliographyRow {
 export interface ZoteroResponse {
   bib: string | null;
   citation: string | null;
-  data: ZoteroResponseData | null;
+  data: {
+    key: string;
+    version: number;
+    itemType: string;
+    title: string;
+    creators: {
+      creatorType: string;
+      firstName: string;
+      lastName: string;
+    }[];
+    abstractNote: string;
+    series: string;
+    seriesNumber: string;
+    volume: string;
+    numberOfVolumes: string;
+    edition: string;
+    place: string;
+    publisher: string;
+    date: string;
+    numPages: string;
+    language: string;
+    ISBN: string;
+    shortTitle: string;
+    url: string;
+    accessDate: string;
+    archive: string;
+    archiveLocation: string;
+    libraryCatalog: string;
+    callNumber: string;
+    rights: string;
+    extra: string;
+    tags: any[];
+    collections: any[];
+    relations: any;
+    dateAdded: string;
+    dateModified: string;
+  } | null;
 }
 
-interface ZoteroCreator {
-  creatorType: string;
-  firstName: string;
-  lastName: string;
-}
-
-interface ZoteroResponseData {
-  key: string;
-  version: number;
-  itemType: string;
-  title: string;
-  creators: ZoteroCreator[];
-  abstractNote: string;
-  series: string;
-  seriesNumber: string;
-  volume: string;
-  numberOfVolumes: string;
-  edition: string;
-  place: string;
-  publisher: string;
-  date: string;
-  numPages: string;
-  language: string;
-  ISBN: string;
-  shortTitle: string;
-  url: string;
-  accessDate: string;
-  archive: string;
-  archiveLocation: string;
-  libraryCatalog: string;
-  callNumber: string;
-  rights: string;
-  extra: string;
-  tags: any[];
-  collections: any[];
-  relations: any;
-  dateAdded: string;
-  dateModified: string;
-}
-
-export interface ZoteroData {
-  uuid: string;
-  referringLocationInfo: ReferringLocationInfo;
-  citation: string;
-  link: string | null;
-  pageLink: string | null;
-  plateLink: string | null;
-}
-
-export interface ReferringLocationInfo {
+export interface Citation {
+  bibliographyUuid: string;
+  citation: string | null;
   beginPage: number | null;
   endPage: number | null;
   beginPlate: number | null;
   endPlate: number | null;
   note: string | null;
   publicationNumber: number | null;
+  urls: CitationUrls;
+}
+
+export interface CitationUrls {
+  general: string | null;
+  page: string | null;
+  plate: string | null;
 }

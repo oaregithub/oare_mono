@@ -29,5 +29,6 @@ export * from './src/properties';
 export * from './src/quarantine';
 export * from './src/environment';
 export * from './src/locale';
+export * from './src/text';
 
 // FIXME alphabetize

@@ -21,6 +21,7 @@ export default defineComponent({
     const imageLink = ref<string | null>(null);
 
     onMounted(async () => {
+      // FIXME
       imageLink.value = await server.getResourceObject('explanation');
     });
 

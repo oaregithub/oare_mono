@@ -1,4 +1,5 @@
-import { Text, HierarchyRow } from './epigraphies';
+import { HierarchyRow } from './epigraphies';
+import { Text } from './text';
 
 // COMPLETE
 

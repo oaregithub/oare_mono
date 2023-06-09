@@ -1,6 +1,6 @@
 // MOSTLY COMPLETE
 
-import { Text } from './epigraphies';
+import { Text } from './text';
 import { Image } from './resource';
 
 export type PermissionItem =

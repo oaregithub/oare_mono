@@ -137,6 +137,28 @@ class PersonDao {
     return rows;
   }
 
+  async getPersonRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<PersonRow | null> {
+    const k = trx || knex;
+
+    const row: PersonRow | undefined = await k('person')
+      .select(
+        'uuid',
+        'name_uuid as nameUuid',
+        'relation',
+        'relation_name_uuid as relationNameUuid',
+        'label',
+        'type',
+        'descriptor'
+      )
+      .where({ uuid })
+      .first();
+
+    return row || null;
+  }
+
   async getPersonsRowsByLetter(
     letter: string,
     trx?: Knex.Transaction

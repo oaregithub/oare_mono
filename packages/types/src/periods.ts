@@ -1,4 +1,4 @@
-// FIXME
+// COMPLETE
 
 export interface Week {
   uuid: string;

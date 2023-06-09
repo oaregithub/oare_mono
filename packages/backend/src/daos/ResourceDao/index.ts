@@ -1,325 +1,415 @@
 import knex from '@/connection';
 import AWS from 'aws-sdk';
 import sl from '@/serviceLocator';
-import {
-  ResourceRow,
-  LinkRow,
-  EpigraphyLabelLink,
-  ReferringLocationInfo,
-} from '@oare/types';
+import { ResourceRow, LinkRow, Image, CitationUrls } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
-import { calcPDFPageNum, getReferringLocationInfoQuery } from './utils';
+import { calcPDFPageNum } from './utils';
+
+// FIXME much better, but still needs some work
 
 class ResourceDao {
-  async getImageLinksByTextUuid(
-    userUuid: string | null,
+  public async getImagesByTextUuid(
     textUuid: string,
-    cdliNum: string | null,
+    userUuid: string | null,
     trx?: Knex.Transaction
-  ): Promise<EpigraphyLabelLink[]> {
-    const s3Links = await this.getValidS3ImageLinks(textUuid, userUuid, trx);
-    const cdliLinks = await this.getValidCdliImageLinks(cdliNum);
-    const metLinks = await this.getValidMetImageLinks(textUuid, trx);
+  ): Promise<Image[]> {
+    const s3Links = await this.getS3ImagesByTextUuid(textUuid, userUuid, trx);
+    const cdliLinks = await this.getCdliImagesByTextUuid(textUuid, trx);
+    const metLinks = await this.getMetImagesByTextUuid(textUuid, trx);
 
     const response = [...s3Links, ...cdliLinks, ...metLinks];
 
     return response;
   }
 
-  async getValidS3ImageLinks(
-    textUuid: string,
-    userUuid: string | null,
+  private async getTextFileNameByTextUuid(
+    uuid: string,
     trx?: Knex.Transaction
-  ): Promise<EpigraphyLabelLink[]> {
+  ): Promise<string | null> {
     const k = trx || knex;
-    const s3Links: EpigraphyLabelLink[] = [];
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
-    try {
-      const s3 = new AWS.S3();
-      const CollectionTextUtils = sl.get('CollectionTextUtils');
-      const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
-
-      const resourceLinks: ImageResource[] = await k('person as p')
-        .distinct()
-        .select('p.label as label', 'r.link as link', 'r.uuid as uuid')
-        .rightOuterJoin('resource as r', 'r.source_uuid', 'p.uuid')
-        .where('r.type', 'img')
-        .andWhere('r.container', 'oare-image-bucket')
-        .whereIn(
-          'r.uuid',
-          k('link').select('obj_uuid').where('reference_uuid', textUuid)
-        )
-        .whereNotIn('r.uuid', imagesToHide);
-
-      const signedUrls = await Promise.all(
-        resourceLinks.map(key => {
-          const params = {
-            Bucket: 'oare-image-bucket',
-            Key: key.link,
-          };
-          return s3.getSignedUrlPromise('getObject', params);
-        })
-      );
-
-      const imagePropertyDetails = await Promise.all(
-        resourceLinks.map(resource =>
-          ItemPropertiesDao.getImagePropertyDetails(resource.uuid, trx)
-        )
-      );
-
-      resourceLinks.forEach((elem, idx) => {
-        s3Links.push({
-          label: elem.label,
-          link: signedUrls[idx],
-          side: imagePropertyDetails[idx].side,
-          view: imagePropertyDetails[idx].view,
-        });
-      });
-    } catch (err) {
-      const ErrorsDao = sl.get('ErrorsDao');
-      await ErrorsDao.logError(
-        null,
-        'Error retrieving S3 images',
-        (err as Error).stack || null,
-        'In Progress',
-        trx
-      );
-    }
-
-    return s3Links;
-  }
-
-  async getTextFileByTextUuid(uuid: string, trx?: Knex.Transaction) {
-    const k = trx || knex;
-    const textLinks: string[] = await k('resource')
-      .pluck('link')
+    const fileName = await k('resource')
+      .select('link')
       .where('container', 'oare-texttxt-bucket')
       .whereIn(
         'uuid',
         k('link').select('obj_uuid').where('reference_uuid', uuid)
-      );
+      )
+      .first()
+      .then((row: ResourceRow | undefined) => row?.link);
 
-    return textLinks[0] || null;
+    return fileName || null;
   }
 
-  async getReferringLocationInfo(
-    textUuid: string,
-    bibUuid: string,
+  public async getTextFileByTextUuid(
+    uuid: string,
     trx?: Knex.Transaction
-  ): Promise<ReferringLocationInfo> {
-    const k = trx || knex;
-    const beginPage: number | null = await getReferringLocationInfoQuery(
-      '5ce1f5a2-b68f-11ec-bcc3-0282f921eac9',
-      textUuid,
-      bibUuid,
-      trx
-    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+  ): Promise<string | null> {
+    const utils = sl.get('utils');
 
-    const endPage: number | null = await getReferringLocationInfoQuery(
-      '5cf077ed-b68f-11ec-bcc3-0282f921eac9',
-      textUuid,
-      bibUuid,
-      trx
-    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+    const textSourceFileName = await this.getTextFileNameByTextUuid(uuid, trx);
 
-    const beginPlate: number | null = await getReferringLocationInfoQuery(
-      '5d42c28a-b1fe-11ec-bcc3-0282f921eac9',
-      textUuid,
-      bibUuid,
-      trx
-    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
+    if (textSourceFileName) {
+      const textSourceFileBody = await utils.getS3ObjectBody(
+        'oare-texttxt-bucket',
+        textSourceFileName
+      );
+      const textContent = textSourceFileBody
+        ? textSourceFileBody.toString('utf-8')
+        : null;
+      if (textContent) {
+        return textContent;
+      }
+    }
 
-    const endPlate: number | null = await getReferringLocationInfoQuery(
-      '5d600469-b1fe-11ec-bcc3-0282f921eac9',
-      textUuid,
-      bibUuid,
-      trx
-    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
-
-    const note: string | null = await getReferringLocationInfoQuery(
-      '5d6b0f28-b1fe-11ec-bcc3-0282f921eac9',
-      textUuid,
-      bibUuid,
-      trx
-    ).then((obj: { value: string | null }) => obj?.value ?? null);
-
-    const publicationNumber:
-      | number
-      | null = await getReferringLocationInfoQuery(
-      '5d771785-b1fe-11ec-bcc3-0282f921eac9',
-      textUuid,
-      bibUuid,
-      trx
-    ).then((obj: { value: string | null }) => Number(obj?.value) ?? null);
-
-    return {
-      beginPage,
-      endPage,
-      beginPlate,
-      endPlate,
-      note,
-      publicationNumber,
-    };
+    return null;
   }
 
   async getPDFUrlByBibliographyUuid(
     uuid: string,
-    referenceLocation?: ReferringLocationInfo,
+    beginPage?: number,
+    beginPlate?: number,
     trx?: Knex.Transaction
-  ): Promise<{
-    fileUrl: string | null;
-    pageLink: string | null;
-    plateLink: string | null;
-  }> {
-    const k = trx || knex;
-    const resourceRow: {
-      link: string;
-      container: string;
-      format: string | null;
-    } = await k('resource')
-      .select('link', 'container', 'format')
-      .whereIn(
-        'uuid',
-        knex('link').select('obj_uuid').where('reference_uuid', uuid)
-      )
-      .where('type', 'pdf')
-      .first();
-
+  ): Promise<CitationUrls> {
     const s3 = new AWS.S3();
 
-    let fileUrl: string | null;
+    const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(uuid, trx);
+    const resourceRows = (
+      await Promise.all(
+        resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+      )
+    ).filter((row): row is ResourceRow => !!row);
+
+    const relevantResourceRows = resourceRows.filter(row => row.type === 'pdf');
+
+    const resourceRow =
+      relevantResourceRows.length > 0 ? relevantResourceRows[0] : null;
+    if (!resourceRow) {
+      throw new Error('No resource found');
+    }
+
+    let generalUrl: string | null;
     let page: number | null = null;
     let plate: number | null = null;
 
     try {
-      fileUrl = await s3.getSignedUrlPromise('getObject', {
+      generalUrl = await s3.getSignedUrlPromise('getObject', {
         Bucket: resourceRow.container,
         Key: resourceRow.link,
         Expires: 60 * 60 * 2,
       });
     } catch {
-      fileUrl = null;
+      generalUrl = null;
     }
 
-    if (resourceRow && resourceRow.format && referenceLocation) {
+    if (resourceRow && resourceRow.format && beginPage && beginPlate) {
       const pdfPageNumResponse = await calcPDFPageNum(
         resourceRow.format,
-        referenceLocation.beginPage,
-        referenceLocation.beginPlate
+        beginPage,
+        beginPlate
       );
       page = pdfPageNumResponse.page;
       plate = pdfPageNumResponse.plate;
     }
-    const pageLink = page ? `${fileUrl}#page=${page}` : null;
-    const plateLink = plate ? `${fileUrl}#page=${plate}` : null;
 
-    return { fileUrl, pageLink, plateLink };
+    const pageUrl = page ? `${generalUrl}#page=${page}` : null;
+    const plateUrl = plate ? `${generalUrl}#page=${plate}` : null;
+
+    const citationUrls: CitationUrls = {
+      general: generalUrl,
+      page: pageUrl,
+      plate: plateUrl,
+    };
+
+    return citationUrls;
   }
 
-  async getValidCdliImageLinks(
-    cdliNum: string | null
-  ): Promise<EpigraphyLabelLink[]> {
-    if (!cdliNum) {
+  public async getS3ImageByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Image> {
+    const s3 = new AWS.S3();
+    const k = trx || knex;
+
+    const PersonDao = sl.get('PersonDao');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const TextDao = sl.get('TextDao');
+
+    const resourceRow = await this.getResourceRowByUuid(uuid, trx);
+
+    if (!resourceRow) {
+      throw new Error(`Image with uuid ${uuid} does not exist`);
+    }
+
+    const textUuid = await this.getLinkReferenceUuidByObjUuid(uuid, trx);
+    if (!textUuid) {
+      throw new Error(`Image with uuid ${uuid} does not have a text`);
+    }
+
+    const text = await TextDao.getTextByUuid(textUuid, trx);
+    if (!text) {
+      throw new Error(`Text with uuid ${textUuid} does not exist`);
+    }
+
+    const source = resourceRow.sourceUuid
+      ? (await PersonDao.getPersonRowByUuid(resourceRow.sourceUuid, trx))
+          ?.label || null
+      : null;
+
+    const url = await s3.getSignedUrlPromise('getObject', {
+      Bucket: resourceRow.container,
+      Key: resourceRow.link,
+    });
+
+    const imageProperties = await ItemPropertiesDao.getImagePropertyDetails(
+      uuid,
+      trx
+    );
+
+    const image: Image = {
+      resourceRow,
+      source,
+      url,
+      side: imageProperties.side,
+      view: imageProperties.view,
+      text,
+    };
+
+    return image;
+  }
+
+  private async getMetImagesByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Image[]> {
+    const TextDao = sl.get('TextDao');
+
+    const text = await TextDao.getTextByUuid(textUuid, trx);
+    if (!text) {
+      throw new Error(`Text with uuid ${textUuid} does not exist`);
+    }
+
+    const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
+      textUuid,
+      trx
+    );
+
+    const resourceRows = (
+      await Promise.all(
+        resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+      )
+    ).filter((row): row is ResourceRow => row !== null);
+
+    const relevantResourceRows = resourceRows.filter(
+      row => row.container === 'metmuseum' && row.type === 'img'
+    );
+
+    const relevantResourceRow =
+      relevantResourceRows.length > 0 ? relevantResourceRows[0] : null;
+    if (!relevantResourceRow) {
+      throw new Error(
+        `Text with uuid ${textUuid} does not have a relevant image`
+      );
+    }
+
+    const metLink = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${relevantResourceRow.link}`;
+
+    const {
+      data,
+    }: {
+      data: {
+        primaryImage: string;
+        additionalImages: string[];
+      };
+    } = await axios.get(metLink);
+
+    const urls = [data.primaryImage, ...data.additionalImages];
+
+    const images: Image[] = urls.map(url => ({
+      resourceRow: relevantResourceRow,
+      source: 'The Metropolitan Museum of Art',
+      url,
+      side: null,
+      view: null,
+      text,
+    }));
+
+    return images;
+  }
+
+  private async getCdliImagesByTextUuid(
+    textUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Image[]> {
+    const TextDao = sl.get('TextDao');
+
+    const text = await TextDao.getTextByUuid(textUuid, trx);
+    if (!text) {
+      throw new Error(`Text with uuid ${textUuid} does not exist`);
+    }
+
+    if (!text.cdliNum) {
       return [];
     }
 
-    const photoUrl = `https://cdli.mpiwg-berlin.mpg.de/dl/photo/${cdliNum}.jpg`;
-    const lineArtUrl = `https://cdli.mpiwg-berlin.mpg.de/dl/lineart/${cdliNum}.jpg`;
+    const PHOTO_URL = `https://cdli.mpiwg-berlin.mpg.de/dl/photo/${text.cdliNum}.jpg`;
+    const LINE_ART_URL = `https://cdli.mpiwg-berlin.mpg.de/dl/lineart/${text.cdliNum}.jpg`;
 
-    const cdliLinks: string[] = [];
+    const urls: string[] = [];
 
     try {
-      await axios.head(photoUrl);
-      cdliLinks.push(photoUrl);
+      await axios.head(PHOTO_URL);
+      urls.push(PHOTO_URL);
     } catch {
       // Do nothing. Image does not exist.
     }
 
     try {
-      await axios.head(lineArtUrl);
-      cdliLinks.push(lineArtUrl);
+      await axios.head(LINE_ART_URL);
+      urls.push(LINE_ART_URL);
     } catch {
       // Do nothing. Image line art does not exist.
     }
 
-    const response: EpigraphyLabelLink[] = cdliLinks.map(link => ({
-      label: 'CDLI',
-      link,
+    const images: Image[] = urls.map(url => ({
+      resourceRow: null,
+      source: 'CDLI',
+      url,
       side: null,
       view: null,
+      text,
     }));
 
-    return response;
+    return images;
   }
 
-  async getValidMetImageLinks(
+  private async getS3ImagesByTextUuid(
     textUuid: string,
+    userUuid: string | null,
     trx?: Knex.Transaction
-  ): Promise<EpigraphyLabelLink[]> {
-    const k = trx || knex;
-    const imageLinks: EpigraphyLabelLink[] = [];
+  ): Promise<Image[]> {
+    const s3 = new AWS.S3();
 
-    try {
-      const row: ImageResource = await k('resource')
-        .select('link', 'uuid')
-        .whereIn(
-          'uuid',
-          k('link').select('obj_uuid').where('reference_uuid', textUuid)
-        )
-        .where('type', 'img')
-        .andWhere('container', 'metmuseum')
-        .first();
-      if (row) {
-        const objectId = row.link;
-        const metLink = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`;
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const PersonDao = sl.get('PersonDao');
+    const TextDao = sl.get('TextDao');
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
-        const {
-          data,
-        }: {
-          data: {
-            primaryImage: string;
-            additionalImages: string[];
-          };
-        } = await axios.get(metLink);
+    const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
 
-        const imageUrls = [data.primaryImage, ...data.additionalImages];
-        imageUrls.forEach(url => {
-          imageLinks.push({
-            label: 'The Metropolitan Museum of Art',
-            link: url,
-            side: null,
-            view: null,
-          });
-        });
-      }
-    } catch (err) {
-      const ErrorsDao = sl.get('ErrorsDao');
-      await ErrorsDao.logError(
-        null,
-        'Error retrieving Metropolitan Museum images',
-        (err as Error).stack || null,
-        'In Progress',
-        trx
-      );
+    const text = await TextDao.getTextByUuid(textUuid, trx);
+    if (!text) {
+      throw new Error(`Text with uuid ${textUuid} does not exist`);
     }
-    return imageLinks;
+
+    const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
+      textUuid,
+      trx
+    );
+
+    const resourceRows = (
+      await Promise.all(
+        resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+      )
+    ).filter((row): row is ResourceRow => row !== null);
+
+    const relevantResourceRows = resourceRows.filter(
+      row =>
+        row.container === 'oare-image-bucket' &&
+        row.type === 'img' &&
+        !imagesToHide.includes(row.uuid)
+    );
+
+    const sources = (
+      await Promise.all(
+        relevantResourceRows.map(row =>
+          row.sourceUuid
+            ? PersonDao.getPersonRowByUuid(row.sourceUuid, trx)
+            : null
+        )
+      )
+    ).map(row => (row ? row.label : null));
+
+    const urls = await Promise.all(
+      relevantResourceRows.map(row =>
+        s3.getSignedUrlPromise('getObject', {
+          Bucket: 'oare-image-bucket',
+          Key: row.link,
+        })
+      )
+    );
+
+    const imageProperties = await Promise.all(
+      relevantResourceRows.map(
+        row => ItemPropertiesDao.getImagePropertyDetails(row.uuid, trx) // FIXME would like to revamp this function
+      )
+    );
+
+    const images: Image[] = relevantResourceRows.map((row, idx) => ({
+      resourceRow: row,
+      source: sources[idx],
+      url: urls[idx],
+      side: imageProperties[idx].side,
+      view: imageProperties[idx].view,
+      text,
+    }));
+
+    return images;
   }
 
-  async getImageDesignatorMatches(
-    preText: string,
+  private async getResourceRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<ResourceRow | null> {
+    const k = trx || knex;
+
+    const row: ResourceRow | undefined = await k('resource')
+      .select(
+        'uuid',
+        'source_uuid as sourceUuid',
+        'type',
+        'container',
+        'format',
+        'link'
+      )
+      .where({ uuid })
+      .first();
+
+    return row || null;
+  }
+
+  private async getLinkObjUuidsByReferenceUuid(
+    referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
-    const results = await k('resource')
-      .pluck('link')
-      .where('link', 'like', `${preText}%`);
-    return results;
+
+    const rows: string[] = await k('link')
+      .pluck('obj_uuid')
+      .where({ reference_uuid: referenceUuid });
+
+    return rows;
   }
 
-  async insertResourceRow(row: ResourceRow, trx?: Knex.Transaction) {
+  private async getLinkReferenceUuidByObjUuid(
+    objUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string | null> {
     const k = trx || knex;
+
+    const referenceUuid: string | null = await k('link')
+      .select('reference_uuid as referenceUuid')
+      .where({ obj_uuid: objUuid })
+      .first()
+      .then(row => (row ? row.referenceUuid : null));
+
+    return referenceUuid;
+  }
+
+  public async insertResourceRow(row: ResourceRow, trx?: Knex.Transaction) {
+    const k = trx || knex;
+
     await k('resource').insert({
       uuid: row.uuid,
       source_uuid: row.sourceUuid,
@@ -330,8 +420,9 @@ class ResourceDao {
     });
   }
 
-  async insertLinkRow(row: LinkRow, trx?: Knex.Transaction) {
+  public async insertLinkRow(row: LinkRow, trx?: Knex.Transaction) {
     const k = trx || knex;
+
     await k('link').insert({
       uuid: row.uuid,
       reference_uuid: row.referenceUuid,
@@ -339,84 +430,12 @@ class ResourceDao {
     });
   }
 
-  async getDirectObjectLink(
-    tag: string,
-    trx?: Knex.Transaction
-  ): Promise<ResourceRow | null> {
-    const k = trx || knex;
-    const tagList: { [key: string]: string } = {
-      explanation: '3d4d9397-b6a8-11ec-bcc3-0282f921eac9',
-    };
-    const uuid = tagList[tag];
-    if (!uuid) {
-      return null;
-    }
-    const result: ResourceRow = await k('resource')
-      .select('uuid', 'source_uuid', 'type', 'container', 'format', 'link')
-      .where({ uuid })
-      .first();
-
-    return result;
-  }
-
-  async getImageByUuid(
-    imageUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<{ uuid: string; link: string }> {
-    const k = trx || knex;
-
-    const image = await k('resource')
-      .select('uuid', 'link')
-      .where('uuid', imageUuid)
-      .first();
-
-    if (!image) {
-      throw new Error(`Image with uuid ${imageUuid} does not exist`);
-    }
-
-    return image;
-  }
-
-  async getAllowListImageWithText(
-    imageUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<ImageResource | null> {
-    const s3 = new AWS.S3();
-    const k = trx || knex;
-
-    const textInfo: { display_name: string } = await k('text')
-      .select('display_name')
-      .whereIn(
-        'uuid',
-        k('link').select('reference_uuid').where('obj_uuid', imageUuid)
-      )
-      .first();
-    const resourceLink: { link: string } = await k('resource')
-      .select('link')
-      .where('uuid', imageUuid)
-      .andWhere('type', 'img')
-      .andWhere('container', 'oare-image-bucket')
-      .first();
-
-    const signedUrl: string = await s3.getSignedUrlPromise('getObject', {
-      Bucket: 'oare-image-bucket',
-      Key: resourceLink.link,
-    });
-
-    const result: ImageResource = {
-      uuid: imageUuid,
-      link: signedUrl,
-      label: textInfo.display_name,
-    };
-
-    return result || null;
-  }
-
-  async removeLinkRowByReferenceUuid(
+  public async removeLinkRowByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
+
     await k('link').del().where({ reference_uuid: referenceUuid });
   }
 }
