@@ -297,7 +297,10 @@ export const bibliographyFilter: CacheFilter<Bibliography> = async (
   );
   const bibliographyResponse = {
     ...bibliography,
-    bibliography: { ...bibliography.bibliography, url: citationUrls.general },
+    bibliography: {
+      ...bibliography.bibliography,
+      url: citationUrls ? citationUrls.general : null,
+    },
   };
   return bibliographyResponse;
 };

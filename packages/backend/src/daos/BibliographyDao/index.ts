@@ -78,7 +78,7 @@ class BibliographyDao {
       date: zoteroData?.data?.date ? zoteroData.data.date : null,
       bibliography: {
         bib: zoteroData?.bib ? zoteroData.bib : null,
-        url: '', // Will be added in cache filter
+        url: null, // Will be added in cache filter
       },
       itemType: zoteroData?.data?.itemType ? zoteroData.data.itemType : null,
       uuid: bibliographyRow.uuid,
@@ -199,11 +199,7 @@ class BibliographyDao {
       publicationNumber: publicationNumbers[idx]
         ? Number(publicationNumbers[idx])
         : null,
-      urls: {
-        general: '', // Will be added in cache filter
-        page: '', // Will be added in cache filter
-        plate: '', // Will be added in cache filter
-      },
+      urls: null, // Will be added in cache filter
     }));
 
     return citations;

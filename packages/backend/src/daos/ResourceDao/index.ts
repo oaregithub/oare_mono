@@ -151,22 +151,24 @@ class ResourceDao {
     beginPage?: number,
     beginPlate?: number,
     trx?: Knex.Transaction
-  ): Promise<CitationUrls> {
+  ): Promise<CitationUrls | null> {
     const s3 = new AWS.S3();
 
-    const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(uuid, trx);
+    const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
+      uuid,
+      undefined,
+      'pdf',
+      trx
+    );
     const resourceRows = await Promise.all(
       resourceUuids.map(resourceUuid =>
         this.getResourceRowByUuid(resourceUuid, trx)
       )
     );
 
-    const relevantResourceRows = resourceRows.filter(row => row.type === 'pdf');
-
-    const resourceRow =
-      relevantResourceRows.length > 0 ? relevantResourceRows[0] : null;
+    const resourceRow = resourceRows.length > 0 ? resourceRows[0] : null;
     if (!resourceRow) {
-      throw new Error('No resource found');
+      return null;
     }
 
     let generalUrl: string | null;
@@ -280,6 +282,8 @@ class ResourceDao {
 
     const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
       textUuid,
+      'metmuseum',
+      'img',
       trx
     );
 
@@ -287,16 +291,10 @@ class ResourceDao {
       resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
     );
 
-    const relevantResourceRows = resourceRows.filter(
-      row => row.container === 'metmuseum' && row.type === 'img'
-    );
-
     const relevantResourceRow =
-      relevantResourceRows.length > 0 ? relevantResourceRows[0] : null;
+      resourceRows.length > 0 ? resourceRows[0] : null;
     if (!relevantResourceRow) {
-      throw new Error(
-        `Text with uuid ${textUuid} does not have a relevant image`
-      );
+      return [];
     }
 
     const metLink = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${relevantResourceRow.link}`;
@@ -399,23 +397,22 @@ class ResourceDao {
 
     const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
       textUuid,
+      'oare-image-bucket',
+      'img',
       trx
     );
 
-    const resourceRows = await Promise.all(
-      resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+    const allowedResourceUuids = resourceUuids.filter(
+      uuid => !imagesToHide.includes(uuid)
     );
 
-    const relevantResourceRows = resourceRows.filter(
-      row =>
-        row.container === 'oare-image-bucket' &&
-        row.type === 'img' &&
-        !imagesToHide.includes(row.uuid)
+    const resourceRows = await Promise.all(
+      allowedResourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
     );
 
     const sources = (
       await Promise.all(
-        relevantResourceRows.map(row =>
+        resourceRows.map(row =>
           row.sourceUuid
             ? PersonDao.getPersonRowByUuid(row.sourceUuid, trx)
             : null
@@ -424,7 +421,7 @@ class ResourceDao {
     ).map(row => (row ? row.label : null));
 
     const urls = await Promise.all(
-      relevantResourceRows.map(row =>
+      resourceRows.map(row =>
         s3.getSignedUrlPromise('getObject', {
           Bucket: 'oare-image-bucket',
           Key: row.link,
@@ -433,12 +430,12 @@ class ResourceDao {
     );
 
     const imageProperties = await Promise.all(
-      relevantResourceRows.map(
+      resourceRows.map(
         row => ItemPropertiesDao.getImagePropertyDetails(row.uuid, trx) // FIXME would like to revamp this function
       )
     );
 
-    const images: Image[] = relevantResourceRows.map((row, idx) => ({
+    const images: Image[] = resourceRows.map((row, idx) => ({
       resourceRow: row,
       source: sources[idx],
       url: urls[idx],
@@ -490,13 +487,23 @@ class ResourceDao {
    */
   private async getLinkObjUuidsByReferenceUuid(
     referenceUuid: string,
+    container?: string,
+    type?: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
 
     const rows: string[] = await k('link')
       .pluck('obj_uuid')
-      .where({ reference_uuid: referenceUuid });
+      .where({ reference_uuid: referenceUuid })
+      .modify(qb => {
+        if (container) {
+          qb.where({ container });
+        }
+        if (type) {
+          qb.where({ type });
+        }
+      });
 
     return rows;
   }

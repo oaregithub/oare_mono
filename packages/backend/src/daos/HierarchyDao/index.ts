@@ -13,7 +13,7 @@ import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 class HierarchyDao {
   /**
@@ -99,7 +99,6 @@ class HierarchyDao {
     };
   }
 
-  // FIXME should this be public?
   /**
    * Constructs variable child objects for a given hierarchy node.
    * @param hierarchyUuid The UUID of the parent hierarchy node.

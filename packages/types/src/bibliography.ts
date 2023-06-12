@@ -69,7 +69,7 @@ export interface Citation {
   endPlate: number | null;
   note: string | null;
   publicationNumber: number | null;
-  urls: CitationUrls;
+  urls: CitationUrls | null;
 }
 
 export interface CitationUrls {
