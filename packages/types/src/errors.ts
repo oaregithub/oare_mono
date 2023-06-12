@@ -1,4 +1,4 @@
-import { User } from './login';
+import { User } from './users';
 
 // COMPLETE
 

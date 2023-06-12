@@ -2,7 +2,6 @@ import express from 'express';
 import {
   AddUsersToGroupPayload,
   RemoveUsersFromGroupPayload,
-  User,
 } from '@oare/types';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
@@ -29,9 +28,9 @@ router
       }
 
       const userUuids = await UserGroupDao.getUsersInGroup(groupId);
-      const users = (
-        await Promise.all(userUuids.map(uuid => UserDao.getUserByUuid(uuid)))
-      ).filter((user): user is User => !!user);
+      const users = await Promise.all(
+        userUuids.map(uuid => UserDao.getUserByUuid(uuid))
+      );
 
       res.json(users);
     } catch (err) {

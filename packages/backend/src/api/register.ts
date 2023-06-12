@@ -35,13 +35,7 @@ router.route('/register').post(async (req, res, next) => {
       displayName: `${firstName} ${lastName}`,
     });
 
-    await UserDao.createUser({
-      uuid,
-      firstName,
-      lastName,
-      email,
-      isAdmin: false,
-    });
+    await UserDao.createUser(uuid, firstName, lastName, email);
 
     const user = await UserDao.getUserByUuid(uuid);
     if (!user) {

@@ -3,16 +3,14 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 import { HttpInternalError, HttpBadRequest, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { User, UserWithGroups } from '@oare/types';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
 router.route('/users').get(adminRoute, async (_req, res, next) => {
   try {
     const UserDao = sl.get('UserDao');
-    const UserGroupDao = sl.get('UserGroupDao');
 
     const userUuids = await UserDao.getAllUserUuids();
 
@@ -20,18 +18,7 @@ router.route('/users').get(adminRoute, async (_req, res, next) => {
       userUuids.map(uuid => UserDao.getUserByUuid(uuid))
     );
 
-    // FIXME groups should be included in User object
-
-    const groups = await Promise.all(
-      users.map(user => UserGroupDao.getGroupsOfUser(user.uuid))
-    );
-
-    const response: UserWithGroups[] = users.map((user, idx) => ({
-      ...user,
-      groups: groups[idx],
-    }));
-
-    res.json(response);
+    res.json(users);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
