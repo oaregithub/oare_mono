@@ -12,9 +12,7 @@ import {
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import adminRoute from '@/middlewares/router/adminRoute';
 
-// MOSTLY COMPLETE
-
-// FIXME - write migration to replace `route` column with `table_reference` column
+// COMPLETE
 
 const router = express.Router();
 
@@ -137,7 +135,6 @@ router
     }
   });
 
-// FIXME should probably use web sockets instead of polling
 router.route('/new_threads/').get(adminRoute, async (_req, res, next) => {
   try {
     const ThreadsDao = sl.get('ThreadsDao');

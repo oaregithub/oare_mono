@@ -32,9 +32,9 @@ class ThreadsDao {
 
     await k('threads').insert({
       uuid,
+      table_reference: tableReference,
       reference_uuid: referenceUuid,
       status: 'New',
-      table_reference: tableReference,
       name,
     });
   }
@@ -70,9 +70,9 @@ class ThreadsDao {
     const threadRows: ThreadsRow[] = await k('threads')
       .select(
         'uuid',
+        'table_reference as tableReference',
         'reference_uuid as referenceUuid',
         'status',
-        'table_reference as tableReference',
         'name'
       )
       .where({ reference_uuid: referenceUuid });
@@ -126,9 +126,9 @@ class ThreadsDao {
     const row: ThreadsRow | undefined = await k('threads')
       .select(
         'uuid',
+        'table_reference as tableReference',
         'reference_uuid as referenceUuid',
         'status',
-        'table_reference as tableReference',
         'name'
       )
       .where({ uuid })
