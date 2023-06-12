@@ -4,6 +4,8 @@ import { v4 } from 'uuid';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
+// COMPLETE
+
 class CommentsDao {
   /**
    * Creates a new comment.

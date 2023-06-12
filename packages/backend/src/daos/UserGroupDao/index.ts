@@ -11,7 +11,7 @@ class UserGroupDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating whether the specified user belongs to the specified group.
    */
-  async userInGroup(
+  public async userInGroup(
     groupId: number,
     userUuid: string,
     trx?: Knex.Transaction
@@ -31,7 +31,7 @@ class UserGroupDao {
    * @param trx Knex Transaction. Optional.
    * @returns An array of group IDs.
    */
-  async getGroupsOfUser(
+  public async getGroupsOfUser(
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<number[]> {
@@ -50,7 +50,7 @@ class UserGroupDao {
    * @param trx Knex Transaction. Optional.
    * @returns An array of user UUIDs.
    */
-  async getUsersInGroup(
+  public async getUsersInGroup(
     groupId: number,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -70,7 +70,7 @@ class UserGroupDao {
    * @param userUuid The UUID of the user to add to the group.
    * @param trx Knex Transaction. Optional.
    */
-  async addUserToGroup(
+  public async addUserToGroup(
     groupId: number,
     userUuid: string,
     trx?: Knex.Transaction
@@ -89,7 +89,7 @@ class UserGroupDao {
    * @param userUuid The UUID of the user to remove from the group.
    * @param trx Knex Transaction. Optional.
    */
-  async removeUserFromGroup(
+  public async removeUserFromGroup(
     groupId: number,
     userUuid: string,
     trx?: Knex.Transaction

@@ -4,11 +4,60 @@ import sl from '@/serviceLocator';
 import { ResourceRow, LinkRow, Image, CitationUrls } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
-import { calcPDFPageNum } from './utils';
 
-// FIXME much better, but still needs some work
+// MOSTLY COMPLETE
 
 class ResourceDao {
+  /**
+   * Calculates the relative page and plate offsets for a PDF resource.
+   * This allows for the PDF to be opened to the correct offset page.
+   * @param format The format of the PDF. Ex: 'a-0-0'.
+   * @param beginPage The beginning page in the data.
+   * @param beginPlate The beginning plate in the data.
+   * @returns An object containing the relative page and plate offsets.
+   */
+  private calcPDFPageNum = (
+    format: string,
+    beginPage: number | null,
+    beginPlate: number | null
+  ) => {
+    const splitFormat: string[] = format.split('-');
+    const layout: string = splitFormat[0];
+    const pageOffset: number = Number(splitFormat[1]);
+    const plateOffset: number = Number(splitFormat[2]);
+    let page = 0;
+    let plate = 0;
+    if (layout === 'a') {
+      if (beginPage) {
+        page = beginPage + pageOffset;
+      }
+      if (beginPlate && plateOffset) {
+        plate = beginPlate + plateOffset;
+      }
+    }
+    if (layout === 'b') {
+      if (beginPage) {
+        page = -Math.floor(-beginPage / 2) + pageOffset;
+      }
+      if (beginPlate && plateOffset) {
+        plate = -Math.floor(-beginPlate / 2) + plateOffset;
+      }
+    }
+    if (layout === 'c') {
+      if (beginPage) {
+        page = Math.floor(beginPage / 2) + pageOffset;
+      }
+      if (beginPlate && plateOffset) {
+        plate = Math.floor(beginPlate / 2) + plateOffset;
+      }
+    }
+
+    return {
+      plate,
+      page,
+    };
+  };
+
   /**
    * Retrieves all images for a given text UUID.
    * @param textUuid The UUID of the text whose images to retrieve.
@@ -97,7 +146,7 @@ class ResourceDao {
    * @returns Citation URLs object. Includes general, page, and plate URLs.
    * @throws Error if one or more of the resources doesn't exist.
    */
-  async getPDFUrlByBibliographyUuid(
+  public async getPDFUrlByBibliographyUuid(
     uuid: string,
     beginPage?: number,
     beginPlate?: number,
@@ -107,7 +156,9 @@ class ResourceDao {
 
     const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(uuid, trx);
     const resourceRows = await Promise.all(
-      resourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+      resourceUuids.map(resourceUuid =>
+        this.getResourceRowByUuid(resourceUuid, trx)
+      )
     );
 
     const relevantResourceRows = resourceRows.filter(row => row.type === 'pdf');
@@ -141,7 +192,7 @@ class ResourceDao {
     }
 
     if (resourceRow.format && beginPage && beginPlate) {
-      const pdfPageNumResponse = await calcPDFPageNum(
+      const pdfPageNumResponse = this.calcPDFPageNum(
         resourceRow.format,
         beginPage,
         beginPlate

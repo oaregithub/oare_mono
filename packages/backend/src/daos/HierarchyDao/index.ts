@@ -11,9 +11,33 @@ import {
 import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
-import { getHierarchyRowQuery } from './utils';
+
+// MOSTLY COMPLETE
 
 class HierarchyDao {
+  /**
+   * Base query for retrieving hierarchy rows for building a tree.
+   * @param trx Knex Transaction. Optional.
+   * @returns Knex query builder.
+   */
+  private getHierarchyRowQuery = (
+    trx?: Knex.Transaction
+  ): Knex.QueryBuilder => {
+    const k = trx || knex;
+    return k('hierarchy')
+      .select(
+        'hierarchy.uuid',
+        'hierarchy.parent_uuid as parentUuid',
+        'hierarchy.type',
+        'hierarchy.role',
+        'hierarchy.object_uuid as objectUuid',
+        'hierarchy.obj_parent_uuid as objectParentUuid',
+        'hierarchy.custom',
+        'h2.obj_parent_uuid as objectGrandparentUuid'
+      )
+      .leftJoin('hierarchy as h2', 'hierarchy.parent_uuid', 'h2.uuid');
+  };
+
   /**
    * Checks if a hierarchy node has children.
    * @param hierarchyUuid The UUID of the hierarchy node
@@ -31,13 +55,18 @@ class HierarchyDao {
     return false;
   }
 
+  /**
+   * Constructs a taxonomy property tree.
+   * @param trx Knex Transaction. Optional.
+   * @returns Complete taxonomy property tree.
+   */
   public async createPropertiesTaxonomyTree(
     trx?: Knex.Transaction
   ): Promise<TaxonomyPropertyTree> {
     const AliasDao = sl.get('AliasDao');
     const FieldDao = sl.get('FieldDao');
 
-    const topNodeHierarchy: HierarchyData = await getHierarchyRowQuery(trx)
+    const topNodeHierarchy: HierarchyData = await this.getHierarchyRowQuery(trx)
       .where('hierarchy.type', 'taxonomy')
       .where('hierarchy.role', 'tree')
       .first();
@@ -88,7 +117,7 @@ class HierarchyDao {
     const hasChild = await this.hasChild(hierarchyUuid, trx);
 
     if (hasChild) {
-      const hierarchyRows: HierarchyData[] = await getHierarchyRowQuery(
+      const hierarchyRows: HierarchyData[] = await this.getHierarchyRowQuery(
         trx
       ).where('hierarchy.parent_uuid', hierarchyUuid);
 
@@ -174,7 +203,7 @@ class HierarchyDao {
     const hasChild = await this.hasChild(hierarchyUuid, trx);
 
     if (hasChild) {
-      const hierarchyRows: HierarchyData[] = await getHierarchyRowQuery(
+      const hierarchyRows: HierarchyData[] = await this.getHierarchyRowQuery(
         trx
       ).where('hierarchy.parent_uuid', hierarchyUuid);
 
@@ -367,4 +396,7 @@ class HierarchyDao {
   }
 }
 
+/**
+ * HierarchyDao instance as a singleton.
+ */
 export default new HierarchyDao();

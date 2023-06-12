@@ -11,6 +11,8 @@ import { Knex } from 'knex';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 
+// COMPLETE
+
 class ErrorsDao {
   /**
    * Logs a new error by inserting a row into the errors table
@@ -20,7 +22,7 @@ class ErrorsDao {
    * @param status The status of the error. Usually 'New'
    * @param trx Knex Transaction. Optional.
    */
-  async logError(
+  public async logError(
     userUuid: string | null,
     description: string,
     stacktrace: string | null,
@@ -57,7 +59,7 @@ class ErrorsDao {
    * @param trx Knex Transaction. Optional.
    * @returns An object containing the paginated list of errors and the total number of errors
    */
-  async getErrorLog(
+  public async getErrorLog(
     status: ErrorStatus | '',
     user: string,
     description: string,
@@ -143,7 +145,7 @@ class ErrorsDao {
    * @param status The new status of the error
    * @param trx Knex Transaction. Optional.
    */
-  async updateErrorStatus(
+  public async updateErrorStatus(
     uuid: string,
     status: ErrorStatus,
     trx?: Knex.Transaction
@@ -158,7 +160,7 @@ class ErrorsDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating if there are new errors
    */
-  async newErrorsExist(trx?: Knex.Transaction): Promise<boolean> {
+  public async newErrorsExist(trx?: Knex.Transaction): Promise<boolean> {
     const k = trx || knex;
 
     const exists = await k('errors').first().where('status', 'New');

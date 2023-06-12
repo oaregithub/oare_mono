@@ -4,7 +4,7 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// FIXME
+// MOSTLY COMPLETE
 
 // FIXME unrelated to this file, but some of the logic in the server start command could be moved into
 /// the build or zip sh files. Those both could be cleaned up.

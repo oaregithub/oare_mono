@@ -1,7 +1,7 @@
 import knex from '@/connection';
 import { Knex } from 'knex';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 class PageContentDao {
   /**

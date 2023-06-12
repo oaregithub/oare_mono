@@ -5,7 +5,7 @@ import { HttpInternalError, HttpBadRequest, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { User, UserWithGroups } from '@oare/types';
 
-// COMPLETE
+// MOSTLY COMPLETE
 
 const router = express.Router();
 
@@ -16,9 +16,11 @@ router.route('/users').get(adminRoute, async (_req, res, next) => {
 
     const userUuids = await UserDao.getAllUserUuids();
 
-    const users = (
-      await Promise.all(userUuids.map(uuid => UserDao.getUserByUuid(uuid)))
-    ).filter((user): user is User => !!user);
+    const users = await Promise.all(
+      userUuids.map(uuid => UserDao.getUserByUuid(uuid))
+    );
+
+    // FIXME groups should be included in User object
 
     const groups = await Promise.all(
       users.map(user => UserGroupDao.getGroupsOfUser(user.uuid))

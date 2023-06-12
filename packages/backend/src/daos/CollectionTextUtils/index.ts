@@ -1,10 +1,18 @@
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// FIXME
+// COMPLETE
 
 class CollectionTextUtils {
-  async canViewText(
+  /**
+   * Checks if a given user can view a given text.
+   * @param textUuid The UUID of the text to check.
+   * @param userUuid The UUID of the user. Can be null.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the user can view the text.
+   * @throws Error if user or text does not exist.
+   */
+  public async canViewText(
     textUuid: string,
     userUuid: string | null,
     trx?: Knex.Transaction
@@ -13,6 +21,7 @@ class CollectionTextUtils {
     const PublicDenylistDao = sl.get('PublicDenylistDao');
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
     const QuarantineTextDao = sl.get('QuarantineTextDao');
+    const UserGroupDao = sl.get('UserGroupDao');
 
     const textIsQuarantined = await QuarantineTextDao.textIsQuarantined(
       textUuid,
@@ -36,47 +45,40 @@ class CollectionTextUtils {
       return true;
     }
 
-    const textIsInAllowlist = await GroupAllowlistDao.textIsInAllowlist(
-      textUuid,
-      userUuid,
-      trx
-    );
-    if (textIsInAllowlist) {
+    const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
+    const textAllowlist = (
+      await Promise.all(
+        groups.map(groupId =>
+          GroupAllowlistDao.getGroupAllowlist(groupId, 'text', trx)
+        )
+      )
+    ).flat();
+
+    if (textAllowlist.includes(textUuid)) {
       return true;
     }
 
     return false;
   }
 
-  async canViewCollection(
+  /**
+   * Checks if a given user can view a given collection.
+   * @param collectionUuid The UUID of the collection to check.
+   * @param userUuid The UUID of the user. Can be null.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the user can view the collection.
+   * @throws Error if user or collection texts do not exist.
+   */
+  public async canViewCollection(
     collectionUuid: string,
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<boolean> {
     const UserDao = sl.get('UserDao');
-    const PublicDenylistDao = sl.get('PublicDenylistDao');
-    const GroupAllowlistDao = sl.get('GroupAllowlistDao');
     const HierarchyDao = sl.get('HierarchyDao');
 
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
-      return true;
-    }
-
-    const isPubliclyViewable = await PublicDenylistDao.collectionIsPubliclyViewable(
-      collectionUuid,
-      trx
-    );
-    if (isPubliclyViewable) {
-      return true;
-    }
-
-    const collectionIsInAllowlist = await GroupAllowlistDao.collectionIsInAllowlist(
-      collectionUuid,
-      userUuid,
-      trx
-    );
-    if (collectionIsInAllowlist) {
       return true;
     }
 
@@ -94,18 +96,24 @@ class CollectionTextUtils {
     return false;
   }
 
-  async textsToHide(
+  /**
+   * Retrieves a list of text UUIDs that should be hidden from the user.
+   * @param userUuid The UUID of the user. Can be null.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of text UUIDs that should be hidden from the user.
+   * @throws Error if user does not exist.
+   */
+  public async textsToHide(
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const GroupAllowlistDao = sl.get('GroupAllowlistDao');
     const PublicDenylistDao = sl.get('PublicDenylistDao');
     const UserGroupDao = sl.get('UserGroupDao');
-    const HierarchyDao = sl.get('HierarchyDao');
     const UserDao = sl.get('UserDao');
     const QuarantineTextDao = sl.get('QuarantineTextDao');
 
-    const quarantinedTexts = await QuarantineTextDao.getQuarantinedTextUuids(
+    const quarantinedTexts = await QuarantineTextDao.getAllQuarantinedTextUuids(
       trx
     );
 
@@ -114,18 +122,7 @@ class CollectionTextUtils {
       return [...quarantinedTexts];
     }
 
-    const publicDenylist = await PublicDenylistDao.getDenylistTextUuids(trx);
-    const publicDenylistCollections = await PublicDenylistDao.getDenylistCollectionUuids(
-      trx
-    );
-    const textsInDenylistCollections = (
-      await Promise.all(
-        publicDenylistCollections.map(collection =>
-          HierarchyDao.getTextUuidsByCollectionUuid(collection, trx)
-        )
-      )
-    ).flat();
-    textsInDenylistCollections.forEach(text => publicDenylist.push(text));
+    const publicDenylist = await PublicDenylistDao.getDenylist('text', trx);
 
     const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
     const textAllowlist = (
@@ -135,21 +132,6 @@ class CollectionTextUtils {
         )
       )
     ).flat();
-    const collectionAllowlist = (
-      await Promise.all(
-        groups.map(groupId =>
-          GroupAllowlistDao.getGroupAllowlist(groupId, 'collection', trx)
-        )
-      )
-    ).flat();
-    const textsInAllowlistCollections = (
-      await Promise.all(
-        collectionAllowlist.map(collection =>
-          HierarchyDao.getTextUuidsByCollectionUuid(collection, trx)
-        )
-      )
-    ).flat();
-    textsInAllowlistCollections.forEach(text => textAllowlist.push(text));
 
     const denylistTexts = publicDenylist.filter(
       text => !textAllowlist.includes(text)
@@ -158,7 +140,14 @@ class CollectionTextUtils {
     return [...denylistTexts, ...quarantinedTexts];
   }
 
-  async imagesToHide(
+  /**
+   * Retrieves a list of image UUIDs that should be hidden from the user.
+   * @param userUuid The UUID of the user. Can be null.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of image UUIDs that should be hidden from the user.
+   * @throws Error if user does not exist.
+   */
+  public async imagesToHide(
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -172,9 +161,7 @@ class CollectionTextUtils {
       return [];
     }
 
-    const publicImageDenylist = await PublicDenylistDao.getDenylistImageUuids(
-      trx
-    );
+    const publicImageDenylist = await PublicDenylistDao.getDenylist('img', trx);
 
     const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
     const imageAllowlist = (
@@ -192,16 +179,21 @@ class CollectionTextUtils {
     return imagesToHide;
   }
 
-  async canEditText(
+  /**
+   * Checks if a given user can edit a given text.
+   * @param textUuid The UUID of the text to check.
+   * @param userUuid The UUID of the user. Can be null.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the user can edit the text.
+   */
+  public async canEditText(
     textUuid: string,
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<boolean> {
     const UserDao = sl.get('UserDao');
-    const CollectionDao = sl.get('CollectionDao');
     const UserGroupDao = sl.get('UserGroupDao');
     const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
-    const TextDao = sl.get('TextDao');
 
     const user = userUuid ? await UserDao.getUserByUuid(userUuid, trx) : null;
     if (user && user.isAdmin) {
@@ -217,7 +209,7 @@ class CollectionTextUtils {
     const textEditPermissions = (
       await Promise.all(
         groups.map(groupId =>
-          GroupEditPermissionsDao.getGroupEditPermissions(groupId, 'text', trx)
+          GroupEditPermissionsDao.getGroupEditPermissions(groupId, trx)
         )
       )
     ).flat();
@@ -227,70 +219,11 @@ class CollectionTextUtils {
       return true;
     }
 
-    const text = await TextDao.getTextByUuid(textUuid, trx);
-    if (!text) {
-      return false;
-    }
-
-    const collectionEditPermissions = (
-      await Promise.all(
-        groups.map(groupId =>
-          GroupEditPermissionsDao.getGroupEditPermissions(
-            groupId,
-            'collection',
-            trx
-          )
-        )
-      )
-    ).flat();
-    const hasCollectionEditPermission =
-      text.collectionUuid &&
-      collectionEditPermissions.includes(text.collectionUuid);
-
-    if (hasCollectionEditPermission) {
-      return true;
-    }
-
     return false;
   }
-
-  /* async sortCollectionTexts(texts: CollectionText[]) {
-    const sortedTexts = texts.sort((a, b) => {
-      const textNameA: string = a.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
-      const textNameB: string = b.name.replace(/[{}()-+,.;: ]{1,}/g, ' ');
-      const nameArrayA: string[] = textNameA.split(' ');
-      const nameArrayB: string[] = textNameB.split(' ');
-      nameArrayA.forEach((val, idx) => {
-        const numLetterSplit = val.match(/(\d+|\D+)/g);
-        if (numLetterSplit && numLetterSplit.length > 1) {
-          nameArrayA.splice(idx, 1, ...numLetterSplit);
-        }
-      });
-      nameArrayB.forEach((val, idx) => {
-        const numLetterSplit = val.match(/\d+|\D+/g);
-        if (numLetterSplit && numLetterSplit.length > 1) {
-          nameArrayB.splice(idx, 1, ...numLetterSplit);
-        }
-      });
-      const shorterLength =
-        nameArrayA.length <= nameArrayB.length
-          ? nameArrayA.length
-          : nameArrayB.length;
-      for (let i = 0; i < shorterLength; i += 1) {
-        if (nameArrayA[i] !== nameArrayB[i]) {
-          const numA = parseFloat(nameArrayA[i]);
-          const numB = parseFloat(nameArrayB[i]);
-          if (numA && numB && numA !== numB) {
-            return numA - numB;
-          }
-          return nameArrayA[i].localeCompare(nameArrayB[i]);
-        }
-      }
-
-      return nameArrayA.length - nameArrayB.length;
-    });
-    return sortedTexts;
-  } */
 }
 
+/**
+ * CollectionTextUtils instance as a singleton.
+ */
 export default new CollectionTextUtils();

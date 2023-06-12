@@ -4,7 +4,7 @@ import { Knex } from 'knex';
 import UserDao from '../UserDao';
 import UserGroupDao from '../UserGroupDao';
 
-// VERIFIED COMPLETE ?
+// COMPLETE
 
 class PermissionsDao {
   /**

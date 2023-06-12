@@ -8,6 +8,8 @@ import {
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
+// MOSTLY COMPLETE
+
 class TextDao {
   /**
    * Retrieves a text by its UUID.
@@ -16,7 +18,10 @@ class TextDao {
    * @returns Single text object.
    * @throws Error if the text doesn't exist or does not belong to a valid collection.
    */
-  async getTextByUuid(uuid: string, trx?: Knex.Transaction): Promise<Text> {
+  public async getTextByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Text> {
     const CollectionDao = sl.get('CollectionDao');
     const TextEpigraphyDao = sl.get('TextEpigraphyDao');
 
@@ -82,7 +87,7 @@ class TextDao {
   }
 
   // FIXME perhaps move to hierarchy dao?
-  async getTransliterationOptions(trx?: Knex.Transaction) {
+  public async getTransliterationOptions(trx?: Knex.Transaction) {
     const k = trx || knex;
 
     const transliterationOptions: TextTransliterationStatus[] = await k(
@@ -106,7 +111,7 @@ class TextDao {
   }
 
   // FIXME perhaps move to hierarchy dao?
-  async getTextTransliterationStatusByUuid(
+  public async getTextTransliterationStatusByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<TextTransliterationStatus> {
@@ -134,7 +139,7 @@ class TextDao {
    * @param transliterationUuid The UUID of the transliteration status to set.
    * @param trx Knex Transaction. Optional.
    */
-  async updateTransliterationStatus(
+  public async updateTransliterationStatus(
     textUuid: string,
     transliterationUuid: string,
     trx?: Knex.Transaction
@@ -157,7 +162,7 @@ class TextDao {
    * @param newPrimaryPublicationNumber The new primary publication number.
    * @param trx Knex Transaction. Optional.
    */
-  async updateTextInfo(
+  public async updateTextInfo(
     uuid: string,
     newExcavationPrefix: string | null,
     newExcavationNumber: string | null,
@@ -186,7 +191,7 @@ class TextDao {
    * @param row The text row to insert.
    * @param trx Knex Transaction. Optional.
    */
-  async insertTextRow(row: TextRow, trx?: Knex.Transaction) {
+  public async insertTextRow(row: TextRow, trx?: Knex.Transaction) {
     const k = trx || knex;
 
     await k('text').insert({
@@ -215,7 +220,7 @@ class TextDao {
    * @param textUuid The UUID of the text to remove.
    * @param trx Knex Transaction. Optional.
    */
-  async removeTextByUuid(textUuid: string, trx?: Knex.Transaction) {
+  public async removeTextByUuid(textUuid: string, trx?: Knex.Transaction) {
     const k = trx || knex;
 
     await k('text').del().where({ uuid: textUuid });
@@ -227,7 +232,7 @@ class TextDao {
    * @param trx Knex Transaction. Optional.
    * @returns A list of link items.
    */
-  async searchTexts(
+  public async searchTexts(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

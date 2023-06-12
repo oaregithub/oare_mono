@@ -2,6 +2,8 @@ import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
+// MOSTLY COMPLETE
+
 // FIXME run migration to remove type column and removing rows of type collection
 
 class GroupEditPermissionsDao {
@@ -11,7 +13,7 @@ class GroupEditPermissionsDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of UUIDs of all texts that are editable by the given group.
    */
-  async getGroupEditPermissions(
+  public async getGroupEditPermissions(
     groupId: number,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -38,7 +40,7 @@ class GroupEditPermissionsDao {
    * @param uuids Array of text UUIDs to add to the group's edit permissions.
    * @param trx Knex Transaction. Optional.
    */
-  async addTextsToGroupEditPermissions(
+  public async addTextsToGroupEditPermissions(
     groupId: number,
     uuids: string[],
     trx?: Knex.Transaction
@@ -59,7 +61,7 @@ class GroupEditPermissionsDao {
    * @param uuid The UUID of the text to remove from the group's edit permissions.
    * @param trx Knex Transaction. Optional.
    */
-  async removeTextFromGroupEditPermissions(
+  public async removeTextFromGroupEditPermissions(
     groupId: number,
     uuid: string,
     trx?: Knex.Transaction
@@ -77,7 +79,7 @@ class GroupEditPermissionsDao {
    * @param uuid The UUID of the text to remove from all groups' edit permissions.
    * @param trx Knex Transaction. Optional.
    */
-  async removeTextFromAllEditPermissions(
+  public async removeTextFromAllEditPermissions(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
@@ -93,7 +95,7 @@ class GroupEditPermissionsDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating whether there is an association between the group and the text.
    */
-  async containsAssociation(
+  public async containsAssociation(
     uuid: string,
     groupId: number,
     trx?: Knex.Transaction
@@ -108,4 +110,7 @@ class GroupEditPermissionsDao {
   }
 }
 
+/**
+ * GroupEditPermissionsDao instance as a singleton.
+ */
 export default new GroupEditPermissionsDao();

@@ -11,7 +11,10 @@ class UserDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating whether the user exists.
    */
-  async emailExists(email: string, trx?: Knex.Transaction): Promise<boolean> {
+  public async emailExists(
+    email: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
     const k = trx || knex;
 
     const user = await k('user').first().where({ email });
@@ -25,13 +28,17 @@ class UserDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating whether the user exists.
    */
-  async uuidExists(uuid: string, trx?: Knex.Transaction): Promise<boolean> {
+  public async uuidExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
     const k = trx || knex;
 
     const user = await k('user').first().where({ uuid });
 
     return !!user;
   }
+  // FIXME need a whole UserRow type that lives in a private function
 
   /**
    * Retrieves a user by their UUID.
@@ -40,7 +47,10 @@ class UserDao {
    * @returns The user object. Null if no user found.
    * @throws Error if no user found.
    */
-  async getUserByUuid(uuid: string, trx?: Knex.Transaction): Promise<User> {
+  public async getUserByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<User> {
     const k = trx || knex;
 
     const row: User | undefined = await k('user')
@@ -68,7 +78,7 @@ class UserDao {
    * @param user The user object to create.
    * @param trx Knex Transaction. Optional.
    */
-  async createUser(user: User, trx?: Knex.Transaction): Promise<void> {
+  public async createUser(user: User, trx?: Knex.Transaction): Promise<void> {
     const k = trx || knex;
 
     await k('user').insert({
@@ -86,7 +96,7 @@ class UserDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of user UUIDs.
    */
-  async getAllUserUuids(trx?: Knex.Transaction): Promise<string[]> {
+  public async getAllUserUuids(trx?: Knex.Transaction): Promise<string[]> {
     const k = trx || knex;
 
     const userUuids: string[] = await k('user').pluck('uuid');
@@ -102,7 +112,7 @@ class UserDao {
    * @param options The profile options to update.
    * @param trx Knex Transaction. Optional.
    */
-  async updateProfile(
+  public async updateProfile(
     uuid: string,
     { email, firstName, lastName }: Required<UpdateProfilePayload>,
     trx?: Knex.Transaction

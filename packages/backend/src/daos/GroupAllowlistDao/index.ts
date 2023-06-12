@@ -1,13 +1,9 @@
 import knex from '@/connection';
 import sl from '@/serviceLocator';
-import {
-  SearchImagesResponse,
-  SearchImagesResultRow,
-  SearchNamesPayload,
-  DenylistAllowlistType,
-} from '@oare/types';
+import { DenylistAllowlistType } from '@oare/types';
 import { Knex } from 'knex';
-import AWS from 'aws-sdk';
+
+// MOSTLY COMPLETE
 
 class GroupAllowlistDao {
   /**
@@ -17,7 +13,7 @@ class GroupAllowlistDao {
    * @param trx Knex Transaction. Optional.
    * @returns An array of UUIDs of the items in the allowlist
    */
-  async getGroupAllowlist(
+  public async getGroupAllowlist(
     groupId: number,
     type: DenylistAllowlistType,
     trx?: Knex.Transaction
@@ -46,7 +42,7 @@ class GroupAllowlistDao {
    * @param type The type of the items to add
    * @param trx Knex Transaction. Optional.
    */
-  async addItemsToAllowlist(
+  public async addItemsToAllowlist(
     groupId: number,
     uuids: string[],
     type: DenylistAllowlistType,
@@ -69,7 +65,7 @@ class GroupAllowlistDao {
    * @param uuid The UUID of the item to remove
    * @param trx Knex Transaction. Optional.
    */
-  async removeItemFromAllowlist(
+  public async removeItemFromAllowlist(
     groupId: number,
     uuid: string,
     trx?: Knex.Transaction
@@ -84,7 +80,7 @@ class GroupAllowlistDao {
    * @param uuid The UUID of the item to remove
    * @param trx Knex Transaction. Optional.
    */
-  async removeItemFromAllAllowlists(
+  public async removeItemFromAllAllowlists(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
@@ -94,42 +90,13 @@ class GroupAllowlistDao {
   }
 
   /**
-   * Checks if a text is in the allowlist for a user
-   * @param textUuid The UUID of the text
-   * @param userUuid The UUID of the user
-   * @param trx Knex Transaction. Optional.
-   * @returns Boolean indicating if the text is in the allowlist
-   */
-  async textIsInAllowlist(
-    textUuid: string,
-    userUuid: string | null,
-    trx?: Knex.Transaction
-  ): Promise<boolean> {
-    const UserGroupDao = sl.get('UserGroupDao');
-
-    const groups = await UserGroupDao.getGroupsOfUser(userUuid, trx);
-
-    const textAllowlist = (
-      await Promise.all(
-        groups.map(groupId => this.getGroupAllowlist(groupId, 'text', trx))
-      )
-    ).flat();
-
-    if (textAllowlist.includes(textUuid)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
    * Determines if there is an association between a group and an allowlist item
    * @param uuid The UUID of the allowlist item
    * @param groupId The ID of the group
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating if there is an association
    */
-  async containsAssociation(
+  public async containsAssociation(
     uuid: string,
     groupId: number,
     trx?: Knex.Transaction

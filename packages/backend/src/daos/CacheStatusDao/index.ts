@@ -1,6 +1,8 @@
 import knex from '@/connection';
 import { Knex } from 'knex';
 
+// COMPLETE
+
 interface CacheStatusRow {
   disableExpires: Date;
 }
@@ -12,7 +14,7 @@ class CacheStatusDao {
    * @returns Boolean indicating if the cache is enabled
    * @throws Error if the cache status row does not exist
    */
-  async cacheIsEnabled(trx?: Knex.Transaction): Promise<boolean> {
+  public async cacheIsEnabled(trx?: Knex.Transaction): Promise<boolean> {
     const k = trx || knex;
 
     const row: CacheStatusRow | undefined = await k('cache_status')
@@ -32,7 +34,7 @@ class CacheStatusDao {
    * Disables the cache for 10 minutes.
    * @param trx Knex Transaction. Optional.
    */
-  async disableCache(trx?: Knex.Transaction): Promise<void> {
+  public async disableCache(trx?: Knex.Transaction): Promise<void> {
     const k = trx || knex;
 
     const expires = new Date(Date.now() + 1000 * 60 * 10); // 10 mins
@@ -45,7 +47,7 @@ class CacheStatusDao {
    * Enables the cache.
    * @param trx Knex Transaction. Optional.
    */
-  async enableCache(trx?: Knex.Transaction): Promise<void> {
+  public async enableCache(trx?: Knex.Transaction): Promise<void> {
     const k = trx || knex;
 
     await k('cache_status').update({

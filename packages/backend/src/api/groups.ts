@@ -1,14 +1,10 @@
 import express from 'express';
-import {
-  CreateGroupPayload,
-  Group,
-  UpdateGroupDescriptionPayload,
-} from '@oare/types';
+import { CreateGroupPayload, UpdateGroupDescriptionPayload } from '@oare/types';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -84,10 +80,9 @@ router
 
       const groupIds = await OareGroupDao.getAllGroupIds();
 
-      // FIXME there has to be a better solution than this
-      const groups = (
-        await Promise.all(groupIds.map(id => OareGroupDao.getGroupById(id)))
-      ).filter((group): group is Group => group !== null);
+      const groups = await Promise.all(
+        groupIds.map(id => OareGroupDao.getGroupById(id))
+      );
 
       res.json(groups);
     } catch (err) {

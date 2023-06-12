@@ -386,7 +386,7 @@ class TextDiscourseDao {
     const response: WordsInTextsSearchResponse = {
       results: textWithDiscourseUuidsArray.map((text, index) => ({
         uuid: text.textUuid,
-        name: textNames[index],
+        name: textNames[index] || '',
         discourseUnits: discourseUnits[index],
         discourseUuids: text.discourseUuids,
       })),

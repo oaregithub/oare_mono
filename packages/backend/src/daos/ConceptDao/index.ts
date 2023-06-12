@@ -2,7 +2,7 @@ import { LinkItem } from '@oare/types';
 import { Knex } from 'knex';
 import knex from '@/connection';
 
-// VERIFIED COMPLETE
+// COMPLETE
 
 class ConceptDao {
   /**

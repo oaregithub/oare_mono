@@ -10,7 +10,10 @@ class TreeDao {
    * @param row The tree row to insert.
    * @param trx Knex Transaction. Optional.
    */
-  async insertTreeRow(row: TreeRow, trx?: Knex.Transaction): Promise<void> {
+  public async insertTreeRow(
+    row: TreeRow,
+    trx?: Knex.Transaction
+  ): Promise<void> {
     const k = trx || knex;
 
     await k('tree').insert(row);

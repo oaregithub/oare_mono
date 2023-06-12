@@ -1,7 +1,9 @@
 import knex from '@/connection';
-import { CollectionRow, Text, Collection } from '@oare/types';
+import { CollectionRow, Collection } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
+
+// COMPLETE
 
 class CollectionDao {
   /**

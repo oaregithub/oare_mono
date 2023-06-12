@@ -12,7 +12,7 @@ class SearchFailureDao {
    * @param userUuid The UUID of the user that performed the search.
    * @param trx Knex Transaction. Optional.
    */
-  async insertSearchFailure(
+  public async insertSearchFailure(
     type: SearchType,
     query: string,
     userUuid: string | null,

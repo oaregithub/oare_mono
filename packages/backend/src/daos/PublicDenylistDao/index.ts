@@ -3,6 +3,8 @@ import sl from '@/serviceLocator';
 import { DenylistAllowlistType } from '@oare/types';
 import { Knex } from 'knex';
 
+// MOSTLY COMPLETE
+
 class PublicDenylistDao {
   /**
    * Retrieves the public denylist for the given type.
@@ -10,7 +12,7 @@ class PublicDenylistDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of UUIDs of the items in the denylist.
    */
-  async getDenylist(
+  public async getDenylist(
     type: DenylistAllowlistType,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -37,7 +39,7 @@ class PublicDenylistDao {
    * @param type The type of the items to add.
    * @param trx Knex Transaction. Optional.
    */
-  async addItemsToDenylist(
+  public async addItemsToDenylist(
     uuids: string[],
     type: DenylistAllowlistType,
     trx?: Knex.Transaction
@@ -57,7 +59,7 @@ class PublicDenylistDao {
    * @param uuid The UUID of the item to remove.
    * @param trx Knex Transaction. Optional.
    */
-  async removeItemFromDenylist(
+  public async removeItemFromDenylist(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<void> {
@@ -72,13 +74,11 @@ class PublicDenylistDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating whether the text is publicly viewable.
    */
-  async textIsPubliclyViewable(
+  public async textIsPubliclyViewable(
     textUuid: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
-    const PublicDenylistDao = sl.get('PublicDenylistDao');
-
-    const textDenylist = await PublicDenylistDao.getDenylist('text', trx);
+    const textDenylist = await this.getDenylist('text', trx);
 
     if (textDenylist.includes(textUuid)) {
       return false;
@@ -88,4 +88,7 @@ class PublicDenylistDao {
   }
 }
 
+/**
+ * PublicDenylistDao instance as a singleton.
+ */
 export default new PublicDenylistDao();

@@ -14,9 +14,7 @@ async function collectionsMiddleware(
 ) {
   try {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const HierarchyDao = sl.get('HierarchyDao');
 
-    const { user } = req;
     const userUuid = req.user ? req.user.uuid : null;
     const uuid = req.params.uuid as string;
 

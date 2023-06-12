@@ -2,6 +2,8 @@ import knex from '@/connection';
 import { SignRow, SignOrgRow, SignReadingRow, Sign } from '@oare/types';
 import { Knex } from 'knex';
 
+// MOSTLY COMPLETE
+
 // FIXME should probably be split into 3 separate daos
 
 class SignReadingDao {
@@ -11,7 +13,7 @@ class SignReadingDao {
    * @param trx Knex Transaction. Optional.
    * @returns Boolean indicating whether the sign reading exists
    */
-  async isValidReading(
+  public async isValidReading(
     reading: string,
     trx?: Knex.Transaction
   ): Promise<boolean> {
@@ -28,7 +30,7 @@ class SignReadingDao {
    * @param signs array of all possible signs from intellisearch query
    * @returns sign uuids for valid signs found in the array of possible signs
    */
-  async getIntellisearchSignUuids(
+  public async getIntellisearchSignUuids(
     signs: string[],
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -42,7 +44,7 @@ class SignReadingDao {
   }
 
   // FIXME don't yet know what this does so can't document
-  async getMatchingSigns(
+  public async getMatchingSigns(
     sign: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
