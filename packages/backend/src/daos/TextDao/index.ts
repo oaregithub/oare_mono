@@ -1,14 +1,9 @@
 import knex from '@/connection';
-import {
-  Text,
-  TextRow,
-  LinkItem,
-  TextTransliterationStatus,
-} from '@oare/types';
+import { Text, TextRow, LinkItem } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 class TextDao {
   /**
@@ -84,53 +79,6 @@ class TextDao {
     }
 
     return textRow;
-  }
-
-  // FIXME perhaps move to hierarchy dao?
-  public async getTransliterationOptions(trx?: Knex.Transaction) {
-    const k = trx || knex;
-
-    const transliterationOptions: TextTransliterationStatus[] = await k(
-      'hierarchy'
-    )
-      .select(
-        'hierarchy.object_uuid as uuid',
-        'a1.name as color',
-        'field.field as colorMeaning'
-      )
-      .innerJoin('alias as a1', 'a1.reference_uuid', 'hierarchy.object_uuid')
-      .innerJoin(
-        'alias as a2',
-        'a2.reference_uuid',
-        'hierarchy.obj_parent_uuid'
-      )
-      .innerJoin('field', 'hierarchy.object_uuid', 'field.reference_uuid')
-      .where('a2.name', 'transliteration status');
-
-    return transliterationOptions;
-  }
-
-  // FIXME perhaps move to hierarchy dao?
-  public async getTextTransliterationStatusByUuid(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<TextTransliterationStatus> {
-    const k = trx || knex;
-
-    const transliterationOption: TextTransliterationStatus = await k(
-      'hierarchy'
-    )
-      .select(
-        'hierarchy.object_uuid as uuid',
-        'alias.name as color',
-        'field.field as colorMeaning'
-      )
-      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
-      .innerJoin('field', 'field.reference_uuid', 'hierarchy.object_uuid')
-      .where({ 'hierarchy.object_uuid': uuid })
-      .first();
-
-    return transliterationOption;
   }
 
   /**

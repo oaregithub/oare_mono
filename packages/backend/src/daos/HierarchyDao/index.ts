@@ -7,6 +7,7 @@ import {
   VariableRow,
   PropertyValue,
   ValueRow,
+  TextTransliterationStatus,
 } from '@oare/types';
 import knex from '@/connection';
 import sl from '@/serviceLocator';
@@ -393,6 +394,62 @@ class HierarchyDao {
     }
 
     return row;
+  }
+
+  /**
+   * Retrieves a list of transliteration options.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of transliteration options.
+   */
+  public async getTransliterationOptions(trx?: Knex.Transaction) {
+    const k = trx || knex;
+
+    const transliterationOptions: TextTransliterationStatus[] = await k(
+      'hierarchy'
+    )
+      .select(
+        'hierarchy.object_uuid as uuid',
+        'a1.name as color',
+        'field.field as colorMeaning'
+      )
+      .innerJoin('alias as a1', 'a1.reference_uuid', 'hierarchy.object_uuid')
+      .innerJoin(
+        'alias as a2',
+        'a2.reference_uuid',
+        'hierarchy.obj_parent_uuid'
+      )
+      .innerJoin('field', 'hierarchy.object_uuid', 'field.reference_uuid')
+      .where('a2.name', 'transliteration status');
+
+    return transliterationOptions;
+  }
+
+  /**
+   * Retrieves a transliteration option by UUID. The translit_status column in the `text` table refers to the UUID of a transliteration option.
+   * @param uuid The UUID of the transliteration option to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A transliteration option.
+   */
+  public async getTextTransliterationStatusByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<TextTransliterationStatus> {
+    const k = trx || knex;
+
+    const transliterationOption: TextTransliterationStatus = await k(
+      'hierarchy'
+    )
+      .select(
+        'hierarchy.object_uuid as uuid',
+        'alias.name as color',
+        'field.field as colorMeaning'
+      )
+      .innerJoin('alias', 'alias.reference_uuid', 'hierarchy.object_uuid')
+      .innerJoin('field', 'field.reference_uuid', 'hierarchy.object_uuid')
+      .where({ 'hierarchy.object_uuid': uuid })
+      .first();
+
+    return transliterationOption;
   }
 }
 

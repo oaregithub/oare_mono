@@ -18,9 +18,9 @@ router
     permissionsRoute('EDIT_TRANSLITERATION_STATUS'),
     async (_req, res, next) => {
       try {
-        const TextDao = sl.get('TextDao');
+        const HierarchyDao = sl.get('HierarchyDao');
 
-        const transliterationStatuses: TextTransliterationStatus[] = await TextDao.getTransliterationOptions();
+        const transliterationStatuses: TextTransliterationStatus[] = await HierarchyDao.getTransliterationOptions();
 
         res.json(transliterationStatuses);
       } catch (err) {

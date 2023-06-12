@@ -33,6 +33,7 @@ router
         const CollectionDao = sl.get('CollectionDao');
         const BibliographyDao = sl.get('BibliographyDao');
         const ResourceDao = sl.get('ResourceDao');
+        const HierarchyDao = sl.get('HierarchyDao');
         const cache = sl.get('cache');
 
         const text = await TextDao.getTextByUuid(textUuid);
@@ -69,7 +70,7 @@ router
 
         const sourceText = await ResourceDao.getTextFileByTextUuid(textUuid);
 
-        const transliteration = await TextDao.getTextTransliterationStatusByUuid(
+        const transliteration = await HierarchyDao.getTextTransliterationStatusByUuid(
           text.translitStatus
         );
 
