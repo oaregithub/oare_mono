@@ -17,7 +17,7 @@ export async function prepareIndividualSearchCharacters(
 
   const characterUuids = await Promise.all(
     signsArray.map(signs =>
-      SignReadingDao.getIntellisearchSignUuids(signs, trx)
+      SignReadingDao.getValidSignReadingUuidsByPossibleReadings(signs, trx)
     )
   );
   return characterUuids;
@@ -150,7 +150,9 @@ export const applyDollarSymbol = async (
     dollarSigns = dollarSigns.map(sign => sign.substr(1));
     dollarSigns = (
       await Promise.all(
-        dollarSigns.map(sign => SignReadingDao.getMatchingSigns(sign, trx))
+        dollarSigns.map(reading =>
+          SignReadingDao.getAlternateSignReadings(reading, trx)
+        )
       )
     ).flat();
   }

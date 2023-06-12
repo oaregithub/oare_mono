@@ -514,6 +514,51 @@ class TextEpigraphyDao {
         .increment('object_on_tablet', amount);
     }
   }
+
+  /**
+   * Gets the number of occurrences of a sign in the text_epigraphy table.
+   * @param uuid The UUID of the sign to get the occurrences for.
+   * @param trx Knex Transaction. Optional.
+   * @returns A number indicating the number of occurrences of the sign.
+   */
+  public async getSignOccurrencesCount(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knex;
+
+    const count: number = await k('text_epigraphy')
+      .count({ count: 'uuid' })
+      .where({ sign_uuid: uuid })
+      .first()
+      .then(row => (row && row.count ? Number(row.count) : 0));
+
+    return count;
+  }
+
+  /**
+   * Gets the number of occurrences of a sign reading in the text_epigraphy table.
+   * @param uuid The UUID of the sign reading to get the occurrences for.
+   * @param trx Knex Transaction. Optional.
+   * @returns A number indicating the number of occurrences of the sign reading.
+   */
+  public async getSignReadingOccurrencesCount(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knex;
+
+    const count: number = await k('text_epigraphy')
+      .count({ count: 'uuid' })
+      .where({ reading_uuid: uuid })
+      .first()
+      .then(row => (row && row.count ? Number(row.count) : 0));
+
+    return count;
+  }
 }
 
+/**
+ * TextEpigraphyDao instance as a singleton.
+ */
 export default new TextEpigraphyDao();

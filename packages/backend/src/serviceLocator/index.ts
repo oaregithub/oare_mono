@@ -31,6 +31,8 @@ import QuarantineTextDao from '@/daos/QuarantineTextDao';
 import ResourceDao from '@/daos/ResourceDao';
 import SealDao from '@/daos/SealDao';
 import SearchFailureDao from '@/daos/SearchFailureDao';
+import SignDao from '@/daos/SignDao';
+import SignOrgDao from '@/daos/SignOrgDao';
 import SignReadingDao from '@/daos/SignReadingDao';
 import SpatialUnitDao from '@/daos/SpatialUnitDao';
 import TextDao from '@/daos/TextDao';
@@ -85,6 +87,8 @@ export type ServiceTypes = {
   ResourceDao: typeof ResourceDao;
   SealDao: typeof SealDao;
   SearchFailureDao: typeof SearchFailureDao;
+  SignDao: typeof SignDao;
+  SignOrgDao: typeof SignOrgDao;
   SignReadingDao: typeof SignReadingDao;
   SpatialUnitDao: typeof SpatialUnitDao;
   TextDao: typeof TextDao;
