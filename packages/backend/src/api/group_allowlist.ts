@@ -2,18 +2,11 @@ import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
-import {
-  AddDenylistAllowlistPayload,
-  DenylistAllowlist,
-  Image,
-  Text,
-} from '@oare/types';
+import { AddDenylistAllowlistPayload, DenylistAllowlist } from '@oare/types';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
-
-// FIXME migration to remove rows that had a type of collection
 
 router
   .route('/group_allowlist/:groupId')
@@ -34,17 +27,13 @@ router
         'img'
       );
 
-      const texts = (
-        await Promise.all(
-          allowlistTexts.map(uuid => TextDao.getTextByUuid(uuid))
-        )
-      ).filter((text): text is Text => !!text);
+      const texts = await Promise.all(
+        allowlistTexts.map(uuid => TextDao.getTextByUuid(uuid))
+      );
 
-      const images = (
-        await Promise.all(
-          allowlistImages.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
-        )
-      ).filter((image): image is Image => !!image);
+      const images = await Promise.all(
+        allowlistImages.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
+      );
 
       const response: DenylistAllowlist = {
         texts,
@@ -67,15 +56,15 @@ router
       const { uuids, type }: AddDenylistAllowlistPayload = req.body;
 
       // Make sure that group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
+      try {
+        await OareGroupDao.getGroupById(groupId);
+      } catch (err) {
+        next(new HttpBadRequest(err as string));
         return;
       }
 
       // If texts, make sure all text UUIDs exist
       if (type === 'text') {
-        // FIXME not ideal setup for checking null status
         try {
           await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
         } catch (err) {
@@ -114,10 +103,11 @@ router
       const groupId = Number(req.params.groupId);
       const { uuid } = req.params;
 
-      // Make sure group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
+      // Make sure that group ID exists
+      try {
+        await OareGroupDao.getGroupById(groupId);
+      } catch (err) {
+        next(new HttpBadRequest(err as string));
         return;
       }
 

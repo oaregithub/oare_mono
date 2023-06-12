@@ -1,17 +1,10 @@
 import express from 'express';
 import { AddDenylistAllowlistPayload, DenylistAllowlist } from '@oare/types';
 import adminRoute from '@/middlewares/router/adminRoute';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// MOSTLY COMPLETE
-
-// FIXME unrelated to this file, but some of the logic in the server start command could be moved into
-/// the build or zip sh files. Those both could be cleaned up.
-
-// FIXME Should probably add HTTP 400 checks
-
-// FIXME migration to remove rows that had a type of collection
+// COMPLETE
 
 const router = express.Router();
 
@@ -46,8 +39,32 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const PublicDenylistDao = sl.get('PublicDenylistDao');
+      const TextDao = sl.get('TextDao');
+      const ResourceDao = sl.get('ResourceDao');
 
       const { uuids, type }: AddDenylistAllowlistPayload = req.body;
+
+      // If texts, make sure all text UUIDs exist
+      if (type === 'text') {
+        try {
+          await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
+        } catch (err) {
+          next(new HttpBadRequest(err as string));
+          return;
+        }
+      }
+
+      // If images, make sure all images UUIDs exist
+      if (type === 'img') {
+        try {
+          await Promise.all(
+            uuids.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
+          );
+        } catch (err) {
+          next(new HttpBadRequest(err as string));
+          return;
+        }
+      }
 
       await PublicDenylistDao.addItemsToDenylist(uuids, type);
 

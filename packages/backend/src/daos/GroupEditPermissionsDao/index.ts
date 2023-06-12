@@ -2,9 +2,7 @@ import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// MOSTLY COMPLETE
-
-// FIXME run migration to remove type column and removing rows of type collection
+// COMPLETE
 
 class GroupEditPermissionsDao {
   /**
@@ -19,9 +17,7 @@ class GroupEditPermissionsDao {
   ): Promise<string[]> {
     const k = trx || knex;
 
-    // FIXME i should just remove the items from the edit permissions when they're quarantined
     const QuarantineTextDao = sl.get('QuarantineTextDao');
-
     const quarantinedTextUuids = await QuarantineTextDao.getAllQuarantinedTextUuids(
       trx
     );

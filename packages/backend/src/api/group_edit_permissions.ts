@@ -4,11 +4,9 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
 import { GroupEditPermissionsPayload } from '@oare/types';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
-
-// FIXME migration to remove type column and delete all rows that had a type of collection
 
 router
   .route('/group_edit_permissions/:groupId')
@@ -44,21 +42,19 @@ router
       const OareGroupDao = sl.get('OareGroupDao');
       const TextDao = sl.get('TextDao');
 
-      // Make sure that group Id exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
+      // Make sure that group ID exists
+      try {
+        await OareGroupDao.getGroupById(groupId);
+      } catch (err) {
+        next(new HttpBadRequest(err as string));
         return;
       }
 
-      // FIXME
-      const texts = await Promise.all(
-        uuids.map(uuid => TextDao.getTextByUuid(uuid))
-      );
-      if (texts.some(text => !text)) {
-        next(
-          new HttpBadRequest('One or more of given text UUIDs does not exist')
-        );
+      // Make sure that all texts exist
+      try {
+        await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
+      } catch (err) {
+        next(new HttpBadRequest(err as string));
         return;
       }
 

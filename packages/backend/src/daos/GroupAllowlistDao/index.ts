@@ -3,7 +3,7 @@ import sl from '@/serviceLocator';
 import { DenylistAllowlistType } from '@oare/types';
 import { Knex } from 'knex';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 class GroupAllowlistDao {
   /**
@@ -21,8 +21,6 @@ class GroupAllowlistDao {
     const k = trx || knex;
 
     const QuarantineTextDao = sl.get('QuarantineTextDao');
-
-    // FIXME should probably just remove from allowlist if quarantined
     const quarantinedTextUuids = await QuarantineTextDao.getAllQuarantinedTextUuids(
       trx
     );
