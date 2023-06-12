@@ -157,17 +157,18 @@ class ItemPropertiesDao {
   ): Promise<string | null> {
     const k = trx || knex;
 
-    const location = await k('item_properties as ip')
+    const location: { value: string } | undefined = await k(
+      'item_properties as ip'
+    )
       .leftJoin('item_properties as ip2', 'ip.parent_uuid', 'ip2.parent_uuid')
       .leftJoin('item_properties as ip3', 'ip2.uuid', 'ip3.parent_uuid')
       .where('ip3.variable_uuid', variableUuid)
       .andWhere('ip3.reference_uuid', textUuid)
       .andWhere('ip.object_uuid', bibliographyUuid)
       .select('ip3.value')
-      .first()
-      .then(row => row.value);
+      .first();
 
-    return location;
+    return location ? location.value : null;
   }
 }
 

@@ -193,11 +193,11 @@ class ResourceDao {
       return citationurls;
     }
 
-    if (resourceRow.format && beginPage && beginPlate) {
+    if (resourceRow.format) {
       const pdfPageNumResponse = this.calcPDFPageNum(
         resourceRow.format,
-        beginPage,
-        beginPlate
+        beginPage || null,
+        beginPlate || null
       );
       page = pdfPageNumResponse.page;
       plate = pdfPageNumResponse.plate;
@@ -497,6 +497,9 @@ class ResourceDao {
       .pluck('obj_uuid')
       .where({ reference_uuid: referenceUuid })
       .modify(qb => {
+        if (container || type) {
+          qb.innerJoin('resource', 'link.obj_uuid', 'resource.uuid');
+        }
         if (container) {
           qb.where({ container });
         }

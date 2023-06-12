@@ -3,7 +3,7 @@ import {
   TextDiscourseRow,
   DiscourseUnitType,
 } from './textDiscourse';
-import { Collection } from './collection';
+import { CollectionRow } from './collection';
 import { InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './signReading';
 import { TreeRow } from './tree';
@@ -25,7 +25,7 @@ export type RowTypes =
 
 export interface Epigraphy {
   text: Text;
-  collection: Collection;
+  collection: CollectionRow;
   transliteration: TextTransliterationStatus;
   units: EpigraphicUnit[];
   discourseUnits: DiscourseUnit[];

@@ -48,7 +48,7 @@ router
           return;
         }
 
-        const collection = await CollectionDao.getCollectionByUuid(
+        const collection = await CollectionDao.getCollectionRowByUuid(
           text.collectionUuid
         );
 
@@ -58,11 +58,6 @@ router
           );
           return;
         }
-
-        const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
-        const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
-          textUuid
-        );
 
         const citations = await BibliographyDao.getCitationsByTextUuid(
           textUuid
@@ -74,16 +69,21 @@ router
           text.translitStatus
         );
 
+        const units = await TextEpigraphyDao.getEpigraphicUnits(textUuid);
+        const discourseUnits = await TextDiscourseDao.getTextDiscourseUnits(
+          textUuid
+        );
+
         const epigraphy: Epigraphy = {
           text,
           collection,
-          units,
-          discourseUnits,
           citations,
           sourceText,
           transliteration,
           images: [], // Will be set in cache filter
           canEdit: false, // Will be set in cache filter
+          units,
+          discourseUnits,
         };
 
         const response = await cache.insert<Epigraphy>(

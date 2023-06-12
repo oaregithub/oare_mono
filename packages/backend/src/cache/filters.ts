@@ -107,10 +107,8 @@ export const collectionFilter: CacheFilter<Collection[]> = async (
   user: User | null
 ): Promise<Collection[]> => {
   const CollectionTextUtils = sl.get('CollectionTextUtils');
-  const HierarchyDao = sl.get('HierarchyDao');
 
   const userUuid = user ? user.uuid : null;
-  const isAdmin = !!user && user.isAdmin;
 
   const viewableCollectionsStatus = await Promise.all(
     collections.map(collection =>

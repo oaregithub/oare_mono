@@ -13,7 +13,7 @@ class CollectionDao {
    * @returns Single collection row.
    * @throws Error if no collection row found.
    */
-  private async getCollectionRowByUuid(
+  public async getCollectionRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<CollectionRow> {
