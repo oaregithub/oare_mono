@@ -8,7 +8,7 @@ import {
   UpdateTextTransliterationStatusPayload,
 } from '@oare/types';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -42,7 +42,6 @@ router
 
         await TextDao.updateTransliterationStatus(textUuid, color);
 
-        // FIXME will need to revisit all cache clears to make sure they point to the right place now that changes have been made.
         await cache.clear(`/epigraphies/text/${textUuid}`, {
           level: 'startsWith',
         });
@@ -59,7 +58,6 @@ router
   .patch(permissionsRoute('EDIT_TEXT_INFO'), async (req, res, next) => {
     try {
       const TextDao = sl.get('TextDao');
-      const CollectionDao = sl.get('CollectionDao');
       const cache = sl.get('cache');
 
       const { uuid } = req.params;
@@ -72,9 +70,12 @@ router
         publicationNumber,
       }: EditTextInfoPayload = req.body;
 
-      const text = await TextDao.getTextByUuid(uuid);
-      if (!text) {
-        next(new HttpBadRequest(`Text with UUID ${uuid} does not exist.`));
+      let collectionUuid: string;
+      try {
+        const text = await TextDao.getTextByUuid(uuid);
+        collectionUuid = text.collectionUuid;
+      } catch (err) {
+        next(new HttpBadRequest(err as string));
         return;
       }
 
@@ -88,11 +89,10 @@ router
         publicationNumber
       );
 
-      // FIXME will need to revisit all cache clears to make sure they point to the right place now that changes have been made.
       await cache.clear(`/epigraphies/${uuid}`, {
         level: 'startsWith',
       });
-      await cache.clear(`/collection/${text.collectionUuid}`, {
+      await cache.clear(`/collection/${collectionUuid}`, {
         level: 'exact',
       });
 
