@@ -10,6 +10,7 @@ import {
   Archive,
   Dossier,
   CollectionRow,
+  Publication,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { CacheFilter } from '@/cache';
@@ -386,4 +387,28 @@ export const dossierFilter: CacheFilter<Dossier> = async (
   };
 
   return dossierResponse;
+};
+
+/**
+ * Filters out texts that the user does not have access to from an array of publications.
+ * @param publications The publications to filter.
+ * @param user The requesting user.
+ * @returns The publications with filtered texts.
+ */
+export const publicationsFilter: CacheFilter<Publication[]> = async (
+  publications: Publication[],
+  user: User | null
+): Promise<Publication[]> => {
+  const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+  const textsToHide = await CollectionTextUtils.textsToHide(
+    user ? user.uuid : null
+  );
+
+  const publicationResponse: Publication[] = publications.map(publication => ({
+    ...publication,
+    texts: publication.texts.filter(text => !textsToHide.includes(text.uuid)),
+  }));
+
+  return publicationResponse;
 };
