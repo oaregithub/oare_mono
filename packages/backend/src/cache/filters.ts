@@ -9,6 +9,7 @@ import {
   Bibliography,
   Archive,
   Dossier,
+  CollectionRow,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { CacheFilter } from '@/cache';
@@ -102,10 +103,10 @@ export const collectionTextsFilter: CacheFilter<Collection> = async (
  * @param user The requesting user.
  * @returns The filtered list of collections.
  */
-export const collectionFilter: CacheFilter<Collection[]> = async (
-  collections: Collection[],
+export const collectionFilter: CacheFilter<CollectionRow[]> = async (
+  collections: CollectionRow[],
   user: User | null
-): Promise<Collection[]> => {
+): Promise<CollectionRow[]> => {
   const CollectionTextUtils = sl.get('CollectionTextUtils');
 
   const userUuid = user ? user.uuid : null;
@@ -120,14 +121,7 @@ export const collectionFilter: CacheFilter<Collection[]> = async (
     (_, idx) => viewableCollectionsStatus[idx]
   );
 
-  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-
-  const filteredCollections = viewableCollections.map(collection => ({
-    ...collection,
-    texts: collection.texts.filter(text => !textsToHide.includes(text.uuid)),
-  }));
-
-  return filteredCollections;
+  return viewableCollections;
 };
 
 /**

@@ -3,7 +3,7 @@ import { HttpInternalError } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/router/collections';
 import sl from '@/serviceLocator';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { Collection } from '@oare/types';
+import { Collection, CollectionRow } from '@oare/types';
 import { collectionTextsFilter, collectionFilter } from '@/cache/filters';
 
 // COMPLETE
@@ -13,7 +13,7 @@ const router = express.Router();
 router
   .route('/collections')
   .get(
-    cacheMiddleware<Collection[]>(collectionFilter),
+    cacheMiddleware<CollectionRow[]>(collectionFilter),
     async (req, res, next) => {
       try {
         const CollectionDao = sl.get('CollectionDao');
@@ -21,13 +21,15 @@ router
 
         const collectionUuids = await CollectionDao.getAllCollectionUuids();
 
-        const collections = await Promise.all(
-          collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
+        const collectionRows = await Promise.all(
+          collectionUuids.map(uuid =>
+            CollectionDao.getCollectionRowByUuid(uuid)
+          )
         );
 
-        const response = await cache.insert<Collection[]>(
+        const response = await cache.insert<CollectionRow[]>(
           { req },
-          collections,
+          collectionRows,
           collectionFilter
         );
 
