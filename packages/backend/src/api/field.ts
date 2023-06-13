@@ -81,6 +81,12 @@ router
         const { uuid } = req.params;
         const { field, primacy, type }: FieldPayload = req.body as FieldPayload;
 
+        const fieldExists = await FieldDao.fieldExists(uuid);
+        if (!fieldExists) {
+          next(new HttpBadRequest('Field does not exist.'));
+          return;
+        }
+
         if (!req.user!.isAdmin && primacy > 1) {
           next(
             new HttpBadRequest('Only admins can edit primacy greater than 1.')

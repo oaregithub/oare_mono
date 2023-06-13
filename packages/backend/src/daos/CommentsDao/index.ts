@@ -104,6 +104,23 @@ class CommentsDao {
 
     return comments;
   }
+
+  /**
+   * Checks if a comment exists.
+   * @param uuid The UUID of the comment to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the comment exists.
+   */
+  public async commentExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const exists = await k('comments').where({ uuid }).first();
+
+    return !!exists;
+  }
 }
 
 /**

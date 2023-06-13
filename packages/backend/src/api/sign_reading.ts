@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { Sign } from '@oare/types';
 import cacheMiddleware from '@/middlewares/router/cache';
@@ -64,6 +64,12 @@ router
       const cache = sl.get('cache');
 
       const { reading } = req.params;
+
+      const signReadingExists = await SignReadingDao.signReadingExists(reading);
+      if (!signReadingExists) {
+        next(new HttpBadRequest('Sign reading does not exist'));
+        return;
+      }
 
       const sign = await SignReadingDao.getSignByReading(reading);
 

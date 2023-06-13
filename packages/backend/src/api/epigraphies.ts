@@ -49,16 +49,6 @@ router
 
         const text = await TextDao.getTextByUuid(textUuid);
 
-        const collectionExists = await CollectionDao.collectionExists(
-          text.collectionUuid
-        );
-        if (!collectionExists) {
-          next(
-            new HttpBadRequest('Text does not belong to a valid collection')
-          );
-          return;
-        }
-
         const collection = await CollectionDao.getCollectionRowByUuid(
           text.collectionUuid
         );
@@ -107,12 +97,23 @@ router
     try {
       const CollectionTextUtils = sl.get('CollectionTextUtils');
       const EditTextUtils = sl.get('EditTextUtils');
+      const TextDao = sl.get('TextDao');
       const cache = sl.get('cache');
       const utils = sl.get('utils');
 
       const userUuid = req.user!.uuid;
 
       const payload: EditTextPayload = req.body;
+
+      const textExists = await TextDao.textExists(payload.textUuid);
+      if (!textExists) {
+        next(
+          new HttpBadRequest(
+            `Text with UUID ${payload.textUuid} does not exist`
+          )
+        );
+        return;
+      }
 
       const canEditText = await CollectionTextUtils.canEditText(
         payload.textUuid,

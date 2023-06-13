@@ -50,8 +50,7 @@ router
     try {
       const ErrorsDao = sl.get('ErrorsDao');
 
-      const user = req.user || null;
-      const userUuid = user ? user.uuid : null;
+      const userUuid = req.user ? req.user.uuid : null;
       const { description, stacktrace }: LogErrorPayload = req.body;
 
       await ErrorsDao.logError(userUuid, description, stacktrace, 'New');

@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { UpdatePermissionPayload, PermissionName } from '@oare/types';
@@ -27,8 +27,15 @@ router
   .get(adminRoute, async (req, res, next) => {
     try {
       const PermissionsDao = sl.get('PermissionsDao');
+      const OareGroupDao = sl.get('OareGroupDao');
 
       const groupId = Number(req.params.groupId);
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
+        return;
+      }
 
       const groupPermissions = await PermissionsDao.getGroupPermissions(
         groupId
@@ -42,9 +49,16 @@ router
   .post(adminRoute, async (req, res, next) => {
     try {
       const PermissionsDao = sl.get('PermissionsDao');
+      const OareGroupDao = sl.get('OareGroupDao');
 
       const groupId = Number(req.params.groupId);
       const { permission }: UpdatePermissionPayload = req.body;
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
+        return;
+      }
 
       await PermissionsDao.addGroupPermission(
         groupId,
@@ -63,9 +77,16 @@ router
   .delete(adminRoute, async (req, res, next) => {
     try {
       const PermissionsDao = sl.get('PermissionsDao');
+      const OareGroupDao = sl.get('OareGroupDao');
 
       const groupId = Number(req.params.groupId);
       const permission = req.params.permission as PermissionName;
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
+        return;
+      }
 
       await PermissionsDao.removeGroupPermission(groupId, permission);
 

@@ -15,8 +15,15 @@ router
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const TextDao = sl.get('TextDao');
       const ResourceDao = sl.get('ResourceDao');
+      const OareGroupDao = sl.get('OareGroupDao');
 
       const groupId = Number(req.params.groupId);
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
+        return;
+      }
 
       const allowlistTexts = await GroupAllowlistDao.getGroupAllowlist(
         groupId,
@@ -62,7 +69,7 @@ router
         return;
       }
 
-      // If texts, make sure all text UUIDs exist
+      // Make sure all UUIDs exist
       if (type === 'text') {
         const textsExist = await Promise.all(
           uuids.map(uuid => TextDao.textExists(uuid))
@@ -73,10 +80,7 @@ router
           );
           return;
         }
-      }
-
-      // If images, make sure all images UUIDs exist
-      if (type === 'img') {
+      } else if (type === 'img') {
         const imagesExist = await Promise.all(
           uuids.map(uuid => ResourceDao.resourceExists(uuid))
         );
@@ -88,6 +92,9 @@ router
           );
           return;
         }
+      } else {
+        next(new HttpBadRequest('Invalid type'));
+        return;
       }
 
       await GroupAllowlistDao.addItemsToAllowlist(groupId, uuids, type);
@@ -121,7 +128,7 @@ router
         groupId
       );
       if (!associationExists) {
-        next(new HttpBadRequest(`Cannot remove item not in group ${uuid}`));
+        next(new HttpBadRequest(`Cannot remove item not in group: ${uuid}`));
         return;
       }
 

@@ -14,8 +14,15 @@ router
     try {
       const GroupEditPermissionsDao = sl.get('GroupEditPermissionsDao');
       const TextDao = sl.get('TextDao');
+      const OareGroupDao = sl.get('OareGroupDao');
 
       const groupId = Number(req.params.groupId);
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
+        return;
+      }
 
       const groupEditPermissionTextUuids = await GroupEditPermissionsDao.getGroupEditPermissions(
         groupId

@@ -120,6 +120,23 @@ class SignReadingDao {
   }
 
   /**
+   * Checks if a sign reading exists.
+   * @param reading The sign reading to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the sign reading exists.
+   */
+  public async signReadingExists(
+    reading: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const exists = await k('sign_reading').where({ reading }).first();
+
+    return !!exists;
+  }
+
+  /**
    * Constructs a complete Sign object for the given reading.
    * @param reading The reading to retrieve the sign for.
    * @param trx Knex Transaction. Optional.

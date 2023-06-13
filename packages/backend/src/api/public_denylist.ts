@@ -44,7 +44,7 @@ router
 
       const { uuids, type }: AddDenylistAllowlistPayload = req.body;
 
-      // If texts, make sure all text UUIDs exist
+      // Make sure all UUIDs exist
       if (type === 'text') {
         const textsExist = await Promise.all(
           uuids.map(uuid => TextDao.textExists(uuid))
@@ -53,10 +53,7 @@ router
           next(new HttpBadRequest('One or more texts do not exist'));
           return;
         }
-      }
-
-      // If images, make sure all images UUIDs exist
-      if (type === 'img') {
+      } else if (type === 'img') {
         const imagesExist = await Promise.all(
           uuids.map(uuid => ResourceDao.resourceExists(uuid))
         );
@@ -64,6 +61,9 @@ router
           next(new HttpBadRequest('One or more images do not exist'));
           return;
         }
+      } else {
+        next(new HttpBadRequest('Invalid type'));
+        return;
       }
 
       await PublicDenylistDao.addItemsToDenylist(uuids, type);

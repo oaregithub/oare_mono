@@ -79,8 +79,13 @@ router
       const ThreadsDao = sl.get('ThreadsDao');
 
       const { uuid } = req.params;
-
       const { name }: UpdateThreadNamePayload = req.body;
+
+      const threadExists = await ThreadsDao.threadExists(uuid);
+      if (!threadExists) {
+        next(new HttpBadRequest('Thread does not exist'));
+        return;
+      }
 
       await ThreadsDao.updateThreadName(uuid, name);
 

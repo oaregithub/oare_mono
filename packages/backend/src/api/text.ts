@@ -40,6 +40,12 @@ router
           color,
         }: UpdateTextTransliterationStatusPayload = req.body;
 
+        const textExists = await TextDao.textExists(textUuid);
+        if (!textExists) {
+          next(new HttpBadRequest('Text does not exist.'));
+          return;
+        }
+
         await TextDao.updateTransliterationStatus(textUuid, color);
 
         await cache.clear(`/epigraphies/text/${textUuid}`, {

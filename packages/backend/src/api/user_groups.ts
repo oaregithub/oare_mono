@@ -41,6 +41,7 @@ router
     try {
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
+      const UserDao = sl.get('UserDao');
 
       const groupId = Number(req.params.groupId);
       const { userUuids }: AddUsersToGroupPayload = req.body;
@@ -49,6 +50,15 @@ router
       const groupExists = await OareGroupDao.groupExists(groupId);
       if (!groupExists) {
         next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
+        return;
+      }
+
+      // Make sure the users exist
+      const usersExist = await Promise.all(
+        userUuids.map(uuid => UserDao.userExists(uuid))
+      );
+      if (usersExist.includes(false)) {
+        next(new HttpBadRequest('One or more users do not exist'));
         return;
       }
 
@@ -78,6 +88,7 @@ router
     try {
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
+      const UserDao = sl.get('UserDao');
 
       const groupId = Number(req.params.groupId);
       const { userUuids }: RemoveUsersFromGroupPayload = req.query as any;
@@ -86,6 +97,15 @@ router
       const groupExists = await OareGroupDao.groupExists(groupId);
       if (!groupExists) {
         next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
+        return;
+      }
+
+      // Make sure the users exist
+      const usersExist = await Promise.all(
+        userUuids.map(uuid => UserDao.userExists(uuid))
+      );
+      if (usersExist.includes(false)) {
+        next(new HttpBadRequest('One or more users do not exist'));
         return;
       }
 

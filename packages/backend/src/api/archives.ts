@@ -65,11 +65,29 @@ router
   .delete(adminRoute, async (req, res, next) => {
     try {
       const ArchiveDao = sl.get('ArchiveDao');
+      const TextDao = sl.get('TextDao');
       const utils = sl.get('utils');
       const cache = sl.get('cache');
 
       const { uuid } = req.params;
-      const textUuid = req.params.textUuid as string;
+      const textUuid = req.query.textUuid as string | undefined;
+
+      if (!textUuid) {
+        next(new HttpBadRequest('A text UUID must be provided'));
+        return;
+      }
+
+      const archiveExists = await ArchiveDao.archiveExists(uuid);
+      if (!archiveExists) {
+        next(new HttpBadRequest('Archive does not exist'));
+        return;
+      }
+
+      const textExists = await TextDao.textExists(textUuid);
+      if (!textExists) {
+        next(new HttpBadRequest('Text does not exist'));
+        return;
+      }
 
       await utils.createTransaction(async trx => {
         await ArchiveDao.disconnectText(textUuid, uuid, trx);

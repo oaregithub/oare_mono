@@ -1,6 +1,6 @@
 import express from 'express';
 import sl from '@/serviceLocator';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import permissionRoute from '@/middlewares/router/permissionsRoute';
 import { CreateCommentPayload } from '@oare/types';
 
@@ -13,8 +13,15 @@ router
   .post(permissionRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const CommentsDao = sl.get('CommentsDao');
+      const ThreadsDao = sl.get('ThreadsDao');
 
       const { threadUuid, comment }: CreateCommentPayload = req.body;
+
+      const threadExists = await ThreadsDao.threadExists(threadUuid);
+      if (!threadExists) {
+        next(new HttpBadRequest('Thread does not exist'));
+        return;
+      }
 
       await CommentsDao.createComment(threadUuid, req.user!.uuid, comment);
 
@@ -31,6 +38,12 @@ router
       const CommentsDao = sl.get('CommentsDao');
 
       const { uuid } = req.params;
+
+      const commentExists = await CommentsDao.commentExists(uuid);
+      if (!commentExists) {
+        next(new HttpBadRequest('Comment does not exist'));
+        return;
+      }
 
       await CommentsDao.markAsDeleted(uuid);
 
