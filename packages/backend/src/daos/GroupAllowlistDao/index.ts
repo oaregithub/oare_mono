@@ -74,20 +74,6 @@ class GroupAllowlistDao {
   }
 
   /**
-   * Removes an item from all allowlists. Used when permanently deleting a text.
-   * @param uuid The UUID of the item to remove
-   * @param trx Knex Transaction. Optional.
-   */
-  public async removeItemFromAllAllowlists(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-
-    await k('group_allowlist').where({ uuid }).del();
-  }
-
-  /**
    * Determines if there is an association between a group and an allowlist item
    * @param uuid The UUID of the allowlist item
    * @param groupId The ID of the group

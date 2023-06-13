@@ -120,9 +120,14 @@ export const collectionFilter: CacheFilter<Collection[]> = async (
     (_, idx) => viewableCollectionsStatus[idx]
   );
 
-  // FIXME - should probably remove texts from collections that the user does not have access to here as well. Or perhaps just don't include texts in the first place using an `Omit` TS type.
+  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
 
-  return viewableCollections;
+  const filteredCollections = viewableCollections.map(collection => ({
+    ...collection,
+    texts: collection.texts.filter(text => !textsToHide.includes(text.uuid)),
+  }));
+
+  return filteredCollections;
 };
 
 /**

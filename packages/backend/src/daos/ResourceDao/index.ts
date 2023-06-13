@@ -568,20 +568,6 @@ class ResourceDao {
       obj_uuid: row.objUuid,
     });
   }
-
-  /**
-   * Removes a resource row by its reference UUID. Used when permanently deleting a text.
-   * @param referenceUuid The reference UUID of the resource row to remove.
-   * @param trx Knex Transaction. Optional.
-   */
-  public async removeLinkRowByReferenceUuid(
-    referenceUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-
-    await k('link').del().where({ reference_uuid: referenceUuid });
-  }
 }
 
 export default new ResourceDao();

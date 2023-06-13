@@ -26,14 +26,6 @@ class NoteDao {
 
     return rows;
   }
-
-  async removeNotesByReferenceUuid(
-    referenceUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-    await k('note').del().where({ reference_uuid: referenceUuid });
-  }
 }
 
 export default new NoteDao();

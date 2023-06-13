@@ -304,20 +304,6 @@ class HierarchyDao {
   }
 
   /**
-   * Removes all text hierarchy rows associated with a given text UUID. Used when a text is permanently deleted.
-   * @param textUuid The UUID of the text whose hierarchy rows should be removed.
-   * @param trx Knex Transaction. Optional.
-   */
-  public async removeHierarchyTextRowsByTextUuid(
-    textUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-
-    await k('hierarchy').del().where({ object_uuid: textUuid, type: 'text' });
-  }
-
-  /**
    * Retrieves all hierarchy rows associated with a given object UUID.
    * @param objectUuid The object UUID of the hierarchy rows to retrieve.
    * @param trx Knex Transaction. Optional.

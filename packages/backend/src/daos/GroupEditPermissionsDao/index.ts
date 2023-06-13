@@ -71,20 +71,6 @@ class GroupEditPermissionsDao {
   }
 
   /**
-   * Removes text from all groups' edit permissions. Used when a text is permanently deleted.
-   * @param uuid The UUID of the text to remove from all groups' edit permissions.
-   * @param trx Knex Transaction. Optional.
-   */
-  public async removeTextFromAllEditPermissions(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-
-    await k('group_edit_permissions').where({ uuid }).del();
-  }
-
-  /**
    * Determines if there is an association between a group and a text in the edit permissions table.
    * @param uuid The UUID of the text.
    * @param groupId The ID of the group.

@@ -164,17 +164,6 @@ class TextDao {
   }
 
   /**
-   * Removes a text by its UUID. Used when permanently deleting a text.
-   * @param textUuid The UUID of the text to remove.
-   * @param trx Knex Transaction. Optional.
-   */
-  public async removeTextByUuid(textUuid: string, trx?: Knex.Transaction) {
-    const k = trx || knex;
-
-    await k('text').del().where({ uuid: textUuid });
-  }
-
-  /**
    * Searches texts. Used when searching for link property matches.
    * @param search The search string.
    * @param trx Knex Transaction. Optional.

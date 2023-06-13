@@ -823,34 +823,6 @@ class TextDiscourseDao {
     return countResult && countResult.count ? (countResult.count as number) : 0;
   }
 
-  async removeDiscourseRowsByTextUuid(
-    textUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-
-    let numDiscourseRows = await this.getNumDiscourseRowsByTextUuid(
-      textUuid,
-      trx
-    );
-    while (numDiscourseRows > 0) {
-      const parentUuids = (
-        await k('text_discourse') // eslint-disable-line no-await-in-loop
-          .distinct('parent_uuid')
-          .where({ text_uuid: textUuid })
-          .whereNotNull('parent_uuid')
-      ).map(row => row.parent_uuid);
-      const rowsToDelete: string[] = await k('text_discourse') // eslint-disable-line no-await-in-loop
-        .pluck('uuid')
-        .where({ text_uuid: textUuid })
-        .whereNotIn('uuid', parentUuids);
-
-      await k('text_discourse').del().whereIn('uuid', rowsToDelete); // eslint-disable-line no-await-in-loop
-
-      numDiscourseRows -= rowsToDelete.length;
-    }
-  }
-
   async getSubwordsByDiscourseUuid(
     discourseUuid: string,
     trx?: Knex.Transaction

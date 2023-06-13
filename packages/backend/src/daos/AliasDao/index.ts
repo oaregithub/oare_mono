@@ -58,21 +58,6 @@ class AliasDao {
       primacy,
     });
   }
-
-  /**
-   * Removes all aliases for a given reference UUID.
-   * Use with caution, as this removes all aliases for a given reference UUID, instead of one at a time.
-   * @param referenceUuid The reference UUID to remove aliases for.
-   * @param trx Knex Transaction. Optional.
-   */
-  public async removeAliasByReferenceUuid(
-    referenceUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-
-    await k('alias').del().where({ reference_uuid: referenceUuid });
-  }
 }
 
 /**

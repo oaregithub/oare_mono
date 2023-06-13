@@ -160,20 +160,6 @@ class FieldDao {
   }
 
   /**
-   * Removes all field rows with the given reference UUID. Used when permanently deleting a text.
-   * @param referenceUuid The reference UUID.
-   * @param trx Knex Transaction. Optional.
-   */
-  public async removeFieldRowsByReferenceUuid(
-    referenceUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<void> {
-    const k = trx || knex;
-
-    await k('field').del().where({ reference_uuid: referenceUuid });
-  }
-
-  /**
    * Deletes all field rows with the given reference UUID and type after a previously deleted field row. Used after deleting a field row to maintain primacy ordering.
    * @param referenceUuid The reference UUID.
    * @param deletedPrimacy The primacy of the deleted field row.
