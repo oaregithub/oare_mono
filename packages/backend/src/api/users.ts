@@ -30,7 +30,7 @@ router.route('/users/:uuid').get(authenticatedRoute, async (req, res, next) => {
 
     const { uuid } = req.params;
 
-    const userExists = await UserDao.uuidExists(uuid);
+    const userExists = await UserDao.userExists(uuid);
     if (!userExists) {
       next(new HttpBadRequest(`There is no user with UUID ${uuid}`));
       return;

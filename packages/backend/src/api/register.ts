@@ -37,12 +37,13 @@ router.route('/register').post(async (req, res, next) => {
 
     await UserDao.createUser(uuid, firstName, lastName, email);
 
-    const user = await UserDao.getUserByUuid(uuid);
-    if (!user) {
+    const userExists = await UserDao.userExists(uuid);
+    if (!userExists) {
       next(new HttpInternalError('Error creating user'));
       return;
     }
 
+    const user = await UserDao.getUserByUuid(uuid);
     req.user = user;
 
     const token = await security.getFirebaseToken(user.uuid);

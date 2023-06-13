@@ -142,6 +142,23 @@ class ThreadsDao {
   }
 
   /**
+   * Checks if a thread exists by UUID.
+   * @param uuid The UUID of the thread to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating if the thread exists.
+   */
+  public async threadExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const exists = await k('threads').first().where({ uuid });
+
+    return !!exists;
+  }
+
+  /**
    * Constructs a thread object by UUID.
    * @param uuid The UUID of the thread to retrieve.
    * @param trx Knex Transaction. Optional.

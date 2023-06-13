@@ -220,7 +220,7 @@ class ResourceDao {
    * @param uuid The UUID of the image to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Single image.
-   * @throws Error if no image found for the given UUID.
+   * @throws Error if no image found for the given UUID or if the associated text does not exist.
    */
   public async getS3ImageByUuid(
     uuid: string,
@@ -327,6 +327,7 @@ class ResourceDao {
    * @param textUuid The UUID of the text whose CDLI images to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Array of CDLI images.
+   * @throws Error if the text doesn't exist.
    */
   private async getCdliImagesByTextUuid(
     textUuid: string,
@@ -477,6 +478,23 @@ class ResourceDao {
     }
 
     return row;
+  }
+
+  /**
+   * Checks if a resource exists.
+   * @param uuid The UUID of the resource to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the resource exists.
+   */
+  public async resourceExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const exists = await k('resource').where({ uuid }).first();
+
+    return !!exists;
   }
 
   /**

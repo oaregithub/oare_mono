@@ -56,31 +56,36 @@ router
       const { uuids, type }: AddDenylistAllowlistPayload = req.body;
 
       // Make sure that group ID exists
-      try {
-        await OareGroupDao.getGroupById(groupId);
-      } catch (err) {
-        next(new HttpBadRequest(err as string));
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
         return;
       }
 
       // If texts, make sure all text UUIDs exist
       if (type === 'text') {
-        try {
-          await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
-        } catch (err) {
-          next(new HttpBadRequest(err as string));
+        const textsExist = await Promise.all(
+          uuids.map(uuid => TextDao.textExists(uuid))
+        );
+        if (textsExist.includes(false)) {
+          next(
+            new HttpBadRequest('One or more of the provided texts do not exist')
+          );
           return;
         }
       }
 
       // If images, make sure all images UUIDs exist
       if (type === 'img') {
-        try {
-          await Promise.all(
-            uuids.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
+        const imagesExist = await Promise.all(
+          uuids.map(uuid => ResourceDao.resourceExists(uuid))
+        );
+        if (imagesExist.includes(false)) {
+          next(
+            new HttpBadRequest(
+              'One or more of the provided images do not exist'
+            )
           );
-        } catch (err) {
-          next(new HttpBadRequest(err as string));
           return;
         }
       }
@@ -104,10 +109,9 @@ router
       const { uuid } = req.params;
 
       // Make sure that group ID exists
-      try {
-        await OareGroupDao.getGroupById(groupId);
-      } catch (err) {
-        next(new HttpBadRequest(err as string));
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
         return;
       }
 

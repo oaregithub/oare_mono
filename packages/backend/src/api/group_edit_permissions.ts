@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { text } from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
@@ -43,18 +43,18 @@ router
       const TextDao = sl.get('TextDao');
 
       // Make sure that group ID exists
-      try {
-        await OareGroupDao.getGroupById(groupId);
-      } catch (err) {
-        next(new HttpBadRequest(err as string));
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
         return;
       }
 
       // Make sure that all texts exist
-      try {
-        await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
-      } catch (err) {
-        next(new HttpBadRequest(err as string));
+      const textsExist = await Promise.all(
+        uuids.map(uuid => TextDao.textExists(uuid))
+      );
+      if (!textsExist.includes(false)) {
+        next(new HttpBadRequest('One or more texts do not exist'));
         return;
       }
 
@@ -80,8 +80,8 @@ router
       const uuid = req.params.uuid as string;
 
       // Make sure group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
         next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
         return;
       }

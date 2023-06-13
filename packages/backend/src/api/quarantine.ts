@@ -29,10 +29,9 @@ router
         return;
       }
 
-      try {
-        await TextDao.getTextByUuid(textUuid);
-      } catch (err) {
-        next(new HttpBadRequest(err as string));
+      const textExists = await TextDao.textExists(textUuid);
+      if (!textExists) {
+        next(new HttpBadRequest('Text does not exist.'));
         return;
       }
 

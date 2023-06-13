@@ -119,6 +119,12 @@ router
 
         const { uuid } = req.params;
 
+        const fieldExists = await FieldDao.fieldExists(uuid);
+        if (!fieldExists) {
+          next(new HttpBadRequest('Field does not exist.'));
+          return;
+        }
+
         const fieldRow = await FieldDao.getFieldRowByUuid(uuid);
 
         await FieldDao.deleteField(uuid);

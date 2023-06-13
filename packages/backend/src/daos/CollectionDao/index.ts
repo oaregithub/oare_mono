@@ -32,6 +32,23 @@ class CollectionDao {
   }
 
   /**
+   * Checks if a collection exists.
+   * @param uuid The UUID of the collection to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the collection exists.
+   */
+  public async collectionExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const collection = await k('collection').first().where({ uuid });
+
+    return !!collection;
+  }
+
+  /**
    * Retrieves the UUID of the collection that contains the given text.
    * @param textUuid The UUID of the text whose containing collection to retrieve.
    * @param trx Knex Transaction. Optional.

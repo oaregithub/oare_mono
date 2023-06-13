@@ -1,6 +1,6 @@
 import express from 'express';
 import sl from '@/serviceLocator';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import {
   CreateThreadPayload,
   Thread,
@@ -46,6 +46,12 @@ router
       const userUuid = req.user!.uuid;
 
       const { status }: UpdateThreadStatusPayload = req.body;
+
+      const threadExists = await ThreadsDao.threadExists(uuid);
+      if (!threadExists) {
+        next(new HttpBadRequest('Thread does not exist'));
+        return;
+      }
 
       const originalThread = await ThreadsDao.getThreadByUuid(uuid);
 

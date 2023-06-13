@@ -16,11 +16,13 @@ router
 
       const groupId = Number(req.params.id);
 
-      const group = await OareGroupDao.getGroupById(groupId);
-      if (!group) {
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
         next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
+
+      const group = await OareGroupDao.getGroupById(groupId);
 
       res.json(group);
     } catch (err) {
@@ -32,6 +34,12 @@ router
       const OareGroupDao = sl.get('OareGroupDao');
 
       const groupId = Number(req.params.id);
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
+        return;
+      }
 
       await OareGroupDao.deleteGroup(groupId);
 
@@ -47,13 +55,9 @@ router
       const groupId = Number(req.params.id);
       const { description }: UpdateGroupDescriptionPayload = req.body;
 
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(
-          new HttpBadRequest(
-            'Cannot update description because group does not exist'
-          )
-        );
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
 

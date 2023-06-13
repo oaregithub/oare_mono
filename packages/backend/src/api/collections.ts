@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import collectionsMiddleware from '@/middlewares/router/collections';
 import sl from '@/serviceLocator';
 import cacheMiddleware from '@/middlewares/router/cache';
@@ -51,6 +51,12 @@ router
         const CollectionDao = sl.get('CollectionDao');
 
         const { uuid } = req.params;
+
+        const collectionExists = await CollectionDao.collectionExists(uuid);
+        if (!collectionExists) {
+          next(new HttpBadRequest('Collection does not exist'));
+          return;
+        }
 
         const collection = await CollectionDao.getCollectionByUuid(uuid);
 

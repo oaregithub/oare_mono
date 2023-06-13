@@ -47,6 +47,20 @@ class BibliographyDao {
   }
 
   /**
+   * Checks if a bibliography exists.
+   * @param uuid The UUID of the bibliography to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the bibliography exists.
+   */
+  public async bibliographyExists(uuid: string, trx?: Knex.Transaction) {
+    const k = trx || knex;
+
+    const bibliography = await k('bibliography').first().where({ uuid });
+
+    return !!bibliography;
+  }
+
+  /**
    * Contructs complete Bibliography object for the given UUID
    * @param uuid The UUID of the bibliography
    * @param citationStyle The citation style to use for Zotero

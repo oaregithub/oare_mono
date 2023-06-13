@@ -21,8 +21,8 @@ router
 
       const groupId = Number(req.params.groupId);
 
-      const group = await OareGroupDao.getGroupById(groupId);
-      if (!group) {
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
         next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
@@ -46,8 +46,8 @@ router
       const { userUuids }: AddUsersToGroupPayload = req.body;
 
       // Make sure that the group ID exists
-      const group = await OareGroupDao.getGroupById(groupId);
-      if (!group) {
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
         next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
         return;
       }
@@ -83,9 +83,9 @@ router
       const { userUuids }: RemoveUsersFromGroupPayload = req.query as any;
 
       // Make sure that the group ID exists
-      const group = await OareGroupDao.getGroupById(groupId);
-      if (!group) {
-        next(new HttpInternalError(`Group ID ${groupId} does not exist`));
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
         return;
       }
 

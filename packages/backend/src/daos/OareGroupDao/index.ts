@@ -48,6 +48,23 @@ class OareGroupDao {
   }
 
   /**
+   * Checks if a group exists.
+   * @param id The ID of the group to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the group exists.
+   */
+  public async groupExists(
+    id: number,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const group = await k('oare_group').first().where({ id });
+
+    return !!group;
+  }
+
+  /**
    * Retrieves a list of all group IDs
    * @param trx Knex Transaction. Optional.
    * @returns An array of group IDs.

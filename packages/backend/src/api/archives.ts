@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { Archive, Dossier } from '@oare/types';
 import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
@@ -42,6 +42,12 @@ router
       const cache = sl.get('cache');
 
       const { uuid } = req.params;
+
+      const archiveExists = await ArchiveDao.archiveExists(uuid);
+      if (!archiveExists) {
+        next(new HttpBadRequest('Archive does not exist'));
+        return;
+      }
 
       const archive = await ArchiveDao.getArchiveByUuid(uuid);
 
@@ -87,6 +93,12 @@ router
       const cache = sl.get('cache');
 
       const { uuid } = req.params;
+
+      const dossierExists = await ArchiveDao.archiveExists(uuid);
+      if (!dossierExists) {
+        next(new HttpBadRequest('Dossier does not exist'));
+        return;
+      }
 
       const dossier = await ArchiveDao.getDossierByUuid(uuid);
 

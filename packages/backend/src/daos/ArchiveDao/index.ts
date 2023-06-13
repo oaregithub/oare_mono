@@ -40,6 +40,23 @@ class ArchiveDao {
   }
 
   /**
+   * Checks if an archive exists.
+   * @param uuid The UUID of the archive to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the archive exists.
+   */
+  public async archiveExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const archive = await k('archive').first().where({ uuid });
+
+    return !!archive;
+  }
+
+  /**
    * Gets list of dossier UUIDs that are children of the given archive UUID.
    * @param uuid The UUID of the archive whose dossier children to retrieve.
    * @param trx Knex Transaction. Optional.

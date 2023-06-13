@@ -46,22 +46,22 @@ router
 
       // If texts, make sure all text UUIDs exist
       if (type === 'text') {
-        try {
-          await Promise.all(uuids.map(uuid => TextDao.getTextByUuid(uuid)));
-        } catch (err) {
-          next(new HttpBadRequest(err as string));
+        const textsExist = await Promise.all(
+          uuids.map(uuid => TextDao.textExists(uuid))
+        );
+        if (textsExist.includes(false)) {
+          next(new HttpBadRequest('One or more texts do not exist'));
           return;
         }
       }
 
       // If images, make sure all images UUIDs exist
       if (type === 'img') {
-        try {
-          await Promise.all(
-            uuids.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
-          );
-        } catch (err) {
-          next(new HttpBadRequest(err as string));
+        const imagesExist = await Promise.all(
+          uuids.map(uuid => ResourceDao.resourceExists(uuid))
+        );
+        if (imagesExist.includes(false)) {
+          next(new HttpBadRequest('One or more images do not exist'));
           return;
         }
       }

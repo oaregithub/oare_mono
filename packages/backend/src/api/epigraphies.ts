@@ -36,9 +36,8 @@ router
         const HierarchyDao = sl.get('HierarchyDao');
         const cache = sl.get('cache');
 
-        const text = await TextDao.getTextByUuid(textUuid);
-
-        if (!text) {
+        const textExists = await TextDao.textExists(textUuid);
+        if (!textExists) {
           next(
             new HttpBadRequest(
               `Text with UUID ${textUuid} does not exist`,
@@ -48,16 +47,21 @@ router
           return;
         }
 
-        const collection = await CollectionDao.getCollectionRowByUuid(
+        const text = await TextDao.getTextByUuid(textUuid);
+
+        const collectionExists = await CollectionDao.collectionExists(
           text.collectionUuid
         );
-
-        if (!collection) {
+        if (!collectionExists) {
           next(
             new HttpBadRequest('Text does not belong to a valid collection')
           );
           return;
         }
+
+        const collection = await CollectionDao.getCollectionRowByUuid(
+          text.collectionUuid
+        );
 
         const citations = await BibliographyDao.getCitationsByTextUuid(
           textUuid
@@ -229,8 +233,7 @@ router
 
       const { tables }: CreateTextsPayload = req.body;
 
-      const existingTextRow = await TextDao.getTextByUuid(tables.text.uuid);
-      const addingToExistingText = !!existingTextRow;
+      const addingToExistingText = await TextDao.textExists(tables.text.uuid);
 
       await utils.createTransaction(async trx => {
         // Text

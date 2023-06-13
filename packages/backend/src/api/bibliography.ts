@@ -1,6 +1,6 @@
 import express from 'express';
 import sl from '@/serviceLocator';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import { Bibliography } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
@@ -59,6 +59,14 @@ router
 
         const citationStyle = (req.query.citationStyle ||
           'chicago-author-date') as string;
+
+        const bibliographyExists = await BibliographyDao.bibliographyExists(
+          uuid
+        );
+        if (!bibliographyExists) {
+          next(new HttpBadRequest('Bibliography does not exist'));
+          return;
+        }
 
         const bibliography = await BibliographyDao.getBibliographyByUuid(
           uuid,

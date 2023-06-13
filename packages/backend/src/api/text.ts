@@ -70,14 +70,13 @@ router
         publicationNumber,
       }: EditTextInfoPayload = req.body;
 
-      let collectionUuid: string;
-      try {
-        const text = await TextDao.getTextByUuid(uuid);
-        collectionUuid = text.collectionUuid;
-      } catch (err) {
-        next(new HttpBadRequest(err as string));
+      const textExists = await TextDao.textExists(uuid);
+      if (!textExists) {
+        next(new HttpBadRequest('Text does not exist.'));
         return;
       }
+
+      const text = await TextDao.getTextByUuid(uuid);
 
       await TextDao.updateTextInfo(
         uuid,
@@ -92,7 +91,7 @@ router
       await cache.clear(`/epigraphies/${uuid}`, {
         level: 'startsWith',
       });
-      await cache.clear(`/collection/${collectionUuid}`, {
+      await cache.clear(`/collection/${text.collectionUuid}`, {
         level: 'exact',
       });
 

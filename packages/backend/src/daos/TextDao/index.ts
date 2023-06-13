@@ -39,6 +39,23 @@ class TextDao {
   }
 
   /**
+   * Checks if a text exists.
+   * @param uuid The UUID of the text to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the text exists.
+   */
+  public async textExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const text = await k('text').first().where({ uuid });
+
+    return !!text;
+  }
+
+  /**
    * Retrieves a text row by its UUID.
    * @param uuid The UUID of the text row to retrieve.
    * @param trx Knex Transaction. Optional.

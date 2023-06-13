@@ -56,6 +56,23 @@ class SignDao {
   }
 
   /**
+   * Checks if a sign exists.
+   * @param uuid The UUID of the sign to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the sign exists.
+   */
+  public async signExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const sign = await k('sign').first().where({ uuid });
+
+    return !!sign;
+  }
+
+  /**
    * Retrieves a list of all sign uuids.
    * @param trx Knex Transaction. Optional.
    * @returns Array of sign uuids.

@@ -40,6 +40,23 @@ class FieldDao {
   }
 
   /**
+   * Checks if a field exists.
+   * @param uuid The UUID of the field to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the field exists.
+   */
+  public async fieldExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const field = await k('field').first().where({ uuid });
+
+    return !!field;
+  }
+
+  /**
    * Retrieves all field rows with the given reference UUID and type.
    * @param referenceUuid The reference UUID.
    * @param type The field type.

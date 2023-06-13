@@ -24,23 +24,6 @@ class UserDao {
   }
 
   /**
-   * Checks to see if a user with the given UUID exists.
-   * @param uuid The UUID to check.
-   * @param trx Knex Transaction. Optional.
-   * @returns Boolean indicating whether the user exists.
-   */
-  public async uuidExists(
-    uuid: string,
-    trx?: Knex.Transaction
-  ): Promise<boolean> {
-    const k = trx || knex;
-
-    const user = await k('user').first().where({ uuid });
-
-    return !!user;
-  }
-
-  /**
    * Retrieves a user row by their UUID.
    * @param uuid The UUID of the user to retrieve.
    * @param trx Knex Transaction. Optional.
@@ -70,6 +53,23 @@ class UserDao {
     }
 
     return { ...row, isAdmin: !!row.isAdmin };
+  }
+
+  /**
+   * Checks if a user exists.
+   * @param uuid The UUID of the user to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the user exists.
+   */
+  public async userExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const user = await k('user').first().where({ uuid });
+
+    return !!user;
   }
 
   /**

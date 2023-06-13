@@ -40,6 +40,12 @@ router
 
       const { uuid } = req.params;
 
+      const signExists = await SignDao.signExists(uuid);
+      if (!signExists) {
+        next(new HttpInternalError('Sign does not exist'));
+        return;
+      }
+
       const sign = await SignDao.getSignByUuid(uuid);
 
       const response = await cache.insert<Sign>({ req }, sign, null);
