@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import knex from '@/connection';
 import { Knex } from 'knex';
-import { FieldRow } from '@oare/types';
+import { FieldRow, FieldType } from '@oare/types';
 
 // COMPLETE
 
@@ -49,7 +49,7 @@ class FieldDao {
    */
   public async getFieldRowsByReferenceUuidAndType(
     referenceUuid: string,
-    type: string,
+    type: FieldType,
     trx?: Knex.Transaction
   ): Promise<FieldRow[]> {
     const fieldUuids = await this.getFieldUuidsByReferenceUuidAndType(
@@ -73,7 +73,7 @@ class FieldDao {
    */
   private async getFieldUuidsByReferenceUuidAndType(
     referenceUuid: string,
-    type: string,
+    type: FieldType,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
@@ -98,7 +98,7 @@ class FieldDao {
    */
   public async insertField(
     referenceUuid: string,
-    type: string,
+    type: FieldType,
     field: string,
     primacy: number | null,
     language: string | null,
@@ -133,7 +133,7 @@ class FieldDao {
     uuid: string,
     field: string,
     language: string | null,
-    type: string | null,
+    type: FieldType,
     primacy: number | null,
     trx?: Knex.Transaction
   ) {
@@ -183,7 +183,7 @@ class FieldDao {
   public async decrementPrimacy(
     referenceUuid: string,
     deletedPrimacy: number,
-    type: string,
+    type: FieldType,
     trx?: Knex.Transaction
   ) {
     const k = trx || knex;

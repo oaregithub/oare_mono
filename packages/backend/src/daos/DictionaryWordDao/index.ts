@@ -8,6 +8,7 @@ import {
   DictItemComboboxDisplay,
   DictionaryWordRow,
   DictionarySearchRow,
+  FieldType,
 } from '@oare/types';
 import { v4 } from 'uuid';
 import knex from '@/connection';
@@ -300,7 +301,7 @@ class DictionaryWordDao {
     const discussionLemmas = (
       await FieldDao.getFieldRowsByReferenceUuidAndType(
         wordUuid,
-        'discoussionLemma',
+        'discussionLemma',
         trx
       )
     ).map(({ uuid, field }) => ({
@@ -605,10 +606,9 @@ class DictionaryWordDao {
   }
 
   async updateTranslations(
-    userUuid: string,
     wordUuid: string,
     translations: DictionaryWordTranslation[],
-    fieldType: string,
+    fieldType: FieldType,
     trx?: Knex.Transaction
   ): Promise<void> {
     // FIXME definition vs translation stuff is off

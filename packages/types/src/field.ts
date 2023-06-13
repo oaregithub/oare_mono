@@ -1,20 +1,24 @@
-// MOSTLY COMPLETE
+// COMPLETE
 
 export interface FieldPayload {
   field: string;
   primacy: number;
-  isTaxonomy: boolean;
-  type: string;
+  type: FieldType;
 }
 
 export interface FieldRow {
   uuid: string;
   referenceUuid: string;
-  type: string | null;
+  type: FieldType | null;
   language: string | null;
   primacy: number | null;
   field: string | null;
   sourceUuid: string | null;
 }
 
-// FIXME add field type?
+export type FieldType =
+  | 'definition'
+  | 'discussionLemma'
+  | 'description'
+  | 'translation'
+  | 'note';

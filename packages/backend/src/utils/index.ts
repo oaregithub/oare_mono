@@ -329,7 +329,7 @@ export const detectLanguage = async (text: string): Promise<string> => {
     .then((results: DetectionResult[]) =>
       languages.find(lang => lang.code === results[0].language)
     );
-  return language?.name ?? 'unknown';
+  return language && language.name ? _.capitalize(language.name) : 'unknown';
 };
 
 export const getS3ObjectBody = async (

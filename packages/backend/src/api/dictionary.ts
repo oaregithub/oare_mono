@@ -260,7 +260,6 @@ router
 
       await utils.createTransaction(async trx => {
         await DictionaryWordDao.updateTranslations(
-          req.user!.uuid,
           uuid,
           translations,
           fieldType,

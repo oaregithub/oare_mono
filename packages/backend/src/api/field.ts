@@ -1,11 +1,11 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
-import { FieldPayload } from '@oare/types';
+import { FieldPayload, FieldType } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router
       const FieldDao = sl.get('FieldDao');
 
       const { uuid: referenceUuid } = req.params;
-      const type = (req.params.type as string) || 'description';
+      const type = (req.params.type as FieldType) || 'description';
 
       const response = await FieldDao.getFieldRowsByReferenceUuidAndType(
         referenceUuid,
@@ -37,12 +37,7 @@ router
         const utils = sl.get('utils');
 
         const { uuid: referenceUuid } = req.params;
-        const {
-          field,
-          primacy,
-          isTaxonomy,
-          type,
-        }: FieldPayload = req.body as FieldPayload;
+        const { field, primacy, type }: FieldPayload = req.body as FieldPayload;
 
         if (req.user && !req.user.isAdmin && primacy > 1) {
           next(
@@ -53,25 +48,21 @@ router
           return;
         }
 
-        const language = (
-          await utils.detectLanguage(field)
-        ).toLocaleLowerCase();
+        const language = await utils.detectLanguage(field);
 
         await FieldDao.insertField(
           referenceUuid,
           type,
           field,
           primacy,
-          language === 'english'
-            ? 'default'
-            : language[0].toLocaleUpperCase() + language.substring(1)
+          language === 'english' ? 'default' : language
         );
 
-        if (isTaxonomy) {
-          cache.clear('/properties_taxonomy_tree', {
-            level: 'exact',
-          });
-        }
+        cache.clear('/properties_taxonomy_tree', {
+          level: 'exact',
+        });
+        cache.clear('/person', { level: 'startsWith' });
+        cache.clear('/archive', { level: 'startsWith' });
 
         res.status(201).end();
       } catch (err) {
@@ -88,41 +79,32 @@ router
         const utils = sl.get('utils');
 
         const { uuid } = req.params;
-        const {
-          field,
-          primacy,
-          isTaxonomy,
-          type,
-        }: FieldPayload = req.body as FieldPayload;
+        const { field, primacy, type }: FieldPayload = req.body as FieldPayload;
 
-        if (req.user && !req.user.isAdmin && primacy > 1) {
+        if (!req.user!.isAdmin && primacy > 1) {
           next(
             new HttpBadRequest('Only admins can edit primacy greater than 1.')
           );
           return;
         }
 
-        const language = (
-          await utils.detectLanguage(field)
-        ).toLocaleLowerCase();
+        const language = await utils.detectLanguage(field);
 
         await FieldDao.updateField(
           uuid,
           field,
-          language === 'english'
-            ? 'default'
-            : language[0].toLocaleUpperCase() + language.substring(1),
+          language === 'english' ? 'default' : language,
           type,
           primacy
         );
 
-        if (isTaxonomy) {
-          cache.clear('/dictionary/tree/taxonomy', {
-            level: 'exact',
-          });
-        }
+        cache.clear('/properties_taxonomy_tree', {
+          level: 'exact',
+        });
+        cache.clear('/person', { level: 'startsWith' });
+        cache.clear('/archive', { level: 'startsWith' });
 
-        res.status(201).end();
+        res.status(204).end();
       } catch (err) {
         next(new HttpInternalError(err as string));
       }
@@ -149,10 +131,11 @@ router
           );
         }
 
-        // FIXME better way to tell if taxonomy?
-        cache.clear('/dictionary/tree/taxonomy', {
+        cache.clear('/properties_taxonomy_tree', {
           level: 'exact',
         });
+        cache.clear('/person', { level: 'startsWith' });
+        cache.clear('/archive', { level: 'startsWith' });
 
         res.status(204).end();
       } catch (err) {

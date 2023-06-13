@@ -1,6 +1,7 @@
 import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
 import { SearchTextsResultRow } from './search';
 import { AppliedProperty } from './properties';
+import { FieldType } from './field';
 
 // FIXME
 
@@ -63,7 +64,7 @@ export interface UpdateFormPayload {
 
 export interface UpdateDictionaryTranslationPayload {
   translations: DictionaryWordTranslation[];
-  fieldType: string;
+  fieldType: FieldType;
 }
 
 export interface UpdateFormSpellingPayload {
