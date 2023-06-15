@@ -593,7 +593,7 @@ class PersonDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of matching, ordered `LinkItem` objects.
    */
-  async searchPersons(
+  async searchPersonsLinkProperties(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

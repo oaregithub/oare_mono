@@ -856,7 +856,7 @@ class TextDiscourseDao {
     return discourseUuids;
   }
 
-  async searchDiscourse(
+  async searchDiscourseLinkProperties(
     search: string,
     textUuidFilter: string,
     trx?: Knex.Transaction

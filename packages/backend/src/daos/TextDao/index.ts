@@ -186,7 +186,7 @@ class TextDao {
    * @param trx Knex Transaction. Optional.
    * @returns A list of link items.
    */
-  public async searchTexts(
+  public async searchTextsLinkProperties(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

@@ -11,7 +11,7 @@ class SpatialUnitDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of matching, ordered `LinkItem` objects.
    */
-  public async searchSpatialUnits(
+  public async searchSpatialUnitsLinkProperties(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

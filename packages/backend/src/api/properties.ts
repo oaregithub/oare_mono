@@ -13,7 +13,7 @@ import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
-import { capitalize } from 'lodash';
+import _ from 'lodash';
 import axios from 'axios';
 import { API_PATH } from '@/setupRoutes';
 
@@ -22,13 +22,27 @@ import { API_PATH } from '@/setupRoutes';
 const router = express.Router();
 
 router
-  .route('/properties/edit/:referenceUuid')
+  .route('/properties/:referenceUuid')
+  .get(async (req, res, next) => {
+    try {
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+
+      const { referenceUuid } = req.params;
+
+      const response: ItemPropertyRow[] = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+        referenceUuid
+      );
+      res.json(response);
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  })
   .patch(permissionsRoute('EDIT_ITEM_PROPERTIES'), async (req, res, next) => {
     try {
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-      const utils = sl.get('utils');
-      const cache = sl.get('cache');
       const DictionaryWordDao = sl.get('DictionaryWordDao');
+      const cache = sl.get('cache');
+      const utils = sl.get('utils');
 
       const { referenceUuid } = req.params;
       const { properties, wordUuid }: EditPropertiesPayload = req.body;
@@ -67,20 +81,6 @@ router
     }
   });
 
-router.route('/properties/:referenceUuid').get(async (req, res, next) => {
-  try {
-    const { referenceUuid } = req.params;
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-
-    const response: ItemPropertyRow[] = await ItemPropertiesDao.getPropertiesByReferenceUuid(
-      referenceUuid
-    );
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
-
 router
   .route('/properties_taxonomy_tree')
   .get(cacheMiddleware<TaxonomyPropertyTree>(null), async (req, res, next) => {
@@ -108,74 +108,96 @@ router.route('/properties_links').get(async (req, res, next) => {
 
     if (tableReference === 'dictionary_word') {
       const DictionaryWordDao = sl.get('DictionaryWordDao');
-      const rows = await DictionaryWordDao.searchDictionaryWords(search);
+
+      const rows = await DictionaryWordDao.searchDictionaryWordsLinkProperties(
+        search
+      );
+
       const response: LinkItem[] = rows.map(row => ({
         objectUuid: row.uuid,
         objectDisplay: row.word,
         objectDropdownDisplay: `<span>${row.word} <b>(${row.type})</b></span>`,
       }));
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'asset') {
       const AssetDao = sl.get('AssetDao');
-      const response = await AssetDao.searchAssets(search);
+
+      const response = await AssetDao.searchAssetsLinkProperties(search);
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'concept?') {
       const ConceptDao = sl.get('ConceptDao');
-      const response = await ConceptDao.searchConcepts(search);
+
+      const response = await ConceptDao.searchConceptsLinkProperties(search);
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'event') {
       const EventDao = sl.get('EventDao');
-      const response = await EventDao.searchEvents(search);
+
+      const response = await EventDao.searchEventsLinkProperties(search);
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'spatial_unit') {
       const SpatialUnitDao = sl.get('SpatialUnitDao');
-      const response = await SpatialUnitDao.searchSpatialUnits(search);
+
+      const response = await SpatialUnitDao.searchSpatialUnitsLinkProperties(
+        search
+      );
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'text') {
       const TextDao = sl.get('TextDao');
-      const response = await TextDao.searchTexts(search);
+
+      const response = await TextDao.searchTextsLinkProperties(search);
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'period') {
       const PeriodsDao = sl.get('PeriodsDao');
-      const response = await PeriodsDao.searchPeriods(search);
+
+      const response = await PeriodsDao.searchPeriodsLinkProperties(search);
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'person') {
       const PersonDao = sl.get('PersonDao');
-      const response = await PersonDao.searchPersons(search);
+
+      const response = await PersonDao.searchPersonsLinkProperties(search);
+
       res.json(response);
       return;
     }
 
     if (tableReference === 'text_discourse') {
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+
       if (!textUuidFilter) {
         throw new Error(
           'Text UUID Filter is required for text discourse links'
         );
       }
-      const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-      const rows = await TextDiscourseDao.searchDiscourse(
+      const rows = await TextDiscourseDao.searchDiscourseLinkProperties(
         search,
         textUuidFilter
       );
@@ -214,7 +236,7 @@ router.route('/properties_links').get(async (req, res, next) => {
         return {
           objectUuid: row.uuid,
           objectDisplay: discourseReading(row),
-          objectDropdownDisplay: `<b>${capitalize(
+          objectDropdownDisplay: `<b>${_.capitalize(
             row.type
           )} - </b><span>${discourseReading(row)}${line}</span>`,
         };
@@ -228,6 +250,7 @@ router.route('/properties_links').get(async (req, res, next) => {
       // FIXME - sending a request to itself is not ideal
       const host =
         process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
+
       const {
         data: bibliographies,
       }: { data: Bibliography[] } = await axios.get(
@@ -241,6 +264,7 @@ router.route('/properties_links').get(async (req, res, next) => {
           },
         }
       );
+
       const relevantBibliographies = bibliographies.filter(b => {
         if (b.title && b.title.includes(search)) {
           return true;
@@ -250,11 +274,13 @@ router.route('/properties_links').get(async (req, res, next) => {
         }
         return false;
       });
+
       const response: LinkItem[] = relevantBibliographies.map(b => ({
         objectUuid: b.uuid,
         objectDisplay: `${b.authors.join(', ')} - ${b.title || ''}`,
         objectDropdownDisplay: b.bibliography.bib || undefined,
       }));
+
       res.json(response);
       return;
     }

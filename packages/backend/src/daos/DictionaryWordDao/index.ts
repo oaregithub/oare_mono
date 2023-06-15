@@ -696,7 +696,7 @@ class DictionaryWordDao {
     return newWordUuid;
   }
 
-  async searchDictionaryWords(
+  async searchDictionaryWordsLinkProperties(
     search: string,
     trx?: Knex.Transaction
   ): Promise<{ uuid: string; word: string; type: string }[]> {
