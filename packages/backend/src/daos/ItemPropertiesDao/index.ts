@@ -3,6 +3,8 @@ import { ItemPropertyRow, ItemProperty } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
+// COMPLETE
+
 class ItemPropertiesDao {
   /**
    * Inserts a single item property row.
@@ -52,6 +54,24 @@ class ItemPropertiesDao {
         rowsByLevel[i].map(row => this.insertItemPropertyRow(row, trx))
       );
     }
+  }
+
+  /**
+   * Deletes all item property rows for a given reference UUID and object UUID.
+   * @param referenceUuid The reference UUID of the item properties to delete.
+   * @param objectUuid The object UUID of the item properties to delete.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async deleteItemPropertyRowsByReferenceUuidAndObjectUuid(
+    referenceUuid: string,
+    objectUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knex;
+
+    await k('item_properties')
+      .where({ reference_uuid: referenceUuid, object_uuid: objectUuid })
+      .del();
   }
 
   /**

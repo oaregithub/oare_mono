@@ -5,7 +5,7 @@ import {
   Epigraphy,
   Seal,
   SealInfo,
-  PersonInfo,
+  Person,
   Bibliography,
   Archive,
   Dossier,
@@ -248,28 +248,29 @@ export const SealListFilter: CacheFilter<SealInfo[]> = async (
  * @param user The requesting user.
  * @returns The person response with added data.
  */
-export const personFilter: CacheFilter<PersonInfo> = async (
-  person: PersonInfo,
+export const personFilter: CacheFilter<Person> = async (
+  person: Person,
   user: User | null
-): Promise<PersonInfo> => {
+): Promise<Person> => {
   const PersonDao = sl.get('PersonDao');
 
-  const temporaryRoles = await PersonDao.getPersonRoles(
-    person.person.uuid,
+  const temporaryRoles = await PersonDao.getPersonRolesWithOccurrences(
+    person.uuid,
     'temporary',
     user ? user.uuid : null
   );
-  const durableRoles = await PersonDao.getPersonRoles(
-    person.person.uuid,
+  const durableRoles = await PersonDao.getPersonRolesWithOccurrences(
+    person.uuid,
     'durable',
     user ? user.uuid : null
   );
   const roleNotYetAssigned = await PersonDao.getPersonOccurrencesCount(
-    person.person.uuid,
+    person.uuid,
     user ? user.uuid : null,
     undefined,
     'noRole'
   );
+
   return {
     ...person,
     temporaryRoles,

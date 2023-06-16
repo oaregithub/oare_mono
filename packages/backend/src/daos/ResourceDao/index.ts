@@ -239,7 +239,7 @@ class ResourceDao {
     const text = await TextDao.getTextByUuid(textUuid, trx);
 
     const source = resourceRow.sourceUuid
-      ? (await PersonDao.getPersonRowByUuid(resourceRow.sourceUuid, trx))
+      ? (await PersonDao.getPersonCoreByUuid(resourceRow.sourceUuid, trx))
           ?.label || null
       : null;
 
@@ -439,7 +439,7 @@ class ResourceDao {
       await Promise.all(
         resourceRows.map(row =>
           row.sourceUuid
-            ? PersonDao.getPersonRowByUuid(row.sourceUuid, trx)
+            ? PersonDao.getPersonCoreByUuid(row.sourceUuid, trx)
             : null
         )
       )

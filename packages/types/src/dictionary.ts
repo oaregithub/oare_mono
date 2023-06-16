@@ -146,17 +146,6 @@ export interface DictionarySearchPayload {
   types: string[];
 }
 
-export interface TextOccurrencesRow {
-  discourseUuid: string;
-  textName: string;
-  textUuid: string;
-}
-
-export interface TextOccurrencesResponseRow extends TextOccurrencesRow {
-  discourseUuidsToHighlight: string[];
-  readings: string[] | null;
-}
-
 export type DictionaryWordTypes = 'word' | 'GN' | 'PN';
 
 export interface AddFormPayload {
@@ -179,9 +168,4 @@ export interface EditPropertiesPayload {
 export interface ConnectSpellingDiscoursePayload {
   discourseUuid: string;
   spellingUuid: string;
-}
-
-export interface TextOccurrencesCountResponseItem {
-  uuid: string;
-  count: number;
 }

@@ -306,18 +306,21 @@ class HierarchyDao {
   /**
    * Retrieves all hierarchy rows associated with a given object UUID.
    * @param objectUuid The object UUID of the hierarchy rows to retrieve.
+   * @param type The type of the hierarchy rows to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Array of hierarchy rows.
    * @throws Error if one or more hierarchy rows are not found.
    */
-  public async getHierarchyRowsByObjectUuid(
+  public async getHierarchyRowsByObjectUuidAndType(
     objectUuid: string,
+    type: string,
     trx?: Knex.Transaction
   ): Promise<HierarchyRow[]> {
     const k = trx || knex;
 
-    const hierarchyUuids = await this.getHierarchyUuidsByObjectUuid(
+    const hierarchyUuids = await this.getHierarchyUuidsByObjectUuidAndType(
       objectUuid,
+      type,
       trx
     );
 
@@ -331,18 +334,20 @@ class HierarchyDao {
   /**
    * Retrieves list of all hierarchy rows associated with a given object UUID.
    * @param objectUuid The object UUID of the hierarchy rows whose UUIDs to retrieve.
+   * @param type The type of the hierarchy rows to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Array of hierarchy UUIDs.
    */
-  private async getHierarchyUuidsByObjectUuid(
+  private async getHierarchyUuidsByObjectUuidAndType(
     objectUuid: string,
+    type: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
 
     const rows = await k('hierarchy')
       .pluck('uuid')
-      .where({ object_uuid: objectUuid });
+      .where({ object_uuid: objectUuid, type });
 
     return rows;
   }
@@ -435,6 +440,53 @@ class HierarchyDao {
       .first();
 
     return transliterationOption;
+  }
+
+  /**
+   * Recursively retrieves all hierarchy leaf node object UUIDs associated with a given object parent UUID.
+   * @param items The starting array of variables/values at the top level of a hierarchy.
+   * @param objectParentUuid The object parent UUID whose children to retrieve.
+   * @returns Array of object UUIDs.
+   */
+  public getRecursiveObjectUuidsByObjectParentUuids(
+    items: PropertyVariable[] | PropertyValue[],
+    objectParentUuid: string
+  ): string[] {
+    const childrenUuids: string[] = [];
+
+    items.forEach(node => {
+      if ((node as PropertyVariable).values) {
+        const typedNode = node as PropertyVariable;
+        if (
+          typedNode.values.length === 0 &&
+          typedNode.hierarchy.objectParentUuid === objectParentUuid
+        ) {
+          childrenUuids.push(typedNode.hierarchy.objectUuid);
+        } else if (typedNode.values.length > 0) {
+          const uuids = this.getRecursiveObjectUuidsByObjectParentUuids(
+            typedNode.values,
+            objectParentUuid
+          );
+          uuids.forEach(uuid => childrenUuids.push(uuid));
+        }
+      } else if ((node as PropertyValue).variables) {
+        const typedNode = node as PropertyValue;
+        if (
+          typedNode.variables.length === 0 &&
+          typedNode.hierarchy.objectParentUuid === objectParentUuid
+        ) {
+          childrenUuids.push(typedNode.hierarchy.objectUuid);
+        } else if (typedNode.variables.length > 0) {
+          const uuids = this.getRecursiveObjectUuidsByObjectParentUuids(
+            typedNode.variables,
+            objectParentUuid
+          );
+          uuids.forEach(uuid => childrenUuids.push(uuid));
+        }
+      }
+    });
+
+    return childrenUuids;
   }
 }
 

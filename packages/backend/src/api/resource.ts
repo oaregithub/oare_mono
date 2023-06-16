@@ -1,4 +1,4 @@
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { ItemPropertyRow, LinkRow, ResourceRow } from '@oare/types';
 import AWS from 'aws-sdk';
@@ -6,12 +6,12 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import sl from '@/serviceLocator';
 
-// FIXME - major revamp
+// MOSTLY COMPLETE
 
 const router = express.Router();
 
 router
-  .route('/text_epigraphies/additional_images')
+  .route('/resource/images')
   .post(permissionsRoute('UPLOAD_EPIGRAPHY_IMAGES'), async (req, res, next) => {
     try {
       const ResourceDao = sl.get('ResourceDao');
@@ -46,15 +46,17 @@ router
     }
   });
 
+// FIXME :key can maybe removed by using the name of the file as sent in formdata
 router
-  .route('/text_epigraphies/upload_image/:key')
+  .route('/resource/upload_image/:key')
   .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
     try {
       const s3 = new AWS.S3();
+
       const { key } = req.params;
 
       if (!req.files) {
-        res.status(400).end();
+        next(new HttpBadRequest('No file uploaded'));
         return;
       }
 

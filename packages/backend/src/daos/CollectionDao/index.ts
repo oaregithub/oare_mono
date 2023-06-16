@@ -109,8 +109,9 @@ class CollectionDao {
 
     const collectionRow = await this.getCollectionRowByUuid(uuid, trx);
 
-    const hierarchyRows = await HierarchyDao.getHierarchyRowsByObjectUuid(
+    const hierarchyRows = await HierarchyDao.getHierarchyRowsByObjectUuidAndType(
       uuid,
+      'collection',
       trx
     );
     const hierarchyRow = hierarchyRows.length > 0 ? hierarchyRows[0] : null;

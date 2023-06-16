@@ -4,15 +4,13 @@ import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import {
-  PersonRow,
-  PersonListItem,
-  ItemProperty,
+  PersonCore,
+  Person,
   TextOccurrencesCountResponseItem,
-  PersonInfo,
 } from '@oare/types';
 import { personFilter } from '@/cache/filters';
 
-// FIXME
+// COMPLETE
 
 const router = express.Router();
 
@@ -20,56 +18,24 @@ router
   .route('/persons/:letter')
   .get(
     permissionsRoute('PERSONS'),
-    cacheMiddleware<PersonListItem[]>(null),
+    cacheMiddleware<PersonCore[]>(null),
     async (req, res, next) => {
       try {
         const { letter } = req.params;
         const PersonDao = sl.get('PersonDao');
-        const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-        const DictionaryWordDao = sl.get('DictionaryWordDao');
         const cache = sl.get('cache');
 
-        const personRows: PersonRow[] = await PersonDao.getPersonsRowsByLetter(
+        const personUuidsByLetter = await PersonDao.getPersonUuidsByLetter(
           letter
         );
 
-        const personProperties: ItemProperty[][] = await Promise.all(
-          personRows.map(({ uuid }) =>
-            ItemPropertiesDao.getItemPropertiesByReferenceUuid(uuid)
-          )
+        const personCores = await Promise.all(
+          personUuidsByLetter.map(uuid => PersonDao.getPersonCoreByUuid(uuid))
         );
 
-        const displays: string[] = await Promise.all(
-          personRows.map(async person => {
-            if (person.nameUuid && person.relation && person.relationNameUuid) {
-              const nameRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
-                person.nameUuid
-              );
-              const relationNameRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
-                person.relationNameUuid
-              );
-              if (!nameRow || !relationNameRow) {
-                return person.label;
-              }
-              const name = nameRow.word;
-              const relationName = relationNameRow.word;
-              return `${name} ${person.relation} ${relationName}`;
-            }
-            return person.label;
-          })
-        );
-
-        const personListItem: PersonListItem[] = personRows.map(
-          (person, idx) => ({
-            person,
-            display: displays[idx],
-            properties: personProperties[idx],
-          })
-        );
-
-        const response = await cache.insert<PersonListItem[]>(
+        const response = await cache.insert<PersonCore[]>(
           { req },
-          personListItem,
+          personCores,
           null
         );
 
@@ -82,16 +48,14 @@ router
 
 router
   .route('/persons/occurrences/count')
-  .post(permissionsRoute('PERSONS'), async (req, res, next) => {
+  .get(permissionsRoute('PERSONS'), async (req, res, next) => {
     try {
       const PersonDao = sl.get('PersonDao');
       const utils = sl.get('utils');
 
       const roleUuid = (req.query.roleUuid as string) || undefined;
-
-      const personUuids: string[] = req.body;
+      const personUuids = req.query.personsUuids as string[];
       const userUuid = req.user ? req.user.uuid : null;
-
       const { filter } = utils.extractPagination(req.query);
 
       const occurrences = await Promise.all(
@@ -126,10 +90,8 @@ router
       const PersonDao = sl.get('PersonDao');
 
       const roleUuid = (req.query.roleUuid as string) || undefined;
-
       const userUuid = req.user ? req.user.uuid : null;
       const pagination = utils.extractPagination(req.query);
-
       const personsUuids = req.query.personsUuids as string[];
 
       const rows = await PersonDao.getPersonOccurrencesTexts(
@@ -153,10 +115,14 @@ router
     permissionsRoute('DISCONNECT_OCCURRENCES'),
     async (req, res, next) => {
       try {
-        const PersonDao = sl.get('PersonDao');
+        const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+
         const { personUuid, discourseUuid } = req.params;
 
-        await PersonDao.disconnectPerson(discourseUuid, personUuid);
+        await ItemPropertiesDao.deleteItemPropertyRowsByReferenceUuidAndObjectUuid(
+          discourseUuid,
+          personUuid
+        );
 
         res.status(204).end();
       } catch (err) {
@@ -169,20 +135,24 @@ router
   .route('/person/:uuid')
   .get(
     permissionsRoute('PERSONS'),
-    cacheMiddleware<PersonInfo>(personFilter),
+    cacheMiddleware<Person>(personFilter),
     async (req, res, next) => {
       try {
         const PersonDao = sl.get('PersonDao');
         const cache = sl.get('cache');
+
         const { uuid } = req.params;
-        const person = await PersonDao.getPersonInfo(uuid);
-        const response = await cache.insert<PersonInfo>(
+
+        const person = await PersonDao.getPersonByUuid(uuid);
+
+        const response = await cache.insert<Person>(
           {
             req,
           },
           person,
           personFilter
         );
+
         res.json(response);
       } catch (err) {
         next(new HttpInternalError(err as string));
