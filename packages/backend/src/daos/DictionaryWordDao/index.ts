@@ -98,7 +98,7 @@ class DictionaryWordDao {
 
     const formProperties = await Promise.all(
       rows.map(r =>
-        ItemPropertiesDao.getPropertiesByReferenceUuid(r.formUuid, trx)
+        ItemPropertiesDao.getItemPropertiesByReferenceUuid(r.formUuid, trx)
       )
     );
 
@@ -180,7 +180,7 @@ class DictionaryWordDao {
 
     const properties = await Promise.all(
       words.map(word =>
-        ItemPropertiesDao.getPropertiesByReferenceUuid(word.uuid, trx)
+        ItemPropertiesDao.getItemPropertiesByReferenceUuid(word.uuid, trx)
       )
     );
     const translationsForDefinition = await this.getAllTranslations(
@@ -332,7 +332,7 @@ class DictionaryWordDao {
       discussionLemmas,
     ] = await Promise.all([
       this.getWordName(wordUuid, trx),
-      ItemPropertiesDao.getPropertiesByReferenceUuid(wordUuid, trx),
+      ItemPropertiesDao.getItemPropertiesByReferenceUuid(wordUuid, trx),
       this.getWordTranslationsForDefinition(wordUuid, trx),
       this.getWordDiscussionLemmas(wordUuid, trx),
     ]);

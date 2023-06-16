@@ -1,6 +1,6 @@
-import { DictionaryWordTranslation, Word, ItemPropertyRow } from './words';
+import { DictionaryWordTranslation, Word } from './words';
 import { SearchTextsResultRow } from './search';
-import { AppliedProperty } from './properties';
+import { AppliedProperty, ItemProperty } from './properties';
 import { FieldType } from './field';
 
 // FIXME
@@ -48,7 +48,7 @@ export interface DictionaryFormGrammar {
 
 export interface DictionaryForm extends DictionaryFormInfo {
   spellings: FormSpelling[];
-  properties: ItemPropertyRow[];
+  properties: ItemProperty[];
 }
 
 export interface DictionaryFormRow {
@@ -163,18 +163,6 @@ export interface AddFormPayload {
   wordUuid: string;
   formSpelling: string;
   properties: AppliedProperty[];
-}
-
-// FIXME why is this in dictionary? Should be a complete ItemPropertyRow probably. And the current ItemPropertyRow should just be ItemProperty
-export interface InsertItemPropertyRow {
-  uuid: string;
-  referenceUuid: string;
-  parentUuid: string | null;
-  level: number | null;
-  variableUuid: string | null;
-  valueUuid: string | null;
-  objectUuid: string | null;
-  value: string | null | boolean;
 }
 
 export interface DictionaryWordRow {

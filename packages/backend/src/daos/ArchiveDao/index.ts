@@ -201,9 +201,15 @@ class ArchiveDao {
       trx
     );
 
-    const bibliographyUuids = await ItemPropertiesDao.getBibliographyUuidsByReference(
+    const itemProperties = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
       uuid
     );
+    const referringWorkProperties = itemProperties.filter(
+      p => p.variableUuid === 'b3938276-173b-11ec-8b77-024de1c1cc1d'
+    );
+    const bibliographyUuids = referringWorkProperties
+      .map(p => p.objectUuid)
+      .filter((u): u is string => !!u);
 
     const archive: Archive = {
       ...archiveRow,

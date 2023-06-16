@@ -4,11 +4,9 @@ import {
   DiscourseUnitType,
 } from './textDiscourse';
 import { CollectionRow } from './collection';
-import { InsertItemPropertyRow } from './dictionary';
 import { SignCodeWithDiscourseUuid } from './signReading';
 import { TreeRow } from './tree';
-import { ItemPropertyRow } from './words';
-import { AppliedProperty } from './properties';
+import { AppliedProperty, ItemProperty, ItemPropertyRow } from './properties';
 import { TextTransliterationStatus, TextRow, Text } from './text';
 import { Citation } from './bibliography';
 import { Image, ResourceRow, LinkRow } from './resource';
@@ -86,7 +84,7 @@ export interface EpigraphicUnit {
   word: string | null;
   form: string | null;
   translation: string | null;
-  parseInfo: ItemPropertyRow[] | null;
+  parseInfo: ItemProperty[] | null;
   signUuid: string | null;
   spellingUuid: string | null;
 }
@@ -327,7 +325,7 @@ export interface CreateTextTables {
   markups: TextMarkupRow[];
   discourses: TextDiscourseRow[];
   text: TextRow;
-  itemProperties: InsertItemPropertyRow[];
+  itemProperties: ItemPropertyRow[];
   signInfo: SignInfo[];
   resources: ResourceRow[];
   links: LinkRow[];

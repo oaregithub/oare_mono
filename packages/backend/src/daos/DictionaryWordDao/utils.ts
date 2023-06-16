@@ -2,7 +2,7 @@ import {
   DictionaryForm,
   DictionarySearchRow,
   DictItemComboboxDisplay,
-  ItemPropertyRow,
+  ItemProperty,
 } from '@oare/types';
 import {
   DictSpellEpigRowDictSearch,
@@ -31,7 +31,7 @@ export async function assembleComboboxDisplay(
   row: WordFormSpellingType
 ): Promise<DictItemComboboxDisplay> {
   let formInfo: Omit<DictionaryForm, 'spellings'> | null = null;
-  const properties: ItemPropertyRow[] = [];
+  const properties: ItemProperty[] = [];
   if (row.type === 'form') {
     formInfo = {
       uuid: row.uuid,

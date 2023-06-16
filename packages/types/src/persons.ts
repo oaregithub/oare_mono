@@ -1,4 +1,4 @@
-import { ItemPropertyRow } from './words';
+import { ItemProperty } from './properties';
 import { FieldRow } from './field';
 
 // FIXME
@@ -15,7 +15,7 @@ export interface PersonRow {
 export interface PersonListItem {
   person: PersonRow;
   display: string;
-  properties: ItemPropertyRow[];
+  properties: ItemProperty[];
 }
 
 export interface PersonCore {

@@ -45,7 +45,7 @@ class DictionaryFormDao {
 
     const formProperties = await Promise.all(
       forms.map(form =>
-        ItemPropertiesDao.getPropertiesByReferenceUuid(form.uuid, trx)
+        ItemPropertiesDao.getItemPropertiesByReferenceUuid(form.uuid, trx)
       )
     );
 

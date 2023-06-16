@@ -161,7 +161,7 @@ router
             properties,
             newRowUuid
           );
-          await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
+          await ItemPropertiesDao.insertItemPropertyRows(itemPropertyRows, trx);
 
           if (discourseType === 'Sentence') {
             await FieldDao.insertField(
@@ -202,7 +202,7 @@ router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const NoteDao = sl.get('NoteDao');
 
-    const properties = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+    const properties = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
       discourseUuid
     );
 

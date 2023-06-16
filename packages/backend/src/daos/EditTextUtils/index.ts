@@ -37,7 +37,8 @@ import {
   MergeWordPayload,
   SplitLinePayload,
   SplitWordPayload,
-  InsertItemPropertyRow,
+  ItemPropertyRow,
+  ItemProperty,
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
@@ -2227,12 +2228,12 @@ class EditTextUtils {
           .update({ reference_uuid: newDiscourseRow.uuid });
       }
     } else if (payload.propertySelections.length === 2) {
-      const existingProperties = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+      const existingProperties: ItemProperty[] = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
         payload.discourseUuid,
         trx
       );
 
-      const newRowsWithUuids: InsertItemPropertyRow[] = existingProperties.map(
+      const newRowsWithUuids: ItemPropertyRow[] = existingProperties.map(
         row => ({
           uuid: v4(),
           referenceUuid: newDiscourseRow.uuid,
@@ -2245,7 +2246,7 @@ class EditTextUtils {
         })
       );
 
-      const newRowsWithParentUuids: InsertItemPropertyRow[] = newRowsWithUuids.map(
+      const newRowsWithParentUuids: ItemPropertyRow[] = newRowsWithUuids.map(
         (row, idx) => {
           const originalParentUuid = existingProperties[idx].parentUuid;
           const parentIndex = existingProperties.findIndex(
@@ -2261,7 +2262,10 @@ class EditTextUtils {
         }
       );
 
-      await ItemPropertiesDao.addProperties(newRowsWithParentUuids, trx);
+      await ItemPropertiesDao.insertItemPropertyRows(
+        newRowsWithParentUuids,
+        trx
+      );
     }
   }
 

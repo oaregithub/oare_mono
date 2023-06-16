@@ -2,7 +2,7 @@ import { Knex } from 'knex';
 import knex from '@/connection';
 import {
   EpigraphicUnit,
-  ItemPropertyRow,
+  ItemProperty,
   MarkupUnit,
   SearchCooccurrence,
 } from '@oare/types';
@@ -308,7 +308,7 @@ export async function getInterlinearInfo(
         let form: string | null = null;
         let formUuid: string | null = null;
         let translation: string | null = null;
-        let parseInfo: ItemPropertyRow[] | null = null;
+        let parseInfo: ItemProperty[] | null = null;
         if (unit.spellingUuid) {
           formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
             unit.spellingUuid
@@ -332,7 +332,7 @@ export async function getInterlinearInfo(
             )[0].val;
           }
           word = await DictionaryWordDao.getWordName(wordUuid);
-          parseInfo = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+          parseInfo = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
             formUuid
           );
         }

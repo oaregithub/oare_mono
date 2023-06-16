@@ -5,8 +5,8 @@ import {
   Pagination,
   TextOccurrencesResponseRow,
   TextOccurrencesRow,
-  ItemPropertyRowWithChildren,
-  ItemPropertyRow,
+  ItemPropertyWithChildren,
+  ItemProperty,
   LocaleCode,
   ZoteroResponse,
 } from '@oare/types';
@@ -156,11 +156,11 @@ export const getTextOccurrences = async (
 
 // FIXME - move to discourse utils
 export const nestProperties = (
-  propertyRows: ItemPropertyRow[],
+  propertyRows: ItemProperty[],
   parentUuid: string | null
-): ItemPropertyRowWithChildren[] => {
+): ItemPropertyWithChildren[] => {
   const children = propertyRows.filter(row => row.parentUuid === parentUuid);
-  const props: ItemPropertyRowWithChildren[] = [];
+  const props: ItemPropertyWithChildren[] = [];
 
   children.forEach(child => {
     const property = {

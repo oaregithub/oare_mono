@@ -1,6 +1,6 @@
 import { HttpInternalError } from '@/exceptions';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
-import { InsertItemPropertyRow, LinkRow, ResourceRow } from '@oare/types';
+import { ItemPropertyRow, LinkRow, ResourceRow } from '@oare/types';
 import AWS from 'aws-sdk';
 import express from 'express';
 import fileUpload from 'express-fileupload';
@@ -25,7 +25,7 @@ router
       }: {
         resources: ResourceRow[];
         links: LinkRow[];
-        itemProperties: InsertItemPropertyRow[];
+        itemProperties: ItemPropertyRow[];
       } = req.body;
 
       await utils.createTransaction(async trx => {
@@ -37,7 +37,7 @@ router
           links.map(row => ResourceDao.insertLinkRow(row, trx))
         );
 
-        await ItemPropertiesDao.addProperties(itemProperties, trx);
+        await ItemPropertiesDao.insertItemPropertyRows(itemProperties, trx);
       });
 
       res.status(201).end();

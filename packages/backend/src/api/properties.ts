@@ -1,12 +1,11 @@
 import express from 'express';
 import {
   EditPropertiesPayload,
-  ItemPropertyRow,
+  ItemProperty,
   TaxonomyPropertyTree,
   LinkPropertiesSearchPayload,
   LinkItem,
   DiscourseUnit,
-  Bibliography,
 } from '@oare/types';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -14,10 +13,8 @@ import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import _ from 'lodash';
-import axios from 'axios';
-import { API_PATH } from '@/setupRoutes';
 
-// FIXME
+// MOSTLY COMPLETE
 
 const router = express.Router();
 
@@ -29,7 +26,7 @@ router
 
       const { referenceUuid } = req.params;
 
-      const response: ItemPropertyRow[] = await ItemPropertiesDao.getPropertiesByReferenceUuid(
+      const response: ItemProperty[] = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
         referenceUuid
       );
       res.json(response);
@@ -48,7 +45,7 @@ router
       const { properties, wordUuid }: EditPropertiesPayload = req.body;
 
       await utils.createTransaction(async trx => {
-        await ItemPropertiesDao.deletePropertiesByReferenceUuid(
+        await ItemPropertiesDao.deleteItemPropertyRowsByReferenceUuid(
           referenceUuid,
           trx
         );
@@ -58,9 +55,10 @@ router
           referenceUuid
         );
 
-        await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
+        await ItemPropertiesDao.insertItemPropertyRows(itemPropertyRows, trx);
       });
 
+      // FIXME better way?
       if (wordUuid) {
         const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
           wordUuid
@@ -202,6 +200,7 @@ router.route('/properties_links').get(async (req, res, next) => {
         textUuidFilter
       );
 
+      // FIXME this is probably duplicated and could be extracted
       const discourseReading = (discourse: DiscourseUnit) => {
         let reading;
         if (
@@ -247,39 +246,11 @@ router.route('/properties_links').get(async (req, res, next) => {
     }
 
     if (tableReference === 'bibliography') {
-      // FIXME - sending a request to itself is not ideal
-      const host =
-        process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : '';
+      const BibliographyDao = sl.get('BibliographyDao');
 
-      const {
-        data: bibliographies,
-      }: { data: Bibliography[] } = await axios.get(
-        `${host}${API_PATH}/bibliographies`,
-        {
-          params: {
-            citationStyle: 'chicago-author-date',
-          },
-          headers: {
-            Authorization: req.headers.authorization || '',
-          },
-        }
+      const response = await BibliographyDao.searchBibliographiesLinkProperties(
+        search
       );
-
-      const relevantBibliographies = bibliographies.filter(b => {
-        if (b.title && b.title.includes(search)) {
-          return true;
-        }
-        if (b.authors.filter(a => a.includes(search)).length > 0) {
-          return true;
-        }
-        return false;
-      });
-
-      const response: LinkItem[] = relevantBibliographies.map(b => ({
-        objectUuid: b.uuid,
-        objectDisplay: `${b.authors.join(', ')} - ${b.title || ''}`,
-        objectDropdownDisplay: b.bibliography.bib || undefined,
-      }));
 
       res.json(response);
       return;

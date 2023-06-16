@@ -17,14 +17,11 @@ export interface LinkRow {
   objUuid: string;
 }
 
-export interface ImageProperties {
-  side: string | null;
-  view: string | null;
-}
-
-export interface Image extends ImageProperties {
+export interface Image {
   resourceRow: ResourceRow | null; // Can be null for CDLI images
   source: string | null;
   url: string;
   text: Text;
+  sides: string[];
+  views: string[];
 }

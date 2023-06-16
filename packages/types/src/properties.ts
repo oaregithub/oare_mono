@@ -1,6 +1,24 @@
-// FIXME
-
 import { FieldRow } from './field';
+
+export interface ItemPropertyRow {
+  uuid: string;
+  referenceUuid: string;
+  parentUuid: string | null;
+  level: number | null;
+  variableUuid: string;
+  valueUuid: string | null;
+  objectUuid: string | null;
+  value: string | null;
+}
+
+export interface ItemProperty extends ItemPropertyRow {
+  variableRow: VariableRow;
+  valueRow: ValueRow | null;
+}
+
+export interface ItemPropertyWithChildren extends ItemPropertyRow {
+  children: ItemPropertyWithChildren[];
+}
 
 export interface HierarchyData {
   uuid: string;

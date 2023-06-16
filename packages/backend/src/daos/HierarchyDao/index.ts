@@ -161,7 +161,7 @@ class HierarchyDao {
    * @returns Single variable row.
    * @throws Error if variable row is not found.
    */
-  private async getVariableRowByUuid(
+  public async getVariableRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<VariableRow> {
@@ -246,7 +246,7 @@ class HierarchyDao {
    * @returns Single value row.
    * @throws Error if value row is not found.
    */
-  private async getValueRowByUuid(
+  public async getValueRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<ValueRow> {

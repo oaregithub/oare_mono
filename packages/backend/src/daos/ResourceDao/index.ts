@@ -248,21 +248,45 @@ class ResourceDao {
       Key: resourceRow.link,
     });
 
-    const imageProperties = await ItemPropertiesDao.getImagePropertyDetails(
-      uuid,
-      trx
-    );
+    const sides = await this.getImageDetailsByUuid(uuid, 'sides', trx);
+    const views = await this.getImageDetailsByUuid(uuid, 'views', trx);
 
     const image: Image = {
       resourceRow,
       source,
       url,
-      side: imageProperties.side,
-      view: imageProperties.view,
+      sides,
+      views,
       text,
     };
 
     return image;
+  }
+
+  private async getImageDetailsByUuid(
+    uuid: string,
+    type: 'sides' | 'views',
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+
+    const detailsTypeVariableUuid =
+      type === 'sides'
+        ? '0600c503-7885-11ec-bcc3-0282f921eac9'
+        : '87126737-7885-11ec-bcc3-0282f921eac9';
+
+    const itemProperties = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
+      uuid,
+      trx
+    );
+
+    const detailsProperties = itemProperties.filter(
+      prop => prop.variableUuid === detailsTypeVariableUuid && prop.valueRow
+    );
+
+    const details = detailsProperties.map(prop => prop.valueRow!.name);
+
+    return details;
   }
 
   /**
@@ -314,8 +338,8 @@ class ResourceDao {
       resourceRow: relevantResourceRow,
       source: 'The Metropolitan Museum of Art',
       url,
-      side: null,
-      view: null,
+      sides: [],
+      views: [],
       text,
     }));
 
@@ -364,8 +388,8 @@ class ResourceDao {
       resourceRow: null,
       source: 'CDLI',
       url,
-      side: null,
-      view: null,
+      sides: [],
+      views: [],
       text,
     }));
 
@@ -430,9 +454,14 @@ class ResourceDao {
       )
     );
 
-    const imageProperties = await Promise.all(
-      resourceRows.map(
-        row => ItemPropertiesDao.getImagePropertyDetails(row.uuid, trx) // FIXME would like to revamp this function
+    const imagesSides = await Promise.all(
+      resourceRows.map(row =>
+        this.getImageDetailsByUuid(row.uuid, 'sides', trx)
+      )
+    );
+    const imagesViews = await Promise.all(
+      resourceRows.map(row =>
+        this.getImageDetailsByUuid(row.uuid, 'views', trx)
       )
     );
 
@@ -440,8 +469,8 @@ class ResourceDao {
       resourceRow: row,
       source: sources[idx],
       url: urls[idx],
-      side: imageProperties[idx].side,
-      view: imageProperties[idx].view,
+      sides: imagesSides[idx],
+      views: imagesViews[idx],
       text,
     }));
 

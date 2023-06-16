@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { AppliedProperty, InsertItemPropertyRow } from '@oare/types';
+import { AppliedProperty, ItemPropertyRow } from '@oare/types';
 import {
   defineComponent,
   PropType,
@@ -39,7 +39,7 @@ interface PropertyDisplay {
 }
 
 interface AppliedPropertyToItemPropertyBridge {
-  itemPropertyRow: InsertItemPropertyRow;
+  itemPropertyRow: ItemPropertyRow;
   appliedProperty: AppliedProperty;
 }
 
@@ -58,11 +58,12 @@ export default defineComponent({
         props.properties,
         'placeholder'
       );
-      const itemPropertiesWithAppliedProperties: AppliedPropertyToItemPropertyBridge[] =
-        itemProperties.map((p, idx) => ({
+      const itemPropertiesWithAppliedProperties: AppliedPropertyToItemPropertyBridge[] = itemProperties.map(
+        (p, idx) => ({
           itemPropertyRow: p,
           appliedProperty: props.properties[idx],
-        }));
+        })
+      );
       const topProperties = itemPropertiesWithAppliedProperties.filter(
         p => !p.itemPropertyRow.parentUuid
       );

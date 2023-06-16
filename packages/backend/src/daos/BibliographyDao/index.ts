@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 import knex from '@/connection';
-import { Bibliography, BibliographyRow, Citation } from '@oare/types';
+import { Bibliography, BibliographyRow, Citation, LinkItem } from '@oare/types';
 import sl from '@/serviceLocator';
 
 // COMPLETE
@@ -115,10 +115,15 @@ class BibliographyDao {
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const utils = sl.get('utils');
 
-    const bibliographyUuids: string[] = await ItemPropertiesDao.getBibliographyUuidsByReference(
-      textUuid,
-      trx
+    const itemProperties = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
+      textUuid
     );
+    const referringWorkProperties = itemProperties.filter(
+      p => p.variableUuid === 'b3938276-173b-11ec-8b77-024de1c1cc1d'
+    );
+    const bibliographyUuids = referringWorkProperties
+      .map(p => p.objectUuid)
+      .filter((u): u is string => !!u);
 
     const bibliographyRows = await Promise.all(
       bibliographyUuids.map(uuid => this.getBibliographyRowByUuid(uuid, trx))
@@ -217,6 +222,37 @@ class BibliographyDao {
     }));
 
     return citations;
+  }
+
+  public async searchBibliographiesLinkProperties(
+    search: string,
+    trx?: Knex.Transaction
+  ): Promise<LinkItem[]> {
+    const bibliographyUuids = await this.getAllBibliographyUuids(trx);
+
+    const bibliographies = await Promise.all(
+      bibliographyUuids.map(uuid =>
+        this.getBibliographyByUuid(uuid, 'chicago-author-date', trx)
+      )
+    );
+
+    const relevantBibliographies = bibliographies.filter(b => {
+      if (b.title && b.title.includes(search)) {
+        return true;
+      }
+      if (b.authors.filter(a => a.includes(search)).length > 0) {
+        return true;
+      }
+      return false;
+    });
+
+    const response: LinkItem[] = relevantBibliographies.map(b => ({
+      objectUuid: b.uuid,
+      objectDisplay: `${b.authors.join(', ')} - ${b.title || ''}`,
+      objectDropdownDisplay: b.bibliography.bib || undefined,
+    }));
+
+    return response;
   }
 }
 

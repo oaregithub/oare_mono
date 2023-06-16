@@ -317,7 +317,10 @@ router
         );
 
         // Item Properties
-        await ItemPropertiesDao.addProperties(tables.itemProperties, trx);
+        await ItemPropertiesDao.insertItemPropertyRows(
+          tables.itemProperties,
+          trx
+        );
       });
 
       await cache.clear(`/collections/${tables.hierarchy.objectParentUuid}`, {

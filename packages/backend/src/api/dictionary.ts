@@ -9,7 +9,6 @@ import {
   CheckSpellingResponse,
   Token,
   AddFormPayload,
-  InsertItemPropertyRow,
   UpdateFormPayload,
   AddWordPayload,
   ItemPropertyRow,
@@ -663,7 +662,7 @@ router
           newFormUuid
         );
 
-        await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
+        await ItemPropertiesDao.insertItemPropertyRows(itemPropertyRows, trx);
       });
 
       const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
@@ -702,7 +701,7 @@ router.route('/dictionary/checknewword').post(async (req, res, next) => {
     );
 
     const hasMatchingProperty = (
-      comparison: InsertItemPropertyRow[],
+      comparison: ItemPropertyRow[],
       property: ItemPropertyRow
     ) =>
       comparison.some(
@@ -756,7 +755,7 @@ router
           newWordUuid
         );
 
-        await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
+        await ItemPropertiesDao.insertItemPropertyRows(itemPropertyRows, trx);
       });
 
       const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(

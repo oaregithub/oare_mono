@@ -6,7 +6,7 @@ import cacheMiddleware from '@/middlewares/router/cache';
 import {
   PersonRow,
   PersonListItem,
-  ItemPropertyRow,
+  ItemProperty,
   TextOccurrencesCountResponseItem,
   PersonInfo,
 } from '@oare/types';
@@ -33,9 +33,9 @@ router
           letter
         );
 
-        const personProperties: ItemPropertyRow[][] = await Promise.all(
+        const personProperties: ItemProperty[][] = await Promise.all(
           personRows.map(({ uuid }) =>
-            ItemPropertiesDao.getPropertiesByReferenceUuid(uuid)
+            ItemPropertiesDao.getItemPropertiesByReferenceUuid(uuid)
           )
         );
 

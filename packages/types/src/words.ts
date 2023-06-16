@@ -1,22 +1,7 @@
 import { DictionaryForm } from './dictionary';
-import { AppliedProperty } from './properties';
+import { AppliedProperty, ItemProperty } from './properties';
 
 // FIXME
-
-export interface ItemPropertyRow {
-  uuid: string;
-  referenceUuid: string;
-  parentUuid: string;
-  level: number | null;
-  variableUuid: string | null;
-  variableName: string;
-  varAbbrevation: string | null;
-  valueUuid: string | null;
-  valueName: string;
-  valAbbreviation: string | null;
-  objectUuid: string;
-  value: string;
-}
 
 export interface DictionaryWordTranslation {
   uuid: string;
@@ -26,7 +11,7 @@ export interface DictionaryWordTranslation {
 export interface DictionaryWordParseInfo {
   translationsForDefinition: DictionaryWordTranslation[];
   discussionLemmas: DictionaryWordTranslation[];
-  properties: ItemPropertyRow[];
+  properties: ItemProperty[];
 }
 
 export interface Word extends DictionaryWordParseInfo {

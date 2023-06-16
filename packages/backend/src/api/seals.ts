@@ -6,7 +6,7 @@ import {
   SealNameUuid,
   SealInfo,
   Seal,
-  InsertItemPropertyRow,
+  ItemPropertyRow,
   AddSealLinkPayload,
 } from '@oare/types';
 import { SealFilter, SealListFilter } from '@/cache/filters';
@@ -113,7 +113,7 @@ router
         textEpigraphyUuid
       );
 
-      const itemProperty: InsertItemPropertyRow = {
+      const itemProperty: ItemPropertyRow = {
         uuid: v4(),
         referenceUuid: textEpigraphyUuid,
         objectUuid: sealUuid,
@@ -125,7 +125,7 @@ router
       };
 
       await utils.createTransaction(async trx => {
-        await ItemPropertiesDao.addProperties([itemProperty], trx);
+        await ItemPropertiesDao.insertItemPropertyRows([itemProperty], trx);
       });
 
       await cache.clear('/seals', { level: 'exact' });

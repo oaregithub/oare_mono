@@ -1,10 +1,11 @@
-import { InsertItemPropertyRow, AppliedProperty } from '@oare/types';
+import { ItemPropertyRow, AppliedProperty } from '@oare/types';
 import { v4 } from 'uuid';
 
+// FIXME maybe rename to imply that they are ItemPropertyRows?
 export const convertAppliedPropsToItemProps = (
   properties: AppliedProperty[],
   referenceUuid: string
-): InsertItemPropertyRow[] => {
+): ItemPropertyRow[] => {
   const propertiesWithUuids = properties.map(prop => ({
     ...prop,
     uuid: v4(),
@@ -27,7 +28,7 @@ export const convertAppliedPropsToItemProps = (
       parentUuid: null,
     };
   });
-  const itemPropertyRows: InsertItemPropertyRow[] = propertiesWithParentUuid.map(
+  const itemPropertyRows: ItemPropertyRow[] = propertiesWithParentUuid.map(
     prop => ({
       uuid: prop.uuid,
       referenceUuid,
@@ -36,7 +37,7 @@ export const convertAppliedPropsToItemProps = (
       variableUuid: prop.variableRow.uuid,
       valueUuid: prop.valueRow ? prop.valueRow.uuid : null,
       objectUuid: prop.objectUuid,
-      value: prop.value,
+      value: prop.value?.toString() || null,
     })
   );
   return itemPropertyRows;
