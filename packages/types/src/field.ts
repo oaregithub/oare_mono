@@ -12,7 +12,7 @@ export interface FieldRow {
   type: FieldType | null;
   language: string | null;
   primacy: number | null;
-  field: string | null;
+  field: string;
   sourceUuid: string | null;
 }
 

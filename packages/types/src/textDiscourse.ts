@@ -1,5 +1,5 @@
 import { SearchNullDiscourseResultRow } from './search';
-import { DiscourseNote } from './notes';
+import { Note } from './notes';
 import { AppliedProperty, ItemPropertyWithChildren } from './properties';
 
 // FIXME
@@ -69,7 +69,7 @@ export interface TextDiscourseRowPartial {
 
 export interface DiscourseProperties {
   properties: ItemPropertyWithChildren[];
-  notes: DiscourseNote[];
+  notes: Note[];
 }
 
 export interface InsertParentDiscourseRowPayload {
