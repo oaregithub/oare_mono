@@ -11,6 +11,7 @@ import {
   Dossier,
   CollectionRow,
   Publication,
+  PeriodResponse,
 } from '@oare/types';
 import sl from '@/serviceLocator';
 import { CacheFilter } from '@/cache';
@@ -412,4 +413,45 @@ export const publicationsFilter: CacheFilter<Publication[]> = async (
   }));
 
   return publicationResponse;
+};
+
+export const periodsFilter: CacheFilter<PeriodResponse> = async (
+  response: PeriodResponse,
+  user: User | null
+): Promise<PeriodResponse> => {
+  const CollectionTextUtils = sl.get('CollectionTextUtils');
+  const PeriodsDao = sl.get('PeriodsDao');
+
+  const textsToHide = await CollectionTextUtils.textsToHide(
+    user ? user.uuid : null
+  );
+
+  const periodResponse: PeriodResponse = {
+    years: await Promise.all(
+      response.years.map(async year => ({
+        ...year,
+        occurrences: await PeriodsDao.getOccurrences(year.uuid, textsToHide),
+        months: await Promise.all(
+          year.months.map(async month => ({
+            ...month,
+            occurrences: await PeriodsDao.getOccurrences(
+              month.uuid,
+              textsToHide
+            ),
+            weeks: await Promise.all(
+              month.weeks.map(async week => ({
+                ...week,
+                occurrences: await PeriodsDao.getOccurrences(
+                  week.uuid,
+                  textsToHide
+                ),
+              }))
+            ),
+          }))
+        ),
+      }))
+    ),
+  };
+
+  return periodResponse;
 };

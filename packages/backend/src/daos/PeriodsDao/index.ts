@@ -197,7 +197,7 @@ class PeriodsDao {
     const year: Year = {
       ...yearRow,
       label,
-      occurrences: await this.getOccurrences(uuid, trx),
+      occurrences: 0, // Will be added in cache filter
       months: sortedMonths,
     };
 
@@ -230,7 +230,7 @@ class PeriodsDao {
     const month: Month = {
       ...monthRow,
       label: monthRow.name,
-      occurrences: await this.getOccurrences(uuid, trx),
+      occurrences: 0, // Will be added in cache filter
       weeks,
     };
 
@@ -253,7 +253,7 @@ class PeriodsDao {
     const week: Week = {
       ...weekRow,
       label: weekRow.name,
-      occurrences: await this.getOccurrences(uuid, trx),
+      occurrences: 0, // Will be added in cache filter
     };
 
     return week;
@@ -288,13 +288,23 @@ class PeriodsDao {
    * @param trx Knex Transaction. Optional.
    * @returns Number of occurrences of the period.
    */
-  async getOccurrences(uuid: string, trx?: Knex.Transaction) {
+  public async getOccurrences(
+    uuid: string,
+    textsToHide: string[],
+    trx?: Knex.Transaction
+  ) {
     const k = trx || knex;
 
     const countRow = await k('item_properties')
+      .innerJoin(
+        'text_discourse',
+        'item_properties.reference_uuid',
+        'text_discourse.uuid'
+      )
       .where('object_uuid', uuid)
       .andWhere('variable_uuid', 'cd76438c-3a82-11ed-b9d7-0282f921eac9')
-      .count({ count: 'uuid' })
+      .whereNotIn('text_uuid', textsToHide)
+      .count({ count: 'item_properties.uuid' })
       .first();
 
     const occurrences = countRow && countRow.count ? Number(countRow.count) : 0;
