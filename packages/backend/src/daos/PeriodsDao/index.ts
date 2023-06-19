@@ -1,17 +1,32 @@
-import { PeriodRow, Year, Month, LinkItem } from '@oare/types';
+import {
+  PeriodRow,
+  Year,
+  Month,
+  LinkItem,
+  PeriodResponse,
+  Week,
+} from '@oare/types';
 import knex from '@/connection';
 import { Knex } from 'knex';
+import sl from '@/serviceLocator';
 
-// FIXME
+// COMPLETE
 
 class PeriodsDao {
-  async getPeriodRows(
-    treeUuid: string,
-    type: string,
+  /**
+   * Retrieves a period row by UUID.
+   * @param uuid The UUID of the period row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns PeriodRow object.
+   * @throws Error if the period row is not found.
+   */
+  private async getPeriodRowByUuid(
+    uuid: string,
     trx?: Knex.Transaction
-  ): Promise<PeriodRow[]> {
+  ): Promise<PeriodRow> {
     const k = trx || knex;
-    const rows: PeriodRow[] = await k('period')
+
+    const row: PeriodRow | undefined = await k('period')
       .select(
         'uuid',
         'type',
@@ -34,172 +49,245 @@ class PeriodsDao {
         'period_type as periodType',
         'order'
       )
-      .where('tree_uuid', treeUuid)
-      .andWhere('period_type', type);
+      .where({ uuid })
+      .first();
 
-    return rows;
+    if (!row) {
+      throw new Error(`Period row with uuid ${uuid} not found`);
+    }
+
+    return row;
   }
 
-  async getYears(
-    yearRows: PeriodRow[],
-    monthRows: PeriodRow[],
-    weekRows: PeriodRow[]
-  ): Promise<Year[]> {
-    const years: Year[] = await Promise.all(
-      yearRows.map(row => this.yearMaker(row, monthRows, weekRows))
+  /**
+   * Constructs an entire PeriodResponse object containing all years, months, and weeks.
+   * @param trx Knex Transaction. Optional.
+   * @returns A PeriodResponse object.
+   * @throws Error if a referenced period row is not found.
+   */
+  public async getPeriods(trx?: Knex.Transaction): Promise<PeriodResponse> {
+    const yearUuids = await this.getPeriodUuidsByParentUuidAndPeriodType(
+      null,
+      'OA Calendar Year',
+      trx
     );
 
-    return years;
+    const years = await Promise.all(
+      yearUuids.map(uuid => this.getYearByUuid(uuid, trx))
+    );
+
+    const sortedYears = years.sort((a, b) => {
+      if (!a.abbreviation) {
+        return -1;
+      }
+
+      if (!b.abbreviation) {
+        return 1;
+      }
+
+      return a.abbreviation.localeCompare(b.abbreviation);
+    });
+
+    const periodResponse: PeriodResponse = {
+      years: sortedYears,
+    };
+
+    return periodResponse;
   }
 
-  async yearMaker(
-    period: PeriodRow,
-    monthRows: PeriodRow[],
-    weekRows: PeriodRow[],
+  /**
+   * Constructs a year object for a given year UUID.
+   * @param uuid The UUID of the year.
+   * @param trx Knex Transaction. Optional.
+   * @returns A Year object.
+   * @throws Error if a referenced period row is not found.
+   */
+  private async getYearByUuid(
+    uuid: string,
     trx?: Knex.Transaction
   ): Promise<Year> {
-    const k = trx || knex;
+    const DictionaryWordDao = sl.get('DictionaryWordDao');
+    const PersonDao = sl.get('PersonDao');
 
-    const { uuid } = period;
-    let yearNumber: string = '';
+    const yearRow = await this.getPeriodRowByUuid(uuid, trx);
 
-    if (period.abbreviation != null) {
-      yearNumber = period.abbreviation;
-    }
-
-    let yearName: string = '';
+    let label: string = '';
 
     if (
-      period.official1Uuid != null &&
-      period.official1FatherNameUuid != null
+      yearRow.official1Uuid !== null &&
+      yearRow.official1FatherNameUuid !== null
     ) {
-      const yearOfficialName = await k('dictionary_word')
-        .select('word')
-        .innerJoin('person', 'person.name_uuid', 'dictionary_word.uuid')
-        .where('person.uuid', period.official1Uuid)
-        .first();
+      const personRow = await PersonDao.getPersonRowByUuid(
+        yearRow.official1Uuid,
+        trx
+      );
 
-      const yearOfficialRelation = await k('person')
-        .select('relation')
-        .where('uuid', period.official1Uuid)
-        .first();
-      const yearOfficialRelationName = await k('dictionary_word')
-        .select('word')
-        .innerJoin(
-          'person',
-          'person.relation_name_uuid',
-          '=',
-          'dictionary_word.uuid'
-        )
-        .where('person.uuid', period.official1Uuid)
-        .first();
-      yearName = `${yearOfficialName.word} ${yearOfficialRelation.relation} ${yearOfficialRelationName.word}`;
+      const yearOfficialName = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        personRow.nameUuid!,
+        trx
+      );
+
+      const yearOfficialRelationName = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        personRow.relationNameUuid!,
+        trx
+      );
+
+      label = `${yearOfficialName.word} ${personRow.relation} ${yearOfficialRelationName.word}`;
     } else if (
-      period.official1Uuid != null &&
-      period.official1FatherNameUuid == null
+      yearRow.official1Uuid !== null &&
+      yearRow.official1FatherNameUuid === null
     ) {
-      const yearOfficialName = await k('dictionary_word')
-        .select('word')
-        .innerJoin('person', 'person.name_uuid', '=', 'dictionary_word.uuid')
-        .where('person.uuid', period.official1Uuid)
-        .first();
+      const personRow = await PersonDao.getPersonRowByUuid(
+        yearRow.official1Uuid,
+        trx
+      );
 
-      const yearOfficialLabel = await k('person')
-        .select('label')
-        .where('person.uuid', period.official1Uuid)
-        .first();
+      const yearOfficialName = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        personRow.nameUuid!,
+        trx
+      );
 
-      if (yearOfficialLabel != null) {
-        yearName = `${yearOfficialName.word} ${yearOfficialLabel.label}`;
+      if (personRow.label !== null) {
+        label = `${yearOfficialName.word} ${personRow.label}`;
       } else {
-        yearName = yearOfficialName.word;
+        label = `${yearOfficialName.word}`;
       }
-    } else if (period.official1NameUuid !== null) {
-      const yearOfficialName = await k('dictionary_word')
-        .select('word')
-        .where('uuid', period.official1NameUuid)
-        .first();
+    } else if (yearRow.official1NameUuid !== null) {
+      const yearOfficialName = await DictionaryWordDao.getDictionaryWordRowByUuid(
+        yearRow.official1NameUuid,
+        trx
+      );
 
-      if (period.official1FatherNameUuid !== null) {
-        const yearOfficialFatherName = await k('dictionary_word')
-          .select('word')
-          .where('uuid', period.official1FatherNameUuid)
-          .first();
+      if (yearRow.official1FatherNameUuid !== null) {
+        const yearOfficialFatherName = await DictionaryWordDao.getDictionaryWordRowByUuid(
+          yearRow.official1FatherNameUuid,
+          trx
+        );
 
-        yearName = `${yearOfficialName.word} s. ${yearOfficialFatherName.word}`;
+        label = `${yearOfficialName.word} s. ${yearOfficialFatherName.word}`;
       } else {
-        yearName = `${yearOfficialName.word}`;
+        label = `${yearOfficialName.word}`;
       }
     } else {
-      yearName = period.name;
+      label = `${yearRow.name}`;
     }
 
-    const yearOccurrences = await this.getOccurrences(period.uuid);
-    const months = await this.getMonths(period, monthRows, weekRows);
-
-    return {
+    const monthUuids = await this.getPeriodUuidsByParentUuidAndPeriodType(
       uuid,
-      number: yearNumber,
-      name: yearName,
-      occurrences: yearOccurrences,
-      months,
-    };
-  }
-
-  async getMonths(
-    yearRow: PeriodRow,
-    monthRows: PeriodRow[],
-    weekRows: PeriodRow[]
-  ): Promise<Month[]> {
-    const matchingMonths = monthRows.filter(
-      month => month.parentUuid === yearRow.uuid
+      'OA Month',
+      trx
     );
 
     const months = await Promise.all(
-      matchingMonths.map(row => this.monthMaker(row, weekRows))
+      monthUuids.map(monthUuid => this.getMonthByUuid(monthUuid, trx))
     );
 
-    return months.sort((a, b) => a.abbreviation - b.abbreviation);
-  }
+    const sortedMonths = months.sort((a, b) => {
+      if (!a.abbreviation) {
+        return -1;
+      }
 
-  async monthMaker(monthRow: PeriodRow, weekRows: PeriodRow[]): Promise<Month> {
-    const { uuid } = monthRow;
-    const monthAbbreviation: number = Number(monthRow.abbreviation);
-    const monthName: string = monthRow.name;
-    const monthOccurrences = await this.getOccurrences(uuid);
-    const weeks = await this.getWeeks(monthRow, weekRows);
+      if (!b.abbreviation) {
+        return 1;
+      }
 
-    return {
-      uuid,
-      abbreviation: monthAbbreviation,
-      name: monthName,
-      occurrences: monthOccurrences,
-      weeks,
+      return a.abbreviation.localeCompare(b.abbreviation);
+    });
+
+    const year: Year = {
+      ...yearRow,
+      label,
+      occurrences: await this.getOccurrences(uuid, trx),
+      months: sortedMonths,
     };
+
+    return year;
   }
 
-  async getWeeks(monthRow: PeriodRow, weekRows: PeriodRow[]) {
-    const matchingWeeks = weekRows.filter(
-      week => week.parentUuid === monthRow.uuid
+  /**
+   * Constructs a Month object for a given month UUID.
+   * @param uuid The UUID of the month.
+   * @param trx Knex Transaction. Optional.
+   * @returns A Month object.
+   * @throws Error if a referenced period row is not found.
+   */
+  private async getMonthByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Month> {
+    const monthRow = await this.getPeriodRowByUuid(uuid, trx);
+
+    const weekUuids = await this.getPeriodUuidsByParentUuidAndPeriodType(
+      uuid,
+      'OA hamuštum',
+      trx
     );
 
     const weeks = await Promise.all(
-      matchingWeeks.map(row => this.weekMaker(row))
+      weekUuids.map(weekUuid => this.getWeekByUuid(weekUuid, trx))
     );
 
-    return weeks;
-  }
-
-  async weekMaker(weekRow: PeriodRow) {
-    const weekOccurrences = await this.getOccurrences(weekRow.uuid);
-
-    return {
-      uuid: weekRow.uuid,
-      name: weekRow.name,
-      occurrences: weekOccurrences,
+    const month: Month = {
+      ...monthRow,
+      label: monthRow.name,
+      occurrences: await this.getOccurrences(uuid, trx),
+      weeks,
     };
+
+    return month;
   }
 
+  /**
+   * Constructs a Week object for a given week UUID.
+   * @param uuid The UUID of the week.
+   * @param trx Knex Transaction. Optional.
+   * @returns A Week object.
+   * @throws Error if a referenced period row is not found.
+   */
+  private async getWeekByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<Week> {
+    const weekRow = await this.getPeriodRowByUuid(uuid, trx);
+
+    const week: Week = {
+      ...weekRow,
+      label: weekRow.name,
+      occurrences: await this.getOccurrences(uuid, trx),
+    };
+
+    return week;
+  }
+
+  /**
+   * Retrieves a list of period UUIDS by parent UUID and period type.
+   * @param parentUuid The UUID of the parent period.
+   * @param periodType The period_type of the period.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of period UUIDs.
+   */
+  private async getPeriodUuidsByParentUuidAndPeriodType(
+    parentUuid: string | null,
+    periodType: string,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knex;
+
+    const uuids = await k('period').pluck('uuid').where({
+      tree_uuid: '01da4ab2-6ea0-49f3-8752-759ca4bd5cdc',
+      parent_uuid: parentUuid,
+      period_type: periodType,
+    });
+
+    return uuids;
+  }
+
+  /**
+   * Retrieves the number of occurrences of a period.
+   * @param uuid The UUID of the period.
+   * @param trx Knex Transaction. Optional.
+   * @returns Number of occurrences of the period.
+   */
   async getOccurrences(uuid: string, trx?: Knex.Transaction) {
     const k = trx || knex;
 
@@ -209,8 +297,9 @@ class PeriodsDao {
       .count({ count: 'uuid' })
       .first();
 
-    const occurrences = countRow && countRow.count ? countRow.count : 0;
-    return Number(occurrences);
+    const occurrences = countRow && countRow.count ? Number(countRow.count) : 0;
+
+    return occurrences;
   }
 
   /**
@@ -220,7 +309,7 @@ class PeriodsDao {
    * @param trx Knex Transaction. Optional.
    * @returns Array of matching, ordered `LinkItem` objects.
    */
-  async searchPeriodsLinkProperties(
+  public async searchPeriodsLinkProperties(
     search: string,
     trx?: Knex.Transaction
   ): Promise<LinkItem[]> {

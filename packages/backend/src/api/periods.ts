@@ -3,9 +3,9 @@ import sl from '@/serviceLocator';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import { HttpInternalError } from '@/exceptions';
-import { PeriodResponse, Year } from '@oare/types';
+import { PeriodResponse } from '@oare/types';
 
-// FIXME - will probably want to wait until dictionary updates have been made
+// COMPLETE
 
 const router = express.Router();
 
@@ -17,29 +17,7 @@ router.route('/periods').get(
       const cache = sl.get('cache');
       const PeriodsDao = sl.get('PeriodsDao');
 
-      const yearRows = await PeriodsDao.getPeriodRows(
-        '01da4ab2-6ea0-49f3-8752-759ca4bd5cdc',
-        'OA Calendar Year'
-      );
-
-      const monthRows = await PeriodsDao.getPeriodRows(
-        '01da4ab2-6ea0-49f3-8752-759ca4bd5cdc',
-        'OA Month'
-      );
-      const weekRows = await PeriodsDao.getPeriodRows(
-        '01da4ab2-6ea0-49f3-8752-759ca4bd5cdc',
-        'OA hamuštum'
-      );
-
-      const years: Year[] = await PeriodsDao.getYears(
-        yearRows,
-        monthRows,
-        weekRows
-      );
-
-      const periods: PeriodResponse = {
-        years,
-      };
+      const periods = await PeriodsDao.getPeriods();
 
       const response = await cache.insert<PeriodResponse>(
         { req },

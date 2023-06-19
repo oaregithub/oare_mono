@@ -166,7 +166,7 @@ class PersonDao {
    * @returns A single person row.
    * @throws Error if no person is found.
    */
-  private async getPersonRowByUuid(
+  public async getPersonRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<PersonRow> {

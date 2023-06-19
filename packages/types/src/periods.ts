@@ -1,23 +1,18 @@
 // COMPLETE
 
-export interface Week {
-  uuid: string;
-  name: string;
+export interface Week extends PeriodRow {
+  label: string;
   occurrences: number;
 }
 
-export interface Month {
-  uuid: string;
-  abbreviation: number;
-  name: string;
+export interface Month extends PeriodRow {
+  label: string;
   occurrences: number;
   weeks: Week[];
 }
 
-export interface Year {
-  uuid: string;
-  number: string;
-  name: string;
+export interface Year extends PeriodRow {
+  label: string;
   occurrences: number;
   months: Month[];
 }

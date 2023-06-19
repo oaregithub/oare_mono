@@ -6,7 +6,7 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import sl from '@/serviceLocator';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -46,7 +46,6 @@ router
     }
   });
 
-// FIXME :key can maybe removed by using the name of the file as sent in formdata
 router
   .route('/resource/upload_image/:key')
   .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
