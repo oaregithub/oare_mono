@@ -229,7 +229,6 @@ class ResourceDao {
     const s3 = new AWS.S3();
 
     const PersonDao = sl.get('PersonDao');
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
     const TextDao = sl.get('TextDao');
 
     const resourceRow = await this.getResourceRowByUuid(uuid, trx);

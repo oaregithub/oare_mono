@@ -58,6 +58,26 @@ class AliasDao {
       primacy,
     });
   }
+
+  /**
+   * Updates the name of an alias.
+   * @param referenceUuid The reference UUID of the alias to edit.
+   * @param name The new name of the alias.
+   * @param primacy The primacy of the alias to edit.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async updateName(
+    referenceUuid: string,
+    name: string,
+    primacy: number,
+    trx?: Knex.Transaction
+  ): Promise<void> {
+    const k = trx || knex;
+
+    await k('alias')
+      .update({ name })
+      .where({ reference_uuid: referenceUuid, primacy });
+  }
 }
 
 /**

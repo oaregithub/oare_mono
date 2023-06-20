@@ -29,7 +29,6 @@ import PublicationDao from '@/daos/PublicationDao';
 import PublicDenylistDao from '@/daos/PublicDenylistDao';
 import QuarantineTextDao from '@/daos/QuarantineTextDao';
 import ResourceDao from '@/daos/ResourceDao';
-import SealDao from '@/daos/SealDao';
 import SearchFailureDao from '@/daos/SearchFailureDao';
 import SignDao from '@/daos/SignDao';
 import SignOrgDao from '@/daos/SignOrgDao';
@@ -85,7 +84,6 @@ export type ServiceTypes = {
   PublicDenylistDao: typeof PublicDenylistDao;
   QuarantineTextDao: typeof QuarantineTextDao;
   ResourceDao: typeof ResourceDao;
-  SealDao: typeof SealDao;
   SearchFailureDao: typeof SearchFailureDao;
   SignDao: typeof SignDao;
   SignOrgDao: typeof SignOrgDao;

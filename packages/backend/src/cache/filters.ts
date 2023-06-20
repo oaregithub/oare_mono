@@ -4,7 +4,7 @@ import {
   Collection,
   Epigraphy,
   Seal,
-  SealInfo,
+  SealCore,
   Person,
   Bibliography,
   Archive,
@@ -177,67 +177,86 @@ export const epigraphyFilter: CacheFilter<Epigraphy> = async (
 };
 
 /**
- * Used to add occurrences count to a seal response.
+ * Used to add occurrences count, image links, and impressions to a seal.
  * Done in a cache filter to exclude occurrences that appear in texts that the user does not have access to.
+ * Image links are added to prevent expiring.
  * @param seal The seal response to add a count to.
  * @param user The requesting user.
  * @returns The seal response with added count.
  */
-export const SealFilter: CacheFilter<Seal> = async (
+export const sealFilter: CacheFilter<Seal> = async (
   seal: Seal,
   user: User | null
 ): Promise<Seal> => {
   const CollectionTextUtils = sl.get('CollectionTextUtils');
-  const SealDao = sl.get('SealDao');
+  const SpatialUnitDao = sl.get('SpatialUnitDao');
 
   const userUuid = user ? user.uuid : null;
 
-  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+  const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
+  const imageLinks = await SpatialUnitDao.getImageLinksBySealUuid(
+    seal.uuid,
+    imagesToHide
+  );
 
-  const count = await SealDao.getSealImpressionCountBySealUuid(
+  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+  const occurrences = await SpatialUnitDao.getSealImpressionOccurrencesBySealUuid(
     seal.uuid,
     textsToHide
   );
 
-  const sealImpressions = await SealDao.getSealImpressionsBySealUuid(
+  const impressions = await SpatialUnitDao.getSealImpressionsBySealUuid(
     seal.uuid,
     textsToHide
   );
 
   return {
     ...seal,
-    count,
-    sealImpressions,
+    imageLinks,
+    occurrences,
+    impressions,
   };
 };
 
 /**
- * Used to add occurrences counts to a list of seals.
+ * Used to add occurrences counts and image links to a list of seals.
  * Done in a cache filter to exclude occurrences that appear in texts that the user does not have access to.
- * @param sealList The seal list to add counts to.
+ * Image links are added to prevent expiring.
+ * @param seals The seal list to add counts to.
  * @param user The requesting user.
  * @returns The seal list with added counts.
  */
-export const SealListFilter: CacheFilter<SealInfo[]> = async (
-  sealList: SealInfo[],
+export const sealListFilter: CacheFilter<SealCore[]> = async (
+  seals: SealCore[],
   user: User | null
-): Promise<SealInfo[]> => {
+): Promise<SealCore[]> => {
   const CollectionTextUtils = sl.get('CollectionTextUtils');
-  const SealDao = sl.get('SealDao');
+  const SpatialUnitDao = sl.get('SpatialUnitDao');
 
   const userUuid = user ? user.uuid : null;
 
-  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
-
-  const filteredSealList = await Promise.all(
-    sealList.map(async s => ({
-      ...s,
-      count: await SealDao.getSealImpressionCountBySealUuid(
-        s.uuid,
-        textsToHide
-      ),
-    }))
+  const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
+  const imageLinks = await Promise.all(
+    seals.map(seal =>
+      SpatialUnitDao.getImageLinksBySealUuid(seal.uuid, imagesToHide)
+    )
   );
+
+  const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+  const occurrences = await Promise.all(
+    seals.map(seal =>
+      SpatialUnitDao.getSealImpressionOccurrencesBySealUuid(
+        seal.uuid,
+        textsToHide
+      )
+    )
+  );
+
+  const filteredSealList = seals.map((seal, idx) => ({
+    ...seal,
+    imageLinks: imageLinks[idx],
+    occurrences: occurrences[idx],
+  }));
 
   return filteredSealList;
 };
