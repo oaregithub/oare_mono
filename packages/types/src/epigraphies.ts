@@ -1,5 +1,5 @@
 import {
-  DiscourseUnit,
+  TextDiscourseUnit,
   TextDiscourseRow,
   DiscourseUnitType,
 } from './textDiscourse';
@@ -26,10 +26,10 @@ export interface Epigraphy {
   collection: CollectionRow;
   transliteration: TextTransliterationStatus;
   units: EpigraphicUnit[];
-  discourseUnits: DiscourseUnit[];
+  discourseUnits: TextDiscourseUnit[];
   citations: Citation[];
   sourceText: string | null;
-  images: Image[]; // FIXME
+  images: Image[];
   canEdit: boolean;
 }
 

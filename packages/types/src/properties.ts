@@ -16,10 +16,6 @@ export interface ItemProperty extends ItemPropertyRow {
   valueRow: ValueRow | null;
 }
 
-export interface ItemPropertyWithChildren extends ItemPropertyRow {
-  children: ItemPropertyWithChildren[];
-}
-
 export interface HierarchyData {
   uuid: string;
   parentUuid: string;

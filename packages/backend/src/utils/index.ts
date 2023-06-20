@@ -5,8 +5,6 @@ import {
   Pagination,
   TextOccurrencesResponseRow,
   TextOccurrencesRow,
-  ItemPropertyWithChildren,
-  ItemProperty,
   LocaleCode,
   ZoteroResponse,
 } from '@oare/types';
@@ -152,26 +150,6 @@ export const getTextOccurrences = async (
     discourseUuidsToHighlight: [...subwordDiscourseUuids[index]],
     readings: readings[index],
   }));
-};
-
-// FIXME - move to discourse utils
-export const nestProperties = (
-  propertyRows: ItemProperty[],
-  parentUuid: string | null
-): ItemPropertyWithChildren[] => {
-  const children = propertyRows.filter(row => row.parentUuid === parentUuid);
-  const props: ItemPropertyWithChildren[] = [];
-
-  children.forEach(child => {
-    const property = {
-      ...child,
-      children: nestProperties(propertyRows, child.uuid),
-    };
-
-    props.push(property);
-  });
-
-  return props;
 };
 
 // FUXNE - move to DictionaryWordDao utils?

@@ -396,11 +396,13 @@ router
       const { discourseUuids }: { discourseUuids: string[] } = req.body;
 
       await Promise.all(
-        discourseUuids.map(uuid => TextDiscourseDao.disconnectSpelling(uuid))
+        discourseUuids.map(uuid => TextDiscourseDao.unsetSpellingUuid(uuid))
       );
 
       const discourseRows = await Promise.all(
-        discourseUuids.map(uuid => TextDiscourseDao.getDiscourseRowByUuid(uuid))
+        discourseUuids.map(uuid =>
+          TextDiscourseDao.getTextDiscourseRowByUuid(uuid)
+        )
       );
 
       await Promise.all(
@@ -442,8 +444,7 @@ router
 
 router
   .route('/dictionary/spellings/:uuid')
-  // FIXME replace with PATCH
-  .put(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
+  .patch(permissionsRoute('UPDATE_FORM'), async (req, res, next) => {
     try {
       const { uuid: spellingUuid } = req.params;
       const { spelling, discourseUuids }: UpdateFormSpellingPayload = req.body;
@@ -602,16 +603,16 @@ router
         return;
       }
 
-      const spellingUuids = await TextDiscourseDao.getSpellingUuidsByDiscourseUuid(
+      const textDiscourseRow = await TextDiscourseDao.getTextDiscourseRowByUuid(
         discourseUuid
       );
 
       let result: Word | null = null;
 
-      if (spellingUuids.length > 0) {
+      if (textDiscourseRow.spellingUuid !== null) {
         // Should only ever be one spelling associated with a "word" type in the text discourse table.
         const formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
-          spellingUuids[0]
+          textDiscourseRow.spellingUuid
         );
 
         const wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(

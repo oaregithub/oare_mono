@@ -5,7 +5,7 @@ import {
   TaxonomyPropertyTree,
   LinkPropertiesSearchPayload,
   LinkItem,
-  DiscourseUnit,
+  TextDiscourseUnit,
 } from '@oare/types';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
@@ -201,29 +201,31 @@ router.route('/properties_links').get(async (req, res, next) => {
       );
 
       // FIXME this is probably duplicated and could be extracted
-      const discourseReading = (discourse: DiscourseUnit) => {
-        let reading;
+      const discourseReading = (discourse: TextDiscourseUnit) => {
+        let reading: string = '';
         if (
           (discourse.type === 'discourseUnit' ||
             discourse.type === 'sentence') &&
-          discourse.translation
+          discourse.translations.length > 0
         ) {
-          reading = discourse.translation;
-        } else if (discourse.type === 'paragraph' && discourse.paragraphLabel) {
-          reading = `<strong><em>${discourse.paragraphLabel}</em></strong>`;
+          reading = discourse.translations[0].field;
+        } else if (
+          discourse.type === 'paragraph' &&
+          discourse.paragraphLabels.length > 0
+        ) {
+          reading = `<strong><em>${discourse.paragraphLabels[0]}</em></strong>`;
         } else if (
           (discourse.type === 'clause' || discourse.type === 'phrase') &&
-          discourse.paragraphLabel
+          discourse.paragraphLabels.length > 0
         ) {
-          reading = `<em>${discourse.paragraphLabel}</em>`;
+          reading = `<em>${discourse.paragraphLabels[0]}</em>`;
         } else if (
           (discourse.type === 'word' || discourse.type === 'number') &&
           discourse.transcription &&
           discourse.explicitSpelling
         ) {
-          const line = discourse.line ? ` Line ${discourse.line}` : '';
           reading = `${discourse.transcription} (${discourse.explicitSpelling})`;
-        } else {
+        } else if (discourse.explicitSpelling) {
           reading = discourse.explicitSpelling;
         }
 
@@ -231,7 +233,9 @@ router.route('/properties_links').get(async (req, res, next) => {
       };
 
       const response: LinkItem[] = rows.map(row => {
-        const line = row.line ? `<b> - Line ${row.line}</b>` : '';
+        const line = row.epigraphy.line
+          ? `<b> - Line ${row.epigraphy.line}</b>`
+          : '';
         return {
           objectUuid: row.uuid,
           objectDisplay: discourseReading(row),

@@ -45,13 +45,6 @@ export interface SearchTextArgs {
   mode: 'respectNoBoundaries' | 'respectBoundaries' | 'respectAllBoundaries';
 }
 
-export interface AnchorInfo {
-  wordOnTablet: number | null;
-  objInText: number | null;
-  childNum: number | null;
-  treeUuid: string;
-}
-
 class TextEpigraphyDao {
   async getEpigraphicUnits(
     textUuid: string,
@@ -111,6 +104,75 @@ class TextEpigraphyDao {
     const epigraphicUnits = await getInterlinearInfo(epigraphicUnitRows);
 
     return epigraphicUnits;
+  }
+
+  private async getTextEpigraphyRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<TextEpigraphyRow> {
+    const k = trx || knex;
+
+    const row: TextEpigraphyRow | undefined = await k('text_epigraphy')
+      .select(
+        'uuid',
+        'type',
+        'text_uuid as textUuid',
+        'tree_uuid as treeUuid',
+        'parent_uuid as parentUuid',
+        'object_on_tablet as objectOnTablet',
+        'side',
+        'column',
+        'line',
+        'char_on_line as charOnLine',
+        'char_on_tablet as charOnTablet',
+        'sign_uuid as signUuid',
+        'sign',
+        'reading_uuid as readingUuid',
+        'reading',
+        'discourse_uuid as discourseUuid'
+      )
+      .where({ uuid })
+      .first();
+
+    if (!row) {
+      throw new Error(`No text epigraphy row with uuid ${uuid}`);
+    }
+
+    return row;
+  }
+
+  private async getTextEpigraphyUuidByDiscourseUuid(
+    discourseUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<string> {
+    const k = trx || knex;
+
+    const row: { uuid: string } | undefined = await k('text_epigraphy')
+      .select('uuid')
+      .where({ discourse_uuid: discourseUuid })
+      .first();
+
+    if (!row) {
+      throw new Error(
+        `No text epigraphy row with discourse uuid ${discourseUuid}`
+      );
+    }
+
+    return row.uuid;
+  }
+
+  public async getTextEpigraphyRowByDiscourseUuid(
+    discourseUuid: string,
+    trx?: Knex.Transaction
+  ): Promise<TextEpigraphyRow> {
+    const epigraphyUuid = await this.getTextEpigraphyUuidByDiscourseUuid(
+      discourseUuid,
+      trx
+    );
+
+    const row = await this.getTextEpigraphyRowByUuid(epigraphyUuid, trx);
+
+    return row;
   }
 
   private async getMatchingTexts(
@@ -349,65 +411,6 @@ class TextEpigraphyDao {
       .first('uuid')
       .where('text_uuid', uuid);
     return !!response;
-  }
-
-  async getAnchorInfo(
-    epigraphyUuids: string[],
-    textUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<AnchorInfo> {
-    const k = trx || knex;
-    const newWordCharOnTablet: number = (
-      await k('text_epigraphy')
-        .whereIn('uuid', epigraphyUuids)
-        .pluck('char_on_tablet')
-        .orderBy('char_on_tablet', 'asc')
-    )[0];
-    let isFirstWord = false;
-    let anchorDiscourseRow: { discourseUuid: string } = await k(
-      'text_epigraphy'
-    )
-      .where('text_uuid', textUuid)
-      .whereNotNull('discourse_uuid')
-      .andWhere(function () {
-        this.where('char_on_tablet', '<', newWordCharOnTablet);
-      })
-      .select('discourse_uuid AS discourseUuid')
-      .orderBy('char_on_tablet', 'desc')
-      .first();
-    if (!anchorDiscourseRow) {
-      isFirstWord = true;
-      anchorDiscourseRow = await k('text_epigraphy')
-        .where('text_uuid', textUuid)
-        .whereNotNull('discourse_uuid')
-        .andWhere(function () {
-          this.where('char_on_tablet', '>', newWordCharOnTablet);
-        })
-        .select('discourse_uuid AS discourseUuid')
-        .orderBy('char_on_tablet', 'asc')
-        .first();
-    }
-    const anchorDiscourseUuid = anchorDiscourseRow.discourseUuid;
-    const anchorInfo: AnchorInfo = await k('text_discourse')
-      .where('uuid', anchorDiscourseUuid)
-      .select(
-        'word_on_tablet AS wordOnTablet',
-        'obj_in_text AS objInText',
-        'child_num AS childNum',
-        'tree_uuid AS treeUuid'
-      )
-      .first();
-
-    if (!isFirstWord && anchorInfo.childNum) {
-      anchorInfo.childNum += 1;
-    }
-    if (!isFirstWord && anchorInfo.objInText) {
-      anchorInfo.objInText += 1;
-    }
-    if (!isFirstWord && anchorInfo.wordOnTablet) {
-      anchorInfo.wordOnTablet += 1;
-    }
-    return anchorInfo;
   }
 
   async addDiscourseUuid(

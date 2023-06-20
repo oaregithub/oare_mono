@@ -1,4 +1,4 @@
-import { DiscourseUnit } from './textDiscourse';
+import { TextDiscourseUnit } from './textDiscourse';
 
 // FIXME
 
@@ -6,13 +6,6 @@ export interface SearchTextsResultRow {
   uuid: string;
   name: string;
   matches: string[];
-  discourseUuids: string[];
-}
-
-export interface WordsInTextsSearchResultRow {
-  uuid: string;
-  name: string;
-  discourseUnits: DiscourseUnit[];
   discourseUuids: string[];
 }
 
@@ -32,11 +25,6 @@ export interface SearchTextsCountPayload {
 
 export interface SearchTextsResponse {
   results: SearchTextsResultRow[];
-}
-
-export interface WordsInTextsSearchResponse {
-  results: WordsInTextsSearchResultRow[];
-  total: number;
 }
 
 export interface SearchCooccurrence {

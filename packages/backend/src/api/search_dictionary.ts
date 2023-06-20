@@ -1,7 +1,7 @@
 import express from 'express';
-import { DictionarySearchPayload } from '@oare/types';
+/* import { DictionarySearchPayload } from '@oare/types';
 import { HttpInternalError } from '@/exceptions';
-import sl from '@/serviceLocator';
+import sl from '@/serviceLocator'; */
 
 // FIXME
 

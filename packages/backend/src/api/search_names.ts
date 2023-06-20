@@ -1,7 +1,7 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+/* import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import { SearchNamesPayload } from '@oare/types';
+import { SearchNamesPayload } from '@oare/types'; */
 
 // FIXME
 

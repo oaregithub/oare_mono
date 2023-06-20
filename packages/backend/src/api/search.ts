@@ -1,5 +1,5 @@
 import express from 'express';
-import {
+/* import {
   SearchTextsResponse,
   SearchTextsCountPayload,
   SearchTextsPayload,
@@ -14,7 +14,7 @@ import { createTabletRenderer } from '@oare/oare';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { prepareCharactersForSearch } from '@/daos/SignReadingDao/utils';
-import { parsedQuery, extractPagination } from '@/utils';
+import { parsedQuery, extractPagination } from '@/utils'; */
 
 // FIXME
 

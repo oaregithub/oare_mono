@@ -1,6 +1,8 @@
 import { SearchNullDiscourseResultRow } from './search';
 import { Note } from './notes';
-import { AppliedProperty, ItemPropertyWithChildren } from './properties';
+import { AppliedProperty, ItemProperty } from './properties';
+import { TextEpigraphyRow } from './epigraphies';
+import { FieldRow } from './field';
 
 // FIXME
 
@@ -14,33 +16,10 @@ export type DiscourseUnitType =
   | 'clause'
   | 'region';
 
-export interface DiscourseUnit {
-  uuid: string;
-  type: DiscourseUnitType;
-  units: DiscourseUnit[];
-  spelling?: string;
-  explicitSpelling?: string;
-  transcription?: string;
-  line?: number;
-  wordOnTablet?: number;
-  paragraphLabel?: string;
-  translation?: string;
-  objInText: number;
-  side?: number;
-  parentUuid?: string;
-  childNum?: number;
-}
-
-export interface NewDiscourseRowPayload {
-  spelling: string;
-  formUuid: string;
-  occurrences: SearchNullDiscourseResultRow[];
-}
-
 export interface TextDiscourseRow {
   uuid: string;
   type: DiscourseUnitType;
-  objInText: number | null;
+  objInText: number;
   wordOnTablet: number | null;
   childNum: number | null;
   textUuid: string;
@@ -52,61 +31,34 @@ export interface TextDiscourseRow {
   transcription: string | null;
 }
 
-export interface TextDiscourseRowPartial {
-  uuid: string;
-  type: DiscourseUnitType;
-  objInText?: number;
-  wordOnTablet?: number;
-  childNum?: number;
-  textUuid: string;
-  treeUuid: string;
-  parentUuid?: string;
-  spellingUuid?: string;
-  spelling?: string;
-  explicitSpelling?: string;
-  transcription?: string;
+export interface TextDiscourse extends TextDiscourseRow {
+  translations: FieldRow[];
+  paragraphLabels: string[];
+  epigraphy: TextEpigraphyRow;
+  properties: ItemProperty[];
+  notes: Note[];
 }
 
-export interface DiscourseProperties {
-  properties: ItemPropertyWithChildren[];
-  notes: Note[];
+export interface TextDiscourseUnit extends TextDiscourse {
+  children: TextDiscourseUnit[];
+}
+
+export interface NewDiscourseRowPayload {
+  spelling: string;
+  formUuid: string;
+  occurrences: SearchNullDiscourseResultRow[];
 }
 
 export interface InsertParentDiscourseRowPayload {
   textUuid: string;
-  discourseSelections: DiscourseUnit[];
-  discourseType: string;
+  discourseSelections: TextDiscourseUnit[];
+  discourseType: DiscourseUnitType;
   newContent: string;
   properties: AppliedProperty[];
-}
-
-export interface EditTranslationPayload {
-  newTranslation: string;
-  textUuid: string;
-}
-
-export interface DiscourseSpellingResponse {
-  spelling: string;
 }
 
 export interface DiscourseDisplayUnit {
   uuid: string;
   type: DiscourseUnitType;
   display: string;
-}
-
-export interface DiscourseRow {
-  uuid: string;
-  type: DiscourseUnitType;
-  wordOnTablet: number | null;
-  parentUuid: string | null;
-  spelling: string | null;
-  explicitSpelling: string | null;
-  transcription: string | null;
-  line: number | null;
-  paragraphLabel: string | null;
-  translation: string | null;
-  objInText: number;
-  side: number | null;
-  childNum: number | null;
 }

@@ -1,11 +1,11 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+/* import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import {
   WordsInTextSearchPayload,
   WordsInTextsSearchResponse,
   DictItemComboboxDisplay,
-} from '@oare/types';
+} from '@oare/types'; */
 
 // FIXME
 

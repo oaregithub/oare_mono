@@ -2160,7 +2160,7 @@ class EditTextUtils {
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
-    const discourseRow = await TextDiscourseDao.getDiscourseRowByUuid(
+    const discourseRow = await TextDiscourseDao.getTextDiscourseRowByUuid(
       payload.discourseUuid,
       trx
     );
