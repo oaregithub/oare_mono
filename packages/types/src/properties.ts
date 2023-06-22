@@ -114,3 +114,7 @@ export interface PreselectionProperty {
   variableHierarchyUuid: string;
   valueUuid: string;
 }
+
+export interface EditPropertiesPayload {
+  properties: AppliedProperty[];
+}

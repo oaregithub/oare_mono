@@ -109,7 +109,6 @@ router
         });
         cache.clear('/person', { level: 'startsWith' });
         cache.clear('/archive', { level: 'startsWith' });
-        // FIXME will need to clear epigraphies too
 
         res.status(204).end();
       } catch (err) {

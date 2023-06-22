@@ -4,7 +4,9 @@ import bibliography from '@/api/bibliography';
 import cacheStatus from '@/api/cache_status';
 import collections from '@/api/collections';
 import comments from '@/api/comments';
-import dictionary from '@/api/dictionary';
+import dictionaryForm from '@/api/dictionary_form';
+import dictionarySpelling from '@/api/dictionary_spelling';
+import dictionaryWord from '@/api/dictionary_word';
 import environment from '@/api/environment';
 import epigraphies from '@/api/epigraphies';
 import errors from '@/api/errors';
@@ -12,12 +14,10 @@ import field from '@/api/field';
 import groupAllowlist from '@/api/group_allowlist';
 import groupEditPermissions from '@/api/group_edit_permissions';
 import groups from '@/api/groups';
-import names from '@/api/names';
 import pageContent from '@/api/page_content';
 import periods from '@/api/periods';
 import permissions from '@/api/permissions';
 import persons from '@/api/persons';
-import places from '@/api/places';
 import profile from '@/api/profile';
 import properties from '@/api/properties';
 import publications from '@/api/publications';
@@ -35,7 +35,6 @@ import textDiscourse from '@/api/text_discourse';
 import threads from '@/api/threads';
 import userGroups from '@/api/user_groups';
 import users from '@/api/users';
-import words from '@/api/words';
 
 /**
  * All API routes are prefixed with this path.
@@ -53,7 +52,9 @@ export default (app: Express) => {
     cacheStatus,
     collections,
     comments,
-    dictionary,
+    dictionaryForm,
+    dictionarySpelling,
+    dictionaryWord,
     environment,
     epigraphies,
     errors,
@@ -61,12 +62,10 @@ export default (app: Express) => {
     groupAllowlist,
     groupEditPermissions,
     groups,
-    names,
     pageContent,
     periods,
     permissions,
     persons,
-    places,
     profile,
     properties,
     publications,
@@ -84,7 +83,6 @@ export default (app: Express) => {
     threads,
     userGroups,
     users,
-    words,
   ].forEach(route => {
     app.use(API_PATH, route);
   });

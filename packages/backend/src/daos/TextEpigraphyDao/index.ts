@@ -14,7 +14,6 @@ import {
   convertEpigraphicUnitRows,
   getSequentialCharacterQuery,
   getNotOccurrenceTexts,
-  getInterlinearInfo,
 } from './utils';
 import TextMarkupDao from '../TextMarkupDao';
 
@@ -100,8 +99,7 @@ class TextEpigraphyDao {
       trx
     );
 
-    const epigraphicUnitRows = convertEpigraphicUnitRows(units, markupUnits);
-    const epigraphicUnits = await getInterlinearInfo(epigraphicUnitRows);
+    const epigraphicUnits = convertEpigraphicUnitRows(units, markupUnits);
 
     return epigraphicUnits;
   }

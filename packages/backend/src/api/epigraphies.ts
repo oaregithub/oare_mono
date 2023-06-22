@@ -323,7 +323,7 @@ router
         );
       });
 
-      await cache.clear(`/collections/${tables.hierarchy.objectParentUuid}`, {
+      await cache.clear(`/collection/${tables.hierarchy.objectParentUuid}`, {
         level: 'exact',
       });
 

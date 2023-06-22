@@ -1,5 +1,5 @@
 import {
-  Word,
+  DictionaryWord,
   User,
   Collection,
   Epigraphy,
@@ -24,17 +24,20 @@ import { CacheFilter } from '@/cache';
  * @param user The requesting user.
  * @returns The filtered word.
  */
-export const dictionaryWordFilter: CacheFilter<Word> = async (
-  word: Word,
+export const dictionaryWordFilter: CacheFilter<DictionaryWord> = async (
+  word: DictionaryWord,
   user: User | null
-): Promise<Word> => {
+): Promise<DictionaryWord> => {
   const PermissionsDao = sl.get('PermissionsDao');
+
   const userPermissions = user
     ? await PermissionsDao.getUserPermissions(user.uuid)
     : [];
+
   const canConnectSpellings = userPermissions
     .map(permission => permission.name)
     .includes('CONNECT_SPELLING');
+
   return {
     ...word,
     forms: word.forms
@@ -56,14 +59,16 @@ export const dictionaryWordFilter: CacheFilter<Word> = async (
  * @param user The requesting user.
  * @returns The filtered list of words.
  */
-export const dictionaryFilter: CacheFilter<Word[]> = async (
-  words: Word[],
+export const dictionaryFilter: CacheFilter<DictionaryWord[]> = async (
+  words: DictionaryWord[],
   user: User | null
-): Promise<Word[]> => {
+): Promise<DictionaryWord[]> => {
   const PermissionsDao = sl.get('PermissionsDao');
+
   const userPermissions = user
     ? await PermissionsDao.getUserPermissions(user.uuid)
     : [];
+
   const canConnectSpellings = userPermissions
     .map(permission => permission.name)
     .includes('CONNECT_SPELLING');

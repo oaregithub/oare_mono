@@ -52,6 +52,7 @@ class Cache {
    * Allows for the cached value to be modified before being sent to the client, as needed.
    * The filter function must implement the `CacheFilter` type. Can be `null`.
    * @param expireInHours The number of hours before the cache expires automatically. Optional.
+   * If not specified, defaults to 72 hours.
    * @returns The filtered cached value. If no filter is specified, the original value is returned.
    * The filtered value is what should be sent to the client.
    * This allows for a user with limited access to receive a filtered value despite their request
@@ -64,7 +65,7 @@ class Cache {
     expireInHours?: number
   ): Promise<T> {
     await redis.set(key.req.originalUrl, JSON.stringify(response), {
-      EX: expireInHours ? expireInHours * 60 * 60 : undefined,
+      EX: expireInHours ? expireInHours * 60 * 60 : 259200, // Defaults to 72 hours
     });
     if (filter === null) {
       return response;

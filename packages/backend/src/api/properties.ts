@@ -14,7 +14,7 @@ import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import _ from 'lodash';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 const router = express.Router();
 
@@ -37,12 +37,10 @@ router
   .patch(permissionsRoute('EDIT_ITEM_PROPERTIES'), async (req, res, next) => {
     try {
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-      const DictionaryWordDao = sl.get('DictionaryWordDao');
-      const cache = sl.get('cache');
       const utils = sl.get('utils');
 
       const { referenceUuid } = req.params;
-      const { properties, wordUuid }: EditPropertiesPayload = req.body;
+      const { properties }: EditPropertiesPayload = req.body;
 
       await utils.createTransaction(async trx => {
         await ItemPropertiesDao.deleteItemPropertyRowsByReferenceUuid(
@@ -57,21 +55,6 @@ router
 
         await ItemPropertiesDao.insertItemPropertyRows(itemPropertyRows, trx);
       });
-
-      // FIXME better way?
-      if (wordUuid) {
-        const dictionaryRow = await DictionaryWordDao.getDictionaryWordRowByUuid(
-          wordUuid
-        );
-
-        const dictionaryCacheRouteToClear = utils.getDictionaryCacheRouteToClear(
-          dictionaryRow.word,
-          dictionaryRow.type
-        );
-
-        await cache.clear(dictionaryCacheRouteToClear, { level: 'exact' });
-        await cache.clear(`/dictionary/${wordUuid}`, { level: 'exact' });
-      }
 
       res.status(204).end();
     } catch (err) {

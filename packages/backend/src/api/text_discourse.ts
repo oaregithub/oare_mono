@@ -148,7 +148,7 @@ router
           }
         });
 
-        await cache.clear(`/text_epigraphies/text/${textUuid}`, {
+        await cache.clear(`/epigraphies/${textUuid}`, {
           level: 'startsWith',
         });
 

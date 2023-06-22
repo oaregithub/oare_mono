@@ -1,11 +1,13 @@
 import knex from '@/connection';
-import { v4 } from 'uuid';
-import { DictionaryForm, DictionaryFormRow } from '@oare/types';
+import {
+  DictionaryForm,
+  DictionaryFormRow,
+  DictionarySpelling,
+} from '@oare/types';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
-import DictionarySpellingDao from '../DictionarySpellingDao';
 
-// FIXME
+// COMPLETE
 
 export interface FormGrammarRow {
   propertyUuid: string;
@@ -16,108 +18,93 @@ export interface FormGrammarRow {
 }
 
 class DictionaryFormDao {
-  async updateForm(
+  async updateFormSpelling(
     uuid: string,
-    newForm: string,
+    form: string,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
-    await k('dictionary_form').update({ form: newForm }).where({ uuid });
+
+    await k('dictionary_form').update({ form }).where({ uuid });
   }
 
-  async getWordForms(
-    wordUuid: string,
-    htmlSpelling = false,
+  async getDictionaryFormUuidsByReferenceUuid(
+    referenceUuid: string,
     trx?: Knex.Transaction
-  ): Promise<DictionaryForm[]> {
+  ): Promise<string[]> {
     const k = trx || knex;
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
-    const forms: { uuid: string; form: string }[] = await k('dictionary_form')
-      .select('uuid', 'form')
-      .where('reference_uuid', wordUuid);
+    const uuids: string[] = await k('dictionary_form')
+      .pluck('uuid')
+      .where({ reference_uuid: referenceUuid });
 
-    const formSpellings = await Promise.all(
-      forms.map(f =>
-        DictionarySpellingDao.getFormSpellings(f.uuid, htmlSpelling, trx)
-      )
-    );
-
-    const formProperties = await Promise.all(
-      forms.map(form =>
-        ItemPropertiesDao.getItemPropertiesByReferenceUuid(form.uuid, trx)
-      )
-    );
-
-    return forms
-      .map((form, i) => ({
-        ...form,
-        properties: formProperties[i],
-        spellings: formSpellings[i],
-      }))
-      .sort((a, b) => a.form.localeCompare(b.form));
-  }
-
-  async getDictionaryWordUuidByFormUuid(
-    formUuid: string,
-    trx?: Knex.Transaction
-  ): Promise<string> {
-    const k = trx || knex;
-    const row: { referenceUuid: string } = await k('dictionary_form')
-      .where('uuid', formUuid)
-      .select('reference_uuid AS referenceUuid')
-      .first();
-
-    if (!row) {
-      throw new Error(`Form with UUID ${formUuid} does not exist`);
-    }
-
-    return row.referenceUuid;
-  }
-
-  async getTranscriptionBySpellingUuids(
-    spellingUuids: string[],
-    trx?: Knex.Transaction
-  ): Promise<string> {
-    const k = trx || knex;
-    const row: { form: string } = await k('dictionary_form')
-      .where('uuid', spellingUuids)
-      .select('form')
-      .first();
-
-    return row.form;
+    return uuids;
   }
 
   async addForm(
+    uuid: string,
     wordUuid: string,
     formSpelling: string,
     trx?: Knex.Transaction
-  ): Promise<string> {
+  ): Promise<void> {
     const k = trx || knex;
-    const newFormUuid = v4();
+
     await k('dictionary_form').insert({
-      uuid: newFormUuid,
+      uuid,
       reference_uuid: wordUuid,
       form: formSpelling,
     });
-    return newFormUuid;
   }
 
-  async getFormByUuid(
-    formUuid: string,
+  async getDictionaryFormRowByUuid(
+    uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryFormRow> {
     const k = trx || knex;
-    const row: DictionaryFormRow = await k('dictionary_form')
-      .where('uuid', formUuid)
+
+    const row: DictionaryFormRow | undefined = await k('dictionary_form')
       .select('uuid', 'reference_uuid as referenceUuid', 'form', 'mash')
+      .where({ uuid })
       .first();
 
     if (!row) {
-      throw new Error(`Form with UUID ${formUuid} does not exist`);
+      throw new Error(`Form with UUID ${uuid} does not exist`);
     }
 
     return row;
+  }
+
+  async getDictionaryFormByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<DictionaryForm> {
+    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+    const DictionarySpellingDao = sl.get('DictionarySpellingDao');
+
+    const row = await this.getDictionaryFormRowByUuid(uuid, trx);
+
+    const properties = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
+      uuid,
+      trx
+    );
+
+    const spellingUuids = await DictionarySpellingDao.getDictionarySpellingUuidsByReferenceUuid(
+      uuid,
+      trx
+    );
+    const spellings: DictionarySpelling[] = await Promise.all(
+      spellingUuids.map(spellingUuid =>
+        DictionarySpellingDao.getDictionarySpellingByUuid(spellingUuid, trx)
+      )
+    );
+
+    const form: DictionaryForm = {
+      ...row,
+      properties,
+      spellings,
+    };
+
+    return form;
   }
 }
 

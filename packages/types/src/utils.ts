@@ -1,5 +1,11 @@
 export type SortOrder = 'asc' | 'desc'; // FIXME should use elsewhere!
 
+export interface Pagination {
+  page: number;
+  limit: number;
+  filter?: string;
+}
+
 export interface TextOccurrencesRow {
   discourseUuid: string;
   textName: string;

@@ -1,4 +1,4 @@
-// FIXME
+// COMPLETE
 
 export type RawTokenType =
   | 'SIGN'

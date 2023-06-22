@@ -11,6 +11,7 @@ import {
 } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
+import { AkkadianLetterGroupsUpper } from '@oare/oare';
 
 // COMPLETE
 
@@ -349,25 +350,11 @@ class PersonDao {
     letter: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
+    const utils = sl.get('utils');
+
     const k = trx || knex;
 
-    const letters = letter.split('/');
-    letters.forEach(possibleVowel => {
-      switch (possibleVowel) {
-        case 'a':
-          return letters.push('ā');
-        case 'e':
-          return letters.push('ē');
-        case 'i':
-          return letters.push('ī');
-        case 'o':
-          return letters.push('ō');
-        case 'u':
-          return letters.push('ū');
-        default:
-          return letters;
-      }
-    });
+    const letters = AkkadianLetterGroupsUpper[letter];
 
     const uuids: string[] = await k('person')
       .pluck('person.uuid')

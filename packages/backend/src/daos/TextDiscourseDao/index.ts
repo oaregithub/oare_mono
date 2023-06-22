@@ -11,7 +11,7 @@ import sl from '@/serviceLocator';
 import _ from 'lodash';
 import { createNestedDiscourses, setDiscourseReading } from './utils';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 class TextDiscourseDao {
   /**

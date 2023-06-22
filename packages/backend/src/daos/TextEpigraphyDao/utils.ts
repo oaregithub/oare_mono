@@ -1,18 +1,12 @@
 import { Knex } from 'knex';
 import knex from '@/connection';
-import {
-  EpigraphicUnit,
-  ItemProperty,
-  MarkupUnit,
-  SearchCooccurrence,
-} from '@oare/types';
+import { EpigraphicUnit, MarkupUnit, SearchCooccurrence } from '@oare/types';
 import {
   normalizeFraction,
   normalizeSign,
   normalizeNumber,
   convertSideNumberToSide,
 } from '@oare/oare';
-import sl from '@/serviceLocator';
 import { EpigraphicQueryRow } from './index';
 
 // FIXME
@@ -288,59 +282,4 @@ export function ignorePunctuation(search: string): string {
     .replace(/[\s]{1,}/g, '([\\s]{1,}|[.,/#!$%^&*;:{}=-_`~()<>]{1,1})')
     .toLowerCase()}.*$`;
   return ignoredPunctuation;
-}
-
-export async function getInterlinearInfo(
-  units: EpigraphicUnit[]
-): Promise<EpigraphicUnit[]> {
-  const DictionaryFormDao = sl.get('DictionaryFormDao');
-  const DictionarySpellingDao = sl.get('DictionarySpellingDao');
-  const DictionaryWordDao = sl.get('DictionaryWordDao');
-  const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-  const epigraphicUnits: EpigraphicUnit[] = await Promise.all(
-    units.map(async (unit, idx) => {
-      if (
-        unit.charOnLine === 1 ||
-        (units[idx - 1] && unit.discourseUuid !== units[idx - 1].discourseUuid)
-      ) {
-        let word: string | null = null;
-        let wordUuid: string | null = null;
-        let form: string | null = null;
-        let formUuid: string | null = null;
-        let translation: string | null = null;
-        let parseInfo: ItemProperty[] | null = null;
-        if (unit.spellingUuid) {
-          formUuid = await DictionarySpellingDao.getFormUuidBySpellingUuid(
-            unit.spellingUuid
-          );
-        }
-        if (formUuid) {
-          form = (await DictionaryFormDao.getFormByUuid(formUuid)).form;
-          wordUuid = await DictionaryFormDao.getDictionaryWordUuidByFormUuid(
-            formUuid
-          );
-          const { type } = await DictionaryWordDao.getDictionaryWordRowByUuid(
-            wordUuid
-          );
-          if (type === 'GN') {
-            translation = 'GN';
-          } else if (type === 'PN') {
-            translation = 'PN';
-          } else {
-            translation = (
-              await DictionaryWordDao.getWordTranslationsForDefinition(wordUuid)
-            )[0].val;
-          }
-          word = await DictionaryWordDao.getWordName(wordUuid);
-          parseInfo = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
-            formUuid
-          );
-        }
-
-        return { ...unit, word, form, translation, parseInfo };
-      }
-      return unit;
-    })
-  );
-  return epigraphicUnits;
 }

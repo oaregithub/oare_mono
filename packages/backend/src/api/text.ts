@@ -48,7 +48,7 @@ router
 
         await TextDao.updateTransliterationStatus(textUuid, color);
 
-        await cache.clear(`/epigraphies/text/${textUuid}`, {
+        await cache.clear(`/epigraphies/${textUuid}`, {
           level: 'startsWith',
         });
 

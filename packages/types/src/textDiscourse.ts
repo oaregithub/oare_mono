@@ -1,10 +1,9 @@
-import { SearchNullDiscourseResultRow } from './search';
 import { Note } from './notes';
 import { AppliedProperty, ItemProperty } from './properties';
 import { TextEpigraphyRow } from './epigraphies';
 import { FieldRow } from './field';
 
-// FIXME
+// MOSTLY COMPLETE
 
 export type DiscourseUnitType =
   | 'discourseUnit'
@@ -43,12 +42,6 @@ export interface TextDiscourseUnit extends TextDiscourse {
   children: TextDiscourseUnit[];
 }
 
-export interface NewDiscourseRowPayload {
-  spelling: string;
-  formUuid: string;
-  occurrences: SearchNullDiscourseResultRow[];
-}
-
 export interface InsertParentDiscourseRowPayload {
   textUuid: string;
   discourseSelections: TextDiscourseUnit[];
@@ -57,6 +50,7 @@ export interface InsertParentDiscourseRowPayload {
   properties: AppliedProperty[];
 }
 
+// FIXME could probably simply be an extension of TextDiscourse with a display string
 export interface DiscourseDisplayUnit {
   uuid: string;
   type: DiscourseUnitType;
