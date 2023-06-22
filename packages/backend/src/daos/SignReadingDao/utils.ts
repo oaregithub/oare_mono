@@ -6,7 +6,7 @@ import { stringToCharsArray } from '../TextEpigraphyDao/utils';
 
 // FIXME should be moved
 
-export async function prepareIndividualSearchCharacters(
+async function prepareIndividualSearchCharacters(
   charsPayload?: string,
   trx?: Knex.Transaction
 ): Promise<string[][]> {
@@ -58,7 +58,7 @@ export async function prepareCharactersForSearch(
   return characterUuids;
 }
 
-export const applyIntellisearch = async (
+const applyIntellisearch = async (
   signs: string[],
   trx?: Knex.Transaction
 ): Promise<string[][]> => {
@@ -81,7 +81,7 @@ export const applyIntellisearch = async (
   return signArray;
 };
 
-export const applyConsonantWildcard = (signs: string[]): string[] => {
+const applyConsonantWildcard = (signs: string[]): string[] => {
   const wildcardConsonants = 'bdgklmnpqrstwyzBDGKLMNPQRSTWYZšṣṭḫṢŠṬḪ'.split('');
   const numberOfWildcards = (signs[0].match(/C/g) || []).length;
 
@@ -95,7 +95,7 @@ export const applyConsonantWildcard = (signs: string[]): string[] => {
   return wildcardSigns;
 };
 
-export const applyAmpersandWildcard = (signs: string[]): string[] => {
+const applyAmpersandWildcard = (signs: string[]): string[] => {
   const beginsWithAmpersand = !!signs[0].match(/^&/);
 
   let wildcardSigns: string[] = signs;
@@ -120,7 +120,7 @@ export const applyAmpersandWildcard = (signs: string[]): string[] => {
   return wildcardSigns;
 };
 
-export const applyBrackets = (signs: string[]): string[] => {
+const applyBrackets = (signs: string[]): string[] => {
   let bracketSigns: string[] = signs;
   const bracketSubstrings = signs[0].match(/\[[^[]*\]/g) || [];
 
@@ -137,7 +137,7 @@ export const applyBrackets = (signs: string[]): string[] => {
   return bracketSigns;
 };
 
-export const applyDollarSymbol = async (
+const applyDollarSymbol = async (
   signs: string[],
   trx?: Knex.Transaction
 ): Promise<string[]> => {
@@ -164,7 +164,7 @@ export const applyDollarSymbol = async (
  * @param vowel The original vowel that should be wildcarded
  * @returns An array of the various possible accented vowel formats
  */
-export const getAccentedVowelOptions = (vowel: string): string[] => {
+const getAccentedVowelOptions = (vowel: string): string[] => {
   switch (vowel) {
     case 'A' || 'Á' || 'À':
       return ['A', 'Á', 'À'];
@@ -195,7 +195,7 @@ export const getAccentedVowelOptions = (vowel: string): string[] => {
  * Simply gets unicode subscripts 4-29. 4 is the minimum possible subscript, 29 is the max.
  * @returns Array of strings containing subscripts 4-29
  */
-export const getSubscriptVowelOptions = (): string[] => {
+const getSubscriptVowelOptions = (): string[] => {
   const maxSubscript = 29;
   const subscripts: string[] = [];
   for (let i = 4; i <= maxSubscript; i += 1) {
