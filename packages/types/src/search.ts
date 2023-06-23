@@ -1,5 +1,3 @@
-import { TextDiscourseUnit } from './textDiscourse';
-
 // FIXME
 
 export interface SearchTextsResultRow {

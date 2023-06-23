@@ -2,9 +2,9 @@ import {
   TextDiscourseUnit,
   TextDiscourseRow,
   DiscourseUnitType,
-} from './textDiscourse';
+} from './text_discourse';
 import { CollectionRow } from './collection';
-import { SignCodeWithDiscourseUuid } from './signReading';
+import { SignCodeWithDiscourseUuid } from './sign_reading';
 import { TreeRow } from './tree';
 import { AppliedProperty, ItemProperty, ItemPropertyRow } from './properties';
 import { TextTransliterationStatus, TextRow, Text } from './text';
