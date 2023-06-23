@@ -1,3 +1,5 @@
+// COMPLETE
+
 export interface User extends UserRow {
   groups: number[];
 }

@@ -25,7 +25,7 @@ router
         const PersonDao = sl.get('PersonDao');
         const cache = sl.get('cache');
 
-        const personUuidsByLetter = await PersonDao.getPersonUuidsByLetter(
+        const personUuidsByLetter = await PersonDao.getPersonUuidsByLetterGroup(
           letter
         );
 

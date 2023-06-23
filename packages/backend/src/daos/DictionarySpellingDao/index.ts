@@ -6,14 +6,14 @@ import sl from '@/serviceLocator';
 
 // COMPLETE
 
-export interface DictionarySpellingRows {
-  uuid: string;
-  referenceUuid: string;
-  explicitSpelling: string;
-}
-
 class DictionarySpellingDao {
-  async updateSpelling(
+  /**
+   * Updates the spelling of a spelling. This also updates the explicit spelling.
+   * @param uuid The UUID of the spelling to update.
+   * @param spelling The new spelling.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async updateSpelling(
     uuid: string,
     spelling: string,
     trx?: Knex.Transaction
@@ -25,7 +25,14 @@ class DictionarySpellingDao {
       .where({ uuid });
   }
 
-  async getDictionarySpellingUuidsByReferenceUuid(
+  /**
+   * Retrieves a list of spelling UUIDs that have the specified reference UUID.
+   * This means that they are spellings of the same form.
+   * @param referenceUuid The UUID of the form that the spellings belong to.
+   * @param trx Knex Transaction. Optional.
+   * @returns An array of spelling UUIDs.
+   */
+  public async getDictionarySpellingUuidsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -38,7 +45,13 @@ class DictionarySpellingDao {
     return uuids;
   }
 
-  async getDictionarySpellingRowByUuid(
+  /**
+   * Retrieves a single dictionary_spelling row by UUID.
+   * @param uuid The UUID of the spelling to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single dictionary_spelling row.
+   */
+  public async getDictionarySpellingRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionarySpellingRow> {
@@ -64,7 +77,13 @@ class DictionarySpellingDao {
     return row;
   }
 
-  async getDictionarySpellingByUuid(
+  /**
+   * Constructs a DictionarySpelling object for a given UUID.
+   * @param uuid The UUID of the spelling to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A DictionarySpelling object.
+   */
+  public async getDictionarySpellingByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionarySpelling> {
@@ -88,7 +107,14 @@ class DictionarySpellingDao {
     return spelling;
   }
 
-  async spellingExistsOnForm(
+  /**
+   * Checks if a spelling already exists on a form.
+   * @param formUuid The UUID of the form to check.
+   * @param spelling The spelling to check.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the spelling exists on the form.
+   */
+  public async spellingExistsOnForm(
     formUuid: string,
     spelling: string,
     trx?: Knex.Transaction
@@ -105,7 +131,14 @@ class DictionarySpellingDao {
     return !!row;
   }
 
-  async addSpelling(
+  /**
+   * Inserts a new spelling into the database.
+   * @param uuid The UUID of the spelling.
+   * @param formUuid The UUID of the form that the spelling belongs to.
+   * @param spelling The new spelling.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async addSpelling(
     uuid: string,
     formUuid: string,
     spelling: string,
@@ -121,11 +154,22 @@ class DictionarySpellingDao {
     });
   }
 
-  async deleteSpelling(uuid: string, trx?: Knex.Transaction): Promise<void> {
+  /**
+   * Removes a spelling from the database.
+   * @param uuid The UUID of the spelling to remove.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async deleteSpelling(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<void> {
     const k = trx || knex;
 
     await k('dictionary_spelling').del().where({ uuid });
   }
 }
 
+/**
+ * DictionarySpellingDao instance as a singleton.
+ */
 export default new DictionarySpellingDao();

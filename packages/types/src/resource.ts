@@ -1,4 +1,4 @@
-// FIXME
+// COMPLETE
 
 import { Text } from './text';
 
@@ -18,7 +18,7 @@ export interface LinkRow {
 }
 
 export interface Image {
-  resourceRow: ResourceRow | null; // Can be null for CDLI images
+  resourceRow: ResourceRow | null; // Can be null for CDLI and Met images
   source: string | null;
   url: string;
   text: Text;

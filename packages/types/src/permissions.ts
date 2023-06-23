@@ -1,4 +1,4 @@
-// MOSTLY COMPLETE
+// COMPLETE
 
 import { Text } from './text';
 import { Image } from './resource';

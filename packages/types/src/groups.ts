@@ -1,12 +1,14 @@
-// MOSTLY COMPLETE
+// COMPLETE
 
-// FIXME add back num_users?
-
-export interface Group {
+export interface GroupRow {
   id: number;
   name: string;
   createdOn: Date;
   description: string | null;
+}
+
+export interface Group extends GroupRow {
+  numUsers: number;
 }
 
 export interface CreateGroupPayload {

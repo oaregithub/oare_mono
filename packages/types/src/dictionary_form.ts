@@ -1,6 +1,8 @@
 import { ItemProperty, AppliedProperty } from './properties';
 import { DictionarySpelling } from './dictionary_spelling';
 
+// COMPLETE
+
 export interface DictionaryFormRow {
   uuid: string;
   referenceUuid: string;

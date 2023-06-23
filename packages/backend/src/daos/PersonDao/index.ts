@@ -342,19 +342,19 @@ class PersonDao {
 
   /**
    * Retrieves a list of person UUIDs by letter.
-   * @param letter The letter string to search for.
+   * @param letterGroup The letter string to search for.
    * @param trx Knex Transaction. Optional.
    * @returns Array of person UUIDs.
    */
-  public async getPersonUuidsByLetter(
-    letter: string,
+  public async getPersonUuidsByLetterGroup(
+    letterGroup: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const utils = sl.get('utils');
 
     const k = trx || knex;
 
-    const letters = AkkadianLetterGroupsUpper[letter];
+    const letters = AkkadianLetterGroupsUpper[letterGroup];
 
     const uuids: string[] = await k('person')
       .pluck('person.uuid')

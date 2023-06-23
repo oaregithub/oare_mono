@@ -1,6 +1,8 @@
 import { ItemProperty } from './properties';
 import { FieldRow } from './field';
 
+// COMPLETE
+
 export interface PersonRow {
   uuid: string;
   nameUuid: string | null;

@@ -1,3 +1,5 @@
+// COMPLETE
+
 export interface TextTransliterationStatus {
   uuid: string;
   color: string;

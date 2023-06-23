@@ -1,5 +1,7 @@
 import { FieldRow } from './field';
 
+// MOSTLY COMPLETE
+
 export interface ItemPropertyRow {
   uuid: string;
   referenceUuid: string;

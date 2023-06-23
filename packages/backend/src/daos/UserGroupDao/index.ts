@@ -56,12 +56,31 @@ class UserGroupDao {
   ): Promise<string[]> {
     const k = trx || knex;
 
-    const userUuids: string[] = await k('user')
-      .innerJoin('user_group', 'user.uuid', 'user_group.user_uuid')
-      .where({ group_id: groupId })
-      .pluck('user.uuid');
+    const userUuids: string[] = await k('user_group')
+      .pluck('user_uuid')
+      .where({ group_id: groupId });
 
     return userUuids;
+  }
+
+  /**
+   * Gets the number of users in a group.
+   * @param groupId The ID of the group to get the number of users for.
+   * @param trx Knex Transaction. Optional.
+   * @returns Number of users in the group.
+   */
+  public async getNumberOfUsersInGroup(
+    groupId: number,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const k = trx || knex;
+
+    const count = await k('user_group')
+      .count({ count: 'user_uuid' })
+      .where({ group_id: groupId })
+      .first();
+
+    return count && count.count ? Number(count.count) : 0;
   }
 
   /**

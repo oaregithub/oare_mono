@@ -9,16 +9,14 @@ import { Knex } from 'knex';
 
 // COMPLETE
 
-export interface FormGrammarRow {
-  propertyUuid: string;
-  parentUuid: string | null;
-  variable: string | null;
-  valueName: string | null;
-  valueAbbrev: string | null;
-}
-
 class DictionaryFormDao {
-  async updateFormSpelling(
+  /**
+   * Updates the spelling of a given form. This is the `form` column.
+   * @param uuid The UUID of the form to update.
+   * @param form The new spelling of the form.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async updateFormSpelling(
     uuid: string,
     form: string,
     trx?: Knex.Transaction
@@ -28,7 +26,14 @@ class DictionaryFormDao {
     await k('dictionary_form').update({ form }).where({ uuid });
   }
 
-  async getDictionaryFormUuidsByReferenceUuid(
+  /**
+   * Retrieves a list of form UUIDs that have the specified reference UUID.
+   * This means that they are forms of the same word.
+   * @param referenceUuid The UUID of the word that the forms belong to.
+   * @param trx Knex Transaction. Optional.
+   * @returns An array of form UUIDs.
+   */
+  public async getDictionaryFormUuidsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -41,7 +46,14 @@ class DictionaryFormDao {
     return uuids;
   }
 
-  async addForm(
+  /**
+   * Inserts a new form row.
+   * @param uuid The UUID of the new form.
+   * @param wordUuid The UUID of the word that the form belongs to.
+   * @param formSpelling The spelling of the form.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async addForm(
     uuid: string,
     wordUuid: string,
     formSpelling: string,
@@ -56,7 +68,13 @@ class DictionaryFormDao {
     });
   }
 
-  async getDictionaryFormRowByUuid(
+  /**
+   * Retrieves a single dictionary_form row by UUID.
+   * @param uuid The UUID of the form to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single dictionary_form row.
+   */
+  public async getDictionaryFormRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryFormRow> {
@@ -74,7 +92,13 @@ class DictionaryFormDao {
     return row;
   }
 
-  async getDictionaryFormByUuid(
+  /**
+   * Constructs a DictionaryForm object for a given UUID.
+   * @param uuid The UUID of the form to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A DictionaryForm object.
+   */
+  public async getDictionaryFormByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryForm> {
@@ -108,4 +132,7 @@ class DictionaryFormDao {
   }
 }
 
+/**
+ * DictionaryFormDao instance as a singleton.
+ */
 export default new DictionaryFormDao();

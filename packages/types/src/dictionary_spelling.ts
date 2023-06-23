@@ -1,4 +1,4 @@
-import { ItemProperty } from './properties';
+// COMPLETE
 
 export interface DictionarySpellingRow {
   uuid: string;

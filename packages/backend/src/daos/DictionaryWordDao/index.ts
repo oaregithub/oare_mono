@@ -1,5 +1,5 @@
 import {
-  DictionaryWordTypes,
+  DictionaryWordType,
   DictionaryWordRow,
   DictionaryWord,
   DictionaryForm,
@@ -12,14 +12,22 @@ import { AkkadianLetterGroupsUpper } from '@oare/oare';
 // COMPLETE
 
 class DictionaryWordDao {
-  async getDictionaryWordUuidsByTypeAndLetter(
-    type: DictionaryWordTypes,
-    letter: string,
+  /**
+   * Retrieves a list of dictionary word UUIDs that have the specified type and begin with the specified letter group.
+   * Used for the dictionary word list.
+   * @param type The type of word to retrieve.
+   * @param letterGroup The letter group to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns An array of dictionary word UUIDs.
+   */
+  public async getDictionaryWordUuidsByTypeAndLetterGroup(
+    type: DictionaryWordType,
+    letterGroup: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const k = trx || knex;
 
-    const letters = AkkadianLetterGroupsUpper[letter];
+    const letters = AkkadianLetterGroupsUpper[letterGroup];
 
     const uuids: string[] = await k('dictionary_word')
       .pluck('uuid')
@@ -36,7 +44,13 @@ class DictionaryWordDao {
     return uuids;
   }
 
-  async updateWordSpelling(
+  /**
+   * Updates the spelling of a given word. This is the `word` column.
+   * @param uuid The UUID of the word to update.
+   * @param word The new spelling of the word.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async updateWordSpelling(
     uuid: string,
     word: string,
     trx?: Knex.Transaction
@@ -46,7 +60,13 @@ class DictionaryWordDao {
     await k('dictionary_word').update({ word }).where({ uuid });
   }
 
-  async getDictionaryWordRowByUuid(
+  /**
+   * Retrieves a single dictionary_word row by UUID.
+   * @param uuid The UUID of the word to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single dictionary_word row.
+   */
+  public async getDictionaryWordRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryWordRow> {
@@ -64,7 +84,13 @@ class DictionaryWordDao {
     return row;
   }
 
-  async getDictionaryWordByUuid(
+  /**
+   * Constructs a DictionaryWord object for a given UUID.
+   * @param uuid The UUID of the word to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A DictionaryWord object.
+   */
+  public async getDictionaryWordByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<DictionaryWord> {
@@ -131,10 +157,17 @@ class DictionaryWordDao {
     return word;
   }
 
-  async addWord(
+  /**
+   * Inserts a new dictionary word into the database.
+   * @param uuid The UUID of the word to insert.
+   * @param word The spelling of the word to insert.
+   * @param type The type of word to insert.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async addWord(
     uuid: string,
     word: string,
-    type: DictionaryWordTypes,
+    type: DictionaryWordType,
     trx?: Knex.Transaction
   ): Promise<void> {
     const k = trx || knex;
@@ -146,8 +179,16 @@ class DictionaryWordDao {
     });
   }
 
-  async getDictionaryWordUuidsByTypeAndWord(
-    type: DictionaryWordTypes,
+  /**
+   * Retrieves a list of dictionary word UUIDs that have the specified type and word spelling.
+   * Used to check if a word already exists.
+   * @param type The type of word to retrieve.
+   * @param word The spelling of the word to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns An array of dictionary word UUIDs.
+   */
+  public async getDictionaryWordUuidsByTypeAndWord(
+    type: DictionaryWordType,
     word: string,
     trx?: Knex.Transaction
   ): Promise<string[]> {
@@ -155,12 +196,18 @@ class DictionaryWordDao {
 
     const uuids: string[] = await k('dictionary_word')
       .pluck('uuid')
-      .where({ word });
+      .where({ type, word });
 
     return uuids;
   }
 
-  async searchDictionaryWordsLinkProperties(
+  /**
+   * Searches for dictionary words for use with link item properties.
+   * @param search The search string.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of dictionary words.
+   */
+  public async searchDictionaryWordsLinkProperties(
     search: string,
     trx?: Knex.Transaction
   ): Promise<{ uuid: string; word: string; type: string }[]> {
@@ -193,4 +240,7 @@ class DictionaryWordDao {
   }
 }
 
+/**
+ * DictionaryWordDao instance as a singleton.
+ */
 export default new DictionaryWordDao();

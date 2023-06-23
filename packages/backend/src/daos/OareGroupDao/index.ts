@@ -1,6 +1,7 @@
-import { Group } from '@oare/types';
+import { Group, GroupRow } from '@oare/types';
 import knex from '@/connection';
 import { Knex } from 'knex';
+import sl from '@/serviceLocator';
 
 // COMPLETE
 
@@ -23,19 +24,19 @@ class OareGroupDao {
   }
 
   /**
-   * Retrieves a group by its ID.
-   * @param id The ID of the group to retrieve.
+   * Retrieves a group row by its ID.
+   * @param id The ID of the group row to retrieve.
    * @param trx Knex Transaction. Optional.
-   * @returns The group object.
-   * @throws Error if no group found.
+   * @returns The group row object.
+   * @throws Error if no group row found.
    */
-  public async getGroupById(
+  private async getGroupRowById(
     id: number,
     trx?: Knex.Transaction
-  ): Promise<Group> {
+  ): Promise<GroupRow> {
     const k = trx || knex;
 
-    const group: Group | undefined = await k('oare_group')
+    const group: GroupRow | undefined = await k('oare_group')
       .select('id', 'name', 'created_on as createdOn', 'description')
       .first()
       .where({ id });
@@ -45,6 +46,29 @@ class OareGroupDao {
     }
 
     return group;
+  }
+
+  /**
+   * Retrieves a group by its ID.
+   * @param id The ID of the group row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns The group object.
+   * @throws Error if no group found.
+   */
+  public async getGroupById(
+    id: number,
+    trx?: Knex.Transaction
+  ): Promise<Group> {
+    const UserGroupDao = sl.get('UserGroupDao');
+
+    const groupRow = await this.getGroupRowById(id, trx);
+
+    const numUsers = await UserGroupDao.getNumberOfUsersInGroup(id, trx);
+
+    return {
+      ...groupRow,
+      numUsers,
+    };
   }
 
   /**

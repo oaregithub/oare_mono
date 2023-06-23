@@ -2,11 +2,13 @@ import { FieldRow } from './field';
 import { AppliedProperty, ItemProperty } from './properties';
 import { DictionaryForm } from './dictionary_form';
 
-export type DictionaryWordTypes = 'word' | 'GN' | 'PN';
+// COMPLETE
+
+export type DictionaryWordType = 'word' | 'GN' | 'PN';
 
 export interface DictionaryWordRow {
   uuid: string;
-  type: DictionaryWordTypes;
+  type: DictionaryWordType;
   word: string;
   mash: string | null;
 }
@@ -26,5 +28,5 @@ export interface UpdateWordSpellingPayload {
 export interface AddWordPayload {
   wordSpelling: string;
   properties: AppliedProperty[];
-  type: DictionaryWordTypes;
+  type: DictionaryWordType;
 }

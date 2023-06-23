@@ -4,7 +4,7 @@ import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import {
   AddWordPayload,
   DictionaryWord,
-  DictionaryWordTypes,
+  DictionaryWordType,
   UpdateWordSpellingPayload,
 } from '@oare/types';
 import express from 'express';
@@ -31,9 +31,9 @@ router
         const DictionaryWordDao = sl.get('DictionaryWordDao');
 
         const { letter } = req.params;
-        const type = req.params.type as DictionaryWordTypes;
+        const type = req.params.type as DictionaryWordType;
 
-        const wordUuids = await DictionaryWordDao.getDictionaryWordUuidsByTypeAndLetter(
+        const wordUuids = await DictionaryWordDao.getDictionaryWordUuidsByTypeAndLetterGroup(
           type,
           letter.toLowerCase()
         );

@@ -1,3 +1,5 @@
+// COMPLETE
+
 export type SortOrder = 'asc' | 'desc'; // FIXME should use elsewhere!
 
 export interface Pagination {
