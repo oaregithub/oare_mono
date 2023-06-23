@@ -162,21 +162,18 @@ class TextDiscourseDao {
   /**
    * Retrieves a list of text occurrences for given spellings.
    * @param spellingUuids The spelling UUIDs whose occurrences to retrieve.
-   * @param userUuid The UUID of the user whose texts to hide. Used to filter out occurrences in texts that a user does not have access to.
+   * @param textsToHide An array of text UUIDS that a user does not have access to.
    * @param pagination Pagination object. Used to supply a page, limit, and search filter.
    * @param trx Knex Transaction. Optional.
    * @returns Array of text occurrences.
    */
   public async getSpellingOccurrencesTexts(
     spellingUuids: string[],
-    userUuid: string | null,
+    textsToHide: string[],
     { limit, page, filter }: Pagination,
     trx?: Knex.Transaction
   ): Promise<TextOccurrencesRow[]> {
     const k = trx || knex;
-
-    const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
 
     const rows: TextOccurrencesRow[] = await k('text_discourse')
       .distinct(

@@ -195,6 +195,7 @@ router
   .route('/dictionary_spelling/occurrences/texts')
   .get(async (req, res, next) => {
     try {
+      const CollectionTextUtils = sl.get('CollectionTextUtils');
       const TextDiscourseDao = sl.get('TextDiscourseDao');
       const utils = sl.get('utils');
 
@@ -202,11 +203,11 @@ router
       const spellingUuids = req.query.spellingUuids as string[];
       const pagination = utils.extractPagination(req.query);
 
-      // FIXME should make this dao function take the textsToHide array rather than computing it within
-      // would bring it in line with the count function
+      const textsToHide = await CollectionTextUtils.textsToHide(userUuid);
+
       const occurrences = await TextDiscourseDao.getSpellingOccurrencesTexts(
         spellingUuids,
-        userUuid,
+        textsToHide,
         pagination
       );
 

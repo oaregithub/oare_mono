@@ -194,7 +194,7 @@ class SpatialUnitDao {
       .select(
         'te.text_uuid as textUuid',
         'te.side as side',
-        k.raw('CONCAT(dw1.word, " ", p.relation, " ", dw2.word) as user') // FIXME?
+        k.raw('CONCAT(dw1.word, " ", p.relation, " ", dw2.word) as user')
       );
 
     return rows;

@@ -5,7 +5,7 @@ import { ResourceRow, LinkRow, Image, CitationUrls } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
 
-// MOSTLY COMPLETE
+// COMPLETE
 
 class ResourceDao {
   /**

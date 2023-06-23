@@ -31,8 +31,6 @@ class ErrorsDao {
   ): Promise<void> {
     const k = trx || knex;
 
-    // FIXME perhaps we don't need the status because we can just default to 'New' when logging?
-
     const uuid = v4();
     const timestamp = new Date();
 

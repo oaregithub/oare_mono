@@ -10,8 +10,6 @@ import localeMiddleware from '@/middlewares/application/locale';
 // FIXME unrelated to this file, but some of the logic in the server start command could be moved into
 // the build or zip sh files. Those both could be cleaned up.
 
-// FIXME revist all clear cache calls to make sure they are being cleared correctly
-
 /**
  * Initialized Express app.
  */
