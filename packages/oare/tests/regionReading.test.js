@@ -5,7 +5,7 @@ describe('region reading test', () => {
     expect(
       regionReading({
         reading: null,
-        markups: [
+        markup: [
           {
             type: 'isSealImpression',
           },
@@ -18,7 +18,7 @@ describe('region reading test', () => {
     expect(
       regionReading({
         reading: 'A',
-        markups: [
+        markup: [
           {
             type: 'isSealImpression',
           },
@@ -30,7 +30,7 @@ describe('region reading test', () => {
   it('displays broken', () => {
     expect(
       regionReading({
-        markups: [
+        markup: [
           {
             type: 'broken',
           },
@@ -42,10 +42,10 @@ describe('region reading test', () => {
   it('displays uninscribed with no value', () => {
     expect(
       regionReading({
-        markups: [
+        markup: [
           {
             type: 'uninscribed',
-            value: null,
+            numValue: null,
           },
         ],
       })
@@ -55,10 +55,10 @@ describe('region reading test', () => {
   it('displays uninscribed with 1 line', () => {
     expect(
       regionReading({
-        markups: [
+        markup: [
           {
             type: 'uninscribed',
-            value: 1,
+            numValue: 1,
           },
         ],
       })
@@ -68,10 +68,10 @@ describe('region reading test', () => {
   it('displays uninscribed with more than 1 line', () => {
     expect(
       regionReading({
-        markups: [
+        markup: [
           {
             type: 'uninscribed',
-            value: 2,
+            numValue: 2,
           },
         ],
       })
@@ -81,10 +81,10 @@ describe('region reading test', () => {
   it('displays ruling', () => {
     expect(
       regionReading({
-        markups: [
+        markup: [
           {
             type: 'ruling',
-            value: 1,
+            numValue: 1,
           },
         ],
       })
@@ -95,10 +95,10 @@ describe('region reading test', () => {
     expect(
       regionReading({
         reading: 'A',
-        markups: [
+        markup: [
           {
             type: 'isStampSealImpression',
-            value: 1,
+            numValue: 1,
           },
         ],
       })
