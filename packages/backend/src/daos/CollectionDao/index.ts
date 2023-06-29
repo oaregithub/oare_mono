@@ -139,4 +139,7 @@ class CollectionDao {
   }
 }
 
+/**
+ * CollectionDao instance as a singleton.
+ */
 export default new CollectionDao();

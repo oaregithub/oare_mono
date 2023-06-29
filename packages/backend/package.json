@@ -9,7 +9,6 @@
     "start": "rm -rf build/@oare && cp -r @oare build && cp -r @oare node_modules && NODE_ENV=production node ./build/src/server.js",
     "lint": "eslint src/*.ts src/**/*.ts",
     "dev": "cross-env NODE_ENV=development ts-node-dev -r tsconfig-paths/register ./src/server.ts --respawn --transpileOnly ",
-    "dev:3": "cross-env DB_VERSION=0.3 npm run dev",
     "test": "cross-env NODE_ENV=test jest",
     "test:log": "cross-env TEST_LOG=on yarn test",
     "migrate:make": "knex migrate:make --migrations-directory migrations -x ts",

@@ -616,4 +616,7 @@ class ResourceDao {
   }
 }
 
+/**
+ * ResourceDao instance as a singleton.
+ */
 export default new ResourceDao();

@@ -7,8 +7,6 @@ import UserGroupDao from '../UserGroupDao';
 // COMPLETE
 
 class PermissionsDao {
-  // FIXME update the permissions
-
   /**
    * All permissions in the system. This is the "source-of-truth" for permissions.
    */

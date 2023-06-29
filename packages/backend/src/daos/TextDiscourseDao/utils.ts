@@ -2,6 +2,12 @@ import { TextDiscourse, TextDiscourseUnit } from '@oare/types';
 
 // COMPLETE
 
+/**
+ * Nests text discourses into a tree structure.
+ * @param discourseRows Text discourses to nest.
+ * @param baseParentUuid The parent UUID to start nesting from.
+ * @returns A nested tree structure of text discourses.
+ */
 export function createNestedDiscourses(
   discourseRows: TextDiscourse[],
   baseParentUuid: string | null
@@ -29,6 +35,11 @@ export function createNestedDiscourses(
   return discourses;
 }
 
+/**
+ * Sets the explicit spelling of each discourse unit to be the concatenation of its children's displayable strings.
+ * @param unit The discourse unit to set the explicit spelling of.
+ * @returns A complete discourse unit with explicit spelling set.
+ */
 export function setDiscourseReading(unit: TextDiscourseUnit): void {
   if (unit.children.length < 1) {
     return;

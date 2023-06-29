@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { Archive, ArchiveRow, Dossier, Text } from '@oare/types';
+import { Archive, ArchiveRow, Dossier } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 

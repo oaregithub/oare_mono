@@ -20,4 +20,7 @@ class TreeDao {
   }
 }
 
+/**
+ * TreeDao instance as a singleton.
+ */
 export default new TreeDao();

@@ -439,6 +439,13 @@ export const publicationsFilter: CacheFilter<Publication[]> = async (
   return publicationResponse;
 };
 
+/**
+ * Used to add occurrences counts to periods data.
+ * Done in a cache filter to filter out occurrences in texts that the user does not have access to.
+ * @param response The periods to add occurrences to.
+ * @param user The requesting user.
+ * @returns The periods with added occurrences.
+ */
 export const periodsFilter: CacheFilter<PeriodResponse> = async (
   response: PeriodResponse,
   user: User | null

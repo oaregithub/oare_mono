@@ -1,4 +1,4 @@
-import express, { text } from 'express';
+import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
